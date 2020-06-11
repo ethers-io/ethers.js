@@ -1,0 +1,444 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Accounts &mdash; ethers.js 4.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Contracts" href="cookbook-contracts.html" />
+    <link rel="prev" title="Cookbook" href="cookbook.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface (API)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="cookbook.html">Cookbook</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Accounts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dump-all-json-wallet-balances-in-current-directory">Dump All JSON Wallet Balances (in current directory)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sweep-an-account-into-another">Sweep an Account into Another</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coalesce-jaxx-wallets">Coalesce Jaxx Wallets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#access-funds-in-a-mnemonic-phrase-wallet">Access Funds in a Mnemonic Phrase Wallet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#random-mnemonic">Random Mnemonic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-transaction-history">Get Transaction History</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook-contracts.html">Contracts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook-providers.html">Providers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook-signing.html">Signing Messages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook-testing.html">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook-react.html">React Native</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ethers.js</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="cookbook.html">Cookbook</a> &raquo;</li>
+        
+      <li>Accounts</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/cookbook-accounts.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="accounts">
+<h1>Accounts<a class="headerlink" href="#accounts" title="Permalink to this headline">¶</a></h1>
+<p>Some quick examples of using Accounts.</p>
+<hr class="docutils" />
+<div class="section" id="dump-all-json-wallet-balances-in-current-directory">
+<h2>Dump All JSON Wallet Balances (in current directory)<a class="headerlink" href="#dump-all-json-wallet-balances-in-current-directory" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text"><em>Load JSON Wallet Balances</em></span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs&#39;</span><span class="p">);</span>
+<span class="kr">const</span> <span class="nx">path</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">);</span>
+
+<span class="kr">const</span> <span class="nx">ethers</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">provider</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">getDefaultProvider</span><span class="p">();</span>
+
+<span class="c1">// Geth</span>
+<span class="kd">let</span> <span class="nx">dirname</span> <span class="o">=</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">HOME</span><span class="p">,</span> <span class="s1">&#39;.ethereum&#39;</span><span class="p">,</span> <span class="s1">&#39;keystore&#39;</span><span class="p">);</span>
+
+<span class="c1">// Parity (use the name of your chain for chainDirectory, such as &quot;homestead&quot;)</span>
+<span class="c1">//var dirname = path.join(process.env.HOME, &#39;.parity&#39;, &#39;keys&#39;, chainDirectory, &#39;keys&#39;);</span>
+
+<span class="kd">let</span> <span class="nx">filenames</span> <span class="o">=</span> <span class="nx">fs</span><span class="p">.</span><span class="nx">readdirSync</span><span class="p">(</span><span class="nx">dirname</span><span class="p">);</span>
+
+<span class="nx">filenames</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">async</span> <span class="kd">function</span><span class="p">(</span><span class="nx">filename</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="c1">// Get the Wallet JSON</span>
+    <span class="kd">let</span> <span class="nx">data</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">fs</span><span class="p">.</span><span class="nx">readFile</span><span class="p">(</span><span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">dirname</span><span class="p">,</span><span class="nx">filename</span><span class="p">));</span>
+
+    <span class="c1">// Get the Wallet address</span>
+    <span class="kd">let</span> <span class="nx">address</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">getJsonWalletAddress</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">toString</span><span class="p">());</span>
+
+    <span class="c1">// Look up the balance</span>
+    <span class="kd">let</span> <span class="nx">balance</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">getBalance</span><span class="p">(</span><span class="nx">address</span><span class="p">);</span>
+
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">address</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">formatEther</span><span class="p">(</span><span class="nx">balance</span><span class="p">));</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="sweep-an-account-into-another">
+<h2>Sweep an Account into Another<a class="headerlink" href="#sweep-an-account-into-another" title="Permalink to this headline">¶</a></h2>
+<p>This will sweep <strong>all</strong> the funds from one account’s <em>privateKey</em> and
+place it in another account, <em>newAddress</em>.</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text"><em>Sweep an Account</em></span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">ethers</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+
+<span class="nx">async</span> <span class="kd">function</span> <span class="nx">sweep</span><span class="p">(</span><span class="nx">privateKey</span><span class="p">,</span> <span class="nx">newAddress</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="kd">let</span> <span class="nx">provider</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">getDefaultProvider</span><span class="p">();</span>
+
+    <span class="kd">let</span> <span class="nx">wallet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">(</span><span class="nx">privateKey</span><span class="p">,</span> <span class="nx">provider</span><span class="p">);</span>
+
+    <span class="c1">// Make sure we are sweeping to an EOA, not a contract. The gas required</span>
+    <span class="c1">// to send to a contract cannot be certain, so we may leave dust behind</span>
+    <span class="c1">// or not set a high enough gas limit, in which case the transaction will</span>
+    <span class="c1">// fail.</span>
+    <span class="kd">let</span> <span class="nx">code</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">getCode</span><span class="p">(</span><span class="nx">newAddress</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">code</span> <span class="o">!==</span> <span class="s1">&#39;0x&#39;</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;Cannot sweep to a contract&#39;</span><span class="p">);</span> <span class="p">}</span>
+
+    <span class="c1">// Get the current balance</span>
+    <span class="kd">let</span> <span class="nx">balance</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">wallet</span><span class="p">.</span><span class="nx">getBalance</span><span class="p">();</span>
+
+    <span class="c1">// Normally we would let the Wallet populate this for us, but we</span>
+    <span class="c1">// need to compute EXACTLY how much value to send</span>
+    <span class="kd">let</span> <span class="nx">gasPrice</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">getGasPrice</span><span class="p">();</span>
+
+    <span class="c1">// The exact cost (in gas) to send to an Externally Owned Account (EOA)</span>
+    <span class="kd">let</span> <span class="nx">gasLimit</span> <span class="o">=</span> <span class="mi">21000</span><span class="p">;</span>
+
+    <span class="c1">// The balance less exactly the txfee in wei</span>
+    <span class="kd">let</span> <span class="nx">value</span> <span class="o">=</span> <span class="nx">balance</span><span class="p">.</span><span class="nx">sub</span><span class="p">(</span><span class="nx">gasPrice</span><span class="p">.</span><span class="nx">mul</span><span class="p">(</span><span class="nx">gasLimit</span><span class="p">))</span>
+
+    <span class="kd">let</span> <span class="nx">tx</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">wallet</span><span class="p">.</span><span class="nx">sendTransaction</span><span class="p">({</span>
+        <span class="nx">gasLimit</span><span class="o">:</span> <span class="nx">gasLimit</span><span class="p">,</span>
+        <span class="nx">gasPrice</span><span class="o">:</span> <span class="nx">gasPrice</span><span class="p">,</span>
+        <span class="nx">to</span><span class="o">:</span> <span class="nx">newAddress</span><span class="p">,</span>
+        <span class="nx">value</span><span class="o">:</span> <span class="nx">value</span>
+    <span class="p">});</span>
+
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Sent in Transaction: &#39;</span> <span class="o">+</span> <span class="nx">tx</span><span class="p">.</span><span class="nx">hash</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="coalesce-jaxx-wallets">
+<h2>Coalesce Jaxx Wallets<a class="headerlink" href="#coalesce-jaxx-wallets" title="Permalink to this headline">¶</a></h2>
+<p>The Jaxx Wallet (for iOS, Android, desktop, et cetera) uses HD wallets on Ethereum the
+same way as Bitcoin, which results in each transaction being received by a separate
+address. As a result, funds get spread across many accounts, making several operations
+in Ethereum impossible.</p>
+<p>This short recipe will coalesce all these accounts into a single one, by sending the funds
+from each account into a single one.</p>
+<p>This also results in paying multiple transaction fees (1 fee per account to merge).</p>
+<p>&#64;TODO: This is incomplete!!</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text"><em>TODO</em></span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">ethers</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">provider</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">getDefaultProvider</span><span class="p">();</span>
+
+<span class="kd">let</span> <span class="nx">mnemonic</span> <span class="o">=</span> <span class="s2">&quot;radar blur cabbage chef fix engine embark joy scheme fiction master release&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">hdnode</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">HDNode</span><span class="p">.</span><span class="nx">fromMnemonic</span><span class="p">(</span><span class="nx">mnemonic</span><span class="p">);</span>
+<span class="kd">let</span> <span class="nx">hdnode</span> <span class="o">=</span> <span class="nx">hdnode</span><span class="p">.</span><span class="nx">derivePath</span><span class="p">(</span><span class="s2">&quot;m/44&#39;/60&#39;/0&#39;/0&quot;</span><span class="p">);</span>
+
+ <span class="c1">// @TODO</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="access-funds-in-a-mnemonic-phrase-wallet">
+<h2>Access Funds in a Mnemonic Phrase Wallet<a class="headerlink" href="#access-funds-in-a-mnemonic-phrase-wallet" title="Permalink to this headline">¶</a></h2>
+<p>&#64;TODO: This is incomplete</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text"><em>TODO</em></span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">ethers</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">walletPath</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;standard&quot;</span><span class="o">:</span> <span class="s2">&quot;m/44&#39;/60&#39;/0&#39;/0/0&quot;</span><span class="p">,</span>
+
+    <span class="c1">// @TODO: Include some non-standard wallet paths</span>
+<span class="p">};</span>
+
+<span class="kd">let</span> <span class="nx">mnemonic</span> <span class="o">=</span> <span class="s2">&quot;radar blur cabbage chef fix engine embark joy scheme fiction master release&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">hdnode</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">HDNode</span><span class="p">.</span><span class="nx">fromMnemonic</span><span class="p">(</span><span class="nx">mnemonic</span><span class="p">);</span>
+<span class="kd">let</span> <span class="nx">node</span> <span class="o">=</span> <span class="nx">hdnode</span><span class="p">.</span><span class="nx">derivePath</span><span class="p">(</span><span class="nx">walletPath</span><span class="p">.</span><span class="nx">standard</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">wallet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">(</span><span class="nx">node</span><span class="p">.</span><span class="nx">privateKey</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">wallet</span><span class="p">.</span><span class="nx">address</span><span class="p">);</span>
+<span class="c1">// 0xaC39b311DCEb2A4b2f5d8461c1cdaF756F4F7Ae9</span>
+
+<span class="c1">// @TODO:</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="random-mnemonic">
+<h2>Random Mnemonic<a class="headerlink" href="#random-mnemonic" title="Permalink to this headline">¶</a></h2>
+<p>Often you may simply want a random mnemonic that is valid. It is important to
+note that <strong>not</strong> all random sets of words are valid; there is a checksum
+included in the binary encoding of the entropy, so it is important to use
+a method that correctly encodes this checksum.</p>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text"><em>Random Mnemonic</em></span><a class="headerlink" href="#id5" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">ethers</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+
+<span class="c1">// All createRandom Wallets are generated from random mnemonics</span>
+<span class="kd">let</span> <span class="nx">wallet</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">.</span><span class="nx">createRandom</span><span class="p">();</span>
+<span class="kd">let</span> <span class="nx">randomMnemonic</span> <span class="o">=</span> <span class="nx">wallet</span><span class="p">.</span><span class="nx">mnemonic</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text"><em>More Complex Random Mnemonic</em></span><a class="headerlink" href="#id6" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">utils</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;ethers/utils&#39;</span><span class="p">);</span>
+
+<span class="c1">// Chose the length of your mnemonic:</span>
+<span class="c1">//   - 16 bytes =&gt; 12 words (* this example)</span>
+<span class="c1">//   - 20 bytes =&gt; 15 words</span>
+<span class="c1">//   - 24 bytes =&gt; 18 words</span>
+<span class="c1">//   - 28 bytes =&gt; 21 words</span>
+<span class="c1">//   - 32 bytes =&gt; 24 words</span>
+<span class="kd">let</span> <span class="nx">bytes</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">random</span><span class="p">(</span><span class="mi">16</span><span class="p">);</span>
+
+<span class="c1">// Select the language:</span>
+<span class="c1">//   - en, es, fr, ja, ko, it, zh_ch, zh_tw</span>
+<span class="kd">let</span> <span class="nx">language</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">wordlists</span><span class="p">.</span><span class="nx">en</span><span class="p">;</span>
+
+<span class="kd">let</span> <span class="nx">randomMnemonic</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">HDNode</span><span class="p">.</span><span class="nx">entropyToMnemonic</span><span class="p">(</span><span class="nx">bytes</span><span class="p">,</span> <span class="nx">language</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="get-transaction-history">
+<h2>Get Transaction History<a class="headerlink" href="#get-transaction-history" title="Permalink to this headline">¶</a></h2>
+<p>Unfortunately, transaction history is not something that is easy to get. It
+is not indexed by the blockchain, not by a standard node, “out-of-the-box”.
+At the time of this recipe, the indices to store the entire history are
+around 800GB. For Parity you may enable tracing and disable pruning, in
+which case you can use some of the vendor specific JSON-RPC debug methods.</p>
+<p>For many cases, you can probably rely on Etherscan, which dedicates large
+amounts of resources to tracking and storing this information.</p>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text"><em>Transaction History</em></span><a class="headerlink" href="#id7" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">etherscanProvider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">EtherscanProvider</span><span class="p">();</span>
+
+<span class="nx">etherscanProvider</span><span class="p">.</span><span class="nx">getHistory</span><span class="p">(</span><span class="nx">address</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">history</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">history</span><span class="p">.</span><span class="nx">forEach</span><span class="p">((</span><span class="nx">tx</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">tx</span><span class="p">);</span>
+    <span class="p">})</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+<p>&#64;TODO: Example of signing and verifying a hash in ethers and in Solidity.</p>
+<hr class="docutils" />
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="cookbook-contracts.html" class="btn btn-neutral float-right" title="Contracts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="cookbook.html" class="btn btn-neutral" title="Cookbook" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

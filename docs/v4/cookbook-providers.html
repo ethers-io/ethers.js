@@ -1,0 +1,349 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Providers &mdash; ethers.js 4.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Signing Messages" href="cookbook-signing.html" />
+    <link rel="prev" title="Contracts" href="cookbook-contracts.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface (API)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="cookbook.html">Cookbook</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="cookbook-accounts.html">Accounts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook-contracts.html">Contracts</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Providers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#metamask">MetaMask</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#testrpc-ganache">TestRPC / Ganache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#custom-provider">Custom Provider</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook-signing.html">Signing Messages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook-testing.html">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook-react.html">React Native</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ethers.js</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="cookbook.html">Cookbook</a> &raquo;</li>
+        
+      <li>Providers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/cookbook-providers.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="providers">
+<h1>Providers<a class="headerlink" href="#providers" title="Permalink to this headline">¶</a></h1>
+<p>The Ethereum eco-system provides many methods of interacting with the
+blockchain. In ethers.js we expose a Provider API that covers the
+breadth of operations, however often it is useful to inter-operate with
+other existing APIs and libraries.</p>
+<hr class="docutils" />
+<div class="section" id="metamask">
+<h2>MetaMask<a class="headerlink" href="#metamask" title="Permalink to this headline">¶</a></h2>
+<p>The MetaMask plug-in enables Ethereum for the Chrome browser, making it
+easy for people new ecosystem to get started, exposing the Ethereum
+network as a standard Web3 Provider.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text"><em>Connecting to MetaMask</em></span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// MetaMask injects a Web3 Provider as &quot;web3.currentProvider&quot;, so</span>
+<span class="c1">// we can wrap it up in the ethers.js Web3Provider, which wraps a</span>
+<span class="c1">// Web3 Provider and exposes the ethers.js Provider API.</span>
+
+<span class="kr">const</span> <span class="nx">provider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">Web3Provider</span><span class="p">(</span><span class="nx">web3</span><span class="p">.</span><span class="nx">currentProvider</span><span class="p">);</span>
+
+<span class="c1">// There is only ever up to one account in MetaMask exposed</span>
+<span class="kr">const</span> <span class="nx">signer</span> <span class="o">=</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">getSigner</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="testrpc-ganache">
+<h2>TestRPC / Ganache<a class="headerlink" href="#testrpc-ganache" title="Permalink to this headline">¶</a></h2>
+<p>The Ganache (formerly TestRPC) is a mock-blockchain which helps create
+temporary instances of an Ethereum node for testing.</p>
+<dl class="docutils">
+<dt><strong>NOTE:</strong></dt>
+<dd>Ganache is not entirely standards-compliant and may
+not always behave properly. If you are getting deeper
+into Ethereum development, we recommend installing
+Geth or Parity and using a development chain</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text"><em>Connecting to a Ganache Node</em></span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Once a Ganache node is running, it behaves very similar to a</span>
+<span class="c1">// JSON-RPC API node.</span>
+
+<span class="kr">const</span> <span class="nx">url</span> <span class="o">=</span> <span class="s2">&quot;http://localhost:8545&quot;</span><span class="p">;</span>
+
+<span class="c1">// Or if you are running the UI version, use this instead:</span>
+<span class="c1">// const url = &quot;http://localhost:7545&quot;</span>
+
+<span class="kr">const</span> <span class="nx">provider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">JsonRpcProvider</span><span class="p">(</span><span class="nx">url</span><span class="p">);</span>
+
+<span class="c1">// Getting the accounts</span>
+<span class="kr">const</span> <span class="nx">signer0</span> <span class="o">=</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">getSigner</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="kr">const</span> <span class="nx">signer1</span> <span class="o">=</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">getSigner</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text"><em>Using an In-Process Ganache Instance</em></span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// If you would like to run an in-process instance of Ganache, you can</span>
+<span class="c1">// use a method similar to the MetaMask solution; we wrap the Web3 Provider</span>
+<span class="c1">// API with an ethers.js Web3Provider, which exposes the ethers.js API</span>
+<span class="c1">// from a Web3 Provider</span>
+
+<span class="kr">const</span> <span class="nx">ganache</span> <span class="o">=</span> <span class="nx">Ganache</span><span class="p">.</span><span class="nx">provider</span><span class="p">(</span><span class="nx">ganacheOptions</span><span class="p">);</span>
+<span class="kr">const</span> <span class="nx">provider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">Web3Provider</span><span class="p">(</span><span class="nx">ganache</span><span class="p">);</span>
+
+<span class="c1">// Getting the accounts</span>
+<span class="kr">const</span> <span class="nx">signer0</span> <span class="o">=</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">getSigner</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="kr">const</span> <span class="nx">signer1</span> <span class="o">=</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">getSigner</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="custom-provider">
+<h2>Custom Provider<a class="headerlink" href="#custom-provider" title="Permalink to this headline">¶</a></h2>
+<p>This is a much more advanced topic, and most people should not need to work this
+low level. But it is provided for those rare instances where you need some custom
+connection logic.</p>
+<p>A provider must only implement the method <strong>perform(method, params)</strong>. All data passed
+into a provider is sanitized by the BaseProvider subclass, and all results are normalized
+before returning them to the user.</p>
+<p>For this example, we will build a DebugProvider, which will simple proxy all commands
+through another Provider, but dump all data going back and forth.</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text"><em>Sub-Class Provider for Debugging</em></span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">ethers</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+
+<span class="kr">class</span> <span class="nx">DebugProvider</span> <span class="kr">extends</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">BaseProvider</span> <span class="p">{</span>
+    <span class="nx">readonly</span> <span class="nx">provider</span><span class="o">:</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">Provider</span><span class="p">;</span>
+
+    <span class="nx">constructor</span><span class="p">(</span><span class="nx">provider</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kr">super</span><span class="p">(</span><span class="nx">provider</span><span class="p">.</span><span class="nx">getNetork</span><span class="p">());</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">provider</span> <span class="o">=</span> <span class="nx">provider</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// This should return a Promise (and may throw erros)</span>
+    <span class="c1">// method is the method name (e.g. getBalance) and params is an</span>
+    <span class="c1">// object with normalized values passed in, depending on the method</span>
+    <span class="nx">perform</span><span class="p">(</span><span class="nx">method</span><span class="p">,</span> <span class="nx">params</span><span class="p">)</span><span class="o">:</span> <span class="nb">Promise</span><span class="o">&lt;</span><span class="nx">any</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">provider</span><span class="p">.</span><span class="nx">perform</span><span class="p">(</span><span class="nx">method</span><span class="p">,</span> <span class="nx">params</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">result</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">,</span> <span class="nx">method</span><span class="p">,</span> <span class="nx">params</span><span class="p">,</span> <span class="s1">&#39;=&gt;&#39;</span><span class="p">,</span> <span class="nx">result</span><span class="p">);</span>
+        <span class="p">},</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;DEBUG:ERROR&#39;</span><span class="p">,</span> <span class="nx">method</span><span class="p">,</span> <span class="nx">params</span><span class="p">,</span> <span class="s1">&#39;=&gt;&#39;</span><span class="p">,</span> <span class="nx">error</span><span class="p">);</span>
+            <span class="k">throw</span> <span class="nx">error</span><span class="p">;</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="cookbook-signing.html" class="btn btn-neutral float-right" title="Signing Messages" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="cookbook-contracts.html" class="btn btn-neutral" title="Contracts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

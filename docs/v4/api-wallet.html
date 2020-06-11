@@ -1,0 +1,701 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Wallets and Signers &mdash; ethers.js 4.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Providers" href="api-providers.html" />
+    <link rel="prev" title="Application Programming Interface (API)" href="api.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Application Programming Interface (API)</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Wallets and Signers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#wallet">Wallet</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#creating-instances">Creating Instances</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#prototype">Prototype</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#signing">Signing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#blockchain-operations">Blockchain Operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#encrypted-json-wallets">Encrypted JSON Wallets</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#signer-api">Signer API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html">Providers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-contract.html">Contracts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ethers.js</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="api.html">Application Programming Interface (API)</a> &raquo;</li>
+        
+      <li>Wallets and Signers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api-wallet.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="wallets-and-signers">
+<span id="api-wallet"></span><h1>Wallets and Signers<a class="headerlink" href="#wallets-and-signers" title="Permalink to this headline">¶</a></h1>
+<p>A <strong>Wallet</strong> manages a private/public key pair which is used to cryptographically sign
+transactions and prove ownership on the Ethereum network.</p>
+<hr class="docutils" />
+<div class="section" id="wallet">
+<span id="id1"></span><h2>Wallet<a class="headerlink" href="#wallet" title="Permalink to this headline">¶</a></h2>
+<p>The <strong>Wallet</strong> implements the <a class="reference internal" href="#signer"><span class="std std-ref">Signer API</span></a> and can be used anywhere a <em>Signer</em>
+is expected and has all the required properties.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="section" id="creating-instances">
+<h3>Creating Instances<a class="headerlink" href="#creating-instances" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>new <sup>Wallet</sup> ( privateKey [ , provider ] )</dt>
+<dd>Creates a new instance from <em>privateKey</em> and optionally connect a provider</dd>
+<dt><sup>Wallet</sup> . createRandom ( [ options ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Wallet</sup></dt>
+<dd><p class="first">Creates a new random wallet. Ensure this wallet is stored somewhere safe, if
+lost there is <strong>NO way to recover it</strong>.</p>
+<p>Options may have the properties:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><strong>extraEntropy</strong> — additional entropy to stir into the random source</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="docutils" id="fromencryptedjson">
+<dt><sup>Wallet</sup> . fromEncryptedJson ( json, password [ , progressCallback ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Wallet</sup></dt>
+<dd>Decrypt an encrypted Secret Storage <a class="reference external" href="https://medium.com/&#64;julien.maffre/what-is-an-ethereum-keystore-file-86c8c5917b97">JSON Wallet</a> (from Geth, parity, Crowdsale
+tools, or that was created using <em>prototype.encrypt</em> )</dd>
+<dt><sup>Wallet</sup> . fromMnemonic ( mnemonic [ , path <sup>= “m/44’/60’/0’/0/0”</sup> [ , wordlist ] ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Wallet</sup></dt>
+<dd><p class="first">Generate a <a class="reference external" href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki">BIP-039</a> + <a class="reference external" href="https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki">BIP-044</a> wallet from <em>mnemonic</em> deriving <em>path</em> using
+the <em>wordlist</em>. The default language is English (en).</p>
+<p>In the browserified <code class="docutils literal notranslate"><span class="pre">dist/ethers.min.js</span></code> only the English wordlist is
+available. Each additional wordlist may be included by adding a <code class="docutils literal notranslate"><span class="pre">&lt;script&gt;</span></code>
+for the <code class="docutils literal notranslate"><span class="pre">dist/wordlist-*.js</span></code></p>
+<p>The current supported wordlists are:</p>
+<table border="1" class="last docutils">
+<colgroup>
+<col width="30%" />
+<col width="38%" />
+<col width="32%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Language</th>
+<th class="head">node.js</th>
+<th class="head">Browser</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>English (US)</td>
+<td><code class="docutils literal notranslate"><span class="pre">ethers.wordlists.en</span></code></td>
+<td><em>included</em></td>
+</tr>
+<tr class="row-odd"><td>Italian</td>
+<td><code class="docutils literal notranslate"><span class="pre">ethers.wordlists.it</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">dist/wordlist-it.js</span></code></td>
+</tr>
+<tr class="row-even"><td>Japanese</td>
+<td><code class="docutils literal notranslate"><span class="pre">ethers.wordlists.ja</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">dist/wordlist-ja.js</span></code></td>
+</tr>
+<tr class="row-odd"><td>Korean</td>
+<td><code class="docutils literal notranslate"><span class="pre">ethers.wordlists.ko</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">dist/wordlist-ko.js</span></code></td>
+</tr>
+<tr class="row-even"><td>Chinese (simplified)</td>
+<td><code class="docutils literal notranslate"><span class="pre">ethers.wordlists.zh_cn</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">dist/wordlist-zh.js</span></code></td>
+</tr>
+<tr class="row-odd"><td>Chinese (traditional)</td>
+<td><code class="docutils literal notranslate"><span class="pre">ethers.wordlists.zh_tw</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">dist/wordlist-zh.js</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<dl class="docutils" id="wallet-connect">
+<dt><sup>prototype</sup> . connect ( provider ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Wallet</sup></dt>
+<dd>Creates a new Wallet instance from an existing instance, connected to a new <em>provider</em>.</dd>
+</dl>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text"><em>load a private key</em></span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">privateKey</span> <span class="o">=</span> <span class="s2">&quot;0x0123456789012345678901234567890123456789012345678901234567890123&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">wallet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">(</span><span class="nx">privateKey</span><span class="p">);</span>
+
+<span class="c1">// Connect a wallet to mainnet</span>
+<span class="kd">let</span> <span class="nx">provider</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">getDefaultProvider</span><span class="p">();</span>
+<span class="kd">let</span> <span class="nx">walletWithProvider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">(</span><span class="nx">privateKey</span><span class="p">,</span> <span class="nx">provider</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text"><em>create a new random account</em></span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">randomWallet</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">.</span><span class="nx">createRandom</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text"><em>load a JSON wallet</em></span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">id</span><span class="o">:</span> <span class="s2">&quot;fb1280c0-d646-4e40-9550-7026b1be504a&quot;</span><span class="p">,</span>
+    <span class="nx">address</span><span class="o">:</span> <span class="s2">&quot;88a5c2d9919e46f883eb62f7b8dd9d0cc45bc290&quot;</span><span class="p">,</span>
+    <span class="nx">Crypto</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">kdfparams</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">dklen</span><span class="o">:</span> <span class="mi">32</span><span class="p">,</span>
+            <span class="nx">p</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="nx">salt</span><span class="o">:</span> <span class="s2">&quot;bbfa53547e3e3bfcc9786a2cbef8504a5031d82734ecef02153e29daeed658fd&quot;</span><span class="p">,</span>
+            <span class="nx">r</span><span class="o">:</span> <span class="mi">8</span><span class="p">,</span>
+            <span class="nx">n</span><span class="o">:</span> <span class="mi">262144</span>
+        <span class="p">},</span>
+        <span class="nx">kdf</span><span class="o">:</span> <span class="s2">&quot;scrypt&quot;</span><span class="p">,</span>
+        <span class="nx">ciphertext</span><span class="o">:</span> <span class="s2">&quot;10adcc8bcaf49474c6710460e0dc974331f71ee4c7baa7314b4a23d25fd6c406&quot;</span><span class="p">,</span>
+        <span class="nx">mac</span><span class="o">:</span> <span class="s2">&quot;1cf53b5ae8d75f8c037b453e7c3c61b010225d916768a6b145adf5cf9cb3a703&quot;</span><span class="p">,</span>
+        <span class="nx">cipher</span><span class="o">:</span> <span class="s2">&quot;aes-128-ctr&quot;</span><span class="p">,</span>
+        <span class="nx">cipherparams</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">iv</span><span class="o">:</span> <span class="s2">&quot;1dcdf13e49cea706994ed38804f6d171&quot;</span>
+         <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;version&quot;</span> <span class="o">:</span> <span class="mi">3</span>
+<span class="p">};</span>
+
+<span class="kd">let</span> <span class="nx">json</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+<span class="kd">let</span> <span class="nx">password</span> <span class="o">=</span> <span class="s2">&quot;foo&quot;</span><span class="p">;</span>
+
+<span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">.</span><span class="nx">fromEncryptedJson</span><span class="p">(</span><span class="nx">json</span><span class="p">,</span> <span class="nx">password</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">wallet</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Address: &quot;</span> <span class="o">+</span> <span class="nx">wallet</span><span class="p">.</span><span class="nx">address</span><span class="p">);</span>
+    <span class="c1">// &quot;Address: 0x88a5C2d9919e46F883EB62F7b8Dd9d0CC45bc290&quot;</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text"><em>load a mnemonic phrase</em></span><a class="headerlink" href="#id5" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">mnemonic</span> <span class="o">=</span> <span class="s2">&quot;radar blur cabbage chef fix engine embark joy scheme fiction master release&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">mnemonicWallet</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">.</span><span class="nx">fromMnemonic</span><span class="p">(</span><span class="nx">mnemonic</span><span class="p">);</span>
+
+<span class="c1">// Load the second account from a mnemonic</span>
+<span class="kd">let</span> <span class="nx">path</span> <span class="o">=</span> <span class="s2">&quot;m/44&#39;/60&#39;/1&#39;/0/0&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">secondMnemonicWallet</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">.</span><span class="nx">fromMnemonic</span><span class="p">(</span><span class="nx">mnemonic</span><span class="p">,</span> <span class="nx">path</span><span class="p">);</span>
+
+<span class="c1">// Load using a non-english locale wordlist (the path &quot;null&quot; will use the default)</span>
+<span class="kd">let</span> <span class="nx">secondMnemonicWallet</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">.</span><span class="nx">fromMnemonic</span><span class="p">(</span><span class="nx">mnemonic</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">wordlists</span><span class="p">.</span><span class="nx">ko</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="prototype">
+<h3>Prototype<a class="headerlink" href="#prototype" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . address</dt>
+<dd>The public address of a wallet</dd>
+<dt><sup>prototype</sup> . privateKey</dt>
+<dd>The private key of a wallet; keep this secret</dd>
+<dt><sup>prototype</sup> . provider</dt>
+<dd><p class="first">A connected <a class="reference internal" href="api-providers.html#provider"><span class="std std-ref">Provider</span></a> which allows the wallet to
+connect to the Ethereum network to query its state and send transactions,
+or null if no provider is connected.</p>
+<p class="last">To change the provider, use the <a class="reference internal" href="#wallet-connect"><span class="std std-ref">connect</span></a> method, which will return
+a <strong>new instance</strong> of the Wallet connected to the provider.</p>
+</dd>
+<dt><sup>prototype</sup> . mnemonic</dt>
+<dd>The mnemonic phrase for this wallet, or null if the mnemonic is unknown.</dd>
+<dt><sup>prototype</sup> . path</dt>
+<dd>The mnemonic path for this wallet, or null if the mnemonic is unknown.</dd>
+</dl>
+</div>
+<hr class="docutils" />
+<div class="section" id="signing">
+<h3>Signing<a class="headerlink" href="#signing" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . sign ( transaction ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;string&gt;</sup></dt>
+<dd><p class="first">Signs <em>transaction</em> and returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> that resolves to
+the signed transaction as a <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a>.</p>
+<p>In general, the <a class="reference internal" href="#sendtransaction">sendTransaction</a> method is preferred to <code class="docutils literal notranslate"><span class="pre">sign</span></code>, as it can automatically
+populate values asynchronously.</p>
+<p>The properties for transaction are all optional and include:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><strong>to</strong></li>
+<li><strong>gasLimit</strong></li>
+<li><strong>gasPrice</strong></li>
+<li><strong>nonce</strong></li>
+<li><strong>data</strong></li>
+<li><strong>value</strong></li>
+<li><strong>chainId</strong></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt><sup>prototype</sup> . signMessage ( message ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;string&gt;</sup></dt>
+<dd><p class="first">Signs <em>message</em> and returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> that resolves to
+the <a class="reference internal" href="api-utils.html#signature"><span class="std std-ref">flat-format</span></a> signature.</p>
+<p class="last">If <em>message</em> is a string, it is converted to UTF-8 bytes, otherwise it is
+preserved as a binary representation of the <a class="reference internal" href="api-utils.html#arrayish"><span class="std std-ref">Arrayish</span></a> data.</p>
+</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text"><em>signing transactions</em></span><a class="headerlink" href="#id6" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">privateKey</span> <span class="o">=</span> <span class="s2">&quot;0x3141592653589793238462643383279502884197169399375105820974944592&quot;</span>
+<span class="kd">let</span> <span class="nx">wallet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">(</span><span class="nx">privateKey</span><span class="p">)</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">wallet</span><span class="p">.</span><span class="nx">address</span><span class="p">)</span>
+<span class="c1">// &quot;0x7357589f8e367c2C31F51242fB77B350A11830F3&quot;</span>
+
+<span class="c1">// All properties are optional</span>
+<span class="kd">let</span> <span class="nx">transaction</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">nonce</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="nx">gasLimit</span><span class="o">:</span> <span class="mi">21000</span><span class="p">,</span>
+    <span class="nx">gasPrice</span><span class="o">:</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">bigNumberify</span><span class="p">(</span><span class="s2">&quot;20000000000&quot;</span><span class="p">),</span>
+
+    <span class="nx">to</span><span class="o">:</span> <span class="s2">&quot;0x88a5C2d9919e46F883EB62F7b8Dd9d0CC45bc290&quot;</span><span class="p">,</span>
+    <span class="c1">// ... or supports ENS names</span>
+    <span class="c1">// to: &quot;ricmoo.firefly.eth&quot;,</span>
+
+    <span class="nx">value</span><span class="o">:</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">parseEther</span><span class="p">(</span><span class="s2">&quot;1.0&quot;</span><span class="p">),</span>
+    <span class="nx">data</span><span class="o">:</span> <span class="s2">&quot;0x&quot;</span><span class="p">,</span>
+
+    <span class="c1">// This ensures the transaction cannot be replayed on different networks</span>
+    <span class="nx">chainId</span><span class="o">:</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">getNetwork</span><span class="p">(</span><span class="s1">&#39;homestead&#39;</span><span class="p">).</span><span class="nx">chainId</span>
+<span class="p">}</span>
+
+<span class="kd">let</span> <span class="nx">signPromise</span> <span class="o">=</span> <span class="nx">wallet</span><span class="p">.</span><span class="nx">sign</span><span class="p">(</span><span class="nx">transaction</span><span class="p">)</span>
+
+<span class="nx">signPromise</span><span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">signedTransaction</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">signedTransaction</span><span class="p">);</span>
+    <span class="c1">// &quot;0xf86c808504a817c8008252089488a5c2d9919e46f883eb62f7b8dd9d0cc45bc2</span>
+    <span class="c1">//    90880de0b6b3a76400008025a05e766fa4bbb395108dc250ec66c2f88355d240</span>
+    <span class="c1">//    acdc47ab5dfaad46bcf63f2a34a05b2cb6290fd8ff801d07f6767df63c1c3da7</span>
+    <span class="c1">//    a7b83b53cd6cea3d3075ef9597d5&quot;</span>
+
+    <span class="c1">// This can now be sent to the Ethereum network</span>
+    <span class="kd">let</span> <span class="nx">provider</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">getDefaultProvider</span><span class="p">()</span>
+    <span class="nx">provider</span><span class="p">.</span><span class="nx">sendTransaction</span><span class="p">(</span><span class="nx">signedTransaction</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">tx</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">tx</span><span class="p">);</span>
+        <span class="c1">// {</span>
+        <span class="c1">//    // These will match the above values (excluded properties are zero)</span>
+        <span class="c1">//    &quot;nonce&quot;, &quot;gasLimit&quot;, &quot;gasPrice&quot;, &quot;to&quot;, &quot;value&quot;, &quot;data&quot;, &quot;chainId&quot;</span>
+        <span class="c1">//</span>
+        <span class="c1">//    // These will now be present</span>
+        <span class="c1">//    &quot;from&quot;, &quot;hash&quot;, &quot;r&quot;, &quot;s&quot;, &quot;v&quot;</span>
+        <span class="c1">//  }</span>
+        <span class="c1">// Hash:</span>
+    <span class="p">});</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text"><em>signing text messages</em></span><a class="headerlink" href="#id7" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">privateKey</span> <span class="o">=</span> <span class="s2">&quot;0x3141592653589793238462643383279502884197169399375105820974944592&quot;</span>
+<span class="kd">let</span> <span class="nx">wallet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">(</span><span class="nx">privateKey</span><span class="p">);</span>
+
+<span class="c1">// Sign a text message</span>
+<span class="kd">let</span> <span class="nx">signPromise</span> <span class="o">=</span> <span class="nx">wallet</span><span class="p">.</span><span class="nx">signMessage</span><span class="p">(</span><span class="s2">&quot;Hello World!&quot;</span><span class="p">)</span>
+
+<span class="nx">signPromise</span><span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">signature</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+
+    <span class="c1">// Flat-format</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">signature</span><span class="p">);</span>
+    <span class="c1">// &quot;0xea09d6e94e52b48489bd66754c9c02a772f029d4a2f136bba9917ab3042a0474</span>
+    <span class="c1">//    301198d8c2afb71351753436b7e5a420745fed77b6c3089bbcca64113575ec3c</span>
+    <span class="c1">//    1c&quot;</span>
+
+    <span class="c1">// Expanded-format</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">splitSignature</span><span class="p">(</span><span class="nx">signature</span><span class="p">));</span>
+    <span class="c1">// {</span>
+    <span class="c1">//   r: &quot;0xea09d6e94e52b48489bd66754c9c02a772f029d4a2f136bba9917ab3042a0474&quot;,</span>
+    <span class="c1">//   s: &quot;0x301198d8c2afb71351753436b7e5a420745fed77b6c3089bbcca64113575ec3c&quot;,</span>
+    <span class="c1">//   v: 28,</span>
+    <span class="c1">//   recoveryParam: 1</span>
+    <span class="c1">//  }</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text"><em>signing binary messages</em></span><a class="headerlink" href="#id8" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">privateKey</span> <span class="o">=</span> <span class="s2">&quot;0x3141592653589793238462643383279502884197169399375105820974944592&quot;</span>
+<span class="kd">let</span> <span class="nx">wallet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">(</span><span class="nx">privateKey</span><span class="p">);</span>
+
+<span class="c1">// The 66 character hex string MUST be converted to a 32-byte array first!</span>
+<span class="kd">let</span> <span class="nx">hash</span> <span class="o">=</span> <span class="s2">&quot;0x3ea2f1d0abf3fc66cf29eebb70cbd4e7fe762ef8a09bcc06c8edf641230afec0&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">binaryData</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">arrayify</span><span class="p">(</span><span class="nx">hash</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">signPromise</span> <span class="o">=</span> <span class="nx">wallet</span><span class="p">.</span><span class="nx">signMessage</span><span class="p">(</span><span class="nx">binaryData</span><span class="p">)</span>
+
+<span class="nx">signPromise</span><span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">signature</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">signature</span><span class="p">);</span>
+    <span class="c1">// &quot;0x5e9b7a7bd77ac21372939d386342ae58081a33bf53479152c87c1e787c27d06b</span>
+    <span class="c1">//    118d3eccff0ace49891e192049e16b5210047068384772ba1fdb33bbcba58039</span>
+    <span class="c1">//    1c&quot;</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="blockchain-operations">
+<h3>Blockchain Operations<a class="headerlink" href="#blockchain-operations" title="Permalink to this headline">¶</a></h3>
+<p>These operations require the wallet have a provider attached to it.</p>
+<dl class="docutils">
+<dt><sup>prototype</sup> . getBalance ( [ blockTag <sup>= “latest”</sup> ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;BigNumber&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> that resolves to the balance of the wallet
+(as a <a class="reference internal" href="api-utils.html#bignumber"><span class="std std-ref">BigNumber</span></a>, in <strong>wei</strong>) at the <a class="reference internal" href="api-providers.html#blocktag"><span class="std std-ref">blockTag</span></a>.</dd>
+<dt><sup>prototype</sup> . getTransactionCount ( [ blockTag <sup>= “latest”</sup> ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;number&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> that resovles to the number of transactions
+this account has ever sent (also called the <em>nonce</em>) at the <a class="reference internal" href="api-providers.html#blocktag"><span class="std std-ref">blockTag</span></a>.</dd>
+<dt><sup>prototype</sup> . estimateGas ( transaction ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;BigNumber&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the estimated cost for <em>transaction</em> (as a
+<a class="reference internal" href="api-utils.html#bignumber"><span class="std std-ref">BigNumber</span></a>, in <strong>gas</strong>)</dd>
+</dl>
+<dl class="docutils" id="sendtransaction">
+<dt><sup>prototype</sup> . sendTransaction ( transaction ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;TransactionResponse&gt;</sup></dt>
+<dd>Sends the <em>transaction</em> (see <a class="reference internal" href="api-providers.html#transaction-request"><span class="std std-ref">Transaction Requests</span></a>) to
+the network and returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> that resolves to a
+<a class="reference internal" href="api-providers.html#transaction-response"><span class="std std-ref">Transaction Response</span></a>. Any properties that are not
+provided will be populated from the network.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text"><em>query the network</em></span><a class="headerlink" href="#id9" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// We require a provider to query the network</span>
+<span class="kd">let</span> <span class="nx">provider</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">getDefaultProvider</span><span class="p">();</span>
+
+<span class="kd">let</span> <span class="nx">privateKey</span> <span class="o">=</span> <span class="s2">&quot;0x3141592653589793238462643383279502884197169399375105820974944592&quot;</span>
+<span class="kd">let</span> <span class="nx">wallet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">(</span><span class="nx">privateKey</span><span class="p">,</span> <span class="nx">provider</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">balancePromise</span> <span class="o">=</span> <span class="nx">wallet</span><span class="p">.</span><span class="nx">getBalance</span><span class="p">();</span>
+
+<span class="nx">balancePromise</span><span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">balance</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">balance</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="kd">let</span> <span class="nx">transactionCountPromise</span> <span class="o">=</span> <span class="nx">wallet</span><span class="p">.</span><span class="nx">getTransactionCount</span><span class="p">();</span>
+
+<span class="nx">transactionCountPromise</span><span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">transactionCount</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">transactionCount</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id10">
+<div class="code-block-caption"><span class="caption-text"><em>transfer ether</em></span><a class="headerlink" href="#id10" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// We require a provider to send transactions</span>
+<span class="kd">let</span> <span class="nx">provider</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">getDefaultProvider</span><span class="p">();</span>
+
+<span class="kd">let</span> <span class="nx">privateKey</span> <span class="o">=</span> <span class="s2">&quot;0x3141592653589793238462643383279502884197169399375105820974944592&quot;</span>
+<span class="kd">let</span> <span class="nx">wallet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">(</span><span class="nx">privateKey</span><span class="p">,</span> <span class="nx">provider</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">amount</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">parseEther</span><span class="p">(</span><span class="s1">&#39;1.0&#39;</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">tx</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">to</span><span class="o">:</span> <span class="s2">&quot;0x88a5c2d9919e46f883eb62f7b8dd9d0cc45bc290&quot;</span><span class="p">,</span>
+    <span class="c1">// ... or supports ENS names</span>
+    <span class="c1">// to: &quot;ricmoo.firefly.eth&quot;,</span>
+
+    <span class="c1">// We must pass in the amount as wei (1 ether = 1e18 wei), so we</span>
+    <span class="c1">// use this convenience function to convert ether to wei.</span>
+    <span class="nx">value</span><span class="o">:</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">parseEther</span><span class="p">(</span><span class="s1">&#39;1.0&#39;</span><span class="p">)</span>
+<span class="p">};</span>
+
+<span class="kd">let</span> <span class="nx">sendPromise</span> <span class="o">=</span> <span class="nx">wallet</span><span class="p">.</span><span class="nx">sendTransaction</span><span class="p">(</span><span class="nx">tx</span><span class="p">);</span>
+
+<span class="nx">sendPromise</span><span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">tx</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">tx</span><span class="p">);</span>
+    <span class="c1">// {</span>
+    <span class="c1">//    // All transaction fields will be present</span>
+    <span class="c1">//    &quot;nonce&quot;, &quot;gasLimit&quot;, &quot;pasPrice&quot;, &quot;to&quot;, &quot;value&quot;, &quot;data&quot;,</span>
+    <span class="c1">//    &quot;from&quot;, &quot;hash&quot;, &quot;r&quot;, &quot;s&quot;, &quot;v&quot;</span>
+    <span class="c1">// }</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="encrypted-json-wallets">
+<h3>Encrypted JSON Wallets<a class="headerlink" href="#encrypted-json-wallets" title="Permalink to this headline">¶</a></h3>
+<p>Many systems store private keys as encrypted JSON wallets, in various formats. There are several
+formats and algorithms that are used, all of which are supported to be read.
+Only the secure scrypt variation can be generated.</p>
+<p>See <a class="reference internal" href="#fromencryptedjson"><span class="std std-ref">Wallet.fromEncryptedJson</span></a> for creating a
+Wallet instance from a JSON wallet.</p>
+<dl class="docutils">
+<dt><sup>prototype</sup> . encrypt ( password [ , options [ , progressCallback ] ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;string&gt;</sup></dt>
+<dd><p class="first">Encrypts the wallet as an encrypted JSON wallet, with the <em>password</em>.</p>
+<p>All options are optional. The valid options are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>salt</strong> — the salt to use for scrypt</li>
+<li><strong>iv</strong> — the initialization vecotr to use for aes-ctr-128</li>
+<li><strong>uuid</strong> — the UUID to use for the wallet</li>
+<li><strong>scrypt</strong> — the scrypt parameters to use (N, r and p)</li>
+<li><strong>entropy</strong> — the mnemonic entropy of this wallet; generally you should <strong>not</strong> specify this</li>
+<li><strong>mnemonic</strong> — the mnemonic phrase of this wallet; generally you should <strong>not</strong> specify this</li>
+<li><strong>path</strong> — the mnemonic path of this wallet; generally you should <strong>not</strong> specify this</li>
+</ul>
+</div></blockquote>
+<p class="last">If the <em>progressCallback</em> is specified, it will be called periodically during
+encryption with a value between 0 and 1, inclusive indicating the progress.</p>
+</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id11">
+<div class="code-block-caption"><span class="caption-text"><em>encrypt a wallet as an encrypted JSON wallet</em></span><a class="headerlink" href="#id11" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">password</span> <span class="o">=</span> <span class="s2">&quot;password123&quot;</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">progress</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Encrypting: &quot;</span> <span class="o">+</span> <span class="nb">parseInt</span><span class="p">(</span><span class="nx">progress</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;% complete&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">let</span> <span class="nx">encryptPromise</span> <span class="o">=</span> <span class="nx">wallet</span><span class="p">.</span><span class="nx">encrypt</span><span class="p">(</span><span class="nx">password</span><span class="p">,</span> <span class="nx">callback</span><span class="p">);</span>
+
+<span class="nx">encryptPromise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">json</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">json</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="signer-api">
+<span id="signer"></span><h2>Signer API<a class="headerlink" href="#signer-api" title="Permalink to this headline">¶</a></h2>
+<p>The Signer API is an abstract class which makes it easy to extend and add new signers,
+that can be used by this library and extension libraries. The <a class="reference internal" href="#wallet"><span class="std std-ref">Wallet</span></a>
+extends the Signer API, as do the <a class="reference internal" href="api-providers.html#signer-jsonrpc"><span class="std std-ref">JsonRpcSigner</span></a> and the
+<a class="reference external" href="https://github.com/ethers-io/ethers-ledger">Ledger Hardware Wallet Signer</a>.</p>
+<p>To implement a Signer, inherit the abstract class <em>ethers.types.Signer</em> and implement
+the following properties:</p>
+<dl class="docutils">
+<dt><sup>object</sup> . provider</dt>
+<dd>A <a class="reference internal" href="api-providers.html#api-provider"><span class="std std-ref">Provider</span></a> that is connected to the network. This is optional, however,
+without a <em>provider</em>, <strong>only</strong> <em>write-only</em> operations should be expected to work.</dd>
+<dt><sup>object</sup> . getAddress ( ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;Address&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> that resolves to the account address.</dd>
+<dt><sup>object</sup> . signMessage ( message ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;hex&gt;</sup></dt>
+<dd><p class="first">Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> that resolves to the <a class="reference internal" href="api-utils.html#signature"><span class="std std-ref">Flat-Format Signature</span></a>
+for the <em>message</em>.</p>
+<p class="last">If <em>message</em> is a string, it is converted to UTF-8 bytes, otherwise it is
+preserved as a binary representation of the <a class="reference internal" href="api-utils.html#arrayish"><span class="std std-ref">Arrayish</span></a> data.</p>
+</dd>
+<dt><sup>object</sup> . sendTransaction ( transaction ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;TransactionResponse&gt;</sup></dt>
+<dd>Sends the <em>transaction</em> (see <a class="reference internal" href="api-providers.html#transaction-request"><span class="std std-ref">Transaction Requests</span></a>) to
+the network and returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> that resolves to a
+<a class="reference internal" href="api-providers.html#transaction-response"><span class="std std-ref">Transaction Response</span></a>. Any properties that are not
+provided will be populated from the network.</dd>
+</dl>
+<hr class="docutils" />
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="api-providers.html" class="btn btn-neutral float-right" title="Providers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="api.html" class="btn btn-neutral" title="Application Programming Interface (API)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

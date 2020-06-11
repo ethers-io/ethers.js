@@ -1,0 +1,886 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Low-Level API &mdash; ethers.js 4.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Cookbook" href="cookbook.html" />
+    <link rel="prev" title="Utilities" href="api-utils.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface (API)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Low-Level API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#abi-coder">ABI Coder</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-instances">Creating Instances</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#static-properties">Static Properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prototype">Prototype</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#hdnode">HDNode</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Creating Instances</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Prototype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#deriving-child-and-neutered-nodes">Deriving Child and Neutered Nodes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#static-methods">Static Methods</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#interface">Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-an-instance">Creating an Instance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Prototype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#parsing-objects">Parsing Objects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#object-test-functions">Object Test Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#descriptions">Descriptions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#provider-sub-classing">Provider (Sub-Classing)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Static Methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Prototype</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#recursive-length-prefixed-encoding-rlp">Recursive-Length Prefixed Encoding (RLP)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id6">Static Methods</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#signing-key">Signing Key</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id7">Creating Instances</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id8">Prototype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cryptographic-operations">Cryptographic Operations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ethers.js</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Low-Level API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api-advanced.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="low-level-api">
+<h1>Low-Level API<a class="headerlink" href="#low-level-api" title="Permalink to this headline">¶</a></h1>
+<p>These are advanced, low-level API features that should, for most people not be
+necessary to worry about.</p>
+<p>They are lightly documented here, and in the future will have more documentation,
+but the emphasis at this point is documenting the more <a class="reference internal" href="api.html#api"><span class="std std-ref">common methods</span></a>.</p>
+<hr class="docutils" />
+<div class="section" id="abi-coder">
+<h2>ABI Coder<a class="headerlink" href="#abi-coder" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="creating-instances">
+<h3>Creating Instances<a class="headerlink" href="#creating-instances" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>new <sup>ethers . utils</sup> <strong>. AbiCoder</strong> ( [ coerceFunc ] )</dt>
+<dd>Create a new ABI Coder object, which calls <em>coerceFunc</em> for each parsed value
+during decoding. The <em>coerceFunc</em> should have the signature: <code class="docutils literal notranslate"><span class="pre">function(type,</span> <span class="pre">value)</span></code>.</dd>
+</dl>
+</div>
+<div class="section" id="static-properties">
+<h3>Static Properties<a class="headerlink" href="#static-properties" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>ethers . utils</sup> <strong>. defaultAbiCoder</strong></dt>
+<dd>A default instance of the coder which can be used, which has a <em>coerceFunc</em>
+which will call <code class="docutils literal notranslate"><span class="pre">toNumber()</span></code> on BigNumbers whose <strong>type</strong> is less than
+53 bits and is safe for JavaScript Number instances.</dd>
+</dl>
+</div>
+<div class="section" id="prototype">
+<h3>Prototype<a class="headerlink" href="#prototype" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . encode ( types , values ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Returns a <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a> of the <em>values</em> encoded as the <em>types</em>.
+Throws if a value is invalid for the type.</dd>
+<dt><sup>prototype</sup> . decode ( types , data ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Result</sup></dt>
+<dd>Returns an Object by parsing <em>data</em> assuming <em>types</em>, with each parameter
+accessible as a positional parameters. Throws if <em>data</em> is invalid
+for the <em>types</em>.</dd>
+</dl>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="hdnode">
+<span id="api-hdnode"></span><h2>HDNode<a class="headerlink" href="#hdnode" title="Permalink to this headline">¶</a></h2>
+<p>A <em>Hierarchical Deterministic Wallet</em> represents a large tree of private keys
+which can reliably be reproduced from an initial seed. Each node in the tree
+is represented by an HDNode which can be descended into.</p>
+<p>A <em>mnemonic phrase</em> represents a simple way to generate the initial seed.</p>
+<p>See the <a class="reference external" href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki">BIP 32 Specification</a> to learn more about HD Wallets and hardened vs
+non-hardened nodes.</p>
+<p>See the <a class="reference external" href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki">BIP 39 Specification</a> to learn more about Mnemonic Phrases.</p>
+<div class="section" id="id1">
+<h3>Creating Instances<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>ethers . utils . HDNode</sup> <strong>. fromMnemonic</strong> ( mnemonic ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>HDNode</sup></dt>
+<dd>Create an HDNode from a <em>mnemonic</em> phrase.</dd>
+<dt><sup>ethers . utils . HDNode</sup> <strong>. fromSeed</strong> ( seed ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>HDNode</sup></dt>
+<dd>Create an HDNode from a seed.</dd>
+<dt><sup>ethers . utils . HDNode</sup> <strong>. fromExtendedKey</strong> ( extendedKey ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>HDNode</sup></dt>
+<dd>Create an HDNode from an extended private key (xpriv) or extended public key (xpub).</dd>
+</dl>
+</div>
+<div class="section" id="id2">
+<h3>Prototype<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> <strong>. privateKey</strong></dt>
+<dd>The <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a> private key for this node.</dd>
+<dt><sup>prototype</sup> <strong>. publicKey</strong></dt>
+<dd>The (compressed) public key for this node.</dd>
+<dt><sup>prototype</sup> <strong>. chainCode</strong></dt>
+<dd>The chain code for this node.</dd>
+<dt><sup>prototype</sup> <strong>. index</strong></dt>
+<dd>The index (from the parent) of this node (0 for the master node).</dd>
+<dt><sup>prototype</sup> <strong>. depth</strong></dt>
+<dd>The depth within the hierarchy of this node.</dd>
+<dt><sup>prototype</sup> <strong>. fingerprint</strong></dt>
+<dd>The fingerprint of this node. This can be used to identify a node, but wallets
+should handle collisions.</dd>
+<dt><sup>prototype</sup> <strong>. parentFingerprint</strong></dt>
+<dd>The fingerprint of this node’s parent (or 0x00000000 for the master node).</dd>
+<dt><sup>prototype</sup> <strong>. extendedKey</strong></dt>
+<dd>The extended private key (xpriv) of the node, or the extended public key (xpub)
+if the node has been neutered.</dd>
+</dl>
+</div>
+<div class="section" id="deriving-child-and-neutered-nodes">
+<h3>Deriving Child and Neutered Nodes<a class="headerlink" href="#deriving-child-and-neutered-nodes" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> <strong>. derivePath</strong> ( path ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>HDNode</sup></dt>
+<dd>Derive the path from this node. Path is slash (<strong>/</strong>) delimited path components.
+The first component may be “m” for master (which enforces the starting node is
+in fact a master node) and each subsequent path component should be a positive
+integer (up to 31 bits), which can optionally include an apostrophe (<strong>‘</strong>) to
+indicate hardened derivation for that path components. See below for some examples.</dd>
+<dt><sup>prototype</sup> <strong>. neuter</strong> ( ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>HDNode</sup></dt>
+<dd>Returns a new instance of the node without a private key. This can be used to
+derive an extended public key. See the BIP32 standard for more details.</dd>
+</dl>
+</div>
+<div class="section" id="static-methods">
+<h3>Static Methods<a class="headerlink" href="#static-methods" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>ethers . utils . HDNode</sup> <strong>. mnemonicToEntropy</strong> ( mnemonic ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Convert a <em>mnemonic</em> to its binary entropy. (throws an error if the checksum
+is invalid)</dd>
+<dt><sup>ethers . utils . HDNode</sup> <strong>. entropyToMnemonic</strong> ( entropy ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>string</sup></dt>
+<dd>Convert the binary <em>entropy</em> to the mnemonic phrase.</dd>
+<dt><sup>ethers . utils . HDNode</sup> <strong>. mnemonicToSeed</strong> ( mnemonic ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Compute the BIP39 seed from <em>mnemonic</em>.</dd>
+<dt><sup>ethers . utils . HDNode</sup> <strong>. isValidMnemonic</strong> ( string ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>boolean</sup></dt>
+<dd>Returns true if and only if the string is a valid mnemonic (including
+the checksum)</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text"><em>HDNode derivation</em></span><a class="headerlink" href="#id9" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">HDNode</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">).</span><span class="nx">utils</span><span class="p">.</span><span class="nx">HDNode</span><span class="p">;</span>
+
+<span class="kd">let</span> <span class="nx">mnemonic</span> <span class="o">=</span> <span class="s2">&quot;radar blur cabbage chef fix engine embark joy scheme fiction master release&quot;</span><span class="p">;</span>
+
+<span class="kd">let</span> <span class="nx">masterNode</span> <span class="o">=</span> <span class="nx">HDNode</span><span class="p">.</span><span class="nx">fromMnemonic</span><span class="p">(</span><span class="nx">mnemonic</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">standardEthereum</span> <span class="o">=</span> <span class="nx">masterNode</span><span class="p">.</span><span class="nx">derivePath</span><span class="p">(</span><span class="s2">&quot;m/44&#39;/60&#39;/0&#39;/0/0&quot;</span><span class="p">);</span>
+
+<span class="c1">// Get the extended private key</span>
+<span class="kd">let</span> <span class="nx">xpriv</span> <span class="o">=</span> <span class="nx">node</span><span class="p">.</span><span class="nx">extendedKey</span><span class="p">;</span>
+
+<span class="c1">// Get the extended public key</span>
+<span class="kd">let</span> <span class="nx">xpub</span> <span class="o">=</span> <span class="nx">node</span><span class="p">.</span><span class="nx">neuter</span><span class="p">().</span><span class="nx">extnededKey</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="interface">
+<span id="api-interface"></span><h2>Interface<a class="headerlink" href="#interface" title="Permalink to this headline">¶</a></h2>
+<p>The Interface Object is a meta-class that accepts a Solidity (or compatible)
+Application Binary Interface (ABI) and populates functions to deal with encoding
+and decoding the parameters to pass in and results returned.</p>
+<div class="section" id="creating-an-instance">
+<h3>Creating an Instance<a class="headerlink" href="#creating-an-instance" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>new <sup>ethers . utils</sup> . Interface ( abi )</dt>
+<dd>Returns a new instance and populates the properties with the ABI constructor,
+methods and events. The <em>abi</em> may be either a JSON string or the parsed JSON
+Object.</dd>
+</dl>
+</div>
+<div class="section" id="id3">
+<h3>Prototype<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . abi</dt>
+<dd>A <strong>copy</strong> of the ABI is returned, modifying this object will not alter the ABI.</dd>
+<dt><sup>prototype</sup> . deployFunction</dt>
+<dd>A DeployDesciption for the constructor defined in the ABI, or the default constructor
+if omitted.</dd>
+<dt><sup>prototype</sup> . events</dt>
+<dd>An object of all the events available in the ABI, by name and signature, which map
+to a EventDescription.</dd>
+<dt><sup>prototype</sup> . functions</dt>
+<dd>An object of all the functions available in the ABI, by name and signature, which map
+to a FunctionDescription.</dd>
+</dl>
+</div>
+<div class="section" id="parsing-objects">
+<h3>Parsing Objects<a class="headerlink" href="#parsing-objects" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . parseTransaction ( transaction ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>TransactionDescription</sup></dt>
+<dd>Parse <em>transaction</em> and return a description of the call it represents.</dd>
+<dt><sup>prototype</sup> . parseLog ( log ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>LogDescription</sup></dt>
+<dd>Parse <em>log</em> and return a description of the event logs it represents.</dd>
+</dl>
+</div>
+<div class="section" id="object-test-functions">
+<h3>Object Test Functions<a class="headerlink" href="#object-test-functions" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . isInterface ( value ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>boolean</sup></dt>
+<dd>Returns true if <em>value</em> is an Interface.</dd>
+<dt><sup>prototype</sup> . isIndexed ( value ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>boolean</sup></dt>
+<dd>Returns true if <em>value</em> is a dynamic Indexed value, which means the actual
+value of <em>value</em> is the hash of the actual value.</dd>
+</dl>
+</div>
+<div class="section" id="descriptions">
+<h3>Descriptions<a class="headerlink" href="#descriptions" title="Permalink to this headline">¶</a></h3>
+<p><strong>Deploy Description</strong></p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="37%" />
+<col width="63%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>inputs</td>
+<td>The description of the constructor input parameters</td>
+</tr>
+<tr class="row-odd"><td>payable</td>
+<td>Whether the constructor can accept <em>Ether</em></td>
+</tr>
+<tr class="row-even"><td>encode(params)</td>
+<td>A function which encodes <em>params</em></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p><strong>Event Description</strong></p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="72%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>name</td>
+<td>The event name (e.g. “Transfer”)</td>
+</tr>
+<tr class="row-odd"><td>signature</td>
+<td>The event signature (e.g. “Transfer(address indexed,address indexed,uint256)”)</td>
+</tr>
+<tr class="row-even"><td>inputs</td>
+<td>The event input parameters</td>
+</tr>
+<tr class="row-odd"><td>anonymous</td>
+<td>Whether the event is an anonymous event</td>
+</tr>
+<tr class="row-even"><td>topic</td>
+<td>The topic for this event signature</td>
+</tr>
+<tr class="row-odd"><td>encodeTopics(params)</td>
+<td>A function which computes filter topics for given <em>params</em></td>
+</tr>
+<tr class="row-even"><td>decode(data, topics)</td>
+<td>A function to parse the log result <em>data</em> and <em>topics</em></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p><strong>Function Description</strong></p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="31%" />
+<col width="69%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>name</td>
+<td>The method name (e.g. “transfer”)</td>
+</tr>
+<tr class="row-odd"><td>type</td>
+<td>The method type (i.e. “call” or “transaction”)</td>
+</tr>
+<tr class="row-even"><td>signature</td>
+<td>The method signature (e.g. “transfer(address to, uint256 amount)”)</td>
+</tr>
+<tr class="row-odd"><td>sighash</td>
+<td>The signature hash of the signature (4 bytes)</td>
+</tr>
+<tr class="row-even"><td>inputs</td>
+<td>The description of the method input parameters</td>
+</tr>
+<tr class="row-odd"><td>outputs</td>
+<td>The description of the method output parameters</td>
+</tr>
+<tr class="row-even"><td>payable</td>
+<td>Whether the method can accept <em>Ether</em></td>
+</tr>
+<tr class="row-odd"><td>gas</td>
+<td>The maximum gas this method will consume (null if unknown)</td>
+</tr>
+<tr class="row-even"><td>encode(params)</td>
+<td>A function which encodes <em>params</em></td>
+</tr>
+<tr class="row-odd"><td>decode(data)</td>
+<td>A function which decodes the result <em>data</em></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p><strong>Log Description</strong></p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="72%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>name</td>
+<td>The event name (e.g. “Transfer”)</td>
+</tr>
+<tr class="row-odd"><td>signature</td>
+<td>The event signature (e.g. “Transfer(address indexed,address indexed,uint256)”)</td>
+</tr>
+<tr class="row-even"><td>topics</td>
+<td>The event topics</td>
+</tr>
+<tr class="row-odd"><td>decode(data, topics)</td>
+<td>A function to parse the logs</td>
+</tr>
+<tr class="row-even"><td>values</td>
+<td>The decoded values of the event</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p><strong>Transaction Description</strong></p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="31%" />
+<col width="69%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>name</td>
+<td>The method name (e.g. “transfer”)</td>
+</tr>
+<tr class="row-odd"><td>args</td>
+<td>The arguments passed to the method</td>
+</tr>
+<tr class="row-even"><td>signature</td>
+<td>The method signature (e.g. “transfer(address to, uint256 amount)”)</td>
+</tr>
+<tr class="row-odd"><td>sighash</td>
+<td>The signature hash of the signature (4 bytes)</td>
+</tr>
+<tr class="row-even"><td>decode(data)</td>
+<td>A function to parse the result data</td>
+</tr>
+<tr class="row-odd"><td>value</td>
+<td>The value (in wei) of the transaction</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="provider-sub-classing">
+<h2>Provider (Sub-Classing)<a class="headerlink" href="#provider-sub-classing" title="Permalink to this headline">¶</a></h2>
+<p>See the <a class="reference internal" href="api-providers.html#api-provider"><span class="std std-ref">Provider API</span></a> for more common usage. This documentation
+is designed for developers that are sub-classing BaseProvider.</p>
+<div class="section" id="id4">
+<h3>Static Methods<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>BaseProvider</sup> . inherits ( childProvider ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>void</sup></dt>
+<dd>Set up <em>childProvider</em> as an provider, inheriting the parent prototype and
+set up a prototype.inherits on the <em>childProvider</em>.</dd>
+</dl>
+</div>
+<div class="section" id="id5">
+<h3>Prototype<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . perform ( method , params ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;any&gt;</sup></dt>
+<dd>The only method needed to override in a subclass. All values are sanitized
+and defaults populated in params and the result is sanitized before returning.
+Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a>, see the example below for overview of
+<em>method</em> and <em>params</em>.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id10">
+<div class="code-block-caption"><span class="caption-text"><em>BaseProvider Sub-Class Stub</em></span><a class="headerlink" href="#id10" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">ethers</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+
+<span class="c1">// The new provider Object</span>
+<span class="kd">function</span> <span class="nx">DemoProvider</span><span class="p">(</span><span class="nx">something</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="kd">let</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">getNetworkSomehow</span><span class="p">()</span>
+
+    <span class="c1">// The super must be called with either a Network or a Promise</span>
+    <span class="c1">// that resolves to a Network</span>
+    <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">BaseProvider</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">network</span><span class="p">);</span>
+
+    <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">defineReadOnly</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">&#39;somethingElse&#39;</span><span class="p">,</span> <span class="nx">somethingElse</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Inherit the Provider</span>
+<span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">BaseProvider</span><span class="p">.</span><span class="nx">inherits</span><span class="p">(</span><span class="nx">DemoProvider</span><span class="p">);</span>
+
+<span class="c1">// Override perform</span>
+<span class="nx">DemoProvider</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">perform</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">method</span><span class="p">,</span> <span class="nx">params</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">switch</span> <span class="p">(</span><span class="nx">method</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="s1">&#39;getBlockNumber&#39;</span><span class="o">:</span>
+            <span class="c1">// Params:</span>
+            <span class="c1">// { }</span>
+
+        <span class="k">case</span> <span class="s1">&#39;getGasPrice&#39;</span><span class="o">:</span>
+            <span class="c1">// Params:</span>
+            <span class="c1">// { }</span>
+
+        <span class="k">case</span> <span class="s1">&#39;getBalance&#39;</span><span class="o">:</span>
+            <span class="c1">// Params:</span>
+            <span class="c1">// {</span>
+            <span class="c1">//     address: address,</span>
+            <span class="c1">//     blockTag: blockTag</span>
+            <span class="c1">// }</span>
+
+        <span class="k">case</span> <span class="s1">&#39;getTransactionCount&#39;</span><span class="o">:</span>
+            <span class="c1">// Params:</span>
+            <span class="c1">// {</span>
+            <span class="c1">//     address: address,</span>
+            <span class="c1">//     blockTag: blockTag</span>
+            <span class="c1">// }</span>
+
+        <span class="k">case</span> <span class="s1">&#39;getCode&#39;</span><span class="o">:</span>
+            <span class="c1">// Params:</span>
+            <span class="c1">// {</span>
+            <span class="c1">//     address: address,</span>
+            <span class="c1">//     blockTag: blockTag</span>
+            <span class="c1">// }</span>
+
+        <span class="k">case</span> <span class="s1">&#39;getStorageAt&#39;</span><span class="o">:</span>
+            <span class="c1">// Params:</span>
+            <span class="c1">// {</span>
+            <span class="c1">//     address: address,</span>
+            <span class="c1">//     position: hexString,</span>
+            <span class="c1">//     blockTag: blockTag</span>
+            <span class="c1">// }</span>
+
+        <span class="k">case</span> <span class="s1">&#39;sendTransaction&#39;</span><span class="o">:</span>
+            <span class="c1">// Params:</span>
+            <span class="c1">// {</span>
+            <span class="c1">//     signedTransaction: hexString</span>
+            <span class="c1">// }</span>
+
+        <span class="k">case</span> <span class="s1">&#39;getBlock&#39;</span><span class="o">:</span>
+            <span class="c1">// Params:</span>
+            <span class="c1">// Exactly one of the following will be specified, the other will be absent</span>
+            <span class="c1">// {</span>
+            <span class="c1">//     blockHash: blockHash,</span>
+            <span class="c1">//     blockTag: blockTag</span>
+            <span class="c1">// }</span>
+
+        <span class="k">case</span> <span class="s1">&#39;getTransaction&#39;</span><span class="o">:</span>
+            <span class="c1">// Params:</span>
+            <span class="c1">// {</span>
+            <span class="c1">//     transactionHash: hexString</span>
+            <span class="c1">// }</span>
+
+        <span class="k">case</span> <span class="s1">&#39;getTransactionReceipt&#39;</span><span class="o">:</span>
+            <span class="c1">// Params:</span>
+            <span class="c1">// {</span>
+            <span class="c1">//     transactionHash: hexString</span>
+            <span class="c1">// }</span>
+
+        <span class="k">case</span> <span class="s1">&#39;call&#39;</span><span class="o">:</span>
+            <span class="c1">// Params:</span>
+            <span class="c1">// {</span>
+            <span class="c1">//     transaction: See Transaction Requests (on Providers API)</span>
+            <span class="c1">// }</span>
+
+        <span class="k">case</span> <span class="s1">&#39;estimateGas&#39;</span><span class="o">:</span>
+            <span class="c1">// Params:</span>
+            <span class="c1">// {</span>
+            <span class="c1">//     transaction: See Transaction Requests (on Providers API)</span>
+            <span class="c1">// }</span>
+
+        <span class="k">case</span> <span class="s1">&#39;getLogs&#39;</span><span class="o">:</span>
+            <span class="c1">// Params:</span>
+            <span class="c1">// {</span>
+            <span class="c1">//    address: address,</span>
+            <span class="c1">//    fromBlock: blockTag,</span>
+            <span class="c1">//    toBlock: blockTag,</span>
+            <span class="c1">//    topics: array (possibly nested) of topics</span>
+            <span class="c1">// }</span>
+
+        <span class="k">default</span><span class="o">:</span>
+            <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;not implemented - &#39;</span> <span class="o">+</span> <span class="nx">method</span><span class="p">));</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="recursive-length-prefixed-encoding-rlp">
+<h2>Recursive-Length Prefixed Encoding (RLP)<a class="headerlink" href="#recursive-length-prefixed-encoding-rlp" title="Permalink to this headline">¶</a></h2>
+<p>This encoding method is used internally for several aspects of Ethereum, such as
+encoding transactions and determining contract addresses. For most developers this
+should not be necessary to use.</p>
+<p>RLP can encode nested arrays, with data as <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex strings</span></a> and Uint8Array (or other non-Array
+<a class="reference internal" href="api-utils.html#arrayish"><span class="std std-ref">arrayish</span></a> objects). A decoded object will always have data represented as <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex strings</span></a> and
+Arrays.</p>
+<p>See: <a class="reference external" href="https://github.com/ethereum/wiki/wiki/RLP">https://github.com/ethereum/wiki/wiki/RLP</a></p>
+<div class="section" id="id6">
+<h3>Static Methods<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>ethers . utils . RLP</sup> . encode( object ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Encodes an object as an RLP <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a>. (throws an Error if the object contains
+invalid items)</dd>
+<dt><sup>ethers . utils . RLP</sup> . decode( hexStringOrArrayish ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>any</sup></dt>
+<dd>Decode <em>hexStringOrArrayish</em> into the encoded object. (throws an Error if
+invalid RLP-coded data)</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id11">
+<div class="code-block-caption"><span class="caption-text"><em>RLP coder</em></span><a class="headerlink" href="#id11" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">object</span> <span class="o">=</span> <span class="p">[</span> <span class="p">[</span><span class="s2">&quot;0x42&quot;</span><span class="p">],</span> <span class="s2">&quot;0x1234&quot;</span><span class="p">,</span> <span class="p">[</span> <span class="p">[],</span> <span class="p">[]</span> <span class="p">]</span> <span class="p">];</span>
+
+<span class="kd">let</span> <span class="nx">encoded</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">RLP</span><span class="p">.</span><span class="nx">encode</span><span class="p">(</span><span class="nx">object</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">encoded</span><span class="p">);</span>
+<span class="c1">// 0xc8c142821234c2c0c0</span>
+
+<span class="kd">let</span> <span class="nx">decoded</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">RLP</span><span class="p">.</span><span class="nx">decode</span><span class="p">(</span><span class="nx">encoded</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">decoded</span><span class="p">);</span>
+<span class="c1">// [ [ &#39;0x42&#39; ], &#39;0x1234&#39;, [ [], [] ] ]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="signing-key">
+<h2>Signing Key<a class="headerlink" href="#signing-key" title="Permalink to this headline">¶</a></h2>
+<p>The SigningKey interface provides an abstraction around the
+<em>secp256k1 elliptic curve cryptography</em> library, which signs digests,
+computes public keys from private keys and performs <em>ecrecover</em> which
+computes a public key from a digest and a signature.</p>
+<div class="section" id="id7">
+<h3>Creating Instances<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>new <sup>ethers . utils</sup> . SigningKey ( privateKey )</dt>
+<dd>Create a new SigningKey and compute the corresponding public key and address.
+A private key may be a any <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a> or an
+<a class="reference internal" href="api-utils.html#arrayish"><span class="std std-ref">Arrayish</span></a> representing 32 bytes.</dd>
+</dl>
+</div>
+<div class="section" id="id8">
+<h3>Prototype<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . address</dt>
+<dd>The Ethereum checksum address for this key pair.</dd>
+<dt><sup>prototype</sup> . privateKey</dt>
+<dd>The private key for the key pair.</dd>
+<dt><sup>prototype</sup> . publicKey</dt>
+<dd>The uncompressed public key for the key pair.</dd>
+</dl>
+</div>
+<div class="section" id="cryptographic-operations">
+<h3>Cryptographic Operations<a class="headerlink" href="#cryptographic-operations" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . signDigest ( messageDigest ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Signature</sup></dt>
+<dd>The <a class="reference internal" href="api-utils.html#signature"><span class="std std-ref">expanded-format Signature</span></a> for the digests, signed
+by this key pair.</dd>
+<dt><sup>prototype</sup> . computeSharedSecret ( publicOrPrivateKey ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Compute the ECDH shared secret from this keys private key and the
+<em>publicOrPrivateKey</em>. In is generally considered good practice to
+further hash this value before using it as a key.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id12">
+<div class="code-block-caption"><span class="caption-text"><em>Signing Key</em></span><a class="headerlink" href="#id12" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">ethers</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">privateKey</span> <span class="o">=</span> <span class="s1">&#39;0x0123456789012345678901234567890123456789012345678901234567890123&#39;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">signingKey</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">SigningKey</span><span class="p">(</span><span class="nx">privateKey</span><span class="p">);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Address: &#39;</span> <span class="o">+</span> <span class="nx">signingKey</span><span class="p">.</span><span class="nx">address</span><span class="p">);</span>
+<span class="c1">// &quot;Address: 0x14791697260E4c9A71f18484C9f997B308e59325&quot;</span>
+
+<span class="kd">let</span> <span class="nx">message</span> <span class="o">=</span> <span class="s2">&quot;Hello World&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">messageBytes</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">toUtf8Bytes</span><span class="p">(</span><span class="nx">message</span><span class="p">);</span>
+<span class="kd">let</span> <span class="nx">messageDigest</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">keccak256</span><span class="p">(</span><span class="nx">messageBytes</span><span class="p">);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Digest: &quot;</span> <span class="o">+</span> <span class="nx">messageDigest</span><span class="p">);</span>
+<span class="c1">// &quot;Digest: 0x592fa743889fc7f92ac2a37bb1f5ba1daf2a5c84741ca0e0061d243a2e6707ba&quot;</span>
+
+<span class="kd">let</span> <span class="nx">signature</span> <span class="o">=</span> <span class="nx">signingKey</span><span class="p">.</span><span class="nx">signDigest</span><span class="p">(</span><span class="nx">messageDigest</span><span class="p">);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">signature</span><span class="p">);</span>
+<span class="c1">// {</span>
+<span class="c1">//    recoveryParam: 0,</span>
+<span class="c1">//    r: &quot;0x79f56f3422dc67f57b2aeeb0b20295a99ec90420b203177f83d419c98beda7fe&quot;,</span>
+<span class="c1">//    s: &quot;0x1a9d05433883bdc7e6d882740f4ea7921ef458a61b2cfe6197c2bb1bc47236fd&quot;</span>
+<span class="c1">// }</span>
+
+<span class="kd">let</span> <span class="nx">recovered</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">recoverAddress</span><span class="p">(</span><span class="nx">messageDigest</span><span class="p">,</span> <span class="nx">signature</span><span class="p">);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Recovered: &quot;</span> <span class="o">+</span> <span class="nx">recovered</span><span class="p">);</span>
+<span class="c1">// &quot;Recovered: 0x14791697260E4c9A71f18484C9f997B308e59325&quot;</span>
+
+<span class="kd">let</span> <span class="nx">publicKey</span> <span class="o">=</span> <span class="nx">signingKey</span><span class="p">.</span><span class="nx">publicKey</span><span class="p">;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Public Key: &#39;</span> <span class="o">+</span> <span class="nx">publicKey</span><span class="p">);</span>
+<span class="c1">// &quot;Public Key: 0x026655feed4d214c261e0a6b554395596f1f1476a77d999560e5a8df9b8a1a3515&quot;</span>
+
+<span class="kd">let</span> <span class="nx">compressedPublicKey</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utlis</span><span class="p">.</span><span class="nx">computePublicKey</span><span class="p">(</span><span class="nx">publicKey</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
+<span class="kd">let</span> <span class="nx">uncompressedPublicKey</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">computePublicKey</span><span class="p">(</span><span class="nx">publicKey</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">compressedPublicKey</span><span class="p">);</span>
+<span class="c1">// &quot;0x026655feed4d214c261e0a6b554395596f1f1476a77d999560e5a8df9b8a1a3515&quot;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">uncompressedPublicKey</span><span class="p">);</span>
+<span class="c1">// &quot;0x046655feed4d214c261e0a6b554395596f1f1476a77d999560e5a8df9b8a1a35&quot; +</span>
+<span class="c1">//   &quot;15217e88dd05e938efdd71b2cce322bf01da96cd42087b236e8f5043157a9c068e&quot;</span>
+
+<span class="kd">let</span> <span class="nx">address</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">computeAddress</span><span class="p">(</span><span class="nx">publicKey</span><span class="p">);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Address: &#39;</span> <span class="o">+</span> <span class="nx">address</span><span class="p">);</span>
+<span class="c1">// &quot;Address: 0x14791697260E4c9A71f18484C9f997B308e59325&quot;</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="cookbook.html" class="btn btn-neutral float-right" title="Cookbook" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="api-utils.html" class="btn btn-neutral" title="Utilities" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,281 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Application Programming Interface (API) &mdash; ethers.js 4.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Wallets and Signers" href="api-wallet.html" />
+    <link rel="prev" title="Getting Started" href="getting-started.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Application Programming Interface (API)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api-wallet.html">Wallets and Signers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html">Providers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-contract.html">Contracts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ethers.js</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Application Programming Interface (API)</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="application-programming-interface-api">
+<span id="api"></span><h1>Application Programming Interface (API)<a class="headerlink" href="#application-programming-interface-api" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api-wallet.html">Wallets and Signers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api-wallet.html#wallet">Wallet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-wallet.html#signer-api">Signer API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api-providers.html">Providers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html#connecting-to-ethereum">Connecting to Ethereum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html#properties">Properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html#network">Network</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html#account">Account</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html#blockchain-status">Blockchain Status</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html#ethereum-naming-service">Ethereum Naming Service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html#contract-execution">Contract Execution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html#contract-state">Contract State</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html#events">Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html#objects-and-types">Objects and Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html#provider-specific-extra-api-calls">Provider Specific Extra API Calls</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api-contract.html">Contracts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api-contract.html#deploying-a-contract">Deploying a Contract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-contract.html#connecting-to-existing-contracts">Connecting to Existing Contracts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-contract.html#meta-class-properties">Meta-Class Properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-contract.html#overrides">Overrides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-contract.html#event-emitter">Event Emitter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-contract.html#providers-vs-signers">Providers vs Signers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-contract.html#types">Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-contract.html#filtering-events">Filtering Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-contract.html#application-binary-interface-abi">Application Binary Interface (ABI)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api-utils.html">Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html#addresses">Addresses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html#arrayish">Arrayish</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html#big-numbers">Big Numbers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html#bytes32-strings">Bytes32 Strings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html#constants">Constants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html#cryptographic-functions">Cryptographic Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html#ether-strings-and-wei">Ether Strings and Wei</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html#hex-strings">Hex Strings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html#namehash">Namehash</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html#signatures">Signatures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html#transactions">Transactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html#utf-8-strings">UTF-8 Strings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html#web">Web</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<hr class="docutils" />
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="api-wallet.html" class="btn btn-neutral float-right" title="Wallets and Signers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="getting-started.html" class="btn btn-neutral" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

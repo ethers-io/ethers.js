@@ -1,0 +1,324 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>React Native &mdash; ethers.js 4.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Migration Guides" href="migration.html" />
+    <link rel="prev" title="Testing" href="cookbook-testing.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface (API)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="cookbook.html">Cookbook</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="cookbook-accounts.html">Accounts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook-contracts.html">Contracts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook-providers.html">Providers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook-signing.html">Signing Messages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook-testing.html">Testing</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">React Native</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#shims">Shims</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#wordlists">Wordlists</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#other-notes">Other Notes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ethers.js</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="cookbook.html">Cookbook</a> &raquo;</li>
+        
+      <li>React Native</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/cookbook-react.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="react-native">
+<h1>React Native<a class="headerlink" href="#react-native" title="Permalink to this headline">¶</a></h1>
+<p>The React Native environment has a lot of little quirks, so this
+documentation is aimed at helping smooth those over.</p>
+<p>Please feel free to create issues on GitHub for recommendations and
+additions to this document.</p>
+<hr class="docutils" />
+<div class="section" id="shims">
+<h2>Shims<a class="headerlink" href="#shims" title="Permalink to this headline">¶</a></h2>
+<p>There are several pieces of functionality missing from the current version
+of React-Native. Here is a list of functionality the <code class="docutils literal notranslate"><span class="pre">ethers/dist/shims</span></code> will
+provide if unavailable:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">ArrayBuffer.isView</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">atob</span></code> and <code class="docutils literal notranslate"><span class="pre">btoa</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">nextTick</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">Promise</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">String.prototype.normalize</span></code></li>
+</ul>
+</div></blockquote>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text"><em>Importing into React-Native</em></span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Import the required shims</span>
+<span class="kr">import</span> <span class="s1">&#39;ethers/dist/shims.js&#39;</span><span class="p">;</span>
+
+<span class="c1">// Import the ethers library</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">ethers</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;ethers&#39;</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<dl class="docutils">
+<dt><strong>Note</strong></dt>
+<dd>This file <strong>must</strong> be minified, since the React-Native <code class="docutils literal notranslate"><span class="pre">require</span></code>
+seems to hijack the variable name <code class="docutils literal notranslate"><span class="pre">require</span></code>, even when encapsulated
+inside a closure. The minification process replaces the <code class="docutils literal notranslate"><span class="pre">require</span></code>
+with a mangled name, so that there is no collision. This is hacky
+and in the future a better method would be preferred. Suggestions?</dd>
+<dt><strong>Note</strong></dt>
+<dd>As we find additional features not generally available, they will
+be added to this shim file. It is targetted toward platforms where
+build-size is not critical, so functionality is favored over keeping
+the size small.</dd>
+</dl>
+</div>
+<hr class="docutils" />
+<div class="section" id="wordlists">
+<h2>Wordlists<a class="headerlink" href="#wordlists" title="Permalink to this headline">¶</a></h2>
+<p>React-Native will pull in the browser version of ethers, which does not have
+all the additional word lists, by default. Each desired wordlist must be
+separately imported.</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text"><em>Importing languages into React-Native</em></span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">es</span><span class="p">,</span>     <span class="c1">// Spanish</span>
+    <span class="nx">fr</span><span class="p">,</span>     <span class="c1">// French</span>
+    <span class="nx">it</span><span class="p">,</span>     <span class="c1">// Italian</span>
+    <span class="nx">ja</span><span class="p">,</span>     <span class="c1">// Japanese</span>
+    <span class="nx">ko</span><span class="p">,</span>     <span class="c1">// Korean</span>
+    <span class="nx">zh_ch</span><span class="p">,</span>  <span class="c1">// Chinese (simplified)</span>
+    <span class="nx">zh_tw</span>   <span class="c1">// Chinese (tranditional)</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;ethers/wordlists&#39;</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="other-notes">
+<h2>Other Notes<a class="headerlink" href="#other-notes" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><strong>console.log</strong></dt>
+<dd>The use of <code class="docutils literal notranslate"><span class="pre">console.log</span></code> in React Native <a class="reference external" href="https://docs.expo.io/versions/latest/react-native/performance/#using-consolelog-statements">can substantially impact performance</a>.
+For this reason, you may wish to reduce the log level to not show info and warnings.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text"><em>Change Log Level</em></span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// The default is &quot;info&quot;; other options</span>
+<span class="c1">// &quot;debug&quot;, &quot;info&quot;, &quot;warn&quot;, &quot;error&quot;, &quot;off&quot;</span>
+<span class="nx">ethers</span><span class="p">.</span><span class="nx">errors</span><span class="p">.</span><span class="nx">setLogLevel</span><span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+<p>TODO: Include instructions on installing crypto performance</p>
+<ul class="simple">
+<li>scrypt (it is VERY slow in React Native; too slow to be functional)</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="migration.html" class="btn btn-neutral float-right" title="Migration Guides" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="cookbook-testing.html" class="btn btn-neutral" title="Testing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

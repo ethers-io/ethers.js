@@ -1,0 +1,704 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Contracts &mdash; ethers.js 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  
+    <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="ethers.js 3.0.0 documentation" href="index.html"/>
+        <link rel="up" title="Application Programming Interface (API)" href="api.html"/>
+        <link rel="next" title="Utilities" href="api-utils.html"/>
+        <link rel="prev" title="Providers API" href="api-providers.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Application Programming Interface (API)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="api-wallet.html">Wallets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html">Providers API</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Contracts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#connecting-to-a-contract">Connecting to a Contract</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prototype">Prototype</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#result-types">Result Types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#integers">Integers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strings">Strings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bytes">Bytes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#arrays">Arrays</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#deploying-a-contract">Deploying a Contract</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1"><em>Examples</em></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#custom-signer">Custom Signer</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id3"><em>Examples</em></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ethers.js</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="api.html">Application Programming Interface (API)</a> &raquo;</li>
+        
+      <li>Contracts</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api-contract.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="contracts">
+<span id="api-contract"></span><h1>Contracts<a class="headerlink" href="#contracts" title="Permalink to this headline">¶</a></h1>
+<p>This API provides a graceful connection to a contract deployed on the blockchain,
+simplifying calling and querying its functions and handling all the binary
+protocol and conversion as necessarily.</p>
+<p>The Contract object is a meta-class, so many of the functions it will have are
+not defined until it is instantiated with an application binary interface (ABI)
+which is usually generated by a compiler, such as Solidity.</p>
+<p>To better see this demonstrated, see the <a class="reference internal" href="#example">example</a> below.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">Contract</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">Contract</span><span class="p">;</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<div class="section" id="connecting-to-a-contract">
+<h2>Connecting to a Contract<a class="headerlink" href="#connecting-to-a-contract" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>new <sup>ethers</sup> . Contract ( addressOrName , interface , providerOrSigner )</dt>
+<dd><p class="first">Connects to the contract at <em>addressOrName</em> defined by <em>interface</em>, which
+may be a JSON string or the parsed object.</p>
+<p>The <em>providerOrSigner</em> may be any instance of the following:</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="api-wallet.html#api-wallet"><span class="std std-ref">Wallet</span></a></dt>
+<dd>The wallet will be used to sign and send transactions, and
+estimates and calls will use the wallet address.</dd>
+<dt><a class="reference internal" href="api-providers.html#api-provider"><span class="std std-ref">Provider</span></a></dt>
+<dd>Gas estimates and constant functions can be called (but without an
+address) and event callbacks may be registered.</dd>
+<dt><a class="reference internal" href="#id2">Custom Signer</a></dt>
+<dd>For much more control over how and when signing and sending
+transaction occurs and to defer address behaviour.</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<hr class="docutils" />
+<div class="section" id="prototype">
+<h2>Prototype<a class="headerlink" href="#prototype" title="Permalink to this headline">¶</a></h2>
+<p>The prototype will contain all the methods and events defined in the
+<strong>interface</strong>.</p>
+<p>The result of all contant methods are a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> which
+resolve to the result as a tuple, optionally with the parameters
+accessible by name, if named in the ABI.</p>
+<p>The result of all non-constant methods are a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a>
+which resolve to the <a class="reference internal" href="api-providers.html#transactionrequest"><span class="std std-ref">transaction</span></a> that
+was sent to the network.</p>
+<p>Name collisions with the built-in properties (below) will not be overwritten.
+Instead, they must be accessed through the <strong>functions</strong> or <strong>events</strong>
+property.</p>
+<p>Due to signature overloading, multiple functions can have the same name. The
+first function specifed in the ABI will be bound to its name. To access
+overloaded functions, use the full typed signature of the functions (e.g.
+<code class="docutils literal"><span class="pre">contract[&quot;foobar(address,uint256)&quot;]</span></code>).</p>
+<dl class="docutils">
+<dt><sup>prototype</sup> . address</dt>
+<dd>The address (or ENS name) of the contract.</dd>
+<dt><sup>prototype</sup> . interface</dt>
+<dd>The <a class="reference internal" href="api-advanced.html#api-interface"><span class="std std-ref">Interface</span></a> meta-class of the parsed
+ABI. Generally, this should not need to be accessed directly.</dd>
+<dt><sup>prototype</sup> . functions . <em>functionName</em></dt>
+<dd>An object that maps each ABI function name to a function that will
+either call (for contant functions) or sign and send a transaction
+(for non-constant functions)</dd>
+<dt><sup>prototype</sup> . estimate . <em>functionName</em></dt>
+<dd>An object that maps each ABI function name to a function that will
+estimate the cost the provided parameters.</dd>
+<dt><sup>prototype</sup> . events . on<em>eventname</em></dt>
+<dd>An object that maps each ABI event name (lower case, with the “on”
+prefix) to a callback that is triggered when the event occurs.</dd>
+<dt><sup>prototype</sup> . connect ( providerOrSigner )</dt>
+<dd>Create a new instance of the Contract connected as the new <em>providerOrSigner</em>.</dd>
+</dl>
+<div class="section" id="examples">
+<span id="example"></span><h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
+<p><em>Example Contract and Interface</em></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/**</span>
+ <span class="o">*</span>  <span class="n">contract</span> <span class="n">SimpleStore</span> <span class="p">{</span>
+ <span class="o">*</span>
+ <span class="o">*</span>      <span class="n">event</span> <span class="n">valueChanged</span><span class="p">(</span><span class="n">address</span> <span class="n">author</span><span class="p">,</span> <span class="n">string</span> <span class="n">oldValue</span><span class="p">,</span> <span class="n">string</span> <span class="n">newValue</span><span class="p">);</span>
+ <span class="o">*</span>
+ <span class="o">*</span>      <span class="n">address</span> <span class="n">_author</span><span class="p">;</span>
+ <span class="o">*</span>      <span class="n">string</span> <span class="n">_value</span><span class="p">;</span>
+ <span class="o">*</span>
+ <span class="o">*</span>      <span class="n">function</span> <span class="n">setValue</span><span class="p">(</span><span class="n">string</span> <span class="n">value</span><span class="p">)</span> <span class="n">public</span> <span class="p">{</span>
+ <span class="o">*</span>          <span class="n">_author</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">sender</span><span class="p">;</span>
+ <span class="o">*</span>          <span class="n">valueChanged</span><span class="p">(</span><span class="n">_author</span><span class="p">,</span> <span class="n">_value</span><span class="p">,</span> <span class="n">value</span><span class="p">);</span>
+ <span class="o">*</span>          <span class="n">_value</span> <span class="o">=</span> <span class="n">value</span><span class="p">;</span>
+ <span class="o">*</span>      <span class="p">}</span>
+ <span class="o">*</span>
+ <span class="o">*</span>      <span class="n">function</span> <span class="n">getValue</span><span class="p">()</span> <span class="n">constant</span> <span class="n">public</span> <span class="n">returns</span> <span class="p">(</span><span class="n">string</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+ <span class="o">*</span>          <span class="k">return</span> <span class="n">_value</span><span class="p">;</span>
+ <span class="o">*</span>      <span class="p">}</span>
+ <span class="o">*</span>
+ <span class="o">*</span>      <span class="n">function</span> <span class="n">getAuthorAndValue</span><span class="p">()</span> <span class="n">constant</span> <span class="n">public</span> <span class="n">returns</span> <span class="p">(</span><span class="n">address</span> <span class="n">author</span><span class="p">,</span> <span class="n">string</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+ <span class="o">*</span>          <span class="k">return</span> <span class="p">(</span><span class="n">_author</span><span class="p">,</span> <span class="n">_value</span><span class="p">);</span>
+ <span class="o">*</span>      <span class="p">}</span>
+ <span class="o">*</span>  <span class="p">}</span>
+ <span class="o">*/</span>
+
+ <span class="o">//</span> <span class="n">The</span> <span class="n">interface</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">Solidity</span> <span class="n">compiler</span>
+ <span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+ <span class="n">var</span> <span class="n">abi</span> <span class="o">=</span> <span class="p">[</span>
+     <span class="p">{</span>
+         <span class="s2">&quot;constant&quot;</span><span class="p">:</span><span class="n">true</span><span class="p">,</span>
+         <span class="s2">&quot;inputs&quot;</span><span class="p">:[],</span>
+         <span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;getValue&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;outputs&quot;</span><span class="p">:[{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;value&quot;</span><span class="p">,</span><span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;string&quot;</span><span class="p">}],</span>
+         <span class="s2">&quot;payable&quot;</span><span class="p">:</span><span class="n">false</span><span class="p">,</span>
+         <span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;function&quot;</span>
+     <span class="p">},</span>
+     <span class="p">{</span>
+         <span class="s2">&quot;constant&quot;</span><span class="p">:</span><span class="n">true</span><span class="p">,</span>
+         <span class="s2">&quot;inputs&quot;</span><span class="p">:[],</span>
+         <span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;getAuthorAndValue&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;outputs&quot;</span><span class="p">:[</span>
+             <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;author&quot;</span><span class="p">,</span><span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;address&quot;</span><span class="p">},</span>
+             <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;value&quot;</span><span class="p">,</span><span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;string&quot;</span><span class="p">}</span>
+         <span class="p">],</span>
+         <span class="s2">&quot;payable&quot;</span><span class="p">:</span><span class="n">false</span><span class="p">,</span>
+         <span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;function&quot;</span>
+     <span class="p">},</span>
+     <span class="p">{</span>
+         <span class="s2">&quot;constant&quot;</span><span class="p">:</span><span class="n">false</span><span class="p">,</span>
+         <span class="s2">&quot;inputs&quot;</span><span class="p">:[{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;value&quot;</span><span class="p">,</span><span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;string&quot;</span><span class="p">}],</span>
+         <span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;setValue&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;outputs&quot;</span><span class="p">:[],</span>
+         <span class="s2">&quot;payable&quot;</span><span class="p">:</span><span class="n">false</span><span class="p">,</span>
+         <span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;function&quot;</span>
+     <span class="p">},</span>
+     <span class="p">{</span>
+         <span class="s2">&quot;anonymous&quot;</span><span class="p">:</span><span class="n">false</span><span class="p">,</span>
+         <span class="s2">&quot;inputs&quot;</span><span class="p">:[</span>
+             <span class="p">{</span><span class="s2">&quot;indexed&quot;</span><span class="p">:</span><span class="n">false</span><span class="p">,</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;oldValue&quot;</span><span class="p">,</span><span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;string&quot;</span><span class="p">},</span>
+             <span class="p">{</span><span class="s2">&quot;indexed&quot;</span><span class="p">:</span><span class="n">false</span><span class="p">,</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;newValue&quot;</span><span class="p">,</span><span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;string&quot;</span><span class="p">}</span>
+         <span class="p">],</span>
+         <span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;valueChanged&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;event&quot;</span>
+     <span class="p">}</span>
+ <span class="p">];</span>
+
+ <span class="n">var</span> <span class="n">address</span> <span class="o">=</span> <span class="s1">&#39;0x2BA27534A8814765795f1Db8AEa01d5dbe4112d9&#39;</span><span class="p">;</span>
+ <span class="n">var</span> <span class="n">provider</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">providers</span><span class="o">.</span><span class="n">getDefaultProvider</span><span class="p">(</span><span class="s1">&#39;ropsten&#39;</span><span class="p">);</span>
+
+ <span class="n">var</span> <span class="n">contract</span> <span class="o">=</span> <span class="n">new</span> <span class="n">ethers</span><span class="o">.</span><span class="n">Contract</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">abi</span><span class="p">,</span> <span class="n">provider</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><em>Example Constant Function</em> – <strong>getAuthorAndValue ( ) returns ( address author , string value )</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">callPromise</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">getValue</span><span class="p">();</span>
+
+<span class="n">callPromise</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Positional argument [0]; author:   &#39;</span> <span class="o">+</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Positional argument [1]; value:    &#39;</span> <span class="o">+</span> <span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Keyword argument [author]; author: &#39;</span> <span class="o">+</span> <span class="n">result</span><span class="o">.</span><span class="n">author</span><span class="p">);</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Keyword argument [value]; value:   &#39;</span> <span class="o">+</span> <span class="n">result</span><span class="o">.</span><span class="n">value</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="o">//</span> <span class="n">These</span> <span class="n">are</span> <span class="n">identical</span> <span class="n">to</span> <span class="n">the</span> <span class="n">above</span> <span class="n">call</span>
+<span class="o">//</span> <span class="n">var</span> <span class="n">callPromise</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">getValue</span><span class="p">();</span>
+<span class="o">//</span> <span class="n">var</span> <span class="n">callPromise</span> <span class="o">=</span> <span class="n">contract</span><span class="p">[</span><span class="s1">&#39;getValue()&#39;</span><span class="p">]();</span>
+<span class="o">//</span> <span class="n">var</span> <span class="n">callPromise</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">functions</span><span class="p">[</span><span class="s1">&#39;getValue()&#39;</span><span class="p">]();</span>
+<span class="o">//</span> <span class="n">var</span> <span class="n">callPromise</span> <span class="o">=</span> <span class="n">contract</span><span class="p">[</span><span class="s1">&#39;getValue()&#39;</span><span class="p">]();</span>
+</pre></div>
+</div>
+<p><em>Example Constant Function with Single Return Value</em> – <strong>getValue ( ) returns ( string value )</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">callPromise</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">getValue</span><span class="p">();</span>
+
+<span class="n">callPromise</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Single Return Value:&#39;</span> <span class="o">+</span> <span class="n">value</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p><em>Example Non-Constant Function</em> – <strong>setValue ( string value )</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">to</span> <span class="n">call</span> <span class="n">a</span> <span class="n">non</span><span class="o">-</span><span class="n">constant</span> <span class="n">function</span><span class="p">,</span> <span class="n">the</span> <span class="n">contract</span> <span class="n">needs</span> <span class="n">to</span> <span class="n">be</span>
+<span class="o">//</span> <span class="n">initialized</span> <span class="k">with</span> <span class="n">a</span> <span class="n">wallet</span> <span class="ow">or</span> <span class="n">a</span> <span class="n">customSigner</span>
+<span class="n">var</span> <span class="n">provider</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">providers</span><span class="o">.</span><span class="n">getDefaultProvider</span><span class="p">(</span><span class="s1">&#39;ropsten&#39;</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">address</span> <span class="o">=</span> <span class="s1">&#39;0x2BA27534A8814765795f1Db8AEa01d5dbe4112d9&#39;</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">privateKey</span> <span class="o">=</span> <span class="s1">&#39;0x0123456789012345678901234567890123456789012345678901234567890123&#39;</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">wallet</span> <span class="o">=</span> <span class="n">new</span> <span class="n">ethers</span><span class="o">.</span><span class="n">Wallet</span><span class="p">(</span><span class="n">privateKey</span><span class="p">,</span> <span class="n">provider</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">contract</span> <span class="o">=</span> <span class="n">new</span> <span class="n">ethers</span><span class="o">.</span><span class="n">Contract</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">abi</span><span class="p">,</span> <span class="n">wallet</span><span class="p">);</span>
+
+<span class="n">var</span> <span class="n">sendPromise</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="s2">&quot;Hello World&quot;</span><span class="p">);</span>
+
+<span class="n">sendPromise</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">transaction</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">transaction</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="o">//</span> <span class="n">This</span> <span class="ow">is</span> <span class="n">identical</span> <span class="n">to</span> <span class="n">the</span> <span class="n">above</span> <span class="n">send</span>
+<span class="o">//</span> <span class="n">var</span> <span class="n">sendPromise</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="s2">&quot;Hello World&quot;</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Overriding</span> <span class="n">parameters</span><span class="p">;</span> <span class="nb">any</span> <span class="n">of</span> <span class="n">these</span> <span class="n">are</span> <span class="n">optional</span> <span class="ow">and</span> <span class="n">get</span> <span class="n">passed</span>
+<span class="o">//</span> <span class="k">as</span> <span class="n">an</span> <span class="n">additional</span> <span class="n">parameter</span> <span class="n">after</span> <span class="nb">all</span> <span class="n">function</span> <span class="n">parameters</span><span class="o">.</span>
+<span class="n">var</span> <span class="n">overrideOptions</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">gasLimit</span><span class="p">:</span> <span class="mi">250000</span><span class="p">,</span>
+    <span class="n">gasPrice</span><span class="p">:</span> <span class="mi">9000000000</span><span class="p">,</span>
+    <span class="n">nonce</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">ethers</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">parseEther</span><span class="p">(</span><span class="s1">&#39;1.0&#39;</span><span class="p">)</span>
+<span class="p">};</span>
+
+<span class="n">var</span> <span class="n">sendPromise</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="s2">&quot;Hello World&quot;</span><span class="p">,</span> <span class="n">overrideOptions</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><em>Example Event Registration</em> – <strong>valueChanged ( author , value )</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Register</span> <span class="k">for</span> <span class="n">events</span>
+<span class="n">contract</span><span class="o">.</span><span class="n">onvaluechanged</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">oldValue</span><span class="p">,</span> <span class="n">newValue</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;oldValue: &#39;</span> <span class="o">+</span> <span class="n">oldValue</span><span class="p">);</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;newValue: &#39;</span> <span class="o">+</span> <span class="n">newValue</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="o">//</span> <span class="n">This</span> <span class="ow">is</span> <span class="n">identical</span> <span class="n">to</span> <span class="n">the</span> <span class="n">above</span> <span class="n">event</span> <span class="n">registry</span>
+<span class="o">//</span> <span class="n">contract</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">onvaluechanged</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">author</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span>
+</pre></div>
+</div>
+<p><em>Example Non-Constant Gas Estimate</em></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">to</span> <span class="n">get</span> <span class="n">the</span> <span class="n">gas</span> <span class="n">estimate</span><span class="p">,</span> <span class="n">the</span> <span class="n">contract</span> <span class="n">needs</span> <span class="n">to</span> <span class="n">be</span>
+<span class="o">//</span> <span class="n">initialized</span> <span class="k">with</span> <span class="n">a</span> <span class="n">wallet</span> <span class="ow">or</span> <span class="n">a</span> <span class="n">customSigner</span>
+<span class="n">var</span> <span class="n">provider</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">providers</span><span class="o">.</span><span class="n">getDefaultProvider</span><span class="p">(</span><span class="s1">&#39;ropsten&#39;</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">privateKey</span> <span class="o">=</span> <span class="s1">&#39;0x0123456789012345678901234567890123456789012345678901234567890123&#39;</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">wallet</span> <span class="o">=</span> <span class="n">new</span> <span class="n">ethers</span><span class="o">.</span><span class="n">Wallet</span><span class="p">(</span><span class="n">privateKey</span><span class="p">,</span> <span class="n">provider</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">contract</span> <span class="o">=</span> <span class="n">new</span> <span class="n">ethers</span><span class="o">.</span><span class="n">Contract</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">abi</span><span class="p">,</span> <span class="n">wallet</span><span class="p">);</span>
+
+<span class="n">var</span> <span class="n">estimatePromise</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">estimate</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="s2">&quot;Hello World&quot;</span><span class="p">);</span>
+
+<span class="n">estimatePromise</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">gasCost</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">gasCost</span> <span class="ow">is</span> <span class="n">returned</span> <span class="k">as</span> <span class="n">BigNumber</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Estimated Gas Cost: &#39;</span> <span class="o">+</span> <span class="n">gasCost</span><span class="o">.</span><span class="n">toString</span><span class="p">());</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="result-types">
+<h2>Result Types<a class="headerlink" href="#result-types" title="Permalink to this headline">¶</a></h2>
+<p>There are many variable types avaiable in Solidity, some which work well
+in JavaScript and others that do not. Here are some note regarding passing
+and returning values in Contracts.</p>
+<div class="section" id="integers">
+<h3>Integers<a class="headerlink" href="#integers" title="Permalink to this headline">¶</a></h3>
+<p>Integers in solidity are a fixed number of bits (aligned to the nearest byte)
+and are available in signed and unsigned variants.</p>
+<p>For example, a <strong>uint256</strong> is 256 bits (32 bytes) and unsigned. An <strong>int8</strong>
+is 8 bits (1 byte) and signed.</p>
+<p>When the type is 48 bits (6 bytes) or less, values are returned as a JavaScript
+Number, since Javascript Numbers are safe to use up to 53 bits.</p>
+<p>Any types with 56 bits (7 bytes) or more will be returned as a BigNumber,
+even if the <em>value</em> is within the 53 bit safe range.</p>
+<p>When passing numeric values in, JavaScript Numbers, hex strings or any BigNumber
+is acceptable (however, take care when using JavaScript Numbers amd performing
+mathematic operations on them).</p>
+<p>The <strong>uint</strong> and <strong>int</strong> types are aliases for <strong>uint256</strong> and <strong>int256</strong>,
+respectively.</p>
+</div>
+<div class="section" id="strings">
+<h3>Strings<a class="headerlink" href="#strings" title="Permalink to this headline">¶</a></h3>
+<p>Strings work fine and require no special care.</p>
+<p>To convert between strings and bytes, which may occasionally come up, use the
+<a class="reference internal" href="api-utils.html#api-utf8-strings"><span class="std std-ref">utils.toUtf8Bytes()</span></a> and <a class="reference internal" href="api-utils.html#api-utf8-strings"><span class="std std-ref">utils.toUtf8String()</span></a>
+utility functions.</p>
+</div>
+<div class="section" id="bytes">
+<h3>Bytes<a class="headerlink" href="#bytes" title="Permalink to this headline">¶</a></h3>
+<p>Bytes are available in fixed-length or dynamic-length variants. In both cases, the
+values are returned as a hex string and may be passed in as either a hex string or
+as an <a class="reference internal" href="api-utils.html#api-arrayish"><span class="std std-ref">arrayish</span></a>.</p>
+<p>To convert the string into an array, use the <a class="reference internal" href="api-utils.html#api-arrayish"><span class="std std-ref">utils.arrayify()</span></a> utility function.</p>
+</div>
+<div class="section" id="arrays">
+<h3>Arrays<a class="headerlink" href="#arrays" title="Permalink to this headline">¶</a></h3>
+<p>Arrays work fine and require no special care.</p>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="deploying-a-contract">
+<h2>Deploying a Contract<a class="headerlink" href="#deploying-a-contract" title="Permalink to this headline">¶</a></h2>
+<p>To deploy a contract to the Ethereum network, you must have its bytecode
+and its application binary interface (ABI), usually generated from the
+Solidity compiler.</p>
+<dl class="docutils">
+<dt><sup>Contract</sup> . getDeployTransaction ( bytecode , interface , … )</dt>
+<dd>Generate the transaction needed to deploy the contract specified by
+<em>bytecode</em> and <em>interface</em>. Any additional parameters the constructor
+take should also be passed in.</dd>
+</dl>
+<div class="section" id="id1">
+<h3><em>Examples</em><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/**</span>
+ <span class="o">*</span>  <span class="n">contract</span> <span class="n">Example</span> <span class="p">{</span>
+ <span class="o">*</span>
+ <span class="o">*</span>      <span class="n">string</span> <span class="n">_value</span><span class="p">;</span>
+ <span class="o">*</span>
+ <span class="o">*</span>      <span class="o">//</span> <span class="n">Constructor</span>
+ <span class="o">*</span>      <span class="n">function</span> <span class="n">Example</span><span class="p">(</span><span class="n">string</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+ <span class="o">*</span>          <span class="n">_value</span> <span class="o">=</span> <span class="n">value</span><span class="p">;</span>
+ <span class="o">*</span>      <span class="p">}</span>
+ <span class="o">*</span>  <span class="p">}</span>
+ <span class="o">*/</span>
+
+<span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">The</span> <span class="n">interface</span> <span class="kn">from</span> <span class="nn">Solidity</span>
+<span class="n">var</span> <span class="n">abi</span> <span class="o">=</span> <span class="s1">&#39;[{&quot;inputs&quot;:[{&quot;name&quot;:&quot;value&quot;,&quot;type&quot;:&quot;string&quot;}],&quot;type&quot;:&quot;constructor&quot;}]&#39;</span><span class="p">;</span>
+
+<span class="o">//</span> <span class="n">The</span> <span class="n">bytecode</span> <span class="kn">from</span> <span class="nn">Solidity</span>
+<span class="n">var</span> <span class="n">bytecode</span> <span class="o">=</span> <span class="s2">&quot;0x6060604052341561000c57fe5b60405161012d38038061012d83398101604052&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;8080518201919050505b806000908051906020019061003f929190610047565b&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;505b506100ec565b828054600181600116156101000203166002900490600052&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;602060002090601f016020900481019282601f1061008857805160ff19168380&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;011785556100b6565b828001600101855582156100b6579182015b8281111561&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;00b557825182559160200191906001019061009a565b5b5090506100c3919061&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;00c7565b5090565b6100e991905b808211156100e55760008160009055506001&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;016100cd565b5090565b90565b6033806100fa6000396000f30060606040525b&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;fe00a165627a7a72305820041f440021b887310055b6f4e647c2844f4e1c8cf1&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;d8e037c72cd7d0aa671e2f0029&quot;</span><span class="p">;</span>
+
+<span class="o">//</span> <span class="n">Notice</span> <span class="n">we</span> <span class="k">pass</span> <span class="ow">in</span> <span class="s2">&quot;Hello World&quot;</span> <span class="k">as</span> <span class="n">the</span> <span class="n">parameter</span> <span class="n">to</span> <span class="n">the</span> <span class="n">constructor</span>
+<span class="n">var</span> <span class="n">deployTransaction</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">Contract</span><span class="o">.</span><span class="n">getDeployTransaction</span><span class="p">(</span><span class="n">bytecode</span><span class="p">,</span> <span class="n">abi</span><span class="p">,</span> <span class="s2">&quot;Hello World&quot;</span><span class="p">);</span>
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">deployTransaction</span><span class="p">);</span>
+<span class="o">//</span> <span class="p">{</span>
+<span class="o">//</span>    <span class="n">data</span><span class="p">:</span> <span class="s2">&quot;0x6060604052341561000c57fe5b60405161012d38038061012d83398101604052&quot;</span> <span class="o">+</span>
+<span class="o">//</span>            <span class="s2">&quot;8080518201919050505b806000908051906020019061003f929190610047565b&quot;</span> <span class="o">+</span>
+<span class="o">//</span>            <span class="s2">&quot;505b506100ec565b828054600181600116156101000203166002900490600052&quot;</span> <span class="o">+</span>
+<span class="o">//</span>            <span class="s2">&quot;602060002090601f016020900481019282601f1061008857805160ff19168380&quot;</span> <span class="o">+</span>
+<span class="o">//</span>            <span class="s2">&quot;011785556100b6565b828001600101855582156100b6579182015b8281111561&quot;</span> <span class="o">+</span>
+<span class="o">//</span>            <span class="s2">&quot;00b557825182559160200191906001019061009a565b5b5090506100c3919061&quot;</span> <span class="o">+</span>
+<span class="o">//</span>            <span class="s2">&quot;00c7565b5090565b6100e991905b808211156100e55760008160009055506001&quot;</span> <span class="o">+</span>
+<span class="o">//</span>            <span class="s2">&quot;016100cd565b5090565b90565b6033806100fa6000396000f30060606040525b&quot;</span> <span class="o">+</span>
+<span class="o">//</span>            <span class="s2">&quot;fe00a165627a7a72305820041f440021b887310055b6f4e647c2844f4e1c8cf1&quot;</span> <span class="o">+</span>
+<span class="o">//</span>            <span class="s2">&quot;d8e037c72cd7d0aa671e2f002900000000000000000000000000000000000000&quot;</span> <span class="o">+</span>
+<span class="o">//</span>            <span class="s2">&quot;0000000000000000000000002000000000000000000000000000000000000000&quot;</span> <span class="o">+</span>
+<span class="o">//</span>            <span class="s2">&quot;0000000000000000000000000b48656c6c6f20576f726c640000000000000000&quot;</span> <span class="o">+</span>
+<span class="o">//</span>            <span class="s2">&quot;00000000000000000000000000&quot;</span>
+<span class="o">//</span> <span class="p">}</span>
+
+<span class="o">//</span> <span class="n">Connect</span> <span class="n">to</span> <span class="n">the</span> <span class="n">network</span>
+<span class="n">var</span> <span class="n">provider</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">providers</span><span class="o">.</span><span class="n">getDefaultProvider</span><span class="p">();</span>
+
+<span class="o">//</span> <span class="n">Create</span> <span class="n">a</span> <span class="n">wallet</span> <span class="n">to</span> <span class="n">deploy</span> <span class="n">the</span> <span class="n">contract</span> <span class="k">with</span>
+<span class="n">var</span> <span class="n">privateKey</span> <span class="o">=</span> <span class="s1">&#39;0x0123456789012345678901234567890123456789012345678901234567890123&#39;</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">wallet</span> <span class="o">=</span> <span class="n">new</span> <span class="n">ethers</span><span class="o">.</span><span class="n">Wallet</span><span class="p">(</span><span class="n">privateKey</span><span class="p">,</span> <span class="n">provider</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Send</span> <span class="n">the</span> <span class="n">transaction</span>
+<span class="n">var</span> <span class="n">sendPromise</span> <span class="o">=</span> <span class="n">wallet</span><span class="o">.</span><span class="n">sendTransaction</span><span class="p">(</span><span class="n">deployTransaction</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Get</span> <span class="n">the</span> <span class="n">transaction</span>
+<span class="n">sendPromise</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">transaction</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">transaction</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="custom-signer">
+<span id="id2"></span><h2>Custom Signer<a class="headerlink" href="#custom-signer" title="Permalink to this headline">¶</a></h2>
+<p>The simplest way to specify a signer is to simply use an instance of a wallet.
+However, if more fine-grained control is required, a custom signer allow
+deferring the address, signing and sending transactions.</p>
+<p>A signer can be any object with:</p>
+<dl class="docutils">
+<dt><sup>object</sup> . getAddress()</dt>
+<dd><p class="first"><em>Required.</em></p>
+<p class="last">Which must return a valid address or a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> which will resolve to a valid
+address or reject an error.</p>
+</dd>
+<dt><sup>object</sup> . provider</dt>
+<dd><p class="first"><em>Required.</em></p>
+<p class="last">A provider that will be used to connect to the Ethereum blockchain to issue
+calls, listen for events and possibly send transaction.</p>
+</dd>
+<dt><sup>object</sup> . estimateGas ( transaction )</dt>
+<dd><p class="first"><em>Optional.</em></p>
+<p>If this is not defined, the provider is queries directly, after populating
+the address using <em>getAddress()</em>.</p>
+<p class="last">The result must be a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> which resolves to the
+<a class="reference internal" href="api-utils.html#bignumber"><span class="std std-ref">BigNumber</span></a> estimated gas cost.</p>
+</dd>
+<dt><sup>object</sup> . sendTransaction ( transaction )</dt>
+<dd><p class="first"><em>Optional.</em></p>
+<p>If this is defined, it is called instead of sign and is expected to
+populate <em>nonce</em>, <em>gasLimit</em> and <em>gasPrice</em>.</p>
+<p class="last">The result must be a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> which resolves to the sent transaction, or
+rejects on failure.</p>
+</dd>
+<dt><sup>object</sup> . sign ( transaction )</dt>
+<dd><p class="first"><em>Optional.</em></p>
+<p>If this is defined, it is called to sign a transaction before using the
+provider to send it to the network.</p>
+<p class="last">The result may be a valid <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a> or a promise which will resolve to a valid
+<a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a> signed transaction or reject on failure.</p>
+</dd>
+</dl>
+<div class="section" id="id3">
+<h3><em>Examples</em><a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">privateKey</span> <span class="o">=</span> <span class="s1">&#39;0x0123456789012345678901234567890123456789012345678901234567890123&#39;</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">wallet</span> <span class="o">=</span> <span class="n">new</span> <span class="n">ethers</span><span class="o">.</span><span class="n">Wallet</span><span class="p">(</span><span class="n">privateKey</span><span class="p">);</span>
+
+<span class="n">function</span> <span class="n">getAddress</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">new</span> <span class="n">Promise</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">resolve</span><span class="p">,</span> <span class="n">reject</span><span class="p">)</span> <span class="p">{</span>
+        <span class="o">//</span> <span class="n">Some</span> <span class="n">asynchronous</span> <span class="n">method</span><span class="p">;</span> <span class="n">some</span> <span class="n">examples</span>
+        <span class="o">//</span>  <span class="o">-</span> <span class="n">request</span> <span class="n">which</span> <span class="n">account</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">user</span>
+        <span class="o">//</span>  <span class="o">-</span> <span class="n">query</span> <span class="n">a</span> <span class="n">database</span>
+        <span class="o">//</span>  <span class="o">-</span> <span class="n">wait</span> <span class="k">for</span> <span class="n">another</span> <span class="n">contract</span> <span class="n">to</span> <span class="n">be</span> <span class="n">mined</span>
+
+        <span class="n">var</span> <span class="n">address</span> <span class="o">=</span> <span class="n">wallet</span><span class="o">.</span><span class="n">address</span><span class="p">;</span>
+
+        <span class="n">resolve</span><span class="p">(</span><span class="n">address</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+
+<span class="n">function</span> <span class="n">sign</span><span class="p">(</span><span class="n">transaction</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">new</span> <span class="n">Promise</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">resolve</span><span class="p">,</span> <span class="n">reject</span><span class="p">)</span> <span class="p">{</span>
+        <span class="o">//</span> <span class="n">Some</span> <span class="n">asynchronous</span> <span class="n">method</span><span class="p">;</span> <span class="n">some</span> <span class="n">examples</span>
+        <span class="o">//</span>  <span class="o">-</span> <span class="n">prompt</span> <span class="n">the</span> <span class="n">user</span> <span class="n">to</span> <span class="n">confirm</span> <span class="ow">or</span> <span class="n">decline</span>
+        <span class="o">//</span>  <span class="o">-</span> <span class="n">check</span> <span class="n">available</span> <span class="n">funds</span> <span class="ow">and</span> <span class="n">credits</span>
+        <span class="o">//</span>  <span class="o">-</span> <span class="n">request</span> <span class="mi">2</span><span class="n">FA</span> <span class="n">over</span> <span class="n">SMS</span>
+
+        <span class="n">var</span> <span class="n">signedTransaction</span> <span class="o">=</span> <span class="n">wallet</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">transaction</span><span class="p">);</span>
+
+        <span class="n">resolve</span><span class="p">(</span><span class="n">signedTransaction</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+
+<span class="n">var</span> <span class="n">customSigner</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">getAddress</span><span class="p">:</span> <span class="n">getAddress</span><span class="p">,</span>
+    <span class="n">provider</span><span class="p">:</span> <span class="n">ethers</span><span class="o">.</span><span class="n">providers</span><span class="o">.</span><span class="n">getDefaultProvider</span><span class="p">(),</span>
+    <span class="n">sign</span><span class="p">:</span> <span class="n">sign</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="api-utils.html" class="btn btn-neutral float-right" title="Utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="api-providers.html" class="btn btn-neutral" title="Providers API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'3.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

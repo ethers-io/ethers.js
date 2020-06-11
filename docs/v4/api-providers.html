@@ -1,0 +1,1308 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Providers &mdash; ethers.js 4.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Contracts" href="api-contract.html" />
+    <link rel="prev" title="Wallets and Signers" href="api-wallet.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Application Programming Interface (API)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="api-wallet.html">Wallets and Signers</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Providers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#connecting-to-ethereum">Connecting to Ethereum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#properties">Properties</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#provider">Provider</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#etherscanprovider-inherits-from-provider">EtherscanProvider <sup>( inherits from Provider )</sup></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#infuraprovider-inherits-from-jsonrpcprovider">InfuraProvider <sup>( inherits from JsonRpcProvider )</sup></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#jsonrpcprovider-inherits-from-provider">JsonRpcProvider <sup>( inherits from Provider )</sup></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#web3provider-inherits-from-jsonrpcprovider">Web3Provider <sup>( inherits from JsonRpcProvider )</sup></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fallbackprovider-inherits-from-provider">FallbackProvider <sup>( inherits from Provider )</sup></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ipcprovider-inherits-from-jsonrpcprovider">IpcProvider <sup>( inherits from JsonRpcProvider )</sup></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#network">Network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#account">Account</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#blockchain-status">Blockchain Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ethereum-naming-service">Ethereum Naming Service</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#contract-execution">Contract Execution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#contract-state">Contract State</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#events">Events</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#event-types">Event Types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#waiting-for-transactions">Waiting for Transactions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#objects-and-types">Objects and Types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#block-tag">Block Tag</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#block-responses">Block Responses</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Network</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#transaction-requests">Transaction Requests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#transaction-response">Transaction Response</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#transaction-receipts">Transaction Receipts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#log">Log</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#filters">Filters</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#provider-specific-extra-api-calls">Provider Specific Extra API Calls</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#etherscan">Etherscan</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#jsonrpcprovider">JsonRpcProvider</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#jsonrpcsigner">JsonRpcSigner</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-contract.html">Contracts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ethers.js</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="api.html">Application Programming Interface (API)</a> &raquo;</li>
+        
+      <li>Providers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api-providers.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="providers">
+<span id="api-provider"></span><h1>Providers<a class="headerlink" href="#providers" title="Permalink to this headline">¶</a></h1>
+<p>A Provider abstracts a connection to the Ethereum blockchain, for issuing queries
+and sending signed state changing transactions.</p>
+<p>The <em>EtherscanProvider</em> and <em>InfuraProvider</em> offer the ability to connect to public
+third-party providers without the need to run any Ethereum node yourself.</p>
+<p>The <em>JsonRpcProvider</em> and <em>IpcProvider</em> allow you to connect to Ethereum nodes you
+control or have access to, including mainnet, testnets, proof-of-authority (PoA)
+nodes or Ganache.</p>
+<p>If you already have a Web3 application, or Web3-compatible Provider
+(e.g. MetaMask’s web3.currentProvider), it can be wrapped by a <em>Web3Provider</em> to make
+it compatible with the ethers Provider API.</p>
+<p>For most situations, it is recommended that you use a default provider, which will
+connect to both Etherscan and INFURA simultaneously:</p>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text"><em>connect to a default provider</em></span><a class="headerlink" href="#id8" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// You can use any standard network name</span>
+<span class="c1">//  - &quot;homestead&quot;</span>
+<span class="c1">//  - &quot;rinkeby&quot;</span>
+<span class="c1">//  - &quot;ropsten&quot;</span>
+<span class="c1">//  - &quot;kovan&quot;</span>
+<span class="c1">//  - &quot;goerli&quot;</span>
+
+<span class="kd">let</span> <span class="nx">provider</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">getDefaultProvider</span><span class="p">(</span><span class="s1">&#39;ropsten&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text"><em>connect to MetaMask</em></span><a class="headerlink" href="#id9" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// The network will be automatically detected; if the network is</span>
+<span class="c1">// changed in MetaMask, it causes a page refresh.</span>
+
+<span class="kd">let</span> <span class="nx">provider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">Web3Provider</span><span class="p">(</span><span class="nx">web3</span><span class="p">.</span><span class="nx">currentProvider</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="connecting-to-ethereum">
+<span id="provider-connect"></span><h2>Connecting to Ethereum<a class="headerlink" href="#connecting-to-ethereum" title="Permalink to this headline">¶</a></h2>
+<p>There are several methods to connect to the Ethereum network provided. If you are not
+running your own local Ethereum node, it is recommended that you use the <code class="docutils literal notranslate"><span class="pre">getDefaultProvider()</span></code>
+method.</p>
+<dl class="docutils">
+<dt><sup>ethers</sup> . getDefaultProvider( [ network <sup>= “homestead”</sup> ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Provider</sup></dt>
+<dd><p class="first">This creates a FallbackProvider backed by multiple backends (INFURA and Etherscan).</p>
+<p class="last">This is the <strong>recommended</strong> method of connecting to the Ethereum network if you are
+not running your own Ethereum node.</p>
+</dd>
+<dt>new <sup>ethers . providers</sup> . EtherscanProvider( [ network <sup>= “homestead”</sup> ] [ , apiToken ] )</dt>
+<dd><p class="first">Connect to the <a class="reference external" href="https://etherscan.io/apis">Etherscan</a> blockchain <a class="reference external" href="https://etherscan.io/apis">web service API</a>.</p>
+<p class="last"><strong>Also See:</strong> Etherscan provider-specific <a class="reference internal" href="#provider-etherscan-properties"><span class="std std-ref">Properties</span></a> and <a class="reference internal" href="#provider-etherscan-extra"><span class="std std-ref">Operations</span></a></p>
+</dd>
+<dt>new <sup>ethers . providers</sup> . InfuraProvider( [ network <sup>= “homestead”</sup> ] [ , apiAccessToken ] )</dt>
+<dd><p class="first">Connect to the <a class="reference external" href="https://infura.io">INFURA</a> hosted network of Ethereum nodes.</p>
+<p class="last"><strong>Also See:</strong> INFURA provider-specific <a class="reference internal" href="#provider-infura-properties"><span class="std std-ref">Properties</span></a></p>
+</dd>
+<dt>new <sup>ethers . providers</sup> . JsonRpcProvider( [ urlOrInfo <sup>= “http://localhost:8545”</sup> ] [ , network ] )</dt>
+<dd><p class="first">Connect to the <a class="reference external" href="https://github.com/ethereum/wiki/wiki/JSON-RPC">JSON-RPC API</a> URL <em>urlorInfo</em> of an Ethereum node, such as <a class="reference external" href="https://ethcore.io/parity.html">Parity</a> or <a class="reference external" href="https://geth.ethereum.org">Geth</a>.</p>
+<p>The <em>urlOrInfo</em> may also be specified as an object with the properties:</p>
+<ul class="simple">
+<li><strong>url</strong> — the JSON-RPC URL (required)</li>
+<li><strong>user</strong> — a username to use for Basic Authentication (optional)</li>
+<li><strong>password</strong> — a password to use for Basic Authentication (optional)</li>
+<li><strong>allowInsecure</strong> — allow Basic Authentication over an insecure HTTP network (default: false)</li>
+</ul>
+<p class="last"><strong>Also See:</strong> JSON-RPC provider-specific <a class="reference internal" href="#provider-jsonrpc-properties"><span class="std std-ref">Properties</span></a> and <a class="reference internal" href="#provider-jsonrpc-extra"><span class="std std-ref">Operations</span></a></p>
+</dd>
+<dt>new <sup>ethers . providers</sup> . Web3Provider( web3Provider [ , network ] )</dt>
+<dd><p class="first">Connect to an existing Web3 provider (e.g. <cite>web3Instance.currentProvider</cite>).</p>
+<p>The <em>network</em> is also automatically detected if not specified; see the above
+description of <em>network</em> for JsonRpcProvider for details.</p>
+<p class="last"><strong>Also See:</strong> Web3 provider-specific <a class="reference internal" href="#provider-web3-properties"><span class="std std-ref">Properties</span></a> and <a class="reference internal" href="#provider-jsonrpc-extra"><span class="std std-ref">Operations</span></a></p>
+</dd>
+<dt>new <sup>ethers . providers</sup> . FallbackProvider( providers )</dt>
+<dd><p class="first">Improves reliability by attempting each provider in turn, falling back to the
+next in the list if an error was encountered. The network is determined from the
+providers and the <strong>must</strong> match each other.</p>
+<p class="last"><strong>Also See:</strong> Fallback provider-specific <a class="reference internal" href="#provider-fallback-properties"><span class="std std-ref">Properties</span></a></p>
+</dd>
+<dt>new <sup>ethers . providers</sup> . IpcProvider( path [ , network ] )</dt>
+<dd><p class="first">Connect to the <a class="reference external" href="https://github.com/ethereum/wiki/wiki/JSON-RPC">JSON-RPC API</a> <em>path</em> over IPC (named pipes) to an Ethereum node, such
+as <a class="reference external" href="https://ethcore.io/parity.html">Parity</a> or <a class="reference external" href="https://geth.ethereum.org">Geth</a>.</p>
+<p>The <em>network</em> is also automatically detected if not specified; see the above
+description of <em>network</em> for JsonRpcProvider for details.</p>
+<p class="last"><strong>Also See:</strong> IPC provider-specific <a class="reference internal" href="#provider-ipc-properties"><span class="std std-ref">Properties</span></a> and <a class="reference internal" href="#provider-jsonrpc-extra"><span class="std std-ref">Operations</span></a></p>
+</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id10">
+<div class="code-block-caption"><span class="caption-text"><em>connect to third-party providers</em></span><a class="headerlink" href="#id10" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// You can use any standard network name</span>
+<span class="c1">//  - &quot;homestead&quot;</span>
+<span class="c1">//  - &quot;rinkeby&quot;</span>
+<span class="c1">//  - &quot;ropsten&quot;</span>
+<span class="c1">//  - &quot;kovan&quot;</span>
+
+<span class="kd">let</span> <span class="nx">defaultProvider</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">getDefaultProvider</span><span class="p">(</span><span class="s1">&#39;ropsten&#39;</span><span class="p">);</span>
+
+<span class="c1">// ... OR ...</span>
+
+<span class="kd">let</span> <span class="nx">etherscanProvider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">EtherscanProvider</span><span class="p">(</span><span class="s1">&#39;ropsten&#39;</span><span class="p">);</span>
+
+<span class="c1">// ... OR ...</span>
+
+<span class="kd">let</span> <span class="nx">infuraProvider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">InfuraProvider</span><span class="p">(</span><span class="s1">&#39;ropsten&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id11">
+<div class="code-block-caption"><span class="caption-text"><em>connect to a Geth or Parity node</em></span><a class="headerlink" href="#id11" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// When using the JSON-RPC API, the network will be automatically detected</span>
+
+
+<span class="c1">// Default: http://localhost:8545</span>
+<span class="kd">let</span> <span class="nx">httpProvider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">JsonRpcProvider</span><span class="p">();</span>
+
+
+<span class="c1">// To connect to a custom URL:</span>
+<span class="kd">let</span> <span class="nx">url</span> <span class="o">=</span> <span class="s2">&quot;http://something-else.com:8546&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">customHttpProvider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">JsonRpcProvider</span><span class="p">(</span><span class="nx">url</span><span class="p">);</span>
+
+
+<span class="c1">// Connect over named pipes using IPC:</span>
+<span class="kd">let</span> <span class="nx">path</span> <span class="o">=</span> <span class="s2">&quot;/var/run/parity.ipc&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">ipcProvider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">IpcProvider</span><span class="p">(</span><span class="nx">path</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id12">
+<div class="code-block-caption"><span class="caption-text"><em>connect to an existing Web3 Provider</em></span><a class="headerlink" href="#id12" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// When using a Web3 provider, the network will be automatically detected</span>
+
+<span class="c1">// e.g. HTTP provider</span>
+<span class="kd">let</span> <span class="nx">currentProvider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">web3</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">HttpProvider</span><span class="p">(</span><span class="s1">&#39;http://localhost:8545&#39;</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">web3Provider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">Web3Provider</span><span class="p">(</span><span class="nx">currentProvider</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="properties">
+<h2>Properties<a class="headerlink" href="#properties" title="Permalink to this headline">¶</a></h2>
+<p>All properties are immutable unless otherwise specified, and will reflect their
+default values if left unspecified.</p>
+<div class="section" id="provider">
+<span id="id1"></span><h3>Provider<a class="headerlink" href="#provider" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . blockNumber</dt>
+<dd>The most recent block number (block height) this provider has seen and has triggered
+events for. If no block has been seen, this is <em>null</em>.</dd>
+<dt><sup>prototype</sup> . polling</dt>
+<dd><p class="first"><em>mutable</em></p>
+<p class="last">If the provider is currently polling because it is actively watching for events. This
+may be set to enable/disable polling temporarily or disabled permanently to allow a
+node process to exit.</p>
+</dd>
+<dt><sup>prototype</sup> . pollingInterval</dt>
+<dd><p class="first"><em>mutable</em></p>
+<p>The frequency (in ms) that the provider is polling. The default interval is 4 seconds.</p>
+<p class="last">This may make sense to lower for PoA networks or when polling a local node. When polling
+Etherscan or INFURA, setting this too low may result in the service blocking your IP
+address or otherwise throttling your API calls.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="etherscanprovider-inherits-from-provider">
+<span id="provider-etherscan-properties"></span><h3>EtherscanProvider <sup>( inherits from Provider )</sup><a class="headerlink" href="#etherscanprovider-inherits-from-provider" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . apiToken</dt>
+<dd>The Etherscan API Token (or null if not specified)</dd>
+</dl>
+</div>
+<div class="section" id="infuraprovider-inherits-from-jsonrpcprovider">
+<span id="provider-infura-properties"></span><h3>InfuraProvider <sup>( inherits from JsonRpcProvider )</sup><a class="headerlink" href="#infuraprovider-inherits-from-jsonrpcprovider" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . apiAccessToken</dt>
+<dd>The INFURA API Access Token (or null if not specified)</dd>
+</dl>
+</div>
+<div class="section" id="jsonrpcprovider-inherits-from-provider">
+<span id="provider-jsonrpc-properties"></span><h3>JsonRpcProvider <sup>( inherits from Provider )</sup><a class="headerlink" href="#jsonrpcprovider-inherits-from-provider" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . connection</dt>
+<dd><p class="first">An object describing the connection of the JSON-RPC endpoint with the properties:</p>
+<ul class="last simple">
+<li><strong>url</strong> — the JSON-RPC URL</li>
+<li><strong>user</strong> — a username to use for Basic Authentication (optional)</li>
+<li><strong>password</strong> — a password to use for Basic Authentication (optional)</li>
+<li><strong>allowInsecure</strong> — allows Basic Authentication over an insecure HTTP network</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="web3provider-inherits-from-jsonrpcprovider">
+<span id="provider-web3-properties"></span><h3>Web3Provider <sup>( inherits from JsonRpcProvider )</sup><a class="headerlink" href="#web3provider-inherits-from-jsonrpcprovider" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . provider</dt>
+<dd><p class="first">The underlying Web3-compatible provider from the Web3 library, for example
+an <a class="reference external" href="https://github.com/ethereum/web3.js/blob/develop/lib/web3/httpprovider.js">HTTPProvider</a> or <a class="reference external" href="https://github.com/ethereum/web3.js/blob/develop/lib/web3/ipcprovider.js">IPCProvider</a>. The only required method on a Web3 provider
+is:</p>
+<ul class="last simple">
+<li><strong>sendAsync ( method , params , callback )</strong></li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="fallbackprovider-inherits-from-provider">
+<span id="provider-fallback-properties"></span><h3>FallbackProvider <sup>( inherits from Provider )</sup><a class="headerlink" href="#fallbackprovider-inherits-from-provider" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . providers</dt>
+<dd>A <strong>copy</strong> of the array of providers (modifying this variable will not affect
+the attached providers)</dd>
+</dl>
+</div>
+<div class="section" id="ipcprovider-inherits-from-jsonrpcprovider">
+<span id="provider-ipc-properties"></span><h3>IpcProvider <sup>( inherits from JsonRpcProvider )</sup><a class="headerlink" href="#ipcprovider-inherits-from-jsonrpcprovider" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . path</dt>
+<dd>The JSON-RPC IPC (named pipe) path the provider is connected to.</dd>
+</dl>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="network">
+<span id="provider-network"></span><h2>Network<a class="headerlink" href="#network" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><sup>prototype</sup> . getNetwork ( ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;Network&gt;</sup></dt>
+<dd>A <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> that resolves to a <a class="reference internal" href="#id2"><span class="std std-ref">Network</span></a> object
+describing the connected network and chain.</dd>
+</dl>
+<hr class="docutils" />
+</div>
+<div class="section" id="account">
+<span id="provider-account"></span><h2>Account<a class="headerlink" href="#account" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><sup>prototype</sup> . getBalance ( addressOrName [ , blockTag <sup>= “latest”</sup> ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;BigNumber&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the balance (as a <a class="reference internal" href="api-utils.html#bignumber"><span class="std std-ref">BigNumber</span></a>) of
+<em>addressOrName</em> at <em>blockTag</em>. (See: <a class="reference internal" href="#blocktag"><span class="std std-ref">Block Tags</span></a>)</dd>
+<dt><sup>prototype</sup> . getTransactionCount ( addressOrName [ , blockTag <sup>= “latest”</sup> ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;number&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the number of sent transactions (as a Number) from
+<em>addressOrName</em> at <em>blockTag</em>. This is also the nonce required to send a new
+transaction. (See: <a class="reference internal" href="#blocktag"><span class="std std-ref">Block Tags</span></a>)</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id13">
+<div class="code-block-caption"><span class="caption-text"><em>get the balance of an account</em></span><a class="headerlink" href="#id13" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">address</span> <span class="o">=</span> <span class="s2">&quot;0x02F024e0882B310c6734703AB9066EdD3a10C6e0&quot;</span><span class="p">;</span>
+
+<span class="nx">provider</span><span class="p">.</span><span class="nx">getBalance</span><span class="p">(</span><span class="nx">address</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">balance</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+
+    <span class="c1">// balance is a BigNumber (in wei); format is as a sting (in ether)</span>
+    <span class="kd">let</span> <span class="nx">etherString</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">formatEther</span><span class="p">(</span><span class="nx">balance</span><span class="p">);</span>
+
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Balance: &quot;</span> <span class="o">+</span> <span class="nx">etherString</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id14">
+<div class="code-block-caption"><span class="caption-text"><em>get the transaction count of an account</em></span><a class="headerlink" href="#id14" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">address</span> <span class="o">=</span> <span class="s2">&quot;0x02F024e0882B310c6734703AB9066EdD3a10C6e0&quot;</span><span class="p">;</span>
+
+<span class="nx">provider</span><span class="p">.</span><span class="nx">getTransactionCount</span><span class="p">(</span><span class="nx">address</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">transactionCount</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Total Transactions Ever Sent: &quot;</span> <span class="o">+</span> <span class="nx">transactionCount</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="blockchain-status">
+<span id="provider-blockchain"></span><h2>Blockchain Status<a class="headerlink" href="#blockchain-status" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><sup>prototype</sup> . getBlockNumber ( ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;number&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the latest block number (as a Number).</dd>
+<dt><sup>prototype</sup> . getGasPrice ( ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;BigNumber&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the current gas price (as a <a class="reference internal" href="api-utils.html#bignumber"><span class="std std-ref">BigNumber</span></a>).</dd>
+<dt><sup>prototype</sup> . getBlock ( blockHashOrBlockNumber ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;Block&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the block at <em>blockHashOrBlockNumber</em>. (See: <a class="reference internal" href="#blockresponse"><span class="std std-ref">Block Responses</span></a>)</dd>
+<dt><sup>prototype</sup> . getTransaction ( transactionHash ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;TransactionResponse&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the transaction with <em>transactionHash</em>. (See: <a class="reference internal" href="#transaction-response"><span class="std std-ref">Transaction Responses</span></a>)</dd>
+<dt><sup>prototype</sup> . getTransactionReceipt ( transactionHash ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;TransactionReceipt&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the transaction receipt with <em>transactionHash</em>.
+(See: <a class="reference internal" href="#transaction-receipt"><span class="std std-ref">Transaction Receipts</span></a>)</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id15">
+<div class="code-block-caption"><span class="caption-text"><em>current state</em></span><a class="headerlink" href="#id15" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">provider</span><span class="p">.</span><span class="nx">getBlockNumber</span><span class="p">().</span><span class="nx">then</span><span class="p">((</span><span class="nx">blockNumber</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Current block number: &quot;</span> <span class="o">+</span> <span class="nx">blockNumber</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="nx">provider</span><span class="p">.</span><span class="nx">getGasPrice</span><span class="p">().</span><span class="nx">then</span><span class="p">((</span><span class="nx">gasPrice</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="c1">// gasPrice is a BigNumber; convert it to a decimal string</span>
+    <span class="nx">gasPriceString</span> <span class="o">=</span> <span class="nx">gasPrice</span><span class="p">.</span><span class="nx">toString</span><span class="p">();</span>
+
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Current gas price: &quot;</span> <span class="o">+</span> <span class="nx">gasPriceString</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id16">
+<div class="code-block-caption"><span class="caption-text"><em>blocks</em></span><a class="headerlink" href="#id16" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// See: https://ropsten.etherscan.io/block/3346773</span>
+
+<span class="c1">// Block Number</span>
+<span class="nx">provider</span><span class="p">.</span><span class="nx">getBlock</span><span class="p">(</span><span class="mi">3346773</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">block</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">block</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="c1">// Block Hash</span>
+<span class="kd">let</span> <span class="nx">blockHash</span> <span class="o">=</span> <span class="s2">&quot;0x7a1d0b010393c8d850200d0ec1e27c0c8a295366247b1bd6124d496cf59182ad&quot;</span><span class="p">;</span>
+<span class="nx">provider</span><span class="p">.</span><span class="nx">getBlock</span><span class="p">(</span><span class="nx">blockHash</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">block</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">block</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id17">
+<div class="code-block-caption"><span class="caption-text"><em>transactions</em></span><a class="headerlink" href="#id17" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// See: https://ropsten.etherscan.io/tx/0xa4ddad980075786c204b45ab8193e543aec4411bd94894abef47dc90d4d3cc01</span>
+
+<span class="kd">let</span> <span class="nx">transactionHash</span> <span class="o">=</span> <span class="s2">&quot;0xa4ddad980075786c204b45ab8193e543aec4411bd94894abef47dc90d4d3cc01&quot;</span>
+
+<span class="nx">provider</span><span class="p">.</span><span class="nx">getTransaction</span><span class="p">(</span><span class="nx">transactionHash</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">transaction</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">transaction</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="nx">provider</span><span class="p">.</span><span class="nx">getTransactionReceipt</span><span class="p">(</span><span class="nx">transactionHash</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">receipt</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">receipt</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="ethereum-naming-service">
+<span id="provider-ens"></span><h2>Ethereum Naming Service<a class="headerlink" href="#ethereum-naming-service" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="https://ens.domains">Ethereum Naming Service</a> (ENS) allows easy to remember and use names to be
+assigned to Ethereum addresses. Any provider operation which takes an address
+may also take an ENS name.</p>
+<p>ENS also provides the ability for a reverse lookup, which determines the name
+for an address if it has been configured.</p>
+<dl class="docutils">
+<dt><sup>prototype</sup> . resolveName ( ensName ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;Address&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> which resolves to the address of that the <em>ensName</em>
+resolves to (or <em>null</em> is not configured).</dd>
+<dt><sup>prototype</sup> . lookupAddress ( address ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;string&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> which resolves to the ENS name that <em>address</em> resolves
+to (or <em>null</em> if not configured).</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id18">
+<div class="code-block-caption"><span class="caption-text"><em>resolve an ENS name to an address</em></span><a class="headerlink" href="#id18" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">provider</span><span class="p">.</span><span class="nx">resolveName</span><span class="p">(</span><span class="s2">&quot;registrar.firefly.eth&quot;</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">address</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Address: &quot;</span> <span class="o">+</span> <span class="nx">address</span><span class="p">);</span>
+    <span class="c1">// &quot;0x6fC21092DA55B392b045eD78F4732bff3C580e2c&quot;</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id19">
+<div class="code-block-caption"><span class="caption-text"><em>lookup the ENS name of an address</em></span><a class="headerlink" href="#id19" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">address</span> <span class="o">=</span> <span class="s2">&quot;0x6fC21092DA55B392b045eD78F4732bff3C580e2c&quot;</span><span class="p">;</span>
+<span class="nx">provider</span><span class="p">.</span><span class="nx">lookupAddress</span><span class="p">(</span><span class="nx">address</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">address</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Name: &quot;</span> <span class="o">+</span> <span class="nx">address</span><span class="p">);</span>
+    <span class="c1">// &quot;registrar.firefly.eth&quot;</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="contract-execution">
+<span id="provider-calling"></span><h2>Contract Execution<a class="headerlink" href="#contract-execution" title="Permalink to this headline">¶</a></h2>
+<p>These are relatively low-level calls. The <a class="reference internal" href="api-contract.html#api-contract"><span class="std std-ref">Contracts API</span></a> should
+usually be used instead.</p>
+<dl class="docutils">
+<dt><sup>prototype</sup> . call ( transaction ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;hex&gt;</sup></dt>
+<dd><p class="first">Send the <strong>read-only</strong> (constant) <em>transaction</em> to a single Ethereum node and
+return a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the result (as a <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a>) of executing it.
+(See <a class="reference internal" href="#transaction-request"><span class="std std-ref">Transaction Requests</span></a>)</p>
+<p class="last">This is free, since it does not change any state on the blockchain.</p>
+</dd>
+<dt><sup>prototype</sup> . estimateGas ( transaction ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;BigNumber&gt;</sup></dt>
+<dd><p class="first">Send a <em>transaction</em> to a single Ethereum node and return a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the
+estimated amount of gas required (as a <a class="reference internal" href="api-utils.html#bignumber"><span class="std std-ref">BigNumber</span></a>) to send it.
+(See <a class="reference internal" href="#transaction-request"><span class="std std-ref">Transaction Requests</span></a>)</p>
+<p class="last">This is free, but only an estimate. Providing too little gas will result in a
+transaction being rejected (while still consuming all provided gas).</p>
+</dd>
+<dt><sup>prototype</sup> . sendTransaction ( signedTransaction ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;TransactionResponse&gt;</sup></dt>
+<dd><p class="first">Send the <em>signedTransaction</em> to the <strong>entire</strong> Ethereum network and returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a>
+that resolves to the <a class="reference internal" href="#transaction-response"><span class="std std-ref">Transaction Response</span></a>.</p>
+<p>If an error occurs after the netowrk <strong>may have</strong> received the transaction, the
+promise will reject with the error, with the additional property <code class="docutils literal notranslate"><span class="pre">transactionHash</span></code>
+so that further processing may be done.</p>
+<p class="last"><strong>This will consume gas</strong> from the account that signed the transaction.</p>
+</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id20">
+<div class="code-block-caption"><span class="caption-text"><em>calling constant functions</em></span><a class="headerlink" href="#id20" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// See: https://ropsten.etherscan.io/address/0x6fc21092da55b392b045ed78f4732bff3c580e2c</span>
+
+<span class="c1">// Setup a transaction to call the FireflyRegistrar.fee() function</span>
+
+<span class="c1">// FireflyRegistrar contract address</span>
+<span class="kd">let</span> <span class="nx">address</span> <span class="o">=</span> <span class="s2">&quot;0x6fC21092DA55B392b045eD78F4732bff3C580e2c&quot;</span><span class="p">;</span>
+
+<span class="c1">// First 4 bytes of the hash of &quot;fee()&quot; for the sighash selector</span>
+<span class="kd">let</span> <span class="nx">data</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">hexDataSlice</span><span class="p">(</span><span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">id</span><span class="p">(</span><span class="s1">&#39;fee()&#39;</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">transaction</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">to</span><span class="o">:</span> <span class="nx">ensName</span><span class="p">,</span>
+    <span class="nx">data</span><span class="o">:</span> <span class="nx">data</span>
+<span class="p">}</span>
+
+<span class="kd">let</span> <span class="nx">callPromise</span> <span class="o">=</span> <span class="nx">defaultProvider</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">transaction</span><span class="p">);</span>
+
+<span class="nx">callPromise</span><span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">result</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
+    <span class="c1">// &quot;0x000000000000000000000000000000000000000000000000016345785d8a0000&quot;</span>
+
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">formatEther</span><span class="p">(</span><span class="nx">result</span><span class="p">));</span>
+    <span class="c1">// &quot;0.1&quot;</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id21">
+<div class="code-block-caption"><span class="caption-text"><em>sending a transaction</em></span><a class="headerlink" href="#id21" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">privateKey</span> <span class="o">=</span> <span class="s1">&#39;0x0123456789012345678901234567890123456789012345678901234567890123&#39;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">wallet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">(</span><span class="nx">privateKey</span><span class="p">,</span> <span class="nx">provider</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">transaction</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">to</span><span class="o">:</span> <span class="s2">&quot;ricmoo.firefly.eth&quot;</span><span class="p">,</span>
+    <span class="nx">value</span><span class="o">:</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">parseEther</span><span class="p">(</span><span class="s2">&quot;0.1&quot;</span><span class="p">)</span>
+<span class="p">};</span>
+
+<span class="c1">// Send the transaction</span>
+<span class="kd">let</span> <span class="nx">sendTransactionPromise</span> <span class="o">=</span> <span class="nx">wallet</span><span class="p">.</span><span class="nx">sendTransaction</span><span class="p">(</span><span class="nx">transaction</span><span class="p">);</span>
+
+<span class="nx">sendTransactionPromise</span><span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">tx</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">tx</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="contract-state">
+<span id="provider-contract"></span><h2>Contract State<a class="headerlink" href="#contract-state" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><sup>prototype</sup> . getCode ( addressOrName ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;hex&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the bytecode (as a <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a>)
+at  <em>addressOrName</em>.</dd>
+<dt><sup>prototype</sup> . getStorageAt ( addressOrName , position [ , blockTag <sup>= “latest”</sup> ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;hex&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the value (as a <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a>) at
+<em>addressOrName</em> in <em>position</em> at <em>blockTag</em>. (See <a class="reference internal" href="#blocktag"><span class="std std-ref">Block Tags</span></a>)</dd>
+<dt><sup>prototype</sup> . getLogs ( filter ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt; Log [ ] &gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with an array (possibly empty) of the logs that
+match the <em>filter</em>. (See <a class="reference internal" href="#filter"><span class="std std-ref">Filters</span></a>)</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id22">
+<div class="code-block-caption"><span class="caption-text"><em>get contract code</em></span><a class="headerlink" href="#id22" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">contractEnsName</span> <span class="o">=</span> <span class="s1">&#39;registrar.firefly.eth&#39;</span><span class="p">;</span>
+
+<span class="kd">let</span> <span class="nx">codePromise</span> <span class="o">=</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">getCode</span><span class="p">(</span><span class="nx">contractEnsName</span><span class="p">);</span>
+
+<span class="nx">codePromise</span><span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">result</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id23">
+<div class="code-block-caption"><span class="caption-text"><em>get contract storage value</em></span><a class="headerlink" href="#id23" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">contractEnsName</span> <span class="o">=</span> <span class="s1">&#39;registrar.firefly.eth&#39;</span><span class="p">;</span>
+
+<span class="c1">// Position 0 in the FireflyRegistrar contract holds the ENS address</span>
+
+<span class="kd">let</span> <span class="nx">storagePromise</span> <span class="o">=</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">getStorageAt</span><span class="p">(</span><span class="nx">contractEnsName</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+
+<span class="nx">storagePromise</span><span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">result</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
+   <span class="c1">// &quot;0x000000000000000000000000112234455c3a32fd11230c42e7bccd4a84e02010&quot;</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id24">
+<div class="code-block-caption"><span class="caption-text"><em>get contract event logs</em></span><a class="headerlink" href="#id24" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">contractEnsName</span> <span class="o">=</span> <span class="s1">&#39;registrar.firefly.eth&#39;</span><span class="p">;</span>
+
+<span class="kd">let</span> <span class="nx">topic</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">id</span><span class="p">(</span><span class="s2">&quot;nameRegistered(bytes32,address,uint256)&quot;</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">filter</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">address</span><span class="o">:</span> <span class="nx">contractEnsName</span><span class="p">,</span>
+    <span class="nx">fromBlock</span><span class="o">:</span> <span class="mi">3313425</span><span class="p">,</span>
+    <span class="nx">toBlock</span><span class="o">:</span> <span class="mi">3313430</span><span class="p">,</span>
+    <span class="nx">topics</span><span class="o">:</span> <span class="p">[</span> <span class="nx">topic</span> <span class="p">]</span>
+<span class="p">}</span>
+
+<span class="nx">provider</span><span class="p">.</span><span class="nx">getLogs</span><span class="p">(</span><span class="nx">filter</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">result</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
+    <span class="c1">// [ {</span>
+    <span class="c1">//    blockNumber: 3313426,</span>
+    <span class="c1">//    blockHash: &quot;0xe01c1e437ed3af9061006492cb07454eca8561479454a709809b7897f225387d&quot;,</span>
+    <span class="c1">//    transactionIndex: 5,</span>
+    <span class="c1">//    removed: false,</span>
+    <span class="c1">//    address: &quot;0x6fC21092DA55B392b045eD78F4732bff3C580e2c&quot;,</span>
+    <span class="c1">//    data: &quot;0x00000000000000000000000053095760c154a1531a69fc718119d14c4aa1506f&quot; +</span>
+    <span class="c1">//            &quot;000000000000000000000000000000000000000000000000016345785d8a0000&quot;,</span>
+    <span class="c1">//    topics: [</span>
+    <span class="c1">//      &quot;0x179ef3319e6587f6efd3157b34c8b357141528074bcb03f9903589876168fa14&quot;,</span>
+    <span class="c1">//      &quot;0xe625ed7b108857745d1d9889a7ae05861d8aee38e0e92fd3a31191de01c2515b&quot;</span>
+    <span class="c1">//    ],</span>
+    <span class="c1">//    transactionHash: &quot;0x61d641aaf3dcf4cf6bafc3e79d332d8773ea0688f87eb00f8b60c3f0050e55f0&quot;,</span>
+    <span class="c1">//    logIndex: 5</span>
+    <span class="c1">// } ]</span>
+
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="events">
+<span id="provider-events"></span><h2>Events<a class="headerlink" href="#events" title="Permalink to this headline">¶</a></h2>
+<p>These methods allow management of callbacks on certain events on the blockchain
+and contracts. They are largely based on the <a class="reference external" href="https://nodejs.org/dist/latest-v6.x/docs/api/events.html">EventEmitter API</a>.</p>
+<dl class="docutils">
+<dt><sup>prototype</sup> . on ( eventType , callback ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Provider</sup></dt>
+<dd>Register a callback for any future <em>eventType</em>; see below for callback parameters</dd>
+<dt><sup>prototype</sup> . once ( eventType , callback) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Provider</sup></dt>
+<dd>Register a callback for the next (and only next) <em>eventType</em>; see below for callback parameters</dd>
+<dt><sup>prototype</sup> . removeListener ( eventType , callback ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>boolean</sup></dt>
+<dd>Unregister the <em>callback</em> for <em>eventType</em>; if the same callback is registered
+more than once, only the first registered instance is removed</dd>
+<dt><sup>prototype</sup> . removeAllListeners ( eventType ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Provider</sup></dt>
+<dd>Unregister all callbacks for <em>eventType</em></dd>
+<dt><sup>prototype</sup> . listenerCount ( [ eventType ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>number</sup></dt>
+<dd>Return the number of callbacks registered for <em>eventType</em>, or if ommitted, the
+total number of callbacks registered</dd>
+<dt><sup>prototype</sup> . resetEventsBlock ( blockNumber ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>void</sup></dt>
+<dd>Begin scanning for events from <em>blockNumber</em>. By default, events begin at the
+block number that the provider began polling at.</dd>
+</dl>
+<div class="section" id="event-types">
+<h3>Event Types<a class="headerlink" href="#event-types" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>“block”</dt>
+<dd><p class="first">Whenever a new block is mined</p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">callback(</span> <span class="pre">blockNumber</span> <span class="pre">)</span></code></p>
+</dd>
+<dt>“pending”</dt>
+<dd><p class="first">Whenever a new transaction is added to the transaction pool. This is <strong>NOT</strong>
+available on Etherscan or INFURA providers and may not be reliable on any
+provider.</p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">callback(</span> <span class="pre">transactionHash</span> <span class="pre">)</span></code></p>
+</dd>
+<dt>“error”</dt>
+<dd><p class="first">Whenever an error occurs during an event.</p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">callback(</span> <span class="pre">error</span> <span class="pre">)</span></code></p>
+</dd>
+<dt>any address</dt>
+<dd><p class="first">When the balance of the corresponding address changes.</p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">callback(</span> <span class="pre">balance</span> <span class="pre">)</span></code></p>
+</dd>
+<dt>any transaction hash</dt>
+<dd><p class="first">When the corresponding transaction has been included in a block; also see
+<a class="reference internal" href="#waitfortransaction"><span class="std std-ref">Waiting for Transactions</span></a>.</p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">callback(</span> <span class="pre">transactionReceipt</span> <span class="pre">)</span></code></p>
+</dd>
+<dt>a filtered event object</dt>
+<dd><p class="first">When the an event is logged by a transaction to the <em>address</em> with the
+associated <em>topics</em>. The filtered event properties are:</p>
+<ul class="simple">
+<li><strong>address</strong> — the contract address to filter by (optional)</li>
+<li><strong>topics</strong> — the log topics to filter by (optional)</li>
+</ul>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">callback(</span> <span class="pre">log</span> <span class="pre">)</span></code></p>
+</dd>
+<dt>an array of topics</dt>
+<dd><p class="first">When any of the topics are logs by a transaction to any address. This is
+equivalent to using a filter object with no <em>address</em>.</p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">callback(</span> <span class="pre">log</span> <span class="pre">)</span></code></p>
+</dd>
+</dl>
+</div>
+<div class="section" id="waiting-for-transactions">
+<span id="waitfortransaction"></span><h3>Waiting for Transactions<a class="headerlink" href="#waiting-for-transactions" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . waitForTransaction ( transactionHash ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;TransactionReceipt&gt;</sup></dt>
+<dd>Return a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> which resolves to the
+<a class="reference internal" href="#transaction-receipt"><span class="std std-ref">Transaction Receipt</span></a> once <em>transactionHash</em> is
+mined.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id25">
+<div class="code-block-caption"><span class="caption-text"><em>new blocks</em></span><a class="headerlink" href="#id25" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">provider</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;block&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">blockNumber</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;New Block: &#39;</span> <span class="o">+</span> <span class="nx">blockNumber</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id26">
+<div class="code-block-caption"><span class="caption-text"><em>account balance changes</em></span><a class="headerlink" href="#id26" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">provider</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;0x46Fa84b9355dB0708b6A57cd6ac222950478Be1d&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">balance</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;New Balance: &#39;</span> <span class="o">+</span> <span class="nx">balance</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id27">
+<div class="code-block-caption"><span class="caption-text"><em>transaction mined</em></span><a class="headerlink" href="#id27" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">provider</span><span class="p">.</span><span class="nx">once</span><span class="p">(</span><span class="nx">transactionHash</span><span class="p">,</span> <span class="p">(</span><span class="nx">receipt</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Transaction Minded: &#39;</span> <span class="o">+</span> <span class="nx">receipt</span><span class="p">.</span><span class="nx">hash</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">receipt</span><span class="p">);</span>
+<span class="p">);</span>
+
+<span class="c1">// ... OR ...</span>
+
+<span class="nx">provider</span><span class="p">.</span><span class="nx">waitForTransaction</span><span class="p">(</span><span class="nx">transactionHash</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">receipt</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Transaction Mined: &#39;</span> <span class="o">+</span> <span class="nx">receipt</span><span class="p">.</span><span class="nx">hash</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">receipt</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id28">
+<div class="code-block-caption"><span class="caption-text"><em>a filtered event has been logged</em></span><a class="headerlink" href="#id28" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">contractEnsName</span> <span class="o">=</span> <span class="s1">&#39;registrar.firefly.eth&#39;</span><span class="p">;</span>
+
+<span class="kd">let</span> <span class="nx">topic</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">id</span><span class="p">(</span><span class="s2">&quot;nameRegistered(bytes32,address,uint256)&quot;</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">filter</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">address</span><span class="o">:</span> <span class="nx">contractEnsName</span><span class="p">,</span>
+    <span class="nx">topics</span><span class="o">:</span> <span class="p">[</span> <span class="nx">topic</span> <span class="p">]</span>
+<span class="p">}</span>
+
+<span class="nx">provider</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">filter</span><span class="p">,</span> <span class="p">(</span><span class="nx">result</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
+    <span class="c1">// {</span>
+    <span class="c1">//    blockNumber: 3606106,</span>
+    <span class="c1">//    blockHash: &quot;0x878aa7059c93239437f66baeec82332dcb2f9288bcdf6eb1ff3ba6998cdf8f69&quot;,</span>
+    <span class="c1">//    transactionIndex: 6,</span>
+    <span class="c1">//    removed: false,</span>
+    <span class="c1">//    address: &quot;0x6fC21092DA55B392b045eD78F4732bff3C580e2c&quot;,</span>
+    <span class="c1">//    data: &quot;0x00000000000000000000000006b5955a67d827cdf91823e3bb8f069e6c89c1d6&quot; +</span>
+    <span class="c1">//            &quot;000000000000000000000000000000000000000000000000016345785d8a0000&quot;,</span>
+    <span class="c1">//    topics: [</span>
+    <span class="c1">//      &quot;0x179ef3319e6587f6efd3157b34c8b357141528074bcb03f9903589876168fa14&quot;,</span>
+    <span class="c1">//      &quot;0x90a4d0958790016bde1de8375806da3be227ff48e611aefea36303fb86bca5ad&quot;</span>
+    <span class="c1">//    ],</span>
+    <span class="c1">//    transactionHash: &quot;0x0d6f43accb067ca8e391666f37f8e8ad75f88ebd8036c9166fd2d0b93b214d2e&quot;,</span>
+    <span class="c1">//    logIndex: 6</span>
+    <span class="c1">// }</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="objects-and-types">
+<h2>Objects and Types<a class="headerlink" href="#objects-and-types" title="Permalink to this headline">¶</a></h2>
+<p>There are several common objects and types that are commonly used as input parameters or
+return types for various provider calls.</p>
+<hr class="docutils" />
+<div class="section" id="block-tag">
+<span id="blocktag"></span><h3>Block Tag<a class="headerlink" href="#block-tag" title="Permalink to this headline">¶</a></h3>
+<p>A block tag is used to uniquely identify a block’s position in the blockchain:</p>
+<dl class="docutils">
+<dt>a Number or <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a>:</dt>
+<dd>Each block has a block number (eg. <code class="docutils literal notranslate"><span class="pre">42</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;0x2a</span></code>.</dd>
+<dt>“latest”:</dt>
+<dd>The most recently mined block.</dd>
+<dt>“pending”:</dt>
+<dd>The block that is currently being mined.</dd>
+</dl>
+<hr class="docutils" />
+</div>
+<div class="section" id="block-responses">
+<span id="blockresponse"></span><h3>Block Responses<a class="headerlink" href="#block-responses" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id29">
+<div class="code-block-caption"><span class="caption-text"><em>Example</em></span><a class="headerlink" href="#id29" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nx">parentHash</span><span class="o">:</span> <span class="s2">&quot;0x3d8182d27303d92a2c9efd294a36dac878e1a9f7cb0964fa0f789fa96b5d0667&quot;</span><span class="p">,</span>
+    <span class="nx">hash</span><span class="o">:</span> <span class="s2">&quot;0x7f20ef60e9f91896b7ebb0962a18b8defb5e9074e62e1b6cde992648fe78794b&quot;</span><span class="p">,</span>
+    <span class="nx">number</span><span class="o">:</span> <span class="mi">3346463</span><span class="p">,</span>
+
+    <span class="nx">difficulty</span><span class="o">:</span> <span class="mi">183765779077962</span><span class="p">,</span>
+    <span class="nx">timestamp</span><span class="o">:</span> <span class="mi">1489440489</span><span class="p">,</span>
+    <span class="nx">nonce</span><span class="o">:</span> <span class="s2">&quot;0x17060cb000d2c714&quot;</span><span class="p">,</span>
+    <span class="nx">extraData</span><span class="o">:</span> <span class="s2">&quot;0x65746865726d696e65202d20555331&quot;</span><span class="p">,</span>
+
+    <span class="nx">gasLimit</span><span class="o">:</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">bigNumberify</span><span class="p">(</span><span class="s2">&quot;3993225&quot;</span><span class="p">),</span>
+    <span class="nx">gasUsed</span><span class="o">:</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">bigNuberify</span><span class="p">(</span><span class="s2">&quot;3254236&quot;</span><span class="p">),</span>
+
+    <span class="nx">miner</span><span class="o">:</span> <span class="s2">&quot;0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8&quot;</span><span class="p">,</span>
+    <span class="nx">transactions</span><span class="o">:</span> <span class="p">[</span>
+        <span class="s2">&quot;0x125d2b846de85c4c74eafb6f1b49fdb2326e22400ae223d96a8a0b26ccb2a513&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;0x948d6e8f6f8a4d30c0bd527becbe24d15b1aba796f9a9a09a758b622145fd963&quot;</span><span class="p">,</span>
+        <span class="p">...</span> <span class="p">[</span> <span class="mi">49</span> <span class="nx">more</span> <span class="nx">transaction</span> <span class="nx">hashes</span> <span class="p">]</span> <span class="p">...</span>
+        <span class="s2">&quot;0xbd141969b164ed70388f95d780864210e045e7db83e71f171ab851b2fba6b730&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="id2">
+<span id="id3"></span><h3>Network<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>A network repsents various properties of a network, such as mainnet (i.e. “homestead”) or
+one of the testnets (e.g. “ropsten”, “rinkeby” or “kovan”) or alternative networks
+(e.g. “classic”). A Network has the following properties:</p>
+<blockquote>
+<div><ul class="simple">
+<li><em>name</em> — the name of the network (e.g. “homestead”, “rinkeby”)</li>
+<li><em>chainId</em> — the chain ID (network ID) of the connected network</li>
+<li><em>ensAddress</em> — the address of ENS if it is deployed to the network, otherwise <em>null</em></li>
+</ul>
+</div></blockquote>
+<p>If a network does not have the ENS contract deployed to it, names cannot be resolved to addresses.</p>
+<div class="literal-block-wrapper docutils container" id="id30">
+<div class="code-block-caption"><span class="caption-text"><em>get a standard network</em></span><a class="headerlink" href="#id30" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">getNetwork</span><span class="p">(</span><span class="s1">&#39;homestead&#39;</span><span class="p">);</span>
+<span class="c1">// {</span>
+<span class="c1">//    chainId: 1,</span>
+<span class="c1">//    ensAddress: &quot;0x314159265dd8dbb310642f98f50c066173c1259b&quot;,</span>
+<span class="c1">//    name: &quot;homestead&quot;</span>
+<span class="c1">// }</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id31">
+<div class="code-block-caption"><span class="caption-text"><em>a custom development network</em></span><a class="headerlink" href="#id31" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">network</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">chainId</span><span class="o">:</span> <span class="mi">1337</span><span class="p">,</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;dev&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="transaction-requests">
+<span id="transaction-request"></span><h3>Transaction Requests<a class="headerlink" href="#transaction-requests" title="Permalink to this headline">¶</a></h3>
+<p>Any property which accepts a number may also be specified as a <a class="reference internal" href="api-utils.html#bignumber"><span class="std std-ref">BigNumber</span></a>
+or <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a>. Any property may also be given as a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a>
+which resolves to the expected type.</p>
+<div class="literal-block-wrapper docutils container" id="id32">
+<div class="code-block-caption"><span class="caption-text"><em>Example</em></span><a class="headerlink" href="#id32" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="c1">// Required unless deploying a contract (in which case omit)</span>
+    <span class="nx">to</span><span class="o">:</span> <span class="nx">addressOrName</span><span class="p">,</span>  <span class="c1">// the target address or ENS name</span>
+
+    <span class="c1">// These are optional/meaningless for call and estimateGas</span>
+    <span class="nx">nonce</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>           <span class="c1">// the transaction nonce</span>
+    <span class="nx">gasLimit</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>        <span class="c1">// the maximum gas this transaction may spend</span>
+    <span class="nx">gasPrice</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>        <span class="c1">// the price (in wei) per unit of gas</span>
+
+    <span class="c1">// These are always optional (but for call, data is usually specified)</span>
+    <span class="nx">data</span><span class="o">:</span> <span class="s2">&quot;0x&quot;</span><span class="p">,</span>         <span class="c1">// extra data for the transaction, or input for call</span>
+    <span class="nx">value</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>           <span class="c1">// the amount (in wei) this transaction is sending</span>
+    <span class="nx">chainId</span><span class="o">:</span> <span class="mi">3</span>          <span class="c1">// the network ID; usually added by a signer</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="transaction-response">
+<span id="id4"></span><h3>Transaction Response<a class="headerlink" href="#transaction-response" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id33">
+<div class="code-block-caption"><span class="caption-text"><em>Example</em></span><a class="headerlink" href="#id33" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="c1">// Only available for mined transactions</span>
+    <span class="nx">blockHash</span><span class="o">:</span> <span class="s2">&quot;0x7f20ef60e9f91896b7ebb0962a18b8defb5e9074e62e1b6cde992648fe78794b&quot;</span><span class="p">,</span>
+    <span class="nx">blockNumber</span><span class="o">:</span> <span class="mi">3346463</span><span class="p">,</span>
+    <span class="nx">timestamp</span><span class="o">:</span> <span class="mi">1489440489</span><span class="p">,</span>
+
+    <span class="c1">// Exactly one of these will be present (send vs. deploy contract)</span>
+    <span class="c1">// They will always be a properly formatted checksum address</span>
+    <span class="nx">creates</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="nx">to</span><span class="o">:</span> <span class="s2">&quot;0xc149Be1bcDFa69a94384b46A1F91350E5f81c1AB&quot;</span><span class="p">,</span>
+
+    <span class="c1">// The transaction hash</span>
+    <span class="nx">hash</span><span class="o">:</span> <span class="s2">&quot;0xf517872f3c466c2e1520e35ad943d833fdca5a6739cfea9e686c4c1b3ab1022e&quot;</span><span class="p">,</span>
+
+    <span class="c1">// See above &quot;Transaction Requests&quot; for details</span>
+    <span class="nx">data</span><span class="o">:</span> <span class="s2">&quot;0x&quot;</span><span class="p">,</span>
+    <span class="nx">from</span><span class="o">:</span> <span class="s2">&quot;0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8&quot;</span><span class="p">,</span>
+    <span class="nx">gasLimit</span><span class="o">:</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">bigNumberify</span><span class="p">(</span><span class="s2">&quot;90000&quot;</span><span class="p">),</span>
+    <span class="nx">gasPrice</span><span class="o">:</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">bigNumberify</span><span class="p">(</span><span class="s2">&quot;21488430592&quot;</span><span class="p">),</span>
+    <span class="nx">nonce</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="nx">value</span><span class="o">:</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">parseEther</span><span class="p">(</span><span class="mf">1.0017071732629267</span><span class="p">),</span>
+
+    <span class="c1">// The chain ID; 0 indicates replay-attack vulnerable</span>
+    <span class="c1">// (eg. 1 = Homestead mainnet, 3 = Ropsten testnet)</span>
+    <span class="nx">chainId</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+
+    <span class="c1">// The signature of the transaction (TestRPC may fail to include these)</span>
+    <span class="nx">r</span><span class="o">:</span> <span class="s2">&quot;0x5b13ef45ce3faf69d1f40f9d15b0070cc9e2c92f3df79ad46d5b3226d7f3d1e8&quot;</span><span class="p">,</span>
+    <span class="nx">s</span><span class="o">:</span> <span class="s2">&quot;0x535236e497c59e3fba93b78e124305c7c9b20db0f8531b015066725e4bb31de6&quot;</span><span class="p">,</span>
+    <span class="nx">v</span><span class="o">:</span> <span class="mi">37</span><span class="p">,</span>
+
+    <span class="c1">// The raw transaction (TestRPC may be missing this)</span>
+    <span class="nx">raw</span><span class="o">:</span> <span class="s2">&quot;0xf87083154262850500cf6e0083015f9094c149be1bcdfa69a94384b46a1f913&quot;</span> <span class="o">+</span>
+           <span class="s2">&quot;50e5f81c1ab880de6c75de74c236c8025a05b13ef45ce3faf69d1f40f9d15b0&quot;</span> <span class="o">+</span>
+           <span class="s2">&quot;070cc9e2c92f3df79ad46d5b3226d7f3d1e8a0535236e497c59e3fba93b78e1&quot;</span> <span class="o">+</span>
+           <span class="s2">&quot;24305c7c9b20db0f8531b015066725e4bb31de6&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="transaction-receipts">
+<span id="transaction-receipt"></span><h3>Transaction Receipts<a class="headerlink" href="#transaction-receipts" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id34">
+<div class="code-block-caption"><span class="caption-text"><em>Example</em></span><a class="headerlink" href="#id34" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nx">transactionHash</span><span class="o">:</span> <span class="s2">&quot;0x7dec07531aae8178e9d0b0abbd317ac3bb6e8e0fd37c2733b4e0d382ba34c5d2&quot;</span><span class="p">,</span>
+
+    <span class="c1">// The block this transaction was mined into</span>
+    <span class="nx">blockHash</span><span class="o">:</span> <span class="s2">&quot;0xca1d4d9c4ac0b903a64cf3ae3be55cc31f25f81bf29933dd23c13e51c3711840&quot;</span><span class="p">,</span>
+    <span class="nx">blockNumber</span><span class="o">:</span> <span class="mi">3346629</span><span class="p">,</span>
+
+    <span class="c1">// The index into this block of the transaction</span>
+    <span class="nx">transactionIndex</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+
+    <span class="c1">// The address of the contract (if one was created)</span>
+    <span class="nx">contractAddress</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
+
+    <span class="c1">// Gas</span>
+    <span class="nx">cumulativeGasUsed</span><span class="o">:</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">bigNumberify</span><span class="p">(</span><span class="s2">&quot;42000&quot;</span><span class="p">),</span>
+    <span class="nx">gasUsed</span><span class="o">:</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">bigNumberify</span><span class="p">(</span><span class="s2">&quot;21000&quot;</span><span class="p">),</span>
+
+    <span class="c1">// Logs (an Array of Logs)</span>
+    <span class="nx">log</span><span class="o">:</span> <span class="p">[</span> <span class="p">],</span>
+    <span class="nx">logsBloom</span><span class="o">:</span> <span class="s2">&quot;0x00&quot;</span> <span class="p">...</span> <span class="p">[</span> <span class="mi">256</span> <span class="nx">bytes</span> <span class="k">of</span> <span class="mi">0</span> <span class="p">]</span> <span class="p">...</span> <span class="s2">&quot;00&quot;</span><span class="p">,</span>
+
+    <span class="c1">// Post-Byzantium hard-fork</span>
+    <span class="nx">byzantium</span><span class="o">:</span> <span class="kc">false</span>
+
+    <span class="c1">////////////</span>
+    <span class="c1">// Pre-byzantium blocks will have a state root:</span>
+    <span class="nx">root</span><span class="o">:</span> <span class="s2">&quot;0x8a27e1f7d3e92ae1a01db5cce3e4718e04954a34e9b17c1942011a5f3a942bf4&quot;</span><span class="p">,</span>
+
+    <span class="c1">////////////</span>
+    <span class="c1">// Post-byzantium blocks will have a status (0 indicated failure during execution)</span>
+    <span class="c1">// status: 1</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="log">
+<span id="id5"></span><h3>Log<a class="headerlink" href="#log" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id35">
+<div class="code-block-caption"><span class="caption-text"><em>Example</em></span><a class="headerlink" href="#id35" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="c1">// The block this log was emitted by</span>
+    <span class="nx">blockNumber</span><span class="o">:</span>
+    <span class="nx">blockHash</span><span class="o">:</span>
+
+    <span class="c1">// The transaction this log was emiited by</span>
+    <span class="nx">transactionHash</span><span class="o">:</span>
+    <span class="nx">transactionIndex</span><span class="o">:</span>
+    <span class="nx">logIndex</span><span class="o">:</span>
+
+    <span class="c1">// Whether the log has been removed (due to a chain re-org)</span>
+    <span class="nx">removed</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+
+    <span class="c1">// The contract emitting the log</span>
+    <span class="nx">address</span><span class="o">:</span>
+
+    <span class="c1">// The indexed data (topics) and non-indexed data (data) for this log</span>
+    <span class="nx">topics</span><span class="o">:</span> <span class="p">[]</span>
+    <span class="nx">data</span><span class="o">:</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="filters">
+<span id="filter"></span><h3>Filters<a class="headerlink" href="#filters" title="Permalink to this headline">¶</a></h3>
+<p>Filtering on topics supports a <a class="reference external" href="https://github.com/ethereum/wiki/wiki/JSON-RPC#a-note-on-specifying-topic-filters">somewhat complicated</a> specification, however,
+for the vast majority of filters, a single topic is usually sufficient (see the example below).</p>
+<p>The <em>EtherscanProvider</em> currently only supports a single topic.</p>
+<div class="literal-block-wrapper docutils container" id="id36">
+<div class="code-block-caption"><span class="caption-text"><em>Example</em></span><a class="headerlink" href="#id36" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="c1">// Optional; The range of blocks to limit querying (See: Block Tags above)</span>
+    <span class="nx">fromBlock</span><span class="o">:</span> <span class="s2">&quot;latest&quot;</span><span class="p">,</span>
+    <span class="nx">toBlock</span><span class="o">:</span> <span class="s2">&quot;latest&quot;</span><span class="p">,</span>
+
+    <span class="c1">// Optional; The specific block to limit the query to</span>
+    <span class="c1">// Note: This may NOT be used with fromBlock or toBlock</span>
+    <span class="c1">// Note: EtherscanProvider does not support blockHash</span>
+    <span class="c1">// Note: This may be used for getLogs, but not as a provider Event (i.e. .on)</span>
+    <span class="nx">blockHash</span><span class="o">:</span> <span class="nx">blockHash</span><span class="p">,</span>
+
+    <span class="c1">// Optional; An address (or ENS name) to filter by</span>
+    <span class="nx">address</span><span class="o">:</span> <span class="nx">addressOrName</span><span class="p">,</span>
+
+    <span class="c1">// Optional; A (possibly nested) list of topics</span>
+    <span class="nx">topics</span><span class="o">:</span> <span class="p">[</span> <span class="nx">topic1</span> <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>&#64;TODO: Link to cookbook entry for filtering ERC-20 events for an address</p>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="provider-specific-extra-api-calls">
+<h2>Provider Specific Extra API Calls<a class="headerlink" href="#provider-specific-extra-api-calls" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="etherscan">
+<span id="provider-etherscan-extra"></span><h3>Etherscan<a class="headerlink" href="#etherscan" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . getEtherPrice ( )</dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the price of ether in USD.</dd>
+<dt><sup>prototype</sup> . getHistory ( addressOrName [ , startBlock <sup>= 0</sup> [ , endBlock <sup>= “latest”</sup> ] ] )</dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with an array of <a class="reference internal" href="#transaction-response"><span class="std std-ref">Transaction Responses</span></a>
+for each transaction to or from <em>addressOrName</em> between <em>startBlock</em> and <em>endBlock</em> (inclusive).</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id37">
+<div class="code-block-caption"><span class="caption-text"><em>a filtered event has been logged</em></span><a class="headerlink" href="#id37" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">etherscanProvider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">EtherscanProvider</span><span class="p">();</span>
+
+<span class="c1">// Getting the current Ethereum price</span>
+<span class="nx">etherscanProvider</span><span class="p">.</span><span class="nx">getEtherPrice</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">price</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Ether price in USD: &quot;</span> <span class="o">+</span> <span class="nx">price</span><span class="p">);</span>
+<span class="p">});</span>
+
+
+<span class="c1">// Getting the transaction history of an address</span>
+<span class="kd">let</span> <span class="nx">address</span> <span class="o">=</span> <span class="s1">&#39;0xb2682160c482eB985EC9F3e364eEc0a904C44C23&#39;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">startBlock</span> <span class="o">=</span> <span class="mi">3135808</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">endBlock</span> <span class="o">=</span> <span class="mi">5091477</span><span class="p">;</span>
+<span class="nx">etherscanProvider</span><span class="p">.</span><span class="nx">getHistory</span><span class="p">(</span><span class="nx">address</span><span class="p">,</span> <span class="nx">startBlock</span><span class="p">,</span> <span class="nx">endBlock</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">history</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">history</span><span class="p">);</span>
+    <span class="c1">// [</span>
+    <span class="c1">//   {</span>
+    <span class="c1">//     hash: &#39;0x327632ccb6d7bb47b455383e936b2f14e6dc50dbefdc214870b446603b468675&#39;,</span>
+    <span class="c1">//     blockHash: &#39;0x0415f0d2741de45fb748166c7dc2aad9b3ff66bcf7d0a127f42a71d3e286c36d&#39;,</span>
+    <span class="c1">//     blockNumber: 3135808,</span>
+    <span class="c1">//     transactionIndex: 1,</span>
+    <span class="c1">//     from: &#39;0xb2682160c482eB985EC9F3e364eEc0a904C44C23&#39;,</span>
+    <span class="c1">//     gasPrice: ethers.utils.bigNumberify(&#39;0x4a817c800&#39;),</span>
+    <span class="c1">//     gasLimit: ethers.utils.bigNumberify(&#39;0x493e0&#39;),</span>
+    <span class="c1">//     to: &#39;0xAe572713CfE65cd7033774170F029B7219Ee7f70&#39;,</span>
+    <span class="c1">//     value: ethers.utils.bigNumberify(&#39;0xd2f13f7789f0000&#39;),</span>
+    <span class="c1">//     nonce: 25,</span>
+    <span class="c1">//     data: &#39;0x&#39;,</span>
+    <span class="c1">//     creates: null,</span>
+    <span class="c1">//     chainId: 0</span>
+    <span class="c1">//   },</span>
+    <span class="c1">//   {</span>
+    <span class="c1">//     hash: &#39;0x7c10f2e7125a1fa5e37b54f5fac5465e8d594f89ff97916806ca56a5744812d9&#39;,</span>
+    <span class="c1">//     ...</span>
+    <span class="c1">//   }</span>
+    <span class="c1">// ]</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="jsonrpcprovider">
+<span id="provider-jsonrpc-extra"></span><h3>JsonRpcProvider<a class="headerlink" href="#jsonrpcprovider" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . send ( method , params ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;any&gt;</sup></dt>
+<dd>Send the JSON-RPC <em>method</em> with <em>params</em>. This is useful for calling
+non-standard or less common JSON-RPC methods. A <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> is
+returned which will resolve to the parsed JSON result.</dd>
+<dt><sup>prototype</sup> . listAccounts ( ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;Address [ ] &gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with a list of all account addresses the
+node connected to this Web3 controls.</dd>
+<dt><sup>prototype</sup> . getSigner( [ indexOrAddress ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>JsonRpcSigner</sup></dt>
+<dd>Returns a <a class="reference internal" href="#signer-jsonrpc"><span class="std std-ref">JsonRpcSigner</span></a> attached to an account on the
+Ethereum node the Web3 object is connected to. If <em>indexOrAddress</em> is not specified,
+the first account on the node is used.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id38">
+<div class="code-block-caption"><span class="caption-text"><em>send vendor specific JSON-RPC API</em></span><a class="headerlink" href="#id38" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">hash</span> <span class="o">=</span> <span class="s2">&quot;0x2ddf6dd2ec23adf525dac59d7c9189b25b172d679aad951e59e232045f2c811f&quot;</span><span class="p">;</span>
+<span class="nx">jsonRpcProvider</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="s1">&#39;debug_traceTransaction&#39;</span><span class="p">,</span> <span class="p">[</span> <span class="nx">hash</span> <span class="p">]).</span><span class="nx">then</span><span class="p">((</span><span class="nx">result</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id39">
+<div class="code-block-caption"><span class="caption-text"><em>list accounts and load the second account</em></span><a class="headerlink" href="#id39" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Get a signer for the account at index 1</span>
+<span class="nx">jsonRpcProvider</span><span class="p">.</span><span class="nx">listAccounts</span><span class="p">().</span><span class="nx">then</span><span class="p">((</span><span class="nx">accounts</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">signer</span> <span class="o">=</span> <span class="nx">jsonRpcProvider</span><span class="p">.</span><span class="nx">getSigner</span><span class="p">(</span><span class="nx">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">signer</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="jsonrpcsigner">
+<span id="signer-jsonrpc"></span><h3>JsonRpcSigner<a class="headerlink" href="#jsonrpcsigner" title="Permalink to this headline">¶</a></h3>
+<p>An account from a JSON-RPC API connection the conforms to the <a class="reference internal" href="api-wallet.html#signer"><span class="std std-ref">Signer API</span></a>.
+The <a class="reference internal" href="#provider-jsonrpc-extra"><span class="std std-ref">getSigner</span></a> method of a JsonRpcProvider should be
+used to instantiate these.</p>
+<dl class="docutils">
+<dt><sup>prototype</sup> . provider</dt>
+<dd>The provider that this Signer is connected to.</dd>
+<dt><sup>prototype</sup> . getAddress ( ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;Address&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> that resolves to the account address.</dd>
+<dt><sup>prototype</sup> . getBalance ( [ blockTag <sup>= “latest”</sup> ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;BigNumber&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> for the account balance.</dd>
+<dt><sup>prototype</sup> . getTransactionCount ( [ blockTag <sup>= “latest”</sup> ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;number&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> for the account transaction count. This
+can be used to determine the next nonce to use for a transaction.</dd>
+<dt><sup>prototype</sup> . sendTransaction ( [ transactionRequest ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;TransactionResponse&gt;</sup></dt>
+<dd><p class="first">Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> that resolves to the Transaction Response for
+the sent transaction.</p>
+<p class="last">If an error occurs after the netowrk <strong>may have</strong> received the transaction, the
+promise will reject with the error, with the additional property <code class="docutils literal notranslate"><span class="pre">transactionHash</span></code>
+so that further processing may be done.</p>
+</dd>
+<dt><sup>prototype</sup> . signMessage ( message ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;hex&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> that resolves the signature of a signed message, in the
+<a class="reference internal" href="api-utils.html#signature"><span class="std std-ref">Flat Format</span></a>.</dd>
+<dt><sup>prototype</sup> . unlock ( password ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;boolean&gt;</sup></dt>
+<dd>Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> the resolves to true or false, depending
+on whether the account unlock was successful.</dd>
+</dl>
+<hr class="docutils" />
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="api-contract.html" class="btn btn-neutral float-right" title="Contracts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="api-wallet.html" class="btn btn-neutral" title="Wallets and Signers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

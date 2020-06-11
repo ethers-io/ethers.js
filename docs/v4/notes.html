@@ -1,0 +1,490 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Notes &mdash; ethers.js 4.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Testing" href="testing.html" />
+    <link rel="prev" title="Migration Guides" href="migration.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface (API)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guides</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#why-can-t-i-just-use-numbers">Why can’t I just use numbers?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#promises">Promises</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#checksum-address">Checksum Address</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#icap-address">ICAP Address</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#supported-platforms">Supported Platforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contributing">Contributing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#security">Security</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-github-and-npm-package">The GitHub and NPM Package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#memory-hard-brute-force-encrpyting">Memory Hard Brute-Force Encrpyting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#responsible-disclosure">Responsible Disclosure</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ethers.js</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Notes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/notes.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="notes">
+<h1>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h1>
+<p>A few quick notes about some of the less obvious aspects of interacting with
+Ethereum in JavaScript.</p>
+<hr class="docutils" />
+<div class="section" id="why-can-t-i-just-use-numbers">
+<span id="ieee754"></span><h2>Why can’t I just use numbers?<a class="headerlink" href="#why-can-t-i-just-use-numbers" title="Permalink to this headline">¶</a></h2>
+<p>The first problem many encounter when dealing with Ethereum is the concept of numbers. Most
+common currencies are broken down with very little granularity. For example, there are only
+100 cents in a single dollar. However, there are  10<sup>18</sup> <strong>wei</strong> in a single
+<strong>ether</strong>.</p>
+<p>JavaScript uses <a class="reference external" href="https://en.wikipedia.org/wiki/Double-precision_floating-point_format">IEEE 754 double-precision binary floating point</a> numbers to represent
+numeric values. As a result, there are <em>holes</em> in the integer set after
+9,007,199,254,740,991; which is problematic for <em>Ethereum</em> because that is only
+around 0.009 ether (in wei).</p>
+<p>To demonstrate how this may be an issue in your code, consider:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="p">(</span><span class="n">Number</span><span class="o">.</span><span class="n">MAX_SAFE_INTEGER</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">-</span> <span class="mi">5</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">Number</span><span class="o">.</span><span class="n">MAX_SAFE_INTEGER</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">false</span>
+</pre></div>
+</div>
+<p>To remedy this, all numbers (which can be large) are stored and manipulated
+as <a class="reference internal" href="api-utils.html#bignumber"><span class="std std-ref">Big Numbers</span></a>.</p>
+<p>The functions <a class="reference internal" href="api-utils.html#parseether"><span class="std std-ref">parseEther( etherString )</span></a> and <a class="reference internal" href="api-utils.html#formatether"><span class="std std-ref">formatEther( wei )</span></a> can be used to convert between
+string representations, which are displayed to or entered by the user and Big Number representations
+which can have mathematical operations handled safely.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="promises">
+<span id="promise"></span><h2>Promises<a class="headerlink" href="#promises" title="Permalink to this headline">¶</a></h2>
+<p>A <a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise in JavaScript</a> is an object which simplifies many aspects of dealing with
+asynchronous functions.</p>
+<p>It allows a pending result to be treated in many ways as if it has already been resolved.</p>
+<p>The most useful operations you will need are:</p>
+<dl class="docutils">
+<dt><sup>Promise</sup> . all ( promises )</dt>
+<dd>Returns a new promise that resolves once all the <em>promises</em> have resolved.</dd>
+<dt><sup>prototype</sup> . then ( onResolve, onReject )</dt>
+<dd><p class="first">Returns another Promise, which once the Promise was resolved, the <em>onResolve</em>
+function will be executed and if an error occurs, <em>onReject</em> will be called.</p>
+<p class="last">If <em>onResolve</em> returns a Promise, it will be inserted into the chain of the returned
+promise. If <em>onResolve</em> throws an Error, the returned Promise will reject.</p>
+</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text"><em>Cleaning out an account</em></span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span> <span class="nx">ethers</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">targetAddress</span> <span class="o">=</span> <span class="s2">&quot;0x02F024e0882B310c6734703AB9066EdD3a10C6e0&quot;</span><span class="p">;</span>
+
+<span class="kd">var</span> <span class="nx">privateKey</span> <span class="o">=</span> <span class="s2">&quot;0x0123456789012345678901234567890123456789012345678901234567890123&quot;</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">wallet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">(</span><span class="nx">privateKey</span><span class="p">);</span>
+
+<span class="c1">// Promises we are interested in</span>
+<span class="kd">var</span> <span class="nx">provider</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">getDefaultProvider</span><span class="p">(</span><span class="s1">&#39;ropsten&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">balancePromise</span> <span class="o">=</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">getBalance</span><span class="p">(</span><span class="nx">wallet</span><span class="p">.</span><span class="nx">address</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">gasPricePromise</span> <span class="o">=</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">getGasPrice</span><span class="p">();</span>
+<span class="kd">var</span> <span class="nx">transactionCountPromise</span> <span class="o">=</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">getTransactionCount</span><span class="p">(</span><span class="nx">wallet</span><span class="p">.</span><span class="nx">address</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">allPromises</span> <span class="o">=</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">all</span><span class="p">([</span>
+    <span class="nx">gasPricePromise</span><span class="p">,</span>
+    <span class="nx">balancePromise</span><span class="p">,</span>
+    <span class="nx">transactionCountPromise</span>
+<span class="p">]);</span>
+
+<span class="kd">var</span> <span class="nx">sendPromise</span> <span class="o">=</span> <span class="nx">allPromises</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">results</span><span class="p">)</span> <span class="p">{</span>
+     <span class="c1">// This function is ONLY called once ALL promises are fulfilled</span>
+
+     <span class="kd">var</span> <span class="nx">gasPrice</span> <span class="o">=</span> <span class="nx">results</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+     <span class="kd">var</span> <span class="nx">balance</span> <span class="o">=</span> <span class="nx">results</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+     <span class="kd">var</span> <span class="nx">transactionCount</span> <span class="o">=</span> <span class="nx">results</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+
+     <span class="c1">// Sending a transaction to an externally owned account (EOA) is 21000 gas)</span>
+     <span class="kd">var</span> <span class="nx">txFeeInWei</span> <span class="o">=</span> <span class="nx">gasPrice</span><span class="p">.</span><span class="nx">mul</span><span class="p">(</span><span class="mi">21000</span><span class="p">);</span>
+
+     <span class="c1">// This will send the maximum amount (our balance minus the fee)</span>
+     <span class="kd">var</span> <span class="nx">value</span> <span class="o">=</span> <span class="nx">balance</span><span class="p">.</span><span class="nx">sub</span><span class="p">(</span><span class="nx">txFeeInWei</span><span class="p">);</span>
+
+     <span class="kd">var</span> <span class="nx">transaction</span> <span class="o">=</span> <span class="p">{</span>
+         <span class="nx">to</span><span class="o">:</span> <span class="nx">targetAddress</span><span class="p">,</span>
+         <span class="nx">gasPrice</span><span class="o">:</span> <span class="nx">gasPrice</span><span class="p">,</span>
+         <span class="nx">gasLimit</span><span class="o">:</span> <span class="mi">21000</span><span class="p">,</span>
+         <span class="nx">nonce</span><span class="o">:</span> <span class="nx">transactionCount</span><span class="p">,</span>
+
+         <span class="c1">// The amount to send</span>
+         <span class="nx">value</span><span class="o">:</span> <span class="nx">value</span><span class="p">,</span>
+
+         <span class="c1">// Prevent replay attacks across networks</span>
+         <span class="nx">chainId</span><span class="o">:</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">chainId</span><span class="p">,</span>
+     <span class="p">};</span>
+
+     <span class="kd">var</span> <span class="nx">signedTransaction</span> <span class="o">=</span> <span class="nx">wallet</span><span class="p">.</span><span class="nx">sign</span><span class="p">(</span><span class="nx">transaction</span><span class="p">);</span>
+
+     <span class="c1">// By returning a Promise, the sendPromise will resolve once the</span>
+     <span class="c1">// transaction is sent</span>
+     <span class="k">return</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">sendTransaction</span><span class="p">(</span><span class="nx">signedTransaction</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="kd">var</span> <span class="nx">minedPromise</span> <span class="o">=</span> <span class="nx">sendPromise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">transaction</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// This will be called once the transaction is sent</span>
+
+    <span class="c1">// This promise will be resolve once the transaction has been mined.</span>
+    <span class="k">return</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">waitForTransaction</span><span class="p">(</span><span class="nx">transaction</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="nx">minedPromise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">transaction</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;The transaction was mined: Block &quot;</span> <span class="o">+</span> <span class="nx">transaction</span><span class="p">.</span><span class="nx">blockNumber</span><span class="p">);</span>
+<span class="p">});</span>
+
+
+<span class="c1">// Promises can be re-used for their value; it will not make the external</span>
+<span class="c1">// call again, and will provide the exact same result every time.</span>
+<span class="nx">balancePromise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">balance</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// This *may* return before the above allPromises, since it only</span>
+    <span class="c1">// required one external call. Keep in mind asynchronous calls can</span>
+    <span class="c1">// be called out of order.</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">balance</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="checksum-address">
+<span id="id1"></span><h2>Checksum Address<a class="headerlink" href="#checksum-address" title="Permalink to this headline">¶</a></h2>
+<p>A <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-55">checksum address</a> uses mixed case hexadecimal strings to encode the checksum
+information in the capitalization of the alphabetic characters, while remaining
+backwards compatible with non-checksum addresses.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Valid</span><span class="p">;</span> <span class="n">checksum</span> <span class="p">(</span><span class="n">mixed</span> <span class="n">case</span><span class="p">)</span>
+<span class="mh">0xCd2a3d9f938e13Cd947eC05ABC7fe734df8DD826</span>
+
+<span class="o">//</span> <span class="n">Valid</span><span class="p">;</span> <span class="n">NO</span> <span class="n">checksum</span> <span class="p">(</span><span class="n">no</span> <span class="n">mixed</span> <span class="n">case</span><span class="p">)</span>
+<span class="mh">0xcd2a3d9f938e13cd947ec05abc7fe734df8dd826</span>
+<span class="mh">0xCD2A3D9F938E13CD947EC05ABC7FE734DF8DD826</span>
+
+<span class="o">//</span> <span class="n">INVALID</span><span class="p">;</span> <span class="p">(</span><span class="n">mixed</span> <span class="n">case</span><span class="p">,</span> <span class="n">but</span> <span class="n">case</span> <span class="n">differs</span> <span class="kn">from</span> <span class="nn">first</span> <span class="n">example</span><span class="p">)</span>
+<span class="mh">0xDc2a3d9f938e13cd947ec05abc7fe734df8dd826</span>
+  <span class="o">^^</span>
+</pre></div>
+</div>
+<p>To convert to a checksum addresses, see <a class="reference internal" href="api-utils.html#utils-getaddress"><span class="std std-ref">getAddress()</span></a>.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="icap-address">
+<span id="id3"></span><h2>ICAP Address<a class="headerlink" href="#icap-address" title="Permalink to this headline">¶</a></h2>
+<p>The original method of adding a checksum to an Ethereum address was by using the
+a format compatible with <a class="reference external" href="https://en.wikipedia.org/wiki/International_Bank_Account_Number">IBAN</a> addresses, using the country code <strong>XE</strong>. However,
+only addresses which have 0 as the first byte (i.e. the address begins with 0x00)
+are truly compatible with IBAN, so ICAP extends the definition to allow for 31
+alphanumeric characters (instead of the standard 30).</p>
+<p>An ICAP address has the following format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">XE</span> <span class="p">[</span><span class="mi">2</span> <span class="n">digit</span> <span class="n">checksum</span><span class="p">]</span> <span class="p">[</span><span class="n">up</span> <span class="n">to</span> <span class="mi">31</span> <span class="n">alphanumeric</span> <span class="n">characters</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>To convert to an ICAP addresses, see <a class="reference internal" href="api-utils.html#utils-getaddress"><span class="std std-ref">getIcapAddress()</span></a>.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="supported-platforms">
+<h2>Supported Platforms<a class="headerlink" href="#supported-platforms" title="Permalink to this headline">¶</a></h2>
+<p>The ethers.js library aims to be as inclusive as possible. People often ask, “why
+don’t you use feature X or syntax Y”, to which the response is usually that it
+begins to heavily restricts the potential user-base.</p>
+<p>The current target for ethers.js is to support an environment which is close to ES3,
+with the addition of Object.defineProperty, which is a bit more advanced than an old
+ES3 environment, but which adds considerable safety and security to the library.</p>
+<p>The phantomjs test harness (<code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">test-phantomjs</span></code>) has a handful of shims included
+in the tests/test.html, but serves as a good benchmark for what minimum features as
+supported.</p>
+<p>Currently the Test Suite runs against:</p>
+<ul class="simple">
+<li>node 6</li>
+<li>node 8</li>
+<li>node 10</li>
+<li>phantomjs</li>
+</ul>
+<p>Another supported aspect is the use of paths in <code class="docutils literal notranslate"><span class="pre">require</span></code>. A small part of the
+library may be included, for example, <code class="docutils literal notranslate"><span class="pre">keccak256</span></code>, by using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">keccak256</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers/utils/keccak256&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">keccak256</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Which means renaming files is a breaking change, and may only be done between
+major version releases. This is useful for people using older, pre-ES6
+tree-shaking, to keep their package sizes small.</p>
+<p>Now that the library also supports TypeScript, another question that often comes
+up is (for example) “why are you doing runtime checks that a value is a number,
+the TypeScript compiler checks that for you”. It is important to keep in mind that
+TypeScript, while a useful tool, is not the tool that everyone uses, and so for
+anyone using JavaScript sans TypeScript, the library should guarantee safety and
+correctness for them too and fail early and fail loud if anything is out of the
+ordinary.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
+<p>I fully welcome anyone to contribute to the project, and appreciate all the
+help I can get. That said, if you have ideas for a PR, please discuss them
+as an issue on GitHub first.</p>
+<p>A few notes on contributing.</p>
+<ul class="simple">
+<li>Please read the above section on Supported Platforms.</li>
+<li>An important feature of ethers.js is that it is small, which means uncommon features or large features need a great deal of discussion.</li>
+<li>Since ethers.js is designed to be extensible, there are often ways to add optional packages; for example, look at the BIP39 mnemonic wordlists, which are not bundled into the browser version, but are designed to be seamlessly loaded into the browser if their functionality is required.</li>
+<li>Dependencies; part A) in line with the above, “keep things small”, adding a dependency is a big deal, as they often bring many other packages with them. A great deal of effort has been used to tune the build process and dependency list to keep things tight</li>
+<li>Dependencies; part B) adding additional third party libraries, adds a huge attack vector fun malicious code or unexpected consequences, so adding a dependency is certainly something that needs to be very convincingly argued.</li>
+<li>Dependencies; part C) part B applies to dev dependencies too. A devDependency can inject or otherwise do strange things and increases the attack vector for bugs and malicious code</li>
+<li>Changing filenames or breaking backwards compatibility is a no-go for minor version changes</li>
+<li>Major version changes do not happen often. We place &#64;TODO in the source code for things that will be updated at the next version change.</li>
+<li>Please use the GitHub issue system to make requests, or discuss changes you would like to make.</li>
+<li>Testing is a must. It should generally take you longer to write test cases than it does the actual code.</li>
+<li>All test cases must pass on all platforms supported on Travis CI.</li>
+</ul>
+</div>
+<hr class="docutils" />
+<div class="section" id="security">
+<h2>Security<a class="headerlink" href="#security" title="Permalink to this headline">¶</a></h2>
+<p>A lot of people store a lot of value in Ethereum and the code that runs it. As
+such, security is important.</p>
+<div class="section" id="the-github-and-npm-package">
+<h3>The GitHub and NPM Package<a class="headerlink" href="#the-github-and-npm-package" title="Permalink to this headline">¶</a></h3>
+<p>The keys used to sign code on GitHub are well protected, but anyones computer
+can be compromised.</p>
+<p>All services involved have two-factor authentication set up, but please keep in
+mind that bleeding-edge technology should probably not be used in production
+environments.</p>
+<p>Keep in mind, however, that at the end of the day, if NPM were hacked, anything
+in the system could be replaced.</p>
+<p>By using a version that is perhaps a few weeks old, providing there are no
+advisories otherwise, there has been adequate time for any compromise to have
+been broadcast.</p>
+<p>Also, one of the test cases verifies the deterministic build on <a class="reference external" href="https://travis-ci.org/ethers-io/ethers.js">Travis CI</a>. <strong>Never</strong>
+install a version which has failed the Continuous Integration tests on Travis CI.</p>
+<p>Long story short, be careful.</p>
+<p>In the event of any significant issue, it will be posted on the README.md file,
+have an issue posted, with ALL CAPS in the title and will be broadcast on the
+&#64;ethersproject twitter.</p>
+</div>
+<div class="section" id="memory-hard-brute-force-encrpyting">
+<h3>Memory Hard Brute-Force Encrpyting<a class="headerlink" href="#memory-hard-brute-force-encrpyting" title="Permalink to this headline">¶</a></h3>
+<p>A topic that often comes up is the poor performance of decrypting Wallet.</p>
+<p>While it may not be immediately obvious, this is intentional for security
+purposes.</p>
+<p>If it takes the legitimate user, who knows the password 5 seconds or so to
+unlock their account, that means that an attacker must spend 5 seconds per
+password attempt, so to guess a million passwords, requires 5 million
+seconds. Client software can streamline the process by using Secure Enclaves
+or other secure local places to store the decrypted wallet to improve the
+customer experience past the first decryption.</p>
+</div>
+<div class="section" id="responsible-disclosure">
+<h3>Responsible Disclosure<a class="headerlink" href="#responsible-disclosure" title="Permalink to this headline">¶</a></h3>
+<p>If you find a critical bug or security issue with ethers.js, please contact
+<a class="reference external" href="mailto:support&#37;&#52;&#48;ethers&#46;io">support<span>&#64;</span>ethers<span>&#46;</span>io</a> so that we can address it before you make it public.
+You will receive credit for the discovery after it is fixed and announced. :)</p>
+<hr class="docutils" />
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="testing.html" class="btn btn-neutral float-right" title="Testing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="migration.html" class="btn btn-neutral" title="Migration Guides" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

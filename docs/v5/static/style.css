@@ -1,27 +1,27 @@
 @font-face {
     font-family: 'LatoLight';
-    src: url('/static/lato/Lato-Regular.ttf') format('truetype');
+    src: url('/v5/static/lato/Lato-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'LatoLight';
-    src: url('/static/lato/Lato-Black.ttf') format('truetype');
+    src: url('/v5/static/lato/Lato-Black.ttf') format('truetype');
     font-weight: bold;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'LatoLight';
-    src: url('/static/lato/Lato-Italic.ttf') format('truetype');
+    src: url('/v5/static/lato/Lato-Italic.ttf') format('truetype');
     font-weight: normal;
     font-style: italic;
 }
 
 @font-face {
     font-family: 'LatoLight';
-    src: url('/static/lato/Lato-BlackItalic.ttf') format('truetype');
+    src: url('/v5/static/lato/Lato-BlackItalic.ttf') format('truetype');
     font-weight: bold;
     font-style: italic;
 }
@@ -184,7 +184,7 @@ div.breadcrumbs span.current {
 }
 
 .sidebar .logo .image {
-    background: url(/static/logo.svg) center no-repeat;
+    background: url(/v5/static/logo.svg) center no-repeat;
     height: 40px;
     margin-bottom: 5px;
     width: 100%;

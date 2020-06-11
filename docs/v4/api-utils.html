@@ -1,0 +1,920 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Utilities &mdash; ethers.js 4.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Low-Level API" href="api-advanced.html" />
+    <link rel="prev" title="Contracts" href="api-contract.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Application Programming Interface (API)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="api-wallet.html">Wallets and Signers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html">Providers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-contract.html">Contracts</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#addresses">Addresses</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#arrayish">Arrayish</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#big-numbers">Big Numbers</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#creating-instances">Creating Instances</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bytes32-strings">Bytes32 Strings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#constants">Constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cryptographic-functions">Cryptographic Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#elliptic-curve">Elliptic Curve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hash-functions">Hash Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hash-function-helpers">Hash Function Helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#key-derivation">Key Derivation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#random">Random</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#solidity">Solidity</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ether-strings-and-wei">Ether Strings and Wei</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hex-strings">Hex Strings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#namehash">Namehash</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#signatures">Signatures</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#transactions">Transactions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#utf-8-strings">UTF-8 Strings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#web">Web</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ethers.js</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="api.html">Application Programming Interface (API)</a> &raquo;</li>
+        
+      <li>Utilities</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api-utils.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="utilities">
+<h1>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h1>
+<p>The utility functions provide a large assortment of common utility functions
+required to write dapps, process user input and format data.</p>
+<hr class="docutils" />
+<div class="section" id="addresses">
+<h2>Addresses<a class="headerlink" href="#addresses" title="Permalink to this headline">¶</a></h2>
+<p>There are <a class="reference internal" href="notes.html#checksum-address"><span class="std std-ref">several formats</span></a> available to represent Ethereum
+addresses and various ways they are determined.</p>
+<dl class="docutils" id="utils-getaddress">
+<dt><sup>utils</sup> . getAddress ( address ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Address</sup></dt>
+<dd>Normalize any supported address-format to a <a class="reference internal" href="notes.html#checksum-address"><span class="std std-ref">checksum address</span></a>.</dd>
+<dt><sup>utils</sup> . getIcapAddress ( address ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Normalize any supported address-format to a <a class="reference internal" href="notes.html#icap-address"><span class="std std-ref">ICAP address</span></a>.</dd>
+<dt><sup>utils</sup> . getContractAddress ( transaction ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Address</sup></dt>
+<dd>Computes the contract address of a contract deployed by <em>transaction</em>. The only
+properties used are <em>from</em> and <em>nonce</em>.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text"><em>convert between address formats</em></span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">address</span> <span class="o">=</span> <span class="s2">&quot;0xd115bffabbdd893a6f7cea402e7338643ced44a6&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">icapAddress</span> <span class="o">=</span> <span class="s2">&quot;XE93OF8SR0OWI6F4FO88KWO4UNNGG1FEBHI&quot;</span><span class="p">;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">utils</span><span class="p">.</span><span class="nx">getAddress</span><span class="p">(</span><span class="nx">address</span><span class="p">));</span>
+<span class="c1">// &quot;0xD115BFFAbbdd893A6f7ceA402e7338643Ced44a6&quot;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">utils</span><span class="p">.</span><span class="nx">getAddress</span><span class="p">(</span><span class="nx">icapAddress</span><span class="p">));</span>
+<span class="c1">// &quot;0xD115BFFAbbdd893A6f7ceA402e7338643Ced44a6&quot;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">utils</span><span class="p">.</span><span class="nx">getAddress</span><span class="p">(</span><span class="nx">address</span><span class="p">,</span> <span class="kc">true</span><span class="p">));</span>
+<span class="c1">// &quot;XE93OF8SR0OWI6F4FO88KWO4UNNGG1FEBHI&quot;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">utils</span><span class="p">.</span><span class="nx">getAddress</span><span class="p">(</span><span class="nx">icapAddress</span><span class="p">,</span> <span class="kc">true</span><span class="p">));</span>
+<span class="c1">// &quot;XE93OF8SR0OWI6F4FO88KWO4UNNGG1FEBHI&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text"><em>determine a contract address</em></span><a class="headerlink" href="#id5" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Ropsten: 0x5bdfd14fcc917abc2f02a30721d152a6f147f09e8cbaad4e0d5405d646c5c3e1</span>
+<span class="kd">let</span> <span class="nx">transaction</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">from</span><span class="o">:</span> <span class="s1">&#39;0xc6af6e1a78a6752c7f8cd63877eb789a2adb776c&#39;</span><span class="p">,</span>
+    <span class="nx">nonce</span><span class="o">:</span> <span class="mi">0</span>
+<span class="p">};</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">utils</span><span class="p">.</span><span class="nx">getContractAddress</span><span class="p">(</span><span class="nx">transaction</span><span class="p">));</span>
+<span class="c1">// &quot;0x0CcCC7507aEDf9FEaF8C8D731421746e16b4d39D&quot;</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="arrayish">
+<span id="id1"></span><h2>Arrayish<a class="headerlink" href="#arrayish" title="Permalink to this headline">¶</a></h2>
+<p>An arrayish object is used to describe binary data and has the following conditions met:</p>
+<blockquote>
+<div><ul class="simple">
+<li>has a <em>length</em> property</li>
+<li>has a value for each index from 0 up to (but excluding) <em>length</em></li>
+<li>has a valid byte for each value; a byte is an integer in the range [0, 255]</li>
+<li>is <strong>not</strong> a string</li>
+</ul>
+</div></blockquote>
+<p><strong>Examples:</strong> <code class="docutils literal notranslate"><span class="pre">Buffer</span></code>, <code class="docutils literal notranslate"><span class="pre">[</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3</span> <span class="pre">]</span></code>, <code class="docutils literal notranslate"><span class="pre">Uint8Array</span></code></p>
+<dl class="docutils">
+<dt><sup>utils</sup> . isArrayish ( object ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>boolean</sup></dt>
+<dd>Returns true if <em>object</em> can be treated as an arrayish object.</dd>
+<dt><sup>utils</sup> . arrayify ( hexStringOrBigNumberOrArrayish ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Uint8Array</sup></dt>
+<dd>Returns a Uint8Array of a hex string, BigNumber or of an <a class="reference internal" href="#arrayish">Arrayish</a> object.</dd>
+<dt><sup>utils</sup> . concat ( arrayOfHexStringsAndArrayish ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Uint8Array</sup></dt>
+<dd>Return a Uint8Array of all <em>arrayOfHexStringsAndArrayish</em> concatenated.</dd>
+<dt><sup>utils</sup> . padZeros ( typedUint8Array, length ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Uint8Array</sup></dt>
+<dd>Return a Uint8Array of <em>typedUint8Array</em> with zeros prepended to <em>length</em> bytes.</dd>
+<dt><sup>utils</sup> . stripZeros ( hexStringOrArrayish ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Uint8Array</sup></dt>
+<dd>Returns a Uint8Array with all leading zero <strong>bytes</strong> striped.</dd>
+</dl>
+<hr class="docutils" />
+</div>
+<div class="section" id="big-numbers">
+<span id="bignumber"></span><h2>Big Numbers<a class="headerlink" href="#big-numbers" title="Permalink to this headline">¶</a></h2>
+<p>A BigNumber is an immutable object which allow accurate math operations
+on values larger than <a class="reference internal" href="notes.html#ieee754"><span class="std std-ref">JavaScript can accurately handle</span></a>
+can safely handle. Also see: <a class="reference internal" href="#constants"><span class="std std-ref">Constants</span></a></p>
+<dl class="docutils">
+<dt><sup>prototype</sup> . add ( otherValue ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>BigNumber</sup></dt>
+<dd>Return a new BigNumber of this plus <em>otherValue</em>.</dd>
+<dt><sup>prototype</sup> . sub ( otherValue ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>BigNumber</sup></dt>
+<dd>Return a new BigNumber of this minus <em>otherValue</em>.</dd>
+<dt><sup>prototype</sup> . mul ( otherValue ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>BigNumber</sup></dt>
+<dd>Return a new BigNumber of this times <em>otherValue</em>.</dd>
+<dt><sup>prototype</sup> . div ( otherValue ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>BigNumber</sup></dt>
+<dd>Return a new BigNumber of this divided by <em>otherValue</em>.</dd>
+<dt><sup>prototype</sup> . mod ( otherValue ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>BigNumber</sup></dt>
+<dd>Return a new BigNumber of this modulo <em>otherValue</em>.</dd>
+<dt><sup>prototype</sup> . maskn ( bits ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>BigNumber</sup></dt>
+<dd>Return a new BigNumber with the number of <em>bits</em> masked.</dd>
+<dt><sup>prototype</sup> . eq ( otherValue ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>boolean</sup></dt>
+<dd>Return true if this is equal to <em>otherValue</em>.</dd>
+<dt><sup>prototype</sup> . lt ( otherValue ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>boolean</sup></dt>
+<dd>Return true if this is less than <em>otherValue</em>.</dd>
+<dt><sup>prototype</sup> . lte ( otherValue ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>boolean</sup></dt>
+<dd>Return true if this is less or equal to <em>otherValue</em>.</dd>
+<dt><sup>prototype</sup> . gt ( otherValue ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>boolean</sup></dt>
+<dd>Return true if this is greater than <em>otherValue</em>.</dd>
+<dt><sup>prototype</sup> . gte ( otherValue ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>boolean</sup></dt>
+<dd>Return true if this is greater than or equal to <em>otherValue</em>.</dd>
+<dt><sup>prototype</sup> . isZero ( ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>boolean</sup></dt>
+<dd>Return true if this is equal to zero.</dd>
+<dt><sup>prototype</sup> . toNumber ( ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>number</sup></dt>
+<dd><p class="first">Return a JavaScript number of the value.</p>
+<p class="last">An error is thrown if the value is outside the safe range for JavaScript
+IEEE 754 64-bit floating point numbers (over 53 bits of mantissa).</p>
+</dd>
+<dt><sup>prototype</sup> . toString () &nbsp; <sup>=&gt;</sup> &nbsp; <sup>string</sup></dt>
+<dd>Return a decimal string representation.</dd>
+<dt><sup>prototype</sup> . toHexString ( ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Return a hexstring representation of the value.</dd>
+</dl>
+<div class="section" id="creating-instances">
+<h3>Creating Instances<a class="headerlink" href="#creating-instances" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>utils</sup> . bigNumberify ( value ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>BigNumber</sup></dt>
+<dd><p class="first">Returns a BigNumber instance of <em>value</em>. The <em>value</em> may be anything that can
+reliably be converted into a BigNumber:</p>
+<table border="1" class="last docutils">
+<colgroup>
+<col width="33%" />
+<col width="27%" />
+<col width="39%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Examples</th>
+<th class="head">Notes</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>decimal string</td>
+<td><code class="docutils literal notranslate"><span class="pre">&quot;42&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;-42&quot;</span></code></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>hexadecimal string</td>
+<td><code class="docutils literal notranslate"><span class="pre">&quot;0x2a&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;-0x2a&quot;</span></code></td>
+<td>case-insensitive</td>
+</tr>
+<tr class="row-even"><td>numbers</td>
+<td><code class="docutils literal notranslate"><span class="pre">42</span></code>, <code class="docutils literal notranslate"><span class="pre">-42</span></code></td>
+<td>must be witin the <a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isSafeInteger">safe range</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#arrayish"><span class="std std-ref">Arrayish</span></a></td>
+<td><code class="docutils literal notranslate"><span class="pre">[</span> <span class="pre">30,</span> <span class="pre">252</span> <span class="pre">]</span></code></td>
+<td>big-endian encoding</td>
+</tr>
+<tr class="row-even"><td>BigNumber</td>
+<td>any other BigNumber</td>
+<td>returns the same instance</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text"><em>examples</em></span><a class="headerlink" href="#id6" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">gasPriceWei</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">bigNumberify</span><span class="p">(</span><span class="s2">&quot;20902747399&quot;</span><span class="p">);</span>
+<span class="kd">let</span> <span class="nx">gasLimit</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">bigNumberify</span><span class="p">(</span><span class="mi">3000000</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">maxCostWei</span> <span class="o">=</span> <span class="nx">gasPriceWei</span><span class="p">.</span><span class="nx">mul</span><span class="p">(</span><span class="nx">gasLimit</span><span class="p">)</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Max Cost: &quot;</span> <span class="o">+</span> <span class="nx">maxCostWei</span><span class="p">.</span><span class="nx">toString</span><span class="p">());</span>
+<span class="c1">// &quot;Max Cost: 62708242197000000&quot;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Number: &quot;</span> <span class="o">+</span> <span class="nx">maxCostWei</span><span class="p">.</span><span class="nx">toNumber</span><span class="p">());</span>
+<span class="c1">// throws an Error, the value is too large for JavaScript to handle safely</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="bytes32-strings">
+<span id="bytes32string"></span><h2>Bytes32 Strings<a class="headerlink" href="#bytes32-strings" title="Permalink to this headline">¶</a></h2>
+<p>Often for short strings, it is far more efficient to store them as
+a fixed, null-terminated bytes32, instead of a dynamic length-prefixed
+bytes.</p>
+<dl class="docutils">
+<dt><sup>utils</sup> . formatBytes32String ( text ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd><p class="first">Returns a <a class="reference internal" href="#hexstring"><span class="std std-ref">hex string</span></a> representation of <em>text</em>, exactly
+32 bytes wide. Strings <strong>must</strong> be 31 bytes or shorter, or an exception
+is thrown.</p>
+<p class="last"><strong>NOTE:</strong> Keep in mind that UTF-8 characters outside the ASCII range can
+be multiple bytes long.</p>
+</dd>
+<dt><sup>utils</sup> . parseBytes32String ( hexStringOrArrayish ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>string</sup></dt>
+<dd>Returns <em>hexStringOrArrayish</em> as the original string, as generated by <code class="docutils literal notranslate"><span class="pre">formatBytes32String</span></code>.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text"><em>example</em></span><a class="headerlink" href="#id7" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">text</span> <span class="o">=</span> <span class="s2">&quot;Hello World!&quot;</span>
+
+<span class="kd">let</span> <span class="nx">bytes32</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">formatBytes32String</span><span class="p">(</span><span class="nx">text</span><span class="p">)</span>
+<span class="c1">// &quot;0x48656c6c6f20576f726c64210000000000000000000000000000000000000000&quot;</span>
+
+<span class="kd">let</span> <span class="nx">originalText</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">parseBytes32String</span><span class="p">(</span><span class="nx">bytes32</span><span class="p">)</span>
+<span class="c1">// &quot;Hello World!&quot;</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="constants">
+<span id="id2"></span><h2>Constants<a class="headerlink" href="#constants" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><sup>ethers . constants</sup> . AddressZero</dt>
+<dd>The address <code class="docutils literal notranslate"><span class="pre">0x0000000000000000000000000000000000000000</span></code>.</dd>
+<dt><sup>ethers . constants</sup> . HashZero</dt>
+<dd>The bytes32 <code class="docutils literal notranslate"><span class="pre">0x0000000000000000000000000000000000000000000000000000000000000000</span></code>.</dd>
+<dt><sup>ethers . constants</sup> . MaxUint256</dt>
+<dd>The bytes32 <code class="docutils literal notranslate"><span class="pre">0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff</span></code>.</dd>
+<dt><sup>ethers . constants</sup> . NegativeOne</dt>
+<dd>The <a class="reference internal" href="#bignumber"><span class="std std-ref">BigNumber</span></a> <code class="docutils literal notranslate"><span class="pre">bigNumberify(-1)</span></code>.</dd>
+<dt><sup>ethers . constants</sup> . Zero</dt>
+<dd>The <a class="reference internal" href="#bignumber"><span class="std std-ref">BigNumber</span></a> <code class="docutils literal notranslate"><span class="pre">bigNumberify(0)</span></code>.</dd>
+<dt><sup>ethers . constants</sup> . One</dt>
+<dd>The <a class="reference internal" href="#bignumber"><span class="std std-ref">BigNumber</span></a> <code class="docutils literal notranslate"><span class="pre">bigNumberify(1)</span></code>.</dd>
+<dt><sup>ethers . constants</sup> . Two</dt>
+<dd>The <a class="reference internal" href="#bignumber"><span class="std std-ref">BigNumber</span></a> <code class="docutils literal notranslate"><span class="pre">bigNumberify(2)</span></code>.</dd>
+<dt><sup>ethers . constants</sup> . WeiPerEther</dt>
+<dd>The <a class="reference internal" href="#bignumber"><span class="std std-ref">BigNumber</span></a> <code class="docutils literal notranslate"><span class="pre">bigNumberify(&quot;1000000000000000000&quot;)</span></code>.</dd>
+<dt><sup>ethers . constants</sup> . EtherSymbol</dt>
+<dd>The Greek character Xi, used as the symbol for <em>ether</em>.</dd>
+</dl>
+</div>
+<hr class="docutils" />
+<div class="section" id="cryptographic-functions">
+<h2>Cryptographic Functions<a class="headerlink" href="#cryptographic-functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="elliptic-curve">
+<h3>Elliptic Curve<a class="headerlink" href="#elliptic-curve" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>utils</sup> . computeAddress ( publicOrPrivateKey ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Address</sup></dt>
+<dd>Computes the Ethereum address given a public key or private key.</dd>
+<dt><sup>utils</sup> . computePublicKey ( publicOrPrivateKey [ , compressed <sup>= false</sup> ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Compute the public key for <em>publicOrPrivateKey</em>, optionally <em>compressed</em>. If
+<em>publicOrPrivateKey</em> is a public key, it may be either compressed or uncompressed.</dd>
+<dt><sup>utils</sup> . recoverAddress ( digest , signature ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Address</sup></dt>
+<dd>Returns the Ethereum address by using ecrecover with the <em>digest</em> for the
+<em>signature</em>.</dd>
+<dt><sup>utils</sup> . recoverPublicKey ( digest , signature ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Returns the public key by using ecrecover with the <em>digest</em> for the <em>signature</em>.</dd>
+<dt><sup>utils</sup> . verifyMessage ( messageStringOrArrayish , signature ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Addresss</sup></dt>
+<dd>Returns the address of the account that signed <em>messageStringOrArrayish</em> to
+generate <em>signature</em>.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text"><em>verify a message signature</em></span><a class="headerlink" href="#id8" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">signature</span> <span class="o">=</span> <span class="s2">&quot;0xddd0a7290af9526056b4e35a077b9a11b513aa0028ec6c9880948544508f3c63&quot;</span> <span class="o">+</span>
+                  <span class="s2">&quot;265e99e47ad31bb2cab9646c504576b3abc6939a1710afc08cbf3034d73214b8&quot;</span> <span class="o">+</span>
+                  <span class="s2">&quot;1c&quot;</span><span class="p">;</span>
+
+<span class="kd">let</span> <span class="nx">signingAddress</span> <span class="o">=</span> <span class="nx">Wallet</span><span class="p">.</span><span class="nx">verifyMessage</span><span class="p">(</span><span class="s1">&#39;hello world&#39;</span><span class="p">,</span> <span class="nx">signature</span><span class="p">);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">signingAddress</span><span class="p">);</span>
+<span class="c1">// &quot;0x14791697260E4c9A71f18484C9f997B308e59325&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="hash-functions">
+<h3>Hash Functions<a class="headerlink" href="#hash-functions" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>utils</sup> . keccak256 ( hexStringOrArrayish ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Compute the keccak256 cryptographic hash of a value, returned as a hex string. (Note:
+often Ethereum documentation refers to this, <strong>incorrectly</strong>, as SHA3)</dd>
+<dt><sup>utils</sup> . sha256 ( hexStringOrArrayish ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Compute the SHA2-256 cryptographic hash of a value, returned as a hex string.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text"><em>hashing binary data</em></span><a class="headerlink" href="#id9" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">utils</span><span class="p">.</span><span class="nx">keccak256</span><span class="p">([</span> <span class="mh">0x42</span> <span class="p">]));</span>
+<span class="c1">// &#39;0x1f675bff07515f5df96737194ea945c36c41e7b4fcef307b7cd4d0e602a69111&#39;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">utils</span><span class="p">.</span><span class="nx">keccak256</span><span class="p">(</span><span class="s2">&quot;0x42&quot;</span><span class="p">));</span>
+<span class="c1">// &#39;0x1f675bff07515f5df96737194ea945c36c41e7b4fcef307b7cd4d0e602a69111&#39;</span>
+
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">utils</span><span class="p">.</span><span class="nx">sha256</span><span class="p">([</span> <span class="mh">0x42</span> <span class="p">]));</span>
+<span class="c1">// &#39;0xdf7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c&#39;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">utils</span><span class="p">.</span><span class="nx">sha256</span><span class="p">(</span><span class="s2">&quot;0x42&quot;</span><span class="p">));</span>
+<span class="c1">// &#39;0xdf7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="hash-function-helpers">
+<h3>Hash Function Helpers<a class="headerlink" href="#hash-function-helpers" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>utils</sup> . hashMessage ( stringOrArrayish ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Compute the prefixed message hash of a stringOrArrayish, by converting the
+message to bytes (as necessary) and prefixing with <code class="docutils literal notranslate"><span class="pre">\x19Ethereum</span> <span class="pre">Signed</span> <span class="pre">Message\n</span></code>
+and the length of the message. See the <a class="reference external" href="https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign">eth_sign</a> JSON-RPC method for more information.</dd>
+<dt><sup>utils</sup> . id ( utf8String ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Compute the keccak256 cryptographic hash of a UTF-8 string, returned as a hex string.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id10">
+<div class="code-block-caption"><span class="caption-text"><em>hashing utf-8 strings</em></span><a class="headerlink" href="#id10" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Convert the string to binary data</span>
+<span class="kd">let</span> <span class="nx">message</span> <span class="o">=</span> <span class="s2">&quot;Hello World&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">messageBytes</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">toUtf8Bytes</span><span class="p">(</span><span class="nx">message</span><span class="p">);</span>
+<span class="nx">utils</span><span class="p">.</span><span class="nx">keccak256</span><span class="p">(</span><span class="nx">messageBytes</span><span class="p">);</span>
+<span class="c1">// &#39;0x592fa743889fc7f92ac2a37bb1f5ba1daf2a5c84741ca0e0061d243a2e6707ba&#39;</span>
+
+<span class="c1">// Which is equivalent to using the id function</span>
+<span class="nx">utils</span><span class="p">.</span><span class="nx">id</span><span class="p">(</span><span class="s2">&quot;Hello World&quot;</span><span class="p">);</span>
+<span class="c1">// &#39;0x592fa743889fc7f92ac2a37bb1f5ba1daf2a5c84741ca0e0061d243a2e6707ba&#39;</span>
+
+
+<span class="c1">// Compute the sighash for a Solidity method</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">utils</span><span class="p">.</span><span class="nx">id</span><span class="p">(</span><span class="s2">&quot;addr(bytes32)&quot;</span><span class="p">));</span>
+<span class="c1">// &#39;0x3b3b57de213591bb50e06975ea011e4c8c4b3e6de4009450c1a9e55f66e4bfa4&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="key-derivation">
+<h3>Key Derivation<a class="headerlink" href="#key-derivation" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>utils</sup> . pbkdf2 ( password , salt , iterations , keylen , hashAlgorithm )</dt>
+<dd>Return the pbkdf2 derived key from <em>password</em> and <em>salt</em> with <em>iterations</em> of
+<em>length</em> using the <em>hashAlgorithm</em>. The supported hash algorithms are <code class="docutils literal notranslate"><span class="pre">sha256</span></code>
+and <code class="docutils literal notranslate"><span class="pre">sha512</span></code>.</dd>
+</dl>
+</div>
+<div class="section" id="random">
+<h3>Random<a class="headerlink" href="#random" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>utils</sup> . randomBytes ( length ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Uint8Array</sup></dt>
+<dd>Return a Uint8Array of cryptographically secure random bytes</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id11">
+<div class="code-block-caption"><span class="caption-text"><em>generate random bytes</em></span><a class="headerlink" href="#id11" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">randomBytes3</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">randomBytes</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="c1">// Uint8Array [ 194, 22, 140 ]</span>
+
+<span class="kd">let</span> <span class="nx">randomBytes32</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">randomBytes</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span>
+<span class="c1">// Uint8Array [ 162, 131, 117, 110, 196, 73, 144, 177, 201, 75, 88,</span>
+<span class="c1">//              105, 227, 210, 104, 226, 82, 65, 103, 157, 36, 170,</span>
+<span class="c1">//              214, 92, 190, 141, 239, 54, 96, 39, 240, 95 ]</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id12">
+<div class="code-block-caption"><span class="caption-text"><em>generate a random number</em></span><a class="headerlink" href="#id12" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">randomNumber</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">bigNumberify</span><span class="p">(</span><span class="nx">utils</span><span class="p">.</span><span class="nx">randomBytes</span><span class="p">(</span><span class="mi">32</span><span class="p">));</span>
+<span class="c1">// BigNumber { _hex: 0x617542634156966e0bbb6c673bf88015f542c96eb115186fd93881518f05f7ff }</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="solidity">
+<h3>Solidity<a class="headerlink" href="#solidity" title="Permalink to this headline">¶</a></h3>
+<p>Solidity uses a <a class="reference external" href="http://solidity.readthedocs.io/en/develop/abi-spec.html#non-standard-packed-mode">non-standard packed mode</a> to encode parameters that are passed
+into its hashing functions. The parameter types and values can be used to compute
+the result of the hash functions as would be performed by Solidity.</p>
+<dl class="docutils">
+<dt><sup>utils</sup> . solidityKeccak256 ( types, values ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Compute the keccak256 cryptographic hash using the Solidity non-standard (tightly)
+packed data for <em>values</em> given the <em>types</em>.</dd>
+<dt><sup>utils</sup> . soliditySha256 ( types, values ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Compute the SHA256 cryptographic hash using the Solidity non-standard (tightly)
+packed data for <em>values</em> given the <em>types</em>.</dd>
+<dt><sup>utils</sup> . solidityPack ( types, values ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Compute the Solidity non-standard (tightly) packed data for <em>values</em> given the <em>types</em>.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id13">
+<div class="code-block-caption"><span class="caption-text"><em>examples</em></span><a class="headerlink" href="#id13" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">solidityKeccak256</span><span class="p">([</span> <span class="s1">&#39;int8&#39;</span><span class="p">,</span> <span class="s1">&#39;bytes1&#39;</span><span class="p">,</span> <span class="s1">&#39;string&#39;</span> <span class="p">],</span> <span class="p">[</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;0x42&#39;</span><span class="p">,</span> <span class="s1">&#39;hello&#39;</span> <span class="p">]);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
+<span class="c1">// &#39;0x52d7e6a62ca667228365be2143375d0a2a92a3bd4325dd571609dfdc7026686e&#39;</span>
+
+<span class="nx">result</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">soliditySha256</span><span class="p">([</span> <span class="s1">&#39;int8&#39;</span><span class="p">,</span> <span class="s1">&#39;bytes1&#39;</span><span class="p">,</span> <span class="s1">&#39;string&#39;</span> <span class="p">],</span> <span class="p">[</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;0x42&#39;</span><span class="p">,</span> <span class="s1">&#39;hello&#39;</span> <span class="p">]);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
+<span class="c1">// &#39;0x1eaebba7999af2691d823bf0c817e635bbe7e89ec7ed32a11e00ca94e86cbf37&#39;</span>
+
+<span class="nx">result</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">solidityPack</span><span class="p">([</span> <span class="s1">&#39;int8&#39;</span><span class="p">,</span> <span class="s1">&#39;bytes1&#39;</span><span class="p">,</span> <span class="s1">&#39;string&#39;</span> <span class="p">],</span> <span class="p">[</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;0x42&#39;</span><span class="p">,</span> <span class="s1">&#39;hello&#39;</span> <span class="p">]);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
+<span class="c1">// &#39;0xff4268656c6c6f&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="ether-strings-and-wei">
+<h2>Ether Strings and Wei<a class="headerlink" href="#ether-strings-and-wei" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><sup>utils</sup> . etherSymbol</dt>
+<dd>The ethereum symbol (the Greek letter <em>Xi</em> )</dd>
+</dl>
+<dl class="docutils" id="parseether">
+<dt><sup>utils</sup> . parseEther ( etherString ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>BigNumber</sup></dt>
+<dd>Parse the <em>etherString</em> representation of ether into a BigNumber instance
+of the amount of wei.</dd>
+</dl>
+<dl class="docutils" id="formatether">
+<dt><sup>utils</sup> . formatEther ( wei ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>string</sup></dt>
+<dd>Format an amount of <em>wei</em> into a decimal string representing the amount of ether.
+The output will always include at least one whole number and at least one decimal
+place, otherwise leading and trailing 0’s will be trimmed.</dd>
+</dl>
+<dl class="docutils" id="parseunits">
+<dt><sup>utils</sup> . parseUnits ( valueString , decimalsOrUnitName ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>BigNumber</sup></dt>
+<dd>Parse the <em>valueString</em> representation of units into a BigNumber instance
+of the amount of wei. The <em>decimalsOrUnitsName</em> may be a number of decimals between
+3 and 18 (multiple of 3) or a name, such as <cite>gwei</cite>.</dd>
+</dl>
+<dl class="docutils" id="formatunits">
+<dt><sup>utils</sup> . formatUnits ( wei , decimalsOrUnitName ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>string</sup></dt>
+<dd>Format an amount of <em>wei</em> into a decimal string representing the amount of units.
+The output will always include at least one whole number and at least one decimal place,
+otherwise leading and trailing 0’s will be trimmed. The <em>decimalsOrUnitsName</em>
+may be a number of decimals between 3 and 18 (multiple of 3) or a name, such as <cite>gwei</cite>.</dd>
+<dt><sup>utils</sup> . commify ( numberOrString ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>string</sup></dt>
+<dd>Returns <em>numberOrString</em> with commas placed at every third position within the whole
+component. If <em>numberOrString</em> contains a decimal point, the output will as well with
+at least one digit for both the whole and decimal components. If there no decimal,
+then the output will also not contain a decimal.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id14">
+<div class="code-block-caption"><span class="caption-text"><em>examples</em></span><a class="headerlink" href="#id14" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">wei</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">parseEther</span><span class="p">(</span><span class="s1">&#39;1000.0&#39;</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">wei</span><span class="p">.</span><span class="nx">toString</span><span class="p">(</span><span class="mi">10</span><span class="p">));</span>
+<span class="c1">// &quot;1000000000000000000000&quot;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">utils</span><span class="p">.</span><span class="nx">formatEther</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+<span class="c1">// &quot;0.0&quot;</span>
+
+<span class="kd">let</span> <span class="nx">wei</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">bigNumberify</span><span class="p">(</span><span class="s2">&quot;1000000000000000000000&quot;</span><span class="p">);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">utils</span><span class="p">.</span><span class="nx">formatEther</span><span class="p">(</span><span class="nx">wei</span><span class="p">));</span>
+<span class="c1">// &quot;1000.0&quot;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">utils</span><span class="p">.</span><span class="nx">formatEther</span><span class="p">(</span><span class="nx">wei</span><span class="p">,</span> <span class="p">{</span><span class="nx">commify</span><span class="o">:</span> <span class="kc">true</span><span class="p">}));</span>
+<span class="c1">// &quot;1,000.0&quot;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">utils</span><span class="p">.</span><span class="nx">formatEther</span><span class="p">(</span><span class="nx">wei</span><span class="p">,</span> <span class="p">{</span><span class="nx">pad</span><span class="o">:</span> <span class="kc">true</span><span class="p">}));</span>
+<span class="c1">// &quot;1000.000000000000000000&quot;       (18 decimal places)</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">utils</span><span class="p">.</span><span class="nx">formatEther</span><span class="p">(</span><span class="nx">wei</span><span class="p">,</span> <span class="p">{</span><span class="nx">commify</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">pad</span><span class="o">:</span> <span class="kc">true</span><span class="p">}));</span>
+<span class="c1">// &quot;1,000.000000000000000000&quot;      (18 decimal places)</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="hex-strings">
+<span id="hexstring"></span><h2>Hex Strings<a class="headerlink" href="#hex-strings" title="Permalink to this headline">¶</a></h2>
+<p>A hex string is <strong>always</strong> prefixed with “0x” and consists of the characters
+0 – 9 and a – f. It is always returned lower case with even-length, but any hex
+string passed into a function may be any case and may be odd-length.</p>
+<dl class="docutils">
+<dt><sup>utils</sup> . hexlify ( numberOrBigNumberOrHexStringOrArrayish ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Converts any number, <a class="reference internal" href="#bignumber"><span class="std std-ref">BigNumber</span></a>, hex string or
+<a class="reference internal" href="#arrayish">Arrayish</a> to a hex string. (otherwise, throws an error)</dd>
+<dt><sup>utils</sup> . isHexString ( value ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>boolean</sup></dt>
+<dd>Returns true if <em>value</em> is a valid hexstring.</dd>
+<dt><sup>utils</sup> . hexDataLength ( hexString ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>number</sup></dt>
+<dd>Returns the length (in bytes) of <em>hexString</em> if it is a valid data hexstring (even length).</dd>
+<dt><sup>utils</sup> . hexDataSlice ( hexString , offset [ , endOffset ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Returns a string for the subdata of <em>hexString</em> from <em>offset</em> <strong>bytes</strong>
+(each byte is two nibbled) to <em>endOffset</em> <strong>bytes</strong>. If no <em>endOffset</em> is
+specified, the result is to the end of the <em>hexString</em> is used. Each byte is two nibbles.</dd>
+<dt><sup>utils</sup> . hexStripZeros ( hexString ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Returns <em>hexString</em> with all leading zeros removed, but retaining at least
+one nibble, even if zero (e.g. <code class="docutils literal notranslate"><span class="pre">0x0</span></code>). This may return an odd-length string.</dd>
+<dt><sup>utils</sup> . hexZeroPad ( hexString , length ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Returns <em>hexString</em> padded (on the left) with zeros to length <strong>bytes</strong> (each
+byte is two nibbles).</dd>
+</dl>
+</div>
+<hr class="docutils" />
+<div class="section" id="namehash">
+<h2>Namehash<a class="headerlink" href="#namehash" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><sup>utils</sup> . namehash ( ensName ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Compute the namehash of <em>ensName</em>. Currently only supports the
+characters <code class="docutils literal notranslate"><span class="pre">[a-z0-9.-]</span></code>. The concerns with fully supporting UTF-8
+are largely security releated, but <a class="reference external" href="https://github.com/ethers-io/ethers.js/issues/42">are open for discussion</a>.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id15">
+<div class="code-block-caption"><span class="caption-text"><em>examples</em></span><a class="headerlink" href="#id15" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">namehash</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">namehash</span><span class="p">(</span><span class="s1">&#39;ricmoo.firefly.eth&#39;</span><span class="p">);</span>
+<span class="c1">// &quot;0x0bcad17ecf260d6506c6b97768bdc2acfb6694445d27ffd3f9c1cfbee4a9bd6d&quot;</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="signatures">
+<span id="signature"></span><h2>Signatures<a class="headerlink" href="#signatures" title="Permalink to this headline">¶</a></h2>
+<p>There are two common formats for signatures in Ethereum. The <strong>flat-format</strong>, which
+is a hexstring with 65 bytes (130 nibbles); or an <strong>expanded-format</strong>, which is an object with
+the properties:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>r</strong> and <strong>s</strong> — the (r, s) public point of a signature</li>
+<li><strong>recoveryParam</strong> — the recovery parameter of a signautre (either <code class="docutils literal notranslate"><span class="pre">0</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>)</li>
+<li><strong>v</strong> — the recovery param nomalized for Solidity (either <code class="docutils literal notranslate"><span class="pre">27</span></code> or <code class="docutils literal notranslate"><span class="pre">28</span></code>)</li>
+</ul>
+</div></blockquote>
+<dl class="docutils">
+<dt><sup>utils</sup> . splitSignature ( hexStringOrArrayishOrSignature ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Signature</sup></dt>
+<dd>Returns an expanded-format signature object for <em>hexStringOrArrayishOrSignature</em>.
+Passing in an signature that is already in the expanded-format will ensure
+both <em>recoveryParam</em> and <em>v</em> are populated.</dd>
+<dt><sup>utils</sup> . joinSignature ( signature ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd>Returns the flat-format signature hexstring of <em>signature</em>. The final <em>v</em>
+byte will always be normalized to <code class="docutils literal notranslate"><span class="pre">0x1b</span></code> of <code class="docutils literal notranslate"><span class="pre">0x1c</span></code>.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id16">
+<div class="code-block-caption"><span class="caption-text"><em>To Expanded-Format</em></span><a class="headerlink" href="#id16" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Flat-format; this is the format provided by JSON-RPC responses</span>
+<span class="kd">let</span> <span class="nx">flat</span> <span class="o">=</span> <span class="s2">&quot;0x0ba9770fd8778383f6d56faadc71e17b75f0d6e3ff0a408d5e6c4cee3bd70a16&quot;</span> <span class="o">+</span>
+             <span class="s2">&quot;3574da0ebfb1eaac261698b057b342e52ea53f85287272cea471a4cda41e3466&quot;</span> <span class="o">+</span>
+             <span class="s2">&quot;1b&quot;</span>
+<span class="kd">let</span> <span class="nx">expanded</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">splitSignature</span><span class="p">(</span><span class="nx">flat</span><span class="p">);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">expanded</span><span class="p">);</span>
+<span class="c1">// {</span>
+<span class="c1">//    r: &quot;0x0ba9770fd8778383f6d56faadc71e17b75f0d6e3ff0a408d5e6c4cee3bd70a16&quot;,</span>
+<span class="c1">//    s: &quot;0x3574da0ebfb1eaac261698b057b342e52ea53f85287272cea471a4cda41e3466&quot;,</span>
+<span class="c1">//    recoveryParam: 0,</span>
+<span class="c1">//    v: 27</span>
+<span class="c1">// }</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id17">
+<div class="code-block-caption"><span class="caption-text"><em>To Flat-Format</em></span><a class="headerlink" href="#id17" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Expanded-format; this is the format Solidity and other tools often require</span>
+<span class="kd">let</span> <span class="nx">expanded</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">r</span><span class="o">:</span> <span class="s2">&quot;0x0ba9770fd8778383f6d56faadc71e17b75f0d6e3ff0a408d5e6c4cee3bd70a16&quot;</span><span class="p">,</span>
+    <span class="nx">s</span><span class="o">:</span> <span class="s2">&quot;0x3574da0ebfb1eaac261698b057b342e52ea53f85287272cea471a4cda41e3466&quot;</span><span class="p">,</span>
+    <span class="nx">recoveryParam</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="nx">v</span><span class="o">:</span> <span class="mi">27</span>
+<span class="p">}</span>
+<span class="kd">let</span> <span class="nx">flat</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">joinSignature</span><span class="p">(</span><span class="nx">expanded</span><span class="p">);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">flat</span><span class="p">)</span>
+<span class="c1">// &quot;0x0ba9770fd8778383f6d56faadc71e17b75f0d6e3ff0a408d5e6c4cee3bd70a16&quot; +</span>
+<span class="c1">//   &quot;3574da0ebfb1eaac261698b057b342e52ea53f85287272cea471a4cda41e3466&quot; +</span>
+<span class="c1">//   &quot;1b&quot;</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="transactions">
+<span id="id3"></span><h2>Transactions<a class="headerlink" href="#transactions" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><sup>utils</sup> . serializeTransaction ( transaction [ , signature ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>hex</sup></dt>
+<dd><p class="first">Serialize <em>transaction</em> as a <a class="reference internal" href="#hexstring"><span class="std std-ref">hex-string</span></a>, optionally including
+the <em>signature</em>.</p>
+<p class="last">If <em>signature</em> is provided, it may be either the <a class="reference internal" href="#signature"><span class="std std-ref">Flat Format</span></a>
+or the <a class="reference internal" href="#signature"><span class="std std-ref">Expanded Format</span></a>, and the serialized transaction will
+be a signed transaction.</p>
+</dd>
+<dt><sup>utils</sup> . parseTransaction ( rawTransaction ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Transaction</sup></dt>
+<dd><p class="first">Parse the serialized transaction, returning an object with the properties:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>to</strong></li>
+<li><strong>nonce</strong></li>
+<li><strong>gasPrice</strong></li>
+<li><strong>gasLimit</strong></li>
+<li><strong>data</strong></li>
+<li><strong>value</strong></li>
+<li><strong>chainId</strong></li>
+</ul>
+</div></blockquote>
+<p>If the transactions is signed, addition properties will be present:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><strong>r</strong>, <strong>s</strong> and <strong>v</strong> — the signature public point and recoveryParam (adjusted for the chainId)</li>
+<li><strong>from</strong> — the address of the account that signed the transaction</li>
+<li><strong>hash</strong> — the transaction hash</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+<hr class="docutils" />
+</div>
+<div class="section" id="utf-8-strings">
+<span id="utf8-strings"></span><h2>UTF-8 Strings<a class="headerlink" href="#utf-8-strings" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils" id="utf8-to-bytes">
+<dt><sup>utils</sup> . toUtf8Bytes ( string ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Uint8Array</sup></dt>
+<dd>Converts a UTF-8 string to a Uint8Array.</dd>
+</dl>
+<dl class="docutils" id="utf8-to-string">
+<dt><sup>utils</sup> . toUtf8String ( hexStringOrArrayish , [ ignoreErrors <sup>= false</sup> ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>string</sup></dt>
+<dd>Converts a hex-encoded string or array to its UTF-8 representation.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id18">
+<div class="code-block-caption"><span class="caption-text"><em>To UTF-8 Bytes</em></span><a class="headerlink" href="#id18" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">text</span> <span class="o">=</span> <span class="s2">&quot;Hello World&quot;</span><span class="p">;</span>
+
+<span class="kd">let</span> <span class="nx">bytes</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">toUtf8Bytes</span><span class="p">(</span><span class="nx">text</span><span class="p">);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">bytes</span><span class="p">);</span>
+<span class="c1">// Uint8Array [72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100]</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id19">
+<div class="code-block-caption"><span class="caption-text"><em>To UTF-8 String</em></span><a class="headerlink" href="#id19" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">array</span> <span class="o">=</span> <span class="p">[</span><span class="mi">72</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">108</span><span class="p">,</span> <span class="mi">108</span><span class="p">,</span> <span class="mi">111</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">87</span><span class="p">,</span> <span class="mi">111</span><span class="p">,</span> <span class="mi">114</span><span class="p">,</span> <span class="mi">108</span><span class="p">,</span> <span class="mi">100</span><span class="p">];</span>
+
+<span class="kd">let</span> <span class="nx">stringFromArray</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">toUtf8String</span><span class="p">(</span><span class="nx">array</span><span class="p">)</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">stringFromArray</span><span class="p">);</span>
+<span class="c1">// &quot;Hello World&quot;</span>
+
+<span class="kd">let</span> <span class="nx">hexString</span> <span class="o">=</span> <span class="s2">&quot;0x48656c6c6f20576f726c64&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">stringFromHexString</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">toUtf8String</span><span class="p">(</span><span class="nx">hexString</span><span class="p">);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">stringFromHexString</span><span class="p">);</span>
+<span class="c1">// &quot;Hello World&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="web">
+<h2>Web<a class="headerlink" href="#web" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><sup>utils</sup> . fetchJson ( urlOrInfo [ , processFunc ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;any&gt;</sup></dt>
+<dd><p class="first">Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> of the contents of <em>urlOrInfo</em>, processed by
+<em>processFunc</em>.</p>
+<p>The <em>urlOrInfo</em> may also be specified as an object with the properties:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><strong>url</strong> — the JSON-RPC URL (required)</li>
+<li><strong>user</strong> — a username to use for Basic Authentication (optional)</li>
+<li><strong>password</strong> — a password to use for Basic Authentication (optional)</li>
+<li><strong>allowInsecure</strong> — allow Basic Authentication over an insecure HTTP network (default: false)</li>
+<li><strong>timeout</strong> — number of milliseconds to abort the request (default: 2 minutes)</li>
+<li><strong>headers</strong> — additional headers to send to the server (case insensitive)</li>
+</ul>
+</div></blockquote>
+</dd>
+<dt><sup>utils</sup> . poll ( func , [ options ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;any&gt;</sup></dt>
+<dd><p class="first">Poll using the function <em>func</em>, resolving when it does not return <code class="docutils literal notranslate"><span class="pre">undefined</span></code>. By
+default this method will use the <a class="reference external" href="https://en.wikipedia.org/wiki/Exponential_backoff">exponential back-off</a> algorithm.</p>
+<p>The <em>options</em> is an object with the properties:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><strong>timeout</strong> — after this many millisecconds, the promise will reject with a <code class="docutils literal notranslate"><span class="pre">timeout</span></code> error (default: no timeout)</li>
+<li><strong>floor</strong> — minimum amount of time between polling (default: 0)</li>
+<li><strong>ceiling</strong> — minimum amount of time between polling (default: 10s)</li>
+<li><strong>interval</strong> — the interval to use for exponential backoff (default: 250ms)</li>
+<li><strong>onceBlock</strong> — a function which takes 2 parameters, the string <code class="docutils literal notranslate"><span class="pre">block</span></code> and a callback <em>func</em>; polling will occur everytime <em>func</em> is called; any provider can be passed in for this property</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+<hr class="docutils" />
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="api-advanced.html" class="btn btn-neutral float-right" title="Low-Level API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="api-contract.html" class="btn btn-neutral" title="Contracts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

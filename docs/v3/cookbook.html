@@ -1,0 +1,486 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Cookbook &mdash; ethers.js 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  
+    <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="ethers.js 3.0.0 documentation" href="index.html"/>
+        <link rel="next" title="Notes" href="notes.html"/>
+        <link rel="prev" title="Low-Level API" href="api-advanced.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface (API)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Cookbook</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dump-all-json-wallet-balances-in-current-directory">Dump All JSON Wallet Balances (in current directory)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#empty-one-account-into-another">Empty One Account into Another</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#transactions-confirm-ui-with-a-custom-signer">Transactions Confirm UI (with a Custom Signer)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#break-apart-r-s-and-v-from-a-message-signature">Break Apart r, s and v from a Message Signature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#coalesce-jaxx-wallets">Coalesce Jaxx Wallets</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#source-code"><em>Source Code</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#access-funds-in-a-mnemonic-phrase-wallet">Access Funds in a Mnemonic Phrase Wallet</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1"><em>Source Code</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#custom-provider">Custom Provider</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ethers.js</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Cookbook</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/cookbook.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="cookbook">
+<h1>Cookbook<a class="headerlink" href="#cookbook" title="Permalink to this headline">¶</a></h1>
+<p>This is a small (but growing) collection of simple recipes to perform common tasks
+with the Ethereum blockchain and Ethereum accounts.</p>
+<p>Some of these recipes are stubs that will be filled in shortly.</p>
+<p>If there is a simple recipe you would like added, please send suggestions to <a class="reference external" href="mailto:support&#37;&#52;&#48;ethers&#46;io">support<span>&#64;</span>ethers<span>&#46;</span>io</a>.</p>
+<hr class="docutils" />
+<div class="section" id="dump-all-json-wallet-balances-in-current-directory">
+<h2>Dump All JSON Wallet Balances (in current directory)<a class="headerlink" href="#dump-all-json-wallet-balances-in-current-directory" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;fs&#39;</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">path</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">);</span>
+
+<span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">provider</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">providers</span><span class="o">.</span><span class="n">getDefaultProvider</span><span class="p">();</span>
+
+<span class="o">//</span> <span class="n">Geth</span>
+<span class="n">var</span> <span class="n">dirname</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">HOME</span><span class="p">,</span> <span class="s1">&#39;.ethereum&#39;</span><span class="p">,</span> <span class="s1">&#39;keystore&#39;</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Parity</span> <span class="p">(</span><span class="n">use</span> <span class="n">the</span> <span class="n">name</span> <span class="n">of</span> <span class="n">your</span> <span class="n">chain</span> <span class="k">for</span> <span class="n">chainDirectory</span><span class="p">,</span> <span class="n">such</span> <span class="k">as</span> <span class="s2">&quot;homestead&quot;</span><span class="p">)</span>
+<span class="o">//</span><span class="n">var</span> <span class="n">dirname</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">HOME</span><span class="p">,</span> <span class="s1">&#39;.parity&#39;</span><span class="p">,</span> <span class="s1">&#39;keys&#39;</span><span class="p">,</span> <span class="n">chainDirectory</span><span class="p">,</span> <span class="s1">&#39;keys&#39;</span><span class="p">);</span>
+
+<span class="n">var</span> <span class="n">filenames</span> <span class="o">=</span> <span class="n">fs</span><span class="o">.</span><span class="n">readdirSync</span><span class="p">(</span><span class="n">dirname</span><span class="p">);</span>
+
+<span class="n">filenames</span><span class="o">.</span><span class="n">forEach</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">fs</span><span class="o">.</span><span class="n">readFile</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span><span class="n">filename</span><span class="p">),</span> <span class="n">function</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">error</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Error reading file: &#39;</span> <span class="o">+</span> <span class="n">error</span><span class="o">.</span><span class="n">message</span><span class="p">);</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">var</span> <span class="n">address</span> <span class="o">=</span> <span class="n">JSON</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">toString</span><span class="p">())</span><span class="o">.</span><span class="n">address</span><span class="p">;</span>
+        <span class="n">provider</span><span class="o">.</span><span class="n">getBalance</span><span class="p">(</span><span class="n">address</span><span class="p">)</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">balance</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">address</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">ethers</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">formatEther</span><span class="p">(</span><span class="n">balance</span><span class="p">));</span>
+        <span class="p">});</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="empty-one-account-into-another">
+<h2>Empty One Account into Another<a class="headerlink" href="#empty-one-account-into-another" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+
+<span class="n">var</span> <span class="n">provider</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">providers</span><span class="o">.</span><span class="n">getDefaultProvider</span><span class="p">();</span>
+
+<span class="n">var</span> <span class="n">newAddress</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">privateKey</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+
+<span class="n">var</span> <span class="n">wallet</span> <span class="o">=</span> <span class="n">new</span> <span class="n">ethers</span><span class="o">.</span><span class="n">Wallet</span><span class="p">(</span><span class="n">privateKey</span><span class="p">,</span> <span class="n">provider</span><span class="p">);</span>
+<span class="n">Promise</span><span class="o">.</span><span class="n">all</span><span class="p">([</span>
+    <span class="n">wallet</span><span class="o">.</span><span class="n">getBalance</span><span class="p">(),</span>
+    <span class="n">provider</span><span class="o">.</span><span class="n">getGasPrice</span><span class="p">(),</span>
+    <span class="n">provider</span><span class="o">.</span><span class="n">getCode</span><span class="p">(</span><span class="n">newAddress</span><span class="p">)</span>
+<span class="p">])</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">var</span> <span class="n">balance</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="n">var</span> <span class="n">gasPrice</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="n">var</span> <span class="n">code</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">code</span> <span class="o">!==</span> <span class="s1">&#39;0x&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">throw</span> <span class="n">new</span> <span class="n">Error</span><span class="p">(</span><span class="s1">&#39;this tool should not send to a contract&#39;</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="o">//</span> <span class="n">The</span> <span class="n">exact</span> <span class="n">cost</span> <span class="p">(</span><span class="ow">in</span> <span class="n">gas</span><span class="p">)</span> <span class="n">to</span> <span class="n">send</span> <span class="n">to</span> <span class="n">an</span> <span class="n">Externally</span> <span class="n">Owned</span> <span class="n">Account</span> <span class="p">(</span><span class="n">EOA</span><span class="p">)</span>
+    <span class="n">var</span> <span class="n">gasLimit</span> <span class="o">=</span> <span class="mi">21000</span><span class="p">;</span>
+
+    <span class="o">//</span> <span class="n">The</span> <span class="n">balance</span> <span class="n">less</span> <span class="n">exactly</span> <span class="n">the</span> <span class="n">txfee</span> <span class="ow">in</span> <span class="n">wei</span>
+    <span class="n">var</span> <span class="n">value</span> <span class="o">=</span> <span class="n">balance</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">gasPrice</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">gasLimit</span><span class="p">))</span>
+
+    <span class="n">wallet</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">newAddress</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="p">{</span><span class="n">gasLimit</span><span class="p">:</span> <span class="n">gasLimit</span><span class="p">})</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">transaction</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">transaction</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="transactions-confirm-ui-with-a-custom-signer">
+<h2>Transactions Confirm UI (with a Custom Signer)<a class="headerlink" href="#transactions-confirm-ui-with-a-custom-signer" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">function</span> <span class="n">CustomSigner</span><span class="p">(</span><span class="n">privateKey</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="n">this</span><span class="o">.</span><span class="n">provider</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">getDefaultProvider</span><span class="p">();</span>
+
+    <span class="n">var</span> <span class="n">wallet</span> <span class="o">=</span> <span class="n">new</span> <span class="n">ethers</span><span class="o">.</span><span class="n">Wallet</span><span class="p">(</span><span class="n">privateKey</span><span class="p">);</span>
+
+    <span class="n">this</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">wallet</span><span class="o">.</span><span class="n">address</span><span class="p">;</span>
+
+    <span class="n">this</span><span class="o">.</span><span class="n">sign</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">transaction</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">new</span> <span class="n">Promise</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">resolve</span><span class="p">,</span> <span class="n">reject</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">var</span> <span class="n">allow</span> <span class="o">=</span> <span class="n">confirm</span><span class="p">(</span><span class="s1">&#39;Sign Transaction? To: &#39;</span> <span class="o">+</span> <span class="n">transaction</span><span class="o">.</span><span class="n">to</span> <span class="o">+</span>
+                <span class="s2">&quot;, Amount: &quot;</span> <span class="o">+</span> <span class="n">ethers</span><span class="o">.</span><span class="n">formatEther</span><span class="p">(</span><span class="n">transaction</span><span class="o">.</span><span class="n">value</span><span class="p">));</span>
+
+            <span class="n">var</span> <span class="n">etherString</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">formatEther</span><span class="p">(</span><span class="n">transaction</span><span class="o">.</span><span class="n">value</span><span class="p">);</span>
+
+            <span class="n">var</span> <span class="n">modal</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="s1">&#39;pre&#39;</span><span class="p">);</span>
+            <span class="n">document</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">modal</span><span class="p">);</span>
+            <span class="n">modal</span><span class="o">.</span><span class="n">className</span> <span class="o">=</span> <span class="s2">&quot;modal&quot;</span><span class="p">;</span>
+            <span class="n">modal</span><span class="o">.</span><span class="n">textContent</span> <span class="o">+=</span> <span class="s1">&#39;Sign Transaction?</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">;</span>
+            <span class="n">modal</span><span class="o">.</span><span class="n">textContent</span> <span class="o">+=</span> <span class="s1">&#39;To:     &#39;</span> <span class="o">+</span> <span class="n">transaction</span><span class="o">.</span><span class="n">address</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">;</span>
+            <span class="n">modal</span><span class="o">.</span><span class="n">textContent</span> <span class="o">+=</span> <span class="s1">&#39;Amount: &#39;</span> <span class="o">+</span>  <span class="n">etherString</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">;</span>
+
+            <span class="n">var</span> <span class="n">confirmButton</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">);</span>
+            <span class="n">modal</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">confirmButton</span><span class="p">);</span>
+            <span class="n">confirmButton</span><span class="o">.</span><span class="n">textContent</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="n">confirm</span><span class="s2">&quot;;</span>
+            <span class="n">confirmButton</span><span class="o">.</span><span class="n">onclick</span> <span class="o">=</span> <span class="n">function</span><span class="p">()</span> <span class="p">{</span>
+                <span class="n">resolve</span><span class="p">(</span><span class="n">wallet</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">transaction</span><span class="p">));</span>
+            <span class="p">}</span>
+
+            <span class="n">var</span> <span class="n">rejectButton</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">);</span>
+            <span class="n">modal</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">rejectButton</span><span class="p">);</span>
+            <span class="n">rejectButton</span><span class="o">.</span><span class="n">textContent</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="n">confirm</span><span class="s2">&quot;;</span>
+            <span class="n">rejectButton</span><span class="o">.</span><span class="n">onclick</span> <span class="o">=</span> <span class="n">function</span><span class="p">()</span> <span class="p">{</span>
+                <span class="n">modal</span><span class="o">.</span><span class="n">remove</span><span class="p">();</span>
+                <span class="n">reject</span><span class="p">(</span><span class="n">new</span> <span class="n">Error</span><span class="p">(</span><span class="s1">&#39;cancelled transaction&#39;</span><span class="p">));</span>
+            <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="break-apart-r-s-and-v-from-a-message-signature">
+<h2>Break Apart r, s and v from a Message Signature<a class="headerlink" href="#break-apart-r-s-and-v-from-a-message-signature" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+
+<span class="n">var</span> <span class="n">privateKey</span> <span class="o">=</span> <span class="s1">&#39;0x0123456789012345678901234567890123456789012345678901234567890123&#39;</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Hello World&quot;</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">wallet</span> <span class="o">=</span> <span class="n">new</span> <span class="n">ethers</span><span class="o">.</span><span class="n">Wallet</span><span class="p">(</span><span class="n">privateKey</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">signature</span> <span class="o">=</span> <span class="n">wallet</span><span class="o">.</span><span class="n">signMessage</span><span class="p">(</span><span class="n">message</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Split</span> <span class="n">apart</span> <span class="n">the</span> <span class="n">signature</span> <span class="n">into</span> <span class="n">an</span> <span class="n">r</span><span class="p">,</span> <span class="n">s</span> <span class="ow">and</span> <span class="n">v</span> <span class="n">that</span> <span class="n">can</span> <span class="n">be</span> <span class="n">used</span> <span class="n">by</span>
+<span class="o">//</span> <span class="n">ecrecover</span> <span class="ow">in</span> <span class="n">Solidity</span><span class="o">.</span> <span class="n">The</span> <span class="n">v</span> <span class="n">parameter</span> <span class="n">will</span> <span class="n">be</span> <span class="n">normalized</span> <span class="n">to</span> <span class="n">the</span>
+<span class="o">//</span> <span class="n">canonical</span> <span class="n">value</span> <span class="n">of</span> <span class="mi">27</span> <span class="ow">or</span> <span class="mf">28.</span>
+<span class="n">var</span> <span class="n">sig</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">splitSignature</span><span class="p">(</span><span class="n">signature</span><span class="p">);</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sig</span><span class="p">);</span>
+<span class="o">//</span> <span class="p">{</span>
+<span class="o">//</span>   <span class="n">r</span><span class="p">:</span> <span class="s1">&#39;0xe0ed34fbbe927a58267ce2e8067a611c69869e20e731bc99187a8bc97058664c&#39;</span><span class="p">,</span>
+<span class="o">//</span>   <span class="n">s</span><span class="p">:</span> <span class="s1">&#39;0x16de07f7660f06ce0985d1d8e063726783033fda59b307897f26a21392d62b3a&#39;</span><span class="p">,</span>
+<span class="o">//</span>   <span class="n">v</span><span class="p">:</span> <span class="mi">28</span>
+<span class="o">//</span> <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="coalesce-jaxx-wallets">
+<h2>Coalesce Jaxx Wallets<a class="headerlink" href="#coalesce-jaxx-wallets" title="Permalink to this headline">¶</a></h2>
+<p>The Jaxx Wallet (for iOS, Android, desktop, et cetera) uses HD wallets on Ethereum the
+same way as Bitcoin, which results in each transaction being received by a separate
+address. As a result, funds get spread across many accounts, making several operations
+in Ethereum impossible.</p>
+<p>This short recipe will coalesce all these accounts into a single one, by sending the funds
+from each account into a single one.</p>
+<p>This also results in paying multiple transaction fees (1 fee per account to merge).</p>
+<p>&#64;TODO: This is incomplete!!</p>
+<div class="section" id="source-code">
+<h3><em>Source Code</em><a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+
+<span class="n">var</span> <span class="n">provider</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">providers</span><span class="o">.</span><span class="n">getDefaultProvider</span><span class="p">();</span>
+
+<span class="n">var</span> <span class="n">mnemonic</span> <span class="o">=</span> <span class="s2">&quot;radar blur cabbage chef fix engine embark joy scheme fiction master release&quot;</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">hdnode</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">HDNode</span><span class="o">.</span><span class="n">fromMnemonic</span><span class="p">(</span><span class="n">mnemonic</span><span class="p">);</span>
+<span class="n">hdnode</span> <span class="o">=</span> <span class="n">hdnode</span><span class="o">.</span><span class="n">derivePath</span><span class="p">(</span><span class="s2">&quot;m/44&#39;/60&#39;/0&#39;/0&quot;</span><span class="p">);</span>
+
+<span class="nd">@TODO</span><span class="p">:</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="access-funds-in-a-mnemonic-phrase-wallet">
+<h2>Access Funds in a Mnemonic Phrase Wallet<a class="headerlink" href="#access-funds-in-a-mnemonic-phrase-wallet" title="Permalink to this headline">¶</a></h2>
+<p>&#64;TODO: This is incomplete</p>
+<div class="section" id="id1">
+<h3><em>Source Code</em><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+
+<span class="n">var</span> <span class="n">walletPath</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;standard&quot;</span><span class="p">:</span> <span class="s2">&quot;m/44&#39;/60&#39;/0&#39;/0/0&quot;</span><span class="p">,</span>
+
+    <span class="o">//</span> <span class="nd">@TODO</span><span class="p">:</span> <span class="n">Include</span> <span class="n">some</span> <span class="n">non</span><span class="o">-</span><span class="n">standard</span> <span class="n">wallet</span> <span class="n">paths</span>
+<span class="p">};</span>
+
+<span class="n">var</span> <span class="n">mnemonic</span> <span class="o">=</span> <span class="s2">&quot;radar blur cabbage chef fix engine embark joy scheme fiction master release&quot;</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">hdnode</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">HDNode</span><span class="o">.</span><span class="n">fromMnemonic</span><span class="p">(</span><span class="n">mnemonic</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">node</span> <span class="o">=</span> <span class="n">hdnode</span><span class="o">.</span><span class="n">derivePath</span><span class="p">(</span><span class="n">walletPath</span><span class="o">.</span><span class="n">standard</span><span class="p">);</span>
+
+<span class="n">var</span> <span class="n">wallet</span> <span class="o">=</span> <span class="n">new</span> <span class="n">ethers</span><span class="o">.</span><span class="n">Wallet</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">privateKey</span><span class="p">);</span>
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">wallet</span><span class="o">.</span><span class="n">address</span><span class="p">);</span>
+<span class="o">//</span> <span class="mh">0xaC39b311DCEb2A4b2f5d8461c1cdaF756F4F7Ae9</span>
+
+<span class="nd">@TODO</span><span class="p">:</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="custom-provider">
+<h2>Custom Provider<a class="headerlink" href="#custom-provider" title="Permalink to this headline">¶</a></h2>
+<p>This is a much more advanced topic, and most people should not need to work this
+low level. But it is provided for those rare instances where you need some custom
+connection logic.</p>
+<p>A provider must only implement the method <strong>perform(method, params)</strong>. All data passed
+into a provider is sanitized by the Provider subclass, and all results are normalized
+before returning them to the user.</p>
+<p>For this example, we will build a DebugProvider, which will simple proxy all commands
+through to INFURA, but dump all data going back and forth.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">inherits</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;inherits&#39;</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+
+<span class="n">function</span> <span class="n">DebugProvider</span><span class="p">(</span><span class="n">testnet</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Provider</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">this</span><span class="p">,</span> <span class="n">testnet</span><span class="p">);</span>
+    <span class="n">this</span><span class="o">.</span><span class="n">subprovider</span> <span class="o">=</span> <span class="n">new</span> <span class="n">ethers</span><span class="o">.</span><span class="n">providers</span><span class="o">.</span><span class="n">InfuraProvider</span><span class="p">(</span><span class="n">testnet</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="n">inherits</span><span class="p">(</span><span class="n">DebugProvider</span><span class="p">,</span> <span class="n">ethers</span><span class="o">.</span><span class="n">providers</span><span class="o">.</span><span class="n">Provider</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">This</span> <span class="n">should</span> <span class="k">return</span> <span class="n">a</span> <span class="n">Promise</span> <span class="p">(</span><span class="ow">and</span> <span class="n">may</span> <span class="n">throw</span> <span class="n">erros</span><span class="p">)</span>
+<span class="o">//</span> <span class="n">method</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">method</span> <span class="n">name</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">getBalance</span><span class="p">)</span> <span class="ow">and</span> <span class="n">params</span> <span class="ow">is</span> <span class="n">an</span>
+<span class="o">//</span> <span class="nb">object</span> <span class="k">with</span> <span class="n">normalized</span> <span class="n">values</span> <span class="n">passed</span> <span class="ow">in</span><span class="p">,</span> <span class="n">depending</span> <span class="n">on</span> <span class="n">the</span> <span class="n">method</span>
+<span class="n">DebugProvier</span><span class="o">.</span><span class="n">prototype</span><span class="o">.</span><span class="n">perform</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">this</span><span class="o">.</span><span class="n">subprovider</span><span class="o">.</span><span class="n">perform</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="s1">&#39;=&gt;&#39;</span><span class="p">,</span> <span class="n">result</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="notes.html" class="btn btn-neutral float-right" title="Notes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="api-advanced.html" class="btn btn-neutral" title="Low-Level API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'3.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

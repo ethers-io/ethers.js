@@ -1,0 +1,964 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Contracts &mdash; ethers.js 4.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Utilities" href="api-utils.html" />
+    <link rel="prev" title="Providers" href="api-providers.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Application Programming Interface (API)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="api-wallet.html">Wallets and Signers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html">Providers</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Contracts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#deploying-a-contract">Deploying a Contract</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#creating-a-contract-factory">Creating a Contract Factory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#prototype">Prototype</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#connecting">Connecting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deployment">Deployment</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#connecting-to-existing-contracts">Connecting to Existing Contracts</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#connecting-to-a-contract">Connecting to a Contract</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Prototype</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#waiting-for-deployment">Waiting for Deployment</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#meta-class-properties">Meta-Class Properties</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#contract-methods">Contract Methods</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#contract-event-filters">Contract Event Filters</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#overrides">Overrides</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#event-emitter">Event Emitter</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#event-names">Event Names</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#event-object">Event Object</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configuring-events">Configuring Events</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#providers-vs-signers">Providers vs Signers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#types">Types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bytes">Bytes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#integers">Integers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#strings">Strings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#structs">Structs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#filtering-events">Filtering Events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#application-binary-interface-abi">Application Binary Interface (ABI)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ethers.js</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="api.html">Application Programming Interface (API)</a> &raquo;</li>
+        
+      <li>Contracts</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api-contract.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="contracts">
+<span id="api-contract"></span><h1>Contracts<a class="headerlink" href="#contracts" title="Permalink to this headline">¶</a></h1>
+<p>A Contract is an abstraction of an executable program on the Ethereum Blockchain. A
+Contract has code (called byte code) as well as allocated long-term memory (called
+storage). Every deployed Contract has an address, which is used to connect to it
+so that it may be sent messages to call its methods.</p>
+<p>A Contract can emit <strong>Events</strong>, which can be efficiently observed by applications to
+be notified when a contract has performed specific operation. Events cannot be read
+by a Contract.</p>
+<p>There are two types of methods that can be called on a Contract:</p>
+<blockquote>
+<div><p>A <strong>Constant</strong> method may not add, remove or change any data in the storage, nor
+log any events, and may only call <strong>Constant</strong> methods on other contracts. These
+methods are free (<strong>no</strong> <em>Ether</em> is required) to call. The result from them may also
+be returned to the caller.</p>
+<p>A <strong>Non-Constant</strong> method requires a fee (in <em>Ether</em>) to be paid, but may perform any
+state-changing operation desired, log events, send ether and call <strong>Non-Constant</strong>
+methods on other Contracts. These methods <strong>cannot</strong> return their result to the caller.
+These methods must be triggered by a transaction, sent by an Externally Owned Account (EOA)
+either directly or indirectly (i.e. called from another contract), and are required
+to be mined before the effects are present. Therefore, the duration required for these
+operations can vary widely, and depend on the transaction gas price, network congestion and
+miner priority heuristics.</p>
+</div></blockquote>
+<p>The Contract API provides simple way to connect to a Contract and call its methods,
+as functions on a JavaScript object, handling all the binary protocol conversion,
+internal name mangling and topic construction. This allows a Contract object to be
+used like any standard JavaScript object, without having to worry about the
+low-level details of the Ethereum Virtual Machine or Blockchain.</p>
+<p>The Contract object is a meta-class, which is a class that defines a Class at
+run-time. The Contract definition (called an <strong>Application Binary Interface</strong>, or ABI)
+can be provided and the available methods and events will be dynamically added to
+the object.</p>
+<p>Throughout this document, we will refer to the following Contract.</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text"><em>SimpleStorage Contract</em></span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">pragma</span> <span class="nx">solidity</span> <span class="o">^</span><span class="mf">0.4.24</span><span class="p">;</span>
+
+<span class="nx">contract</span> <span class="nx">SimpleStorage</span> <span class="p">{</span>
+
+    <span class="nx">event</span> <span class="nx">ValueChanged</span><span class="p">(</span><span class="nx">address</span> <span class="nx">indexed</span> <span class="nx">author</span><span class="p">,</span> <span class="nx">string</span> <span class="nx">oldValue</span><span class="p">,</span> <span class="nx">string</span> <span class="nx">newValue</span><span class="p">);</span>
+
+    <span class="nx">string</span> <span class="nx">_value</span><span class="p">;</span>
+
+    <span class="nx">constructor</span><span class="p">(</span><span class="nx">string</span> <span class="nx">value</span><span class="p">)</span> <span class="kr">public</span> <span class="p">{</span>
+        <span class="nx">emit</span> <span class="nx">ValueChanged</span><span class="p">(</span><span class="nx">msg</span><span class="p">.</span><span class="nx">sender</span><span class="p">,</span> <span class="nx">_value</span><span class="p">,</span> <span class="nx">value</span><span class="p">);</span>
+        <span class="nx">_value</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">getValue</span><span class="p">()</span> <span class="nx">view</span> <span class="kr">public</span> <span class="nx">returns</span> <span class="p">(</span><span class="nx">string</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">_value</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">setValue</span><span class="p">(</span><span class="nx">string</span> <span class="nx">value</span><span class="p">)</span> <span class="kr">public</span> <span class="p">{</span>
+        <span class="nx">emit</span> <span class="nx">ValueChanged</span><span class="p">(</span><span class="nx">msg</span><span class="p">.</span><span class="nx">sender</span><span class="p">,</span> <span class="nx">_value</span><span class="p">,</span> <span class="nx">value</span><span class="p">);</span>
+        <span class="nx">_value</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="deploying-a-contract">
+<span id="contract-deployment"></span><h2>Deploying a Contract<a class="headerlink" href="#deploying-a-contract" title="Permalink to this headline">¶</a></h2>
+<p>To deploy a contract to the Ethereum network, a <strong>ContractFactory</strong> can be created
+which manages the Contract bytecode and <strong>Application Binary Interface</strong> (ABI),
+usually generated from the <em>Solidity</em> compiler.</p>
+<div class="section" id="creating-a-contract-factory">
+<h3>Creating a Contract Factory<a class="headerlink" href="#creating-a-contract-factory" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>new <sup>ethers</sup> . ContractFactory ( abi , bytecode [ , signer ] )</dt>
+<dd>Creates a factory for deployment of the Contract with <em>bytecode</em>, and the
+constructor defined in the <em>abi</em>. The <em>signer</em> will be used to send
+any deployment transaction.</dd>
+<dt><sup>ethers</sup> . ContractFactory . fromSolidity ( compilerOutput [ , signer ] )</dt>
+<dd>Creates a ContractFactory from the <em>compilerOutput</em> of the <em>Solidity</em>
+compiler or from the <em>Truffle</em> JSON.
+(i.e. <code class="docutils literal notranslate"><span class="pre">output.contracts['SimpleStorage.sol'].SimpleStorage</span></code>)</dd>
+<dt><sup>prototype</sup> . connect ( signer ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>ContractFactory</sup></dt>
+<dd>Create a <strong>new instance</strong> of the ContractFactory, connected to the new <em>signer</em>.</dd>
+</dl>
+</div>
+<div class="section" id="prototype">
+<h3>Prototype<a class="headerlink" href="#prototype" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . bytecode</dt>
+<dd>The Contract executable byte code..</dd>
+<dt><sup>prototype</sup> . interface</dt>
+<dd>The Contract Application Binary Interface (ABI).</dd>
+<dt><sup>prototype</sup> . signer</dt>
+<dd>The <a class="reference internal" href="api-wallet.html#signer"><span class="std std-ref">Signer</span></a> that will be used to send transactions to the network.
+If this is null, <code class="docutils literal notranslate"><span class="pre">deploy()</span></code> cannot be called.</dd>
+</dl>
+</div>
+<div class="section" id="connecting">
+<h3>Connecting<a class="headerlink" href="#connecting" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . attach ( address ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Contract</sup></dt>
+<dd>Connect to an existing instance of this Contract at <em>address</em> using the
+Contract Interface and Signer.</dd>
+</dl>
+</div>
+<div class="section" id="deployment">
+<h3>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . deploy ( … ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;Contract&gt;</sup></dt>
+<dd><p class="first">Creates a transaction to deploy the transaction and
+sends it to the network using the contract <a class="reference internal" href="api-wallet.html#signer"><span class="std std-ref">Signer</span></a>, returning a
+<a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> that resolves to a Contract. The transaction is available
+as contract.deployTransaction.</p>
+<p class="last">Keep in mind that the Contract may not be mined immediately. The
+<code class="docutils literal notranslate"><span class="pre">contract.deployed()</span></code> function will return a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a>
+which will resolve once the contract is deployed, or reject if there
+was an error during deployment.</p>
+</dd>
+<dt><sup>prototype</sup> . getDeployTransaction ( … ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>UnsignedTransaction</sup></dt>
+<dd>Returns the transaction required to deploy the Contract with the provided
+constructor arguments. This is often useful for signing offline transactions or
+analysis tools.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text"><em>Deploy a Contract</em></span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">ethers</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+
+<span class="c1">// The Contract interface</span>
+<span class="kd">let</span> <span class="nx">abi</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;event ValueChanged(address indexed author, string oldValue, string newValue)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;constructor(string value)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;function getValue() view returns (string value)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;function setValue(string value)&quot;</span>
+<span class="p">];</span>
+
+<span class="c1">// The bytecode from Solidity, compiling the above source</span>
+<span class="kd">let</span> <span class="nx">bytecode</span> <span class="o">=</span> <span class="s2">&quot;0x608060405234801561001057600080fd5b506040516105bd3803806105bd8339&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;8101604081815282518183526000805460026000196101006001841615020190&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;91160492840183905293019233927fe826f71647b8486f2bae59832124c70792&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;fba044036720a54ec8dacdd5df4fcb9285919081906020820190606083019086&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;9080156100cd5780601f106100a2576101008083540402835291602001916100&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;cd565b820191906000526020600020905b815481529060010190602001808311&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;6100b057829003601f168201915b505083810382528451815284516020918201&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;9186019080838360005b838110156101015781810151838201526020016100e9&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;565b50505050905090810190601f16801561012e578082038051600183602003&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;6101000a031916815260200191505b5094505050505060405180910390a28051&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;610150906000906020840190610157565b50506101f2565b8280546001816001&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;16156101000203166002900490600052602060002090601f0160209004810192&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;82601f1061019857805160ff19168380011785556101c5565b82800160010185&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;5582156101c5579182015b828111156101c55782518255916020019190600101&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;906101aa565b506101d19291506101d5565b5090565b6101ef91905b80821115&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;6101d157600081556001016101db565b90565b6103bc806102016000396000f3&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;0060806040526004361061004b5763ffffffff7c010000000000000000000000&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;0000000000000000000000000000000000600035041663209652558114610050&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;57806393a09352146100da575b600080fd5b34801561005c57600080fd5b5061&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;0065610135565b60408051602080825283518183015283519192839290830191&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;85019080838360005b8381101561009f57818101518382015260200161008756&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;5b50505050905090810190601f1680156100cc57808203805160018360200361&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;01000a031916815260200191505b509250505060405180910390f35b34801561&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;00e657600080fd5b506040805160206004803580820135601f81018490048402&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;8501840190955284845261013394369492936024939284019190819084018382&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;80828437509497506101cc9650505050505050565b005b600080546040805160&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;20601f6002600019610100600188161502019095169490940493840181900481&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;0282018101909252828152606093909290918301828280156101c15780601f10&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;610196576101008083540402835291602001916101c1565b8201919060005260&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;20600020905b8154815290600101906020018083116101a457829003601f1682&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;01915b505050505090505b90565b604080518181526000805460026000196101&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;00600184161502019091160492820183905233927fe826f71647b8486f2bae59&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;832124c70792fba044036720a54ec8dacdd5df4fcb9285918190602082019060&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;60830190869080156102715780601f1061024657610100808354040283529160&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;200191610271565b820191906000526020600020905b81548152906001019060&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;200180831161025457829003601f168201915b50508381038252845181528451&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;60209182019186019080838360005b838110156102a557818101518382015260&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;200161028d565b50505050905090810190601f1680156102d257808203805160&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;01836020036101000a031916815260200191505b509450505050506040518091&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;0390a280516102f49060009060208401906102f8565b5050565b828054600181&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;600116156101000203166002900490600052602060002090601f016020900481&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;019282601f1061033957805160ff1916838001178555610366565b8280016001&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;0185558215610366579182015b82811115610366578251825591602001919060&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;01019061034b565b50610372929150610376565b5090565b6101c991905b8082&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;1115610372576000815560010161037c5600a165627a7a723058202225a35c50&quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;7b31ac6df494f4be31057c7202b5084c592bdb9b29f232407abeac0029&quot;</span><span class="p">;</span>
+
+
+<span class="c1">// Connect to the network</span>
+<span class="kd">let</span> <span class="nx">provider</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">getDefaultProvider</span><span class="p">(</span><span class="s1">&#39;ropsten&#39;</span><span class="p">);</span>
+
+<span class="c1">// Load the wallet to deploy the contract with</span>
+<span class="kd">let</span> <span class="nx">privateKey</span> <span class="o">=</span> <span class="s1">&#39;0x0123456789012345678901234567890123456789012345678901234567890123&#39;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">wallet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">(</span><span class="nx">privateKey</span><span class="p">,</span> <span class="nx">provider</span><span class="p">);</span>
+
+<span class="c1">// Deployment is asynchronous, so we use an async IIFE</span>
+<span class="p">(</span><span class="nx">async</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="c1">// Create an instance of a Contract Factory</span>
+    <span class="kd">let</span> <span class="nx">factory</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">ContractFactory</span><span class="p">(</span><span class="nx">abi</span><span class="p">,</span> <span class="nx">bytecode</span><span class="p">,</span> <span class="nx">wallet</span><span class="p">);</span>
+
+    <span class="c1">// Notice we pass in &quot;Hello World&quot; as the parameter to the constructor</span>
+    <span class="kd">let</span> <span class="nx">contract</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">factory</span><span class="p">.</span><span class="nx">deploy</span><span class="p">(</span><span class="s2">&quot;Hello World&quot;</span><span class="p">);</span>
+
+    <span class="c1">// The address the Contract WILL have once mined</span>
+    <span class="c1">// See: https://ropsten.etherscan.io/address/0x2bd9aaa2953f988153c8629926d22a6a5f69b14e</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">contract</span><span class="p">.</span><span class="nx">address</span><span class="p">);</span>
+    <span class="c1">// &quot;0x2bD9aAa2953F988153c8629926D22A6a5F69b14E&quot;</span>
+
+    <span class="c1">// The transaction that was sent to the network to deploy the Contract</span>
+    <span class="c1">// See: https://ropsten.etherscan.io/tx/0x159b76843662a15bd67e482dcfbee55e8e44efad26c5a614245e12a00d4b1a51</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">contract</span><span class="p">.</span><span class="nx">deployTransaction</span><span class="p">.</span><span class="nx">hash</span><span class="p">);</span>
+    <span class="c1">// &quot;0x159b76843662a15bd67e482dcfbee55e8e44efad26c5a614245e12a00d4b1a51&quot;</span>
+
+    <span class="c1">// The contract is NOT deployed yet; we must wait until it is mined</span>
+    <span class="nx">await</span> <span class="nx">contract</span><span class="p">.</span><span class="nx">deployed</span><span class="p">()</span>
+
+    <span class="c1">// Done! The contract is deployed.</span>
+<span class="p">})();</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="connecting-to-existing-contracts">
+<h2>Connecting to Existing Contracts<a class="headerlink" href="#connecting-to-existing-contracts" title="Permalink to this headline">¶</a></h2>
+<p>Once a Contract has been deployed, it can be connected to using
+the <strong>Contract</strong> object.</p>
+<div class="section" id="connecting-to-a-contract">
+<h3>Connecting to a Contract<a class="headerlink" href="#connecting-to-a-contract" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>new <sup>ethers</sup> . Contract ( addressOrName , abi , providerOrSigner )</dt>
+<dd><p class="first">Connects to the contract at <em>addressOrName</em> defined by <em>abi</em>, connected as <em>providerOrSigner</em>.</p>
+<p>For supported formats for <em>abi</em>, see <a class="reference internal" href="#contract-abi"><span class="std std-ref">Contract ABI</span></a>.</p>
+<p class="last">For access capabilities and restrictions, see <a class="reference internal" href="#providers-vs-signers"><span class="std std-ref">Providers vs Signers</span></a></p>
+</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text"><em>Connecting to an existing Contract</em></span><a class="headerlink" href="#id5" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">ethers</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+
+<span class="c1">// The Contract interface</span>
+<span class="kd">let</span> <span class="nx">abi</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;event ValueChanged(address indexed author, string oldValue, string newValue)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;constructor(string value)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;function getValue() view returns (string value)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;function setValue(string value)&quot;</span>
+<span class="p">];</span>
+
+<span class="c1">// Connect to the network</span>
+<span class="kd">let</span> <span class="nx">provider</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">getDefaultProvider</span><span class="p">();</span>
+
+<span class="c1">// The address from the above deployment example</span>
+<span class="kd">let</span> <span class="nx">contractAddress</span> <span class="o">=</span> <span class="s2">&quot;0x2bD9aAa2953F988153c8629926D22A6a5F69b14E&quot;</span><span class="p">;</span>
+
+<span class="c1">// We connect to the Contract using a Provider, so we will only</span>
+<span class="c1">// have read-only access to the Contract</span>
+<span class="kd">let</span> <span class="nx">contract</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Contract</span><span class="p">(</span><span class="nx">contractAddress</span><span class="p">,</span> <span class="nx">abi</span><span class="p">,</span> <span class="nx">provider</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text"><em>Calling a read-only Constant Method</em></span><a class="headerlink" href="#id6" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Get the current value</span>
+<span class="kd">let</span> <span class="nx">currentValue</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">contract</span><span class="p">.</span><span class="nx">getValue</span><span class="p">();</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">currentValue</span><span class="p">);</span>
+<span class="c1">// &quot;Hello World&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text"><em>Calling a Non-Constant Method</em></span><a class="headerlink" href="#id7" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// A Signer from a private key</span>
+<span class="kd">let</span> <span class="nx">privateKey</span> <span class="o">=</span> <span class="s1">&#39;0x0123456789012345678901234567890123456789012345678901234567890123&#39;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">wallet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">(</span><span class="nx">privateKey</span><span class="p">,</span> <span class="nx">provider</span><span class="p">);</span>
+
+<span class="c1">// Create a new instance of the Contract with a Signer, which allows</span>
+<span class="c1">// update methods</span>
+<span class="kd">let</span> <span class="nx">contractWithSigner</span> <span class="o">=</span> <span class="nx">contract</span><span class="p">.</span><span class="nx">connect</span><span class="p">(</span><span class="nx">wallet</span><span class="p">);</span>
+<span class="c1">// ... OR ...</span>
+<span class="c1">// let contractWithSigner = new Contract(contractAddress, abi, wallet)</span>
+
+<span class="c1">// Set a new Value, which returns the transaction</span>
+<span class="kd">let</span> <span class="nx">tx</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">contractWithSigner</span><span class="p">.</span><span class="nx">setValue</span><span class="p">(</span><span class="s2">&quot;I like turtles.&quot;</span><span class="p">);</span>
+
+<span class="c1">// See: https://ropsten.etherscan.io/tx/0xaf0068dcf728afa5accd02172867627da4e6f946dfb8174a7be31f01b11d5364</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">tx</span><span class="p">.</span><span class="nx">hash</span><span class="p">);</span>
+<span class="c1">// &quot;0xaf0068dcf728afa5accd02172867627da4e6f946dfb8174a7be31f01b11d5364&quot;</span>
+
+<span class="c1">// The operation is NOT complete yet; we must wait until it is mined</span>
+<span class="nx">await</span> <span class="nx">tx</span><span class="p">.</span><span class="nx">wait</span><span class="p">();</span>
+
+<span class="c1">// Call the Contract&#39;s getValue() method again</span>
+<span class="kd">let</span> <span class="nx">newValue</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">contract</span><span class="p">.</span><span class="nx">getValue</span><span class="p">();</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">currentValue</span><span class="p">);</span>
+<span class="c1">// &quot;I like turtles.&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text"><em>Listening to Events</em></span><a class="headerlink" href="#id8" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">contract</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;ValueChanged&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nx">author</span><span class="p">,</span> <span class="nx">oldValue</span><span class="p">,</span> <span class="nx">newValue</span><span class="p">,</span> <span class="nx">event</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="c1">// Called when anyone changes the value</span>
+
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">author</span><span class="p">);</span>
+    <span class="c1">// &quot;0x14791697260E4c9A71f18484C9f997B308e59325&quot;</span>
+
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">oldValue</span><span class="p">);</span>
+    <span class="c1">// &quot;Hello World&quot;</span>
+
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">newValue</span><span class="p">);</span>
+    <span class="c1">// &quot;Ilike turtles.&quot;</span>
+
+    <span class="c1">// See Event Emitter below for all properties on Event</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">blockNumber</span><span class="p">);</span>
+    <span class="c1">// 4115004</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text"><em>Filtering an Events</em></span><a class="headerlink" href="#id9" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// A filter that matches my Signer as the author</span>
+<span class="kd">let</span> <span class="nx">filter</span> <span class="o">=</span> <span class="nx">contract</span><span class="p">.</span><span class="nx">filters</span><span class="p">.</span><span class="nx">ValueChanged</span><span class="p">(</span><span class="nx">wallet</span><span class="p">.</span><span class="nx">address</span><span class="p">);</span>
+
+<span class="nx">contract</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">filter</span><span class="p">,</span> <span class="p">(</span><span class="nx">author</span><span class="p">,</span> <span class="nx">oldValue</span><span class="p">,</span> <span class="nx">newValue</span><span class="p">,</span> <span class="nx">event</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="c1">// Called ONLY when your account changes the value</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="id1">
+<h3>Prototype<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . address</dt>
+<dd>The address (or ENS name) of the contract.</dd>
+<dt><sup>prototype</sup> . deployTransaction</dt>
+<dd>If the contract was deployed by a ContractFactory, this is the transaction
+used to deploy it, otherwise it is null.</dd>
+<dt><sup>prototype</sup> . interface</dt>
+<dd>The <a class="reference internal" href="api-advanced.html#api-interface"><span class="std std-ref">Interface</span></a> meta-class of the parsed
+ABI. Generally, this should not need to be accessed directly.</dd>
+</dl>
+<p>Additional properties will be added to the prototype at run-time, based on
+the ABI provided, see <a class="reference internal" href="#contract-metaclass"><span class="std std-ref">Contract Meta-Class</span></a>.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="waiting-for-deployment">
+<h3>Waiting for Deployment<a class="headerlink" href="#waiting-for-deployment" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . deployed ( ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Promise&lt;Contract&gt;</sup></dt>
+<dd>If the contract is the result of <code class="docutils literal notranslate"><span class="pre">deploy()</span></code>, returns
+a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> that resolves to the contract once it
+has been mined, or rejects if the contract failed to deploy. If the
+contract has been deployed already, this will return a
+<a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> that resolves once the on-chain code has
+been confirmed.</dd>
+</dl>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="meta-class-properties">
+<span id="contract-metaclass"></span><h2>Meta-Class Properties<a class="headerlink" href="#meta-class-properties" title="Permalink to this headline">¶</a></h2>
+<p>Since a Contract is dynamic and loaded at run-time, many of the properties
+that will exist on a Contract are determined at run-time from
+the <a class="reference internal" href="#contract-abi"><span class="std std-ref">Contract ABI</span></a>.</p>
+<div class="section" id="contract-methods">
+<h3>Contract Methods<a class="headerlink" href="#contract-methods" title="Permalink to this headline">¶</a></h3>
+<p>All functions populated from the ABI are also included on the contract object
+directly, for example <code class="docutils literal notranslate"><span class="pre">contract.functions.getValue()</span></code> can also be called
+using <code class="docutils literal notranslate"><span class="pre">contract.getValue()</span></code>.</p>
+<dl class="docutils">
+<dt><sup>prototype</sup> . functions . <em>functionName</em></dt>
+<dd><p class="first">An object that maps each ABI function name to a function that will
+either call (for constant functions) or sign and send a transaction
+(for non-constant functions)</p>
+<p>Calling a <strong>Constant</strong> function requires either a <a class="reference internal" href="api-providers.html#provider-connect"><span class="std std-ref">Provider</span></a> or
+a Signer with a <a class="reference internal" href="api-providers.html#provider-connect"><span class="std std-ref">Provider</span></a>.</p>
+<p class="last">Calling a <strong>Non-Constant</strong> function (i.e. sending a transaction) requires a
+<a class="reference internal" href="api-wallet.html#signer"><span class="std std-ref">Signer</span></a>.</p>
+</dd>
+<dt><sup>prototype</sup> . estimate . <em>functionName</em></dt>
+<dd>An object that maps each ABI function name to a function that will
+estimate the cost the provided parameters.</dd>
+</dl>
+</div>
+<div class="section" id="contract-event-filters">
+<h3>Contract Event Filters<a class="headerlink" href="#contract-event-filters" title="Permalink to this headline">¶</a></h3>
+<p>Filters allow for a flexible and efficient way to fetch only a subset of the
+events that match specific criteria. The <code class="docutils literal notranslate"><span class="pre">filters</span></code> property contains a
+function for every Event in the ABI that computes a Filter for a given
+set of values. The <code class="docutils literal notranslate"><span class="pre">null</span></code> matches any value.</p>
+<dl class="docutils">
+<dt><sup>prototype</sup> . filters . <em>eventname</em></dt>
+<dd>A function that generates filters that can be listened to, using the
+<code class="docutils literal notranslate"><span class="pre">on(eventName,</span> <span class="pre">...)</span></code> function, filtered by the Event values.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id10">
+<div class="code-block-caption"><span class="caption-text"><em>Filtering Events</em></span><a class="headerlink" href="#id10" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// A filter from me to anyone</span>
+<span class="kd">let</span> <span class="nx">filterFromMe</span> <span class="o">=</span> <span class="nx">contract</span><span class="p">.</span><span class="nx">filters</span><span class="p">.</span><span class="nx">Transfer</span><span class="p">(</span><span class="nx">myAddress</span><span class="p">);</span>
+
+<span class="c1">// A filter from anyone to me</span>
+<span class="kd">let</span> <span class="nx">filterToMe</span> <span class="o">=</span> <span class="nx">contract</span><span class="p">.</span><span class="nx">filters</span><span class="p">.</span><span class="nx">Transfer</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">myAddress</span><span class="p">);</span>
+
+<span class="c1">// A filter from me AND to me</span>
+<span class="kd">let</span> <span class="nx">filterFromMeToMe</span> <span class="o">=</span> <span class="nx">contract</span><span class="p">.</span><span class="nx">filters</span><span class="p">.</span><span class="nx">Transfer</span><span class="p">(</span><span class="nx">myAddress</span><span class="p">,</span> <span class="nx">myAddress</span><span class="p">);</span>
+
+<span class="nx">contract</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">filterFromMe</span><span class="p">,</span> <span class="p">(</span><span class="nx">fromAddress</span><span class="p">,</span> <span class="nx">toAddress</span><span class="p">,</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">event</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;I sent&#39;</span><span class="p">,</span> <span class="nx">value</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="nx">contract</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">filterToMe</span><span class="p">,</span> <span class="p">(</span><span class="nx">fromAddress</span><span class="p">,</span> <span class="nx">toAddress</span><span class="p">,</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">event</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;I received&#39;</span><span class="p">,</span> <span class="nx">value</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="nx">contract</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">filterFromMeToMe</span><span class="p">,</span> <span class="p">(</span><span class="nx">fromAddress</span><span class="p">,</span> <span class="nx">toAddress</span><span class="p">,</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">event</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Myself to me&#39;</span><span class="p">,</span> <span class="nx">value</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="overrides">
+<span id="contract-overrides"></span><h2>Overrides<a class="headerlink" href="#overrides" title="Permalink to this headline">¶</a></h2>
+<p>Every Contract method may take one additional (optional) parameter which specifies the
+transaction (or call) overrides.</p>
+<div class="literal-block-wrapper docutils container" id="id11">
+<div class="code-block-caption"><span class="caption-text"><em>Contract Transaction Overrides</em></span><a class="headerlink" href="#id11" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// All overrides are optional</span>
+<span class="kd">let</span> <span class="nx">overrides</span> <span class="o">=</span> <span class="p">{</span>
+
+    <span class="c1">// The maximum units of gas for the transaction to use</span>
+    <span class="nx">gasLimit</span><span class="o">:</span> <span class="mi">23000</span><span class="p">,</span>
+
+    <span class="c1">// The price (in wei) per unit of gas</span>
+    <span class="nx">gasPrice</span><span class="o">:</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">parseUnits</span><span class="p">(</span><span class="s1">&#39;9.0&#39;</span><span class="p">,</span> <span class="s1">&#39;gwei&#39;</span><span class="p">),</span>
+
+    <span class="c1">// The nonce to use in the transaction</span>
+    <span class="nx">nonce</span><span class="o">:</span> <span class="mi">123</span><span class="p">,</span>
+
+    <span class="c1">// The amount to send with the transaction (i.e. msg.value)</span>
+    <span class="nx">value</span><span class="o">:</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">parseEther</span><span class="p">(</span><span class="s1">&#39;1.0&#39;</span><span class="p">),</span>
+
+    <span class="c1">// The chain ID (or network ID) to use</span>
+    <span class="nx">chainId</span><span class="o">:</span> <span class="mi">1</span>
+
+<span class="p">};</span>
+
+<span class="c1">// Solidity: function someFunction(address addr) public</span>
+<span class="kd">let</span> <span class="nx">tx</span> <span class="o">=</span> <span class="nx">contract</span><span class="p">.</span><span class="nx">someFunction</span><span class="p">(</span><span class="nx">addr</span><span class="p">,</span> <span class="nx">overrides</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id12">
+<div class="code-block-caption"><span class="caption-text"><em>Contract Call Overrides</em></span><a class="headerlink" href="#id12" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">overrides</span> <span class="o">=</span> <span class="p">{</span>
+
+    <span class="c1">// The address to execute the call as</span>
+    <span class="nx">from</span><span class="o">:</span> <span class="s2">&quot;0x0123456789012345678901234567890123456789&quot;</span><span class="p">,</span>
+
+    <span class="c1">// The maximum units of gas for the transaction to use</span>
+    <span class="nx">gasLimit</span><span class="o">:</span> <span class="mi">23000</span><span class="p">,</span>
+
+<span class="p">};</span>
+
+<span class="c1">// Solidity: function someFunction(address addr) public pure returns (bytes32 result)</span>
+<span class="kd">let</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">contract</span><span class="p">.</span><span class="nx">someFunction</span><span class="p">(</span><span class="nx">addr</span><span class="p">,</span> <span class="nx">overrides</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="event-emitter">
+<span id="contract-event-emitter"></span><h2>Event Emitter<a class="headerlink" href="#event-emitter" title="Permalink to this headline">¶</a></h2>
+<p>Each Contract supports many of the operations available from the <a class="reference external" href="https://nodejs.org/api/events.html#events_class_eventemitter">Event Emitter API</a>.</p>
+<p>To listen for Events, the contract requires either a <a class="reference internal" href="api-providers.html#provider-connect"><span class="std std-ref">Provider</span></a> or
+a Signer with a <a class="reference internal" href="api-providers.html#provider-connect"><span class="std std-ref">Provider</span></a>.</p>
+<div class="section" id="event-names">
+<h3>Event Names<a class="headerlink" href="#event-names" title="Permalink to this headline">¶</a></h3>
+<p>The available eventNames are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>string</strong> – The name of an event (e.g. “TestEvent” or “TestEvent(string, uint)”)</li>
+<li><strong>filter</strong> – See <a class="reference internal" href="#contract-filter"><span class="std std-ref">Contract Filters</span></a></li>
+<li><strong>*</strong> – All events</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="event-object">
+<h3>Event Object<a class="headerlink" href="#event-object" title="Permalink to this headline">¶</a></h3>
+<p>All event callbacks receive the parameters specified in the ABI as well as one additional
+Event Object with</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>blockNumber</strong>, <strong>blockHash</strong>, <strong>transactionHash</strong> – The Block and Transaction of the Log</li>
+<li><strong>address</strong> – The contract address for the Log</li>
+<li><strong>data</strong> – The Log data</li>
+<li><strong>topics</strong> – An array of the Log topics</li>
+<li><strong>args</strong> – An array of the parsed  arguments for the event</li>
+<li><strong>event</strong> – the name of the event (e.g. “Transfer”)</li>
+<li><strong>eventSignature</strong> – the full signature of the event (e.g. “Transfer(address,address,uint256)”)</li>
+<li><strong>getBlock()</strong> – A function that resolves to the Block containing the Log</li>
+<li><strong>getTransaction()</strong> – A function that resolves to the Transaction containing the Log</li>
+<li><strong>getTransactionReceipt()</strong> – A function that resolves to the Transaction Receipt containing the Log</li>
+<li><strong>removeListener()</strong> – A function that removes this callack as a listener</li>
+<li><strong>decode(data, topics)</strong> – A function that decodes data and topics into parsed arguments</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="configuring-events">
+<h3>Configuring Events<a class="headerlink" href="#configuring-events" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . on ( eventName , callback ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Contract</sup></dt>
+<dd>Registers <em>callback</em> to be called on every <em>eventName</em>. Returns the contract, so calls may be chained.</dd>
+<dt><sup>prototype</sup> . addListner ( eventName , callback ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Contract</sup></dt>
+<dd>An alias for <code class="docutils literal notranslate"><span class="pre">on</span></code>.</dd>
+<dt><sup>prototype</sup> . once ( eventName , callback ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Contract</sup></dt>
+<dd>Register <em>callback</em> to be called at most once, for <em>eventName</em>. Returns the contract, so calls may be chained.</dd>
+<dt><sup>prototype</sup> . emit ( eventName , … ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>boolean</sup></dt>
+<dd>Trigger all callbacks for <em>eventName</em>, returning true if there was at
+least one listener. This should generally not be called directly.</dd>
+<dt><sup>prototype</sup> . listenerCount ( [ eventName ] ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>number</sup></dt>
+<dd>Returns the number of callbacks registered for <em>eventName</em>.</dd>
+<dt><sup>prototype</sup> . listeners ( eventName ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Listeners[]</sup></dt>
+<dd>Returns a list of callbacks for <em>eventName</em>.</dd>
+<dt><sup>prototype</sup> . removeAllListeners ( eventName ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Contract</sup></dt>
+<dd>De-registers all listeners for <em>eventName</em>. Returns the contract, so calls may be chained.</dd>
+<dt><sup>prototype</sup> . removeListener ( eventName , callback ) &nbsp; <sup>=&gt;</sup> &nbsp; <sup>Contract</sup></dt>
+<dd>De-registers the specific <em>callback</em> for <em>eventName</em>. Returns the contract, so calls may be chained.</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id13">
+<div class="code-block-caption"><span class="caption-text"><em>Events</em></span><a class="headerlink" href="#id13" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">contract</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;ValueChanged&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nx">oldValue</span><span class="p">,</span> <span class="nx">newValue</span><span class="p">,</span> <span class="nx">event</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">oldValue</span><span class="p">,</span> <span class="nx">newValue</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="providers-vs-signers">
+<span id="id2"></span><h2>Providers vs Signers<a class="headerlink" href="#providers-vs-signers" title="Permalink to this headline">¶</a></h2>
+<p>A Contract object has a notion of an “frame of reference”, which will determine
+what type of access and whom the Contract is enacted upon as. This is specified
+by the <strong>providerOrSigner</strong> parameter when connecting to a Contract.</p>
+<p>There are three possible cases for connecting a Contract using the providerOrSigner.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="52%" />
+<col width="48%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">providerOrSigner</th>
+<th class="head">Operation Privileges</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="api-providers.html#provider-connect"><span class="std std-ref">Provider</span></a></td>
+<td>Read-Only Access</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="api-wallet.html#signer"><span class="std std-ref">Signer</span></a> (without a provider)</td>
+<td>Write-Only Access (as account owner)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="api-wallet.html#signer"><span class="std std-ref">Signer</span></a> (with a provider)</td>
+<td>Read and Write Access (as account owner)</td>
+</tr>
+</tbody>
+</table>
+<p>The <strong>providerOrSigner</strong> is immutable, so to change the “frame of reference” to
+another account or provider, use the <code class="docutils literal notranslate"><span class="pre">connect</span></code> function.</p>
+<dl class="docutils">
+<dt><sup>prototype</sup> . connect ( providerOrSigner )</dt>
+<dd>Create a <strong>new instance</strong> of the Contract object connected as <em>providerOrSigner</em>.</dd>
+</dl>
+</div>
+<div class="section" id="types">
+<h2>Types<a class="headerlink" href="#types" title="Permalink to this headline">¶</a></h2>
+<p>There are many variable types available in <em>Solidity</em>, some which convert
+to and from JavaScript gracefully, and others that do not. Here are some
+note regarding passing and returning values in Contracts.</p>
+<div class="section" id="bytes">
+<h3>Bytes<a class="headerlink" href="#bytes" title="Permalink to this headline">¶</a></h3>
+<p>Bytes are available in fixed-length or dynamic-length variants. In both cases, the
+values are returned as a hex string and may be passed in as either a hex string or
+as an <a class="reference internal" href="api-utils.html#arrayish"><span class="std std-ref">arrayish</span></a>.</p>
+<p>To convert the string into an array, use the <a class="reference internal" href="api-utils.html#arrayish"><span class="std std-ref">arrayify()</span></a> utility function.</p>
+</div>
+<div class="section" id="integers">
+<h3>Integers<a class="headerlink" href="#integers" title="Permalink to this headline">¶</a></h3>
+<p>Integers in <em>solidity</em> are a fixed number of bits (aligned to the nearest byte)
+and are available in signed and unsigned variants.</p>
+<p>For example, a <strong>uint256</strong> is 256 bits (32 bytes) and unsigned. An <strong>int8</strong>
+is 8 bits (1 byte) and signed.</p>
+<p>When the type is 48 bits (6 bytes) or less, values are returned as a JavaScript
+Number, since Javascript Numbers are safe to use up to 53 bits.</p>
+<p>Any types with 56 bits (7 bytes) or more will be returned as a BigNumber,
+even if the <em>value</em> is within the 53 bit safe range.</p>
+<p>When passing numeric values in, JavaScript Numbers, hex strings or any BigNumber
+is acceptable (however, take care when using JavaScript Numbers and performing
+mathematical operations on them).</p>
+<p>The <strong>uint</strong> and <strong>int</strong> types are aliases for <strong>uint256</strong> and <strong>int256</strong>,
+respectively.</p>
+</div>
+<div class="section" id="strings">
+<h3>Strings<a class="headerlink" href="#strings" title="Permalink to this headline">¶</a></h3>
+<p>For short strings, many Contracts use a bytes32 to encode a null-terminated
+string representation, rather than a length-prefixed representation, so the
+<a class="reference internal" href="api-utils.html#bytes32string"><span class="std std-ref">formatBytes32String</span></a> and <a class="reference internal" href="api-utils.html#bytes32string"><span class="std std-ref">parseBytes32String</span></a>
+utility functions can be used to handle this conversion.</p>
+<p>To convert between the two dynamic types, strings and bytes, the
+<a class="reference internal" href="api-utils.html#utf8-strings"><span class="std std-ref">toUtf8Bytes()</span></a> and <a class="reference internal" href="api-utils.html#utf8-strings"><span class="std std-ref">toUtf8String()</span></a>
+utility functions can be used.</p>
+</div>
+<div class="section" id="structs">
+<h3>Structs<a class="headerlink" href="#structs" title="Permalink to this headline">¶</a></h3>
+<p>Structs can be specified as Objects with their named properties, or as an Array,
+the same length as the struct.</p>
+<p><strong>Constant</strong> methods which return a single item, return that item directly. If the
+method returns multiple values then an object is returned which can be accessed by
+either the named properties or by their indices, in which case both point to the
+<strong>same instance</strong>.</p>
+<div class="literal-block-wrapper docutils container" id="id14">
+<div class="code-block-caption"><span class="caption-text"><em>Example Return Types</em></span><a class="headerlink" href="#id14" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> *  Contract Methods</span>
+<span class="cm"> *</span>
+<span class="cm"> *  function oneItem() public view returns (uint256 param1);</span>
+<span class="cm"> *  function twoItems() public view returns (uint256 param1, uint256 param2);</span>
+<span class="cm"> *</span>
+<span class="cm"> */</span>
+
+ <span class="kd">let</span> <span class="nx">resultOne</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">oneItem</span><span class="p">();</span>
+ <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">resultOne</span><span class="p">);</span>
+ <span class="c1">// 1337</span>
+
+ <span class="kd">let</span> <span class="nx">resultTwo</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">twoItems</span><span class="p">();</span>
+ <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">resultTwo</span><span class="p">);</span>
+ <span class="c1">// {</span>
+ <span class="c1">//    &quot;param1&quot;: 1337,</span>
+ <span class="c1">//    &quot;param2&quot;: 42,</span>
+ <span class="c1">//    0: 1337,</span>
+ <span class="c1">//    1: 42,</span>
+ <span class="c1">//    length: 2</span>
+ <span class="c1">// }</span>
+
+ <span class="nx">assert</span><span class="p">.</span><span class="nx">ok</span><span class="p">(</span><span class="nx">resultTwo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">===</span> <span class="nx">resultTwo</span><span class="p">.</span><span class="nx">param1</span><span class="p">);</span>
+ <span class="nx">assert</span><span class="p">.</span><span class="nx">ok</span><span class="p">(</span><span class="nx">resultTwo</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">===</span> <span class="nx">resultTwo</span><span class="p">.</span><span class="nx">param2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="filtering-events">
+<span id="contract-filter"></span><h2>Filtering Events<a class="headerlink" href="#filtering-events" title="Permalink to this headline">¶</a></h2>
+<p>On every contract, there is a <code class="docutils literal notranslate"><span class="pre">filters</span></code> property, which can be used to
+generate an event filter. And event filter can be passed into the <code class="docutils literal notranslate"><span class="pre">on(eventName)</span></code>
+of a contract.</p>
+<div class="literal-block-wrapper docutils container" id="id15">
+<div class="code-block-caption"><span class="caption-text"><em>Find all ERC-20 transfers to myAddress</em></span><a class="headerlink" href="#id15" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// The null field indicates any value matches, this specifies</span>
+<span class="c1">// &quot;any Transfer from any to myAddress&quot;</span>
+<span class="kd">let</span> <span class="nx">filter</span> <span class="o">=</span> <span class="nx">contract</span><span class="p">.</span><span class="nx">filters</span><span class="p">.</span><span class="nx">Transfer</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">myAddress</span><span class="p">);</span>
+
+<span class="c1">// Listen for our filtered results</span>
+<span class="nx">contract</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">filter</span><span class="p">,</span> <span class="p">(</span><span class="nx">from</span><span class="p">,</span> <span class="nx">to</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;I received &#39;</span> <span class="o">+</span> <span class="nx">value</span><span class="p">.</span><span class="nx">toString</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39; tokens from &#39;</span> <span class="o">+</span> <span class="nx">from</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="application-binary-interface-abi">
+<span id="contract-abi"></span><h2>Application Binary Interface (ABI)<a class="headerlink" href="#application-binary-interface-abi" title="Permalink to this headline">¶</a></h2>
+<p>Each Contract has a description of its interface, which describes each function
+and event.</p>
+<p>The Solidity compiler generates the ABI in a JSON format, which can be used as
+a JSON string or parsed as a JavaScript Object. This is generated by the
+compiler and can be loaded as a file, or copied into the source code.</p>
+<p>The ABI may also be specified using <a class="reference external" href="https://blog.ricmoo.com/human-readable-contract-abis-in-ethers-js-141902f4d917">Human-Readable ABI</a>, which is much easier
+to use when typing in an ABI by hand, for example, as well as easier to read. This
+is simply an array of strings, each of which is the Solidity function or event
+signature.</p>
+<div class="literal-block-wrapper docutils container" id="id16">
+<div class="code-block-caption"><span class="caption-text"><em>Human-Readable ABI</em></span><a class="headerlink" href="#id16" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">ABI</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;event Transfer(address from, address to, uint amount)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;function transfer(address to, uint amount)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;function symbol() view returns (string)&quot;</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="api-utils.html" class="btn btn-neutral float-right" title="Utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="api-providers.html" class="btn btn-neutral" title="Providers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

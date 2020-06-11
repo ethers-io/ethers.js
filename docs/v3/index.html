@@ -1,0 +1,366 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>What is ethers.js &mdash; ethers.js 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  
+    <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="ethers.js 3.0.0 documentation" href="#"/>
+        <link rel="next" title="Getting Started" href="getting-started.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface (API)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">ethers.js</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>What is ethers.js</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="what-is-ethers-js">
+<h1>What is ethers.js<a class="headerlink" href="#what-is-ethers-js" title="Permalink to this headline">¶</a></h1>
+<p>This library (which was made for and used by ethers.io) is designed to make it
+easier to write client-side JavaScript based wallets, keeping the private key on
+the owner’s machine at all times.</p>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting-started.html#installing-in-node-js">Installing in Node.js</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started.html#including-in-web-applications">Including in Web Applications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface (API)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api-wallet.html">Wallets</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api-wallet.html#creating-instances">Creating Instances</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-wallet.html#prototype">Prototype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-wallet.html#blockchain-operations">Blockchain Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-wallet.html#parsing-transactions">Parsing Transactions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-wallet.html#verifying-messages">Verifying Messages</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html">Providers API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api-providers.html#connecting-to-ethereum">Connecting to Ethereum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-providers.html#prototype">Prototype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-providers.html#account-actions">Account Actions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-providers.html#blockchain-status">Blockchain Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-providers.html#ethereum-name-resolution">Ethereum Name Resolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-providers.html#contract-execution">Contract Execution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-providers.html#contract-state">Contract State</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-providers.html#events">Events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-providers.html#objects">Objects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-providers.html#provider-specific-extra-api-calls">Provider Specific Extra API Calls</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-contract.html">Contracts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api-contract.html#connecting-to-a-contract">Connecting to a Contract</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-contract.html#prototype">Prototype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-contract.html#result-types">Result Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-contract.html#deploying-a-contract">Deploying a Contract</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-contract.html#custom-signer">Custom Signer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-utils.html">Utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api-utils.html#big-numbers">Big Numbers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-utils.html#ether-strings-and-wei">Ether Strings and Wei</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-utils.html#addresses">Addresses</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-utils.html#utf-8-strings">UTF-8 Strings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-utils.html#cryptographic-functions">Cryptographic Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-utils.html#solidity-cryptographic-functions">Solidity Cryptographic Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-utils.html#arrayish">Arrayish</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-utils.html#hex-strings">Hex Strings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-utils.html#contract-addresses">Contract Addresses</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api-advanced.html#hdnode">HDNode</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#creating-instances">Creating Instances</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#prototype">Prototype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#static-methods">Static Methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#examples"><em>Examples</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-advanced.html#interface">Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#creating-an-instance">Creating an Instance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#id1">Prototype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#id2"><em>Examples</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-advanced.html#abi-coder">ABI Coder</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#id3">Creating Instances</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#static-properties">Static Properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#id4">Prototype</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-advanced.html#provider-sub-classing">Provider (Sub-Classing)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#id5">Static Methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#id6">Prototype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#id7"><em>Examples</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-advanced.html#signing-key">Signing Key</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#id8">Creating Instances</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#id9">Static Methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#id10">Prototype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#id11"><em>Examples</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-advanced.html#recursive-length-prefixed-encoding-rlp">Recursive-Length Prefixed Encoding (RLP)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#id12">Static Methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-advanced.html#id13"><em>Examples</em></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Cookbook</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cookbook.html#dump-all-json-wallet-balances-in-current-directory">Dump All JSON Wallet Balances (in current directory)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook.html#empty-one-account-into-another">Empty One Account into Another</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook.html#transactions-confirm-ui-with-a-custom-signer">Transactions Confirm UI (with a Custom Signer)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook.html#break-apart-r-s-and-v-from-a-message-signature">Break Apart r, s and v from a Message Signature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook.html#coalesce-jaxx-wallets">Coalesce Jaxx Wallets</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cookbook.html#source-code"><em>Source Code</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook.html#access-funds-in-a-mnemonic-phrase-wallet">Access Funds in a Mnemonic Phrase Wallet</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cookbook.html#id1"><em>Source Code</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook.html#custom-provider">Custom Provider</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notes.html#why-can-t-i-just-use-numbers">Why can’t I just use numbers?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes.html#promises">Promises</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="notes.html#examples"><strong>Examples</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="notes.html#checksum-address">Checksum Address</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notes.html#icap-address">ICAP Address</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+</div>
+<hr class="docutils" />
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="getting-started.html" class="btn btn-neutral float-right" title="Getting Started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'3.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

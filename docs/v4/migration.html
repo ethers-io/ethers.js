@@ -1,0 +1,895 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Migration Guides &mdash; ethers.js 4.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Notes" href="notes.html" />
+    <link rel="prev" title="React Native" href="cookbook-react.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface (API)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Cookbook</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Migration Guides</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#migrating-from-web3-to-ethers-v4">Migrating from Web3 to ethers v4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#migrating-from-ethers-v3-to-ethers-v4">Migrating from ethers v3 to ethers v4</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#constants">Constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#deploying-contracts">Deploying Contracts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#encrypted-wallets">Encrypted Wallets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#events">Events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fetching-json">Fetching JSON</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#interfaces">Interfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#networks">Networks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#parsing-transactions">Parsing Transactions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#custom-signer">Custom Signer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#default-provider">Default Provider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#big-number">Big Number</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#jsonrpcprovider">JsonRpcProvider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#verifying-messages">Verifying Messages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#waiting-for-transactions">Waiting for Transactions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ethers.js</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Migration Guides</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/migration.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="migration-guides">
+<span id="migration"></span><h1>Migration Guides<a class="headerlink" href="#migration-guides" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="migrating-from-web3-to-ethers-v4">
+<h2>Migrating from Web3 to ethers v4<a class="headerlink" href="#migrating-from-web3-to-ethers-v4" title="Permalink to this headline">¶</a></h2>
+<p>Todo: This is coming soon.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="migrating-from-ethers-v3-to-ethers-v4">
+<h2>Migrating from ethers v3 to ethers v4<a class="headerlink" href="#migrating-from-ethers-v3-to-ethers-v4" title="Permalink to this headline">¶</a></h2>
+<p>A lot of the functionality has remained the same, but there has been some
+slight refactoring and improved paradigms.</p>
+<hr class="docutils" />
+<div class="section" id="constants">
+<h3>Constants<a class="headerlink" href="#constants" title="Permalink to this headline">¶</a></h3>
+<p>All constants have moved from the utils to the root ethers object.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text"><em>Constants — ethers v3</em></span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">one</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">constants</span><span class="p">.</span><span class="nx">One</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text"><em>Constants — ethers v4</em></span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">one</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">constants</span><span class="p">.</span><span class="nx">One</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="deploying-contracts">
+<h3>Deploying Contracts<a class="headerlink" href="#deploying-contracts" title="Permalink to this headline">¶</a></h3>
+<p>Deploying contracts has undergone some significant change. The new API is more
+seamless and reduces the amount of low-level understanding that is required,
+such as the details of how <em>init transaction</em> behave.</p>
+<p>More complex and complete objects are also returned through-out the
+process, so there are far less calls to utility functions after a deployment
+required to populate databases and track status.</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text"><em>ethers v3</em></span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">tx</span> <span class="o">=</span> <span class="nx">Contract</span><span class="p">.</span><span class="nx">getDeployTransaction</span><span class="p">(</span><span class="nx">bytecode</span><span class="p">,</span> <span class="nx">abi</span><span class="p">,</span> <span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">);</span>
+
+<span class="c1">// overrides</span>
+<span class="nx">tx</span><span class="p">.</span><span class="nx">gasLimit</span> <span class="o">=</span> <span class="mi">1500000</span><span class="p">;</span>
+
+<span class="nx">wallet</span><span class="p">.</span><span class="nx">sendTransaction</span><span class="p">(</span><span class="nx">tx</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">tx</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">contractAddress</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">getContractAddress</span><span class="p">(</span><span class="nx">tx</span><span class="p">);</span>
+    <span class="kd">let</span> <span class="nx">contract</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Contract</span><span class="p">(</span><span class="nx">contractAddress</span><span class="p">,</span> <span class="nx">abi</span><span class="p">,</span> <span class="nx">wallet</span><span class="p">);</span>
+    <span class="nx">provider</span><span class="p">.</span><span class="nx">waitForTransaction</span><span class="p">(</span><span class="nx">tx</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">tx</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+        <span class="nx">provider</span><span class="p">.</span><span class="nx">getTransactionReceipt</span><span class="p">(</span><span class="nx">tx</span><span class="p">.</span><span class="nx">hash</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">receipt</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">receipt</span><span class="p">.</span><span class="nx">status</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;failed to deploy&#39;</span><span class="p">);</span>
+            <span class="p">}</span>
+            <span class="nx">contract</span><span class="p">.</span><span class="nx">someFunction</span><span class="p">();</span>
+        <span class="p">});</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text"><em>Deploy a Contract — ethers v4</em></span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Construct a Contract Factory</span>
+<span class="kd">let</span> <span class="nx">factory</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">ContractFactory</span><span class="p">(</span><span class="nx">abi</span><span class="p">,</span> <span class="nx">bytecode</span><span class="p">,</span> <span class="nx">signer</span><span class="p">);</span>
+
+<span class="c1">// Deploy automatically detects gasLimit and all other parameters</span>
+<span class="c1">// Overrides can optionally be passed as an extra parameter</span>
+
+<span class="c1">// Optional; all unspecified values will queried from the network</span>
+<span class="kd">let</span> <span class="nx">overrides</span> <span class="o">=</span> <span class="p">{</span> <span class="p">};</span>
+
+<span class="nx">factory</span><span class="p">.</span><span class="nx">deploy</span><span class="p">(</span><span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">,</span> <span class="nx">overrides</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">contract</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="c1">// The contract is returned immediately; it has not been mined yet</span>
+
+    <span class="c1">// The contract known its address (before it is even mined)</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">contract</span><span class="p">.</span><span class="nx">address</span><span class="p">);</span>
+
+    <span class="c1">// You can access the in-flight transaction that is currently waiting to be mined</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">contract</span><span class="p">.</span><span class="nx">deployTransaction</span><span class="p">);</span>
+    <span class="c1">// A full transaction with:</span>
+    <span class="c1">// - from</span>
+    <span class="c1">// - nonce</span>
+    <span class="c1">// - hash</span>
+    <span class="c1">// - all other Transaction Response fields</span>
+    <span class="c1">// - wait() =&gt; Promise that resolves to the TransactionReceipt</span>
+
+    <span class="c1">// The &quot;deployed()&quot; function will return a Promise that resolves</span>
+    <span class="c1">// to the contract, once it has been mined. If the contract fails</span>
+    <span class="c1">// to deploy, the Promise will reject.</span>
+    <span class="nx">contract</span><span class="p">.</span><span class="nx">deployed</span><span class="p">().</span><span class="nx">then</span><span class="p">((</span><span class="nx">contract</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+        <span class="c1">// The contract is now deployed</span>
+        <span class="nx">contract</span><span class="p">.</span><span class="nx">someFunction</span><span class="p">();</span>
+
+    <span class="p">},</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+        <span class="c1">// The transaction failed to deploy</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Failed to deploy in TX:&#39;</span><span class="p">,</span> <span class="nx">error</span><span class="p">.</span><span class="nx">transactionHash</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text"><em>Deploy a Contract with async/await — ethers v4</em></span><a class="headerlink" href="#id5" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">async</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">factory</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">ContractFactory</span><span class="p">(</span><span class="nx">abi</span><span class="p">,</span> <span class="nx">bytecode</span><span class="p">,</span> <span class="nx">signer</span><span class="p">);</span>
+
+    <span class="kd">let</span> <span class="nx">contract</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">factory</span><span class="p">.</span><span class="nx">deploy</span><span class="p">(</span><span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">);</span>
+
+    <span class="k">try</span> <span class="p">{</span>
+        <span class="nx">await</span> <span class="nx">contract</span><span class="p">.</span><span class="nx">deployed</span><span class="p">();</span>
+
+    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Failed to deploy in TX:&#39;</span><span class="p">,</span> <span class="nx">error</span><span class="p">.</span><span class="nx">transactionHash</span><span class="p">);</span>
+        <span class="k">throw</span> <span class="nx">error</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nx">contract</span><span class="p">.</span><span class="nx">someFunction</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text"><em>Get Deployment Transaction — ethers v4</em></span><a class="headerlink" href="#id6" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// If you still need the deployment transaction, and don&#39;t wish to</span>
+<span class="c1">// actually deploy, you can much more easily just use the Interface</span>
+<span class="c1">// object without the need for a provider or signer.</span>
+
+<span class="kd">let</span> <span class="nx">factory</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">ContractFactory</span><span class="p">(</span><span class="nx">abi</span><span class="p">,</span> <span class="nx">bytecode</span><span class="p">);</span>
+
+<span class="kd">let</span> <span class="nx">tx</span> <span class="o">=</span> <span class="nx">factory</span><span class="p">.</span><span class="nx">getDeployTransaction</span><span class="p">(</span><span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="encrypted-wallets">
+<h3>Encrypted Wallets<a class="headerlink" href="#encrypted-wallets" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text"><em>Checking JSON Wallets — ethers v3</em></span><a class="headerlink" href="#id7" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">isJsonWallet</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">.</span><span class="nx">isEncryptedWallet</span><span class="p">(</span><span class="nx">json</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text"><em>Checking JSON Wallets — ethers v4</em></span><a class="headerlink" href="#id8" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">address</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">getJsonWalletAddress</span><span class="p">(</span><span class="nx">json</span><span class="p">);</span>
+<span class="kd">let</span> <span class="nx">isJsonWallet</span> <span class="o">=</span> <span class="p">(</span><span class="nx">address</span> <span class="o">!==</span> <span class="kc">null</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text"><em>Decrypting JSON Wallets — ethers v3</em></span><a class="headerlink" href="#id9" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">wallet</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">.</span><span class="nx">fromEncryptedWallet</span><span class="p">(</span><span class="nx">json</span><span class="p">,</span> <span class="nx">password</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id10">
+<div class="code-block-caption"><span class="caption-text"><em>Decrypting JSON Wallets — ethers v4</em></span><a class="headerlink" href="#id10" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">wallet</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">.</span><span class="nx">fromEncryptedJson</span><span class="p">(</span><span class="nx">json</span><span class="p">,</span> <span class="nx">password</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="events">
+<h3>Events<a class="headerlink" href="#events" title="Permalink to this headline">¶</a></h3>
+<p>Events now behave like a modern JavaScript Event Emitter, rather than a 1995
+web browser.</p>
+<p>The events now play nicer with the arrow operator (i.e. <code class="docutils literal notranslate"><span class="pre">()</span> <span class="pre">=&gt;</span> <span class="pre">{</span> <span class="pre">...</span> <span class="pre">}</span></code>),
+since rather than modifying the <cite>this</cite> inside the callbacks, an additional
+rich object is passed along.</p>
+<div class="literal-block-wrapper docutils container" id="id11">
+<div class="code-block-caption"><span class="caption-text"><em>Events — ethers v3</em></span><a class="headerlink" href="#id11" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Solidity: event SomeEvent(address foo, uint256 bar)</span>
+<span class="nx">contract</span><span class="p">.</span><span class="nx">onsomeevent</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">foo</span><span class="p">,</span> <span class="nx">bar</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">foo</span><span class="p">,</span> <span class="nx">bar</span><span class="p">);</span>
+    <span class="c1">// The Log was available at this:</span>
+    <span class="c1">// - this.event</span>
+    <span class="c1">// - this.removeListener()</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id12">
+<div class="code-block-caption"><span class="caption-text"><em>Listening to an Event — ethers v4</em></span><a class="headerlink" href="#id12" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Solidity: event SomeEvent(address foo, uint256 bar)</span>
+<span class="nx">contract</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;SomeEvent&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">foo</span><span class="p">,</span> <span class="nx">bar</span><span class="p">,</span> <span class="nx">eventInfo</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">foo</span><span class="p">,</span> <span class="nx">bar</span><span class="p">);</span>
+    <span class="c1">// eventInfo</span>
+    <span class="c1">//  - Log (blockNumber, blockHash, txHash, removed, address, data, etc.)</span>
+    <span class="c1">//  - args: [ foo, bar ]</span>
+    <span class="c1">//  - decode: (data, topics) =&gt; [ foo, bar ]</span>
+    <span class="c1">//  - event: &quot;SomeEvent&quot;</span>
+    <span class="c1">//  - eventSignature: &quot;SomeEvent(address,uint256)&quot;</span>
+    <span class="c1">//  - removeListener: () =&gt; removes this listener</span>
+    <span class="c1">//  - getBlock: () =&gt; returns a Promise of the block</span>
+    <span class="c1">//  - getTransaction: () =&gt; returns a Promise of transaction</span>
+    <span class="c1">//  - getTransactionReceipt: () =&gt; returns a Promise of the receipt</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id13">
+<div class="code-block-caption"><span class="caption-text"><em>Indexed Events — ethers v3</em></span><a class="headerlink" href="#id13" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Detecting a parameters is an indexed hash, and not a value</span>
+<span class="nx">contract</span><span class="p">.</span><span class="nx">someEvent</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">foo</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">foo</span><span class="p">.</span><span class="nx">indexed</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// The value is just a hash to filter by</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id14">
+<div class="code-block-caption"><span class="caption-text"><em>Indexed Events — ethers v4</em></span><a class="headerlink" href="#id14" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">Indexed</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">types</span><span class="p">.</span><span class="nx">Indexed</span><span class="p">;</span>
+
+<span class="c1">// Detecting a parameters is an indexed hash, and not a value</span>
+<span class="nx">contract</span><span class="p">.</span><span class="nx">someEvent</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">foo</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">Indexed</span><span class="p">.</span><span class="nx">isIndexed</span><span class="p">(</span><span class="nx">foo</span><span class="p">))</span> <span class="p">{</span>
+        <span class="c1">// The value is just a hash to filter by</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id15">
+<div class="code-block-caption"><span class="caption-text"><em>Filtering Events — ethers v4</em></span><a class="headerlink" href="#id15" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Solidity: event SomeEvent(address indexed foo, uint256 bar)</span>
+<span class="kd">let</span> <span class="nx">address</span> <span class="o">=</span> <span class="s1">&#39;0x8B40a2E27C5E87aa66DfA7F80BF675176F49DCA7&#39;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">filter</span> <span class="o">=</span> <span class="nx">contract</span><span class="p">.</span><span class="nx">filters</span><span class="p">.</span><span class="nx">SomeEvent</span><span class="p">(</span><span class="nx">address</span><span class="p">,</span> <span class="kc">null</span><span class="p">);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">filter</span><span class="p">);</span>
+<span class="c1">// {</span>
+<span class="c1">//    address: contract.address,</span>
+<span class="c1">//    topics: [</span>
+<span class="c1">//        0xdde371250dcd21c331edbb965b9163f4898566e8c60e28868533281edf66ab03,</span>
+<span class="c1">//        0x0000000000000000000000008b40a2e27c5e87aa66dfa7f80bf675176f49dca7</span>
+<span class="c1">//    ]</span>
+<span class="c1">// }</span>
+
+<span class="nx">contract</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">filter</span><span class="p">,</span> <span class="p">(</span><span class="nx">foo</span><span class="p">,</span> <span class="nx">bar</span><span class="p">,</span> <span class="nx">eventInfo</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">foo</span> <span class="o">===</span> <span class="nx">address</span><span class="p">);</span>
+    <span class="c1">// true</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<p>If there are multiple events with the same name:</p>
+<div class="literal-block-wrapper docutils container" id="id16">
+<div class="code-block-caption"><span class="caption-text"><em>Event Name Collision — ethers v4</em></span><a class="headerlink" href="#id16" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Solidity</span>
+<span class="c1">// - event SomeEvent(address foo, uint256 bar)</span>
+<span class="c1">// - event SomeEvent(address foo, address bar)</span>
+
+<span class="nx">contract</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;SomeEvent(address, uint256)&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">foo</span><span class="p">,</span> <span class="nx">bar</span><span class="p">,</span> <span class="nx">eventInfo</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+<span class="p">});</span>
+
+<span class="nx">contract</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;SomeEvent(address, address)&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">foo</span><span class="p">,</span> <span class="nx">bar</span><span class="p">,</span> <span class="nx">eventInfo</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="fetching-json">
+<h3>Fetching JSON<a class="headerlink" href="#fetching-json" title="Permalink to this headline">¶</a></h3>
+<p>The JSON fetching routine, since it was mostly used for Providers was
+on the Provider object in v3. In v4, it has moved to utils, since there
+are other common cases where it may be useful.</p>
+<div class="literal-block-wrapper docutils container" id="id17">
+<div class="code-block-caption"><span class="caption-text"><em>Fetching JSON — ethers v3</em></span><a class="headerlink" href="#id17" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">Provider</span><span class="p">.</span><span class="nx">fetchJson</span><span class="p">(</span><span class="nx">url</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">object</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id18">
+<div class="code-block-caption"><span class="caption-text"><em>Fetching JSON — ethers v4</em></span><a class="headerlink" href="#id18" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">fetchJson</span><span class="p">(</span><span class="nx">url</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">object</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="interfaces">
+<h3>Interfaces<a class="headerlink" href="#interfaces" title="Permalink to this headline">¶</a></h3>
+<p>This has always been a fairly low-level API, and mostly available for
+framework developers and other tools that require quite specific access
+to working with an ABI. Most of the changes are to simplify the interaction,
+so while there will probably be changes required, if you use this class, the
+complexity and size of your code should be reduced.</p>
+<div class="literal-block-wrapper docutils container" id="id19">
+<div class="code-block-caption"><span class="caption-text"><em>Interface — ethers v3</em></span><a class="headerlink" href="#id19" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">iface</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Interface</span><span class="p">(</span><span class="nx">address</span><span class="p">,</span> <span class="nx">abi</span><span class="p">,</span> <span class="nx">providerOrSigner</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id20">
+<div class="code-block-caption"><span class="caption-text"><em>Interface — ethers v4</em></span><a class="headerlink" href="#id20" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">iface</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">Interface</span><span class="p">(</span><span class="nx">address</span><span class="p">,</span> <span class="nx">abi</span><span class="p">,</span> <span class="nx">providerOrSigner</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id21">
+<div class="code-block-caption"><span class="caption-text"><em>Function Description — ethers v3</em></span><a class="headerlink" href="#id21" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">address</span> <span class="o">=</span> <span class="s2">&quot;0x8B40a2E27C5E87aa66DfA7F80BF675176F49DCA7&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">value</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">;</span>
+
+<span class="c1">// Solidity: function someFunc(address foo, uint256 bar) constant returns (address result)</span>
+<span class="kd">let</span> <span class="nx">functionCallable</span> <span class="o">=</span> <span class="nx">iface</span><span class="p">.</span><span class="nx">functionst</span><span class="p">.</span><span class="nx">someFunc</span>
+<span class="c1">// functionInfo</span>
+<span class="c1">// - inputs: { names: [ &quot;foo&quot;, &quot;bar&quot; ], types: [ &quot;address&quot;, &quot;uint256&quot; ] }</span>
+<span class="c1">// - outputs: { names: [ &quot;result&quot; ], types: [ &quot;address&quot; ] }</span>
+<span class="c1">// - payable: false</span>
+<span class="c1">// - parseResult: (data) =&gt; any</span>
+<span class="c1">// - signature: &quot;someFunc(address,uint256)&quot;</span>
+<span class="c1">// - sighash: &quot;0xd90a6a67&quot;</span>
+
+<span class="kd">let</span> <span class="nx">data</span> <span class="o">=</span> <span class="nx">functionCallable</span><span class="p">(</span><span class="nx">address</span><span class="p">,</span> <span class="nx">value</span><span class="p">);</span>
+<span class="kd">let</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">functionCallable</span><span class="p">.</span><span class="nx">parseResult</span><span class="p">(</span><span class="nx">callResultData</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id22">
+<div class="code-block-caption"><span class="caption-text"><em>Function Description — ethers v4</em></span><a class="headerlink" href="#id22" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">address</span> <span class="o">=</span> <span class="s2">&quot;0x8B40a2E27C5E87aa66DfA7F80BF675176F49DCA7&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">value</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">;</span>
+
+<span class="c1">// Solidity: function someFunc(address foo, uint256 bar) constant returns (address result)</span>
+<span class="kd">let</span> <span class="nx">functionInfo</span> <span class="o">=</span> <span class="nx">iface</span><span class="p">.</span><span class="nx">functions</span><span class="p">.</span><span class="nx">someFunc</span><span class="p">;</span>
+<span class="c1">// functionInfo</span>
+<span class="c1">// - type: &quot;call&quot; (or &quot;transaction&quot; for non-constant functions)</span>
+<span class="c1">// - name: &quot;someFunc&quot;</span>
+<span class="c1">// - signature: &quot;someFunc(address,uint256)&quot;</span>
+<span class="c1">// - sighash: &quot;0xd90a6a67&quot;</span>
+<span class="c1">// - inputs: [ { name: foo&quot;, type: &quot;bar&quot; }, { name: &quot;bar&quot;, type: &quot;uint256&quot; } ]</span>
+<span class="c1">// - outputs: [ { name: &quot;result&quot;, type: &quot;address&quot; } ]</span>
+<span class="c1">// - payable: false</span>
+<span class="c1">// - encode: (params) =&gt; string</span>
+<span class="c1">// - decode: (data) =&gt; any</span>
+
+<span class="c1">// Note: This takes in an array; it no longer uses ...args</span>
+<span class="kd">let</span> <span class="nx">data</span> <span class="o">=</span> <span class="nx">functionInfo</span><span class="p">.</span><span class="nx">encode</span><span class="p">([</span> <span class="nx">address</span><span class="p">,</span> <span class="nx">value</span> <span class="p">]);</span>
+<span class="kd">let</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">functionInfo</span><span class="p">.</span><span class="nx">decode</span><span class="p">(</span><span class="nx">callResultData</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id23">
+<div class="code-block-caption"><span class="caption-text"><em>Event Description — ethers v3</em></span><a class="headerlink" href="#id23" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Solidity: event SomeEvent(address foo, uint256 bar)</span>
+<span class="kd">let</span> <span class="nx">eventInfo</span> <span class="o">=</span> <span class="nx">iface</span><span class="p">.</span><span class="nx">events</span><span class="p">.</span><span class="nx">SomeEvent</span><span class="p">;</span>
+<span class="c1">// eventInfo</span>
+<span class="c1">// - topics: [ ethers.utils.id(&quot;SomeEvent(address,uint256)&quot;) ]</span>
+<span class="c1">// - anonymous: false</span>
+<span class="c1">// - name: &quot;SomeEvent&quot;</span>
+<span class="c1">// - signature: &quot;SomeEvent(address,uint256)&quot;</span>
+<span class="c1">// - type: &quot;event&quot;</span>
+<span class="c1">// - inputs: { names: [ &#39;foo&#39;, &#39;bar&#39; ], types: [ &#39;address&#39;, &#39;uint256&#39; ] }</span>
+<span class="c1">// - parse: (topics, data) =&gt; Result</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id24">
+<div class="code-block-caption"><span class="caption-text"><em>Event Description — ethers v4</em></span><a class="headerlink" href="#id24" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Solidity: event SomeEvent(address foo, uint256 bar)</span>
+<span class="kd">let</span> <span class="nx">eventInfo</span> <span class="o">=</span> <span class="nx">iface</span><span class="p">.</span><span class="nx">events</span><span class="p">.</span><span class="nx">SomeEvent</span><span class="p">;</span>
+<span class="c1">// eventInfo</span>
+<span class="c1">// - name: &quot;SomeEvent&quot;</span>
+<span class="c1">// - signature: &quot;SomeEvent(address,bar)&quot;</span>
+<span class="c1">// - inputs: [ { name: &quot;foo&quot;, type: &quot;address&quot; }, { name: &quot;bar&quot;, type: &quot;uint256&quot; } ]</span>
+<span class="c1">// - anonymous: false</span>
+<span class="c1">// - topic: ethers.utils.id(&quot;SomeEvent(address,uint256)&quot;)</span>
+<span class="c1">// - encodeTopics: (Array&lt;any&gt;) =&gt; Array&lt;string&gt;</span>
+<span class="c1">// - decode: (data, topics) =&gt; Result</span>
+
+<span class="c1">// Create event filter topics</span>
+<span class="kd">let</span> <span class="nx">address</span> <span class="o">=</span> <span class="s1">&#39;0x8B40a2E27C5E87aa66DfA7F80BF675176F49DCA7&#39;</span><span class="p">;</span>
+<span class="nx">eventInfo</span><span class="p">.</span><span class="nx">encodeTopics</span><span class="p">(</span><span class="nx">address</span><span class="p">,</span> <span class="kc">null</span><span class="p">)</span>
+<span class="c1">// topics: [</span>
+<span class="c1">//   &quot;0xdde371250dcd21c331edbb965b9163f4898566e8c60e28868533281edf66ab03&quot;,</span>
+<span class="c1">//   &quot;0x0000000000000000000000008b40a2e27c5e87aa66dfa7f80bf675176f49dca7&quot;</span>
+<span class="c1">// ]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="networks">
+<h3>Networks<a class="headerlink" href="#networks" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id25">
+<div class="code-block-caption"><span class="caption-text"><em>Getting Network Info - ethers v3</em></span><a class="headerlink" href="#id25" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">getNetwork</span><span class="p">(</span><span class="s1">&#39;ropsten&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id26">
+<div class="code-block-caption"><span class="caption-text"><em>Getting Network Info - ethers v4</em></span><a class="headerlink" href="#id26" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">getNetwork</span><span class="p">(</span><span class="s1">&#39;ropsten&#39;</span><span class="p">);</span>
+
+<span class="c1">// Networks may now also be found by their network ID</span>
+<span class="kd">let</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">getNetwork</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+
+<span class="c1">// And networks can be validated as an object</span>
+<span class="kd">let</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">getNetwork</span><span class="p">({</span> <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;custom&quot;</span><span class="p">,</span> <span class="nx">chainId</span><span class="o">:</span> <span class="mi">1337</span> <span class="p">});</span>
+
+<span class="c1">// Validation fails; this will throw an error, since Rinkeby is not</span>
+<span class="c1">// chain ID 1 (homestead is)</span>
+<span class="kd">let</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">getNetwork</span><span class="p">({</span> <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;rinkeby&quot;</span><span class="p">,</span> <span class="nx">chainId</span><span class="o">:</span> <span class="mi">1</span> <span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="parsing-transactions">
+<h3>Parsing Transactions<a class="headerlink" href="#parsing-transactions" title="Permalink to this headline">¶</a></h3>
+<p>The transaction parsing was moved out of the Wallet and into its own class
+in the utilities, along with a general serialization API.</p>
+<div class="literal-block-wrapper docutils container" id="id27">
+<div class="code-block-caption"><span class="caption-text"><em>ethers v3</em></span><a class="headerlink" href="#id27" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">tx</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">.</span><span class="nx">parseTransaction</span><span class="p">(</span><span class="nx">rawTransaction</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id28">
+<div class="code-block-caption"><span class="caption-text"><em>ethers v4</em></span><a class="headerlink" href="#id28" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">tx</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">parseTransaction</span><span class="p">(</span><span class="nx">rawTransaction</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="custom-signer">
+<h3>Custom Signer<a class="headerlink" href="#custom-signer" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id29">
+<div class="code-block-caption"><span class="caption-text"><em>Custome Signer — ethers v3</em></span><a class="headerlink" href="#id29" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">signer</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1">// Required</span>
+    <span class="nx">getAddress</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="p">...</span> <span class="p">},</span>
+    <span class="nx">provider</span><span class="o">:</span> <span class="nx">provider</span><span class="p">,</span>
+
+    <span class="c1">// Optional</span>
+    <span class="nx">estimateGas</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">tx</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">},</span>
+    <span class="nx">sendTransaction</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">tx</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">},</span>
+    <span class="nx">sign</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">tx</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">},</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id30">
+<div class="code-block-caption"><span class="caption-text"><em>Custom Signer — JavaScript — ethers v4</em></span><a class="headerlink" href="#id30" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">function</span> <span class="nx">CustomSigner</span> <span class="p">{</span>
+    <span class="nx">ethers</span><span class="p">.</span><span class="nx">Signer</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+
+    <span class="c1">// Optional</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">provider</span> <span class="o">=</span> <span class="nx">provider</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="nx">inherits</span><span class="p">(</span><span class="nx">CustomSigner</span><span class="p">,</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Signer</span><span class="p">);</span>
+
+<span class="c1">// Required</span>
+<span class="nx">CustomSigner</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">getAddress</span> <span class="o">=</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span> <span class="p">...</span> <span class="p">};</span>
+<span class="nx">CustomSigner</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">sendTransaction</span> <span class="o">=</span> <span class="p">(</span><span class="nx">tx</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span> <span class="p">...</span> <span class="p">};</span>
+<span class="nx">CustomSigner</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">signMessage</span> <span class="o">=</span> <span class="p">(</span><span class="nx">message</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span> <span class="p">...</span> <span class="p">};</span>
+
+<span class="c1">// Optional</span>
+<span class="nx">CustomSigner</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">connect</span> <span class="o">=</span> <span class="p">(</span><span class="nx">provider</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span> <span class="p">...</span> <span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id31">
+<div class="code-block-caption"><span class="caption-text"><em>Custom Signer — TypeScript — ethers v4</em></span><a class="headerlink" href="#id31" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">Signer</span><span class="p">,</span>
+    <span class="nx">utils</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;ethers&#39;</span><span class="p">;</span>
+
+<span class="kr">import</span> <span class="p">{</span>
+    <span class="nx">Provider</span><span class="p">,</span>
+    <span class="nx">TransactionRequest</span><span class="p">,</span>
+    <span class="nx">TransactionReqponse</span>
+<span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;ethers/providers&#39;</span><span class="p">;</span>
+
+<span class="kr">class</span> <span class="nx">CustomSigner</span> <span class="kr">extends</span> <span class="nx">Signer</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">provider</span> <span class="o">=</span> <span class="nx">provider</span><span class="p">;</span>
+    <span class="nx">readony</span> <span class="nx">provider</span><span class="o">:</span> <span class="nx">Provider</span><span class="p">;</span>
+    <span class="nx">constructor</span><span class="p">(</span><span class="nx">provider</span><span class="p">)</span> <span class="p">{</span>
+         <span class="kr">super</span><span class="p">();</span>
+
+         <span class="c1">// Optional</span>
+         <span class="k">this</span><span class="p">.</span><span class="nx">provider</span> <span class="o">=</span> <span class="c1">// ...</span>
+    <span class="p">}</span>
+
+    <span class="nx">getAddress</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// Return a promise to the address</span>
+    <span class="p">};</span>
+
+    <span class="nx">sendTransaction</span> <span class="o">=</span> <span class="p">(</span><span class="nx">transaction</span><span class="o">:</span> <span class="nx">TransactionRequest</span><span class="p">)</span><span class="o">:</span> <span class="nb">Promise</span><span class="o">&lt;</span><span class="nx">TransaxctinResponse</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="c1">// This will popualte missing properties, like nonce, gasLimit, etc</span>
+        <span class="k">return</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">populateTransaction</span><span class="p">(</span><span class="nx">transaction</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">tx</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+             <span class="c1">// Send the transaction and resolve the transaction</span>
+        <span class="p">});</span>
+    <span class="p">};</span>
+
+    <span class="nx">signMessage</span><span class="p">(</span><span class="nx">message</span><span class="o">:</span> <span class="nx">string</span> <span class="o">|</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">Arrayish</span><span class="p">)</span><span class="o">:</span> <span class="nb">Promise</span><span class="o">&lt;</span><span class="nx">string</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">dataToSign</span><span class="o">:</span> <span class="nx">Uint8Array</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">hashMessage</span><span class="p">(</span><span class="nx">message</span><span class="p">);;</span>
+        <span class="c1">// Sign ths dataToSign and resolve teh flat-format signature</span>
+    <span class="p">};</span>
+
+    <span class="c1">// Optional; highly recommended</span>
+    <span class="nx">connect</span><span class="p">(</span><span class="nx">provider</span><span class="o">:</span> <span class="nx">Provider</span><span class="p">)</span><span class="o">:</span> <span class="nx">CustomSigner</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nx">CustomSigner</span><span class="p">(</span><span class="nx">provider</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="default-provider">
+<h3>Default Provider<a class="headerlink" href="#default-provider" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id32">
+<div class="code-block-caption"><span class="caption-text"><em>Default Provider — ethers v3</em></span><a class="headerlink" href="#id32" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">provider</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">getDefaultProvider</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id33">
+<div class="code-block-caption"><span class="caption-text"><em>Default Provider — ethers v4</em></span><a class="headerlink" href="#id33" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">provider</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">getDefaultProvider</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="big-number">
+<h3>Big Number<a class="headerlink" href="#big-number" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id34">
+<div class="code-block-caption"><span class="caption-text"><em>isBigNumber — ethers v3</em></span><a class="headerlink" href="#id34" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">checkBigNumber</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">isBigNumber</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id35">
+<div class="code-block-caption"><span class="caption-text"><em>isBigNumber — ethers v4</em></span><a class="headerlink" href="#id35" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">checkBigNumber</span> <span class="o">=</span> <span class="nx">BigNumber</span><span class="p">.</span><span class="nx">isBigNumber</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="jsonrpcprovider">
+<h3>JsonRpcProvider<a class="headerlink" href="#jsonrpcprovider" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id36">
+<div class="code-block-caption"><span class="caption-text"><em>Connecting — ethers v3</em></span><a class="headerlink" href="#id36" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">url</span> <span class="o">=</span> <span class="s2">&quot;http://localhost:8545&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">network</span> <span class="o">=</span> <span class="s2">&quot;rinkeby&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">provider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">JsonRpcProvider</span><span class="p">(</span><span class="nx">url</span><span class="p">,</span> <span class="nx">network</span><span class="p">);</span>
+
+<span class="c1">// Even if the network was wrong, this would mostly seem to work and</span>
+<span class="c1">// fail once the chain ID was attempted</span>
+
+<span class="c1">// The network was a synchronous property on Provider</span>
+<span class="kd">let</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">network</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id37">
+<div class="code-block-caption"><span class="caption-text"><em>Connecting — ethers v4</em></span><a class="headerlink" href="#id37" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// In v4, the network is automatically determined; you may override</span>
+<span class="c1">// the network, but it must match, or it will fail early</span>
+
+<span class="kd">let</span> <span class="nx">url</span> <span class="o">=</span> <span class="s2">&quot;http://localhost:8545&quot;</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">provider</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">providers</span><span class="p">.</span><span class="nx">JsonRpcProvider</span><span class="p">(</span><span class="nx">url</span><span class="p">);</span>
+
+<span class="c1">// The network is now an asynchronous property:</span>
+<span class="nx">provider</span><span class="p">.</span><span class="nx">getNetwork</span><span class="p">().</span><span class="nx">then</span><span class="p">((</span><span class="nx">network</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+<span class="p">});</span>
+
+<span class="c1">// One useful and common exception it that, if any async call from</span>
+<span class="c1">// the provider has ever succeeded, the synchronous network property</span>
+<span class="c1">// is then valid. The network property is populated before any</span>
+<span class="c1">// async call is made, so once an async call has finished, the network</span>
+<span class="c1">// property is available synchronously.</span>
+
+<span class="nx">async</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">await</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">getBlockNumber</span><span class="p">();</span>
+
+    <span class="kd">let</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">provider</span><span class="p">.</span><span class="nx">network</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id38">
+<div class="code-block-caption"><span class="caption-text"><em>Sending Transactions — ethers v3</em></span><a class="headerlink" href="#id38" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">provider</span><span class="p">.</span><span class="nx">sendTransaction</span><span class="p">(</span><span class="nx">rawTransaction</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">hash</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="c1">// Just a transaction hash</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id39">
+<div class="code-block-caption"><span class="caption-text"><em>Sending Transactions — ethers v4</em></span><a class="headerlink" href="#id39" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">provider</span><span class="p">.</span><span class="nx">sendTransaction</span><span class="p">(</span><span class="nx">rawTransaction</span><span class="p">).</span><span class="nx">then</span><span class="p">((</span><span class="nx">transaction</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="c1">// A full Transaction Response is returned</span>
+    <span class="c1">// - from</span>
+    <span class="c1">// - to</span>
+    <span class="c1">// - gasLimit, gasPrice</span>
+    <span class="c1">// - nonce</span>
+    <span class="c1">// - r, s, v</span>
+    <span class="c1">// - wait() =&gt; Promise that resolves the Transaction Receipt once mined</span>
+    <span class="c1">//             and rejects with an error is the stats is 0; the error</span>
+    <span class="c1">//             will have a transactionHash property as well as a</span>
+    <span class="c1">//             transaction property.</span>
+
+    <span class="kd">let</span> <span class="nx">hash</span> <span class="o">=</span> <span class="nx">transaction</span><span class="p">.</span><span class="nx">hash</span><span class="p">;</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="verifying-messages">
+<h3>Verifying Messages<a class="headerlink" href="#verifying-messages" title="Permalink to this headline">¶</a></h3>
+<p>The message verification was moved from a static class on the Wallet to the
+utilities, along with a few other functions of the elliptic curve cryptographic
+exposed.</p>
+<div class="literal-block-wrapper docutils container" id="id40">
+<div class="code-block-caption"><span class="caption-text"><em>ethers v3</em></span><a class="headerlink" href="#id40" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">signingAddress</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">Wallet</span><span class="p">.</span><span class="nx">verifyMessage</span><span class="p">(</span><span class="nx">message</span><span class="p">,</span> <span class="nx">signature</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id41">
+<div class="code-block-caption"><span class="caption-text"><em>ethers v4</em></span><a class="headerlink" href="#id41" title="Permalink to this code">¶</a></div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nx">signingAddress</span> <span class="o">=</span> <span class="nx">ethers</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">verifyMessage</span><span class="p">(</span><span class="nx">message</span><span class="p">,</span> <span class="nx">signature</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="waiting-for-transactions">
+<h3>Waiting for Transactions<a class="headerlink" href="#waiting-for-transactions" title="Permalink to this headline">¶</a></h3>
+<p>In v3, the <code class="docutils literal notranslate"><span class="pre">transaction.wait()</span></code> returned a Promise which would resolve to the
+<strong>TransactionResponse</strong> once it is mined.</p>
+<p>In v4, the <code class="docutils literal notranslate"><span class="pre">transaction.wait()</span></code> returned a Promise which would resolve to the
+<strong>TransactionReceipt</strong> once it is mined.</p>
+<hr class="docutils" />
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="notes.html" class="btn btn-neutral float-right" title="Notes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="cookbook-react.html" class="btn btn-neutral" title="React Native" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

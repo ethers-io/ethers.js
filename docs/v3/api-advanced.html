@@ -1,0 +1,857 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Low-Level API &mdash; ethers.js 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  
+    <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="ethers.js 3.0.0 documentation" href="index.html"/>
+        <link rel="next" title="Cookbook" href="cookbook.html"/>
+        <link rel="prev" title="Utilities" href="api-utils.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface (API)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Low-Level API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#hdnode">HDNode</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-instances">Creating Instances</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prototype">Prototype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#static-methods">Static Methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples"><em>Examples</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#interface">Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-an-instance">Creating an Instance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Prototype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2"><em>Examples</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#abi-coder">ABI Coder</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Creating Instances</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#static-properties">Static Properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Prototype</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#provider-sub-classing">Provider (Sub-Classing)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Static Methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">Prototype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7"><em>Examples</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#signing-key">Signing Key</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id8">Creating Instances</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">Static Methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id10">Prototype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id11"><em>Examples</em></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#recursive-length-prefixed-encoding-rlp">Recursive-Length Prefixed Encoding (RLP)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id12">Static Methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id13"><em>Examples</em></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ethers.js</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Low-Level API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api-advanced.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="low-level-api">
+<h1>Low-Level API<a class="headerlink" href="#low-level-api" title="Permalink to this headline">¶</a></h1>
+<p>These are advanced, low-level API features that should, for most people not be
+necessary to worry about.</p>
+<p>They are lightly documented here, and in the future will have more documentation,
+but the emphasis at this point is documenting the more <a class="reference internal" href="api.html#api"><span class="std std-ref">common methods</span></a>.</p>
+<hr class="docutils" />
+<div class="section" id="hdnode">
+<span id="api-hdnode"></span><h2>HDNode<a class="headerlink" href="#hdnode" title="Permalink to this headline">¶</a></h2>
+<p>A <em>Hierarchical Deterministic Wallet</em> represents a large tree of private keys
+which can reliably be reproduced from an initial seed. Each node in the tree
+is represended by an HDNode which can be descended into.</p>
+<p>A <em>mnemonic phrase</em> represents a simple way to generate the initial seed.</p>
+<p>See the <a class="reference external" href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki">BIP 32 Specification</a> to learn more about HD Wallets and hardened vs
+non-hardened nodes.</p>
+<p>See the <a class="reference external" href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki">BIP 39 Specification</a> to learn more about Mnemonic Phrases.</p>
+<div class="section" id="creating-instances">
+<h3>Creating Instances<a class="headerlink" href="#creating-instances" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>ethers . HDNode</sup> <strong>. fromMnemonic</strong> ( mnemonic )</dt>
+<dd>Create an HDNode from a <em>mnemonic</em> phrase.</dd>
+<dt><sup>ethers . HDNode</sup> <strong>. fromSeed</strong> ( seed )</dt>
+<dd>Create an HDNode from a seed.</dd>
+</dl>
+</div>
+<div class="section" id="prototype">
+<h3>Prototype<a class="headerlink" href="#prototype" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> <strong>. privateKey</strong></dt>
+<dd>The <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a> private key for this node.</dd>
+<dt><sup>prototype</sup> <strong>. publicKey</strong></dt>
+<dd>The (compressed) public key for this node.</dd>
+<dt><sup>prototype</sup> <strong>. chainCode</strong></dt>
+<dd>The chain code for this node.</dd>
+<dt><sup>prototype</sup> <strong>. index</strong></dt>
+<dd>The index (from the parent) of this node (0 for the master node).</dd>
+<dt><sup>prototype</sup> <strong>. depth</strong></dt>
+<dd>The depth within th hierarchy of this node.</dd>
+<dt><sup>prototype</sup> <strong>. derivePath</strong> ( path )</dt>
+<dd>Derive the path from this node. Path is slash (<strong>/</strong>) delimited path components.
+The first component may be “m” for master (which enforces the starting node is
+infact a master node) and each subsequent path component should be a positive
+integer (up to 31 bits), which can optionally include an apostrophe (<strong>‘</strong>) to
+indicate hardened derivation for that path components. See below for some examples.</dd>
+</dl>
+</div>
+<div class="section" id="static-methods">
+<h3>Static Methods<a class="headerlink" href="#static-methods" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>ethers . HDNode</sup> <strong>. mnemonicToEntropy</strong> ( mnemonic )</dt>
+<dd>Convert a <em>mnemonic</em> to its binary entropy. (throws an error if the checksum
+is invalid)</dd>
+<dt><sup>ethers . HDNode</sup> <strong>. entropyToMnemonic</strong> ( entropy )</dt>
+<dd>Convert the binary <em>entropy</em> to the mnemonic phrase.</dd>
+<dt><sup>ethers . HDNode</sup> <strong>. mnemonicToSeed</strong> ( mnemonic )</dt>
+<dd>Compute the BIP39 seed from <em>mnemonic</em>.</dd>
+<dt><sup>ethers . HDNode</sup> <strong>. isValidMnemonic</strong> ( string )</dt>
+<dd>Returns true if and only if the string is a valid mnemonic (including
+the checksum)</dd>
+</dl>
+</div>
+<div class="section" id="examples">
+<h3><em>Examples</em><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">HDNode</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">HDNode</span><span class="p">;</span>
+
+<span class="n">var</span> <span class="n">mnemonic</span> <span class="o">=</span> <span class="s2">&quot;radar blur cabbage chef fix engine embark joy scheme fiction master release&quot;</span><span class="p">;</span>
+
+<span class="n">var</span> <span class="n">masterNode</span> <span class="o">=</span> <span class="n">HDNode</span><span class="o">.</span><span class="n">fromMnemonic</span><span class="p">(</span><span class="n">mnemonic</span><span class="p">);</span>
+
+<span class="n">var</span> <span class="n">standardEthereum</span> <span class="o">=</span> <span class="n">masterNode</span><span class="o">.</span><span class="n">derivePath</span><span class="p">(</span><span class="s2">&quot;m/44&#39;/60&#39;/0&#39;/0/0&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="interface">
+<span id="api-interface"></span><h2>Interface<a class="headerlink" href="#interface" title="Permalink to this headline">¶</a></h2>
+<p>The Interface Object is a meta-class that accepts a Solidity (or compatible)
+Application Binary Interface (ABI) and populates functions to deal with encoding
+and decoding the parameters to pass in and results returned.</p>
+<div class="section" id="creating-an-instance">
+<h3>Creating an Instance<a class="headerlink" href="#creating-an-instance" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>new <sup>ethers</sup> . Interface ( abi )</dt>
+<dd>Returns a new instance and populates the properties with the ABI constructor,
+methods and events. The <em>abi</em> may be either a JSON string or the parsed JSON
+Object.</dd>
+</dl>
+</div>
+<div class="section" id="id1">
+<h3>Prototype<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . abi</dt>
+<dd>A <strong>copy</strong> of the ABI is returned, modifying this object will not alter the ABI.</dd>
+<dt><sup>prototype</sup> . functions</dt>
+<dd>An object of the functions available in the ABI, by name. (collissions are dropped)</dd>
+<dt><sup>prototype</sup> . events</dt>
+<dd>An object of the events available in the ABI, by name. (collisions are dropped)</dd>
+<dt><sup>prototype</sup> . deployFunction ( bytecode [ , params… ])</dt>
+<dd>The function to deploy the contract (compiled to <em>bytecode</em>) to the network, passing
+<em>params</em> into the ABI constructor. If the ABI does not have a constructor, a default
+one is generated.</dd>
+</dl>
+</div>
+<div class="section" id="id2">
+<h3><em>Examples</em><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p><strong>Creating an Interface Instance</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">Interface</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">Interface</span><span class="p">;</span>
+
+<span class="n">var</span> <span class="n">abi</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="n">constant</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:[],</span>
+        <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;getValue&quot;</span><span class="p">,</span>
+        <span class="n">outputs</span><span class="p">:[</span> <span class="p">{</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">}</span> <span class="p">],</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="n">constant</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="p">[</span> <span class="p">{</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span> <span class="p">}</span> <span class="p">],</span>
+        <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;setValue&quot;</span><span class="p">,</span>
+        <span class="n">outputs</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="n">anonymous</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:[</span>
+            <span class="p">{</span> <span class="n">indexed</span><span class="p">:</span><span class="n">false</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;oldValue&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span> <span class="p">},</span>
+            <span class="p">{</span> <span class="n">indexed</span><span class="p">:</span><span class="n">false</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;newValue&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span> <span class="p">}</span>
+        <span class="p">],</span>
+        <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;valueChanged&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;event&quot;</span>
+    <span class="p">}</span>
+<span class="p">];</span>
+
+<span class="o">//</span> <span class="n">NOTE</span><span class="p">:</span> <span class="s2">&quot;interface&quot;</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">reserved</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">JavaScript</span>
+
+<span class="n">var</span> <span class="n">iface</span> <span class="o">=</span> <span class="n">new</span> <span class="n">Interface</span><span class="p">(</span><span class="n">abi</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Call (Constant) Functions</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">getValueInfo</span> <span class="o">=</span> <span class="n">iface</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">getValue</span><span class="p">();</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">getValueInfo</span><span class="p">);</span>
+<span class="o">//</span> <span class="p">{</span>
+<span class="o">//</span>     <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;getValue&quot;</span><span class="p">,</span>
+<span class="o">//</span>     <span class="n">signature</span><span class="p">:</span> <span class="s2">&quot;getValue()&quot;</span><span class="p">,</span>
+<span class="o">//</span>     <span class="n">data</span><span class="p">:</span> <span class="s2">&quot;0x20965255&quot;</span><span class="p">,</span>
+<span class="o">//</span>     <span class="n">parse</span><span class="p">:</span> <span class="n">function</span><span class="p">(</span><span class="n">result</span><span class="p">),</span>
+<span class="o">//</span>     <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span>
+<span class="o">//</span> <span class="p">}</span>
+
+<span class="o">//</span> <span class="n">Here</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">result</span> <span class="n">of</span><span class="p">:</span>
+<span class="o">//</span> <span class="n">provider</span><span class="o">.</span><span class="n">call</span><span class="p">({</span>
+<span class="o">//</span>    <span class="n">to</span><span class="p">:</span> <span class="s2">&quot;0x954De93D9f1Cd1e2e3AE5964F614CDcc821Fac64&quot;</span><span class="p">,</span>
+<span class="o">//</span>    <span class="n">data</span><span class="p">:</span> <span class="n">getValue</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+<span class="o">//</span> <span class="p">})</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="p">{</span>
+<span class="o">//</span>    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="o">//</span> <span class="p">});</span>
+<span class="n">var</span> <span class="n">getDataResult</span> <span class="o">=</span> <span class="s2">&quot;0x0000000000000000000000000000000000000000000000000000000000000020&quot;</span> <span class="o">+</span>
+                      <span class="s2">&quot;000000000000000000000000000000000000000000000000000000000000000b&quot;</span> <span class="o">+</span>
+                      <span class="s2">&quot;48656c6c6f20576f726c64000000000000000000000000000000000000000000&quot;</span>
+
+ <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">getValueInfo</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">getDataResult</span><span class="p">));</span>
+ <span class="o">//</span> <span class="p">{</span>
+ <span class="o">//</span>    <span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;Hello World&quot;</span><span class="p">,</span>
+ <span class="o">//</span>    <span class="n">value</span><span class="p">:</span> <span class="s2">&quot;Hello World&quot;</span><span class="p">,</span>
+ <span class="o">//</span>    <span class="n">length</span><span class="p">:</span> <span class="mi">1</span>
+ <span class="o">//</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Transaction (Non-Constant) Functions</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">setValueInfo</span> <span class="o">=</span> <span class="n">iface</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="s2">&quot;Foobar!&quot;</span><span class="p">);</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">setValueInfo</span><span class="p">);</span>
+<span class="o">//</span> <span class="p">{</span>
+<span class="o">//</span>     <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;setValue&quot;</span><span class="p">,</span>
+<span class="o">//</span>     <span class="n">signature</span><span class="p">:</span> <span class="s2">&quot;setValue(string)&quot;</span><span class="p">,</span>
+<span class="o">//</span>     <span class="n">data</span><span class="p">:</span> <span class="s2">&quot;0x93a09352&quot;</span> <span class="o">+</span>
+<span class="o">//</span>             <span class="s2">&quot;0000000000000000000000000000000000000000000000000000000000000020&quot;</span> <span class="o">+</span>
+<span class="o">//</span>             <span class="s2">&quot;0000000000000000000000000000000000000000000000000000000000000007&quot;</span> <span class="o">+</span>
+<span class="o">//</span>             <span class="s2">&quot;466f6f6261722100000000000000000000000000000000000000000000000000&quot;</span>
+<span class="o">//</span>     <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;transaction&quot;</span>
+<span class="o">//</span> <span class="p">}</span>
+
+<span class="o">//</span> <span class="n">To</span> <span class="n">send</span> <span class="n">this</span> <span class="n">to</span> <span class="n">the</span> <span class="n">network</span><span class="p">,</span> <span class="n">you</span> <span class="n">would</span> <span class="n">sign</span> <span class="ow">and</span> <span class="n">send</span> <span class="n">the</span> <span class="n">transaction</span><span class="p">:</span>
+<span class="o">//</span> <span class="p">{</span>
+<span class="o">//</span>     <span class="n">to</span><span class="p">:</span> <span class="s2">&quot;0x954De93D9f1Cd1e2e3AE5964F614CDcc821Fac64&quot;</span><span class="p">,</span>
+<span class="o">//</span>     <span class="n">data</span><span class="p">:</span> <span class="n">setValueInfo</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+<span class="o">//</span>     <span class="n">gasLimit</span><span class="p">:</span> <span class="n">someGasLimit</span><span class="p">,</span>
+<span class="o">//</span>     <span class="n">gasPrice</span><span class="p">:</span> <span class="n">someGasPrice</span><span class="p">,</span>
+<span class="o">//</span>     <span class="n">nonce</span><span class="p">:</span> <span class="n">yourTransactionCountForYourAddress</span>
+<span class="o">//</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Events</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">Interface</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">Interface</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">abi</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="n">anonymous</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:[</span>
+            <span class="p">{</span> <span class="n">indexed</span><span class="p">:</span><span class="n">true</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;from&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;address&quot;</span> <span class="p">},</span>
+            <span class="p">{</span> <span class="n">indexed</span><span class="p">:</span><span class="n">true</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;to&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;address&quot;</span> <span class="p">},</span>
+            <span class="p">{</span> <span class="n">indexed</span><span class="p">:</span><span class="n">false</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;uint256&quot;</span> <span class="p">}</span>
+        <span class="p">],</span>
+        <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;Transfer&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;event&quot;</span>
+    <span class="p">}</span>
+<span class="p">];</span>
+<span class="o">//</span> <span class="n">NOTE</span><span class="p">:</span> <span class="s2">&quot;interface&quot;</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">reserved</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">JavaScript</span>
+<span class="n">var</span> <span class="n">iface</span> <span class="o">=</span> <span class="n">new</span> <span class="n">Interface</span><span class="p">(</span><span class="n">abi</span><span class="p">)</span>
+<span class="n">var</span> <span class="n">transferInfo</span> <span class="o">=</span> <span class="n">iface</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">Transfer</span><span class="p">();</span>
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">transferInfo</span><span class="p">);</span>
+<span class="o">//</span> <span class="n">EventDescription</span> <span class="p">{</span>
+<span class="o">//</span>    <span class="n">inputs</span><span class="p">:</span>
+<span class="o">//</span>      <span class="p">[</span> <span class="p">{</span> <span class="n">indexed</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;from&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="s1">&#39;address&#39;</span> <span class="p">},</span>
+<span class="o">//</span>        <span class="p">{</span> <span class="n">indexed</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;to&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="s1">&#39;address&#39;</span> <span class="p">},</span>
+<span class="o">//</span>        <span class="p">{</span> <span class="n">indexed</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="s1">&#39;uint256&#39;</span> <span class="p">}</span> <span class="p">],</span>
+<span class="o">//</span>    <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;Transfer&#39;</span><span class="p">,</span>
+<span class="o">//</span>    <span class="n">signature</span><span class="p">:</span> <span class="s1">&#39;Transfer(address,address,uint256)&#39;</span><span class="p">,</span>
+<span class="o">//</span>    <span class="n">topics</span><span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef&#39;</span> <span class="p">],</span>
+<span class="o">//</span>    <span class="n">parse</span><span class="p">:</span> <span class="p">[</span><span class="n">Function</span><span class="p">]</span> <span class="p">}</span>
+
+
+<span class="o">//</span> <span class="n">To</span> <span class="n">listen</span> <span class="k">for</span> <span class="n">this</span> <span class="n">event</span><span class="p">:</span>
+<span class="n">var</span> <span class="n">provider</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">providers</span><span class="o">.</span><span class="n">getDefaultProvider</span><span class="p">();</span>
+<span class="n">provider</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">transferInfo</span><span class="o">.</span><span class="n">topics</span><span class="p">,</span> <span class="n">function</span><span class="p">(</span><span class="n">log</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">Parse</span> <span class="n">event</span> <span class="n">data</span> <span class="p">(</span><span class="n">only</span> <span class="n">returns</span> <span class="n">the</span> <span class="n">non</span><span class="o">-</span><span class="n">indexed</span> <span class="n">entries</span><span class="p">)</span>
+    <span class="n">var</span> <span class="n">result</span> <span class="o">=</span> <span class="n">transferInfo</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">data</span><span class="p">);</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;non-indexed entries: &#39;</span><span class="p">,</span> <span class="n">result</span><span class="p">);</span>
+
+    <span class="o">//</span> <span class="n">non</span><span class="o">-</span><span class="n">indexed</span> <span class="n">entries</span><span class="p">:</span>  <span class="n">Result</span> <span class="p">{</span>
+    <span class="o">//</span>   <span class="s1">&#39;0&#39;</span><span class="p">:</span> <span class="n">Indexed</span> <span class="p">{</span> <span class="n">indexed</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="nb">hash</span><span class="p">:</span> <span class="n">null</span> <span class="p">},</span>
+    <span class="o">//</span>   <span class="s1">&#39;1&#39;</span><span class="p">:</span> <span class="n">Indexed</span> <span class="p">{</span> <span class="n">indexed</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="nb">hash</span><span class="p">:</span> <span class="n">null</span> <span class="p">},</span>
+    <span class="o">//</span>   <span class="s1">&#39;2&#39;</span><span class="p">:</span> <span class="n">BigNumber</span> <span class="p">{</span> <span class="n">_bn</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">BN</span><span class="p">:</span> <span class="mi">1</span><span class="n">db3c5934d11e3c0000</span><span class="o">&gt;</span> <span class="p">},</span>
+    <span class="o">//</span>   <span class="n">from</span><span class="p">:</span> <span class="n">Indexed</span> <span class="p">{</span> <span class="n">indexed</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="nb">hash</span><span class="p">:</span> <span class="n">null</span> <span class="p">},</span>
+    <span class="o">//</span>   <span class="n">to</span><span class="p">:</span> <span class="n">Indexed</span> <span class="p">{</span> <span class="n">indexed</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="nb">hash</span><span class="p">:</span> <span class="n">null</span> <span class="p">},</span>
+    <span class="o">//</span>   <span class="n">value</span><span class="p">:</span> <span class="n">BigNumber</span> <span class="p">{</span> <span class="n">_bn</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">BN</span><span class="p">:</span> <span class="mi">1</span><span class="n">db3c5934d11e3c0000</span><span class="o">&gt;</span> <span class="p">},</span>
+    <span class="o">//</span>   <span class="n">length</span><span class="p">:</span> <span class="mi">3</span> <span class="p">}</span>
+
+
+    <span class="o">//</span> <span class="n">Parse</span> <span class="n">event</span> <span class="n">topics</span> <span class="ow">and</span> <span class="n">data</span> <span class="p">(</span><span class="n">returns</span> <span class="nb">all</span> <span class="n">entries</span><span class="p">)</span>
+    <span class="o">//</span> <span class="n">Note</span><span class="p">:</span> <span class="n">Any</span> <span class="n">indexed</span> <span class="n">entry</span> <span class="n">which</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">a</span> <span class="mi">32</span> <span class="n">byte</span> <span class="n">value</span> <span class="ow">is</span> <span class="n">hashed</span><span class="o">.</span>
+    <span class="o">//</span>       <span class="n">Dynamic</span> <span class="n">arrays</span> <span class="n">are</span> <span class="n">hashed</span> <span class="k">as</span> <span class="n">a</span> <span class="n">static</span> <span class="n">sized</span> <span class="n">array</span><span class="o">.</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">transferInfo</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">topics</span><span class="p">,</span> <span class="n">log</span><span class="o">.</span><span class="n">data</span><span class="p">);</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;all entries: &#39;</span><span class="p">,</span> <span class="n">result</span><span class="p">);</span>
+
+    <span class="o">//</span> <span class="nb">all</span> <span class="n">entries</span><span class="p">:</span>  <span class="n">Result</span> <span class="p">{</span>
+    <span class="o">//</span>   <span class="s1">&#39;0&#39;</span><span class="p">:</span> <span class="s1">&#39;0x0000000000000000000000000000000000000000&#39;</span><span class="p">,</span>
+    <span class="o">//</span>   <span class="s1">&#39;1&#39;</span><span class="p">:</span> <span class="s1">&#39;0x92239D0512c313E1b001b3996707F822a76C0901&#39;</span><span class="p">,</span>
+    <span class="o">//</span>   <span class="s1">&#39;2&#39;</span><span class="p">:</span> <span class="n">BigNumber</span> <span class="p">{</span> <span class="n">_bn</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">BN</span><span class="p">:</span> <span class="mi">1</span><span class="n">db3c5934d11e3c0000</span><span class="o">&gt;</span> <span class="p">},</span>
+    <span class="o">//</span>   <span class="n">from</span><span class="p">:</span> <span class="s1">&#39;0x0000000000000000000000000000000000000000&#39;</span><span class="p">,</span>
+    <span class="o">//</span>   <span class="n">to</span><span class="p">:</span> <span class="s1">&#39;0x92239D0512c313E1b001b3996707F822a76C0901&#39;</span><span class="p">,</span>
+    <span class="o">//</span>   <span class="n">value</span><span class="p">:</span> <span class="n">BigNumber</span> <span class="p">{</span> <span class="n">_bn</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">BN</span><span class="p">:</span> <span class="mi">1</span><span class="n">db3c5934d11e3c0000</span><span class="o">&gt;</span> <span class="p">},</span>
+    <span class="o">//</span>   <span class="n">length</span><span class="p">:</span> <span class="mi">3</span> <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="abi-coder">
+<h2>ABI Coder<a class="headerlink" href="#abi-coder" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h3>Creating Instances<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>new <sup>ethers . utils</sup> <strong>. AbiCoder</strong> ( [ coerceFunc ] )</dt>
+<dd>Create a new ABI Coder object, which calls <em>coerceFunc</em> for each parsed value
+during decoding. The <em>coerceFunc</em> should have the signature: <code class="docutils literal"><span class="pre">function(type,</span> <span class="pre">value)</span></code>.</dd>
+</dl>
+</div>
+<div class="section" id="static-properties">
+<h3>Static Properties<a class="headerlink" href="#static-properties" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>ethers . utils</sup> <strong>. defaultAbiCoder</strong></dt>
+<dd>A default instance of the coder which can be used, which has a <em>coerceFunc</em>
+which will call <code class="docutils literal"><span class="pre">toNumber()</span></code> on BigNumbers whose <strong>type</strong> is less than
+53 bits and is safe for JavaScript Number instances.</dd>
+</dl>
+</div>
+<div class="section" id="id4">
+<h3>Prototype<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . encode ( [ names , ] types , values )</dt>
+<dd>Returns a <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a> of the <em>values</em> encoded as the <em>types</em>.
+If names is provided, <em>values</em> may contain named keys for tuples, otherwise
+each tuple expects an Array. Throws if a value is invalid for the type.</dd>
+<dt><sup>prototype</sup> . decode ( [ names , ] types , data )</dt>
+<dd>Returns an Object by parsing <em>data</em> assuming <em>types</em>, with each parameter
+accessible as apositional parameters. If <em>names</em> is provided, each
+parameter is also accessible by its name. Throws if <em>data</em> is invalid
+for the <em>types</em>.</dd>
+</dl>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="provider-sub-classing">
+<h2>Provider (Sub-Classing)<a class="headerlink" href="#provider-sub-classing" title="Permalink to this headline">¶</a></h2>
+<p>See the <a class="reference internal" href="api-providers.html#api-provider"><span class="std std-ref">Provider API</span></a> for more common usage. This documentation
+is designed for developers that are sub-classing Provider.</p>
+<div class="section" id="id5">
+<h3>Static Methods<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>Provider</sup> . inherits ( childProvider )</dt>
+<dd>Set up <em>childProvider</em> as an provider, inheriting the parent prototype and
+set up a prototype.inherits on the <em>childProvider</em>.</dd>
+<dt><sup>Provider</sup> . fetchJSON ( url , body , processFunc )</dt>
+<dd>Convenience method for returning a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a> with the result of fetching JSON
+from a <em>url</em> with an optional <em>body</em>. The optional <em>processFunc</em> is called on
+the parsed JSON before being passed to the Promise’s resolve. (throwing an error
+in the <em>processFunc</em> will cause the Promise to reject)</dd>
+</dl>
+</div>
+<div class="section" id="id6">
+<h3>Prototype<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . perform ( method , params )</dt>
+<dd>The only method needed to override in a subclass. All values are sanitized
+and defaults populated in params and the result is sanitized before returning.
+Returns a <a class="reference internal" href="notes.html#promise"><span class="std std-ref">Promise</span></a>, see the example below for overview of
+<em>method</em> and <em>params</em>.</dd>
+</dl>
+</div>
+<div class="section" id="id7">
+<h3><em>Examples</em><a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">utils</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">utils</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">Provider</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">providers</span><span class="o">.</span><span class="n">Provider</span><span class="p">;</span>
+
+<span class="o">//</span> <span class="n">The</span> <span class="n">new</span> <span class="n">provider</span> <span class="n">Object</span>
+<span class="n">function</span> <span class="n">DemoProvider</span><span class="p">(</span><span class="n">testnet</span><span class="p">,</span> <span class="n">somethingElse</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Provide</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">this</span><span class="p">,</span> <span class="n">testnet</span><span class="p">);</span>
+
+    <span class="n">utils</span><span class="o">.</span><span class="n">defineProperty</span><span class="p">(</span><span class="n">this</span><span class="p">,</span> <span class="s1">&#39;somethingElse&#39;</span><span class="p">,</span> <span class="n">somethingElse</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="o">//</span> <span class="n">Inherit</span> <span class="n">the</span> <span class="n">Provider</span>
+<span class="n">Provider</span><span class="o">.</span><span class="n">inherits</span><span class="p">(</span><span class="n">DemoProvider</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Override</span> <span class="n">perform</span>
+<span class="n">utils</span><span class="o">.</span><span class="n">defineProperty</span><span class="p">(</span><span class="n">DemoProvider</span><span class="o">.</span><span class="n">prototype</span><span class="p">,</span> <span class="s1">&#39;perform&#39;</span><span class="p">,</span> <span class="n">function</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">switch</span> <span class="p">(</span><span class="n">method</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">case</span> <span class="s1">&#39;getBlockNumber&#39;</span><span class="p">:</span>
+            <span class="o">//</span> <span class="n">Params</span><span class="p">:</span>
+            <span class="o">//</span> <span class="p">{</span> <span class="p">}</span>
+
+        <span class="n">case</span> <span class="s1">&#39;getGasPrice&#39;</span><span class="p">:</span>
+            <span class="o">//</span> <span class="n">Params</span><span class="p">:</span>
+            <span class="o">//</span> <span class="p">{</span> <span class="p">}</span>
+
+        <span class="n">case</span> <span class="s1">&#39;getBalance&#39;</span><span class="p">:</span>
+            <span class="o">//</span> <span class="n">Params</span><span class="p">:</span>
+            <span class="o">//</span> <span class="p">{</span>
+            <span class="o">//</span>     <span class="n">address</span><span class="p">:</span> <span class="n">address</span><span class="p">,</span>
+            <span class="o">//</span>     <span class="n">blockTag</span><span class="p">:</span> <span class="n">blockTag</span>
+            <span class="o">//</span> <span class="p">}</span>
+
+        <span class="n">case</span> <span class="s1">&#39;getTransactionCount&#39;</span><span class="p">:</span>
+            <span class="o">//</span> <span class="n">Params</span><span class="p">:</span>
+            <span class="o">//</span> <span class="p">{</span>
+            <span class="o">//</span>     <span class="n">address</span><span class="p">:</span> <span class="n">address</span><span class="p">,</span>
+            <span class="o">//</span>     <span class="n">blockTag</span><span class="p">:</span> <span class="n">blockTag</span>
+            <span class="o">//</span> <span class="p">}</span>
+
+        <span class="n">case</span> <span class="s1">&#39;getCode&#39;</span><span class="p">:</span>
+            <span class="o">//</span> <span class="n">Params</span><span class="p">:</span>
+            <span class="o">//</span> <span class="p">{</span>
+            <span class="o">//</span>     <span class="n">address</span><span class="p">:</span> <span class="n">address</span><span class="p">,</span>
+            <span class="o">//</span>     <span class="n">blockTag</span><span class="p">:</span> <span class="n">blockTag</span>
+            <span class="o">//</span> <span class="p">}</span>
+
+        <span class="n">case</span> <span class="s1">&#39;getStorageAt&#39;</span><span class="p">:</span>
+            <span class="o">//</span> <span class="n">Params</span><span class="p">:</span>
+            <span class="o">//</span> <span class="p">{</span>
+            <span class="o">//</span>     <span class="n">address</span><span class="p">:</span> <span class="n">address</span><span class="p">,</span>
+            <span class="o">//</span>     <span class="n">position</span><span class="p">:</span> <span class="n">hexString</span><span class="p">,</span>
+            <span class="o">//</span>     <span class="n">blockTag</span><span class="p">:</span> <span class="n">blockTag</span>
+            <span class="o">//</span> <span class="p">}</span>
+
+        <span class="n">case</span> <span class="s1">&#39;sendTransaction&#39;</span><span class="p">:</span>
+            <span class="o">//</span> <span class="n">Params</span><span class="p">:</span>
+            <span class="o">//</span> <span class="p">{</span>
+            <span class="o">//</span>     <span class="n">signedTransaction</span><span class="p">:</span> <span class="n">hexString</span>
+            <span class="o">//</span> <span class="p">}</span>
+
+        <span class="n">case</span> <span class="s1">&#39;getBlock&#39;</span><span class="p">:</span>
+            <span class="o">//</span> <span class="n">Params</span><span class="p">:</span>
+            <span class="o">//</span> <span class="n">Exactly</span> <span class="n">one</span> <span class="n">of</span> <span class="n">the</span> <span class="n">following</span> <span class="n">will</span> <span class="n">be</span> <span class="n">specified</span><span class="p">,</span> <span class="n">the</span> <span class="n">other</span> <span class="n">will</span> <span class="n">be</span> <span class="n">absent</span>
+            <span class="o">//</span> <span class="p">{</span>
+            <span class="o">//</span>     <span class="n">blockHash</span><span class="p">:</span> <span class="n">blockHash</span><span class="p">,</span>
+            <span class="o">//</span>     <span class="n">blockTag</span><span class="p">:</span> <span class="n">blockTag</span>
+            <span class="o">//</span> <span class="p">}</span>
+
+        <span class="n">case</span> <span class="s1">&#39;getTransaction&#39;</span><span class="p">:</span>
+            <span class="o">//</span> <span class="n">Params</span><span class="p">:</span>
+            <span class="o">//</span> <span class="p">{</span>
+            <span class="o">//</span>     <span class="n">transactionHash</span><span class="p">:</span> <span class="n">hexString</span>
+            <span class="o">//</span> <span class="p">}</span>
+
+        <span class="n">case</span> <span class="s1">&#39;getTransactionReceipt&#39;</span><span class="p">:</span>
+            <span class="o">//</span> <span class="n">Params</span><span class="p">:</span>
+            <span class="o">//</span> <span class="p">{</span>
+            <span class="o">//</span>     <span class="n">transactionHash</span><span class="p">:</span> <span class="n">hexString</span>
+            <span class="o">//</span> <span class="p">}</span>
+
+        <span class="n">case</span> <span class="s1">&#39;call&#39;</span><span class="p">:</span>
+            <span class="o">//</span> <span class="n">Params</span><span class="p">:</span>
+            <span class="o">//</span> <span class="p">{</span>
+            <span class="o">//</span>     <span class="n">transaction</span><span class="p">:</span> <span class="n">See</span> <span class="n">Transaction</span> <span class="n">Requests</span> <span class="p">(</span><span class="n">on</span> <span class="n">Providers</span> <span class="n">API</span><span class="p">)</span>
+            <span class="o">//</span> <span class="p">}</span>
+
+        <span class="n">case</span> <span class="s1">&#39;estimateGas&#39;</span><span class="p">:</span>
+            <span class="o">//</span> <span class="n">Params</span><span class="p">:</span>
+            <span class="o">//</span> <span class="p">{</span>
+            <span class="o">//</span>     <span class="n">transaction</span><span class="p">:</span> <span class="n">See</span> <span class="n">Transaction</span> <span class="n">Requests</span> <span class="p">(</span><span class="n">on</span> <span class="n">Providers</span> <span class="n">API</span><span class="p">)</span>
+            <span class="o">//</span> <span class="p">}</span>
+
+        <span class="n">case</span> <span class="s1">&#39;getLogs&#39;</span><span class="p">:</span>
+            <span class="o">//</span> <span class="n">Params</span><span class="p">:</span>
+            <span class="o">//</span> <span class="p">{</span>
+            <span class="o">//</span>    <span class="n">address</span><span class="p">:</span> <span class="n">address</span><span class="p">,</span>
+            <span class="o">//</span>    <span class="n">fromBlock</span><span class="p">:</span> <span class="n">blockTag</span><span class="p">,</span>
+            <span class="o">//</span>    <span class="n">toBlock</span><span class="p">:</span> <span class="n">blockTag</span><span class="p">,</span>
+            <span class="o">//</span>    <span class="n">topics</span><span class="p">:</span> <span class="n">array</span> <span class="p">(</span><span class="n">possibly</span> <span class="n">nested</span><span class="p">)</span> <span class="n">of</span> <span class="n">topics</span>
+            <span class="o">//</span> <span class="p">}</span>
+
+        <span class="n">default</span><span class="p">:</span>
+            <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">Promise</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="n">new</span> <span class="n">Error</span><span class="p">(</span><span class="s1">&#39;not implemented - &#39;</span> <span class="o">+</span> <span class="n">method</span><span class="p">));</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="signing-key">
+<h2>Signing Key<a class="headerlink" href="#signing-key" title="Permalink to this headline">¶</a></h2>
+<p>The SigningKey interface provides an abstraction around the
+<em>secp256k1 elliptic curve cryptography</em> library, which signs digests,
+computes public keys from private keys and performs <em>ecrecover</em> which
+computes a public key from a digest and a signature.</p>
+<div class="section" id="id8">
+<h3>Creating Instances<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>new <sup>ethers</sup> . SigningKey ( privateKey )</dt>
+<dd>Create a new SigningKey and compute the corresponding public key and address.
+A private key may be a any <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a> or an
+<a class="reference internal" href="api-utils.html#api-arrayish"><span class="std std-ref">Arrayish</span></a> representing 32 bytes.</dd>
+</dl>
+</div>
+<div class="section" id="id9">
+<h3>Static Methods<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>SigningKey</sup> . recover ( digest, r, s, recoveryParam )</dt>
+<dd>Given a message <em>digest</em> and the signature parameters <em>r</em>, <em>s</em>
+and <em>recoveryParam</em> compute the the address that signed the
+message.</dd>
+<dt><sup>SigningKey</sup> . getPublicKey ( publicOrPrivateKey [, compressed] )</dt>
+<dd><p class="first">Given a <em>publicOrPrivateKey</em>, return the public key, optionally <em>compressed</em>.</p>
+<p class="last"><strong>default:</strong> <em>compressed</em>=false</p>
+</dd>
+<dt><sup>SigningKey</sup> . publicKeyToAddress ( publicOrPrivateKey )</dt>
+<dd>Convert a <em>publicOrPrivateKey</em> to an Ethereum address.</dd>
+</dl>
+</div>
+<div class="section" id="id10">
+<h3>Prototype<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>prototype</sup> . privateKey</dt>
+<dd>The private key.</dd>
+<dt><sup>prototype</sup> . publicKey</dt>
+<dd>The compressed public key.</dd>
+<dt><sup>prototype</sup> . address</dt>
+<dd>The Ethereum address for this key pair.</dd>
+<dt><sup>prototype</sup> . signDigest ( messageDigest )</dt>
+<dd>The compressed public key</dd>
+</dl>
+</div>
+<div class="section" id="id11">
+<h3><em>Examples</em><a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">SigningKey</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">_SigningKey</span><span class="p">;</span>
+
+<span class="n">var</span> <span class="n">privateKey</span> <span class="o">=</span> <span class="s1">&#39;0x0123456789012345678901234567890123456789012345678901234567890123&#39;</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">signingKey</span> <span class="o">=</span> <span class="n">new</span> <span class="n">SigningKey</span><span class="p">(</span><span class="n">privateKey</span><span class="p">);</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Address: &#39;</span> <span class="o">+</span> <span class="n">signingKey</span><span class="o">.</span><span class="n">address</span><span class="p">);</span>
+<span class="o">//</span> <span class="s2">&quot;Address: 0x14791697260E4c9A71f18484C9f997B308e59325&quot;</span>
+
+<span class="n">var</span> <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Hello World&quot;</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">messageBytes</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">toUtf8Bytes</span><span class="p">(</span><span class="n">message</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">messageDigest</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">keccak256</span><span class="p">(</span><span class="n">messageBytes</span><span class="p">);</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Digest: &quot;</span> <span class="o">+</span> <span class="n">messageDigest</span><span class="p">);</span>
+<span class="o">//</span> <span class="s2">&quot;Digest: 0x592fa743889fc7f92ac2a37bb1f5ba1daf2a5c84741ca0e0061d243a2e6707ba&quot;</span>
+
+<span class="n">var</span> <span class="n">signature</span> <span class="o">=</span> <span class="n">signingKey</span><span class="o">.</span><span class="n">signDigest</span><span class="p">(</span><span class="n">messageDigest</span><span class="p">);</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">signature</span><span class="p">);</span>
+<span class="o">//</span> <span class="p">{</span>
+<span class="o">//</span>    <span class="n">recoveryParam</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="o">//</span>    <span class="n">r</span><span class="p">:</span> <span class="s2">&quot;0x79f56f3422dc67f57b2aeeb0b20295a99ec90420b203177f83d419c98beda7fe&quot;</span><span class="p">,</span>
+<span class="o">//</span>    <span class="n">s</span><span class="p">:</span> <span class="s2">&quot;0x1a9d05433883bdc7e6d882740f4ea7921ef458a61b2cfe6197c2bb1bc47236fd&quot;</span>
+<span class="o">//</span> <span class="p">}</span>
+
+<span class="n">var</span> <span class="n">recovered</span> <span class="o">=</span> <span class="n">SigningKey</span><span class="o">.</span><span class="n">recover</span><span class="p">(</span><span class="n">messageDigest</span><span class="p">,</span> <span class="n">signature</span><span class="o">.</span><span class="n">r</span><span class="p">,</span>
+                    <span class="n">signature</span><span class="o">.</span><span class="n">s</span><span class="p">,</span> <span class="n">signature</span><span class="o">.</span><span class="n">recoveryParam</span><span class="p">);</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Recovered: &quot;</span> <span class="o">+</span> <span class="n">recovered</span><span class="p">);</span>
+<span class="o">//</span> <span class="s2">&quot;Recovered: 0x14791697260E4c9A71f18484C9f997B308e59325&quot;</span>
+
+<span class="n">var</span> <span class="n">publicKey</span> <span class="o">=</span> <span class="n">signingKey</span><span class="o">.</span><span class="n">publicKey</span><span class="p">;</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Public Key: &#39;</span> <span class="o">+</span> <span class="n">publicKey</span><span class="p">);</span>
+<span class="o">//</span> <span class="s2">&quot;Public Key: 0x026655feed4d214c261e0a6b554395596f1f1476a77d999560e5a8df9b8a1a3515&quot;</span>
+
+<span class="n">var</span> <span class="n">compressedPublicKey</span> <span class="o">=</span> <span class="n">SigningKey</span><span class="o">.</span><span class="n">getPublicKey</span><span class="p">(</span><span class="n">publicKey</span><span class="p">,</span> <span class="n">true</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">uncompressedPublicKey</span> <span class="o">=</span> <span class="n">SigningKey</span><span class="o">.</span><span class="n">getPublicKey</span><span class="p">(</span><span class="n">publicKey</span><span class="p">,</span> <span class="n">false</span><span class="p">);</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Compressed: &#39;</span> <span class="o">+</span> <span class="n">compressedPublicKey</span><span class="p">);</span>
+<span class="o">//</span> <span class="s2">&quot;Compressed: 0x026655feed4d214c261e0a6b554395596f1f1476a77d999560e5a8df9b8a1a3515&quot;</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Uncompressed: &#39;</span> <span class="o">+</span> <span class="n">uncompressedPublicKey</span><span class="p">);</span>
+<span class="o">//</span> <span class="s2">&quot;Uncompressed: 0x046655feed4d214c261e0a6b554395596f1f1476a77d999560e5a8df9b8a1a35&quot;</span> <span class="o">+</span>
+<span class="o">//</span> <span class="s2">&quot;15217e88dd05e938efdd71b2cce322bf01da96cd42087b236e8f5043157a9c068e&quot;</span>
+
+<span class="n">var</span> <span class="n">address</span> <span class="o">=</span> <span class="n">SigningKey</span><span class="o">.</span><span class="n">publicKeyToAddress</span><span class="p">(</span><span class="n">publicKey</span><span class="p">);</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Address: &#39;</span> <span class="o">+</span> <span class="n">address</span><span class="p">);</span>
+<span class="o">//</span> <span class="s2">&quot;Address: 0x14791697260E4c9A71f18484C9f997B308e59325&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="recursive-length-prefixed-encoding-rlp">
+<h2>Recursive-Length Prefixed Encoding (RLP)<a class="headerlink" href="#recursive-length-prefixed-encoding-rlp" title="Permalink to this headline">¶</a></h2>
+<p>This encoding method is used internally for several aspects of Ethereum, such as
+encoding transactions and determining contract addresses. For most developers this
+should not be necessary to use.</p>
+<p>RLP can encode nested arrays, with data as <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex strings</span></a> and Uint8Array (or other non-Array
+<a class="reference internal" href="api-utils.html#api-arrayish"><span class="std std-ref">arrayish</span></a> objects). A decoded object will always have data represented as <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex strings</span></a> and
+Arrays.</p>
+<p>See: <a class="reference external" href="https://github.com/ethereum/wiki/wiki/RLP">https://github.com/ethereum/wiki/wiki/RLP</a></p>
+<div class="section" id="id12">
+<h3>Static Methods<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>ethers . utils . RLP</sup> . encode( object )</dt>
+<dd>Encodes an object as an RLP <a class="reference internal" href="api-utils.html#hexstring"><span class="std std-ref">hex string</span></a>. (throws an Error if the object contains
+invalid items)</dd>
+<dt><sup>ethers . utils . RLP</sup> . decode( hexStringOrArrayish )</dt>
+<dd>Decode <em>hexStringOrArrayish</em> into the encoded object. (throws an Error if
+invalid RLP-coded data)</dd>
+</dl>
+</div>
+<div class="section" id="id13">
+<h3><em>Examples</em><a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">rlp</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">RLP</span><span class="p">;</span>
+
+<span class="n">var</span> <span class="nb">object</span> <span class="o">=</span> <span class="p">[</span> <span class="p">[</span><span class="s2">&quot;0x42&quot;</span><span class="p">],</span> <span class="s2">&quot;0x1234&quot;</span><span class="p">,</span> <span class="p">[</span> <span class="p">[],</span> <span class="p">[]</span> <span class="p">]</span> <span class="p">];</span>
+
+<span class="n">var</span> <span class="n">encoded</span> <span class="o">=</span> <span class="n">rlp</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="nb">object</span><span class="p">);</span>
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">encoded</span><span class="p">);</span>
+<span class="o">//</span> <span class="mh">0xc8c142821234c2c0c0</span>
+
+<span class="n">var</span> <span class="n">decoded</span> <span class="o">=</span> <span class="n">rlp</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">encoded</span><span class="p">);</span>
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">decoded</span><span class="p">);</span>
+<span class="o">//</span> <span class="p">[</span> <span class="p">[</span> <span class="s1">&#39;0x42&#39;</span> <span class="p">],</span> <span class="s1">&#39;0x1234&#39;</span><span class="p">,</span> <span class="p">[</span> <span class="p">[],</span> <span class="p">[]</span> <span class="p">]</span> <span class="p">]</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="cookbook.html" class="btn btn-neutral float-right" title="Cookbook" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="api-utils.html" class="btn btn-neutral" title="Utilities" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'3.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

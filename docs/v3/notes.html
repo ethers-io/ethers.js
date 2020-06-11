@@ -1,0 +1,408 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Notes &mdash; ethers.js 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  
+    <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="ethers.js 3.0.0 documentation" href="index.html"/>
+        <link rel="next" title="Testing" href="testing.html"/>
+        <link rel="prev" title="Cookbook" href="cookbook.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Application Programming Interface (API)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Cookbook</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#why-can-t-i-just-use-numbers">Why can’t I just use numbers?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#promises">Promises</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#examples"><strong>Examples</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#checksum-address">Checksum Address</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#icap-address">ICAP Address</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ethers.js</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Notes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/notes.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="notes">
+<h1>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h1>
+<p>A few quick notes about some of the less obvious aspects of interacting with
+Ethereum in JavaScript.</p>
+<hr class="docutils" />
+<div class="section" id="why-can-t-i-just-use-numbers">
+<span id="ieee754"></span><h2>Why can’t I just use numbers?<a class="headerlink" href="#why-can-t-i-just-use-numbers" title="Permalink to this headline">¶</a></h2>
+<p>The first problem many encounter when dealing with Ethereum is the concept of numbers. Most
+common currencies are broken down with very little granulairty. For example, there are only
+100 cents in a single dollar. However, there are  10<sup>18</sup> <strong>wei</strong> in a single
+<strong>ether</strong>.</p>
+<p>JavaScript uses <a class="reference external" href="https://en.wikipedia.org/wiki/Double-precision_floating-point_format">IEEE 754 double-precision binary floating point</a> numbers to represent
+numeric values. As a result, there are <em>holes</em> in the integer set after
+9,007,199,254,740,991; which is problematic for <em>Ethereum</em> because that is only
+around 0.009 ether (in wei).</p>
+<p>To demonstrate how this may be an issue in your code, consider:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="p">(</span><span class="n">Number</span><span class="o">.</span><span class="n">MAX_SAFE_INTEGER</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">-</span> <span class="mi">5</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">Number</span><span class="o">.</span><span class="n">MAX_SAFE_INTEGER</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">false</span>
+</pre></div>
+</div>
+<p>To remedy this, all numbers (which can be large) are stored and manipulated
+as <a class="reference internal" href="api-utils.html#bignumber"><span class="std std-ref">Big Numbers</span></a>.</p>
+<p>The functions <a class="reference internal" href="api-utils.html#parseether"><span class="std std-ref">parseEther( etherString )</span></a> and <a class="reference internal" href="api-utils.html#formatether"><span class="std std-ref">formatEther( wei )</span></a> can be used to convert between
+string representations, which are displayed to or entered by the user and Big Number representations
+which can have mathematical operations handled safely.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="promises">
+<span id="promise"></span><h2>Promises<a class="headerlink" href="#promises" title="Permalink to this headline">¶</a></h2>
+<p>A <a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise in JavaScript</a> is an object which simplifies many aspects of dealing with
+asynchronous functions.</p>
+<p>It allows a pending result to be treated in many ways as if it has already been resolved.</p>
+<p>The most useful operations you will need are:</p>
+<dl class="docutils">
+<dt><sup>Promise</sup> . all ( promises )</dt>
+<dd>Returns a new promise that resolves once all the <em>promises</em> have resolved.</dd>
+<dt><sup>prototype</sup> . then ( onResolve, onReject )</dt>
+<dd><p class="first">Returns another Promise, which once the Promise was resolved, the <em>onResolve</em>
+function will be executed and if an error occurs, <em>onReject</em> will be called.</p>
+<p class="last">If <em>onResolve</em> returns a Promise, it will be inserted into the chain of the returned
+promise. If <em>onResolve</em> throws an Error, the returned Promise will reject.</p>
+</dd>
+</dl>
+<div class="section" id="examples">
+<h3><strong>Examples</strong><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
+<p><strong>Cleaning out an account</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">ethers</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">targetAddress</span> <span class="o">=</span> <span class="s2">&quot;0x02F024e0882B310c6734703AB9066EdD3a10C6e0&quot;</span><span class="p">;</span>
+
+<span class="n">var</span> <span class="n">privateKey</span> <span class="o">=</span> <span class="s2">&quot;0x0123456789012345678901234567890123456789012345678901234567890123&quot;</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">wallet</span> <span class="o">=</span> <span class="n">new</span> <span class="n">ethers</span><span class="o">.</span><span class="n">Wallet</span><span class="p">(</span><span class="n">privateKey</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Promises</span> <span class="n">we</span> <span class="n">are</span> <span class="n">interested</span> <span class="ow">in</span>
+<span class="n">var</span> <span class="n">provider</span> <span class="o">=</span> <span class="n">ethers</span><span class="o">.</span><span class="n">providers</span><span class="o">.</span><span class="n">getDefaultProvider</span><span class="p">(</span><span class="s1">&#39;ropsten&#39;</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">balancePromise</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">getBalance</span><span class="p">(</span><span class="n">wallet</span><span class="o">.</span><span class="n">address</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">gasPricePromise</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">getGasPrice</span><span class="p">();</span>
+<span class="n">var</span> <span class="n">transactionCountPromise</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">getTransactionCount</span><span class="p">(</span><span class="n">wallet</span><span class="o">.</span><span class="n">address</span><span class="p">);</span>
+
+<span class="n">var</span> <span class="n">allPromises</span> <span class="o">=</span> <span class="n">Promise</span><span class="o">.</span><span class="n">all</span><span class="p">([</span>
+    <span class="n">gasPricePromise</span><span class="p">,</span>
+    <span class="n">balancePromise</span><span class="p">,</span>
+    <span class="n">transactionCountPromise</span>
+<span class="p">]);</span>
+
+<span class="n">var</span> <span class="n">sendPromise</span> <span class="o">=</span> <span class="n">allPromises</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="p">{</span>
+     <span class="o">//</span> <span class="n">This</span> <span class="n">function</span> <span class="ow">is</span> <span class="n">ONLY</span> <span class="n">called</span> <span class="n">once</span> <span class="n">ALL</span> <span class="n">promises</span> <span class="n">are</span> <span class="n">fulfilled</span>
+
+     <span class="n">var</span> <span class="n">gasPrice</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+     <span class="n">var</span> <span class="n">balance</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+     <span class="n">var</span> <span class="n">transactionCount</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+
+     <span class="o">//</span> <span class="n">Sending</span> <span class="n">a</span> <span class="n">transaction</span> <span class="n">to</span> <span class="n">an</span> <span class="n">externally</span> <span class="n">owned</span> <span class="n">account</span> <span class="p">(</span><span class="n">EOA</span><span class="p">)</span> <span class="ow">is</span> <span class="mi">21000</span> <span class="n">gas</span><span class="p">)</span>
+     <span class="n">var</span> <span class="n">txFeeInWei</span> <span class="o">=</span> <span class="n">gasPrice</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mi">21000</span><span class="p">);</span>
+
+     <span class="o">//</span> <span class="n">This</span> <span class="n">will</span> <span class="n">send</span> <span class="n">the</span> <span class="n">maximum</span> <span class="n">amount</span> <span class="p">(</span><span class="n">our</span> <span class="n">balance</span> <span class="n">minus</span> <span class="n">the</span> <span class="n">fee</span><span class="p">)</span>
+     <span class="n">var</span> <span class="n">value</span> <span class="o">=</span> <span class="n">balance</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">txFeeInWei</span><span class="p">);</span>
+
+     <span class="n">var</span> <span class="n">transaction</span> <span class="o">=</span> <span class="p">{</span>
+         <span class="n">to</span><span class="p">:</span> <span class="n">targetAddress</span><span class="p">,</span>
+         <span class="n">gasPrice</span><span class="p">:</span> <span class="n">gasPrice</span><span class="p">,</span>
+         <span class="n">gasLimit</span><span class="p">:</span> <span class="mi">21000</span><span class="p">,</span>
+         <span class="n">nonce</span><span class="p">:</span> <span class="n">transactionCount</span><span class="p">,</span>
+
+         <span class="o">//</span> <span class="n">The</span> <span class="n">amount</span> <span class="n">to</span> <span class="n">send</span>
+         <span class="n">value</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span>
+
+         <span class="o">//</span> <span class="n">Prevent</span> <span class="n">replay</span> <span class="n">attacks</span> <span class="n">across</span> <span class="n">networks</span>
+         <span class="n">chainId</span><span class="p">:</span> <span class="n">provider</span><span class="o">.</span><span class="n">chainId</span><span class="p">,</span>
+     <span class="p">};</span>
+
+     <span class="n">var</span> <span class="n">signedTransaction</span> <span class="o">=</span> <span class="n">wallet</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">transaction</span><span class="p">);</span>
+
+     <span class="o">//</span> <span class="n">By</span> <span class="n">returning</span> <span class="n">a</span> <span class="n">Promise</span><span class="p">,</span> <span class="n">the</span> <span class="n">sendPromise</span> <span class="n">will</span> <span class="n">resolve</span> <span class="n">once</span> <span class="n">the</span>
+     <span class="o">//</span> <span class="n">transaction</span> <span class="ow">is</span> <span class="n">sent</span>
+     <span class="k">return</span> <span class="n">provider</span><span class="o">.</span><span class="n">sendTransaction</span><span class="p">(</span><span class="n">signedTransaction</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="n">var</span> <span class="n">minedPromise</span> <span class="o">=</span> <span class="n">sendPromise</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">transaction</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">This</span> <span class="n">will</span> <span class="n">be</span> <span class="n">called</span> <span class="n">once</span> <span class="n">the</span> <span class="n">transaction</span> <span class="ow">is</span> <span class="n">sent</span>
+
+    <span class="o">//</span> <span class="n">This</span> <span class="n">promise</span> <span class="n">will</span> <span class="n">be</span> <span class="n">resolve</span> <span class="n">once</span> <span class="n">the</span> <span class="n">transaction</span> <span class="n">has</span> <span class="n">been</span> <span class="n">mined</span><span class="o">.</span>
+    <span class="k">return</span> <span class="n">provider</span><span class="o">.</span><span class="n">waitForTransaction</span><span class="p">(</span><span class="n">transaction</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="n">minedPromise</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">transaction</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;The transaction was mined: Block &quot;</span> <span class="o">+</span> <span class="n">transaction</span><span class="o">.</span><span class="n">blockNumber</span><span class="p">);</span>
+<span class="p">});</span>
+
+
+<span class="o">//</span> <span class="n">Promises</span> <span class="n">can</span> <span class="n">be</span> <span class="n">re</span><span class="o">-</span><span class="n">used</span> <span class="k">for</span> <span class="n">their</span> <span class="n">value</span><span class="p">;</span> <span class="n">it</span> <span class="n">will</span> <span class="ow">not</span> <span class="n">make</span> <span class="n">the</span> <span class="n">external</span>
+<span class="o">//</span> <span class="n">call</span> <span class="n">again</span><span class="p">,</span> <span class="ow">and</span> <span class="n">will</span> <span class="n">provide</span> <span class="n">the</span> <span class="n">exact</span> <span class="n">same</span> <span class="n">result</span> <span class="n">every</span> <span class="n">time</span><span class="o">.</span>
+<span class="n">balancePromise</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">balance</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">This</span> <span class="o">*</span><span class="n">may</span><span class="o">*</span> <span class="k">return</span> <span class="n">before</span> <span class="n">teh</span> <span class="n">above</span> <span class="n">allPromises</span><span class="p">,</span> <span class="n">since</span> <span class="n">it</span> <span class="n">only</span>
+    <span class="o">//</span> <span class="n">required</span> <span class="n">one</span> <span class="n">external</span> <span class="n">call</span><span class="o">.</span> <span class="n">Keep</span> <span class="ow">in</span> <span class="n">mind</span> <span class="n">asynchronous</span> <span class="n">calls</span> <span class="n">can</span>
+    <span class="o">//</span> <span class="n">be</span> <span class="n">called</span> <span class="n">out</span> <span class="n">of</span> <span class="n">order</span><span class="o">.</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">balance</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="checksum-address">
+<span id="id1"></span><h2>Checksum Address<a class="headerlink" href="#checksum-address" title="Permalink to this headline">¶</a></h2>
+<p>A <a class="reference external" href="https://github.com/ethereum/EIPs/issues/55">checksum address</a> uses mixed case hexidecimal strings to encode the checksum
+information in the capitalization of the alphabetic characters, while remaining
+backwards compatible with non-checksum addresses.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Valid</span><span class="p">;</span> <span class="n">checksum</span> <span class="p">(</span><span class="n">mixed</span> <span class="n">case</span><span class="p">)</span>
+<span class="mh">0xCd2a3d9f938e13Cd947eC05ABC7fe734df8DD826</span>
+
+<span class="o">//</span> <span class="n">Valid</span><span class="p">;</span> <span class="n">NO</span> <span class="n">checksum</span> <span class="p">(</span><span class="n">no</span> <span class="n">mixed</span> <span class="n">case</span><span class="p">)</span>
+<span class="mh">0xcd2a3d9f938e13cd947ec05abc7fe734df8dd826</span>
+<span class="mh">0xCD2A3D9F938E13CD947EC05ABC7FE734DF8DD826</span>
+
+<span class="o">//</span> <span class="n">INVALID</span><span class="p">;</span> <span class="p">(</span><span class="n">mixed</span> <span class="n">case</span><span class="p">,</span> <span class="n">but</span> <span class="n">case</span> <span class="n">differs</span> <span class="kn">from</span> <span class="nn">first</span> <span class="n">example</span><span class="p">)</span>
+<span class="mh">0xDc2a3d9f938e13cd947ec05abc7fe734df8dd826</span>
+  <span class="o">^^</span>
+</pre></div>
+</div>
+<p>To convert between ICAP and checksum addresses, see <a class="reference internal" href="api-utils.html#api-getaddress"><span class="std std-ref">getAddress()</span></a>.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="icap-address">
+<span id="id3"></span><h2>ICAP Address<a class="headerlink" href="#icap-address" title="Permalink to this headline">¶</a></h2>
+<p>The original method of adding a checksum to an Ethereum address was by using the
+a format compatible with <a class="reference external" href="https://en.wikipedia.org/wiki/International_Bank_Account_Number">IBAN</a> addresses, using the country code <strong>XE</strong>. However,
+only addresses which have 0 as the first byte (i.e. the address begins with 0x00)
+are truely compatible with IBAN, so ICAP extends the definition to allow for 31
+alphanumeric characters (instead of the standard 30).</p>
+<p>An ICAP address has the following format:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">XE</span> <span class="p">[</span><span class="mi">2</span> <span class="n">digit</span> <span class="n">checksum</span><span class="p">]</span> <span class="p">[</span><span class="n">up</span> <span class="n">to</span> <span class="mi">31</span> <span class="n">alphanumeric</span> <span class="n">characters</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>To convert between ICAP and checksum addresses, see <a class="reference internal" href="api-utils.html#api-getaddress"><span class="std std-ref">getAddress()</span></a>.</p>
+<hr class="docutils" />
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="testing.html" class="btn btn-neutral float-right" title="Testing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="cookbook.html" class="btn btn-neutral" title="Cookbook" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'3.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

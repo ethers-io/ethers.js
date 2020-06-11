@@ -1,0 +1,651 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Utilities &mdash; ethers.js 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  
+    <link rel="stylesheet" href="_static/css/ethers.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="ethers.js 3.0.0 documentation" href="index.html"/>
+        <link rel="up" title="Application Programming Interface (API)" href="api.html"/>
+        <link rel="next" title="Low-Level API" href="api-advanced.html"/>
+        <link rel="prev" title="Contracts" href="api-contract.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ethers.js
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Application Programming Interface (API)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="api-wallet.html">Wallets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-providers.html">Providers API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-contract.html">Contracts</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#big-numbers">Big Numbers</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#creating-instances">Creating Instances</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#examples"><em>Examples</em></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ether-strings-and-wei">Ether Strings and Wei</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1"><em>Examples</em></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#addresses">Addresses</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2"><em>Examples</em></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#utf-8-strings">UTF-8 Strings</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id3"><em>Examples</em></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#cryptographic-functions">Cryptographic Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id4"><em>Examples</em></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#solidity-cryptographic-functions">Solidity Cryptographic Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id5"><em>Examples</em></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#arrayish">Arrayish</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hex-strings">Hex Strings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#contract-addresses">Contract Addresses</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id6"><em>Examples</em></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api-advanced.html">Low-Level API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ethers.js</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="api.html">Application Programming Interface (API)</a> &raquo;</li>
+        
+      <li>Utilities</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api-utils.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="utilities">
+<h1>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h1>
+<p>The utility functions exposed in both the <em>ethers</em> umbrella package and the <em>ethers-utils</em>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">utils</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">utils</span><span class="p">;</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<div class="section" id="big-numbers">
+<span id="bignumber"></span><h2>Big Numbers<a class="headerlink" href="#big-numbers" title="Permalink to this headline">¶</a></h2>
+<p>A BigNumber is an immutable object which allow math operations to be carried
+out on numbers far larger than <a class="reference internal" href="notes.html#ieee754"><span class="std std-ref">JavaScript can accurately handle</span></a>.
+Many functions return these, so it is important to understand how to work with these.</p>
+<dl class="docutils">
+<dt><sup>prototype</sup> . add ( otherValue )</dt>
+<dd>Return a new BigNumber of this plus <em>otherValue</em></dd>
+<dt><sup>prototype</sup> . sub ( otherValue )</dt>
+<dd>Return a new BigNumber of this minus <em>otherValue</em></dd>
+<dt><sup>prototype</sup> . mul ( otherValue )</dt>
+<dd>Return a new BigNumber of this times <em>otherValue</em></dd>
+<dt><sup>prototype</sup> . div ( otherValue )</dt>
+<dd>Return a new BigNumber of this divided by <em>otherValue</em></dd>
+<dt><sup>prototype</sup> . mod ( otherValue )</dt>
+<dd>Return a new BigNumber of this modulo <em>otherValue</em></dd>
+<dt><sup>prototype</sup> . eq ( otherValue )</dt>
+<dd>Return true if this is equal to <em>otherValue</em></dd>
+<dt><sup>prototype</sup> . lt ( otherValue )</dt>
+<dd>Return true if this is less than <em>otherValue</em></dd>
+<dt><sup>prototype</sup> . lte ( otherValue )</dt>
+<dd>Return true if this is less or equal to <em>otherValue</em></dd>
+<dt><sup>prototype</sup> . gt ( otherValue )</dt>
+<dd>Return true if this is greater than <em>otherValue</em></dd>
+<dt><sup>prototype</sup> . gte ( otherValue )</dt>
+<dd>Return true if this is greater than or equal to <em>otherValue</em></dd>
+<dt><sup>prototype</sup> . isZero ( )</dt>
+<dd>Return true if this is equal to zero</dd>
+<dt><sup>prototype</sup> . toNumber ( )</dt>
+<dd>Return a JavaScript number representation; an error is thrown if the value is
+outside the safe range for JavaScript IEEE 754 64-bit floating point numbers</dd>
+<dt><sup>prototype</sup> . toString ()</dt>
+<dd>Return a decimal string representation</dd>
+<dt><sup>prototype</sup> . toHexString ( )</dt>
+<dd>Return a <strong>0x prefixed</strong> hexidecimal representation</dd>
+</dl>
+<div class="section" id="creating-instances">
+<h3>Creating Instances<a class="headerlink" href="#creating-instances" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><sup>utils</sup> <strong>. bigNumberify</strong> ( value )</dt>
+<dd><p class="first">Returns a BigNumber instance of <em>value</em>. The <em>value</em> may be anything which can be
+reliably converted into a BigNumber:</p>
+<dl class="last docutils">
+<dt><em>Decimal String</em></dt>
+<dd><p class="first">A string consisting of the decimal digits 0 through 9, optionally with a leading
+negative sign.</p>
+<p class="last"><strong>examples:</strong> utils.bigNumberify(“42”)</p>
+</dd>
+<dt><em>Hex String</em></dt>
+<dd><p class="first">A <a class="reference internal" href="#hexstring"><span class="std std-ref">hex string</span></a>, witch has aa <strong>prefix of 0x</strong> and consisting
+of the hexidecimal digits 0 through 9 and a through f, case-insensitive. Must
+be non-negative.</p>
+<p class="last"><strong>examples:</strong> utils.bigNumberify(“0x2a”)</p>
+</dd>
+<dt><em>JavaScript Numbers</em></dt>
+<dd><p class="first">Numbers must be within the <a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isSafeInteger">safe range</a> for JavaScript.</p>
+<p class="last"><strong>examples:</strong> utils.bigNumberify(42)</p>
+</dd>
+<dt><em>Arrayish</em></dt>
+<dd><p class="first">Treats the <a class="reference internal" href="#api-arrayish"><span class="std std-ref">arrayish</span></a> as a big-endian encoded bytes representation.</p>
+<p class="last"><strong>examples:</strong> utils.bigNumberify([ 42 ])</p>
+</dd>
+<dt><em>BigNumber</em></dt>
+<dd>Returns <em>value</em>, since a BigNumber is immutable.</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="examples">
+<h3><em>Examples</em><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">utils</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">utils</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">gasPriceWei</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">bigNumberify</span><span class="p">(</span><span class="s2">&quot;20902747399&quot;</span><span class="p">);</span>
+<span class="n">var</span> <span class="n">gasLimit</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">bigNumberify</span><span class="p">(</span><span class="mi">3000000</span><span class="p">);</span>
+
+<span class="n">var</span> <span class="n">maxCostWei</span> <span class="o">=</span> <span class="n">gasPriceWei</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">gasLimit</span><span class="p">)</span>
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Max Cost: &quot;</span> <span class="o">+</span> <span class="n">maxCostWei</span><span class="o">.</span><span class="n">toString</span><span class="p">());</span>
+<span class="o">//</span> <span class="s2">&quot;Max Cost: 62708242197000000&quot;</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Number: &quot;</span> <span class="o">+</span> <span class="n">maxCostWei</span><span class="o">.</span><span class="n">toNumber</span><span class="p">());</span>
+<span class="o">//</span> <span class="n">throws</span> <span class="n">an</span> <span class="n">Error</span><span class="p">,</span> <span class="n">the</span> <span class="n">value</span> <span class="ow">is</span> <span class="n">too</span> <span class="n">large</span> <span class="k">for</span> <span class="n">JavaScript</span> <span class="n">to</span> <span class="n">handle</span> <span class="n">safely</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="ether-strings-and-wei">
+<h2>Ether Strings and Wei<a class="headerlink" href="#ether-strings-and-wei" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><sup>utils</sup> . etherSymbol</dt>
+<dd>The ethereum symbol (the Greek letter <em>Xi</em> )</dd>
+</dl>
+<dl class="docutils" id="parseether">
+<dt><sup>utils</sup> . parseEther ( etherString )</dt>
+<dd>Parse the <em>etherString</em> representation of ether into a BigNumber instance
+of the amount of wei.</dd>
+</dl>
+<dl class="docutils" id="formatether">
+<dt><sup>utils</sup> . formatEther ( wei [ , options ] )</dt>
+<dd>Format an amount of <em>wei</em> into a decimal string representing the amount of ether. The
+<em>options</em> object supports the keys <code class="docutils literal"><span class="pre">commify</span></code> and <code class="docutils literal"><span class="pre">pad</span></code>. The output will always
+include at least one whole number and at least one decimal place.</dd>
+</dl>
+<dl class="docutils" id="parseunits">
+<dt><sup>utils</sup> . parseUnits ( valueString , decimalsOrUnitName )</dt>
+<dd>Parse the <em>valueString</em> representation of units into a BigNumber instance
+of the amount of wei. The <em>decimalsOrUnitsName</em> may be a number of decimals between
+3 and 18 (multiple of 3) or a name, such as <cite>gwei</cite>.</dd>
+</dl>
+<dl class="docutils" id="formatunits">
+<dt><sup>utils</sup> . formatUnits ( wei , decimalsOrUnitName [ , options ] )</dt>
+<dd>Format an amount of <em>wei</em> into a decimal string representing the amount of units. The
+<em>options</em> object supports the keys <code class="docutils literal"><span class="pre">commify</span></code> and <code class="docutils literal"><span class="pre">pad</span></code>. The output will always
+include at least one whole number and at least one decimal place. The <em>decimalsOrUnitsName</em>
+may be a number of decimals between 3 and 18 (multiple of 3) or a name, such as <cite>gwei</cite>.</dd>
+</dl>
+<div class="section" id="id1">
+<h3><em>Examples</em><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">utils</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">utils</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">wei</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">parseEther</span><span class="p">(</span><span class="s1">&#39;1000.0&#39;</span><span class="p">);</span>
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">wei</span><span class="o">.</span><span class="n">toString</span><span class="p">(</span><span class="mi">10</span><span class="p">));</span>
+<span class="o">//</span> <span class="s2">&quot;1000000000000000000000&quot;</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">formatEther</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+<span class="o">//</span> <span class="s2">&quot;0.0&quot;</span>
+
+<span class="n">var</span> <span class="n">wei</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">bigNumberify</span><span class="p">(</span><span class="s2">&quot;1000000000000000000000&quot;</span><span class="p">);</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">formatEther</span><span class="p">(</span><span class="n">wei</span><span class="p">));</span>
+<span class="o">//</span> <span class="s2">&quot;1000.0&quot;</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">formatEther</span><span class="p">(</span><span class="n">wei</span><span class="p">,</span> <span class="p">{</span><span class="n">commify</span><span class="p">:</span> <span class="n">true</span><span class="p">}));</span>
+<span class="o">//</span> <span class="s2">&quot;1,000.0&quot;</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">formatEther</span><span class="p">(</span><span class="n">wei</span><span class="p">,</span> <span class="p">{</span><span class="n">pad</span><span class="p">:</span> <span class="n">true</span><span class="p">}));</span>
+<span class="o">//</span> <span class="s2">&quot;1000.000000000000000000&quot;</span>       <span class="p">(</span><span class="mi">18</span> <span class="n">decimal</span> <span class="n">places</span><span class="p">)</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">formatEther</span><span class="p">(</span><span class="n">wei</span><span class="p">,</span> <span class="p">{</span><span class="n">commify</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="n">pad</span><span class="p">:</span> <span class="n">true</span><span class="p">}));</span>
+<span class="o">//</span> <span class="s2">&quot;1,000.000000000000000000&quot;</span>      <span class="p">(</span><span class="mi">18</span> <span class="n">decimal</span> <span class="n">places</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="addresses">
+<h2>Addresses<a class="headerlink" href="#addresses" title="Permalink to this headline">¶</a></h2>
+<p>There are <a class="reference internal" href="notes.html#checksum-address"><span class="std std-ref">several formats</span></a> available on the Ethereum network for
+addresses, and it is often useful to be able to convert between them.</p>
+<dl class="docutils" id="api-getaddress">
+<dt><sup>utils</sup> . getAddress ( address [ , generateIcap ] )</dt>
+<dd>Normalize an address to a <a class="reference internal" href="notes.html#checksum-address"><span class="std std-ref">checksum address</span></a>, or as an
+<a class="reference internal" href="notes.html#icap-address"><span class="std std-ref">ICAP</span></a> address if <em>generateIcap</em> is true.</dd>
+</dl>
+<div class="section" id="id2">
+<h3><em>Examples</em><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">utils</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">utils</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">address</span> <span class="o">=</span> <span class="s2">&quot;0xd115bffabbdd893a6f7cea402e7338643ced44a6&quot;</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">icapAddress</span> <span class="o">=</span> <span class="s2">&quot;XE93OF8SR0OWI6F4FO88KWO4UNNGG1FEBHI&quot;</span><span class="p">;</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">getAddress</span><span class="p">(</span><span class="n">address</span><span class="p">));</span>
+<span class="o">//</span> <span class="s2">&quot;0xD115BFFAbbdd893A6f7ceA402e7338643Ced44a6&quot;</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">getAddress</span><span class="p">(</span><span class="n">icapAddress</span><span class="p">));</span>
+<span class="o">//</span> <span class="s2">&quot;0xD115BFFAbbdd893A6f7ceA402e7338643Ced44a6&quot;</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">getAddress</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">true</span><span class="p">));</span>
+<span class="o">//</span> <span class="s2">&quot;XE93OF8SR0OWI6F4FO88KWO4UNNGG1FEBHI&quot;</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">getAddress</span><span class="p">(</span><span class="n">icapAddress</span><span class="p">,</span> <span class="n">true</span><span class="p">));</span>
+<span class="o">//</span> <span class="s2">&quot;XE93OF8SR0OWI6F4FO88KWO4UNNGG1FEBHI&quot;</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="utf-8-strings">
+<span id="api-utf8-strings"></span><h2>UTF-8 Strings<a class="headerlink" href="#utf-8-strings" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils" id="api-utf8-to-bytes">
+<dt><sup>utils</sup> . toUtf8Bytes ( string )</dt>
+<dd>Converts a UTF-8 string to a Uint8Array.</dd>
+</dl>
+<dl class="docutils" id="api-utf8-to-string">
+<dt><sup>utils</sup> . toUtf8String ( hexStringOrArrayish )</dt>
+<dd>Converts a hex-encoded string or array to its UTF-8 representation.</dd>
+</dl>
+<div class="section" id="id3">
+<h3><em>Examples</em><a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">utils</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">utils</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;Hello World&quot;</span><span class="p">;</span>
+
+<span class="n">var</span> <span class="nb">bytes</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">toUtf8Bytes</span><span class="p">(</span><span class="n">text</span><span class="p">);</span>
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">bytes</span><span class="p">);</span>
+<span class="o">//</span> <span class="n">Uint8Array</span> <span class="p">[</span><span class="mi">72</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">108</span><span class="p">,</span> <span class="mi">108</span><span class="p">,</span> <span class="mi">111</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">87</span><span class="p">,</span> <span class="mi">111</span><span class="p">,</span> <span class="mi">114</span><span class="p">,</span> <span class="mi">108</span><span class="p">,</span> <span class="mi">100</span><span class="p">]</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">toUtf8String</span><span class="p">(</span><span class="nb">bytes</span><span class="p">));</span>
+<span class="o">//</span> <span class="s2">&quot;Hello World&quot;</span>
+
+<span class="n">var</span> <span class="n">hexString</span> <span class="o">=</span> <span class="s2">&quot;0x48656c6c6f20576f726c64&quot;</span><span class="p">;</span>
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">toUtf8String</span><span class="p">(</span><span class="n">hexString</span><span class="p">));</span>
+<span class="o">//</span> <span class="s2">&quot;Hello World&quot;</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="cryptographic-functions">
+<span id="api-utils-crypto"></span><h2>Cryptographic Functions<a class="headerlink" href="#cryptographic-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><sup>utils</sup> . keccak256 ( hexStringOrArrayish )</dt>
+<dd>Compute the keccak256 cryptographic hash of a value, returned as a hex string. (Note:
+often Ethereum refers to this, <strong>incorrectly</strong>, as SHA3)</dd>
+<dt><sup>utils</sup> . id ( utf8String )</dt>
+<dd>Compute the keccak256 cryptographic hash of a UTF-8 string, returned as a hex string.</dd>
+<dt><sup>utils</sup> . sha256 ( hexStringOrArrayish )</dt>
+<dd>Compute the SHA2-256 cryptographic hash of a value, returned as a hex string.</dd>
+<dt><sup>utils</sup> . randomBytes ( length )</dt>
+<dd>Return a Uint8Array of cryptographically secure random bytes</dd>
+</dl>
+<div class="section" id="id4">
+<h3><em>Examples</em><a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p><strong>Hashing Binary Data</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">utils</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">utils</span><span class="p">;</span>
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">keccak256</span><span class="p">([</span> <span class="mh">0x42</span> <span class="p">]));</span>
+<span class="o">//</span> <span class="s1">&#39;0x1f675bff07515f5df96737194ea945c36c41e7b4fcef307b7cd4d0e602a69111&#39;</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">keccak256</span><span class="p">(</span><span class="s2">&quot;0x42&quot;</span><span class="p">));</span>
+<span class="o">//</span> <span class="s1">&#39;0x1f675bff07515f5df96737194ea945c36c41e7b4fcef307b7cd4d0e602a69111&#39;</span>
+
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">sha256</span><span class="p">([</span> <span class="mh">0x42</span> <span class="p">]));</span>
+<span class="o">//</span> <span class="s1">&#39;0xdf7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c&#39;</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="s2">&quot;0x42&quot;</span><span class="p">));</span>
+<span class="o">//</span> <span class="s1">&#39;0xdf7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c&#39;</span>
+</pre></div>
+</div>
+<p><strong>Hashing UTF-8 Strings</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">utils</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">utils</span><span class="p">;</span>
+<span class="o">//</span> <span class="n">Convert</span> <span class="n">the</span> <span class="n">string</span> <span class="n">to</span> <span class="n">binary</span> <span class="n">data</span>
+<span class="n">var</span> <span class="n">utf8Bytes</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">toUtf8Bytes</span><span class="p">(</span><span class="s1">&#39;Hello World&#39;</span><span class="p">);</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">keccak256</span><span class="p">(</span><span class="n">utf8Bytes</span><span class="p">));</span>
+<span class="o">//</span> <span class="s1">&#39;0x592fa743889fc7f92ac2a37bb1f5ba1daf2a5c84741ca0e0061d243a2e6707ba&#39;</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">utf8Bytes</span><span class="p">));</span>
+<span class="o">//</span> <span class="s1">&#39;0xa591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e&#39;</span>
+
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">id</span><span class="p">(</span><span class="s2">&quot;Hello World&quot;</span><span class="p">));</span>
+<span class="o">//</span> <span class="s1">&#39;0x592fa743889fc7f92ac2a37bb1f5ba1daf2a5c84741ca0e0061d243a2e6707ba&#39;</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">id</span><span class="p">(</span><span class="s2">&quot;addr(bytes32)&quot;</span><span class="p">));</span>
+<span class="o">//</span> <span class="s1">&#39;0x3b3b57de213591bb50e06975ea011e4c8c4b3e6de4009450c1a9e55f66e4bfa4&#39;</span>
+</pre></div>
+</div>
+<p><strong>Random Bytes</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">utils</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">utils</span><span class="p">;</span>
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">randomBytes</span><span class="p">(</span><span class="mi">3</span><span class="p">));</span>
+<span class="o">//</span> <span class="n">Uint8Array</span> <span class="p">[</span> <span class="mi">194</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">140</span> <span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="solidity-cryptographic-functions">
+<h2>Solidity Cryptographic Functions<a class="headerlink" href="#solidity-cryptographic-functions" title="Permalink to this headline">¶</a></h2>
+<p>Solidity uses a <a class="reference external" href="http://solidity.readthedocs.io/en/develop/abi-spec.html#non-standard-packed-mode">non-standard packed mode</a> to encode parameters that are passed
+into its hashing functions. The parameter types and values can be used to compute
+the result of the hash functions as would be performed by Solidity.</p>
+<dl class="docutils">
+<dt><sup>utils</sup> . solidityKeccak256 ( types, values )</dt>
+<dd>Compute the keccak256 cryptographic hash using the Solidity non-standard (tightly)
+packed data for <em>values</em> given the <em>types</em>.</dd>
+<dt><sup>utils</sup> . soliditySha256 ( types, values )</dt>
+<dd>Compute the SHA256 cryptographic hash using the Solidity non-standard (tightly)
+packed data for <em>values</em> given the <em>types</em>.</dd>
+<dt><sup>utils</sup> . solidityPack ( types, values )</dt>
+<dd>Compute the Solidity non-standard (tightly) packed data for <em>values</em> given the <em>types</em>.</dd>
+</dl>
+<div class="section" id="id5">
+<h3><em>Examples</em><a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">utils</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">utils</span><span class="p">;</span>
+<span class="n">var</span> <span class="n">result</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">solidityKeccak256</span><span class="p">([</span> <span class="s1">&#39;int8&#39;</span><span class="p">,</span> <span class="s1">&#39;bytes1&#39;</span><span class="p">,</span> <span class="s1">&#39;string&#39;</span> <span class="p">],</span> <span class="p">[</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;0x42&#39;</span><span class="p">,</span> <span class="s1">&#39;hello&#39;</span> <span class="p">]);</span>
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="o">//</span> <span class="s1">&#39;0x52d7e6a62ca667228365be2143375d0a2a92a3bd4325dd571609dfdc7026686e&#39;</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">soliditySha256</span><span class="p">([</span> <span class="s1">&#39;int8&#39;</span><span class="p">,</span> <span class="s1">&#39;bytes1&#39;</span><span class="p">,</span> <span class="s1">&#39;string&#39;</span> <span class="p">],</span> <span class="p">[</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;0x42&#39;</span><span class="p">,</span> <span class="s1">&#39;hello&#39;</span> <span class="p">]);</span>
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="o">//</span> <span class="s1">&#39;0x1eaebba7999af2691d823bf0c817e635bbe7e89ec7ed32a11e00ca94e86cbf37&#39;</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">solidityPack</span><span class="p">([</span> <span class="s1">&#39;int8&#39;</span><span class="p">,</span> <span class="s1">&#39;bytes1&#39;</span><span class="p">,</span> <span class="s1">&#39;string&#39;</span> <span class="p">],</span> <span class="p">[</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;0x42&#39;</span><span class="p">,</span> <span class="s1">&#39;hello&#39;</span> <span class="p">]);</span>
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="o">//</span> <span class="s1">&#39;0xff4268656c6c6f&#39;</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="arrayish">
+<span id="api-arrayish"></span><h2>Arrayish<a class="headerlink" href="#arrayish" title="Permalink to this headline">¶</a></h2>
+<p>An arrayish object is any such that it:</p>
+<ul class="simple">
+<li>has a <em>length</em> property</li>
+<li>has a value for each index from 0 up to (but excluding) <em>length</em></li>
+<li>has a valid byte for each value; a byte is an integer in the range [0, 255]</li>
+<li>is <strong>NOT</strong> a string</li>
+</ul>
+<dl class="docutils">
+<dt><sup>utils</sup> . isArrayish ( object )</dt>
+<dd>Returns true if <em>object</em> can be treated as an arrayish object.</dd>
+<dt><sup>utils</sup> . arrayify ( hexStringOrBigNumberOrArrayish )</dt>
+<dd>Returns a Uint8Array of a hex string, BigNumber or of an <a class="reference internal" href="#arrayish">Arrayish</a> object.</dd>
+<dt><sup>utils</sup> . concat ( arrayOfHexStringsAndArrayish )</dt>
+<dd>Return a Uint8Array of all <em>arrayOfHexStringsAndArrayish</em> concatenated.</dd>
+<dt><sup>utils</sup> . padZeros ( typedUint8Array, length )</dt>
+<dd>Return a Uint8Array of <em>typedUint8Array</em> with zeros prepended to <em>length</em> bytes.</dd>
+<dt><sup>utils</sup> . stripZeros ( hexStringOrArrayish )</dt>
+<dd>Returns a Uint8Array with all leading zero <strong>bytes</strong> striped.</dd>
+</dl>
+<hr class="docutils" />
+</div>
+<div class="section" id="hex-strings">
+<span id="hexstring"></span><h2>Hex Strings<a class="headerlink" href="#hex-strings" title="Permalink to this headline">¶</a></h2>
+<p>A hex string is <strong>always</strong> prefixed with “0x” and consists of the characters
+0 – 9 and a – f. It is always returned lower case with even-length, but any hex
+string passed into a function may be any case and may be odd-length.</p>
+<dl class="docutils">
+<dt><sup>utils</sup> . hexlify ( numberOrBigNumberOrHexStringOrArrayish )</dt>
+<dd>Converts any number, <a class="reference internal" href="#bignumber"><span class="std std-ref">BigNumber</span></a>, hex string or
+<a class="reference internal" href="#arrayish">Arrayish</a> to a hex string. (otherwise, throws an error)</dd>
+</dl>
+</div>
+<hr class="docutils" />
+<div class="section" id="contract-addresses">
+<h2>Contract Addresses<a class="headerlink" href="#contract-addresses" title="Permalink to this headline">¶</a></h2>
+<p>Every contract deployed on the Ethereum network requires an address (you can think
+of this as the memory address which the running application lives at). The address
+is generated from a cryptographic hash of the address of the creator and the nonce
+of the transaction.</p>
+<dl class="docutils">
+<dt><sup>utils</sup> . getContractAddress ( transaction )</dt>
+<dd>Computes the contract address a contract would have if this transaction
+created a contract. (transaction requires only <code class="docutils literal"><span class="pre">from</span></code> and <code class="docutils literal"><span class="pre">nonce</span></code> be
+defined)</dd>
+</dl>
+<div class="section" id="id6">
+<h3><em>Examples</em><a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">var</span> <span class="n">utils</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s1">&#39;ethers&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">utils</span><span class="p">;</span>
+<span class="o">//</span> <span class="n">Ropsten</span><span class="p">:</span> <span class="mh">0x5bdfd14fcc917abc2f02a30721d152a6f147f09e8cbaad4e0d5405d646c5c3e1</span>
+<span class="n">var</span> <span class="n">transaction</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">from</span><span class="p">:</span> <span class="s1">&#39;0xc6af6e1a78a6752c7f8cd63877eb789a2adb776c&#39;</span><span class="p">,</span>
+    <span class="n">nonce</span><span class="p">:</span> <span class="mi">0</span>
+<span class="p">};</span>
+
+<span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">getContractAddress</span><span class="p">(</span><span class="n">transaction</span><span class="p">));</span>
+<span class="o">//</span> <span class="s2">&quot;0x0CcCC7507aEDf9FEaF8C8D731421746e16b4d39D&quot;</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="api-advanced.html" class="btn btn-neutral float-right" title="Low-Level API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="api-contract.html" class="btn btn-neutral" title="Contracts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Richard Moore &lt;me@ricmoo.com&gt;.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'3.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
