@@ -3,6 +3,13 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.0-beta.192 (2020-06-12 04:51)
+-----------------------------------------
+
+  - Support nonpayable Solidity modifier in ABI. ([adc8d3d](https://github.com/ethers-io/ethers.js/commit/adc8d3d9aec2f5ee8e207f8bc77d99052e473d16))
+  - More debug information in timeout and fetch errors. ([#678](https://github.com/ethers-io/ethers.js/issues/678); [693094e](https://github.com/ethers-io/ethers.js/commit/693094e97ce4f0dc0cd49b9cf6b1557bd7dc517d))
+  - Use URL parse instead of constructor for react compatibility. ([#874](https://github.com/ethers-io/ethers.js/issues/874); [5e7d28b](https://github.com/ethers-io/ethers.js/commit/5e7d28b19b18aa1bbb4b851f74f6d7865725be02))
+
 ethers/v5.0.0-beta.191 (2020-06-03 03:41)
 -----------------------------------------
 

@@ -4806,7 +4806,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.0.0-beta.155";
+const version$4 = "abi/5.0.0-beta.156";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -5291,6 +5291,10 @@ function parseModifiers(value, params) {
             case "payable":
                 params.payable = true;
                 params.stateMutability = "payable";
+                break;
+            case "nonpayable":
+                params.payable = false;
+                params.stateMutability = "nonpayable";
                 break;
             case "pure":
                 params.constant = true;
@@ -15870,7 +15874,7 @@ var browser$2 = /*#__PURE__*/Object.freeze({
 	encode: encode$1
 });
 
-const version$l = "web/5.0.0-beta.141";
+const version$l = "web/5.0.0-beta.142";
 
 "use strict";
 var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -15989,7 +15993,12 @@ function fetchJson(connection, json, processFunc) {
                         return;
                     }
                     timer = null;
-                    reject(logger$p.makeError("timeout", Logger.errors.TIMEOUT, { timeout: timeout }));
+                    reject(logger$p.makeError("timeout", Logger.errors.TIMEOUT, {
+                        requestBody: (options.body || null),
+                        requestMethod: options.method,
+                        timeout: timeout,
+                        url: url
+                    }));
                 }, timeout);
             }
         });
@@ -16013,6 +16022,8 @@ function fetchJson(connection, json, processFunc) {
                 if (response == null) {
                     runningTimeout.cancel();
                     logger$p.throwError("missing response", Logger.errors.SERVER_ERROR, {
+                        requestBody: (options.body || null),
+                        requestMethod: options.method,
                         serverError: error,
                         url: url
                     });
@@ -16028,6 +16039,8 @@ function fetchJson(connection, json, processFunc) {
                     status: response.statusCode,
                     headers: response.headers,
                     body: body,
+                    requestBody: (options.body || null),
+                    requestMethod: options.method,
                     url: url
                 });
             }
@@ -16041,6 +16054,8 @@ function fetchJson(connection, json, processFunc) {
                     logger$p.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
                         body: body,
                         error: error,
+                        requestBody: (options.body || null),
+                        requestMethod: options.method,
                         url: url
                     });
                 }
@@ -16052,7 +16067,10 @@ function fetchJson(connection, json, processFunc) {
                 catch (error) {
                     logger$p.throwError("processing response error", Logger.errors.SERVER_ERROR, {
                         body: json,
-                        error: error
+                        error: error,
+                        requestBody: (options.body || null),
+                        requestMethod: options.method,
+                        url: url
                     });
                 }
             }
@@ -19861,7 +19879,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.0-beta.191";
+const version$o = "ethers/5.0.0-beta.192";
 
 "use strict";
 const logger$E = new Logger(version$o);

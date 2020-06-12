@@ -4998,7 +4998,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.0-beta.155";
+	exports.version = "abi/5.0.0-beta.156";
 	});
 
 	var _version$9 = unwrapExports(_version$8);
@@ -5516,6 +5516,10 @@
 	            case "payable":
 	                params.payable = true;
 	                params.stateMutability = "payable";
+	                break;
+	            case "nonpayable":
+	                params.payable = false;
+	                params.stateMutability = "nonpayable";
 	                break;
 	            case "pure":
 	                params.constant = true;
@@ -17572,7 +17576,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "web/5.0.0-beta.141";
+	exports.version = "web/5.0.0-beta.142";
 	});
 
 	var _version$H = unwrapExports(_version$G);
@@ -17774,7 +17778,12 @@
 	                        return;
 	                    }
 	                    timer = null;
-	                    reject(logger.makeError("timeout", lib.Logger.errors.TIMEOUT, { timeout: timeout }));
+	                    reject(logger.makeError("timeout", lib.Logger.errors.TIMEOUT, {
+	                        requestBody: (options.body || null),
+	                        requestMethod: options.method,
+	                        timeout: timeout,
+	                        url: url
+	                    }));
 	                }, timeout);
 	            }
 	        });
@@ -17807,6 +17816,8 @@
 	                        if (response == null) {
 	                            runningTimeout.cancel();
 	                            logger.throwError("missing response", lib.Logger.errors.SERVER_ERROR, {
+	                                requestBody: (options.body || null),
+	                                requestMethod: options.method,
 	                                serverError: error_1,
 	                                url: url
 	                            });
@@ -17823,6 +17834,8 @@
 	                                status: response.statusCode,
 	                                headers: response.headers,
 	                                body: body,
+	                                requestBody: (options.body || null),
+	                                requestMethod: options.method,
 	                                url: url
 	                            });
 	                        }
@@ -17836,6 +17849,8 @@
 	                                logger.throwError("invalid JSON", lib.Logger.errors.SERVER_ERROR, {
 	                                    body: body,
 	                                    error: error,
+	                                    requestBody: (options.body || null),
+	                                    requestMethod: options.method,
 	                                    url: url
 	                                });
 	                            }
@@ -17852,7 +17867,10 @@
 	                        error_2 = _a.sent();
 	                        logger.throwError("processing response error", lib.Logger.errors.SERVER_ERROR, {
 	                            body: json,
-	                            error: error_2
+	                            error: error_2,
+	                            requestBody: (options.body || null),
+	                            requestMethod: options.method,
+	                            url: url
 	                        });
 	                        return [3 /*break*/, 8];
 	                    case 8: return [2 /*return*/, json];
@@ -22932,7 +22950,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.0-beta.191";
+	exports.version = "ethers/5.0.0-beta.192";
 	});
 
 	var _version$N = unwrapExports(_version$M);

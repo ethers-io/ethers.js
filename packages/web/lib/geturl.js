@@ -79,6 +79,13 @@ function getResponse(request) {
         request.on("error", function (error) { reject(error); });
     });
 }
+// The URL.parse uses null instead of the empty string
+function nonnull(value) {
+    if (value == null) {
+        return "";
+    }
+    return value;
+}
 function getUrl(href, options) {
     return __awaiter(this, void 0, void 0, function () {
         var url, request, req, response;
@@ -88,17 +95,17 @@ function getUrl(href, options) {
                     if (options == null) {
                         options = {};
                     }
-                    url = new url_1.URL(href);
+                    url = url_1.parse(href);
                     request = {
-                        protocol: url.protocol,
-                        hostname: url.hostname,
-                        port: url.port,
-                        path: (url.pathname + url.search),
+                        protocol: nonnull(url.protocol),
+                        hostname: nonnull(url.hostname),
+                        port: nonnull(url.port),
+                        path: (nonnull(url.pathname) + nonnull(url.search)),
                         method: (options.method || "GET"),
                         headers: (options.headers || {}),
                     };
                     req = null;
-                    switch (url.protocol) {
+                    switch (nonnull(url.protocol)) {
                         case "http:":
                             req = http_1.default.request(request);
                             break;

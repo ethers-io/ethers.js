@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import http from "http";
 import https from "https";
-import { URL } from "url";
+import { parse } from "url";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
@@ -48,6 +48,13 @@ function getResponse(request) {
         request.on("error", (error) => { reject(error); });
     });
 }
+// The URL.parse uses null instead of the empty string
+function nonnull(value) {
+    if (value == null) {
+        return "";
+    }
+    return value;
+}
 export function getUrl(href, options) {
     return __awaiter(this, void 0, void 0, function* () {
         if (options == null) {
@@ -56,17 +63,17 @@ export function getUrl(href, options) {
         // @TODO: Once we drop support for node 8, we can pass the href
         //        firectly into request and skip adding the components
         //        to this request object
-        const url = new URL(href);
+        const url = parse(href);
         const request = {
-            protocol: url.protocol,
-            hostname: url.hostname,
-            port: url.port,
-            path: (url.pathname + url.search),
+            protocol: nonnull(url.protocol),
+            hostname: nonnull(url.hostname),
+            port: nonnull(url.port),
+            path: (nonnull(url.pathname) + nonnull(url.search)),
             method: (options.method || "GET"),
             headers: (options.headers || {}),
         };
         let req = null;
-        switch (url.protocol) {
+        switch (nonnull(url.protocol)) {
             case "http:":
                 req = http.request(request);
                 break;

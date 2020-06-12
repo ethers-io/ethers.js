@@ -74,7 +74,12 @@ export function fetchJson(connection, json, processFunc) {
                         return;
                     }
                     timer = null;
-                    reject(logger.makeError("timeout", Logger.errors.TIMEOUT, { timeout: timeout }));
+                    reject(logger.makeError("timeout", Logger.errors.TIMEOUT, {
+                        requestBody: (options.body || null),
+                        requestMethod: options.method,
+                        timeout: timeout,
+                        url: url
+                    }));
                 }, timeout);
             }
         });
@@ -98,6 +103,8 @@ export function fetchJson(connection, json, processFunc) {
                 if (response == null) {
                     runningTimeout.cancel();
                     logger.throwError("missing response", Logger.errors.SERVER_ERROR, {
+                        requestBody: (options.body || null),
+                        requestMethod: options.method,
                         serverError: error,
                         url: url
                     });
@@ -113,6 +120,8 @@ export function fetchJson(connection, json, processFunc) {
                     status: response.statusCode,
                     headers: response.headers,
                     body: body,
+                    requestBody: (options.body || null),
+                    requestMethod: options.method,
                     url: url
                 });
             }
@@ -126,6 +135,8 @@ export function fetchJson(connection, json, processFunc) {
                     logger.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
                         body: body,
                         error: error,
+                        requestBody: (options.body || null),
+                        requestMethod: options.method,
                         url: url
                     });
                 }
@@ -137,7 +148,10 @@ export function fetchJson(connection, json, processFunc) {
                 catch (error) {
                     logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
                         body: json,
-                        error: error
+                        error: error,
+                        requestBody: (options.body || null),
+                        requestMethod: options.method,
+                        url: url
                     });
                 }
             }

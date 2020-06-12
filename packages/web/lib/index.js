@@ -102,7 +102,12 @@ function fetchJson(connection, json, processFunc) {
                         return;
                     }
                     timer = null;
-                    reject(logger.makeError("timeout", logger_1.Logger.errors.TIMEOUT, { timeout: timeout }));
+                    reject(logger.makeError("timeout", logger_1.Logger.errors.TIMEOUT, {
+                        requestBody: (options.body || null),
+                        requestMethod: options.method,
+                        timeout: timeout,
+                        url: url
+                    }));
                 }, timeout);
             }
         });
@@ -135,6 +140,8 @@ function fetchJson(connection, json, processFunc) {
                         if (response == null) {
                             runningTimeout.cancel();
                             logger.throwError("missing response", logger_1.Logger.errors.SERVER_ERROR, {
+                                requestBody: (options.body || null),
+                                requestMethod: options.method,
                                 serverError: error_1,
                                 url: url
                             });
@@ -151,6 +158,8 @@ function fetchJson(connection, json, processFunc) {
                                 status: response.statusCode,
                                 headers: response.headers,
                                 body: body,
+                                requestBody: (options.body || null),
+                                requestMethod: options.method,
                                 url: url
                             });
                         }
@@ -164,6 +173,8 @@ function fetchJson(connection, json, processFunc) {
                                 logger.throwError("invalid JSON", logger_1.Logger.errors.SERVER_ERROR, {
                                     body: body,
                                     error: error,
+                                    requestBody: (options.body || null),
+                                    requestMethod: options.method,
                                     url: url
                                 });
                             }
@@ -180,7 +191,10 @@ function fetchJson(connection, json, processFunc) {
                         error_2 = _a.sent();
                         logger.throwError("processing response error", logger_1.Logger.errors.SERVER_ERROR, {
                             body: json,
-                            error: error_2
+                            error: error_2,
+                            requestBody: (options.body || null),
+                            requestMethod: options.method,
+                            url: url
                         });
                         return [3 /*break*/, 8];
                     case 8: return [2 /*return*/, json];
