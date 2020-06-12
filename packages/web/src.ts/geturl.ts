@@ -2,7 +2,7 @@
 
 import http from "http";
 import https from "https";
-import { URL } from "url"
+import { parse } from "url"
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -58,26 +58,32 @@ function getResponse(request: http.ClientRequest): Promise<GetUrlResponse> {
     });
 }
 
+// The URL.parse uses null instead of the empty string
+function nonnull(value: string): string {
+    if (value == null) { return ""; }
+    return value;
+}
+
 export async function getUrl(href: string, options?: Options): Promise<GetUrlResponse> {
     if (options == null) { options = { }; }
 
     // @TODO: Once we drop support for node 8, we can pass the href
     //        firectly into request and skip adding the components
     //        to this request object
-    const url = new URL(href);
+    const url = parse(href);
 
     const request = {
-        protocol: url.protocol,
-        hostname: url.hostname,
-        port: url.port,
-        path: (url.pathname + url.search),
+        protocol: nonnull(url.protocol),
+        hostname: nonnull(url.hostname),
+        port: nonnull(url.port),
+        path: (nonnull(url.pathname) + nonnull(url.search)),
 
         method: (options.method || "GET"),
         headers: (options.headers || { }),
     };
 
     let req: http.ClientRequest = null;
-    switch (url.protocol) {
+    switch (nonnull(url.protocol)) {
         case "http:":
             req = http.request(request);
             break;
