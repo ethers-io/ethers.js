@@ -20,13 +20,7 @@ Returns the number of transactions //address// has ever **sent**, as of //blockT
 This value is required to be the nonce for the next transaction from //address//
 sent to the network.
 
-_heading: Examples
-
-_code: @lang<javascript>
-
-// <hide>
-const provider = ethers.getDefaultProvider()
-// </hide>
+_code: Account Examples @lang<javascript>
 
 // Get the balance for an account...
 provider.getBalance("ricmoo.firefly.eth");
@@ -55,10 +49,29 @@ _property: provider.getBlockWithTransactions(block) => Promise<[[providers-Block
 Get the //block// from the network, where the ``result.transactions`` is
 an Array of [[providers-TransactionResponse]] objects.
 
+_code: Block Examples @lang<javascript>
 
-_subsection: Ethereum Naming Service (ENS) Methods
+provider.getBlock(100004)
+//!
 
-TODO: Explain ENS here...
+provider.getBlockWithTransactions(100004)
+//!
+
+_subsection: Ethereum Naming Service (ENS) Methods @<Provider--ens-methods>
+
+The [Ethereum Naming Service](link-ens) (ENS) allows a short and
+easy-to-remember ENS Name to be atached to any set of keys
+and values.
+
+One of the most common uses for this is to use a simple name to
+refer to an [Ethereum Address](address).
+
+In the ethers API, nearly anywhere that accepts an address, an
+ENS name may be used instead, which can simplify code and make
+reading and debugging much simpler.
+
+The provider offers some basic operations to help resolve and
+work with ENS names.
 
 _property: provider.lookupAddress(address) => Promise<string>  @<Provider-lookupAddress> @SRC<providers/base-provider>
 Performs a reverse lookup of the //address// in ENS using the
@@ -70,13 +83,7 @@ Looks up the address of //name//. If the name is not owned, or
 does not have a //Resolver// configured, or the //Resolver// does
 not have an address configured, ``null`` is returned.
 
-_heading: Examples
-
-_code: @lang<javascript>
-
-// <hide>
-const provider = ethers.getDefaultProvider()
-// </hide>
+_code: ENS Examples @lang<javascript>
 
 // Reverse lookup of an ENS by address...
 provider.lookupAddress("0x6fC21092DA55B392b045eD78F4732bff3C580e2c");
@@ -107,6 +114,31 @@ Returns the block number (or height) of the most recently mined block.
 
 _property: provider.getGasPrice() => Promise<[[BigNumber]]>  @<Provider-getGasPrice> @SRC<providers/base-provider>
 Returns a //best guess// of the [[gas-price]] to use in a transaction.
+
+_code: Network Status Examples @lang<javascript>
+
+// The network information
+provider.getNetwork()
+// <hide>
+//!
+network = utils.shallowCopy(_)
+delete network._defaultProvider
+network
+// </hide>
+//!
+
+// The current block number
+provider.getBlockNumber()
+//!
+
+// Get the current suggested gas price (in wei)...
+gasPrice = await provider.getGasPrice()
+//! async gasPrice
+
+// ...often this gas price is easier to understand or
+// display to the user in gwei (giga-wei, or 1e9 wei)
+utils.formatUnits(gasPrice, "gwei")
+//!
 
 
 _subsection: Transactions Methods  @<Provider--transaction-methods>
@@ -226,14 +258,15 @@ $Debug:    each Provider may use this to emit useful debugging information
 |    ``"debug"``      |   provider dependent             <| $Debug             <<<|
 
 
-_code: Events Example @lang<javasript>
+_code: Events Example @lang<javascript>
 
 // <hide>
-const provider = ethers.getDefaultProvider();
 const txHash = utils.id("dummy-data");
+const myAddress = ethers.constants.HashZero;
+const myOtherAddress = ethers.constants.HashZero;
 // </hide>
 
-provide.on("block", (blockNumber) => {
+provider.on("block", (blockNumber) => {
     // Emitted on every block change
 })
 
@@ -246,7 +279,7 @@ provider.once(txHash, (transaction) => {
 // This filter could also be generated with the Contract or
 // Interface API. If address is not specified, any address
 // matches and if topics is not specified, any log matches
-const filter = {
+filter = {
     address: "dai.tokens.ethers.eth",
     topics: [
         utils.id("Transfer(address,address,uint256")
@@ -259,7 +292,7 @@ provider.on(filter, (log, event) => {
 
 // Notice this is an array of topic-sets and is identical to
 // using a filter with no address (i.e. match any address)
-const topicSets = [
+topicSets = [
     utils.id("Transfer(address,address,uint256"),
     null,
     [
@@ -276,10 +309,15 @@ provider.on("pending", (tx) => {
     // Emitted when any new pending transaction is noticed
 });
 
+
 provider.on("error", (tx) => {
     // Emitted when any error occurs
 });
 
+// <hide>
+// Make sure our documentation builds without waiting forever
+provider.removeAllListeners()
+// </hide>
 
 _subsection: Inspection Methods  @<Provider--inspection-methods>
 

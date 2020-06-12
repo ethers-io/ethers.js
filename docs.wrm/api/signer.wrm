@@ -1,19 +1,36 @@
+
 _section: Signers @<signers>
 
-A Signer represents...
+A **Signer** in //ethers// is an abstraction of an Ethereum Account,
+which can be used to sign messages and transactions and send
+signed transactions to the Ethereum Network to execute state
+changing operations.
+
+The available operations depends largely on the sub-class used.
+
+For example, a Signer from MetaMask can send transactions and sign
+messages but cannot sign a transaction (without broadcasting it).
+
+The most common Signers you will encounter are:
+
+- [[Wallet]], which is a class which knows its private key and can
+  execute any operations with it
+- [[JsonRpcSigner]], which is connected to a [[JsonRpcProvider]] (or
+  sub-class) and is acquired using [getSigner](JsonRpcProvider-getSigner)
 
 _subsection: Signer @<Signer> @SRC<abstract-signer:class.Signer>
 
-The **Signer** class is abstract and cannot be directly instaniated. Instead
-use one of the concreate sub-classes, such as the [[Wallet]], [[VoidSigner]]
-or [[JsonRpcSigner]].
+The **Signer** class is abstract and cannot be directly instaniated.
+
+Instead use one of the concreate sub-classes, such as the [[Wallet]],
+[[VoidSigner]] or [[JsonRpcSigner]].
 
 _property: signer.connect(provider) => [[Signer]]  @<Signer-connect>
 
 Sub-classes **must** implement this, however they may simply throw an error
 if changing providers is not supported.
 
-_property: signer.getAddress() => Promise<string<[Address](address)>>  @<Signer-getaddress> @SRC<abstract-signer:Signer.connect>
+_property: signer.getAddress() => Promise<string<[[address]]>>  @<Signer-getaddress> @SRC<abstract-signer:Signer.connect>
 Returns a Promise that resolves to the account address.
 
 This is a Promise so that a **Signer** can be designed around an
@@ -47,18 +64,19 @@ _property: signer.estimateGas(transactionRequest) => Promise<[[BigNumber]]>  @<S
 Returns the result of estimating the cost to send the //transactionRequest//,
 with this account address being used as the ``from`` field.
 
-_property: signer.resolveName(ensName) => Promise<string<[Address](address)>> @<Signer-resolveName> @SRC<abstract-signer>
+_property: signer.resolveName(ensName) => Promise<string<[[address]]>> @<Signer-resolveName> @SRC<abstract-signer>
 Returns the address associated with the //ensName//.
 
 
-_heading: Signing
+_heading: Signing @<Signer--signing-methods>
 
 _property: signer.signMessage(message) => Promise<string<[RawSignature](signature-raw)>> @<Signer-signMessage>
 This returns a Promise which resolves to the [[signature-raw]]
 of //message//.
 
 Sub-classes **must** implement this, however they may throw if signing a
-message is not supported.
+message is not supported, such as in a Contract-based Wallet or
+Meta-Transaction-based Wallet.
 
 _note: Note
 
@@ -83,24 +101,27 @@ Returns a Promise which resolves to the signed transaction of the
 //transactionRequest//. This method does not populate any missing fields.
 
 Sub-classes **must** implement this, however they may throw if signing a
-transaction is not supported.
+transaction is not supported, which is common for security reasons in many
+clients.
 
 _property: signer.sendTransaction(transactionRequest) => Promise<[[providers-TransactionResponse]]> @<Signer-sendTransaction>
 This method populates the transactionRequest with missing fields, using
 [populateTransaction](Signer-populateTransaction) and returns a Promise which resolves to the transaction.
 
-Sub-classes **must** implement this, however they may throw if signing a
-transaction is not supported.
+Sub-classes **must** implement this, however they may throw if sending a
+transaction is not supported, such as the [[VoidSigner]] or if the
+Wallet is offline and not connected to a [[Provider]].
 
 _heading: Sub-Classes @<Signer--subclassing>
 
 It is very important that all important properties of a **Signer** are
 **immutable**. Since Ethereum is very asynchronous and deals with critical
 data (such as ether and other potentially valuable crypto assets), keeping
-properties such as the //provider// and //address// static helps prevent
-serious issues.
+properties such as the //provider// and //address// static throughout the
+life-cycle of the Signer helps prevent serious issues and many other classes
+and libraries make this assumption.
 
-A sub-class **must** call ``super()``.
+A sub-class **must** extend Sigenr and **must** call ``super()``.
 
 _property: signer.checkTransaction(transactionRequest) => [[providers-TransactionRequest]]  @<Signer-checkTransaction> @SRC<abstract-signer>
 This is generally not required to be overridden, but may needed to provide
@@ -111,8 +132,9 @@ needed by ``call``, ``estimateGas`` and ``populateTransaction`` (which is used
 by sendTransaction). It should also throw an error if any unknown key is specified.
 
 The default implementation checks only valid [[providers-TransactionRequest]] properties
-exist and adds ``from`` to the transaction if it does not exist, or verifies it is equal
-to the Signer's address if it does exist.
+exist and adds ``from`` to the transaction if it does not exist.
+
+If there is a ``from`` field it **must** be verified to be equal to the Signer's address.
 
 _property: signer.populateTransaction(transactionRequest) => Promise<[[providers-TransactionRequest]]> @<Signer-populateTransaction> @SRC<abstract-signer>
 This is generally not required to be overridden, but may needed to provide
@@ -126,6 +148,7 @@ utility function can be used for this.
 The default implementation calls ``checkTransaction`` and resolves to if it is an
 ENS name, adds ``gasPrice``, ``nonce``, ``gasLimit`` and ``chainId`` based on the
 related operations on Signer.
+
 
 _subsection: Wallet  @<Wallet> @INHERIT<[[ExternallyOwnedAccount]] and [[Signer]]> @SRC<wallet:class.Wallet>
 
@@ -141,10 +164,14 @@ Returns a new Wallet with a random private key, generated from
 cryptographically secure entropy sources. If the current environment
 does not have a secure entropy source, an error is thrown.
 
+Wallets created using this method will have a mnemonic.
+
 _property: ethers.Wallet.fromEncryptedJson(json, password [ , progress ])  => Promise<[[Wallet]]> @<Wallet-fromEncryptedJson> @SRC<wallet>
-Create an instance from an encrypted JSON wallet. If //progress//
-is provided it will be called during decryption with a value between 0 and
-1 indicating the progress towards completion.
+Create an instance from an encrypted JSON wallet.
+
+If //progress// is provided it will be called during decryption
+with a value between 0 and 1 indicating the progress towards
+completion.
 
 _property: ethers.Wallet.fromEncryptedJsonSync(json, password)  => [[Wallet]] @<Wallet-fromEncryptedJsonSync> @SRC<wallet>
 Create an instance from an encrypted JSON wallet.
@@ -153,16 +180,16 @@ This operation will operate synchronously which will lock up the user
 interface, possibly for a non-trivial duration. Most applications should
 use the asynchronous ``fromEncryptedJson`` instead.
 
-_property: ethers.Wallet.fromMnemonic(mnemonic [ , path, [ wordlist ] ]) => [[Wallet]]
+_property: ethers.Wallet.fromMnemonic(mnemonic [ , path, [ wordlist ] ]) => [[Wallet]] @<Wallet.fromMnemonic>
 Create an instance from a mnemonic phrase.
 
-If path is not specified, the Ethereum default path is used (i.e. m/44'/60'/0'/0/0).
+If path is not specified, the Ethereum default path is used (i.e. ``m/44'/60'/0'/0/0``).
 
 If wordlist is not specified, the English Wordlist is used.
 
-_heading: Properties
+_heading: Properties @<Wallet--properties>
 
-_property: wallet.address => string<[Address](address)>
+_property: wallet.address => string<[[address]]>
 The address for the account this Wallet represents.
 
 _property: wallet.provider => [[Provider]]
@@ -177,12 +204,81 @@ to the desired provider.
 _property: wallet.publicKey => string<[[DataHexString]]<65>>
 The uncompressed public key for this Wallet represents.
 
-_heading: Methods
+_heading: Methods @<Wallet--methods>
 
-_property: wallet.encrypt(password, [ options = { }, [ progress ] ]) => Promise<string>
+_property: wallet.encrypt(password, [ options = { }, [ progress ] ]) => Promise<string> @<Wallet-encrypt>
 
 Encrypt the wallet using //password// returning a Promise which resolves
 to a JSON wallet.
+
+If //progress// is provided it will be called during decryption
+with a value between 0 and 1 indicating the progress towards
+completion.
+
+_code: Wallet Examples @lang<javascript>
+
+// Create a wallet instance from a mnemonic...
+mnemonic = "announce room limb pattern dry unit scale effort smooth jazz weasel alcohol"
+walletMnemonic = Wallet.fromMnemonic(mnemonic)
+
+// ...or from a private key
+walletPrivateKey = new Wallet(walletMnemonic.privateKey)
+
+walletMnemonic.address === walletPrivateKey.address
+//!
+
+// The address as a Promise per the Signer API
+walletMnemonic.getAddress()
+//!
+
+// A Wallet address is also available synchronously
+walletMnemonic.address
+//!
+
+// The internal cryptographic components
+walletMnemonic.privateKey
+//!
+walletMnemonic.publicKey
+//!
+
+// The wallet mnemonic
+walletMnemonic.mnemonic
+//!
+
+// Note: A wallet created with a private key does not
+//       have a mnemonic (the derivation prevents it)
+walletPrivateKey.mnemonic
+//!
+
+// Signing a message
+walletMnemonic.signMessage("Hello World")
+//!
+
+tx = {
+  to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+  value: utils.parseEther("1.0")
+}
+
+// Signing a transaction
+walletMnemonic.signTransaction(tx)
+//!
+
+// The connect method returns a new instance of the
+// Wallet connected to a provider
+wallet = walletMnemonic.connect(provider)
+
+// Querying the network
+wallet.getBalance();
+//!
+wallet.getTransactionCount();
+//!
+
+// Sending ether
+wallet.sendTransaction(tx)
+// <hide>
+//! error
+// </hide>
+
 
 
 _subsection: VoidSigner  @<VoidSigner> @INHERIT<[[Signer]]> @SRC<abstract-signer:class.VoidSigner>
@@ -196,11 +292,47 @@ will be carried.
 For example, the ``call`` operation will automatically have the
 provided address passed along during the execution.
 
-_property: new ethers.VoidSigner(address) => [[VoidSigner]]
+_property: new ethers.VoidSigner(address [ , provider ]) => [[VoidSigner]]
 Create a new instance of a **VoidSigner** for //address//.
 
-_property: voidSigner.address => string<[Address](address)>
+_property: voidSigner.address => string<[[address]]>
 The address of this **VoidSigner**.
+
+_code: VoidSigner Pre-flight Example @lang<javascript>
+
+address = "0x8ba1f109551bD432803012645Ac136ddd64DBA72"
+signer = new ethers.VoidSigner(address, provider)
+
+// The DAI token contract
+abi = [
+  "function balanceOf(address) view returns (uint)",
+  "function transfer(address, uint) returns (bool)"
+]
+contract = new ethers.Contract("dai.tokens.ethers.eth", abi, signer)
+
+// <hide>
+//!
+// </hide>
+// Get the number of tokens for this account
+tokens = await contract.balanceOf(signer.getAddress())
+//! async tokens
+
+//
+// Pre-flight (check for revert) on DAI from the signer
+//
+// Note: We do not have the private key at this point, this
+//       simply allows us to check what would happen if we
+//       did. This can be useful to check before prompting
+//       a request in the UI
+//
+
+// This will pass since the token balance is available
+contract.callStatic.transfer("donations.ethers.eth", tokens)
+//!
+
+// This will fail since it is greater than the token balance
+contract.callStatic.transfer("donations.ethers.eth", tokens.add(1))
+//! error
 
 
 _subsection: ExternallyOwnedAccount  @<ExternallyOwnedAccount>
@@ -209,7 +341,7 @@ This is an interface which contains a minimal set of properties
 required for Externally Owned Accounts which can have certain
 operations performed, such as encoding as a JSON wallet.
 
-_property: eoa.address => string<[Address](address)>
+_property: eoa.address => string<[[address]]>
 
 The [[address]] of this EOA.
 

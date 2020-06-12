@@ -30,6 +30,11 @@ the registered //name//.
 
 _subsection: Languages @<wordlists--languages>
 
+The [official wordlists](link-bip39-wordlists) availalbe in at
+`ethers.wordlists`. In the browser, only the english langauge is
+available by default; to include the others (which increases the
+size of the library), see the dist files in the `ethers` package.
+
 _property: ethers.wordlists.cz => Wordlist
 The Czech [[Wordlist]].
 

@@ -162,7 +162,7 @@ Rather than executing the state-change of a transaction, it is possible to ask a
 
 This does not actually chagne any state, but is free. This in some cases can be used to determine if a transaction will fail or succeed.
 
-This otherwise functions the same as a [Read-Only Method](/v5/api/contract/contract/#contract--readonly).
+This otherwise functions the same as a [Read-Only Method](/v5/api/contract/contract/#Contract--readonly).
 
 
 ### Event Filters

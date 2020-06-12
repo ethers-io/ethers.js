@@ -1,6 +1,6 @@
-_section: Security
+_section: Security @<security>
 
-_subsection: Key Derivation Functions @<security-pbkdf>
+_subsection: Key Derivation Functions @<security--pbkdf>
 
 This is not specific to Ethereum, but is a useful technique
 to understand and has some implications on User Experience.

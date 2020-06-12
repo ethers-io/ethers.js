@@ -1,6 +1,6 @@
 _section: Transactions @<transactions>
 
-_subsection: Types
+_subsection: Types @<transactions--types>
 
 _heading: UnsignedTransaction @<UnsignedTransaction>
 An unsigned transaction represents a transaction that has not been
@@ -95,7 +95,7 @@ x-coordinate can have, and in [[link-eip-155]] is additionally
 used to encode the chain ID into the serialized transaction.
 
 
-_subsection: Functions
+_subsection: Functions  @<transactions--functions>
 
 _property: ethers.utils.parseTransaction(aBytesLike) => [[Transaction]]  @<utils-parseTransaction> @SRC<transactions:parse>
 Parses the transaction properties from a serialized transactions.

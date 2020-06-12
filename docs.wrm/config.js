@@ -127,6 +127,7 @@ function codeContextify(context) {
     context.hexlify = ethers.utils.hexlify;
     context.hexValue = ethers.utils.hexValue;
     context.Wallet = ethers.Wallet;
+    context.provider = new ethers.providers.InfuraProvider();
 
     context.BigNumber.prototype[inspect.custom] = function(depth, options) {
         return `{ BigNumber: ${JSON.stringify(this.toString()) } }`;
@@ -134,46 +135,26 @@ function codeContextify(context) {
 
 
     context._inspect = function(value, depth) {
-        /*
-        if (context.BigNumber.isBigNumber(value)) {
-            return `{ BigNumber: ${ JSON.stringify(value.toString()) } }`;
+        if (value && value.constructor && value.constructor.name === "Uint8Array") {
+            return `Uint8Array [ ${ Array.prototype.join.call(value, ", ") } ]`;
         }
-
-        if (value && typeof(value.length) === "number" && typeof(value) !== "string") {
-            return "[ " + Array.prototype.map.call(value, (i) => context._inspect(i, (depth || 0) + 1)).join(", ") + " ]";
-        }
-
-        if (typeof(value) === "object" && depth == null) {
-            const keys = Object.keys(value);
-            keys.sort();
-            value = keys.reduce((accum, key) => {
-                accum[key] = value[key];
-                return accum;
-            }, { });
-        */
-            /*
-            return [
-                "{",
-                keys.map((key) => {
-                    return `  ${key}: ${ context._inspect(value[key], 1) },`;
-                }).join("\n"),
-                "}"
-            ].join("\n");
-            */
-        //}
 
         //return JSON.stringify(value);
         return inspect(value, {
             compact: false,
+            breakLength: Infinity,
             sorted: true,
         });
     }
 }
 
+
 module.exports = {
   title: "ethers",
   subtitle: "v5.0-beta",
   logo: "logo.svg",
+
+  prefix: "/v5",
 
   link: "https:/\/docs-beta.ethers.io",
   copyright: "The content of this site is licensed under the [Creative Commons License](https:/\/choosealicense.com/licenses/cc-by-4.0/). Generated on &$now;.",
@@ -189,12 +170,13 @@ module.exports = {
   codeRoot: "../",
 
   externalLinks: {
-      "link-alchemy": "https:/\/alchemyapi.io",
-      "link-cloudflare": "https:/\/developers.cloudflare.com/distributed-web/ethereum-gateway/",
-      "link-ethereum": "https:/\/ethereumorg",
-      "link-etherscan": "https:/\/etherscan.io",
+      "link-alchemy": { name: "Alchemy", url: "https:/\/alchemyapi.io" },
+      "link-cloudflare": { name: "Cloudflare", url: "https:/\/developers.cloudflare.com/distributed-web/ethereum-gateway/" },
+      "link-ens": { name: "ENS", url: "https:/\/ens.domains/" },
+      "link-ethereum": { name: "Ethereum", url: "https:/\/ethereumorg" },
+      "link-etherscan": { name: "Etherscan", url: "https:/\/etherscan.io" },
       "link-etherscan-api": "https:/\/etherscan.io/apis",
-      "link-flatworm": "https:/\/github.com/ricmoo/flatworm",
+      "link-flatworm": { name: "Flatworm", url: "https:/\/github.com/ricmoo/flatworm" },
       "link-geth": { name: "Geth", url: "https:/\/geth.ethereum.org" },
       "link-infura": { name: "INFURA", url: "https:/\/infura.io" },
       "link-ledger": "https:/\/www.ledger.com",
@@ -203,16 +185,17 @@ module.exports = {
       "link-rtd": "https:/\/github.com/readthedocs/sphinx_rtd_theme",
       "link-semver": { name: "semver", url: "https:/\/semver.org" },
       "link-solidity": { name: "Solidity" , url: "https:/\/solidity.readthedocs.io/en/v0.6.2/" },
-      "link-sphinx": "https:/\/www.sphinx-doc.org/",
+      "link-sphinx": { name: "Sphinx", url: "https:/\/www.sphinx-doc.org/" },
 
       "link-json-rpc": "https:/\/github.com/ethereum/wiki/wiki/JSON-RPC",
+      "link-web3-send": "https:/\/github.com/ethereum/web3.js/blob/1.x/packages/web3-providers-http/types/index.d.ts#L57",
       "link-parity-trace": "https:/\/openethereum.github.io/wiki/JSONRPC-trace-module",
       "link-parity-rpc": "https:/\/openethereum.github.io/wiki/JSONRPC",
       "link-geth-debug": "https:/\/github.com/ethereum/go-ethereum/wiki/Management-APIs#debug",
       "link-geth-rpc": "https:/\/github.com/ethereum/go-ethereum/wiki/Management-APIs",
 
-      "link-legacy-docs3": "https:/\/docs.ethers.io/ethers.js/v3.0/html/",
-      "link-legacy-docs4": "https:/\/docs.ethers.io/ethers.js",
+      "link-legacy-docs3": "https:/\/docs.ethers.io/v3/",
+      "link-legacy-docs4": "https:/\/docs.ethers.io/v4/",
 
       "link-infura-secret": "https:/\/infura.io/docs/gettingStarted/authentication",
 
@@ -222,11 +205,12 @@ module.exports = {
       "link-web3-ws": "https:/\/github.com/ethereum/web3.js/tree/1.x/packages/web3-providers-ws",
 
       "link-solc-output": "https:/\/solidity.readthedocs.io/en/v0.6.0/using-the-compiler.html#output-description",
+      "link-bip39-wordlists": "https:/\/github.com/bitcoin/bips/blob/master/bip-0039/bip-0039-wordlists.md",
 
       "link-icap": "https:/\/github.com/ethereum/wiki/wiki/Inter-exchange-Client-Address-Protocol-%28ICAP%29",
       "link-jsonrpc": "https:/\/github.com/ethereum/wiki/wiki/JSON-RPC",
-      "link-mit": "https:/\/en.m.wikipedia.org/wiki/MIT_License",
-      "link-namehash": "https:/\/docs.ens.domains/contract-api-reference/name-processing#hashing-names",
+      "link-mit": { name: "MIT License", url: "https:/\/en.m.wikipedia.org/wiki/MIT_License" },
+      "link-namehash": { name: "namehash", url: "https:/\/docs.ens.domains/contract-api-reference/name-processing#hashing-names" },
       "link-rlp": { name: "Recursive Length Prefix", url: "https:/\/github.com/ethereum/wiki/wiki/RLP" },
 
       "link-ethersio": "https:/\/ethers.io/",
@@ -237,12 +221,12 @@ module.exports = {
 
       "link-eip-155": { name: "EIP-155", url: "https:/\/eips.ethereum.org/EIPS/eip-155" },
       "link-eip-191": { name: "EIP-191", url: "https:/\/eips.ethereum.org/EIPS/eip-191" },
-      "link-eip-609": "https:/\/eips.ethereum.org/EIPS/eip-609",
-      "link-eip-1014": "https:/\/eips.ethereum.org/EIPS/eip-1014",
+      "link-eip-609": { name: "EIP-609", url: "https:/\/eips.ethereum.org/EIPS/eip-609" },
+      "link-eip-1014": { name: "EIP-1014", url: "https:/\/eips.ethereum.org/EIPS/eip-1014" },
       "link-eip-1193": { name: "EIP-1193", url: "https:/\/eips.ethereum.org/EIPS/eip-1193" },
-      "link-eip-2098": "https:/\/eips.ethereum.org/EIPS/eip-2098",
-      "link-bip-39": "https://en.bitcoin.it/wiki/BIP_0039",
-      "link-bip-32": "https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki",
+      "link-eip-2098": { name: "EIP-2098", url: "https:/\/eips.ethereum.org/EIPS/eip-2098" },
+      "link-bip-39": { name: "BIP-39", url: "https:/\/en.bitcoin.it/wiki/BIP_0039" },
+      "link-bip-32": { name: "BIP-32", url: "https:/\/github.com/bitcoin/bips/blob/master/bip-0032.mediawiki" },
 
       "link-npm-elliptic": { name: "elliptic", url: "https:/\/www.npmjs.com/package/elliptic" },
       "link-npm-events": { name: "EventEmitter", url: "https:/\/nodejs.org/dist/latest-v13.x/docs/api/events.html#events_class_eventemitter" },
@@ -278,5 +262,8 @@ module.exports = {
       "link-wiki-shuffle": { name: "Fisher-Yates Shuffle", url: "https:/\/en.wikipedia.org/wiki/Fisher-Yates_shuffle" },
       "link-wiki-overflow": { name: "overflow", url: "https:/\/en.wikipedia.org/wiki/Integer_overflow" },
       "link-wiki-underflow": { name: "arithmetic underflow", url: "https:/\/en.wikipedia.org/wiki/Arithmetic_underflow" },
-  }
+  },
+
+  redirectLinks: JSON.parse(fs.readFileSync(resolve(__dirname, "redirects.json"))),
+
 };

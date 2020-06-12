@@ -1,0 +1,61 @@
+
+<html>
+  <head>
+    <title>ethers.js - Legacy Documentation</title>
+    <style type="text/css">
+      html {
+        font-family: sans-serif;
+      }
+      h1 {
+        opacity: 0.8;
+      }
+      .content {
+        border: 2px solid #000;
+        border-radius: 7px;
+        box-shadow: 5px 5px 10px #aaa;
+        left: 50%;
+        padding: 20px;
+        position: absolute;
+        text-align: center;
+        transform: translate(-50%, 30px);
+        width: 700px;
+      }
+      .hr {
+        border-top: 1px solid black;
+        margin: 4px 10px 40px;
+      }
+      span.v5 {
+        font-size: 24px;
+        margin-bottom: 40px;
+      }
+      span.v4 {
+        opacity: 0.7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content">
+      <h1>This link is out-of-date <i>and</i> has moved.</h1>
+      <div class="hr"></div>
+      <span class="v5">Click <a id="link-v5" href="/v5/api/contract/contract/">here</a> to visit the updated documentation</span>
+      <br />
+      <br />
+      <br />
+      <span class="v4">or continue to the historic <a id="link-v4" href="/v4/api-contract.html">legacy documentation</a>.</span>
+    </div>
+    <script type="text/javascript">
+      var redirects = {"_legacy":"/v4/api-contract.html","_":"/v5/api/contract/contract/","api-contract":"/v5/api/contract/contract/","application-binary-interface-abi":"/v5/api/utils/abi/formats/","bytes":"/v5/api/contract/contract/#Contract-functionsCall","configuring-events":"/v5/api/contract/contract/#Contract--events","connecting":"/v5/api/contract/contract-factory/#ContractFactory-attach","connecting-to-a-contract":"/v5/api/contract/contract/#Contract--creating","connecting-to-existing-contracts":"/v5/api/contract/contract/#Contract--creating","contract-abi":"/v5/api/utils/abi/formats/","contract-event-filters":"/v5/api/contract/contract/#Contract--filters","contract-filter":"/v5/api/contract/contract/#Contract--filters","contract-metaclass":"/v5/api/contract/contract/#Contract--metaclass","contract-methods":"/v5/api/contract/contract/#Contract--methods","contracts":"/v5/api/contract/contract/","creating-a-contract-factory":"/v5/api/contract/contract-factory/#ContractFactory--creating","deploying-a-contract":"/v5/api/contract/contract-factory/#ContractFactory-deploy","deployment":"/v5/api/contract/contract-factory/#ContractFactory--methods","event-emitter":"/v5/api/contract/contract/#Contract--events","event-names":"/v5/api/contract/contract/#Contract--events","event-object":"/v5/api/contract/contract/#Contract--events","filtering-events":"/v5/api/contract/contract/#Contract--filters","integers":"/v5/api/contract/contract/#Contract-functionsCall","meta-class-properties":"/v5/api/contract/contract/#Contract--metaclass","overrides":"/v5/api/contract/contract/#Contract--metaclass","prototype":"/v5/api/contract/contract/#Contract--properties","providers-vs-signers":"/v5/api/contract/contract/#Contract-connect","strings":"/v5/api/utils/strings/#Bytes32String","structs":"/v5/api/contract/contract/#Contract--metaclass","types":"/v5/api/contract/contract/#Contract-functionsCall","waiting-for-deployment":"/v5/api/contract/contract-factory/"};
+      var hash = location.hash;
+      if (hash && hash !== "#") {
+        hash = hash.substring(1);
+        var v4 = document.getElementById("link-v4");
+        v4.setAttribute("href", v4.getAttribute("href").split("#")[0] + "#" + hash);
+        var target = redirects[hash];
+        if (target) {
+          var v5 = document.getElementById("link-v5");
+          v5.setAttribute("href", target);
+        }
+      }
+    </script>
+  </body>
+</html>

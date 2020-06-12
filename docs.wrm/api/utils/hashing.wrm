@@ -1,9 +1,9 @@
-_section: Hashing Algorithms
+_section: Hashing Algorithms @<hashing-algorithms>
 
 Explain what hash functions are?
 
 
-_subsection: Cryptographic Hash Functions
+_subsection: Cryptographic Hash Functions @<cryptographic-hash-functions>
 
 The [Cryptographic Hash Functions](link-wiki-cryptographichash)
 are a specific family of hash functions.
@@ -125,7 +125,7 @@ utils.computeHmac("sha256", key, data)
 //!
 
 
-_subsection: Hashing Helpers
+_subsection: Hashing Helpers @<utils--hashing-helpers>
 
 _property: ethers.utils.hashMessage(message) => string<[[DataHexString]]<32>>  @<utils-hashMessage> @SRC<hash>
 Computes the [[link-eip-191]] personal message digest of //message//. Personal messages are
@@ -137,7 +137,7 @@ Returns the [ENS Namehash](link-namehash) of //name//.
 
 _code: Hashing Messages  @lang<javascript>
 
-// @TODO: include exampels of hashMessage; it can be complex. :)
+// @TODO: include examples of hashMessage; it can be complex. :)
 
 
 _code: Namehash  @lang<javascript>
@@ -155,7 +155,7 @@ utils.namehash("ricmoo.xyz")
 //!
 
 
-_subsection: Solidity Hashing Algorithms
+_subsection: Solidity Hashing Algorithms @<utils--solidity-hashing>
 
 When using the Solidity ``abi.packEncoded(...)`` function, a non-standard
 //tightly packed// version of encoding is used. These functions implement

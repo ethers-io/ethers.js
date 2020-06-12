@@ -12,7 +12,7 @@ upon set of formats to encode various types of data which each contract can
 expect so they can interoperate with each other.
 
 
-_subsection: Creating Instances
+_subsection: Creating Instances @<Interface--creating>
 
 _property: new ethers.utils.Interface(abi) @SRC<abi/interface:constructor.Interface>
 Create a new **Interface** from a JSON string or object representing
@@ -26,7 +26,7 @@ which is a format the Ethers created to simplify manually typing the ABI
 into the source and so that a Contract ABI can also be referenced easily
 within the same source file.
 
-_subsection: Properties
+_subsection: Properties @<Interface--properties>
 
 _property: interface.fragments => Array<[[Fragment]]>
 All the [Fragments](Fragment) in the interface.
@@ -41,7 +41,7 @@ _property: interface.deploy => [[ConstructorFragment]]
 The [Constructor Fragments](ConstructorFragment) for the interface.
 
 
-_subsection: Formatting
+_subsection: Formatting @<Interface--formatting>
 
 _property: interface.format( [ format ]) => string | Array<string> @SRC<abi/interface>
 Return the formatted **Interface**. If the format type is ``json`` a
@@ -49,7 +49,7 @@ single string is returned, otherwise an Array of the human-readable
 strings is returned.
 
 
-_subsection: Fragment Access
+_subsection: Fragment Access @<Interface--fragments>
 
 _property: interface.getFunction(fragment) => [[FunctionFragment]]  @SRC<abi/interface>
 Returns the [[FunctionFragment]] for //fragment// (see [[Interface--specifying-fragments]]).
@@ -58,7 +58,7 @@ _property: interface.getEvent(fragment) => [[EventFragment]] @SRC<abi/interface>
 Returns the [[EventFragment]] for //fragment// (see [[Interface--specifying-fragments]]).
 
 
-_subsection: Signature and Topic Hashes
+_subsection: Signature and Topic Hashes @<Interface--selectors>
 
 _property: interface.getSighash(fragment) => string<[[DataHexString]]<4>> @SRC<abi/interface:method.Interface.getSighash>
 Return the sighash (or Function Selector) for //fragment// (see [[Interface--specifying-fragments]]).
@@ -67,7 +67,7 @@ _property: interface.getEventTopic(fragment) => string<[[DataHexString]]<32>> @S
 Return the topic hash for //fragment// (see [[Interface--specifying-fragments]]).
 
 
-_subsection: Encoding Data
+_subsection: Encoding Data @<Interface--encoding>
 
 _property: interface.encodeDeploy([ values ]) => string<[[DataHexString]]> @SRC<abi/interface>
 Return the encoded deployment data, which can be concatenated to the
@@ -91,7 +91,7 @@ Returns the encoded result, which would normally be the response from a call for
 Most developers will not need this method, but may be useful for authors of a mock blockchain.
 
 
-_subsection: Decoding Data
+_subsection: Decoding Data @<Interface--decoding>
 
 _property: interface.decodeEventLog(fragment, data [ , topics ]) => [[Result]] @SRC<abi/interface>
 Returns the decoded event values from an event log for
@@ -112,7 +112,7 @@ Returns the decoded values from the result of a call for
 //fragment// (see [[Interface--specifying-fragments]]) for the given //data//.
 
 
-_subsection: Parsing
+_subsection: Parsing @<Interface--parsing>
 
 The functions are generally the most useful for most developers. They will
 automatically search the ABI for a matching Event or Function and decode
@@ -127,7 +127,7 @@ Search for the function that matches the //transaction// data sighash
 and parse the transaction properties.
 
 
-_subsection: Types
+_subsection: Types @<Interface--types>
 
 _heading: Result @<Result> @INHERIT<Array\<any\>>
 

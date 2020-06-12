@@ -1,13 +1,13 @@
-_section: Documentation
+_section: Documentation @<documentation>
 
-_subsection: What is Ethers?
+_subsection: What is Ethers? @<preamble>
 
 The ethers.js library aims to be a complete and compact library for
 interacting with the Ethereum Blockchain and its ecosystem. It was
 originally designed for use with [ethers.io](link-ethersio) and
 has since expanded into a much more general-purpose library.
 
-_subsection: Features
+_subsection: Features @<features>
 
 - Keep your private keys in your client, **safe** and sound
 - Import and export **JSON wallets** (Geth, Parity and crowdsale)
@@ -48,7 +48,7 @@ _toc:
     license
 
 
-_subsection: Legacy Documentation
+_subsection: Legacy Documentation @<documentation--legacy>
 
 This section will be kept up to date, linking to documentation of
 older versions of the library.

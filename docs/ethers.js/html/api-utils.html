@@ -1,0 +1,61 @@
+
+<html>
+  <head>
+    <title>ethers.js - Legacy Documentation</title>
+    <style type="text/css">
+      html {
+        font-family: sans-serif;
+      }
+      h1 {
+        opacity: 0.8;
+      }
+      .content {
+        border: 2px solid #000;
+        border-radius: 7px;
+        box-shadow: 5px 5px 10px #aaa;
+        left: 50%;
+        padding: 20px;
+        position: absolute;
+        text-align: center;
+        transform: translate(-50%, 30px);
+        width: 700px;
+      }
+      .hr {
+        border-top: 1px solid black;
+        margin: 4px 10px 40px;
+      }
+      span.v5 {
+        font-size: 24px;
+        margin-bottom: 40px;
+      }
+      span.v4 {
+        opacity: 0.7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content">
+      <h1>This link is out-of-date <i>and</i> has moved.</h1>
+      <div class="hr"></div>
+      <span class="v5">Click <a id="link-v5" href="/v5/api/utils/">here</a> to visit the updated documentation</span>
+      <br />
+      <br />
+      <br />
+      <span class="v4">or continue to the historic <a id="link-v4" href="/v4/api-utils.html">legacy documentation</a>.</span>
+    </div>
+    <script type="text/javascript">
+      var redirects = {"_legacy":"/v4/api-utils.html","_":"/v5/api/utils/","addresses":"/v5/api/utils/address/","arrayish":"/v5/api/utils/bytes/#Bytes","big-numbers":"/v5/api/utils/bignumber/","bignumber":"/v5/api/utils/bignumber/","bytes32-strings":"/v5/api/utils/strings/#Bytes32String","bytes32string":"/v5/api/utils/strings/#Bytes32String","constants":"/v5/api/utils/constants/","creating-instances":"/v5/api/utils/bignumber/#BigNumber--creating","cryptographic-functions":"/v5/api/utils/hashing/#cryptographic-hash-functions","elliptic-curve":"/v5/api/utils/signing-key/","ether-strings-and-wei":"/v5/api/utils/display-logic/#unit-conversion","formatether":"/v5/api/utils/display-logic/#utils-formatUnits","hash-function-helpers":"/v5/api/utils/hashing/#utils--hashing-helpers","hash-functions":"/v5/api/utils/hashing/#cryptographic-hash-functions","hex-strings":"/v5/api/utils/bytes/#HexString","hexstring":"/v5/api/utils/bytes/#HexString","key-derivation":"/v5/api/utils/hashing/#utils--hashing-helpers","namehash":"/v5/api/utils/hashing/#utils-namehash","parseether":"/v5/api/utils/display-logic/#utils-parseUnits","random":"/v5/api/utils/bytes/#utils-randomBytes","signature":"/v5/api/utils/bytes/#Signature","signatures":"/v5/api/utils/bytes/#Signature","solidity":"/v5/api/utils/hashing/#utils--solidity-hashing","transactions":"/v5/api/utils/transactions/#transactions--functions","utf-8-strings":"/v5/api/utils/strings/#strings-utf8","utf8-strings":"/v5/api/utils/strings/#strings-utf8","utilities":"/v5/api/utils/","utils-getaddress":"/v5/api/utils/address/#utils-getAddress","web":"/v5/api/utils/web/"};
+      var hash = location.hash;
+      if (hash && hash !== "#") {
+        hash = hash.substring(1);
+        var v4 = document.getElementById("link-v4");
+        v4.setAttribute("href", v4.getAttribute("href").split("#")[0] + "#" + hash);
+        var target = redirects[hash];
+        if (target) {
+          var v5 = document.getElementById("link-v5");
+          v5.setAttribute("href", target);
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -42,7 +42,7 @@ Methods
 
 #### *contractFactory* . **attach**( address ) => *[Contract](/v5/api/contract/contract/)*
 
-Return an instance of a [Contract](/v5/api/contract/contract/) attched to *address*. This is the same as using the [Contract constructor](/v5/api/contract/contract/#contract--creating) with *address* and this the the *interface* and *signerOrProvider* passed in when creating the ContractFactory.
+Return an instance of a [Contract](/v5/api/contract/contract/) attched to *address*. This is the same as using the [Contract constructor](/v5/api/contract/contract/#Contract--creating) with *address* and this the the *interface* and *signerOrProvider* passed in when creating the ContractFactory.
 
 
 #### *contractFactory* . **getDeployTransaction**( ...args ) => *[UnsignedTransaction](/v5/api/utils/transactions/#UnsignedTransaction)*

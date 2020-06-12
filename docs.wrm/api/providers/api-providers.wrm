@@ -77,7 +77,7 @@ _property: provider.getHistory(address) => Array<History> @src<providers>
 @TODO... Explain
 
 
-_subsection: InfuraProvider @INHERIT<[[UrlJsonRpcProvider]]> @src<providers:class.InfuraProvider>
+_subsection: InfuraProvider @<InfuraProvider> @INHERIT<[[UrlJsonRpcProvider]]> @src<providers:class.InfuraProvider>
 
 The **InfuraProvider** is backed by the popular [INFURA](link-infura)
 Ethereum service.
@@ -137,7 +137,7 @@ provider = new InfuraProvider("homestead", {
 });
 
 
-_subsection: AlchemyProvider @inherit<[[UrlJsonRpcProvider]]> @src<providers:class.AlchemyProvider>
+_subsection: AlchemyProvider @<AlchemyProvider> @inherit<[[UrlJsonRpcProvider]]> @src<providers:class.AlchemyProvider>
 
 The **AlchemyProvider** is backed by [Alchemy](link-alchemy).
 
@@ -183,7 +183,7 @@ provider = new AlchemyProvider(null, apiKey);
 provider = new AlchemyProvider("homestead", apiKey);
 
 
-_subsection: CloudflareProvider @inherit<[[UrlJsonRpcProvider]]> @src<providers:class.CloudflareProvider>
+_subsection: CloudflareProvider @<CloudflareProvider> @inherit<[[UrlJsonRpcProvider]]> @src<providers:class.CloudflareProvider>
 
 The CloudflareProvider is backed by the [Cloudflare Ethereum Gateway](link-cloudflare).
 

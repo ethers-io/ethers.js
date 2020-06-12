@@ -11,27 +11,7 @@ Most operations which need to return a value will return a **BigNumber**
 and parameters which accept values will generally accept them.
 
 
-_heading: Importing
-
-_code: CommonJS @lang<script>
-
-// From the Umbrella ethers package...
-const { BigNumber } = require("ethers");
-
-// From the BigNumber pacakge...
-const { BigNumber } = require("@ethersproject/BigNumber");
-
-
-_code: ES6 and TypeScript CommonJS @lang<script>
-
-// From the Umbrella ethers package...
-import { BigNumber } from "ethers";
-
-// From the BigNumber pacakge...
-import { BigNumber } from "@ethersproject/BigNumber";
-
-
-_subsection: Types
+_subsection: Types @<BigNumber--types>
 
 _heading: BigNumberish @<BigNumberish>
 
@@ -57,7 +37,7 @@ A JavaScript [BigInt](link-js-bigint)
 object, on environments that support BigInt.
 
 
-_subsection: Creating Instances
+_subsection: Creating Instances @<BigNumber--creating>
 
 The constructor of BigNumber cannot be called directly. Instead, Use the static ``BigNumber.from``.
 
@@ -108,7 +88,7 @@ BigNumber.from(Number.MAX_SAFE_INTEGER);
 //! error
 
 
-_subsection: Methods
+_subsection: Methods @<BigNumber--methods>
 
 The BigNumber class is immutable, so no operations can change the value
 it represents.
@@ -210,7 +190,7 @@ a.mul(b);
 //!
 
 
-_subsection: Notes
+_subsection: Notes @<BigNumber--notes>
 
 This section is a for a couple of questions that come up frequently.
 

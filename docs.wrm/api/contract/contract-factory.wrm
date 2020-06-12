@@ -1,5 +1,6 @@
 _section: ContractFactory @<ContractFactory> @SRC<contracts:class.ContractFactory>
 
+@TODO: Fill this in, including @SRC links
 
 _subsection: Creating Instances  @<ContractFactory--creating>
 
@@ -7,7 +8,7 @@ _property: new ethers.ContractFactory(interface, bydecode [ , signer ]) @SRC<con
 
 _property: ContractFactory.fromSolidity(compilerOutput [ , signer ]) => [[ContractFactory]]
 
-_property: contractFactory.connect(signer) => [[Contract]]
+_property: contractFactory.connect(signer) => [[Contract]] @<ContractFactory-connect>
 
 
 _subsection: Properties  @<ContractFactory--properties>
@@ -21,10 +22,10 @@ _property: contractFactory.signer => [[Signer]]
 
 _subsection: Methods  @<ContractFactory--methods>
 
-_property: contractFactory.attach(address) => [[Contract]]
+_property: contractFactory.attach(address) => [[Contract]] @<ContractFactory-attach>
 
 Return an instance of a [[Contract]] attched to //address//. This is the
-same as using the [Contract constructor](contract--creating) with
+same as using the [Contract constructor](Contract--creating) with
 //address// and this the the //interface// and //signerOrProvider// passed
 in when creating the ContractFactory.
 
@@ -33,7 +34,7 @@ _property: contractFactory.getDeployTransaction(...args) => [[UnsignedTransactio
 Returns the unsigned transaction which would deploy this Contract with //args// passed
 to the Contract's constructor.
 
-_property: contractFactory.deploy(...args) => Promise<[[Contract]]>
+_property: contractFactory.deploy(...args) => Promise<[[Contract]]> @<ContractFactory-deploy>
 
 Uses the signer to deploy the Contract with //args// passed into tgee constructor and
 retruns a Contract which is attached to  the address where this contract **will** be

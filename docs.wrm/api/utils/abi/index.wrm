@@ -15,5 +15,7 @@ framework, tool developers or developers using advanced techniques
 may find these classes and utilities useful.
 
 _toc:
-  interface
+  coder
+  formats
   fragments
+  interface

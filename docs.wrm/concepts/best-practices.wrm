@@ -1,0 +1,39 @@
+_section: Best Practices @<best-practices>
+
+_subsection: Network Changes
+
+Handling a change in the network (e.g. Ropsten vs Mainnet) is
+incredibly complex and a slight failure can at best make your
+application seem confusing and at worst cause the loss of funds,
+leak private data or misrepresent what an action performed.
+
+Luckily, standard users should likely never change their networks
+unless tricked to do so or they make a mistake.
+
+This is a problem you mainly need to worry about for developers, and
+most developers should understand the vast array of issues surrounding
+a network change during application operation and will understand the
+page reloading (which is already the default behaviour in many clients).
+
+So, the best practice when a network change occurs is to simply
+refresh the page. This should cause all your UI components to
+reset to a known-safe state, including any banners and warnings
+to your users if they are on an unsupported network.
+
+This can be acomplished by using the following function:
+
+_code: Automatically Refresh on Network Change @lang<script>
+
+// Force page refreshes on network changes
+{
+    // The "any" network will allow spontaneous network changes
+    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    provider.on("network", (newNetwork, oldNetwork) => {
+        // When a Provider makes its initial connection, it emits a "network"
+        // event with a null oldNetwork along with the newNetwork. So, if the
+        // oldNetwork exists, it represents a changing network
+        if (oldNetwork) {
+            window.location.reload();
+        }
+    });
+}

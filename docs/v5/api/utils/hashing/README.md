@@ -155,7 +155,7 @@ Returns the [ENS Namehash](https://docs.ens.domains/contract-api-reference/name-
 
 
 ```javascript
-// @TODO: include exampels of hashMessage; it can be complex. :)
+// @TODO: include examples of hashMessage; it can be complex. :)
 ```
 
 ```javascript

@@ -97,14 +97,50 @@ _subsection: Web3Provider @<Web3Provider> @INHERIT<[[JsonRpcProvider]]>
 
 The Web3Provider is meant to ease moving from a [web3.js based](link-web3)
 application to ethers by wraping an existing Web3-compatible (such as a
-[Web3HttpProvider](link-web3-http)[Web3IpcProvider](link-web3-ipc) or
+[Web3HttpProvider](link-web3-http), [Web3IpcProvider](link-web3-ipc) or
 [Web3WsProvider](link-web3-ws)) and exposing it as an ethers.js [[Provider]]
 which can then be used with the rest of the library.
 
-_property: new ethers.providers.Web3Provider(web3Provider [, network ])
-Create a new **Web3Provider**, which wraps an [EIP-1193 Provider]() or
+This may also be used to wrap a standard [EIP-1193 Provider](link-eip-1193].
+
+_property: new ethers.providers.Web3Provider(externalProvider [, network ])
+Create a new **Web3Provider**, which wraps an [EIP-1193 Provider](link-eip-1193) or
 Web3Provider-compatible Provider.
 
 _property: web3Provider.provider => Web3CompatibleProvider
 The provider used to create this instance.
+
+_heading: ExternalProvider @<Web3Provider--ExternalProvider>
+
+An **ExternalProvider** can be either one for the above mentioned Web3
+Providers (or otherwise compatible) or an [[link-eip-1193]] provider.
+
+An ExternalProvider must offer one of the following signatures, and the
+first matching is used:
+
+_property: externalProvider.request(request) => Promise<any>
+
+This follows the [[link-eip-1193]] API signature.
+
+The //request// should be a standard JSON-RPC payload, which should at
+a minimum specify the ``method`` and ``params``.
+
+The result should be the actual result, which differs from the Web3.js
+response, which is a wrapped JSON-RPC response.
+
+_property: externalProvider.sendAsync(request, callback) => void
+
+This follows the [Web3.js Provider Signature](link-web3-send).
+
+The //request// should be a standard JSON-RPC payload, which should at
+a minimum specify the ``method`` and ``params``.
+
+The //callback// should use the error-first calling semantics, so
+``(error, result)`` where the result is a JSON-RPC wrapped result.
+
+_property: externalProvider.send(request, callback) => void
+
+This is identical to ``sendAsync``. Historically, this used a synchronous
+web request, but no current browsers support this, so its use this way
+was deprecated quite a long time ago
 
