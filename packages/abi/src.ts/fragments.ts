@@ -606,6 +606,10 @@ function parseModifiers(value: string, params: any): void {
                 params.payable = true;
                 params.stateMutability = "payable";
                 break;
+            case "nonpayable":
+                params.payable = false;
+                params.stateMutability = "nonpayable";
+                break;
             case "pure":
                 params.constant = true;
                 params.stateMutability = "pure";
