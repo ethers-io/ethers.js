@@ -18,41 +18,42 @@
 
 <a name="example-erc-20-contract"></a><h1 class="show-anchors"><div>Example: ERC-20 Contract<div class="anchors"><a class="self" href="/v5/api/contract/example/#example-erc-20-contract"></a></div></div></h1>
 <a name="example-erc-20-contract--connecting-to-a-contract"></a><h2 class="show-anchors"><div>Connecting to a Contract<div class="anchors"><a class="self" href="/v5/api/contract/example/#example-erc-20-contract--connecting-to-a-contract"></a></div></div></h2>
-<div class="code-title"><div>A simple ERC-20 contract</div></div><div class="code">// A Human-Readable ABI; any supported ABI format could be used
-const abi = [
-    // Read-Only Functions
-    "function balanceOf(address owner) view returns (uint256)",
+<div class="code-title"><div>A simple ERC-20 contract</div></div><div class="code"><span class="comment">// A Human-Readable ABI; any supported ABI format could be used
+</span>const abi = [
+<span class="comment">    // Read-Only Functions
+</span>    "function balanceOf(address owner) view returns (uint256)",
     "function decimals() view returns (uint8)",
     "function symbol() view returns (string)",
 
-    // Authenticated Functions
-    "function transfer(address to, uint amount) returns (boolean)",
+<span class="comment">    // Authenticated Functions
+</span>    "function transfer(address to, uint amount) returns (boolean)",
 
-    // Events
-    "event Transfer(address indexed from, address indexed to, uint amount)"
+<span class="comment">    // Events
+</span>    "event Transfer(address indexed from, address indexed to, uint amount)"
 ];
 
-// This can be an address or an ENS name
-const address = "dai.tokens.ethers.eth";
+<span class="comment">// This can be an address or an ENS name
+</span>const address = "dai.tokens.ethers.eth";
 
-// An example Provider
-const provider = ethers.getDefaultProvider();
+<span class="comment">// An example Provider
+</span>const provider = ethers.getDefaultProvider();
 
-// An example Signer
-const signer = ethers.Wallet.createRandom().connect(provider);
+<span class="comment">// An example Signer
+</span>const signer = ethers.Wallet.createRandom().connect(provider);
 
-// Read-Only; By connecting to a Provider, allows:
-// - Any constant function
-// - Querying Filters
-// - Populating Unsigned Transactions for non-constant methods
-// - Estimating Gas for non-constant (as an anonymous sender)
-// - Static Calling non-constant methods (as anonymous sender)
-const erc20 = new ethers.Contract(address, abi, provider);
+<span class="comment">// Read-Only; By connecting to a Provider, allows:
+</span><span class="comment">// - Any constant function
+</span><span class="comment">// - Querying Filters
+</span><span class="comment">// - Populating Unsigned Transactions for non-constant methods
+</span><span class="comment">// - Estimating Gas for non-constant (as an anonymous sender)
+</span><span class="comment">// - Static Calling non-constant methods (as anonymous sender)
+</span>const erc20 = new ethers.Contract(address, abi, provider);
 
-// Read-Write; By connecting to a Signer, allows:
-// - Everything from Read-Only (except as Signer, not anonymous)
-// - Sending transactions for non-constant functions
-const erc20_rw = new ethers.Contract(address, abi, signer)</div><a name="example-erc-20-contract--connecting-to-a-contract--erc20contract"></a><h3 class="show-anchors"><div>ERC20Contract<span class="inherits"> inherits <a href="/v5/api/contract/contract/">Contract</a></span><div class="anchors"><a class="self" href="/v5/api/contract/example/#example-erc-20-contract--connecting-to-a-contract--erc20contract"></a></div></div></h3>
+<span class="comment">// Read-Write; By connecting to a Signer, allows:
+</span><span class="comment">// - Everything from Read-Only (except as Signer, not anonymous)
+</span><span class="comment">// - Sending transactions for non-constant functions
+</span>const erc20_rw = new ethers.Contract(address, abi, signer)
+</div><a name="example-erc-20-contract--connecting-to-a-contract--erc20contract"></a><h3 class="show-anchors"><div>ERC20Contract<span class="inherits"> inherits <a href="/v5/api/contract/contract/">Contract</a></span><div class="anchors"><a class="self" href="/v5/api/contract/example/#example-erc-20-contract--connecting-to-a-contract--erc20contract"></a></div></div></h3>
 <div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="path">ethers</span><span class="symbol">.</span><span class="method">Contract</span><span class="symbol">(</span> <span class="param">address</span> <span class="symbol">,</span> <span class="param">abi</span> <span class="symbol">,</span> <span class="param">providerOrSigner</span> <span class="symbol">)</span><div class="anchors"></div></div><div class="body"><p>See the above code example for creating an Instance which will (in addition to the Contact methods and properties) automatically add the additional properties defined in <i>abi</i> to a <b>Contract</b> connected to <i>address</i> using the <i>providerOrSigner</i>.</p>
 
 </div></div><a name="example-erc-20-contract--properties"></a><h2 class="show-anchors"><div>Properties<span class="inherits">(inheritted from <a href="/v5/api/contract/contract/">Contract</a>)</span><div class="anchors"><a class="self" href="/v5/api/contract/example/#example-erc-20-contract--properties"></a></div></div></h2>
@@ -126,7 +127,7 @@ const erc20_rw = new ethers.Contract(address, abi, signer)</div><a name="example
         <div class="nav previous"><a href="/v5/api/contract/contract-factory/"><span class="arrow">&larr;</span>ContractFactory</a></div>
         <div class="nav next"><a href="/v5/api/signer/">Signers<span class="arrow">&rarr;</span></a></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on June 12, 2020, 3:31am.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Last modified on June 12, 2020, 7:17pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
   </body>

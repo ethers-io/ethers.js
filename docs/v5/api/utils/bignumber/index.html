@@ -40,44 +40,45 @@
 <div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">BigNumber</span><span class="symbol">.</span><span class="method">from</span><span class="symbol">(</span> <span class="param">aBigNumberish</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/utils/bignumber/">BigNumber</a></span><div class="anchors"></div></div><div class="body"><p>Returns an instance of a <b>BigNumber</b> for <i>aBigNumberish</i>.</p>
 
 </div></div><a name="BigNumber--BigNumber--creating--examples"></a><h3 class="show-anchors"><div>Examples:<div class="anchors"></div></div></h3>
-<div class="code">// From a decimal string...
-BigNumber.from("42")
-//!
-
-// From a HexString...
-BigNumber.from("0x2a")
-//!
-
-// From a negative HexString...
-BigNumber.from("-0x2a")
-//!
-
-// From an Array (or Uint8Array)...
-BigNumber.from([ 42 ])
-//!
-
-// From an existing BigNumber...
-let one1 = constants.One;
+<div class="code"><span class="comment">// From a decimal string...
+</span>BigNumber.from("42")
+<span class="result ok">// { BigNumber: "42" }
+</span>
+<span class="comment">// From a HexString...
+</span>BigNumber.from("0x2a")
+<span class="result ok">// { BigNumber: "42" }
+</span>
+<span class="comment">// From a negative HexString...
+</span>BigNumber.from("-0x2a")
+<span class="result ok">// { BigNumber: "-42" }
+</span>
+<span class="comment">// From an Array (or Uint8Array)...
+</span>BigNumber.from([ 42 ])
+<span class="result ok">// { BigNumber: "42" }
+</span>
+<span class="comment">// From an existing BigNumber...
+</span>let one1 = constants.One;
 let one2 = BigNumber.from(one1)
 
 one2
-//!
-
-// ...which returns the same instance
-one1 === one2
-//!
-
-// From a (safe) number...
-BigNumber.from(42)
-//!
-
-// From a ES2015 BigInt... (only on platforms with BigInt support)
-BigNumber.from(42n)
-//!
-
-// Numbers outside the safe range fail:
-BigNumber.from(Number.MAX_SAFE_INTEGER);
-//! error</div><a name="BigNumber--methods"></a><a name="BigNumber--BigNumber--methods"></a><h2 class="show-anchors"><div>Methods<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber--methods"></a></div></div></h2><p>The BigNumber class is immutable, so no operations can change the value it represents.</p>
+<span class="result ok">// { BigNumber: "1" }
+</span>
+<span class="comment">// ...which returns the same instance
+</span>one1 === one2
+<span class="result ok">// true
+</span>
+<span class="comment">// From a (safe) number...
+</span>BigNumber.from(42)
+<span class="result ok">// { BigNumber: "42" }
+</span>
+<span class="comment">// From a ES2015 BigInt... (only on platforms with BigInt support)
+</span>BigNumber.from(42n)
+<span class="result ok">// { BigNumber: "42" }
+</span>
+<span class="comment">// Numbers outside the safe range fail:
+</span>BigNumber.from(Number.MAX_SAFE_INTEGER);
+<span class="result error">// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740991, code=NUMERIC_FAULT, version=bignumber/5.0.0-beta.139)
+</span></div><a name="BigNumber--methods"></a><a name="BigNumber--BigNumber--methods"></a><h2 class="show-anchors"><div>Methods<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber--methods"></a></div></div></h2><p>The BigNumber class is immutable, so no operations can change the value it represents.</p>
 
 <a name="BigNumber--BigNumber--methods--math-operations"></a><h3 class="show-anchors"><div>Math Operations<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber--BigNumber--methods--math-operations"></a></div></div></h3>
 <div class="property show-anchors"><div class="signature"><span class="path">BigNumber</span><span class="symbol">.</span><span class="method">add</span><span class="symbol">(</span> <span class="param">otherValue</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/utils/bignumber/">BigNumber</a></span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/bignumber/src.ts/bignumber.ts#L71">source</a></div></div><div class="body"><p>Returns a BigNumber with the value of <i>BigNumber</i> <b>+</b> <i>otherValue</i>.</p>
@@ -132,7 +133,8 @@ BigNumber.from(Number.MAX_SAFE_INTEGER);
 let b = BigNumber.from("91");
 
 a.mul(b);
-//!</div><a name="BigNumber--notes"></a><a name="BigNumber--BigNumber--notes"></a><h2 class="show-anchors"><div>Notes<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber--notes"></a></div></div></h2><p>This section is a for a couple of questions that come up frequently.</p>
+<span class="result ok">// { BigNumber: "3822" }
+</span></div><a name="BigNumber--notes"></a><a name="BigNumber--BigNumber--notes"></a><h2 class="show-anchors"><div>Notes<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber--notes"></a></div></div></h2><p>This section is a for a couple of questions that come up frequently.</p>
 
 <a name="BigNumber--notes-safenumbers"></a><a name="BigNumber--BigNumber--notes--BigNumber--notes-safenumbers"></a><h3 class="show-anchors"><div>Why can't I just use numbers?<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber--notes-safenumbers"></a></div></div></h3><p>The first problem many encounter when dealing with Ethereum is the concept of numbers. Most common currencies are broken down with very little granularity. For example, there are only 100 cents in a single dollar. However, there are 10<sup>18</sup> <b>wei</b> in a single <b>ether</b>.</p>
 
@@ -141,7 +143,8 @@ a.mul(b);
 <p>To demonstrate how this may be an issue in your code, consider:</p>
 
 <div class="code">(Number.MAX_SAFE_INTEGER + 2 - 2) == (Number.MAX_SAFE_INTEGER)
-//!</div><p>To remedy this, all numbers (which can be large) are stored and manipulated as <a href="/v5/api/utils/bignumber/">Big Numbers</a>.</p>
+<span class="result ok">// false
+</span></div><p>To remedy this, all numbers (which can be large) are stored and manipulated as <a href="/v5/api/utils/bignumber/">Big Numbers</a>.</p>
 
 <p>The functions <a href="/v5/api/utils/display-logic/#utils-parseEther">parseEther( etherString )</a> and <a href="/v5/api/utils/display-logic/#utils-formatEther">formatEther( wei )</a> can be used to convert between string representations, which are displayed to or entered by the user and Big Number representations which can have mathematical operations handled safely.</p>
 
@@ -175,7 +178,7 @@ a.mul(b);
         <div class="nav previous"><a href="/v5/api/utils/address/"><span class="arrow">&larr;</span>Addresses</a></div>
         <div class="nav next"><a href="/v5/api/utils/bytes/">Byte Manipulation<span class="arrow">&rarr;</span></a></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on June 12, 2020, 3:31am.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Last modified on June 12, 2020, 7:17pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
   </body>

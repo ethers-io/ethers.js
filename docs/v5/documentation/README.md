@@ -229,22 +229,15 @@ foo
 ```
 
 ```javascript
-// <hide>
-const url = require("url");
-// </hide>
-
 url.parse("https://www.ricmoo.com/").protocol
-//!
+// 'https:'
 
 url.parse(45)
-//! error
+// Error: The "url" argument must be of type string. Received type number
 
 // You want to assign (doesn't emit eval) AND display the value
 const foo = 4 + 5;
-// <hide>
-foo
-// </hide>
-//!
+// 9
 ```
 
 ### Languages

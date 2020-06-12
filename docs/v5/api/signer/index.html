@@ -131,67 +131,69 @@
 
 <p>If <i>progress</i> is provided it will be called during decryption with a value between 0 and 1 indicating the progress towards completion.</p>
 
-</div></div><div class="code-title"><div>Wallet Examples</div></div><div class="code">// Create a wallet instance from a mnemonic...
-mnemonic = "announce room limb pattern dry unit scale effort smooth jazz weasel alcohol"
+</div></div><div class="code-title"><div>Wallet Examples</div></div><div class="code"><span class="comment">// Create a wallet instance from a mnemonic...
+</span>mnemonic = "announce room limb pattern dry unit scale effort smooth jazz weasel alcohol"
 walletMnemonic = Wallet.fromMnemonic(mnemonic)
 
-// ...or from a private key
-walletPrivateKey = new Wallet(walletMnemonic.privateKey)
+<span class="comment">// ...or from a private key
+</span>walletPrivateKey = new Wallet(walletMnemonic.privateKey)
 
 walletMnemonic.address === walletPrivateKey.address
-//!
-
-// The address as a Promise per the Signer API
-walletMnemonic.getAddress()
-//!
-
-// A Wallet address is also available synchronously
-walletMnemonic.address
-//!
-
-// The internal cryptographic components
-walletMnemonic.privateKey
-//!
-walletMnemonic.publicKey
-//!
-
-// The wallet mnemonic
-walletMnemonic.mnemonic
-//!
-
-// Note: A wallet created with a private key does not
-//       have a mnemonic (the derivation prevents it)
-walletPrivateKey.mnemonic
-//!
-
-// Signing a message
-walletMnemonic.signMessage("Hello World")
-//!
-
+<span class="result ok">// true
+</span>
+<span class="comment">// The address as a Promise per the Signer API
+</span>walletMnemonic.getAddress()
+<span class="result ok">// { Promise: '0x71CB05EE1b1F506fF321Da3dac38f25c0c9ce6E1' }
+</span>
+<span class="comment">// A Wallet address is also available synchronously
+</span>walletMnemonic.address
+<span class="result ok">// '0x71CB05EE1b1F506fF321Da3dac38f25c0c9ce6E1'
+</span>
+<span class="comment">// The internal cryptographic components
+</span>walletMnemonic.privateKey
+<span class="result ok">// '0x1da6847600b0ee25e9ad9a52abbd786dd2502fa4005dd5af9310b7cc7a3b25db'
+</span>walletMnemonic.publicKey
+<span class="result ok">// '0x04b9e72dfd423bcf95b3801ac93f4392be5ff22143f9980eb78b3a860c4843bfd04829ae61cdba4b3b1978ac5fc64f5cc2f4350e35a108a9c9a92a81200a60cd64'
+</span>
+<span class="comment">// The wallet mnemonic
+</span>walletMnemonic.mnemonic
+<span class="result ok">// {
+</span><span class="result ok">//   locale: 'en',
+</span><span class="result ok">//   path: 'm/44\'/60\'/0\'/0/0',
+</span><span class="result ok">//   phrase: 'announce room limb pattern dry unit scale effort smooth jazz weasel alcohol'
+</span><span class="result ok">// }
+</span>
+<span class="comment">// Note: A wallet created with a private key does not
+</span><span class="comment">//       have a mnemonic (the derivation prevents it)
+</span>walletPrivateKey.mnemonic
+<span class="result ok">// null
+</span>
+<span class="comment">// Signing a message
+</span>walletMnemonic.signMessage("Hello World")
+<span class="result ok">// { Promise: '0x14280e5885a19f60e536de50097e96e3738c7acae4e9e62d67272d794b8127d31c03d9cd59781d4ee31fb4e1b893bd9b020ec67dfa65cfb51e2bdadbb1de26d91c' }
+</span>
 tx = {
   to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
   value: utils.parseEther("1.0")
 }
 
-// Signing a transaction
-walletMnemonic.signTransaction(tx)
-//!
+<span class="comment">// Signing a transaction
+</span>walletMnemonic.signTransaction(tx)
+<span class="result ok">// { Promise: '0xf865808080948ba1f109551bd432803012645ac136ddd64dba72880de0b6b3a7640000801ca0918e294306d177ab7bd664f5e141436563854ebe0a3e523b9690b4922bbb52b8a01181612cec9c431c4257a79b8c9f0c980a2c49bb5a0e6ac52949163eeb565dfc' }
+</span>
+<span class="comment">// The connect method returns a new instance of the
+</span><span class="comment">// Wallet connected to a provider
+</span>wallet = walletMnemonic.connect(provider)
 
-// The connect method returns a new instance of the
-// Wallet connected to a provider
-wallet = walletMnemonic.connect(provider)
-
-// Querying the network
-wallet.getBalance();
-//!
-wallet.getTransactionCount();
-//!
-
-// Sending ether
-wallet.sendTransaction(tx)
-// &lt;hide&gt;
-//! error
-// &lt;/hide&gt;</div><a name="VoidSigner"></a><a name="signers--VoidSigner"></a><h2 class="show-anchors"><div>VoidSigner<span class="inherits"> inherits <a href="/v5/api/signer/#Signer">Signer</a></span><div class="anchors"><a class="self" href="/v5/api/signer/#VoidSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abstract-signer/src.ts/index.ts#L211">source</a></div></div></h2><p>A <b>VoidSigner</b> is a simple Signer which cannot sign.</p>
+<span class="comment">// Querying the network
+</span>wallet.getBalance();
+<span class="result ok">// { Promise: { BigNumber: "42" } }
+</span>wallet.getTransactionCount();
+<span class="result ok">// { Promise: 0 }
+</span>
+<span class="comment">// Sending ether
+</span>wallet.sendTransaction(tx)
+</div><a name="VoidSigner"></a><a name="signers--VoidSigner"></a><h2 class="show-anchors"><div>VoidSigner<span class="inherits"> inherits <a href="/v5/api/signer/#Signer">Signer</a></span><div class="anchors"><a class="self" href="/v5/api/signer/#VoidSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abstract-signer/src.ts/index.ts#L211">source</a></div></div></h2><p>A <b>VoidSigner</b> is a simple Signer which cannot sign.</p>
 
 <p>It is useful as a read-only signer, when an API requires a Signer as a parameter, but it is known only read-only operations will be carried.</p>
 
@@ -204,36 +206,34 @@ wallet.sendTransaction(tx)
 </div></div><div class="code-title"><div>VoidSigner Pre-flight Example</div></div><div class="code">address = "0x8ba1f109551bD432803012645Ac136ddd64DBA72"
 signer = new ethers.VoidSigner(address, provider)
 
-// The DAI token contract
-abi = [
+<span class="comment">// The DAI token contract
+</span>abi = [
   "function balanceOf(address) view returns (uint)",
   "function transfer(address, uint) returns (bool)"
 ]
 contract = new ethers.Contract("dai.tokens.ethers.eth", abi, signer)
 
-// &lt;hide&gt;
-//!
-// &lt;/hide&gt;
-// Get the number of tokens for this account
-tokens = await contract.balanceOf(signer.getAddress())
-//! async tokens
-
+<span class="comment">// Get the number of tokens for this account
+</span>tokens = await contract.balanceOf(signer.getAddress())
+<span class="result ok">// { BigNumber: "7712595125722568213383" }
+</span>
 //
-// Pre-flight (check for revert) on DAI from the signer
-//
-// Note: We do not have the private key at this point, this
-//       simply allows us to check what would happen if we
-//       did. This can be useful to check before prompting
-//       a request in the UI
-//
+<span class="comment">// Pre-flight (check for revert) on DAI from the signer
+</span>//
+<span class="comment">// Note: We do not have the private key at this point, this
+</span><span class="comment">//       simply allows us to check what would happen if we
+</span><span class="comment">//       did. This can be useful to check before prompting
+</span><span class="comment">//       a request in the UI
+</span>//
 
-// This will pass since the token balance is available
-contract.callStatic.transfer("donations.ethers.eth", tokens)
-//!
-
-// This will fail since it is greater than the token balance
-contract.callStatic.transfer("donations.ethers.eth", tokens.add(1))
-//! error</div><a name="ExternallyOwnedAccount"></a><a name="signers--ExternallyOwnedAccount"></a><h2 class="show-anchors"><div>ExternallyOwnedAccount<div class="anchors"><a class="self" href="/v5/api/signer/#ExternallyOwnedAccount"></a></div></div></h2><p>This is an interface which contains a minimal set of properties required for Externally Owned Accounts which can have certain operations performed, such as encoding as a JSON wallet.</p>
+<span class="comment">// This will pass since the token balance is available
+</span>contract.callStatic.transfer("donations.ethers.eth", tokens)
+<span class="result ok">// { Promise: true }
+</span>
+<span class="comment">// This will fail since it is greater than the token balance
+</span>contract.callStatic.transfer("donations.ethers.eth", tokens.add(1))
+<span class="result error">// Error: call revert exception (method="transfer(address,uint256)", errorSignature="Error(string)", errorArgs=["Dai/insufficient-balance"], reason="Dai/insufficient-balance", code=CALL_EXCEPTION, version=abi/5.0.0-beta.156)
+</span></div><a name="ExternallyOwnedAccount"></a><a name="signers--ExternallyOwnedAccount"></a><h2 class="show-anchors"><div>ExternallyOwnedAccount<div class="anchors"><a class="self" href="/v5/api/signer/#ExternallyOwnedAccount"></a></div></div></h2><p>This is an interface which contains a minimal set of properties required for Externally Owned Accounts which can have certain operations performed, such as encoding as a JSON wallet.</p>
 
 <div class="property show-anchors"><div class="signature"><span class="path">eoa</span><span class="symbol">.</span><span class="method">address</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="/v5/api/utils/address/#address">Address</a> &gt;</span><div class="anchors"></div></div><div class="body"><p>The <a href="/v5/api/utils/address/#address">Address</a> of this EOA.</p>
 
@@ -247,7 +247,7 @@ contract.callStatic.transfer("donations.ethers.eth", tokens.add(1))
         <div class="nav previous"><a href="/v5/api/contract/example/"><span class="arrow">&larr;</span>Example: ERC-20 Contract</a></div>
         <div class="nav next"><a href="/v5/api/providers/">Providers<span class="arrow">&rarr;</span></a></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on June 12, 2020, 3:31am.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Last modified on June 12, 2020, 7:17pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
   </body>

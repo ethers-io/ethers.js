@@ -38,11 +38,6 @@ It is highly recommended for production, you register with [Etherscan](https://e
 
 
 ```javascript
-// <hide>
-const EtherscanProvider = ethers.providers.EtherscanProvider;
-const apiKey = "...";
-// </hide>
-
 // Connect to mainnet (homestead)
 provider = new EtherscanProvider();
 
@@ -51,11 +46,11 @@ provider = new EtherscanProvider("rinkeby");
 provider = new EtherscanProvider(4);
 
 const network = ethers.providers.getNetwork("rinkeby");
-// <hide>
-delete network._defaultProvider;
-network
-// </hide>
-//!
+// {
+//   chainId: 4,
+//   ensAddress: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
+//   name: 'rinkeby'
+// }
 
 provider = new EtherscanProvider(network);
 
@@ -100,12 +95,6 @@ It is highly recommended for production, you register with [INFURA](https://infu
 
 
 ```javascript
-// <hide>
-const InfuraProvider = ethers.providers.InfuraProvider;
-const projectId = "...";
-const projectSecret = "...";
-// </hide>
-
 // Connect to mainnet (homestead)
 provider = new InfuraProvider();
 
@@ -153,11 +142,6 @@ It is highly recommended for production, you register with [Alchemy](https://alc
 
 
 ```javascript
-// <hide>
-const AlchemyProvider = ethers.providers.AlchemyProvider;
-const apiKey = "...";
-// </hide>
-
 // Connect to mainnet (homestead)
 provider = new AlchemyProvider();
 
@@ -186,10 +170,6 @@ Create a new **CloudflareProvider** connected to mainnet (i.e. "homestead").
 
 
 ```javascript
-// <hide>
-const CloudflareProvider = ethers.providers.CloudflareProvider;
-// </hide>
-
 // Connect to mainnet (homestead)
 provider = new CloudflareProvider();
 ```

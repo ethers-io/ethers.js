@@ -50,42 +50,42 @@ Returns an instance of a **BigNumber** for *aBigNumberish*.
 ```javascript
 // From a decimal string...
 BigNumber.from("42")
-//!
+// { BigNumber: "42" }
 
 // From a HexString...
 BigNumber.from("0x2a")
-//!
+// { BigNumber: "42" }
 
 // From a negative HexString...
 BigNumber.from("-0x2a")
-//!
+// { BigNumber: "-42" }
 
 // From an Array (or Uint8Array)...
 BigNumber.from([ 42 ])
-//!
+// { BigNumber: "42" }
 
 // From an existing BigNumber...
 let one1 = constants.One;
 let one2 = BigNumber.from(one1)
 
 one2
-//!
+// { BigNumber: "1" }
 
 // ...which returns the same instance
 one1 === one2
-//!
+// true
 
 // From a (safe) number...
 BigNumber.from(42)
-//!
+// { BigNumber: "42" }
 
 // From a ES2015 BigInt... (only on platforms with BigInt support)
 BigNumber.from(42n)
-//!
+// { BigNumber: "42" }
 
 // Numbers outside the safe range fail:
 BigNumber.from(Number.MAX_SAFE_INTEGER);
-//! error
+// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740991, code=NUMERIC_FAULT, version=bignumber/5.0.0-beta.139)
 ```
 
 Methods
@@ -210,7 +210,7 @@ let a = BigNumber.from(42);
 let b = BigNumber.from("91");
 
 a.mul(b);
-//!
+// { BigNumber: "3822" }
 ```
 
 Notes
@@ -220,7 +220,7 @@ Notes
 
 ```javascript
 (Number.MAX_SAFE_INTEGER + 2 - 2) == (Number.MAX_SAFE_INTEGER)
-//!
+// false
 ```
 
 

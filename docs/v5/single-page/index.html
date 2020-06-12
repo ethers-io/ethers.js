@@ -30,7 +30,9 @@
 
 <div class="code">/home/ricmoo&gt; npm install --save ethers@next</div><a name="/v5/getting-started/-%23-importing"></a><a name="/v5/getting-started/-%23-getting-started--importing"></a><a name="/v5/getting-started/"></a><h2 class="show-anchors"><div>Importing<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-importing"></a></div></div></h2>
 <a name="/v5/getting-started/-%23-getting-started--importing--node-js"></a><a name="/v5/getting-started/"></a><h3 class="show-anchors"><div>Node.js<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--importing--node-js"></a></div></div></h3>
-<div class="code-title"><div>node.js require</div></div><div class="code">const { ethers } = require("ethers");</div><div class="code-title"><div>ES6 or TypeScript</div></div><div class="code">import { ethers } from "ethers";</div><a name="/v5/getting-started/-%23-getting-started--importing--web-browser"></a><a name="/v5/getting-started/"></a><h3 class="show-anchors"><div>Web Browser<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--importing--web-browser"></a></div></div></h3><p>It is generally better practice (for security reasons) to copy the <a href="https://cdn.ethers.io/lib/ethers-5.0.esm.min.js">ethers library</a> to your own webserver and serve it yourself.</p>
+<div class="code-title"><div>node.js require</div></div><div class="code">const { ethers } = require("ethers");
+</div><div class="code-title"><div>ES6 or TypeScript</div></div><div class="code">import { ethers } from "ethers";
+</div><a name="/v5/getting-started/-%23-getting-started--importing--web-browser"></a><a name="/v5/getting-started/"></a><h3 class="show-anchors"><div>Web Browser<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--importing--web-browser"></a></div></div></h3><p>It is generally better practice (for security reasons) to copy the <a href="https://cdn.ethers.io/lib/ethers-5.0.esm.min.js">ethers library</a> to your own webserver and serve it yourself.</p>
 
 <p>For quick demos or prototyping though, it can be loaded in your Web Applications from our CDN.</p>
 
@@ -42,37 +44,40 @@
 
 <p><ul><li>A connection to the Ethereum network (a <a href="#/v5/api/providers/provider/">Provider</a>) </li><li>Holds your private key and can sign thing (a <a href="#/v5/api/signer/-%23-Signer">Signer</a>) </li></ul></p>
 
-<div class="code-title"><div>Connecting to Metamask</div></div><div class="code">// A Web3Provider wraps a standard Web3 provider, which is
-// what Metamask injects as window.ethereum into each page
-const provider = new ethers.providers.Web3Provider(window.ethereum)
+<div class="code-title"><div>Connecting to Metamask</div></div><div class="code"><span class="comment">// A Web3Provider wraps a standard Web3 provider, which is
+</span><span class="comment">// what Metamask injects as window.ethereum into each page
+</span>const provider = new ethers.providers.Web3Provider(window.ethereum)
 
-// The Metamask plugin also allows signing transactions to
-// send ether and pay to change state within the blockchain.
-// For this, we need the account signer...
-const signer = provider.getSigner()</div><a name="/v5/getting-started/-%23-getting-started--querying"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--connecting--getting-started--querying"></a><a name="/v5/getting-started/"></a><h3 class="show-anchors"><div>Querying the Blockchain<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--querying"></a></div></div></h3><p>Once you have a <a href="#/v5/api/providers/provider/">Provider</a>, you have a read-only connection to the blockchain, which can be used to query the current state, fetch historic logs, look up deployed code and so on.</p>
+<span class="comment">// The Metamask plugin also allows signing transactions to
+</span><span class="comment">// send ether and pay to change state within the blockchain.
+</span><span class="comment">// For this, we need the account signer...
+</span>const signer = provider.getSigner()
+</div><a name="/v5/getting-started/-%23-getting-started--querying"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--connecting--getting-started--querying"></a><a name="/v5/getting-started/"></a><h3 class="show-anchors"><div>Querying the Blockchain<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--querying"></a></div></div></h3><p>Once you have a <a href="#/v5/api/providers/provider/">Provider</a>, you have a read-only connection to the blockchain, which can be used to query the current state, fetch historic logs, look up deployed code and so on.</p>
 
-<div class="code-title"><div>Basic Queries</div></div><div class="code">// Look up the current block number
-provider.getBlockNumber()
-//!
-
-// Get the balance of an account (by address or ENS name)
-balance = await provider.getBalance("ethers.eth")
-//! async balance
-
-// Often you will need to format the output for the user
-// which prefer to see values in ether (instead of wei)
-ethers.utils.formatEther(balance)
-//!
-
-// Or if a user enters a string in an input field, you may need
-// to convert it from ether (as a string) to wei (as a BigNumber)
-ethers.utils.parseEther("1.0")
-//!</div><a name="/v5/getting-started/-%23-getting-started--sending"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--connecting--getting-started--sending"></a><a name="/v5/getting-started/"></a><h3 class="show-anchors"><div>Writing to the Blockchain<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--sending"></a></div></div></h3>
-<div class="code-title"><div>Sending Ether</div></div><div class="code">// Send 1 ether to an ens name.
-const tx = signer.sendTransaction({
+<div class="code-title"><div>Basic Queries</div></div><div class="code"><span class="comment">// Look up the current block number
+</span>provider.getBlockNumber()
+<span class="result ok">// { Promise: 10253799 }
+</span>
+<span class="comment">// Get the balance of an account (by address or ENS name)
+</span>balance = await provider.getBalance("ethers.eth")
+<span class="result ok">// { BigNumber: "2337132817842795605" }
+</span>
+<span class="comment">// Often you will need to format the output for the user
+</span><span class="comment">// which prefer to see values in ether (instead of wei)
+</span>ethers.utils.formatEther(balance)
+<span class="result ok">// '2.337132817842795605'
+</span>
+<span class="comment">// Or if a user enters a string in an input field, you may need
+</span><span class="comment">// to convert it from ether (as a string) to wei (as a BigNumber)
+</span>ethers.utils.parseEther("1.0")
+<span class="result ok">// { BigNumber: "1000000000000000000" }
+</span></div><a name="/v5/getting-started/-%23-getting-started--sending"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--connecting--getting-started--sending"></a><a name="/v5/getting-started/"></a><h3 class="show-anchors"><div>Writing to the Blockchain<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--sending"></a></div></div></h3>
+<div class="code-title"><div>Sending Ether</div></div><div class="code"><span class="comment">// Send 1 ether to an ens name.
+</span>const tx = signer.sendTransaction({
     to: "ricmoo.firefly.eth",
     value: ethers.utils.parseEther("1.0")
-});</div><a name="/v5/getting-started/-%23-getting-started--contracts"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--contracts"></a><a name="/v5/getting-started/"></a><h2 class="show-anchors"><div>Contracts<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--contracts"></a></div></div></h2><p>A Contract is an abstraction of program code which lives on the Ethereum blockchain.</p>
+});
+</div><a name="/v5/getting-started/-%23-getting-started--contracts"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--contracts"></a><a name="/v5/getting-started/"></a><h2 class="show-anchors"><div>Contracts<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--contracts"></a></div></div></h2><p>A Contract is an abstraction of program code which lives on the Ethereum blockchain.</p>
 
 <p>The <a href="#/v5/api/contract/contract/">Contract</a> object makes it easier to use an on-chain Contract as a normal JavaScript object, with the method all mapped to encoding and decoding data for you.</p>
 
@@ -86,167 +91,200 @@ const tx = signer.sendTransaction({
 
 <p>An ABI often comes from the Solidity or Vyper compiler, but may also be placed in the code easily using the Human-Readable ABI, which the following examples use.</p>
 
-<div class="code-title"><div>Connecting to the DAI Contract</div></div><div class="code">// We can use an ENS name for the contract address
-const daiAddress = "dai.tokens.ethers.eth";
+<div class="code-title"><div>Connecting to the DAI Contract</div></div><div class="code"><span class="comment">// We can use an ENS name for the contract address
+</span>const daiAddress = "dai.tokens.ethers.eth";
 
-// The ERC-20 Contract ABI, which is a common contract interface
-// for tokens (this is the Human-Readable ABI format)
-const daiAbi = [
-  // Some simple details about the token
-  "function name() view returns (string)",
+<span class="comment">// The ERC-20 Contract ABI, which is a common contract interface
+</span><span class="comment">// for tokens (this is the Human-Readable ABI format)
+</span>const daiAbi = [
+<span class="comment">  // Some simple details about the token
+</span>  "function name() view returns (string)",
   "function symbol() view returns (string)",
 
-  // Get the account balance
-  "function balanceOf(address) view returns (uint)",
+<span class="comment">  // Get the account balance
+</span>  "function balanceOf(address) view returns (uint)",
 
-  // Send some of your tokens to someone else
-  "function transfer(address to, uint amount)",
+<span class="comment">  // Send some of your tokens to someone else
+</span>  "function transfer(address to, uint amount)",
 
-  // An event triggered whenever anyone transfers to someone else
-  "event Transfer(address indexed from, address indexed to, uint amount)"
+<span class="comment">  // An event triggered whenever anyone transfers to someone else
+</span>  "event Transfer(address indexed from, address indexed to, uint amount)"
 ];
 
-// The Contract object
-const daiContract = new ethers.Contract(daiAddress, daiAbi, provider);</div><a name="/v5/getting-started/-%23-getting-started--reading"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--contracts--getting-started--reading"></a><a name="/v5/getting-started/"></a><h3 class="show-anchors"><div>Read-Only Methods<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--reading"></a></div></div></h3>
-<div class="code-title"><div>Querying the DAI Contract</div></div><div class="code">// &lt;hide&gt;
-const daiAbi = [
-  // Some simple details about the token
-  "function name() view returns (string)",
-  "function symbol() view returns (string)",
+<span class="comment">// The Contract object
+</span>const daiContract = new ethers.Contract(daiAddress, daiAbi, provider);
+</div><a name="/v5/getting-started/-%23-getting-started--reading"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--contracts--getting-started--reading"></a><a name="/v5/getting-started/"></a><h3 class="show-anchors"><div>Read-Only Methods<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--reading"></a></div></div></h3>
+<div class="code-title"><div>Querying the DAI Contract</div></div><div class="code"><span class="comment">// Get the ERC-20 token name
+</span>daiContract.name()
+<span class="result ok">// { Promise: 'Dai Stablecoin' }
+</span>
+<span class="comment">// Get the ERC-20 token synbol (for tickers and UIs)
+</span>daiContract.symbol()
+<span class="result ok">// { Promise: 'DAI' }
+</span>
+<span class="comment">// Get the balance of an address
+</span>balance = await daiContract.balanceOf("ricmoo.firefly.eth")
+<span class="result ok">// { BigNumber: "7712595125722568213383" }
+</span>
+<span class="comment">// Format the DAI for displaying to the user
+</span>ethers.utils.formatUnits(balance, 18)
+<span class="result ok">// '7712.595125722568213383'
+</span></div><a name="/v5/getting-started/-%23-getting-started--writing"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--contracts--getting-started--writing"></a><a name="/v5/getting-started/"></a><h3 class="show-anchors"><div>State Changing Methods<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--writing"></a></div></div></h3>
+<div class="code-title"><div>Sending DAI</div></div><div class="code"><span class="comment">// The DAI Contract is currently connected to the Provider,
+</span><span class="comment">// which is read-only. We need to connect to a Signer, so
+</span><span class="comment">// that we can pay to send state-changing transactions.
+</span>const daiWithSigner = contract.connect(signer);
 
-  // Get the account balance
-  "function balanceOf(address) view returns (uint)",
-];
-const daiContract = new ethers.Contract("dai.tokens.ethers.eth", daiAbi, provider);
-// &lt;/hide&gt;
+<span class="comment">// Each DAI has 18 decimal places
+</span>const dai = ethers.utils.parseUnits("1.0", 18);
 
-// Get the ERC-20 token name
-daiContract.name()
-//!
-
-// Get the ERC-20 token synbol (for tickers and UIs)
-daiContract.symbol()
-//!
-
-// Get the balance of an address
-balance = await daiContract.balanceOf("ricmoo.firefly.eth")
-//! async balance
-
-// Format the DAI for displaying to the user
-ethers.utils.formatUnits(balance, 18)
-//!</div><a name="/v5/getting-started/-%23-getting-started--writing"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--contracts--getting-started--writing"></a><a name="/v5/getting-started/"></a><h3 class="show-anchors"><div>State Changing Methods<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--writing"></a></div></div></h3>
-<div class="code-title"><div>Sending DAI</div></div><div class="code">// The DAI Contract is currently connected to the Provider,
-// which is read-only. We need to connect to a Signer, so
-// that we can pay to send state-changing transactions.
-const daiWithSigner = contract.connect(signer);
-
-// Each DAI has 18 decimal places
-const dai = ethers.utils.parseUnits("1.0", 18);
-
-// Send 1 DAI to "ricmoo.firefly.eth"
-tx = daiWithSigner.transfer("ricmoo.firefly.eth", dai);</div><a name="/v5/getting-started/-%23-getting-started--events"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--contracts--getting-started--events"></a><a name="/v5/getting-started/"></a><h3 class="show-anchors"><div>Listening to Events<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--events"></a></div></div></h3>
-<div class="code-title"><div>Listening to Events</div></div><div class="code">// &lt;hide&gt;
-const daiAbi = [
-  "event Transfer(address indexed, address indexed, uint256)"
-];
-const daiContract = new ethers.Contract("dai.tokens.ethers.eth", daiAbi, provider);
-const formatEther = ethers.utils.formatEther;
-// &lt;/hide&gt;
-
-// Receive an event when ANY transfer occurs
-daiContract.on("Transfer", (from, to, amount, event) =&gt; {
+<span class="comment">// Send 1 DAI to "ricmoo.firefly.eth"
+</span>tx = daiWithSigner.transfer("ricmoo.firefly.eth", dai);
+</div><a name="/v5/getting-started/-%23-getting-started--events"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--contracts--getting-started--events"></a><a name="/v5/getting-started/"></a><h3 class="show-anchors"><div>Listening to Events<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--events"></a></div></div></h3>
+<div class="code-title"><div>Listening to Events</div></div><div class="code"><span class="comment">// Receive an event when ANY transfer occurs
+</span>daiContract.on("Transfer", (from, to, amount, event) =&gt; {
     console.log(`${ from } sent ${ formatEther(amount) } to ${ to}`);
-    // The event object contains the verbatim log data, the
-    // EventFragment and functions to fetch the block,
-    // transaction and receipt and event functions
-});
+<span class="comment">    // The event object contains the verbatim log data, the
+</span><span class="comment">    // EventFragment and functions to fetch the block,
+</span><span class="comment">    // transaction and receipt and event functions
+</span>});
 
-// A filter for when a specific address receives tokens
-myAddress = "0x8ba1f109551bD432803012645Ac136ddd64DBA72";
+<span class="comment">// A filter for when a specific address receives tokens
+</span>myAddress = "0x8ba1f109551bD432803012645Ac136ddd64DBA72";
 filter = daiContract.filters.Transfer(null, myAddress)
-// &lt;hide&gt;
-filter
-// &lt;/hide&gt;
-//!
-
-// Receive an event when that filter occurs
-daiContract.on(filter, (from, to, amount, event) =&gt; {
-    // The to will always be "address"
-    console.log(`I got ${ formatEther(amount) } from ${ from }.`);
+<span class="result ok">// {
+</span><span class="result ok">//   address: 'dai.tokens.ethers.eth',
+</span><span class="result ok">//   topics: [
+</span><span class="result ok">//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+</span><span class="result ok">//     null,
+</span><span class="result ok">//     '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72'
+</span><span class="result ok">//   ]
+</span><span class="result ok">// }
+</span>
+<span class="comment">// Receive an event when that filter occurs
+</span>daiContract.on(filter, (from, to, amount, event) =&gt; {
+<span class="comment">    // The to will always be "address"
+</span>    console.log(`I got ${ formatEther(amount) } from ${ from }.`);
 });
-
-// &lt;hide&gt;
-// Don't want to block the docs from compiling...
-daiContract.removeAllListeners();
-// &lt;/hide&gt;</div><a name="/v5/getting-started/-%23-getting-started--history"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--contracts--getting-started--history"></a><a name="/v5/getting-started/"></a><h3 class="show-anchors"><div>Query Historic Events<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--history"></a></div></div></h3>
-<div class="code-title"><div>Filtering Historic Events</div></div><div class="code">// &lt;hide&gt;
-const signer = new ethers.VoidSigner("0x8ba1f109551bD432803012645Ac136ddd64DBA72");
-const daiAbi = [
-  "event Transfer(address indexed, address indexed, uint256)"
-];
-const daiContract = new ethers.Contract("dai.tokens.ethers.eth", daiAbi, provider);
-//!
-// &lt;/hide&gt;
-
-// Get the address of the Signer
-myAddress = await signer.getAddress()
-//! async myAddress
-
-// Filter for all token transfers to me
-filterFrom = daiContract.filters.Transfer(myAddress, null);
-// &lt;hide&gt;
-filterFrom
-// &lt;/hide&gt;
-//!
-
-// Filter for all token transfers from me
-filterTo = daiContract.filters.Transfer(null, myAddress);
-// &lt;hide&gt;
-filterTo
-// &lt;/hide&gt;
-//!
-
-// List all transfers sent from me a specific block range
-daiContract.queryFilter(filterFrom, 9843470, 9843480)
-//!
-
+</div><a name="/v5/getting-started/-%23-getting-started--history"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--contracts--getting-started--history"></a><a name="/v5/getting-started/"></a><h3 class="show-anchors"><div>Query Historic Events<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--history"></a></div></div></h3>
+<div class="code-title"><div>Filtering Historic Events</div></div><div class="code"><span class="comment">// Get the address of the Signer
+</span>myAddress = await signer.getAddress()
+<span class="result ok">// '0x8ba1f109551bD432803012645Ac136ddd64DBA72'
+</span>
+<span class="comment">// Filter for all token transfers to me
+</span>filterFrom = daiContract.filters.Transfer(myAddress, null);
+<span class="result ok">// {
+</span><span class="result ok">//   address: 'dai.tokens.ethers.eth',
+</span><span class="result ok">//   topics: [
+</span><span class="result ok">//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+</span><span class="result ok">//     '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72'
+</span><span class="result ok">//   ]
+</span><span class="result ok">// }
+</span>
+<span class="comment">// Filter for all token transfers from me
+</span>filterTo = daiContract.filters.Transfer(null, myAddress);
+<span class="result ok">// {
+</span><span class="result ok">//   address: 'dai.tokens.ethers.eth',
+</span><span class="result ok">//   topics: [
+</span><span class="result ok">//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+</span><span class="result ok">//     null,
+</span><span class="result ok">//     '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72'
+</span><span class="result ok">//   ]
+</span><span class="result ok">// }
+</span>
+<span class="comment">// List all transfers sent from me a specific block range
+</span>daiContract.queryFilter(filterFrom, 9843470, 9843480)
+<span class="result ok">// { Promise: [
+</span><span class="result ok">//   {
+</span><span class="result ok">//     address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+</span><span class="result ok">//     args: [
+</span><span class="result ok">//       '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
+</span><span class="result ok">//       '0x8B3765eDA5207fB21690874B722ae276B96260E0',
+</span><span class="result ok">//       { BigNumber: "4750000000000000000" }
+</span><span class="result ok">//     ],
+</span><span class="result ok">//     blockHash: '0x8462eb2fbcef5aa4861266f59ad5f47b9aa6525d767d713920fdbdfb6b0c0b78',
+</span><span class="result ok">//     blockNumber: 9843476,
+</span><span class="result ok">//     data: '0x00000000000000000000000000000000000000000000000041eb63d55b1b0000',
+</span><span class="result ok">//     decode: [Function],
+</span><span class="result ok">//     event: 'Transfer',
+</span><span class="result ok">//     eventSignature: 'Transfer(address,address,uint256)',
+</span><span class="result ok">//     getBlock: [Function],
+</span><span class="result ok">//     getTransaction: [Function],
+</span><span class="result ok">//     getTransactionReceipt: [Function],
+</span><span class="result ok">//     logIndex: 69,
+</span><span class="result ok">//     removeListener: [Function],
+</span><span class="result ok">//     removed: false,
+</span><span class="result ok">//     topics: [
+</span><span class="result ok">//       '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+</span><span class="result ok">//       '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72',
+</span><span class="result ok">//       '0x0000000000000000000000008b3765eda5207fb21690874b722ae276b96260e0'
+</span><span class="result ok">//     ],
+</span><span class="result ok">//     transactionHash: '0x1be23554545030e1ce47391a41098a46ff426382ed740db62d63d7676ff6fcf1',
+</span><span class="result ok">//     transactionIndex: 81
+</span><span class="result ok">//   },
+</span><span class="result ok">//   {
+</span><span class="result ok">//     address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+</span><span class="result ok">//     args: [
+</span><span class="result ok">//       '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
+</span><span class="result ok">//       '0x00De4B13153673BCAE2616b67bf822500d325Fc3',
+</span><span class="result ok">//       { BigNumber: "250000000000000000" }
+</span><span class="result ok">//     ],
+</span><span class="result ok">//     blockHash: '0x8462eb2fbcef5aa4861266f59ad5f47b9aa6525d767d713920fdbdfb6b0c0b78',
+</span><span class="result ok">//     blockNumber: 9843476,
+</span><span class="result ok">//     data: '0x00000000000000000000000000000000000000000000000003782dace9d90000',
+</span><span class="result ok">//     decode: [Function],
+</span><span class="result ok">//     event: 'Transfer',
+</span><span class="result ok">//     eventSignature: 'Transfer(address,address,uint256)',
+</span><span class="result ok">//     getBlock: [Function],
+</span><span class="result ok">//     getTransaction: [Function],
+</span><span class="result ok">//     getTransactionReceipt: [Function],
+</span><span class="result ok">//     logIndex: 70,
+</span><span class="result ok">//     removeListener: [Function],
+</span><span class="result ok">//     removed: false,
+</span><span class="result ok">//     topics: [
+</span><span class="result ok">//       '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+</span><span class="result ok">//       '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72',
+</span><span class="result ok">//       '0x00000000000000000000000000de4b13153673bcae2616b67bf822500d325fc3'
+</span><span class="result ok">//     ],
+</span><span class="result ok">//     transactionHash: '0x1be23554545030e1ce47391a41098a46ff426382ed740db62d63d7676ff6fcf1',
+</span><span class="result ok">//     transactionIndex: 81
+</span><span class="result ok">//   }
+</span><span class="result ok">// ] }
+</span>
 //
-// The following have had the results omitted due to the
-// number of entries; but they provide some useful examples
+<span class="comment">// The following have had the results omitted due to the
+</span><span class="comment">// number of entries; but they provide some useful examples
+</span>//
+
+<span class="comment">// List all transfers I sent in the last 10,000 blocks
+</span>daiContract.queryFilter(filterFrom, -10000)
+
+<span class="comment">// List all transfers ever sent to me
+</span>daiContract.queryFilter(filterTo)
+</div><a name="/v5/getting-started/-%23-getting-started--signing"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--signing"></a><a name="/v5/getting-started/"></a><h2 class="show-anchors"><div>Signing Messages<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--signing"></a></div></div></h2>
+<div class="code-title"><div>Signing Messages</div></div><div class="code"><span class="comment">// To sign a simple string, which can often be used for
+</span><span class="comment">// logging into a service, such as CryptoKitties simply
+</span><span class="comment">// pass the string in.
+</span>signature = await signer.signMessage("Hello World");
+<span class="result ok">// '0xe4f2a4e1a867a4757bd1ef7d0d5b9bf552c013f4598356e9326106d74d47292412efc81cd3b97a7e298f1b78b973c376d32ae0bdca811514e1258360a00c1bb71c'
+</span>
 //
+<span class="comment">// A common case is also signing a hash, which is 32
+</span><span class="comment">// bytes. It is important to note, that to sign binary
+</span><span class="comment">// data it MUST be an Array (or TypedArray)
+</span>//
 
-// List all transfers I sent in the last 10,000 blocks
-daiContract.queryFilter(filterFrom, -10000)
+<span class="comment">// This string is 66 chacacters long
+</span>message = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 
-// List all transfers ever sent to me
-daiContract.queryFilter(filterTo)</div><a name="/v5/getting-started/-%23-getting-started--signing"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--signing"></a><a name="/v5/getting-started/"></a><h2 class="show-anchors"><div>Signing Messages<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--signing"></a></div></div></h2>
-<div class="code-title"><div>Signing Messages</div></div><div class="code">// &lt;hide&gt;
-const signer = ethers.Wallet.createRandom();
-//!
-// &lt;/hide&gt;
-
-// To sign a simple string, which can often be used for
-// logging into a service, such as CryptoKitties simply
-// pass the string in.
-signature = await signer.signMessage("Hello World");
-//! async signature
-
-//
-// A common case is also signing a hash, which is 32
-// bytes. It is important to note, that to sign binary
-// data it MUST be an Array (or TypedArray)
-//
-
-// This string is 66 chacacters long
-message = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
-
-// This array representation is 32 bytes long
-messageBytes = ethers.utils.arrayify(message);
-//!
-
-// To sign a hash, you most often want to sign the bytes
-signature = await signer.signMessage(messageBytes)
-//! async signature</div><div class="page-separator"></div><a name="/v5/concepts/-%23-ethereum-basics"></a><a name="/v5/concepts/"></a><h1 class="show-anchors"><div>Ethereum Basics<div class="anchors"><a class="self" href="#/v5/concepts/-%23-ethereum-basics"></a></div></div></h1><p>This is a very breif overview of some aspects of <i>Ethereum</i> and blockchains which developers can make use of or should be aware of.</p>
+<span class="comment">// This array representation is 32 bytes long
+</span>messageBytes = ethers.utils.arrayify(message);
+<span class="result ok">// Uint8Array [ 221, 242, 82, 173, 27, 226, 200, 155, 105, 194, 176, 104, 252, 55, 141, 170, 149, 43, 167, 241, 99, 196, 161, 22, 40, 245, 90, 77, 245, 35, 179, 239 ]
+</span>
+<span class="comment">// To sign a hash, you most often want to sign the bytes
+</span>signature = await signer.signMessage(messageBytes)
+<span class="result ok">// '0x4542871f6c9b776c7ca4f23d0435b4e98eaf9fc25060162bf1c43420d8ce202c2d12a5e1c1dbbbde145e5ee8b1c243c931d3e2d93394f73081800155b2cc480b1c'
+</span></div><div class="page-separator"></div><a name="/v5/concepts/-%23-ethereum-basics"></a><a name="/v5/concepts/"></a><h1 class="show-anchors"><div>Ethereum Basics<div class="anchors"><a class="self" href="#/v5/concepts/-%23-ethereum-basics"></a></div></div></h1><p>This is a very breif overview of some aspects of <i>Ethereum</i> and blockchains which developers can make use of or should be aware of.</p>
 
 <p>This section is fairly sparse at the moment, but will be expanded as time goes on.</p>
 
@@ -268,40 +306,32 @@ signature = await signer.signMessage(messageBytes)
 
 <p>If a topic-set is an array of topics, a log topic in that position must match any <b>one</b> of topics (i.e. the topic in thie position are <code class="inline">OR</code>-ed).</p>
 
-<table class="table full"><tr><td align="center" width="25%"><b>Topic-Sets</b></td><td align="center" colspan="3" width="75%"><b>Matching Logs</b></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ A ]</td><td align="left" colspan="3" rowspan="2" width="75%">topic[0] = A</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ A, null ]</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ null, B ]</td><td align="left" colspan="3" rowspan="3" width="75%">topic[1] = B</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ null, [ B ] ]</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ null, [ B ], null ]</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ A, B ]</td><td align="left" colspan="3" rowspan="3" width="75%">(topic[0] = A) <b>AND</b> (topic[1] = B)</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ A, [ B ] ]</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ A, [ B ], null ]</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ [ A, B ] ]</td><td align="left" colspan="3" rowspan="2" width="75%">(topic[0] = A) <b>OR</b> (topic[0] = B)</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ [ A, B ], null ]</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ [ A, B ], [ C, D ] ]</td><td align="left" colspan="3" width="75%"><b>[</b> (topic[0] = A) <b>OR</b> (topic[0] = B) <b>]</b> <b>AND</b> <b>[</b> (topic[1] = C) <b>OR</b> (topic[1] = D) <b>]</b></td><td class="fix">&nbsp;</td></tr><tr><td class="table-title" colspan="4">Example Log Matching</td><td class="fix">&nbsp;</td></tr></table><div class="code-title"><div>ERC-20 Transfer Filter Examples</div></div><div class="code">// &lt;hide&gt;
-const tokenAddress = ethers.constants.AddressZero;
-const myAddress = ethers.constants.AddressZero;
-const myOtherAddress = ethers.constants.AddressZero;
-const id = ethers.utils.id;
-const hexZeroPad = ethers.utils.hexZeroPad;
-// &lt;/hide&gt;
-
-// Short example of manually creating filters for an ERC-20
-// Transfer event.
-//
-// Most users should generally use the Contract API to
-// compute filters, as it is much simpler, but this is
-// provided as an illustration for those curious. See
-// below for examples of the equivalent Contract API.
-
-// ERC-20:
-//   Transfer(address indexed src, address indexed dst, uint val)
-//
-// -------------------^
-// ----------------------------------------^
-//
-// Notice that only *src* and *dst* are *indexed*, so ONLY they
-// qualify for filtering.
-//
-// Also, note that in Solidity an Event uses the first topic to
-// identify the Event name; for Transfer this will be:
-//   id("Transfer(address,address,uint256)")
-//
-// Other Notes:
-//  - A topic must be 32 bytes; so shorter types must be padded
-
-// List all token transfers  *from*  myAddress
-filter = {
+<table class="table full"><tr><td align="center" width="25%"><b>Topic-Sets</b></td><td align="center" colspan="3" width="75%"><b>Matching Logs</b></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ A ]</td><td align="left" colspan="3" rowspan="2" width="75%">topic[0] = A</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ A, null ]</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ null, B ]</td><td align="left" colspan="3" rowspan="3" width="75%">topic[1] = B</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ null, [ B ] ]</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ null, [ B ], null ]</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ A, B ]</td><td align="left" colspan="3" rowspan="3" width="75%">(topic[0] = A) <b>AND</b> (topic[1] = B)</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ A, [ B ] ]</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ A, [ B ], null ]</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ [ A, B ] ]</td><td align="left" colspan="3" rowspan="2" width="75%">(topic[0] = A) <b>OR</b> (topic[0] = B)</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ [ A, B ], null ]</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="25%">[ [ A, B ], [ C, D ] ]</td><td align="left" colspan="3" width="75%"><b>[</b> (topic[0] = A) <b>OR</b> (topic[0] = B) <b>]</b> <b>AND</b> <b>[</b> (topic[1] = C) <b>OR</b> (topic[1] = D) <b>]</b></td><td class="fix">&nbsp;</td></tr><tr><td class="table-title" colspan="4">Example Log Matching</td><td class="fix">&nbsp;</td></tr></table><div class="code-title"><div>ERC-20 Transfer Filter Examples</div></div><div class="code"><span class="comment">// Short example of manually creating filters for an ERC-20
+</span><span class="comment">// Transfer event.
+</span>//
+<span class="comment">// Most users should generally use the Contract API to
+</span><span class="comment">// compute filters, as it is much simpler, but this is
+</span><span class="comment">// provided as an illustration for those curious. See
+</span><span class="comment">// below for examples of the equivalent Contract API.
+</span>
+<span class="comment">// ERC-20:
+</span><span class="comment">//   Transfer(address indexed src, address indexed dst, uint val)
+</span>//
+<span class="comment">// -------------------^
+</span><span class="comment">// ----------------------------------------^
+</span>//
+<span class="comment">// Notice that only *src* and *dst* are *indexed*, so ONLY they
+</span><span class="comment">// qualify for filtering.
+</span>//
+<span class="comment">// Also, note that in Solidity an Event uses the first topic to
+</span><span class="comment">// identify the Event name; for Transfer this will be:
+</span><span class="comment">//   id("Transfer(address,address,uint256)")
+</span>//
+<span class="comment">// Other Notes:
+</span><span class="comment">//  - A topic must be 32 bytes; so shorter types must be padded
+</span>
+<span class="comment">// List all token transfers  *from*  myAddress
+</span>filter = {
     address: tokenAddress,
     topics: [
         id("Transfer(address,address,uint256)"),
@@ -309,8 +339,8 @@ filter = {
     ]
 }
 
-// List all token transfers  *to*  myAddress:
-filter = {
+<span class="comment">// List all token transfers  *to*  myAddress:
+</span>filter = {
     address: tokenAddress,
     topics: [
         id("Transfer(address,address,uint256)"),
@@ -319,8 +349,8 @@ filter = {
     ]
 }
 
-// List all token transfers  *to*  myAddress or myOtherAddress:
-filter = {
+<span class="comment">// List all token transfers  *to*  myAddress or myOtherAddress:
+</span>filter = {
     address: tokenAddress,
     topics: [
         id("Transfer(address,address,uint256)"),
@@ -330,37 +360,61 @@ filter = {
             hexZeroPad(myOtherAddress, 32),
         ]
     ]
-}</div><p>To simplify life, ..., explain here, the contract API</p>
+}
+</div><p>To simplify life, ..., explain here, the contract API</p>
 
-<div class="code-title"><div>ERC-20 Contract Filter Examples</div></div><div class="code">// &lt;hide&gt;
-const tokenAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"; // DAI
-const myAddress = "0x8ba1f109551bD432803012645Ac136ddd64DBA72";
-const otherAddress = "0xEA517D5a070e6705Cc5467858681Ed953d285Eb9";
-const provider = ethers.getDefaultProvider();
-const Contract = ethers.Contract;
-// &lt;/hide&gt;
-
-const abi = [
+<div class="code-title"><div>ERC-20 Contract Filter Examples</div></div><div class="code">const abi = [
   "event Transfer(address indexed src, address indexed dst, uint val)"
 ];
 
 const contract = new Contract(tokenAddress, abi, provider);
 
-// List all token transfers *from* myAddress
-contract.filters.Transfer(myAddress)
-//!
-
-// List all token transfers *to* myAddress:
-contract.filters.Transfer(null, myAddress)
-//!
-
-// List all token transfers *from* myAddress *to* otherAddress:
-contract.filters.Transfer(myAddress, otherAddress)
-//!
-
-// List all token transfers *to* myAddress OR otherAddress:
-contract.filters.Transfer(null, [ myAddress, otherAddress ])
-//!</div><a name="/v5/concepts/events/-%23-events--logs-and-filtering--other-things-todo"></a><a name="/v5/concepts/events/"></a><h3 class="show-anchors"><div>Other Things? TODO<div class="anchors"><a class="self" href="#/v5/concepts/events/-%23-events--logs-and-filtering--other-things-todo"></a></div></div></h3><p>Explain what happens to strings and bytes, how to filter and retain the value</p>
+<span class="comment">// List all token transfers *from* myAddress
+</span>contract.filters.Transfer(myAddress)
+<span class="result ok">// {
+</span><span class="result ok">//   address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+</span><span class="result ok">//   topics: [
+</span><span class="result ok">//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+</span><span class="result ok">//     '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72'
+</span><span class="result ok">//   ]
+</span><span class="result ok">// }
+</span>
+<span class="comment">// List all token transfers *to* myAddress:
+</span>contract.filters.Transfer(null, myAddress)
+<span class="result ok">// {
+</span><span class="result ok">//   address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+</span><span class="result ok">//   topics: [
+</span><span class="result ok">//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+</span><span class="result ok">//     null,
+</span><span class="result ok">//     '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72'
+</span><span class="result ok">//   ]
+</span><span class="result ok">// }
+</span>
+<span class="comment">// List all token transfers *from* myAddress *to* otherAddress:
+</span>contract.filters.Transfer(myAddress, otherAddress)
+<span class="result ok">// {
+</span><span class="result ok">//   address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+</span><span class="result ok">//   topics: [
+</span><span class="result ok">//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+</span><span class="result ok">//     '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72',
+</span><span class="result ok">//     '0x000000000000000000000000ea517d5a070e6705cc5467858681ed953d285eb9'
+</span><span class="result ok">//   ]
+</span><span class="result ok">// }
+</span>
+<span class="comment">// List all token transfers *to* myAddress OR otherAddress:
+</span>contract.filters.Transfer(null, [ myAddress, otherAddress ])
+<span class="result ok">// {
+</span><span class="result ok">//   address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+</span><span class="result ok">//   topics: [
+</span><span class="result ok">//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+</span><span class="result ok">//     null,
+</span><span class="result ok">//     [
+</span><span class="result ok">//       '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72',
+</span><span class="result ok">//       '0x000000000000000000000000ea517d5a070e6705cc5467858681ed953d285eb9'
+</span><span class="result ok">//     ]
+</span><span class="result ok">//   ]
+</span><span class="result ok">// }
+</span></div><a name="/v5/concepts/events/-%23-events--logs-and-filtering--other-things-todo"></a><a name="/v5/concepts/events/"></a><h3 class="show-anchors"><div>Other Things? TODO<div class="anchors"><a class="self" href="#/v5/concepts/events/-%23-events--logs-and-filtering--other-things-todo"></a></div></div></h3><p>Explain what happens to strings and bytes, how to filter and retain the value</p>
 
 <div class="page-separator"></div><a name="/v5/concepts/gas/-%23-gas"></a><a name="/v5/concepts/gas/-%23-gas"></a><a name="/v5/concepts/gas/"></a><h1 class="show-anchors"><div>Gas<div class="anchors"><a class="self" href="#/v5/concepts/gas/-%23-gas"></a></div></div></h1><p>Explain attack vectors</p>
 
@@ -390,23 +444,24 @@ contract.filters.Transfer(null, [ myAddress, otherAddress ])
 
 <p>The scrypt algorithm is designed to be tuned. The main purpose of this is to increase the difficulty as time goes on and computers get faster, but it can also be tuned down in situations where the security is less important.</p>
 
-<div class="code">// Our wallet object
-const wallet = Wallet.createRandom();
+<div class="code"><span class="comment">// Our wallet object
+</span>const wallet = Wallet.createRandom();
 
-// The password to encrypt with
-const password = "password123";
+<span class="comment">// The password to encrypt with
+</span>const password = "password123";
 
-// WARNING: Doing this substantially reduces the security
-//          of the wallet. This is highly NOT recommended.
-
-// We override the default scrypt.N value, which is used
-// to indicate the difficulty to crack this wallet.
-const json = wallet.encrypt(password, {
+<span class="comment">// WARNING: Doing this substantially reduces the security
+</span><span class="comment">//          of the wallet. This is highly NOT recommended.
+</span>
+<span class="comment">// We override the default scrypt.N value, which is used
+</span><span class="comment">// to indicate the difficulty to crack this wallet.
+</span>const json = wallet.encrypt(password, {
   scrypt: {
-    // The number must be a power of 2 (default: 131072)
-    N: 64
+<span class="comment">    // The number must be a power of 2 (default: 131072)
+</span>    N: 64
   }
-});</div><div class="page-separator"></div><a name="/v5/api/-%23-api"></a><a name="/v5/api/-%23-api"></a><a name="/v5/api/"></a><h1 class="show-anchors"><div>Application Programming Interface<div class="anchors"><a class="self" href="#/v5/api/-%23-api"></a></div></div></h1><p>An Application Programming Interface (API) is the formal specification of the library.</p>
+});
+</div><div class="page-separator"></div><a name="/v5/api/-%23-api"></a><a name="/v5/api/-%23-api"></a><a name="/v5/api/"></a><h1 class="show-anchors"><div>Application Programming Interface<div class="anchors"><a class="self" href="#/v5/api/-%23-api"></a></div></div></h1><p>An Application Programming Interface (API) is the formal specification of the library.</p>
 
 <div class="toc"><div style="padding-left: 0px"><span class="bullet">&bull;</span><a href="#/v5/api/contract/">Contract Interaction</a></div><div style="padding-left: 0px"><span class="bullet">&bull;</span><a href="#/v5/api/signer/">Signers</a></div><div style="padding-left: 0px"><span class="bullet">&bull;</span><a href="#/v5/api/providers/">Providers</a></div><div style="padding-left: 0px"><span class="bullet">&bull;</span><a href="#/v5/api/utils/">Utilities</a></div><div style="padding-left: 0px"><span class="bullet">&bull;</span><a href="#/v5/api/other/">Other Libraries</a></div><div style="padding-left: 0px"><span class="bullet">&bull;</span><a href="#/v5/api/experimental/">Experimental</a></div></div><div class="page-separator"></div><a name="/v5/api/contract/-%23-contracts"></a><a name="/v5/api/contract/-%23-contracts"></a><a name="/v5/api/contract/"></a><h1 class="show-anchors"><div>Contract Interaction<div class="anchors"><a class="self" href="#/v5/api/contract/-%23-contracts"></a></div></div></h1><p>A <b>Contract</b> object is an abstraction of a contract (EVM bytecode) deployed on the Ethereum network. It allows for a simple way to serialize calls and transaxtions to an on-chain contract and deserialize their results and emitted logs.</p>
 
@@ -550,41 +605,42 @@ contract.deployTransaction.wait()
 contract.value()
 //!</div><div class="page-separator"></div><a name="/v5/api/contract/example/-%23-example-erc-20-contract"></a><a name="/v5/api/contract/example/"></a><h1 class="show-anchors"><div>Example: ERC-20 Contract<div class="anchors"><a class="self" href="#/v5/api/contract/example/-%23-example-erc-20-contract"></a></div></div></h1>
 <a name="/v5/api/contract/example/-%23-example-erc-20-contract--connecting-to-a-contract"></a><a name="/v5/api/contract/example/"></a><h2 class="show-anchors"><div>Connecting to a Contract<div class="anchors"><a class="self" href="#/v5/api/contract/example/-%23-example-erc-20-contract--connecting-to-a-contract"></a></div></div></h2>
-<div class="code-title"><div>A simple ERC-20 contract</div></div><div class="code">// A Human-Readable ABI; any supported ABI format could be used
-const abi = [
-    // Read-Only Functions
-    "function balanceOf(address owner) view returns (uint256)",
+<div class="code-title"><div>A simple ERC-20 contract</div></div><div class="code"><span class="comment">// A Human-Readable ABI; any supported ABI format could be used
+</span>const abi = [
+<span class="comment">    // Read-Only Functions
+</span>    "function balanceOf(address owner) view returns (uint256)",
     "function decimals() view returns (uint8)",
     "function symbol() view returns (string)",
 
-    // Authenticated Functions
-    "function transfer(address to, uint amount) returns (boolean)",
+<span class="comment">    // Authenticated Functions
+</span>    "function transfer(address to, uint amount) returns (boolean)",
 
-    // Events
-    "event Transfer(address indexed from, address indexed to, uint amount)"
+<span class="comment">    // Events
+</span>    "event Transfer(address indexed from, address indexed to, uint amount)"
 ];
 
-// This can be an address or an ENS name
-const address = "dai.tokens.ethers.eth";
+<span class="comment">// This can be an address or an ENS name
+</span>const address = "dai.tokens.ethers.eth";
 
-// An example Provider
-const provider = ethers.getDefaultProvider();
+<span class="comment">// An example Provider
+</span>const provider = ethers.getDefaultProvider();
 
-// An example Signer
-const signer = ethers.Wallet.createRandom().connect(provider);
+<span class="comment">// An example Signer
+</span>const signer = ethers.Wallet.createRandom().connect(provider);
 
-// Read-Only; By connecting to a Provider, allows:
-// - Any constant function
-// - Querying Filters
-// - Populating Unsigned Transactions for non-constant methods
-// - Estimating Gas for non-constant (as an anonymous sender)
-// - Static Calling non-constant methods (as anonymous sender)
-const erc20 = new ethers.Contract(address, abi, provider);
+<span class="comment">// Read-Only; By connecting to a Provider, allows:
+</span><span class="comment">// - Any constant function
+</span><span class="comment">// - Querying Filters
+</span><span class="comment">// - Populating Unsigned Transactions for non-constant methods
+</span><span class="comment">// - Estimating Gas for non-constant (as an anonymous sender)
+</span><span class="comment">// - Static Calling non-constant methods (as anonymous sender)
+</span>const erc20 = new ethers.Contract(address, abi, provider);
 
-// Read-Write; By connecting to a Signer, allows:
-// - Everything from Read-Only (except as Signer, not anonymous)
-// - Sending transactions for non-constant functions
-const erc20_rw = new ethers.Contract(address, abi, signer)</div><a name="/v5/api/contract/example/-%23-example-erc-20-contract--connecting-to-a-contract--erc20contract"></a><a name="/v5/api/contract/example/"></a><h3 class="show-anchors"><div>ERC20Contract<span class="inherits"> inherits <a href="#/v5/api/contract/contract/">Contract</a></span><div class="anchors"><a class="self" href="#/v5/api/contract/example/-%23-example-erc-20-contract--connecting-to-a-contract--erc20contract"></a></div></div></h3>
+<span class="comment">// Read-Write; By connecting to a Signer, allows:
+</span><span class="comment">// - Everything from Read-Only (except as Signer, not anonymous)
+</span><span class="comment">// - Sending transactions for non-constant functions
+</span>const erc20_rw = new ethers.Contract(address, abi, signer)
+</div><a name="/v5/api/contract/example/-%23-example-erc-20-contract--connecting-to-a-contract--erc20contract"></a><a name="/v5/api/contract/example/"></a><h3 class="show-anchors"><div>ERC20Contract<span class="inherits"> inherits <a href="#/v5/api/contract/contract/">Contract</a></span><div class="anchors"><a class="self" href="#/v5/api/contract/example/-%23-example-erc-20-contract--connecting-to-a-contract--erc20contract"></a></div></div></h3>
 <div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="path">ethers</span><span class="symbol">.</span><span class="method">Contract</span><span class="symbol">(</span> <span class="param">address</span> <span class="symbol">,</span> <span class="param">abi</span> <span class="symbol">,</span> <span class="param">providerOrSigner</span> <span class="symbol">)</span><div class="anchors"></div></div><div class="body"><p>See the above code example for creating an Instance which will (in addition to the Contact methods and properties) automatically add the additional properties defined in <i>abi</i> to a <b>Contract</b> connected to <i>address</i> using the <i>providerOrSigner</i>.</p>
 
 </div></div><a name="/v5/api/contract/example/-%23-example-erc-20-contract--properties"></a><a name="/v5/api/contract/example/"></a><h2 class="show-anchors"><div>Properties<span class="inherits">(inheritted from <a href="#/v5/api/contract/contract/">Contract</a>)</span><div class="anchors"><a class="self" href="#/v5/api/contract/example/-%23-example-erc-20-contract--properties"></a></div></div></h2>
@@ -767,67 +823,69 @@ const erc20_rw = new ethers.Contract(address, abi, signer)</div><a name="/v5/api
 
 <p>If <i>progress</i> is provided it will be called during decryption with a value between 0 and 1 indicating the progress towards completion.</p>
 
-</div></div><div class="code-title"><div>Wallet Examples</div></div><div class="code">// Create a wallet instance from a mnemonic...
-mnemonic = "announce room limb pattern dry unit scale effort smooth jazz weasel alcohol"
+</div></div><div class="code-title"><div>Wallet Examples</div></div><div class="code"><span class="comment">// Create a wallet instance from a mnemonic...
+</span>mnemonic = "announce room limb pattern dry unit scale effort smooth jazz weasel alcohol"
 walletMnemonic = Wallet.fromMnemonic(mnemonic)
 
-// ...or from a private key
-walletPrivateKey = new Wallet(walletMnemonic.privateKey)
+<span class="comment">// ...or from a private key
+</span>walletPrivateKey = new Wallet(walletMnemonic.privateKey)
 
 walletMnemonic.address === walletPrivateKey.address
-//!
-
-// The address as a Promise per the Signer API
-walletMnemonic.getAddress()
-//!
-
-// A Wallet address is also available synchronously
-walletMnemonic.address
-//!
-
-// The internal cryptographic components
-walletMnemonic.privateKey
-//!
-walletMnemonic.publicKey
-//!
-
-// The wallet mnemonic
-walletMnemonic.mnemonic
-//!
-
-// Note: A wallet created with a private key does not
-//       have a mnemonic (the derivation prevents it)
-walletPrivateKey.mnemonic
-//!
-
-// Signing a message
-walletMnemonic.signMessage("Hello World")
-//!
-
+<span class="result ok">// true
+</span>
+<span class="comment">// The address as a Promise per the Signer API
+</span>walletMnemonic.getAddress()
+<span class="result ok">// { Promise: '0x71CB05EE1b1F506fF321Da3dac38f25c0c9ce6E1' }
+</span>
+<span class="comment">// A Wallet address is also available synchronously
+</span>walletMnemonic.address
+<span class="result ok">// '0x71CB05EE1b1F506fF321Da3dac38f25c0c9ce6E1'
+</span>
+<span class="comment">// The internal cryptographic components
+</span>walletMnemonic.privateKey
+<span class="result ok">// '0x1da6847600b0ee25e9ad9a52abbd786dd2502fa4005dd5af9310b7cc7a3b25db'
+</span>walletMnemonic.publicKey
+<span class="result ok">// '0x04b9e72dfd423bcf95b3801ac93f4392be5ff22143f9980eb78b3a860c4843bfd04829ae61cdba4b3b1978ac5fc64f5cc2f4350e35a108a9c9a92a81200a60cd64'
+</span>
+<span class="comment">// The wallet mnemonic
+</span>walletMnemonic.mnemonic
+<span class="result ok">// {
+</span><span class="result ok">//   locale: 'en',
+</span><span class="result ok">//   path: 'm/44\'/60\'/0\'/0/0',
+</span><span class="result ok">//   phrase: 'announce room limb pattern dry unit scale effort smooth jazz weasel alcohol'
+</span><span class="result ok">// }
+</span>
+<span class="comment">// Note: A wallet created with a private key does not
+</span><span class="comment">//       have a mnemonic (the derivation prevents it)
+</span>walletPrivateKey.mnemonic
+<span class="result ok">// null
+</span>
+<span class="comment">// Signing a message
+</span>walletMnemonic.signMessage("Hello World")
+<span class="result ok">// { Promise: '0x14280e5885a19f60e536de50097e96e3738c7acae4e9e62d67272d794b8127d31c03d9cd59781d4ee31fb4e1b893bd9b020ec67dfa65cfb51e2bdadbb1de26d91c' }
+</span>
 tx = {
   to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
   value: utils.parseEther("1.0")
 }
 
-// Signing a transaction
-walletMnemonic.signTransaction(tx)
-//!
+<span class="comment">// Signing a transaction
+</span>walletMnemonic.signTransaction(tx)
+<span class="result ok">// { Promise: '0xf865808080948ba1f109551bd432803012645ac136ddd64dba72880de0b6b3a7640000801ca0918e294306d177ab7bd664f5e141436563854ebe0a3e523b9690b4922bbb52b8a01181612cec9c431c4257a79b8c9f0c980a2c49bb5a0e6ac52949163eeb565dfc' }
+</span>
+<span class="comment">// The connect method returns a new instance of the
+</span><span class="comment">// Wallet connected to a provider
+</span>wallet = walletMnemonic.connect(provider)
 
-// The connect method returns a new instance of the
-// Wallet connected to a provider
-wallet = walletMnemonic.connect(provider)
-
-// Querying the network
-wallet.getBalance();
-//!
-wallet.getTransactionCount();
-//!
-
-// Sending ether
-wallet.sendTransaction(tx)
-// &lt;hide&gt;
-//! error
-// &lt;/hide&gt;</div><a name="/v5/api/signer/-%23-VoidSigner"></a><a name="/v5/api/signer/-%23-signers--VoidSigner"></a><a name="/v5/api/signer/"></a><h2 class="show-anchors"><div>VoidSigner<span class="inherits"> inherits <a href="#/v5/api/signer/-%23-Signer">Signer</a></span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-VoidSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abstract-signer/src.ts/index.ts#L211">source</a></div></div></h2><p>A <b>VoidSigner</b> is a simple Signer which cannot sign.</p>
+<span class="comment">// Querying the network
+</span>wallet.getBalance();
+<span class="result ok">// { Promise: { BigNumber: "42" } }
+</span>wallet.getTransactionCount();
+<span class="result ok">// { Promise: 0 }
+</span>
+<span class="comment">// Sending ether
+</span>wallet.sendTransaction(tx)
+</div><a name="/v5/api/signer/-%23-VoidSigner"></a><a name="/v5/api/signer/-%23-signers--VoidSigner"></a><a name="/v5/api/signer/"></a><h2 class="show-anchors"><div>VoidSigner<span class="inherits"> inherits <a href="#/v5/api/signer/-%23-Signer">Signer</a></span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-VoidSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abstract-signer/src.ts/index.ts#L211">source</a></div></div></h2><p>A <b>VoidSigner</b> is a simple Signer which cannot sign.</p>
 
 <p>It is useful as a read-only signer, when an API requires a Signer as a parameter, but it is known only read-only operations will be carried.</p>
 
@@ -840,36 +898,34 @@ wallet.sendTransaction(tx)
 </div></div><div class="code-title"><div>VoidSigner Pre-flight Example</div></div><div class="code">address = "0x8ba1f109551bD432803012645Ac136ddd64DBA72"
 signer = new ethers.VoidSigner(address, provider)
 
-// The DAI token contract
-abi = [
+<span class="comment">// The DAI token contract
+</span>abi = [
   "function balanceOf(address) view returns (uint)",
   "function transfer(address, uint) returns (bool)"
 ]
 contract = new ethers.Contract("dai.tokens.ethers.eth", abi, signer)
 
-// &lt;hide&gt;
-//!
-// &lt;/hide&gt;
-// Get the number of tokens for this account
-tokens = await contract.balanceOf(signer.getAddress())
-//! async tokens
-
+<span class="comment">// Get the number of tokens for this account
+</span>tokens = await contract.balanceOf(signer.getAddress())
+<span class="result ok">// { BigNumber: "7712595125722568213383" }
+</span>
 //
-// Pre-flight (check for revert) on DAI from the signer
-//
-// Note: We do not have the private key at this point, this
-//       simply allows us to check what would happen if we
-//       did. This can be useful to check before prompting
-//       a request in the UI
-//
+<span class="comment">// Pre-flight (check for revert) on DAI from the signer
+</span>//
+<span class="comment">// Note: We do not have the private key at this point, this
+</span><span class="comment">//       simply allows us to check what would happen if we
+</span><span class="comment">//       did. This can be useful to check before prompting
+</span><span class="comment">//       a request in the UI
+</span>//
 
-// This will pass since the token balance is available
-contract.callStatic.transfer("donations.ethers.eth", tokens)
-//!
-
-// This will fail since it is greater than the token balance
-contract.callStatic.transfer("donations.ethers.eth", tokens.add(1))
-//! error</div><a name="/v5/api/signer/-%23-ExternallyOwnedAccount"></a><a name="/v5/api/signer/-%23-signers--ExternallyOwnedAccount"></a><a name="/v5/api/signer/"></a><h2 class="show-anchors"><div>ExternallyOwnedAccount<div class="anchors"><a class="self" href="#/v5/api/signer/-%23-ExternallyOwnedAccount"></a></div></div></h2><p>This is an interface which contains a minimal set of properties required for Externally Owned Accounts which can have certain operations performed, such as encoding as a JSON wallet.</p>
+<span class="comment">// This will pass since the token balance is available
+</span>contract.callStatic.transfer("donations.ethers.eth", tokens)
+<span class="result ok">// { Promise: true }
+</span>
+<span class="comment">// This will fail since it is greater than the token balance
+</span>contract.callStatic.transfer("donations.ethers.eth", tokens.add(1))
+<span class="result error">// Error: call revert exception (method="transfer(address,uint256)", errorSignature="Error(string)", errorArgs=["Dai/insufficient-balance"], reason="Dai/insufficient-balance", code=CALL_EXCEPTION, version=abi/5.0.0-beta.156)
+</span></div><a name="/v5/api/signer/-%23-ExternallyOwnedAccount"></a><a name="/v5/api/signer/-%23-signers--ExternallyOwnedAccount"></a><a name="/v5/api/signer/"></a><h2 class="show-anchors"><div>ExternallyOwnedAccount<div class="anchors"><a class="self" href="#/v5/api/signer/-%23-ExternallyOwnedAccount"></a></div></div></h2><p>This is an interface which contains a minimal set of properties required for Externally Owned Accounts which can have certain operations performed, such as encoding as a JSON wallet.</p>
 
 <div class="property show-anchors"><div class="signature"><span class="path">eoa</span><span class="symbol">.</span><span class="method">address</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="#/v5/api/utils/address/-%23-address">Address</a> &gt;</span><div class="anchors"></div></div><div class="body"><p>The <a href="#/v5/api/utils/address/-%23-address">Address</a> of this EOA.</p>
 
@@ -913,30 +969,78 @@ contract.callStatic.transfer("donations.ethers.eth", tokens.add(1))
 
 </div></div><a name="/v5/api/providers/provider/-%23-Provider-getTransactionCount"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getTransactionCount</span><span class="symbol">(</span> <span class="param">address</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">blockTag</span> = <span class="param">latest</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; number &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider-getTransactionCount"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/base-provider.ts#L698">source</a></div></div><div class="body"><p>Returns the number of transactions <i>address</i> has ever <b>sent</b>, as of <i>blockTag</i>. This value is required to be the nonce for the next transaction from <i>address</i> sent to the network.</p>
 
-</div></div><div class="code-title"><div>Account Examples</div></div><div class="code">// Get the balance for an account...
-provider.getBalance("ricmoo.firefly.eth");
-//!
-
-// Get the code for a contract...
-provider.getCode("registrar.firefly.eth");
-//!
-
-// Get the storage value at position 0...
-provider.getStorageAt("registrar.firefly.eth", 0)
-//!
-
-// Get transaction count of an account...
-provider.getTransactionCount("ricmoo.firefly.eth");
-//!</div><a name="/v5/api/providers/provider/-%23-Provider--block-methods"></a><a name="/v5/api/providers/provider/-%23-Provider--Provider--block-methods"></a><a name="/v5/api/providers/provider/"></a><h2 class="show-anchors"><div>Blocks Methods<div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider--block-methods"></a></div></div></h2>
+</div></div><div class="code-title"><div>Account Examples</div></div><div class="code"><span class="comment">// Get the balance for an account...
+</span>provider.getBalance("ricmoo.firefly.eth");
+<span class="result ok">// { Promise: { BigNumber: "955864037352077165" } }
+</span>
+<span class="comment">// Get the code for a contract...
+</span>provider.getCode("registrar.firefly.eth");
+<span class="result ok">// { Promise: '0x606060405236156100885763ffffffff60e060020a60003504166369fe0e2d81146100fa578063704b6c021461010f57806379502c551461012d578063bed866f614610179578063c37067fa1461019e578063c66485b2146101ab578063d80528ae146101c9578063ddca3f43146101f7578063f2c298be14610219578063f3fef3a314610269575b6100f85b6000808052600760209081527f6d5257204ebe7d88fd91ae87941cb2dd9d8062b64ae5a2bd2d28ec40b9fbf6df80543490810190915560408051918252517fdb7750418f9fa390aaf85d881770065aa4adbe46343bcff4ae573754c829d9af929181900390910190a25b565b005b341561010257fe5b6100f860043561028a565b005b341561011757fe5b6100f8600160a060020a03600435166102ec565b005b341561013557fe5b61013d610558565b60408051600160a060020a0396871681526020810195909552928516848401526060840191909152909216608082015290519081900360a00190f35b341561018157fe5b61018c600435610580565b60408051918252519081900360200190f35b6100f8600435610595565b005b34156101b357fe5b6100f8600160a060020a03600435166105e6565b005b34156101d157fe5b6101d9610676565b60408051938452602084019290925282820152519081900360600190f35b34156101ff57fe5b61018c61068d565b60408051918252519081900360200190f35b6100f8600480803590602001908201803590602001908080601f0160208091040260200160405190810160405280939291908181526020018383808284375094965061069495505050505050565b005b341561027157fe5b6100f8600160a060020a0360043516602435610ab2565b005b60025433600160a060020a039081169116146102a65760006000fd5b600454604080519182526020820183905280517f854231545a00e13c316c82155f2b8610d638e9ff6ebc4930676f84a5af08a49a9281900390910190a160048190555b50565b60025433600160a060020a039081169116146103085760006000fd5b60025460408051600160a060020a039283168152918316602083015280517fbadc9a52979e89f78b7c58309537410c5e51d0f63a0a455efe8d61d2b474e6989281900390910190a16002805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a038381169190911790915560008054604080516020908101849052815160e060020a6302571be30281527f91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e26004820152915192909416936302571be39360248084019492938390030190829087803b15156103e957fe5b60325a03f115156103f657fe5b50505060405180519050600160a060020a0316631e83409a826000604051602001526040518263ffffffff1660e060020a0281526004018082600160a060020a0316600160a060020a03168152602001915050602060405180830381600087803b151561045f57fe5b60325a03f1151561046c57fe5b50506040805160008054600354602093840183905284517f0178b8bf00000000000000000000000000000000000000000000000000000000815260048101919091529351600160a060020a039091169450630178b8bf9360248082019493918390030190829087803b15156104dd57fe5b60325a03f115156104ea57fe5b505060408051805160035460025460e860020a62d5fa2b0284526004840191909152600160a060020a03908116602484015292519216925063d5fa2b0091604480830192600092919082900301818387803b151561054457fe5b60325a03f1151561055157fe5b5050505b50565b600054600354600254600454600154600160a060020a039485169492831692165b9091929394565b6000818152600760205260409020545b919050565b6000818152600760209081526040918290208054349081019091558251908152915183927fdb7750418f9fa390aaf85d881770065aa4adbe46343bcff4ae573754c829d9af92908290030190a25b50565b60025433600160a060020a039081169116146106025760006000fd5b60015460408051600160a060020a039283168152918316602083015280517f279875333405c968e401e3bc4e71d5f8e48728c90f4e8180ce28f74efb5669209281900390910190a16001805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0383161790555b50565b600654600554600160a060020a033016315b909192565b6004545b90565b80516001820190600080808060048510806106af5750601485115b156106ba5760006000fd5b600093505b8484101561072a57855160ff16925060618310806106e05750607a8360ff16115b80156106fc575060308360ff1610806106fc575060398360ff16115b5b801561070d57508260ff16602d14155b156107185760006000fd5b6001909501945b6001909301926106bf565b60045434101561073a5760006000fd5b866040518082805190602001908083835b6020831061076a5780518252601f19909201916020918201910161074b565b51815160209384036101000a60001901801990921691161790526040805192909401829003822060035483528282018190528451928390038501832060008054948401819052865160e060020a6302571be3028152600481018390529651929a509098509650600160a060020a0390921694506302571be393602480820194509192919082900301818787803b15156107ff57fe5b60325a03f1151561080c57fe5b505060405151600160a060020a031691909114905061082b5760006000fd5b60008054600354604080517f06ab5923000000000000000000000000000000000000000000000000000000008152600481019290925260248201869052600160a060020a03308116604484015290519216926306ab59239260648084019382900301818387803b151561089a57fe5b60325a03f115156108a757fe5b505060008054600154604080517f1896f70a00000000000000000000000000000000000000000000000000000000815260048101879052600160a060020a0392831660248201529051919092169350631896f70a9260448084019391929182900301818387803b151561091657fe5b60325a03f1151561092357fe5b50506001546040805160e860020a62d5fa2b02815260048101859052600160a060020a033381166024830152915191909216925063d5fa2b009160448082019260009290919082900301818387803b151561097a57fe5b60325a03f1151561098757fe5b505060008054604080517f5b0fc9c300000000000000000000000000000000000000000000000000000000815260048101869052600160a060020a0333811660248301529151919092169350635b0fc9c39260448084019391929182900301818387803b15156109f357fe5b60325a03f11515610a0057fe5b505060058054349081019091556006805460010190556000838152600760209081526040918290208054840190558151600160a060020a03331681529081019290925280518493507f179ef3319e6587f6efd3157b34c8b357141528074bcb03f9903589876168fa149281900390910190a260408051348152905182917fdb7750418f9fa390aaf85d881770065aa4adbe46343bcff4ae573754c829d9af919081900360200190a25b50505050505050565b60025433600160a060020a03908116911614610ace5760006000fd5b604051600160a060020a0383169082156108fc029083906000818181858888f193505050501515610aff5760006000fd5b60408051600160a060020a03841681526020810183905281517fac375770417e1cb46c89436efcf586a74d0298fee9838f66a38d40c65959ffda929181900390910190a15b50505600a165627a7a723058205c3628c01dc80233f51979d91a76cec2a25d84e86c9838d34672734ca2232b640029' }
+</span>
+<span class="comment">// Get the storage value at position 0...
+</span>provider.getStorageAt("registrar.firefly.eth", 0)
+<span class="result ok">// { Promise: '0x000000000000000000000000314159265dd8dbb310642f98f50c066173c1259b' }
+</span>
+<span class="comment">// Get transaction count of an account...
+</span>provider.getTransactionCount("ricmoo.firefly.eth");
+<span class="result ok">// { Promise: 668 }
+</span></div><a name="/v5/api/providers/provider/-%23-Provider--block-methods"></a><a name="/v5/api/providers/provider/-%23-Provider--Provider--block-methods"></a><a name="/v5/api/providers/provider/"></a><h2 class="show-anchors"><div>Blocks Methods<div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider--block-methods"></a></div></div></h2>
 <a name="/v5/api/providers/provider/-%23-Provider-getBlock"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getBlock</span><span class="symbol">(</span> <span class="param">block</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="#/v5/api/providers/types/-%23-providers-Block">Block</a> &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider-getBlock"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/base-provider.ts#L925">source</a></div></div><div class="body"><p>Get the <i>block</i> from the network, where the <code class="inline">result.transactions</code> is a list of transaction hashes.</p>
 
 </div></div><a name="/v5/api/providers/provider/-%23-Provider-getBlockWithTransactions"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getBlockWithTransactions</span><span class="symbol">(</span> <span class="param">block</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="#/v5/api/providers/types/-%23-providers-BlockWithTransactions">BlockWithTransactions</a> &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider-getBlockWithTransactions"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/base-provider.ts#L929">source</a></div></div><div class="body"><p>Get the <i>block</i> from the network, where the <code class="inline">result.transactions</code> is an Array of <a href="#/v5/api/providers/types/-%23-providers-TransactionResponse">TransactionResponse</a> objects.</p>
 
 </div></div><div class="code-title"><div>Block Examples</div></div><div class="code">provider.getBlock(100004)
-//!
-
+<span class="result ok">// { Promise: {
+</span><span class="result ok">//   difficulty: 3849295379889,
+</span><span class="result ok">//   extraData: '0x476574682f76312e302e312d39383130306634372f6c696e75782f676f312e34',
+</span><span class="result ok">//   gasLimit: { BigNumber: "3141592" },
+</span><span class="result ok">//   gasUsed: { BigNumber: "21000" },
+</span><span class="result ok">//   hash: '0xf93283571ae16dcecbe1816adc126954a739350cd1523a1559eabeae155fbb63',
+</span><span class="result ok">//   miner: '0x909755D480A27911cB7EeeB5edB918fae50883c0',
+</span><span class="result ok">//   nonce: '0x1a455280001cc3f8',
+</span><span class="result ok">//   number: 100004,
+</span><span class="result ok">//   parentHash: '0x73d88d376f6b4d232d70dc950d9515fad3b5aa241937e362fdbfd74d1c901781',
+</span><span class="result ok">//   timestamp: 1439799168,
+</span><span class="result ok">//   transactions: [
+</span><span class="result ok">//     '0x6f12399cc2cb42bed5b267899b08a847552e8c42a64f5eb128c1bcbd1974fb0c'
+</span><span class="result ok">//   ]
+</span><span class="result ok">// } }
+</span>
 provider.getBlockWithTransactions(100004)
-//!</div><a name="/v5/api/providers/provider/-%23-Provider--ens-methods"></a><a name="/v5/api/providers/provider/-%23-Provider--Provider--ens-methods"></a><a name="/v5/api/providers/provider/"></a><h2 class="show-anchors"><div>Ethereum Naming Service (ENS) Methods<div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider--ens-methods"></a></div></div></h2><p>The <a href="https://ens.domains/">Ethereum Naming Service</a> (ENS) allows a short and easy-to-remember ENS Name to be atached to any set of keys and values.</p>
+<span class="result ok">// { Promise: {
+</span><span class="result ok">//   difficulty: 3849295379889,
+</span><span class="result ok">//   extraData: '0x476574682f76312e302e312d39383130306634372f6c696e75782f676f312e34',
+</span><span class="result ok">//   gasLimit: { BigNumber: "3141592" },
+</span><span class="result ok">//   gasUsed: { BigNumber: "21000" },
+</span><span class="result ok">//   hash: '0xf93283571ae16dcecbe1816adc126954a739350cd1523a1559eabeae155fbb63',
+</span><span class="result ok">//   miner: '0x909755D480A27911cB7EeeB5edB918fae50883c0',
+</span><span class="result ok">//   nonce: '0x1a455280001cc3f8',
+</span><span class="result ok">//   number: 100004,
+</span><span class="result ok">//   parentHash: '0x73d88d376f6b4d232d70dc950d9515fad3b5aa241937e362fdbfd74d1c901781',
+</span><span class="result ok">//   timestamp: 1439799168,
+</span><span class="result ok">//   transactions: [
+</span><span class="result ok">//     {
+</span><span class="result ok">//       blockHash: '0xf93283571ae16dcecbe1816adc126954a739350cd1523a1559eabeae155fbb63',
+</span><span class="result ok">//       blockNumber: 100004,
+</span><span class="result ok">//       chainId: 0,
+</span><span class="result ok">//       confirmations: 10153796,
+</span><span class="result ok">//       creates: null,
+</span><span class="result ok">//       data: '0x',
+</span><span class="result ok">//       from: '0xcf00A85f3826941e7A25BFcF9Aac575d40410852',
+</span><span class="result ok">//       gasLimit: { BigNumber: "90000" },
+</span><span class="result ok">//       gasPrice: { BigNumber: "54588778004" },
+</span><span class="result ok">//       hash: '0x6f12399cc2cb42bed5b267899b08a847552e8c42a64f5eb128c1bcbd1974fb0c',
+</span><span class="result ok">//       nonce: 25,
+</span><span class="result ok">//       r: '0xb23adc880d3735e4389698dddc953fb02f1fa9b57e84d3510a2a4b3597ac2486',
+</span><span class="result ok">//       s: '0x4e856f95c4e2828933246fb4765a5bfd2ca5959840643bef0e80b4e3a243d064',
+</span><span class="result ok">//       to: '0xD9666150A9dA92d9108198a4072970805a8B3428',
+</span><span class="result ok">//       transactionIndex: 0,
+</span><span class="result ok">//       v: 27,
+</span><span class="result ok">//       value: { BigNumber: "5000000000000000000" }
+</span><span class="result ok">//     }
+</span><span class="result ok">//   ]
+</span><span class="result ok">// } }
+</span></div><a name="/v5/api/providers/provider/-%23-Provider--ens-methods"></a><a name="/v5/api/providers/provider/-%23-Provider--Provider--ens-methods"></a><a name="/v5/api/providers/provider/"></a><h2 class="show-anchors"><div>Ethereum Naming Service (ENS) Methods<div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider--ens-methods"></a></div></div></h2><p>The <a href="https://ens.domains/">Ethereum Naming Service</a> (ENS) allows a short and easy-to-remember ENS Name to be atached to any set of keys and values.</p>
 
 <p>One of the most common uses for this is to use a simple name to refer to an <a href="#/v5/api/utils/address/-%23-address">Ethereum Address</a>.</p>
 
@@ -948,13 +1052,14 @@ provider.getBlockWithTransactions(100004)
 
 </div></div><a name="/v5/api/providers/provider/-%23-Provider-ResolveName"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">resolveName</span><span class="symbol">(</span> <span class="param">name</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="#/v5/api/utils/address/-%23-address">Address</a> &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider-ResolveName"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/base-provider.ts#L1060">source</a></div></div><div class="body"><p>Looks up the address of <i>name</i>. If the name is not owned, or does not have a <i>Resolver</i> configured, or the <i>Resolver</i> does not have an address configured, <code class="inline">null</code> is returned.</p>
 
-</div></div><div class="code-title"><div>ENS Examples</div></div><div class="code">// Reverse lookup of an ENS by address...
-provider.lookupAddress("0x6fC21092DA55B392b045eD78F4732bff3C580e2c");
-//!
-
-// Lookup an address of an ENS name...
-provider.resolveName("ricmoo.firefly.eth");
-//!</div><a name="/v5/api/providers/provider/-%23-Provider--log-methods"></a><a name="/v5/api/providers/provider/-%23-Provider--Provider--log-methods"></a><a name="/v5/api/providers/provider/"></a><h2 class="show-anchors"><div>Logs Methods<div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider--log-methods"></a></div></div></h2>
+</div></div><div class="code-title"><div>ENS Examples</div></div><div class="code"><span class="comment">// Reverse lookup of an ENS by address...
+</span>provider.lookupAddress("0x6fC21092DA55B392b045eD78F4732bff3C580e2c");
+<span class="result ok">// { Promise: 'registrar.firefly.eth' }
+</span>
+<span class="comment">// Lookup an address of an ENS name...
+</span>provider.resolveName("ricmoo.firefly.eth");
+<span class="result ok">// { Promise: '0x8ba1f109551bD432803012645Ac136ddd64DBA72' }
+</span></div><a name="/v5/api/providers/provider/-%23-Provider--log-methods"></a><a name="/v5/api/providers/provider/-%23-Provider--Provider--log-methods"></a><a name="/v5/api/providers/provider/"></a><h2 class="show-anchors"><div>Logs Methods<div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider--log-methods"></a></div></div></h2>
 <a name="/v5/api/providers/provider/-%23-Provider-getLogs"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getLogs</span><span class="symbol">(</span> <span class="param">filter</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; Array&lt; <a href="#/v5/api/providers/types/-%23-providers-Log">Log</a> &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider-getLogs"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/base-provider.ts#L1005">source</a></div></div><div class="body"><p>Returns the Array of <a href="#/v5/api/providers/types/-%23-providers-Log">Log</a> matching the <i>filter</i>.</p>
 
 <p>Keep in mind that many backends will discard old events, and that requests which are too broad may get dropped as they require too many resources to execute the query.</p>
@@ -966,28 +1071,27 @@ provider.resolveName("ricmoo.firefly.eth");
 
 </div></div><a name="/v5/api/providers/provider/-%23-Provider-getGasPrice"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getGasPrice</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="#/v5/api/utils/bignumber/">BigNumber</a> &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider-getGasPrice"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/base-provider.ts#L684">source</a></div></div><div class="body"><p>Returns a <i>best guess</i> of the <a href="#/v5/concepts/gas/-%23-gas-price">Gas Price</a> to use in a transaction.</p>
 
-</div></div><div class="code-title"><div>Network Status Examples</div></div><div class="code">// The network information
-provider.getNetwork()
-// &lt;hide&gt;
-//!
-network = utils.shallowCopy(_)
-delete network._defaultProvider
-network
-// &lt;/hide&gt;
-//!
-
-// The current block number
-provider.getBlockNumber()
-//!
-
-// Get the current suggested gas price (in wei)...
-gasPrice = await provider.getGasPrice()
-//! async gasPrice
-
-// ...often this gas price is easier to understand or
-// display to the user in gwei (giga-wei, or 1e9 wei)
-utils.formatUnits(gasPrice, "gwei")
-//!</div><a name="/v5/api/providers/provider/-%23-Provider--transaction-methods"></a><a name="/v5/api/providers/provider/-%23-Provider--Provider--transaction-methods"></a><a name="/v5/api/providers/provider/"></a><h2 class="show-anchors"><div>Transactions Methods<div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider--transaction-methods"></a></div></div></h2>
+</div></div><div class="code-title"><div>Network Status Examples</div></div><div class="code"><span class="comment">// The network information
+</span>provider.getNetwork()
+<span class="result ok">// {
+</span><span class="result ok">//   chainId: 1,
+</span><span class="result ok">//   ensAddress: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
+</span><span class="result ok">//   name: 'homestead'
+</span><span class="result ok">// }
+</span>
+<span class="comment">// The current block number
+</span>provider.getBlockNumber()
+<span class="result ok">// { Promise: 10253799 }
+</span>
+<span class="comment">// Get the current suggested gas price (in wei)...
+</span>gasPrice = await provider.getGasPrice()
+<span class="result ok">// { BigNumber: "19470000000" }
+</span>
+<span class="comment">// ...often this gas price is easier to understand or
+</span><span class="comment">// display to the user in gwei (giga-wei, or 1e9 wei)
+</span>utils.formatUnits(gasPrice, "gwei")
+<span class="result ok">// '19.47'
+</span></div><a name="/v5/api/providers/provider/-%23-Provider--transaction-methods"></a><a name="/v5/api/providers/provider/-%23-Provider--Provider--transaction-methods"></a><a name="/v5/api/providers/provider/"></a><h2 class="show-anchors"><div>Transactions Methods<div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider--transaction-methods"></a></div></div></h2>
 <a name="/v5/api/providers/provider/-%23-Provider-call"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">call</span><span class="symbol">(</span> <span class="param">transaction</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">blockTag</span> = <span class="param">latest</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="#/v5/api/utils/bytes/-%23-DataHexString">DataHexString</a> &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider-call"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/base-provider.ts#L825">source</a></div></div><div class="body"><p>Returns the result of executing the <i>transaction</i>, using <i>call</i>. A call does not require any ether, but cannot change any state. This is useful for calling gettings on Contracts.</p>
 
 </div></div><a name="/v5/api/providers/provider/-%23-Provider-estimateGas"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">estimateGas</span><span class="symbol">(</span> <span class="param">transaction</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="#/v5/api/utils/bignumber/">BigNumber</a> &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider-estimateGas"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/base-provider.ts#L834">source</a></div></div><div class="body"><p>Returns an estimate of the amount of gas that would be required to submit <i>transaction</i> to the network.</p>
@@ -1032,39 +1136,33 @@ utils.formatUnits(gasPrice, "gwei")
 
 </div></div><p>In addition to transaction and filter events, there are several named events.</p>
 
-<table class="table full"><tr><td align="center" width="16%"><b>Event Name</b></td><td align="center" colspan="2" width="28%"><b>Arguments</b></td><td align="center" colspan="4" width="56%"><b>Description</b></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"block"</code></td><td align="center" colspan="2" width="28%"><i>blockNumber</i></td><td align="left" colspan="4" width="56%">emitted when a new block is mined</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"error"</code></td><td align="center" colspan="2" width="28%"><i>error</i></td><td align="left" colspan="4" width="56%">emitted on any error</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"pending"</code></td><td align="center" colspan="2" width="28%"><i>pendingTransaction</i></td><td align="left" colspan="4" width="56%">emitted when a new transaction enters the memory pool; only certain providers offer this event and may require running your own node for reliable results</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"willPoll"</code></td><td align="center" colspan="2" width="28%"><i>pollId</i></td><td align="left" colspan="4" width="56%">emitted prior to a polling loop is about to begin; <i>(very rarely used by most developers)</i></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"poll"</code></td><td align="center" colspan="2" width="28%"><i>pollId</i>, <i>blockNumber</i></td><td align="left" colspan="4" width="56%">emitted during each poll cycle after `blockNumber` is updated (if changed) and before any other events (if any) are emitted during the poll loop; <i>(very rarely used by most developers)</i></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"didPoll"</code></td><td align="center" colspan="2" width="28%"><i>pollId</i></td><td align="left" colspan="4" width="56%">emitted after all events from a polling loop are emitted; <i>(very rarely used by most developers)</i></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"debug"</code></td><td align="center" colspan="2" width="28%">provider dependent</td><td align="left" colspan="4" width="56%">each Provider may use this to emit useful debugging information and the format is up to the developer; <i>(very rarely used by most developers)</i></td><td class="fix">&nbsp;</td></tr><tr><td class="table-title" colspan="7">Named Provider Events</td><td class="fix">&nbsp;</td></tr></table><div class="code-title"><div>Events Example</div></div><div class="code">// &lt;hide&gt;
-const txHash = utils.id("dummy-data");
-const myAddress = ethers.constants.HashZero;
-const myOtherAddress = ethers.constants.HashZero;
-// &lt;/hide&gt;
-
-provider.on("block", (blockNumber) =&gt; {
-    // Emitted on every block change
-})
+<table class="table full"><tr><td align="center" width="16%"><b>Event Name</b></td><td align="center" colspan="2" width="28%"><b>Arguments</b></td><td align="center" colspan="4" width="56%"><b>Description</b></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"block"</code></td><td align="center" colspan="2" width="28%"><i>blockNumber</i></td><td align="left" colspan="4" width="56%">emitted when a new block is mined</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"error"</code></td><td align="center" colspan="2" width="28%"><i>error</i></td><td align="left" colspan="4" width="56%">emitted on any error</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"pending"</code></td><td align="center" colspan="2" width="28%"><i>pendingTransaction</i></td><td align="left" colspan="4" width="56%">emitted when a new transaction enters the memory pool; only certain providers offer this event and may require running your own node for reliable results</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"willPoll"</code></td><td align="center" colspan="2" width="28%"><i>pollId</i></td><td align="left" colspan="4" width="56%">emitted prior to a polling loop is about to begin; <i>(very rarely used by most developers)</i></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"poll"</code></td><td align="center" colspan="2" width="28%"><i>pollId</i>, <i>blockNumber</i></td><td align="left" colspan="4" width="56%">emitted during each poll cycle after `blockNumber` is updated (if changed) and before any other events (if any) are emitted during the poll loop; <i>(very rarely used by most developers)</i></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"didPoll"</code></td><td align="center" colspan="2" width="28%"><i>pollId</i></td><td align="left" colspan="4" width="56%">emitted after all events from a polling loop are emitted; <i>(very rarely used by most developers)</i></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"debug"</code></td><td align="center" colspan="2" width="28%">provider dependent</td><td align="left" colspan="4" width="56%">each Provider may use this to emit useful debugging information and the format is up to the developer; <i>(very rarely used by most developers)</i></td><td class="fix">&nbsp;</td></tr><tr><td class="table-title" colspan="7">Named Provider Events</td><td class="fix">&nbsp;</td></tr></table><div class="code-title"><div>Events Example</div></div><div class="code">provider.on("block", (blockNumber) =&gt; {
+<span class="comment">    // Emitted on every block change
+</span>})
 
 
 provider.once(txHash, (transaction) =&gt; {
-    // Emitted when the transaction has been mined
-})
+<span class="comment">    // Emitted when the transaction has been mined
+</span>})
 
 
-// This filter could also be generated with the Contract or
-// Interface API. If address is not specified, any address
-// matches and if topics is not specified, any log matches
-filter = {
+<span class="comment">// This filter could also be generated with the Contract or
+</span><span class="comment">// Interface API. If address is not specified, any address
+</span><span class="comment">// matches and if topics is not specified, any log matches
+</span>filter = {
     address: "dai.tokens.ethers.eth",
     topics: [
         utils.id("Transfer(address,address,uint256")
     ]
 }
 provider.on(filter, (log, event) =&gt; {
-    // Emitted whenever a DAI token transfer occurs
-})
+<span class="comment">    // Emitted whenever a DAI token transfer occurs
+</span>})
 
 
-// Notice this is an array of topic-sets and is identical to
-// using a filter with no address (i.e. match any address)
-topicSets = [
+<span class="comment">// Notice this is an array of topic-sets and is identical to
+</span><span class="comment">// using a filter with no address (i.e. match any address)
+</span>topicSets = [
     utils.id("Transfer(address,address,uint256"),
     null,
     [
@@ -1073,37 +1171,33 @@ topicSets = [
     ]
 ]
 provider.on(topicSets, (log, event) =&gt; {
-    // Emitted any token is sent TO either address
-})
+<span class="comment">    // Emitted any token is sent TO either address
+</span>})
 
 
 provider.on("pending", (tx) =&gt; {
-    // Emitted when any new pending transaction is noticed
-});
+<span class="comment">    // Emitted when any new pending transaction is noticed
+</span>});
 
 
 provider.on("error", (tx) =&gt; {
-    // Emitted when any error occurs
-});
-
-// &lt;hide&gt;
-// Make sure our documentation builds without waiting forever
-provider.removeAllListeners()
-// &lt;/hide&gt;</div><a name="/v5/api/providers/provider/-%23-Provider--inspection-methods"></a><a name="/v5/api/providers/provider/-%23-Provider--Provider--inspection-methods"></a><a name="/v5/api/providers/provider/"></a><h2 class="show-anchors"><div>Inspection Methods<div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider--inspection-methods"></a></div></div></h2>
+<span class="comment">    // Emitted when any error occurs
+</span>});
+</div><a name="/v5/api/providers/provider/-%23-Provider--inspection-methods"></a><a name="/v5/api/providers/provider/-%23-Provider--Provider--inspection-methods"></a><a name="/v5/api/providers/provider/"></a><h2 class="show-anchors"><div>Inspection Methods<div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider--inspection-methods"></a></div></div></h2>
 <a name="/v5/api/providers/provider/-%23-Provider-isProvider"></a><div class="property show-anchors"><div class="signature"><span class="path">Provider</span><span class="symbol">.</span><span class="method">isProvider</span><span class="symbol">(</span> <span class="param">object</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">boolean</span><div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider-isProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abstract-provider/src.ts/index.ts#L269">source</a></div></div><div class="body"><p>Returns true if and only if <i>object</i> is a Provider.</p>
 
-</div></div><div class="page-separator"></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider"></a><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider"></a><a name="/v5/api/providers/jsonrpc-provider/"></a><h1 class="show-anchors"><div>JsonRpcProvider<span class="inherits"> inherits <a href="#/v5/api/providers/provider/">Provider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L234">source</a></div></div></h1><p>The <a href="https://github.com/ethereum/wiki/wiki/JSON-RPC">JSON-RPC API</a> is a very popular method for interacting with Ethereum and is available in all major Ethereum node implementations (e.g. <a href="https://geth.ethereum.org">Geth</a> and <a href="https://www.parity.io">Parity</a>) as well as many third-party web services (e.g. <a href="https://infura.io">INFURA</a>)</p>
+</div></div><div class="page-separator"></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider"></a><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider"></a><a name="/v5/api/providers/jsonrpc-provider/"></a><h1 class="show-anchors"><div>JsonRpcProvider<span class="inherits"> inherits <a href="#/v5/api/providers/provider/">Provider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L220">source</a></div></div></h1><p>The <a href="https://github.com/ethereum/wiki/wiki/JSON-RPC">JSON-RPC API</a> is a very popular method for interacting with Ethereum and is available in all major Ethereum node implementations (e.g. <a href="https://geth.ethereum.org">Geth</a> and <a href="https://www.parity.io">Parity</a>) as well as many third-party web services (e.g. <a href="https://infura.io">INFURA</a>)</p>
 
-<div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="path">ethers</span><span class="symbol">.</span><span class="path">providers</span><span class="symbol">.</span><span class="method">JsonRpcProvider</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">url</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">aNetworkish</span> <span class="symbol">]</span> <span class="symbol">]</span> <span class="symbol">)</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L240">source</a></div></div><div class="body"><p>Connect to a JSON-RPC API located at <i>url</i> using the <i>aNetworkish</i> network. If <i>url</i> is not specified, the default (i.e. <code class="inline">http://localhost:8545</code>) is used and if no network is specified, it will be determined automatically by querying the node.</p>
+<div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="path">ethers</span><span class="symbol">.</span><span class="path">providers</span><span class="symbol">.</span><span class="method">JsonRpcProvider</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">url</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">aNetworkish</span> <span class="symbol">]</span> <span class="symbol">]</span> <span class="symbol">)</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L226">source</a></div></div><div class="body"><p>Connect to a JSON-RPC API located at <i>url</i> using the <i>aNetworkish</i> network. If <i>url</i> is not specified, the default (i.e. <code class="inline">http://localhost:8545</code>) is used and if no network is specified, it will be determined automatically by querying the node.</p>
 
 </div></div><div class="definition container-box note"><div class="term">Note: Connecting to a Local Node</div><div class="body"><p>Each node implementation is slightly different and may require specific command-line flags, configuration or settings in their UI to enable JSON-RPC, unlock accounrs or expose specific APIs. Please consult their documentation.</p>
 
-</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-getSigner"></a><div class="property show-anchors"><div class="signature"><span class="path">jsonRpcProvider</span><span class="symbol">.</span><span class="method">getSigner</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">addressOrIndex</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner">JsonRpcSigner</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-getSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L305">source</a></div></div><div class="body"><p>Returns a <a href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner">JsonRpcSigner</a> which is managed by this Ethereum node, at <i>addressOrIndex</i>. If no <i>addressOrIndex</i> is provided, the first account (account #0) is used.</p>
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-getSigner"></a><div class="property show-anchors"><div class="signature"><span class="path">jsonRpcProvider</span><span class="symbol">.</span><span class="method">getSigner</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">addressOrIndex</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner">JsonRpcSigner</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-getSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L291">source</a></div></div><div class="body"><p>Returns a <a href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner">JsonRpcSigner</a> which is managed by this Ethereum node, at <i>addressOrIndex</i>. If no <i>addressOrIndex</i> is provided, the first account (account #0) is used.</p>
 
-</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-getUncheckedSigner"></a><div class="property show-anchors"><div class="signature"><span class="path">jsonRpcProvider</span><span class="symbol">.</span><span class="method">getUncheckedSigner</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">addressOrIndex</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/providers/jsonrpc-provider/-%23-UncheckedJsonRpcSigner">JsonRpcUncheckedSigner</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-getUncheckedSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L309">source</a></div></div><div class="body">
-</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-listAccounts"></a><div class="property show-anchors"><div class="signature"><span class="path">jsonRpcProvider</span><span class="symbol">.</span><span class="method">listAccounts</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Array&lt; string &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-listAccounts"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L313">source</a></div></div><div class="body"><p>Returns a list of all account addresses managed by this provider.</p>
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-getUncheckedSigner"></a><div class="property show-anchors"><div class="signature"><span class="path">jsonRpcProvider</span><span class="symbol">.</span><span class="method">getUncheckedSigner</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">addressOrIndex</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/providers/jsonrpc-provider/-%23-UncheckedJsonRpcSigner">JsonRpcUncheckedSigner</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-getUncheckedSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L295">source</a></div></div><div class="body">
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-listAccounts"></a><div class="property show-anchors"><div class="signature"><span class="path">jsonRpcProvider</span><span class="symbol">.</span><span class="method">listAccounts</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Array&lt; string &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-listAccounts"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L299">source</a></div></div><div class="body"><p>Returns a list of all account addresses managed by this provider.</p>
 
-</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-send"></a><div class="property show-anchors"><div class="signature"><span class="path">jsonRpcProvider</span><span class="symbol">.</span><span class="method">send</span><span class="symbol">(</span> <span class="param">method</span> <span class="symbol">,</span> <span class="param">params</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; any &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-send"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L319">source</a></div></div><div class="body"><p>Allows sending raw messages to the provider.</p>
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-send"></a><div class="property show-anchors"><div class="signature"><span class="path">jsonRpcProvider</span><span class="symbol">.</span><span class="method">send</span><span class="symbol">(</span> <span class="param">method</span> <span class="symbol">,</span> <span class="param">params</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; any &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-send"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L305">source</a></div></div><div class="body"><p>Allows sending raw messages to the provider.</p>
 
 <p>This can be used for backend-specific calls, such as for debugging or specific account management.</p>
 
@@ -1111,13 +1205,13 @@ provider.removeAllListeners()
 
 <div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">provider</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/providers/jsonrpc-provider/">JsonRpcProvider</a></span><div class="anchors"></div></div><div class="body"><p>The provider this signer was established from.</p>
 
-</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-connectUnchecked"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">connectUnchecked</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/providers/jsonrpc-provider/-%23-UncheckedJsonRpcSigner">JsonRpcUncheckedSigner</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-connectUnchecked"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L87">source</a></div></div><div class="body"><p>Returns a new Signer object which does not perform addtional checks when sending a transaction. See <a href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-getUncheckedSigner">getUncheckedSigner</a> for more details.</p>
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-connectUnchecked"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">connectUnchecked</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/providers/jsonrpc-provider/-%23-UncheckedJsonRpcSigner">JsonRpcUncheckedSigner</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-connectUnchecked"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L83">source</a></div></div><div class="body"><p>Returns a new Signer object which does not perform addtional checks when sending a transaction. See <a href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-getUncheckedSigner">getUncheckedSigner</a> for more details.</p>
 
-</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-sendUncheckedTransaction"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">sendUncheckedTransaction</span><span class="symbol">(</span> <span class="param">transaction</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="#/v5/api/utils/bytes/-%23-DataHexString">DataHexString</a>&lt; 32 &gt; &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-sendUncheckedTransaction"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L116">source</a></div></div><div class="body"><p>Sends the <i>transaction</i> and returns a Promise which resolves to the opacque transaction hash.</p>
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-sendUncheckedTransaction"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">sendUncheckedTransaction</span><span class="symbol">(</span> <span class="param">transaction</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="#/v5/api/utils/bytes/-%23-DataHexString">DataHexString</a>&lt; 32 &gt; &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-sendUncheckedTransaction"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L102">source</a></div></div><div class="body"><p>Sends the <i>transaction</i> and returns a Promise which resolves to the opacque transaction hash.</p>
 
-</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-unlock"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">unlock</span><span class="symbol">(</span> <span class="param">password</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; boolean &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-unlock"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L202">source</a></div></div><div class="body"><p>Request the node unlock the account (if locked) using <i>password</i>.</p>
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-unlock"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">unlock</span><span class="symbol">(</span> <span class="param">password</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; boolean &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-unlock"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L188">source</a></div></div><div class="body"><p>Request the node unlock the account (if locked) using <i>password</i>.</p>
 
-</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-UncheckedJsonRpcSigner"></a><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider--UncheckedJsonRpcSigner"></a><a name="/v5/api/providers/jsonrpc-provider/"></a><h2 class="show-anchors"><div>JsonRpcUncheckedSigner<span class="inherits"> inherits <a href="#/v5/api/signer/-%23-Signer">Signer</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-UncheckedJsonRpcSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L211">source</a></div></div></h2><p>The JSON-RPC API only provides a transaction hash as the response when a transaction is sent, but the ethers Provider requires populating all details of a transaction before returning it. For example, the gas price and gas limit may be adjusted by the node or the nonce automatically included, in which case the opaque transaction hash has discarded this.</p>
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-UncheckedJsonRpcSigner"></a><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider--UncheckedJsonRpcSigner"></a><a name="/v5/api/providers/jsonrpc-provider/"></a><h2 class="show-anchors"><div>JsonRpcUncheckedSigner<span class="inherits"> inherits <a href="#/v5/api/signer/-%23-Signer">Signer</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-UncheckedJsonRpcSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/json-rpc-provider.ts#L197">source</a></div></div></h2><p>The JSON-RPC API only provides a transaction hash as the response when a transaction is sent, but the ethers Provider requires populating all details of a transaction before returning it. For example, the gas price and gas limit may be adjusted by the node or the nonce automatically included, in which case the opaque transaction hash has discarded this.</p>
 
 <p>To remedy this, the <a href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner">JsonRpcSigner</a> immeidately queries the provider for the details using the returned transaction hash to populate the <a href="#/v5/api/providers/types/-%23-providers-TransactionResponse">TransactionResponse</a> object.</p>
 
@@ -1149,30 +1243,26 @@ provider.removeAllListeners()
 
 </div></div><div class="definition"><div class="term"><b>Supported Networks</b></div><div class="body"><p><ul><li>Homestead (Mainnet) </li><li>Ropsten (proof-of-work testnet) </li><li>Rinkeby (proof-of-authority testnet) </li><li>G&ouml;rli (clique testnet) </li><li>Kovan (proof-of-authority testnet) </li></ul></p>
 
-</div></div><div class="code-title"><div>Etherscan Examples</div></div><div class="code">// &lt;hide&gt;
-const EtherscanProvider = ethers.providers.EtherscanProvider;
-const apiKey = "...";
-// &lt;/hide&gt;
+</div></div><div class="code-title"><div>Etherscan Examples</div></div><div class="code"><span class="comment">// Connect to mainnet (homestead)
+</span>provider = new EtherscanProvider();
 
-// Connect to mainnet (homestead)
-provider = new EtherscanProvider();
-
-// Connect to rinkeby testnet (these are equivalent)
-provider = new EtherscanProvider("rinkeby");
+<span class="comment">// Connect to rinkeby testnet (these are equivalent)
+</span>provider = new EtherscanProvider("rinkeby");
 provider = new EtherscanProvider(4);
 
 const network = ethers.providers.getNetwork("rinkeby");
-// &lt;hide&gt;
-delete network._defaultProvider;
-network
-// &lt;/hide&gt;
-//!
-
+<span class="result ok">// {
+</span><span class="result ok">//   chainId: 4,
+</span><span class="result ok">//   ensAddress: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
+</span><span class="result ok">//   name: 'rinkeby'
+</span><span class="result ok">// }
+</span>
 provider = new EtherscanProvider(network);
 
-// Connect to mainnet (homestead) with an API key
-provider = new EtherscanProvider(null, apiKey);
-provider = new EtherscanProvider("homestead", apiKey);</div><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getHistory</span><span class="symbol">(</span> <span class="param">address</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Array&lt; History &gt;</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/etherscan-provider.ts#L306">source</a></div></div><div class="body"><p>@TODO... Explain</p>
+<span class="comment">// Connect to mainnet (homestead) with an API key
+</span>provider = new EtherscanProvider(null, apiKey);
+provider = new EtherscanProvider("homestead", apiKey);
+</div><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getHistory</span><span class="symbol">(</span> <span class="param">address</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Array&lt; History &gt;</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/etherscan-provider.ts#L306">source</a></div></div><div class="body"><p>@TODO... Explain</p>
 
 </div></div><a name="/v5/api/providers/api-providers/-%23-InfuraProvider"></a><a name="/v5/api/providers/api-providers/-%23-api-providers--InfuraProvider"></a><a name="/v5/api/providers/api-providers/"></a><h2 class="show-anchors"><div>InfuraProvider<span class="inherits"> inherits <a href="#/v5/api/providers/other/-%23-UrlJsonRpcProvider">UrlJsonRpcProvider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/api-providers/-%23-InfuraProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/infura-provider.ts#L17">source</a></div></div></h2><p>The <b>InfuraProvider</b> is backed by the popular <a href="https://infura.io">INFURA</a> Ethereum service.</p>
 
@@ -1188,28 +1278,23 @@ provider = new EtherscanProvider("homestead", apiKey);</div><div class="property
 
 </div></div><div class="definition"><div class="term"><b>Supported Networks</b></div><div class="body"><p><ul><li>Homestead (Mainnet) </li><li>Ropsten (proof-of-work testnet) </li><li>Rinkeby (proof-of-authority testnet) </li><li>G&ouml;rli (clique testnet) </li><li>Kovan (proof-of-authority testnet) </li></ul></p>
 
-</div></div><div class="code-title"><div>INFURA Examples</div></div><div class="code">// &lt;hide&gt;
-const InfuraProvider = ethers.providers.InfuraProvider;
-const projectId = "...";
-const projectSecret = "...";
-// &lt;/hide&gt;
+</div></div><div class="code-title"><div>INFURA Examples</div></div><div class="code"><span class="comment">// Connect to mainnet (homestead)
+</span>provider = new InfuraProvider();
 
-// Connect to mainnet (homestead)
-provider = new InfuraProvider();
+<span class="comment">// Connect to the ropsten testnet
+</span><span class="comment">// (see EtherscanProvider above for other network examples)
+</span>provider = new InfuraProvider("ropsten");
 
-// Connect to the ropsten testnet
-// (see EtherscanProvider above for other network examples)
-provider = new InfuraProvider("ropsten");
-
-// Connect to mainnet with a Project ID (these are equivalent)
-provider = new InfuraProvider(null, projectId);
+<span class="comment">// Connect to mainnet with a Project ID (these are equivalent)
+</span>provider = new InfuraProvider(null, projectId);
 provider = new InfuraProvider("homestead", projectId);
 
-// Connect to mainnet with a Project ID and Project Secret
-provider = new InfuraProvider("homestead", {
+<span class="comment">// Connect to mainnet with a Project ID and Project Secret
+</span>provider = new InfuraProvider("homestead", {
     projectId: projectId,
     projectSecret: projectSecret
-});</div><a name="/v5/api/providers/api-providers/-%23-AlchemyProvider"></a><a name="/v5/api/providers/api-providers/-%23-api-providers--AlchemyProvider"></a><a name="/v5/api/providers/api-providers/"></a><h2 class="show-anchors"><div>AlchemyProvider<span class="inherits"> inherits <a href="#/v5/api/providers/other/-%23-UrlJsonRpcProvider">UrlJsonRpcProvider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/api-providers/-%23-AlchemyProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/alchemy-provider.ts#L18">source</a></div></div></h2><p>The <b>AlchemyProvider</b> is backed by <a href="https://alchemyapi.io">Alchemy</a>.</p>
+});
+</div><a name="/v5/api/providers/api-providers/-%23-AlchemyProvider"></a><a name="/v5/api/providers/api-providers/-%23-api-providers--AlchemyProvider"></a><a name="/v5/api/providers/api-providers/"></a><h2 class="show-anchors"><div>AlchemyProvider<span class="inherits"> inherits <a href="#/v5/api/providers/other/-%23-UrlJsonRpcProvider">UrlJsonRpcProvider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/api-providers/-%23-AlchemyProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/alchemy-provider.ts#L18">source</a></div></div></h2><p>The <b>AlchemyProvider</b> is backed by <a href="https://alchemyapi.io">Alchemy</a>.</p>
 
 <div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="path">ethers</span><span class="symbol">.</span><span class="path">providers</span><span class="symbol">.</span><span class="method">AlchemyProvider</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">network</span> = "<span class="param">homestead</span>" <span class="symbol">,</span> <span class="symbol">[</span> <span class="param">apiKey</span> <span class="symbol">]</span> <span class="symbol">]</span> <span class="symbol">)</span><div class="anchors"></div></div><div class="body"><p>Create a new <b>AlchemyProvider</b> connected to <i>network</i> with the optional <i>apiKey</i>.</p>
 
@@ -1221,32 +1306,25 @@ provider = new InfuraProvider("homestead", {
 
 </div></div><div class="definition"><div class="term"><b>Supported Networks</b></div><div class="body"><p><ul><li>Homestead (Mainnet) </li><li>Ropsten (proof-of-work testnet) </li><li>Rinkeby (proof-of-authority testnet) </li><li>G&ouml;rli (clique testnet) </li><li>Kovan (proof-of-authority testnet) </li></ul></p>
 
-</div></div><div class="code-title"><div>Alchemy Examples</div></div><div class="code">// &lt;hide&gt;
-const AlchemyProvider = ethers.providers.AlchemyProvider;
-const apiKey = "...";
-// &lt;/hide&gt;
+</div></div><div class="code-title"><div>Alchemy Examples</div></div><div class="code"><span class="comment">// Connect to mainnet (homestead)
+</span>provider = new AlchemyProvider();
 
-// Connect to mainnet (homestead)
-provider = new AlchemyProvider();
+<span class="comment">// Connect to the ropsten testnet
+</span><span class="comment">// (see EtherscanProvider above for other network examples)
+</span>provider = new AlchemyProvider("ropsten");
 
-// Connect to the ropsten testnet
-// (see EtherscanProvider above for other network examples)
-provider = new AlchemyProvider("ropsten");
-
-// Connect to mainnet with an API key (these are equivalent)
-provider = new AlchemyProvider(null, apiKey);
-provider = new AlchemyProvider("homestead", apiKey);</div><a name="/v5/api/providers/api-providers/-%23-CloudflareProvider"></a><a name="/v5/api/providers/api-providers/-%23-api-providers--CloudflareProvider"></a><a name="/v5/api/providers/api-providers/"></a><h2 class="show-anchors"><div>CloudflareProvider<span class="inherits"> inherits <a href="#/v5/api/providers/other/-%23-UrlJsonRpcProvider">UrlJsonRpcProvider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/api-providers/-%23-CloudflareProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/cloudflare-provider.ts#L10">source</a></div></div></h2><p>The CloudflareProvider is backed by the <a href="https://developers.cloudflare.com/distributed-web/ethereum-gateway/">Cloudflare Ethereum Gateway</a>.</p>
+<span class="comment">// Connect to mainnet with an API key (these are equivalent)
+</span>provider = new AlchemyProvider(null, apiKey);
+provider = new AlchemyProvider("homestead", apiKey);
+</div><a name="/v5/api/providers/api-providers/-%23-CloudflareProvider"></a><a name="/v5/api/providers/api-providers/-%23-api-providers--CloudflareProvider"></a><a name="/v5/api/providers/api-providers/"></a><h2 class="show-anchors"><div>CloudflareProvider<span class="inherits"> inherits <a href="#/v5/api/providers/other/-%23-UrlJsonRpcProvider">UrlJsonRpcProvider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/api-providers/-%23-CloudflareProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/cloudflare-provider.ts#L10">source</a></div></div></h2><p>The CloudflareProvider is backed by the <a href="https://developers.cloudflare.com/distributed-web/ethereum-gateway/">Cloudflare Ethereum Gateway</a>.</p>
 
 <div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="path">ethers</span><span class="symbol">.</span><span class="path">providers</span><span class="symbol">.</span><span class="method">CloudflareProvider</span><span class="symbol">(</span> <span class="symbol">)</span><div class="anchors"></div></div><div class="body"><p>Create a new <b>CloudflareProvider</b> connected to mainnet (i.e. "homestead").</p>
 
 </div></div><div class="definition"><div class="term"><b>Supported Networks</b></div><div class="body"><p><ul><li>Homestead (Mainnet) </li></ul></p>
 
-</div></div><div class="code-title"><div>Cloudflare Examples</div></div><div class="code">// &lt;hide&gt;
-const CloudflareProvider = ethers.providers.CloudflareProvider;
-// &lt;/hide&gt;
-
-// Connect to mainnet (homestead)
-provider = new CloudflareProvider();</div><div class="page-separator"></div><a name="/v5/api/providers/other/-%23-other-providers"></a><a name="/v5/api/providers/other/"></a><h1 class="show-anchors"><div>Other Providers<div class="anchors"><a class="self" href="#/v5/api/providers/other/-%23-other-providers"></a></div></div></h1><p>Others...</p>
+</div></div><div class="code-title"><div>Cloudflare Examples</div></div><div class="code"><span class="comment">// Connect to mainnet (homestead)
+</span>provider = new CloudflareProvider();
+</div><div class="page-separator"></div><a name="/v5/api/providers/other/-%23-other-providers"></a><a name="/v5/api/providers/other/"></a><h1 class="show-anchors"><div>Other Providers<div class="anchors"><a class="self" href="#/v5/api/providers/other/-%23-other-providers"></a></div></div></h1><p>Others...</p>
 
 <a name="/v5/api/providers/other/-%23-FallbackProvider"></a><a name="/v5/api/providers/other/-%23-other-providers--FallbackProvider"></a><a name="/v5/api/providers/other/"></a><h2 class="show-anchors"><div>FallbackProvider<span class="inherits"> inherits <a href="#/v5/api/providers/provider/">Provider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/other/-%23-FallbackProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/fallback-provider.ts#L384">source</a></div></div></h2><p>The <b>FallbackProvider</b> is the most advanced <a href="#/v5/api/providers/provider/">Provider</a> available in ethers.</p>
 
@@ -1560,7 +1638,7 @@ provider = new CloudflareProvider();</div><div class="page-separator"></div><a n
 
 </div></div><a name="/v5/api/utils/abi/fragments/-%23-Fragment-isFragment"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="path">Fragment</span><span class="symbol">.</span><span class="method">isFragment</span><span class="symbol">(</span> <span class="param">object</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">boolean</span><div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-Fragment-isFragment"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abi/src.ts/fragments.ts#L474">source</a></div></div><div class="body"><p>Tra lal al</p>
 
-</div></div><a name="/v5/api/utils/abi/fragments/-%23-ConstructorFragment"></a><a name="/v5/api/utils/abi/fragments/-%23-fragments--ConstructorFragment"></a><a name="/v5/api/utils/abi/fragments/"></a><h2 class="show-anchors"><div>ConstructorFragment<span class="inherits"> inherits <a href="#/v5/api/utils/abi/fragments/-%23-Fragment">Fragment</a></span><div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-ConstructorFragment"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abi/src.ts/fragments.ts#L704">source</a></div></div></h2>
+</div></div><a name="/v5/api/utils/abi/fragments/-%23-ConstructorFragment"></a><a name="/v5/api/utils/abi/fragments/-%23-fragments--ConstructorFragment"></a><a name="/v5/api/utils/abi/fragments/"></a><h2 class="show-anchors"><div>ConstructorFragment<span class="inherits"> inherits <a href="#/v5/api/utils/abi/fragments/-%23-Fragment">Fragment</a></span><div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-ConstructorFragment"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abi/src.ts/fragments.ts#L708">source</a></div></div></h2>
 <a name="/v5/api/utils/abi/fragments/-%23-fragments--ConstructorFragment--properties"></a><a name="/v5/api/utils/abi/fragments/"></a><h3 class="show-anchors"><div>Properties<div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-fragments--ConstructorFragment--properties"></a></div></div></h3>
 <div class="property show-anchors"><div class="signature"><span class="path">fragment</span><span class="symbol">.</span><span class="method">gas</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/utils/bignumber/">BigNumber</a></span><div class="anchors"></div></div><div class="body"><p>This is the gas limit that should be used during deployment. It may be null.</p>
 
@@ -1571,9 +1649,9 @@ provider = new CloudflareProvider();</div><div class="page-separator"></div><a n
 <p><ul><li><code class="inline">nonpayable</code> </li><li><code class="inline">payable</code> </li></ul></p>
 
 </div></div><a name="/v5/api/utils/abi/fragments/-%23-fragments--ConstructorFragment--methods"></a><a name="/v5/api/utils/abi/fragments/"></a><h3 class="show-anchors"><div>Methods<div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-fragments--ConstructorFragment--methods"></a></div></div></h3>
-<a name="/v5/api/utils/abi/fragments/-%23-ConstructorFragment-from"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="path">ConstructorFragment</span><span class="symbol">.</span><span class="method">from</span><span class="symbol">(</span> <span class="param">objectOrString</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/utils/abi/fragments/-%23-ConstructorFragment">ConstructorFragment</a></span><div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-ConstructorFragment-from"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abi/src.ts/fragments.ts#L742">source</a></div></div><div class="body"><p>Tra la la...</p>
+<a name="/v5/api/utils/abi/fragments/-%23-ConstructorFragment-from"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="path">ConstructorFragment</span><span class="symbol">.</span><span class="method">from</span><span class="symbol">(</span> <span class="param">objectOrString</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/utils/abi/fragments/-%23-ConstructorFragment">ConstructorFragment</a></span><div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-ConstructorFragment-from"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abi/src.ts/fragments.ts#L746">source</a></div></div><div class="body"><p>Tra la la...</p>
 
-</div></div><a name="/v5/api/utils/abi/fragments/-%23-ConstructorFragment-isConstructorFragment"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="path">ConstructorFragment</span><span class="symbol">.</span><span class="method">isConstructorFragment</span><span class="symbol">(</span> <span class="param">object</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">boolean</span><div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-ConstructorFragment-isConstructorFragment"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abi/src.ts/fragments.ts#L790">source</a></div></div><div class="body"><p>Tra lal al</p>
+</div></div><a name="/v5/api/utils/abi/fragments/-%23-ConstructorFragment-isConstructorFragment"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="path">ConstructorFragment</span><span class="symbol">.</span><span class="method">isConstructorFragment</span><span class="symbol">(</span> <span class="param">object</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">boolean</span><div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-ConstructorFragment-isConstructorFragment"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abi/src.ts/fragments.ts#L794">source</a></div></div><div class="body"><p>Tra lal al</p>
 
 </div></div><a name="/v5/api/utils/abi/fragments/-%23-EventFragment"></a><a name="/v5/api/utils/abi/fragments/-%23-fragments--EventFragment"></a><a name="/v5/api/utils/abi/fragments/"></a><h2 class="show-anchors"><div>EventFragment<span class="inherits"> inherits <a href="#/v5/api/utils/abi/fragments/-%23-Fragment">Fragment</a></span><div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-EventFragment"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abi/src.ts/fragments.ts#L483">source</a></div></div></h2>
 <a name="/v5/api/utils/abi/fragments/-%23-fragments--EventFragment--properties"></a><a name="/v5/api/utils/abi/fragments/"></a><h3 class="show-anchors"><div>Properties<div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-fragments--EventFragment--properties"></a></div></div></h3>
@@ -1584,7 +1662,7 @@ provider = new CloudflareProvider();</div><div class="page-separator"></div><a n
 
 </div></div><a name="/v5/api/utils/abi/fragments/-%23-EventFragment-isEventFragment"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="path">EventFragment</span><span class="symbol">.</span><span class="method">isEventFragment</span><span class="symbol">(</span> <span class="param">object</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">boolean</span><div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-EventFragment-isEventFragment"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abi/src.ts/fragments.ts#L572">source</a></div></div><div class="body"><p>Tra lal al</p>
 
-</div></div><a name="/v5/api/utils/abi/fragments/-%23-FunctionFragment"></a><a name="/v5/api/utils/abi/fragments/-%23-fragments--FunctionFragment"></a><a name="/v5/api/utils/abi/fragments/"></a><h2 class="show-anchors"><div>FunctionFragment<span class="inherits"> inherits <a href="#/v5/api/utils/abi/fragments/-%23-ConstructorFragment">ConstructorFragment</a></span><div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-FunctionFragment"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abi/src.ts/fragments.ts#L800">source</a></div></div></h2>
+</div></div><a name="/v5/api/utils/abi/fragments/-%23-FunctionFragment"></a><a name="/v5/api/utils/abi/fragments/-%23-fragments--FunctionFragment"></a><a name="/v5/api/utils/abi/fragments/"></a><h2 class="show-anchors"><div>FunctionFragment<span class="inherits"> inherits <a href="#/v5/api/utils/abi/fragments/-%23-ConstructorFragment">ConstructorFragment</a></span><div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-FunctionFragment"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abi/src.ts/fragments.ts#L804">source</a></div></div></h2>
 <a name="/v5/api/utils/abi/fragments/-%23-fragments--FunctionFragment--properties"></a><a name="/v5/api/utils/abi/fragments/"></a><h3 class="show-anchors"><div>Properties<div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-fragments--FunctionFragment--properties"></a></div></div></h3>
 <div class="property show-anchors"><div class="signature"><span class="path">fragment</span><span class="symbol">.</span><span class="method">constant</span> <span class="arrow">&rArr;</span> <span class="returns">boolean</span><div class="anchors"></div></div><div class="body"><p>This is whether the function is constant (i.e. does not change state). This is true if the state mutability is <code class="inline">pure</code> or <code class="inline">view</code>.</p>
 
@@ -1595,9 +1673,9 @@ provider = new CloudflareProvider();</div><div class="page-separator"></div><a n
 </div></div><div class="property show-anchors"><div class="signature"><span class="path">fragment</span><span class="symbol">.</span><span class="method">outputs</span> <span class="arrow">&rArr;</span> <span class="returns">Array&lt; <a href="#/v5/api/utils/abi/fragments/-%23-ParamType">ParamType</a> &gt;</span><div class="anchors"></div></div><div class="body"><p>A list of the Function output parameters.</p>
 
 </div></div><a name="/v5/api/utils/abi/fragments/-%23-fragments--FunctionFragment--method"></a><a name="/v5/api/utils/abi/fragments/"></a><h3 class="show-anchors"><div>Method<div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-fragments--FunctionFragment--method"></a></div></div></h3>
-<a name="/v5/api/utils/abi/fragments/-%23-FunctionFragment-from"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="path">FunctionFragment</span><span class="symbol">.</span><span class="method">from</span><span class="symbol">(</span> <span class="param">objectOrString</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/utils/abi/fragments/-%23-FunctionFragment">FunctionFragment</a></span><div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-FunctionFragment-from"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abi/src.ts/fragments.ts#L742">source</a></div></div><div class="body"><p>Tra la la...</p>
+<a name="/v5/api/utils/abi/fragments/-%23-FunctionFragment-from"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="path">FunctionFragment</span><span class="symbol">.</span><span class="method">from</span><span class="symbol">(</span> <span class="param">objectOrString</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/utils/abi/fragments/-%23-FunctionFragment">FunctionFragment</a></span><div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-FunctionFragment-from"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abi/src.ts/fragments.ts#L746">source</a></div></div><div class="body"><p>Tra la la...</p>
 
-</div></div><a name="/v5/api/utils/abi/fragments/-%23-FunctionFragment-isFunctionFragment"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="path">FunctionFragment</span><span class="symbol">.</span><span class="method">isFunctionFragment</span><span class="symbol">(</span> <span class="param">object</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">boolean</span><div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-FunctionFragment-isFunctionFragment"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abi/src.ts/fragments.ts#L921">source</a></div></div><div class="body"><p>Tra lal al</p>
+</div></div><a name="/v5/api/utils/abi/fragments/-%23-FunctionFragment-isFunctionFragment"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="path">FunctionFragment</span><span class="symbol">.</span><span class="method">isFunctionFragment</span><span class="symbol">(</span> <span class="param">object</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">boolean</span><div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-FunctionFragment-isFunctionFragment"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abi/src.ts/fragments.ts#L925">source</a></div></div><div class="body"><p>Tra lal al</p>
 
 </div></div><a name="/v5/api/utils/abi/fragments/-%23-ParamType"></a><a name="/v5/api/utils/abi/fragments/-%23-fragments--ParamType"></a><a name="/v5/api/utils/abi/fragments/"></a><h2 class="show-anchors"><div>ParamType<div class="anchors"><a class="self" href="#/v5/api/utils/abi/fragments/-%23-ParamType"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abi/src.ts/fragments.ts#L251">source</a></div></div></h2><p>The following examples will represent the Solidity parameter:</p>
 
@@ -1790,44 +1868,45 @@ provider = new CloudflareProvider();</div><div class="page-separator"></div><a n
 <div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">BigNumber</span><span class="symbol">.</span><span class="method">from</span><span class="symbol">(</span> <span class="param">aBigNumberish</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/utils/bignumber/">BigNumber</a></span><div class="anchors"></div></div><div class="body"><p>Returns an instance of a <b>BigNumber</b> for <i>aBigNumberish</i>.</p>
 
 </div></div><a name="/v5/api/utils/bignumber/-%23-BigNumber--BigNumber--creating--examples"></a><a name="/v5/api/utils/bignumber/"></a><h3 class="show-anchors"><div>Examples:<div class="anchors"></div></div></h3>
-<div class="code">// From a decimal string...
-BigNumber.from("42")
-//!
-
-// From a HexString...
-BigNumber.from("0x2a")
-//!
-
-// From a negative HexString...
-BigNumber.from("-0x2a")
-//!
-
-// From an Array (or Uint8Array)...
-BigNumber.from([ 42 ])
-//!
-
-// From an existing BigNumber...
-let one1 = constants.One;
+<div class="code"><span class="comment">// From a decimal string...
+</span>BigNumber.from("42")
+<span class="result ok">// { BigNumber: "42" }
+</span>
+<span class="comment">// From a HexString...
+</span>BigNumber.from("0x2a")
+<span class="result ok">// { BigNumber: "42" }
+</span>
+<span class="comment">// From a negative HexString...
+</span>BigNumber.from("-0x2a")
+<span class="result ok">// { BigNumber: "-42" }
+</span>
+<span class="comment">// From an Array (or Uint8Array)...
+</span>BigNumber.from([ 42 ])
+<span class="result ok">// { BigNumber: "42" }
+</span>
+<span class="comment">// From an existing BigNumber...
+</span>let one1 = constants.One;
 let one2 = BigNumber.from(one1)
 
 one2
-//!
-
-// ...which returns the same instance
-one1 === one2
-//!
-
-// From a (safe) number...
-BigNumber.from(42)
-//!
-
-// From a ES2015 BigInt... (only on platforms with BigInt support)
-BigNumber.from(42n)
-//!
-
-// Numbers outside the safe range fail:
-BigNumber.from(Number.MAX_SAFE_INTEGER);
-//! error</div><a name="/v5/api/utils/bignumber/-%23-BigNumber--methods"></a><a name="/v5/api/utils/bignumber/-%23-BigNumber--BigNumber--methods"></a><a name="/v5/api/utils/bignumber/"></a><h2 class="show-anchors"><div>Methods<div class="anchors"><a class="self" href="#/v5/api/utils/bignumber/-%23-BigNumber--methods"></a></div></div></h2><p>The BigNumber class is immutable, so no operations can change the value it represents.</p>
+<span class="result ok">// { BigNumber: "1" }
+</span>
+<span class="comment">// ...which returns the same instance
+</span>one1 === one2
+<span class="result ok">// true
+</span>
+<span class="comment">// From a (safe) number...
+</span>BigNumber.from(42)
+<span class="result ok">// { BigNumber: "42" }
+</span>
+<span class="comment">// From a ES2015 BigInt... (only on platforms with BigInt support)
+</span>BigNumber.from(42n)
+<span class="result ok">// { BigNumber: "42" }
+</span>
+<span class="comment">// Numbers outside the safe range fail:
+</span>BigNumber.from(Number.MAX_SAFE_INTEGER);
+<span class="result error">// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740991, code=NUMERIC_FAULT, version=bignumber/5.0.0-beta.139)
+</span></div><a name="/v5/api/utils/bignumber/-%23-BigNumber--methods"></a><a name="/v5/api/utils/bignumber/-%23-BigNumber--BigNumber--methods"></a><a name="/v5/api/utils/bignumber/"></a><h2 class="show-anchors"><div>Methods<div class="anchors"><a class="self" href="#/v5/api/utils/bignumber/-%23-BigNumber--methods"></a></div></div></h2><p>The BigNumber class is immutable, so no operations can change the value it represents.</p>
 
 <a name="/v5/api/utils/bignumber/-%23-BigNumber--BigNumber--methods--math-operations"></a><a name="/v5/api/utils/bignumber/"></a><h3 class="show-anchors"><div>Math Operations<div class="anchors"><a class="self" href="#/v5/api/utils/bignumber/-%23-BigNumber--BigNumber--methods--math-operations"></a></div></div></h3>
 <div class="property show-anchors"><div class="signature"><span class="path">BigNumber</span><span class="symbol">.</span><span class="method">add</span><span class="symbol">(</span> <span class="param">otherValue</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/utils/bignumber/">BigNumber</a></span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/bignumber/src.ts/bignumber.ts#L71">source</a></div></div><div class="body"><p>Returns a BigNumber with the value of <i>BigNumber</i> <b>+</b> <i>otherValue</i>.</p>
@@ -1882,7 +1961,8 @@ BigNumber.from(Number.MAX_SAFE_INTEGER);
 let b = BigNumber.from("91");
 
 a.mul(b);
-//!</div><a name="/v5/api/utils/bignumber/-%23-BigNumber--notes"></a><a name="/v5/api/utils/bignumber/-%23-BigNumber--BigNumber--notes"></a><a name="/v5/api/utils/bignumber/"></a><h2 class="show-anchors"><div>Notes<div class="anchors"><a class="self" href="#/v5/api/utils/bignumber/-%23-BigNumber--notes"></a></div></div></h2><p>This section is a for a couple of questions that come up frequently.</p>
+<span class="result ok">// { BigNumber: "3822" }
+</span></div><a name="/v5/api/utils/bignumber/-%23-BigNumber--notes"></a><a name="/v5/api/utils/bignumber/-%23-BigNumber--BigNumber--notes"></a><a name="/v5/api/utils/bignumber/"></a><h2 class="show-anchors"><div>Notes<div class="anchors"><a class="self" href="#/v5/api/utils/bignumber/-%23-BigNumber--notes"></a></div></div></h2><p>This section is a for a couple of questions that come up frequently.</p>
 
 <a name="/v5/api/utils/bignumber/-%23-BigNumber--notes-safenumbers"></a><a name="/v5/api/utils/bignumber/-%23-BigNumber--BigNumber--notes--BigNumber--notes-safenumbers"></a><a name="/v5/api/utils/bignumber/"></a><h3 class="show-anchors"><div>Why can't I just use numbers?<div class="anchors"><a class="self" href="#/v5/api/utils/bignumber/-%23-BigNumber--notes-safenumbers"></a></div></div></h3><p>The first problem many encounter when dealing with Ethereum is the concept of numbers. Most common currencies are broken down with very little granularity. For example, there are only 100 cents in a single dollar. However, there are 10<sup>18</sup> <b>wei</b> in a single <b>ether</b>.</p>
 
@@ -1891,7 +1971,8 @@ a.mul(b);
 <p>To demonstrate how this may be an issue in your code, consider:</p>
 
 <div class="code">(Number.MAX_SAFE_INTEGER + 2 - 2) == (Number.MAX_SAFE_INTEGER)
-//!</div><p>To remedy this, all numbers (which can be large) are stored and manipulated as <a href="#/v5/api/utils/bignumber/">Big Numbers</a>.</p>
+<span class="result ok">// false
+</span></div><p>To remedy this, all numbers (which can be large) are stored and manipulated as <a href="#/v5/api/utils/bignumber/">Big Numbers</a>.</p>
 
 <p>The functions <a href="#/v5/api/utils/display-logic/-%23-utils-parseEther">parseEther( etherString )</a> and <a href="#/v5/api/utils/display-logic/-%23-utils-formatEther">formatEther( wei )</a> can be used to convert between string representations, which are displayed to or entered by the user and Big Number representations which can have mathematical operations handled safely.</p>
 
@@ -1952,29 +2033,30 @@ a.mul(b);
 
 </div></div><a name="/v5/api/utils/bytes/-%23-utils-hexValue"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">hexValue</span><span class="symbol">(</span> <span class="param">aBigNumberish</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="#/v5/api/utils/bytes/-%23-HexString">HexString</a> &gt;</span><div class="anchors"><a class="self" href="#/v5/api/utils/bytes/-%23-utils-hexValue"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/bytes/src.ts/index.ts#L287">source</a></div></div><div class="body"><p>Converts <i>aBigNumberish</i> to a <a href="#/v5/api/utils/bytes/-%23-HexString">HexString</a>, with no <u>unnecessary</u> leading zeros.</p>
 
-</div></div><div class="code-title"><div>Examples</div></div><div class="code">// Convert a hexstring to a Uint8Array
-arrayify("0x1234")
-//!
-
-// Convert an Array to a hexstring
-hexlify([1, 2, 3, 4])
-//!
-
-// Convert an Object to a hexstring
-hexlify({ length: 2, "0": 1, "1": 2 })
-//!
-
-// Convert an Array to a hexstring
-hexlify([ 1 ])
-//!
-
-// Convert a number to a stripped hex value
-hexValue(1)
-//!
-
-// Convert an Array to a stripped hex value
-hexValue([ 1, 2 ])
-//!</div><a name="/v5/api/utils/bytes/-%23-byte-manipulation--array-manipulation"></a><a name="/v5/api/utils/bytes/"></a><h2 class="show-anchors"><div>Array Manipulation<div class="anchors"><a class="self" href="#/v5/api/utils/bytes/-%23-byte-manipulation--array-manipulation"></a></div></div></h2>
+</div></div><div class="code-title"><div>Examples</div></div><div class="code"><span class="comment">// Convert a hexstring to a Uint8Array
+</span>arrayify("0x1234")
+<span class="result ok">// Uint8Array [ 18, 52 ]
+</span>
+<span class="comment">// Convert an Array to a hexstring
+</span>hexlify([1, 2, 3, 4])
+<span class="result ok">// '0x01020304'
+</span>
+<span class="comment">// Convert an Object to a hexstring
+</span>hexlify({ length: 2, "0": 1, "1": 2 })
+<span class="result ok">// '0x0102'
+</span>
+<span class="comment">// Convert an Array to a hexstring
+</span>hexlify([ 1 ])
+<span class="result ok">// '0x01'
+</span>
+<span class="comment">// Convert a number to a stripped hex value
+</span>hexValue(1)
+<span class="result ok">// '0x1'
+</span>
+<span class="comment">// Convert an Array to a stripped hex value
+</span>hexValue([ 1, 2 ])
+<span class="result ok">// '0x102'
+</span></div><a name="/v5/api/utils/bytes/-%23-byte-manipulation--array-manipulation"></a><a name="/v5/api/utils/bytes/"></a><h2 class="show-anchors"><div>Array Manipulation<div class="anchors"><a class="self" href="#/v5/api/utils/bytes/-%23-byte-manipulation--array-manipulation"></a></div></div></h2>
 <a name="/v5/api/utils/bytes/-%23-utils-concat"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">concat</span><span class="symbol">(</span> <span class="param">arrayOfBytesLike</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Uint8Array</span><div class="anchors"><a class="self" href="#/v5/api/utils/bytes/-%23-utils-concat"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/bytes/src.ts/index.ts#L140">source</a></div></div><div class="body"><p>Concatenates all the <a href="#/v5/api/utils/bytes/-%23-BytesLike">BytesLike</a> in <i>arrayOfBytesLike</i> into a single Uint8Array.</p>
 
 </div></div><a name="/v5/api/utils/bytes/-%23-utils-stripZeros"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">stripZeros</span><span class="symbol">(</span> <span class="param">aBytesLike</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Uint8Array</span><div class="anchors"><a class="self" href="#/v5/api/utils/bytes/-%23-utils-stripZeros"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/bytes/src.ts/index.ts#L154">source</a></div></div><div class="body"><p>Returns a Uint8Array with all leading <code class="inline">0</code> bytes of <i>aBtyesLike</i> removed.</p>
@@ -2007,17 +2089,34 @@ hexValue([ 1, 2 ])
 </div></div><a name="/v5/api/utils/bytes/-%23-utils-shuffled"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">shuffled</span><span class="symbol">(</span> <span class="param">array</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Array&lt; any &gt;</span><div class="anchors"><a class="self" href="#/v5/api/utils/bytes/-%23-utils-shuffled"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/random/src.ts/shuffle.ts#L3">source</a></div></div><div class="body"><p>Return a copy of <i>array</i> shuffled using <a href="https://en.wikipedia.org/wiki/Fisher-Yates_shuffle">Fisher-Yates Shuffle</a>.</p>
 
 </div></div><div class="code-title"><div>Examples</div></div><div class="code">utils.randomBytes(8)
-//!
-
+<span class="result ok">// Uint8Array [ 131, 252, 210, 50, 128, 120, 18, 68 ]
+</span>
 const data = [ 1, 2, 3, 4, 5, 6, 7 ];
 
-// Returns a new Array
-utils.shuffled(data);
-//!
-
-// The Original is unscathed...
-data
-//!</div><div class="page-separator"></div><a name="/v5/api/utils/constants/-%23-constants"></a><a name="/v5/api/utils/constants/-%23-constants"></a><a name="/v5/api/utils/constants/"></a><h1 class="show-anchors"><div>Constants<div class="anchors"><a class="self" href="#/v5/api/utils/constants/-%23-constants"></a></div></div></h1><p>The <b>ethers.contants</b> Object contains commonly used values.</p>
+<span class="comment">// Returns a new Array
+</span>utils.shuffled(data);
+<span class="result ok">// [
+</span><span class="result ok">//   7,
+</span><span class="result ok">//   6,
+</span><span class="result ok">//   4,
+</span><span class="result ok">//   2,
+</span><span class="result ok">//   3,
+</span><span class="result ok">//   1,
+</span><span class="result ok">//   5
+</span><span class="result ok">// ]
+</span>
+<span class="comment">// The Original is unscathed...
+</span>data
+<span class="result ok">// [
+</span><span class="result ok">//   1,
+</span><span class="result ok">//   2,
+</span><span class="result ok">//   3,
+</span><span class="result ok">//   4,
+</span><span class="result ok">//   5,
+</span><span class="result ok">//   6,
+</span><span class="result ok">//   7
+</span><span class="result ok">// ]
+</span></div><div class="page-separator"></div><a name="/v5/api/utils/constants/-%23-constants"></a><a name="/v5/api/utils/constants/-%23-constants"></a><a name="/v5/api/utils/constants/"></a><h1 class="show-anchors"><div>Constants<div class="anchors"><a class="self" href="#/v5/api/utils/constants/-%23-constants"></a></div></div></h1><p>The <b>ethers.contants</b> Object contains commonly used values.</p>
 
 <a name="/v5/api/utils/constants/-%23-constants--bytes"></a><a name="/v5/api/utils/constants/"></a><h2 class="show-anchors"><div>Bytes<div class="anchors"><a class="self" href="#/v5/api/utils/constants/-%23-constants--bytes"></a></div></div></h2>
 <a name="/v5/api/utils/constants/-%23-constants-AddressZero"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">constants</span><span class="symbol">.</span><span class="method">AddressZero</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="#/v5/api/utils/address/-%23-address">Address</a> &gt;</span><div class="anchors"><a class="self" href="#/v5/api/utils/constants/-%23-constants-AddressZero"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/constants/src.ts/index.ts#L5">source</a></div></div><div class="body"><p>The Address Zero, which is 20 bytes (40 nibbles) of zero.</p>
@@ -2177,73 +2276,73 @@ data
 </div></div><a name="/v5/api/utils/hashing/-%23-utils-sha512"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">sha512</span><span class="symbol">(</span> <span class="param">aBytesLike</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="#/v5/api/utils/bytes/-%23-DataHexString">DataHexString</a>&lt; 64 &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/utils/hashing/-%23-utils-sha512"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/sha2/src.ts/index.ts#L22">source</a></div></div><div class="body"><p>Returns the <a href="https://en.wikipedia.org/wiki/SHA-2">SHA2-512</a> digest of <i>aBytesLike</i>.</p>
 
 </div></div><div class="code-title"><div>KECCAK256</div></div><div class="code">utils.keccak256([ 0x12, 0x34 ])
-//!
-
+<span class="result ok">// '0x56570de287d73cd1cb6092bb8fdee6173974955fdef345ae579ee9f475ea7432'
+</span>
 utils.keccak256("0x")
-//!
-
+<span class="result ok">// '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+</span>
 utils.keccak256("0x1234")
-//!
-
-// The value MUST be data, such as:
-//  - an Array of numbers
-//  - a data hex string (e.g. "0x1234")
-//  - a Uint8Array
-
-// Do NOT use UTF-8 strings that are not a DataHexstring
-utils.keccak256("hello world")
-//! error
-
-// If needed, convert strings to bytes first:
-utils.keccak256(utils.toUtf8Bytes("hello world"))
-//!
-
-// Or equivalently use the identity function:
-utils.id("hello world")
-//!
-
-// Keep in mind that the string "0x1234" represents TWO
-// bytes (i.e. [ 0x12, 0x34 ]. If you wish to compute the
-// hash of the 6 characters "0x1234", convert it to UTF-8
-// bytes first using utils.toUtf8Bytes.
-
-// Consider the following examples:
-
-// Hash of TWO (2) bytes:
-utils.keccak256("0x1234")
-//!
-
-// Hash of TWO (2) bytes: (same result)
-utils.keccak256([ 0x12, 0x34 ])
-//!
-
+<span class="result ok">// '0x56570de287d73cd1cb6092bb8fdee6173974955fdef345ae579ee9f475ea7432'
+</span>
+<span class="comment">// The value MUST be data, such as:
+</span><span class="comment">//  - an Array of numbers
+</span><span class="comment">//  - a data hex string (e.g. "0x1234")
+</span><span class="comment">//  - a Uint8Array
+</span>
+<span class="comment">// Do NOT use UTF-8 strings that are not a DataHexstring
+</span>utils.keccak256("hello world")
+<span class="result error">// Error: invalid arrayify value (argument="value", value="hello world", code=INVALID_ARGUMENT, version=bytes/5.0.0-beta.138)
+</span>
+<span class="comment">// If needed, convert strings to bytes first:
+</span>utils.keccak256(utils.toUtf8Bytes("hello world"))
+<span class="result ok">// '0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad'
+</span>
+<span class="comment">// Or equivalently use the identity function:
+</span>utils.id("hello world")
+<span class="result ok">// '0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad'
+</span>
+<span class="comment">// Keep in mind that the string "0x1234" represents TWO
+</span><span class="comment">// bytes (i.e. [ 0x12, 0x34 ]. If you wish to compute the
+</span><span class="comment">// hash of the 6 characters "0x1234", convert it to UTF-8
+</span><span class="comment">// bytes first using utils.toUtf8Bytes.
+</span>
+<span class="comment">// Consider the following examples:
+</span>
+<span class="comment">// Hash of TWO (2) bytes:
+</span>utils.keccak256("0x1234")
+<span class="result ok">// '0x56570de287d73cd1cb6092bb8fdee6173974955fdef345ae579ee9f475ea7432'
+</span>
+<span class="comment">// Hash of TWO (2) bytes: (same result)
+</span>utils.keccak256([ 0x12, 0x34 ])
+<span class="result ok">// '0x56570de287d73cd1cb6092bb8fdee6173974955fdef345ae579ee9f475ea7432'
+</span>
 const bytes = utils.toUtf8Bytes("0x1234");
-// &lt;hide&gt;
-bytes
-// &lt;/hide&gt;
-//!
-
-// Hash of SIX (6) characters (different than above)
-utils.keccak256(bytes)
-//!
-
-// Hash of SIX (6) characters (same result)
-utils.id("0x1234")
-//!</div><div class="code-title"><div>RIPEMD160</div></div><div class="code">utils.ripemd160("0x")
-//!
-
+<span class="result ok">// Uint8Array [ 48, 120, 49, 50, 51, 52 ]
+</span>
+<span class="comment">// Hash of SIX (6) characters (different than above)
+</span>utils.keccak256(bytes)
+<span class="result ok">// '0x1ac7d1b81b7ba1025b36ccb86723da6ee5a87259f1c2fd5abe69d3200b512ec8'
+</span>
+<span class="comment">// Hash of SIX (6) characters (same result)
+</span>utils.id("0x1234")
+<span class="result ok">// '0x1ac7d1b81b7ba1025b36ccb86723da6ee5a87259f1c2fd5abe69d3200b512ec8'
+</span></div><div class="code-title"><div>RIPEMD160</div></div><div class="code">utils.ripemd160("0x")
+<span class="result ok">// '0x9c1185a5c5e9fc54612808977ee8f548b2258d31'
+</span>
 utils.ripemd160("0x1234")
-//!</div><div class="code-title"><div>SHA-2</div></div><div class="code">utils.sha256("0x")
-//!
-
+<span class="result ok">// '0xc39867e393cb061b837240862d9ad318c176a96d'
+</span></div><div class="code-title"><div>SHA-2</div></div><div class="code">utils.sha256("0x")
+<span class="result ok">// '0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+</span>
 utils.sha256("0x1234")
-//!
-
+<span class="result ok">// '0x3a103a4e5729ad68c02a678ae39accfbc0ae208096437401b7ceab63cca0622f'
+</span>
 utils.sha512("0x")
-//!
-
+<span class="result ok">// '0xcf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e'
+</span>
 utils.sha512("0x1234")
-//!</div><a name="/v5/api/utils/hashing/-%23-utils--hmac"></a><a name="/v5/api/utils/hashing/-%23-hashing-algorithms--utils--hmac"></a><a name="/v5/api/utils/hashing/"></a><h2 class="show-anchors"><div>HMAC<div class="anchors"><a class="self" href="#/v5/api/utils/hashing/-%23-utils--hmac"></a></div></div></h2>
+<span class="result ok">// '0x4c54886c9821195522d88ff4705c3e0c686b921054421e6ea598739c29c26e1ee75419aaceec94dd2e3c0dbb82ecf895c9f61215f375de6d800d9b99d3d4b816'
+</span></div><a name="/v5/api/utils/hashing/-%23-utils--hmac"></a><a name="/v5/api/utils/hashing/-%23-hashing-algorithms--utils--hmac"></a><a name="/v5/api/utils/hashing/"></a><h2 class="show-anchors"><div>HMAC<div class="anchors"><a class="self" href="#/v5/api/utils/hashing/-%23-utils--hmac"></a></div></div></h2>
 <a name="/v5/api/utils/hashing/-%23-utils-computeHmac"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">computeHmac</span><span class="symbol">(</span> <span class="param">algorithm</span> <span class="symbol">,</span> <span class="param">key</span> <span class="symbol">,</span> <span class="param">data</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="#/v5/api/utils/bytes/-%23-DataHexString">DataHexString</a> &gt;</span><div class="anchors"><a class="self" href="#/v5/api/utils/hashing/-%23-utils-computeHmac"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/sha2/src.ts/index.ts#L27">source</a></div></div><div class="body"><p>Returns the <a href="https://en.wikipedia.org/wiki/HMAC">HMAC</a> of <i>data</i> with <i>key</i> using the <a href="#/v5/api/utils/hashing/-%23-utils--hmac-supported-algorithm">Algorithm</a> <i>algorithm</i>.</p>
 
 </div></div><a name="/v5/api/utils/hashing/-%23-utils--hmac-supported-algorithm"></a><a name="/v5/api/utils/hashing/-%23-hashing-algorithms--utils--hmac--utils--hmac-supported-algorithm"></a><a name="/v5/api/utils/hashing/"></a><h3 class="show-anchors"><div><b>HMAC Supported Algorithms</b><div class="anchors"><a class="self" href="#/v5/api/utils/hashing/-%23-utils--hmac-supported-algorithm"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/sha2/src.ts/index.ts#L11">source</a></div></div></h3>
@@ -2254,22 +2353,25 @@ utils.sha512("0x1234")
 </div></div><div class="code-title"><div>HMAC</div></div><div class="code">const key = "0x0102";
 const data = "0x1234";
 utils.computeHmac("sha256", key, data)
-//!</div><a name="/v5/api/utils/hashing/-%23-utils--hashing-helpers"></a><a name="/v5/api/utils/hashing/-%23-hashing-algorithms--utils--hashing-helpers"></a><a name="/v5/api/utils/hashing/"></a><h2 class="show-anchors"><div>Hashing Helpers<div class="anchors"><a class="self" href="#/v5/api/utils/hashing/-%23-utils--hashing-helpers"></a></div></div></h2>
+<span class="result ok">// '0x7553df81c628815cf569696cad13a37c606c5058df13d9dff4fee2cf5e9b5779'
+</span></div><a name="/v5/api/utils/hashing/-%23-utils--hashing-helpers"></a><a name="/v5/api/utils/hashing/-%23-hashing-algorithms--utils--hashing-helpers"></a><a name="/v5/api/utils/hashing/"></a><h2 class="show-anchors"><div>Hashing Helpers<div class="anchors"><a class="self" href="#/v5/api/utils/hashing/-%23-utils--hashing-helpers"></a></div></div></h2>
 <a name="/v5/api/utils/hashing/-%23-utils-hashMessage"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">hashMessage</span><span class="symbol">(</span> <span class="param">message</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="#/v5/api/utils/bytes/-%23-DataHexString">DataHexString</a>&lt; 32 &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/utils/hashing/-%23-utils-hashMessage"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/hash/src.ts/index.ts#L53">source</a></div></div><div class="body"><p>Computes the <a href="https://eips.ethereum.org/EIPS/eip-191">EIP-191</a> personal message digest of <i>message</i>. Personal messages are converted to UTF-8 bytes and prefixed with <code class="inline">\x19Ethereum Signed Message:</code> and the length of <i>message</i>.</p>
 
 </div></div><a name="/v5/api/utils/hashing/-%23-utils-namehash"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">namehash</span><span class="symbol">(</span> <span class="param">name</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="#/v5/api/utils/bytes/-%23-DataHexString">DataHexString</a>&lt; 32 &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/utils/hashing/-%23-utils-namehash"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/hash/src.ts/index.ts#L29">source</a></div></div><div class="body"><p>Returns the <a href="https://docs.ens.domains/contract-api-reference/name-processing#hashing-names">ENS Namehash</a> of <i>name</i>.</p>
 
-</div></div><div class="code-title"><div>Hashing Messages</div></div><div class="code">// @TODO: include examples of hashMessage; it can be complex. :)</div><div class="code-title"><div>Namehash</div></div><div class="code">utils.namehash("")
-//!
-
+</div></div><div class="code-title"><div>Hashing Messages</div></div><div class="code"><span class="comment">// @TODO: include examples of hashMessage; it can be complex. :)
+</span></div><div class="code-title"><div>Namehash</div></div><div class="code">utils.namehash("")
+<span class="result ok">// '0x0000000000000000000000000000000000000000000000000000000000000000'
+</span>
 utils.namehash("eth")
-//!
-
+<span class="result ok">// '0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae'
+</span>
 utils.namehash("ricmoo.firefly.eth")
-//!
-
+<span class="result ok">// '0x0bcad17ecf260d6506c6b97768bdc2acfb6694445d27ffd3f9c1cfbee4a9bd6d'
+</span>
 utils.namehash("ricmoo.xyz")
-//!</div><a name="/v5/api/utils/hashing/-%23-utils--solidity-hashing"></a><a name="/v5/api/utils/hashing/-%23-hashing-algorithms--utils--solidity-hashing"></a><a name="/v5/api/utils/hashing/"></a><h2 class="show-anchors"><div>Solidity Hashing Algorithms<div class="anchors"><a class="self" href="#/v5/api/utils/hashing/-%23-utils--solidity-hashing"></a></div></div></h2><p>When using the Solidity <code class="inline">abi.packEncoded(...)</code> function, a non-standard <i>tightly packed</i> version of encoding is used. These functions implement the tightly packing algorithm.</p>
+<span class="result ok">// '0x7d56aa46358ba2f8b77d8e05bcabdd2358370dcf34e87810f8cea77ecb3fc57d'
+</span></div><a name="/v5/api/utils/hashing/-%23-utils--solidity-hashing"></a><a name="/v5/api/utils/hashing/-%23-hashing-algorithms--utils--solidity-hashing"></a><a name="/v5/api/utils/hashing/"></a><h2 class="show-anchors"><div>Solidity Hashing Algorithms<div class="anchors"><a class="self" href="#/v5/api/utils/hashing/-%23-utils--solidity-hashing"></a></div></div></h2><p>When using the Solidity <code class="inline">abi.packEncoded(...)</code> function, a non-standard <i>tightly packed</i> version of encoding is used. These functions implement the tightly packing algorithm.</p>
 
 <a name="/v5/api/utils/hashing/-%23-utils-solidityPack"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">solidityPack</span><span class="symbol">(</span> <span class="param">types</span> <span class="symbol">,</span> <span class="param">values</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="#/v5/api/utils/bytes/-%23-DataHexString">DataHexString</a> &gt;</span><div class="anchors"><a class="self" href="#/v5/api/utils/hashing/-%23-utils-solidityPack"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/solidity/src.ts/index.ts#L73">source</a></div></div><div class="body"><p>Returns the non-standard encoded <i>values</i> packed according to their respecive type in <i>types</i>.</p>
 
@@ -2278,16 +2380,17 @@ utils.namehash("ricmoo.xyz")
 </div></div><a name="/v5/api/utils/hashing/-%23-utils-soliditySha256"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">soliditySha256</span><span class="symbol">(</span> <span class="param">types</span> <span class="symbol">,</span> <span class="param">values</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="#/v5/api/utils/bytes/-%23-DataHexString">DataHexString</a>&lt; 32 &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/utils/hashing/-%23-utils-soliditySha256"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/solidity/src.ts/index.ts#L86">source</a></div></div><div class="body"><p>Returns the <a href="https://en.wikipedia.org/wiki/SHA-2">SHA2-256</a> of the non-standard encoded <i>values</i> packed according to their respective type in <i>types</i>.</p>
 
 </div></div><div class="code-title"><div>Solidity Hashing</div></div><div class="code">utils.solidityPack([ "int16", "uint48" ], [ -1, 12 ])
-//!
-
+<span class="result ok">// '0xffff00000000000c'
+</span>
 utils.solidityPack([ "string", "uint8" ], [ "Hello", 3 ])
-//!
-
+<span class="result ok">// '0x48656c6c6f03'
+</span>
 utils.solidityKeccak256([ "int16", "uint48" ], [ -1, 12 ])
-//!
-
+<span class="result ok">// '0x81da7abb5c9c7515f57dab2fc946f01217ab52f3bd8958bc36bd55894451a93c'
+</span>
 utils.soliditySha256([ "int16", "uint48" ], [ -1, 12 ])
-//!</div><div class="page-separator"></div><a name="/v5/api/utils/hdnode/-%23-hdnodes"></a><a name="/v5/api/utils/hdnode/-%23-hdnodes"></a><a name="/v5/api/utils/hdnode/"></a><h1 class="show-anchors"><div>HD Wallet<div class="anchors"><a class="self" href="#/v5/api/utils/hdnode/-%23-hdnodes"></a></div></div></h1><p>TODO: Explain <a href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki">BIP32</a> <a href="https://en.bitcoin.it/wiki/BIP_0039">BIP-39</a> and whatnot here...</p>
+<span class="result ok">// '0xa5580fb602f6e2ba9c588011dc4e6c2335e0f5d970dc45869db8f217efc6911a'
+</span></div><div class="page-separator"></div><a name="/v5/api/utils/hdnode/-%23-hdnodes"></a><a name="/v5/api/utils/hdnode/-%23-hdnodes"></a><a name="/v5/api/utils/hdnode/"></a><h1 class="show-anchors"><div>HD Wallet<div class="anchors"><a class="self" href="#/v5/api/utils/hdnode/-%23-hdnodes"></a></div></div></h1><p>TODO: Explain <a href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki">BIP32</a> <a href="https://en.bitcoin.it/wiki/BIP_0039">BIP-39</a> and whatnot here...</p>
 
 <a name="/v5/api/utils/hdnode/-%23-hdnodes--types"></a><a name="/v5/api/utils/hdnode/"></a><h2 class="show-anchors"><div>Types<div class="anchors"><a class="self" href="#/v5/api/utils/hdnode/-%23-hdnodes--types"></a></div></div></h2>
 <a name="/v5/api/utils/hdnode/-%23-hdnodes--defaultpath"></a><a name="/v5/api/utils/hdnode/-%23-hdnodes--types--hdnodes--defaultpath"></a><a name="/v5/api/utils/hdnode/"></a><h3 class="show-anchors"><div>Constants<div class="anchors"><a class="self" href="#/v5/api/utils/hdnode/-%23-hdnodes--defaultpath"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/hdnode/src.ts/index.ts#L67">source</a></div></div></h3>
@@ -2877,7 +2980,8 @@ utils.soliditySha256([ "int16", "uint48" ], [ -1, 12 ])
 </div></div><div class="page-separator"></div><a name="/v5/api/other/hardware/-%23-hardware-wallets"></a><a name="/v5/api/other/hardware/"></a><h1 class="show-anchors"><div>Hardware Wallets<div class="anchors"><a class="self" href="#/v5/api/other/hardware/-%23-hardware-wallets"></a></div></div></h1>
 <a name="/v5/api/other/hardware/-%23-hw-ledger"></a><a name="/v5/api/other/hardware/-%23-hardware-wallets--hw-ledger"></a><a name="/v5/api/other/hardware/"></a><h2 class="show-anchors"><div>LedgerSigner<span class="inherits"> inherits <a href="#/v5/api/signer/-%23-Signer">Signer</a></span><div class="anchors"><a class="self" href="#/v5/api/other/hardware/-%23-hw-ledger"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/hardware-wallets/src.ts/ledger.ts#L23">source</a></div></div></h2><p>The <a href="https://www.ledger.com">Ledger Hardware Wallets</a> are a fairly popular brand.</p>
 
-<div class="code-title"><div>Importing in ES6 or TypeScript</div></div><div class="code">import { LedgerSigner } from "@ethersproject/hardware-wallets";</div><a name="/v5/api/other/hardware/-%23-hardware-wallets--hw-ledger--api"></a><a name="/v5/api/other/hardware/"></a><h3 class="show-anchors"><div>API<div class="anchors"><a class="self" href="#/v5/api/other/hardware/-%23-hardware-wallets--hw-ledger--api"></a></div></div></h3>
+<div class="code-title"><div>Importing in ES6 or TypeScript</div></div><div class="code">import { LedgerSigner } from "@ethersproject/hardware-wallets";
+</div><a name="/v5/api/other/hardware/-%23-hardware-wallets--hw-ledger--api"></a><a name="/v5/api/other/hardware/"></a><h3 class="show-anchors"><div>API<div class="anchors"><a class="self" href="#/v5/api/other/hardware/-%23-hardware-wallets--hw-ledger--api"></a></div></div></h3>
 <div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="method">LedgerSigner</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">provider</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">type</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">path</span> <span class="symbol">]</span> <span class="symbol">]</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/other/hardware/-%23-hw-ledger">LedgerSigner</a></span><div class="anchors"></div></div><div class="body"><p>Connects to a Ledger Hardware Wallet. The <i>type</i> if left unspecified is determined by the environment; in node the default is "hid" and in the browser "u2f" is the default. The default Ethereum path is used if <i>path</i> is left unspecified.</p>
 
 </div></div><div class="page-separator"></div><a name="/v5/api/experimental/-%23-experimental"></a><a name="/v5/api/experimental/"></a><h1 class="show-anchors"><div>Experimental<div class="anchors"><a class="self" href="#/v5/api/experimental/-%23-experimental"></a></div></div></h1><p>The <b>Experimental</b> package is used for features that are not ready to be included in the base library. The API should not be considered stable and does not follow <a href="https://semver.org">semver</a> versioning, so applications requiring it should specify the <i>exact version</i> needed.</p>
@@ -3444,29 +3548,32 @@ OTHER OPTIONS
 <a name="/v5/migration/ethers-v4/-%23-migration-v4--bignumber"></a><a name="/v5/migration/ethers-v4/"></a><h2 class="show-anchors"><div>BigNumber<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--bignumber"></a></div></div></h2>
 <a name="/v5/migration/ethers-v4/-%23-migration-v4--bignumber--namespace"></a><a name="/v5/migration/ethers-v4/"></a><h3 class="show-anchors"><div>Namespace<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--bignumber--namespace"></a></div></div></h3><p>Since <a href="#/v5/api/utils/bignumber/">BigNumber</a> is used quite frequently, it has been moved to the top level of the umbrella package.</p>
 
-<div class="code">// v4
-ethers.utils.BigNumber
+<div class="code"><span class="comment">// v4
+</span>ethers.utils.BigNumber
 ethers.utils.BigNumberish
 
-// v5
-ethers.BigNumber
-ethers.BigNumberish</div><a name="/v5/migration/ethers-v4/-%23-migration-v4--bignumber--creating-instances"></a><a name="/v5/migration/ethers-v4/"></a><h3 class="show-anchors"><div>Creating Instances<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--bignumber--creating-instances"></a></div></div></h3><p>The <code class="inline">bigNumberify</code> method was always preferred over the constructor since it could short-circuit an object instantiation for [[BigNumber] objects (since they are immutable). This has been moved to a static <code class="inline">from</code> class method.</p>
+<span class="comment">// v5
+</span>ethers.BigNumber
+ethers.BigNumberish
+</div><a name="/v5/migration/ethers-v4/-%23-migration-v4--bignumber--creating-instances"></a><a name="/v5/migration/ethers-v4/"></a><h3 class="show-anchors"><div>Creating Instances<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--bignumber--creating-instances"></a></div></div></h3><p>The <code class="inline">bigNumberify</code> method was always preferred over the constructor since it could short-circuit an object instantiation for [[BigNumber] objects (since they are immutable). This has been moved to a static <code class="inline">from</code> class method.</p>
 
-<div class="code">// v4
-new ethers.utils.BigNumber(someValue)
+<div class="code"><span class="comment">// v4
+</span>new ethers.utils.BigNumber(someValue)
 ethers.utils.bigNumberify(someValue);
 
-// v5
-// - Constructor is private
-// - Removed `bigNumberify`
-ethers.BigNumber.from(someValue)</div><a name="/v5/migration/ethers-v4/-%23-migration-v4--contracts"></a><a name="/v5/migration/ethers-v4/"></a><h2 class="show-anchors"><div>Contracts<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--contracts"></a></div></div></h2>
-<div class="code">// @TODO</div><a name="/v5/migration/ethers-v4/-%23-migration-v4--errors"></a><a name="/v5/migration/ethers-v4/"></a><h2 class="show-anchors"><div>Errors<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--errors"></a></div></div></h2>
+<span class="comment">// v5
+</span><span class="comment">// - Constructor is private
+</span><span class="comment">// - Removed `bigNumberify`
+</span>ethers.BigNumber.from(someValue)
+</div><a name="/v5/migration/ethers-v4/-%23-migration-v4--contracts"></a><a name="/v5/migration/ethers-v4/"></a><h2 class="show-anchors"><div>Contracts<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--contracts"></a></div></div></h2>
+<div class="code"><span class="comment">// @TODO
+</span></div><a name="/v5/migration/ethers-v4/-%23-migration-v4--errors"></a><a name="/v5/migration/ethers-v4/"></a><h2 class="show-anchors"><div>Errors<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--errors"></a></div></div></h2>
 <a name="/v5/migration/ethers-v4/-%23-migration-v4--errors--namespace"></a><a name="/v5/migration/ethers-v4/"></a><h3 class="show-anchors"><div>Namespace<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--errors--namespace"></a></div></div></h3><p>All errors now belong to the <a href="#/v5/api/utils/logger/-%23-Logger">Logger</a> class and the related functions have been moved to <a href="#/v5/api/utils/logger/-%23-Logger">Logger</a> instances, which can include a per-package version string.</p>
 
 <p>Global error fucntions have been moved <a href="#/v5/api/utils/logger/-%23-Logger">Logger</a> class methods.</p>
 
-<div class="code">// v4
-ethers.errors.UNKNOWN_ERROR
+<div class="code"><span class="comment">// v4
+</span>ethers.errors.UNKNOWN_ERROR
 ethers.errors.*
 
 errors.setCensorship(censorship, permanent)
@@ -3479,8 +3586,8 @@ errors.throwError(message, code, params)
 errors.warn(...)
 errors.info(...)
 
-// v5
-ethers.utils.Logger.errors.UNKNOWN_ERROR
+<span class="comment">// v5
+</span>ethers.utils.Logger.errors.UNKNOWN_ERROR
 ethers.utils.Logger.errors.*
 
 Logger.setCensorship(censorship, permanent)
@@ -3492,31 +3599,34 @@ logger.checkNew(self, kind)
 logger.checkNormalize()
 logger.throwError(message, code, params)
 logger.warn(...)
-logger.info(...)</div><a name="/v5/migration/ethers-v4/-%23-migration-v4--interface"></a><a name="/v5/migration/ethers-v4/"></a><h2 class="show-anchors"><div>Interface<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--interface"></a></div></div></h2><p>The <a href="#/v5/api/utils/abi/interface/">Interface</a> object has undergone the most dramatic changes.</p>
+logger.info(...)
+</div><a name="/v5/migration/ethers-v4/-%23-migration-v4--interface"></a><a name="/v5/migration/ethers-v4/"></a><h2 class="show-anchors"><div>Interface<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--interface"></a></div></div></h2><p>The <a href="#/v5/api/utils/abi/interface/">Interface</a> object has undergone the most dramatic changes.</p>
 
 <p>It is no longer a meta-class and now has methods that simplify handling contract interface operations without the need for object inspection and special edge cases.</p>
 
 <a name="/v5/migration/ethers-v4/-%23-migration-v4--interface--functions"></a><a name="/v5/migration/ethers-v4/"></a><h3 class="show-anchors"><div>Functions<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--interface--functions"></a></div></div></h3>
-<div class="code">// v4 (example: "transfer(address to, uint amount)")
-interface.functions.transfer.encode(to, amount)
+<div class="code"><span class="comment">// v4 (example: "transfer(address to, uint amount)")
+</span>interface.functions.transfer.encode(to, amount)
 interface.functions.transfer.decode(callData)
 
-// v5
-interface.encodeData("transfer", [ to, amount ])
+<span class="comment">// v5
+</span>interface.encodeData("transfer", [ to, amount ])
 interface.decodeResult("transfer", data)
 
-// Or you can use any compatible signature or Fragment objects.
-// Notice that signature normalization is performed for you,
-// e.g. "uint" and "uint256" will be automatically converted
-interface.encodeData("transfer(address,uint)", [ to, amount ])
-interface.decodeResult("transfer(address to, uint256 amount)", data)</div><a name="/v5/migration/ethers-v4/-%23-migration-v4--interface--events"></a><a name="/v5/migration/ethers-v4/"></a><h3 class="show-anchors"><div>Events<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--interface--events"></a></div></div></h3>
-<div class="code">// v4 (example: Transfer(address indexed, address indexed, uint256)
-interface.events.Transfer.encodeTopics(values)
+<span class="comment">// Or you can use any compatible signature or Fragment objects.
+</span><span class="comment">// Notice that signature normalization is performed for you,
+</span><span class="comment">// e.g. "uint" and "uint256" will be automatically converted
+</span>interface.encodeData("transfer(address,uint)", [ to, amount ])
+interface.decodeResult("transfer(address to, uint256 amount)", data)
+</div><a name="/v5/migration/ethers-v4/-%23-migration-v4--interface--events"></a><a name="/v5/migration/ethers-v4/"></a><h3 class="show-anchors"><div>Events<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--interface--events"></a></div></div></h3>
+<div class="code"><span class="comment">// v4 (example: Transfer(address indexed, address indexed, uint256)
+</span>interface.events.Transfer.encodeTopics(values)
 interface.events.Transfer.decode(data, topics)
 
-// v5
-interface.encodeFilterTopics("Transfer", values)
-interface.encodeEventLog("Transfer", data, topics)</div><a name="/v5/migration/ethers-v4/-%23-migration-v4--interface--inspection"></a><a name="/v5/migration/ethers-v4/"></a><h3 class="show-anchors"><div>Inspection<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--interface--inspection"></a></div></div></h3><p>Interrogating properties about a function or event can now (mostly) be done directly on the <a href="#/v5/api/utils/abi/fragments/-%23-Fragment">Fragment</a> object.</p>
+<span class="comment">// v5
+</span>interface.encodeFilterTopics("Transfer", values)
+interface.encodeEventLog("Transfer", data, topics)
+</div><a name="/v5/migration/ethers-v4/-%23-migration-v4--interface--inspection"></a><a name="/v5/migration/ethers-v4/"></a><h3 class="show-anchors"><div>Inspection<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--interface--inspection"></a></div></div></h3><p>Interrogating properties about a function or event can now (mostly) be done directly on the <a href="#/v5/api/utils/abi/fragments/-%23-Fragment">Fragment</a> object.</p>
 
 <div class="code">// v4
 interface.functions.transfer.name
@@ -3567,18 +3677,20 @@ const sighash = interface.getSighash(functionFragment)
 const eventSig = eventFragment.format()
 const topic = interface.getTopic(eventFragment)</div><a name="/v5/migration/ethers-v4/-%23-migration-v4--utilities"></a><a name="/v5/migration/ethers-v4/"></a><h2 class="show-anchors"><div>Utilities<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--utilities"></a></div></div></h2>
 <a name="/v5/migration/ethers-v4/-%23-migration-v4--utilities--renaming"></a><a name="/v5/migration/ethers-v4/"></a><h3 class="show-anchors"><div>Renaming<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--utilities--renaming"></a></div></div></h3>
-<div class="code">// @TODO</div><a name="/v5/migration/ethers-v4/-%23-migration-v4--wallet"></a><a name="/v5/migration/ethers-v4/"></a><h2 class="show-anchors"><div>Wallet<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--wallet"></a></div></div></h2>
+<div class="code"><span class="comment">// @TODO
+</span></div><a name="/v5/migration/ethers-v4/-%23-migration-v4--wallet"></a><a name="/v5/migration/ethers-v4/"></a><h2 class="show-anchors"><div>Wallet<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--wallet"></a></div></div></h2>
 <a name="/v5/migration/ethers-v4/-%23-migration-v4--wallet--mnemonic-phrases"></a><a name="/v5/migration/ethers-v4/"></a><h3 class="show-anchors"><div>Mnemonic Phrases<div class="anchors"><a class="self" href="#/v5/migration/ethers-v4/-%23-migration-v4--wallet--mnemonic-phrases"></a></div></div></h3><p>The <b>mnemonic</b> phrase and related properties have been merged into a single <code class="inline">mnemonic</code> object, which also now includes the <code class="inline">locale</code>.</p>
 
-<div class="code">// v4
-wallet.mnemonic
+<div class="code"><span class="comment">// v4
+</span>wallet.mnemonic
 wallet.path
 
-// v5
-// - Mnemonic phrase and path are a Mnemonic object
-// - Note: wallet.mnemonic is null if there is no mnemonic
-wallet.mnemonic.phrase
-wallet.mnemonic.path</div><div class="page-separator"></div><a name="/v5/testing/-%23-testing"></a><a name="/v5/testing/"></a><h1 class="show-anchors"><div>Testing<div class="anchors"><a class="self" href="#/v5/testing/-%23-testing"></a></div></div></h1><p>Here goes info about testing</p>
+<span class="comment">// v5
+</span><span class="comment">// - Mnemonic phrase and path are a Mnemonic object
+</span><span class="comment">// - Note: wallet.mnemonic is null if there is no mnemonic
+</span>wallet.mnemonic.phrase
+wallet.mnemonic.path
+</div><div class="page-separator"></div><a name="/v5/testing/-%23-testing"></a><a name="/v5/testing/"></a><h1 class="show-anchors"><div>Testing<div class="anchors"><a class="self" href="#/v5/testing/-%23-testing"></a></div></div></h1><p>Here goes info about testing</p>
 
 <div class="page-separator"></div><a name="/v5/contributing/-%23-contributing-and-hacking"></a><a name="/v5/contributing/"></a><h1 class="show-anchors"><div>Contributing and Hacking<div class="anchors"><a class="self" href="#/v5/contributing/-%23-contributing-and-hacking"></a></div></div></h1><p>The ethers.js library is something that I've written out of necessity, and has grown somewhat organically over time.</p>
 
@@ -3798,22 +3910,16 @@ const foo = 4 + 5;
 // &lt;hide&gt;
 foo
 // &lt;/hide&gt;
-//!</div><div class="code-title"><div>Result of Code Example</div></div><div class="code">// &lt;hide&gt;
-const url = require("url");
-// &lt;/hide&gt;
-
-url.parse("https://www.ricmoo.com/").protocol
-//!
-
+//!</div><div class="code-title"><div>Result of Code Example</div></div><div class="code">url.parse("https://www.ricmoo.com/").protocol
+<span class="result ok">// 'https:'
+</span>
 url.parse(45)
-//! error
-
-// You want to assign (doesn't emit eval) AND display the value
-const foo = 4 + 5;
-// &lt;hide&gt;
-foo
-// &lt;/hide&gt;
-//!</div><a name="/v5/documentation/-%23-flatworm-docs--flatworm--code--languages"></a><a name="/v5/documentation/"></a><h3 class="show-anchors"><div>Languages<div class="anchors"><a class="self" href="#/v5/documentation/-%23-flatworm-docs--flatworm--code--languages"></a></div></div></h3><p>The language can be specified using the <a href="#/v5/documentation/-%23-flatworm--ext-lang">@lang extension</a>.</p>
+<span class="result error">// Error: The "url" argument must be of type string. Received type number
+</span>
+<span class="comment">// You want to assign (doesn't emit eval) AND display the value
+</span>const foo = 4 + 5;
+<span class="result ok">// 9
+</span></div><a name="/v5/documentation/-%23-flatworm-docs--flatworm--code--languages"></a><a name="/v5/documentation/"></a><h3 class="show-anchors"><div>Languages<div class="anchors"><a class="self" href="#/v5/documentation/-%23-flatworm-docs--flatworm--code--languages"></a></div></div></h3><p>The language can be specified using the <a href="#/v5/documentation/-%23-flatworm--ext-lang">@lang extension</a>.</p>
 
 <table class="table minimal"><tr><td align="center"><b>Language</b></td><td align="center"><b>Notes</b></td><td class="fix">&nbsp;</td></tr><tr><td align="center">javascript</td><td align="left">Syntax highlights and <a href="#/v5/documentation/-%23-flatworm--code-eval">evaluates</a> the JavaScipt</td><td class="fix">&nbsp;</td></tr><tr><td align="center">script</td><td align="left">Same as <code class="inline">javascript</code>, but does not evaluate the results</td><td class="fix">&nbsp;</td></tr><tr><td align="center">shell</td><td align="left">Shell scripts or command-line</td><td class="fix">&nbsp;</td></tr><tr><td align="center">text</td><td align="left">Plain text with no syntax highlighting</td><td class="fix">&nbsp;</td></tr></table><a name="/v5/documentation/-%23-flatworm--table"></a><a name="/v5/documentation/-%23-flatworm-docs--flatworm--table"></a><a name="/v5/documentation/"></a><h2 class="show-anchors"><div>Tables<div class="anchors"><a class="self" href="#/v5/documentation/-%23-flatworm--table"></a></div></div></h2><p>The table directive consumes the entire body up until the next directive. To terminate a table early to begin a text block, use a <b>_null:</b> directive.</p>
 
@@ -3895,7 +4001,7 @@ $bottom: This just represents an example of
         <div class="nav previous"><!--PREV_LINK--></div>
         <div class="nav next"><!--NEXT_LINK--></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on June 12, 2020, 3:31am.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Last modified on June 12, 2020, 7:18pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
   </body>

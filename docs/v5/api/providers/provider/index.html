@@ -27,30 +27,78 @@
 
 </div></div><a name="Provider-getTransactionCount"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getTransactionCount</span><span class="symbol">(</span> <span class="param">address</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">blockTag</span> = <span class="param">latest</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; number &gt;</span><div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider-getTransactionCount"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/base-provider.ts#L698">source</a></div></div><div class="body"><p>Returns the number of transactions <i>address</i> has ever <b>sent</b>, as of <i>blockTag</i>. This value is required to be the nonce for the next transaction from <i>address</i> sent to the network.</p>
 
-</div></div><div class="code-title"><div>Account Examples</div></div><div class="code">// Get the balance for an account...
-provider.getBalance("ricmoo.firefly.eth");
-//!
-
-// Get the code for a contract...
-provider.getCode("registrar.firefly.eth");
-//!
-
-// Get the storage value at position 0...
-provider.getStorageAt("registrar.firefly.eth", 0)
-//!
-
-// Get transaction count of an account...
-provider.getTransactionCount("ricmoo.firefly.eth");
-//!</div><a name="Provider--block-methods"></a><a name="Provider--Provider--block-methods"></a><h2 class="show-anchors"><div>Blocks Methods<div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider--block-methods"></a></div></div></h2>
+</div></div><div class="code-title"><div>Account Examples</div></div><div class="code"><span class="comment">// Get the balance for an account...
+</span>provider.getBalance("ricmoo.firefly.eth");
+<span class="result ok">// { Promise: { BigNumber: "955864037352077165" } }
+</span>
+<span class="comment">// Get the code for a contract...
+</span>provider.getCode("registrar.firefly.eth");
+<span class="result ok">// { Promise: '0x606060405236156100885763ffffffff60e060020a60003504166369fe0e2d81146100fa578063704b6c021461010f57806379502c551461012d578063bed866f614610179578063c37067fa1461019e578063c66485b2146101ab578063d80528ae146101c9578063ddca3f43146101f7578063f2c298be14610219578063f3fef3a314610269575b6100f85b6000808052600760209081527f6d5257204ebe7d88fd91ae87941cb2dd9d8062b64ae5a2bd2d28ec40b9fbf6df80543490810190915560408051918252517fdb7750418f9fa390aaf85d881770065aa4adbe46343bcff4ae573754c829d9af929181900390910190a25b565b005b341561010257fe5b6100f860043561028a565b005b341561011757fe5b6100f8600160a060020a03600435166102ec565b005b341561013557fe5b61013d610558565b60408051600160a060020a0396871681526020810195909552928516848401526060840191909152909216608082015290519081900360a00190f35b341561018157fe5b61018c600435610580565b60408051918252519081900360200190f35b6100f8600435610595565b005b34156101b357fe5b6100f8600160a060020a03600435166105e6565b005b34156101d157fe5b6101d9610676565b60408051938452602084019290925282820152519081900360600190f35b34156101ff57fe5b61018c61068d565b60408051918252519081900360200190f35b6100f8600480803590602001908201803590602001908080601f0160208091040260200160405190810160405280939291908181526020018383808284375094965061069495505050505050565b005b341561027157fe5b6100f8600160a060020a0360043516602435610ab2565b005b60025433600160a060020a039081169116146102a65760006000fd5b600454604080519182526020820183905280517f854231545a00e13c316c82155f2b8610d638e9ff6ebc4930676f84a5af08a49a9281900390910190a160048190555b50565b60025433600160a060020a039081169116146103085760006000fd5b60025460408051600160a060020a039283168152918316602083015280517fbadc9a52979e89f78b7c58309537410c5e51d0f63a0a455efe8d61d2b474e6989281900390910190a16002805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a038381169190911790915560008054604080516020908101849052815160e060020a6302571be30281527f91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e26004820152915192909416936302571be39360248084019492938390030190829087803b15156103e957fe5b60325a03f115156103f657fe5b50505060405180519050600160a060020a0316631e83409a826000604051602001526040518263ffffffff1660e060020a0281526004018082600160a060020a0316600160a060020a03168152602001915050602060405180830381600087803b151561045f57fe5b60325a03f1151561046c57fe5b50506040805160008054600354602093840183905284517f0178b8bf00000000000000000000000000000000000000000000000000000000815260048101919091529351600160a060020a039091169450630178b8bf9360248082019493918390030190829087803b15156104dd57fe5b60325a03f115156104ea57fe5b505060408051805160035460025460e860020a62d5fa2b0284526004840191909152600160a060020a03908116602484015292519216925063d5fa2b0091604480830192600092919082900301818387803b151561054457fe5b60325a03f1151561055157fe5b5050505b50565b600054600354600254600454600154600160a060020a039485169492831692165b9091929394565b6000818152600760205260409020545b919050565b6000818152600760209081526040918290208054349081019091558251908152915183927fdb7750418f9fa390aaf85d881770065aa4adbe46343bcff4ae573754c829d9af92908290030190a25b50565b60025433600160a060020a039081169116146106025760006000fd5b60015460408051600160a060020a039283168152918316602083015280517f279875333405c968e401e3bc4e71d5f8e48728c90f4e8180ce28f74efb5669209281900390910190a16001805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0383161790555b50565b600654600554600160a060020a033016315b909192565b6004545b90565b80516001820190600080808060048510806106af5750601485115b156106ba5760006000fd5b600093505b8484101561072a57855160ff16925060618310806106e05750607a8360ff16115b80156106fc575060308360ff1610806106fc575060398360ff16115b5b801561070d57508260ff16602d14155b156107185760006000fd5b6001909501945b6001909301926106bf565b60045434101561073a5760006000fd5b866040518082805190602001908083835b6020831061076a5780518252601f19909201916020918201910161074b565b51815160209384036101000a60001901801990921691161790526040805192909401829003822060035483528282018190528451928390038501832060008054948401819052865160e060020a6302571be3028152600481018390529651929a509098509650600160a060020a0390921694506302571be393602480820194509192919082900301818787803b15156107ff57fe5b60325a03f1151561080c57fe5b505060405151600160a060020a031691909114905061082b5760006000fd5b60008054600354604080517f06ab5923000000000000000000000000000000000000000000000000000000008152600481019290925260248201869052600160a060020a03308116604484015290519216926306ab59239260648084019382900301818387803b151561089a57fe5b60325a03f115156108a757fe5b505060008054600154604080517f1896f70a00000000000000000000000000000000000000000000000000000000815260048101879052600160a060020a0392831660248201529051919092169350631896f70a9260448084019391929182900301818387803b151561091657fe5b60325a03f1151561092357fe5b50506001546040805160e860020a62d5fa2b02815260048101859052600160a060020a033381166024830152915191909216925063d5fa2b009160448082019260009290919082900301818387803b151561097a57fe5b60325a03f1151561098757fe5b505060008054604080517f5b0fc9c300000000000000000000000000000000000000000000000000000000815260048101869052600160a060020a0333811660248301529151919092169350635b0fc9c39260448084019391929182900301818387803b15156109f357fe5b60325a03f11515610a0057fe5b505060058054349081019091556006805460010190556000838152600760209081526040918290208054840190558151600160a060020a03331681529081019290925280518493507f179ef3319e6587f6efd3157b34c8b357141528074bcb03f9903589876168fa149281900390910190a260408051348152905182917fdb7750418f9fa390aaf85d881770065aa4adbe46343bcff4ae573754c829d9af919081900360200190a25b50505050505050565b60025433600160a060020a03908116911614610ace5760006000fd5b604051600160a060020a0383169082156108fc029083906000818181858888f193505050501515610aff5760006000fd5b60408051600160a060020a03841681526020810183905281517fac375770417e1cb46c89436efcf586a74d0298fee9838f66a38d40c65959ffda929181900390910190a15b50505600a165627a7a723058205c3628c01dc80233f51979d91a76cec2a25d84e86c9838d34672734ca2232b640029' }
+</span>
+<span class="comment">// Get the storage value at position 0...
+</span>provider.getStorageAt("registrar.firefly.eth", 0)
+<span class="result ok">// { Promise: '0x000000000000000000000000314159265dd8dbb310642f98f50c066173c1259b' }
+</span>
+<span class="comment">// Get transaction count of an account...
+</span>provider.getTransactionCount("ricmoo.firefly.eth");
+<span class="result ok">// { Promise: 668 }
+</span></div><a name="Provider--block-methods"></a><a name="Provider--Provider--block-methods"></a><h2 class="show-anchors"><div>Blocks Methods<div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider--block-methods"></a></div></div></h2>
 <a name="Provider-getBlock"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getBlock</span><span class="symbol">(</span> <span class="param">block</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="/v5/api/providers/types/#providers-Block">Block</a> &gt;</span><div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider-getBlock"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/base-provider.ts#L925">source</a></div></div><div class="body"><p>Get the <i>block</i> from the network, where the <code class="inline">result.transactions</code> is a list of transaction hashes.</p>
 
 </div></div><a name="Provider-getBlockWithTransactions"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getBlockWithTransactions</span><span class="symbol">(</span> <span class="param">block</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="/v5/api/providers/types/#providers-BlockWithTransactions">BlockWithTransactions</a> &gt;</span><div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider-getBlockWithTransactions"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/base-provider.ts#L929">source</a></div></div><div class="body"><p>Get the <i>block</i> from the network, where the <code class="inline">result.transactions</code> is an Array of <a href="/v5/api/providers/types/#providers-TransactionResponse">TransactionResponse</a> objects.</p>
 
 </div></div><div class="code-title"><div>Block Examples</div></div><div class="code">provider.getBlock(100004)
-//!
-
+<span class="result ok">// { Promise: {
+</span><span class="result ok">//   difficulty: 3849295379889,
+</span><span class="result ok">//   extraData: '0x476574682f76312e302e312d39383130306634372f6c696e75782f676f312e34',
+</span><span class="result ok">//   gasLimit: { BigNumber: "3141592" },
+</span><span class="result ok">//   gasUsed: { BigNumber: "21000" },
+</span><span class="result ok">//   hash: '0xf93283571ae16dcecbe1816adc126954a739350cd1523a1559eabeae155fbb63',
+</span><span class="result ok">//   miner: '0x909755D480A27911cB7EeeB5edB918fae50883c0',
+</span><span class="result ok">//   nonce: '0x1a455280001cc3f8',
+</span><span class="result ok">//   number: 100004,
+</span><span class="result ok">//   parentHash: '0x73d88d376f6b4d232d70dc950d9515fad3b5aa241937e362fdbfd74d1c901781',
+</span><span class="result ok">//   timestamp: 1439799168,
+</span><span class="result ok">//   transactions: [
+</span><span class="result ok">//     '0x6f12399cc2cb42bed5b267899b08a847552e8c42a64f5eb128c1bcbd1974fb0c'
+</span><span class="result ok">//   ]
+</span><span class="result ok">// } }
+</span>
 provider.getBlockWithTransactions(100004)
-//!</div><a name="Provider--ens-methods"></a><a name="Provider--Provider--ens-methods"></a><h2 class="show-anchors"><div>Ethereum Naming Service (ENS) Methods<div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider--ens-methods"></a></div></div></h2><p>The <a href="https://ens.domains/">Ethereum Naming Service</a> (ENS) allows a short and easy-to-remember ENS Name to be atached to any set of keys and values.</p>
+<span class="result ok">// { Promise: {
+</span><span class="result ok">//   difficulty: 3849295379889,
+</span><span class="result ok">//   extraData: '0x476574682f76312e302e312d39383130306634372f6c696e75782f676f312e34',
+</span><span class="result ok">//   gasLimit: { BigNumber: "3141592" },
+</span><span class="result ok">//   gasUsed: { BigNumber: "21000" },
+</span><span class="result ok">//   hash: '0xf93283571ae16dcecbe1816adc126954a739350cd1523a1559eabeae155fbb63',
+</span><span class="result ok">//   miner: '0x909755D480A27911cB7EeeB5edB918fae50883c0',
+</span><span class="result ok">//   nonce: '0x1a455280001cc3f8',
+</span><span class="result ok">//   number: 100004,
+</span><span class="result ok">//   parentHash: '0x73d88d376f6b4d232d70dc950d9515fad3b5aa241937e362fdbfd74d1c901781',
+</span><span class="result ok">//   timestamp: 1439799168,
+</span><span class="result ok">//   transactions: [
+</span><span class="result ok">//     {
+</span><span class="result ok">//       blockHash: '0xf93283571ae16dcecbe1816adc126954a739350cd1523a1559eabeae155fbb63',
+</span><span class="result ok">//       blockNumber: 100004,
+</span><span class="result ok">//       chainId: 0,
+</span><span class="result ok">//       confirmations: 10153796,
+</span><span class="result ok">//       creates: null,
+</span><span class="result ok">//       data: '0x',
+</span><span class="result ok">//       from: '0xcf00A85f3826941e7A25BFcF9Aac575d40410852',
+</span><span class="result ok">//       gasLimit: { BigNumber: "90000" },
+</span><span class="result ok">//       gasPrice: { BigNumber: "54588778004" },
+</span><span class="result ok">//       hash: '0x6f12399cc2cb42bed5b267899b08a847552e8c42a64f5eb128c1bcbd1974fb0c',
+</span><span class="result ok">//       nonce: 25,
+</span><span class="result ok">//       r: '0xb23adc880d3735e4389698dddc953fb02f1fa9b57e84d3510a2a4b3597ac2486',
+</span><span class="result ok">//       s: '0x4e856f95c4e2828933246fb4765a5bfd2ca5959840643bef0e80b4e3a243d064',
+</span><span class="result ok">//       to: '0xD9666150A9dA92d9108198a4072970805a8B3428',
+</span><span class="result ok">//       transactionIndex: 0,
+</span><span class="result ok">//       v: 27,
+</span><span class="result ok">//       value: { BigNumber: "5000000000000000000" }
+</span><span class="result ok">//     }
+</span><span class="result ok">//   ]
+</span><span class="result ok">// } }
+</span></div><a name="Provider--ens-methods"></a><a name="Provider--Provider--ens-methods"></a><h2 class="show-anchors"><div>Ethereum Naming Service (ENS) Methods<div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider--ens-methods"></a></div></div></h2><p>The <a href="https://ens.domains/">Ethereum Naming Service</a> (ENS) allows a short and easy-to-remember ENS Name to be atached to any set of keys and values.</p>
 
 <p>One of the most common uses for this is to use a simple name to refer to an <a href="/v5/api/utils/address/#address">Ethereum Address</a>.</p>
 
@@ -62,13 +110,14 @@ provider.getBlockWithTransactions(100004)
 
 </div></div><a name="Provider-ResolveName"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">resolveName</span><span class="symbol">(</span> <span class="param">name</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="/v5/api/utils/address/#address">Address</a> &gt; &gt;</span><div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider-ResolveName"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/base-provider.ts#L1060">source</a></div></div><div class="body"><p>Looks up the address of <i>name</i>. If the name is not owned, or does not have a <i>Resolver</i> configured, or the <i>Resolver</i> does not have an address configured, <code class="inline">null</code> is returned.</p>
 
-</div></div><div class="code-title"><div>ENS Examples</div></div><div class="code">// Reverse lookup of an ENS by address...
-provider.lookupAddress("0x6fC21092DA55B392b045eD78F4732bff3C580e2c");
-//!
-
-// Lookup an address of an ENS name...
-provider.resolveName("ricmoo.firefly.eth");
-//!</div><a name="Provider--log-methods"></a><a name="Provider--Provider--log-methods"></a><h2 class="show-anchors"><div>Logs Methods<div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider--log-methods"></a></div></div></h2>
+</div></div><div class="code-title"><div>ENS Examples</div></div><div class="code"><span class="comment">// Reverse lookup of an ENS by address...
+</span>provider.lookupAddress("0x6fC21092DA55B392b045eD78F4732bff3C580e2c");
+<span class="result ok">// { Promise: 'registrar.firefly.eth' }
+</span>
+<span class="comment">// Lookup an address of an ENS name...
+</span>provider.resolveName("ricmoo.firefly.eth");
+<span class="result ok">// { Promise: '0x8ba1f109551bD432803012645Ac136ddd64DBA72' }
+</span></div><a name="Provider--log-methods"></a><a name="Provider--Provider--log-methods"></a><h2 class="show-anchors"><div>Logs Methods<div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider--log-methods"></a></div></div></h2>
 <a name="Provider-getLogs"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getLogs</span><span class="symbol">(</span> <span class="param">filter</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; Array&lt; <a href="/v5/api/providers/types/#providers-Log">Log</a> &gt; &gt;</span><div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider-getLogs"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/base-provider.ts#L1005">source</a></div></div><div class="body"><p>Returns the Array of <a href="/v5/api/providers/types/#providers-Log">Log</a> matching the <i>filter</i>.</p>
 
 <p>Keep in mind that many backends will discard old events, and that requests which are too broad may get dropped as they require too many resources to execute the query.</p>
@@ -80,28 +129,27 @@ provider.resolveName("ricmoo.firefly.eth");
 
 </div></div><a name="Provider-getGasPrice"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getGasPrice</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="/v5/api/utils/bignumber/">BigNumber</a> &gt;</span><div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider-getGasPrice"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/base-provider.ts#L684">source</a></div></div><div class="body"><p>Returns a <i>best guess</i> of the <a href="/v5/concepts/gas/#gas-price">Gas Price</a> to use in a transaction.</p>
 
-</div></div><div class="code-title"><div>Network Status Examples</div></div><div class="code">// The network information
-provider.getNetwork()
-// &lt;hide&gt;
-//!
-network = utils.shallowCopy(_)
-delete network._defaultProvider
-network
-// &lt;/hide&gt;
-//!
-
-// The current block number
-provider.getBlockNumber()
-//!
-
-// Get the current suggested gas price (in wei)...
-gasPrice = await provider.getGasPrice()
-//! async gasPrice
-
-// ...often this gas price is easier to understand or
-// display to the user in gwei (giga-wei, or 1e9 wei)
-utils.formatUnits(gasPrice, "gwei")
-//!</div><a name="Provider--transaction-methods"></a><a name="Provider--Provider--transaction-methods"></a><h2 class="show-anchors"><div>Transactions Methods<div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider--transaction-methods"></a></div></div></h2>
+</div></div><div class="code-title"><div>Network Status Examples</div></div><div class="code"><span class="comment">// The network information
+</span>provider.getNetwork()
+<span class="result ok">// {
+</span><span class="result ok">//   chainId: 1,
+</span><span class="result ok">//   ensAddress: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
+</span><span class="result ok">//   name: 'homestead'
+</span><span class="result ok">// }
+</span>
+<span class="comment">// The current block number
+</span>provider.getBlockNumber()
+<span class="result ok">// { Promise: 10253799 }
+</span>
+<span class="comment">// Get the current suggested gas price (in wei)...
+</span>gasPrice = await provider.getGasPrice()
+<span class="result ok">// { BigNumber: "19470000000" }
+</span>
+<span class="comment">// ...often this gas price is easier to understand or
+</span><span class="comment">// display to the user in gwei (giga-wei, or 1e9 wei)
+</span>utils.formatUnits(gasPrice, "gwei")
+<span class="result ok">// '19.47'
+</span></div><a name="Provider--transaction-methods"></a><a name="Provider--Provider--transaction-methods"></a><h2 class="show-anchors"><div>Transactions Methods<div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider--transaction-methods"></a></div></div></h2>
 <a name="Provider-call"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">call</span><span class="symbol">(</span> <span class="param">transaction</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">blockTag</span> = <span class="param">latest</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="/v5/api/utils/bytes/#DataHexString">DataHexString</a> &gt; &gt;</span><div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider-call"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/base-provider.ts#L825">source</a></div></div><div class="body"><p>Returns the result of executing the <i>transaction</i>, using <i>call</i>. A call does not require any ether, but cannot change any state. This is useful for calling gettings on Contracts.</p>
 
 </div></div><a name="Provider-estimateGas"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">estimateGas</span><span class="symbol">(</span> <span class="param">transaction</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="/v5/api/utils/bignumber/">BigNumber</a> &gt;</span><div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider-estimateGas"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/providers/src.ts/base-provider.ts#L834">source</a></div></div><div class="body"><p>Returns an estimate of the amount of gas that would be required to submit <i>transaction</i> to the network.</p>
@@ -146,39 +194,33 @@ utils.formatUnits(gasPrice, "gwei")
 
 </div></div><p>In addition to transaction and filter events, there are several named events.</p>
 
-<table class="table full"><tr><td align="center" width="16%"><b>Event Name</b></td><td align="center" colspan="2" width="28%"><b>Arguments</b></td><td align="center" colspan="4" width="56%"><b>Description</b></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"block"</code></td><td align="center" colspan="2" width="28%"><i>blockNumber</i></td><td align="left" colspan="4" width="56%">emitted when a new block is mined</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"error"</code></td><td align="center" colspan="2" width="28%"><i>error</i></td><td align="left" colspan="4" width="56%">emitted on any error</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"pending"</code></td><td align="center" colspan="2" width="28%"><i>pendingTransaction</i></td><td align="left" colspan="4" width="56%">emitted when a new transaction enters the memory pool; only certain providers offer this event and may require running your own node for reliable results</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"willPoll"</code></td><td align="center" colspan="2" width="28%"><i>pollId</i></td><td align="left" colspan="4" width="56%">emitted prior to a polling loop is about to begin; <i>(very rarely used by most developers)</i></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"poll"</code></td><td align="center" colspan="2" width="28%"><i>pollId</i>, <i>blockNumber</i></td><td align="left" colspan="4" width="56%">emitted during each poll cycle after `blockNumber` is updated (if changed) and before any other events (if any) are emitted during the poll loop; <i>(very rarely used by most developers)</i></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"didPoll"</code></td><td align="center" colspan="2" width="28%"><i>pollId</i></td><td align="left" colspan="4" width="56%">emitted after all events from a polling loop are emitted; <i>(very rarely used by most developers)</i></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"debug"</code></td><td align="center" colspan="2" width="28%">provider dependent</td><td align="left" colspan="4" width="56%">each Provider may use this to emit useful debugging information and the format is up to the developer; <i>(very rarely used by most developers)</i></td><td class="fix">&nbsp;</td></tr><tr><td class="table-title" colspan="7">Named Provider Events</td><td class="fix">&nbsp;</td></tr></table><div class="code-title"><div>Events Example</div></div><div class="code">// &lt;hide&gt;
-const txHash = utils.id("dummy-data");
-const myAddress = ethers.constants.HashZero;
-const myOtherAddress = ethers.constants.HashZero;
-// &lt;/hide&gt;
-
-provider.on("block", (blockNumber) =&gt; {
-    // Emitted on every block change
-})
+<table class="table full"><tr><td align="center" width="16%"><b>Event Name</b></td><td align="center" colspan="2" width="28%"><b>Arguments</b></td><td align="center" colspan="4" width="56%"><b>Description</b></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"block"</code></td><td align="center" colspan="2" width="28%"><i>blockNumber</i></td><td align="left" colspan="4" width="56%">emitted when a new block is mined</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"error"</code></td><td align="center" colspan="2" width="28%"><i>error</i></td><td align="left" colspan="4" width="56%">emitted on any error</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"pending"</code></td><td align="center" colspan="2" width="28%"><i>pendingTransaction</i></td><td align="left" colspan="4" width="56%">emitted when a new transaction enters the memory pool; only certain providers offer this event and may require running your own node for reliable results</td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"willPoll"</code></td><td align="center" colspan="2" width="28%"><i>pollId</i></td><td align="left" colspan="4" width="56%">emitted prior to a polling loop is about to begin; <i>(very rarely used by most developers)</i></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"poll"</code></td><td align="center" colspan="2" width="28%"><i>pollId</i>, <i>blockNumber</i></td><td align="left" colspan="4" width="56%">emitted during each poll cycle after `blockNumber` is updated (if changed) and before any other events (if any) are emitted during the poll loop; <i>(very rarely used by most developers)</i></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"didPoll"</code></td><td align="center" colspan="2" width="28%"><i>pollId</i></td><td align="left" colspan="4" width="56%">emitted after all events from a polling loop are emitted; <i>(very rarely used by most developers)</i></td><td class="fix">&nbsp;</td></tr><tr><td align="center" width="16%"><code class="inline">"debug"</code></td><td align="center" colspan="2" width="28%">provider dependent</td><td align="left" colspan="4" width="56%">each Provider may use this to emit useful debugging information and the format is up to the developer; <i>(very rarely used by most developers)</i></td><td class="fix">&nbsp;</td></tr><tr><td class="table-title" colspan="7">Named Provider Events</td><td class="fix">&nbsp;</td></tr></table><div class="code-title"><div>Events Example</div></div><div class="code">provider.on("block", (blockNumber) =&gt; {
+<span class="comment">    // Emitted on every block change
+</span>})
 
 
 provider.once(txHash, (transaction) =&gt; {
-    // Emitted when the transaction has been mined
-})
+<span class="comment">    // Emitted when the transaction has been mined
+</span>})
 
 
-// This filter could also be generated with the Contract or
-// Interface API. If address is not specified, any address
-// matches and if topics is not specified, any log matches
-filter = {
+<span class="comment">// This filter could also be generated with the Contract or
+</span><span class="comment">// Interface API. If address is not specified, any address
+</span><span class="comment">// matches and if topics is not specified, any log matches
+</span>filter = {
     address: "dai.tokens.ethers.eth",
     topics: [
         utils.id("Transfer(address,address,uint256")
     ]
 }
 provider.on(filter, (log, event) =&gt; {
-    // Emitted whenever a DAI token transfer occurs
-})
+<span class="comment">    // Emitted whenever a DAI token transfer occurs
+</span>})
 
 
-// Notice this is an array of topic-sets and is identical to
-// using a filter with no address (i.e. match any address)
-topicSets = [
+<span class="comment">// Notice this is an array of topic-sets and is identical to
+</span><span class="comment">// using a filter with no address (i.e. match any address)
+</span>topicSets = [
     utils.id("Transfer(address,address,uint256"),
     null,
     [
@@ -187,23 +229,19 @@ topicSets = [
     ]
 ]
 provider.on(topicSets, (log, event) =&gt; {
-    // Emitted any token is sent TO either address
-})
+<span class="comment">    // Emitted any token is sent TO either address
+</span>})
 
 
 provider.on("pending", (tx) =&gt; {
-    // Emitted when any new pending transaction is noticed
-});
+<span class="comment">    // Emitted when any new pending transaction is noticed
+</span>});
 
 
 provider.on("error", (tx) =&gt; {
-    // Emitted when any error occurs
-});
-
-// &lt;hide&gt;
-// Make sure our documentation builds without waiting forever
-provider.removeAllListeners()
-// &lt;/hide&gt;</div><a name="Provider--inspection-methods"></a><a name="Provider--Provider--inspection-methods"></a><h2 class="show-anchors"><div>Inspection Methods<div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider--inspection-methods"></a></div></div></h2>
+<span class="comment">    // Emitted when any error occurs
+</span>});
+</div><a name="Provider--inspection-methods"></a><a name="Provider--Provider--inspection-methods"></a><h2 class="show-anchors"><div>Inspection Methods<div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider--inspection-methods"></a></div></div></h2>
 <a name="Provider-isProvider"></a><div class="property show-anchors"><div class="signature"><span class="path">Provider</span><span class="symbol">.</span><span class="method">isProvider</span><span class="symbol">(</span> <span class="param">object</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">boolean</span><div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider-isProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/abstract-provider/src.ts/index.ts#L269">source</a></div></div><div class="body"><p>Returns true if and only if <i>object</i> is a Provider.</p>
 
 </div></div>
@@ -212,7 +250,7 @@ provider.removeAllListeners()
         <div class="nav previous"><a href="/v5/api/providers/"><span class="arrow">&larr;</span>Providers</a></div>
         <div class="nav next"><a href="/v5/api/providers/jsonrpc-provider/">JsonRpcProvider<span class="arrow">&rarr;</span></a></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on June 12, 2020, 3:31am.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Last modified on June 12, 2020, 7:17pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
   </body>

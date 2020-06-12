@@ -414,7 +414,7 @@
   "ethers.js/html/migration.html#waiting-for-transactions":
     { "tag": "" },
   "ethers.js/html/notes.html":
-    { "tag": "/v5/" },
+    { "path": "/v5/" },
   "ethers.js/html/notes.html#checksum-address":
     { "tag": "address-formats" },
   "ethers.js/html/notes.html#contributing":

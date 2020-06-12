@@ -263,7 +263,4 @@ module.exports = {
       "link-wiki-overflow": { name: "overflow", url: "https:/\/en.wikipedia.org/wiki/Integer_overflow" },
       "link-wiki-underflow": { name: "arithmetic underflow", url: "https:/\/en.wikipedia.org/wiki/Arithmetic_underflow" },
   },
-
-  redirectLinks: JSON.parse(fs.readFileSync(resolve(__dirname, "redirects.json"))),
-
 };

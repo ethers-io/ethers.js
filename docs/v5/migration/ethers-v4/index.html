@@ -20,29 +20,32 @@
 <a name="migration-v4--bignumber"></a><h2 class="show-anchors"><div>BigNumber<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--bignumber"></a></div></div></h2>
 <a name="migration-v4--bignumber--namespace"></a><h3 class="show-anchors"><div>Namespace<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--bignumber--namespace"></a></div></div></h3><p>Since <a href="/v5/api/utils/bignumber/">BigNumber</a> is used quite frequently, it has been moved to the top level of the umbrella package.</p>
 
-<div class="code">// v4
-ethers.utils.BigNumber
+<div class="code"><span class="comment">// v4
+</span>ethers.utils.BigNumber
 ethers.utils.BigNumberish
 
-// v5
-ethers.BigNumber
-ethers.BigNumberish</div><a name="migration-v4--bignumber--creating-instances"></a><h3 class="show-anchors"><div>Creating Instances<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--bignumber--creating-instances"></a></div></div></h3><p>The <code class="inline">bigNumberify</code> method was always preferred over the constructor since it could short-circuit an object instantiation for [[BigNumber] objects (since they are immutable). This has been moved to a static <code class="inline">from</code> class method.</p>
+<span class="comment">// v5
+</span>ethers.BigNumber
+ethers.BigNumberish
+</div><a name="migration-v4--bignumber--creating-instances"></a><h3 class="show-anchors"><div>Creating Instances<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--bignumber--creating-instances"></a></div></div></h3><p>The <code class="inline">bigNumberify</code> method was always preferred over the constructor since it could short-circuit an object instantiation for [[BigNumber] objects (since they are immutable). This has been moved to a static <code class="inline">from</code> class method.</p>
 
-<div class="code">// v4
-new ethers.utils.BigNumber(someValue)
+<div class="code"><span class="comment">// v4
+</span>new ethers.utils.BigNumber(someValue)
 ethers.utils.bigNumberify(someValue);
 
-// v5
-// - Constructor is private
-// - Removed `bigNumberify`
-ethers.BigNumber.from(someValue)</div><a name="migration-v4--contracts"></a><h2 class="show-anchors"><div>Contracts<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--contracts"></a></div></div></h2>
-<div class="code">// @TODO</div><a name="migration-v4--errors"></a><h2 class="show-anchors"><div>Errors<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--errors"></a></div></div></h2>
+<span class="comment">// v5
+</span><span class="comment">// - Constructor is private
+</span><span class="comment">// - Removed `bigNumberify`
+</span>ethers.BigNumber.from(someValue)
+</div><a name="migration-v4--contracts"></a><h2 class="show-anchors"><div>Contracts<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--contracts"></a></div></div></h2>
+<div class="code"><span class="comment">// @TODO
+</span></div><a name="migration-v4--errors"></a><h2 class="show-anchors"><div>Errors<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--errors"></a></div></div></h2>
 <a name="migration-v4--errors--namespace"></a><h3 class="show-anchors"><div>Namespace<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--errors--namespace"></a></div></div></h3><p>All errors now belong to the <a href="/v5/api/utils/logger/#Logger">Logger</a> class and the related functions have been moved to <a href="/v5/api/utils/logger/#Logger">Logger</a> instances, which can include a per-package version string.</p>
 
 <p>Global error fucntions have been moved <a href="/v5/api/utils/logger/#Logger">Logger</a> class methods.</p>
 
-<div class="code">// v4
-ethers.errors.UNKNOWN_ERROR
+<div class="code"><span class="comment">// v4
+</span>ethers.errors.UNKNOWN_ERROR
 ethers.errors.*
 
 errors.setCensorship(censorship, permanent)
@@ -55,8 +58,8 @@ errors.throwError(message, code, params)
 errors.warn(...)
 errors.info(...)
 
-// v5
-ethers.utils.Logger.errors.UNKNOWN_ERROR
+<span class="comment">// v5
+</span>ethers.utils.Logger.errors.UNKNOWN_ERROR
 ethers.utils.Logger.errors.*
 
 Logger.setCensorship(censorship, permanent)
@@ -68,31 +71,34 @@ logger.checkNew(self, kind)
 logger.checkNormalize()
 logger.throwError(message, code, params)
 logger.warn(...)
-logger.info(...)</div><a name="migration-v4--interface"></a><h2 class="show-anchors"><div>Interface<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--interface"></a></div></div></h2><p>The <a href="/v5/api/utils/abi/interface/">Interface</a> object has undergone the most dramatic changes.</p>
+logger.info(...)
+</div><a name="migration-v4--interface"></a><h2 class="show-anchors"><div>Interface<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--interface"></a></div></div></h2><p>The <a href="/v5/api/utils/abi/interface/">Interface</a> object has undergone the most dramatic changes.</p>
 
 <p>It is no longer a meta-class and now has methods that simplify handling contract interface operations without the need for object inspection and special edge cases.</p>
 
 <a name="migration-v4--interface--functions"></a><h3 class="show-anchors"><div>Functions<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--interface--functions"></a></div></div></h3>
-<div class="code">// v4 (example: "transfer(address to, uint amount)")
-interface.functions.transfer.encode(to, amount)
+<div class="code"><span class="comment">// v4 (example: "transfer(address to, uint amount)")
+</span>interface.functions.transfer.encode(to, amount)
 interface.functions.transfer.decode(callData)
 
-// v5
-interface.encodeData("transfer", [ to, amount ])
+<span class="comment">// v5
+</span>interface.encodeData("transfer", [ to, amount ])
 interface.decodeResult("transfer", data)
 
-// Or you can use any compatible signature or Fragment objects.
-// Notice that signature normalization is performed for you,
-// e.g. "uint" and "uint256" will be automatically converted
-interface.encodeData("transfer(address,uint)", [ to, amount ])
-interface.decodeResult("transfer(address to, uint256 amount)", data)</div><a name="migration-v4--interface--events"></a><h3 class="show-anchors"><div>Events<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--interface--events"></a></div></div></h3>
-<div class="code">// v4 (example: Transfer(address indexed, address indexed, uint256)
-interface.events.Transfer.encodeTopics(values)
+<span class="comment">// Or you can use any compatible signature or Fragment objects.
+</span><span class="comment">// Notice that signature normalization is performed for you,
+</span><span class="comment">// e.g. "uint" and "uint256" will be automatically converted
+</span>interface.encodeData("transfer(address,uint)", [ to, amount ])
+interface.decodeResult("transfer(address to, uint256 amount)", data)
+</div><a name="migration-v4--interface--events"></a><h3 class="show-anchors"><div>Events<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--interface--events"></a></div></div></h3>
+<div class="code"><span class="comment">// v4 (example: Transfer(address indexed, address indexed, uint256)
+</span>interface.events.Transfer.encodeTopics(values)
 interface.events.Transfer.decode(data, topics)
 
-// v5
-interface.encodeFilterTopics("Transfer", values)
-interface.encodeEventLog("Transfer", data, topics)</div><a name="migration-v4--interface--inspection"></a><h3 class="show-anchors"><div>Inspection<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--interface--inspection"></a></div></div></h3><p>Interrogating properties about a function or event can now (mostly) be done directly on the <a href="/v5/api/utils/abi/fragments/#Fragment">Fragment</a> object.</p>
+<span class="comment">// v5
+</span>interface.encodeFilterTopics("Transfer", values)
+interface.encodeEventLog("Transfer", data, topics)
+</div><a name="migration-v4--interface--inspection"></a><h3 class="show-anchors"><div>Inspection<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--interface--inspection"></a></div></div></h3><p>Interrogating properties about a function or event can now (mostly) be done directly on the <a href="/v5/api/utils/abi/fragments/#Fragment">Fragment</a> object.</p>
 
 <div class="code">// v4
 interface.functions.transfer.name
@@ -143,24 +149,26 @@ const sighash = interface.getSighash(functionFragment)
 const eventSig = eventFragment.format()
 const topic = interface.getTopic(eventFragment)</div><a name="migration-v4--utilities"></a><h2 class="show-anchors"><div>Utilities<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--utilities"></a></div></div></h2>
 <a name="migration-v4--utilities--renaming"></a><h3 class="show-anchors"><div>Renaming<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--utilities--renaming"></a></div></div></h3>
-<div class="code">// @TODO</div><a name="migration-v4--wallet"></a><h2 class="show-anchors"><div>Wallet<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--wallet"></a></div></div></h2>
+<div class="code"><span class="comment">// @TODO
+</span></div><a name="migration-v4--wallet"></a><h2 class="show-anchors"><div>Wallet<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--wallet"></a></div></div></h2>
 <a name="migration-v4--wallet--mnemonic-phrases"></a><h3 class="show-anchors"><div>Mnemonic Phrases<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--wallet--mnemonic-phrases"></a></div></div></h3><p>The <b>mnemonic</b> phrase and related properties have been merged into a single <code class="inline">mnemonic</code> object, which also now includes the <code class="inline">locale</code>.</p>
 
-<div class="code">// v4
-wallet.mnemonic
+<div class="code"><span class="comment">// v4
+</span>wallet.mnemonic
 wallet.path
 
-// v5
-// - Mnemonic phrase and path are a Mnemonic object
-// - Note: wallet.mnemonic is null if there is no mnemonic
-wallet.mnemonic.phrase
-wallet.mnemonic.path</div>
+<span class="comment">// v5
+</span><span class="comment">// - Mnemonic phrase and path are a Mnemonic object
+</span><span class="comment">// - Note: wallet.mnemonic is null if there is no mnemonic
+</span>wallet.mnemonic.phrase
+wallet.mnemonic.path
+</div>
 
       <div class="footer">
         <div class="nav previous"><a href="/v5/migration/web3/"><span class="arrow">&larr;</span>Migration: From Web3.js</a></div>
         <div class="nav next"><a href="/v5/testing/">Testing<span class="arrow">&rarr;</span></a></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on June 12, 2020, 3:31am.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Last modified on June 12, 2020, 7:17pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
   </body>

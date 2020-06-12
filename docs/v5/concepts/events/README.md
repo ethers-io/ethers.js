@@ -20,14 +20,6 @@ Example Log Matching
 
 
 ```javascript
-// <hide>
-const tokenAddress = ethers.constants.AddressZero;
-const myAddress = ethers.constants.AddressZero;
-const myOtherAddress = ethers.constants.AddressZero;
-const id = ethers.utils.id;
-const hexZeroPad = ethers.utils.hexZeroPad;
-// </hide>
-
 // Short example of manually creating filters for an ERC-20
 // Transfer event.
 //
@@ -90,14 +82,6 @@ To simplify life, ..., explain here, the contract API
 
 
 ```javascript
-// <hide>
-const tokenAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"; // DAI
-const myAddress = "0x8ba1f109551bD432803012645Ac136ddd64DBA72";
-const otherAddress = "0xEA517D5a070e6705Cc5467858681Ed953d285Eb9";
-const provider = ethers.getDefaultProvider();
-const Contract = ethers.Contract;
-// </hide>
-
 const abi = [
   "event Transfer(address indexed src, address indexed dst, uint val)"
 ];
@@ -106,19 +90,49 @@ const contract = new Contract(tokenAddress, abi, provider);
 
 // List all token transfers *from* myAddress
 contract.filters.Transfer(myAddress)
-//!
+// {
+//   address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+//   topics: [
+//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+//     '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72'
+//   ]
+// }
 
 // List all token transfers *to* myAddress:
 contract.filters.Transfer(null, myAddress)
-//!
+// {
+//   address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+//   topics: [
+//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+//     null,
+//     '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72'
+//   ]
+// }
 
 // List all token transfers *from* myAddress *to* otherAddress:
 contract.filters.Transfer(myAddress, otherAddress)
-//!
+// {
+//   address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+//   topics: [
+//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+//     '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72',
+//     '0x000000000000000000000000ea517d5a070e6705cc5467858681ed953d285eb9'
+//   ]
+// }
 
 // List all token transfers *to* myAddress OR otherAddress:
 contract.filters.Transfer(null, [ myAddress, otherAddress ])
-//!
+// {
+//   address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+//   topics: [
+//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+//     null,
+//     [
+//       '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72',
+//       '0x000000000000000000000000ea517d5a070e6705cc5467858681ed953d285eb9'
+//     ]
+//   ]
+// }
 ```
 
 ### Other Things? TODO

@@ -27,25 +27,26 @@
 
 <p>This can be acomplished by using the following function:</p>
 
-<div class="code-title"><div>Automatically Refresh on Network Change</div></div><div class="code">// Force page refreshes on network changes
-{
-    // The "any" network will allow spontaneous network changes
-    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+<div class="code-title"><div>Automatically Refresh on Network Change</div></div><div class="code"><span class="comment">// Force page refreshes on network changes
+</span>{
+<span class="comment">    // The "any" network will allow spontaneous network changes
+</span>    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
     provider.on("network", (newNetwork, oldNetwork) =&gt; {
-        // When a Provider makes its initial connection, it emits a "network"
-        // event with a null oldNetwork along with the newNetwork. So, if the
-        // oldNetwork exists, it represents a changing network
-        if (oldNetwork) {
+<span class="comment">        // When a Provider makes its initial connection, it emits a "network"
+</span><span class="comment">        // event with a null oldNetwork along with the newNetwork. So, if the
+</span><span class="comment">        // oldNetwork exists, it represents a changing network
+</span>        if (oldNetwork) {
             window.location.reload();
         }
     });
-}</div>
+}
+</div>
 
       <div class="footer">
         <div class="nav previous"><!--PREV_LINK--></div>
         <div class="nav next"><!--NEXT_LINK--></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on June 12, 2020, 3:31am.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Last modified on June 12, 2020, 7:17pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
   </body>

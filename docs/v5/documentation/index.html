@@ -199,22 +199,16 @@ const foo = 4 + 5;
 // &lt;hide&gt;
 foo
 // &lt;/hide&gt;
-//!</div><div class="code-title"><div>Result of Code Example</div></div><div class="code">// &lt;hide&gt;
-const url = require("url");
-// &lt;/hide&gt;
-
-url.parse("https://www.ricmoo.com/").protocol
-//!
-
+//!</div><div class="code-title"><div>Result of Code Example</div></div><div class="code">url.parse("https://www.ricmoo.com/").protocol
+<span class="result ok">// 'https:'
+</span>
 url.parse(45)
-//! error
-
-// You want to assign (doesn't emit eval) AND display the value
-const foo = 4 + 5;
-// &lt;hide&gt;
-foo
-// &lt;/hide&gt;
-//!</div><a name="flatworm-docs--flatworm--code--languages"></a><h3 class="show-anchors"><div>Languages<div class="anchors"><a class="self" href="/v5/documentation/#flatworm-docs--flatworm--code--languages"></a></div></div></h3><p>The language can be specified using the <a href="/v5/documentation/#flatworm--ext-lang">@lang extension</a>.</p>
+<span class="result error">// Error: The "url" argument must be of type string. Received type number
+</span>
+<span class="comment">// You want to assign (doesn't emit eval) AND display the value
+</span>const foo = 4 + 5;
+<span class="result ok">// 9
+</span></div><a name="flatworm-docs--flatworm--code--languages"></a><h3 class="show-anchors"><div>Languages<div class="anchors"><a class="self" href="/v5/documentation/#flatworm-docs--flatworm--code--languages"></a></div></div></h3><p>The language can be specified using the <a href="/v5/documentation/#flatworm--ext-lang">@lang extension</a>.</p>
 
 <table class="table minimal"><tr><td align="center"><b>Language</b></td><td align="center"><b>Notes</b></td><td class="fix">&nbsp;</td></tr><tr><td align="center">javascript</td><td align="left">Syntax highlights and <a href="/v5/documentation/#flatworm--code-eval">evaluates</a> the JavaScipt</td><td class="fix">&nbsp;</td></tr><tr><td align="center">script</td><td align="left">Same as <code class="inline">javascript</code>, but does not evaluate the results</td><td class="fix">&nbsp;</td></tr><tr><td align="center">shell</td><td align="left">Shell scripts or command-line</td><td class="fix">&nbsp;</td></tr><tr><td align="center">text</td><td align="left">Plain text with no syntax highlighting</td><td class="fix">&nbsp;</td></tr></table><a name="flatworm--table"></a><a name="flatworm-docs--flatworm--table"></a><h2 class="show-anchors"><div>Tables<div class="anchors"><a class="self" href="/v5/documentation/#flatworm--table"></a></div></div></h2><p>The table directive consumes the entire body up until the next directive. To terminate a table early to begin a text block, use a <b>_null:</b> directive.</p>
 
@@ -287,7 +281,7 @@ $bottom: This just represents an example of
         <div class="nav previous"><a href="/v5/contributing/"><span class="arrow">&larr;</span>Contributing and Hacking</a></div>
         <div class="nav next"><a href="/v5/license/">License and Copyright<span class="arrow">&rarr;</span></a></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on June 12, 2020, 3:31am.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Last modified on June 12, 2020, 7:17pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
   </body>
