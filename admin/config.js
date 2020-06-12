@@ -22,6 +22,7 @@ function Config(filename) {
     this.salt = null;
     this.dkey = null;
     this.values = { };
+    this.canary = "";
     this.filename = filename;
 }
 
@@ -36,6 +37,8 @@ Config.prototype.load = async function() {
             salt: Buffer.from(randomBytes(32)).toString("hex")
         };
     }
+
+    this.canary = data.canary || "";
 
     this.salt = data.salt;
 
@@ -77,7 +80,8 @@ Config.prototype.save = function() {
         ciphertext: ciphertext.toString("base64"),
         iv: iv.toString("base64"),
         salt: this.salt,
-        hmac: hmac
+        hmac: hmac,
+        canary: this.canary
     };
 
     fs.writeFileSync(this.filename, JSON.stringify(data, null, 2));
