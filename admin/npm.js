@@ -2,7 +2,7 @@
 
 const resolve = require("path").resolve;
 
-const npm = require("libnpm");
+const npmpub = require("libnpmpublish");
 const semver = require("semver");
 
 const local = require("./local");
@@ -60,7 +60,7 @@ async function getTarballHash(name, version) {
 
 async function _publish(info, tarball, options) {
     try {
-        let result = await npm.publish(info, tarball, options);
+        let result = await npmpub.publish(info, tarball, options);
         return result;
     } catch (error) {
 
