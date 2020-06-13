@@ -3,7 +3,7 @@ name: Node.js CI
 on:
   push:
     branches:
-      - ethers-v5-beta
+      - master
 
 jobs:
   test-node:
