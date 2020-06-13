@@ -1,11 +1,11 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bignumber": ">=5.0.0-beta.138",
-    "@ethersproject/bytes": ">=5.0.0-beta.137",
-    "@ethersproject/keccak256": ">=5.0.0-beta.131",
-    "@ethersproject/logger": ">=5.0.0-beta.137",
-    "@ethersproject/rlp": ">=5.0.0-beta.132",
+    "@ethersproject/bignumber": "^5.0.0",
+    "@ethersproject/bytes": "^5.0.0",
+    "@ethersproject/keccak256": "^5.0.0",
+    "@ethersproject/logger": "^5.0.0",
+    "@ethersproject/rlp": "^5.0.0",
     "bn.js": "^4.4.0"
   },
   "description": "Utilities for handling Ethereum Addresses for ethers.",
@@ -28,7 +28,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xcd7c012840c8c6bd80d11096e1bb593cd1bc0d149c76ad5383c79bf7c61328a1",
+  "tarballHash": "0x3388e6ad886c1847a2be7925f8b6e9756e79dba2473a4d0de9b68dedfb62bf22",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.135"
+  "version": "5.0.0"
 }

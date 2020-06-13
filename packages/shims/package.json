@@ -26,7 +26,7 @@
     "dist": "browserify ./src/index.js -o ./dist/index.js && uglifyjs --compress --mangle --output ./dist/index.min.js -- ./dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x7850f44d2c98114e92ba597c4aa2844083b024719a5e21a3d79cb011842f7f66",
+  "tarballHash": "0xef0882ff1cb16e611bd4f5d1969b240da93e0b11b1c7e0c2f220afb709d535e3",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.134"
+  "version": "5.0.0"
 }

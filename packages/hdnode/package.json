@@ -1,18 +1,18 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/abstract-signer": ">=5.0.0-beta.142",
-    "@ethersproject/basex": ">=5.0.0-beta.132",
-    "@ethersproject/bignumber": ">=5.0.0-beta.138",
-    "@ethersproject/bytes": ">=5.0.0-beta.137",
-    "@ethersproject/logger": ">=5.0.0-beta.137",
-    "@ethersproject/pbkdf2": ">=5.0.0-beta.135",
-    "@ethersproject/properties": ">=5.0.0-beta.140",
-    "@ethersproject/sha2": ">=5.0.0-beta.136",
-    "@ethersproject/signing-key": ">=5.0.0-beta.135",
-    "@ethersproject/strings": ">=5.0.0-beta.136",
-    "@ethersproject/transactions": ">=5.0.0-beta.135",
-    "@ethersproject/wordlists": ">=5.0.0-beta.136"
+    "@ethersproject/abstract-signer": "^5.0.0",
+    "@ethersproject/basex": "^5.0.0",
+    "@ethersproject/bignumber": "^5.0.0",
+    "@ethersproject/bytes": "^5.0.0",
+    "@ethersproject/logger": "^5.0.0",
+    "@ethersproject/pbkdf2": "^5.0.0",
+    "@ethersproject/properties": "^5.0.0",
+    "@ethersproject/sha2": "^5.0.0",
+    "@ethersproject/signing-key": "^5.0.0",
+    "@ethersproject/strings": "^5.0.0",
+    "@ethersproject/transactions": "^5.0.0",
+    "@ethersproject/wordlists": "^5.0.0"
   },
   "description": "BIP32 Hierarchal Deterministic Node operations.",
   "ethereum": "donations.ethers.eth",
@@ -34,7 +34,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x36b02253d01dcf8adafbb0060bf4224e6abc1e6380144597c268253a90ee58cd",
+  "tarballHash": "0xa52c3366e1d36ccedf65b847292ad97f650d87d0d309e34945f1957ade0c3956",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.140"
+  "version": "5.0.0"
 }

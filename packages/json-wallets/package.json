@@ -1,17 +1,17 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/abstract-signer": ">=5.0.0-beta.142",
-    "@ethersproject/address": ">=5.0.0-beta.134",
-    "@ethersproject/bytes": ">=5.0.0-beta.137",
-    "@ethersproject/hdnode": ">=5.0.0-beta.139",
-    "@ethersproject/keccak256": ">=5.0.0-beta.131",
-    "@ethersproject/logger": ">=5.0.0-beta.137",
-    "@ethersproject/pbkdf2": ">=5.0.0-beta.135",
-    "@ethersproject/properties": ">=5.0.0-beta.140",
-    "@ethersproject/random": ">=5.0.0-beta.135",
-    "@ethersproject/strings": ">=5.0.0-beta.136",
-    "@ethersproject/transactions": ">=5.0.0-beta.135",
+    "@ethersproject/abstract-signer": "^5.0.0",
+    "@ethersproject/address": "^5.0.0",
+    "@ethersproject/bytes": "^5.0.0",
+    "@ethersproject/hdnode": "^5.0.0",
+    "@ethersproject/keccak256": "^5.0.0",
+    "@ethersproject/logger": "^5.0.0",
+    "@ethersproject/pbkdf2": "^5.0.0",
+    "@ethersproject/properties": "^5.0.0",
+    "@ethersproject/random": "^5.0.0",
+    "@ethersproject/strings": "^5.0.0",
+    "@ethersproject/transactions": "^5.0.0",
     "aes-js": "3.0.0",
     "scrypt-js": "3.0.1",
     "uuid": "2.0.1"
@@ -36,7 +36,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x095861746097c0e77ceed3ec162a515cd9ffddaeb9e9efd7a4c423a72442789c",
+  "tarballHash": "0x85620a4056580964aa552122cc26ea52bf61def8ff3fb001111d1a8f4ab5ba6d",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.140"
+  "version": "5.0.0"
 }

@@ -4,7 +4,7 @@
   "browser.esm": "./lib.esm/browser.js",
   "browser.umd": "./lib/browser.js",
   "dependencies": {
-    "@ethersproject/bytes": ">=5.0.0-beta.137"
+    "@ethersproject/bytes": "^5.0.0"
   },
   "description": "Base64 coder.",
   "ethereum": "donations.ethers.eth",
@@ -26,7 +26,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xefb6a07f48873410e79d2ceee6ffd44476483e78e2920e440645aa6c071926ad",
+  "tarballHash": "0x2b05844b5c583e0dd326a714786dc6cf03cbfb1a9691f6d1844721766b93214b",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.134"
+  "version": "5.0.0"
 }

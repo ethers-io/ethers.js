@@ -1,6 +1,6 @@
 {
   "_devDependencies": {
-    "@ethersproject/cli": ">=5.0.0-beta.142",
+    "@ethersproject/cli": "^5.0.0",
     "@types/bip39": "2.4.1",
     "@types/bitcoinjs-lib": "3.3.2",
     "bip39": "2.5.0",
@@ -13,12 +13,12 @@
   "browser.esm": "./lib.esm/browser.js",
   "browser.umd": "./lib/browser.js",
   "dependencies": {
-    "@ethersproject/bignumber": ">=5.0.0-beta.138",
-    "@ethersproject/bytes": ">=5.0.0-beta.137",
-    "@ethersproject/keccak256": ">=5.0.0-beta.131",
-    "@ethersproject/strings": ">=5.0.0-beta.136",
+    "@ethersproject/bignumber": "^5.0.0",
+    "@ethersproject/bytes": "^5.0.0",
+    "@ethersproject/keccak256": "^5.0.0",
+    "@ethersproject/strings": "^5.0.0",
     "browserify-zlib": "^0.2.0",
-    "ethers": ">=5.0.0-beta.186"
+    "ethers": "^5.0.0"
   },
   "description": "Testcases for Ethereum and scripts to generate testcases.",
   "ethereum": "donations.ethers.eth",
@@ -40,7 +40,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x3aa3964ef3d3bf6156f11b65d4b12a879c28e61a29e8bfbd65fc30c2f8e1b4b3",
+  "tarballHash": "0xd1fa49eb263a91b34d6abaed86933ea7fe04332ef1cc72cde7185e39a1940e31",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.141"
+  "version": "5.0.0"
 }

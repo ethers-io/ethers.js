@@ -1,21 +1,21 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/abstract-provider": ">=5.0.0-beta.139",
-    "@ethersproject/abstract-signer": ">=5.0.0-beta.142",
-    "@ethersproject/address": ">=5.0.0-beta.134",
-    "@ethersproject/bignumber": ">=5.0.0-beta.138",
-    "@ethersproject/bytes": ">=5.0.0-beta.137",
-    "@ethersproject/hash": ">=5.0.0-beta.133",
-    "@ethersproject/hdnode": ">=5.0.0-beta.139",
-    "@ethersproject/json-wallets": ">=5.0.0-beta.138",
-    "@ethersproject/keccak256": ">=5.0.0-beta.131",
-    "@ethersproject/logger": ">=5.0.0-beta.137",
-    "@ethersproject/properties": ">=5.0.0-beta.140",
-    "@ethersproject/random": ">=5.0.0-beta.135",
-    "@ethersproject/signing-key": ">=5.0.0-beta.135",
-    "@ethersproject/transactions": ">=5.0.0-beta.135",
-    "@ethersproject/wordlists": ">=5.0.0-beta.136"
+    "@ethersproject/abstract-provider": "^5.0.0",
+    "@ethersproject/abstract-signer": "^5.0.0",
+    "@ethersproject/address": "^5.0.0",
+    "@ethersproject/bignumber": "^5.0.0",
+    "@ethersproject/bytes": "^5.0.0",
+    "@ethersproject/hash": "^5.0.0",
+    "@ethersproject/hdnode": "^5.0.0",
+    "@ethersproject/json-wallets": "^5.0.0",
+    "@ethersproject/keccak256": "^5.0.0",
+    "@ethersproject/logger": "^5.0.0",
+    "@ethersproject/properties": "^5.0.0",
+    "@ethersproject/random": "^5.0.0",
+    "@ethersproject/signing-key": "^5.0.0",
+    "@ethersproject/transactions": "^5.0.0",
+    "@ethersproject/wordlists": "^5.0.0"
   },
   "description": "Classes for managing, encrypting and decrypting Ethereum private keys as a Signer for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -37,7 +37,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x377f1eb89b1ffcab3f5e8afc9e5508a86adae4b7582fdd89d7fd8149c2df3288",
+  "tarballHash": "0xa9b06c3c70de4a59981425612fb50b0365af2923751a2570b4906ecb3ab8e4e9",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.141"
+  "version": "5.0.0"
 }

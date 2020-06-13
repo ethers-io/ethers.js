@@ -1,7 +1,7 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bignumber": ">=5.0.0-beta.138"
+    "@ethersproject/bignumber": "^5.0.0"
   },
   "description": "Common Ethereum constants used for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -23,7 +23,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x53f0341d9ba057be66ae4c5f18e56523dd46b9c733c4e073d339b730241bbe1c",
+  "tarballHash": "0x34815f337eac65eba08ed3c4b8041d219127ca5fb4eff67436b2051b9d18e132",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.134"
+  "version": "5.0.0"
 }

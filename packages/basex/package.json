@@ -1,8 +1,8 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bytes": ">=5.0.0-beta.137",
-    "@ethersproject/properties": ">=5.0.0-beta.140"
+    "@ethersproject/bytes": "^5.0.0",
+    "@ethersproject/properties": "^5.0.0"
   },
   "description": "Base-X without Buffer.",
   "ethereum": "donations.ethers.eth",
@@ -24,7 +24,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x1edc1212b4a47fba2b6297a3f3dc57f8945829804daadf6feef4d22949138391",
+  "tarballHash": "0xde76e04ed8965e89b212fb7331a3100d763fc137ee1c97c79e36dffa6104558c",
   "types": "./lib/index.d.ts",
-  "version": "5.0.0-beta.133"
+  "version": "5.0.0"
 }
