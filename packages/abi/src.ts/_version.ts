@@ -1,1 +1,1 @@
-export const version = "abi/5.0.0-beta.156";
+export const version = "abi/5.0.1";
