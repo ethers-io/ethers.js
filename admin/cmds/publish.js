@@ -10,7 +10,7 @@ const { getPackageVersion, publish } = require("../npm");
 const { log } = require("../log");
 
 const USER_AGENT = "ethers-dist@0.0.0";
-const TAG = "next";
+const TAG = "latest";
 
 
 let dirnames = getOrdered();
@@ -75,10 +75,7 @@ if (process.argv.length > 2) {
         let dirname = dirnames[i];
 
         if (dirname === "ethers") {
-            options.tag = "next";
             includeEthers = true;
-        } else {
-            options.tag = "latest";
         }
 
         let info = loadPackage(dirname);
@@ -98,20 +95,30 @@ if (process.argv.length > 2) {
         log("  <green:Done.>");
     }
 
-    // Publish the GitHub release (currently beta)
-    const beta = true;
+    // Publish the GitHub release
+    const beta = false;
     if (includeEthers) {
+        {
+            // The password above already succeeded
+            const username = await config.get("github-user");
+            const password = await config.get("github-release");
 
-        // The password above already succeeded
-        const username = await config.get("github-user");
-        const password = await config.get("github-release");
+            // Get the latest change from the changelog
+            const change = latestChange();
 
-        // Get the latest change from the changelog
-        const change = latestChange();
+            // Publish the release
+            const link = await createRelease(username, password, change.version, change.title, change.content, beta, gitCommit);
+            log(`<bold:Published Release:> ${ link }`);
+        }
 
-        // Publish the release
-        const link = await createRelease(username, password, change.version, change.title, change.content, beta, gitCommit);
-        log(`<bold:Published Release:> ${ link }`);
+        /*
+        {
+            const accessKey = await config.get("aws-upload-scripts-accesskey");
+            const secretKey = await config.get("aws-upload-scripts-secretkey");
+            const s3 = 
+        }
+        */
+
     }
 
 })();

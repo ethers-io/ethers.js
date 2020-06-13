@@ -60,7 +60,7 @@ if (process.argv.length > 2) {
 
         // Bump the version if necessary
         if (info.version === npmInfo.version) {
-            let newVersion = semver.inc(info.version, "prerelease", "beta");
+            let newVersion = semver.inc(info.version, "patch");
 
             // Write out the _version.ts
             if (!info._ethers_nobuild) {

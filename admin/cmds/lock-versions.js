@@ -23,15 +23,23 @@ const { log } = require("../log");
             const deps = info[key];
             if (!deps) { return; }
             Object.keys(deps).forEach((name) => {
-                if (versions[name] == null) { return; }
-                const value = ">=" + versions[name];
-                if (value !== deps[name])
-                if (!deps[name]) { return; }
+                // Not a package in this monorepoa
+                const version = versions[name];
+                if (version == null) { return; }
+
+                const value = ((version.indexOf("beta") !== -1) ? ">=": "^") + version;
+
+                // No change
+                if (value === deps[name]) { return; }
+
+                // Show a header for the first change
                 if (!shown) {
                     log(`<bold:Locking ${ info.name }:>`);
                     shown = true;
                 }
-                log(`    <green:${ name }>: ${ deps[name] } => <bold:${ value.substring(2) }>`);
+
+                // Show the locked version
+                log(`    <green:${ name }>: ${ deps[name] } => <bold:${ value.replace(">", "&gt;") }>`);
                 deps[name] = value;
             });
         });

@@ -19,7 +19,7 @@ expired failed fetches formatted formatting funding generated
 has ignoring implemented implementer imported including instantiate
 keyword labelled larger lookup matches mined modified modifies multi
 named needed nested neutered numeric offline optimizer overriding owned packed
-padded parsed parsing passed placeholder processing reached
+padded parsed parsing passed placeholder processing properties reached
 recommended recovered redacted remaining replaced required
 serializes shared signed signing skipped stored supported tagging targetted
 transactions uninstall unstake unsubscribe using verifies website
@@ -42,8 +42,8 @@ jumpdest mstore shr shl xor
 ABIEncoder testcase numberish Wordlist
 
 // Common Code Strings
-abi addr api app arg arrayify asm basex bigint bn byte bytecode
-callback calldata checksum ciphertext cli codepoint config
+abi addr api app arg arrayify asm basex bigint bignumber bn byte
+bytecode callback calldata checksum ciphertext cli codepoint config
 contenthash ctr ctrl debug dd dklen eexist encseed eof ethaddr
 ethseed ethers eval exec filename func gz hid http https hw iv
 info init ipc json kdf kdfparams labelhash lang lib mm multihash nfc

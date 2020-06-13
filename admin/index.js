@@ -54,7 +54,7 @@ async function runDiff(dirnames) {
 
         // Bump the version if necessary
         if (info.version === npmInfo.version) {
-            info.version = semver.inc(info.version, "prerelease", "beta");
+            info.version = semver.inc(info.version, "patch");
         }
 
         console.log(colorify("<bold:Package>: ") + info.name);
@@ -176,7 +176,7 @@ async function runUpdate(dirnames) {
 
         // Bump the version if necessary
         if (info.version === npmInfo.version) {
-            let newVersion = semver.inc(info.version, "prerelease", "beta");
+            let newVersion = semver.inc(info.version, "patch");
 
             // Write out the _version.ts
             if (!info._ethers_skipPrepare) {
