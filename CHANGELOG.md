@@ -6,7 +6,7 @@ This change log is managed by `scripts/cmds/update-versions` but may be manually
 ethers/v5.0.1 (2020-06-12 23:09)
 --------------------------------
 
-  - Fixed embedded pacakge version strings. ([5a69e9c](https://github.com/ethers-io/ethers.js/commit/5a69e9caa882aa5f1b44c4453d67cde43254eafe))
+  - Fixed embedded package version strings. ([5a69e9c](https://github.com/ethers-io/ethers.js/commit/5a69e9caa882aa5f1b44c4453d67cde43254eafe))
 
 ethers/v5.0.0 (2020-06-12 19:58)
 --------------------------------
