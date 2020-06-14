@@ -327,11 +327,14 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                             catch (error) {
                                 return [2 /*return*/, logger.throwError("could not detect network", logger_1.Logger.errors.NETWORK_ERROR, {
                                         chainId: chainId,
+                                        event: "invalidNetwork",
                                         serverError: error
                                     })];
                             }
                         }
-                        return [2 /*return*/, logger.throwError("could not detect network", logger_1.Logger.errors.NETWORK_ERROR)];
+                        return [2 /*return*/, logger.throwError("could not detect network", logger_1.Logger.errors.NETWORK_ERROR, {
+                                event: "noNetwork"
+                            })];
                 }
             });
         });

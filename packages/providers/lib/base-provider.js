@@ -253,7 +253,7 @@ var BaseProvider = /** @class */ (function (_super) {
             // Squash any "unhandled promise" errors; that do not need to be handled
             network.catch(function (error) { });
             // Trigger initial network setting (async)
-            _this._ready();
+            _this._ready().catch(function (error) { });
         }
         else {
             var knownNetwork = properties_1.getStatic((_newTarget), "getNetwork")(network);
@@ -323,7 +323,18 @@ var BaseProvider = /** @class */ (function (_super) {
         // For "any", this can change (a "network" event is emitted before
         // any change is refelcted); otherwise this cannot change
         get: function () {
-            return this._ready();
+            var _this = this;
+            return web_1.poll(function () {
+                return _this._ready().then(function (network) {
+                    return network;
+                }, function (error) {
+                    // If the network isn't running yet, we will wait
+                    if (error.code === logger_1.Logger.errors.NETWORK_ERROR && error.event === "noNetwork") {
+                        return undefined;
+                    }
+                    throw error;
+                });
+            });
         },
         enumerable: true,
         configurable: true
@@ -347,7 +358,7 @@ var BaseProvider = /** @class */ (function (_super) {
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.ready];
+                    case 0: return [4 /*yield*/, this._ready()];
                     case 1:
                         _a.sent();
                         internalBlockNumber = this._internalBlockNumber;
@@ -417,6 +428,7 @@ var BaseProvider = /** @class */ (function (_super) {
                             logger.warn("network block skew detected; skipping block events");
                             this.emit("error", logger.makeError("network block skew detected", logger_1.Logger.errors.NETWORK_ERROR, {
                                 blockNumber: blockNumber,
+                                event: "blockSkew",
                                 previousBlockNumber: this._emitted.block
                             }));
                             this.emit("block", blockNumber);
@@ -529,7 +541,7 @@ var BaseProvider = /** @class */ (function (_super) {
             var network, currentNetwork, error;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.ready];
+                    case 0: return [4 /*yield*/, this._ready()];
                     case 1:
                         network = _a.sent();
                         return [4 /*yield*/, this.detectNetwork()];

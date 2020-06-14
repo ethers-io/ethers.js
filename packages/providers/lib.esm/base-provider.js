@@ -191,7 +191,7 @@ export class BaseProvider extends Provider {
             // Squash any "unhandled promise" errors; that do not need to be handled
             network.catch((error) => { });
             // Trigger initial network setting (async)
-            this._ready();
+            this._ready().catch((error) => { });
         }
         else {
             const knownNetwork = getStatic((new.target), "getNetwork")(network);
@@ -245,7 +245,17 @@ export class BaseProvider extends Provider {
     // For "any", this can change (a "network" event is emitted before
     // any change is refelcted); otherwise this cannot change
     get ready() {
-        return this._ready();
+        return poll(() => {
+            return this._ready().then((network) => {
+                return network;
+            }, (error) => {
+                // If the network isn't running yet, we will wait
+                if (error.code === Logger.errors.NETWORK_ERROR && error.event === "noNetwork") {
+                    return undefined;
+                }
+                throw error;
+            });
+        });
     }
     // @TODO: Remove this and just create a singleton formatter
     static getFormatter() {
@@ -262,7 +272,7 @@ export class BaseProvider extends Provider {
     // than maxAge old or has been requested since the last request
     _getInternalBlockNumber(maxAge) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.ready;
+            yield this._ready();
             const internalBlockNumber = this._internalBlockNumber;
             if (maxAge > 0 && this._internalBlockNumber) {
                 const result = yield internalBlockNumber;
@@ -317,6 +327,7 @@ export class BaseProvider extends Provider {
                 logger.warn("network block skew detected; skipping block events");
                 this.emit("error", logger.makeError("network block skew detected", Logger.errors.NETWORK_ERROR, {
                     blockNumber: blockNumber,
+                    event: "blockSkew",
                     previousBlockNumber: this._emitted.block
                 }));
                 this.emit("block", blockNumber);
@@ -418,7 +429,7 @@ export class BaseProvider extends Provider {
     }
     getNetwork() {
         return __awaiter(this, void 0, void 0, function* () {
-            const network = yield this.ready;
+            const network = yield this._ready();
             // Make sure we are still connected to the same network; this is
             // only an external call for backends which can have the underlying
             // network change spontaneously
