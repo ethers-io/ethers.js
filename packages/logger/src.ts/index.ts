@@ -66,6 +66,7 @@ export enum ErrorCode {
     UNSUPPORTED_OPERATION = "UNSUPPORTED_OPERATION",
 
     // Network Error (i.e. Ethereum Network, such as an invalid chain ID)
+    //   - event ("noNetwork" is not re-thrown in provider.ready; otherwise thrown)
     NETWORK_ERROR = "NETWORK_ERROR",
 
     // Some sort of bad response from the server

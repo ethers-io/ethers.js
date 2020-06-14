@@ -280,12 +280,15 @@ export class JsonRpcProvider extends BaseProvider {
             } catch (error) {
                 return logger.throwError("could not detect network", Logger.errors.NETWORK_ERROR, {
                     chainId: chainId,
+                    event: "invalidNetwork",
                     serverError: error
                 });
             }
         }
 
-        return logger.throwError("could not detect network", Logger.errors.NETWORK_ERROR);
+        return logger.throwError("could not detect network", Logger.errors.NETWORK_ERROR, {
+            event: "noNetwork"
+        });
     }
 
     getSigner(addressOrIndex?: string | number): JsonRpcSigner {

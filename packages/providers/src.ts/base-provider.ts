@@ -255,7 +255,7 @@ export class BaseProvider extends Provider {
             network.catch((error) => { });
 
             // Trigger initial network setting (async)
-            this._ready();
+            this._ready().catch((error) => { });
 
         } else {
             const knownNetwork = getStatic<(network: Networkish) => Network>(new.target, "getNetwork")(network);
@@ -315,7 +315,17 @@ export class BaseProvider extends Provider {
     // For "any", this can change (a "network" event is emitted before
     // any change is refelcted); otherwise this cannot change
     get ready(): Promise<Network> {
-        return this._ready();
+        return poll(() => {
+            return this._ready().then((network) => {
+                return network;
+            }, (error) => {
+                // If the network isn't running yet, we will wait
+                if (error.code === Logger.errors.NETWORK_ERROR && error.event === "noNetwork") {
+                    return undefined;
+                }
+                throw error;
+            });
+        });
     }
 
     // @TODO: Remove this and just create a singleton formatter
@@ -334,7 +344,7 @@ export class BaseProvider extends Provider {
     // Fetches the blockNumber, but will reuse any result that is less
     // than maxAge old or has been requested since the last request
     async _getInternalBlockNumber(maxAge: number): Promise<number> {
-        await this.ready;
+        await this._ready();
 
         const internalBlockNumber = this._internalBlockNumber;
 
@@ -401,6 +411,7 @@ export class BaseProvider extends Provider {
             logger.warn("network block skew detected; skipping block events");
             this.emit("error", logger.makeError("network block skew detected", Logger.errors.NETWORK_ERROR, {
                 blockNumber: blockNumber,
+                event: "blockSkew",
                 previousBlockNumber: this._emitted.block
             }));
             this.emit("block", blockNumber);
@@ -507,7 +518,7 @@ export class BaseProvider extends Provider {
     }
 
     async getNetwork(): Promise<Network> {
-        const network = await this.ready;
+        const network = await this._ready();
 
         // Make sure we are still connected to the same network; this is
         // only an external call for backends which can have the underlying
