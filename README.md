@@ -44,7 +44,7 @@ Installing
 **browser (UMD)**
 
 ```
-<script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js" type="text/javasctipt">
+<script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js" type="text/javascript">
 </script>
 ```
 
