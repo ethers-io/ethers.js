@@ -45,7 +45,7 @@ _property: ethers.utils.getAddress(address) => string<[[address]]>  @<utils-getA
 Returns //address// as a Checksum Address.
 
 If //address// is an invalid 40-nibble [[HexString]] or if it contains mixed case and
-the checksum is invalid, an InvalidArgument Error is throw.
+the checksum is invalid, an InvalidArgument Error is thrown.
 
 The value of //address// may be any supported address format.
 

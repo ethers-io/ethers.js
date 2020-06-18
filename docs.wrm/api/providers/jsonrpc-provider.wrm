@@ -14,7 +14,7 @@ querying the node.
 _note: Note: Connecting to a Local Node
 Each node implementation is slightly different and may require specific
 command-line flags, configuration or settings in their UI to enable
-JSON-RPC, unlock accounrs or expose specific APIs. Please consult
+JSON-RPC, unlock accounts or expose specific APIs. Please consult
 their documentation.
 
 _property: jsonRpcProvider.getSigner([ addressOrIndex ]) => [[JsonRpcSigner]]  @<JsonRpcProvider-getSigner> @SRC<providers/json-rpc-provider>
@@ -42,12 +42,12 @@ _property: signer.provider => [[JsonRpcProvider]]
 The provider this signer was established from.
 
 _property: signer.connectUnchecked() => [[UncheckedJsonRpcSigner]]  @<JsonRpcSigner-connectUnchecked> @SRC<providers>
-Returns a new Signer object which does not perform addtional checks when
+Returns a new Signer object which does not perform additional checks when
 sending a transaction. See [getUncheckedSigner](JsonRpcProvider-getUncheckedSigner) for more details.
 
 _property: signer.sendUncheckedTransaction(transaction) => Promise<string<[[DataHexString]]\<32>\>>  @<JsonRpcSigner-sendUncheckedTransaction> @SRC<providers>
 Sends the //transaction// and returns a Promise which resolves to the
-opacque transaction hash.
+opaque transaction hash.
 
 _property: signer.unlock(password) => Promise<boolean>  @<JsonRpcSigner-unlock> @SRC<providers>
 Request the node unlock the account (if locked) using //password//.
@@ -60,7 +60,7 @@ of a transaction before returning it. For example, the gas price and gas limit
 may be adjusted by the node or the nonce automatically included, in which case
 the opaque transaction hash has discarded this.
 
-To remedy this, the [[JsonRpcSigner]] immeidately queries the provider for
+To remedy this, the [[JsonRpcSigner]] immediately queries the provider for
 the details using the returned transaction hash to populate the [[providers-TransactionResponse]]
 object.
 
@@ -85,7 +85,7 @@ The [jsonRpcProvider.send](JsonRpcProvider-send) method can be used to access th
 - [All JSON-RPC methods](link-json-rpc) (including the less common methods) which most
   Ethereum Nodes support.
 - [Parity's Trace Module](link-parity-trace) can be used to trace and debug EVM
-  execcution of a transaction (requires custom configuration)
+  execution of a transaction (requires custom configuration)
 - [Geth's Debug Module](link-geth-debug) can be used to debug transactions and
   internal cache state, etc.
 - [Additional Geth Methods](link-geth-rpc)

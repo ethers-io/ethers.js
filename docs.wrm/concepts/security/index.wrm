@@ -12,7 +12,7 @@ much stronger security.
 
 The algorithm usually used for this process is [scrypt](link-wiki-scrypt),
 which is a memory and CPU intensive algorithm which computes
-a key (fixed-length psudo-random series of bytes) for a given
+a key (fixed-length pseudo-random series of bytes) for a given
 password.
 
 
@@ -50,7 +50,7 @@ progress callback which will be periodically called with a number between
 
 In general a progress bar makes the experience feel faster, as well as
 more comfortable since there is a clear indication how much (relative) time
-is remaining. Additionally, using language like //"decrpyting..."// in
+is remaining. Additionally, using language like //"decrypting..."// in
 a progress bar makes a user feel like there time is not being //needlessly//
 wasted.
 

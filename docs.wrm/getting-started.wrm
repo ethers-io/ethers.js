@@ -78,7 +78,7 @@ Ethereum is to use [[link-metamask]], which is a browser extension
 that provides:
 
 - A connection to the Ethereum network (a [[Provider]])
-- Holds your private key and can sign thing (a [[Signer]])
+- Holds your private key and can sign things (a [[Signer]])
 
 _code: Connecting to Metamask @lang<script>
 
