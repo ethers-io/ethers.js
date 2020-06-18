@@ -1,4 +1,4 @@
-_section: Flatworm Docs
+_section: Flatworm Docs @<flatworm>
 
 The //Flatworm Docs// rendering engine is designed to be **very**
 simple, but provide enough formatting necessary for documenting
@@ -102,7 +102,7 @@ _definition: **_table:** //FOOTER//
 
 Creates a [Table](flatworm--table) structured according to the body.
 
-Each cell support and variables support markdown.
+Each cell contents supports markdown and variables supports markdown.
 
 **Extensions:** [@style](flatworm--ext-style)
 
@@ -173,7 +173,8 @@ This is placed in an orange box.
 
 
 \_null:
-This breaks out of a directive. For example, to end a
+This breaks out of a directive. For example, to end
+a ``_note:`` or ``_code:``.
 
 
 _subsection: Markdown @<flatworm-markdown>

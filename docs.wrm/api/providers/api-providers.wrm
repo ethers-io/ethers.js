@@ -82,7 +82,7 @@ _subsection: InfuraProvider @<InfuraProvider> @INHERIT<[[UrlJsonRpcProvider]]> @
 The **InfuraProvider** is backed by the popular [INFURA](link-infura)
 Ethereum service.
 
-_property: new ethers.providers.InfuraProvider([ network = "homestead", [ apiKey ] ])
+_property: new ethers.providers.InfuraProvider([ network = "homestead", [ apiKey ] ]) @SRC<providers>
 Create a new **InfuraProvider** connected to //network// with
 the optional //apiKey//.
 
@@ -95,6 +95,12 @@ with the properties ``projectId`` and ``projectSecret`` to
 specify a [Project Secret](link-infura-secret) which can be used
 on non-public sources (like on a server) to further secure your
 API access and quotas.
+
+_property: InfuraProvider.getWebSocketProvider([ network [ , apiKey ] ]) => [[WebSocketProvider]] @<InfuraProvider-getWebSocketProvider> @SRC<providers>
+Create a new [[WebSocketProvider]] using the INFURA web-socket endpoint
+to connect to //network// with the optional //apiKey//.
+
+The //network// and //apiKey// are specified the same as [the constructor](InfuraProvider).
 
 _note: Note: Default API keys
 If no //apiKey// is provided, a shared API key will be used,
@@ -135,6 +141,14 @@ provider = new InfuraProvider("homestead", {
     projectId: projectId,
     projectSecret: projectSecret
 });
+
+// Connect to the INFURA WebSocket endpoints with a WebSocketProvider
+provider = InfuraProvider.getWebSocketProvider()
+// <hide>
+provider._websocket.onopen = function(){
+    provider._websocket.close();
+};
+// </hide>
 
 
 _subsection: AlchemyProvider @<AlchemyProvider> @inherit<[[UrlJsonRpcProvider]]> @src<providers:class.AlchemyProvider>

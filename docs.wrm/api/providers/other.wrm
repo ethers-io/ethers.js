@@ -93,7 +93,7 @@ The URL to use for the JsonRpcProvider instance.
 
 
 
-_subsection: Web3Provider @<Web3Provider> @INHERIT<[[JsonRpcProvider]]>
+_subsection: Web3Provider @<Web3Provider> @INHERIT<[[JsonRpcProvider]]> @SRC<providers:class.Web3Provider>
 
 The Web3Provider is meant to ease moving from a [web3.js based](link-web3)
 application to ethers by wraping an existing Web3-compatible (such as a
@@ -144,3 +144,20 @@ This is identical to ``sendAsync``. Historically, this used a synchronous
 web request, but no current browsers support this, so its use this way
 was deprecated quite a long time ago
 
+
+_subsection: WebSocketProvider @<WebSocketProvider> @INHERIT<[[JsonRpcProvider]]> @SRC<providers:class.WebSocketProvider>
+
+The **WebSocketProvider** connects to a JSON-RPC WebSocket-compatible backend
+which allows for a persistent connection, multiplexing requests and pub-sub
+events for a more immediate event dispatching.
+
+The WebSocket API is newer, and if running your own infrastructure, note that
+WebSockets are much more intensive on your server resourses, as they must manage
+and maintain the state for each client. For this reason, many services may also
+charge additional fees for using their WebSocket endpoints.
+
+_property: new ethers.provider.WebSockerProvider([ url [ , network ] ])
+Returns a new [[WebSocketProvider]] connected to //url// as the //network//.
+
+If //url// is unspecified, the default ``"ws:/\/localhost:8546"`` will be used.
+If //network// is unspecified, it will be queried from the network.

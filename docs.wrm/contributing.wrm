@@ -1,4 +1,4 @@
-_section: Contributing and Hacking
+_section: Contributing and Hacking @<contributing>
 
 The ethers.js library is something that I've written out of necessity,
 and has grown somewhat organically over time.
@@ -25,14 +25,19 @@ have a public discussion and figure out the best way to address to problem/featu
 **:)**
 
 
-_subsection: Building
+_subsection: Building @<contributing--building>
 
-If you wish to modify the source code, there are a few steps involved in setting up
-your environment.
+If you wish to modify the source code, there are a few steps involved in
+setting up your environment.
 
-_code: Preparing the Package @lang<shell>
+Since the library uses a monorepo, you must install an initial required
+set of libraries, which can then be used to install the remaining libraries
+used within each package, as well as link all the packages within the repo
+with each other.
 
-# Clone the REPO
+_code: Preparing for builds @lang<shell>
+
+# Clone the repository
 /home/ricmoo> git clone git@github.com:ethers-io/ethers.js.git
 /home/ricmoo> cd ethers.js
 
@@ -43,6 +48,10 @@ _code: Preparing the Package @lang<shell>
 # internally, so they reference each other
 /home/ricmoo/ethers.js> npm run bootstrap
 
+
+_subsection: Making your changes @<contributing--updating>
+
+TODO: Add more information here.
 
 _code: Watching and Building @lang<shell>
 
@@ -72,3 +81,65 @@ _code: Preparing the Distribution @lang<shell>
 
 /home/ricmoo/ethers.js> npm run update-version
 
+
+_subsection: Documentation @<contributing--documentation>
+
+The documents are generated using [Flatworm](flatworm) documentation
+generation tool, which was written for the purpose of writing the documentation
+for ethers.
+
+Style Guide (this section will have much more coming):
+
+- Try to keep lines no longer than //around// 80 characters
+- Avoid inline links in the source; use the ``externalLinks`` field in the config.js
+- Prefix external links with ``link-``
+- Changing an anchor name must be well justified, as it will break all existing links
+  to that section; flatworm will support symblinks in the future
+- In general, I aim for xonsistency; look to similar situations throughout the documentation
+
+
+_heading: Building
+
+To build the documentation, you should first follow the
+[above steps](contributing--building) to build the ethers library.
+
+Building the docs will generate several types of output:
+
+- A full set of HTML pages, linking across each other
+- A single one-page HTML page with all pages linking to local anchors
+- A full set of README.md pages organized to be browsable and linkable in GitHub
+- A metadata dump for tool ingestion (still needs more work)
+- (@TODO; only half done) The documentation as a LaTeX and generated PDF
+
+_code: Building the Documentations @lang<shell>
+
+/home/ricmoo/ethers.js> npm run build-docs
+
+
+_heading: Evaluation
+
+When building the documentation, all code samples are run through a JavaScript
+VM to ensure there are no typos in the example code, as well the exact output
+of results are injected into the output, so there is no need to keep the results
+and code in-sync.
+
+However, this can be a bit of a headache when making many small changes, so to
+build the documentation faster, you can skip the evaluation step, which will
+inject the code directly.
+
+_code: Build docs skipping evaluation @lang<shell>
+
+/home/ricmoo/ethers.js> npm run build-docs -- --skip-eval
+
+
+_heading: Previewing Changes
+
+To preview the changes locally, you can use any standard web server and run
+from the ``/docs/`` folder, or use the built-in web server.
+
+The same caveats as normal web development apply, such flushing browser
+caches after changing (and re-building) the docs.
+
+_code: Running a webserver @lang<shell>
+
+/home/ricmoo/ethers.js> npm run serve-docs

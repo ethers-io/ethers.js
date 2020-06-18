@@ -1,7 +1,7 @@
 The Ethers Project
 ==================
 
-[![npm (tag)](https://img.shields.io/npm/v/ethers/latest)](https://www.npmjs.com/package/ethers)
+[![npm (tag)](https://img.shields.io/npm/v/ethers)](https://www.npmjs.com/package/ethers)
 [![Node.js CI](https://github.com/ethers-io/ethers.js/workflows/Node.js%20CI/badge.svg?branch=ethers-v5-beta)](https://github.com/ethers-io/ethers.js/actions?query=workflow%3A%22Node.js+CI%22)
 
 A complete Ethereum wallet implementation and utilities in JavaScript (and TypeScript).
@@ -38,7 +38,7 @@ Installing
 **node.js**
 
 ```
-/home/ricmoo/some_project> npm install --save ethers@next
+/home/ricmoo/some_project> npm install --save ethers
 ```
 
 **browser (UMD)**
@@ -60,13 +60,13 @@ Installing
 Documentation
 -------------
 
-Browse the documentation online:
+Browse the [documentation](https://docs.ethers.io/v5/) online:
 
-- [Getting Started](https://docs.ethers.io/)
-- [Full API Documentation](https://docs.ethers.io/)
+- [Getting Started](https://docs.ethers.io/v5/getting-started/)
+- [Full API Documentation](https://docs.ethers.io/v5/api/)
 - [Various Ethereum Articles](https://blog.ricmoo.com/)
 
-Or browser the entire documentations as a [single page](https://docs.ethers.io/single-page/).
+Or browser the entire documentations as a [single page](https://docs.ethers.io/single-page/) to make searching easier.
 
 
 Ancillary Packages
