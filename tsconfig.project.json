@@ -10,9 +10,6 @@
   },
   "references": [
     {
-      "path": "./packages/errors"
-    },
-    {
       "path": "./packages/logger"
     },
     {
