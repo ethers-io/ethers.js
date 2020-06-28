@@ -121,7 +121,7 @@ The type of the result depends on the ABI.
 
 For values that have a simple meaning in JavaScript, the types are fairly straight forward; strings and booleans are returned as JavaScript strings and booleans.
 
-For numbers, if the **type** is in the JavaSsript safe range (i.e. less than 53 bits, such as an `int24` or `uint48`) a normal JavaScript number is used. Otherwise a [BigNumber](/v5/api/utils/bignumber/) is returned.
+For numbers, if the **type** is in the JavaScript safe range (i.e. less than 53 bits, such as an `int24` or `uint48`) a normal JavaScript number is used. Otherwise a [BigNumber](/v5/api/utils/bignumber/) is returned.
 
 For bytes (both fixed length and dynamic), a [DataHexString](/v5/api/utils/bytes/#DataHexString) is returned.
 
