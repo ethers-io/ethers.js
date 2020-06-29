@@ -23,6 +23,9 @@ exports.JsonRpcProvider = json_rpc_provider_1.JsonRpcProvider;
 exports.JsonRpcSigner = json_rpc_provider_1.JsonRpcSigner;
 var nodesmith_provider_1 = require("./nodesmith-provider");
 exports.NodesmithProvider = nodesmith_provider_1.NodesmithProvider;
+var url_json_rpc_provider_1 = require("./url-json-rpc-provider");
+exports.StaticJsonRpcProvider = url_json_rpc_provider_1.StaticJsonRpcProvider;
+exports.UrlJsonRpcProvider = url_json_rpc_provider_1.UrlJsonRpcProvider;
 var web3_provider_1 = require("./web3-provider");
 exports.Web3Provider = web3_provider_1.Web3Provider;
 var websocket_provider_1 = require("./websocket-provider");
@@ -37,6 +40,22 @@ var logger = new logger_1.Logger(_version_1.version);
 function getDefaultProvider(network, options) {
     if (network == null) {
         network = "homestead";
+    }
+    // If passed a URL, figure out the right type of provider based on the scheme
+    if (typeof (network) === "string") {
+        // @TODO: Add support for IpcProvider; maybe if it ends in ".ipc"?
+        // Handle http and ws (and their secure variants)
+        var match = network.match(/^(ws|http)s?:/i);
+        if (match) {
+            switch (match[1]) {
+                case "http":
+                    return new json_rpc_provider_1.JsonRpcProvider(network);
+                case "ws":
+                    return new websocket_provider_1.WebSocketProvider(network);
+                default:
+                    logger.throwArgumentError("unsupported URL scheme", "network", network);
+            }
+        }
     }
     var n = networks_1.getNetwork(network);
     if (!n || !n._defaultProvider) {

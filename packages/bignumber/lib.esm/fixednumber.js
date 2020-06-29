@@ -105,6 +105,11 @@ export function parseFixed(value, decimals) {
 }
 export class FixedFormat {
     constructor(constructorGuard, signed, width, decimals) {
+        if (constructorGuard !== _constructorGuard) {
+            logger.throwError("cannot use FixedFormat constructor; use FixedFormat.from", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "new FixedFormat"
+            });
+        }
         this.signed = signed;
         this.width = width;
         this.decimals = decimals;
@@ -162,6 +167,11 @@ export class FixedFormat {
 export class FixedNumber {
     constructor(constructorGuard, hex, value, format) {
         logger.checkNew(new.target, FixedNumber);
+        if (constructorGuard !== _constructorGuard) {
+            logger.throwError("cannot use FixedNumber constructor; use FixedNumber.from", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "new FixedFormat"
+            });
+        }
         this.format = format;
         this._hex = hex;
         this._value = value;
@@ -215,6 +225,9 @@ export class FixedNumber {
         comps = this.addUnsafe(FixedNumber.fromString(bump, this.format))._value.split(".");
         // Now it is safe to truncate
         return FixedNumber.fromString(comps[0] + "." + comps[1].substring(0, decimals));
+    }
+    isZero() {
+        return (this._value === "0.0");
     }
     toString() { return this._value; }
     toHexString(width) {

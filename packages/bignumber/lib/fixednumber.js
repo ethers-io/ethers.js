@@ -108,6 +108,11 @@ function parseFixed(value, decimals) {
 exports.parseFixed = parseFixed;
 var FixedFormat = /** @class */ (function () {
     function FixedFormat(constructorGuard, signed, width, decimals) {
+        if (constructorGuard !== _constructorGuard) {
+            logger.throwError("cannot use FixedFormat constructor; use FixedFormat.from", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "new FixedFormat"
+            });
+        }
         this.signed = signed;
         this.width = width;
         this.decimals = decimals;
@@ -168,6 +173,11 @@ var FixedNumber = /** @class */ (function () {
     function FixedNumber(constructorGuard, hex, value, format) {
         var _newTarget = this.constructor;
         logger.checkNew(_newTarget, FixedNumber);
+        if (constructorGuard !== _constructorGuard) {
+            logger.throwError("cannot use FixedNumber constructor; use FixedNumber.from", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "new FixedFormat"
+            });
+        }
         this.format = format;
         this._hex = hex;
         this._value = value;
@@ -221,6 +231,9 @@ var FixedNumber = /** @class */ (function () {
         comps = this.addUnsafe(FixedNumber.fromString(bump, this.format))._value.split(".");
         // Now it is safe to truncate
         return FixedNumber.fromString(comps[0] + "." + comps[1].substring(0, decimals));
+    };
+    FixedNumber.prototype.isZero = function () {
+        return (this._value === "0.0");
     };
     FixedNumber.prototype.toString = function () { return this._value; };
     FixedNumber.prototype.toHexString = function (width) {

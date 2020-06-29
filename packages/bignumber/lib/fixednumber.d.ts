@@ -23,6 +23,7 @@ export declare class FixedNumber {
     mulUnsafe(other: FixedNumber): FixedNumber;
     divUnsafe(other: FixedNumber): FixedNumber;
     round(decimals?: number): FixedNumber;
+    isZero(): boolean;
     toString(): string;
     toHexString(width?: number): string;
     toUnsafeFloat(): number;

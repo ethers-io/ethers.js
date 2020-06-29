@@ -13,7 +13,30 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 import { JsonRpcProvider } from "./json-rpc-provider";
-export class UrlJsonRpcProvider extends JsonRpcProvider {
+// A StaticJsonRpcProvider is useful when you *know* for certain that
+// the backend will never change, as it never calls eth_chainId to
+// verify its backend. However, if the backend does change, the effects
+// are undefined and may include:
+// - inconsistent results
+// - locking up the UI
+// - block skew warnings
+// - wrong results
+export class StaticJsonRpcProvider extends JsonRpcProvider {
+    detectNetwork() {
+        const _super = Object.create(null, {
+            _ready: { get: () => super._ready }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            let network = this.network;
+            if (network == null) {
+                // After this call completes, network is defined
+                network = yield _super._ready.call(this);
+            }
+            return network;
+        });
+    }
+}
+export class UrlJsonRpcProvider extends StaticJsonRpcProvider {
     constructor(network, apiKey) {
         logger.checkAbstract(new.target, UrlJsonRpcProvider);
         // Normalize the Network and API Key
@@ -29,11 +52,6 @@ export class UrlJsonRpcProvider extends JsonRpcProvider {
                 defineReadOnly(this, key, apiKey[key]);
             });
         }
-    }
-    detectNetwork() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.network;
-        });
     }
     _startPending() {
         logger.warn("WARNING: API provider does not support pending filters");

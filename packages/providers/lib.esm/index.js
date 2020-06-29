@@ -10,6 +10,7 @@ import { IpcProvider } from "./ipc-provider";
 import { InfuraProvider } from "./infura-provider";
 import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 import { NodesmithProvider } from "./nodesmith-provider";
+import { StaticJsonRpcProvider, UrlJsonRpcProvider } from "./url-json-rpc-provider";
 import { Web3Provider } from "./web3-provider";
 import { WebSocketProvider } from "./websocket-provider";
 import { Formatter } from "./formatter";
@@ -21,6 +22,22 @@ const logger = new Logger(version);
 function getDefaultProvider(network, options) {
     if (network == null) {
         network = "homestead";
+    }
+    // If passed a URL, figure out the right type of provider based on the scheme
+    if (typeof (network) === "string") {
+        // @TODO: Add support for IpcProvider; maybe if it ends in ".ipc"?
+        // Handle http and ws (and their secure variants)
+        const match = network.match(/^(ws|http)s?:/i);
+        if (match) {
+            switch (match[1]) {
+                case "http":
+                    return new JsonRpcProvider(network);
+                case "ws":
+                    return new WebSocketProvider(network);
+                default:
+                    logger.throwArgumentError("unsupported URL scheme", "network", network);
+            }
+        }
     }
     const n = getNetwork(network);
     if (!n || !n._defaultProvider) {
@@ -45,10 +62,10 @@ function getDefaultProvider(network, options) {
 // Exports
 export { 
 // Abstract Providers (or Abstract-ish)
-Provider, BaseProvider, 
+Provider, BaseProvider, UrlJsonRpcProvider, 
 ///////////////////////
 // Concreate Providers
-FallbackProvider, AlchemyProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, JsonRpcProvider, NodesmithProvider, Web3Provider, WebSocketProvider, IpcProvider, 
+FallbackProvider, AlchemyProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, JsonRpcProvider, NodesmithProvider, StaticJsonRpcProvider, Web3Provider, WebSocketProvider, IpcProvider, 
 ///////////////////////
 // Signer
 JsonRpcSigner, 

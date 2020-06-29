@@ -21,7 +21,7 @@ export declare class WebSocketProvider extends JsonRpcProvider {
         [name: string]: Subscription;
     };
     _wsReady: boolean;
-    constructor(url: string, network: Networkish);
+    constructor(url: string, network?: Networkish);
     get pollingInterval(): number;
     resetEventsBlock(blockNumber: number): void;
     set pollingInterval(value: number);

@@ -54,6 +54,40 @@ var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var json_rpc_provider_1 = require("./json-rpc-provider");
+// A StaticJsonRpcProvider is useful when you *know* for certain that
+// the backend will never change, as it never calls eth_chainId to
+// verify its backend. However, if the backend does change, the effects
+// are undefined and may include:
+// - inconsistent results
+// - locking up the UI
+// - block skew warnings
+// - wrong results
+var StaticJsonRpcProvider = /** @class */ (function (_super) {
+    __extends(StaticJsonRpcProvider, _super);
+    function StaticJsonRpcProvider() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    StaticJsonRpcProvider.prototype.detectNetwork = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var network;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        network = this.network;
+                        if (!(network == null)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, _super.prototype._ready.call(this)];
+                    case 1:
+                        // After this call completes, network is defined
+                        network = _a.sent();
+                        _a.label = 2;
+                    case 2: return [2 /*return*/, network];
+                }
+            });
+        });
+    };
+    return StaticJsonRpcProvider;
+}(json_rpc_provider_1.JsonRpcProvider));
+exports.StaticJsonRpcProvider = StaticJsonRpcProvider;
 var UrlJsonRpcProvider = /** @class */ (function (_super) {
     __extends(UrlJsonRpcProvider, _super);
     function UrlJsonRpcProvider(network, apiKey) {
@@ -75,13 +109,6 @@ var UrlJsonRpcProvider = /** @class */ (function (_super) {
         }
         return _this;
     }
-    UrlJsonRpcProvider.prototype.detectNetwork = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2 /*return*/, this.network];
-            });
-        });
-    };
     UrlJsonRpcProvider.prototype._startPending = function () {
         logger.warn("WARNING: API provider does not support pending filters");
     };
@@ -104,5 +131,5 @@ var UrlJsonRpcProvider = /** @class */ (function (_super) {
         });
     };
     return UrlJsonRpcProvider;
-}(json_rpc_provider_1.JsonRpcProvider));
+}(StaticJsonRpcProvider));
 exports.UrlJsonRpcProvider = UrlJsonRpcProvider;
