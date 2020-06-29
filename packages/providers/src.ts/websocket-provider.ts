@@ -56,7 +56,7 @@ export class WebSocketProvider extends JsonRpcProvider {
 
     _wsReady: boolean;
 
-    constructor(url: string, network: Networkish) {
+    constructor(url: string, network?: Networkish) {
         // This will be added in the future; please open an issue to expedite
         if (network === "any") {
             logger.throwError("WebSocketProvider does not support 'any' network yet", Logger.errors.UNSUPPORTED_OPERATION, {
