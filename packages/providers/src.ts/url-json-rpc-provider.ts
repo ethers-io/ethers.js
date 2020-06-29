@@ -13,7 +13,26 @@ import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 
 type getUrlFunc = (network: Network, apiKey: string) => string | ConnectionInfo;
 
-export abstract class UrlJsonRpcProvider extends JsonRpcProvider {
+// A StaticJsonRpcProvider is useful when you *know* for certain that
+// the backend will never change, as it never calls eth_chainId to
+// verify its backend. However, if the backend does change, the effects
+// are undefined and may include:
+// - inconsistent results
+// - locking up the UI
+// - block skew warnings
+// - wrong results
+export class StaticJsonRpcProvider extends JsonRpcProvider {
+    async detectNetwork(): Promise<Network> {
+        let network = this.network;
+        if (network == null) {
+            // After this call completes, network is defined
+            network = await super._ready();
+        }
+        return network;
+    }
+}
+
+export abstract class UrlJsonRpcProvider extends StaticJsonRpcProvider {
     readonly apiKey: any;
 
     constructor(network?: Networkish, apiKey?: any) {
@@ -34,10 +53,6 @@ export abstract class UrlJsonRpcProvider extends JsonRpcProvider {
                 defineReadOnly<any, any>(this, key, apiKey[key]);
             });
         }
-    }
-
-    async detectNetwork(): Promise<Network> {
-        return this.network;
     }
 
     _startPending(): void {

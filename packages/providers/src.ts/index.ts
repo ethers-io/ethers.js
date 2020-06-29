@@ -26,9 +26,9 @@ import { IpcProvider } from "./ipc-provider";
 import { InfuraProvider } from "./infura-provider";
 import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 import { NodesmithProvider } from "./nodesmith-provider";
+import { StaticJsonRpcProvider, UrlJsonRpcProvider } from "./url-json-rpc-provider";
 import { Web3Provider } from "./web3-provider";
 import { WebSocketProvider } from "./websocket-provider";
-
 import { ExternalProvider, JsonRpcFetchFunc } from "./web3-provider";
 
 import { Formatter } from "./formatter";
@@ -93,6 +93,7 @@ export {
     Provider,
     BaseProvider,
 
+    UrlJsonRpcProvider,
 
     ///////////////////////
     // Concreate Providers
@@ -105,6 +106,7 @@ export {
     InfuraProvider,
     JsonRpcProvider,
     NodesmithProvider,
+    StaticJsonRpcProvider,
     Web3Provider,
     WebSocketProvider,
 
