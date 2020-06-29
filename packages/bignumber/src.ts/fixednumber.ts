@@ -121,7 +121,7 @@ export class FixedFormat {
 
     constructor(constructorGuard: any, signed: boolean, width: number, decimals: number) {
         if (constructorGuard !== _constructorGuard) {
-            logger.throwError("cannot use FixedFormat construtor; use FixedFormat.from", Logger.errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("cannot use FixedFormat constructor; use FixedFormat.from", Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "new FixedFormat"
             });
         }
@@ -192,7 +192,7 @@ export class FixedNumber {
         logger.checkNew(new.target, FixedNumber);
 
         if (constructorGuard !== _constructorGuard) {
-            logger.throwError("cannot use FixedNumber construtor; use FixedNumber.from", Logger.errors.UNSUPPORTED_OPERATION, {
+            logger.throwError("cannot use FixedNumber constructor; use FixedNumber.from", Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "new FixedFormat"
             });
         }
