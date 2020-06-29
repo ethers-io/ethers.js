@@ -120,6 +120,12 @@ export class FixedFormat {
     readonly _multiplier: string;
 
     constructor(constructorGuard: any, signed: boolean, width: number, decimals: number) {
+        if (constructorGuard !== _constructorGuard) {
+            logger.throwError("cannot use FixedFormat construtor; use FixedFormat.from", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "new FixedFormat"
+            });
+        }
+
         this.signed = signed;
         this.width = width;
         this.decimals = decimals;
@@ -185,6 +191,12 @@ export class FixedNumber {
     constructor(constructorGuard: any, hex: string, value: string, format?: FixedFormat) {
         logger.checkNew(new.target, FixedNumber);
 
+        if (constructorGuard !== _constructorGuard) {
+            logger.throwError("cannot use FixedNumber construtor; use FixedNumber.from", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "new FixedFormat"
+            });
+        }
+
         this.format = format;
         this._hex = hex;
         this._value = value;
@@ -245,6 +257,10 @@ export class FixedNumber {
 
         // Now it is safe to truncate
         return FixedNumber.fromString(comps[0] + "." + comps[1].substring(0, decimals));
+    }
+
+    isZero(): boolean {
+        return (this._value === "0.0");
     }
 
 
