@@ -91,7 +91,7 @@ Returns a new instance of the Contract, but connected to
 By passing in a [[Provider]], this will return a downgraded
 **Contract** which only has read-only access (i.e. constant calls).
 
-By passing in a [[Signer]]. the will return a **Contract** which
+By passing in a [[Signer]]. this will return a **Contract** which
 will act on behalf of that signer.
 
 _property: erc20.deployed() => Promise<Contract>

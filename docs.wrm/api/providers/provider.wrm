@@ -60,7 +60,7 @@ provider.getBlockWithTransactions(100004)
 _subsection: Ethereum Naming Service (ENS) Methods @<Provider--ens-methods>
 
 The [Ethereum Naming Service](link-ens) (ENS) allows a short and
-easy-to-remember ENS Name to be atached to any set of keys
+easy-to-remember ENS Name to be attached to any set of keys
 and values.
 
 One of the most common uses for this is to use a simple name to

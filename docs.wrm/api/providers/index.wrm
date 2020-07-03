@@ -55,16 +55,16 @@ _note: Note: API Keys
 It is highly recommended for production services that to acquire
 and specify an API Key for each sercice.
 
-The deafult API Keys used by ethers are shared across all users,
+The default API Keys used by ethers are shared across all users,
 so services may throttle all services that are using the default
 API Keys during periods of load without realizing it.
 
 Many services also have monitoring and usage metrics, which are
-only available if an API Key is specifie. This allows tracking
+only available if an API Key is specified. This allows tracking
 how many requests are being sent and which methods are being
 used the most.
 
-Some services also provide additional paid features, whichare only
+Some services also provide additional paid features, which are only
 available when specifying an API Key.
 
 

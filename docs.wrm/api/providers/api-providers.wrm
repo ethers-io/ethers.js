@@ -96,7 +96,7 @@ specify a [Project Secret](link-infura-secret) which can be used
 on non-public sources (like on a server) to further secure your
 API access and quotas.
 
-_property: InfuraProvider.getWebSocketProvider([ network [ , apiKey ] ]) => [[WebSocketProvider]] @<InfuraProvider-getWebSocketProvider> @SRC<providers>
+_property: InfuraProvider.getWebSocketProvider([ network [ , apiKey ] ]) => [[WebSocketProvider]] @<InfuraProvider-getWebSocketProvider> @SRC<providers:InfuraProvider.getWebSocketProvider>
 Create a new [[WebSocketProvider]] using the INFURA web-socket endpoint
 to connect to //network// with the optional //apiKey//.
 

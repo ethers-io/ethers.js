@@ -19,7 +19,7 @@ Returns a new instance of the Contract, but connected to
 By passing in a [[Provider]], this will return a downgraded
 **Contract** which only has read-only access (i.e. constant calls).
 
-By passing in a [[Signer]]. the will return a **Contract** which
+By passing in a [[Signer]]. this will return a **Contract** which
 will act on behalf of that signer.
 
 
@@ -107,7 +107,7 @@ For values that have a simple meaning in JavaScript, the types are fairly
 straight forward; strings and booleans are returned as JavaScript strings
 and booleans.
 
-For numbers, if the **type** is in the JavaSsript safe range (i.e. less
+For numbers, if the **type** is in the JavaScript safe range (i.e. less
 than 53 bits, such as an ``int24`` or ``uint48``) a normal JavaScript
 number is used. Otherwise a [[BigNumber]] is returned.
 
@@ -150,7 +150,7 @@ signer.
 
 _heading: Write Methods Analysis @<Contract--check>
 
-There are secveral options to analyze properties and results of a
+There are several options to analyze properties and results of a
 write method without actually executing it.
 
 _property: contract.estimateGas.METHOD_NAME(...args [ , overrides ]) => Promise<[[BigNumber]]>  @<contract-estimateGas>
@@ -162,12 +162,12 @@ Returns an [[UnsignedTransaction]] which represents the transaction
 that would need to be signed and submitted to the network to execute
 //METHOD_NAME// with //args// and //overrides//.
 
-_property: contract.staticCall.METHOD_NAME(...args [ , overrides ]) => Promise<any>  @<contract-staticCall>
+_property: contract.callStatic.METHOD_NAME(...args [ , overrides ]) => Promise<any>  @<contract-callStatic>
 Rather than executing the state-change of a transaction, it is possible
 to ask a node to //pretend// that a call is not state-changing and
 return the result.
 
-This does not actually chagne any state, but is free. This in some cases
+This does not actually change any state, but is free. This in some cases
 can be used to determine if a transaction will fail or succeed.
 
 This otherwise functions the same as a [Read-Only Method](Contract--readonly).

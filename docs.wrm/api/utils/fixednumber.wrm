@@ -49,6 +49,12 @@ _property: fixednumber.round([ decimals = 0 ]) => [[FixedNumber]]  @SRC<bignumbe
 Returns a new FixedNumber with the value of //fixedvalue// rounded to //decimals//.
 
 
+_heading: Comparison and Equivalence
+
+_property: FixedNumber.isZero() => boolean  @SRC<bignumber/fixednumber:FixedNumber.isZero>
+Returns true if and only if the value of //FixedNumber// is zero.
+
+
 _heading: Conversion
 
 _property: fixednumber.toFormat(format) => [[FixedNumber]]  @SRC<bignumber/fixednumber>

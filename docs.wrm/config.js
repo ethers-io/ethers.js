@@ -54,7 +54,7 @@ function getDefinitions(source) {
 
 const getSourceUrl = (function(path, include, exclude) {
     console.log("Scanning TypeScript Sources...");
-    const Link = "https://github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages$FILENAME#L$LINE";
+    const Link = "https://github.com/ethers-io/ethers.js/blob/master/packages$FILENAME#L$LINE";
     const Root = resolve(__dirname, path);
 
     const readdir = function(path) {
@@ -151,16 +151,16 @@ function codeContextify(context) {
 
 module.exports = {
   title: "ethers",
-  subtitle: "v5.0-beta",
+  subtitle: "v5.0",
   logo: "logo.svg",
 
   prefix: "/v5",
 
-  link: "https:/\/docs-beta.ethers.io",
+  link: "https:/\/docs.ethers.io",
   copyright: "The content of this site is licensed under the [Creative Commons License](https:/\/choosealicense.com/licenses/cc-by-4.0/). Generated on &$now;.",
 
   markdown: {
-      "banner": "-----\n\nDocumentation: [html](https://docs-beta.ethers.io/)\n\n-----\n\n"
+      "banner": "-----\n\nDocumentation: [html](https://docs.ethers.io/)\n\n-----\n\n"
   },
 
   codeContextify: codeContextify,
@@ -217,7 +217,7 @@ module.exports = {
       "link-ethers-docs": "https:/\/docs.ethers.io/",
       "link-ethers-js": "https:/\/cdn.ethers.io/lib/ethers-5.0.esm.min.js",
       "link-ethers-npm": "https:/\/www.npmjs.com/search?q=%40ethersproject%2F",
-      "link-ethers-asm-grammar": "https:/\/github.com/ethers-io/ethers.js/blob/ethers-v5-beta/packages/asm/grammar.jison",
+      "link-ethers-asm-grammar": "https:/\/github.com/ethers-io/ethers.js/blob/master/packages/asm/grammar.jison",
 
       "link-eip-155": { name: "EIP-155", url: "https:/\/eips.ethereum.org/EIPS/eip-155" },
       "link-eip-191": { name: "EIP-191", url: "https:/\/eips.ethereum.org/EIPS/eip-191" },

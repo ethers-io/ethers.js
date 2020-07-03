@@ -12,12 +12,12 @@ The **JSON ABI Format** is the format that is
 A JSON serialized object is always a string, which represents an Array
 of Objects, where each Object has various properties describing the [[Fragment]] of the ABI.
 
-The deserialied JSON string (which is a normal JavaScript Object) may
+The deserialized JSON string (which is a normal JavaScript Object) may
 also be passed into any function which accepts a JSON String ABI.
 
 _heading: Humanb-Readable ABI
 
-The Human-Readable ABI was 
+The Human-Readable ABI was @TODO
 
 [article](link-ricmoo-humanreadableabi)
 

@@ -27,7 +27,7 @@ If a topic-set is a single topic, a log topic in that position must match
 **that topic**.
 
 If a topic-set is an array of topics, a log topic in that position must
-match any **one** of topics (i.e. the topic in thie position are ``OR``-ed).
+match any **one** of the topics (i.e. the topic in this position are ``OR``-ed).
 
 
 _table: Example Log Matching @style<full>

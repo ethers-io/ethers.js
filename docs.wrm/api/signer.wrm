@@ -47,7 +47,7 @@ _property: signer.getBalance([ blockTag = "latest" ]) => Promise<[[BigNumber]]> 
 Returns the balance of this wallet at //blockTag//.
 
 _property: signer.getChainId() => Promise<number>  @<Signer-getChainId> @SRC<abstract-signer>
-Returns ths chain ID this wallet is connected to.
+Returns the chain ID this wallet is connected to.
 
 _property: signer.getGasPrice() => Promise<[[BigNumber]]>  @<Signer-getGasPrice> @SRC<abstract-signer>
 Returns the current gas price.
@@ -121,7 +121,7 @@ properties such as the //provider// and //address// static throughout the
 life-cycle of the Signer helps prevent serious issues and many other classes
 and libraries make this assumption.
 
-A sub-class **must** extend Sigenr and **must** call ``super()``.
+A sub-class **must** extend Signer and **must** call ``super()``.
 
 _property: signer.checkTransaction(transactionRequest) => [[providers-TransactionRequest]]  @<Signer-checkTransaction> @SRC<abstract-signer>
 This is generally not required to be overridden, but may needed to provide
@@ -197,7 +197,7 @@ The provider this wallet is connected to, which will ge used for any [[Signer--b
 methods. This can be null.
 
 _note: Note
-A **Wallet** instance is immuatable, so if you wish to change the Provider, you
+A **Wallet** instance is immutable, so if you wish to change the Provider, you
 may use the [connect](Signer-connect) method to create a new instance connected
 to the desired provider.
 
