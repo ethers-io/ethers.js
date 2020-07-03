@@ -1,6 +1,8 @@
 "use strict";
 
-import { Network } from "@ethersproject/networks";
+import { Network, Networkish } from "@ethersproject/networks";
+
+import { WebSocketProvider } from "./websocket-provider";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -18,6 +20,15 @@ const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC"
 export class AlchemyProvider extends UrlJsonRpcProvider {
     readonly apiKey: string;
 
+    static getWebSocketProvider(network: Networkish, apiKey: any): WebSocketProvider {
+        const provider = new AlchemyProvider(network, apiKey);
+
+        const url = provider.connection.url.replace(/^http/i, "ws")
+                                           .replace(".alchemyapi.", ".ws.alchemyapi.");
+
+        return new WebSocketProvider(url, provider.network);
+    }
+
     static getApiKey(apiKey: any): any {
         if (apiKey == null) { return defaultApiKey; }
         if (apiKey && typeof(apiKey) !== "string") {
@@ -30,19 +41,19 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
         let host = null;
         switch (network.name) {
             case "homestead":
-                host = "eth-mainnet.alchemyapi.io/jsonrpc/";
+                host = "eth-mainnet.alchemyapi.io/v2/";
                 break;
             case "ropsten":
-                host = "eth-ropsten.alchemyapi.io/jsonrpc/";
+                host = "eth-ropsten.alchemyapi.io/v2/";
                 break;
             case "rinkeby":
-                host = "eth-rinkeby.alchemyapi.io/jsonrpc/";
+                host = "eth-rinkeby.alchemyapi.io/v2/";
                 break;
             case "goerli":
-                host = "eth-goerli.alchemyapi.io/jsonrpc/";
+                host = "eth-goerli.alchemyapi.io/v2/";
                 break;
             case "kovan":
-                host = "eth-kovan.alchemyapi.io/jsonrpc/";
+                host = "eth-kovan.alchemyapi.io/v2/";
                 break;
             default:
                logger.throwArgumentError("unsupported network", "network", arguments[0]);
