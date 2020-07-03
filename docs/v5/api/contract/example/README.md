@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -102,7 +102,7 @@ Returns a new instance of the Contract, but connected to *providerOrSigner*.
 
 By passing in a [Provider](/v5/api/providers/provider/), this will return a downgraded **Contract** which only has read-only access (i.e. constant calls).
 
-By passing in a [Signer](/v5/api/signer/#Signer). the will return a **Contract** which will act on behalf of that signer.
+By passing in a [Signer](/v5/api/signer/#Signer). this will return a **Contract** which will act on behalf of that signer.
 
 
 #### *erc20* . **deployed**( ) => *Promise< Contract >*

@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -89,14 +89,14 @@ interface.functions.transfer.encode(to, amount)
 interface.functions.transfer.decode(callData)
 
 // v5
-interface.encodeData("transfer", [ to, amount ])
-interface.decodeResult("transfer", data)
+interface.encodeFunctionData("transfer", [ to, amount ])
+interface.decodeFunctionResult("transfer", data)
 
 // Or you can use any compatible signature or Fragment objects.
 // Notice that signature normalization is performed for you,
 // e.g. "uint" and "uint256" will be automatically converted
-interface.encodeData("transfer(address,uint)", [ to, amount ])
-interface.decodeResult("transfer(address to, uint256 amount)", data)
+interface.encodeFunctionData("transfer(address,uint)", [ to, amount ])
+interface.decodeFunctionResult("transfer(address to, uint256 amount)", data)
 ```
 
 ### Events

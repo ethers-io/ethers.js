@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -38,7 +38,7 @@ Returns the balance of this wallet at *blockTag*.
 
 #### *signer* . **getChainId**( ) => *Promise< number >*
 
-Returns ths chain ID this wallet is connected to.
+Returns the chain ID this wallet is connected to.
 
 
 #### *signer* . **getGasPrice**( ) => *Promise< [BigNumber](/v5/api/utils/bignumber/) >*
@@ -177,7 +177,7 @@ The provider this wallet is connected to, which will ge used for any [Blockchain
 
 #### Note
 
-A **Wallet** instance is immuatable, so if you wish to change the Provider, you may use the [connect](/v5/api/signer/#Signer-connect) method to create a new instance connected to the desired provider.
+A **Wallet** instance is immutable, so if you wish to change the Provider, you may use the [connect](/v5/api/signer/#Signer-connect) method to create a new instance connected to the desired provider.
 
 
 #### *wallet* . **publicKey** => *string< [DataHexString](/v5/api/utils/bytes/#DataHexString)< 65 > >*
@@ -285,7 +285,7 @@ contract = new ethers.Contract("dai.tokens.ethers.eth", abi, signer)
 
 // Get the number of tokens for this account
 tokens = await contract.balanceOf(signer.getAddress())
-// { BigNumber: "7712595125722568213383" }
+// { BigNumber: "8814410125722568213383" }
 
 //
 // Pre-flight (check for revert) on DAI from the signer
@@ -302,7 +302,7 @@ contract.callStatic.transfer("donations.ethers.eth", tokens)
 
 // This will fail since it is greater than the token balance
 contract.callStatic.transfer("donations.ethers.eth", tokens.add(1))
-// Error: call revert exception (method="transfer(address,uint256)", errorSignature="Error(string)", errorArgs=["Dai/insufficient-balance"], reason="Dai/insufficient-balance", code=CALL_EXCEPTION, version=abi/5.0.0-beta.156)
+// Error: call revert exception (method="transfer(address,uint256)", errorSignature="Error(string)", errorArgs=["Dai/insufficient-balance"], reason="Dai/insufficient-balance", code=CALL_EXCEPTION, version=abi/5.0.1)
 ```
 
 ExternallyOwnedAccount

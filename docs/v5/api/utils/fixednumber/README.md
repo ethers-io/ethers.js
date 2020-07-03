@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -66,6 +66,13 @@ Returns a new FixedNumber with the value of *fixedvalue* **/** *otherValue*.
 #### *fixednumber* . **round**( [ decimals = 0 ] ) => *[FixedNumber](/v5/api/utils/fixednumber/)*
 
 Returns a new FixedNumber with the value of *fixedvalue* rounded to *decimals*.
+
+
+### Comparison and Equivalence
+
+#### *FixedNumber* . **isZero**( ) => *boolean*
+
+Returns true if and only if the value of *FixedNumber* is zero.
 
 
 ### Conversion

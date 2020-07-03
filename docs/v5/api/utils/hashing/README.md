@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -52,7 +52,7 @@ utils.keccak256("0x1234")
 
 // Do NOT use UTF-8 strings that are not a DataHexstring
 utils.keccak256("hello world")
-// Error: invalid arrayify value (argument="value", value="hello world", code=INVALID_ARGUMENT, version=bytes/5.0.0-beta.138)
+// Error: invalid arrayify value (argument="value", value="hello world", code=INVALID_ARGUMENT, version=bytes/5.0.1)
 
 // If needed, convert strings to bytes first:
 utils.keccak256(utils.toUtf8Bytes("hello world"))

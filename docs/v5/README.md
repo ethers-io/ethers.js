@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -80,6 +80,7 @@ Developer Documentation
       * [IpcProvider](api/providers/other)
       * [UrlJsonRpcProvider](api/providers/other)
       * [Web3Provider](api/providers/other)
+      * [WebSocketProvider](api/providers/other)
     * [Types](api/providers/types)
       * [BlockTag](api/providers/types)
       * [Network](api/providers/types)
@@ -235,6 +236,8 @@ Developer Documentation
 * [Testing](testing)
 * [Contributing and Hacking](contributing)
   * [Building](contributing)
+  * [Making your changes](contributing)
+  * [Documentation](contributing)
 * [Flatworm Docs](documentation)
   * [Fragments](documentation)
   * [Markdown](documentation)

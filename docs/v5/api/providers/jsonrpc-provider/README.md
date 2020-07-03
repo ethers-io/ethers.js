@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -14,7 +14,7 @@ Connect to a JSON-RPC API located at *url* using the *aNetworkish* network. If *
 
 #### Note: Connecting to a Local Node
 
-Each node implementation is slightly different and may require specific command-line flags, configuration or settings in their UI to enable JSON-RPC, unlock accounrs or expose specific APIs. Please consult their documentation.
+Each node implementation is slightly different and may require specific command-line flags, configuration or settings in their UI to enable JSON-RPC, unlock accounts or expose specific APIs. Please consult their documentation.
 
 
 #### *jsonRpcProvider* . **getSigner**( [ addressOrIndex ] ) => *[JsonRpcSigner](/v5/api/providers/jsonrpc-provider/#JsonRpcSigner)*
@@ -48,12 +48,12 @@ The provider this signer was established from.
 
 #### *signer* . **connectUnchecked**( ) => *[JsonRpcUncheckedSigner](/v5/api/providers/jsonrpc-provider/#UncheckedJsonRpcSigner)*
 
-Returns a new Signer object which does not perform addtional checks when sending a transaction. See [getUncheckedSigner](/v5/api/providers/jsonrpc-provider/#JsonRpcProvider-getUncheckedSigner) for more details.
+Returns a new Signer object which does not perform additional checks when sending a transaction. See [getUncheckedSigner](/v5/api/providers/jsonrpc-provider/#JsonRpcProvider-getUncheckedSigner) for more details.
 
 
 #### *signer* . **sendUncheckedTransaction**( transaction ) => *Promise< string< [DataHexString](/v5/api/utils/bytes/#DataHexString)< 32 > > >*
 
-Sends the *transaction* and returns a Promise which resolves to the opacque transaction hash.
+Sends the *transaction* and returns a Promise which resolves to the opaque transaction hash.
 
 
 #### *signer* . **unlock**( password ) => *Promise< boolean >*

@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -25,7 +25,7 @@ Returns a new instance of the Contract, but connected to *providerOrSigner*.
 
 By passing in a [Provider](/v5/api/providers/provider/), this will return a downgraded **Contract** which only has read-only access (i.e. constant calls).
 
-By passing in a [Signer](/v5/api/signer/#Signer). the will return a **Contract** which will act on behalf of that signer.
+By passing in a [Signer](/v5/api/signer/#Signer). this will return a **Contract** which will act on behalf of that signer.
 
 
 Properties
@@ -121,7 +121,7 @@ The type of the result depends on the ABI.
 
 For values that have a simple meaning in JavaScript, the types are fairly straight forward; strings and booleans are returned as JavaScript strings and booleans.
 
-For numbers, if the **type** is in the JavaSsript safe range (i.e. less than 53 bits, such as an `int24` or `uint48`) a normal JavaScript number is used. Otherwise a [BigNumber](/v5/api/utils/bignumber/) is returned.
+For numbers, if the **type** is in the JavaScript safe range (i.e. less than 53 bits, such as an `int24` or `uint48`) a normal JavaScript number is used. Otherwise a [BigNumber](/v5/api/utils/bignumber/) is returned.
 
 For bytes (both fixed length and dynamic), a [DataHexString](/v5/api/utils/bytes/#DataHexString) is returned.
 
@@ -156,11 +156,11 @@ Returns the estimate units of gas that would be required to execute the *METHOD_
 Returns an [UnsignedTransaction](/v5/api/utils/transactions/#UnsignedTransaction) which represents the transaction that would need to be signed and submitted to the network to execute *METHOD_NAME* with *args* and *overrides*.
 
 
-#### *contract* . *staticCall* . **METHOD_NAME**( ...args [ , overrides ] ) => *Promise< any >*
+#### *contract* . *callStatic* . **METHOD_NAME**( ...args [ , overrides ] ) => *Promise< any >*
 
 Rather than executing the state-change of a transaction, it is possible to ask a node to *pretend* that a call is not state-changing and return the result.
 
-This does not actually chagne any state, but is free. This in some cases can be used to determine if a transaction will fail or succeed.
+This does not actually change any state, but is free. This in some cases can be used to determine if a transaction will fail or succeed.
 
 This otherwise functions the same as a [Read-Only Method](/v5/api/contract/contract/#Contract--readonly).
 

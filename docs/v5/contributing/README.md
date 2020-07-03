@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -11,7 +11,7 @@ Building
 --------
 
 ```
-# Clone the REPO
+# Clone the repository
 /home/ricmoo> git clone git@github.com:ethers-io/ethers.js.git
 /home/ricmoo> cd ethers.js
 
@@ -22,6 +22,9 @@ Building
 # internally, so they reference each other
 /home/ricmoo/ethers.js> npm run bootstrap
 ```
+
+Making your changes
+-------------------
 
 ```
 # Begin watching the files and re-building whenever they change
@@ -47,5 +50,26 @@ Building
 
 ```
 /home/ricmoo/ethers.js> npm run update-version
+```
+
+Documentation
+-------------
+
+### Building
+
+```
+/home/ricmoo/ethers.js> npm run build-docs
+```
+
+### Evaluation
+
+```
+/home/ricmoo/ethers.js> npm run build-docs -- --skip-eval
+```
+
+### Previewing Changes
+
+```
+/home/ricmoo/ethers.js> npm run serve-docs
 ```
 

@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -118,5 +118,15 @@ The *callback* should use the error-first calling semantics, so `(error, result)
 #### *externalProvider* . **send**( request , callback ) => *void*
 
 This is identical to `sendAsync`. Historically, this used a synchronous web request, but no current browsers support this, so its use this way was deprecated quite a long time ago
+
+
+WebSocketProvider
+-----------------
+
+#### **new ***ethers* . *provider* . **WebSockerProvider**( [ url [ , network ] ] )
+
+Returns a new [WebSocketProvider](/v5/api/providers/other/#WebSocketProvider) connected to *url* as the *network*.
+
+If *url* is unspecified, the default `"ws://localhost:8546"` will be used. If *network* is unspecified, it will be queried from the network.
 
 

@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -76,6 +76,13 @@ The *network* may be specified as **string** for a common network name, a **numb
 The *apiKey* can be a **string** Project ID or an **object** with the properties `projectId` and `projectSecret` to specify a [Project Secret](https://infura.io/docs/gettingStarted/authentication) which can be used on non-public sources (like on a server) to further secure your API access and quotas.
 
 
+#### *InfuraProvider* . **getWebSocketProvider**( [ network [ , apiKey ] ] ) => *[WebSocketProvider](/v5/api/providers/other/#WebSocketProvider)*
+
+Create a new [WebSocketProvider](/v5/api/providers/other/#WebSocketProvider) using the INFURA web-socket endpoint to connect to *network* with the optional *apiKey*.
+
+The *network* and *apiKey* are specified the same as [the constructor](/v5/api/providers/api-providers/#InfuraProvider).
+
+
 #### Note: Default API keys
 
 If no *apiKey* is provided, a shared API key will be used, which may result in reduced performance and throttled requests.
@@ -111,6 +118,9 @@ provider = new InfuraProvider("homestead", {
     projectId: projectId,
     projectSecret: projectSecret
 });
+
+// Connect to the INFURA WebSocket endpoints with a WebSocketProvider
+provider = InfuraProvider.getWebSocketProvider()
 ```
 
 AlchemyProvider

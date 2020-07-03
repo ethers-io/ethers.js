@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -54,6 +54,7 @@ Application Programming Interface
     * [IpcProvider](providers/other)
     * [UrlJsonRpcProvider](providers/other)
     * [Web3Provider](providers/other)
+    * [WebSocketProvider](providers/other)
   * [Types](providers/types)
     * [BlockTag](providers/types)
     * [Network](providers/types)

@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -52,9 +52,9 @@ Returns the unsigned transaction which would deploy this Contract with *args* pa
 
 #### *contractFactory* . **deploy**( ...args ) => *Promise< [Contract](/v5/api/contract/contract/) >*
 
-Uses the signer to deploy the Contract with *args* passed into tgee constructor and retruns a Contract which is attached to the address where this contract **will** be deployed once the transction is mined.
+Uses the signer to deploy the Contract with *args* passed into the constructor and retruns a Contract which is attached to the address where this contract **will** be deployed once the transaction is mined.
 
-The transction can be found at `contract.deployTransaction`, and no interactions should be made until the transaction is mined.
+The transaction can be found at `contract.deployTransaction`, and no interactions should be made until the transaction is mined.
 
 
 ```
@@ -86,7 +86,7 @@ contract.deployTransaction
 contract.deployTransaction.wait()
 //!
 
-// Now the contract is safe to ineract with
+// Now the contract is safe to interact with
 contract.value()
 //!
 ```

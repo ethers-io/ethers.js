@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -164,20 +164,20 @@ Return a copy of *array* shuffled using [Fisher-Yates Shuffle](https://en.wikipe
 
 ```javascript
 utils.randomBytes(8)
-// Uint8Array [ 131, 252, 210, 50, 128, 120, 18, 68 ]
+// Uint8Array [ 95, 9, 0, 81, 176, 49, 211, 225 ]
 
 const data = [ 1, 2, 3, 4, 5, 6, 7 ];
 
 // Returns a new Array
 utils.shuffled(data);
 // [
-//   7,
 //   6,
+//   7,
 //   4,
-//   2,
 //   3,
+//   5,
 //   1,
-//   5
+//   2
 // ]
 
 // The Original is unscathed...

@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -102,7 +102,7 @@ If a line begins with a `"_"`, it should be escaped with a `"\"`.
 
 Creates a [Table](/v5/documentation/#flatworm--table) structured according to the body.
 
-Each cell support and variables support markdown.
+Each cell contents supports markdown and variables supports markdown.
 
 **Extensions:** [@style](/v5/documentation/#flatworm--ext-style)
 
@@ -172,7 +172,8 @@ This is placed in an orange box.
 
 
 _null:
-This breaks out of a directive. For example, to end a
+This breaks out of a directive. For example, to end
+a ``_note:`` or ``_code:``.
 ```
 
 Markdown

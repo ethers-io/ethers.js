@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -85,7 +85,7 @@ BigNumber.from(42n)
 
 // Numbers outside the safe range fail:
 BigNumber.from(Number.MAX_SAFE_INTEGER);
-// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740991, code=NUMERIC_FAULT, version=bignumber/5.0.0-beta.139)
+// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740991, code=NUMERIC_FAULT, version=bignumber/5.0.2)
 ```
 
 Methods

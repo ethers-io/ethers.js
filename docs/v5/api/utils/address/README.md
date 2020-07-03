@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -21,7 +21,7 @@ Converting and Verifying
 
 Returns *address* as a Checksum Address.
 
-If *address* is an invalid 40-nibble [HexString](/v5/api/utils/bytes/#HexString) or if it contains mixed case and the checksum is invalid, an InvalidArgument Error is throw.
+If *address* is an invalid 40-nibble [HexString](/v5/api/utils/bytes/#HexString) or if it contains mixed case and the checksum is invalid, an InvalidArgument Error is thrown.
 
 The value of *address* may be any supported address format.
 

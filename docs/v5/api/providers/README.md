@@ -1,6 +1,6 @@
 -----
 
-Documentation: [html](https://docs-beta.ethers.io/)
+Documentation: [html](https://docs.ethers.io/)
 
 -----
 
@@ -25,11 +25,11 @@ Option Properties
 
 It is highly recommended for production services that to acquire and specify an API Key for each sercice.
 
-The deafult API Keys used by ethers are shared across all users, so services may throttle all services that are using the default API Keys during periods of load without realizing it.
+The default API Keys used by ethers are shared across all users, so services may throttle all services that are using the default API Keys during periods of load without realizing it.
 
-Many services also have monitoring and usage metrics, which are only available if an API Key is specifie. This allows tracking how many requests are being sent and which methods are being used the most.
+Many services also have monitoring and usage metrics, which are only available if an API Key is specified. This allows tracking how many requests are being sent and which methods are being used the most.
 
-Some services also provide additional paid features, whichare only available when specifying an API Key.
+Some services also provide additional paid features, which are only available when specifying an API Key.
 
 
 Provider Documentation
@@ -58,6 +58,7 @@ Provider Documentation
   * [IpcProvider](other)
   * [UrlJsonRpcProvider](other)
   * [Web3Provider](other)
+  * [WebSocketProvider](other)
 * [Types](types)
   * [BlockTag](types)
   * [Network](types)
