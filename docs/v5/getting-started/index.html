@@ -27,8 +27,10 @@
 
 <p>For quick demos or prototyping though, it can be loaded in your Web Applications from our CDN.</p>
 
-<div class="code-title"><div>ES6 in the Browser</div></div><div class="code">&lt;script src="https://cdn.ethers.io/lib/ethers-5.0.esm.min.js"
-        type="application/javascipt"&gt;&lt;/script&gt;</div><div class="code-title"><div>ES3 (UMD) in the Browser</div></div><div class="code">&lt;script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js"
+<div class="code-title"><div>ES6 in the Browser</div></div><div class="code">&lt;script type="module"&gt;
+    import { ethers } from "https://cdn.ethers.io/lib/ethers-5.0.esm.min.js";
+    // Your code here...
+&lt;/script&gt;</div><div class="code-title"><div>ES3 (UMD) in the Browser</div></div><div class="code">&lt;script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js"
         type="application/javascipt"&gt;&lt;/script&gt;</div><a name="getting-started--glossary"></a><a name="getting-started--getting-started--glossary"></a><h2 class="show-anchors"><div>Common Terminology<div class="anchors"><a class="self" href="/v5/getting-started/#getting-started--glossary"></a></div></div></h2><p>This section needs work...</p>
 
 <table class="table minimal"><tr><td align="left"><b>Provider</b></td><td align="left">A Provider (in ethers) is a class which provides an abstraction for a connection to the Ethereum Network. It provides read-only access to the Blockchain and its status.</td><td class="fix">&nbsp;</td></tr><tr><td align="left"><b>Signer</b></td><td align="left">A Signer is a class which (usually) in some way directly or indirectly has access to a private key, which can sign messages and transactions to authorize the network to charge your account ether to perform operations.</td><td class="fix">&nbsp;</td></tr><tr><td align="left"><b>Contract</b></td><td align="left">A Contract is an abstraction which represents a connection to a specific contract on the Ethereum Network, so that it can be used like a normal JavaScipt object.</td><td class="fix">&nbsp;</td></tr><tr><td class="table-title" colspan="2">Common Terms</td><td class="fix">&nbsp;</td></tr></table><a name="getting-started--connecting"></a><a name="getting-started--getting-started--connecting"></a><h2 class="show-anchors"><div>Connecting to Ethereum: Metamask<div class="anchors"><a class="self" href="/v5/getting-started/#getting-started--connecting"></a></div></div></h2><p>The quickest and easiest way to experiment and begin developing on Ethereum is to use <a href="https://metamask.io/">Metamask</a>, which is a browser extension that provides:</p>
@@ -47,7 +49,7 @@
 
 <div class="code-title"><div>Basic Queries</div></div><div class="code"><span class="comment">// Look up the current block number
 </span>provider.getBlockNumber()
-<span class="result ok">// { Promise: 10384649 }
+<span class="result ok">// { Promise: 10397126 }
 </span>
 <span class="comment">// Get the balance of an account (by address or ENS name)
 </span>balance = await provider.getBalance("ethers.eth")
@@ -115,11 +117,11 @@
 </span>
 <span class="comment">// Get the balance of an address
 </span>balance = await daiContract.balanceOf("ricmoo.firefly.eth")
-<span class="result ok">// { BigNumber: "8814410125722568213383" }
+<span class="result ok">// { BigNumber: "9709905125722568213383" }
 </span>
 <span class="comment">// Format the DAI for displaying to the user
 </span>ethers.utils.formatUnits(balance, 18)
-<span class="result ok">// '8814.410125722568213383'
+<span class="result ok">// '9709.905125722568213383'
 </span></div><a name="getting-started--writing"></a><a name="getting-started--getting-started--contracts--getting-started--writing"></a><h3 class="show-anchors"><div>State Changing Methods<div class="anchors"><a class="self" href="/v5/getting-started/#getting-started--writing"></a></div></div></h3>
 <div class="code-title"><div>Sending DAI</div></div><div class="code"><span class="comment">// The DAI Contract is currently connected to the Provider,
 </span><span class="comment">// which is read-only. We need to connect to a Signer, so
@@ -257,7 +259,7 @@ filter = daiContract.filters.Transfer(null, myAddress)
 </span><span class="comment">// logging into a service, such as CryptoKitties simply
 </span><span class="comment">// pass the string in.
 </span>signature = await signer.signMessage("Hello World");
-<span class="result ok">// '0x9671c8b89473038593fddda5875debcb517dbfe79bd25119f6b0878bcd6c5e9d497e5d7f08cb7314da5d2a04b49bee0918d0b9e11744ee5a738b94e38986575f1c'
+<span class="result ok">// '0x7b8d663c680b165bb7b0601a65d730f532fa6427b2e30f1d91ff1d929712b3a50b427a672b90c1dc48a4e5fbde292fbded51f670ab57d15d5794b6ff015649611c'
 </span>
 //
 <span class="comment">// A common case is also signing a hash, which is 32
@@ -274,14 +276,14 @@ filter = daiContract.filters.Transfer(null, myAddress)
 </span>
 <span class="comment">// To sign a hash, you most often want to sign the bytes
 </span>signature = await signer.signMessage(messageBytes)
-<span class="result ok">// '0xfff17b9972cf8466bcde13dfc52afe6cbe39b86b1c9028d0fe4de6ab565ce01a48b7eba3663a24588e87798d924e8178f3c7c84d9363f57a9bee519f7cac50b31b'
+<span class="result ok">// '0xc791b3d29aa1754f9e392784273f076ef39ca5d81f2729c92af61f89db724a604074acbd725d9d95e1d3c9630211c8eee8e34f6d948d537dd82c11be4bcf676e1c'
 </span></div>
 
       <div class="footer">
         <div class="nav previous"><a href="/v5/"><span class="arrow">&larr;</span>Documentation</a></div>
         <div class="nav next"><a href="/v5/concepts/">Ethereum Basics<span class="arrow">&rarr;</span></a></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on July 3, 2020, 1:44am.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on July 5, 2020, 12:0am.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
   </body>

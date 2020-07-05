@@ -285,7 +285,7 @@ contract = new ethers.Contract("dai.tokens.ethers.eth", abi, signer)
 
 // Get the number of tokens for this account
 tokens = await contract.balanceOf(signer.getAddress())
-// { BigNumber: "8814410125722568213383" }
+// { BigNumber: "9709905125722568213383" }
 
 //
 // Pre-flight (check for revert) on DAI from the signer

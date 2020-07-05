@@ -30,8 +30,10 @@ import { ethers } from "ethers";
 ### Web Browser
 
 ```
-<script src="https://cdn.ethers.io/lib/ethers-5.0.esm.min.js"
-        type="application/javascipt"></script>
+<script type="module">
+    import { ethers } from "https://cdn.ethers.io/lib/ethers-5.0.esm.min.js";
+    // Your code here...
+</script>
 ```
 
 ```
@@ -65,7 +67,7 @@ const signer = provider.getSigner()
 ```javascript
 // Look up the current block number
 provider.getBlockNumber()
-// { Promise: 10384649 }
+// { Promise: 10397126 }
 
 // Get the balance of an account (by address or ENS name)
 balance = await provider.getBalance("ethers.eth")
@@ -133,11 +135,11 @@ daiContract.symbol()
 
 // Get the balance of an address
 balance = await daiContract.balanceOf("ricmoo.firefly.eth")
-// { BigNumber: "8814410125722568213383" }
+// { BigNumber: "9709905125722568213383" }
 
 // Format the DAI for displaying to the user
 ethers.utils.formatUnits(balance, 18)
-// '8814.410125722568213383'
+// '9709.905125722568213383'
 ```
 
 ### State Changing Methods
@@ -292,7 +294,7 @@ Signing Messages
 // logging into a service, such as CryptoKitties simply
 // pass the string in.
 signature = await signer.signMessage("Hello World");
-// '0x9671c8b89473038593fddda5875debcb517dbfe79bd25119f6b0878bcd6c5e9d497e5d7f08cb7314da5d2a04b49bee0918d0b9e11744ee5a738b94e38986575f1c'
+// '0x7b8d663c680b165bb7b0601a65d730f532fa6427b2e30f1d91ff1d929712b3a50b427a672b90c1dc48a4e5fbde292fbded51f670ab57d15d5794b6ff015649611c'
 
 //
 // A common case is also signing a hash, which is 32
@@ -309,6 +311,6 @@ messageBytes = ethers.utils.arrayify(message);
 
 // To sign a hash, you most often want to sign the bytes
 signature = await signer.signMessage(messageBytes)
-// '0xfff17b9972cf8466bcde13dfc52afe6cbe39b86b1c9028d0fe4de6ab565ce01a48b7eba3663a24588e87798d924e8178f3c7c84d9363f57a9bee519f7cac50b31b'
+// '0xc791b3d29aa1754f9e392784273f076ef39ca5d81f2729c92af61f89db724a604074acbd725d9d95e1d3c9630211c8eee8e34f6d948d537dd82c11be4bcf676e1c'
 ```
 

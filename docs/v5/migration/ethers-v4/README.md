@@ -108,7 +108,7 @@ interface.events.Transfer.decode(data, topics)
 
 // v5
 interface.encodeFilterTopics("Transfer", values)
-interface.encodeEventLog("Transfer", data, topics)
+interface.decodeEventLog("Transfer", data, topics)
 ```
 
 ### Inspection
