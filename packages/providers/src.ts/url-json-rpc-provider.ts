@@ -21,12 +21,26 @@ type getUrlFunc = (network: Network, apiKey: string) => string | ConnectionInfo;
 // - locking up the UI
 // - block skew warnings
 // - wrong results
+// If the network is not explicit (i.e. auto-detection is expected), the
+// node MUST be running and available to respond to requests BEFORE this
+// is instantiated.
 export class StaticJsonRpcProvider extends JsonRpcProvider {
     async detectNetwork(): Promise<Network> {
         let network = this.network;
         if (network == null) {
-            // After this call completes, network is defined
-            network = await super._ready();
+            network = await super.detectNetwork();
+
+            if (!network) {
+                logger.throwError("no network detected", Logger.errors.UNKNOWN_ERROR, { });
+            }
+
+            // If still not set, set it
+            if (this._network == null) {
+                // A static network does not support "any"
+                defineReadOnly(this, "_network", network);
+
+                this.emit("network", network, null);
+            }
         }
         return network;
     }
