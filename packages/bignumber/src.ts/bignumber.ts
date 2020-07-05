@@ -97,7 +97,11 @@ export class BigNumber implements Hexable {
     }
 
     pow(other: BigNumberish): BigNumber {
-        return toBigNumber(toBN(this).pow(toBN(other)));
+        const value = toBN(other);
+        if (value.isNeg()) {
+            throwFault("cannot raise to negative values", "pow");
+        }
+        return toBigNumber(toBN(this).pow(value));
     }
 
     and(other: BigNumberish): BigNumber {
