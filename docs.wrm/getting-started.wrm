@@ -38,8 +38,10 @@ Web Applications from our CDN.
 
 _code: ES6 in the Browser @lang<html>
 
-<script src="https://cdn.ethers.io/lib/ethers-5.0.esm.min.js"
-        type="application/javascipt"></script>
+<script type="module">
+    import { ethers } from "https://cdn.ethers.io/lib/ethers-5.0.esm.min.js";
+    // Your code here...
+</script>
 
 
 _code: ES3 (UMD) in the Browser @lang<html>
