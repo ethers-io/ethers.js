@@ -27,7 +27,7 @@ Keep Updated
 ------------
 
 For the latest news and advisories, please follow the [@ethersproject](https://twitter.com/ethersproject)
-on Twitter (low-traffic, non-marketting, important information only) as well as watch this GitHub project.
+on Twitter (low-traffic, non-marketing, important information only) as well as watch this GitHub project.
 
 For the latest changes, see the [CHANGELOG](https://github.com/ethers-io/ethers.js/blob/master/CHANGELOG.md).
 
@@ -66,7 +66,7 @@ Browse the [documentation](https://docs.ethers.io/v5/) online:
 - [Full API Documentation](https://docs.ethers.io/v5/api/)
 - [Various Ethereum Articles](https://blog.ricmoo.com/)
 
-Or browser the entire documentations as a [single page](https://docs.ethers.io/single-page/) to make searching easier.
+Or browse the entire documentation as a [single page](https://docs.ethers.io/single-page/) to make searching easier.
 
 
 Ancillary Packages
@@ -78,7 +78,7 @@ use-cases, so rather than adding them to the umbrella package, they are added as
 ancillary packaged, which can be included by those who need them, while not bloating
 everyone else with packages they do not need.
 
-We will keep a list of useful pacakges here.
+We will keep a list of useful packages here.
 
 - `@ethersproject/experimental` ([documentation](https://docs.ethers.io))
 - `@ethersproject/cli` ([documentation](https://docs.ethers.io))
