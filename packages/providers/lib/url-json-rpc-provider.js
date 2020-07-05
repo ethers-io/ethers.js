@@ -62,6 +62,9 @@ var json_rpc_provider_1 = require("./json-rpc-provider");
 // - locking up the UI
 // - block skew warnings
 // - wrong results
+// If the network is not explicit (i.e. auto-detection is expected), the
+// node MUST be running and available to respond to requests BEFORE this
+// is instantiated.
 var StaticJsonRpcProvider = /** @class */ (function (_super) {
     __extends(StaticJsonRpcProvider, _super);
     function StaticJsonRpcProvider() {
@@ -75,10 +78,18 @@ var StaticJsonRpcProvider = /** @class */ (function (_super) {
                     case 0:
                         network = this.network;
                         if (!(network == null)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, _super.prototype._ready.call(this)];
+                        return [4 /*yield*/, _super.prototype.detectNetwork.call(this)];
                     case 1:
-                        // After this call completes, network is defined
                         network = _a.sent();
+                        if (!network) {
+                            logger.throwError("no network detected", logger_1.Logger.errors.UNKNOWN_ERROR, {});
+                        }
+                        // If still not set, set it
+                        if (this._network == null) {
+                            // A static network does not support "any"
+                            properties_1.defineReadOnly(this, "_network", network);
+                            this.emit("network", network, null);
+                        }
                         _a.label = 2;
                     case 2: return [2 /*return*/, network];
                 }

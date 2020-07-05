@@ -21,16 +21,27 @@ import { JsonRpcProvider } from "./json-rpc-provider";
 // - locking up the UI
 // - block skew warnings
 // - wrong results
+// If the network is not explicit (i.e. auto-detection is expected), the
+// node MUST be running and available to respond to requests BEFORE this
+// is instantiated.
 export class StaticJsonRpcProvider extends JsonRpcProvider {
     detectNetwork() {
         const _super = Object.create(null, {
-            _ready: { get: () => super._ready }
+            detectNetwork: { get: () => super.detectNetwork }
         });
         return __awaiter(this, void 0, void 0, function* () {
             let network = this.network;
             if (network == null) {
-                // After this call completes, network is defined
-                network = yield _super._ready.call(this);
+                network = yield _super.detectNetwork.call(this);
+                if (!network) {
+                    logger.throwError("no network detected", Logger.errors.UNKNOWN_ERROR, {});
+                }
+                // If still not set, set it
+                if (this._network == null) {
+                    // A static network does not support "any"
+                    defineReadOnly(this, "_network", network);
+                    this.emit("network", network, null);
+                }
             }
             return network;
         });

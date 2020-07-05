@@ -4149,7 +4149,7 @@ var lib_esm$1 = /*#__PURE__*/Object.freeze({
 	joinSignature: joinSignature
 });
 
-const version$2 = "bignumber/5.0.2";
+const version$2 = "bignumber/5.0.3";
 
 "use strict";
 const logger$1 = new Logger(version$2);
@@ -4211,7 +4211,11 @@ class BigNumber {
         return toBigNumber(toBN(this).umod(value));
     }
     pow(other) {
-        return toBigNumber(toBN(this).pow(toBN(other)));
+        const value = toBN(other);
+        if (value.isNeg()) {
+            throwFault("cannot raise to negative values", "pow");
+        }
+        return toBigNumber(toBN(this).pow(value));
     }
     and(other) {
         const value = toBN(other);
@@ -16211,7 +16215,7 @@ function poll(func, options) {
     });
 }
 
-const version$m = "providers/5.0.3";
+const version$m = "providers/5.0.4";
 
 "use strict";
 const logger$q = new Logger(version$m);
@@ -17706,6 +17710,40 @@ class BaseProvider extends Provider {
     }
 }
 
+var _version$2 = createCommonjsModule(function (module, exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.version = "providers/5.0.4";
+});
+
+var _version$3 = unwrapExports(_version$2);
+var _version_1$1 = _version$2.version;
+
+var browserWs = createCommonjsModule(function (module, exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+
+var WS = null;
+try {
+    WS = WebSocket;
+    if (WS == null) {
+        throw new Error("inject please");
+    }
+}
+catch (error) {
+    var logger_2 = new lib_esm.Logger(_version$2.version);
+    WS = function () {
+        logger_2.throwError("WebSockets not supported in this environment", lib_esm.Logger.errors.UNSUPPORTED_OPERATION, {
+            operation: "new WebSocket()"
+        });
+    };
+}
+module.exports = WS;
+});
+
+var WebSocket$1 = unwrapExports(browserWs);
+
 "use strict";
 var __awaiter$7 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -18176,6 +18214,246 @@ var __awaiter$8 = (window && window.__awaiter) || function (thisArg, _arguments,
     });
 };
 const logger$t = new Logger(version$m);
+/**
+ *  Notes:
+ *
+ *  This provider differs a bit from the polling providers. One main
+ *  difference is how it handles consistency. The polling providers
+ *  will stall responses to ensure a consistent state, while this
+ *  WebSocket provider assumes the connected backend will manage this.
+ *
+ *  For example, if a polling provider emits an event which indicats
+ *  the event occurred in blockhash XXX, a call to fetch that block by
+ *  its hash XXX, if not present will retry until it is present. This
+ *  can occur when querying a pool of nodes that are mildly out of sync
+ *  with each other.
+ */
+let NextId = 1;
+// For more info about the Real-time Event API see:
+//   https://geth.ethereum.org/docs/rpc/pubsub
+class WebSocketProvider extends JsonRpcProvider {
+    constructor(url, network) {
+        // This will be added in the future; please open an issue to expedite
+        if (network === "any") {
+            logger$t.throwError("WebSocketProvider does not support 'any' network yet", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "network:any"
+            });
+        }
+        super(url, network);
+        this._pollingInterval = -1;
+        defineReadOnly(this, "_websocket", new WebSocket$1(this.connection.url));
+        defineReadOnly(this, "_requests", {});
+        defineReadOnly(this, "_subs", {});
+        defineReadOnly(this, "_subIds", {});
+        // Stall sending requests until the socket is open...
+        this._wsReady = false;
+        this._websocket.onopen = () => {
+            this._wsReady = true;
+            Object.keys(this._requests).forEach((id) => {
+                this._websocket.send(this._requests[id].payload);
+            });
+        };
+        this._websocket.onmessage = (messageEvent) => {
+            const data = messageEvent.data;
+            const result = JSON.parse(data);
+            if (result.id != null) {
+                const id = String(result.id);
+                const request = this._requests[id];
+                delete this._requests[id];
+                if (result.result !== undefined) {
+                    request.callback(null, result.result);
+                }
+                else {
+                    if (result.error) {
+                        const error = new Error(result.error.message || "unknown error");
+                        defineReadOnly(error, "code", result.error.code || null);
+                        defineReadOnly(error, "response", data);
+                        request.callback(error, undefined);
+                    }
+                    else {
+                        request.callback(new Error("unknown error"), undefined);
+                    }
+                }
+            }
+            else if (result.method === "eth_subscription") {
+                // Subscription...
+                const sub = this._subs[result.params.subscription];
+                if (sub) {
+                    //this.emit.apply(this,                  );
+                    sub.processFunc(result.params.result);
+                }
+            }
+            else {
+                console.warn("this should not happen");
+            }
+        };
+        // This Provider does not actually poll, but we want to trigger
+        // poll events for things that depend on them (like stalling for
+        // block and transaction lookups)
+        const fauxPoll = setInterval(() => {
+            this.emit("poll");
+        }, 1000);
+        if (fauxPoll.unref) {
+            fauxPoll.unref();
+        }
+    }
+    get pollingInterval() {
+        return 0;
+    }
+    resetEventsBlock(blockNumber) {
+        logger$t.throwError("cannot reset events block on WebSocketProvider", Logger.errors.UNSUPPORTED_OPERATION, {
+            operation: "resetEventBlock"
+        });
+    }
+    set pollingInterval(value) {
+        logger$t.throwError("cannot set polling interval on WebSocketProvider", Logger.errors.UNSUPPORTED_OPERATION, {
+            operation: "setPollingInterval"
+        });
+    }
+    poll() {
+        return __awaiter$8(this, void 0, void 0, function* () {
+            return null;
+        });
+    }
+    set polling(value) {
+        if (!value) {
+            return;
+        }
+        logger$t.throwError("cannot set polling on WebSocketProvider", Logger.errors.UNSUPPORTED_OPERATION, {
+            operation: "setPolling"
+        });
+    }
+    send(method, params) {
+        const rid = NextId++;
+        return new Promise((resolve, reject) => {
+            function callback(error, result) {
+                if (error) {
+                    return reject(error);
+                }
+                return resolve(result);
+            }
+            const payload = JSON.stringify({
+                method: method,
+                params: params,
+                id: rid,
+                jsonrpc: "2.0"
+            });
+            this._requests[String(rid)] = { callback, payload };
+            if (this._wsReady) {
+                this._websocket.send(payload);
+            }
+        });
+    }
+    static defaultUrl() {
+        return "ws:/\/localhost:8546";
+    }
+    _subscribe(tag, param, processFunc) {
+        return __awaiter$8(this, void 0, void 0, function* () {
+            let subIdPromise = this._subIds[tag];
+            if (subIdPromise == null) {
+                subIdPromise = Promise.all(param).then((param) => {
+                    return this.send("eth_subscribe", param);
+                });
+                this._subIds[tag] = subIdPromise;
+            }
+            const subId = yield subIdPromise;
+            this._subs[subId] = { tag, processFunc };
+        });
+    }
+    _startEvent(event) {
+        switch (event.type) {
+            case "block":
+                this._subscribe("block", ["newHeads"], (result) => {
+                    const blockNumber = BigNumber.from(result.number).toNumber();
+                    this._emitted.block = blockNumber;
+                    this.emit("block", blockNumber);
+                });
+                break;
+            case "pending":
+                this._subscribe("pending", ["newPendingTransactions"], (result) => {
+                    this.emit("pending", result);
+                });
+                break;
+            case "filter":
+                this._subscribe(event.tag, ["logs", this._getFilter(event.filter)], (result) => {
+                    if (result.removed == null) {
+                        result.removed = false;
+                    }
+                    this.emit(event.filter, this.formatter.filterLog(result));
+                });
+                break;
+            case "tx": {
+                const emitReceipt = (event) => {
+                    const hash = event.hash;
+                    this.getTransactionReceipt(hash).then((receipt) => {
+                        if (!receipt) {
+                            return;
+                        }
+                        this.emit(hash, receipt);
+                    });
+                };
+                // In case it is already mined
+                emitReceipt(event);
+                // To keep things simple, we start up a single newHeads subscription
+                // to keep an eye out for transactions we are watching for.
+                // Starting a subscription for an event (i.e. "tx") that is already
+                // running is (basically) a nop.
+                this._subscribe("tx", ["newHeads"], (result) => {
+                    this._events.filter((e) => (e.type === "tx")).forEach(emitReceipt);
+                });
+                break;
+            }
+            // Nothing is needed
+            case "debug":
+            case "poll":
+            case "willPoll":
+            case "didPoll":
+            case "error":
+                break;
+            default:
+                console.log("unhandled:", event);
+                break;
+        }
+    }
+    _stopEvent(event) {
+        let tag = event.tag;
+        if (event.type === "tx") {
+            // There are remaining transaction event listeners
+            if (this._events.filter((e) => (e.type === "tx")).length) {
+                return;
+            }
+            tag = "tx";
+        }
+        else if (this.listenerCount(event.event)) {
+            // There are remaining event listeners
+            return;
+        }
+        const subId = this._subIds[tag];
+        if (!subId) {
+            return;
+        }
+        delete this._subIds[tag];
+        subId.then((subId) => {
+            if (!this._subs[subId]) {
+                return;
+            }
+            delete this._subs[subId];
+            this.send("eth_unsubscribe", [subId]);
+        });
+    }
+}
+
+"use strict";
+var __awaiter$9 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const logger$u = new Logger(version$m);
 // A StaticJsonRpcProvider is useful when you *know* for certain that
 // the backend will never change, as it never calls eth_chainId to
 // verify its backend. However, if the backend does change, the effects
@@ -18184,16 +18462,27 @@ const logger$t = new Logger(version$m);
 // - locking up the UI
 // - block skew warnings
 // - wrong results
+// If the network is not explicit (i.e. auto-detection is expected), the
+// node MUST be running and available to respond to requests BEFORE this
+// is instantiated.
 class StaticJsonRpcProvider extends JsonRpcProvider {
     detectNetwork() {
         const _super = Object.create(null, {
-            _ready: { get: () => super._ready }
+            detectNetwork: { get: () => super.detectNetwork }
         });
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             let network = this.network;
             if (network == null) {
-                // After this call completes, network is defined
-                network = yield _super._ready.call(this);
+                network = yield _super.detectNetwork.call(this);
+                if (!network) {
+                    logger$u.throwError("no network detected", Logger.errors.UNKNOWN_ERROR, {});
+                }
+                // If still not set, set it
+                if (this._network == null) {
+                    // A static network does not support "any"
+                    defineReadOnly(this, "_network", network);
+                    this.emit("network", network, null);
+                }
             }
             return network;
         });
@@ -18201,7 +18490,7 @@ class StaticJsonRpcProvider extends JsonRpcProvider {
 }
 class UrlJsonRpcProvider extends StaticJsonRpcProvider {
     constructor(network, apiKey) {
-        logger$t.checkAbstract(new.target, UrlJsonRpcProvider);
+        logger$u.checkAbstract(new.target, UrlJsonRpcProvider);
         // Normalize the Network and API Key
         network = getStatic((new.target), "getNetwork")(network);
         apiKey = getStatic((new.target), "getApiKey")(apiKey);
@@ -18217,10 +18506,10 @@ class UrlJsonRpcProvider extends StaticJsonRpcProvider {
         }
     }
     _startPending() {
-        logger$t.warn("WARNING: API provider does not support pending filters");
+        logger$u.warn("WARNING: API provider does not support pending filters");
     }
     getSigner(address) {
-        return logger$t.throwError("API provider does not support signing", Logger.errors.UNSUPPORTED_OPERATION, { operation: "getSigner" });
+        return logger$u.throwError("API provider does not support signing", Logger.errors.UNSUPPORTED_OPERATION, { operation: "getSigner" });
     }
     listAccounts() {
         return Promise.resolve([]);
@@ -18233,26 +18522,32 @@ class UrlJsonRpcProvider extends StaticJsonRpcProvider {
     // API key will have been sanitized by the getApiKey first, so any validation
     // or transformations can be done there.
     static getUrl(network, apiKey) {
-        return logger$t.throwError("not implemented; sub-classes must override getUrl", Logger.errors.NOT_IMPLEMENTED, {
+        return logger$u.throwError("not implemented; sub-classes must override getUrl", Logger.errors.NOT_IMPLEMENTED, {
             operation: "getUrl"
         });
     }
 }
 
 "use strict";
-const logger$u = new Logger(version$m);
+const logger$v = new Logger(version$m);
 // This key was provided to ethers.js by Alchemy to be used by the
 // default provider, but it is recommended that for your own
 // production environments, that you acquire your own API key at:
 //   https://dashboard.alchemyapi.io
 const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC";
 class AlchemyProvider extends UrlJsonRpcProvider {
+    static getWebSocketProvider(network, apiKey) {
+        const provider = new AlchemyProvider(network, apiKey);
+        const url = provider.connection.url.replace(/^http/i, "ws")
+            .replace(".alchemyapi.", ".ws.alchemyapi.");
+        return new WebSocketProvider(url, provider.network);
+    }
     static getApiKey(apiKey) {
         if (apiKey == null) {
             return defaultApiKey;
         }
         if (apiKey && typeof (apiKey) !== "string") {
-            logger$u.throwArgumentError("invalid apiKey", "apiKey", apiKey);
+            logger$v.throwArgumentError("invalid apiKey", "apiKey", apiKey);
         }
         return apiKey;
     }
@@ -18260,69 +18555,24 @@ class AlchemyProvider extends UrlJsonRpcProvider {
         let host = null;
         switch (network.name) {
             case "homestead":
-                host = "eth-mainnet.alchemyapi.io/jsonrpc/";
+                host = "eth-mainnet.alchemyapi.io/v2/";
                 break;
             case "ropsten":
-                host = "eth-ropsten.alchemyapi.io/jsonrpc/";
+                host = "eth-ropsten.alchemyapi.io/v2/";
                 break;
             case "rinkeby":
-                host = "eth-rinkeby.alchemyapi.io/jsonrpc/";
+                host = "eth-rinkeby.alchemyapi.io/v2/";
                 break;
             case "goerli":
-                host = "eth-goerli.alchemyapi.io/jsonrpc/";
+                host = "eth-goerli.alchemyapi.io/v2/";
                 break;
             case "kovan":
-                host = "eth-kovan.alchemyapi.io/jsonrpc/";
-                break;
-            default:
-                logger$u.throwArgumentError("unsupported network", "network", arguments[0]);
-        }
-        return ("https:/" + "/" + host + apiKey);
-    }
-}
-
-"use strict";
-var __awaiter$9 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const logger$v = new Logger(version$m);
-class CloudflareProvider extends UrlJsonRpcProvider {
-    static getApiKey(apiKey) {
-        if (apiKey != null) {
-            logger$v.throwArgumentError("apiKey not supported for cloudflare", "apiKey", apiKey);
-        }
-        return null;
-    }
-    static getUrl(network, apiKey) {
-        let host = null;
-        switch (network.name) {
-            case "homestead":
-                host = "https://cloudflare-eth.com/";
+                host = "eth-kovan.alchemyapi.io/v2/";
                 break;
             default:
                 logger$v.throwArgumentError("unsupported network", "network", arguments[0]);
         }
-        return host;
-    }
-    perform(method, params) {
-        const _super = Object.create(null, {
-            perform: { get: () => super.perform }
-        });
-        return __awaiter$9(this, void 0, void 0, function* () {
-            // The Cloudflare provider does not support eth_blockNumber,
-            // so we get the latest block and pull it from that
-            if (method === "getBlockNumber") {
-                const block = yield _super.perform.call(this, "getBlock", { blockTag: "latest" });
-                return block.number;
-            }
-            return _super.perform.call(this, method, params);
-        });
+        return ("https:/" + "/" + host + apiKey);
     }
 }
 
@@ -18337,6 +18587,51 @@ var __awaiter$a = (window && window.__awaiter) || function (thisArg, _arguments,
     });
 };
 const logger$w = new Logger(version$m);
+class CloudflareProvider extends UrlJsonRpcProvider {
+    static getApiKey(apiKey) {
+        if (apiKey != null) {
+            logger$w.throwArgumentError("apiKey not supported for cloudflare", "apiKey", apiKey);
+        }
+        return null;
+    }
+    static getUrl(network, apiKey) {
+        let host = null;
+        switch (network.name) {
+            case "homestead":
+                host = "https://cloudflare-eth.com/";
+                break;
+            default:
+                logger$w.throwArgumentError("unsupported network", "network", arguments[0]);
+        }
+        return host;
+    }
+    perform(method, params) {
+        const _super = Object.create(null, {
+            perform: { get: () => super.perform }
+        });
+        return __awaiter$a(this, void 0, void 0, function* () {
+            // The Cloudflare provider does not support eth_blockNumber,
+            // so we get the latest block and pull it from that
+            if (method === "getBlockNumber") {
+                const block = yield _super.perform.call(this, "getBlock", { blockTag: "latest" });
+                return block.number;
+            }
+            return _super.perform.call(this, method, params);
+        });
+    }
+}
+
+"use strict";
+var __awaiter$b = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const logger$x = new Logger(version$m);
 // The transaction has already been sanitized by the calls in Provider
 function getTransactionString(transaction) {
     const result = [];
@@ -18398,7 +18693,7 @@ function checkLogTag(blockTag) {
 const defaultApiKey$1 = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 class EtherscanProvider extends BaseProvider {
     constructor(network, apiKey) {
-        logger$w.checkNew(new.target, EtherscanProvider);
+        logger$x.checkNew(new.target, EtherscanProvider);
         super(network);
         let name = "invalid";
         if (this.network) {
@@ -18428,7 +18723,7 @@ class EtherscanProvider extends BaseProvider {
         defineReadOnly(this, "apiKey", apiKey || defaultApiKey$1);
     }
     detectNetwork() {
-        return __awaiter$a(this, void 0, void 0, function* () {
+        return __awaiter$b(this, void 0, void 0, function* () {
             return this.network;
         });
     }
@@ -18436,13 +18731,13 @@ class EtherscanProvider extends BaseProvider {
         const _super = Object.create(null, {
             perform: { get: () => super.perform }
         });
-        return __awaiter$a(this, void 0, void 0, function* () {
+        return __awaiter$b(this, void 0, void 0, function* () {
             let url = this.baseUrl;
             let apiKey = "";
             if (this.apiKey) {
                 apiKey += "&apikey=" + this.apiKey;
             }
-            const get = (url, procFunc) => __awaiter$a(this, void 0, void 0, function* () {
+            const get = (url, procFunc) => __awaiter$b(this, void 0, void 0, function* () {
                 this.emit("debug", {
                     action: "request",
                     request: url,
@@ -18489,15 +18784,15 @@ class EtherscanProvider extends BaseProvider {
                         if (error.responseText) {
                             // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
                             if (error.responseText.toLowerCase().indexOf("insufficient funds") >= 0) {
-                                logger$w.throwError("insufficient funds", Logger.errors.INSUFFICIENT_FUNDS, {});
+                                logger$x.throwError("insufficient funds", Logger.errors.INSUFFICIENT_FUNDS, {});
                             }
                             // "Transaction with the same hash was already imported."
                             if (error.responseText.indexOf("same hash was already imported") >= 0) {
-                                logger$w.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {});
+                                logger$x.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {});
                             }
                             // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
                             if (error.responseText.indexOf("another transaction with same nonce") >= 0) {
-                                logger$w.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {});
+                                logger$x.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {});
                             }
                         }
                         throw error;
@@ -18559,12 +18854,12 @@ class EtherscanProvider extends BaseProvider {
                     // @TODO: We can handle slightly more complicated logs using the logs API
                     if (params.filter.topics && params.filter.topics.length > 0) {
                         if (params.filter.topics.length > 1) {
-                            logger$w.throwError("unsupported topic count", Logger.errors.UNSUPPORTED_OPERATION, { topics: params.filter.topics });
+                            logger$x.throwError("unsupported topic count", Logger.errors.UNSUPPORTED_OPERATION, { topics: params.filter.topics });
                         }
                         if (params.filter.topics.length === 1) {
                             const topic0 = params.filter.topics[0];
                             if (typeof (topic0) !== "string" || topic0.length !== 66) {
-                                logger$w.throwError("unsupported topic format", Logger.errors.UNSUPPORTED_OPERATION, { topic0: topic0 });
+                                logger$x.throwError("unsupported topic format", Logger.errors.UNSUPPORTED_OPERATION, { topic0: topic0 });
                             }
                             url += "&topic0=" + topic0;
                         }
@@ -18655,7 +18950,7 @@ class EtherscanProvider extends BaseProvider {
 }
 
 "use strict";
-var __awaiter$b = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$c = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -18664,7 +18959,7 @@ var __awaiter$b = (window && window.__awaiter) || function (thisArg, _arguments,
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const logger$x = new Logger(version$m);
+const logger$y = new Logger(version$m);
 function now() { return (new Date()).getTime(); }
 // Returns to network as long as all agree, or null if any is null.
 // Throws an error if any two networks do not match.
@@ -18680,7 +18975,7 @@ function checkNetworks(networks) {
             // Make sure the network matches the previous networks
             if (!(result.name === network.name && result.chainId === network.chainId &&
                 ((result.ensAddress === network.ensAddress) || (result.ensAddress == null && network.ensAddress == null)))) {
-                logger$x.throwArgumentError("provider mismatch", "networks", networks);
+                logger$y.throwArgumentError("provider mismatch", "networks", networks);
             }
         }
         else {
@@ -18903,7 +19198,7 @@ function getProcessFunc(provider, method, params) {
 // If we are doing a blockTag query, we need to make sure the backend is
 // caught up to the FallbackProvider, before sending a request to it.
 function waitForSync(config, blockNumber) {
-    return __awaiter$b(this, void 0, void 0, function* () {
+    return __awaiter$c(this, void 0, void 0, function* () {
         const provider = (config.provider);
         if ((provider.blockNumber != null && provider.blockNumber >= blockNumber) || blockNumber === -1) {
             return provider;
@@ -18927,7 +19222,7 @@ function waitForSync(config, blockNumber) {
     });
 }
 function getRunner(config, currentBlockNumber, method, params) {
-    return __awaiter$b(this, void 0, void 0, function* () {
+    return __awaiter$c(this, void 0, void 0, function* () {
         let provider = config.provider;
         switch (method) {
             case "getBlockNumber":
@@ -18972,7 +19267,7 @@ function getRunner(config, currentBlockNumber, method, params) {
                 return provider.getLogs(filter);
             }
         }
-        return logger$x.throwError("unknown method error", Logger.errors.UNKNOWN_ERROR, {
+        return logger$y.throwError("unknown method error", Logger.errors.UNKNOWN_ERROR, {
             method: method,
             params: params
         });
@@ -18980,9 +19275,9 @@ function getRunner(config, currentBlockNumber, method, params) {
 }
 class FallbackProvider extends BaseProvider {
     constructor(providers, quorum) {
-        logger$x.checkNew(new.target, FallbackProvider);
+        logger$y.checkNew(new.target, FallbackProvider);
         if (providers.length === 0) {
-            logger$x.throwArgumentError("missing providers", "providers", providers);
+            logger$y.throwArgumentError("missing providers", "providers", providers);
         }
         const providerConfigs = providers.map((configOrProvider, index) => {
             if (Provider.isProvider(configOrProvider)) {
@@ -19000,7 +19295,7 @@ class FallbackProvider extends BaseProvider {
             }
             const weight = config.weight;
             if (weight % 1 || weight > 512 || weight < 1) {
-                logger$x.throwArgumentError("invalid weight; must be integer in [1, 512]", `providers[${index}].weight`, weight);
+                logger$y.throwArgumentError("invalid weight; must be integer in [1, 512]", `providers[${index}].weight`, weight);
             }
             return Object.freeze(config);
         });
@@ -19009,7 +19304,7 @@ class FallbackProvider extends BaseProvider {
             quorum = total / 2;
         }
         else if (quorum > total) {
-            logger$x.throwArgumentError("quorum will always fail; larger than total weight", "quorum", quorum);
+            logger$y.throwArgumentError("quorum will always fail; larger than total weight", "quorum", quorum);
         }
         // Are all providers' networks are known
         let networkOrReady = checkNetworks(providerConfigs.map((c) => (c.provider).network));
@@ -19028,13 +19323,13 @@ class FallbackProvider extends BaseProvider {
         this._highestBlockNumber = -1;
     }
     detectNetwork() {
-        return __awaiter$b(this, void 0, void 0, function* () {
+        return __awaiter$c(this, void 0, void 0, function* () {
             const networks = yield Promise.all(this.providerConfigs.map((c) => c.provider.getNetwork()));
             return checkNetworks(networks);
         });
     }
     perform(method, params) {
-        return __awaiter$b(this, void 0, void 0, function* () {
+        return __awaiter$c(this, void 0, void 0, function* () {
             // Sending transactions is special; always broadcast it to all backends
             if (method === "sendTransaction") {
                 const results = yield Promise.all(this.providerConfigs.map((c) => {
@@ -19161,7 +19456,7 @@ class FallbackProvider extends BaseProvider {
                 }
                 c.cancelled = true;
             });
-            return logger$x.throwError("failed to meet quorum", Logger.errors.SERVER_ERROR, {
+            return logger$y.throwError("failed to meet quorum", Logger.errors.SERVER_ERROR, {
                 method: method,
                 params: params,
                 //results: configs.map((c) => c.result),
@@ -19179,280 +19474,6 @@ var IpcProvider = null;
 var browserIpcProvider = {
 	IpcProvider: IpcProvider
 };
-
-var _version$2 = createCommonjsModule(function (module, exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.3";
-});
-
-var _version$3 = unwrapExports(_version$2);
-var _version_1$1 = _version$2.version;
-
-var browserWs = createCommonjsModule(function (module, exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-
-
-var WS = null;
-try {
-    WS = WebSocket;
-    if (WS == null) {
-        throw new Error("inject please");
-    }
-}
-catch (error) {
-    var logger_2 = new lib_esm.Logger(_version$2.version);
-    WS = function () {
-        logger_2.throwError("WebSockets not supported in this environment", lib_esm.Logger.errors.UNSUPPORTED_OPERATION, {
-            operation: "new WebSocket()"
-        });
-    };
-}
-module.exports = WS;
-});
-
-var WebSocket$1 = unwrapExports(browserWs);
-
-"use strict";
-var __awaiter$c = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const logger$y = new Logger(version$m);
-/**
- *  Notes:
- *
- *  This provider differs a bit from the polling providers. One main
- *  difference is how it handles consistency. The polling providers
- *  will stall responses to ensure a consistent state, while this
- *  WebSocket provider assumes the connected backend will manage this.
- *
- *  For example, if a polling provider emits an event which indicats
- *  the event occurred in blockhash XXX, a call to fetch that block by
- *  its hash XXX, if not present will retry until it is present. This
- *  can occur when querying a pool of nodes that are mildly out of sync
- *  with each other.
- */
-let NextId = 1;
-// For more info about the Real-time Event API see:
-//   https://geth.ethereum.org/docs/rpc/pubsub
-class WebSocketProvider extends JsonRpcProvider {
-    constructor(url, network) {
-        // This will be added in the future; please open an issue to expedite
-        if (network === "any") {
-            logger$y.throwError("WebSocketProvider does not support 'any' network yet", Logger.errors.UNSUPPORTED_OPERATION, {
-                operation: "network:any"
-            });
-        }
-        super(url, network);
-        this._pollingInterval = -1;
-        defineReadOnly(this, "_websocket", new WebSocket$1(this.connection.url));
-        defineReadOnly(this, "_requests", {});
-        defineReadOnly(this, "_subs", {});
-        defineReadOnly(this, "_subIds", {});
-        // Stall sending requests until the socket is open...
-        this._wsReady = false;
-        this._websocket.onopen = () => {
-            this._wsReady = true;
-            Object.keys(this._requests).forEach((id) => {
-                this._websocket.send(this._requests[id].payload);
-            });
-        };
-        this._websocket.onmessage = (messageEvent) => {
-            const data = messageEvent.data;
-            const result = JSON.parse(data);
-            if (result.id != null) {
-                const id = String(result.id);
-                const request = this._requests[id];
-                delete this._requests[id];
-                if (result.result !== undefined) {
-                    request.callback(null, result.result);
-                }
-                else {
-                    if (result.error) {
-                        const error = new Error(result.error.message || "unknown error");
-                        defineReadOnly(error, "code", result.error.code || null);
-                        defineReadOnly(error, "response", data);
-                        request.callback(error, undefined);
-                    }
-                    else {
-                        request.callback(new Error("unknown error"), undefined);
-                    }
-                }
-            }
-            else if (result.method === "eth_subscription") {
-                // Subscription...
-                const sub = this._subs[result.params.subscription];
-                if (sub) {
-                    //this.emit.apply(this,                  );
-                    sub.processFunc(result.params.result);
-                }
-            }
-            else {
-                console.warn("this should not happen");
-            }
-        };
-        // This Provider does not actually poll, but we want to trigger
-        // poll events for things that depend on them (like stalling for
-        // block and transaction lookups)
-        const fauxPoll = setInterval(() => {
-            this.emit("poll");
-        }, 1000);
-        if (fauxPoll.unref) {
-            fauxPoll.unref();
-        }
-    }
-    get pollingInterval() {
-        return 0;
-    }
-    resetEventsBlock(blockNumber) {
-        logger$y.throwError("cannot reset events block on WebSocketProvider", Logger.errors.UNSUPPORTED_OPERATION, {
-            operation: "resetEventBlock"
-        });
-    }
-    set pollingInterval(value) {
-        logger$y.throwError("cannot set polling interval on WebSocketProvider", Logger.errors.UNSUPPORTED_OPERATION, {
-            operation: "setPollingInterval"
-        });
-    }
-    poll() {
-        return __awaiter$c(this, void 0, void 0, function* () {
-            return null;
-        });
-    }
-    set polling(value) {
-        if (!value) {
-            return;
-        }
-        logger$y.throwError("cannot set polling on WebSocketProvider", Logger.errors.UNSUPPORTED_OPERATION, {
-            operation: "setPolling"
-        });
-    }
-    send(method, params) {
-        const rid = NextId++;
-        return new Promise((resolve, reject) => {
-            function callback(error, result) {
-                if (error) {
-                    return reject(error);
-                }
-                return resolve(result);
-            }
-            const payload = JSON.stringify({
-                method: method,
-                params: params,
-                id: rid,
-                jsonrpc: "2.0"
-            });
-            this._requests[String(rid)] = { callback, payload };
-            if (this._wsReady) {
-                this._websocket.send(payload);
-            }
-        });
-    }
-    static defaultUrl() {
-        return "ws:/\/localhost:8546";
-    }
-    _subscribe(tag, param, processFunc) {
-        return __awaiter$c(this, void 0, void 0, function* () {
-            let subIdPromise = this._subIds[tag];
-            if (subIdPromise == null) {
-                subIdPromise = Promise.all(param).then((param) => {
-                    return this.send("eth_subscribe", param);
-                });
-                this._subIds[tag] = subIdPromise;
-            }
-            const subId = yield subIdPromise;
-            this._subs[subId] = { tag, processFunc };
-        });
-    }
-    _startEvent(event) {
-        switch (event.type) {
-            case "block":
-                this._subscribe("block", ["newHeads"], (result) => {
-                    const blockNumber = BigNumber.from(result.number).toNumber();
-                    this._emitted.block = blockNumber;
-                    this.emit("block", blockNumber);
-                });
-                break;
-            case "pending":
-                this._subscribe("pending", ["newPendingTransactions"], (result) => {
-                    this.emit("pending", result);
-                });
-                break;
-            case "filter":
-                this._subscribe(event.tag, ["logs", this._getFilter(event.filter)], (result) => {
-                    if (result.removed == null) {
-                        result.removed = false;
-                    }
-                    this.emit(event.filter, this.formatter.filterLog(result));
-                });
-                break;
-            case "tx": {
-                const emitReceipt = (event) => {
-                    const hash = event.hash;
-                    this.getTransactionReceipt(hash).then((receipt) => {
-                        if (!receipt) {
-                            return;
-                        }
-                        this.emit(hash, receipt);
-                    });
-                };
-                // In case it is already mined
-                emitReceipt(event);
-                // To keep things simple, we start up a single newHeads subscription
-                // to keep an eye out for transactions we are watching for.
-                // Starting a subscription for an event (i.e. "tx") that is already
-                // running is (basically) a nop.
-                this._subscribe("tx", ["newHeads"], (result) => {
-                    this._events.filter((e) => (e.type === "tx")).forEach(emitReceipt);
-                });
-                break;
-            }
-            // Nothing is needed
-            case "debug":
-            case "poll":
-            case "willPoll":
-            case "didPoll":
-            case "error":
-                break;
-            default:
-                console.log("unhandled:", event);
-                break;
-        }
-    }
-    _stopEvent(event) {
-        let tag = event.tag;
-        if (event.type === "tx") {
-            // There are remaining transaction event listeners
-            if (this._events.filter((e) => (e.type === "tx")).length) {
-                return;
-            }
-            tag = "tx";
-        }
-        else if (this.listenerCount(event.event)) {
-            // There are remaining event listeners
-            return;
-        }
-        const subId = this._subIds[tag];
-        if (!subId) {
-            return;
-        }
-        delete this._subIds[tag];
-        subId.then((subId) => {
-            if (!this._subs[subId]) {
-                return;
-            }
-            delete this._subs[subId];
-            this.send("eth_unsubscribe", [subId]);
-        });
-    }
-}
 
 "use strict";
 const logger$z = new Logger(version$m);
@@ -19981,7 +20002,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.3";
+const version$o = "ethers/5.0.4";
 
 "use strict";
 const logger$E = new Logger(version$o);

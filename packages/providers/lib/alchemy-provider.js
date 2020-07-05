@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+var websocket_provider_1 = require("./websocket-provider");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
@@ -27,6 +28,12 @@ var AlchemyProvider = /** @class */ (function (_super) {
     function AlchemyProvider() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    AlchemyProvider.getWebSocketProvider = function (network, apiKey) {
+        var provider = new AlchemyProvider(network, apiKey);
+        var url = provider.connection.url.replace(/^http/i, "ws")
+            .replace(".alchemyapi.", ".ws.alchemyapi.");
+        return new websocket_provider_1.WebSocketProvider(url, provider.network);
+    };
     AlchemyProvider.getApiKey = function (apiKey) {
         if (apiKey == null) {
             return defaultApiKey;
@@ -40,19 +47,19 @@ var AlchemyProvider = /** @class */ (function (_super) {
         var host = null;
         switch (network.name) {
             case "homestead":
-                host = "eth-mainnet.alchemyapi.io/jsonrpc/";
+                host = "eth-mainnet.alchemyapi.io/v2/";
                 break;
             case "ropsten":
-                host = "eth-ropsten.alchemyapi.io/jsonrpc/";
+                host = "eth-ropsten.alchemyapi.io/v2/";
                 break;
             case "rinkeby":
-                host = "eth-rinkeby.alchemyapi.io/jsonrpc/";
+                host = "eth-rinkeby.alchemyapi.io/v2/";
                 break;
             case "goerli":
-                host = "eth-goerli.alchemyapi.io/jsonrpc/";
+                host = "eth-goerli.alchemyapi.io/v2/";
                 break;
             case "kovan":
-                host = "eth-kovan.alchemyapi.io/jsonrpc/";
+                host = "eth-kovan.alchemyapi.io/v2/";
                 break;
             default:
                 logger.throwArgumentError("unsupported network", "network", arguments[0]);

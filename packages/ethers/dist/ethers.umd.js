@@ -4209,7 +4209,7 @@
 	var _version$4 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bignumber/5.0.2";
+	exports.version = "bignumber/5.0.3";
 	});
 
 	var _version$5 = unwrapExports(_version$4);
@@ -4290,7 +4290,11 @@
 	        return toBigNumber(toBN(this).umod(value));
 	    };
 	    BigNumber.prototype.pow = function (other) {
-	        return toBigNumber(toBN(this).pow(toBN(other)));
+	        var value = toBN(other);
+	        if (value.isNeg()) {
+	            throwFault("cannot raise to negative values", "pow");
+	        }
+	        return toBigNumber(toBN(this).pow(value));
 	    };
 	    BigNumber.prototype.and = function (other) {
 	        var value = toBN(other);
@@ -18022,7 +18026,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.3";
+	exports.version = "providers/5.0.4";
 	});
 
 	var _version$J = unwrapExports(_version$I);
@@ -19947,6 +19951,31 @@
 	var baseProvider_1 = baseProvider.Event;
 	var baseProvider_2 = baseProvider.BaseProvider;
 
+	var browserWs = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+
+	var WS = null;
+	try {
+	    WS = WebSocket;
+	    if (WS == null) {
+	        throw new Error("inject please");
+	    }
+	}
+	catch (error) {
+	    var logger_2 = new lib.Logger(_version$I.version);
+	    WS = function () {
+	        logger_2.throwError("WebSockets not supported in this environment", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	            operation: "new WebSocket()"
+	        });
+	    };
+	}
+	module.exports = WS;
+	});
+
+	var browserWs$1 = unwrapExports(browserWs);
+
 	var jsonRpcProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
@@ -20506,6 +20535,329 @@
 	var jsonRpcProvider_1 = jsonRpcProvider.JsonRpcSigner;
 	var jsonRpcProvider_2 = jsonRpcProvider.JsonRpcProvider;
 
+	var websocketProvider = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
+	    var extendStatics = function (d, b) {
+	        extendStatics = Object.setPrototypeOf ||
+	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	        return extendStatics(d, b);
+	    };
+	    return function (d, b) {
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments || [])).next());
+	    });
+	};
+	var __generator = (commonjsGlobal && commonjsGlobal.__generator) || function (thisArg, body) {
+	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+	    function verb(n) { return function (v) { return step([n, v]); }; }
+	    function step(op) {
+	        if (f) throw new TypeError("Generator is already executing.");
+	        while (_) try {
+	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+	            if (y = 0, t) op = [op[0] & 2, t.value];
+	            switch (op[0]) {
+	                case 0: case 1: t = op; break;
+	                case 4: _.label++; return { value: op[1], done: false };
+	                case 5: _.label++; y = op[1]; op = [0]; continue;
+	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+	                default:
+	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+	                    if (t[2]) _.ops.pop();
+	                    _.trys.pop(); continue;
+	            }
+	            op = body.call(thisArg, _);
+	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+	    }
+	};
+	var __importDefault = (commonjsGlobal && commonjsGlobal.__importDefault) || function (mod) {
+	    return (mod && mod.__esModule) ? mod : { "default": mod };
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var ws_1 = __importDefault(browserWs);
+
+
+
+
+
+	var logger = new lib.Logger(_version$I.version);
+	/**
+	 *  Notes:
+	 *
+	 *  This provider differs a bit from the polling providers. One main
+	 *  difference is how it handles consistency. The polling providers
+	 *  will stall responses to ensure a consistent state, while this
+	 *  WebSocket provider assumes the connected backend will manage this.
+	 *
+	 *  For example, if a polling provider emits an event which indicats
+	 *  the event occurred in blockhash XXX, a call to fetch that block by
+	 *  its hash XXX, if not present will retry until it is present. This
+	 *  can occur when querying a pool of nodes that are mildly out of sync
+	 *  with each other.
+	 */
+	var NextId = 1;
+	// For more info about the Real-time Event API see:
+	//   https://geth.ethereum.org/docs/rpc/pubsub
+	var WebSocketProvider = /** @class */ (function (_super) {
+	    __extends(WebSocketProvider, _super);
+	    function WebSocketProvider(url, network) {
+	        var _this = this;
+	        // This will be added in the future; please open an issue to expedite
+	        if (network === "any") {
+	            logger.throwError("WebSocketProvider does not support 'any' network yet", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                operation: "network:any"
+	            });
+	        }
+	        _this = _super.call(this, url, network) || this;
+	        _this._pollingInterval = -1;
+	        lib$3.defineReadOnly(_this, "_websocket", new ws_1.default(_this.connection.url));
+	        lib$3.defineReadOnly(_this, "_requests", {});
+	        lib$3.defineReadOnly(_this, "_subs", {});
+	        lib$3.defineReadOnly(_this, "_subIds", {});
+	        // Stall sending requests until the socket is open...
+	        _this._wsReady = false;
+	        _this._websocket.onopen = function () {
+	            _this._wsReady = true;
+	            Object.keys(_this._requests).forEach(function (id) {
+	                _this._websocket.send(_this._requests[id].payload);
+	            });
+	        };
+	        _this._websocket.onmessage = function (messageEvent) {
+	            var data = messageEvent.data;
+	            var result = JSON.parse(data);
+	            if (result.id != null) {
+	                var id = String(result.id);
+	                var request = _this._requests[id];
+	                delete _this._requests[id];
+	                if (result.result !== undefined) {
+	                    request.callback(null, result.result);
+	                }
+	                else {
+	                    if (result.error) {
+	                        var error = new Error(result.error.message || "unknown error");
+	                        lib$3.defineReadOnly(error, "code", result.error.code || null);
+	                        lib$3.defineReadOnly(error, "response", data);
+	                        request.callback(error, undefined);
+	                    }
+	                    else {
+	                        request.callback(new Error("unknown error"), undefined);
+	                    }
+	                }
+	            }
+	            else if (result.method === "eth_subscription") {
+	                // Subscription...
+	                var sub = _this._subs[result.params.subscription];
+	                if (sub) {
+	                    //this.emit.apply(this,                  );
+	                    sub.processFunc(result.params.result);
+	                }
+	            }
+	            else {
+	                console.warn("this should not happen");
+	            }
+	        };
+	        // This Provider does not actually poll, but we want to trigger
+	        // poll events for things that depend on them (like stalling for
+	        // block and transaction lookups)
+	        var fauxPoll = setInterval(function () {
+	            _this.emit("poll");
+	        }, 1000);
+	        if (fauxPoll.unref) {
+	            fauxPoll.unref();
+	        }
+	        return _this;
+	    }
+	    Object.defineProperty(WebSocketProvider.prototype, "pollingInterval", {
+	        get: function () {
+	            return 0;
+	        },
+	        set: function (value) {
+	            logger.throwError("cannot set polling interval on WebSocketProvider", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                operation: "setPollingInterval"
+	            });
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    WebSocketProvider.prototype.resetEventsBlock = function (blockNumber) {
+	        logger.throwError("cannot reset events block on WebSocketProvider", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	            operation: "resetEventBlock"
+	        });
+	    };
+	    WebSocketProvider.prototype.poll = function () {
+	        return __awaiter(this, void 0, void 0, function () {
+	            return __generator(this, function (_a) {
+	                return [2 /*return*/, null];
+	            });
+	        });
+	    };
+	    Object.defineProperty(WebSocketProvider.prototype, "polling", {
+	        set: function (value) {
+	            if (!value) {
+	                return;
+	            }
+	            logger.throwError("cannot set polling on WebSocketProvider", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                operation: "setPolling"
+	            });
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    WebSocketProvider.prototype.send = function (method, params) {
+	        var _this = this;
+	        var rid = NextId++;
+	        return new Promise(function (resolve, reject) {
+	            function callback(error, result) {
+	                if (error) {
+	                    return reject(error);
+	                }
+	                return resolve(result);
+	            }
+	            var payload = JSON.stringify({
+	                method: method,
+	                params: params,
+	                id: rid,
+	                jsonrpc: "2.0"
+	            });
+	            _this._requests[String(rid)] = { callback: callback, payload: payload };
+	            if (_this._wsReady) {
+	                _this._websocket.send(payload);
+	            }
+	        });
+	    };
+	    WebSocketProvider.defaultUrl = function () {
+	        return "ws:/\/localhost:8546";
+	    };
+	    WebSocketProvider.prototype._subscribe = function (tag, param, processFunc) {
+	        return __awaiter(this, void 0, void 0, function () {
+	            var subIdPromise, subId;
+	            var _this = this;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        subIdPromise = this._subIds[tag];
+	                        if (subIdPromise == null) {
+	                            subIdPromise = Promise.all(param).then(function (param) {
+	                                return _this.send("eth_subscribe", param);
+	                            });
+	                            this._subIds[tag] = subIdPromise;
+	                        }
+	                        return [4 /*yield*/, subIdPromise];
+	                    case 1:
+	                        subId = _a.sent();
+	                        this._subs[subId] = { tag: tag, processFunc: processFunc };
+	                        return [2 /*return*/];
+	                }
+	            });
+	        });
+	    };
+	    WebSocketProvider.prototype._startEvent = function (event) {
+	        var _this = this;
+	        switch (event.type) {
+	            case "block":
+	                this._subscribe("block", ["newHeads"], function (result) {
+	                    var blockNumber = lib$2.BigNumber.from(result.number).toNumber();
+	                    _this._emitted.block = blockNumber;
+	                    _this.emit("block", blockNumber);
+	                });
+	                break;
+	            case "pending":
+	                this._subscribe("pending", ["newPendingTransactions"], function (result) {
+	                    _this.emit("pending", result);
+	                });
+	                break;
+	            case "filter":
+	                this._subscribe(event.tag, ["logs", this._getFilter(event.filter)], function (result) {
+	                    if (result.removed == null) {
+	                        result.removed = false;
+	                    }
+	                    _this.emit(event.filter, _this.formatter.filterLog(result));
+	                });
+	                break;
+	            case "tx": {
+	                var emitReceipt_1 = function (event) {
+	                    var hash = event.hash;
+	                    _this.getTransactionReceipt(hash).then(function (receipt) {
+	                        if (!receipt) {
+	                            return;
+	                        }
+	                        _this.emit(hash, receipt);
+	                    });
+	                };
+	                // In case it is already mined
+	                emitReceipt_1(event);
+	                // To keep things simple, we start up a single newHeads subscription
+	                // to keep an eye out for transactions we are watching for.
+	                // Starting a subscription for an event (i.e. "tx") that is already
+	                // running is (basically) a nop.
+	                this._subscribe("tx", ["newHeads"], function (result) {
+	                    _this._events.filter(function (e) { return (e.type === "tx"); }).forEach(emitReceipt_1);
+	                });
+	                break;
+	            }
+	            // Nothing is needed
+	            case "debug":
+	            case "poll":
+	            case "willPoll":
+	            case "didPoll":
+	            case "error":
+	                break;
+	            default:
+	                console.log("unhandled:", event);
+	                break;
+	        }
+	    };
+	    WebSocketProvider.prototype._stopEvent = function (event) {
+	        var _this = this;
+	        var tag = event.tag;
+	        if (event.type === "tx") {
+	            // There are remaining transaction event listeners
+	            if (this._events.filter(function (e) { return (e.type === "tx"); }).length) {
+	                return;
+	            }
+	            tag = "tx";
+	        }
+	        else if (this.listenerCount(event.event)) {
+	            // There are remaining event listeners
+	            return;
+	        }
+	        var subId = this._subIds[tag];
+	        if (!subId) {
+	            return;
+	        }
+	        delete this._subIds[tag];
+	        subId.then(function (subId) {
+	            if (!_this._subs[subId]) {
+	                return;
+	            }
+	            delete _this._subs[subId];
+	            _this.send("eth_unsubscribe", [subId]);
+	        });
+	    };
+	    return WebSocketProvider;
+	}(jsonRpcProvider.JsonRpcProvider));
+	exports.WebSocketProvider = WebSocketProvider;
+	});
+
+	var websocketProvider$1 = unwrapExports(websocketProvider);
+	var websocketProvider_1 = websocketProvider.WebSocketProvider;
+
 	var urlJsonRpcProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
@@ -20571,6 +20923,9 @@
 	// - locking up the UI
 	// - block skew warnings
 	// - wrong results
+	// If the network is not explicit (i.e. auto-detection is expected), the
+	// node MUST be running and available to respond to requests BEFORE this
+	// is instantiated.
 	var StaticJsonRpcProvider = /** @class */ (function (_super) {
 	    __extends(StaticJsonRpcProvider, _super);
 	    function StaticJsonRpcProvider() {
@@ -20584,10 +20939,18 @@
 	                    case 0:
 	                        network = this.network;
 	                        if (!(network == null)) return [3 /*break*/, 2];
-	                        return [4 /*yield*/, _super.prototype._ready.call(this)];
+	                        return [4 /*yield*/, _super.prototype.detectNetwork.call(this)];
 	                    case 1:
-	                        // After this call completes, network is defined
 	                        network = _a.sent();
+	                        if (!network) {
+	                            logger.throwError("no network detected", lib.Logger.errors.UNKNOWN_ERROR, {});
+	                        }
+	                        // If still not set, set it
+	                        if (this._network == null) {
+	                            // A static network does not support "any"
+	                            lib$3.defineReadOnly(this, "_network", network);
+	                            this.emit("network", network, null);
+	                        }
 	                        _a.label = 2;
 	                    case 2: return [2 /*return*/, network];
 	                }
@@ -20666,6 +21029,7 @@
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 
+
 	var logger = new lib.Logger(_version$I.version);
 
 	// This key was provided to ethers.js by Alchemy to be used by the
@@ -20678,6 +21042,12 @@
 	    function AlchemyProvider() {
 	        return _super !== null && _super.apply(this, arguments) || this;
 	    }
+	    AlchemyProvider.getWebSocketProvider = function (network, apiKey) {
+	        var provider = new AlchemyProvider(network, apiKey);
+	        var url = provider.connection.url.replace(/^http/i, "ws")
+	            .replace(".alchemyapi.", ".ws.alchemyapi.");
+	        return new websocketProvider.WebSocketProvider(url, provider.network);
+	    };
 	    AlchemyProvider.getApiKey = function (apiKey) {
 	        if (apiKey == null) {
 	            return defaultApiKey;
@@ -20691,19 +21061,19 @@
 	        var host = null;
 	        switch (network.name) {
 	            case "homestead":
-	                host = "eth-mainnet.alchemyapi.io/jsonrpc/";
+	                host = "eth-mainnet.alchemyapi.io/v2/";
 	                break;
 	            case "ropsten":
-	                host = "eth-ropsten.alchemyapi.io/jsonrpc/";
+	                host = "eth-ropsten.alchemyapi.io/v2/";
 	                break;
 	            case "rinkeby":
-	                host = "eth-rinkeby.alchemyapi.io/jsonrpc/";
+	                host = "eth-rinkeby.alchemyapi.io/v2/";
 	                break;
 	            case "goerli":
-	                host = "eth-goerli.alchemyapi.io/jsonrpc/";
+	                host = "eth-goerli.alchemyapi.io/v2/";
 	                break;
 	            case "kovan":
-	                host = "eth-kovan.alchemyapi.io/jsonrpc/";
+	                host = "eth-kovan.alchemyapi.io/v2/";
 	                break;
 	            default:
 	                logger.throwArgumentError("unsupported network", "network", arguments[0]);
@@ -21903,354 +22273,6 @@
 		IpcProvider: IpcProvider
 	};
 
-	var browserWs = createCommonjsModule(function (module, exports) {
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-
-
-	var WS = null;
-	try {
-	    WS = WebSocket;
-	    if (WS == null) {
-	        throw new Error("inject please");
-	    }
-	}
-	catch (error) {
-	    var logger_2 = new lib.Logger(_version$I.version);
-	    WS = function () {
-	        logger_2.throwError("WebSockets not supported in this environment", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	            operation: "new WebSocket()"
-	        });
-	    };
-	}
-	module.exports = WS;
-	});
-
-	var browserWs$1 = unwrapExports(browserWs);
-
-	var websocketProvider = createCommonjsModule(function (module, exports) {
-	"use strict";
-	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
-	    var extendStatics = function (d, b) {
-	        extendStatics = Object.setPrototypeOf ||
-	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-	        return extendStatics(d, b);
-	    };
-	    return function (d, b) {
-	        extendStatics(d, b);
-	        function __() { this.constructor = d; }
-	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	    };
-	})();
-	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
-	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-	    return new (P || (P = Promise))(function (resolve, reject) {
-	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-	        step((generator = generator.apply(thisArg, _arguments || [])).next());
-	    });
-	};
-	var __generator = (commonjsGlobal && commonjsGlobal.__generator) || function (thisArg, body) {
-	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-	    function verb(n) { return function (v) { return step([n, v]); }; }
-	    function step(op) {
-	        if (f) throw new TypeError("Generator is already executing.");
-	        while (_) try {
-	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-	            if (y = 0, t) op = [op[0] & 2, t.value];
-	            switch (op[0]) {
-	                case 0: case 1: t = op; break;
-	                case 4: _.label++; return { value: op[1], done: false };
-	                case 5: _.label++; y = op[1]; op = [0]; continue;
-	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-	                default:
-	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-	                    if (t[2]) _.ops.pop();
-	                    _.trys.pop(); continue;
-	            }
-	            op = body.call(thisArg, _);
-	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-	    }
-	};
-	var __importDefault = (commonjsGlobal && commonjsGlobal.__importDefault) || function (mod) {
-	    return (mod && mod.__esModule) ? mod : { "default": mod };
-	};
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var ws_1 = __importDefault(browserWs);
-
-
-
-
-
-	var logger = new lib.Logger(_version$I.version);
-	/**
-	 *  Notes:
-	 *
-	 *  This provider differs a bit from the polling providers. One main
-	 *  difference is how it handles consistency. The polling providers
-	 *  will stall responses to ensure a consistent state, while this
-	 *  WebSocket provider assumes the connected backend will manage this.
-	 *
-	 *  For example, if a polling provider emits an event which indicats
-	 *  the event occurred in blockhash XXX, a call to fetch that block by
-	 *  its hash XXX, if not present will retry until it is present. This
-	 *  can occur when querying a pool of nodes that are mildly out of sync
-	 *  with each other.
-	 */
-	var NextId = 1;
-	// For more info about the Real-time Event API see:
-	//   https://geth.ethereum.org/docs/rpc/pubsub
-	var WebSocketProvider = /** @class */ (function (_super) {
-	    __extends(WebSocketProvider, _super);
-	    function WebSocketProvider(url, network) {
-	        var _this = this;
-	        // This will be added in the future; please open an issue to expedite
-	        if (network === "any") {
-	            logger.throwError("WebSocketProvider does not support 'any' network yet", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                operation: "network:any"
-	            });
-	        }
-	        _this = _super.call(this, url, network) || this;
-	        _this._pollingInterval = -1;
-	        lib$3.defineReadOnly(_this, "_websocket", new ws_1.default(_this.connection.url));
-	        lib$3.defineReadOnly(_this, "_requests", {});
-	        lib$3.defineReadOnly(_this, "_subs", {});
-	        lib$3.defineReadOnly(_this, "_subIds", {});
-	        // Stall sending requests until the socket is open...
-	        _this._wsReady = false;
-	        _this._websocket.onopen = function () {
-	            _this._wsReady = true;
-	            Object.keys(_this._requests).forEach(function (id) {
-	                _this._websocket.send(_this._requests[id].payload);
-	            });
-	        };
-	        _this._websocket.onmessage = function (messageEvent) {
-	            var data = messageEvent.data;
-	            var result = JSON.parse(data);
-	            if (result.id != null) {
-	                var id = String(result.id);
-	                var request = _this._requests[id];
-	                delete _this._requests[id];
-	                if (result.result !== undefined) {
-	                    request.callback(null, result.result);
-	                }
-	                else {
-	                    if (result.error) {
-	                        var error = new Error(result.error.message || "unknown error");
-	                        lib$3.defineReadOnly(error, "code", result.error.code || null);
-	                        lib$3.defineReadOnly(error, "response", data);
-	                        request.callback(error, undefined);
-	                    }
-	                    else {
-	                        request.callback(new Error("unknown error"), undefined);
-	                    }
-	                }
-	            }
-	            else if (result.method === "eth_subscription") {
-	                // Subscription...
-	                var sub = _this._subs[result.params.subscription];
-	                if (sub) {
-	                    //this.emit.apply(this,                  );
-	                    sub.processFunc(result.params.result);
-	                }
-	            }
-	            else {
-	                console.warn("this should not happen");
-	            }
-	        };
-	        // This Provider does not actually poll, but we want to trigger
-	        // poll events for things that depend on them (like stalling for
-	        // block and transaction lookups)
-	        var fauxPoll = setInterval(function () {
-	            _this.emit("poll");
-	        }, 1000);
-	        if (fauxPoll.unref) {
-	            fauxPoll.unref();
-	        }
-	        return _this;
-	    }
-	    Object.defineProperty(WebSocketProvider.prototype, "pollingInterval", {
-	        get: function () {
-	            return 0;
-	        },
-	        set: function (value) {
-	            logger.throwError("cannot set polling interval on WebSocketProvider", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                operation: "setPollingInterval"
-	            });
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    WebSocketProvider.prototype.resetEventsBlock = function (blockNumber) {
-	        logger.throwError("cannot reset events block on WebSocketProvider", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	            operation: "resetEventBlock"
-	        });
-	    };
-	    WebSocketProvider.prototype.poll = function () {
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                return [2 /*return*/, null];
-	            });
-	        });
-	    };
-	    Object.defineProperty(WebSocketProvider.prototype, "polling", {
-	        set: function (value) {
-	            if (!value) {
-	                return;
-	            }
-	            logger.throwError("cannot set polling on WebSocketProvider", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                operation: "setPolling"
-	            });
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    WebSocketProvider.prototype.send = function (method, params) {
-	        var _this = this;
-	        var rid = NextId++;
-	        return new Promise(function (resolve, reject) {
-	            function callback(error, result) {
-	                if (error) {
-	                    return reject(error);
-	                }
-	                return resolve(result);
-	            }
-	            var payload = JSON.stringify({
-	                method: method,
-	                params: params,
-	                id: rid,
-	                jsonrpc: "2.0"
-	            });
-	            _this._requests[String(rid)] = { callback: callback, payload: payload };
-	            if (_this._wsReady) {
-	                _this._websocket.send(payload);
-	            }
-	        });
-	    };
-	    WebSocketProvider.defaultUrl = function () {
-	        return "ws:/\/localhost:8546";
-	    };
-	    WebSocketProvider.prototype._subscribe = function (tag, param, processFunc) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var subIdPromise, subId;
-	            var _this = this;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0:
-	                        subIdPromise = this._subIds[tag];
-	                        if (subIdPromise == null) {
-	                            subIdPromise = Promise.all(param).then(function (param) {
-	                                return _this.send("eth_subscribe", param);
-	                            });
-	                            this._subIds[tag] = subIdPromise;
-	                        }
-	                        return [4 /*yield*/, subIdPromise];
-	                    case 1:
-	                        subId = _a.sent();
-	                        this._subs[subId] = { tag: tag, processFunc: processFunc };
-	                        return [2 /*return*/];
-	                }
-	            });
-	        });
-	    };
-	    WebSocketProvider.prototype._startEvent = function (event) {
-	        var _this = this;
-	        switch (event.type) {
-	            case "block":
-	                this._subscribe("block", ["newHeads"], function (result) {
-	                    var blockNumber = lib$2.BigNumber.from(result.number).toNumber();
-	                    _this._emitted.block = blockNumber;
-	                    _this.emit("block", blockNumber);
-	                });
-	                break;
-	            case "pending":
-	                this._subscribe("pending", ["newPendingTransactions"], function (result) {
-	                    _this.emit("pending", result);
-	                });
-	                break;
-	            case "filter":
-	                this._subscribe(event.tag, ["logs", this._getFilter(event.filter)], function (result) {
-	                    if (result.removed == null) {
-	                        result.removed = false;
-	                    }
-	                    _this.emit(event.filter, _this.formatter.filterLog(result));
-	                });
-	                break;
-	            case "tx": {
-	                var emitReceipt_1 = function (event) {
-	                    var hash = event.hash;
-	                    _this.getTransactionReceipt(hash).then(function (receipt) {
-	                        if (!receipt) {
-	                            return;
-	                        }
-	                        _this.emit(hash, receipt);
-	                    });
-	                };
-	                // In case it is already mined
-	                emitReceipt_1(event);
-	                // To keep things simple, we start up a single newHeads subscription
-	                // to keep an eye out for transactions we are watching for.
-	                // Starting a subscription for an event (i.e. "tx") that is already
-	                // running is (basically) a nop.
-	                this._subscribe("tx", ["newHeads"], function (result) {
-	                    _this._events.filter(function (e) { return (e.type === "tx"); }).forEach(emitReceipt_1);
-	                });
-	                break;
-	            }
-	            // Nothing is needed
-	            case "debug":
-	            case "poll":
-	            case "willPoll":
-	            case "didPoll":
-	            case "error":
-	                break;
-	            default:
-	                console.log("unhandled:", event);
-	                break;
-	        }
-	    };
-	    WebSocketProvider.prototype._stopEvent = function (event) {
-	        var _this = this;
-	        var tag = event.tag;
-	        if (event.type === "tx") {
-	            // There are remaining transaction event listeners
-	            if (this._events.filter(function (e) { return (e.type === "tx"); }).length) {
-	                return;
-	            }
-	            tag = "tx";
-	        }
-	        else if (this.listenerCount(event.event)) {
-	            // There are remaining event listeners
-	            return;
-	        }
-	        var subId = this._subIds[tag];
-	        if (!subId) {
-	            return;
-	        }
-	        delete this._subIds[tag];
-	        subId.then(function (subId) {
-	            if (!_this._subs[subId]) {
-	                return;
-	            }
-	            delete _this._subs[subId];
-	            _this.send("eth_unsubscribe", [subId]);
-	        });
-	    };
-	    return WebSocketProvider;
-	}(jsonRpcProvider.JsonRpcProvider));
-	exports.WebSocketProvider = WebSocketProvider;
-	});
-
-	var websocketProvider$1 = unwrapExports(websocketProvider);
-	var websocketProvider_1 = websocketProvider.WebSocketProvider;
-
 	var infuraProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
@@ -23066,7 +23088,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.3";
+	exports.version = "ethers/5.0.4";
 	});
 
 	var _version$N = unwrapExports(_version$M);

@@ -69,7 +69,11 @@ export class BigNumber {
         return toBigNumber(toBN(this).umod(value));
     }
     pow(other) {
-        return toBigNumber(toBN(this).pow(toBN(other)));
+        const value = toBN(other);
+        if (value.isNeg()) {
+            throwFault("cannot raise to negative values", "pow");
+        }
+        return toBigNumber(toBN(this).pow(value));
     }
     and(other) {
         const value = toBN(other);

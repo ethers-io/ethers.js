@@ -72,7 +72,11 @@ var BigNumber = /** @class */ (function () {
         return toBigNumber(toBN(this).umod(value));
     };
     BigNumber.prototype.pow = function (other) {
-        return toBigNumber(toBN(this).pow(toBN(other)));
+        var value = toBN(other);
+        if (value.isNeg()) {
+            throwFault("cannot raise to negative values", "pow");
+        }
+        return toBigNumber(toBN(this).pow(value));
     };
     BigNumber.prototype.and = function (other) {
         var value = toBN(other);
