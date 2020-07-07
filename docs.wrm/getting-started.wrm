@@ -3,14 +3,14 @@ _section: Getting Started @<getting-started>
 
 _subsection: Installing @<installing>
 
-The various Classes and Functions are available to be imported
+Ethers' various Classes and Functions are available to import
 manually from sub-packages under the [@ethersproject](link-ethers-npm)
 organization but for most projects, the umbrella package is the
 easiest way to get started.
 
 _code: @lang<shell>
 
-/home/ricmoo> npm install --save ethers@next
+/home/ricmoo> npm install --save ethers
 
 
 _subsection: Importing @<importing>
@@ -32,7 +32,7 @@ It is generally better practice (for security reasons) to copy the
 [ethers library](link-ethers-js) to your own webserver and serve it
 yourself.
 
-For quick demos or prototyping though, it can be loaded in your
+For quick demos or prototyping though, you can load it in your
 Web Applications from our CDN.
 
 
@@ -64,8 +64,8 @@ $Signer:    A Signer is a class which (usually) in some way directly or
             and transactions to authorize the network to charge your account
             ether to perform operations.
 $Contract:  A Contract is an abstraction which represents a connection to a
-            specific contract on the Ethereum Network, so that it can be
-            used like a normal JavaScipt object.
+            specific contract on the Ethereum Network, so that applications 
+            can use it like a normal JavaScipt object.
 
 
 | **Provider**     | $Provider      |
@@ -90,14 +90,34 @@ const provider = new ethers.providers.Web3Provider(window.ethereum)
 
 // The Metamask plugin also allows signing transactions to
 // send ether and pay to change state within the blockchain.
-// For this, we need the account signer...
+// For this, you need the account signer...
 const signer = provider.getSigner()
 
+_subsection: Connecting to Ethereum: RPC @<getting-started--connecting-rpc>
+
+The [JSON-RPC API](link-jsonrpc) is another popular method for interacting
+with Ethereum and is available in all major Ethereum node implementations
+(e.g. [[link-geth]] and [[link-parity]]) as well as many
+third-party web services (e.g. [[link-infura]]). It typically provides:
+
+- A connection to the Ethereum network (a [[Provider]])
+- Holds your private key and can sign thing (a [[Signer]])
+
+_code: Connecting to an RPC client @lang<script>
+
+// If you don't specify a //url//, Ethers connects to the default 
+// (i.e. ``http:/\/localhost:8545``)
+const provider = new ethers.providers.JsonRpcProvider();
+
+// The provider also allows signing transactions to
+// send ether and pay to change state within the blockchain.
+// For this, we need the account signer...
+const signer = provider.getSigner()
 
 _heading: Querying the Blockchain @<getting-started--querying>
 
 Once you have a [[Provider]], you have a read-only connection to the
-blockchain, which can be used to query the current state, fetch historic
+blockchain, which you can use to query the current state, fetch historic
 logs, look up deployed code and so on.
 
 _code: Basic Queries @lang<javascript>
@@ -106,16 +126,16 @@ _code: Basic Queries @lang<javascript>
 provider.getBlockNumber()
 //!
 
-// Get the balance of an account (by address or ENS name)
+// Get the balance of an account (by address or ENS name, if supported by network)
 balance = await provider.getBalance("ethers.eth")
 //! async balance
 
-// Often you will need to format the output for the user
-// which prefer to see values in ether (instead of wei)
+// Often you need to format the output to something more user-friendly,
+// such as in ether (instead of wei)
 ethers.utils.formatEther(balance)
 //!
 
-// Or if a user enters a string in an input field, you may need
+// If a user enters a string in an input field, you may need
 // to convert it from ether (as a string) to wei (as a BigNumber)
 ethers.utils.parseEther("1.0")
 //!
@@ -138,10 +158,10 @@ A Contract is an abstraction of program code which lives on the
 Ethereum blockchain.
 
 The [[Contract]] object makes it easier to use an on-chain
-Contract as a normal JavaScript object, with the method all
+Contract as a normal JavaScript object, with the methods
 mapped to encoding and decoding data for you.
 
-If you are familiar with Databases, this is similar to ORM.
+If you are familiar with Databases, this is similar to an ORM.
 
 In order to communicate with the Contract on-chain, this class
 needs to know what methods are available and how to encode and
@@ -149,26 +169,25 @@ decode the data, which is what the //Application Binary Interface// (API)
 provides.
 
 This class is a meta-class, which means its methods are constructed
-at runtime, when you pass in the ABI to the constructor it uses that
+at runtime, when you pass in the ABI to the constructor it uses it
 to determine which methods to add.
 
 While a on-chain Contract may have many methods available, you can safely ignore
 any methods you don't need or use, providing a smaller subset of the ABI to
 the contract.
 
-An ABI often comes from the Solidity or Vyper compiler, but may also be
-placed in the code easily using the Human-Readable ABI, which the following
-examples use.
+An ABI often comes from the Solidity or Vyper compiler, but you can use the
+Human-Readable ABI in code, which the following examples use.
 
 _code: Connecting to the DAI Contract @lang<javascript>
 
-// We can use an ENS name for the contract address
+// You can also use an ENS name for the contract address
 const daiAddress = "dai.tokens.ethers.eth";
 
 // The ERC-20 Contract ABI, which is a common contract interface
 // for tokens (this is the Human-Readable ABI format)
 const daiAbi = [
-  // Some simple details about the token
+  // Some details about the token
   "function name() view returns (string)",
   "function symbol() view returns (string)",
 

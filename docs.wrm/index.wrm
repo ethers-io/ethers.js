@@ -5,7 +5,7 @@ _subsection: What is Ethers? @<preamble>
 The ethers.js library aims to be a complete and compact library for
 interacting with the Ethereum Blockchain and its ecosystem. It was
 originally designed for use with [ethers.io](link-ethersio) and
-has since expanded into a much more general-purpose library.
+has since expanded into a more general-purpose library.
 
 _subsection: Features @<features>
 
