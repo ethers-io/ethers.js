@@ -159,7 +159,7 @@ export class BigNumber {
             return value;
         }
         if (typeof (value) === "string") {
-            if (value.match(/-?0x[0-9a-f]+/i)) {
+            if (value.match(/^-?0x[0-9a-f]+$/i)) {
                 return new BigNumber(_constructorGuard, toHex(value));
             }
             if (value.match(/^-?[0-9]+$/)) {

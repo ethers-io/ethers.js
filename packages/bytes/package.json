@@ -25,7 +25,7 @@
     "build": "tsc -p ./tsconfig.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x38d537642ec1492da9037a0bace04ff260534dbc92f13c98e0c92d44a84611c8",
+  "tarballHash": "0x1f1b5b80f2744d771fc150c14e25f62180f57396ca7728d60348e0a7ee980cc0",
   "types": "./lib/index.d.ts",
-  "version": "5.0.1"
+  "version": "5.0.2"
 }

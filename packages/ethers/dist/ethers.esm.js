@@ -3750,7 +3750,7 @@ var lib_esm = /*#__PURE__*/Object.freeze({
 	Logger: Logger
 });
 
-const version$1 = "bytes/5.0.1";
+const version$1 = "bytes/5.0.2";
 
 "use strict";
 const logger = new Logger(version$1);
@@ -4022,8 +4022,6 @@ function splitSignature(signature) {
         result.r = hexlify(bytes.slice(0, 32));
         result.s = hexlify(bytes.slice(32, 64));
         result.v = bytes[64];
-        // Compute recoveryParam from v
-        result.recoveryParam = 1 - (result.v % 2);
         // Allow a recid to be used as the v
         if (result.v < 27) {
             if (result.v === 0 || result.v === 1) {
@@ -4033,6 +4031,8 @@ function splitSignature(signature) {
                 logger.throwArgumentError("signature invalid v byte", "signature", signature);
             }
         }
+        // Compute recoveryParam from v
+        result.recoveryParam = 1 - (result.v % 2);
         // Compute _vs from recoveryParam and s
         if (result.recoveryParam) {
             bytes[32] |= 0x80;
@@ -4149,7 +4149,7 @@ var lib_esm$1 = /*#__PURE__*/Object.freeze({
 	joinSignature: joinSignature
 });
 
-const version$2 = "bignumber/5.0.3";
+const version$2 = "bignumber/5.0.4";
 
 "use strict";
 const logger$1 = new Logger(version$2);
@@ -4301,7 +4301,7 @@ class BigNumber {
             return value;
         }
         if (typeof (value) === "string") {
-            if (value.match(/-?0x[0-9a-f]+/i)) {
+            if (value.match(/^-?0x[0-9a-f]+$/i)) {
                 return new BigNumber(_constructorGuard, toHex(value));
             }
             if (value.match(/^-?[0-9]+$/)) {
@@ -20002,7 +20002,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.4";
+const version$o = "ethers/5.0.5";
 
 "use strict";
 const logger$E = new Logger(version$o);

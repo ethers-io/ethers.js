@@ -3783,7 +3783,7 @@
 	var _version$2 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bytes/5.0.1";
+	exports.version = "bytes/5.0.2";
 	});
 
 	var _version$3 = unwrapExports(_version$2);
@@ -4077,8 +4077,6 @@
 	        result.r = hexlify(bytes.slice(0, 32));
 	        result.s = hexlify(bytes.slice(32, 64));
 	        result.v = bytes[64];
-	        // Compute recoveryParam from v
-	        result.recoveryParam = 1 - (result.v % 2);
 	        // Allow a recid to be used as the v
 	        if (result.v < 27) {
 	            if (result.v === 0 || result.v === 1) {
@@ -4088,6 +4086,8 @@
 	                logger.throwArgumentError("signature invalid v byte", "signature", signature);
 	            }
 	        }
+	        // Compute recoveryParam from v
+	        result.recoveryParam = 1 - (result.v % 2);
 	        // Compute _vs from recoveryParam and s
 	        if (result.recoveryParam) {
 	            bytes[32] |= 0x80;
@@ -4209,7 +4209,7 @@
 	var _version$4 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bignumber/5.0.3";
+	exports.version = "bignumber/5.0.4";
 	});
 
 	var _version$5 = unwrapExports(_version$4);
@@ -4380,7 +4380,7 @@
 	            return value;
 	        }
 	        if (typeof (value) === "string") {
-	            if (value.match(/-?0x[0-9a-f]+/i)) {
+	            if (value.match(/^-?0x[0-9a-f]+$/i)) {
 	                return new BigNumber(_constructorGuard, toHex(value));
 	            }
 	            if (value.match(/^-?[0-9]+$/)) {
@@ -23088,7 +23088,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.4";
+	exports.version = "ethers/5.0.5";
 	});
 
 	var _version$N = unwrapExports(_version$M);
