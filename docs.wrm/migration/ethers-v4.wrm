@@ -1,5 +1,16 @@
 _section: Migration: From Ethers v4  @<migration-v4>
 
+This document only covers the features present in v4 which have changed
+in some important way in v5.
+
+It does not cover all the new additional featuers that have been added and
+mainly aims to help those updating their older scripts and applications to
+retain functional parity.
+
+If you encounter any missing changes, please let me know and I'll update this
+guide.
+
+
 _subsection: BigNumber
 
 _heading: Namespace
@@ -18,6 +29,7 @@ ethers.BigNumberish
 
 
 _heading: Creating Instances
+
 The ``bigNumberify`` method was always preferred over the constructor
 since it could short-circuit an object instantiation for [[BigNumber]
 objects (since they are immutable). This has been moved to a static
@@ -37,9 +49,99 @@ ethers.BigNumber.from(someValue)
 
 _subsection: Contracts
 
-_code: @lang<script>
+_heading: ENS Name Resolution
 
-// @TODO
+The name of the resolved address has changed. If the address passed into the
+constructor was an ENS name, the address will be resovled before any calls
+are made to the contract.
+
+The name of the property where the resolved address has changed from ``addressPromise``
+to ``resolvedAddress``.
+
+_code: Resolved ENS Names @lang<script>
+
+// v4
+contract.addressPromise
+
+// v5
+contract.resolvedAddress
+
+
+_heading: Gas Estimation
+
+The only difference in gas estimation is that the bucket has changed
+its name from ``estimate`` to ``estimateGas``.
+
+_code: Gas Estimation @lang<script>
+
+// v4
+contract.estimate.transfer(toAddress, amount)
+
+// v5
+contract.estimateGas.transfer(toAddress, amount)
+
+_heading: Functions
+
+In a contract in ethers, there is a ``functions`` bucket, which exposes
+all the methods of a contract.
+
+All these functions are available on the root contract itself as well
+and historically there was no difference between ``contact.foo`` and
+``contract.functions.foo``. The original reason for the ``functions`` bucket
+was to help when there were method names that collided with other buckets,
+which is rare.
+
+In v5, the ``functions`` bucket is now intended to help with frameworks and
+for the new error recovery API, so most users should use the methods on the
+root contract.
+
+The main difference will occur when a contract method only returns a single
+item. The root method will dereference this automatically while the ``functions``
+bucket will preserve it as an [[Result]].
+
+If a method returns multiple items, there is no difference.
+
+This helps when creating a framework, since the result will always be known to
+have the same number of components as the [[Fragment]] outputs, without having
+to handle the special case of a single return value.
+
+_code: Functions Bucket @lang<script>
+
+const abi = [
+
+  // Returns a single value
+  "function single() view returns (uint8)",
+
+  // Returns two values
+  "function double() view returns (uint8, uint8)",
+];
+
+// v4
+await contract.single()
+// 123
+await contract.functions.single()
+// 123
+
+
+// v5 (notice the change in the .function variant)
+await contract.single()
+// 123
+await contract.functions.single()
+// [ 123 ]
+
+
+// v4
+await contract.double()
+// [ 123, 5 ]
+await contract.functions.double()
+// [ 123, 5 ]
+
+
+// v5 (no difference from v4)
+await contract.double()
+// [ 123, 5 ]
+await contract.functions.double()
+// [ 123, 5 ]
 
 
 _subsection: Errors
@@ -84,6 +186,7 @@ logger.info(...)
 
 
 _subsection: Interface
+
 The [[Interface]] object has undergone the most dramatic changes.
 
 It is no longer a meta-class and now has methods that simplify handling
@@ -177,14 +280,6 @@ const sighash = interface.getSighash(functionFragment)
 const eventSig = eventFragment.format()
 const topic = interface.getTopic(eventFragment)
 
-
-_subsection: Utilities
-
-_heading: Renaming
-
-_code: @lang<script>
-
-// @TODO
 
 _subsection: Wallet
 

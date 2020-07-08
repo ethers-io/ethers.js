@@ -29,14 +29,15 @@ _code: @lang<script>
 const web3 = new Web3(Web3.givenProvider);
 
 // ethers
-import { ethers } from "./dist/ethers.esm.js";
 const provider = new ethers.providers.Web3Provider(window.ethereum);
+
 
 _subsection: Signers
 
 In ethers, a **signer** is an abstraction of an Ethereum Account. It can be used to sign messages and transactions and send signed transactions to the Ethereum Network.
 
 In web3, an account can be used to sign messages and transactions.
+
 
 _heading: Creating signer
 
@@ -45,20 +46,26 @@ _code: @lang<script>
 // web3
 const account = web3.eth.accounts.create();
 
-// ethers
+// ethers (create random new account)
 const signer = ethers.Wallet.createRandom();
-// getting signer from JSON RPC providers
+
+// ethers (connect to JSON-RPC accounts)
 const signer = provider.getSigner();
+
 
 _heading: Signing a message
 
 _code: @lang<script>
 
-// web3
-let signature = web3.eth.accounts.sign('Some data', privateKey);
+// web3 (using a private key)
+signature = web3.eth.accounts.sign('Some data', privateKey)
+
+// web3 (using a JSON-RPC account)
+// @TODO
 
 // ethers
-let signature = await signer.signMessage('Some data');
+signature = await signer.signMessage('Some data')
+
 
 _subsection: Contracts
 
@@ -123,23 +130,32 @@ const receipt = await tx.wait();
 
 _heading: Overloaded Functions
 
-Overloaded functions are functions that have the same name but different parameter types. In ethers, the syntax to call an overloaded contract function is different from the non-overloaded function. This section shows the differences between web3 and ethers when calling overloaded functions. See [issue #407](https://github.com/ethers-io/ethers.js/issues/407) for more details.
+Overloaded functions are functions that have the same name but different parameter
+types.
+
+In ethers, the syntax to call an overloaded contract function is different
+from the non-overloaded function. This section shows the differences between web3
+and ethers when calling overloaded functions.
+
+See [issue #407](link-issue-407) for more details.
 
 _code: @lang<script>
 
 // web3
-const message = await contract.methods.getMessage('nice').call();
-console.log('message', message);
+message = await contract.methods.getMessage('nice').call();
 
 
 // ethers
-const abi = ['function getMessage(string memory prefix) public view returns (string memory)',
-             'function getMessage() public view returns (string memory)'];
+const abi = [
+  "function getMessage(string) public view returns (string)",
+  "function getMessage() public view returns (string)"
+]
 const contract = new ethers.Contract(address, abi, signer);
 
-// this is how ethers identifies which function to call for overloaded functions
-const message = await contract['getMessage(string)']('nice');
-console.log('message', message);
+// for ambiguous functions (two functions with the same
+// name), the signature must also be specified
+message = await contract['getMessage(string)']('nice');
+
 
 _subsection: Numbers
 
@@ -150,10 +166,17 @@ Convert to BigNumber:
 _code: @lang<script>
 
 // web3
-const bn = web3.utils.toBN('123456');
+web3.utils.toBN('123456');
 
-// ethers
-const bn = ethers.BigNumber.from(123456);
+// ethers (from a number; must be within safe range)
+ethers.BigNumber.from(123456)
+
+// ethers (from base-10 string)
+ethers.BigNumber.from("123456")
+
+// ethers (from hex string)
+ethers.BigNumber.from("0x1e240")
+
 
 _subsection: Utilities
 
@@ -167,6 +190,9 @@ _code: @lang<script>
 web3.utils.sha3('hello world');
 web3.utils.keccak256('hello world');
 
-// ethers
+// ethers (hash of a string)
 ethers.utils.id('hello world')
+
+// ethers (hash of binary data)
+ethers.utils.keccak256('0x4242')
 
