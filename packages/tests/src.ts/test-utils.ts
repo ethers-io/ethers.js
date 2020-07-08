@@ -441,26 +441,6 @@ describe('Test Bytes32String coder', function() {
     });
 });
 
-describe('Test BigNumber', function() {
-    it("computes absolute values", function() {
-        function testAbs(test: { expected: string, value: string }) {
-            let value = ethers.BigNumber.from(test.value);
-            let expected = ethers.BigNumber.from(test.expected);
-            assert.ok(value.abs().eq(expected), 'BigNumber.abs - ' + test.value);
-        }
-
-        [
-            { value: "0x0", expected: "0x0" },
-            { value: "-0x0", expected: "0x0" },
-            { value: "0x5", expected: "0x5" },
-            { value: "-0x5", expected: "0x5" },
-            { value: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
-            { value: "-0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
-            { value: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
-            { value: "-0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
-        ].forEach(testAbs);
-    });
-});
 
 function getHex(value: string): string {
     return "0x" + Buffer.from(value).toString("hex");
@@ -536,4 +516,48 @@ describe("Test Signature Manipulation", function() {
             }
         });
     });
+});
+
+describe("BigNumber", function() {
+    const tests: Array<TestCase.BigNumber> = loadTests("bignumber");
+    tests.forEach((test) => {
+        if (test.expectedValue == null) {
+            it(test.testcase, function() {
+                assert.throws(() => {
+                    const value = ethers.BigNumber.from(test.value);
+                    console.log("ERROR", value);
+                }, (error: Error) => {
+                    return true;
+                });
+            });
+        } else {
+            it(test.testcase, function() {
+                const value = ethers.BigNumber.from(test.value);
+                assert.equal(value.toHexString(), test.expectedValue);
+
+                const value2 = ethers.BigNumber.from(value)
+                assert.equal(value2.toHexString(), test.expectedValue);
+            });
+        }
+    });
+
+    [
+        { value: "0x0", expected: "0x0" },
+        { value: "-0x0", expected: "0x0" },
+        { value: "0x5", expected: "0x5" },
+        { value: "-0x5", expected: "0x5" },
+        { value: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+        { value: "-0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+        { value: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+        { value: "-0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+    ].forEach((test) => {
+        it(`absolute value (${ test.value })`, function() {
+            const value = ethers.BigNumber.from(test.value);
+            const expected = ethers.BigNumber.from(test.expected);
+            assert.ok(value.abs().eq(expected));
+        });
+    });
+
+    // @TODO: Add more tests here
+
 });

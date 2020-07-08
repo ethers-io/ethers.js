@@ -8,6 +8,12 @@ import { randomBytes, randomHexString, randomNumber } from "./random";
 export { randomBytes, randomHexString, randomNumber };
 
 export module TestCase {
+    export type BigNumber = {
+        testcase: string;
+        value: string | number;
+        expectedValue: string;
+    };
+
     export type HDWalletNode = {
         path: string;
         address: string;
