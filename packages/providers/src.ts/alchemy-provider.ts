@@ -20,7 +20,7 @@ const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC"
 export class AlchemyProvider extends UrlJsonRpcProvider {
     readonly apiKey: string;
 
-    static getWebSocketProvider(network: Networkish, apiKey: any): WebSocketProvider {
+    static getWebSocketProvider(network?: Networkish, apiKey?: any): WebSocketProvider {
         const provider = new AlchemyProvider(network, apiKey);
 
         const url = provider.connection.url.replace(/^http/i, "ws")
