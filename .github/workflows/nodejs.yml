@@ -11,6 +11,8 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    continue-on-error: true
+
     strategy:
       matrix:
         node-version: [8.x, 10.x, 12.x, 13.x ]
@@ -30,6 +32,8 @@ jobs:
   test-browser:
 
     runs-on: ubuntu-latest
+
+    continue-on-error: true
 
     strategy:
       matrix:
