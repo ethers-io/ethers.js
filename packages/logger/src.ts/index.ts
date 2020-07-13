@@ -224,6 +224,16 @@ export class Logger {
         });
     }
 
+    assert(condition: any, message: string, code?: ErrorCode, params?: any): void {
+        if (!!condition) { return; }
+        this.throwError(message, code, params);
+    }
+
+    assertArgument(condition: any, message: string, name: string, value: any): void {
+        if (!!condition) { return; }
+        this.throwArgumentError(message, name, value);
+    }
+
     checkNormalize(message?: string): void {
         if (message == null) { message = "platform missing String.prototype.normalize"; }
         if (_normalizeError) {
