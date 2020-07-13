@@ -24394,14 +24394,14 @@
 	                switch (_a.label) {
 	                    case 0:
 	                        if (!(this._websocket.readyState === ws_1.default.CONNECTING)) return [3 /*break*/, 2];
-	                        return [4 /*yield*/, new Promise(function (resolve) {
-	                                _this._websocket.on("open", function () {
+	                        return [4 /*yield*/, (new Promise(function (resolve) {
+	                                _this._websocket.onopen = function () {
 	                                    resolve(true);
-	                                });
-	                                _this._websocket.on("error", function () {
+	                                };
+	                                _this._websocket.onerror = function () {
 	                                    resolve(false);
-	                                });
-	                            })];
+	                                };
+	                            }))];
 	                    case 1:
 	                        _a.sent();
 	                        _a.label = 2;
