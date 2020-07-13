@@ -27,6 +27,7 @@ export function isValidName(name: string): boolean {
 }
 
 export function namehash(name: string): string {
+    /* istanbul ignore if */
     if (typeof(name) !== "string") {
         logger.throwArgumentError("invalid address - " + String(name), "name", name);
     }

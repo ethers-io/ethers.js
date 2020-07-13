@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 "use strict";
 
 import fs from "fs";
@@ -988,3 +990,4 @@ export class CLI {
         }
     }
 }
+

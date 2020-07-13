@@ -49,6 +49,7 @@ function getResponse(request: http.ClientRequest): Promise<GetUrlResponse> {
             });
 
             resp.on("error", (error) => {
+                /* istanbul ignore next */
                 (<any>error).response = response;
                 reject(error);
             });
@@ -91,6 +92,7 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
             req = https.request(request);
             break;
         default:
+            /* istanbul ignore next */
             logger.throwError(`unsupported protocol ${ url.protocol }`, Logger.errors.UNSUPPORTED_OPERATION, {
                 protocol: url.protocol,
                 operation: "request"

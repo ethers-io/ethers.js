@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 "use strict";
 
 export type PromptOptions = {

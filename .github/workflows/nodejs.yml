@@ -6,13 +6,14 @@ on:
       - master
 
 jobs:
+
   test-node:
 
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [8.x, 10.x, 12.x, 13.x]
+        node-version: [8.x, 10.x, 12.x, 13.x, 14.x]
 
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
@@ -22,7 +23,9 @@ jobs:
       - uses: actions/checkout@v2
       - run: npm ci
       - run: npm run bootstrap
+      - run: npm run build-all
       - run: npm run test-node
+
 
   test-browser:
 
@@ -39,5 +42,22 @@ jobs:
       - uses: actions/checkout@v2
       - run: npm ci
       - run: npm run bootstrap
+      - run: npm run build-all
       - run: npm run test-browser-${{ matrix.module }}
 
+
+  coverage:
+
+    name: Coverage
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - uses: actions/checkout@v2
+      - run: npm ci
+      - run: npm run bootstrap
+      - run: npm run build-all
+      - run: npm run test-coverage

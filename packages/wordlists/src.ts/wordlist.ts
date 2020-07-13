@@ -35,6 +35,7 @@ export abstract class Wordlist {
         const words = [];
         for (let i = 0; i < 2048; i++) {
             const word = wordlist.getWord(i);
+            /* istanbul ignore if */
             if (i !== wordlist.getWordIndex(word)) { return "0x"; }
             words.push(word);
         }
@@ -43,6 +44,8 @@ export abstract class Wordlist {
 
     static register(lang: Wordlist, name?: string): void {
         if (!name) { name = lang.locale; }
+
+        /* istanbul ignore if */
         if (exportWordlist) {
             try {
                 const anyGlobal = (window as any)

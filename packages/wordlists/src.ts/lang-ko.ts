@@ -48,6 +48,8 @@ function loadWords(lang: Wordlist): void {
 
     wordlist.sort();
 
+    // Verify the computed list matches the official list
+    /* istanbul ignore if */
     if (Wordlist.check(lang) !== "0xf9eddeace9c5d3da9c93cf7d3cd38f6a13ed3affb933259ae865714e8a3ae71a") {
         wordlist = null;
         throw new Error("BIP39 Wordlist for ko (Korean) FAILED");
