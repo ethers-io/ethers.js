@@ -314,3 +314,4 @@ export function encrypt(account, password, options, progressCallback) {
         return JSON.stringify(data);
     });
 }
+//# sourceMappingURL=keystore.js.map

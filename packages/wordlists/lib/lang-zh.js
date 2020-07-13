@@ -49,6 +49,8 @@ function loadWords(lang) {
         }
         wordlist[lang.locale].push(strings_1.toUtf8String(bytes));
     }
+    // Verify the computed list matches the official list
+    /* istanbul ignore if */
     if (wordlist_1.Wordlist.check(lang) !== Checks[lang.locale]) {
         wordlist[lang.locale] = null;
         throw new Error("BIP39 Wordlist for " + lang.locale + " (Chinese) FAILED");
@@ -80,3 +82,4 @@ wordlist_1.Wordlist.register(langZhCn, "zh");
 var langZhTw = new LangZh("tw");
 exports.langZhTw = langZhTw;
 wordlist_1.Wordlist.register(langZhTw);
+//# sourceMappingURL=lang-zh.js.map

@@ -28,3 +28,4 @@ var BooleanCoder = /** @class */ (function (_super) {
     return BooleanCoder;
 }(abstract_coder_1.Coder));
 exports.BooleanCoder = BooleanCoder;
+//# sourceMappingURL=boolean.js.map

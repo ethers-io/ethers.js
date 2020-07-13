@@ -239,3 +239,4 @@ export function poll(func, options) {
         check();
     });
 }
+//# sourceMappingURL=index.js.map

@@ -9,3 +9,4 @@ import "./test-wallet";
 import "./test-wordlists";
 import { Reporter } from "./reporter";
 export { Reporter };
+//# sourceMappingURL=index.js.map

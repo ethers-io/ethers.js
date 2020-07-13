@@ -17,3 +17,4 @@ catch (error) {
     };
 }
 module.exports = WS;
+//# sourceMappingURL=browser-ws.js.map

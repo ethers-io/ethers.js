@@ -41,3 +41,4 @@ var TupleCoder = /** @class */ (function (_super) {
     return TupleCoder;
 }(abstract_coder_1.Coder));
 exports.TupleCoder = TupleCoder;
+//# sourceMappingURL=tuple.js.map

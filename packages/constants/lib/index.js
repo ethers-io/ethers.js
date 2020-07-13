@@ -20,3 +20,4 @@ var WeiPerEther = bignumber_1.BigNumber.from("1000000000000000000");
 exports.WeiPerEther = WeiPerEther;
 var MaxUint256 = bignumber_1.BigNumber.from("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 exports.MaxUint256 = MaxUint256;
+//# sourceMappingURL=index.js.map

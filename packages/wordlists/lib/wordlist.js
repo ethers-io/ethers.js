@@ -25,6 +25,7 @@ var Wordlist = /** @class */ (function () {
         var words = [];
         for (var i = 0; i < 2048; i++) {
             var word = wordlist.getWord(i);
+            /* istanbul ignore if */
             if (i !== wordlist.getWordIndex(word)) {
                 return "0x";
             }
@@ -36,6 +37,7 @@ var Wordlist = /** @class */ (function () {
         if (!name) {
             name = lang.locale;
         }
+        /* istanbul ignore if */
         if (exportWordlist) {
             try {
                 var anyGlobal = window;
@@ -51,3 +53,4 @@ var Wordlist = /** @class */ (function () {
     return Wordlist;
 }());
 exports.Wordlist = Wordlist;
+//# sourceMappingURL=wordlist.js.map

@@ -19,3 +19,4 @@ export class AddressCoder extends Coder {
         return getAddress(hexZeroPad(reader.readValue().toHexString(), 20));
     }
 }
+//# sourceMappingURL=address.js.map

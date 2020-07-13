@@ -5,3 +5,4 @@ import { Wordlist } from "./wordlist";
 import { langEn as en } from "./lang-en";
 const wordlists = { en: en };
 export { Wordlist, wordlists };
+//# sourceMappingURL=browser.js.map

@@ -11,3 +11,4 @@ export class BooleanCoder extends Coder {
         return reader.coerce(this.type, !reader.readValue().isZero());
     }
 }
+//# sourceMappingURL=boolean.js.map

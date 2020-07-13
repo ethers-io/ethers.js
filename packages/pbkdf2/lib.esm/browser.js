@@ -41,3 +41,4 @@ export function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
     }
     return hexlify(DK);
 }
+//# sourceMappingURL=browser.js.map

@@ -242,4 +242,22 @@ export class WebSocketProvider extends JsonRpcProvider {
             this.send("eth_unsubscribe", [subId]);
         });
     }
+    destroy() {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Wait until we have connected before trying to disconnect
+            if (this._websocket.readyState === WebSocket.CONNECTING) {
+                yield new Promise((resolve) => {
+                    this._websocket.on("open", () => {
+                        resolve(true);
+                    });
+                    this._websocket.on("error", () => {
+                        resolve(false);
+                    });
+                });
+            }
+            // Hangup (navigating away from the page that opened the connection)
+            this._websocket.close(1001);
+        });
+    }
 }
+//# sourceMappingURL=websocket-provider.js.map

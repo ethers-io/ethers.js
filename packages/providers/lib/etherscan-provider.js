@@ -422,3 +422,4 @@ var EtherscanProvider = /** @class */ (function (_super) {
     return EtherscanProvider;
 }(base_provider_1.BaseProvider));
 exports.EtherscanProvider = EtherscanProvider;
+//# sourceMappingURL=etherscan-provider.js.map

@@ -181,3 +181,4 @@ export function getNetwork(network) {
         _defaultProvider: (network._defaultProvider || standard._defaultProvider || null)
     };
 }
+//# sourceMappingURL=index.js.map

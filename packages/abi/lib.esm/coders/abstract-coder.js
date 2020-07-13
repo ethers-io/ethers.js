@@ -129,3 +129,4 @@ export class Reader {
         return BigNumber.from(this.readBytes(this.wordSize));
     }
 }
+//# sourceMappingURL=abstract-coder.js.map

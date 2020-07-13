@@ -150,3 +150,4 @@ class GeneratePlugin extends Plugin {
 }
 cli.setPlugin(GeneratePlugin);
 cli.run(process.argv.slice(2));
+//# sourceMappingURL=ethers-ts.js.map

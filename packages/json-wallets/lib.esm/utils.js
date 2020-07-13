@@ -41,3 +41,4 @@ export function searchPath(object, path) {
     }
     return currentChild;
 }
+//# sourceMappingURL=utils.js.map

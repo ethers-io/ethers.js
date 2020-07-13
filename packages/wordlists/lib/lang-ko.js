@@ -52,6 +52,8 @@ function loadWords(lang) {
         }
     });
     wordlist.sort();
+    // Verify the computed list matches the official list
+    /* istanbul ignore if */
     if (wordlist_1.Wordlist.check(lang) !== "0xf9eddeace9c5d3da9c93cf7d3cd38f6a13ed3affb933259ae865714e8a3ae71a") {
         wordlist = null;
         throw new Error("BIP39 Wordlist for ko (Korean) FAILED");
@@ -75,3 +77,4 @@ var LangKo = /** @class */ (function (_super) {
 var langKo = new LangKo();
 exports.langKo = langKo;
 wordlist_1.Wordlist.register(langKo);
+//# sourceMappingURL=lang-ko.js.map

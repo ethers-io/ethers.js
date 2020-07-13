@@ -36,3 +36,4 @@ var AddressCoder = /** @class */ (function (_super) {
     return AddressCoder;
 }(abstract_coder_1.Coder));
 exports.AddressCoder = AddressCoder;
+//# sourceMappingURL=address.js.map

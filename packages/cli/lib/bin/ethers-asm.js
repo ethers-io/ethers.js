@@ -247,3 +247,4 @@ var AssemblePlugin = /** @class */ (function (_super) {
 }(cli_1.Plugin));
 cli.setPlugin(AssemblePlugin);
 cli.run(process.argv.slice(2));
+//# sourceMappingURL=ethers-asm.js.map

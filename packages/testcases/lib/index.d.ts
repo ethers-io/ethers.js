@@ -7,6 +7,12 @@ export declare module TestCase {
         value: string | number;
         expectedValue: string;
     };
+    type Hash = {
+        data: string;
+        keccak256: string;
+        sha256: string;
+        sha512: string;
+    };
     type HDWalletNode = {
         path: string;
         address: string;

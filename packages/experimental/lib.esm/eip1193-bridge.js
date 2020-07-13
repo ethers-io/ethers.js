@@ -153,3 +153,4 @@ export class _Eip1193Bridge extends EventEmitter {
         });
     }
 }
+//# sourceMappingURL=eip1193-bridge.js.map

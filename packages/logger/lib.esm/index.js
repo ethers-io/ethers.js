@@ -180,6 +180,18 @@ export class Logger {
             value: value
         });
     }
+    assert(condition, message, code, params) {
+        if (!!condition) {
+            return;
+        }
+        this.throwError(message, code, params);
+    }
+    assertArgument(condition, message, name, value) {
+        if (!!condition) {
+            return;
+        }
+        this.throwArgumentError(message, name, value);
+    }
     checkNormalize(message) {
         if (message == null) {
             message = "platform missing String.prototype.normalize";
@@ -279,3 +291,4 @@ export class Logger {
 }
 Logger.errors = ErrorCode;
 Logger.levels = LogLevel;
+//# sourceMappingURL=index.js.map

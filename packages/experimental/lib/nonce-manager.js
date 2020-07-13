@@ -84,3 +84,4 @@ var NonceManager = /** @class */ (function (_super) {
     return NonceManager;
 }(ethers_1.ethers.Signer));
 exports.NonceManager = NonceManager;
+//# sourceMappingURL=nonce-manager.js.map

@@ -34,3 +34,4 @@ function loadData(filename) {
     return new Buffer(data[filename], "base64");
 }
 exports.loadData = loadData;
+//# sourceMappingURL=browser.js.map

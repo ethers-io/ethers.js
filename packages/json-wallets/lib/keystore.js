@@ -382,3 +382,4 @@ function encrypt(account, password, options, progressCallback) {
     });
 }
 exports.encrypt = encrypt;
+//# sourceMappingURL=keystore.js.map

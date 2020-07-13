@@ -64,3 +64,4 @@ export class MetamaskProvider extends ethers.providers.Web3Provider {
         return this;
     }
 }
+//# sourceMappingURL=metamask-provider.js.map

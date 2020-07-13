@@ -95,3 +95,4 @@ export class Web3Provider extends JsonRpcProvider {
         return this.jsonRpcFetchFunc(method, params);
     }
 }
+//# sourceMappingURL=web3-provider.js.map

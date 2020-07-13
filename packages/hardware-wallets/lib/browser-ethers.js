@@ -9,3 +9,4 @@ if (w._ethers == null) {
 else {
     exports.ethers = ethers = w._ethers;
 }
+//# sourceMappingURL=browser-ethers.js.map

@@ -9,3 +9,4 @@ function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
     return bytes_1.hexlify(crypto_1.pbkdf2Sync(bufferify(password), bufferify(salt), iterations, keylen, hashAlgorithm));
 }
 exports.pbkdf2 = pbkdf2;
+//# sourceMappingURL=index.js.map

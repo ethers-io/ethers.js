@@ -44,3 +44,4 @@ export function getUrl(href, options) {
         };
     });
 }
+//# sourceMappingURL=browser-geturl.js.map

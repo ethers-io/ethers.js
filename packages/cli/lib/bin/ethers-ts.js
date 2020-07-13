@@ -211,3 +211,4 @@ var GeneratePlugin = /** @class */ (function (_super) {
 }(cli_1.Plugin));
 cli.setPlugin(GeneratePlugin);
 cli.run(process.argv.slice(2));
+//# sourceMappingURL=ethers-ts.js.map

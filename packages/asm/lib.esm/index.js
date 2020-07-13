@@ -9,3 +9,4 @@ Opcode,
 assemble, disassemble, formatBytecode, parse, 
 // Assembly AST Nodes
 DataNode, EvaluationNode, ExecutionNode, LabelNode, LabelledNode, LinkNode, LiteralNode, Node, OpcodeNode, PopNode, ScopeNode, ValueNode, SemanticErrorSeverity, };
+//# sourceMappingURL=index.js.map

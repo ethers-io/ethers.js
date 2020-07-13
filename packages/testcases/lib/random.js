@@ -27,3 +27,4 @@ function randomNumber(seed, lower, upper) {
     return lower + Math.floor((upper - lower) * percent);
 }
 exports.randomNumber = randomNumber;
+//# sourceMappingURL=random.js.map

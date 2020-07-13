@@ -29,3 +29,4 @@ var StringCoder = /** @class */ (function (_super) {
     return StringCoder;
 }(bytes_1.DynamicBytesCoder));
 exports.StringCoder = StringCoder;
+//# sourceMappingURL=string.js.map

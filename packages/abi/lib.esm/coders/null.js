@@ -15,3 +15,4 @@ export class NullCoder extends Coder {
         return reader.coerce(this.name, null);
     }
 }
+//# sourceMappingURL=null.js.map

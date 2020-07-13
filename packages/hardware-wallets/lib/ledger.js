@@ -200,3 +200,4 @@ var LedgerSigner = /** @class */ (function (_super) {
     return LedgerSigner;
 }(ethers_1.ethers.Signer));
 exports.LedgerSigner = LedgerSigner;
+//# sourceMappingURL=ledger.js.map

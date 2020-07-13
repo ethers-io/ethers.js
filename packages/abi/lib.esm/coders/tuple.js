@@ -22,3 +22,4 @@ export class TupleCoder extends Coder {
         return reader.coerce(this.name, unpack(reader, this.coders));
     }
 }
+//# sourceMappingURL=tuple.js.map

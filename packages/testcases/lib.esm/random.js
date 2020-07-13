@@ -23,3 +23,4 @@ export function randomNumber(seed, lower, upper) {
     let percent = ((top[0] << 16) | (top[1] << 8) | top[2]) / 0x01000000;
     return lower + Math.floor((upper - lower) * percent);
 }
+//# sourceMappingURL=random.js.map

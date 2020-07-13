@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 'use strict';
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -128,3 +129,4 @@ function wrapSolc(_solc) {
 }
 exports.wrapSolc = wrapSolc;
 exports.compile = wrapSolc(customRequire(".")("solc"));
+//# sourceMappingURL=solc.js.map

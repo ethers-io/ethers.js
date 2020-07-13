@@ -985,3 +985,4 @@ cli.addPlugin("renew", RenewPlugin);
  *    reclaim NAME --address OWNER
  */
 cli.run(process.argv.slice(2));
+//# sourceMappingURL=ethers-ens.js.map

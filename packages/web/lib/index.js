@@ -285,3 +285,4 @@ function poll(func, options) {
     });
 }
 exports.poll = poll;
+//# sourceMappingURL=index.js.map

@@ -56,6 +56,7 @@ export class HDNode {
      */
     constructor(constructorGuard, privateKey, publicKey, parentFingerprint, chainCode, index, depth, mnemonicOrPath) {
         logger.checkNew(new.target, HDNode);
+        /* istanbul ignore if */
         if (constructorGuard !== _constructorGuard) {
             throw new Error("HDNode constructor cannot be called directly");
         }
@@ -321,3 +322,4 @@ export function isValidMnemonic(mnemonic, wordlist) {
     catch (error) { }
     return false;
 }
+//# sourceMappingURL=index.js.map

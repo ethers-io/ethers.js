@@ -465,3 +465,4 @@ export class JsonRpcProvider extends BaseProvider {
         return result;
     }
 }
+//# sourceMappingURL=json-rpc-provider.js.map

@@ -77,3 +77,4 @@ function getDefaultProvider(network, options) {
     }, options);
 }
 exports.getDefaultProvider = getDefaultProvider;
+//# sourceMappingURL=index.js.map

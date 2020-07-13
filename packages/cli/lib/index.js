@@ -15,3 +15,4 @@ var solc = __importStar(require("./solc"));
 exports.solc = solc;
 var typescript = __importStar(require("./typescript"));
 exports.typescript = typescript;
+//# sourceMappingURL=index.js.map

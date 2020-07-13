@@ -20,3 +20,4 @@ describe('Test solc', function () {
         assert_1.default(iface.functions['f()'], 'The interface should have function f()');
     });
 });
+//# sourceMappingURL=test-solc.js.map

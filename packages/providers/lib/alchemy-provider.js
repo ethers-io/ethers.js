@@ -69,3 +69,4 @@ var AlchemyProvider = /** @class */ (function (_super) {
     return AlchemyProvider;
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));
 exports.AlchemyProvider = AlchemyProvider;
+//# sourceMappingURL=alchemy-provider.js.map

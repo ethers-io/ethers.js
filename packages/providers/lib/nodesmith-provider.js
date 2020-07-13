@@ -57,3 +57,4 @@ var NodesmithProvider = /** @class */ (function (_super) {
     return NodesmithProvider;
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));
 exports.NodesmithProvider = NodesmithProvider;
+//# sourceMappingURL=nodesmith-provider.js.map

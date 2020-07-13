@@ -40,3 +40,4 @@ function computeHmac(algorithm, key, data) {
     return "0x" + hash.hmac(hash[algorithm], bytes_1.arrayify(key)).update(bytes_1.arrayify(data)).digest("hex");
 }
 exports.computeHmac = computeHmac;
+//# sourceMappingURL=browser.js.map

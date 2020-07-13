@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1085,3 +1086,4 @@ var CLI = /** @class */ (function () {
     return CLI;
 }());
 exports.CLI = CLI;
+//# sourceMappingURL=cli.js.map

@@ -23,3 +23,4 @@ const wordlists = {
     zh_tw: zh_tw
 };
 export { logger, Wordlist, wordlists };
+//# sourceMappingURL=index.js.map

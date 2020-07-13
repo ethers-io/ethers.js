@@ -260,3 +260,4 @@ function throwFault(fault, operation, value) {
     }
     return logger.throwError(fault, logger_1.Logger.errors.NUMERIC_FAULT, params);
 }
+//# sourceMappingURL=bignumber.js.map

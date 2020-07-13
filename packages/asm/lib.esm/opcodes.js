@@ -230,3 +230,4 @@ Object.keys(_Opcodes).forEach((mnemonic) => {
     Opcodes[value] = opcode;
 });
 Object.freeze(Opcodes);
+//# sourceMappingURL=opcodes.js.map

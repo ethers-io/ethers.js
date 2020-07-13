@@ -38,3 +38,4 @@ var FixedBytesCoder = /** @class */ (function (_super) {
     return FixedBytesCoder;
 }(abstract_coder_1.Coder));
 exports.FixedBytesCoder = FixedBytesCoder;
+//# sourceMappingURL=fixed-bytes.js.map

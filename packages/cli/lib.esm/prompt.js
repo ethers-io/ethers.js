@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 "use strict";
 function repeat(chr, count) {
     let result = "";
@@ -123,3 +124,4 @@ export function getChoice(prompt, choices, defaultChoice) {
     let hint = choice.map((c) => ((c === defaultChoice) ? c.toUpperCase() : c)).join("/");
     return getPrompt((prompt + " (" + hint + ") "), options);
 }
+//# sourceMappingURL=prompt.js.map

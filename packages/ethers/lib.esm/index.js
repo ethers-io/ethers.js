@@ -13,3 +13,4 @@ export { Signer, Wallet, VoidSigner, getDefaultProvider, providers, Contract, Co
 ////////////////////////
 // Compile-Time Constants
 version, Wordlist } from "./ethers";
+//# sourceMappingURL=index.js.map

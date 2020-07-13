@@ -8,3 +8,4 @@ exports.transports = {
     "u2f": hw_transport_u2f_1.default,
     "default": hw_transport_u2f_1.default
 };
+//# sourceMappingURL=browser-ledger-transport.js.map

@@ -8,3 +8,4 @@ function randomBytes(length) {
     return bytes_1.arrayify(crypto_1.randomBytes(length));
 }
 exports.randomBytes = randomBytes;
+//# sourceMappingURL=index.js.map

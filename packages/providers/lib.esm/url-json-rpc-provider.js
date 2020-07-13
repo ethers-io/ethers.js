@@ -86,3 +86,4 @@ export class UrlJsonRpcProvider extends StaticJsonRpcProvider {
         });
     }
 }
+//# sourceMappingURL=url-json-rpc-provider.js.map

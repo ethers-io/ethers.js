@@ -312,6 +312,33 @@ var WebSocketProvider = /** @class */ (function (_super) {
             _this.send("eth_unsubscribe", [subId]);
         });
     };
+    WebSocketProvider.prototype.destroy = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!(this._websocket.readyState === ws_1.default.CONNECTING)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, new Promise(function (resolve) {
+                                _this._websocket.on("open", function () {
+                                    resolve(true);
+                                });
+                                _this._websocket.on("error", function () {
+                                    resolve(false);
+                                });
+                            })];
+                    case 1:
+                        _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        // Hangup (navigating away from the page that opened the connection)
+                        this._websocket.close(1001);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     return WebSocketProvider;
 }(json_rpc_provider_1.JsonRpcProvider));
 exports.WebSocketProvider = WebSocketProvider;
+//# sourceMappingURL=websocket-provider.js.map

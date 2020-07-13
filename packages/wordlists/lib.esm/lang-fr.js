@@ -37,6 +37,8 @@ function loadWords(lang) {
     wordlist.forEach((word, index) => {
         lookup[dropDiacritic(word)] = index;
     });
+    // Verify the computed list matches the official list
+    /* istanbul ignore if */
     if (Wordlist.check(lang) !== "0x51deb7ae009149dc61a6bd18a918eb7ac78d2775726c68e598b92d002519b045") {
         wordlist = null;
         throw new Error("BIP39 Wordlist for fr (French) FAILED");
@@ -52,13 +54,10 @@ class LangFr extends Wordlist {
     }
     getWordIndex(word) {
         loadWords(this);
-        const index = lookup[dropDiacritic(word)];
-        if (typeof (index) !== "number") {
-            return -1;
-        }
-        return index;
+        return lookup[dropDiacritic(word)];
     }
 }
 const langFr = new LangFr();
 Wordlist.register(langFr);
 export { langFr };
+//# sourceMappingURL=lang-fr.js.map

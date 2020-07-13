@@ -42,3 +42,4 @@ export function randomBytes(length) {
     return arrayify(result);
 }
 ;
+//# sourceMappingURL=browser.js.map

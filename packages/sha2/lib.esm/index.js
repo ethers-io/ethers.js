@@ -20,6 +20,7 @@ export function sha512(data) {
     return "0x" + createHash("sha512").update(Buffer.from(arrayify(data))).digest("hex");
 }
 export function computeHmac(algorithm, key, data) {
+    /* istanbul ignore if */
     if (!SupportedAlgorithm[algorithm]) {
         logger.throwError("unsupported algorithm - " + algorithm, Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "computeHmac",
@@ -28,3 +29,4 @@ export function computeHmac(algorithm, key, data) {
     }
     return "0x" + createHmac(algorithm, Buffer.from(arrayify(key))).update(Buffer.from(arrayify(data))).digest("hex");
 }
+//# sourceMappingURL=index.js.map

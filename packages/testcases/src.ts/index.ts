@@ -14,6 +14,13 @@ export module TestCase {
         expectedValue: string;
     };
 
+    export type Hash = {
+        data: string;
+        keccak256: string;
+        sha256: string;
+        sha512: string;
+    };
+
     export type HDWalletNode = {
         path: string;
         address: string;

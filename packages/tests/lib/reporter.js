@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 // Maximum time in seconds to suppress output
@@ -132,3 +133,4 @@ function Reporter(runner) {
     });
 }
 exports.Reporter = Reporter;
+//# sourceMappingURL=reporter.js.map

@@ -1516,3 +1516,4 @@ var BaseProvider = /** @class */ (function (_super) {
     return BaseProvider;
 }(abstract_provider_1.Provider));
 exports.BaseProvider = BaseProvider;
+//# sourceMappingURL=base-provider.js.map

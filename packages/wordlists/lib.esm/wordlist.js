@@ -23,6 +23,7 @@ export class Wordlist {
         const words = [];
         for (let i = 0; i < 2048; i++) {
             const word = wordlist.getWord(i);
+            /* istanbul ignore if */
             if (i !== wordlist.getWordIndex(word)) {
                 return "0x";
             }
@@ -34,6 +35,7 @@ export class Wordlist {
         if (!name) {
             name = lang.locale;
         }
+        /* istanbul ignore if */
         if (exportWordlist) {
             try {
                 const anyGlobal = window;
@@ -47,3 +49,4 @@ export class Wordlist {
         }
     }
 }
+//# sourceMappingURL=wordlist.js.map

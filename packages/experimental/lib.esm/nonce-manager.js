@@ -60,3 +60,4 @@ export class NonceManager extends ethers.Signer {
         });
     }
 }
+//# sourceMappingURL=nonce-manager.js.map

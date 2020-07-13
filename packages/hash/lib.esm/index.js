@@ -22,6 +22,7 @@ export function isValidName(name) {
     return false;
 }
 export function namehash(name) {
+    /* istanbul ignore if */
     if (typeof (name) !== "string") {
         logger.throwArgumentError("invalid address - " + String(name), "name", name);
     }
@@ -48,3 +49,4 @@ export function hashMessage(message) {
         message
     ]));
 }
+//# sourceMappingURL=index.js.map

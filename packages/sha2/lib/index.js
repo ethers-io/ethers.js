@@ -24,6 +24,7 @@ function sha512(data) {
 }
 exports.sha512 = sha512;
 function computeHmac(algorithm, key, data) {
+    /* istanbul ignore if */
     if (!SupportedAlgorithm[algorithm]) {
         logger.throwError("unsupported algorithm - " + algorithm, logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "computeHmac",
@@ -33,3 +34,4 @@ function computeHmac(algorithm, key, data) {
     return "0x" + crypto_1.createHmac(algorithm, Buffer.from(bytes_1.arrayify(key))).update(Buffer.from(bytes_1.arrayify(data))).digest("hex");
 }
 exports.computeHmac = computeHmac;
+//# sourceMappingURL=index.js.map

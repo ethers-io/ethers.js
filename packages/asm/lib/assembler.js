@@ -1322,3 +1322,4 @@ function assemble(ast, options) {
     });
 }
 exports.assemble = assemble;
+//# sourceMappingURL=assembler.js.map

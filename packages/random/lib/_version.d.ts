@@ -1,1 +1,1 @@
-export declare const version = "random/5.0.1";
+export declare const version = "random/5.0.2";

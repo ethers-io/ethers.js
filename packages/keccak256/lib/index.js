@@ -9,3 +9,4 @@ function keccak256(data) {
     return '0x' + js_sha3_1.default.keccak_256(bytes_1.arrayify(data));
 }
 exports.keccak256 = keccak256;
+//# sourceMappingURL=index.js.map

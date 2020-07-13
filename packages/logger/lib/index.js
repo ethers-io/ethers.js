@@ -193,6 +193,18 @@ var Logger = /** @class */ (function () {
             value: value
         });
     };
+    Logger.prototype.assert = function (condition, message, code, params) {
+        if (!!condition) {
+            return;
+        }
+        this.throwError(message, code, params);
+    };
+    Logger.prototype.assertArgument = function (condition, message, name, value) {
+        if (!!condition) {
+            return;
+        }
+        this.throwArgumentError(message, name, value);
+    };
     Logger.prototype.checkNormalize = function (message) {
         if (message == null) {
             message = "platform missing String.prototype.normalize";
@@ -294,3 +306,4 @@ var Logger = /** @class */ (function () {
     return Logger;
 }());
 exports.Logger = Logger;
+//# sourceMappingURL=index.js.map

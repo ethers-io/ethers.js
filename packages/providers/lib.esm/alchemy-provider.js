@@ -49,3 +49,4 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
         return ("https:/" + "/" + host + apiKey);
     }
 }
+//# sourceMappingURL=alchemy-provider.js.map

@@ -550,3 +550,4 @@ var JsonRpcProvider = /** @class */ (function (_super) {
     return JsonRpcProvider;
 }(base_provider_1.BaseProvider));
 exports.JsonRpcProvider = JsonRpcProvider;
+//# sourceMappingURL=json-rpc-provider.js.map

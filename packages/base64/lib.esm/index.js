@@ -7,3 +7,4 @@ export function decode(textData) {
 export function encode(data) {
     return Buffer.from(arrayify(data)).toString("base64");
 }
+//# sourceMappingURL=index.js.map

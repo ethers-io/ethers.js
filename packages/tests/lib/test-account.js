@@ -31,3 +31,4 @@ describe('Checksum and ICAP address generation', function () {
         });
     });
 });
+//# sourceMappingURL=test-account.js.map

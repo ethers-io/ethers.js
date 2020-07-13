@@ -377,3 +377,4 @@ export function joinSignature(signature) {
         (signature.recoveryParam ? "0x1c" : "0x1b")
     ]));
 }
+//# sourceMappingURL=index.js.map
