@@ -42,6 +42,9 @@ export function commify(value: string | number): string {
 
     let suffix = "";
     if (comps.length === 2) { suffix = "." + (comps[1] || "0"); }
+    while (suffix.length > 2 && suffix[suffix.length - 1] === "0") {
+        suffix = suffix.substring(0, suffix.length - 1);
+    }
 
     const formatted = [];
     while (whole.length) {
