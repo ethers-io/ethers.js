@@ -11,9 +11,8 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    continue-on-error: true
-
     strategy:
+      fail-fast: false
       matrix:
         node-version: [8.x, 10.x, 12.x, 13.x ]
 
@@ -33,9 +32,8 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    continue-on-error: true
-
     strategy:
+      fail-fast: false
       matrix:
         module: [ 'esm', 'umd' ]
 
@@ -55,6 +53,8 @@ jobs:
     name: Coverage
 
     runs-on: ubuntu-latest
+
+    continue-on-error: true
 
     steps:
       - uses: actions/setup-node@v1
