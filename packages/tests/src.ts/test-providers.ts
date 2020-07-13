@@ -664,3 +664,113 @@ describe("Test Basic Authentication", function() {
         }, "throws an exception for insecure connections");
     })
 });
+
+describe("Test API Key Formatting", function() {
+    it("Infura API Key", function() {
+        const projectId = "someProjectId";
+        const projectSecret = "someSecretKey";
+
+        // Test simple projectId
+        const apiKeyString = ethers.providers.InfuraProvider.getApiKey(projectId);
+        assert.equal(apiKeyString.apiKey, projectId);
+        assert.equal(apiKeyString.projectId, projectId);
+        assert.ok(apiKeyString.secretKey == null);
+
+        // Test complex API key with projectId
+        const apiKeyObject = ethers.providers.InfuraProvider.getApiKey({
+            projectId
+        });
+        assert.equal(apiKeyObject.apiKey, projectId);
+        assert.equal(apiKeyObject.projectId, projectId);
+        assert.ok(apiKeyObject.projectSecret == null);
+
+        // Test complex API key with projectId and projectSecret
+        const apiKeyObject2 = ethers.providers.InfuraProvider.getApiKey({
+            projectId: projectId,
+            projectSecret: projectSecret
+        });
+        assert.equal(apiKeyObject2.apiKey, projectId);
+        assert.equal(apiKeyObject2.projectId, projectId);
+        assert.equal(apiKeyObject2.projectSecret, projectSecret);
+
+        // Fails on invalid projectId type
+        assert.throws(() => {
+            const apiKey = ethers.providers.InfuraProvider.getApiKey({
+                projectId: 1234,
+                projectSecret: projectSecret
+            });
+            console.log(apiKey);
+        }, (error: any) => {
+            return (error.argument === "projectId" && error.reason === "projectSecret requires a projectId");
+        });
+
+        // Fails on invalid projectSecret type
+        assert.throws(() => {
+            const apiKey = ethers.providers.InfuraProvider.getApiKey({
+                projectId: projectId,
+                projectSecret: 1234
+            });
+            console.log(apiKey);
+        }, (error: any) => {
+            return (error.argument === "projectSecret" && error.reason === "invalid projectSecret");
+        });
+
+        {
+            const provider = new ethers.providers.InfuraProvider("homestead", {
+                projectId: projectId,
+                projectSecret: projectSecret
+            });
+            assert.equal(provider.network.name, "homestead");
+            assert.equal(provider.apiKey, projectId);
+            assert.equal(provider.projectId, projectId);
+            assert.equal(provider.projectSecret, projectSecret);
+        }
+
+        // Attempt an unsupported network
+        assert.throws(() => {
+            const provider = new ethers.providers.InfuraProvider("imaginary");
+            console.log(provider);
+        }, (error: any) => {
+            return (error.argument === "network" && error.reason === "unsupported network");
+        });
+
+    });
+});
+
+describe("Test WebSocketProvider", function() {
+    async function testWebSocketProvider(provider: ethers.providers.WebSocketProvider): Promise<void> {
+        await provider.destroy();
+    }
+
+    it("InfuraProvider.getWebSocketProvider", async function() {
+        const provider = ethers.providers.InfuraProvider.getWebSocketProvider();
+        await testWebSocketProvider(provider);
+    });
+});
+
+describe("Test Events", function() {
+    async function testBlockEvent(provider: ethers.providers.Provider) {
+        return new Promise((resolve, reject) => {
+            let firstBlockNumber: number = null;
+            const handler = (blockNumber: number) => {
+                if (firstBlockNumber == null) {
+                    firstBlockNumber = blockNumber;
+                    return;
+                }
+                provider.removeListener("block", handler);
+                if (firstBlockNumber + 1 === blockNumber) {
+                    resolve(true);
+                } else {
+                    reject(new Error("blockNumber fail"));
+                }
+            };
+            provider.on("block", handler);
+        });
+    }
+
+    it("InfuraProvider", async function() {
+        this.timeout(50000);
+        const provider = new ethers.providers.InfuraProvider("rinkeby");
+        await testBlockEvent(provider);
+    });
+});
