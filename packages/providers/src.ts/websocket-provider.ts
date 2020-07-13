@@ -289,7 +289,8 @@ export class WebSocketProvider extends JsonRpcProvider {
             }));
         }
 
-        // Hangup (navigating away from the page that opened the connection)
-        this._websocket.close(1001);
+        // Hangup
+        // See: https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent#Status_codes
+        this._websocket.close(1000);
     }
 }
