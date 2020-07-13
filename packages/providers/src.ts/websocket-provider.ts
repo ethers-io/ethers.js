@@ -278,15 +278,15 @@ export class WebSocketProvider extends JsonRpcProvider {
     async destroy(): Promise<void> {
         // Wait until we have connected before trying to disconnect
         if (this._websocket.readyState === WebSocket.CONNECTING) {
-            await new Promise((resolve) => {
-                this._websocket.on("open", () => {
+            await (new Promise((resolve) => {
+                this._websocket.onopen = function() {
                     resolve(true);
-                });
+                };
 
-                this._websocket.on("error", () => {
+                this._websocket.onerror = function() {
                     resolve(false);
-                });
-            });
+                };
+            }));
         }
 
         // Hangup (navigating away from the page that opened the connection)
