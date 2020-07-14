@@ -316,3 +316,4 @@ export class FixedNumber {
         return !!(value && value._isFixedNumber);
     }
 }
+//# sourceMappingURL=fixednumber.js.map

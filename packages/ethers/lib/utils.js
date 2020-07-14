@@ -119,3 +119,4 @@ exports.SupportedAlgorithm = sha2_2.SupportedAlgorithm;
 var strings_2 = require("@ethersproject/strings");
 exports.UnicodeNormalizationForm = strings_2.UnicodeNormalizationForm;
 exports.Utf8ErrorReason = strings_2.Utf8ErrorReason;
+//# sourceMappingURL=utils.js.map

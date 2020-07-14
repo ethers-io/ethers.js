@@ -52,3 +52,4 @@ export class IpcProvider extends JsonRpcProvider {
         });
     }
 }
+//# sourceMappingURL=ipc-provider.js.map

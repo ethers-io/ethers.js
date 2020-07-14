@@ -1083,3 +1083,4 @@ export function assemble(ast, options) {
         return assembler.assemble(options.target || "_");
     });
 }
+//# sourceMappingURL=assembler.js.map

@@ -50,3 +50,4 @@ function getJsonWalletAddress(json) {
     return null;
 }
 exports.getJsonWalletAddress = getJsonWalletAddress;
+//# sourceMappingURL=inspect.js.map

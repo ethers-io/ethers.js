@@ -19,3 +19,4 @@ export function loadData(filename) {
     console.log("loading:", filename);
     return new Buffer(data[filename], "base64");
 }
+//# sourceMappingURL=browser.js.map

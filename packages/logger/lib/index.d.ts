@@ -36,6 +36,8 @@ export declare class Logger {
     makeError(message: string, code?: ErrorCode, params?: any): Error;
     throwError(message: string, code?: ErrorCode, params?: any): never;
     throwArgumentError(message: string, name: string, value: any): never;
+    assert(condition: any, message: string, code?: ErrorCode, params?: any): void;
+    assertArgument(condition: any, message: string, name: string, value: any): void;
     checkNormalize(message?: string): void;
     checkSafeUint53(value: number, message?: string): void;
     checkArgumentCount(count: number, expectedCount: number, message?: string): void;

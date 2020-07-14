@@ -525,3 +525,4 @@ export class FallbackProvider extends BaseProvider {
         });
     }
 }
+//# sourceMappingURL=fallback-provider.js.map

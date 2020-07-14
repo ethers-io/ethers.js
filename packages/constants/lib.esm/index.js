@@ -11,3 +11,4 @@ const Two = BigNumber.from(2);
 const WeiPerEther = BigNumber.from("1000000000000000000");
 const MaxUint256 = BigNumber.from("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 export { AddressZero, HashZero, EtherSymbol, NegativeOne, Zero, One, Two, WeiPerEther, MaxUint256 };
+//# sourceMappingURL=index.js.map

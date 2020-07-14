@@ -16,3 +16,4 @@ exports.Indexed = interface_1.Indexed;
 exports.Interface = interface_1.Interface;
 exports.LogDescription = interface_1.LogDescription;
 exports.TransactionDescription = interface_1.TransactionDescription;
+//# sourceMappingURL=index.js.map

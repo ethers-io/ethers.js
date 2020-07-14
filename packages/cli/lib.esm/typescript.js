@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 "use strict";
 import { ethers } from "ethers";
 function getType(param, flexible) {
@@ -120,3 +121,4 @@ export function generate(contract, bytecode) {
     let output = lines.join("\n") + "\n";
     return output;
 }
+//# sourceMappingURL=typescript.js.map

@@ -32,3 +32,4 @@ var NullCoder = /** @class */ (function (_super) {
     return NullCoder;
 }(abstract_coder_1.Coder));
 exports.NullCoder = NullCoder;
+//# sourceMappingURL=null.js.map

@@ -61,3 +61,4 @@ var BrainWallet = /** @class */ (function (_super) {
     return BrainWallet;
 }(ethers_1.ethers.Wallet));
 exports.BrainWallet = BrainWallet;
+//# sourceMappingURL=brain-wallet.js.map

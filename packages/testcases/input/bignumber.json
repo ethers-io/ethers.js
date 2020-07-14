@@ -1,0 +1,187 @@
+[
+  {
+    "testcase": "HexStrings - Zero; odd-length",
+    "value": "0x0",
+    "expectedValue": "0x00"
+  },
+  {
+    "testcase": "HexStrings - Zero; padded",
+    "value": "0x00",
+    "expectedValue": "0x00"
+  },
+  {
+    "testcase": "HexStrings - Negative Zero",
+    "value": "-0x00",
+    "expectedValue": "0x00"
+  },
+  {
+    "testcase": "HexStrings - One",
+    "value": "0x1",
+    "expectedValue": "0x01"
+  },
+  {
+    "testcase": "HexStrings - Negative One",
+    "value": "-0x1",
+    "expectedValue": "-0x01"
+  },
+  {
+    "testcase": "HexStrings - Over 32-bits",
+    "value": "0xdeadbeef1",
+    "expectedValue": "0x0deadbeef1"
+  },
+  {
+    "testcase": "HexStrings - Over 32-bits (negative)",
+    "value": "-0xdeadbeef1",
+    "expectedValue": "-0x0deadbeef1"
+  },
+  {
+    "testcase": "HexStrings - Over 53-bits",
+    "value": "0xfffffffffffffff",
+    "expectedValue": "0x0fffffffffffffff"
+  },
+  {
+    "testcase": "HexStrings - Over 53-bits (negative)",
+    "value": "-0xfffffffffffffff",
+    "expectedValue": "-0x0fffffffffffffff"
+  },
+  {
+    "testcase": "HexStrings - Over 64-bits",
+    "value": "0xdeadbeefdeadbeef1",
+    "expectedValue": "0x0deadbeefdeadbeef1"
+  },
+  {
+    "testcase": "HexStrings - Over 64-bits (negative)",
+    "value": "-0xdeadbeefdeadbeef1",
+    "expectedValue": "-0x0deadbeefdeadbeef1"
+  },
+  {
+    "testcase": "DecimalStrings - Zero",
+    "value": "0",
+    "expectedValue": "0x00"
+  },
+  {
+    "testcase": "DecimalStrings - One",
+    "value": "1",
+    "expectedValue": "0x01"
+  },
+  {
+    "testcase": "DecimalStrings - Negative One",
+    "value": "-1",
+    "expectedValue": "-0x01"
+  },
+  {
+    "testcase": "DecimalStrings - Life and such",
+    "value": "42",
+    "expectedValue": "0x2a"
+  },
+  {
+    "testcase": "DecimalStrings - Life and such (negative)",
+    "value": "-42",
+    "expectedValue": "-0x2a"
+  },
+  {
+    "testcase": "DecimalStrings - MAX_SAFE_INTEGER",
+    "value": "9007199254740991",
+    "expectedValue": "0x1fffffffffffff"
+  },
+  {
+    "testcase": "DecimalStrings - MAX_SAFE_INTEGER (negative)",
+    "value": "-9007199254740991",
+    "expectedValue": "-0x1fffffffffffff"
+  },
+  {
+    "testcase": "DecimalStrings - High value not on compact boundary",
+    "value": "9007199254740995",
+    "expectedValue": "0x20000000000003"
+  },
+  {
+    "testcase": "DecimalStrings - Low value not on compact boundary",
+    "value": "-9007199254740995",
+    "expectedValue": "-0x20000000000003"
+  },
+  {
+    "testcase": "Numbers - Zero",
+    "value": 0,
+    "expectedValue": "0x00"
+  },
+  {
+    "testcase": "Numbers - One",
+    "value": 1,
+    "expectedValue": "0x01"
+  },
+  {
+    "testcase": "Numbers - Negative One",
+    "value": -1,
+    "expectedValue": "-0x01"
+  },
+  {
+    "testcase": "Numbers - BigNumber Safe",
+    "value": 9007199254740990,
+    "expectedValue": "0x1ffffffffffffe"
+  },
+  {
+    "testcase": "Numbers - BigNumber Safe (negative)",
+    "value": -9007199254740990,
+    "expectedValue": "-0x1ffffffffffffe"
+  },
+  {
+    "testcase": "Invalid - Empty value",
+    "value": "0x",
+    "expectedValue": null
+  },
+  {
+    "testcase": "Invalid - The x of 0x0",
+    "value": "x",
+    "expectedValue": null
+  },
+  {
+    "testcase": "Invalid - Negative at the end",
+    "value": "0123-",
+    "expectedValue": null
+  },
+  {
+    "testcase": "Invalid - Negative in middle",
+    "value": "0123-456",
+    "expectedValue": null
+  },
+  {
+    "testcase": "Invalid - Double negative",
+    "value": "--123",
+    "expectedValue": null
+  },
+  {
+    "testcase": "Invalid - MAX_SAFE_INTEGER",
+    "value": 9007199254740991,
+    "expectedValue": null
+  },
+  {
+    "testcase": "Invalid - -MAX_SAFE_INTEGER",
+    "value": -9007199254740991,
+    "expectedValue": null
+  },
+  {
+    "testcase": "Invalid - Too high; safe value",
+    "value": 9007199254740996,
+    "expectedValue": null
+  },
+  {
+    "testcase": "Invalid - Too low; save value",
+    "value": -9007199254740996,
+    "expectedValue": null
+  },
+  {
+    "testcase": "Invalid - Random text",
+    "value": "hello world",
+    "expectedValue": null
+  },
+  {
+    "testcase": "Invalid - Bad hex character",
+    "value": "0x123g",
+    "expectedValue": null
+  },
+  {
+    "testcase": "Invalid - See #935",
+    "value": "0-0x1 whatever",
+    "expectedValue": null
+  }
+]

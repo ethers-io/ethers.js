@@ -55,3 +55,4 @@ var NumberCoder = /** @class */ (function (_super) {
     return NumberCoder;
 }(abstract_coder_1.Coder));
 exports.NumberCoder = NumberCoder;
+//# sourceMappingURL=number.js.map

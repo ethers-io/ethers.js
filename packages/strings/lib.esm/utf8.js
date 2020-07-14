@@ -245,3 +245,4 @@ export function toUtf8String(bytes, onError) {
 export function toUtf8CodePoints(str, form = UnicodeNormalizationForm.current) {
     return getUtf8CodePoints(toUtf8Bytes(str, form));
 }
+//# sourceMappingURL=utf8.js.map

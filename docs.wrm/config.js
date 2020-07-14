@@ -181,11 +181,17 @@ module.exports = {
       "link-infura": { name: "INFURA", url: "https:/\/infura.io" },
       "link-ledger": "https:/\/www.ledger.com",
       "link-metamask": { name: "Metamask", url: "https:/\/metamask.io/" },
+      "link-otto": "https:/\/github.com/robertkrimen/otto",
       "link-parity": { name: "Parity", url: "https:/\/www.parity.io" },
       "link-rtd": "https:/\/github.com/readthedocs/sphinx_rtd_theme",
       "link-semver": { name: "semver", url: "https:/\/semver.org" },
       "link-solidity": { name: "Solidity" , url: "https:/\/solidity.readthedocs.io/en/v0.6.2/" },
       "link-sphinx": { name: "Sphinx", url: "https:/\/www.sphinx-doc.org/" },
+
+      "link-alchemy-signup": "https:/\/alchemyapi.io/signup",
+      "link-etherscan-signup": "https:/\/etherscan.io/apis",
+      "link-etherscan-ratelimit": "https:/\/info.etherscan.com/api-return-errors/",
+      "link-infura-signup": "https:/\/infura.io/register",
 
       "link-json-rpc": "https:/\/github.com/ethereum/wiki/wiki/JSON-RPC",
       "link-web3-send": "https:/\/github.com/ethereum/web3.js/blob/1.x/packages/web3-providers-http/types/index.d.ts#L57",
@@ -196,6 +202,11 @@ module.exports = {
 
       "link-legacy-docs3": "https:/\/docs.ethers.io/v3/",
       "link-legacy-docs4": "https:/\/docs.ethers.io/v4/",
+
+      "link-github-ci": "https:/\/github.com/ethers-io/ethers.js/actions/runs/158006903",
+      "link-github-issues": "https:/\/github.com/ethers-io/ethers.js/issues",
+
+      "link-issue-407": "https:/\/github.com/ethers-io/ethers.js/issues/407",
 
       "link-infura-secret": "https:/\/infura.io/docs/gettingStarted/authentication",
 
@@ -237,6 +248,7 @@ module.exports = {
       "link-js-bigint": "https:/\/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt",
       "link-js-normalize": { name: "String.normalize", url: "https:/\/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize" },
       "link-js-maxsafe": "https:/\/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER#Description",
+      "link-js-proxy": "https:/\/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy",
       "link-js-typedarray": "https:/\/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray",
 
       "link-ricmoo-humanreadableabi": "https:/\/blog.ricmoo.com/human-readable-contract-abis-in-ethers-js-141902f4d917",

@@ -26,3 +26,4 @@ var wordlists = {
     zh_tw: lang_zh_1.langZhTw
 };
 exports.wordlists = wordlists;
+//# sourceMappingURL=index.js.map

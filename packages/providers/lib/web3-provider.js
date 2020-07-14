@@ -115,3 +115,4 @@ var Web3Provider = /** @class */ (function (_super) {
     return Web3Provider;
 }(json_rpc_provider_1.JsonRpcProvider));
 exports.Web3Provider = Web3Provider;
+//# sourceMappingURL=web3-provider.js.map

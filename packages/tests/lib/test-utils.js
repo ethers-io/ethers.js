@@ -166,6 +166,26 @@ describe('Test Unit Conversion', function () {
             }
         });
     });
+    it("formats with commify", function () {
+        var tests = {
+            "0.0": "0.0",
+            ".0": "0.0",
+            "0.": "0.0",
+            "00.00": "0.0",
+            "100.000": "100.0",
+            "100.0000": "100.0",
+            "1000.000": "1,000.0",
+            "1000.0000": "1,000.0",
+            "100.123": "100.123",
+            "100.1234": "100.1234",
+            "1000.1234": "1,000.1234",
+            "1000.12345": "1,000.12345",
+            "998998998998.123456789": "998,998,998,998.123456789",
+        };
+        Object.keys(tests).forEach(function (test) {
+            assert_1.default.equal(ethers_1.ethers.utils.commify(test), tests[test]);
+        });
+    });
 });
 describe('Test Namehash', function () {
     var tests = testcases_1.loadTests('namehash');
@@ -174,6 +194,11 @@ describe('Test Namehash', function () {
             this.timeout(120000);
             assert_1.default.equal(ethers_1.ethers.utils.namehash(test.name), test.expected, 'computes namehash(' + test.name + ')');
         });
+    });
+    it("isValidName", function () {
+        assert_1.default.ok(ethers_1.ethers.utils.isValidName("ricmoo.eth"));
+        assert_1.default.ok(!ethers_1.ethers.utils.isValidName(""));
+        assert_1.default.ok(!ethers_1.ethers.utils.isValidName("ricmoo..eth"));
     });
 });
 describe('Test ID Hash Functions', function () {
@@ -195,7 +220,7 @@ describe('Test ID Hash Functions', function () {
 describe('Test Solidity Hash Functions', function () {
     var tests = testcases_1.loadTests('solidity-hashes');
     function test(funcName, testKey) {
-        it(('computes ' + funcName + ' correctly'), function () {
+        it("computes " + funcName + " correctly", function () {
             this.timeout(120000);
             tests.forEach(function (test, index) {
                 var actual = (ethers_1.ethers.utils)['solidity' + funcName](test.types, test.values);
@@ -206,6 +231,26 @@ describe('Test Solidity Hash Functions', function () {
     }
     test('Keccak256', 'keccak256');
     test('Sha256', 'sha256');
+    var testsInvalid = [
+        "uint0",
+        "uint1",
+        "uint08",
+        "uint266",
+        "bytes0",
+        "bytes02",
+        "bytes33",
+        "purple" // invalid type
+    ];
+    testsInvalid.forEach(function (type) {
+        it("disallows invalid type \"" + type + "\"", function () {
+            assert_1.default.throws(function () {
+                ethers_1.ethers.utils.solidityPack([type], ["0x12"]);
+            }, function (error) {
+                var message = error.message;
+                return (message.match(/invalid([a-z ]*) type/) && message.indexOf(type) >= 0);
+            });
+        });
+    });
 });
 describe('Test Hash Functions', function () {
     var tests = testcases_1.loadTests('hashes');
@@ -215,10 +260,16 @@ describe('Test Hash Functions', function () {
             assert_1.default.equal(ethers_1.ethers.utils.keccak256(test.data), test.keccak256, ('Keccak256 - ' + test.data));
         });
     });
-    it('computes sha2566 correctly', function () {
+    it('computes sha2-256 correctly', function () {
         this.timeout(120000);
         tests.forEach(function (test) {
             assert_1.default.equal(ethers_1.ethers.utils.sha256(test.data), test.sha256, ('SHA256 - ' + test.data));
+        });
+    });
+    it('computes sha2-512 correctly', function () {
+        this.timeout(120000);
+        tests.forEach(function (test) {
+            assert_1.default.equal(ethers_1.ethers.utils.sha512(test.data), test.sha512, ('SHA512 - ' + test.data));
         });
     });
 });
@@ -351,25 +402,6 @@ describe('Test Bytes32String coder', function () {
         assert_1.default.equal(str2, str, "parsed correctly");
     });
 });
-describe('Test BigNumber', function () {
-    it("computes absolute values", function () {
-        function testAbs(test) {
-            var value = ethers_1.ethers.BigNumber.from(test.value);
-            var expected = ethers_1.ethers.BigNumber.from(test.expected);
-            assert_1.default.ok(value.abs().eq(expected), 'BigNumber.abs - ' + test.value);
-        }
-        [
-            { value: "0x0", expected: "0x0" },
-            { value: "-0x0", expected: "0x0" },
-            { value: "0x5", expected: "0x5" },
-            { value: "-0x5", expected: "0x5" },
-            { value: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
-            { value: "-0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
-            { value: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
-            { value: "-0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
-        ].forEach(testAbs);
-    });
-});
 function getHex(value) {
     return "0x" + Buffer.from(value).toString("hex");
 }
@@ -441,3 +473,64 @@ describe("Test Signature Manipulation", function () {
         });
     });
 });
+describe("BigNumber", function () {
+    var tests = testcases_1.loadTests("bignumber");
+    tests.forEach(function (test) {
+        if (test.expectedValue == null) {
+            it(test.testcase, function () {
+                assert_1.default.throws(function () {
+                    var value = ethers_1.ethers.BigNumber.from(test.value);
+                    console.log("ERROR", value);
+                }, function (error) {
+                    return true;
+                });
+            });
+        }
+        else {
+            it(test.testcase, function () {
+                var value = ethers_1.ethers.BigNumber.from(test.value);
+                assert_1.default.equal(value.toHexString(), test.expectedValue);
+                var value2 = ethers_1.ethers.BigNumber.from(value);
+                assert_1.default.equal(value2.toHexString(), test.expectedValue);
+            });
+        }
+    });
+    [
+        { value: "0x0", expected: "0x0" },
+        { value: "-0x0", expected: "0x0" },
+        { value: "0x5", expected: "0x5" },
+        { value: "-0x5", expected: "0x5" },
+        { value: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+        { value: "-0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+        { value: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+        { value: "-0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+    ].forEach(function (test) {
+        it("absolute value (" + test.value + ")", function () {
+            var value = ethers_1.ethers.BigNumber.from(test.value);
+            var expected = ethers_1.ethers.BigNumber.from(test.expected);
+            assert_1.default.ok(value.abs().eq(expected));
+        });
+    });
+    // @TODO: Add more tests here
+});
+describe("Logger", function () {
+    var logger = new ethers_1.ethers.utils.Logger("testing/0.0");
+    it("checkArgumentCount", function () {
+        logger.checkArgumentCount(3, 3);
+    });
+    it("checkArgumentCount - too few", function () {
+        assert_1.default.throws(function () {
+            logger.checkArgumentCount(1, 3);
+        }, function (error) {
+            return error.code === ethers_1.ethers.utils.Logger.errors.MISSING_ARGUMENT;
+        });
+    });
+    it("checkArgumentCount - too many", function () {
+        assert_1.default.throws(function () {
+            logger.checkArgumentCount(3, 1);
+        }, function (error) {
+            return error.code === ethers_1.ethers.utils.Logger.errors.UNEXPECTED_ARGUMENT;
+        });
+    });
+});
+//# sourceMappingURL=test-utils.js.map

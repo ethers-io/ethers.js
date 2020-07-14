@@ -20,3 +20,4 @@ export { Signer, Wallet, VoidSigner, getDefaultProvider, providers, Contract, Co
 ////////////////////////
 // Compile-Time Constants
 version, Wordlist };
+//# sourceMappingURL=ethers.js.map

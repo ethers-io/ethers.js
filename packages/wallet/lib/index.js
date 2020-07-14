@@ -68,6 +68,7 @@ var Wallet = /** @class */ (function (_super) {
         }
         else {
             if (signing_key_1.SigningKey.isSigningKey(privateKey)) {
+                /* istanbul ignore if */
                 if (privateKey.curve !== "secp256k1") {
                     logger.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
                 }
@@ -80,6 +81,7 @@ var Wallet = /** @class */ (function (_super) {
             properties_1.defineReadOnly(_this, "_mnemonic", function () { return null; });
             properties_1.defineReadOnly(_this, "address", transactions_1.computeAddress(_this.publicKey));
         }
+        /* istanbul ignore if */
         if (provider && !abstract_provider_1.Provider.isProvider(provider)) {
             logger.throwArgumentError("invalid provider", "provider", provider);
         }
@@ -112,7 +114,7 @@ var Wallet = /** @class */ (function (_super) {
         return properties_1.resolveProperties(transaction).then(function (tx) {
             if (tx.from != null) {
                 if (address_1.getAddress(tx.from) !== _this.address) {
-                    throw new Error("transaction from address mismatch");
+                    logger.throwArgumentError("transaction from address mismatch", "transaction.from", transaction.from);
                 }
                 delete tx.from;
             }
@@ -171,3 +173,4 @@ function verifyMessage(message, signature) {
     return transactions_1.recoverAddress(hash_1.hashMessage(message), signature);
 }
 exports.verifyMessage = verifyMessage;
+//# sourceMappingURL=index.js.map

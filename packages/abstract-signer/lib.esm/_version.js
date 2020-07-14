@@ -1,1 +1,2 @@
-export const version = "abstract-signer/5.0.1";
+export const version = "abstract-signer/5.0.2";
+//# sourceMappingURL=_version.js.map

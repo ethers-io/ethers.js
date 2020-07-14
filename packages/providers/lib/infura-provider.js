@@ -14,6 +14,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var websocket_provider_1 = require("./websocket-provider");
+var formatter_1 = require("./formatter");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
@@ -48,12 +49,8 @@ var InfuraProvider = /** @class */ (function (_super) {
             apiKeyObj.projectId = apiKey;
         }
         else if (apiKey.projectSecret != null) {
-            if (typeof (apiKey.projectId) !== "string") {
-                logger.throwArgumentError("projectSecret requires a projectId", "projectId", apiKey.projectId);
-            }
-            if (typeof (apiKey.projectSecret) !== "string") {
-                logger.throwArgumentError("invalid projectSecret", "projectSecret", "[REDACTED]");
-            }
+            logger.assertArgument((typeof (apiKey.projectId) === "string"), "projectSecret requires a projectId", "projectId", apiKey.projectId);
+            logger.assertArgument((typeof (apiKey.projectSecret) === "string"), "invalid projectSecret", "projectSecret", "[REDACTED]");
             apiKeyObj.projectId = apiKey.projectId;
             apiKeyObj.projectSecret = apiKey.projectSecret;
         }
@@ -65,7 +62,7 @@ var InfuraProvider = /** @class */ (function (_super) {
     };
     InfuraProvider.getUrl = function (network, apiKey) {
         var host = null;
-        switch (network.name) {
+        switch (network ? network.name : "unknown") {
             case "homestead":
                 host = "mainnet.infura.io";
                 break;
@@ -88,7 +85,13 @@ var InfuraProvider = /** @class */ (function (_super) {
                 });
         }
         var connection = {
-            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId)
+            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId),
+            throttleCallback: function (attempt, url) {
+                if (apiKey.projectId === defaultProjectId) {
+                    formatter_1.showThrottleMessage();
+                }
+                return Promise.resolve(true);
+            }
         };
         if (apiKey.projectSecret != null) {
             connection.user = "";
@@ -99,3 +102,4 @@ var InfuraProvider = /** @class */ (function (_super) {
     return InfuraProvider;
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));
 exports.InfuraProvider = InfuraProvider;
+//# sourceMappingURL=infura-provider.js.map

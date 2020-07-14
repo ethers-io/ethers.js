@@ -6,6 +6,8 @@ import { Network, Networkish } from "@ethersproject/networks";
 import { deepCopy, defineReadOnly } from "@ethersproject/properties";
 import { fetchJson } from "@ethersproject/web";
 
+import { showThrottleMessage } from "./formatter";
+
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
@@ -34,9 +36,11 @@ function getResult(result: { status?: number, message?: string, result?: any }):
     }
 
     if (result.status != 1 || result.message != "OK") {
-        // @TODO: not any
         const error: any = new Error("invalid response");
         error.result = JSON.stringify(result);
+        if ((result.result || "").toLowerCase().indexOf("rate limit") >= 0) {
+            error.throttleRetry = true;
+        }
         throw error;
     }
 
@@ -44,6 +48,14 @@ function getResult(result: { status?: number, message?: string, result?: any }):
 }
 
 function getJsonResult(result: { jsonrpc: string, result?: any, error?: { code?: number, data?: any, message?: string} } ): any {
+    // This response indicates we are being throttled
+    if (result && (<any>result).status == 0 && (<any>result).message == "NOTOK" && (result.result || "").toLowerCase().indexOf("rate limit") >= 0) {
+        const error: any = new Error("throttled response");
+        error.result = JSON.stringify(result);
+        error.throttleRetry = true;
+        throw error;
+    }
+
     if (result.jsonrpc != "2.0") {
         // @TODO: not any
         const error: any = new Error("invalid response");
@@ -76,6 +88,7 @@ const defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 export class EtherscanProvider extends BaseProvider{
     readonly baseUrl: string;
     readonly apiKey: string;
+
     constructor(network?: Networkish, apiKey?: string) {
         logger.checkNew(new.target, EtherscanProvider);
 
@@ -126,7 +139,18 @@ export class EtherscanProvider extends BaseProvider{
                 provider: this
             });
 
-            const result = await fetchJson(url, null, procFunc || getJsonResult);
+
+            const connection = {
+                url: url,
+                throttleCallback: (attempt: number, url: string) => {
+                    if (this.apiKey === defaultApiKey) {
+                        showThrottleMessage();
+                    }
+                    return Promise.resolve(true);
+                }
+            };
+
+            const result = await fetchJson(connection, null, procFunc || getJsonResult);
 
             this.emit("debug", {
                 action: "response",
@@ -162,13 +186,13 @@ export class EtherscanProvider extends BaseProvider{
             case "getCode":
                 url += "/api?module=proxy&action=eth_getCode&address=" + params.address;
                 url += "&tag=" + params.blockTag + apiKey;
-                return get(url, getJsonResult);
+                return get(url);
 
             case "getStorageAt":
                 url += "/api?module=proxy&action=eth_getStorageAt&address=" + params.address;
                 url += "&position=" + params.position;
                 url += "&tag=" + params.blockTag + apiKey;
-                return get(url, getJsonResult);
+                return get(url);
 
 
             case "sendTransaction":
@@ -325,7 +349,17 @@ export class EtherscanProvider extends BaseProvider{
                 provider: this
             });
 
-            return fetchJson(url, null, getResult).then((result: Array<any>) => {
+            const connection = {
+                url: url,
+                throttleCallback: (attempt: number, url: string) => {
+                    if (this.apiKey === defaultApiKey) {
+                        showThrottleMessage();
+                    }
+                    return Promise.resolve(true);
+                }
+            }
+
+            return fetchJson(connection, null, getResult).then((result: Array<any>) => {
                 this.emit("debug", {
                     action: "response",
                     request: url,

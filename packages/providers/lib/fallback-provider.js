@@ -638,3 +638,4 @@ var FallbackProvider = /** @class */ (function (_super) {
     return FallbackProvider;
 }(base_provider_1.BaseProvider));
 exports.FallbackProvider = FallbackProvider;
+//# sourceMappingURL=fallback-provider.js.map

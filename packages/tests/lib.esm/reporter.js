@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 'use strict';
 // Maximum time in seconds to suppress output
 const MAX_DELAY = 30;
@@ -130,3 +131,4 @@ export function Reporter(runner) {
         currentSuite._countSkip++;
     });
 }
+//# sourceMappingURL=reporter.js.map

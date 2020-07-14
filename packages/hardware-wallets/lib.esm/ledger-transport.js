@@ -33,3 +33,4 @@ export const transports = Object.freeze({
     "hid": hidWrapper,
     "default": hidWrapper
 });
+//# sourceMappingURL=ledger-transport.js.map

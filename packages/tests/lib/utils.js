@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var ethers_1 = require("ethers");
@@ -63,3 +64,4 @@ function equals(a, b) {
     return a === b;
 }
 exports.equals = equals;
+//# sourceMappingURL=utils.js.map

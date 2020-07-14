@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 'use strict';
 
 // Maximum time in seconds to suppress output

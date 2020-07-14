@@ -162,7 +162,7 @@ var BigNumber = /** @class */ (function () {
             return value;
         }
         if (typeof (value) === "string") {
-            if (value.match(/-?0x[0-9a-f]+/i)) {
+            if (value.match(/^-?0x[0-9a-f]+$/i)) {
                 return new BigNumber(_constructorGuard, toHex(value));
             }
             if (value.match(/^-?[0-9]+$/)) {
@@ -260,3 +260,4 @@ function throwFault(fault, operation, value) {
     }
     return logger.throwError(fault, logger_1.Logger.errors.NUMERIC_FAULT, params);
 }
+//# sourceMappingURL=bignumber.js.map

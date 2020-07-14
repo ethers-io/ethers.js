@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ethers_1 = require("ethers");
@@ -127,3 +128,4 @@ function generate(contract, bytecode) {
     return output;
 }
 exports.generate = generate;
+//# sourceMappingURL=typescript.js.map

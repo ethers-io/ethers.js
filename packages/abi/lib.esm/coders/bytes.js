@@ -23,3 +23,4 @@ export class BytesCoder extends DynamicBytesCoder {
         return reader.coerce(this.name, hexlify(super.decode(reader)));
     }
 }
+//# sourceMappingURL=bytes.js.map

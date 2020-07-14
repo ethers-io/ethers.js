@@ -47,6 +47,8 @@ function loadWords(lang: Wordlist) {
         wordlist[lang.locale].push(toUtf8String(bytes));
     }
 
+    // Verify the computed list matches the official list
+    /* istanbul ignore if */
     if (Wordlist.check(lang) !== Checks[lang.locale]) {
         wordlist[lang.locale] = null;
         throw new Error("BIP39 Wordlist for " + lang.locale + " (Chinese) FAILED");

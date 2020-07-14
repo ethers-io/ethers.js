@@ -31,7 +31,8 @@ function _pack(type: string, value: any, isArray?: boolean): Uint8Array {
     if (match) {
         //let signed = (match[1] === "int")
         let size = parseInt(match[2] || "256")
-        if ((size % 8 != 0) || size === 0 || size > 256) {
+
+        if ((match[2] && String(size) !== match[2]) || (size % 8 !== 0) || size === 0 || size > 256) {
             throw new Error("invalid number type - " + type);
         }
 
@@ -45,8 +46,9 @@ function _pack(type: string, value: any, isArray?: boolean): Uint8Array {
     match = type.match(regexBytes);
     if (match) {
         const size = parseInt(match[1]);
-        if (String(size) != match[1] || size === 0 || size > 32) {
-            throw new Error("invalid number type - " + type);
+
+        if (String(size) !== match[1] || size === 0 || size > 32) {
+            throw new Error("invalid bytes type - " + type);
         }
         if (arrayify(value).byteLength !== size) { throw new Error("invalid value for " + type); }
         if (isArray) { return arrayify((value + Zeros).substring(0, 66)); }
@@ -65,7 +67,7 @@ function _pack(type: string, value: any, isArray?: boolean): Uint8Array {
         return concat(result);
     }
 
-    throw new Error("unknown type - " + type);
+    throw new Error("invalid type - " + type);
 }
 
 // @TODO: Array Enum

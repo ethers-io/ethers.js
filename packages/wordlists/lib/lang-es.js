@@ -52,6 +52,8 @@ function loadWords(lang) {
     wordlist.forEach(function (word, index) {
         lookup[dropDiacritic(word)] = index;
     });
+    // Verify the computed list matches the official list
+    /* istanbul ignore if */
     if (wordlist_1.Wordlist.check(lang) !== "0xf74fb7092aeacdfbf8959557de22098da512207fb9f109cb526994938cf40300") {
         wordlist = null;
         throw new Error("BIP39 Wordlist for es (Spanish) FAILED");
@@ -68,14 +70,11 @@ var LangEs = /** @class */ (function (_super) {
     };
     LangEs.prototype.getWordIndex = function (word) {
         loadWords(this);
-        var index = lookup[dropDiacritic(word)];
-        if (typeof (index) !== "number") {
-            return -1;
-        }
-        return index;
+        return lookup[dropDiacritic(word)];
     };
     return LangEs;
 }(wordlist_1.Wordlist));
 var langEs = new LangEs();
 exports.langEs = langEs;
 wordlist_1.Wordlist.register(langEs);
+//# sourceMappingURL=lang-es.js.map

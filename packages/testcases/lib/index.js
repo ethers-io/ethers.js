@@ -26,3 +26,4 @@ function loadData(filename) {
     return fs_1.default.readFileSync(path_1.default.resolve(__dirname, filename));
 }
 exports.loadData = loadData;
+//# sourceMappingURL=index.js.map

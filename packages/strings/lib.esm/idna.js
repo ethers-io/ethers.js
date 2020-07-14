@@ -185,3 +185,4 @@ export function nameprep(value) {
     }
     return name;
 }
+//# sourceMappingURL=idna.js.map

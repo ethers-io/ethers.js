@@ -1156,4 +1156,3 @@ return Promise$3;
 
 })));
 
-//# sourceMappingURL=es6-promise.auto.map

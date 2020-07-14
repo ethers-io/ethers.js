@@ -21,3 +21,4 @@ var opcodes_1 = require("./opcodes");
 exports.Opcode = opcodes_1.Opcode;
 var assembler_2 = require("./assembler");
 exports.SemanticErrorSeverity = assembler_2.SemanticErrorSeverity;
+//# sourceMappingURL=index.js.map

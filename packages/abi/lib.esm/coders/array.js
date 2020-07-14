@@ -190,3 +190,4 @@ export class ArrayCoder extends Coder {
         return reader.coerce(this.name, unpack(reader, coders));
     }
 }
+//# sourceMappingURL=array.js.map

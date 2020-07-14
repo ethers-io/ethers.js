@@ -41,6 +41,7 @@ function getResponse(request) {
                 resolve(response);
             });
             resp.on("error", (error) => {
+                /* istanbul ignore next */
                 error.response = response;
                 reject(error);
             });
@@ -81,6 +82,7 @@ export function getUrl(href, options) {
                 req = https.request(request);
                 break;
             default:
+                /* istanbul ignore next */
                 logger.throwError(`unsupported protocol ${url.protocol}`, Logger.errors.UNSUPPORTED_OPERATION, {
                     protocol: url.protocol,
                     operation: "request"
@@ -94,3 +96,4 @@ export function getUrl(href, options) {
         return response;
     });
 }
+//# sourceMappingURL=geturl.js.map

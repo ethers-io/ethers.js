@@ -139,3 +139,4 @@ function getCreate2Address(from, salt, initCodeHash) {
     return getAddress(bytes_1.hexDataSlice(keccak256_1.keccak256(bytes_1.concat(["0xff", getAddress(from), salt, initCodeHash])), 12));
 }
 exports.getCreate2Address = getCreate2Address;
+//# sourceMappingURL=index.js.map

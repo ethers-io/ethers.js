@@ -16,3 +16,4 @@ export function encode(data) {
     }
     return btoa(textData);
 }
+//# sourceMappingURL=browser.js.map

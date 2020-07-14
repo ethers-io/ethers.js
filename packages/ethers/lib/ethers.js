@@ -38,3 +38,4 @@ var _version_1 = require("./_version");
 exports.version = _version_1.version;
 var logger = new logger_1.Logger(_version_1.version);
 exports.logger = logger;
+//# sourceMappingURL=ethers.js.map

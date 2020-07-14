@@ -76,3 +76,4 @@ export class Provider {
         return !!(value && value._isProvider);
     }
 }
+//# sourceMappingURL=index.js.map

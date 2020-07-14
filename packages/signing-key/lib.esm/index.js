@@ -72,3 +72,4 @@ export function computePublicKey(key, compressed) {
     }
     return logger.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
+//# sourceMappingURL=index.js.map

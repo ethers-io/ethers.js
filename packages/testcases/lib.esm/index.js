@@ -17,3 +17,4 @@ export function loadTests(tag) {
 export function loadData(filename) {
     return fs.readFileSync(path.resolve(__dirname, filename));
 }
+//# sourceMappingURL=index.js.map

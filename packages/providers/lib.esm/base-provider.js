@@ -1126,3 +1126,4 @@ export class BaseProvider extends Provider {
         return this;
     }
 }
+//# sourceMappingURL=base-provider.js.map

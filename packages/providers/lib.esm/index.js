@@ -75,3 +75,4 @@ getDefaultProvider, getNetwork,
 ///////////////////////
 // Objects
 Formatter };
+//# sourceMappingURL=index.js.map

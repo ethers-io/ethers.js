@@ -7,3 +7,4 @@ exports.formatFixed = fixednumber_1.formatFixed;
 exports.FixedFormat = fixednumber_1.FixedFormat;
 exports.FixedNumber = fixednumber_1.FixedNumber;
 exports.parseFixed = fixednumber_1.parseFixed;
+//# sourceMappingURL=index.js.map

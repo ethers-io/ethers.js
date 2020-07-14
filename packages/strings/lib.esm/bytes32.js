@@ -29,3 +29,4 @@ export function parseBytes32String(bytes) {
     // Determine the string value
     return toUtf8String(data.slice(0, length));
 }
+//# sourceMappingURL=bytes32.js.map

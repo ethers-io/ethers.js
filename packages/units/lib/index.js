@@ -38,6 +38,9 @@ function commify(value) {
     if (comps.length === 2) {
         suffix = "." + (comps[1] || "0");
     }
+    while (suffix.length > 2 && suffix[suffix.length - 1] === "0") {
+        suffix = suffix.substring(0, suffix.length - 1);
+    }
     var formatted = [];
     while (whole.length) {
         if (whole.length <= 3) {
@@ -81,3 +84,4 @@ function parseEther(ether) {
     return parseUnits(ether, 18);
 }
 exports.parseEther = parseEther;
+//# sourceMappingURL=index.js.map

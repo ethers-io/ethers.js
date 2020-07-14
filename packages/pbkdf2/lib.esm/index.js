@@ -7,3 +7,4 @@ function bufferify(value) {
 export function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
     return hexlify(_pbkdf2(bufferify(password), bufferify(salt), iterations, keylen, hashAlgorithm));
 }
+//# sourceMappingURL=index.js.map

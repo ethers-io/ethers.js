@@ -12,7 +12,7 @@ describe('Test JSON Wallets', function() {
 
     let tests: Array<TestCase.Wallet> = loadTests('wallets');
     tests.forEach(function(test) {
-        it(('decrypts wallet - ' + test.name), function() {
+        it(('decrypts wallet - ' + test.name), async function() {
             this.timeout(1200000);
 
             if (test.hasAddress) {
@@ -20,16 +20,49 @@ describe('Test JSON Wallets', function() {
                     'detect encrypted JSON wallet');
             }
 
-            return ethers.Wallet.fromEncryptedJson(test.json, test.password).then((wallet) => {
-                assert.equal(wallet.privateKey, test.privateKey,
-                    'generated correct private key - ' + wallet.privateKey);
-                assert.equal(wallet.address.toLowerCase(), test.address,
-                    'generate correct address - '  + wallet.address);
-                if (test.mnemonic) {
-                    assert.equal(wallet.mnemonic.phrase, test.mnemonic,
-                        'mnemonic enabled encrypted wallet has a mnemonic phrase');
-                }
-            });
+            const wallet = await ethers.Wallet.fromEncryptedJson(test.json, test.password);
+
+            assert.equal(wallet.privateKey, test.privateKey,
+                'generated correct private key - ' + wallet.privateKey);
+
+            assert.equal(wallet.address.toLowerCase(), test.address,
+                'generate correct address - '  + wallet.address);
+
+            assert.equal(wallet.address.toLowerCase(), test.address,
+                'generate correct address - '  + wallet.address);
+
+            const walletAddress = await wallet.getAddress();
+            assert.equal(walletAddress.toLowerCase(), test.address,
+                'generate correct address - '  + wallet.address);
+
+            // Test connect
+            {
+                const provider = new ethers.providers.EtherscanProvider();
+                const walletConnected = wallet.connect(provider);
+                assert.equal(walletConnected.provider, provider, "provider is connected");
+                assert.ok((wallet.provider == null), "original wallet provider is null");
+                assert.equal(walletConnected.address.toLowerCase(), test.address,
+                    "connected correct address - "  + wallet.address);
+            }
+
+            // Make sure it can accept a SigningKey
+            {
+                const wallet2 = new ethers.Wallet(wallet._signingKey());
+                assert.equal(wallet2.privateKey, test.privateKey,
+                    'generated correct private key - ' + wallet2.privateKey);
+            }
+
+            // Test the sync decryption (this wallet is light, so it is safe)
+            if (test.name === "life") {
+                const wallet2 = ethers.Wallet.fromEncryptedJsonSync(test.json, test.password);
+                assert.equal(wallet2.privateKey, test.privateKey,
+                    'generated correct private key - ' + wallet2.privateKey);
+            }
+
+            if (test.mnemonic) {
+                assert.equal(wallet.mnemonic.phrase, test.mnemonic,
+                    'mnemonic enabled encrypted wallet has a mnemonic phrase');
+            }
         });
     });
 
@@ -177,7 +210,26 @@ describe('Test Transaction Signing and Parsing', function() {
                 assert.equal(ethers.utils.serializeTransaction(transaction, signature), test.signedTransactionChainId5,
                     'signs transaction (eip155)');
             })();
+        });
+    });
 
+    tests.forEach((test) => {
+        it(('wallet signs transaction - ' + test.name), async function() {
+            this.timeout(120000);
+
+            const wallet = new ethers.Wallet(test.privateKey);
+            const transaction = {
+                to: test.to,
+                data: test.data,
+                gasLimit: test.gasLimit,
+                gasPrice: test.gasPrice,
+                value: test.value,
+                nonce: ((<any>(test.nonce)) === "0x") ? 0: test.nonce,
+                chainId: 5
+            };
+
+            const signedTx = await wallet.signTransaction(transaction);
+            assert.equal(signedTx, test.signedTransactionChainId5);
         });
     });
 });
@@ -237,8 +289,8 @@ describe('Test Signing Messages', function() {
     tests.forEach(function(test) {
         it(('verifies a message "' + test.name + '"'), function() {
             this.timeout(120000);
-//            let address = ethers.utils.verifyMessage(test.message, test.signature);
-//            assert.equal(address, test.address, 'verifies message signature');
+            let address = ethers.utils.verifyMessage(test.message, test.signature);
+            assert.equal(address, test.address, 'verifies message signature');
         });
     });
 
@@ -259,5 +311,52 @@ describe("Serialize Transactions", function() {
             value: "0x1"
         });
         //console.log(result);
+    });
+});
+
+describe("Wallet Errors", function() {
+    it("fails on privateKey/address mismatch", function() {
+        assert.throws(() => {
+            const wallet = new ethers.Wallet({
+                privateKey: "0x6a73cd9b03647e83ef937888a5258a26e4c766dbf41ddd974f15e32d09cfe9c0",
+                address: "0x3f4f037dfc910a3517b9a5b23cf036ffae01a5a7"
+            });
+            console.log(wallet);
+        }, (error: any) => {
+            return error.reason === "privateKey/address mismatch";
+        });
+    });
+
+    it("fails on mnemonic/address mismatch", function() {
+        assert.throws(() => {
+            const wallet = new ethers.Wallet(<any>{
+                privateKey: "0x6a73cd9b03647e83ef937888a5258a26e4c766dbf41ddd974f15e32d09cfe9c0",
+                address: "0x4Dfe3BF68c80f19083FF90E6a852fC876AE7429b",
+                mnemonic: {
+                    phrase: "pact grief smile usage kind pledge river excess garbage mixed olive receive"
+                }
+            });
+            console.log(wallet);
+        }, (error: any) => {
+            return error.reason === "mnemonic/address mismatch";
+        });
+    });
+
+    it("fails on from mismatch", function() {
+        const wallet = new ethers.Wallet("0x6a73cd9b03647e83ef937888a5258a26e4c766dbf41ddd974f15e32d09cfe9c0");
+        return new Promise(async (resolve, reject) => {
+            try {
+                await wallet.signTransaction({
+                    from: "0x3f4f037dfc910a3517b9a5b23cf036ffae01a5a7"
+                });
+            } catch (error) {
+                if (error.code === ethers.utils.Logger.errors.INVALID_ARGUMENT && error.argument === "transaction.from") {
+                    resolve(true);
+                    return;
+                }
+            }
+
+            reject(new Error("assert failed; did not throw"));
+        });
     });
 });

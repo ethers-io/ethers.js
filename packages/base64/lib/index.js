@@ -10,3 +10,4 @@ function encode(data) {
     return Buffer.from(bytes_1.arrayify(data)).toString("base64");
 }
 exports.encode = encode;
+//# sourceMappingURL=index.js.map

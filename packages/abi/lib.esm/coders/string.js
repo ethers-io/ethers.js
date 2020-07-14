@@ -12,3 +12,4 @@ export class StringCoder extends DynamicBytesCoder {
         return toUtf8String(super.decode(reader));
     }
 }
+//# sourceMappingURL=string.js.map

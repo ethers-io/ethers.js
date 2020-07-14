@@ -51,6 +51,7 @@ export class Wallet extends Signer {
         }
         else {
             if (SigningKey.isSigningKey(privateKey)) {
+                /* istanbul ignore if */
                 if (privateKey.curve !== "secp256k1") {
                     logger.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
                 }
@@ -63,6 +64,7 @@ export class Wallet extends Signer {
             defineReadOnly(this, "_mnemonic", () => null);
             defineReadOnly(this, "address", computeAddress(this.publicKey));
         }
+        /* istanbul ignore if */
         if (provider && !Provider.isProvider(provider)) {
             logger.throwArgumentError("invalid provider", "provider", provider);
         }
@@ -81,7 +83,7 @@ export class Wallet extends Signer {
         return resolveProperties(transaction).then((tx) => {
             if (tx.from != null) {
                 if (getAddress(tx.from) !== this.address) {
-                    throw new Error("transaction from address mismatch");
+                    logger.throwArgumentError("transaction from address mismatch", "transaction.from", transaction.from);
                 }
                 delete tx.from;
             }
@@ -137,3 +139,4 @@ export class Wallet extends Signer {
 export function verifyMessage(message, signature) {
     return recoverAddress(hashMessage(message), signature);
 }
+//# sourceMappingURL=index.js.map

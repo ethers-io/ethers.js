@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 'use strict';
 import { ethers } from "ethers";
 function randomBytes(seed, lower, upper) {
@@ -59,3 +60,4 @@ function equals(a, b) {
     return a === b;
 }
 export { randomBytes, randomHexString, randomNumber, equals };
+//# sourceMappingURL=utils.js.map

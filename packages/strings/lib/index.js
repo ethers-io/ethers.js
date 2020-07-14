@@ -13,3 +13,4 @@ exports.toUtf8String = utf8_1.toUtf8String;
 exports.UnicodeNormalizationForm = utf8_1.UnicodeNormalizationForm;
 exports.Utf8ErrorFuncs = utf8_1.Utf8ErrorFuncs;
 exports.Utf8ErrorReason = utf8_1.Utf8ErrorReason;
+//# sourceMappingURL=index.js.map

@@ -7,3 +7,4 @@ exports.Wordlist = wordlist_1.Wordlist;
 var lang_en_1 = require("./lang-en");
 var wordlists = { en: lang_en_1.langEn };
 exports.wordlists = wordlists;
+//# sourceMappingURL=browser.js.map

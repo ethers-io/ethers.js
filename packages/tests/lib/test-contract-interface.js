@@ -510,3 +510,4 @@ describe("Test ParamType Parser", function () {
         });
     });
 });
+//# sourceMappingURL=test-contract-interface.js.map

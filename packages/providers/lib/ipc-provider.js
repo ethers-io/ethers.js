@@ -76,3 +76,4 @@ var IpcProvider = /** @class */ (function (_super) {
     return IpcProvider;
 }(json_rpc_provider_1.JsonRpcProvider));
 exports.IpcProvider = IpcProvider;
+//# sourceMappingURL=ipc-provider.js.map

@@ -83,3 +83,4 @@ function getUrl(href, options) {
     });
 }
 exports.getUrl = getUrl;
+//# sourceMappingURL=browser-geturl.js.map

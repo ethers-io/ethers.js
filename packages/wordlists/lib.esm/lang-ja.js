@@ -88,11 +88,15 @@ function loadWords(lang) {
     // The order SHOULD be:
     //   - kyoku
     //   - kiyoku
+    // This should ignore "if", but that doesn't work here??
+    /* istanbul ignore next */
     if (hex(wordlist[442]) === KiYoKu && hex(wordlist[443]) === KyoKu) {
         const tmp = wordlist[442];
         wordlist[442] = wordlist[443];
         wordlist[443] = tmp;
     }
+    // Verify the computed list matches the official list
+    /* istanbul ignore if */
     if (Wordlist.check(lang) !== "0xcb36b09e6baa935787fd762ce65e80b0c6a8dabdfbc3a7f86ac0e2c4fd111600") {
         wordlist = null;
         throw new Error("BIP39 Wordlist for ja (Japanese) FAILED");
@@ -121,3 +125,4 @@ class LangJa extends Wordlist {
 const langJa = new LangJa();
 Wordlist.register(langJa);
 export { langJa };
+//# sourceMappingURL=lang-ja.js.map

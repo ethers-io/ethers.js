@@ -177,3 +177,4 @@ class AssemblePlugin extends Plugin {
 }
 cli.setPlugin(AssemblePlugin);
 cli.run(process.argv.slice(2));
+//# sourceMappingURL=ethers-asm.js.map

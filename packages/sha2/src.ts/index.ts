@@ -25,6 +25,7 @@ export function sha512(data: BytesLike): string {
 
 
 export function computeHmac(algorithm: SupportedAlgorithm, key: BytesLike, data: BytesLike): string {
+    /* istanbul ignore if */
     if (!SupportedAlgorithm[algorithm]) {
         logger.throwError("unsupported algorithm - " + algorithm, Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "computeHmac",

@@ -190,3 +190,4 @@ function nameprep(value) {
     return name;
 }
 exports.nameprep = nameprep;
+//# sourceMappingURL=idna.js.map

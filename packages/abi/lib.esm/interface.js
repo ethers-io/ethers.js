@@ -492,3 +492,4 @@ export class Interface {
         return !!(value && value._isInterface);
     }
 }
+//# sourceMappingURL=interface.js.map

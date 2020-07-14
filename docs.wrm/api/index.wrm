@@ -4,9 +4,9 @@ An Application Programming Interface (API) is the formal
 specification of the library.
 
 _toc:
-    contract
-    signer
     providers
+    signer
+    contract
     utils
     other
     experimental

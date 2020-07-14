@@ -2,6 +2,17 @@
 import { randomBytes, randomHexString, randomNumber } from "./random";
 export { randomBytes, randomHexString, randomNumber };
 export declare module TestCase {
+    type BigNumber = {
+        testcase: string;
+        value: string | number;
+        expectedValue: string;
+    };
+    type Hash = {
+        data: string;
+        keccak256: string;
+        sha256: string;
+        sha512: string;
+    };
     type HDWalletNode = {
         path: string;
         address: string;

@@ -19,3 +19,4 @@ export class FixedBytesCoder extends Coder {
         return reader.coerce(this.name, hexlify(reader.readBytes(this.size)));
     }
 }
+//# sourceMappingURL=fixed-bytes.js.map

@@ -8,3 +8,4 @@ else {
     ethers = w._ethers;
 }
 export { ethers };
+//# sourceMappingURL=browser-ethers.js.map

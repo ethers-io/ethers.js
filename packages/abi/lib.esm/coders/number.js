@@ -36,3 +36,4 @@ export class NumberCoder extends Coder {
         return reader.coerce(this.name, value);
     }
 }
+//# sourceMappingURL=number.js.map

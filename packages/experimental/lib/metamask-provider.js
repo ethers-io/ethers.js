@@ -87,3 +87,4 @@ var MetamaskProvider = /** @class */ (function (_super) {
     return MetamaskProvider;
 }(ethers_1.ethers.providers.Web3Provider));
 exports.MetamaskProvider = MetamaskProvider;
+//# sourceMappingURL=metamask-provider.js.map

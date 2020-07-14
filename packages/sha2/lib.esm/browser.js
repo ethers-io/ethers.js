@@ -28,3 +28,4 @@ export function computeHmac(algorithm, key, data) {
     }
     return "0x" + hash.hmac(hash[algorithm], arrayify(key)).update(arrayify(data)).digest("hex");
 }
+//# sourceMappingURL=browser.js.map

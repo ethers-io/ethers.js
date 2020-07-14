@@ -36,3 +36,4 @@ exports.wordlists = ethers_1.wordlists;
 // Compile-Time Constants
 exports.version = ethers_1.version;
 exports.Wordlist = ethers_1.Wordlist;
+//# sourceMappingURL=index.js.map

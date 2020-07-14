@@ -13,3 +13,4 @@ export class AnonymousCoder extends Coder {
         return this.coder.decode(reader);
     }
 }
+//# sourceMappingURL=anonymous.js.map

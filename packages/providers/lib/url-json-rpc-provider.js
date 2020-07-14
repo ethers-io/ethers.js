@@ -144,3 +144,4 @@ var UrlJsonRpcProvider = /** @class */ (function (_super) {
     return UrlJsonRpcProvider;
 }(StaticJsonRpcProvider));
 exports.UrlJsonRpcProvider = UrlJsonRpcProvider;
+//# sourceMappingURL=url-json-rpc-provider.js.map

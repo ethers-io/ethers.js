@@ -120,3 +120,4 @@ function decode(data) {
     return decoded.result;
 }
 exports.decode = decode;
+//# sourceMappingURL=index.js.map

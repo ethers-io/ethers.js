@@ -45,3 +45,4 @@ export class CloudflareProvider extends UrlJsonRpcProvider {
         });
     }
 }
+//# sourceMappingURL=cloudflare-provider.js.map

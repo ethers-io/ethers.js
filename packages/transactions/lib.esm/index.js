@@ -166,3 +166,4 @@ export function parse(rawTransaction) {
     }
     return tx;
 }
+//# sourceMappingURL=index.js.map

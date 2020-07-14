@@ -15,6 +15,17 @@ function checkWordlist(content, wordlist) {
             assert_1.default.equal(actual, expected, 'failed to match word ' + i + ': ' + words[i] + ' !=' + wordlist.getWord(i));
         }
     });
+    it("splitting and joining are equivalent", function () {
+        var words = [];
+        for (var i = 0; i < 12; i++) {
+            words.push(wordlist.getWord(i));
+        }
+        var phrase = wordlist.join(words);
+        var words2 = wordlist.split(phrase);
+        var phrase2 = wordlist.join(words2);
+        assert_1.default.deepStrictEqual(words2, words, "split words");
+        assert_1.default.deepStrictEqual(phrase2, phrase, "re-joined words");
+    });
 }
 describe('Check Wordlists', function () {
     var tests = testcases_1.loadTests("wordlists");
@@ -23,3 +34,4 @@ describe('Check Wordlists', function () {
         checkWordlist(test.content, wordlist);
     });
 });
+//# sourceMappingURL=test-wordlists.js.map

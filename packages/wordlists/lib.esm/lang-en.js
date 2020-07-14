@@ -7,6 +7,8 @@ function loadWords(lang) {
         return;
     }
     wordlist = words.replace(/([A-Z])/g, " $1").toLowerCase().substring(1).split(" ");
+    // Verify the computed list matches the official list
+    /* istanbul ignore if */
     if (Wordlist.check(lang) !== "0x3c8acc1e7b08d8e76f9fda015ef48dc8c710a73cb7e0f77b2c18a9b5a7adde60") {
         wordlist = null;
         throw new Error("BIP39 Wordlist for en (English) FAILED");
@@ -28,3 +30,4 @@ class LangEn extends Wordlist {
 const langEn = new LangEn();
 Wordlist.register(langEn);
 export { langEn };
+//# sourceMappingURL=lang-en.js.map

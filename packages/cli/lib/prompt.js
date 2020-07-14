@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function repeat(chr, count) {
@@ -128,3 +129,4 @@ function getChoice(prompt, choices, defaultChoice) {
     return getPrompt((prompt + " (" + hint + ") "), options);
 }
 exports.getChoice = getChoice;
+//# sourceMappingURL=prompt.js.map

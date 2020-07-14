@@ -1,5 +1,6 @@
 "use strict";
 import { WebSocketProvider } from "./websocket-provider";
+import { showThrottleMessage } from "./formatter";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
@@ -30,12 +31,8 @@ export class InfuraProvider extends UrlJsonRpcProvider {
             apiKeyObj.projectId = apiKey;
         }
         else if (apiKey.projectSecret != null) {
-            if (typeof (apiKey.projectId) !== "string") {
-                logger.throwArgumentError("projectSecret requires a projectId", "projectId", apiKey.projectId);
-            }
-            if (typeof (apiKey.projectSecret) !== "string") {
-                logger.throwArgumentError("invalid projectSecret", "projectSecret", "[REDACTED]");
-            }
+            logger.assertArgument((typeof (apiKey.projectId) === "string"), "projectSecret requires a projectId", "projectId", apiKey.projectId);
+            logger.assertArgument((typeof (apiKey.projectSecret) === "string"), "invalid projectSecret", "projectSecret", "[REDACTED]");
             apiKeyObj.projectId = apiKey.projectId;
             apiKeyObj.projectSecret = apiKey.projectSecret;
         }
@@ -47,7 +44,7 @@ export class InfuraProvider extends UrlJsonRpcProvider {
     }
     static getUrl(network, apiKey) {
         let host = null;
-        switch (network.name) {
+        switch (network ? network.name : "unknown") {
             case "homestead":
                 host = "mainnet.infura.io";
                 break;
@@ -70,7 +67,13 @@ export class InfuraProvider extends UrlJsonRpcProvider {
                 });
         }
         const connection = {
-            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId)
+            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId),
+            throttleCallback: (attempt, url) => {
+                if (apiKey.projectId === defaultProjectId) {
+                    showThrottleMessage();
+                }
+                return Promise.resolve(true);
+            }
         };
         if (apiKey.projectSecret != null) {
             connection.user = "";
@@ -79,3 +82,4 @@ export class InfuraProvider extends UrlJsonRpcProvider {
         return connection;
     }
 }
+//# sourceMappingURL=infura-provider.js.map

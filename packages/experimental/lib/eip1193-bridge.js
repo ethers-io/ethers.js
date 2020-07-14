@@ -228,3 +228,4 @@ var _Eip1193Bridge = /** @class */ (function (_super) {
     return _Eip1193Bridge;
 }(events_1.default));
 exports._Eip1193Bridge = _Eip1193Bridge;
+//# sourceMappingURL=eip1193-bridge.js.map

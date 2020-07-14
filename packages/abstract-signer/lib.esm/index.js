@@ -198,3 +198,4 @@ export class VoidSigner extends Signer {
         return new VoidSigner(this.address, provider);
     }
 }
+//# sourceMappingURL=index.js.map

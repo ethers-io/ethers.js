@@ -19,6 +19,7 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "module": "commonjs",
+    "sourceMap": true,
     "target": "es5"
   }
 }

@@ -242,4 +242,23 @@ export class WebSocketProvider extends JsonRpcProvider {
             this.send("eth_unsubscribe", [subId]);
         });
     }
+    destroy() {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Wait until we have connected before trying to disconnect
+            if (this._websocket.readyState === WebSocket.CONNECTING) {
+                yield (new Promise((resolve) => {
+                    this._websocket.onopen = function () {
+                        resolve(true);
+                    };
+                    this._websocket.onerror = function () {
+                        resolve(false);
+                    };
+                }));
+            }
+            // Hangup
+            // See: https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent#Status_codes
+            this._websocket.close(1000);
+        });
+    }
 }
+//# sourceMappingURL=websocket-provider.js.map

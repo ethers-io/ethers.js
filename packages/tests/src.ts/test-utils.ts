@@ -198,6 +198,31 @@ describe('Test Unit Conversion', function () {
             }
         });
     });
+
+    it("formats with commify", function() {
+        const tests: { [ testcase: string ]: string } = {
+            "0.0": "0.0",
+            ".0": "0.0",
+            "0.": "0.0",
+            "00.00": "0.0",
+
+            "100.000": "100.0",
+            "100.0000": "100.0",
+            "1000.000": "1,000.0",
+            "1000.0000": "1,000.0",
+
+            "100.123": "100.123",
+            "100.1234": "100.1234",
+            "1000.1234": "1,000.1234",
+            "1000.12345": "1,000.12345",
+
+            "998998998998.123456789": "998,998,998,998.123456789",
+        };
+
+        Object.keys(tests).forEach((test) => {
+            assert.equal(ethers.utils.commify(test), tests[test]);
+        });
+    });
 });
 
 
@@ -215,6 +240,13 @@ describe('Test Namehash', function() {
             assert.equal(ethers.utils.namehash(test.name), test.expected,
                 'computes namehash(' + test.name + ')');
         });
+    });
+
+    it("isValidName", function() {
+        assert.ok(ethers.utils.isValidName("ricmoo.eth"));
+
+        assert.ok(!ethers.utils.isValidName(""));
+        assert.ok(!ethers.utils.isValidName("ricmoo..eth"));
     });
 });
 
@@ -255,7 +287,7 @@ describe('Test Solidity Hash Functions', function() {
     const tests: Array<TestCase> = loadTests('solidity-hashes');
 
     function test(funcName: string, testKey: 'keccak256' | 'sha256') {
-        it(('computes ' + funcName + ' correctly'), function() {
+        it(`computes ${ funcName } correctly`, function() {
             this.timeout(120000);
 
             tests.forEach((test, index) => {
@@ -269,11 +301,33 @@ describe('Test Solidity Hash Functions', function() {
 
     test('Keccak256', 'keccak256');
     test('Sha256', 'sha256');
+
+    const testsInvalid = [
+        "uint0",     // number - null length
+        "uint1",     // number - not byte-aligned
+        "uint08",    // number - leading zeros
+        "uint266",   // number - out-of-range
+        "bytes0",    // bytes - null length
+        "bytes02",   // bytes - leading zeros
+        "bytes33",   // bytes - out-of-range
+        "purple"     // invalid type
+    ];
+
+    testsInvalid.forEach((type) => {
+        it(`disallows invalid type "${ type }"`, function() {
+            assert.throws(() => {
+                ethers.utils.solidityPack([ type ], [ "0x12" ]);
+            }, (error: Error) => {
+                const message = error.message;
+                return (message.match(/invalid([a-z ]*) type/) && message.indexOf(type) >= 0);
+            });
+        });
+    });
 });
 
 describe('Test Hash Functions', function() {
 
-    const tests: Array<{ data: string, keccak256: string, sha256: string }> = loadTests('hashes');
+    const tests: Array<TestCase.Hash> = loadTests('hashes');
 
     it('computes keccak256 correctly', function() {
         this.timeout(120000);
@@ -282,10 +336,17 @@ describe('Test Hash Functions', function() {
         });
     });
 
-    it('computes sha2566 correctly', function() {
+    it('computes sha2-256 correctly', function() {
         this.timeout(120000);
         tests.forEach(function(test) {
             assert.equal(ethers.utils.sha256(test.data), test.sha256, ('SHA256 - ' + test.data));
+        });
+    });
+
+    it('computes sha2-512 correctly', function() {
+        this.timeout(120000);
+        tests.forEach(function(test) {
+            assert.equal(ethers.utils.sha512(test.data), test.sha512, ('SHA512 - ' + test.data));
         });
     });
 });
@@ -441,26 +502,6 @@ describe('Test Bytes32String coder', function() {
     });
 });
 
-describe('Test BigNumber', function() {
-    it("computes absolute values", function() {
-        function testAbs(test: { expected: string, value: string }) {
-            let value = ethers.BigNumber.from(test.value);
-            let expected = ethers.BigNumber.from(test.expected);
-            assert.ok(value.abs().eq(expected), 'BigNumber.abs - ' + test.value);
-        }
-
-        [
-            { value: "0x0", expected: "0x0" },
-            { value: "-0x0", expected: "0x0" },
-            { value: "0x5", expected: "0x5" },
-            { value: "-0x5", expected: "0x5" },
-            { value: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
-            { value: "-0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
-            { value: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
-            { value: "-0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
-        ].forEach(testAbs);
-    });
-});
 
 function getHex(value: string): string {
     return "0x" + Buffer.from(value).toString("hex");
@@ -537,3 +578,90 @@ describe("Test Signature Manipulation", function() {
         });
     });
 });
+
+describe("BigNumber", function() {
+    const tests: Array<TestCase.BigNumber> = loadTests("bignumber");
+    tests.forEach((test) => {
+        if (test.expectedValue == null) {
+            it(test.testcase, function() {
+                assert.throws(() => {
+                    const value = ethers.BigNumber.from(test.value);
+                    console.log("ERROR", value);
+                }, (error: Error) => {
+                    return true;
+                });
+            });
+        } else {
+            it(test.testcase, function() {
+                const value = ethers.BigNumber.from(test.value);
+                assert.equal(value.toHexString(), test.expectedValue);
+
+                const value2 = ethers.BigNumber.from(value)
+                assert.equal(value2.toHexString(), test.expectedValue);
+            });
+        }
+    });
+
+    [
+        { value: "0x0", expected: "0x0" },
+        { value: "-0x0", expected: "0x0" },
+        { value: "0x5", expected: "0x5" },
+        { value: "-0x5", expected: "0x5" },
+        { value: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+        { value: "-0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+        { value: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+        { value: "-0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", expected: "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+    ].forEach((test) => {
+        it(`absolute value (${ test.value })`, function() {
+            const value = ethers.BigNumber.from(test.value);
+            const expected = ethers.BigNumber.from(test.expected);
+            assert.ok(value.abs().eq(expected));
+        });
+    });
+
+    // @TODO: Add more tests here
+
+});
+
+describe("Logger", function() {
+    const logger = new ethers.utils.Logger("testing/0.0");
+
+    it("checkArgumentCount", function() {
+        logger.checkArgumentCount(3, 3);
+    });
+
+    it("checkArgumentCount - too few", function() {
+        assert.throws(() => {
+            logger.checkArgumentCount(1, 3);
+        }, (error: any) => {
+            return error.code === ethers.utils.Logger.errors.MISSING_ARGUMENT;
+        });
+    });
+
+    it("checkArgumentCount - too many", function() {
+        assert.throws(() => {
+            logger.checkArgumentCount(3, 1);
+        }, (error: any) => {
+            return error.code === ethers.utils.Logger.errors.UNEXPECTED_ARGUMENT;
+        });
+    });
+});
+
+/*
+describe("Base58 Coder", function() {
+    it("decodes", function() {
+        assert.equal(ethers.utils.Base58.decode("JxF12TrwUP45BMd"), "Hello World");
+    });
+
+    it("encodes", function() {
+        assert.equal(ethers.utils.Base58.encode("Hello World"), "JxF12TrwUP45BMd");
+    });
+});
+
+describe("Web Fetch", function() {
+    it("fetches JSON", async function() {
+        const url = "https:/\/api.etherscan.io/api?module=stats&action=ethprice&apikey=9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
+        const getData = ethers.utils.fetchJson(url)
+    });
+});
+*/

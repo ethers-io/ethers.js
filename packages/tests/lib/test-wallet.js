@@ -1,4 +1,40 @@
 'use strict';
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -18,16 +54,49 @@ describe('Test JSON Wallets', function () {
     var tests = testcases_1.loadTests('wallets');
     tests.forEach(function (test) {
         it(('decrypts wallet - ' + test.name), function () {
-            this.timeout(1200000);
-            if (test.hasAddress) {
-                assert_1.default.ok((ethers_1.ethers.utils.getJsonWalletAddress(test.json) !== null), 'detect encrypted JSON wallet');
-            }
-            return ethers_1.ethers.Wallet.fromEncryptedJson(test.json, test.password).then(function (wallet) {
-                assert_1.default.equal(wallet.privateKey, test.privateKey, 'generated correct private key - ' + wallet.privateKey);
-                assert_1.default.equal(wallet.address.toLowerCase(), test.address, 'generate correct address - ' + wallet.address);
-                if (test.mnemonic) {
-                    assert_1.default.equal(wallet.mnemonic.phrase, test.mnemonic, 'mnemonic enabled encrypted wallet has a mnemonic phrase');
-                }
+            return __awaiter(this, void 0, void 0, function () {
+                var wallet, walletAddress, provider, walletConnected, wallet2, wallet2;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            this.timeout(1200000);
+                            if (test.hasAddress) {
+                                assert_1.default.ok((ethers_1.ethers.utils.getJsonWalletAddress(test.json) !== null), 'detect encrypted JSON wallet');
+                            }
+                            return [4 /*yield*/, ethers_1.ethers.Wallet.fromEncryptedJson(test.json, test.password)];
+                        case 1:
+                            wallet = _a.sent();
+                            assert_1.default.equal(wallet.privateKey, test.privateKey, 'generated correct private key - ' + wallet.privateKey);
+                            assert_1.default.equal(wallet.address.toLowerCase(), test.address, 'generate correct address - ' + wallet.address);
+                            assert_1.default.equal(wallet.address.toLowerCase(), test.address, 'generate correct address - ' + wallet.address);
+                            return [4 /*yield*/, wallet.getAddress()];
+                        case 2:
+                            walletAddress = _a.sent();
+                            assert_1.default.equal(walletAddress.toLowerCase(), test.address, 'generate correct address - ' + wallet.address);
+                            // Test connect
+                            {
+                                provider = new ethers_1.ethers.providers.EtherscanProvider();
+                                walletConnected = wallet.connect(provider);
+                                assert_1.default.equal(walletConnected.provider, provider, "provider is connected");
+                                assert_1.default.ok((wallet.provider == null), "original wallet provider is null");
+                                assert_1.default.equal(walletConnected.address.toLowerCase(), test.address, "connected correct address - " + wallet.address);
+                            }
+                            // Make sure it can accept a SigningKey
+                            {
+                                wallet2 = new ethers_1.ethers.Wallet(wallet._signingKey());
+                                assert_1.default.equal(wallet2.privateKey, test.privateKey, 'generated correct private key - ' + wallet2.privateKey);
+                            }
+                            // Test the sync decryption (this wallet is light, so it is safe)
+                            if (test.name === "life") {
+                                wallet2 = ethers_1.ethers.Wallet.fromEncryptedJsonSync(test.json, test.password);
+                                assert_1.default.equal(wallet2.privateKey, test.privateKey, 'generated correct private key - ' + wallet2.privateKey);
+                            }
+                            if (test.mnemonic) {
+                                assert_1.default.equal(wallet.mnemonic.phrase, test.mnemonic, 'mnemonic enabled encrypted wallet has a mnemonic phrase');
+                            }
+                            return [2 /*return*/];
+                    }
+                });
             });
         });
     });
@@ -136,6 +205,34 @@ describe('Test Transaction Signing and Parsing', function () {
             })();
         });
     });
+    tests.forEach(function (test) {
+        it(('wallet signs transaction - ' + test.name), function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var wallet, transaction, signedTx;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            this.timeout(120000);
+                            wallet = new ethers_1.ethers.Wallet(test.privateKey);
+                            transaction = {
+                                to: test.to,
+                                data: test.data,
+                                gasLimit: test.gasLimit,
+                                gasPrice: test.gasPrice,
+                                value: test.value,
+                                nonce: ((test.nonce) === "0x") ? 0 : test.nonce,
+                                chainId: 5
+                            };
+                            return [4 /*yield*/, wallet.signTransaction(transaction)];
+                        case 1:
+                            signedTx = _a.sent();
+                            assert_1.default.equal(signedTx, test.signedTransactionChainId5);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        });
+    });
 });
 describe('Test Signing Messages', function () {
     var tests = [
@@ -179,8 +276,8 @@ describe('Test Signing Messages', function () {
     tests.forEach(function (test) {
         it(('verifies a message "' + test.name + '"'), function () {
             this.timeout(120000);
-            //            let address = ethers.utils.verifyMessage(test.message, test.signature);
-            //            assert.equal(address, test.address, 'verifies message signature');
+            var address = ethers_1.ethers.utils.verifyMessage(test.message, test.signature);
+            assert_1.default.equal(address, test.address, 'verifies message signature');
         });
     });
     tests.forEach(function (test) {
@@ -201,3 +298,60 @@ describe("Serialize Transactions", function () {
         //console.log(result);
     });
 });
+describe("Wallet Errors", function () {
+    it("fails on privateKey/address mismatch", function () {
+        assert_1.default.throws(function () {
+            var wallet = new ethers_1.ethers.Wallet({
+                privateKey: "0x6a73cd9b03647e83ef937888a5258a26e4c766dbf41ddd974f15e32d09cfe9c0",
+                address: "0x3f4f037dfc910a3517b9a5b23cf036ffae01a5a7"
+            });
+            console.log(wallet);
+        }, function (error) {
+            return error.reason === "privateKey/address mismatch";
+        });
+    });
+    it("fails on mnemonic/address mismatch", function () {
+        assert_1.default.throws(function () {
+            var wallet = new ethers_1.ethers.Wallet({
+                privateKey: "0x6a73cd9b03647e83ef937888a5258a26e4c766dbf41ddd974f15e32d09cfe9c0",
+                address: "0x4Dfe3BF68c80f19083FF90E6a852fC876AE7429b",
+                mnemonic: {
+                    phrase: "pact grief smile usage kind pledge river excess garbage mixed olive receive"
+                }
+            });
+            console.log(wallet);
+        }, function (error) {
+            return error.reason === "mnemonic/address mismatch";
+        });
+    });
+    it("fails on from mismatch", function () {
+        var _this = this;
+        var wallet = new ethers_1.ethers.Wallet("0x6a73cd9b03647e83ef937888a5258a26e4c766dbf41ddd974f15e32d09cfe9c0");
+        return new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+            var error_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, wallet.signTransaction({
+                                from: "0x3f4f037dfc910a3517b9a5b23cf036ffae01a5a7"
+                            })];
+                    case 1:
+                        _a.sent();
+                        return [3 /*break*/, 3];
+                    case 2:
+                        error_1 = _a.sent();
+                        if (error_1.code === ethers_1.ethers.utils.Logger.errors.INVALID_ARGUMENT && error_1.argument === "transaction.from") {
+                            resolve(true);
+                            return [2 /*return*/];
+                        }
+                        return [3 /*break*/, 3];
+                    case 3:
+                        reject(new Error("assert failed; did not throw"));
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+    });
+});
+//# sourceMappingURL=test-wallet.js.map

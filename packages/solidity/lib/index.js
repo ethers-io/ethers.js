@@ -31,7 +31,7 @@ function _pack(type, value, isArray) {
     if (match) {
         //let signed = (match[1] === "int")
         var size = parseInt(match[2] || "256");
-        if ((size % 8 != 0) || size === 0 || size > 256) {
+        if ((match[2] && String(size) !== match[2]) || (size % 8 !== 0) || size === 0 || size > 256) {
             throw new Error("invalid number type - " + type);
         }
         if (isArray) {
@@ -43,8 +43,8 @@ function _pack(type, value, isArray) {
     match = type.match(regexBytes);
     if (match) {
         var size = parseInt(match[1]);
-        if (String(size) != match[1] || size === 0 || size > 32) {
-            throw new Error("invalid number type - " + type);
+        if (String(size) !== match[1] || size === 0 || size > 32) {
+            throw new Error("invalid bytes type - " + type);
         }
         if (bytes_1.arrayify(value).byteLength !== size) {
             throw new Error("invalid value for " + type);
@@ -67,7 +67,7 @@ function _pack(type, value, isArray) {
         });
         return bytes_1.concat(result_1);
     }
-    throw new Error("unknown type - " + type);
+    throw new Error("invalid type - " + type);
 }
 // @TODO: Array Enum
 function pack(types, values) {
@@ -89,3 +89,4 @@ function sha256(types, values) {
     return sha2_1.sha256(pack(types, values));
 }
 exports.sha256 = sha256;
+//# sourceMappingURL=index.js.map

@@ -66,7 +66,7 @@ Browse the [documentation](https://docs.ethers.io/v5/) online:
 - [Full API Documentation](https://docs.ethers.io/v5/api/)
 - [Various Ethereum Articles](https://blog.ricmoo.com/)
 
-Or browse the entire documentation as a [single page](https://docs.ethers.io/single-page/) to make searching easier.
+Or browse the entire documentation as a [single page](https://docs.ethers.io/v5/single-page/) to make searching easier.
 
 
 Ancillary Packages

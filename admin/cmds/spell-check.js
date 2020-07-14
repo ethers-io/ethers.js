@@ -16,8 +16,8 @@ decrypt decrypted decrypting deployed deploying deprecated detected
 discontinued earliest email enabled encoded encoding encrypt
 encrypted encrypting entries euro exceeded existing expected
 expired failed fetches formatted formatting funding generated
-has ignoring implemented implementer imported including instantiate
-keyword labelled larger lookup matches mined modified modifies multi
+hardened has ignoring implemented implementer imported including instantiate
+joined keyword labelled larger lookup matches mined modified modifies multi
 named needed nested neutered numeric offline optimizer overriding owned packed
 padded parsed parsing passed placeholder processing properties reached
 recommended recovered redacted remaining replaced required
@@ -43,14 +43,14 @@ ABIEncoder testcase numberish Wordlist
 
 // Common Code Strings
 abi addr api app arg arrayify asm basex bigint bignumber bn byte
-bytecode callback calldata checksum ciphertext cli codepoint config
+bytecode callback calldata checksum ciphertext cli codepoint commify config
 contenthash ctr ctrl debug dd dklen eexist encseed eof ethaddr
 ethseed ethers eval exec filename func gz hid http https hw iv
 info init ipc json kdf kdfparams labelhash lang lib mm multihash nfc
 nfkc nfd nfkd nodehash nullish oob opcode pbkdf pc plugin pragma pre prf
 repl rpc sighash topichash solc stdin stdout subclasses subnode
 timeout todo txt ufixed utc utf util url uuid vm vs websocket
-wikipedia wx xe yyyy zlib
+wikipedia wx xe xpriv xpub xx yyyy zlib
 
 // AbiV2
 abiv

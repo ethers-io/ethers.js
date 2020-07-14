@@ -308,3 +308,4 @@ var VoidSigner = /** @class */ (function (_super) {
     return VoidSigner;
 }(Signer));
 exports.VoidSigner = VoidSigner;
+//# sourceMappingURL=index.js.map

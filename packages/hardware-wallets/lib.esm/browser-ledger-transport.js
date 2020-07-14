@@ -4,3 +4,4 @@ export const transports = {
     "u2f": u2f,
     "default": u2f
 };
+//# sourceMappingURL=browser-ledger-transport.js.map

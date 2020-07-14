@@ -37,3 +37,4 @@ function decryptJsonWalletSync(json, password) {
     throw new Error("invalid JSON wallet");
 }
 exports.decryptJsonWalletSync = decryptJsonWalletSync;
+//# sourceMappingURL=index.js.map

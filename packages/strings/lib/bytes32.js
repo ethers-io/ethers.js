@@ -32,3 +32,4 @@ function parseBytes32String(bytes) {
     return utf8_1.toUtf8String(data.slice(0, length));
 }
 exports.parseBytes32String = parseBytes32String;
+//# sourceMappingURL=bytes32.js.map

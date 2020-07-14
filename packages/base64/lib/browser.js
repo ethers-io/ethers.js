@@ -19,3 +19,4 @@ function encode(data) {
     return btoa(textData);
 }
 exports.encode = encode;
+//# sourceMappingURL=browser.js.map

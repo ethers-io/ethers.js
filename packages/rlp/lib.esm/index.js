@@ -117,3 +117,4 @@ export function decode(data) {
     }
     return decoded.result;
 }
+//# sourceMappingURL=index.js.map

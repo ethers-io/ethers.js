@@ -31,3 +31,4 @@ var AnonymousCoder = /** @class */ (function (_super) {
     return AnonymousCoder;
 }(abstract_coder_1.Coder));
 exports.AnonymousCoder = AnonymousCoder;
+//# sourceMappingURL=anonymous.js.map

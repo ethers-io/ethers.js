@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 'use strict';
 import fs from "fs";
 import _module from "module";
@@ -122,3 +123,4 @@ export function wrapSolc(_solc) {
     };
 }
 export const compile = wrapSolc(customRequire(".")("solc"));
+//# sourceMappingURL=solc.js.map

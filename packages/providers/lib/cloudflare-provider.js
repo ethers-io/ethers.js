@@ -94,3 +94,4 @@ var CloudflareProvider = /** @class */ (function (_super) {
     return CloudflareProvider;
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));
 exports.CloudflareProvider = CloudflareProvider;
+//# sourceMappingURL=cloudflare-provider.js.map

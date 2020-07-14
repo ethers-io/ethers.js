@@ -32,4 +32,5 @@ export declare class WebSocketProvider extends JsonRpcProvider {
     _subscribe(tag: string, param: Array<any>, processFunc: (result: any) => void): Promise<void>;
     _startEvent(event: Event): void;
     _stopEvent(event: Event): void;
+    destroy(): Promise<void>;
 }

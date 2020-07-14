@@ -274,4 +274,23 @@ export class WebSocketProvider extends JsonRpcProvider {
             this.send("eth_unsubscribe", [ subId ]);
         });
     }
+
+    async destroy(): Promise<void> {
+        // Wait until we have connected before trying to disconnect
+        if (this._websocket.readyState === WebSocket.CONNECTING) {
+            await (new Promise((resolve) => {
+                this._websocket.onopen = function() {
+                    resolve(true);
+                };
+
+                this._websocket.onerror = function() {
+                    resolve(false);
+                };
+            }));
+        }
+
+        // Hangup
+        // See: https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent#Status_codes
+        this._websocket.close(1000);
+    }
 }

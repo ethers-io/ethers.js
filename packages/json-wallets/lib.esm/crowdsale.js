@@ -45,3 +45,4 @@ export function decrypt(json, password) {
         privateKey: privateKey
     });
 }
+//# sourceMappingURL=crowdsale.js.map

@@ -41,3 +41,4 @@ export class BrainWallet extends ethers.Wallet {
         return BrainWallet._generate(username, password, true, progressCallback);
     }
 }
+//# sourceMappingURL=brain-wallet.js.map

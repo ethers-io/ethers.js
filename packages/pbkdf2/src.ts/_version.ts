@@ -1,1 +1,1 @@
-export const version = "pbkdf2/5.0.1";
+export const version = "pbkdf2/5.0.2";

@@ -105,3 +105,4 @@ export class LedgerSigner extends ethers.Signer {
         return new LedgerSigner(provider, this.type, this.path);
     }
 }
+//# sourceMappingURL=ledger.js.map
