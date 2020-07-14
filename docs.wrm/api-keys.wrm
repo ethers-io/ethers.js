@@ -1,0 +1,103 @@
+_section: Provider API Keys @<api-keys>
+
+//( **TL; DR** &ndash; sign up for your own API keys with the links below to improve your application performance )//
+
+When using a [[Provider]] backed by an API service (such as [[link-alchemy]],
+[[link-etherscan]] or [[link-infura]]), the service requires an API key,
+which allows each service to track individual projects and their usage and
+permissions.
+
+The ethers library offers default API keys for each service, so that each
+[[Provider]] works out-of-the-box.
+
+These API keys are a provided as a community resource by the backend services
+for low-traffic projects and for early prototyping.
+
+Since these API keys are shared by all users (that have not acquired their
+own API key), they are aggressively throttled which means reties occur more
+frequently and the responses are slower.
+
+It is **highly recommended** that you sign up for a free API key from each service for their
+free tier, which (depending on the service) includes many advantages:
+
+- a much **higher request rate** and concurrent request limit
+- **faster** responses with fewer retries and timeouts
+- useful **metric tracking** for performance tuning and to analyze your customer behaviour
+- more **advanced APIs**, such as archive data or advanced log queries
+
+_subsection: Etherscan @<api-keys--etherscan>
+
+Etherscan is an Ethereum block explorer, which is possibly the most useful
+developer tool for building and debugging Ethereum applications.
+
+They offer an extensive collection of API endpoints which provide all the
+operations required to interact with the Ethereum Blockchain.
+
+[Sign up for a free API key on Etherscan](link-etherscan-signup)
+
+**Benefits:**
+
+- higher rate limit (since you are not using the [shared rate limit](link-etherscan-ratelimit))
+- customer usage metrics
+
+_subsection: INFURA @<api-keys--infura>
+
+The INFURA service has been around for quite some time and is very robust
+and reliable and highly recommend.
+
+They offer a standard JSON-RPC interface and a WebSocket interface, which makes
+interaction with standard tools versatile, simple and straight forward.
+
+[Sign up for a free Project ID on INFURA](link-infura-signup)
+
+**Benefits:**
+
+- higher rate limit
+- customer usage metrics
+- access to archive data (requires paid upgrade)
+
+_subsection: Alchemy @<api-keys--alchemy>
+
+The Alchemy service has been around a few years and is also very robust
+and reliable.
+
+They offer a standard JSON-RPC interface and a WebSocket interface, as well
+as a collection of advanced APIs for interacting with tokens and to assist
+with debugging.
+
+[Sign up for a free API key on Alchemy](link-alchemy-signup)
+
+**Benefits:**
+
+- higher rate limit
+- customer usage metrics
+- access to advanced token balance and metadata APIs
+- access to advanced debugging trace and revert reason APIs
+
+
+_subsection: Creating a Default Provider @<api-keys--getDefaultProvider>
+
+The [default provider](providers-getDefaultProvider) connects to multiple
+backends and verifies their results internally, making it simple to have
+a high level of trust in third-party services.
+
+A second optional parameter allows API keys to be specified to each
+Provider created internally and any API key omitted will fallback onto
+using the default API key for that service.
+
+It is **highly recommended** that you provide an API for each service, to
+maximize your applications performance.
+
+_code: Passing API Keys into getDefaultProvider @lang<script>
+
+// Use the mainnet
+const network = "homestead";
+
+// Specify your own API keys
+// Each is optional, and if you omit it the default
+// API key for that service will be used.
+const provider = ethers.getDefaultProvider(network, {
+    etherscan: YOUR_ETHERSCAN_API_KEY,
+    infura: YOUR_INFURA_PROJECT_ID,
+    alchemy: YOUR_ALCHEMY_API_KEY
+});

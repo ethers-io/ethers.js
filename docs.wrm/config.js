@@ -188,6 +188,11 @@ module.exports = {
       "link-solidity": { name: "Solidity" , url: "https:/\/solidity.readthedocs.io/en/v0.6.2/" },
       "link-sphinx": { name: "Sphinx", url: "https:/\/www.sphinx-doc.org/" },
 
+      "link-alchemy-signup": "https:/\/alchemyapi.io/signup",
+      "link-etherscan-signup": "https:/\/etherscan.io/apis",
+      "link-etherscan-ratelimit": "https:/\/info.etherscan.com/api-return-errors/",
+      "link-infura-signup": "https:/\/infura.io/register",
+
       "link-json-rpc": "https:/\/github.com/ethereum/wiki/wiki/JSON-RPC",
       "link-web3-send": "https:/\/github.com/ethereum/web3.js/blob/1.x/packages/web3-providers-http/types/index.d.ts#L57",
       "link-parity-trace": "https:/\/openethereum.github.io/wiki/JSONRPC-trace-module",
