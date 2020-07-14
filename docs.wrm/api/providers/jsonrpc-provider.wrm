@@ -1,6 +1,6 @@
 _section: JsonRpcProvider  @<JsonRpcProvider> @INHERIT<[[Provider]]> @SRC<providers:class.JsonRpcProvider>
 
-The [JSON-RPC API](link-jsonrpc) is a very popular method for interacting
+The [JSON-RPC API](link-jsonrpc) is a popular method for interacting
 with Ethereum and is available in all major Ethereum node implementations
 (e.g. [[link-geth]] and [[link-parity]]) as well as many
 third-party web services (e.g. [[link-infura]])

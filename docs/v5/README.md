@@ -21,6 +21,7 @@ Developer Documentation
   * [Importing](getting-started)
   * [Common Terminology](getting-started)
   * [Connecting to Ethereum: Metamask](getting-started)
+  * [Connecting to Ethereum: RPC](getting-started)
   * [Contracts](getting-started)
   * [Signing Messages](getting-started)
 * [Ethereum Basics](concepts)
