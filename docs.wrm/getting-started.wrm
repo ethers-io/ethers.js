@@ -161,18 +161,18 @@ The [[Contract]] object makes it easier to use an on-chain
 Contract as a normal JavaScript object, with the methods
 mapped to encoding and decoding data for you.
 
-If you are familiar with Databases, this is similar to an ORM.
+If you are familiar with Databases, this is similar to an ////Object Relational Mapper// (ORM).
 
 In order to communicate with the Contract on-chain, this class
 needs to know what methods are available and how to encode and
 decode the data, which is what the //Application Binary Interface// (API)
 provides.
 
-This class is a meta-class, which means its methods are constructed
-at runtime, when you pass in the ABI to the constructor it uses it
+This class is a //meta-class//, which means its methods are constructed
+at runtime, and when you pass in the ABI to the constructor it uses it
 to determine which methods to add.
 
-While a on-chain Contract may have many methods available, you can safely ignore
+While an on-chain Contract may have many methods available, you can safely ignore
 any methods you don't need or use, providing a smaller subset of the ABI to
 the contract.
 
@@ -243,8 +243,8 @@ _heading: State Changing Methods @<getting-started--writing>
 _code: Sending DAI @lang<script>
 
 // The DAI Contract is currently connected to the Provider,
-// which is read-only. We need to connect to a Signer, so
-// that we can pay to send state-changing transactions.
+// which is read-only. You need to connect to a Signer, so
+// that you can pay to send state-changing transactions.
 const daiWithSigner = contract.connect(signer);
 
 // Each DAI has 18 decimal places
@@ -334,7 +334,7 @@ daiContract.queryFilter(filterFrom, 9843470, 9843480)
 // number of entries; but they provide some useful examples
 //
 
-// List all transfers I sent in the last 10,000 blocks
+// List all transfers sent in the last 10,000 blocks
 daiContract.queryFilter(filterFrom, -10000)
 
 // List all transfers ever sent to me
@@ -350,8 +350,8 @@ const signer = ethers.Wallet.createRandom();
 //!
 // </hide>
 
-// To sign a simple string, which can often be used for
-// logging into a service, such as CryptoKitties simply
+// To sign a simple string, which are used for
+// logging into a service, such as CryptoKitties,
 // pass the string in.
 signature = await signer.signMessage("Hello World");
 //! async signature
@@ -362,7 +362,7 @@ signature = await signer.signMessage("Hello World");
 // data it MUST be an Array (or TypedArray)
 //
 
-// This string is 66 chacacters long
+// This string is 66 characters long
 message = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 
 // This array representation is 32 bytes long
