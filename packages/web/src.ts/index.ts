@@ -10,15 +10,26 @@ const logger = new Logger(version);
 
 import { getUrl, GetUrlResponse } from "./geturl";
 
+function staller(duration: number): Promise<void> {
+    return new Promise((resolve) => {
+        setTimeout(resolve, duration);
+    });
+}
+
 // Exported Types
 export type ConnectionInfo = {
     url: string,
+    headers?: { [key: string]: string | number }
+
     user?: string,
     password?: string,
+
     allowInsecureAuthentication?: boolean,
+
     throttleLimit?: number,
+    throttleCallback?: (attempt: number, url: string) => Promise<boolean>,
+
     timeout?: number,
-    headers?: { [key: string]: string | number }
 };
 
 export interface OnceBlockable {
@@ -48,6 +59,14 @@ export type FetchJsonResponse = {
 type Header = { key: string, value: string };
 
 export function fetchJson(connection: string | ConnectionInfo, json?: string, processFunc?: (value: any, response: FetchJsonResponse) => any): Promise<any> {
+
+    // How many times to retry in the event of a throttle
+    const attemptLimit = (typeof(connection) === "object" && connection.throttleLimit != null) ? connection.throttleLimit: 12;
+    logger.assertArgument((attemptLimit > 0 && (attemptLimit % 1) === 0),
+        "invalid connection throttle limit", "connection.throttleLimit", attemptLimit);
+
+    const throttleCallback = ((typeof(connection) === "object") ? connection.throttleCallback: null);
+
     const headers: { [key: string]: Header } = { };
 
     let url: string = null;
@@ -143,72 +162,105 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
 
     const runningFetch = (async function() {
 
-        let response: GetUrlResponse = null;
-        try {
-            response = await getUrl(url, options);
-        } catch (error) {
-            response = (<any>error).response;
-            if (response == null) {
+        for (let attempt = 0; attempt < attemptLimit; attempt++) {
+            let response: GetUrlResponse = null;
+
+            try {
+                response = await getUrl(url, options);
+
+                // Exponential back-off throttling (interval = 100ms)
+                if (response.statusCode === 429 && attempt < attemptLimit) {
+                    let tryAgain = true;
+                    if (throttleCallback) {
+                        tryAgain = await throttleCallback(attempt, url);
+                    }
+
+                    if (tryAgain) {
+                        const timeout = 100 * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                        await staller(timeout);
+                        continue;
+                    }
+                }
+
+            } catch (error) {
+                response = (<any>error).response;
+                if (response == null) {
+                    runningTimeout.cancel();
+                    logger.throwError("missing response", Logger.errors.SERVER_ERROR, {
+                        requestBody: (options.body || null),
+                        requestMethod: options.method,
+                        serverError: error,
+                        url: url
+                    });
+                }
+            }
+
+
+            let body = response.body;
+
+            if (allow304 && response.statusCode === 304) {
+                body = null;
+
+            } else if (response.statusCode < 200 || response.statusCode >= 300) {
                 runningTimeout.cancel();
-                logger.throwError("missing response", Logger.errors.SERVER_ERROR, {
-                    requestBody: (options.body || null),
-                    requestMethod: options.method,
-                    serverError: error,
-                    url: url
-                });
-            }
-        }
-
-
-        let body = response.body;
-
-        if (allow304 && response.statusCode === 304) {
-            body = null;
-
-        } else if (response.statusCode < 200 || response.statusCode >= 300) {
-            runningTimeout.cancel();
-            logger.throwError("bad response", Logger.errors.SERVER_ERROR, {
-                status: response.statusCode,
-                headers: response.headers,
-                body: body,
-                requestBody: (options.body || null),
-                requestMethod: options.method,
-                url: url
-            });
-        }
-
-        runningTimeout.cancel();
-
-        let json: any = null;
-        if (body != null) {
-            try {
-                json = JSON.parse(body);
-            } catch (error) {
-                logger.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
+                logger.throwError("bad response", Logger.errors.SERVER_ERROR, {
+                    status: response.statusCode,
+                    headers: response.headers,
                     body: body,
-                    error: error,
                     requestBody: (options.body || null),
                     requestMethod: options.method,
                     url: url
                 });
             }
-        }
 
-        if (processFunc) {
-            try {
-                json = await processFunc(json, response);
-            } catch (error) {
-                logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
-                    body: json,
-                    error: error,
-                    requestBody: (options.body || null),
-                    requestMethod: options.method,
-                    url: url
-                });
+            let json: any = null;
+            if (body != null) {
+                try {
+                    json = JSON.parse(body);
+                } catch (error) {
+                    runningTimeout.cancel();
+                    logger.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
+                        body: body,
+                        error: error,
+                        requestBody: (options.body || null),
+                        requestMethod: options.method,
+                        url: url
+                    });
+                }
             }
-        }
 
-        return json;
+            if (processFunc) {
+                try {
+                    json = await processFunc(json, response);
+                } catch (error) {
+                    // Allow the processFunc to trigger a throttle
+                    if (error.throttleRetry && attempt < attemptLimit) {
+                        let tryAgain = true;
+                        if (throttleCallback) {
+                            tryAgain = await throttleCallback(attempt, url);
+                        }
+
+                        if (tryAgain) {
+                            const timeout = 100 * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                            await staller(timeout);
+                            continue;
+                        }
+                    }
+
+                    runningTimeout.cancel();
+                    logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
+                        body: json,
+                        error: error,
+                        requestBody: (options.body || null),
+                        requestMethod: options.method,
+                        url: url
+                    });
+                }
+            }
+
+            runningTimeout.cancel();
+            return json;
+        }
     })();
 
     return Promise.race([ runningTimeout.promise, runningFetch ]);

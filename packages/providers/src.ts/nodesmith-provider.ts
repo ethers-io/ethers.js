@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 "use strict";
 
 import { Network } from "@ethersproject/networks";

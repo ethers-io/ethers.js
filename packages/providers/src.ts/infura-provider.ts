@@ -4,6 +4,7 @@ import { Network, Networkish } from "@ethersproject/networks";
 import { ConnectionInfo } from "@ethersproject/web";
 
 import { WebSocketProvider } from "./websocket-provider";
+import { showThrottleMessage } from "./formatter";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -61,7 +62,7 @@ export class InfuraProvider extends UrlJsonRpcProvider {
         return apiKeyObj;
     }
 
-    static getUrl(network: Network, apiKey: any): string | ConnectionInfo {
+    static getUrl(network: Network, apiKey: any): ConnectionInfo {
         let host: string = null;
         switch(network ? network.name: "unknown") {
             case "homestead":
@@ -87,7 +88,13 @@ export class InfuraProvider extends UrlJsonRpcProvider {
         }
 
         const connection: ConnectionInfo = {
-             url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId)
+             url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId),
+             throttleCallback: (attempt: number, url: string) => {
+                 if (apiKey.projectId === defaultProjectId) {
+                     showThrottleMessage();
+                 }
+                 return Promise.resolve(true);
+             }
         };
 
         if (apiKey.projectSecret != null) {

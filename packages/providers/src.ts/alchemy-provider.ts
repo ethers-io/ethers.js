@@ -1,7 +1,9 @@
 "use strict";
 
 import { Network, Networkish } from "@ethersproject/networks";
+import { ConnectionInfo } from "@ethersproject/web";
 
+import { showThrottleMessage } from "./formatter";
 import { WebSocketProvider } from "./websocket-provider";
 
 import { Logger } from "@ethersproject/logger";
@@ -18,7 +20,6 @@ import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC"
 
 export class AlchemyProvider extends UrlJsonRpcProvider {
-    readonly apiKey: string;
 
     static getWebSocketProvider(network?: Networkish, apiKey?: any): WebSocketProvider {
         const provider = new AlchemyProvider(network, apiKey);
@@ -37,7 +38,7 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
         return apiKey;
     }
 
-    static getUrl(network: Network, apiKey: string): string {
+    static getUrl(network: Network, apiKey: string): ConnectionInfo {
         let host = null;
         switch (network.name) {
             case "homestead":
@@ -59,6 +60,14 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
                logger.throwArgumentError("unsupported network", "network", arguments[0]);
         }
 
-        return ("https:/" + "/" + host + apiKey);
+        return {
+            url: ("https:/" + "/" + host + apiKey),
+            throttleCallback: (attempt: number, url: string) => {
+                if (apiKey === defaultApiKey) {
+                    showThrottleMessage();
+                }
+                return Promise.resolve(true);
+            }
+        };
     }
 }
