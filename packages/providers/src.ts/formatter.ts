@@ -101,7 +101,7 @@ export class Formatter {
             from: Formatter.allowNull(this.address, null),
             contractAddress: Formatter.allowNull(address, null),
             transactionIndex: number,
-            root: Formatter.allowNull(hash),
+            root: Formatter.allowNull(hex),
             gasUsed: bigNumber,
             logsBloom: Formatter.allowNull(data),// @TODO: should this be data?
             blockHash: hash,
