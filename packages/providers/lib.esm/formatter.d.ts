@@ -48,3 +48,4 @@ export declare class Formatter {
     static allowFalsish(format: FormatFunc, replaceValue: any): FormatFunc;
     static arrayOf(format: FormatFunc): FormatFunc;
 }
+export declare function showThrottleMessage(): void;

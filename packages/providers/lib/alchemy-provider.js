@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+var formatter_1 = require("./formatter");
 var websocket_provider_1 = require("./websocket-provider");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
@@ -64,7 +65,15 @@ var AlchemyProvider = /** @class */ (function (_super) {
             default:
                 logger.throwArgumentError("unsupported network", "network", arguments[0]);
         }
-        return ("https:/" + "/" + host + apiKey);
+        return {
+            url: ("https:/" + "/" + host + apiKey),
+            throttleCallback: function (attempt, url) {
+                if (apiKey === defaultApiKey) {
+                    formatter_1.showThrottleMessage();
+                }
+                return Promise.resolve(true);
+            }
+        };
     };
     return AlchemyProvider;
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));

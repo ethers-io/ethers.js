@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 "use strict";
 import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 import { Logger } from "@ethersproject/logger";

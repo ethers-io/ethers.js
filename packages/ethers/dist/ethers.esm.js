@@ -19448,7 +19448,16 @@ var __awaiter$5 = (window && window.__awaiter) || function (thisArg, _arguments,
     });
 };
 const logger$p = new Logger(version$l);
+function staller(duration) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, duration);
+    });
+}
 function fetchJson(connection, json, processFunc) {
+    // How many times to retry in the event of a throttle
+    const attemptLimit = (typeof (connection) === "object" && connection.throttleLimit != null) ? connection.throttleLimit : 12;
+    logger$p.assertArgument((attemptLimit > 0 && (attemptLimit % 1) === 0), "invalid connection throttle limit", "connection.throttleLimit", attemptLimit);
+    const throttleCallback = ((typeof (connection) === "object") ? connection.throttleCallback : null);
     const headers = {};
     let url = null;
     // @TODO: Allow ConnectionInfo to override some of these values
@@ -19527,68 +19536,96 @@ function fetchJson(connection, json, processFunc) {
     })();
     const runningFetch = (function () {
         return __awaiter$5(this, void 0, void 0, function* () {
-            let response = null;
-            try {
-                response = yield getUrl(url, options);
-            }
-            catch (error) {
-                response = error.response;
-                if (response == null) {
+            for (let attempt = 0; attempt < attemptLimit; attempt++) {
+                let response = null;
+                try {
+                    response = yield getUrl(url, options);
+                    // Exponential back-off throttling (interval = 100ms)
+                    if (response.statusCode === 429 && attempt < attemptLimit) {
+                        let tryAgain = true;
+                        if (throttleCallback) {
+                            tryAgain = yield throttleCallback(attempt, url);
+                        }
+                        if (tryAgain) {
+                            const timeout = 100 * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                            yield staller(timeout);
+                            continue;
+                        }
+                    }
+                }
+                catch (error) {
+                    response = error.response;
+                    if (response == null) {
+                        runningTimeout.cancel();
+                        logger$p.throwError("missing response", Logger.errors.SERVER_ERROR, {
+                            requestBody: (options.body || null),
+                            requestMethod: options.method,
+                            serverError: error,
+                            url: url
+                        });
+                    }
+                }
+                let body = response.body;
+                if (allow304 && response.statusCode === 304) {
+                    body = null;
+                }
+                else if (response.statusCode < 200 || response.statusCode >= 300) {
                     runningTimeout.cancel();
-                    logger$p.throwError("missing response", Logger.errors.SERVER_ERROR, {
-                        requestBody: (options.body || null),
-                        requestMethod: options.method,
-                        serverError: error,
-                        url: url
-                    });
-                }
-            }
-            let body = response.body;
-            if (allow304 && response.statusCode === 304) {
-                body = null;
-            }
-            else if (response.statusCode < 200 || response.statusCode >= 300) {
-                runningTimeout.cancel();
-                logger$p.throwError("bad response", Logger.errors.SERVER_ERROR, {
-                    status: response.statusCode,
-                    headers: response.headers,
-                    body: body,
-                    requestBody: (options.body || null),
-                    requestMethod: options.method,
-                    url: url
-                });
-            }
-            runningTimeout.cancel();
-            let json = null;
-            if (body != null) {
-                try {
-                    json = JSON.parse(body);
-                }
-                catch (error) {
-                    logger$p.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
+                    logger$p.throwError("bad response", Logger.errors.SERVER_ERROR, {
+                        status: response.statusCode,
+                        headers: response.headers,
                         body: body,
-                        error: error,
                         requestBody: (options.body || null),
                         requestMethod: options.method,
                         url: url
                     });
                 }
-            }
-            if (processFunc) {
-                try {
-                    json = yield processFunc(json, response);
+                let json = null;
+                if (body != null) {
+                    try {
+                        json = JSON.parse(body);
+                    }
+                    catch (error) {
+                        runningTimeout.cancel();
+                        logger$p.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
+                            body: body,
+                            error: error,
+                            requestBody: (options.body || null),
+                            requestMethod: options.method,
+                            url: url
+                        });
+                    }
                 }
-                catch (error) {
-                    logger$p.throwError("processing response error", Logger.errors.SERVER_ERROR, {
-                        body: json,
-                        error: error,
-                        requestBody: (options.body || null),
-                        requestMethod: options.method,
-                        url: url
-                    });
+                if (processFunc) {
+                    try {
+                        json = yield processFunc(json, response);
+                    }
+                    catch (error) {
+                        // Allow the processFunc to trigger a throttle
+                        if (error.throttleRetry && attempt < attemptLimit) {
+                            let tryAgain = true;
+                            if (throttleCallback) {
+                                tryAgain = yield throttleCallback(attempt, url);
+                            }
+                            if (tryAgain) {
+                                const timeout = 100 * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                                yield staller(timeout);
+                                continue;
+                            }
+                        }
+                        runningTimeout.cancel();
+                        logger$p.throwError("processing response error", Logger.errors.SERVER_ERROR, {
+                            body: json,
+                            error: error,
+                            requestBody: (options.body || null),
+                            requestMethod: options.method,
+                            url: url
+                        });
+                    }
                 }
+                runningTimeout.cancel();
+                return json;
             }
-            return json;
         });
     })();
     return Promise.race([runningTimeout.promise, runningFetch]);
@@ -20048,6 +20085,26 @@ class Formatter {
             return result;
         });
     }
+}
+// Show the throttle message only once
+let throttleMessage = false;
+function showThrottleMessage() {
+    if (throttleMessage) {
+        return;
+    }
+    throttleMessage = true;
+    console.log("========= NOTICE =========");
+    console.log("Request-Rate Exceeded  (this message will not be repeated)");
+    console.log("");
+    console.log("The default API keys for each service are provided as a highly-throttled,");
+    console.log("community resource for low-traffic projects and early prototyping.");
+    console.log("");
+    console.log("While your application will continue to function, we highly recommended");
+    console.log("signing up for your own API keys to improve performance, increase your");
+    console.log("request rate/limit and enable other perks, such as metrics and advanced APIs.");
+    console.log("");
+    console.log("For more details: https:/\/docs.ethers.io/api-keys/");
+    console.log("==========================");
 }
 
 "use strict";
@@ -22050,7 +22107,15 @@ class AlchemyProvider extends UrlJsonRpcProvider {
             default:
                 logger$v.throwArgumentError("unsupported network", "network", arguments[0]);
         }
-        return ("https:/" + "/" + host + apiKey);
+        return {
+            url: ("https:/" + "/" + host + apiKey),
+            throttleCallback: (attempt, url) => {
+                if (apiKey === defaultApiKey) {
+                    showThrottleMessage();
+                }
+                return Promise.resolve(true);
+            }
+        };
     }
 }
 
@@ -22131,14 +22196,23 @@ function getResult$1(result) {
         return result.result;
     }
     if (result.status != 1 || result.message != "OK") {
-        // @TODO: not any
         const error = new Error("invalid response");
         error.result = JSON.stringify(result);
+        if ((result.result || "").toLowerCase().indexOf("rate limit") >= 0) {
+            error.throttleRetry = true;
+        }
         throw error;
     }
     return result.result;
 }
 function getJsonResult(result) {
+    // This response indicates we are being throttled
+    if (result && result.status == 0 && result.message == "NOTOK" && (result.result || "").toLowerCase().indexOf("rate limit") >= 0) {
+        const error = new Error("throttled response");
+        error.result = JSON.stringify(result);
+        error.throttleRetry = true;
+        throw error;
+    }
     if (result.jsonrpc != "2.0") {
         // @TODO: not any
         const error = new Error("invalid response");
@@ -22221,7 +22295,16 @@ class EtherscanProvider extends BaseProvider {
                     request: url,
                     provider: this
                 });
-                const result = yield fetchJson(url, null, procFunc || getJsonResult);
+                const connection = {
+                    url: url,
+                    throttleCallback: (attempt, url) => {
+                        if (this.apiKey === defaultApiKey$1) {
+                            showThrottleMessage();
+                        }
+                        return Promise.resolve(true);
+                    }
+                };
+                const result = yield fetchJson(connection, null, procFunc || getJsonResult);
                 this.emit("debug", {
                     action: "response",
                     request: url,
@@ -22249,12 +22332,12 @@ class EtherscanProvider extends BaseProvider {
                 case "getCode":
                     url += "/api?module=proxy&action=eth_getCode&address=" + params.address;
                     url += "&tag=" + params.blockTag + apiKey;
-                    return get(url, getJsonResult);
+                    return get(url);
                 case "getStorageAt":
                     url += "/api?module=proxy&action=eth_getStorageAt&address=" + params.address;
                     url += "&position=" + params.position;
                     url += "&tag=" + params.blockTag + apiKey;
-                    return get(url, getJsonResult);
+                    return get(url);
                 case "sendTransaction":
                     url += "/api?module=proxy&action=eth_sendRawTransaction&hex=" + params.signedTransaction;
                     url += apiKey;
@@ -22398,7 +22481,16 @@ class EtherscanProvider extends BaseProvider {
                 request: url,
                 provider: this
             });
-            return fetchJson(url, null, getResult$1).then((result) => {
+            const connection = {
+                url: url,
+                throttleCallback: (attempt, url) => {
+                    if (this.apiKey === defaultApiKey$1) {
+                        showThrottleMessage();
+                    }
+                    return Promise.resolve(true);
+                }
+            };
+            return fetchJson(connection, null, getResult$1).then((result) => {
                 this.emit("debug", {
                     action: "response",
                     request: url,
@@ -23018,7 +23110,13 @@ class InfuraProvider extends UrlJsonRpcProvider {
                 });
         }
         const connection = {
-            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId)
+            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId),
+            throttleCallback: (attempt, url) => {
+                if (apiKey.projectId === defaultProjectId) {
+                    showThrottleMessage();
+                }
+                return Promise.resolve(true);
+            }
         };
         if (apiKey.projectSecret != null) {
             connection.user = "";
@@ -23028,6 +23126,7 @@ class InfuraProvider extends UrlJsonRpcProvider {
     }
 }
 
+/* istanbul ignore file */
 "use strict";
 const logger$A = new Logger(version$m);
 // Special API key provided by Nodesmith for ethers.js

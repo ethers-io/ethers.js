@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { hexlify, hexValue } from "@ethersproject/bytes";
 import { deepCopy, defineReadOnly } from "@ethersproject/properties";
 import { fetchJson } from "@ethersproject/web";
+import { showThrottleMessage } from "./formatter";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
@@ -36,14 +37,23 @@ function getResult(result) {
         return result.result;
     }
     if (result.status != 1 || result.message != "OK") {
-        // @TODO: not any
         const error = new Error("invalid response");
         error.result = JSON.stringify(result);
+        if ((result.result || "").toLowerCase().indexOf("rate limit") >= 0) {
+            error.throttleRetry = true;
+        }
         throw error;
     }
     return result.result;
 }
 function getJsonResult(result) {
+    // This response indicates we are being throttled
+    if (result && result.status == 0 && result.message == "NOTOK" && (result.result || "").toLowerCase().indexOf("rate limit") >= 0) {
+        const error = new Error("throttled response");
+        error.result = JSON.stringify(result);
+        error.throttleRetry = true;
+        throw error;
+    }
     if (result.jsonrpc != "2.0") {
         // @TODO: not any
         const error = new Error("invalid response");
@@ -126,7 +136,16 @@ export class EtherscanProvider extends BaseProvider {
                     request: url,
                     provider: this
                 });
-                const result = yield fetchJson(url, null, procFunc || getJsonResult);
+                const connection = {
+                    url: url,
+                    throttleCallback: (attempt, url) => {
+                        if (this.apiKey === defaultApiKey) {
+                            showThrottleMessage();
+                        }
+                        return Promise.resolve(true);
+                    }
+                };
+                const result = yield fetchJson(connection, null, procFunc || getJsonResult);
                 this.emit("debug", {
                     action: "response",
                     request: url,
@@ -154,12 +173,12 @@ export class EtherscanProvider extends BaseProvider {
                 case "getCode":
                     url += "/api?module=proxy&action=eth_getCode&address=" + params.address;
                     url += "&tag=" + params.blockTag + apiKey;
-                    return get(url, getJsonResult);
+                    return get(url);
                 case "getStorageAt":
                     url += "/api?module=proxy&action=eth_getStorageAt&address=" + params.address;
                     url += "&position=" + params.position;
                     url += "&tag=" + params.blockTag + apiKey;
-                    return get(url, getJsonResult);
+                    return get(url);
                 case "sendTransaction":
                     url += "/api?module=proxy&action=eth_sendRawTransaction&hex=" + params.signedTransaction;
                     url += apiKey;
@@ -303,7 +322,16 @@ export class EtherscanProvider extends BaseProvider {
                 request: url,
                 provider: this
             });
-            return fetchJson(url, null, getResult).then((result) => {
+            const connection = {
+                url: url,
+                throttleCallback: (attempt, url) => {
+                    if (this.apiKey === defaultApiKey) {
+                        showThrottleMessage();
+                    }
+                    return Promise.resolve(true);
+                }
+            };
+            return fetchJson(connection, null, getResult).then((result) => {
                 this.emit("debug", {
                     action: "response",
                     request: url,

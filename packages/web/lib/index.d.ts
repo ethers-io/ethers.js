@@ -1,13 +1,14 @@
 export declare type ConnectionInfo = {
     url: string;
+    headers?: {
+        [key: string]: string | number;
+    };
     user?: string;
     password?: string;
     allowInsecureAuthentication?: boolean;
     throttleLimit?: number;
+    throttleCallback?: (attempt: number, url: string) => Promise<boolean>;
     timeout?: number;
-    headers?: {
-        [key: string]: string | number;
-    };
 };
 export interface OnceBlockable {
     once(eventName: "block", handler: () => void): void;

@@ -43,7 +43,16 @@ var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var geturl_1 = require("./geturl");
+function staller(duration) {
+    return new Promise(function (resolve) {
+        setTimeout(resolve, duration);
+    });
+}
 function fetchJson(connection, json, processFunc) {
+    // How many times to retry in the event of a throttle
+    var attemptLimit = (typeof (connection) === "object" && connection.throttleLimit != null) ? connection.throttleLimit : 12;
+    logger.assertArgument((attemptLimit > 0 && (attemptLimit % 1) === 0), "invalid connection throttle limit", "connection.throttleLimit", attemptLimit);
+    var throttleCallback = ((typeof (connection) === "object") ? connection.throttleCallback : null);
     var headers = {};
     var url = null;
     // @TODO: Allow ConnectionInfo to override some of these values
@@ -122,19 +131,37 @@ function fetchJson(connection, json, processFunc) {
     })();
     var runningFetch = (function () {
         return __awaiter(this, void 0, void 0, function () {
-            var response, error_1, body, json, error_2;
+            var attempt, response, tryAgain, timeout_1, error_1, body, json_1, error_2, tryAgain, timeout_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        response = null;
+                        attempt = 0;
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, geturl_1.getUrl(url, options)];
+                        if (!(attempt < attemptLimit)) return [3 /*break*/, 19];
+                        response = null;
+                        _a.label = 2;
                     case 2:
-                        response = _a.sent();
-                        return [3 /*break*/, 4];
+                        _a.trys.push([2, 8, , 9]);
+                        return [4 /*yield*/, geturl_1.getUrl(url, options)];
                     case 3:
+                        response = _a.sent();
+                        if (!(response.statusCode === 429 && attempt < attemptLimit)) return [3 /*break*/, 7];
+                        tryAgain = true;
+                        if (!throttleCallback) return [3 /*break*/, 5];
+                        return [4 /*yield*/, throttleCallback(attempt, url)];
+                    case 4:
+                        tryAgain = _a.sent();
+                        _a.label = 5;
+                    case 5:
+                        if (!tryAgain) return [3 /*break*/, 7];
+                        timeout_1 = 100 * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                        return [4 /*yield*/, staller(timeout_1)];
+                    case 6:
+                        _a.sent();
+                        return [3 /*break*/, 18];
+                    case 7: return [3 /*break*/, 9];
+                    case 8:
                         error_1 = _a.sent();
                         response = error_1.response;
                         if (response == null) {
@@ -146,8 +173,8 @@ function fetchJson(connection, json, processFunc) {
                                 url: url
                             });
                         }
-                        return [3 /*break*/, 4];
-                    case 4:
+                        return [3 /*break*/, 9];
+                    case 9:
                         body = response.body;
                         if (allow304 && response.statusCode === 304) {
                             body = null;
@@ -163,13 +190,13 @@ function fetchJson(connection, json, processFunc) {
                                 url: url
                             });
                         }
-                        runningTimeout.cancel();
-                        json = null;
+                        json_1 = null;
                         if (body != null) {
                             try {
-                                json = JSON.parse(body);
+                                json_1 = JSON.parse(body);
                             }
                             catch (error) {
+                                runningTimeout.cancel();
                                 logger.throwError("invalid JSON", logger_1.Logger.errors.SERVER_ERROR, {
                                     body: body,
                                     error: error,
@@ -179,25 +206,47 @@ function fetchJson(connection, json, processFunc) {
                                 });
                             }
                         }
-                        if (!processFunc) return [3 /*break*/, 8];
-                        _a.label = 5;
-                    case 5:
-                        _a.trys.push([5, 7, , 8]);
-                        return [4 /*yield*/, processFunc(json, response)];
-                    case 6:
-                        json = _a.sent();
-                        return [3 /*break*/, 8];
-                    case 7:
+                        if (!processFunc) return [3 /*break*/, 17];
+                        _a.label = 10;
+                    case 10:
+                        _a.trys.push([10, 12, , 17]);
+                        return [4 /*yield*/, processFunc(json_1, response)];
+                    case 11:
+                        json_1 = _a.sent();
+                        return [3 /*break*/, 17];
+                    case 12:
                         error_2 = _a.sent();
+                        if (!(error_2.throttleRetry && attempt < attemptLimit)) return [3 /*break*/, 16];
+                        tryAgain = true;
+                        if (!throttleCallback) return [3 /*break*/, 14];
+                        return [4 /*yield*/, throttleCallback(attempt, url)];
+                    case 13:
+                        tryAgain = _a.sent();
+                        _a.label = 14;
+                    case 14:
+                        if (!tryAgain) return [3 /*break*/, 16];
+                        timeout_2 = 100 * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                        return [4 /*yield*/, staller(timeout_2)];
+                    case 15:
+                        _a.sent();
+                        return [3 /*break*/, 18];
+                    case 16:
+                        runningTimeout.cancel();
                         logger.throwError("processing response error", logger_1.Logger.errors.SERVER_ERROR, {
-                            body: json,
+                            body: json_1,
                             error: error_2,
                             requestBody: (options.body || null),
                             requestMethod: options.method,
                             url: url
                         });
-                        return [3 /*break*/, 8];
-                    case 8: return [2 /*return*/, json];
+                        return [3 /*break*/, 17];
+                    case 17:
+                        runningTimeout.cancel();
+                        return [2 /*return*/, json_1];
+                    case 18:
+                        attempt++;
+                        return [3 /*break*/, 1];
+                    case 19: return [2 /*return*/];
                 }
             });
         });

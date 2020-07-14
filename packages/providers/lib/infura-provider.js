@@ -14,6 +14,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var websocket_provider_1 = require("./websocket-provider");
+var formatter_1 = require("./formatter");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
@@ -84,7 +85,13 @@ var InfuraProvider = /** @class */ (function (_super) {
                 });
         }
         var connection = {
-            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId)
+            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId),
+            throttleCallback: function (attempt, url) {
+                if (apiKey.projectId === defaultProjectId) {
+                    formatter_1.showThrottleMessage();
+                }
+                return Promise.resolve(true);
+            }
         };
         if (apiKey.projectSecret != null) {
             connection.user = "";

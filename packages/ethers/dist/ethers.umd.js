@@ -21306,7 +21306,16 @@
 
 	var logger = new lib.Logger(_version$G.version);
 
+	function staller(duration) {
+	    return new Promise(function (resolve) {
+	        setTimeout(resolve, duration);
+	    });
+	}
 	function fetchJson(connection, json, processFunc) {
+	    // How many times to retry in the event of a throttle
+	    var attemptLimit = (typeof (connection) === "object" && connection.throttleLimit != null) ? connection.throttleLimit : 12;
+	    logger.assertArgument((attemptLimit > 0 && (attemptLimit % 1) === 0), "invalid connection throttle limit", "connection.throttleLimit", attemptLimit);
+	    var throttleCallback = ((typeof (connection) === "object") ? connection.throttleCallback : null);
 	    var headers = {};
 	    var url = null;
 	    // @TODO: Allow ConnectionInfo to override some of these values
@@ -21385,19 +21394,37 @@
 	    })();
 	    var runningFetch = (function () {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var response, error_1, body, json, error_2;
+	            var attempt, response, tryAgain, timeout_1, error_1, body, json_1, error_2, tryAgain, timeout_2;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
-	                        response = null;
+	                        attempt = 0;
 	                        _a.label = 1;
 	                    case 1:
-	                        _a.trys.push([1, 3, , 4]);
-	                        return [4 /*yield*/, browserGeturl.getUrl(url, options)];
+	                        if (!(attempt < attemptLimit)) return [3 /*break*/, 19];
+	                        response = null;
+	                        _a.label = 2;
 	                    case 2:
-	                        response = _a.sent();
-	                        return [3 /*break*/, 4];
+	                        _a.trys.push([2, 8, , 9]);
+	                        return [4 /*yield*/, browserGeturl.getUrl(url, options)];
 	                    case 3:
+	                        response = _a.sent();
+	                        if (!(response.statusCode === 429 && attempt < attemptLimit)) return [3 /*break*/, 7];
+	                        tryAgain = true;
+	                        if (!throttleCallback) return [3 /*break*/, 5];
+	                        return [4 /*yield*/, throttleCallback(attempt, url)];
+	                    case 4:
+	                        tryAgain = _a.sent();
+	                        _a.label = 5;
+	                    case 5:
+	                        if (!tryAgain) return [3 /*break*/, 7];
+	                        timeout_1 = 100 * parseInt(String(Math.random() * Math.pow(2, attempt)));
+	                        return [4 /*yield*/, staller(timeout_1)];
+	                    case 6:
+	                        _a.sent();
+	                        return [3 /*break*/, 18];
+	                    case 7: return [3 /*break*/, 9];
+	                    case 8:
 	                        error_1 = _a.sent();
 	                        response = error_1.response;
 	                        if (response == null) {
@@ -21409,8 +21436,8 @@
 	                                url: url
 	                            });
 	                        }
-	                        return [3 /*break*/, 4];
-	                    case 4:
+	                        return [3 /*break*/, 9];
+	                    case 9:
 	                        body = response.body;
 	                        if (allow304 && response.statusCode === 304) {
 	                            body = null;
@@ -21426,13 +21453,13 @@
 	                                url: url
 	                            });
 	                        }
-	                        runningTimeout.cancel();
-	                        json = null;
+	                        json_1 = null;
 	                        if (body != null) {
 	                            try {
-	                                json = JSON.parse(body);
+	                                json_1 = JSON.parse(body);
 	                            }
 	                            catch (error) {
+	                                runningTimeout.cancel();
 	                                logger.throwError("invalid JSON", lib.Logger.errors.SERVER_ERROR, {
 	                                    body: body,
 	                                    error: error,
@@ -21442,25 +21469,47 @@
 	                                });
 	                            }
 	                        }
-	                        if (!processFunc) return [3 /*break*/, 8];
-	                        _a.label = 5;
-	                    case 5:
-	                        _a.trys.push([5, 7, , 8]);
-	                        return [4 /*yield*/, processFunc(json, response)];
-	                    case 6:
-	                        json = _a.sent();
-	                        return [3 /*break*/, 8];
-	                    case 7:
+	                        if (!processFunc) return [3 /*break*/, 17];
+	                        _a.label = 10;
+	                    case 10:
+	                        _a.trys.push([10, 12, , 17]);
+	                        return [4 /*yield*/, processFunc(json_1, response)];
+	                    case 11:
+	                        json_1 = _a.sent();
+	                        return [3 /*break*/, 17];
+	                    case 12:
 	                        error_2 = _a.sent();
+	                        if (!(error_2.throttleRetry && attempt < attemptLimit)) return [3 /*break*/, 16];
+	                        tryAgain = true;
+	                        if (!throttleCallback) return [3 /*break*/, 14];
+	                        return [4 /*yield*/, throttleCallback(attempt, url)];
+	                    case 13:
+	                        tryAgain = _a.sent();
+	                        _a.label = 14;
+	                    case 14:
+	                        if (!tryAgain) return [3 /*break*/, 16];
+	                        timeout_2 = 100 * parseInt(String(Math.random() * Math.pow(2, attempt)));
+	                        return [4 /*yield*/, staller(timeout_2)];
+	                    case 15:
+	                        _a.sent();
+	                        return [3 /*break*/, 18];
+	                    case 16:
+	                        runningTimeout.cancel();
 	                        logger.throwError("processing response error", lib.Logger.errors.SERVER_ERROR, {
-	                            body: json,
+	                            body: json_1,
 	                            error: error_2,
 	                            requestBody: (options.body || null),
 	                            requestMethod: options.method,
 	                            url: url
 	                        });
-	                        return [3 /*break*/, 8];
-	                    case 8: return [2 /*return*/, json];
+	                        return [3 /*break*/, 17];
+	                    case 17:
+	                        runningTimeout.cancel();
+	                        return [2 /*return*/, json_1];
+	                    case 18:
+	                        attempt++;
+	                        return [3 /*break*/, 1];
+	                    case 19: return [2 /*return*/];
 	                }
 	            });
 	        });
@@ -21954,11 +22003,33 @@
 	    return Formatter;
 	}());
 	exports.Formatter = Formatter;
+	// Show the throttle message only once
+	var throttleMessage = false;
+	function showThrottleMessage() {
+	    if (throttleMessage) {
+	        return;
+	    }
+	    throttleMessage = true;
+	    console.log("========= NOTICE =========");
+	    console.log("Request-Rate Exceeded  (this message will not be repeated)");
+	    console.log("");
+	    console.log("The default API keys for each service are provided as a highly-throttled,");
+	    console.log("community resource for low-traffic projects and early prototyping.");
+	    console.log("");
+	    console.log("While your application will continue to function, we highly recommended");
+	    console.log("signing up for your own API keys to improve performance, increase your");
+	    console.log("request rate/limit and enable other perks, such as metrics and advanced APIs.");
+	    console.log("");
+	    console.log("For more details: https:/\/docs.ethers.io/api-keys/");
+	    console.log("==========================");
+	}
+	exports.showThrottleMessage = showThrottleMessage;
 
 	});
 
 	var formatter$1 = unwrapExports(formatter);
 	var formatter_1 = formatter.Formatter;
+	var formatter_2 = formatter.showThrottleMessage;
 
 	var baseProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -24596,6 +24667,7 @@
 
 
 
+
 	var logger = new lib.Logger(_version$I.version);
 
 	// This key was provided to ethers.js by Alchemy to be used by the
@@ -24644,7 +24716,15 @@
 	            default:
 	                logger.throwArgumentError("unsupported network", "network", arguments[0]);
 	        }
-	        return ("https:/" + "/" + host + apiKey);
+	        return {
+	            url: ("https:/" + "/" + host + apiKey),
+	            throttleCallback: function (attempt, url) {
+	                if (apiKey === defaultApiKey) {
+	                    formatter.showThrottleMessage();
+	                }
+	                return Promise.resolve(true);
+	            }
+	        };
 	    };
 	    return AlchemyProvider;
 	}(urlJsonRpcProvider.UrlJsonRpcProvider));
@@ -24815,6 +24895,7 @@
 
 
 
+
 	var logger = new lib.Logger(_version$I.version);
 
 	// The transaction has already been sanitized by the calls in Provider
@@ -24838,14 +24919,23 @@
 	        return result.result;
 	    }
 	    if (result.status != 1 || result.message != "OK") {
-	        // @TODO: not any
 	        var error = new Error("invalid response");
 	        error.result = JSON.stringify(result);
+	        if ((result.result || "").toLowerCase().indexOf("rate limit") >= 0) {
+	            error.throttleRetry = true;
+	        }
 	        throw error;
 	    }
 	    return result.result;
 	}
 	function getJsonResult(result) {
+	    // This response indicates we are being throttled
+	    if (result && result.status == 0 && result.message == "NOTOK" && (result.result || "").toLowerCase().indexOf("rate limit") >= 0) {
+	        var error = new Error("throttled response");
+	        error.result = JSON.stringify(result);
+	        error.throttleRetry = true;
+	        throw error;
+	    }
 	    if (result.jsonrpc != "2.0") {
 	        // @TODO: not any
 	        var error = new Error("invalid response");
@@ -24931,7 +25021,8 @@
 	                            apiKey += "&apikey=" + this.apiKey;
 	                        }
 	                        get = function (url, procFunc) { return __awaiter(_this, void 0, void 0, function () {
-	                            var result;
+	                            var connection, result;
+	                            var _this = this;
 	                            return __generator(this, function (_a) {
 	                                switch (_a.label) {
 	                                    case 0:
@@ -24940,7 +25031,16 @@
 	                                            request: url,
 	                                            provider: this
 	                                        });
-	                                        return [4 /*yield*/, lib$l.fetchJson(url, null, procFunc || getJsonResult)];
+	                                        connection = {
+	                                            url: url,
+	                                            throttleCallback: function (attempt, url) {
+	                                                if (_this.apiKey === defaultApiKey) {
+	                                                    formatter.showThrottleMessage();
+	                                                }
+	                                                return Promise.resolve(true);
+	                                            }
+	                                        };
+	                                        return [4 /*yield*/, lib$l.fetchJson(connection, null, procFunc || getJsonResult)];
 	                                    case 1:
 	                                        result = _a.sent();
 	                                        this.emit("debug", {
@@ -24989,12 +25089,12 @@
 	                    case 5:
 	                        url += "/api?module=proxy&action=eth_getCode&address=" + params.address;
 	                        url += "&tag=" + params.blockTag + apiKey;
-	                        return [2 /*return*/, get(url, getJsonResult)];
+	                        return [2 /*return*/, get(url)];
 	                    case 6:
 	                        url += "/api?module=proxy&action=eth_getStorageAt&address=" + params.address;
 	                        url += "&position=" + params.position;
 	                        url += "&tag=" + params.blockTag + apiKey;
-	                        return [2 /*return*/, get(url, getJsonResult)];
+	                        return [2 /*return*/, get(url)];
 	                    case 7:
 	                        url += "/api?module=proxy&action=eth_sendRawTransaction&hex=" + params.signedTransaction;
 	                        url += apiKey;
@@ -25153,7 +25253,16 @@
 	                request: url,
 	                provider: _this
 	            });
-	            return lib$l.fetchJson(url, null, getResult).then(function (result) {
+	            var connection = {
+	                url: url,
+	                throttleCallback: function (attempt, url) {
+	                    if (_this.apiKey === defaultApiKey) {
+	                        formatter.showThrottleMessage();
+	                    }
+	                    return Promise.resolve(true);
+	                }
+	            };
+	            return lib$l.fetchJson(connection, null, getResult).then(function (result) {
 	                _this.emit("debug", {
 	                    action: "response",
 	                    request: url,
@@ -25863,6 +25972,7 @@
 
 
 
+
 	var logger = new lib.Logger(_version$I.version);
 
 	var defaultProjectId = "84842078b09946638c03157f83405213";
@@ -25931,7 +26041,13 @@
 	                });
 	        }
 	        var connection = {
-	            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId)
+	            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId),
+	            throttleCallback: function (attempt, url) {
+	                if (apiKey.projectId === defaultProjectId) {
+	                    formatter.showThrottleMessage();
+	                }
+	                return Promise.resolve(true);
+	            }
 	        };
 	        if (apiKey.projectSecret != null) {
 	            connection.user = "";
@@ -25949,6 +26065,7 @@
 	var infuraProvider_1 = infuraProvider.InfuraProvider;
 
 	var nodesmithProvider = createCommonjsModule(function (module, exports) {
+	/* istanbul ignore file */
 	"use strict";
 	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
 	    var extendStatics = function (d, b) {

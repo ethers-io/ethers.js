@@ -1,5 +1,6 @@
 "use strict";
 import { WebSocketProvider } from "./websocket-provider";
+import { showThrottleMessage } from "./formatter";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
@@ -66,7 +67,13 @@ export class InfuraProvider extends UrlJsonRpcProvider {
                 });
         }
         const connection = {
-            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId)
+            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId),
+            throttleCallback: (attempt, url) => {
+                if (apiKey.projectId === defaultProjectId) {
+                    showThrottleMessage();
+                }
+                return Promise.resolve(true);
+            }
         };
         if (apiKey.projectSecret != null) {
             connection.user = "";

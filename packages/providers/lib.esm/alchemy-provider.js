@@ -1,4 +1,5 @@
 "use strict";
+import { showThrottleMessage } from "./formatter";
 import { WebSocketProvider } from "./websocket-provider";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -46,7 +47,15 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
             default:
                 logger.throwArgumentError("unsupported network", "network", arguments[0]);
         }
-        return ("https:/" + "/" + host + apiKey);
+        return {
+            url: ("https:/" + "/" + host + apiKey),
+            throttleCallback: (attempt, url) => {
+                if (apiKey === defaultApiKey) {
+                    showThrottleMessage();
+                }
+                return Promise.resolve(true);
+            }
+        };
     }
 }
 //# sourceMappingURL=alchemy-provider.js.map

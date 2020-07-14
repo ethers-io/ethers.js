@@ -52,6 +52,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("@ethersproject/bytes");
 var properties_1 = require("@ethersproject/properties");
 var web_1 = require("@ethersproject/web");
+var formatter_1 = require("./formatter");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
@@ -77,14 +78,23 @@ function getResult(result) {
         return result.result;
     }
     if (result.status != 1 || result.message != "OK") {
-        // @TODO: not any
         var error = new Error("invalid response");
         error.result = JSON.stringify(result);
+        if ((result.result || "").toLowerCase().indexOf("rate limit") >= 0) {
+            error.throttleRetry = true;
+        }
         throw error;
     }
     return result.result;
 }
 function getJsonResult(result) {
+    // This response indicates we are being throttled
+    if (result && result.status == 0 && result.message == "NOTOK" && (result.result || "").toLowerCase().indexOf("rate limit") >= 0) {
+        var error = new Error("throttled response");
+        error.result = JSON.stringify(result);
+        error.throttleRetry = true;
+        throw error;
+    }
     if (result.jsonrpc != "2.0") {
         // @TODO: not any
         var error = new Error("invalid response");
@@ -170,7 +180,8 @@ var EtherscanProvider = /** @class */ (function (_super) {
                             apiKey += "&apikey=" + this.apiKey;
                         }
                         get = function (url, procFunc) { return __awaiter(_this, void 0, void 0, function () {
-                            var result;
+                            var connection, result;
+                            var _this = this;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
@@ -179,7 +190,16 @@ var EtherscanProvider = /** @class */ (function (_super) {
                                             request: url,
                                             provider: this
                                         });
-                                        return [4 /*yield*/, web_1.fetchJson(url, null, procFunc || getJsonResult)];
+                                        connection = {
+                                            url: url,
+                                            throttleCallback: function (attempt, url) {
+                                                if (_this.apiKey === defaultApiKey) {
+                                                    formatter_1.showThrottleMessage();
+                                                }
+                                                return Promise.resolve(true);
+                                            }
+                                        };
+                                        return [4 /*yield*/, web_1.fetchJson(connection, null, procFunc || getJsonResult)];
                                     case 1:
                                         result = _a.sent();
                                         this.emit("debug", {
@@ -228,12 +248,12 @@ var EtherscanProvider = /** @class */ (function (_super) {
                     case 5:
                         url += "/api?module=proxy&action=eth_getCode&address=" + params.address;
                         url += "&tag=" + params.blockTag + apiKey;
-                        return [2 /*return*/, get(url, getJsonResult)];
+                        return [2 /*return*/, get(url)];
                     case 6:
                         url += "/api?module=proxy&action=eth_getStorageAt&address=" + params.address;
                         url += "&position=" + params.position;
                         url += "&tag=" + params.blockTag + apiKey;
-                        return [2 /*return*/, get(url, getJsonResult)];
+                        return [2 /*return*/, get(url)];
                     case 7:
                         url += "/api?module=proxy&action=eth_sendRawTransaction&hex=" + params.signedTransaction;
                         url += apiKey;
@@ -392,7 +412,16 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 request: url,
                 provider: _this
             });
-            return web_1.fetchJson(url, null, getResult).then(function (result) {
+            var connection = {
+                url: url,
+                throttleCallback: function (attempt, url) {
+                    if (_this.apiKey === defaultApiKey) {
+                        formatter_1.showThrottleMessage();
+                    }
+                    return Promise.resolve(true);
+                }
+            };
+            return web_1.fetchJson(connection, null, getResult).then(function (result) {
                 _this.emit("debug", {
                     action: "response",
                     request: url,

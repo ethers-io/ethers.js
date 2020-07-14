@@ -15,7 +15,16 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 import { getUrl } from "./geturl";
+function staller(duration) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, duration);
+    });
+}
 export function fetchJson(connection, json, processFunc) {
+    // How many times to retry in the event of a throttle
+    const attemptLimit = (typeof (connection) === "object" && connection.throttleLimit != null) ? connection.throttleLimit : 12;
+    logger.assertArgument((attemptLimit > 0 && (attemptLimit % 1) === 0), "invalid connection throttle limit", "connection.throttleLimit", attemptLimit);
+    const throttleCallback = ((typeof (connection) === "object") ? connection.throttleCallback : null);
     const headers = {};
     let url = null;
     // @TODO: Allow ConnectionInfo to override some of these values
@@ -94,68 +103,96 @@ export function fetchJson(connection, json, processFunc) {
     })();
     const runningFetch = (function () {
         return __awaiter(this, void 0, void 0, function* () {
-            let response = null;
-            try {
-                response = yield getUrl(url, options);
-            }
-            catch (error) {
-                response = error.response;
-                if (response == null) {
+            for (let attempt = 0; attempt < attemptLimit; attempt++) {
+                let response = null;
+                try {
+                    response = yield getUrl(url, options);
+                    // Exponential back-off throttling (interval = 100ms)
+                    if (response.statusCode === 429 && attempt < attemptLimit) {
+                        let tryAgain = true;
+                        if (throttleCallback) {
+                            tryAgain = yield throttleCallback(attempt, url);
+                        }
+                        if (tryAgain) {
+                            const timeout = 100 * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                            yield staller(timeout);
+                            continue;
+                        }
+                    }
+                }
+                catch (error) {
+                    response = error.response;
+                    if (response == null) {
+                        runningTimeout.cancel();
+                        logger.throwError("missing response", Logger.errors.SERVER_ERROR, {
+                            requestBody: (options.body || null),
+                            requestMethod: options.method,
+                            serverError: error,
+                            url: url
+                        });
+                    }
+                }
+                let body = response.body;
+                if (allow304 && response.statusCode === 304) {
+                    body = null;
+                }
+                else if (response.statusCode < 200 || response.statusCode >= 300) {
                     runningTimeout.cancel();
-                    logger.throwError("missing response", Logger.errors.SERVER_ERROR, {
-                        requestBody: (options.body || null),
-                        requestMethod: options.method,
-                        serverError: error,
-                        url: url
-                    });
-                }
-            }
-            let body = response.body;
-            if (allow304 && response.statusCode === 304) {
-                body = null;
-            }
-            else if (response.statusCode < 200 || response.statusCode >= 300) {
-                runningTimeout.cancel();
-                logger.throwError("bad response", Logger.errors.SERVER_ERROR, {
-                    status: response.statusCode,
-                    headers: response.headers,
-                    body: body,
-                    requestBody: (options.body || null),
-                    requestMethod: options.method,
-                    url: url
-                });
-            }
-            runningTimeout.cancel();
-            let json = null;
-            if (body != null) {
-                try {
-                    json = JSON.parse(body);
-                }
-                catch (error) {
-                    logger.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
+                    logger.throwError("bad response", Logger.errors.SERVER_ERROR, {
+                        status: response.statusCode,
+                        headers: response.headers,
                         body: body,
-                        error: error,
                         requestBody: (options.body || null),
                         requestMethod: options.method,
                         url: url
                     });
                 }
-            }
-            if (processFunc) {
-                try {
-                    json = yield processFunc(json, response);
+                let json = null;
+                if (body != null) {
+                    try {
+                        json = JSON.parse(body);
+                    }
+                    catch (error) {
+                        runningTimeout.cancel();
+                        logger.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
+                            body: body,
+                            error: error,
+                            requestBody: (options.body || null),
+                            requestMethod: options.method,
+                            url: url
+                        });
+                    }
                 }
-                catch (error) {
-                    logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
-                        body: json,
-                        error: error,
-                        requestBody: (options.body || null),
-                        requestMethod: options.method,
-                        url: url
-                    });
+                if (processFunc) {
+                    try {
+                        json = yield processFunc(json, response);
+                    }
+                    catch (error) {
+                        // Allow the processFunc to trigger a throttle
+                        if (error.throttleRetry && attempt < attemptLimit) {
+                            let tryAgain = true;
+                            if (throttleCallback) {
+                                tryAgain = yield throttleCallback(attempt, url);
+                            }
+                            if (tryAgain) {
+                                const timeout = 100 * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                                yield staller(timeout);
+                                continue;
+                            }
+                        }
+                        runningTimeout.cancel();
+                        logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
+                            body: json,
+                            error: error,
+                            requestBody: (options.body || null),
+                            requestMethod: options.method,
+                            url: url
+                        });
+                    }
                 }
+                runningTimeout.cancel();
+                return json;
             }
-            return json;
         });
     })();
     return Promise.race([runningTimeout.promise, runningFetch]);

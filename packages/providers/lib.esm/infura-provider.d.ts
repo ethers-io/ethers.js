@@ -7,5 +7,5 @@ export declare class InfuraProvider extends UrlJsonRpcProvider {
     readonly projectSecret: string;
     static getWebSocketProvider(network?: Networkish, apiKey?: any): WebSocketProvider;
     static getApiKey(apiKey: any): any;
-    static getUrl(network: Network, apiKey: any): string | ConnectionInfo;
+    static getUrl(network: Network, apiKey: any): ConnectionInfo;
 }
