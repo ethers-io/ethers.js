@@ -145,9 +145,7 @@ provider = new InfuraProvider("homestead", {
 // Connect to the INFURA WebSocket endpoints with a WebSocketProvider
 provider = InfuraProvider.getWebSocketProvider()
 // <hide>
-provider._websocket.onopen = function(){
-    provider._websocket.close();
-};
+provider.destroy();
 // </hide>
 
 
@@ -195,6 +193,12 @@ provider = new AlchemyProvider("ropsten");
 // Connect to mainnet with an API key (these are equivalent)
 provider = new AlchemyProvider(null, apiKey);
 provider = new AlchemyProvider("homestead", apiKey);
+
+// Connect to the Alchemy WebSocket endpoints with a WebSocketProvider
+provider = AlchemyProvider.getWebSocketProvider()
+// <hide>
+provider.destroy();
+// </hide>
 
 
 _subsection: CloudflareProvider @<CloudflareProvider> @inherit<[[UrlJsonRpcProvider]]> @src<providers:class.CloudflareProvider>
