@@ -69,7 +69,7 @@ var Formatter = /** @class */ (function () {
             from: Formatter.allowNull(this.address, null),
             contractAddress: Formatter.allowNull(address, null),
             transactionIndex: number,
-            root: Formatter.allowNull(hash),
+            root: Formatter.allowNull(hex),
             gasUsed: bigNumber,
             logsBloom: Formatter.allowNull(data),
             blockHash: hash,
@@ -149,7 +149,7 @@ var Formatter = /** @class */ (function () {
                 return value.toLowerCase();
             }
         }
-        return logger.throwArgumentError("invalid hash", "value", value);
+        return logger.throwArgumentError("invalid hex", "value", value);
     };
     Formatter.prototype.data = function (value, strict) {
         var result = this.hex(value, strict);
