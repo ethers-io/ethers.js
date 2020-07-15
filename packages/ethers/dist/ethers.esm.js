@@ -19458,6 +19458,8 @@ function fetchJson(connection, json, processFunc) {
     const attemptLimit = (typeof (connection) === "object" && connection.throttleLimit != null) ? connection.throttleLimit : 12;
     logger$p.assertArgument((attemptLimit > 0 && (attemptLimit % 1) === 0), "invalid connection throttle limit", "connection.throttleLimit", attemptLimit);
     const throttleCallback = ((typeof (connection) === "object") ? connection.throttleCallback : null);
+    const throttleSlotInterval = ((typeof (connection) === "object" && typeof (connection.throttleSlotInterval) === "number") ? connection.throttleSlotInterval : 100);
+    logger$p.assertArgument((throttleSlotInterval > 0 && (throttleSlotInterval % 1) === 0), "invalid connection throttle slot interval", "connection.throttleSlotInterval", throttleSlotInterval);
     const headers = {};
     let url = null;
     // @TODO: Allow ConnectionInfo to override some of these values
@@ -19540,15 +19542,22 @@ function fetchJson(connection, json, processFunc) {
                 let response = null;
                 try {
                     response = yield getUrl(url, options);
-                    // Exponential back-off throttling (interval = 100ms)
+                    // Exponential back-off throttling
                     if (response.statusCode === 429 && attempt < attemptLimit) {
                         let tryAgain = true;
                         if (throttleCallback) {
                             tryAgain = yield throttleCallback(attempt, url);
                         }
                         if (tryAgain) {
-                            const timeout = 100 * parseInt(String(Math.random() * Math.pow(2, attempt)));
-                            yield staller(timeout);
+                            let stall = 0;
+                            const retryAfter = response.headers["retry-after"];
+                            if (typeof (retryAfter) === "string" && retryAfter.match(/^[1-9][0-9]*$/)) {
+                                stall = parseInt(retryAfter) * 1000;
+                            }
+                            else {
+                                stall = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                            }
+                            yield staller(stall);
                             continue;
                         }
                     }
@@ -19608,7 +19617,7 @@ function fetchJson(connection, json, processFunc) {
                                 tryAgain = yield throttleCallback(attempt, url);
                             }
                             if (tryAgain) {
-                                const timeout = 100 * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                                const timeout = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
                                 yield staller(timeout);
                                 continue;
                             }

@@ -53,6 +53,8 @@ function fetchJson(connection, json, processFunc) {
     var attemptLimit = (typeof (connection) === "object" && connection.throttleLimit != null) ? connection.throttleLimit : 12;
     logger.assertArgument((attemptLimit > 0 && (attemptLimit % 1) === 0), "invalid connection throttle limit", "connection.throttleLimit", attemptLimit);
     var throttleCallback = ((typeof (connection) === "object") ? connection.throttleCallback : null);
+    var throttleSlotInterval = ((typeof (connection) === "object" && typeof (connection.throttleSlotInterval) === "number") ? connection.throttleSlotInterval : 100);
+    logger.assertArgument((throttleSlotInterval > 0 && (throttleSlotInterval % 1) === 0), "invalid connection throttle slot interval", "connection.throttleSlotInterval", throttleSlotInterval);
     var headers = {};
     var url = null;
     // @TODO: Allow ConnectionInfo to override some of these values
@@ -131,7 +133,7 @@ function fetchJson(connection, json, processFunc) {
     })();
     var runningFetch = (function () {
         return __awaiter(this, void 0, void 0, function () {
-            var attempt, response, tryAgain, timeout_1, error_1, body, json_1, error_2, tryAgain, timeout_2;
+            var attempt, response, tryAgain, stall, retryAfter, error_1, body, json_1, error_2, tryAgain, timeout_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -155,8 +157,15 @@ function fetchJson(connection, json, processFunc) {
                         _a.label = 5;
                     case 5:
                         if (!tryAgain) return [3 /*break*/, 7];
-                        timeout_1 = 100 * parseInt(String(Math.random() * Math.pow(2, attempt)));
-                        return [4 /*yield*/, staller(timeout_1)];
+                        stall = 0;
+                        retryAfter = response.headers["retry-after"];
+                        if (typeof (retryAfter) === "string" && retryAfter.match(/^[1-9][0-9]*$/)) {
+                            stall = parseInt(retryAfter) * 1000;
+                        }
+                        else {
+                            stall = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                        }
+                        return [4 /*yield*/, staller(stall)];
                     case 6:
                         _a.sent();
                         return [3 /*break*/, 18];
@@ -225,8 +234,8 @@ function fetchJson(connection, json, processFunc) {
                         _a.label = 14;
                     case 14:
                         if (!tryAgain) return [3 /*break*/, 16];
-                        timeout_2 = 100 * parseInt(String(Math.random() * Math.pow(2, attempt)));
-                        return [4 /*yield*/, staller(timeout_2)];
+                        timeout_1 = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                        return [4 /*yield*/, staller(timeout_1)];
                     case 15:
                         _a.sent();
                         return [3 /*break*/, 18];

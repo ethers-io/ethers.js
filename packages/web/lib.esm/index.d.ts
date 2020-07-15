@@ -7,6 +7,7 @@ export declare type ConnectionInfo = {
     password?: string;
     allowInsecureAuthentication?: boolean;
     throttleLimit?: number;
+    throttleSlotInterval?: number;
     throttleCallback?: (attempt: number, url: string) => Promise<boolean>;
     timeout?: number;
 };
