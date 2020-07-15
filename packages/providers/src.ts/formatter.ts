@@ -190,7 +190,7 @@ export class Formatter {
                return value.toLowerCase();
             }
         }
-        return logger.throwArgumentError("invalid hash", "value", value);
+        return logger.throwArgumentError("invalid hex", "value", value);
     }
 
     data(value: any, strict?: boolean): string {
