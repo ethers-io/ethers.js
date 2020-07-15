@@ -27,6 +27,7 @@ export type ConnectionInfo = {
     allowInsecureAuthentication?: boolean,
 
     throttleLimit?: number,
+    throttleSlotInterval?: number;
     throttleCallback?: (attempt: number, url: string) => Promise<boolean>,
 
     timeout?: number,
@@ -66,6 +67,9 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
         "invalid connection throttle limit", "connection.throttleLimit", attemptLimit);
 
     const throttleCallback = ((typeof(connection) === "object") ? connection.throttleCallback: null);
+    const throttleSlotInterval = ((typeof(connection) === "object" && typeof(connection.throttleSlotInterval) === "number") ? connection.throttleSlotInterval: 100);
+    logger.assertArgument((throttleSlotInterval > 0 && (throttleSlotInterval % 1) === 0),
+        "invalid connection throttle slot interval", "connection.throttleSlotInterval", throttleSlotInterval);
 
     const headers: { [key: string]: Header } = { };
 
@@ -168,7 +172,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
             try {
                 response = await getUrl(url, options);
 
-                // Exponential back-off throttling (interval = 100ms)
+                // Exponential back-off throttling
                 if (response.statusCode === 429 && attempt < attemptLimit) {
                     let tryAgain = true;
                     if (throttleCallback) {
@@ -176,8 +180,16 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
                     }
 
                     if (tryAgain) {
-                        const timeout = 100 * parseInt(String(Math.random() * Math.pow(2, attempt)));
-                        await staller(timeout);
+                        let stall = 0;
+
+                        const retryAfter = response.headers["retry-after"];
+                        if (typeof(retryAfter) === "string" && retryAfter.match(/^[1-9][0-9]*$/)) {
+                            stall = parseInt(retryAfter) * 1000;
+                        } else {
+                            stall = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                        }
+
+                        await staller(stall);
                         continue;
                     }
                 }
@@ -241,7 +253,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
                         }
 
                         if (tryAgain) {
-                            const timeout = 100 * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                            const timeout = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
                             await staller(timeout);
                             continue;
                         }
