@@ -142,6 +142,7 @@ export class EtherscanProvider extends BaseProvider{
 
             const connection = {
                 url: url,
+                throttleSlotInterval: 1000,
                 throttleCallback: (attempt: number, url: string) => {
                     if (this.apiKey === defaultApiKey) {
                         showThrottleMessage();
@@ -351,6 +352,7 @@ export class EtherscanProvider extends BaseProvider{
 
             const connection = {
                 url: url,
+                throttleSlotInterval: 1000,
                 throttleCallback: (attempt: number, url: string) => {
                     if (this.apiKey === defaultApiKey) {
                         showThrottleMessage();
