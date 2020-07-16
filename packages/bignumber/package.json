@@ -3,7 +3,6 @@
   "dependencies": {
     "@ethersproject/bytes": "^5.0.0",
     "@ethersproject/logger": "^5.0.0",
-    "@ethersproject/properties": "^5.0.0",
     "bn.js": "^4.4.0"
   },
   "description": "BigNumber library used in ethers.js.",
@@ -27,7 +26,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x57e4190860f4d2a86b05cf22525cbcc9d3014212985f5b3463af4ef16cf23d27",
+  "tarballHash": "0xcdc00c893b74d6eae49a2fc685a6d4c5801067505feb0e38f0ad366f6c37e0fd",
   "types": "./lib/index.d.ts",
   "version": "5.0.5"
 }

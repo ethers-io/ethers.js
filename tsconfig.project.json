@@ -19,6 +19,12 @@
       "path": "./packages/base64"
     },
     {
+      "path": "./packages/bignumber"
+    },
+    {
+      "path": "./packages/constants"
+    },
+    {
       "path": "./packages/keccak256"
     },
     {
@@ -29,12 +35,6 @@
     },
     {
       "path": "./packages/basex"
-    },
-    {
-      "path": "./packages/bignumber"
-    },
-    {
-      "path": "./packages/constants"
     },
     {
       "path": "./packages/random"
