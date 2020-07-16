@@ -11,8 +11,18 @@ export {
     Networkish
 };
 
-function ethDefaultProvider(network: string): (providers: any) => any {
-    return function(providers: any, options?: any): any {
+type DefaultProviderFunc = (providers: any, options?: any) => any;
+
+interface Renetworkable extends DefaultProviderFunc {
+    renetwork: (network: Network) => DefaultProviderFunc;
+};
+
+function isRenetworkable(value: any): value is Renetworkable {
+    return (value && typeof(value.renetwork) === "function");
+}
+
+function ethDefaultProvider(network: string | Network): Renetworkable {
+    const func = function(providers: any, options?: any): any {
         if (options == null) { options = { }; }
         const providerList: Array<any> = [];
 
@@ -53,17 +63,29 @@ function ethDefaultProvider(network: string): (providers: any) => any {
         }
 
         return providerList[0];
-    }
+    };
+
+    func.renetwork = function(network: Network) {
+        return ethDefaultProvider(network);
+    };
+
+    return func;
 }
 
-function etcDefaultProvider(url: string, network: string): (providers: any) => any {
-    return function(providers: any, options?: any): any {
+function etcDefaultProvider(url: string, network: string | Network): Renetworkable {
+    const func = function(providers: any, options?: any): any {
         if (providers.JsonRpcProvider) {
             return new providers.JsonRpcProvider(url, network);
         }
 
         return null;
-    }
+    };
+
+    func.renetwork = function(network: Network) {
+        return etcDefaultProvider(url, network);
+    };
+
+    return func;
 }
 
 const homestead: Network = {
@@ -201,11 +223,22 @@ export function getNetwork(network: Networkish): Network {
         logger.throwArgumentError("network chainId mismatch", "network", network);
     }
 
+    // @TODO: In the next major version add an attach function to a defaultProvider
+    // class and move the _defaultProvider internal to this file (extend Network)
+    let defaultProvider: DefaultProviderFunc = network._defaultProvider || null;
+    if (defaultProvider == null && standard._defaultProvider) {
+        if (isRenetworkable(standard._defaultProvider)) {
+            defaultProvider = standard._defaultProvider.renetwork(network);
+        } else {
+            defaultProvider = standard._defaultProvider;
+        }
+    }
+
     // Standard Network (allow overriding the ENS address)
     return {
         name: network.name,
         chainId: standard.chainId,
         ensAddress: (network.ensAddress || standard.ensAddress || null),
-        _defaultProvider: (network._defaultProvider || standard._defaultProvider || null)
+        _defaultProvider: defaultProvider
     };
 }
