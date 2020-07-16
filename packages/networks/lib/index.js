@@ -3,8 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
+;
+function isRenetworkable(value) {
+    return (value && typeof (value.renetwork) === "function");
+}
 function ethDefaultProvider(network) {
-    return function (providers, options) {
+    var func = function (providers, options) {
         if (options == null) {
             options = {};
         }
@@ -48,14 +52,22 @@ function ethDefaultProvider(network) {
         }
         return providerList[0];
     };
+    func.renetwork = function (network) {
+        return ethDefaultProvider(network);
+    };
+    return func;
 }
 function etcDefaultProvider(url, network) {
-    return function (providers, options) {
+    var func = function (providers, options) {
         if (providers.JsonRpcProvider) {
             return new providers.JsonRpcProvider(url, network);
         }
         return null;
     };
+    func.renetwork = function (network) {
+        return etcDefaultProvider(url, network);
+    };
+    return func;
 }
 var homestead = {
     chainId: 1,
@@ -174,12 +186,23 @@ function getNetwork(network) {
     if (network.chainId !== 0 && network.chainId !== standard.chainId) {
         logger.throwArgumentError("network chainId mismatch", "network", network);
     }
+    // @TODO: In the next major version add an attach function to a defaultProvider
+    // class and move the _defaultProvider internal to this file (extend Network)
+    var defaultProvider = network._defaultProvider || null;
+    if (defaultProvider == null && standard._defaultProvider) {
+        if (isRenetworkable(standard._defaultProvider)) {
+            defaultProvider = standard._defaultProvider.renetwork(network);
+        }
+        else {
+            defaultProvider = standard._defaultProvider;
+        }
+    }
     // Standard Network (allow overriding the ENS address)
     return {
         name: network.name,
         chainId: standard.chainId,
         ensAddress: (network.ensAddress || standard.ensAddress || null),
-        _defaultProvider: (network._defaultProvider || standard._defaultProvider || null)
+        _defaultProvider: defaultProvider
     };
 }
 exports.getNetwork = getNetwork;

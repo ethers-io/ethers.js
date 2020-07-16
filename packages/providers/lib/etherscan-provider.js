@@ -192,6 +192,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                                         });
                                         connection = {
                                             url: url,
+                                            throttleSlotInterval: 1000,
                                             throttleCallback: function (attempt, url) {
                                                 if (_this.apiKey === defaultApiKey) {
                                                     formatter_1.showThrottleMessage();
@@ -414,6 +415,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
             });
             var connection = {
                 url: url,
+                throttleSlotInterval: 1000,
                 throttleCallback: function (attempt, url) {
                     if (_this.apiKey === defaultApiKey) {
                         formatter_1.showThrottleMessage();

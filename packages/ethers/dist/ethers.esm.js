@@ -19185,8 +19185,12 @@ const version$k = "networks/5.0.2";
 
 "use strict";
 const logger$o = new Logger(version$k);
+;
+function isRenetworkable(value) {
+    return (value && typeof (value.renetwork) === "function");
+}
 function ethDefaultProvider(network) {
-    return function (providers, options) {
+    const func = function (providers, options) {
         if (options == null) {
             options = {};
         }
@@ -19230,14 +19234,22 @@ function ethDefaultProvider(network) {
         }
         return providerList[0];
     };
+    func.renetwork = function (network) {
+        return ethDefaultProvider(network);
+    };
+    return func;
 }
 function etcDefaultProvider(url, network) {
-    return function (providers, options) {
+    const func = function (providers, options) {
         if (providers.JsonRpcProvider) {
             return new providers.JsonRpcProvider(url, network);
         }
         return null;
     };
+    func.renetwork = function (network) {
+        return etcDefaultProvider(url, network);
+    };
+    return func;
 }
 const homestead = {
     chainId: 1,
@@ -19356,12 +19368,23 @@ function getNetwork(network) {
     if (network.chainId !== 0 && network.chainId !== standard.chainId) {
         logger$o.throwArgumentError("network chainId mismatch", "network", network);
     }
+    // @TODO: In the next major version add an attach function to a defaultProvider
+    // class and move the _defaultProvider internal to this file (extend Network)
+    let defaultProvider = network._defaultProvider || null;
+    if (defaultProvider == null && standard._defaultProvider) {
+        if (isRenetworkable(standard._defaultProvider)) {
+            defaultProvider = standard._defaultProvider.renetwork(network);
+        }
+        else {
+            defaultProvider = standard._defaultProvider;
+        }
+    }
     // Standard Network (allow overriding the ENS address)
     return {
         name: network.name,
         chainId: standard.chainId,
         ensAddress: (network.ensAddress || standard.ensAddress || null),
-        _defaultProvider: (network._defaultProvider || standard._defaultProvider || null)
+        _defaultProvider: defaultProvider
     };
 }
 
@@ -22306,6 +22329,7 @@ class EtherscanProvider extends BaseProvider {
                 });
                 const connection = {
                     url: url,
+                    throttleSlotInterval: 1000,
                     throttleCallback: (attempt, url) => {
                         if (this.apiKey === defaultApiKey$1) {
                             showThrottleMessage();
@@ -22492,6 +22516,7 @@ class EtherscanProvider extends BaseProvider {
             });
             const connection = {
                 url: url,
+                throttleSlotInterval: 1000,
                 throttleCallback: (attempt, url) => {
                     if (this.apiKey === defaultApiKey$1) {
                         showThrottleMessage();

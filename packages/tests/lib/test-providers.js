@@ -466,7 +466,7 @@ function testProvider(providerName, networkName) {
                     // Note: These tests could be fiddled with if someone sends ether
                     // to our address; we just have to live with jerks sending us
                     // money. *smile emoji*
-                    this.timeout(20000);
+                    this.timeout(60000);
                     return provider.getBalance(test.address).then(function (balance) {
                         equals("Balance", test.balance, balance);
                         return waiter(delay);
@@ -475,7 +475,7 @@ function testProvider(providerName, networkName) {
             }
             if (test.code) {
                 it("fetches address code: " + test.address, function () {
-                    this.timeout(20000);
+                    this.timeout(60000);
                     return provider.getCode(test.address).then(function (code) {
                         equals("Code", test.code, code);
                         return waiter(delay);
@@ -485,7 +485,7 @@ function testProvider(providerName, networkName) {
             if (test.storage) {
                 Object.keys(test.storage).forEach(function (position) {
                     it("fetches storage: " + test.address + ":" + position, function () {
-                        this.timeout(20000);
+                        this.timeout(60000);
                         return provider.getStorageAt(test.address, bnify(position)).then(function (value) {
                             equals("Storage", test.storage[position], value);
                             return waiter(delay);
@@ -495,7 +495,7 @@ function testProvider(providerName, networkName) {
             }
             if (test.name) {
                 it("fetches the ENS name: " + test.name, function () {
-                    this.timeout(20000);
+                    this.timeout(60000);
                     return provider.resolveName(test.name).then(function (address) {
                         equals("ENS Name", test.address, address);
                         return waiter(delay);
@@ -513,7 +513,7 @@ function testProvider(providerName, networkName) {
                 });
             }
             it("fetches block (by number) #" + test.number, function () {
-                this.timeout(20000);
+                this.timeout(60000);
                 return checkBlock(provider.getBlock(test.number));
             });
             // Etherscan does not support getBlockByBlockhash... *sad emoji*
@@ -521,7 +521,7 @@ function testProvider(providerName, networkName) {
                 return;
             }
             it("fetches block (by hash) " + test.hash, function () {
-                this.timeout(20000);
+                this.timeout(60000);
                 return checkBlock(provider.getBlock(test.hash));
             });
         });
@@ -541,7 +541,7 @@ function testProvider(providerName, networkName) {
                 });
             }
             it("fetches transaction: " + test.hash, function () {
-                this.timeout(20000);
+                this.timeout(60000);
                 return testTransaction(test);
             });
         });
@@ -560,7 +560,7 @@ function testProvider(providerName, networkName) {
                 });
             }
             it("fetches transaction receipt: " + test.transactionHash, function () {
-                this.timeout(100000);
+                this.timeout(60000);
                 return testTransactionReceipt(test);
             });
         });
@@ -619,7 +619,7 @@ describe("Test Basic Authentication", function () {
     // https://stackoverflow.com/questions/6509278/authentication-test-servers#16756383
     function test(name, url) {
         it("tests " + name, function () {
-            this.timeout(20000);
+            this.timeout(60000);
             return ethers_1.ethers.utils.fetchJson(url).then(function (data) {
                 assert_1.default.equal(data.authenticated, true, "authenticates user");
             });
@@ -644,7 +644,7 @@ describe("Test Basic Authentication", function () {
     test("secure url", secure);
     test("insecure url", insecureForced);
     it("tests insecure connections fail", function () {
-        this.timeout(20000);
+        this.timeout(60000);
         assert_1.default.throws(function () {
             return ethers_1.ethers.utils.fetchJson(insecure);
         }, function (error) {
@@ -774,7 +774,7 @@ describe("Test Events", function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        this.timeout(50000);
+                        this.timeout(60000);
                         provider = new ethers_1.ethers.providers.InfuraProvider("rinkeby");
                         return [4 /*yield*/, testBlockEvent(provider)];
                     case 1:

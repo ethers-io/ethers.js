@@ -20943,8 +20943,12 @@
 
 
 	var logger = new lib.Logger(_version$E.version);
+	;
+	function isRenetworkable(value) {
+	    return (value && typeof (value.renetwork) === "function");
+	}
 	function ethDefaultProvider(network) {
-	    return function (providers, options) {
+	    var func = function (providers, options) {
 	        if (options == null) {
 	            options = {};
 	        }
@@ -20988,14 +20992,22 @@
 	        }
 	        return providerList[0];
 	    };
+	    func.renetwork = function (network) {
+	        return ethDefaultProvider(network);
+	    };
+	    return func;
 	}
 	function etcDefaultProvider(url, network) {
-	    return function (providers, options) {
+	    var func = function (providers, options) {
 	        if (providers.JsonRpcProvider) {
 	            return new providers.JsonRpcProvider(url, network);
 	        }
 	        return null;
 	    };
+	    func.renetwork = function (network) {
+	        return etcDefaultProvider(url, network);
+	    };
+	    return func;
 	}
 	var homestead = {
 	    chainId: 1,
@@ -21114,12 +21126,23 @@
 	    if (network.chainId !== 0 && network.chainId !== standard.chainId) {
 	        logger.throwArgumentError("network chainId mismatch", "network", network);
 	    }
+	    // @TODO: In the next major version add an attach function to a defaultProvider
+	    // class and move the _defaultProvider internal to this file (extend Network)
+	    var defaultProvider = network._defaultProvider || null;
+	    if (defaultProvider == null && standard._defaultProvider) {
+	        if (isRenetworkable(standard._defaultProvider)) {
+	            defaultProvider = standard._defaultProvider.renetwork(network);
+	        }
+	        else {
+	            defaultProvider = standard._defaultProvider;
+	        }
+	    }
 	    // Standard Network (allow overriding the ENS address)
 	    return {
 	        name: network.name,
 	        chainId: standard.chainId,
 	        ensAddress: (network.ensAddress || standard.ensAddress || null),
-	        _defaultProvider: (network._defaultProvider || standard._defaultProvider || null)
+	        _defaultProvider: defaultProvider
 	    };
 	}
 	exports.getNetwork = getNetwork;
@@ -25042,6 +25065,7 @@
 	                                        });
 	                                        connection = {
 	                                            url: url,
+	                                            throttleSlotInterval: 1000,
 	                                            throttleCallback: function (attempt, url) {
 	                                                if (_this.apiKey === defaultApiKey) {
 	                                                    formatter.showThrottleMessage();
@@ -25264,6 +25288,7 @@
 	            });
 	            var connection = {
 	                url: url,
+	                throttleSlotInterval: 1000,
 	                throttleCallback: function (attempt, url) {
 	                    if (_this.apiKey === defaultApiKey) {
 	                        formatter.showThrottleMessage();

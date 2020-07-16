@@ -2,8 +2,12 @@
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
+;
+function isRenetworkable(value) {
+    return (value && typeof (value.renetwork) === "function");
+}
 function ethDefaultProvider(network) {
-    return function (providers, options) {
+    const func = function (providers, options) {
         if (options == null) {
             options = {};
         }
@@ -47,14 +51,22 @@ function ethDefaultProvider(network) {
         }
         return providerList[0];
     };
+    func.renetwork = function (network) {
+        return ethDefaultProvider(network);
+    };
+    return func;
 }
 function etcDefaultProvider(url, network) {
-    return function (providers, options) {
+    const func = function (providers, options) {
         if (providers.JsonRpcProvider) {
             return new providers.JsonRpcProvider(url, network);
         }
         return null;
     };
+    func.renetwork = function (network) {
+        return etcDefaultProvider(url, network);
+    };
+    return func;
 }
 const homestead = {
     chainId: 1,
@@ -173,12 +185,23 @@ export function getNetwork(network) {
     if (network.chainId !== 0 && network.chainId !== standard.chainId) {
         logger.throwArgumentError("network chainId mismatch", "network", network);
     }
+    // @TODO: In the next major version add an attach function to a defaultProvider
+    // class and move the _defaultProvider internal to this file (extend Network)
+    let defaultProvider = network._defaultProvider || null;
+    if (defaultProvider == null && standard._defaultProvider) {
+        if (isRenetworkable(standard._defaultProvider)) {
+            defaultProvider = standard._defaultProvider.renetwork(network);
+        }
+        else {
+            defaultProvider = standard._defaultProvider;
+        }
+    }
     // Standard Network (allow overriding the ENS address)
     return {
         name: network.name,
         chainId: standard.chainId,
         ensAddress: (network.ensAddress || standard.ensAddress || null),
-        _defaultProvider: (network._defaultProvider || standard._defaultProvider || null)
+        _defaultProvider: defaultProvider
     };
 }
 //# sourceMappingURL=index.js.map
