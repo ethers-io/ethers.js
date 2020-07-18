@@ -282,7 +282,7 @@ provider.once(txHash, (transaction) => {
 filter = {
     address: "dai.tokens.ethers.eth",
     topics: [
-        utils.id("Transfer(address,address,uint256")
+        utils.id("Transfer(address,address,uint256)")
     ]
 }
 provider.on(filter, (log, event) => {
@@ -293,7 +293,7 @@ provider.on(filter, (log, event) => {
 // Notice this is an array of topic-sets and is identical to
 // using a filter with no address (i.e. match any address)
 topicSets = [
-    utils.id("Transfer(address,address,uint256"),
+    utils.id("Transfer(address,address,uint256)"),
     null,
     [
         myAddress,
