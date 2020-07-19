@@ -23,6 +23,7 @@ module.exports = function(config) {
     customLaunchers: {
       HeadlessLittleLiar: {
         base: 'ChromeHeadless',
+        // https://peter.sh/experiments/chromium-command-line-switches/
         flags: [
             '--disable-extensions',
 
