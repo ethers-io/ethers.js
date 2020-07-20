@@ -626,6 +626,17 @@ describe("BigNumber", function() {
 describe("Logger", function() {
     const logger = new ethers.utils.Logger("testing/0.0");
 
+    it ("setLogLevel", function() {
+        ethers.utils.Logger.setLogLevel(ethers.utils.Logger.levels.DEBUG);
+        ethers.utils.Logger.setLogLevel(ethers.utils.Logger.levels.INFO);
+        ethers.utils.Logger.setLogLevel(ethers.utils.Logger.levels.WARNING);
+        ethers.utils.Logger.setLogLevel(ethers.utils.Logger.levels.ERROR);
+        ethers.utils.Logger.setLogLevel(ethers.utils.Logger.levels.OFF);
+
+        // Reset back to INFO when done tests
+        ethers.utils.Logger.setLogLevel(ethers.utils.Logger.levels.INFO);
+    });
+
     it("checkArgumentCount", function() {
         logger.checkArgumentCount(3, 3);
     });
@@ -646,6 +657,7 @@ describe("Logger", function() {
         });
     });
 });
+
 
 /*
 describe("Base58 Coder", function() {
