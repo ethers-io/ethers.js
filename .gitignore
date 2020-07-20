@@ -18,3 +18,5 @@ lerna-debug.log
 packages/*/tsconfig.tsbuildinfo
 
 packages/testcases/input/nameprep/**
+
+.nyc_output/**

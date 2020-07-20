@@ -515,6 +515,15 @@ describe("BigNumber", function () {
 });
 describe("Logger", function () {
     var logger = new ethers_1.ethers.utils.Logger("testing/0.0");
+    it("setLogLevel", function () {
+        ethers_1.ethers.utils.Logger.setLogLevel(ethers_1.ethers.utils.Logger.levels.DEBUG);
+        ethers_1.ethers.utils.Logger.setLogLevel(ethers_1.ethers.utils.Logger.levels.INFO);
+        ethers_1.ethers.utils.Logger.setLogLevel(ethers_1.ethers.utils.Logger.levels.WARNING);
+        ethers_1.ethers.utils.Logger.setLogLevel(ethers_1.ethers.utils.Logger.levels.ERROR);
+        ethers_1.ethers.utils.Logger.setLogLevel(ethers_1.ethers.utils.Logger.levels.OFF);
+        // Reset back to INFO when done tests
+        ethers_1.ethers.utils.Logger.setLogLevel(ethers_1.ethers.utils.Logger.levels.INFO);
+    });
     it("checkArgumentCount", function () {
         logger.checkArgumentCount(3, 3);
     });

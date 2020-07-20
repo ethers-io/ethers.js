@@ -294,7 +294,7 @@ var Logger = /** @class */ (function () {
         _permanentCensorErrors = !!permanent;
     };
     Logger.setLogLevel = function (logLevel) {
-        var level = LogLevels[logLevel];
+        var level = LogLevels[logLevel.toLowerCase()];
         if (level == null) {
             Logger.globalLogger().warn("invalid log level - " + logLevel);
             return;

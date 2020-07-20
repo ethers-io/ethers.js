@@ -281,7 +281,7 @@ export class Logger {
         _permanentCensorErrors = !!permanent;
     }
     static setLogLevel(logLevel) {
-        const level = LogLevels[logLevel];
+        const level = LogLevels[logLevel.toLowerCase()];
         if (level == null) {
             Logger.globalLogger().warn("invalid log level - " + logLevel);
             return;

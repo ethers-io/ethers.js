@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import aes from "aes-js";
 import * as scrypt from "scrypt-js";
-import uuid from "uuid";
 import { getAddress } from "@ethersproject/address";
 import { arrayify, concat, hexlify } from "@ethersproject/bytes";
 import { defaultPath, entropyToMnemonic, HDNode, mnemonicToEntropy } from "@ethersproject/hdnode";
@@ -19,7 +18,7 @@ import { pbkdf2 as _pbkdf2 } from "@ethersproject/pbkdf2";
 import { randomBytes } from "@ethersproject/random";
 import { Description } from "@ethersproject/properties";
 import { computeAddress } from "@ethersproject/transactions";
-import { getPassword, looseArrayify, searchPath, zpad } from "./utils";
+import { getPassword, looseArrayify, searchPath, uuidV4, zpad } from "./utils";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
@@ -269,7 +268,7 @@ export function encrypt(account, password, options, progressCallback) {
         // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
         const data = {
             address: account.address.substring(2).toLowerCase(),
-            id: uuid.v4({ random: uuidRandom }),
+            id: uuidV4(uuidRandom),
             version: 3,
             Crypto: {
                 cipher: "aes-128-ctr",

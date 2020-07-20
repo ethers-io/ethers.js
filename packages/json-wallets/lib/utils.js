@@ -46,4 +46,24 @@ function searchPath(object, path) {
     return currentChild;
 }
 exports.searchPath = searchPath;
+// See: https://www.ietf.org/rfc/rfc4122.txt (Section 4.4)
+function uuidV4(randomBytes) {
+    var bytes = bytes_1.arrayify(randomBytes);
+    // Section: 4.1.3:
+    // - time_hi_and_version[12:16] = 0b0100
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    // Section 4.4
+    // - clock_seq_hi_and_reserved[6] = 0b0
+    // - clock_seq_hi_and_reserved[7] = 0b1
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    var value = bytes_1.hexlify(bytes);
+    return [
+        value.substring(2, 10),
+        value.substring(10, 14),
+        value.substring(14, 18),
+        value.substring(18, 22),
+        value.substring(22, 34),
+    ].join("-");
+}
+exports.uuidV4 = uuidV4;
 //# sourceMappingURL=utils.js.map

@@ -61,7 +61,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var aes_js_1 = __importDefault(require("aes-js"));
 var scrypt = __importStar(require("scrypt-js"));
-var uuid_1 = __importDefault(require("uuid"));
 var address_1 = require("@ethersproject/address");
 var bytes_1 = require("@ethersproject/bytes");
 var hdnode_1 = require("@ethersproject/hdnode");
@@ -336,7 +335,7 @@ function encrypt(account, password, options, progressCallback) {
         // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
         var data = {
             address: account.address.substring(2).toLowerCase(),
-            id: uuid_1.default.v4({ random: uuidRandom }),
+            id: utils_1.uuidV4(uuidRandom),
             version: 3,
             Crypto: {
                 cipher: "aes-128-ctr",
