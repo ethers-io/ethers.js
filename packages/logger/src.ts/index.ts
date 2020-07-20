@@ -329,7 +329,7 @@ export class Logger {
     }
 
     static setLogLevel(logLevel: LogLevel): void {
-        const level = LogLevels[logLevel];
+        const level = LogLevels[logLevel.toLowerCase()];
         if (level == null) {
             Logger.globalLogger().warn("invalid log level - " + logLevel);
             return;
