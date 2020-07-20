@@ -2,7 +2,6 @@
 
 import aes from "aes-js";
 import * as scrypt from "scrypt-js";
-import uuid from "uuid";
 
 import { ExternallyOwnedAccount } from "@ethersproject/abstract-signer";
 import { getAddress } from "@ethersproject/address";
@@ -14,7 +13,7 @@ import { randomBytes } from "@ethersproject/random";
 import { Description } from "@ethersproject/properties";
 import { computeAddress } from "@ethersproject/transactions";
 
-import { getPassword, looseArrayify, searchPath, zpad } from "./utils";
+import { getPassword, looseArrayify, searchPath, uuidV4, zpad } from "./utils";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -328,7 +327,7 @@ export function encrypt(account: ExternallyOwnedAccount, password: Bytes | strin
         // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
         const data: { [key: string]: any } = {
             address: account.address.substring(2).toLowerCase(),
-            id: uuid.v4({ random: uuidRandom }),
+            id: uuidV4(uuidRandom),
             version: 3,
             Crypto: {
                 cipher: "aes-128-ctr",

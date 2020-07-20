@@ -20,10 +20,3 @@ declare module "aes-js" {
         }
     }
 }
-
-declare module "uuid" {
-    export type Options = {
-        random: Uint8Array;
-    };
-    export function v4(options?: Options): string;
-}

@@ -13,8 +13,7 @@
     "@ethersproject/strings": "^5.0.0",
     "@ethersproject/transactions": "^5.0.0",
     "aes-js": "3.0.0",
-    "scrypt-js": "3.0.1",
-    "uuid": "2.0.1"
+    "scrypt-js": "3.0.1"
   },
   "description": "Wallet management utilities for KeyStore and Crowdsale JSON wallets.",
   "ethereum": "donations.ethers.eth",
