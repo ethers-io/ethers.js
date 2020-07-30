@@ -16,11 +16,11 @@ _property: contract.connect(providerOrSigner) => [[Contract]]  @<Contract-connec
 Returns a new instance of the Contract, but connected to
 //providerOrSigner//.
 
-By passing in a [[Provider]], this will return a downgraded
+By passing in a [[Provider]], this returns a downgraded
 **Contract** which only has read-only access (i.e. constant calls).
 
-By passing in a [[Signer]]. this will return a **Contract** which
-will act on behalf of that signer.
+By passing in a [[Signer]], this returns a **Contract** which acts
+on behalf of that signer.
 
 
 _subsection: Properties  @<Contract--properties>
@@ -29,9 +29,9 @@ _property: contract.address => string<[[address]]>
 This is the address (or ENS name) the contract was constructed with.
 
 _property: contract.resolvedAddress => string<[[address]]>
-This is a promise that will resolve to the address the **Contract**
+This is a promise that resolves to the address the **Contract**
 object is attached to. If an [[address]] was provided to the constructor,
-it will be equal to this; if an ENS name was provided, this will be the
+it is equal to this address. If an ENS name was provided, this is the
 resolved address.
 
 _property: contract.deployTransaction => [[providers-TransactionResponse]]
@@ -42,11 +42,11 @@ _property: contract.interface => [[Interface]]
 This is the ABI as an [[Interface]].
 
 _property: contract.provider => [[Provider]]
-If a provider was provided to the constructor, this is that provider. If
-a signer was provided that had a [[Provider]], this is that provider.
+If a provider was provided to the constructor, the value is that provider. If
+a signer was provided that had a [[Provider]], the value is that provider.
 
 _property: contract.signer => [[Signer]]
-If a signer was provided to the constructor, this is that signer.
+If a signer was provided to the constructor, the value is that signer.
 
 
 _subsection: Methods @<Contract--methods>
@@ -98,7 +98,7 @@ A constant method is read-only and evaluates a small amount of EVM
 code against the current blockchain state and can be computed by
 asking a single node, which can return a result. It is therefore
 free and does not require any ether, but **cannot make changes** to
-the blockchain state..
+the blockchain state.
 
 _property: contract.METHOD_NAME(...args [, overrides ]) => Promise<any>  @<Contract-functionsCall>
 The type of the result depends on the ABI.
@@ -115,7 +115,7 @@ For bytes (both fixed length and dynamic), a [[DataHexString]] is returned.
 
 _property: contract.functions.METHOD_NAME(...args [, overrides ]) => Promise<[[Result]]>
 
-The result will always be a [[Result]], even if there is only a single
+The result is always a [[Result]], even if there is only a single
 return value type.
 
 This simplifies frameworks which wish to use the [[Contract]] object,
@@ -124,15 +124,15 @@ functions.
 
 Another use for this method is for error recovery. For example, if a
 function result is an invalid UTF-8 string, the normal call using the
-above meta-class function will throw an exception. This allows using the
+above meta-class function throws an exception. This allows using the
 Result access error to access the low-level bytes and reason for the error
 allowing an alternate UTF-8 error strategy to be used.
 
-Most developers should not require this.
+Most developers should not need this.
 
 _heading: Write Methods (non-constant) @<Contract--write>
 
-A non-constant method requires a transaction to be signed and requires
+A non-constant method requires a signed transaction and requires
 payment in the form of a fee to be paid to a miner. This transaction
 will be verified by every node on the entire network as well by the
 miner who will compute the new state of the blockchain after executing
@@ -167,8 +167,8 @@ Rather than executing the state-change of a transaction, it is possible
 to ask a node to //pretend// that a call is not state-changing and
 return the result.
 
-This does not actually change any state, but is free. This in some cases
-can be used to determine if a transaction will fail or succeed.
+This does not actually change any state, so is a free transaction. In some cases you 
+can use this to determine if a transaction will fail or succeed.
 
 This otherwise functions the same as a [Read-Only Method](Contract--readonly).
 

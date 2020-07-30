@@ -58,7 +58,7 @@ This is the address (or ENS name) the contract was constructed with.
 _property: erc20.resolvedAddress => string<[[address]]>
 This is a promise that will resolve to the address the **Contract**
 object is attached to. If an [[address]] was provided to the constructor,
-it will be equal to this; if an ENS name was provided, this will be the
+it is equal to the value of the address. If an ENS name was provided, the value is the 
 resolved address.
 
 _property: erc20.deployTransaction => [[providers-TransactionResponse]]
@@ -69,11 +69,11 @@ _property: erc20.interface => [[Interface]]
 This is the ABI as an [[Interface]].
 
 _property: erc20.provider => [[Provider]]
-If a provider was provided to the constructor, this is that provider. If
-a signer was provided that had a [[Provider]], this is that provider.
+If a provider was provided to the constructor, the value is that provider. If
+a signer was provided that had a [[Provider]], the value is that provider.
 
 _property: erc20.signer => [[Signer]]
-If a signer was provided to the constructor, this is that signer.
+If a signer was provided to the constructor, the value is that signer.
 
 
 _subsection: Methods @NOTE<(inheritted from [[Contract]])>
@@ -88,10 +88,10 @@ _property: erc20.connect(providerOrSigner) => [[Contract]]
 Returns a new instance of the Contract, but connected to
 //providerOrSigner//.
 
-By passing in a [[Provider]], this will return a downgraded
+By passing in a [[Provider]], this returns a downgraded
 **Contract** which only has read-only access (i.e. constant calls).
 
-By passing in a [[Signer]]. this will return a **Contract** which
+By passing in a [[Signer]], this returns a **Contract** which
 will act on behalf of that signer.
 
 _property: erc20.deployed() => Promise<Contract>
@@ -99,7 +99,7 @@ _property: erc20.deployed() => Promise<Contract>
 _property: Contract.isIndexed(value) => boolean
 
 
-_subsection: Events @NOTE<(inheritted from [[Contract]])> @<erc20-events>
+_subsection: Events @NOTE<(inherited from [[Contract]])> @<erc20-events>
 
 _property: erc20.queryFilter(event [ , fromBlockOrBlockHash [ , toBlock ]) => Promise<Array<Event>> @<erc20-queryfilter>
 Return Events that match the //event//.
@@ -153,7 +153,7 @@ _property: erc20.callStatic.transfer(target, amount [, overrides ]) => Promise<b
 Performs a dry-run of transferring //amount// tokens to //target// from
 the current signer, without actually signing or sending a transaction.
 
-This can be used to preflight check that a transaction will be successful.
+You can use this to preflight check if a transaction will be successful.
 
 _property: erc20.estimateGas.transfer(target, amount [, overrides ]) => Promise<[[BigNumber]]>
 Returns an estimate for how many units of gas would be required
@@ -178,7 +178,7 @@ _subsection: Meta-Class Filters @NOTE<(added at Runtime)>
 Since the Contract is a Meta-Class, the methods available here depend
 on the ABI which was passed into the **Contract**.
 
-_property: erc20.filters.Transafer([ fromAddress [ , toAddress ] ]) => Filter
+_property: erc20.filters.Transfer([ fromAddress [ , toAddress ] ]) => Filter
 Returns a new Filter which can be used to [query](erc20-queryfilter) or
 to [subscribe/unsubscribe to events](erc20-events).
 

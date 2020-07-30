@@ -1,7 +1,7 @@
 _section: Signers @<signers>
 
 A **Signer** in //ethers// is an abstraction of an Ethereum Account,
-which can be used to sign messages and transactions and send
+which you can use to sign messages and transactions, and send
 signed transactions to the Ethereum Network to execute state
 changing operations.
 
@@ -33,7 +33,7 @@ _property: signer.getAddress() => Promise<string<[[address]]>>  @<Signer-getaddr
 Returns a Promise that resolves to the account address.
 
 This is a Promise so that a **Signer** can be designed around an
-asynchronous source, such as  hardware wallets.
+asynchronous source, such as hardware wallets.
 
 Sub-classes **must** implement this.
 
@@ -43,10 +43,10 @@ Returns true if an only if //object// is a **Signer**.
 _heading: Blockchain Methods @<Signer--blockchain-methods>
 
 _property: signer.getBalance([ blockTag = "latest" ]) => Promise<[[BigNumber]]>  @<Signer-getBalance> @SRC<abstract-signer>
-Returns the balance of this wallet at //blockTag//.
+Returns the balance of the wallet at //blockTag//.
 
 _property: signer.getChainId() => Promise<number>  @<Signer-getChainId> @SRC<abstract-signer>
-Returns the chain ID this wallet is connected to.
+Returns the chain ID the wallet is connected to.
 
 _property: signer.getGasPrice() => Promise<[[BigNumber]]>  @<Signer-getGasPrice> @SRC<abstract-signer>
 Returns the current gas price.
@@ -73,16 +73,16 @@ _property: signer.signMessage(message) => Promise<string<[RawSignature](signatur
 This returns a Promise which resolves to the [[signature-raw]]
 of //message//.
 
-Sub-classes **must** implement this, however they may throw if signing a
-message is not supported, such as in a Contract-based Wallet or
+Sub-classes **must** implement this, however they may throw an error if they do not 
+support signing a message, such as in a Contract-based Wallet or
 Meta-Transaction-based Wallet.
 
 _note: Note
 
-If //message// is a string, it is **treated as a string** and
-converted to its representation in UTF8 bytes.
+If //message// is a string, Ethers **treats it as a string** and
+converts it to its representation in UTF8 bytes.
 
-**If and only if** a message is a [[Bytes]] will it be treated as
+**If and only if** a message is a [[Bytes]] type will Ethers treat it as
 binary data.
 
 For example, the string ``"0x1234"`` is 6 characters long (and in
@@ -90,7 +90,7 @@ this case 6 bytes long). This is **not** equivalent to the array
 ``[ 0x12, 0x34 ]``, which is 2 bytes long.
 
 A common case is to sign a hash. In this case, if the hash is a
-string, it **must** be converted to an array first, using the
+string, you **must** convert it to an array first, using the
 [arrayify](utils-arrayify) utility function.
 
 _null:
@@ -99,7 +99,7 @@ _property: signer.signTransaction(transactionRequest) => Promise<string<[[DataHe
 Returns a Promise which resolves to the signed transaction of the
 //transactionRequest//. This method does not populate any missing fields.
 
-Sub-classes **must** implement this, however they may throw if signing a
+Sub-classes **must** implement this, however they may throw an error if signing a
 transaction is not supported, which is common for security reasons in many
 clients.
 
@@ -107,7 +107,7 @@ _property: signer.sendTransaction(transactionRequest) => Promise<[[providers-Tra
 This method populates the transactionRequest with missing fields, using
 [populateTransaction](Signer-populateTransaction) and returns a Promise which resolves to the transaction.
 
-Sub-classes **must** implement this, however they may throw if sending a
+Sub-classes **must** implement this, however they may throw an error if sending a
 transaction is not supported, such as the [[VoidSigner]] or if the
 Wallet is offline and not connected to a [[Provider]].
 
@@ -133,16 +133,16 @@ by sendTransaction). It should also throw an error if any unknown key is specifi
 The default implementation checks only valid [[providers-TransactionRequest]] properties
 exist and adds ``from`` to the transaction if it does not exist.
 
-If there is a ``from`` field it **must** be verified to be equal to the Signer's address.
+If there is a ``from`` field you **must** verify it to be equal to the Signer's address.
 
 _property: signer.populateTransaction(transactionRequest) => Promise<[[providers-TransactionRequest]]> @<Signer-populateTransaction> @SRC<abstract-signer>
-This is generally not required to be overridden, but may needed to provide
+You do not generally need to override this method, but you may need it to provide
 custom behaviour in sub-classes.
 
 This should return a **copy** of //transactionRequest//, follow the same procedure
 as ``checkTransaction`` and fill in any properties required for sending a transaction.
-The result should have all promises resolved; if needed the [resolveProperties](utils-resolveproperties)
-utility function can be used for this.
+The result should have all promises resolved; if needed you can use the [resolveProperties](utils-resolveproperties)
+utility function for this.
 
 The default implementation calls ``checkTransaction`` and resolves to if it is an
 ENS name, adds ``gasPrice``, ``nonce``, ``gasLimit`` and ``chainId`` based on the
@@ -163,12 +163,12 @@ Returns a new Wallet with a random private key, generated from
 cryptographically secure entropy sources. If the current environment
 does not have a secure entropy source, an error is thrown.
 
-Wallets created using this method will have a mnemonic.
+Wallets created using this method have a mnemonic.
 
 _property: ethers.Wallet.fromEncryptedJson(json, password [ , progress ])  => Promise<[[Wallet]]> @<Wallet-fromEncryptedJson> @SRC<wallet>
 Create an instance from an encrypted JSON wallet.
 
-If //progress// is provided it will be called during decryption
+If //progress// is provided it is called during decryption
 with a value between 0 and 1 indicating the progress towards
 completion.
 
@@ -210,7 +210,7 @@ _property: wallet.encrypt(password, [ options = { }, [ progress ] ]) => Promise<
 Encrypt the wallet using //password// returning a Promise which resolves
 to a JSON wallet.
 
-If //progress// is provided it will be called during decryption
+If //progress// is provided it is called during decryption
 with a value between 0 and 1 indicating the progress towards
 completion.
 
@@ -285,10 +285,10 @@ _subsection: VoidSigner  @<VoidSigner> @INHERIT<[[Signer]]> @SRC<abstract-signer
 A **VoidSigner** is a simple Signer which cannot sign.
 
 It is useful as a read-only signer, when an API requires a
-Signer as a parameter, but it is known only read-only operations
-will be carried.
+Signer as a parameter, but you know that only read-only operations
+are carried by the API.
 
-For example, the ``call`` operation will automatically have the
+For example, the ``call`` operation automatically has the
 provided address passed along during the execution.
 
 _property: new ethers.VoidSigner(address [ , provider ]) => [[VoidSigner]]
@@ -325,11 +325,11 @@ tokens = await contract.balanceOf(signer.getAddress())
 //       a request in the UI
 //
 
-// This will pass since the token balance is available
+// This passes since the token balance is available
 contract.callStatic.transfer("donations.ethers.eth", tokens)
 //!
 
-// This will fail since it is greater than the token balance
+// This fails since it is greater than the token balance
 contract.callStatic.transfer("donations.ethers.eth", tokens.add(1))
 //! error
 
