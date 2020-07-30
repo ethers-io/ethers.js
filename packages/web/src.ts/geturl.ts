@@ -4,22 +4,15 @@ import http from "http";
 import https from "https";
 import { parse } from "url"
 
+import { concat } from "@ethersproject/bytes";
+
+import type { GetUrlResponse, Options } from "./types";
+
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 
-export type GetUrlResponse = {
-    statusCode: number,
-    statusMessage: string;
-    headers: { [ key: string] : string };
-    body: string;
-};
-
-export type Options = {
-    method?: string,
-    body?: string
-    headers?: { [ key: string] : string },
-};
+export { GetUrlResponse, Options };
 
 function getResponse(request: http.ClientRequest): Promise<GetUrlResponse> {
     return new Promise((resolve, reject) => {
@@ -37,11 +30,11 @@ function getResponse(request: http.ClientRequest): Promise<GetUrlResponse> {
                 }, <{ [ name: string ]: string }>{ }),
                 body: null
             };
-            resp.setEncoding("utf8");
+            //resp.setEncoding("utf8");
 
-            resp.on("data", (chunk: string) => {
-                if (response.body == null) { response.body = ""; }
-                response.body += chunk;
+            resp.on("data", (chunk: Uint8Array) => {
+                if (response.body == null) { response.body = new Uint8Array(0); }
+                response.body = concat([ response.body, chunk ]);
             });
 
             resp.on("end", () => {
@@ -100,7 +93,7 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
     }
 
     if (options.body) {
-        req.write(options.body);
+        req.write(Buffer.from(options.body));
     }
     req.end();
 

@@ -2,7 +2,7 @@
 
 import { encode as base64Encode } from "@ethersproject/base64";
 import { shallowCopy } from "@ethersproject/properties";
-import { toUtf8Bytes } from "@ethersproject/strings";
+import { toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -59,7 +59,7 @@ export type FetchJsonResponse = {
 
 type Header = { key: string, value: string };
 
-export function fetchJson(connection: string | ConnectionInfo, json?: string, processFunc?: (value: any, response: FetchJsonResponse) => any): Promise<any> {
+export function fetchData<T = Uint8Array>(connection: string | ConnectionInfo, body?: Uint8Array, processFunc?: (value: Uint8Array, response: FetchJsonResponse) => T): Promise<T> {
 
     // How many times to retry in the event of a throttle
     const attemptLimit = (typeof(connection) === "object" && connection.throttleLimit != null) ? connection.throttleLimit: 12;
@@ -124,10 +124,12 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
         }
     }
 
-    if (json) {
+    if (body) {
         options.method = "POST";
-        options.body = json;
-        headers["content-type"] = { key: "Content-Type", value: "application/json" };
+        options.body = body;
+        if (headers["content-type"] == null) {
+            headers["content-type"] = { key: "Content-Type", value: "application/octet-stream" };
+        }
     }
 
     const flatHeaders: { [ key: string ]: string } = { };
@@ -139,7 +141,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
 
     const runningTimeout = (function() {
         let timer: NodeJS.Timer = null;
-        const promise = new Promise(function(resolve, reject) {
+        const promise: Promise<never> = new Promise(function(resolve, reject) {
             if (timeout) {
                 timer = setTimeout(() => {
                     if (timer == null) { return; }
@@ -189,6 +191,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
                             stall = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
                         }
 
+                        //console.log("Stalling 429");
                         await staller(stall);
                         continue;
                     }
@@ -225,25 +228,12 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
                 });
             }
 
-            let json: any = null;
-            if (body != null) {
-                try {
-                    json = JSON.parse(body);
-                } catch (error) {
-                    runningTimeout.cancel();
-                    logger.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
-                        body: body,
-                        error: error,
-                        requestBody: (options.body || null),
-                        requestMethod: options.method,
-                        url: url
-                    });
-                }
-            }
-
             if (processFunc) {
                 try {
-                    json = await processFunc(json, response);
+                    const result = await processFunc(body, response);
+                    runningTimeout.cancel();
+                    return result;
+
                 } catch (error) {
                     // Allow the processFunc to trigger a throttle
                     if (error.throttleRetry && attempt < attemptLimit) {
@@ -254,6 +244,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
 
                         if (tryAgain) {
                             const timeout = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                            //console.log("Stalling callback");
                             await staller(timeout);
                             continue;
                         }
@@ -261,7 +252,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
 
                     runningTimeout.cancel();
                     logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
-                        body: json,
+                        body: body,
                         error: error,
                         requestBody: (options.body || null),
                         requestMethod: options.method,
@@ -271,11 +262,65 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
             }
 
             runningTimeout.cancel();
-            return json;
+
+            // If we had a processFunc, it eitehr returned a T or threw above.
+            // The "body" is now a Uint8Array.
+            return <T>(<unknown>body);
         }
+
+        return logger.throwError("failed response", Logger.errors.SERVER_ERROR, {
+            requestBody: (options.body || null),
+            requestMethod: options.method,
+            url: url
+        });
     })();
 
     return Promise.race([ runningTimeout.promise, runningFetch ]);
+}
+
+export function fetchJson(connection: string | ConnectionInfo, json?: string, processFunc?: (value: any, response: FetchJsonResponse) => any): Promise<any> {
+    let processJsonFunc = (value: Uint8Array, response: FetchJsonResponse) => {
+        let result: any = null;
+        if (value != null) {
+            try {
+                result = JSON.parse(toUtf8String(value));
+            } catch (error) {
+                logger.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
+                    body: value,
+                    error: error
+                });
+            }
+        }
+
+        if (processFunc) {
+            result = processFunc(result, response);
+        }
+
+        return result;
+    }
+
+    // If we have json to send, we must
+    // - add content-type of application/json (unless already overridden)
+    // - convert the json to bytes
+    let body: Uint8Array = null;
+    if (json != null) {
+        body = toUtf8Bytes(json);
+
+        // Create a connection with the content-type set for JSON
+        const updated: ConnectionInfo = (typeof(connection) === "string") ? ({ url: connection }): connection;
+        if (updated.headers) {
+            const hasContentType = (Object.keys(updated.headers).filter((k) => (k.toLowerCase() === "content-type")).length) !== 0;
+            if (!hasContentType) {
+                updated.headers = shallowCopy(updated.headers);
+                updated.headers["content-type"] = "application/json";
+            }
+        } else {
+            updated.headers = { "content-type": "application/json" };
+        }
+        connection = updated;
+    }
+
+    return fetchData<any>(connection, body, processJsonFunc);
 }
 
 export function poll<T>(func: () => Promise<T>, options?: PollOptions): Promise<T> {

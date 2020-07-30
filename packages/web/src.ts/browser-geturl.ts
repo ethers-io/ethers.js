@@ -1,17 +1,10 @@
 "use strict";
 
-export type GetUrlResponse = {
-    statusCode: number,
-    statusMessage: string;
-    headers: { [ key: string] : string };
-    body: string;
-};
+import { arrayify } from "@ethersproject/bytes";
 
-export type Options = {
-    method?: string,
-    body?: string
-    headers?: { [ key: string] : string },
-};
+import type { GetUrlResponse, Options } from "./types";
+
+export { GetUrlResponse, Options };
 
 export async function getUrl(href: string, options?: Options): Promise<GetUrlResponse> {
     if (options == null) { options = { }; }
@@ -29,7 +22,7 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
     };
 
     const response = await fetch(href, request);
-    const body = await response.text();
+    const body = await response.arrayBuffer();
 
     const headers: { [ name: string ]: string } = { };
     if (response.headers.forEach) {
@@ -46,6 +39,6 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
         headers: headers,
         statusCode: response.status,
         statusMessage: response.statusText,
-        body: body,
+        body: arrayify(new Uint8Array(body)),
     }
 }
