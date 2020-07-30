@@ -1,4 +1,3 @@
-
 _section: Signers @<signers>
 
 A **Signer** in //ethers// is an abstraction of an Ethereum Account,
@@ -20,14 +19,14 @@ The most common Signers you will encounter are:
 
 _subsection: Signer @<Signer> @SRC<abstract-signer:class.Signer>
 
-The **Signer** class is abstract and cannot be directly instaniated.
+The **Signer** class is abstract and cannot be directly instantiated.
 
-Instead use one of the concreate sub-classes, such as the [[Wallet]],
+Instead use one of the concrete sub-classes, such as the [[Wallet]],
 [[VoidSigner]] or [[JsonRpcSigner]].
 
 _property: signer.connect(provider) => [[Signer]]  @<Signer-connect>
 
-Sub-classes **must** implement this, however they may simply throw an error
+Sub-classes **must** implement this method, however they may throw an error
 if changing providers is not supported.
 
 _property: signer.getAddress() => Promise<string<[[address]]>>  @<Signer-getaddress> @SRC<abstract-signer:Signer.connect>
@@ -58,11 +57,11 @@ is the value required to be included in transactions as the ``nonce``.
 
 _property: signer.call(transactionRequest) => Promise<string<[[DataHexString]]>>  @<Signer-call> @SRC<abstract-signer>
 Returns the result of calling using the //transactionRequest//, with this
-account address being used as the ``from`` field.
+account address used as the ``from`` field.
 
 _property: signer.estimateGas(transactionRequest) => Promise<[[BigNumber]]>  @<Signer-estimateGas> @SRC<abstract-signer>
 Returns the result of estimating the cost to send the //transactionRequest//,
-with this account address being used as the ``from`` field.
+with this account address used as the ``from`` field.
 
 _property: signer.resolveName(ensName) => Promise<string<[[address]]>> @<Signer-resolveName> @SRC<abstract-signer>
 Returns the address associated with the //ensName//.
@@ -114,17 +113,17 @@ Wallet is offline and not connected to a [[Provider]].
 
 _heading: Sub-Classes @<Signer--subclassing>
 
-It is very important that all important properties of a **Signer** are
-**immutable**. Since Ethereum is very asynchronous and deals with critical
+It is important that all important properties of a **Signer** are
+**immutable**. Since Ethereum is asynchronous and deals with critical
 data (such as ether and other potentially valuable crypto assets), keeping
 properties such as the //provider// and //address// static throughout the
-life-cycle of the Signer helps prevent serious issues and many other classes
+lifecycle of the Signer helps prevent serious issues and many other classes
 and libraries make this assumption.
 
 A sub-class **must** extend Signer and **must** call ``super()``.
 
 _property: signer.checkTransaction(transactionRequest) => [[providers-TransactionRequest]]  @<Signer-checkTransaction> @SRC<abstract-signer>
-This is generally not required to be overridden, but may needed to provide
+This is generally not required to be overridden, but may be needed to provide
 custom behaviour in sub-classes.
 
 This should return a **copy** of the //transactionRequest//, with any properties

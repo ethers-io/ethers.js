@@ -9,7 +9,7 @@ cover the vast majority of use-cases, but also includes the
 necessary functions and classes for sub-classing if a more
 custom configuration is necessary.
 
-Most users should be able to simply use the [[providers-getDefaultProvider]].
+Most users should be able to use the [[providers-getDefaultProvider]].
 
 
 _subsection: Default Provider @<providers-getDefaultProvider>
@@ -20,13 +20,10 @@ for use in production.
 
 It creates a [[FallbackProvider]] connected to as many backend
 services as possible. When a request is made, it is sent to
-multiple backends simulatenously. As responses from each backend
-are returned, they are checked that they agree. Once a quorum
-has been reached (i.e. enough of the backends agree), the response
-is provided to your application.
+multiple backends simultaneously. As each backend returns a response, the provider checks that they agree. Once a quorum
+has been reached (i.e. enough of the backends agree), the provider provides a response to your application.
 
-This ensures that if a backend has become out-of-sync, or if it
-has been compromised that its responses are dropped in favor of
+This ensures that if a backend has become out-of-sync, or if it is compromised that its responses are dropped in favor of
 responses that match the majority.
 
 _property: ethers.getDefaultProvider([ network, [ options ] ]) => [[Provider]]
@@ -52,8 +49,8 @@ $Quorum:      The number of backends that must agree
 
 _note: Note: API Keys
 
-It is highly recommended for production services that to acquire
-and specify an API Key for each sercice.
+It is highly recommended for production services to acquire
+and specify an API Key for each service.
 
 The default API Keys used by ethers are shared across all users,
 so services may throttle all services that are using the default
