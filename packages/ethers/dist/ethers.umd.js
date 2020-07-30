@@ -19374,7 +19374,7 @@
 	var _version$A = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "json-wallets/5.0.3";
+	exports.version = "json-wallets/5.0.4";
 
 	});
 
@@ -20990,7 +20990,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "web/5.0.2";
+	exports.version = "web/5.0.3";
 
 	});
 
@@ -21036,6 +21036,7 @@
 	    }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+
 	function getUrl(href, options) {
 	    return __awaiter(this, void 0, void 0, function () {
 	        var request, response, body, headers;
@@ -21058,7 +21059,7 @@
 	                    return [4 /*yield*/, fetch(href, request)];
 	                case 1:
 	                    response = _a.sent();
-	                    return [4 /*yield*/, response.text()];
+	                    return [4 /*yield*/, response.arrayBuffer()];
 	                case 2:
 	                    body = _a.sent();
 	                    headers = {};
@@ -21076,7 +21077,7 @@
 	                            headers: headers,
 	                            statusCode: response.status,
 	                            statusMessage: response.statusText,
-	                            body: body,
+	                            body: lib$1.arrayify(new Uint8Array(body)),
 	                        }];
 	            }
 	        });
@@ -21140,7 +21141,7 @@
 	        setTimeout(resolve, duration);
 	    });
 	}
-	function fetchJson(connection, json, processFunc) {
+	function fetchData(connection, body, processFunc) {
 	    // How many times to retry in the event of a throttle
 	    var attemptLimit = (typeof (connection) === "object" && connection.throttleLimit != null) ? connection.throttleLimit : 12;
 	    logger.assertArgument((attemptLimit > 0 && (attemptLimit % 1) === 0), "invalid connection throttle limit", "connection.throttleLimit", attemptLimit);
@@ -21185,10 +21186,12 @@
 	            };
 	        }
 	    }
-	    if (json) {
+	    if (body) {
 	        options.method = "POST";
-	        options.body = json;
-	        headers["content-type"] = { key: "Content-Type", value: "application/json" };
+	        options.body = body;
+	        if (headers["content-type"] == null) {
+	            headers["content-type"] = { key: "Content-Type", value: "application/octet-stream" };
+	        }
 	    }
 	    var flatHeaders = {};
 	    Object.keys(headers).forEach(function (key) {
@@ -21225,7 +21228,7 @@
 	    })();
 	    var runningFetch = (function () {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var attempt, response, tryAgain, stall, retryAfter, error_1, body, json_1, error_2, tryAgain, timeout_1;
+	            var attempt, response, tryAgain, stall, retryAfter, error_1, body_1, result, error_2, tryAgain, timeout_1;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
@@ -21257,8 +21260,10 @@
 	                        else {
 	                            stall = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
 	                        }
+	                        //console.log("Stalling 429");
 	                        return [4 /*yield*/, staller(stall)];
 	                    case 6:
+	                        //console.log("Stalling 429");
 	                        _a.sent();
 	                        return [3 /*break*/, 18];
 	                    case 7: return [3 /*break*/, 9];
@@ -21276,45 +21281,30 @@
 	                        }
 	                        return [3 /*break*/, 9];
 	                    case 9:
-	                        body = response.body;
+	                        body_1 = response.body;
 	                        if (allow304 && response.statusCode === 304) {
-	                            body = null;
+	                            body_1 = null;
 	                        }
 	                        else if (response.statusCode < 200 || response.statusCode >= 300) {
 	                            runningTimeout.cancel();
 	                            logger.throwError("bad response", lib.Logger.errors.SERVER_ERROR, {
 	                                status: response.statusCode,
 	                                headers: response.headers,
-	                                body: body,
+	                                body: body_1,
 	                                requestBody: (options.body || null),
 	                                requestMethod: options.method,
 	                                url: url
 	                            });
 	                        }
-	                        json_1 = null;
-	                        if (body != null) {
-	                            try {
-	                                json_1 = JSON.parse(body);
-	                            }
-	                            catch (error) {
-	                                runningTimeout.cancel();
-	                                logger.throwError("invalid JSON", lib.Logger.errors.SERVER_ERROR, {
-	                                    body: body,
-	                                    error: error,
-	                                    requestBody: (options.body || null),
-	                                    requestMethod: options.method,
-	                                    url: url
-	                                });
-	                            }
-	                        }
 	                        if (!processFunc) return [3 /*break*/, 17];
 	                        _a.label = 10;
 	                    case 10:
 	                        _a.trys.push([10, 12, , 17]);
-	                        return [4 /*yield*/, processFunc(json_1, response)];
+	                        return [4 /*yield*/, processFunc(body_1, response)];
 	                    case 11:
-	                        json_1 = _a.sent();
-	                        return [3 /*break*/, 17];
+	                        result = _a.sent();
+	                        runningTimeout.cancel();
+	                        return [2 /*return*/, result];
 	                    case 12:
 	                        error_2 = _a.sent();
 	                        if (!(error_2.throttleRetry && attempt < attemptLimit)) return [3 /*break*/, 16];
@@ -21327,14 +21317,16 @@
 	                    case 14:
 	                        if (!tryAgain) return [3 /*break*/, 16];
 	                        timeout_1 = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
+	                        //console.log("Stalling callback");
 	                        return [4 /*yield*/, staller(timeout_1)];
 	                    case 15:
+	                        //console.log("Stalling callback");
 	                        _a.sent();
 	                        return [3 /*break*/, 18];
 	                    case 16:
 	                        runningTimeout.cancel();
 	                        logger.throwError("processing response error", lib.Logger.errors.SERVER_ERROR, {
-	                            body: json_1,
+	                            body: body_1,
 	                            error: error_2,
 	                            requestBody: (options.body || null),
 	                            requestMethod: options.method,
@@ -21343,16 +21335,64 @@
 	                        return [3 /*break*/, 17];
 	                    case 17:
 	                        runningTimeout.cancel();
-	                        return [2 /*return*/, json_1];
+	                        // If we had a processFunc, it eitehr returned a T or threw above.
+	                        // The "body" is now a Uint8Array.
+	                        return [2 /*return*/, body_1];
 	                    case 18:
 	                        attempt++;
 	                        return [3 /*break*/, 1];
-	                    case 19: return [2 /*return*/];
+	                    case 19: return [2 /*return*/, logger.throwError("failed response", lib.Logger.errors.SERVER_ERROR, {
+	                            requestBody: (options.body || null),
+	                            requestMethod: options.method,
+	                            url: url
+	                        })];
 	                }
 	            });
 	        });
 	    })();
 	    return Promise.race([runningTimeout.promise, runningFetch]);
+	}
+	exports.fetchData = fetchData;
+	function fetchJson(connection, json, processFunc) {
+	    var processJsonFunc = function (value, response) {
+	        var result = null;
+	        if (value != null) {
+	            try {
+	                result = JSON.parse(lib$8.toUtf8String(value));
+	            }
+	            catch (error) {
+	                logger.throwError("invalid JSON", lib.Logger.errors.SERVER_ERROR, {
+	                    body: value,
+	                    error: error
+	                });
+	            }
+	        }
+	        if (processFunc) {
+	            result = processFunc(result, response);
+	        }
+	        return result;
+	    };
+	    // If we have json to send, we must
+	    // - add content-type of application/json (unless already overridden)
+	    // - convert the json to bytes
+	    var body = null;
+	    if (json != null) {
+	        body = lib$8.toUtf8Bytes(json);
+	        // Create a connection with the content-type set for JSON
+	        var updated = (typeof (connection) === "string") ? ({ url: connection }) : connection;
+	        if (updated.headers) {
+	            var hasContentType = (Object.keys(updated.headers).filter(function (k) { return (k.toLowerCase() === "content-type"); }).length) !== 0;
+	            if (!hasContentType) {
+	                updated.headers = lib$3.shallowCopy(updated.headers);
+	                updated.headers["content-type"] = "application/json";
+	            }
+	        }
+	        else {
+	            updated.headers = { "content-type": "application/json" };
+	        }
+	        connection = updated;
+	    }
+	    return fetchData(connection, body, processJsonFunc);
 	}
 	exports.fetchJson = fetchJson;
 	function poll(func, options) {
@@ -21439,8 +21479,9 @@
 	});
 
 	var index$l = unwrapExports(lib$l);
-	var lib_1$l = lib$l.fetchJson;
-	var lib_2$j = lib$l.poll;
+	var lib_1$l = lib$l.fetchData;
+	var lib_2$j = lib$l.fetchJson;
+	var lib_3$f = lib$l.poll;
 
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -26181,7 +26222,7 @@
 	var index$m = unwrapExports(lib$m);
 	var lib_1$m = lib$m.Provider;
 	var lib_2$k = lib$m.getNetwork;
-	var lib_3$f = lib$m.BaseProvider;
+	var lib_3$g = lib$m.BaseProvider;
 	var lib_4$c = lib$m.AlchemyProvider;
 	var lib_5$b = lib$m.CloudflareProvider;
 	var lib_6$7 = lib$m.EtherscanProvider;
@@ -26296,7 +26337,7 @@
 	var index$n = unwrapExports(lib$n);
 	var lib_1$n = lib$n.pack;
 	var lib_2$l = lib$n.keccak256;
-	var lib_3$g = lib$n.sha256;
+	var lib_3$h = lib$n.sha256;
 
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -26401,7 +26442,7 @@
 	var index$o = unwrapExports(lib$o);
 	var lib_1$o = lib$o.commify;
 	var lib_2$m = lib$o.formatUnits;
-	var lib_3$h = lib$o.parseUnits;
+	var lib_3$i = lib$o.parseUnits;
 	var lib_4$d = lib$o.formatEther;
 	var lib_5$c = lib$o.parseEther;
 
@@ -26436,6 +26477,8 @@
 	exports.isAddress = lib$6.isAddress;
 	var base64 = __importStar(browser$8);
 	exports.base64 = base64;
+
+	exports.base58 = lib$e.Base58;
 
 	exports.arrayify = lib$1.arrayify;
 	exports.concat = lib$1.concat;
@@ -26518,6 +26561,7 @@
 
 	exports.verifyMessage = lib$j.verifyMessage;
 
+	exports.fetchData = lib$l.fetchData;
 	exports.fetchJson = lib$l.fetchJson;
 	exports.poll = lib$l.poll;
 	////////////////////////
@@ -26549,81 +26593,83 @@
 	var utils_16 = utils$3.getIcapAddress;
 	var utils_17 = utils$3.isAddress;
 	var utils_18 = utils$3.base64;
-	var utils_19 = utils$3.arrayify;
-	var utils_20 = utils$3.concat;
-	var utils_21 = utils$3.hexDataSlice;
-	var utils_22 = utils$3.hexDataLength;
-	var utils_23 = utils$3.hexlify;
-	var utils_24 = utils$3.hexStripZeros;
-	var utils_25 = utils$3.hexValue;
-	var utils_26 = utils$3.hexZeroPad;
-	var utils_27 = utils$3.isBytes;
-	var utils_28 = utils$3.isBytesLike;
-	var utils_29 = utils$3.isHexString;
-	var utils_30 = utils$3.joinSignature;
-	var utils_31 = utils$3.zeroPad;
-	var utils_32 = utils$3.splitSignature;
-	var utils_33 = utils$3.stripZeros;
-	var utils_34 = utils$3.hashMessage;
-	var utils_35 = utils$3.id;
-	var utils_36 = utils$3.isValidName;
-	var utils_37 = utils$3.namehash;
-	var utils_38 = utils$3.defaultPath;
-	var utils_39 = utils$3.entropyToMnemonic;
-	var utils_40 = utils$3.HDNode;
-	var utils_41 = utils$3.isValidMnemonic;
-	var utils_42 = utils$3.mnemonicToEntropy;
-	var utils_43 = utils$3.mnemonicToSeed;
-	var utils_44 = utils$3.getJsonWalletAddress;
-	var utils_45 = utils$3.keccak256;
-	var utils_46 = utils$3.Logger;
-	var utils_47 = utils$3.computeHmac;
-	var utils_48 = utils$3.ripemd160;
-	var utils_49 = utils$3.sha256;
-	var utils_50 = utils$3.sha512;
-	var utils_51 = utils$3.solidityKeccak256;
-	var utils_52 = utils$3.solidityPack;
-	var utils_53 = utils$3.soliditySha256;
-	var utils_54 = utils$3.randomBytes;
-	var utils_55 = utils$3.shuffled;
-	var utils_56 = utils$3.checkProperties;
-	var utils_57 = utils$3.deepCopy;
-	var utils_58 = utils$3.defineReadOnly;
-	var utils_59 = utils$3.getStatic;
-	var utils_60 = utils$3.resolveProperties;
-	var utils_61 = utils$3.shallowCopy;
-	var utils_62 = utils$3.RLP;
-	var utils_63 = utils$3.computePublicKey;
-	var utils_64 = utils$3.recoverPublicKey;
-	var utils_65 = utils$3.SigningKey;
-	var utils_66 = utils$3.formatBytes32String;
-	var utils_67 = utils$3.nameprep;
-	var utils_68 = utils$3.parseBytes32String;
-	var utils_69 = utils$3._toEscapedUtf8String;
-	var utils_70 = utils$3.toUtf8Bytes;
-	var utils_71 = utils$3.toUtf8CodePoints;
-	var utils_72 = utils$3.toUtf8String;
-	var utils_73 = utils$3.Utf8ErrorFuncs;
-	var utils_74 = utils$3.computeAddress;
-	var utils_75 = utils$3.parseTransaction;
-	var utils_76 = utils$3.recoverAddress;
-	var utils_77 = utils$3.serializeTransaction;
-	var utils_78 = utils$3.commify;
-	var utils_79 = utils$3.formatEther;
-	var utils_80 = utils$3.parseEther;
-	var utils_81 = utils$3.formatUnits;
-	var utils_82 = utils$3.parseUnits;
-	var utils_83 = utils$3.verifyMessage;
-	var utils_84 = utils$3.fetchJson;
-	var utils_85 = utils$3.poll;
-	var utils_86 = utils$3.SupportedAlgorithm;
-	var utils_87 = utils$3.UnicodeNormalizationForm;
-	var utils_88 = utils$3.Utf8ErrorReason;
+	var utils_19 = utils$3.base58;
+	var utils_20 = utils$3.arrayify;
+	var utils_21 = utils$3.concat;
+	var utils_22 = utils$3.hexDataSlice;
+	var utils_23 = utils$3.hexDataLength;
+	var utils_24 = utils$3.hexlify;
+	var utils_25 = utils$3.hexStripZeros;
+	var utils_26 = utils$3.hexValue;
+	var utils_27 = utils$3.hexZeroPad;
+	var utils_28 = utils$3.isBytes;
+	var utils_29 = utils$3.isBytesLike;
+	var utils_30 = utils$3.isHexString;
+	var utils_31 = utils$3.joinSignature;
+	var utils_32 = utils$3.zeroPad;
+	var utils_33 = utils$3.splitSignature;
+	var utils_34 = utils$3.stripZeros;
+	var utils_35 = utils$3.hashMessage;
+	var utils_36 = utils$3.id;
+	var utils_37 = utils$3.isValidName;
+	var utils_38 = utils$3.namehash;
+	var utils_39 = utils$3.defaultPath;
+	var utils_40 = utils$3.entropyToMnemonic;
+	var utils_41 = utils$3.HDNode;
+	var utils_42 = utils$3.isValidMnemonic;
+	var utils_43 = utils$3.mnemonicToEntropy;
+	var utils_44 = utils$3.mnemonicToSeed;
+	var utils_45 = utils$3.getJsonWalletAddress;
+	var utils_46 = utils$3.keccak256;
+	var utils_47 = utils$3.Logger;
+	var utils_48 = utils$3.computeHmac;
+	var utils_49 = utils$3.ripemd160;
+	var utils_50 = utils$3.sha256;
+	var utils_51 = utils$3.sha512;
+	var utils_52 = utils$3.solidityKeccak256;
+	var utils_53 = utils$3.solidityPack;
+	var utils_54 = utils$3.soliditySha256;
+	var utils_55 = utils$3.randomBytes;
+	var utils_56 = utils$3.shuffled;
+	var utils_57 = utils$3.checkProperties;
+	var utils_58 = utils$3.deepCopy;
+	var utils_59 = utils$3.defineReadOnly;
+	var utils_60 = utils$3.getStatic;
+	var utils_61 = utils$3.resolveProperties;
+	var utils_62 = utils$3.shallowCopy;
+	var utils_63 = utils$3.RLP;
+	var utils_64 = utils$3.computePublicKey;
+	var utils_65 = utils$3.recoverPublicKey;
+	var utils_66 = utils$3.SigningKey;
+	var utils_67 = utils$3.formatBytes32String;
+	var utils_68 = utils$3.nameprep;
+	var utils_69 = utils$3.parseBytes32String;
+	var utils_70 = utils$3._toEscapedUtf8String;
+	var utils_71 = utils$3.toUtf8Bytes;
+	var utils_72 = utils$3.toUtf8CodePoints;
+	var utils_73 = utils$3.toUtf8String;
+	var utils_74 = utils$3.Utf8ErrorFuncs;
+	var utils_75 = utils$3.computeAddress;
+	var utils_76 = utils$3.parseTransaction;
+	var utils_77 = utils$3.recoverAddress;
+	var utils_78 = utils$3.serializeTransaction;
+	var utils_79 = utils$3.commify;
+	var utils_80 = utils$3.formatEther;
+	var utils_81 = utils$3.parseEther;
+	var utils_82 = utils$3.formatUnits;
+	var utils_83 = utils$3.parseUnits;
+	var utils_84 = utils$3.verifyMessage;
+	var utils_85 = utils$3.fetchData;
+	var utils_86 = utils$3.fetchJson;
+	var utils_87 = utils$3.poll;
+	var utils_88 = utils$3.SupportedAlgorithm;
+	var utils_89 = utils$3.UnicodeNormalizationForm;
+	var utils_90 = utils$3.Utf8ErrorReason;
 
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.7";
+	exports.version = "ethers/5.0.8";
 
 	});
 
@@ -26737,7 +26783,7 @@
 	var index$p = unwrapExports(lib$p);
 	var lib_1$p = lib$p.ethers;
 	var lib_2$n = lib$p.Signer;
-	var lib_3$i = lib$p.Wallet;
+	var lib_3$j = lib$p.Wallet;
 	var lib_4$e = lib$p.VoidSigner;
 	var lib_5$d = lib$p.getDefaultProvider;
 	var lib_6$8 = lib$p.providers;
@@ -26759,7 +26805,7 @@
 	exports.FixedNumber = lib_10$4;
 	exports.Signer = lib_2$n;
 	exports.VoidSigner = lib_4$e;
-	exports.Wallet = lib_3$i;
+	exports.Wallet = lib_3$j;
 	exports.Wordlist = lib_17$1;
 	exports.constants = lib_11$3;
 	exports.default = index$p;

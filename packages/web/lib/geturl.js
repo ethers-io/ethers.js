@@ -42,6 +42,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var http_1 = __importDefault(require("http"));
 var https_1 = __importDefault(require("https"));
 var url_1 = require("url");
+var bytes_1 = require("@ethersproject/bytes");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
@@ -61,12 +62,12 @@ function getResponse(request) {
                 }, {}),
                 body: null
             };
-            resp.setEncoding("utf8");
+            //resp.setEncoding("utf8");
             resp.on("data", function (chunk) {
                 if (response.body == null) {
-                    response.body = "";
+                    response.body = new Uint8Array(0);
                 }
-                response.body += chunk;
+                response.body = bytes_1.concat([response.body, chunk]);
             });
             resp.on("end", function () {
                 resolve(response);
@@ -121,7 +122,7 @@ function getUrl(href, options) {
                             });
                     }
                     if (options.body) {
-                        req.write(options.body);
+                        req.write(Buffer.from(options.body));
                     }
                     req.end();
                     return [4 /*yield*/, getResponse(req)];

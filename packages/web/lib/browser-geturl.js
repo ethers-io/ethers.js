@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var bytes_1 = require("@ethersproject/bytes");
 function getUrl(href, options) {
     return __awaiter(this, void 0, void 0, function () {
         var request, response, body, headers;
@@ -58,7 +59,7 @@ function getUrl(href, options) {
                     return [4 /*yield*/, fetch(href, request)];
                 case 1:
                     response = _a.sent();
-                    return [4 /*yield*/, response.text()];
+                    return [4 /*yield*/, response.arrayBuffer()];
                 case 2:
                     body = _a.sent();
                     headers = {};
@@ -76,7 +77,7 @@ function getUrl(href, options) {
                             headers: headers,
                             statusCode: response.status,
                             statusMessage: response.statusText,
-                            body: body,
+                            body: bytes_1.arrayify(new Uint8Array(body)),
                         }];
             }
         });

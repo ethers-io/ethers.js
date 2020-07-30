@@ -3,6 +3,7 @@
 import { AbiCoder, checkResultErrors, defaultAbiCoder, EventFragment, FormatTypes, Fragment, FunctionFragment, Indexed, Interface, LogDescription, ParamType, Result, TransactionDescription }from "@ethersproject/abi";
 import { getAddress, getCreate2Address, getContractAddress, getIcapAddress, isAddress } from "@ethersproject/address";
 import * as base64 from "@ethersproject/base64";
+import { Base58 as base58 } from "@ethersproject/basex";
 import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexValue, hexZeroPad, isBytes, isBytesLike, isHexString, joinSignature, zeroPad, splitSignature, stripZeros } from "@ethersproject/bytes";
 import { hashMessage, id, isValidName, namehash } from "@ethersproject/hash";
 import { defaultPath, entropyToMnemonic, HDNode, isValidMnemonic, mnemonicToEntropy, mnemonicToSeed } from "@ethersproject/hdnode";
@@ -19,7 +20,7 @@ import { formatBytes32String, nameprep, parseBytes32String, _toEscapedUtf8String
 import { computeAddress, parse as parseTransaction, recoverAddress, serialize as serializeTransaction } from "@ethersproject/transactions";
 import { commify, formatEther, parseEther, formatUnits, parseUnits } from "@ethersproject/units";
 import { verifyMessage } from "@ethersproject/wallet";
-import { fetchJson, poll } from "@ethersproject/web";
+import { fetchData, fetchJson, poll } from "@ethersproject/web";
 
 ////////////////////////
 // Enums
@@ -59,6 +60,7 @@ export {
 
     RLP,
 
+    fetchData,
     fetchJson,
     poll,
 
@@ -87,6 +89,7 @@ export {
     LogDescription,
     TransactionDescription,
 
+    base58,
     base64,
 
     hexlify,

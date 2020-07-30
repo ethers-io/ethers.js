@@ -28,6 +28,8 @@ exports.getIcapAddress = address_1.getIcapAddress;
 exports.isAddress = address_1.isAddress;
 var base64 = __importStar(require("@ethersproject/base64"));
 exports.base64 = base64;
+var basex_1 = require("@ethersproject/basex");
+exports.base58 = basex_1.Base58;
 var bytes_1 = require("@ethersproject/bytes");
 exports.arrayify = bytes_1.arrayify;
 exports.concat = bytes_1.concat;
@@ -110,6 +112,7 @@ exports.parseUnits = units_1.parseUnits;
 var wallet_1 = require("@ethersproject/wallet");
 exports.verifyMessage = wallet_1.verifyMessage;
 var web_1 = require("@ethersproject/web");
+exports.fetchData = web_1.fetchData;
 exports.fetchJson = web_1.fetchJson;
 exports.poll = web_1.poll;
 ////////////////////////

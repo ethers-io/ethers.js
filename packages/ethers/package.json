@@ -7,6 +7,7 @@
     "@ethersproject/abstract-signer": "^5.0.0",
     "@ethersproject/address": "^5.0.0",
     "@ethersproject/base64": "^5.0.0",
+    "@ethersproject/basex": "^5.0.0",
     "@ethersproject/bignumber": "^5.0.0",
     "@ethersproject/bytes": "^5.0.0",
     "@ethersproject/constants": "^5.0.0",
@@ -49,7 +50,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x17ba6d6f28b5eddd096e17f9c1c855d4c9559f25de72246080f61ea22ca640a1",
+  "tarballHash": "0x0e595ef116eb4da86ea0a69cb271653d195d50b807553439d9ad7f28320f22de",
   "types": "./lib/index.d.ts",
-  "version": "5.0.7"
+  "version": "5.0.8"
 }

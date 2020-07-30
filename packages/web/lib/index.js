@@ -48,7 +48,7 @@ function staller(duration) {
         setTimeout(resolve, duration);
     });
 }
-function fetchJson(connection, json, processFunc) {
+function fetchData(connection, body, processFunc) {
     // How many times to retry in the event of a throttle
     var attemptLimit = (typeof (connection) === "object" && connection.throttleLimit != null) ? connection.throttleLimit : 12;
     logger.assertArgument((attemptLimit > 0 && (attemptLimit % 1) === 0), "invalid connection throttle limit", "connection.throttleLimit", attemptLimit);
@@ -93,10 +93,12 @@ function fetchJson(connection, json, processFunc) {
             };
         }
     }
-    if (json) {
+    if (body) {
         options.method = "POST";
-        options.body = json;
-        headers["content-type"] = { key: "Content-Type", value: "application/json" };
+        options.body = body;
+        if (headers["content-type"] == null) {
+            headers["content-type"] = { key: "Content-Type", value: "application/octet-stream" };
+        }
     }
     var flatHeaders = {};
     Object.keys(headers).forEach(function (key) {
@@ -133,7 +135,7 @@ function fetchJson(connection, json, processFunc) {
     })();
     var runningFetch = (function () {
         return __awaiter(this, void 0, void 0, function () {
-            var attempt, response, tryAgain, stall, retryAfter, error_1, body, json_1, error_2, tryAgain, timeout_1;
+            var attempt, response, tryAgain, stall, retryAfter, error_1, body_1, result, error_2, tryAgain, timeout_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -165,8 +167,10 @@ function fetchJson(connection, json, processFunc) {
                         else {
                             stall = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
                         }
+                        //console.log("Stalling 429");
                         return [4 /*yield*/, staller(stall)];
                     case 6:
+                        //console.log("Stalling 429");
                         _a.sent();
                         return [3 /*break*/, 18];
                     case 7: return [3 /*break*/, 9];
@@ -184,45 +188,30 @@ function fetchJson(connection, json, processFunc) {
                         }
                         return [3 /*break*/, 9];
                     case 9:
-                        body = response.body;
+                        body_1 = response.body;
                         if (allow304 && response.statusCode === 304) {
-                            body = null;
+                            body_1 = null;
                         }
                         else if (response.statusCode < 200 || response.statusCode >= 300) {
                             runningTimeout.cancel();
                             logger.throwError("bad response", logger_1.Logger.errors.SERVER_ERROR, {
                                 status: response.statusCode,
                                 headers: response.headers,
-                                body: body,
+                                body: body_1,
                                 requestBody: (options.body || null),
                                 requestMethod: options.method,
                                 url: url
                             });
                         }
-                        json_1 = null;
-                        if (body != null) {
-                            try {
-                                json_1 = JSON.parse(body);
-                            }
-                            catch (error) {
-                                runningTimeout.cancel();
-                                logger.throwError("invalid JSON", logger_1.Logger.errors.SERVER_ERROR, {
-                                    body: body,
-                                    error: error,
-                                    requestBody: (options.body || null),
-                                    requestMethod: options.method,
-                                    url: url
-                                });
-                            }
-                        }
                         if (!processFunc) return [3 /*break*/, 17];
                         _a.label = 10;
                     case 10:
                         _a.trys.push([10, 12, , 17]);
-                        return [4 /*yield*/, processFunc(json_1, response)];
+                        return [4 /*yield*/, processFunc(body_1, response)];
                     case 11:
-                        json_1 = _a.sent();
-                        return [3 /*break*/, 17];
+                        result = _a.sent();
+                        runningTimeout.cancel();
+                        return [2 /*return*/, result];
                     case 12:
                         error_2 = _a.sent();
                         if (!(error_2.throttleRetry && attempt < attemptLimit)) return [3 /*break*/, 16];
@@ -235,14 +224,16 @@ function fetchJson(connection, json, processFunc) {
                     case 14:
                         if (!tryAgain) return [3 /*break*/, 16];
                         timeout_1 = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                        //console.log("Stalling callback");
                         return [4 /*yield*/, staller(timeout_1)];
                     case 15:
+                        //console.log("Stalling callback");
                         _a.sent();
                         return [3 /*break*/, 18];
                     case 16:
                         runningTimeout.cancel();
                         logger.throwError("processing response error", logger_1.Logger.errors.SERVER_ERROR, {
-                            body: json_1,
+                            body: body_1,
                             error: error_2,
                             requestBody: (options.body || null),
                             requestMethod: options.method,
@@ -251,16 +242,64 @@ function fetchJson(connection, json, processFunc) {
                         return [3 /*break*/, 17];
                     case 17:
                         runningTimeout.cancel();
-                        return [2 /*return*/, json_1];
+                        // If we had a processFunc, it eitehr returned a T or threw above.
+                        // The "body" is now a Uint8Array.
+                        return [2 /*return*/, body_1];
                     case 18:
                         attempt++;
                         return [3 /*break*/, 1];
-                    case 19: return [2 /*return*/];
+                    case 19: return [2 /*return*/, logger.throwError("failed response", logger_1.Logger.errors.SERVER_ERROR, {
+                            requestBody: (options.body || null),
+                            requestMethod: options.method,
+                            url: url
+                        })];
                 }
             });
         });
     })();
     return Promise.race([runningTimeout.promise, runningFetch]);
+}
+exports.fetchData = fetchData;
+function fetchJson(connection, json, processFunc) {
+    var processJsonFunc = function (value, response) {
+        var result = null;
+        if (value != null) {
+            try {
+                result = JSON.parse(strings_1.toUtf8String(value));
+            }
+            catch (error) {
+                logger.throwError("invalid JSON", logger_1.Logger.errors.SERVER_ERROR, {
+                    body: value,
+                    error: error
+                });
+            }
+        }
+        if (processFunc) {
+            result = processFunc(result, response);
+        }
+        return result;
+    };
+    // If we have json to send, we must
+    // - add content-type of application/json (unless already overridden)
+    // - convert the json to bytes
+    var body = null;
+    if (json != null) {
+        body = strings_1.toUtf8Bytes(json);
+        // Create a connection with the content-type set for JSON
+        var updated = (typeof (connection) === "string") ? ({ url: connection }) : connection;
+        if (updated.headers) {
+            var hasContentType = (Object.keys(updated.headers).filter(function (k) { return (k.toLowerCase() === "content-type"); }).length) !== 0;
+            if (!hasContentType) {
+                updated.headers = properties_1.shallowCopy(updated.headers);
+                updated.headers["content-type"] = "application/json";
+            }
+        }
+        else {
+            updated.headers = { "content-type": "application/json" };
+        }
+        connection = updated;
+    }
+    return fetchData(connection, body, processJsonFunc);
 }
 exports.fetchJson = fetchJson;
 function poll(func, options) {

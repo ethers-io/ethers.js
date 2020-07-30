@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import http from "http";
 import https from "https";
 import { parse } from "url";
+import { concat } from "@ethersproject/bytes";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
@@ -30,12 +31,12 @@ function getResponse(request) {
                 }, {}),
                 body: null
             };
-            resp.setEncoding("utf8");
+            //resp.setEncoding("utf8");
             resp.on("data", (chunk) => {
                 if (response.body == null) {
-                    response.body = "";
+                    response.body = new Uint8Array(0);
                 }
-                response.body += chunk;
+                response.body = concat([response.body, chunk]);
             });
             resp.on("end", () => {
                 resolve(response);
@@ -89,7 +90,7 @@ export function getUrl(href, options) {
                 });
         }
         if (options.body) {
-            req.write(options.body);
+            req.write(Buffer.from(options.body));
         }
         req.end();
         const response = yield getResponse(req);

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ethersproject/base64": "^5.0.0",
+    "@ethersproject/bytes": "^5.0.0",
     "@ethersproject/logger": "^5.0.0",
     "@ethersproject/properties": "^5.0.0",
     "@ethersproject/strings": "^5.0.0"
@@ -35,7 +36,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x706e9cf2a72162332269c71f0e1c5ca6dbaa252e627710ed676fd342dbe89e40",
+  "tarballHash": "0x2aaeadaeffd9b91cc53a54957aef410745a16c20af755cb66e5d188d2be8a814",
   "types": "./lib/index.d.ts",
-  "version": "5.0.2"
+  "version": "5.0.3"
 }

@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+import { arrayify } from "@ethersproject/bytes";
 export function getUrl(href, options) {
     return __awaiter(this, void 0, void 0, function* () {
         if (options == null) {
@@ -24,7 +25,7 @@ export function getUrl(href, options) {
             referrer: "client",
         };
         const response = yield fetch(href, request);
-        const body = yield response.text();
+        const body = yield response.arrayBuffer();
         const headers = {};
         if (response.headers.forEach) {
             response.headers.forEach((value, key) => {
@@ -40,7 +41,7 @@ export function getUrl(href, options) {
             headers: headers,
             statusCode: response.status,
             statusMessage: response.statusText,
-            body: body,
+            body: arrayify(new Uint8Array(body)),
         };
     });
 }

@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { encode as base64Encode } from "@ethersproject/base64";
 import { shallowCopy } from "@ethersproject/properties";
-import { toUtf8Bytes } from "@ethersproject/strings";
+import { toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
@@ -20,7 +20,7 @@ function staller(duration) {
         setTimeout(resolve, duration);
     });
 }
-export function fetchJson(connection, json, processFunc) {
+export function fetchData(connection, body, processFunc) {
     // How many times to retry in the event of a throttle
     const attemptLimit = (typeof (connection) === "object" && connection.throttleLimit != null) ? connection.throttleLimit : 12;
     logger.assertArgument((attemptLimit > 0 && (attemptLimit % 1) === 0), "invalid connection throttle limit", "connection.throttleLimit", attemptLimit);
@@ -65,10 +65,12 @@ export function fetchJson(connection, json, processFunc) {
             };
         }
     }
-    if (json) {
+    if (body) {
         options.method = "POST";
-        options.body = json;
-        headers["content-type"] = { key: "Content-Type", value: "application/json" };
+        options.body = body;
+        if (headers["content-type"] == null) {
+            headers["content-type"] = { key: "Content-Type", value: "application/octet-stream" };
+        }
     }
     const flatHeaders = {};
     Object.keys(headers).forEach((key) => {
@@ -124,6 +126,7 @@ export function fetchJson(connection, json, processFunc) {
                             else {
                                 stall = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
                             }
+                            //console.log("Stalling 429");
                             yield staller(stall);
                             continue;
                         }
@@ -156,25 +159,11 @@ export function fetchJson(connection, json, processFunc) {
                         url: url
                     });
                 }
-                let json = null;
-                if (body != null) {
-                    try {
-                        json = JSON.parse(body);
-                    }
-                    catch (error) {
-                        runningTimeout.cancel();
-                        logger.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
-                            body: body,
-                            error: error,
-                            requestBody: (options.body || null),
-                            requestMethod: options.method,
-                            url: url
-                        });
-                    }
-                }
                 if (processFunc) {
                     try {
-                        json = yield processFunc(json, response);
+                        const result = yield processFunc(body, response);
+                        runningTimeout.cancel();
+                        return result;
                     }
                     catch (error) {
                         // Allow the processFunc to trigger a throttle
@@ -185,13 +174,14 @@ export function fetchJson(connection, json, processFunc) {
                             }
                             if (tryAgain) {
                                 const timeout = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                                //console.log("Stalling callback");
                                 yield staller(timeout);
                                 continue;
                             }
                         }
                         runningTimeout.cancel();
                         logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
-                            body: json,
+                            body: body,
                             error: error,
                             requestBody: (options.body || null),
                             requestMethod: options.method,
@@ -200,11 +190,59 @@ export function fetchJson(connection, json, processFunc) {
                     }
                 }
                 runningTimeout.cancel();
-                return json;
+                // If we had a processFunc, it eitehr returned a T or threw above.
+                // The "body" is now a Uint8Array.
+                return body;
             }
+            return logger.throwError("failed response", Logger.errors.SERVER_ERROR, {
+                requestBody: (options.body || null),
+                requestMethod: options.method,
+                url: url
+            });
         });
     })();
     return Promise.race([runningTimeout.promise, runningFetch]);
+}
+export function fetchJson(connection, json, processFunc) {
+    let processJsonFunc = (value, response) => {
+        let result = null;
+        if (value != null) {
+            try {
+                result = JSON.parse(toUtf8String(value));
+            }
+            catch (error) {
+                logger.throwError("invalid JSON", Logger.errors.SERVER_ERROR, {
+                    body: value,
+                    error: error
+                });
+            }
+        }
+        if (processFunc) {
+            result = processFunc(result, response);
+        }
+        return result;
+    };
+    // If we have json to send, we must
+    // - add content-type of application/json (unless already overridden)
+    // - convert the json to bytes
+    let body = null;
+    if (json != null) {
+        body = toUtf8Bytes(json);
+        // Create a connection with the content-type set for JSON
+        const updated = (typeof (connection) === "string") ? ({ url: connection }) : connection;
+        if (updated.headers) {
+            const hasContentType = (Object.keys(updated.headers).filter((k) => (k.toLowerCase() === "content-type")).length) !== 0;
+            if (!hasContentType) {
+                updated.headers = shallowCopy(updated.headers);
+                updated.headers["content-type"] = "application/json";
+            }
+        }
+        else {
+            updated.headers = { "content-type": "application/json" };
+        }
+        connection = updated;
+    }
+    return fetchData(connection, body, processJsonFunc);
 }
 export function poll(func, options) {
     if (!options) {
