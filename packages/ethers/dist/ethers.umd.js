@@ -21141,7 +21141,13 @@
 	        setTimeout(resolve, duration);
 	    });
 	}
-	function fetchData(connection, body, processFunc) {
+	// This API is still a work in progress; the future changes will likely be:
+	// - ConnectionInfo => FetchDataRequest<T = any>
+	// - FetchDataRequest.body? = string | Uint8Array | { contentType: string, data: string | Uint8Array }
+	//   - If string => text/plain, Uint8Array => application/octet-stream (if content-type unspecified)
+	// - FetchDataRequest.processFunc = (body: Uint8Array, response: FetchDataResponse) => T
+	// For this reason, it should be considered internal until the API is finalized
+	function _fetchData(connection, body, processFunc) {
 	    // How many times to retry in the event of a throttle
 	    var attemptLimit = (typeof (connection) === "object" && connection.throttleLimit != null) ? connection.throttleLimit : 12;
 	    logger.assertArgument((attemptLimit > 0 && (attemptLimit % 1) === 0), "invalid connection throttle limit", "connection.throttleLimit", attemptLimit);
@@ -21352,7 +21358,7 @@
 	    })();
 	    return Promise.race([runningTimeout.promise, runningFetch]);
 	}
-	exports.fetchData = fetchData;
+	exports._fetchData = _fetchData;
 	function fetchJson(connection, json, processFunc) {
 	    var processJsonFunc = function (value, response) {
 	        var result = null;
@@ -21392,7 +21398,7 @@
 	        }
 	        connection = updated;
 	    }
-	    return fetchData(connection, body, processJsonFunc);
+	    return _fetchData(connection, body, processJsonFunc);
 	}
 	exports.fetchJson = fetchJson;
 	function poll(func, options) {
@@ -21479,7 +21485,7 @@
 	});
 
 	var index$l = unwrapExports(lib$l);
-	var lib_1$l = lib$l.fetchData;
+	var lib_1$l = lib$l._fetchData;
 	var lib_2$j = lib$l.fetchJson;
 	var lib_3$f = lib$l.poll;
 
@@ -26561,7 +26567,7 @@
 
 	exports.verifyMessage = lib$j.verifyMessage;
 
-	exports.fetchData = lib$l.fetchData;
+	exports._fetchData = lib$l._fetchData;
 	exports.fetchJson = lib$l.fetchJson;
 	exports.poll = lib$l.poll;
 	////////////////////////
@@ -26659,7 +26665,7 @@
 	var utils_82 = utils$3.formatUnits;
 	var utils_83 = utils$3.parseUnits;
 	var utils_84 = utils$3.verifyMessage;
-	var utils_85 = utils$3.fetchData;
+	var utils_85 = utils$3._fetchData;
 	var utils_86 = utils$3.fetchJson;
 	var utils_87 = utils$3.poll;
 	var utils_88 = utils$3.SupportedAlgorithm;

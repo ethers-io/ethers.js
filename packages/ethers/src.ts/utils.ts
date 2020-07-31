@@ -20,7 +20,7 @@ import { formatBytes32String, nameprep, parseBytes32String, _toEscapedUtf8String
 import { computeAddress, parse as parseTransaction, recoverAddress, serialize as serializeTransaction } from "@ethersproject/transactions";
 import { commify, formatEther, parseEther, formatUnits, parseUnits } from "@ethersproject/units";
 import { verifyMessage } from "@ethersproject/wallet";
-import { fetchData, fetchJson, poll } from "@ethersproject/web";
+import { _fetchData, fetchJson, poll } from "@ethersproject/web";
 
 ////////////////////////
 // Enums
@@ -60,7 +60,7 @@ export {
 
     RLP,
 
-    fetchData,
+    _fetchData,
     fetchJson,
     poll,
 

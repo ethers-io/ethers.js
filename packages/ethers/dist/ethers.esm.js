@@ -19281,7 +19281,13 @@ function staller(duration) {
         setTimeout(resolve, duration);
     });
 }
-function fetchData(connection, body, processFunc) {
+// This API is still a work in progress; the future changes will likely be:
+// - ConnectionInfo => FetchDataRequest<T = any>
+// - FetchDataRequest.body? = string | Uint8Array | { contentType: string, data: string | Uint8Array }
+//   - If string => text/plain, Uint8Array => application/octet-stream (if content-type unspecified)
+// - FetchDataRequest.processFunc = (body: Uint8Array, response: FetchDataResponse) => T
+// For this reason, it should be considered internal until the API is finalized
+function _fetchData(connection, body, processFunc) {
     // How many times to retry in the event of a throttle
     const attemptLimit = (typeof (connection) === "object" && connection.throttleLimit != null) ? connection.throttleLimit : 12;
     logger$p.assertArgument((attemptLimit > 0 && (attemptLimit % 1) === 0), "invalid connection throttle limit", "connection.throttleLimit", attemptLimit);
@@ -19503,7 +19509,7 @@ function fetchJson(connection, json, processFunc) {
         }
         connection = updated;
     }
-    return fetchData(connection, body, processJsonFunc);
+    return _fetchData(connection, body, processJsonFunc);
 }
 function poll(func, options) {
     if (!options) {
@@ -23376,7 +23382,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	checkResultErrors: checkResultErrors,
 	Logger: Logger,
 	RLP: index,
-	fetchData: fetchData,
+	_fetchData: _fetchData,
 	fetchJson: fetchJson,
 	poll: poll,
 	checkProperties: checkProperties,
