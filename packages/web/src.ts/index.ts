@@ -59,7 +59,13 @@ export type FetchJsonResponse = {
 
 type Header = { key: string, value: string };
 
-export function fetchData<T = Uint8Array>(connection: string | ConnectionInfo, body?: Uint8Array, processFunc?: (value: Uint8Array, response: FetchJsonResponse) => T): Promise<T> {
+// This API is still a work in progress; the future changes will likely be:
+// - ConnectionInfo => FetchDataRequest<T = any>
+// - FetchDataRequest.body? = string | Uint8Array | { contentType: string, data: string | Uint8Array }
+//   - If string => text/plain, Uint8Array => application/octet-stream (if content-type unspecified)
+// - FetchDataRequest.processFunc = (body: Uint8Array, response: FetchDataResponse) => T
+// For this reason, it should be considered internal until the API is finalized
+export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, body?: Uint8Array, processFunc?: (value: Uint8Array, response: FetchJsonResponse) => T): Promise<T> {
 
     // How many times to retry in the event of a throttle
     const attemptLimit = (typeof(connection) === "object" && connection.throttleLimit != null) ? connection.throttleLimit: 12;
@@ -320,7 +326,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
         connection = updated;
     }
 
-    return fetchData<any>(connection, body, processJsonFunc);
+    return _fetchData<any>(connection, body, processJsonFunc);
 }
 
 export function poll<T>(func: () => Promise<T>, options?: PollOptions): Promise<T> {
