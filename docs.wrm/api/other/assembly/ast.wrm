@@ -49,8 +49,8 @@ string of a decimal number.
 
 _property: literalNode.verbatim => boolean
 This is true in a [[asm-datanode]] context, since in that case the
-value should be taken verbatim and no ``PUSH`` operation shoud be
-added, otherwise false.
+value should be taken verbatim and no ``PUSH`` operation should be
+added. Otherwise false.
 
 
 _heading: PopNode @<asm-popnode> @INHERIT<[[asm-valuenode]]> @SRC<asm:class.PopNode>
@@ -96,8 +96,8 @@ any output assembly, using the ``{{! code here }}`` syntax.
 
 _property: literalNode.verbatim => boolean
 This is true in a [[asm-datanode]] context, since in that case the
-value should be taken verbatim and no ``PUSH`` operation shoud be
-added, otherwise false.
+value should be taken verbatim and no ``PUSH`` operation should be
+added. Otherwise false.
 
 _property: evaluationNode.script => string
 The code to evaluate and produce the result to use as a literal.
@@ -115,7 +115,7 @@ The code to execute. Any result is ignored.
 _heading: LabelledNode @<asm-labellednode> @INHERIT<[[asm-node]]> @SRC<asm:class.LabelledNode>
 
 A **LabelledNode** is used for any Node that has a name, and can therefore
-be targetted by a [[asm-linknode]].
+be targeted by an [[asm-linknode]].
 
 _property: labelledNode.name => string
 The name of this node.
@@ -123,7 +123,7 @@ The name of this node.
 
 _heading: LabelNode @<asm-labelnode> @INHERIT<[[asm-labellednode]]> @SRC<asm:class.LabelNode>
 
-A **LabelNode** is used as a place to ``JUMP`` to by referencing it
+A **LabelNode** is used as a place to ``JUMP`` to by referencing it by
 name, using ``@myLabel:``. A ``JUMPDEST`` is automatically inserted
 at the bytecode offset.
 
@@ -142,9 +142,7 @@ _heading: ScopeNode @<asm-scopenode> @INHERIT<[[asm-labellednode]]> @SRC<asm:cla
 
 
 A **ScopeNode** allows a new frame of reference that all [[asm-linknode]]'s
-will use when resolving offset locations, using ``@myScope{ ... }``.
+use when resolving offset locations, using ``@myScope{ ... }``.
 
 _property: scopeNode.statements => Array<[[asm-node]]>
 The list of child nodes for this scope.
-
-
