@@ -313,7 +313,7 @@ export function fetchJson(connection: string | ConnectionInfo, json?: string, pr
         body = toUtf8Bytes(json);
 
         // Create a connection with the content-type set for JSON
-        const updated: ConnectionInfo = (typeof(connection) === "string") ? ({ url: connection }): connection;
+        const updated: ConnectionInfo = (typeof(connection) === "string") ? ({ url: connection }): shallowCopy(connection);
         if (updated.headers) {
             const hasContentType = (Object.keys(updated.headers).filter((k) => (k.toLowerCase() === "content-type")).length) !== 0;
             if (!hasContentType) {
