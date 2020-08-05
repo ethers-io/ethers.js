@@ -3,10 +3,10 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
-ethers/v5.0.8 (2020-08-04 20:30)
+ethers/v5.0.8 (2020-08-04 20:55)
 --------------------------------
 
-  - Abstract fetchJson for data. ([e2d6f28](https://github.com/ethers-io/ethers.js/commit/e2d6f281d5a2bd749bc72549a4e55f2c752a7bd8), [2c49a52](https://github.com/ethers-io/ethers.js/commit/2c49a52a41a30ae844376561de95f0c851d19f73))
+  - Abstract fetchJson for data. ([e2d6f28](https://github.com/ethers-io/ethers.js/commit/e2d6f281d5a2bd749bc72549a4e55f2c752a7bd8), [2c49a52](https://github.com/ethers-io/ethers.js/commit/2c49a52a41a30ae844376561de95f0c851d19f73), [e1bbb06](https://github.com/ethers-io/ethers.js/commit/e1bbb064a10d0b4bf5563e0a79396665d83935a1))
 
 ethers/v5.0.7 (2020-07-20 02:22)
 --------------------------------

@@ -45,7 +45,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0x1d97bb6267b4f2071bb1f21b7ba0d1a73327fa56bbb516cd3e12511378038ebf",
+  "tarballHash": "0x43066269c7955e759809b3ba113d56c79bb39a8ed35f5048a0625d6ac2a3849c",
   "types": "./lib/index.d.ts",
-  "version": "5.0.2"
+  "version": "5.0.3"
 }

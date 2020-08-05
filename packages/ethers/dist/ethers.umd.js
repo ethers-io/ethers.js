@@ -21385,7 +21385,7 @@
 	    if (json != null) {
 	        body = lib$8.toUtf8Bytes(json);
 	        // Create a connection with the content-type set for JSON
-	        var updated = (typeof (connection) === "string") ? ({ url: connection }) : connection;
+	        var updated = (typeof (connection) === "string") ? ({ url: connection }) : lib$3.shallowCopy(connection);
 	        if (updated.headers) {
 	            var hasContentType = (Object.keys(updated.headers).filter(function (k) { return (k.toLowerCase() === "content-type"); }).length) !== 0;
 	            if (!hasContentType) {
