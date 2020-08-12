@@ -25,7 +25,7 @@
     "test-browser-umd": "npm run _dist-test-umd && npm run _test-browser-umd",
     "test-browser-esm": "npm run _dist-test-esm && npm run _test-browser-esm",
     "test-node": "mocha --no-colors --reporter ./packages/tests/reporter ./packages/tests/lib/test-*.js",
-    "test": "if [ \"$TEST\" == \"\" ]; then npm run test-node; else npm run \"test-$TEST\"; fi",
+    "test": "if [ \"$TEST\" = \"\" ]; then npm run test-node; else npm run \"test-$TEST\"; fi",
     "test-coverage": "nyc mocha --reporter ./packages/tests/reporter-keepalive ./packages/tests/lib/test-*.js",
     "lock-versions": "node ./admin/cmds/lock-versions",
     "build-docs": "flatworm docs.wrm docs",
