@@ -25,7 +25,7 @@
     "test-browser-umd": "npm run _dist-test-umd && npm run _test-browser-umd",
     "test-browser-esm": "npm run _dist-test-esm && npm run _test-browser-esm",
     "test-node": "mocha --no-colors --reporter ./packages/tests/reporter ./packages/tests/lib/test-*.js",
-    "test": "if [ \"$TEST\" == \"\" ]; then npm run test-node; else npm run \"test-$TEST\"; fi",
+    "test": "npm run build-all && npm run test-node",
     "test-coverage": "nyc mocha --reporter ./packages/tests/reporter-keepalive ./packages/tests/lib/test-*.js",
     "lock-versions": "node ./admin/cmds/lock-versions",
     "build-docs": "flatworm docs.wrm docs",
@@ -36,7 +36,8 @@
     "_admin_prepare": "npm run clean && npm run bootstrap && npm run build && node ./admin/cmds/update-exports.js",
     "update-versions": "npm run spell-check && npm run _admin_prepare && node ./admin/cmds/update-versions",
     "publish-all": "node ./admin/cmds/publish",
-    "sync-github": "node ./admin/cmds/cache-github"
+    "sync-github": "node ./admin/cmds/cache-github",
+    "postinstall": "npm run bootstrap"
   },
   "devDependencies": {
     "@erquhart/rollup-plugin-node-builtins": "2.1.5",
