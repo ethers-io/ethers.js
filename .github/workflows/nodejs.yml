@@ -23,7 +23,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - uses: actions/checkout@v2
       - run: npm ci
-      - run: npm run bootstrap
       - run: npm run build-all
       - run: npm run test-node
 
@@ -43,7 +42,6 @@ jobs:
           node-version: 12.x
       - uses: actions/checkout@v2
       - run: npm ci
-      - run: npm run bootstrap
       - run: npm run build-all
       - run: npm run test-browser-${{ matrix.module }}
 
@@ -62,6 +60,5 @@ jobs:
           node-version: 12.x
       - uses: actions/checkout@v2
       - run: npm ci
-      - run: npm run bootstrap
       - run: npm run build-all
       - run: npm run test-coverage

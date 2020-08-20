@@ -6,6 +6,7 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "scripts": {
+    "postinstall": "npm run bootstrap",
     "auto-build": "node ./admin/cmds/reset-build.js && npm run build -- -w",
     "auto-build-esm": "node ./admin/cmds/set-option esm && npm run build -- -w",
     "bootstrap": "node ./admin/cmds/reset-build.js && node ./admin/cmds/update-depgraph && lerna bootstrap --hoist",
@@ -25,7 +26,7 @@
     "test-browser-umd": "npm run _dist-test-umd && npm run _test-browser-umd",
     "test-browser-esm": "npm run _dist-test-esm && npm run _test-browser-esm",
     "test-node": "mocha --no-colors --reporter ./packages/tests/reporter ./packages/tests/lib/test-*.js",
-    "test": "if [ \"$TEST\" == \"\" ]; then npm run test-node; else npm run \"test-$TEST\"; fi",
+    "test": "npm run build-all && npm run test-node",
     "test-coverage": "nyc mocha --reporter ./packages/tests/reporter-keepalive ./packages/tests/lib/test-*.js",
     "lock-versions": "node ./admin/cmds/lock-versions",
     "build-docs": "flatworm docs.wrm docs",
@@ -50,7 +51,7 @@
     "karma": "5.1.0",
     "karma-chrome-launcher": "3.1.0",
     "karma-mocha": "2.0.1",
-    "lerna": "^3.20.2",
+    "lerna": "3.22.1",
     "libnpmpublish": "1.1.3",
     "mocha": "^7.1.1",
     "npm-packlist": "1.4.1",
