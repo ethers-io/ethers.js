@@ -178,7 +178,7 @@ _subsection: Meta-Class Filters @NOTE<(added at Runtime)>
 Since the Contract is a Meta-Class, the methods available here depend
 on the ABI which was passed into the **Contract**.
 
-_property: erc20.filters.Transafer([ fromAddress [ , toAddress ] ]) => Filter
+_property: erc20.filters.Transfer([ fromAddress [ , toAddress ] ]) => Filter
 Returns a new Filter which can be used to [query](erc20-queryfilter) or
 to [subscribe/unsubscribe to events](erc20-events).
 
