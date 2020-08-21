@@ -390,7 +390,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
         });
     };
     // @TODO: Allow startBlock and endBlock to be Promises
-    EtherscanProvider.prototype.getHistory = function (addressOrName, startBlock, endBlock) {
+    EtherscanProvider.prototype.getHistory = function (addressOrName, startBlock, endBlock, contractAddress) {
         var _this = this;
         var url = this.baseUrl;
         var apiKey = "";
@@ -404,10 +404,11 @@ var EtherscanProvider = /** @class */ (function (_super) {
             endBlock = 99999999;
         }
         return this.resolveName(addressOrName).then(function (address) {
-            url += "/api?module=account&action=txlist&address=" + address;
+            url += `/api?module=account&action=${contractAddress == null ? 'txlist' : 'tokentx'}&address=` + address;
             url += "&startblock=" + startBlock;
             url += "&endblock=" + endBlock;
             url += "&sort=asc" + apiKey;
+            if (contractAddress != null) url += "&contractaddress=" + contractAddress;
             _this.emit("debug", {
                 action: "request",
                 request: url,
