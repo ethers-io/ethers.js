@@ -229,6 +229,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                             case "estimateGas": return [3 /*break*/, 12];
                             case "getLogs": return [3 /*break*/, 13];
                             case "getEtherPrice": return [3 /*break*/, 20];
+                            case "getabi": return [3 /*break*/, 24];
                         }
                         return [3 /*break*/, 22];
                     case 1:
@@ -385,6 +386,10 @@ var EtherscanProvider = /** @class */ (function (_super) {
                     case 21: return [2 /*return*/, _b.apply(void 0, [(_c.sent()).ethusd])];
                     case 22: return [3 /*break*/, 23];
                     case 23: return [2 /*return*/, _super.prototype.perform.call(this, method, params)];
+                    case 24:
+                        url += "/api?module=contract&action=getabi&address=" + params.address;
+                        url += apiKey;
+                        return [2 /*return*/, get(url, getResult)];
                 }
             });
         });
