@@ -1,9 +1,10 @@
 {
   "name": "ethers",
   "private": true,
+  "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/ethers-io/ethers.js.git"
+    "url": "git://github.com/michaeltout/ethers.js.git"
   },
   "scripts": {
     "postinstall": "npm run bootstrap",
