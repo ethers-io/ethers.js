@@ -3,7 +3,7 @@
 'use strict';
 
 // Maximum time in seconds to suppress output
-const MAX_DELAY = 30;
+const MAX_DELAY = 60;
 
 function getTime(): number {
     return (new Date()).getTime();
@@ -19,30 +19,60 @@ interface Runner {
   on(event: string, callback: (...args: Array<any>) => void): Runner;
 }
 
+const stdoutWrite = process.stdout.write.bind(process.stdout);
+let logOut = "";
+let capturing = false;
+
+function log(message?: string): void {
+    if (message == null) { message = ""; }
+    if (capturing) {
+        logOut += message;
+    } else {
+        console.log(message);
+    }
+}
+
+function captureLog(initialLog?: string): void {
+    capturing = true;
+
+    if (initialLog == null) { initialLog = ""; }
+    logOut = initialLog
+
+    process.stdout.write = function(...args: Array<any>): boolean {
+        logOut += "*";
+        return true;
+    }
+}
+
+function releaseLog(): string {
+    capturing = false;
+
+    const result = logOut;
+    process.stdout.write = stdoutWrite;
+    logOut = "";
+
+    return result;
+}
+
 export function ReporterKeepAlive(runner: Runner) {
     let suites = 0;
     let fails = 0;
     const errors: Array<string> = [ ];
 
-    const stdoutWrite = process.stdout.write.bind(process.stdout);
-    //process.stdout.write = function(buffer: string | Uint8Array, cb?: (err?: Error) => void): boolean {
-    process.stdout.write = function(...args: Array<any>): boolean {
-        return stdoutWrite("*");
-    }
+    // Catch anything attempting to write to the consolea
+    captureLog();
 
     // Force Output; Keeps the console output alive with periodic updates
     let lastOutput = getTime();
     function forceOutput() {
         if (((getTime() - lastOutput) / 1000) > MAX_DELAY) {
-            log(".");
+            let currentLog = releaseLog();
+            console.log(`# Keep Alive: ${ currentLog }`);
+            captureLog();
+            lastOutput = getTime();
         }
     }
     const timer = setInterval(forceOutput, 1000);
-
-    function log(message: string): void {
-        stdoutWrite(message);
-        lastOutput = getTime();
-    }
 
     runner.on('suite', function(suite: Suite) {
         suites++;
@@ -55,22 +85,32 @@ export function ReporterKeepAlive(runner: Runner) {
         log("]");
 
         if (suites === 0) {
-            process.stdout.write = stdoutWrite;
+            // Reset standard output
+            const currentLog = releaseLog();
+
+            if (logOut.length) {
+                console.log(`# Keep Alive: ${ currentLog }`);
+            }
+
+            // Stop the keep-alive poller
             clearTimeout(timer);
-            console.log("")
+
+            // Dump out any errors encountered
+            console.log("#")
             if (errors.length) {
-                console.log("---------------")
+                console.log("# ---------------")
                 errors.forEach((error, index) => {
-                    if (index > 0) { console.log(""); }
-                    console.log(error);
+                    if (index > 0) { console.log("#"); }
+                    error.toString().split("\n").forEach((line) => {
+                        console.log(`# ${ line }`);
+                    });
                 });
             }
-            console.log("---------------")
+            console.log("# ---------------")
         }
     });
 
     runner.on('test', function(test) {
-        forceOutput();
     });
 
     runner.on('fail', function(test, error) {
@@ -82,8 +122,6 @@ export function ReporterKeepAlive(runner: Runner) {
     });
 
     runner.on('pass', function(test) {
-        forceOutput();
-
     });
 
     runner.on('pending', function(test) {

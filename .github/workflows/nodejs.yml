@@ -21,7 +21,9 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
+
       - uses: actions/checkout@v2
+
       - run: npm ci
       - run: npm run build-all
       - run: npm run test-node
@@ -40,7 +42,9 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
+
       - uses: actions/checkout@v2
+
       - run: npm ci
       - run: npm run build-all
       - run: npm run test-browser-${{ matrix.module }}
@@ -58,7 +62,24 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
+
       - uses: actions/checkout@v2
+
       - run: npm ci
       - run: npm run build-all
       - run: npm run test-coverage
+
+      - name: Upload Coverage Summary
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-summary
+          path: ./output/summary.txt
+
+      - name: Tar files
+        run: tar -cvf ./output/coverage.tar ./output/lcov-report/
+
+      - name: Upload Coverage
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-complete
+          path: ./output/coverage.tar
