@@ -87,7 +87,7 @@ function start(root, options) {
     });
 
     server.listen(options.port, () => {
-        console.log(`Listening on port: ${ options.port }`);
+        console.log(`Server running on: http://localhost:${ options.port }`);
     });
 
     return server;
