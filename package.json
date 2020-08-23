@@ -28,7 +28,7 @@
     "test-browser-esm": "npm run _dist-test-esm && npm run _test-browser-esm",
     "test-node": "mocha --no-colors --reporter ./packages/tests/reporter ./packages/tests/lib/test-*.js",
     "test": "npm run build-all && npm run test-node",
-    "test-coverage": "nyc mocha --reporter ./packages/tests/reporter-keepalive ./packages/tests/lib/test-*.js",
+    "test-coverage": "nyc --report-dir=output --reporter=lcov --reporter=text mocha --reporter ./packages/tests/reporter-keepalive ./packages/tests/lib/test-*.js | tee output/summary.txt"
     "lock-versions": "node ./admin/cmds/lock-versions",
     "build-docs": "flatworm docs.wrm docs",
     "serve-docs": "node ./admin/cmds/serve-docs.js",
