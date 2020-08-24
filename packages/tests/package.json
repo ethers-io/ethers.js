@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ethersproject/cli": "^5.0.0",
+    "@ethersproject/experimental": "^5.0.0",
     "@ethersproject/testcases": "^5.0.0",
     "@types/mocha": "^5.2.0",
     "ethers": "^5.0.0"

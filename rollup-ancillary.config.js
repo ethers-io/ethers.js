@@ -35,7 +35,7 @@ function getConfig(project, minify) {
     return {
       input: `packages/${ project }/lib.esm/index.js`,
       output: {
-        file: `packages/${ project }/dist/hardware-wallets.${ suffix.join(".") }.js`,
+        file: `packages/${ project }/dist/${ project }.${ suffix.join(".") }.js`,
         format: "esm",
         name: "_ethersAncillary",
         exports: "named"
@@ -49,5 +49,7 @@ function getConfig(project, minify) {
 export default [
     getConfig("hardware-wallets", false),
     getConfig("hardware-wallets", true),
+    getConfig("experimental", false),
+    getConfig("experimental", true),
 ]
 

@@ -63,3 +63,56 @@ Bump the current transaction count (nonce) by //count//.
 
 This may be useful it interacting with the signer outside of using
 this class.
+
+_subsection: GsnSigner @<experimental-gsn-signer> @INHERIT<[[Signer]]>
+
+The **GsnSigner** is designed to work with the Ethereum Gas Status Network (GSN).
+It sends transactions to the blockchain via a relayer allowing
+accounts to make state changing contract calls without spending gas.
+
+See [EIP-1613](https://eips.ethereum.org/EIPS/eip-1613) and
+[OpenGsn](https://docs.opengsn.org/learn/index.html) for more details about GSN.
+
+Currently, ethers only supports GSN **v1.0**.
+
+_property: new GsnSigner(signer)
+Create a new GsnSigner.
+
+_property: gsnSigner.signer => [[Signer]]
+The signer which will sign transactions.
+
+_property: gsnSigner.provider => [[Provider]]
+The provider associated with the signer.
+
+_property: gsnSigner.sendTransaction(transactionRequest) => Promise<[[providers-TransactionResponse]]> @<GsnSigner-sendTransaction> @SRC<gsn-signer>
+This method populates the transactionRequest with missing fields, signs the transaction and forwards it to a relayer.
+It returns a Promise which resolves to the transaction
+
+_property: gsnSigner.estimateGas(transactionRequest) => Promise<[[BigNumber]]>  @<GsnSigner-estimateGas> @SRC<gsn-signer>
+Returns the result of estimating the cost to send the //transactionRequest//,
+with relay hub address being used as the ``from`` field. The signer address will be appended to the transaction data
+which will be used by the contract as the ``msg.sender`` value.
+
+_heading: Examples:  @<>
+
+_code: ES6 and TypeScript CommonJS @lang<script>
+
+import { GsnSigner } = from '@ethersprojects/experimental';
+const provider = new ethers.providers.InfuraProvider("rinkeby");
+const wallet = ethers.Wallet.createRandom().connect(provider);
+
+// create a gsn signer using wallet as the underying signer
+const signer = new GsnSigner(wallet);
+
+// make a state changing contract call similar to a regular signer
+const contractAddress = "0x7d6bea40FD170B2cF3caA101f908545E4991a3a8";
+const abi = [ "function setValue(uint256 val) public" ];
+
+const contract = new ethers.Contract(contractAddress, abi, signer);
+const value = '12345678901234';
+contract.setValue(value).then(async tx => {
+    console.log('tx.hash', tx.hash);
+    const receipt = await tx.wait();
+    console.log('receipt', receipt);
+});
+
