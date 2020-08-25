@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+ethers/v4.0.48 (2020-08-24 15:44)
+---------------------------------
+
+  - Bumped elliptic version for security updates. ([f79c965](https://github.com/ethers-io/ethers.js/commit/f79c9655bdd13ada834a6af9f66f93851740a9ab))
+
 ethers/v4.0.47 (2020-04-21 23:15)
 ---------------------------------
 
