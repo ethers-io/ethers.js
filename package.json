@@ -1,6 +1,10 @@
 {
   "name": "ethers",
   "version": "4.0.48",
+  "publishConfig": {
+    "access": "public",
+    "tag": "legacy"
+  },
   "description": "Ethereum wallet library.",
   "main": "./index.js",
   "types": "./index.d.ts",
