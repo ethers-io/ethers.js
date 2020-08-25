@@ -198,6 +198,10 @@ export class BigNumber implements Hexable {
         return this._hex;
     }
 
+    toJSON(key?: string): any {
+        return { type: "BigNumber", hex: this.toHexString() };
+    }
+
     static from(value: any): BigNumber {
         if (value instanceof BigNumber) { return value; }
 
@@ -225,22 +229,39 @@ export class BigNumber implements Hexable {
             return BigNumber.from(String(value));
         }
 
-        if (typeof(value) === "bigint") {
-            return BigNumber.from((<any>value).toString());
+        const anyValue = <any>value;
+
+        if (typeof(anyValue) === "bigint") {
+            return BigNumber.from(anyValue.toString());
         }
 
-        if (isBytes(value)) {
-            return BigNumber.from(hexlify(value));
+        if (isBytes(anyValue)) {
+            return BigNumber.from(hexlify(anyValue));
         }
 
-        if ((<any>value)._hex && isHexString((<any>value)._hex)) {
-            return BigNumber.from((<any>value)._hex);
-        }
+        if (anyValue) {
 
-        if ((<any>value).toHexString) {
-            value = (<any>value).toHexString();
-            if (typeof(value) === "string") {
-                return BigNumber.from(value);
+            // Hexable interface (takes piority)
+            if (anyValue.toHexString) {
+                const hex = anyValue.toHexString();
+                if (typeof(hex) === "string") {
+                    return BigNumber.from(hex);
+                }
+
+            } else {
+                // For now, handle legacy JSON-ified values (goes away in v6)
+                let hex = anyValue._hex;
+
+                // New-form JSON
+                if (hex == null && anyValue.type === "BigNumber") {
+                    hex = anyValue.hex;
+                }
+
+                if (typeof(hex) === "string") {
+                    if (isHexString(hex) || (hex[0] === "-" && isHexString(hex.substring(1)))) {
+                        return BigNumber.from(hex);
+                    }
+                }
             }
         }
 
