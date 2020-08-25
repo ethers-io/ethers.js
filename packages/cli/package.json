@@ -9,9 +9,9 @@
   "dependencies": {
     "@babel/parser": "7.8.4",
     "@babel/types": "7.8.3",
-    "@ethersproject/asm": "^5.0.0",
-    "@ethersproject/basex": "^5.0.0",
-    "ethers": "^5.0.0",
+    "@ethersproject/asm": "^5.0.3",
+    "@ethersproject/basex": "^5.0.3",
+    "ethers": "^5.0.9",
     "mime-types": "2.1.11",
     "scrypt-js": "3.0.1",
     "solc": "0.5.10",
@@ -41,7 +41,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0xfdc0fad9825a96be6014812af5569db22a09cbf187160093655e0760ea47b114",
+  "tarballHash": "0xed228fdbbb6124ddd1378a2bd80bf33815dfb6b88bbf349544f919e2247eeeb6",
   "types": "./lib/index.d.ts",
-  "version": "5.0.2"
+  "version": "5.0.3"
 }

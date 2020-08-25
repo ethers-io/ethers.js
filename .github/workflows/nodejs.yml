@@ -69,7 +69,7 @@ jobs:
       - run: npm run build-all
       - run: npm run test-coverage
 
-      - name: Upload Coverage Summary
+      - name: Upload coverage summary
         uses: actions/upload-artifact@v2
         with:
           name: coverage-summary
@@ -78,7 +78,7 @@ jobs:
       - name: Tar files
         run: tar -cvf ./output/coverage.tar ./output/lcov-report/
 
-      - name: Upload Coverage
+      - name: Upload coverage
         uses: actions/upload-artifact@v2
         with:
           name: coverage-complete

@@ -171,7 +171,7 @@ export class ArrayCoder extends Coder {
             count = value.length;
             writer.writeValue(value.length);
         }
-        logger.checkArgumentCount(count, value.length, "coder array" + (this.localName ? (" " + this.localName) : ""));
+        logger.checkArgumentCount(value.length, count, "coder array" + (this.localName ? (" " + this.localName) : ""));
         let coders = [];
         for (let i = 0; i < value.length; i++) {
             coders.push(this.coder);

@@ -10,10 +10,10 @@
     "ethers": "./lib/browser-ethers.js"
   },
   "dependencies": {
-    "@ethersproject/cli": "^5.0.0",
-    "@ethersproject/testcases": "^5.0.0",
+    "@ethersproject/cli": "^5.0.3",
+    "@ethersproject/testcases": "^5.0.4",
     "@types/mocha": "^5.2.0",
-    "ethers": "^5.0.0"
+    "ethers": "^5.0.9"
   },
   "description": "Testing package for ethers.",
   "devDependencies": {
@@ -39,7 +39,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0xc942735bd0e208426f49181e44da6143c1a068cf2ff5ed5a5122d8a2e87e4ead",
+  "tarballHash": "0x260d33d709dd38545678a3af27b1d2fdccbb4eaabd9648a1ce2359a5894ccd7f",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

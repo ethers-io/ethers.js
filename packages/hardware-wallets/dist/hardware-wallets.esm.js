@@ -8,7 +8,7 @@ else {
     ethers = w._ethers;
 }
 
-const version = "hardware-wallets/5.0.3";
+const version = "hardware-wallets/5.0.4";
 
 var global$1 = (typeof global !== "undefined" ? global :
             typeof self !== "undefined" ? self :

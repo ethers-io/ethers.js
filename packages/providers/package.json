@@ -16,21 +16,21 @@
     "ws": "./lib/browser-ws.js"
   },
   "dependencies": {
-    "@ethersproject/abstract-provider": "^5.0.0",
-    "@ethersproject/abstract-signer": "^5.0.0",
-    "@ethersproject/address": "^5.0.0",
-    "@ethersproject/bignumber": "^5.0.0",
-    "@ethersproject/bytes": "^5.0.0",
-    "@ethersproject/constants": "^5.0.0",
-    "@ethersproject/hash": "^5.0.0",
-    "@ethersproject/logger": "^5.0.0",
-    "@ethersproject/networks": "^5.0.0",
-    "@ethersproject/properties": "^5.0.0",
-    "@ethersproject/random": "^5.0.0",
-    "@ethersproject/rlp": "^5.0.0",
-    "@ethersproject/strings": "^5.0.0",
-    "@ethersproject/transactions": "^5.0.0",
-    "@ethersproject/web": "^5.0.0",
+    "@ethersproject/abstract-provider": "^5.0.3",
+    "@ethersproject/abstract-signer": "^5.0.3",
+    "@ethersproject/address": "^5.0.3",
+    "@ethersproject/bignumber": "^5.0.6",
+    "@ethersproject/bytes": "^5.0.4",
+    "@ethersproject/constants": "^5.0.3",
+    "@ethersproject/hash": "^5.0.3",
+    "@ethersproject/logger": "^5.0.5",
+    "@ethersproject/networks": "^5.0.3",
+    "@ethersproject/properties": "^5.0.3",
+    "@ethersproject/random": "^5.0.3",
+    "@ethersproject/rlp": "^5.0.3",
+    "@ethersproject/strings": "^5.0.3",
+    "@ethersproject/transactions": "^5.0.3",
+    "@ethersproject/web": "^5.0.4",
     "ws": "7.2.3"
   },
   "description": "Ethereum Providers for ethers.",
@@ -56,7 +56,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x4037514c8693061300f9e72c0dc441786b640e3de69ef48dc7ff61467260d361",
+  "tarballHash": "0x1d61cdffeed914388b28d4b32a324caece7f9d0cb71f23cbb26a946da14a5fef",
   "types": "./lib/index.d.ts",
-  "version": "5.0.5"
+  "version": "5.0.6"
 }

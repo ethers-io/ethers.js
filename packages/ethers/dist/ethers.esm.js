@@ -3461,7 +3461,7 @@ var bn = createCommonjsModule(function (module) {
 });
 var bn_1 = bn.BN;
 
-const version = "logger/5.0.4";
+const version = "logger/5.0.5";
 
 "use strict";
 let _permanentCensorErrors = false;
@@ -3762,7 +3762,7 @@ var lib_esm = /*#__PURE__*/Object.freeze({
 	Logger: Logger
 });
 
-const version$1 = "bytes/5.0.3";
+const version$1 = "bytes/5.0.4";
 
 "use strict";
 const logger = new Logger(version$1);
@@ -4161,7 +4161,7 @@ var lib_esm$1 = /*#__PURE__*/Object.freeze({
 	joinSignature: joinSignature
 });
 
-const version$2 = "bignumber/5.0.5";
+const version$2 = "bignumber/5.0.6";
 
 "use strict";
 const logger$1 = new Logger(version$2);
@@ -4308,6 +4308,9 @@ class BigNumber {
     toHexString() {
         return this._hex;
     }
+    toJSON(key) {
+        return { type: "BigNumber", hex: this.toHexString() };
+    }
     static from(value) {
         if (value instanceof BigNumber) {
             return value;
@@ -4330,19 +4333,33 @@ class BigNumber {
             }
             return BigNumber.from(String(value));
         }
-        if (typeof (value) === "bigint") {
-            return BigNumber.from(value.toString());
+        const anyValue = value;
+        if (typeof (anyValue) === "bigint") {
+            return BigNumber.from(anyValue.toString());
         }
-        if (isBytes(value)) {
-            return BigNumber.from(hexlify(value));
+        if (isBytes(anyValue)) {
+            return BigNumber.from(hexlify(anyValue));
         }
-        if (value._hex && isHexString(value._hex)) {
-            return BigNumber.from(value._hex);
-        }
-        if (value.toHexString) {
-            value = value.toHexString();
-            if (typeof (value) === "string") {
-                return BigNumber.from(value);
+        if (anyValue) {
+            // Hexable interface (takes piority)
+            if (anyValue.toHexString) {
+                const hex = anyValue.toHexString();
+                if (typeof (hex) === "string") {
+                    return BigNumber.from(hex);
+                }
+            }
+            else {
+                // For now, handle legacy JSON-ified values (goes away in v6)
+                let hex = anyValue._hex;
+                // New-form JSON
+                if (hex == null && anyValue.type === "BigNumber") {
+                    hex = anyValue.hex;
+                }
+                if (typeof (hex) === "string") {
+                    if (isHexString(hex) || (hex[0] === "-" && isHexString(hex.substring(1)))) {
+                        return BigNumber.from(hex);
+                    }
+                }
             }
         }
         return logger$1.throwArgumentError("invalid BigNumber value", "value", value);
@@ -4725,7 +4742,7 @@ class FixedNumber {
     }
 }
 
-const version$3 = "properties/5.0.2";
+const version$3 = "properties/5.0.3";
 
 "use strict";
 var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -4842,7 +4859,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.0.2";
+const version$4 = "abi/5.0.3";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -6235,7 +6252,7 @@ function keccak256(data) {
     return '0x' + sha3.keccak_256(arrayify(data));
 }
 
-const version$5 = "rlp/5.0.2";
+const version$5 = "rlp/5.0.3";
 
 "use strict";
 const logger$6 = new Logger(version$5);
@@ -6358,7 +6375,7 @@ var index = /*#__PURE__*/Object.freeze({
 	decode: decode
 });
 
-const version$6 = "address/5.0.2";
+const version$6 = "address/5.0.3";
 
 "use strict";
 const logger$7 = new Logger(version$6);
@@ -6691,7 +6708,7 @@ class ArrayCoder extends Coder {
             count = value.length;
             writer.writeValue(value.length);
         }
-        logger$8.checkArgumentCount(count, value.length, "coder array" + (this.localName ? (" " + this.localName) : ""));
+        logger$8.checkArgumentCount(value.length, count, "coder array" + (this.localName ? (" " + this.localName) : ""));
         let coders = [];
         for (let i = 0; i < value.length; i++) {
             coders.push(this.coder);
@@ -6845,7 +6862,7 @@ class NumberCoder extends Coder {
     }
 }
 
-const version$7 = "strings/5.0.2";
+const version$7 = "strings/5.0.3";
 
 "use strict";
 const logger$9 = new Logger(version$7);
@@ -7422,7 +7439,7 @@ class AbiCoder {
 }
 const defaultAbiCoder = new AbiCoder();
 
-const version$8 = "hash/5.0.2";
+const version$8 = "hash/5.0.3";
 
 "use strict";
 const logger$b = new Logger(version$8);
@@ -7956,7 +7973,7 @@ class Interface {
 
 "use strict";
 
-const version$9 = "abstract-provider/5.0.2";
+const version$9 = "abstract-provider/5.0.3";
 
 "use strict";
 const logger$d = new Logger(version$9);
@@ -8033,7 +8050,7 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.0.2";
+const version$a = "abstract-signer/5.0.3";
 
 "use strict";
 var __awaiter$1 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8233,7 +8250,7 @@ class VoidSigner extends Signer {
     }
 }
 
-const version$b = "contracts/5.0.2";
+const version$b = "contracts/5.0.3";
 
 "use strict";
 var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -10460,7 +10477,7 @@ var hash_5 = hash_1.sha512;
 var _version = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "sha2/5.0.2";
+exports.version = "sha2/5.0.3";
 
 });
 
@@ -16396,7 +16413,7 @@ elliptic.eddsa = eddsa;
 });
 var elliptic_2 = elliptic_1.ec;
 
-const version$d = "signing-key/5.0.3";
+const version$d = "signing-key/5.0.4";
 
 "use strict";
 const logger$g = new Logger(version$d);
@@ -16468,7 +16485,7 @@ function computePublicKey(key, compressed) {
     return logger$g.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$e = "transactions/5.0.2";
+const version$e = "transactions/5.0.3";
 
 "use strict";
 const logger$h = new Logger(version$e);
@@ -16629,7 +16646,7 @@ function parse(rawTransaction) {
     return tx;
 }
 
-const version$f = "wordlists/5.0.2";
+const version$f = "wordlists/5.0.3";
 
 "use strict";
 // This gets overridden by rollup
@@ -16713,7 +16730,7 @@ Wordlist.register(langEn);
 "use strict";
 const wordlists = { en: langEn };
 
-const version$g = "hdnode/5.0.2";
+const version$g = "hdnode/5.0.3";
 
 "use strict";
 const logger$j = new Logger(version$g);
@@ -17028,7 +17045,7 @@ function isValidMnemonic(mnemonic, wordlist) {
     return false;
 }
 
-const version$h = "random/5.0.2";
+const version$h = "random/5.0.3";
 
 "use strict";
 function shuffled(array) {
@@ -17884,7 +17901,7 @@ var aesJs = createCommonjsModule(function (module, exports) {
 })(commonjsGlobal);
 });
 
-const version$i = "json-wallets/5.0.4";
+const version$i = "json-wallets/5.0.5";
 
 "use strict";
 function looseArrayify(hexString) {
@@ -18856,7 +18873,7 @@ function decryptJsonWalletSync(json, password) {
     throw new Error("invalid JSON wallet");
 }
 
-const version$j = "wallet/5.0.2";
+const version$j = "wallet/5.0.3";
 
 "use strict";
 const logger$n = new Logger(version$j);
@@ -18986,7 +19003,7 @@ function verifyMessage(message, signature) {
     return recoverAddress(hashMessage(message), signature);
 }
 
-const version$k = "networks/5.0.2";
+const version$k = "networks/5.0.3";
 
 "use strict";
 const logger$o = new Logger(version$k);
@@ -19216,7 +19233,7 @@ var browser$2 = /*#__PURE__*/Object.freeze({
 	encode: encode$1
 });
 
-const version$l = "web/5.0.3";
+const version$l = "web/5.0.4";
 
 "use strict";
 var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -19591,7 +19608,7 @@ function poll(func, options) {
     });
 }
 
-const version$m = "providers/5.0.5";
+const version$m = "providers/5.0.6";
 
 "use strict";
 const logger$q = new Logger(version$m);
@@ -21109,7 +21126,7 @@ class BaseProvider extends Provider {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.5";
+exports.version = "providers/5.0.6";
 
 });
 
@@ -23289,7 +23306,7 @@ function sha256$1(types, values) {
     return browser_3(pack$1(types, values));
 }
 
-const version$n = "units/5.0.2";
+const version$n = "units/5.0.3";
 
 "use strict";
 const logger$D = new Logger(version$n);
@@ -23464,7 +23481,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.8";
+const version$o = "ethers/5.0.9";
 
 "use strict";
 const logger$E = new Logger(version$o);

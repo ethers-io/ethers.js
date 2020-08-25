@@ -157,6 +157,9 @@ var BigNumber = /** @class */ (function () {
     BigNumber.prototype.toHexString = function () {
         return this._hex;
     };
+    BigNumber.prototype.toJSON = function (key) {
+        return { type: "BigNumber", hex: this.toHexString() };
+    };
     BigNumber.from = function (value) {
         if (value instanceof BigNumber) {
             return value;
@@ -179,19 +182,33 @@ var BigNumber = /** @class */ (function () {
             }
             return BigNumber.from(String(value));
         }
-        if (typeof (value) === "bigint") {
-            return BigNumber.from(value.toString());
+        var anyValue = value;
+        if (typeof (anyValue) === "bigint") {
+            return BigNumber.from(anyValue.toString());
         }
-        if (bytes_1.isBytes(value)) {
-            return BigNumber.from(bytes_1.hexlify(value));
+        if (bytes_1.isBytes(anyValue)) {
+            return BigNumber.from(bytes_1.hexlify(anyValue));
         }
-        if (value._hex && bytes_1.isHexString(value._hex)) {
-            return BigNumber.from(value._hex);
-        }
-        if (value.toHexString) {
-            value = value.toHexString();
-            if (typeof (value) === "string") {
-                return BigNumber.from(value);
+        if (anyValue) {
+            // Hexable interface (takes piority)
+            if (anyValue.toHexString) {
+                var hex = anyValue.toHexString();
+                if (typeof (hex) === "string") {
+                    return BigNumber.from(hex);
+                }
+            }
+            else {
+                // For now, handle legacy JSON-ified values (goes away in v6)
+                var hex = anyValue._hex;
+                // New-form JSON
+                if (hex == null && anyValue.type === "BigNumber") {
+                    hex = anyValue.hex;
+                }
+                if (typeof (hex) === "string") {
+                    if (bytes_1.isHexString(hex) || (hex[0] === "-" && bytes_1.isHexString(hex.substring(1)))) {
+                        return BigNumber.from(hex);
+                    }
+                }
             }
         }
         return logger.throwArgumentError("invalid BigNumber value", "value", value);

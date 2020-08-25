@@ -3,6 +3,14 @@ Changelog
 
 This change log is managed by `scripts/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.9 (2020-08-25 01:45)
+--------------------------------
+
+  - Updated docs for all packages on npm pages. ([#1013](https://github.com/ethers-io/ethers.js/issues/1013); [cb8f4a3](https://github.com/ethers-io/ethers.js/commit/cb8f4a3a4e378a749c6bbbddf46d8d79d35722cc))
+  - Added JSON support to BigNumber. ([#1010](https://github.com/ethers-io/ethers.js/issues/1010); [8facc1a](https://github.com/ethers-io/ethers.js/commit/8facc1a5305b1f699aa3afc5a0a692abe7927652))
+  - Updated packages for security audit. ([5b5904e](https://github.com/ethers-io/ethers.js/commit/5b5904ea9977ecf8c079a57593b627553f0126a0))
+  - Fix emitted error for ABI code array count mismatch. ([#1004](https://github.com/ethers-io/ethers.js/issues/1004); [b0c082d](https://github.com/ethers-io/ethers.js/commit/b0c082d728dc66b0f2a5ec315da44d6295716284))
+
 ethers/v5.0.8 (2020-08-04 20:55)
 --------------------------------
 

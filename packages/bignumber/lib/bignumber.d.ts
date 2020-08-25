@@ -30,6 +30,7 @@ export declare class BigNumber implements Hexable {
     toNumber(): number;
     toString(): string;
     toHexString(): string;
+    toJSON(key?: string): any;
     static from(value: any): BigNumber;
     static isBigNumber(value: any): value is BigNumber;
 }
