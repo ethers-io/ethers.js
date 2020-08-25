@@ -1,15 +1,12 @@
 Testcases for Ethereum
 ======================
 
-**EXPERIMENTAL**
+This sub-module is part of the [ethers project](https://github.com/ethers-io/ethers.js).
 
-Please see the [ethers](https://github.com/ethers-io/ethers.js) repository
-for more informations.
+It contains the testcases used to verify various Ethereum operations.
 
-API
----
+For more information, see the [documentation](https://docs.ethers.io/v5/testing/).
 
-`@TODO`
 
 License
 -------

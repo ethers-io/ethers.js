@@ -29,7 +29,6 @@ console.log(encodedData);
 // "..."
 ```
 
-
 License
 =======
 

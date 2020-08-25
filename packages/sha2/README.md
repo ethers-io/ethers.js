@@ -1,15 +1,36 @@
 SHA2 Hash Functions
 ===================
 
-**EXPERIMENTAL**
+This sub-module is part of the [ethers project](https://github.com/ethers-io/ethers.js).
 
-Please see the [ethers](https://github.com/ethers-io/ethers.js) repository
-for more informations.
+It is responsible for common cryptographic hashes and HMAC.
 
-API
----
+For more information, see the [documentation](https://docs.ethers.io/v5/api/utils/hashing/).
 
-`@TODO`
+
+Importing
+---------
+
+Most users will prefer to use the [umbrella package](https://www.npmjs.com/package/ethers),
+but for those with more specific needs, individual components can be imported.
+
+```javascript
+const {
+
+    ripemd160,
+
+    sha256,
+    sha512,
+
+    computeHmac,
+
+    // Enums
+
+    SupportedAlgorithm
+
+} = require("@ethersproject/sha2");
+```
+
 
 License
 -------

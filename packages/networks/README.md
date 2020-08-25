@@ -1,15 +1,32 @@
 Ethereum (and ilk) Network Definitions
 ======================================
 
-**EXPERIMENTAL**
+This sub-module is part of the [ethers project](https://github.com/ethers-io/ethers.js).
 
-Please see the [ethers](https://github.com/ethers-io/ethers.js) repository
-for more informations.
+It is responsible for tracking common networks along with important
+parameters for each.
 
-API
----
+For more information, see the [documentation](https://docs.ethers.io/v5/api/providers/types/#providers-Network).
 
-`@TODO`
+Importing
+---------
+
+Most users will prefer to use the [umbrella package](https://www.npmjs.com/package/ethers),
+but for those with more specific needs, individual components can be imported.
+
+```javascript
+const {
+
+    getNetwork,
+
+    // Types
+
+    Network,
+    Networkish
+
+} = require("@ethersproject/networks");
+```
+
 
 License
 -------
