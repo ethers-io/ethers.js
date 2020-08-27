@@ -96,7 +96,12 @@ export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
 
     // Prevent underflow
     if (fraction.length > multiplier.length - 1) {
-        throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
+        // handle case 123.45600000
+        if (fraction.slice(multiplier.length, fraction.length) !== '0'.repeat(fraction.length-multiplier.length-1)) {
+            throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
+        } else {
+            fraction = fraction.slice(0, multiplier.length)
+        }
     }
 
     // Fully pad the string with zeros to get to wei
