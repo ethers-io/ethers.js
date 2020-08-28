@@ -9,6 +9,6 @@ import "./test-utils";
 import "./test-wallet";
 import "./test-wordlists";
 
-import { Reporter } from "./reporter";
+import { LogFunc, Reporter, setLogFunc } from "./reporter";
 
-export { Reporter }
+export { LogFunc, Reporter, setLogFunc }
