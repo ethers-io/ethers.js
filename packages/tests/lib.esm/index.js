@@ -7,6 +7,6 @@ import "./test-providers";
 import "./test-utils";
 import "./test-wallet";
 import "./test-wordlists";
-import { Reporter } from "./reporter";
-export { Reporter };
+import { Reporter, setLogFunc } from "./reporter";
+export { Reporter, setLogFunc };
 //# sourceMappingURL=index.js.map

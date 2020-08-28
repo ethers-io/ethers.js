@@ -21,6 +21,11 @@ function getDelta(t0) {
     }
     return '(' + minutes + ':' + seconds + ')';
 }
+var _logFunc = console.log.bind(console);
+function setLogFunc(logFunc) {
+    _logFunc = logFunc;
+}
+exports.setLogFunc = setLogFunc;
 function Reporter(runner) {
     var suites = [];
     // Force Output; Keeps the console output alive with periodic updates
@@ -43,7 +48,7 @@ function Reporter(runner) {
         if (!message) {
             message = '';
         }
-        console.log(getIndent() + message);
+        _logFunc(getIndent() + message);
         lastOutput = getTime();
     }
     runner.on('suite', function (suite) {
@@ -77,8 +82,8 @@ function Reporter(runner) {
         if (extras.length) {
             extra = " (" + extras.join(",") + ")  ******** WARNING! ********";
         }
-        log("  Total Tests: " + suite._countPass + "/" + suite._countTotal + " passed " + getDelta(suite._t0) + " " + extra + " ");
-        log();
+        log("  Total Tests: " + suite._countPass + "/" + suite._countTotal + " passed " + getDelta(suite._t0) + " " + extra + " \n");
+        //log();
         if (suites.length > 0) {
             var currentSuite = suites[suites.length - 1];
             currentSuite._countFail += suite._countFail;
@@ -88,6 +93,7 @@ function Reporter(runner) {
         }
         else {
             clearTimeout(timer);
+            log("# status:" + ((suite._countPass === suite._countTotal) ? 0 : 1));
         }
     });
     runner.on('test', function (test) {

@@ -6,5 +6,5 @@ import "./test-providers";
 import "./test-utils";
 import "./test-wallet";
 import "./test-wordlists";
-import { Reporter } from "./reporter";
-export { Reporter };
+import { LogFunc, Reporter, setLogFunc } from "./reporter";
+export { LogFunc, Reporter, setLogFunc };

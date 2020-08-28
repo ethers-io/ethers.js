@@ -10,4 +10,5 @@ require("./test-wallet");
 require("./test-wordlists");
 var reporter_1 = require("./reporter");
 exports.Reporter = reporter_1.Reporter;
+exports.setLogFunc = reporter_1.setLogFunc;
 //# sourceMappingURL=index.js.map
