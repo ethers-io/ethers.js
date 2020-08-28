@@ -50,6 +50,29 @@ jobs:
       - run: npm run test-browser-${{ matrix.module }}
 
 
+  test-react-native:
+
+    runs-on: macos-latest
+
+    # Temporary for testing CI
+    continue-on-error: true
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - uses: actions/checkout@v2
+
+      - run: npm ci
+      - run: npm run build-all
+      - run: npm run test-react
+
+
   coverage:
 
     name: Coverage
