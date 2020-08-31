@@ -10,7 +10,7 @@ ContractFactory
 Creating Instances
 ------------------
 
-#### **new ***ethers* . **ContractFactory**( interface , bydecode [ , signer ] )
+#### **new ***ethers* . **ContractFactory**( interface , bytecode [ , signer ] )
 
 
 
