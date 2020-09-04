@@ -17,7 +17,7 @@ A complete Ethereum wallet implementation and utilities in JavaScript (and TypeS
 - **Tiny** (~104kb compressed; 322kb uncompressed)
 - **Modular** packages; include only what you need
 - **Complete** functionality for all your Ethereum desires
-- Extensive [documentation](https://docs.ethers.io/ethers.js/v5/)
+- Extensive [documentation](https://docs.ethers.io/v5/)
 - Large collection of **test cases** which are maintained and added to
 - Fully **TypeScript** ready, with definition files and full TypeScript source
 - **MIT License** (including ALL dependencies); completely open source to do with as you please
