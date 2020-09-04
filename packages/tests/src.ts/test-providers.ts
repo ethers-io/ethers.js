@@ -415,6 +415,7 @@ function testProvider(providerName: string, networkName: string) {
     const delay = 1000;
 
     describe(("Read-Only " + providerName + " (" + networkName + ")"), function() {
+        this.retries(3);
 
         // Get the Provider based on the name of the provider we are testing and the network
         let provider: ethers.providers.Provider = null;
@@ -615,6 +616,8 @@ describe("Test extra Etherscan operations", function() {
 */
 
 describe("Test Basic Authentication", function() {
+    this.retries(3);
+
     // https://stackoverflow.com/questions/6509278/authentication-test-servers#16756383
 
     type TestCase = {
@@ -738,6 +741,8 @@ describe("Test API Key Formatting", function() {
 });
 
 describe("Test WebSocketProvider", function() {
+    this.retries(3);
+
     async function testWebSocketProvider(provider: ethers.providers.WebSocketProvider): Promise<void> {
         await provider.destroy();
     }
@@ -749,6 +754,8 @@ describe("Test WebSocketProvider", function() {
 });
 
 describe("Test Events", function() {
+    this.retries(3);
+
     async function testBlockEvent(provider: ethers.providers.Provider) {
         return new Promise((resolve, reject) => {
             let firstBlockNumber: number = null;
