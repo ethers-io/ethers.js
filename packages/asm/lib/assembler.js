@@ -711,7 +711,8 @@ function disassemble(bytecode) {
         }
         var op = {
             opcode: opcode,
-            offset: i
+            offset: i,
+            length: 1
         };
         offsets[i] = op;
         ops.push(op);
@@ -721,6 +722,7 @@ function disassemble(bytecode) {
             var data = ethers_1.ethers.utils.hexlify(bytes.slice(i, i + push));
             if (ethers_1.ethers.utils.hexDataLength(data) === push) {
                 op.pushValue = data;
+                op.length += push;
                 i += push;
             }
             else {
@@ -729,8 +731,30 @@ function disassemble(bytecode) {
         }
     }
     ops.getOperation = function (offset) {
+        if (offset >= bytes.length) {
+            return {
+                opcode: opcodes_1.Opcode.from("STOP"),
+                offset: offset,
+                length: 1
+            };
+        }
         return (offsets[offset] || null);
     };
+    ops.getByte = function (offset) {
+        if (offset >= bytes.length) {
+            return 0x00;
+        }
+        return bytes[offset];
+    };
+    ops.getBytes = function (offset, length) {
+        var result = new Uint8Array(length);
+        result.fill(0);
+        if (offset < bytes.length) {
+            result.set(bytes.slice(offset));
+        }
+        return ethers_1.ethers.utils.arrayify(result);
+    };
+    ops.byteLength = bytes.length;
     return ops;
 }
 exports.disassemble = disassemble;

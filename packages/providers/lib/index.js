@@ -6,6 +6,7 @@ var networks_1 = require("@ethersproject/networks");
 exports.getNetwork = networks_1.getNetwork;
 var base_provider_1 = require("./base-provider");
 exports.BaseProvider = base_provider_1.BaseProvider;
+exports.Resolver = base_provider_1.Resolver;
 var alchemy_provider_1 = require("./alchemy-provider");
 exports.AlchemyProvider = alchemy_provider_1.AlchemyProvider;
 var cloudflare_provider_1 = require("./cloudflare-provider");

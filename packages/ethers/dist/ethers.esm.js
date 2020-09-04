@@ -19608,7 +19608,197 @@ function poll(func, options) {
     });
 }
 
-const version$m = "providers/5.0.6";
+'use strict';
+var ALPHABET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+
+// pre-compute lookup table
+var ALPHABET_MAP = {};
+for (var z = 0; z < ALPHABET.length; z++) {
+  var x = ALPHABET.charAt(z);
+
+  if (ALPHABET_MAP[x] !== undefined) throw new TypeError(x + ' is ambiguous')
+  ALPHABET_MAP[x] = z;
+}
+
+function polymodStep (pre) {
+  var b = pre >> 25;
+  return ((pre & 0x1FFFFFF) << 5) ^
+    (-((b >> 0) & 1) & 0x3b6a57b2) ^
+    (-((b >> 1) & 1) & 0x26508e6d) ^
+    (-((b >> 2) & 1) & 0x1ea119fa) ^
+    (-((b >> 3) & 1) & 0x3d4233dd) ^
+    (-((b >> 4) & 1) & 0x2a1462b3)
+}
+
+function prefixChk (prefix) {
+  var chk = 1;
+  for (var i = 0; i < prefix.length; ++i) {
+    var c = prefix.charCodeAt(i);
+    if (c < 33 || c > 126) return 'Invalid prefix (' + prefix + ')'
+
+    chk = polymodStep(chk) ^ (c >> 5);
+  }
+  chk = polymodStep(chk);
+
+  for (i = 0; i < prefix.length; ++i) {
+    var v = prefix.charCodeAt(i);
+    chk = polymodStep(chk) ^ (v & 0x1f);
+  }
+  return chk
+}
+
+function encode$2 (prefix, words, LIMIT) {
+  LIMIT = LIMIT || 90;
+  if ((prefix.length + 7 + words.length) > LIMIT) throw new TypeError('Exceeds length limit')
+
+  prefix = prefix.toLowerCase();
+
+  // determine chk mod
+  var chk = prefixChk(prefix);
+  if (typeof chk === 'string') throw new Error(chk)
+
+  var result = prefix + '1';
+  for (var i = 0; i < words.length; ++i) {
+    var x = words[i];
+    if ((x >> 5) !== 0) throw new Error('Non 5-bit word')
+
+    chk = polymodStep(chk) ^ x;
+    result += ALPHABET.charAt(x);
+  }
+
+  for (i = 0; i < 6; ++i) {
+    chk = polymodStep(chk);
+  }
+  chk ^= 1;
+
+  for (i = 0; i < 6; ++i) {
+    var v = (chk >> ((5 - i) * 5)) & 0x1f;
+    result += ALPHABET.charAt(v);
+  }
+
+  return result
+}
+
+function __decode (str, LIMIT) {
+  LIMIT = LIMIT || 90;
+  if (str.length < 8) return str + ' too short'
+  if (str.length > LIMIT) return 'Exceeds length limit'
+
+  // don't allow mixed case
+  var lowered = str.toLowerCase();
+  var uppered = str.toUpperCase();
+  if (str !== lowered && str !== uppered) return 'Mixed-case string ' + str
+  str = lowered;
+
+  var split = str.lastIndexOf('1');
+  if (split === -1) return 'No separator character for ' + str
+  if (split === 0) return 'Missing prefix for ' + str
+
+  var prefix = str.slice(0, split);
+  var wordChars = str.slice(split + 1);
+  if (wordChars.length < 6) return 'Data too short'
+
+  var chk = prefixChk(prefix);
+  if (typeof chk === 'string') return chk
+
+  var words = [];
+  for (var i = 0; i < wordChars.length; ++i) {
+    var c = wordChars.charAt(i);
+    var v = ALPHABET_MAP[c];
+    if (v === undefined) return 'Unknown character ' + c
+    chk = polymodStep(chk) ^ v;
+
+    // not in the checksum?
+    if (i + 6 >= wordChars.length) continue
+    words.push(v);
+  }
+
+  if (chk !== 1) return 'Invalid checksum for ' + str
+  return { prefix: prefix, words: words }
+}
+
+function decodeUnsafe () {
+  var res = __decode.apply(null, arguments);
+  if (typeof res === 'object') return res
+}
+
+function decode$2 (str) {
+  var res = __decode.apply(null, arguments);
+  if (typeof res === 'object') return res
+
+  throw new Error(res)
+}
+
+function convert (data, inBits, outBits, pad) {
+  var value = 0;
+  var bits = 0;
+  var maxV = (1 << outBits) - 1;
+
+  var result = [];
+  for (var i = 0; i < data.length; ++i) {
+    value = (value << inBits) | data[i];
+    bits += inBits;
+
+    while (bits >= outBits) {
+      bits -= outBits;
+      result.push((value >> bits) & maxV);
+    }
+  }
+
+  if (pad) {
+    if (bits > 0) {
+      result.push((value << (outBits - bits)) & maxV);
+    }
+  } else {
+    if (bits >= inBits) return 'Excess padding'
+    if ((value << (outBits - bits)) & maxV) return 'Non-zero padding'
+  }
+
+  return result
+}
+
+function toWordsUnsafe (bytes) {
+  var res = convert(bytes, 8, 5, true);
+  if (Array.isArray(res)) return res
+}
+
+function toWords (bytes) {
+  var res = convert(bytes, 8, 5, true);
+  if (Array.isArray(res)) return res
+
+  throw new Error(res)
+}
+
+function fromWordsUnsafe (words) {
+  var res = convert(words, 5, 8, false);
+  if (Array.isArray(res)) return res
+}
+
+function fromWords (words) {
+  var res = convert(words, 5, 8, false);
+  if (Array.isArray(res)) return res
+
+  throw new Error(res)
+}
+
+var bech32 = {
+  decodeUnsafe: decodeUnsafe,
+  decode: decode$2,
+  encode: encode$2,
+  toWordsUnsafe: toWordsUnsafe,
+  toWords: toWords,
+  fromWordsUnsafe: fromWordsUnsafe,
+  fromWords: fromWords
+};
+var bech32_1 = bech32.decodeUnsafe;
+var bech32_2 = bech32.decode;
+var bech32_3 = bech32.encode;
+var bech32_4 = bech32.toWordsUnsafe;
+var bech32_5 = bech32.toWords;
+var bech32_6 = bech32.fromWordsUnsafe;
+var bech32_7 = bech32.fromWords;
+
+const version$m = "providers/5.0.7";
 
 "use strict";
 const logger$q = new Logger(version$m);
@@ -20154,6 +20344,182 @@ class Event {
     }
     pollable() {
         return (this.tag.indexOf(":") >= 0 || PollableEvents.indexOf(this.tag) >= 0);
+    }
+}
+;
+// https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+const coinInfos = {
+    "0": { symbol: "btc", p2pkh: 0x00, p2sh: 0x05, prefix: "bc" },
+    "2": { symbol: "ltc", p2pkh: 0x30, p2sh: 0x32, prefix: "ltc" },
+    "3": { symbol: "doge", p2pkh: 0x1e, p2sh: 0x16 },
+    "60": { symbol: "eth", ilk: "eth" },
+    "61": { symbol: "etc", ilk: "eth" },
+    "700": { symbol: "xdai", ilk: "eth" },
+};
+function bytes32ify(value) {
+    return hexZeroPad(BigNumber.from(value).toHexString(), 32);
+}
+// Compute the Base58Check encoded data (checksum is first 4 bytes of sha256d)
+function base58Encode(data) {
+    return Base58.encode(concat([data, hexDataSlice(browser_3(browser_3(data)), 0, 4)]));
+}
+class Resolver {
+    constructor(provider, address, name) {
+        defineReadOnly(this, "provider", provider);
+        defineReadOnly(this, "name", name);
+        defineReadOnly(this, "address", provider.formatter.address(address));
+    }
+    _fetchBytes(selector, parameters) {
+        return __awaiter$6(this, void 0, void 0, function* () {
+            // keccak256("addr(bytes32,uint256)")
+            const transaction = {
+                to: this.address,
+                data: hexConcat([selector, namehash(this.name), (parameters || "0x")])
+            };
+            const result = yield this.provider.call(transaction);
+            if (result === "0x") {
+                return null;
+            }
+            const offset = BigNumber.from(hexDataSlice(result, 0, 32)).toNumber();
+            const length = BigNumber.from(hexDataSlice(result, offset, offset + 32)).toNumber();
+            return hexDataSlice(result, offset + 32, offset + 32 + length);
+        });
+    }
+    _getAddress(coinType, hexBytes) {
+        const coinInfo = coinInfos[String(coinType)];
+        if (coinInfo == null) {
+            logger$r.throwError(`unsupported coin type: ${coinType}`, Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: `getAddress(${coinType})`
+            });
+        }
+        if (coinInfo.ilk === "eth") {
+            return this.provider.formatter.address(hexBytes);
+        }
+        const bytes = arrayify(hexBytes);
+        // P2PKH: OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
+        if (coinInfo.p2pkh != null) {
+            const p2pkh = hexBytes.match(/^0x76a9([0-9a-f][0-9a-f])([0-9a-f]*)88ac$/);
+            if (p2pkh) {
+                const length = parseInt(p2pkh[1], 16);
+                if (p2pkh[2].length === length * 2 && length >= 1 && length <= 75) {
+                    return base58Encode(concat([[coinInfo.p2pkh], ("0x" + p2pkh[2])]));
+                }
+            }
+        }
+        // P2SH: OP_HASH160 <scriptHash> OP_EQUAL
+        if (coinInfo.p2sh != null) {
+            const p2sh = hexBytes.match(/^0xa9([0-9a-f][0-9a-f])([0-9a-f]*)87$/);
+            if (p2sh) {
+                const length = parseInt(p2sh[1], 16);
+                if (p2sh[2].length === length * 2 && length >= 1 && length <= 75) {
+                    return base58Encode(concat([[coinInfo.p2sh], ("0x" + p2sh[2])]));
+                }
+            }
+        }
+        // Bech32
+        if (coinInfo.prefix != null) {
+            const length = bytes[1];
+            // https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#witness-program
+            let version = bytes[0];
+            if (version === 0x00) {
+                if (length !== 20 && length !== 32) {
+                    version = -1;
+                }
+            }
+            else {
+                version = -1;
+            }
+            if (version >= 0 && bytes.length === 2 + length && length >= 1 && length <= 75) {
+                const words = bech32_5(bytes.slice(2));
+                words.unshift(version);
+                return bech32_3(coinInfo.prefix, words);
+            }
+        }
+        return null;
+    }
+    getAddress(coinType) {
+        return __awaiter$6(this, void 0, void 0, function* () {
+            if (coinType == null) {
+                coinType = 60;
+            }
+            // If Ethereum, use the standard `addr(bytes32)`
+            if (coinType === 60) {
+                // keccak256("addr(bytes32)")
+                const transaction = {
+                    to: this.address,
+                    data: ("0x3b3b57de" + namehash(this.name).substring(2))
+                };
+                const hexBytes = yield this.provider.call(transaction);
+                // No address
+                if (hexBytes === "0x" || hexBytes === HashZero) {
+                    return null;
+                }
+                return this.provider.formatter.callAddress(hexBytes);
+            }
+            // keccak256("addr(bytes32,uint256")
+            const hexBytes = yield this._fetchBytes("0xf1cb7e06", bytes32ify(coinType));
+            // No address
+            if (hexBytes == null || hexBytes === "0x") {
+                return null;
+            }
+            // Compute the address
+            const address = this._getAddress(coinType, hexBytes);
+            if (address == null) {
+                logger$r.throwError(`invalid or unsupported coin data`, Logger.errors.UNSUPPORTED_OPERATION, {
+                    operation: `getAddress(${coinType})`,
+                    coinType: coinType,
+                    data: hexBytes
+                });
+            }
+            return address;
+        });
+    }
+    getContentHash() {
+        return __awaiter$6(this, void 0, void 0, function* () {
+            // keccak256("contenthash()")
+            const hexBytes = yield this._fetchBytes("0xbc1c58d1");
+            // No contenthash
+            if (hexBytes == null || hexBytes === "0x") {
+                return null;
+            }
+            // IPFS (CID: 1, Type: DAG-PB)
+            const ipfs = hexBytes.match(/^0xe3010170(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
+            if (ipfs) {
+                const length = parseInt(ipfs[3], 16);
+                if (ipfs[4].length === length * 2) {
+                    return "ipfs:/\/" + Base58.encode("0x" + ipfs[1]);
+                }
+            }
+            // Swarm (CID: 1, Type: swarm-manifest; hash/length hard-coded to keccak256/32)
+            const swarm = hexBytes.match(/^0xe40101fa011b20([0-9a-f]*)$/);
+            if (swarm) {
+                if (swarm[1].length === (32 * 2)) {
+                    return "bzz:/\/" + swarm[1];
+                }
+            }
+            return logger$r.throwError(`invalid or unsupported content hash data`, Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "getContentHash()",
+                data: hexBytes
+            });
+        });
+    }
+    getText(key) {
+        return __awaiter$6(this, void 0, void 0, function* () {
+            // The key encoded as parameter to fetchBytes
+            let keyBytes = toUtf8Bytes(key);
+            // The nodehash consumes the first slot, so the string pointer targets
+            // offset 64, with the length at offset 64 and data starting at offset 96
+            keyBytes = concat([bytes32ify(64), bytes32ify(keyBytes.length), keyBytes]);
+            // Pad to word-size (32 bytes)
+            if ((keyBytes.length % 32) !== 0) {
+                keyBytes = concat([keyBytes, hexZeroPad("0x", 32 - (key.length % 32))]);
+            }
+            const hexBytes = yield this._fetchBytes("0x59d1d43c", hexlify(keyBytes));
+            if (hexBytes == null || hexBytes === "0x") {
+                return null;
+            }
+            return toUtf8String(hexBytes);
+        });
     }
 }
 let defaultFormatter = null;
@@ -20937,6 +21303,15 @@ class BaseProvider extends Provider {
             return this.formatter.blockTag(blockTag);
         });
     }
+    getResolver(name) {
+        return __awaiter$6(this, void 0, void 0, function* () {
+            const address = yield this._getResolver(name);
+            if (address == null) {
+                return null;
+            }
+            return new Resolver(this, address, name);
+        });
+    }
     _getResolver(name) {
         return __awaiter$6(this, void 0, void 0, function* () {
             // Get the resolver from the blockchain
@@ -20970,16 +21345,11 @@ class BaseProvider extends Provider {
                 logger$r.throwArgumentError("invalid ENS name", "name", name);
             }
             // Get the addr from the resovler
-            const resolverAddress = yield this._getResolver(name);
-            if (!resolverAddress) {
+            const resolver = yield this.getResolver(name);
+            if (!resolver) {
                 return null;
             }
-            // keccak256("addr(bytes32)")
-            const transaction = {
-                to: resolverAddress,
-                data: ("0x3b3b57de" + namehash(name).substring(2))
-            };
-            return this.formatter.callAddress(yield this.call(transaction));
+            return yield resolver.getAddress();
         });
     }
     lookupAddress(address) {
@@ -21126,7 +21496,7 @@ class BaseProvider extends Provider {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.6";
+exports.version = "providers/5.0.7";
 
 });
 
@@ -23205,6 +23575,7 @@ function getDefaultProvider(network, options) {
 var index$2 = /*#__PURE__*/Object.freeze({
 	Provider: Provider,
 	BaseProvider: BaseProvider,
+	Resolver: Resolver,
 	UrlJsonRpcProvider: UrlJsonRpcProvider,
 	FallbackProvider: FallbackProvider,
 	AlchemyProvider: AlchemyProvider,
@@ -23481,7 +23852,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.9";
+const version$o = "ethers/5.0.10";
 
 "use strict";
 const logger$E = new Logger(version$o);

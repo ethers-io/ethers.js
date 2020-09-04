@@ -1,7 +1,7 @@
 import { Block, BlockTag, EventType, Filter, Log, Listener, Provider, TransactionReceipt, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { getNetwork } from "@ethersproject/networks";
 import { Network, Networkish } from "@ethersproject/networks";
-import { BaseProvider } from "./base-provider";
+import { BaseProvider, EnsProvider, EnsResolver, Resolver } from "./base-provider";
 import { AlchemyProvider } from "./alchemy-provider";
 import { CloudflareProvider } from "./cloudflare-provider";
 import { EtherscanProvider } from "./etherscan-provider";
@@ -16,4 +16,4 @@ import { WebSocketProvider } from "./websocket-provider";
 import { ExternalProvider, JsonRpcFetchFunc } from "./web3-provider";
 import { Formatter } from "./formatter";
 declare function getDefaultProvider(network?: Network | string, options?: any): BaseProvider;
-export { Provider, BaseProvider, UrlJsonRpcProvider, FallbackProvider, AlchemyProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, JsonRpcProvider, NodesmithProvider, StaticJsonRpcProvider, Web3Provider, WebSocketProvider, IpcProvider, JsonRpcSigner, getDefaultProvider, getNetwork, Formatter, Block, BlockTag, EventType, Filter, Log, Listener, TransactionReceipt, TransactionRequest, TransactionResponse, ExternalProvider, JsonRpcFetchFunc, Network, Networkish };
+export { Provider, BaseProvider, Resolver, UrlJsonRpcProvider, FallbackProvider, AlchemyProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, JsonRpcProvider, NodesmithProvider, StaticJsonRpcProvider, Web3Provider, WebSocketProvider, IpcProvider, JsonRpcSigner, getDefaultProvider, getNetwork, Formatter, Block, BlockTag, EventType, Filter, Log, Listener, TransactionReceipt, TransactionRequest, TransactionResponse, ExternalProvider, JsonRpcFetchFunc, Network, Networkish, EnsProvider, EnsResolver };

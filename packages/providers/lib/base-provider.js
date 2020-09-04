@@ -50,13 +50,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
+var basex_1 = require("@ethersproject/basex");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
+var constants_1 = require("@ethersproject/constants");
 var hash_1 = require("@ethersproject/hash");
 var networks_1 = require("@ethersproject/networks");
 var properties_1 = require("@ethersproject/properties");
+var sha2_1 = require("@ethersproject/sha2");
 var strings_1 = require("@ethersproject/strings");
 var web_1 = require("@ethersproject/web");
+var bech32_1 = require("bech32");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
@@ -219,6 +223,207 @@ var Event = /** @class */ (function () {
     return Event;
 }());
 exports.Event = Event;
+;
+// https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+var coinInfos = {
+    "0": { symbol: "btc", p2pkh: 0x00, p2sh: 0x05, prefix: "bc" },
+    "2": { symbol: "ltc", p2pkh: 0x30, p2sh: 0x32, prefix: "ltc" },
+    "3": { symbol: "doge", p2pkh: 0x1e, p2sh: 0x16 },
+    "60": { symbol: "eth", ilk: "eth" },
+    "61": { symbol: "etc", ilk: "eth" },
+    "700": { symbol: "xdai", ilk: "eth" },
+};
+function bytes32ify(value) {
+    return bytes_1.hexZeroPad(bignumber_1.BigNumber.from(value).toHexString(), 32);
+}
+// Compute the Base58Check encoded data (checksum is first 4 bytes of sha256d)
+function base58Encode(data) {
+    return basex_1.Base58.encode(bytes_1.concat([data, bytes_1.hexDataSlice(sha2_1.sha256(sha2_1.sha256(data)), 0, 4)]));
+}
+var Resolver = /** @class */ (function () {
+    function Resolver(provider, address, name) {
+        properties_1.defineReadOnly(this, "provider", provider);
+        properties_1.defineReadOnly(this, "name", name);
+        properties_1.defineReadOnly(this, "address", provider.formatter.address(address));
+    }
+    Resolver.prototype._fetchBytes = function (selector, parameters) {
+        return __awaiter(this, void 0, void 0, function () {
+            var transaction, result, offset, length;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        transaction = {
+                            to: this.address,
+                            data: bytes_1.hexConcat([selector, hash_1.namehash(this.name), (parameters || "0x")])
+                        };
+                        return [4 /*yield*/, this.provider.call(transaction)];
+                    case 1:
+                        result = _a.sent();
+                        if (result === "0x") {
+                            return [2 /*return*/, null];
+                        }
+                        offset = bignumber_1.BigNumber.from(bytes_1.hexDataSlice(result, 0, 32)).toNumber();
+                        length = bignumber_1.BigNumber.from(bytes_1.hexDataSlice(result, offset, offset + 32)).toNumber();
+                        return [2 /*return*/, bytes_1.hexDataSlice(result, offset + 32, offset + 32 + length)];
+                }
+            });
+        });
+    };
+    Resolver.prototype._getAddress = function (coinType, hexBytes) {
+        var coinInfo = coinInfos[String(coinType)];
+        if (coinInfo == null) {
+            logger.throwError("unsupported coin type: " + coinType, logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "getAddress(" + coinType + ")"
+            });
+        }
+        if (coinInfo.ilk === "eth") {
+            return this.provider.formatter.address(hexBytes);
+        }
+        var bytes = bytes_1.arrayify(hexBytes);
+        // P2PKH: OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
+        if (coinInfo.p2pkh != null) {
+            var p2pkh = hexBytes.match(/^0x76a9([0-9a-f][0-9a-f])([0-9a-f]*)88ac$/);
+            if (p2pkh) {
+                var length_1 = parseInt(p2pkh[1], 16);
+                if (p2pkh[2].length === length_1 * 2 && length_1 >= 1 && length_1 <= 75) {
+                    return base58Encode(bytes_1.concat([[coinInfo.p2pkh], ("0x" + p2pkh[2])]));
+                }
+            }
+        }
+        // P2SH: OP_HASH160 <scriptHash> OP_EQUAL
+        if (coinInfo.p2sh != null) {
+            var p2sh = hexBytes.match(/^0xa9([0-9a-f][0-9a-f])([0-9a-f]*)87$/);
+            if (p2sh) {
+                var length_2 = parseInt(p2sh[1], 16);
+                if (p2sh[2].length === length_2 * 2 && length_2 >= 1 && length_2 <= 75) {
+                    return base58Encode(bytes_1.concat([[coinInfo.p2sh], ("0x" + p2sh[2])]));
+                }
+            }
+        }
+        // Bech32
+        if (coinInfo.prefix != null) {
+            var length_3 = bytes[1];
+            // https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#witness-program
+            var version_1 = bytes[0];
+            if (version_1 === 0x00) {
+                if (length_3 !== 20 && length_3 !== 32) {
+                    version_1 = -1;
+                }
+            }
+            else {
+                version_1 = -1;
+            }
+            if (version_1 >= 0 && bytes.length === 2 + length_3 && length_3 >= 1 && length_3 <= 75) {
+                var words = bech32_1.toWords(bytes.slice(2));
+                words.unshift(version_1);
+                return bech32_1.encode(coinInfo.prefix, words);
+            }
+        }
+        return null;
+    };
+    Resolver.prototype.getAddress = function (coinType) {
+        return __awaiter(this, void 0, void 0, function () {
+            var transaction, hexBytes_1, hexBytes, address;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (coinType == null) {
+                            coinType = 60;
+                        }
+                        if (!(coinType === 60)) return [3 /*break*/, 2];
+                        transaction = {
+                            to: this.address,
+                            data: ("0x3b3b57de" + hash_1.namehash(this.name).substring(2))
+                        };
+                        return [4 /*yield*/, this.provider.call(transaction)];
+                    case 1:
+                        hexBytes_1 = _a.sent();
+                        // No address
+                        if (hexBytes_1 === "0x" || hexBytes_1 === constants_1.HashZero) {
+                            return [2 /*return*/, null];
+                        }
+                        return [2 /*return*/, this.provider.formatter.callAddress(hexBytes_1)];
+                    case 2: return [4 /*yield*/, this._fetchBytes("0xf1cb7e06", bytes32ify(coinType))];
+                    case 3:
+                        hexBytes = _a.sent();
+                        // No address
+                        if (hexBytes == null || hexBytes === "0x") {
+                            return [2 /*return*/, null];
+                        }
+                        address = this._getAddress(coinType, hexBytes);
+                        if (address == null) {
+                            logger.throwError("invalid or unsupported coin data", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
+                                operation: "getAddress(" + coinType + ")",
+                                coinType: coinType,
+                                data: hexBytes
+                            });
+                        }
+                        return [2 /*return*/, address];
+                }
+            });
+        });
+    };
+    Resolver.prototype.getContentHash = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var hexBytes, ipfs, length_4, swarm;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this._fetchBytes("0xbc1c58d1")];
+                    case 1:
+                        hexBytes = _a.sent();
+                        // No contenthash
+                        if (hexBytes == null || hexBytes === "0x") {
+                            return [2 /*return*/, null];
+                        }
+                        ipfs = hexBytes.match(/^0xe3010170(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
+                        if (ipfs) {
+                            length_4 = parseInt(ipfs[3], 16);
+                            if (ipfs[4].length === length_4 * 2) {
+                                return [2 /*return*/, "ipfs:/\/" + basex_1.Base58.encode("0x" + ipfs[1])];
+                            }
+                        }
+                        swarm = hexBytes.match(/^0xe40101fa011b20([0-9a-f]*)$/);
+                        if (swarm) {
+                            if (swarm[1].length === (32 * 2)) {
+                                return [2 /*return*/, "bzz:/\/" + swarm[1]];
+                            }
+                        }
+                        return [2 /*return*/, logger.throwError("invalid or unsupported content hash data", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
+                                operation: "getContentHash()",
+                                data: hexBytes
+                            })];
+                }
+            });
+        });
+    };
+    Resolver.prototype.getText = function (key) {
+        return __awaiter(this, void 0, void 0, function () {
+            var keyBytes, hexBytes;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        keyBytes = strings_1.toUtf8Bytes(key);
+                        // The nodehash consumes the first slot, so the string pointer targets
+                        // offset 64, with the length at offset 64 and data starting at offset 96
+                        keyBytes = bytes_1.concat([bytes32ify(64), bytes32ify(keyBytes.length), keyBytes]);
+                        // Pad to word-size (32 bytes)
+                        if ((keyBytes.length % 32) !== 0) {
+                            keyBytes = bytes_1.concat([keyBytes, bytes_1.hexZeroPad("0x", 32 - (key.length % 32))]);
+                        }
+                        return [4 /*yield*/, this._fetchBytes("0x59d1d43c", bytes_1.hexlify(keyBytes))];
+                    case 1:
+                        hexBytes = _a.sent();
+                        if (hexBytes == null || hexBytes === "0x") {
+                            return [2 /*return*/, null];
+                        }
+                        return [2 /*return*/, strings_1.toUtf8String(hexBytes)];
+                }
+            });
+        });
+    };
+    return Resolver;
+}());
+exports.Resolver = Resolver;
 var defaultFormatter = null;
 var nextPollId = 1;
 var BaseProvider = /** @class */ (function (_super) {
@@ -1295,6 +1500,22 @@ var BaseProvider = /** @class */ (function (_super) {
             });
         });
     };
+    BaseProvider.prototype.getResolver = function (name) {
+        return __awaiter(this, void 0, void 0, function () {
+            var address;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this._getResolver(name)];
+                    case 1:
+                        address = _a.sent();
+                        if (address == null) {
+                            return [2 /*return*/, null];
+                        }
+                        return [2 /*return*/, new Resolver(this, address, name)];
+                }
+            });
+        });
+    };
     BaseProvider.prototype._getResolver = function (name) {
         return __awaiter(this, void 0, void 0, function () {
             var network, transaction, _a, _b;
@@ -1320,12 +1541,12 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype.resolveName = function (name) {
         return __awaiter(this, void 0, void 0, function () {
-            var resolverAddress, transaction, _a, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var resolver;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0: return [4 /*yield*/, name];
                     case 1:
-                        name = _c.sent();
+                        name = _a.sent();
                         // If it is already an address, nothing to resolve
                         try {
                             return [2 /*return*/, Promise.resolve(this.formatter.address(name))];
@@ -1339,19 +1560,14 @@ var BaseProvider = /** @class */ (function (_super) {
                         if (typeof (name) !== "string") {
                             logger.throwArgumentError("invalid ENS name", "name", name);
                         }
-                        return [4 /*yield*/, this._getResolver(name)];
+                        return [4 /*yield*/, this.getResolver(name)];
                     case 2:
-                        resolverAddress = _c.sent();
-                        if (!resolverAddress) {
+                        resolver = _a.sent();
+                        if (!resolver) {
                             return [2 /*return*/, null];
                         }
-                        transaction = {
-                            to: resolverAddress,
-                            data: ("0x3b3b57de" + hash_1.namehash(name).substring(2))
-                        };
-                        _b = (_a = this.formatter).callAddress;
-                        return [4 /*yield*/, this.call(transaction)];
-                    case 3: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+                        return [4 /*yield*/, resolver.getAddress()];
+                    case 3: return [2 /*return*/, _a.sent()];
                 }
             });
         });

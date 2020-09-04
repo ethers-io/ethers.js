@@ -25,8 +25,8 @@ serializes shared signed signing skipped stored supported tagging targetted
 throttled transactions uninstall unstake unsubscribe using verifies website
 
 // Overly Specific Words
-BIP BIP39 BIP44 crypto eip hashes hmac icap
-keccak namehash ripemd RLP scrypt secp sha
+bech BIP BIP39 BIP44 btc bzz crypto eip etc hashes hmac icap
+keccak ltc namehash ripemd RLP scrypt secp sha xdai
 
 blockhash
 

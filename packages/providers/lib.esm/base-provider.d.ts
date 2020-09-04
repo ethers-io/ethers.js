@@ -16,7 +16,30 @@ export declare class Event {
     get filter(): Filter;
     pollable(): boolean;
 }
-export declare class BaseProvider extends Provider {
+export interface EnsResolver {
+    readonly name: string;
+    readonly address: string;
+    getAddress(coinType?: 60): Promise<string>;
+    getContentHash(): Promise<string>;
+    getText(key: string): Promise<string>;
+}
+export interface EnsProvider {
+    resolveName(name: string): Promise<string>;
+    lookupAddress(address: string): Promise<string>;
+    getResolver(name: string): Promise<EnsResolver>;
+}
+export declare class Resolver implements EnsResolver {
+    readonly provider: BaseProvider;
+    readonly name: string;
+    readonly address: string;
+    constructor(provider: BaseProvider, address: string, name: string);
+    _fetchBytes(selector: string, parameters?: string): Promise<string>;
+    _getAddress(coinType: number, hexBytes: string): string;
+    getAddress(coinType?: number): Promise<string>;
+    getContentHash(): Promise<string>;
+    getText(key: string): Promise<string>;
+}
+export declare class BaseProvider extends Provider implements EnsProvider {
     _networkPromise: Promise<Network>;
     _network: Network;
     _events: Array<Event>;
@@ -87,6 +110,7 @@ export declare class BaseProvider extends Provider {
     getLogs(filter: Filter | FilterByBlockHash | Promise<Filter | FilterByBlockHash>): Promise<Array<Log>>;
     getEtherPrice(): Promise<number>;
     _getBlockTag(blockTag: BlockTag | Promise<BlockTag>): Promise<BlockTag>;
+    getResolver(name: string): Promise<Resolver>;
     _getResolver(name: string): Promise<string>;
     resolveName(name: string | Promise<string>): Promise<string>;
     lookupAddress(address: string | Promise<string>): Promise<string>;

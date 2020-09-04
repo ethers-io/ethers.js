@@ -9,13 +9,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { ForkEvent, Provider } from "@ethersproject/abstract-provider";
+import { Base58 } from "@ethersproject/basex";
 import { BigNumber } from "@ethersproject/bignumber";
-import { arrayify, hexDataLength, hexlify, hexValue, isHexString } from "@ethersproject/bytes";
+import { arrayify, concat, hexConcat, hexDataLength, hexDataSlice, hexlify, hexValue, hexZeroPad, isHexString } from "@ethersproject/bytes";
+import { HashZero } from "@ethersproject/constants";
 import { namehash } from "@ethersproject/hash";
 import { getNetwork } from "@ethersproject/networks";
 import { defineReadOnly, getStatic, resolveProperties } from "@ethersproject/properties";
-import { toUtf8String } from "@ethersproject/strings";
+import { sha256 } from "@ethersproject/sha2";
+import { toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
 import { poll } from "@ethersproject/web";
+import { encode, toWords } from "bech32";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
@@ -158,6 +162,182 @@ export class Event {
     }
     pollable() {
         return (this.tag.indexOf(":") >= 0 || PollableEvents.indexOf(this.tag) >= 0);
+    }
+}
+;
+// https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+const coinInfos = {
+    "0": { symbol: "btc", p2pkh: 0x00, p2sh: 0x05, prefix: "bc" },
+    "2": { symbol: "ltc", p2pkh: 0x30, p2sh: 0x32, prefix: "ltc" },
+    "3": { symbol: "doge", p2pkh: 0x1e, p2sh: 0x16 },
+    "60": { symbol: "eth", ilk: "eth" },
+    "61": { symbol: "etc", ilk: "eth" },
+    "700": { symbol: "xdai", ilk: "eth" },
+};
+function bytes32ify(value) {
+    return hexZeroPad(BigNumber.from(value).toHexString(), 32);
+}
+// Compute the Base58Check encoded data (checksum is first 4 bytes of sha256d)
+function base58Encode(data) {
+    return Base58.encode(concat([data, hexDataSlice(sha256(sha256(data)), 0, 4)]));
+}
+export class Resolver {
+    constructor(provider, address, name) {
+        defineReadOnly(this, "provider", provider);
+        defineReadOnly(this, "name", name);
+        defineReadOnly(this, "address", provider.formatter.address(address));
+    }
+    _fetchBytes(selector, parameters) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // keccak256("addr(bytes32,uint256)")
+            const transaction = {
+                to: this.address,
+                data: hexConcat([selector, namehash(this.name), (parameters || "0x")])
+            };
+            const result = yield this.provider.call(transaction);
+            if (result === "0x") {
+                return null;
+            }
+            const offset = BigNumber.from(hexDataSlice(result, 0, 32)).toNumber();
+            const length = BigNumber.from(hexDataSlice(result, offset, offset + 32)).toNumber();
+            return hexDataSlice(result, offset + 32, offset + 32 + length);
+        });
+    }
+    _getAddress(coinType, hexBytes) {
+        const coinInfo = coinInfos[String(coinType)];
+        if (coinInfo == null) {
+            logger.throwError(`unsupported coin type: ${coinType}`, Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: `getAddress(${coinType})`
+            });
+        }
+        if (coinInfo.ilk === "eth") {
+            return this.provider.formatter.address(hexBytes);
+        }
+        const bytes = arrayify(hexBytes);
+        // P2PKH: OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
+        if (coinInfo.p2pkh != null) {
+            const p2pkh = hexBytes.match(/^0x76a9([0-9a-f][0-9a-f])([0-9a-f]*)88ac$/);
+            if (p2pkh) {
+                const length = parseInt(p2pkh[1], 16);
+                if (p2pkh[2].length === length * 2 && length >= 1 && length <= 75) {
+                    return base58Encode(concat([[coinInfo.p2pkh], ("0x" + p2pkh[2])]));
+                }
+            }
+        }
+        // P2SH: OP_HASH160 <scriptHash> OP_EQUAL
+        if (coinInfo.p2sh != null) {
+            const p2sh = hexBytes.match(/^0xa9([0-9a-f][0-9a-f])([0-9a-f]*)87$/);
+            if (p2sh) {
+                const length = parseInt(p2sh[1], 16);
+                if (p2sh[2].length === length * 2 && length >= 1 && length <= 75) {
+                    return base58Encode(concat([[coinInfo.p2sh], ("0x" + p2sh[2])]));
+                }
+            }
+        }
+        // Bech32
+        if (coinInfo.prefix != null) {
+            const length = bytes[1];
+            // https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#witness-program
+            let version = bytes[0];
+            if (version === 0x00) {
+                if (length !== 20 && length !== 32) {
+                    version = -1;
+                }
+            }
+            else {
+                version = -1;
+            }
+            if (version >= 0 && bytes.length === 2 + length && length >= 1 && length <= 75) {
+                const words = toWords(bytes.slice(2));
+                words.unshift(version);
+                return encode(coinInfo.prefix, words);
+            }
+        }
+        return null;
+    }
+    getAddress(coinType) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (coinType == null) {
+                coinType = 60;
+            }
+            // If Ethereum, use the standard `addr(bytes32)`
+            if (coinType === 60) {
+                // keccak256("addr(bytes32)")
+                const transaction = {
+                    to: this.address,
+                    data: ("0x3b3b57de" + namehash(this.name).substring(2))
+                };
+                const hexBytes = yield this.provider.call(transaction);
+                // No address
+                if (hexBytes === "0x" || hexBytes === HashZero) {
+                    return null;
+                }
+                return this.provider.formatter.callAddress(hexBytes);
+            }
+            // keccak256("addr(bytes32,uint256")
+            const hexBytes = yield this._fetchBytes("0xf1cb7e06", bytes32ify(coinType));
+            // No address
+            if (hexBytes == null || hexBytes === "0x") {
+                return null;
+            }
+            // Compute the address
+            const address = this._getAddress(coinType, hexBytes);
+            if (address == null) {
+                logger.throwError(`invalid or unsupported coin data`, Logger.errors.UNSUPPORTED_OPERATION, {
+                    operation: `getAddress(${coinType})`,
+                    coinType: coinType,
+                    data: hexBytes
+                });
+            }
+            return address;
+        });
+    }
+    getContentHash() {
+        return __awaiter(this, void 0, void 0, function* () {
+            // keccak256("contenthash()")
+            const hexBytes = yield this._fetchBytes("0xbc1c58d1");
+            // No contenthash
+            if (hexBytes == null || hexBytes === "0x") {
+                return null;
+            }
+            // IPFS (CID: 1, Type: DAG-PB)
+            const ipfs = hexBytes.match(/^0xe3010170(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
+            if (ipfs) {
+                const length = parseInt(ipfs[3], 16);
+                if (ipfs[4].length === length * 2) {
+                    return "ipfs:/\/" + Base58.encode("0x" + ipfs[1]);
+                }
+            }
+            // Swarm (CID: 1, Type: swarm-manifest; hash/length hard-coded to keccak256/32)
+            const swarm = hexBytes.match(/^0xe40101fa011b20([0-9a-f]*)$/);
+            if (swarm) {
+                if (swarm[1].length === (32 * 2)) {
+                    return "bzz:/\/" + swarm[1];
+                }
+            }
+            return logger.throwError(`invalid or unsupported content hash data`, Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "getContentHash()",
+                data: hexBytes
+            });
+        });
+    }
+    getText(key) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // The key encoded as parameter to fetchBytes
+            let keyBytes = toUtf8Bytes(key);
+            // The nodehash consumes the first slot, so the string pointer targets
+            // offset 64, with the length at offset 64 and data starting at offset 96
+            keyBytes = concat([bytes32ify(64), bytes32ify(keyBytes.length), keyBytes]);
+            // Pad to word-size (32 bytes)
+            if ((keyBytes.length % 32) !== 0) {
+                keyBytes = concat([keyBytes, hexZeroPad("0x", 32 - (key.length % 32))]);
+            }
+            const hexBytes = yield this._fetchBytes("0x59d1d43c", hexlify(keyBytes));
+            if (hexBytes == null || hexBytes === "0x") {
+                return null;
+            }
+            return toUtf8String(hexBytes);
+        });
     }
 }
 let defaultFormatter = null;
@@ -941,6 +1121,15 @@ export class BaseProvider extends Provider {
             return this.formatter.blockTag(blockTag);
         });
     }
+    getResolver(name) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const address = yield this._getResolver(name);
+            if (address == null) {
+                return null;
+            }
+            return new Resolver(this, address, name);
+        });
+    }
     _getResolver(name) {
         return __awaiter(this, void 0, void 0, function* () {
             // Get the resolver from the blockchain
@@ -974,16 +1163,11 @@ export class BaseProvider extends Provider {
                 logger.throwArgumentError("invalid ENS name", "name", name);
             }
             // Get the addr from the resovler
-            const resolverAddress = yield this._getResolver(name);
-            if (!resolverAddress) {
+            const resolver = yield this.getResolver(name);
+            if (!resolver) {
                 return null;
             }
-            // keccak256("addr(bytes32)")
-            const transaction = {
-                to: resolverAddress,
-                data: ("0x3b3b57de" + namehash(name).substring(2))
-            };
-            return this.formatter.callAddress(yield this.call(transaction));
+            return yield resolver.getAddress();
         });
     }
     lookupAddress(address) {

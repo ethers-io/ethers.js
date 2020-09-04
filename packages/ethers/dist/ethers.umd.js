@@ -21506,10 +21506,200 @@
 	var lib_2$j = lib$l.fetchJson;
 	var lib_3$f = lib$l.poll;
 
+	'use strict';
+	var ALPHABET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+
+	// pre-compute lookup table
+	var ALPHABET_MAP = {};
+	for (var z = 0; z < ALPHABET.length; z++) {
+	  var x = ALPHABET.charAt(z);
+
+	  if (ALPHABET_MAP[x] !== undefined) throw new TypeError(x + ' is ambiguous')
+	  ALPHABET_MAP[x] = z;
+	}
+
+	function polymodStep (pre) {
+	  var b = pre >> 25;
+	  return ((pre & 0x1FFFFFF) << 5) ^
+	    (-((b >> 0) & 1) & 0x3b6a57b2) ^
+	    (-((b >> 1) & 1) & 0x26508e6d) ^
+	    (-((b >> 2) & 1) & 0x1ea119fa) ^
+	    (-((b >> 3) & 1) & 0x3d4233dd) ^
+	    (-((b >> 4) & 1) & 0x2a1462b3)
+	}
+
+	function prefixChk (prefix) {
+	  var chk = 1;
+	  for (var i = 0; i < prefix.length; ++i) {
+	    var c = prefix.charCodeAt(i);
+	    if (c < 33 || c > 126) return 'Invalid prefix (' + prefix + ')'
+
+	    chk = polymodStep(chk) ^ (c >> 5);
+	  }
+	  chk = polymodStep(chk);
+
+	  for (i = 0; i < prefix.length; ++i) {
+	    var v = prefix.charCodeAt(i);
+	    chk = polymodStep(chk) ^ (v & 0x1f);
+	  }
+	  return chk
+	}
+
+	function encode (prefix, words, LIMIT) {
+	  LIMIT = LIMIT || 90;
+	  if ((prefix.length + 7 + words.length) > LIMIT) throw new TypeError('Exceeds length limit')
+
+	  prefix = prefix.toLowerCase();
+
+	  // determine chk mod
+	  var chk = prefixChk(prefix);
+	  if (typeof chk === 'string') throw new Error(chk)
+
+	  var result = prefix + '1';
+	  for (var i = 0; i < words.length; ++i) {
+	    var x = words[i];
+	    if ((x >> 5) !== 0) throw new Error('Non 5-bit word')
+
+	    chk = polymodStep(chk) ^ x;
+	    result += ALPHABET.charAt(x);
+	  }
+
+	  for (i = 0; i < 6; ++i) {
+	    chk = polymodStep(chk);
+	  }
+	  chk ^= 1;
+
+	  for (i = 0; i < 6; ++i) {
+	    var v = (chk >> ((5 - i) * 5)) & 0x1f;
+	    result += ALPHABET.charAt(v);
+	  }
+
+	  return result
+	}
+
+	function __decode (str, LIMIT) {
+	  LIMIT = LIMIT || 90;
+	  if (str.length < 8) return str + ' too short'
+	  if (str.length > LIMIT) return 'Exceeds length limit'
+
+	  // don't allow mixed case
+	  var lowered = str.toLowerCase();
+	  var uppered = str.toUpperCase();
+	  if (str !== lowered && str !== uppered) return 'Mixed-case string ' + str
+	  str = lowered;
+
+	  var split = str.lastIndexOf('1');
+	  if (split === -1) return 'No separator character for ' + str
+	  if (split === 0) return 'Missing prefix for ' + str
+
+	  var prefix = str.slice(0, split);
+	  var wordChars = str.slice(split + 1);
+	  if (wordChars.length < 6) return 'Data too short'
+
+	  var chk = prefixChk(prefix);
+	  if (typeof chk === 'string') return chk
+
+	  var words = [];
+	  for (var i = 0; i < wordChars.length; ++i) {
+	    var c = wordChars.charAt(i);
+	    var v = ALPHABET_MAP[c];
+	    if (v === undefined) return 'Unknown character ' + c
+	    chk = polymodStep(chk) ^ v;
+
+	    // not in the checksum?
+	    if (i + 6 >= wordChars.length) continue
+	    words.push(v);
+	  }
+
+	  if (chk !== 1) return 'Invalid checksum for ' + str
+	  return { prefix: prefix, words: words }
+	}
+
+	function decodeUnsafe () {
+	  var res = __decode.apply(null, arguments);
+	  if (typeof res === 'object') return res
+	}
+
+	function decode (str) {
+	  var res = __decode.apply(null, arguments);
+	  if (typeof res === 'object') return res
+
+	  throw new Error(res)
+	}
+
+	function convert (data, inBits, outBits, pad) {
+	  var value = 0;
+	  var bits = 0;
+	  var maxV = (1 << outBits) - 1;
+
+	  var result = [];
+	  for (var i = 0; i < data.length; ++i) {
+	    value = (value << inBits) | data[i];
+	    bits += inBits;
+
+	    while (bits >= outBits) {
+	      bits -= outBits;
+	      result.push((value >> bits) & maxV);
+	    }
+	  }
+
+	  if (pad) {
+	    if (bits > 0) {
+	      result.push((value << (outBits - bits)) & maxV);
+	    }
+	  } else {
+	    if (bits >= inBits) return 'Excess padding'
+	    if ((value << (outBits - bits)) & maxV) return 'Non-zero padding'
+	  }
+
+	  return result
+	}
+
+	function toWordsUnsafe (bytes) {
+	  var res = convert(bytes, 8, 5, true);
+	  if (Array.isArray(res)) return res
+	}
+
+	function toWords (bytes) {
+	  var res = convert(bytes, 8, 5, true);
+	  if (Array.isArray(res)) return res
+
+	  throw new Error(res)
+	}
+
+	function fromWordsUnsafe (words) {
+	  var res = convert(words, 5, 8, false);
+	  if (Array.isArray(res)) return res
+	}
+
+	function fromWords (words) {
+	  var res = convert(words, 5, 8, false);
+	  if (Array.isArray(res)) return res
+
+	  throw new Error(res)
+	}
+
+	var bech32 = {
+	  decodeUnsafe: decodeUnsafe,
+	  decode: decode,
+	  encode: encode,
+	  toWordsUnsafe: toWordsUnsafe,
+	  toWords: toWords,
+	  fromWordsUnsafe: fromWordsUnsafe,
+	  fromWords: fromWords
+	};
+	var bech32_1 = bech32.decodeUnsafe;
+	var bech32_2 = bech32.decode;
+	var bech32_3 = bech32.encode;
+	var bech32_4 = bech32.toWordsUnsafe;
+	var bech32_5 = bech32.toWords;
+	var bech32_6 = bech32.fromWordsUnsafe;
+	var bech32_7 = bech32.fromWords;
+
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.6";
+	exports.version = "providers/5.0.7";
 
 	});
 
@@ -21995,6 +22185,10 @@
 
 
 
+
+
+
+
 	var logger = new lib.Logger(_version$I.version);
 
 	//////////////////////////////
@@ -22155,6 +22349,207 @@
 	    return Event;
 	}());
 	exports.Event = Event;
+	;
+	// https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+	var coinInfos = {
+	    "0": { symbol: "btc", p2pkh: 0x00, p2sh: 0x05, prefix: "bc" },
+	    "2": { symbol: "ltc", p2pkh: 0x30, p2sh: 0x32, prefix: "ltc" },
+	    "3": { symbol: "doge", p2pkh: 0x1e, p2sh: 0x16 },
+	    "60": { symbol: "eth", ilk: "eth" },
+	    "61": { symbol: "etc", ilk: "eth" },
+	    "700": { symbol: "xdai", ilk: "eth" },
+	};
+	function bytes32ify(value) {
+	    return lib$1.hexZeroPad(lib$2.BigNumber.from(value).toHexString(), 32);
+	}
+	// Compute the Base58Check encoded data (checksum is first 4 bytes of sha256d)
+	function base58Encode(data) {
+	    return lib$e.Base58.encode(lib$1.concat([data, lib$1.hexDataSlice(browser.sha256(browser.sha256(data)), 0, 4)]));
+	}
+	var Resolver = /** @class */ (function () {
+	    function Resolver(provider, address, name) {
+	        lib$3.defineReadOnly(this, "provider", provider);
+	        lib$3.defineReadOnly(this, "name", name);
+	        lib$3.defineReadOnly(this, "address", provider.formatter.address(address));
+	    }
+	    Resolver.prototype._fetchBytes = function (selector, parameters) {
+	        return __awaiter(this, void 0, void 0, function () {
+	            var transaction, result, offset, length;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        transaction = {
+	                            to: this.address,
+	                            data: lib$1.hexConcat([selector, lib$9.namehash(this.name), (parameters || "0x")])
+	                        };
+	                        return [4 /*yield*/, this.provider.call(transaction)];
+	                    case 1:
+	                        result = _a.sent();
+	                        if (result === "0x") {
+	                            return [2 /*return*/, null];
+	                        }
+	                        offset = lib$2.BigNumber.from(lib$1.hexDataSlice(result, 0, 32)).toNumber();
+	                        length = lib$2.BigNumber.from(lib$1.hexDataSlice(result, offset, offset + 32)).toNumber();
+	                        return [2 /*return*/, lib$1.hexDataSlice(result, offset + 32, offset + 32 + length)];
+	                }
+	            });
+	        });
+	    };
+	    Resolver.prototype._getAddress = function (coinType, hexBytes) {
+	        var coinInfo = coinInfos[String(coinType)];
+	        if (coinInfo == null) {
+	            logger.throwError("unsupported coin type: " + coinType, lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                operation: "getAddress(" + coinType + ")"
+	            });
+	        }
+	        if (coinInfo.ilk === "eth") {
+	            return this.provider.formatter.address(hexBytes);
+	        }
+	        var bytes = lib$1.arrayify(hexBytes);
+	        // P2PKH: OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
+	        if (coinInfo.p2pkh != null) {
+	            var p2pkh = hexBytes.match(/^0x76a9([0-9a-f][0-9a-f])([0-9a-f]*)88ac$/);
+	            if (p2pkh) {
+	                var length_1 = parseInt(p2pkh[1], 16);
+	                if (p2pkh[2].length === length_1 * 2 && length_1 >= 1 && length_1 <= 75) {
+	                    return base58Encode(lib$1.concat([[coinInfo.p2pkh], ("0x" + p2pkh[2])]));
+	                }
+	            }
+	        }
+	        // P2SH: OP_HASH160 <scriptHash> OP_EQUAL
+	        if (coinInfo.p2sh != null) {
+	            var p2sh = hexBytes.match(/^0xa9([0-9a-f][0-9a-f])([0-9a-f]*)87$/);
+	            if (p2sh) {
+	                var length_2 = parseInt(p2sh[1], 16);
+	                if (p2sh[2].length === length_2 * 2 && length_2 >= 1 && length_2 <= 75) {
+	                    return base58Encode(lib$1.concat([[coinInfo.p2sh], ("0x" + p2sh[2])]));
+	                }
+	            }
+	        }
+	        // Bech32
+	        if (coinInfo.prefix != null) {
+	            var length_3 = bytes[1];
+	            // https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#witness-program
+	            var version_1 = bytes[0];
+	            if (version_1 === 0x00) {
+	                if (length_3 !== 20 && length_3 !== 32) {
+	                    version_1 = -1;
+	                }
+	            }
+	            else {
+	                version_1 = -1;
+	            }
+	            if (version_1 >= 0 && bytes.length === 2 + length_3 && length_3 >= 1 && length_3 <= 75) {
+	                var words = bech32.toWords(bytes.slice(2));
+	                words.unshift(version_1);
+	                return bech32.encode(coinInfo.prefix, words);
+	            }
+	        }
+	        return null;
+	    };
+	    Resolver.prototype.getAddress = function (coinType) {
+	        return __awaiter(this, void 0, void 0, function () {
+	            var transaction, hexBytes_1, hexBytes, address;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        if (coinType == null) {
+	                            coinType = 60;
+	                        }
+	                        if (!(coinType === 60)) return [3 /*break*/, 2];
+	                        transaction = {
+	                            to: this.address,
+	                            data: ("0x3b3b57de" + lib$9.namehash(this.name).substring(2))
+	                        };
+	                        return [4 /*yield*/, this.provider.call(transaction)];
+	                    case 1:
+	                        hexBytes_1 = _a.sent();
+	                        // No address
+	                        if (hexBytes_1 === "0x" || hexBytes_1 === lib$7.HashZero) {
+	                            return [2 /*return*/, null];
+	                        }
+	                        return [2 /*return*/, this.provider.formatter.callAddress(hexBytes_1)];
+	                    case 2: return [4 /*yield*/, this._fetchBytes("0xf1cb7e06", bytes32ify(coinType))];
+	                    case 3:
+	                        hexBytes = _a.sent();
+	                        // No address
+	                        if (hexBytes == null || hexBytes === "0x") {
+	                            return [2 /*return*/, null];
+	                        }
+	                        address = this._getAddress(coinType, hexBytes);
+	                        if (address == null) {
+	                            logger.throwError("invalid or unsupported coin data", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                                operation: "getAddress(" + coinType + ")",
+	                                coinType: coinType,
+	                                data: hexBytes
+	                            });
+	                        }
+	                        return [2 /*return*/, address];
+	                }
+	            });
+	        });
+	    };
+	    Resolver.prototype.getContentHash = function () {
+	        return __awaiter(this, void 0, void 0, function () {
+	            var hexBytes, ipfs, length_4, swarm;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0: return [4 /*yield*/, this._fetchBytes("0xbc1c58d1")];
+	                    case 1:
+	                        hexBytes = _a.sent();
+	                        // No contenthash
+	                        if (hexBytes == null || hexBytes === "0x") {
+	                            return [2 /*return*/, null];
+	                        }
+	                        ipfs = hexBytes.match(/^0xe3010170(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
+	                        if (ipfs) {
+	                            length_4 = parseInt(ipfs[3], 16);
+	                            if (ipfs[4].length === length_4 * 2) {
+	                                return [2 /*return*/, "ipfs:/\/" + lib$e.Base58.encode("0x" + ipfs[1])];
+	                            }
+	                        }
+	                        swarm = hexBytes.match(/^0xe40101fa011b20([0-9a-f]*)$/);
+	                        if (swarm) {
+	                            if (swarm[1].length === (32 * 2)) {
+	                                return [2 /*return*/, "bzz:/\/" + swarm[1]];
+	                            }
+	                        }
+	                        return [2 /*return*/, logger.throwError("invalid or unsupported content hash data", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                                operation: "getContentHash()",
+	                                data: hexBytes
+	                            })];
+	                }
+	            });
+	        });
+	    };
+	    Resolver.prototype.getText = function (key) {
+	        return __awaiter(this, void 0, void 0, function () {
+	            var keyBytes, hexBytes;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        keyBytes = lib$8.toUtf8Bytes(key);
+	                        // The nodehash consumes the first slot, so the string pointer targets
+	                        // offset 64, with the length at offset 64 and data starting at offset 96
+	                        keyBytes = lib$1.concat([bytes32ify(64), bytes32ify(keyBytes.length), keyBytes]);
+	                        // Pad to word-size (32 bytes)
+	                        if ((keyBytes.length % 32) !== 0) {
+	                            keyBytes = lib$1.concat([keyBytes, lib$1.hexZeroPad("0x", 32 - (key.length % 32))]);
+	                        }
+	                        return [4 /*yield*/, this._fetchBytes("0x59d1d43c", lib$1.hexlify(keyBytes))];
+	                    case 1:
+	                        hexBytes = _a.sent();
+	                        if (hexBytes == null || hexBytes === "0x") {
+	                            return [2 /*return*/, null];
+	                        }
+	                        return [2 /*return*/, lib$8.toUtf8String(hexBytes)];
+	                }
+	            });
+	        });
+	    };
+	    return Resolver;
+	}());
+	exports.Resolver = Resolver;
 	var defaultFormatter = null;
 	var nextPollId = 1;
 	var BaseProvider = /** @class */ (function (_super) {
@@ -23231,6 +23626,22 @@
 	            });
 	        });
 	    };
+	    BaseProvider.prototype.getResolver = function (name) {
+	        return __awaiter(this, void 0, void 0, function () {
+	            var address;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0: return [4 /*yield*/, this._getResolver(name)];
+	                    case 1:
+	                        address = _a.sent();
+	                        if (address == null) {
+	                            return [2 /*return*/, null];
+	                        }
+	                        return [2 /*return*/, new Resolver(this, address, name)];
+	                }
+	            });
+	        });
+	    };
 	    BaseProvider.prototype._getResolver = function (name) {
 	        return __awaiter(this, void 0, void 0, function () {
 	            var network, transaction, _a, _b;
@@ -23256,12 +23667,12 @@
 	    };
 	    BaseProvider.prototype.resolveName = function (name) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var resolverAddress, transaction, _a, _b;
-	            return __generator(this, function (_c) {
-	                switch (_c.label) {
+	            var resolver;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
 	                    case 0: return [4 /*yield*/, name];
 	                    case 1:
-	                        name = _c.sent();
+	                        name = _a.sent();
 	                        // If it is already an address, nothing to resolve
 	                        try {
 	                            return [2 /*return*/, Promise.resolve(this.formatter.address(name))];
@@ -23275,19 +23686,14 @@
 	                        if (typeof (name) !== "string") {
 	                            logger.throwArgumentError("invalid ENS name", "name", name);
 	                        }
-	                        return [4 /*yield*/, this._getResolver(name)];
+	                        return [4 /*yield*/, this.getResolver(name)];
 	                    case 2:
-	                        resolverAddress = _c.sent();
-	                        if (!resolverAddress) {
+	                        resolver = _a.sent();
+	                        if (!resolver) {
 	                            return [2 /*return*/, null];
 	                        }
-	                        transaction = {
-	                            to: resolverAddress,
-	                            data: ("0x3b3b57de" + lib$9.namehash(name).substring(2))
-	                        };
-	                        _b = (_a = this.formatter).callAddress;
-	                        return [4 /*yield*/, this.call(transaction)];
-	                    case 3: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+	                        return [4 /*yield*/, resolver.getAddress()];
+	                    case 3: return [2 /*return*/, _a.sent()];
 	                }
 	            });
 	        });
@@ -23457,7 +23863,8 @@
 
 	var baseProvider$1 = unwrapExports(baseProvider);
 	var baseProvider_1 = baseProvider.Event;
-	var baseProvider_2 = baseProvider.BaseProvider;
+	var baseProvider_2 = baseProvider.Resolver;
+	var baseProvider_3 = baseProvider.BaseProvider;
 
 	var browserWs = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -26168,6 +26575,7 @@
 	exports.getNetwork = lib$k.getNetwork;
 
 	exports.BaseProvider = baseProvider.BaseProvider;
+	exports.Resolver = baseProvider.Resolver;
 
 	exports.AlchemyProvider = alchemyProvider.AlchemyProvider;
 
@@ -26246,21 +26654,22 @@
 	var lib_1$m = lib$m.Provider;
 	var lib_2$k = lib$m.getNetwork;
 	var lib_3$g = lib$m.BaseProvider;
-	var lib_4$c = lib$m.AlchemyProvider;
-	var lib_5$b = lib$m.CloudflareProvider;
-	var lib_6$7 = lib$m.EtherscanProvider;
-	var lib_7$6 = lib$m.FallbackProvider;
-	var lib_8$5 = lib$m.IpcProvider;
-	var lib_9$5 = lib$m.InfuraProvider;
-	var lib_10$3 = lib$m.JsonRpcProvider;
-	var lib_11$2 = lib$m.JsonRpcSigner;
-	var lib_12$2 = lib$m.NodesmithProvider;
-	var lib_13$2 = lib$m.StaticJsonRpcProvider;
-	var lib_14$1 = lib$m.UrlJsonRpcProvider;
-	var lib_15$1 = lib$m.Web3Provider;
-	var lib_16$1 = lib$m.WebSocketProvider;
-	var lib_17 = lib$m.Formatter;
-	var lib_18 = lib$m.getDefaultProvider;
+	var lib_4$c = lib$m.Resolver;
+	var lib_5$b = lib$m.AlchemyProvider;
+	var lib_6$7 = lib$m.CloudflareProvider;
+	var lib_7$6 = lib$m.EtherscanProvider;
+	var lib_8$5 = lib$m.FallbackProvider;
+	var lib_9$5 = lib$m.IpcProvider;
+	var lib_10$3 = lib$m.InfuraProvider;
+	var lib_11$2 = lib$m.JsonRpcProvider;
+	var lib_12$2 = lib$m.JsonRpcSigner;
+	var lib_13$2 = lib$m.NodesmithProvider;
+	var lib_14$1 = lib$m.StaticJsonRpcProvider;
+	var lib_15$1 = lib$m.UrlJsonRpcProvider;
+	var lib_16$1 = lib$m.Web3Provider;
+	var lib_17 = lib$m.WebSocketProvider;
+	var lib_18 = lib$m.Formatter;
+	var lib_19 = lib$m.getDefaultProvider;
 
 	var lib$n = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -26692,7 +27101,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.9";
+	exports.version = "ethers/5.0.10";
 
 	});
 

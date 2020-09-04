@@ -1,7 +1,7 @@
 "use strict";
 import { Provider } from "@ethersproject/abstract-provider";
 import { getNetwork } from "@ethersproject/networks";
-import { BaseProvider } from "./base-provider";
+import { BaseProvider, Resolver } from "./base-provider";
 import { AlchemyProvider } from "./alchemy-provider";
 import { CloudflareProvider } from "./cloudflare-provider";
 import { EtherscanProvider } from "./etherscan-provider";
@@ -62,7 +62,7 @@ function getDefaultProvider(network, options) {
 // Exports
 export { 
 // Abstract Providers (or Abstract-ish)
-Provider, BaseProvider, UrlJsonRpcProvider, 
+Provider, BaseProvider, Resolver, UrlJsonRpcProvider, 
 ///////////////////////
 // Concreate Providers
 FallbackProvider, AlchemyProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, JsonRpcProvider, NodesmithProvider, StaticJsonRpcProvider, Web3Provider, WebSocketProvider, IpcProvider, 

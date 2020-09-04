@@ -525,7 +525,8 @@ export function disassemble(bytecode) {
         }
         const op = {
             opcode: opcode,
-            offset: i
+            offset: i,
+            length: 1
         };
         offsets[i] = op;
         ops.push(op);
@@ -535,6 +536,7 @@ export function disassemble(bytecode) {
             const data = ethers.utils.hexlify(bytes.slice(i, i + push));
             if (ethers.utils.hexDataLength(data) === push) {
                 op.pushValue = data;
+                op.length += push;
                 i += push;
             }
             else {
@@ -543,8 +545,30 @@ export function disassemble(bytecode) {
         }
     }
     ops.getOperation = function (offset) {
+        if (offset >= bytes.length) {
+            return {
+                opcode: Opcode.from("STOP"),
+                offset: offset,
+                length: 1
+            };
+        }
         return (offsets[offset] || null);
     };
+    ops.getByte = function (offset) {
+        if (offset >= bytes.length) {
+            return 0x00;
+        }
+        return bytes[offset];
+    };
+    ops.getBytes = function (offset, length) {
+        const result = new Uint8Array(length);
+        result.fill(0);
+        if (offset < bytes.length) {
+            result.set(bytes.slice(offset));
+        }
+        return ethers.utils.arrayify(result);
+    };
+    ops.byteLength = bytes.length;
     return ops;
 }
 export function formatBytecode(bytecode) {
