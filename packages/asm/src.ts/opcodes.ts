@@ -145,6 +145,8 @@ const _Opcodes: { [ name: string ]: _Opcode } = {
     number:         { value: 0x43, delta: 0, alpha: 1, doc: "blockNumber = number" },
     difficulty:     { value: 0x44, delta: 0, alpha: 1, doc: "diff = difficulty" },
     gaslimit:       { value: 0x45, delta: 0, alpha: 1, doc: "gas = gaslimit" },
+    chainid:        { value: 0x46, delta: 0, alpha: 1, doc: "chainid = chainid" },
+    selfbalance:    { value: 0x47, delta: 0, alpha: 1, doc: "bal = selfbalance" },
 
     // Stack, Memory, Storage and Flow Operations
     pop:            { value: 0x50, delta: 1, alpha: 0, doc: "stackTopValue = pop" },
