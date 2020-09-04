@@ -436,6 +436,7 @@ function testProvider(providerName, networkName) {
     // Delay (ms) after each test case to prevent the backends from throttling
     var delay = 1000;
     describe(("Read-Only " + providerName + " (" + networkName + ")"), function () {
+        this.retries(3);
         // Get the Provider based on the name of the provider we are testing and the network
         var provider = null;
         if (networkName === "default") {
@@ -616,7 +617,7 @@ describe("Test extra Etherscan operations", function() {
 });
 */
 describe("Test Basic Authentication", function () {
-    // https://stackoverflow.com/questions/6509278/authentication-test-servers#16756383
+    this.retries(3);
     function test(name, url) {
         it("tests " + name, function () {
             this.timeout(60000);
@@ -716,6 +717,7 @@ describe("Test API Key Formatting", function () {
     });
 });
 describe("Test WebSocketProvider", function () {
+    this.retries(3);
     function testWebSocketProvider(provider) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -745,6 +747,7 @@ describe("Test WebSocketProvider", function () {
     });
 });
 describe("Test Events", function () {
+    this.retries(3);
     function testBlockEvent(provider) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
