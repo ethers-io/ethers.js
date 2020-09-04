@@ -1,5 +1,4 @@
 /* istanbul ignore file */
-
 'use strict';
 
 // Maximum time in seconds to suppress output
@@ -108,7 +107,6 @@ export function Reporter(runner: Runner) {
         }
 
         log(`  Total Tests: ${ suite._countPass }/${ suite._countTotal } passed ${ getDelta(suite._t0) } ${ extra} \n`);
-        //log();
 
         if (suites.length > 0) {
             let currentSuite = suites[suites.length - 1];
@@ -118,14 +116,22 @@ export function Reporter(runner: Runner) {
             currentSuite._countTotal += suite._countTotal;
         } else {
             clearTimeout(timer);
-            log(`# status:${ (suite._countPass === suite._countTotal) ? 0: 1 }`);
+            const status = (suite._countPass === suite._countTotal) ? 0: 1;
+            log(`# status:${ status }`);
+
+            // Force quit after 5s
+            setTimeout(() => {
+                process.exit(status);
+            }, 5000);
         }
     });
 
     runner.on('test', function(test) {
         forceOutput();
-        const currentSuite = suites[suites.length - 1];
-        currentSuite._countTotal++;
+        if (test._currentRetry === 0) {
+            const currentSuite = suites[suites.length - 1];
+            currentSuite._countTotal++;
+        }
     });
 
     runner.on('fail', function(test, error) {
