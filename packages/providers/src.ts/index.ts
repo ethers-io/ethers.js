@@ -16,7 +16,7 @@ import {
 import { getNetwork } from "@ethersproject/networks";
 import { Network, Networkish } from "@ethersproject/networks";
 
-import { BaseProvider } from "./base-provider";
+import { BaseProvider, EnsProvider, EnsResolver, Resolver } from "./base-provider";
 
 import { AlchemyProvider } from "./alchemy-provider";
 import { CloudflareProvider } from "./cloudflare-provider";
@@ -93,6 +93,8 @@ export {
     Provider,
     BaseProvider,
 
+    Resolver,
+
     UrlJsonRpcProvider,
 
     ///////////////////////
@@ -149,6 +151,9 @@ export {
     JsonRpcFetchFunc,
 
     Network,
-    Networkish
+    Networkish,
+
+    EnsProvider,
+    EnsResolver
 };
 
