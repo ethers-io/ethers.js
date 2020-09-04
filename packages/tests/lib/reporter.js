@@ -83,7 +83,6 @@ function Reporter(runner) {
             extra = " (" + extras.join(",") + ")  ******** WARNING! ********";
         }
         log("  Total Tests: " + suite._countPass + "/" + suite._countTotal + " passed " + getDelta(suite._t0) + " " + extra + " \n");
-        //log();
         if (suites.length > 0) {
             var currentSuite = suites[suites.length - 1];
             currentSuite._countFail += suite._countFail;
@@ -93,13 +92,20 @@ function Reporter(runner) {
         }
         else {
             clearTimeout(timer);
-            log("# status:" + ((suite._countPass === suite._countTotal) ? 0 : 1));
+            var status_1 = (suite._countPass === suite._countTotal) ? 0 : 1;
+            log("# status:" + status_1);
+            // Force quit after 5s
+            setTimeout(function () {
+                process.exit(status_1);
+            }, 5000);
         }
     });
     runner.on('test', function (test) {
         forceOutput();
-        var currentSuite = suites[suites.length - 1];
-        currentSuite._countTotal++;
+        if (test._currentRetry === 0) {
+            var currentSuite = suites[suites.length - 1];
+            currentSuite._countTotal++;
+        }
     });
     runner.on('fail', function (test, error) {
         var currentSuite = suites[suites.length - 1];
