@@ -1,6 +1,7 @@
 "use strict";
 
 import { encode as base64Encode } from "@ethersproject/base64";
+import { hexlify, isBytesLike } from "@ethersproject/bytes";
 import { shallowCopy } from "@ethersproject/properties";
 import { toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
 
@@ -14,6 +15,23 @@ function staller(duration: number): Promise<void> {
     return new Promise((resolve) => {
         setTimeout(resolve, duration);
     });
+}
+
+function bodyify(value: any, type: string): string {
+    if (value == null) { return null; }
+
+    if (typeof(value) === "string") { return value; }
+
+    if (isBytesLike(value)) {
+        if (type && (type.split("/")[0] === "text" || type === "application/json")) {
+            try {
+                return toUtf8String(value);
+            } catch (error) { };
+        }
+        return hexlify(value);
+    }
+
+    return value;
 }
 
 // Exported Types
@@ -154,7 +172,7 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
                     timer = null;
 
                     reject(logger.makeError("timeout", Logger.errors.TIMEOUT, {
-                        requestBody: (options.body || null),
+                        requestBody: bodyify(options.body, flatHeaders["content-type"]),
                         requestMethod: options.method,
                         timeout: timeout,
                         url: url
@@ -208,7 +226,7 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
                 if (response == null) {
                     runningTimeout.cancel();
                     logger.throwError("missing response", Logger.errors.SERVER_ERROR, {
-                        requestBody: (options.body || null),
+                        requestBody: bodyify(options.body, flatHeaders["content-type"]),
                         requestMethod: options.method,
                         serverError: error,
                         url: url
@@ -227,8 +245,8 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
                 logger.throwError("bad response", Logger.errors.SERVER_ERROR, {
                     status: response.statusCode,
                     headers: response.headers,
-                    body: body,
-                    requestBody: (options.body || null),
+                    body: bodyify(body, ((response.headers) ? response.headers["content-type"]: null)),
+                    requestBody: bodyify(options.body, flatHeaders["content-type"]),
                     requestMethod: options.method,
                     url: url
                 });
@@ -258,9 +276,9 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
 
                     runningTimeout.cancel();
                     logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
-                        body: body,
+                        body: bodyify(body, ((response.headers) ? response.headers["content-type"]: null)),
                         error: error,
-                        requestBody: (options.body || null),
+                        requestBody: bodyify(options.body, flatHeaders["content-type"]),
                         requestMethod: options.method,
                         url: url
                     });
@@ -275,7 +293,7 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
         }
 
         return logger.throwError("failed response", Logger.errors.SERVER_ERROR, {
-            requestBody: (options.body || null),
+            requestBody: bodyify(options.body, flatHeaders["content-type"]),
             requestMethod: options.method,
             url: url
         });
