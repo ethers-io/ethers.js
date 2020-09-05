@@ -83,6 +83,7 @@ export default commandLineArgs => {
         format: format,
         name: "testing"
       },
+      context: "window",
       treeshake: false,
       plugins: plugins
   };

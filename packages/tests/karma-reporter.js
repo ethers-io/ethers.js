@@ -40,7 +40,9 @@ const KarmaReporter = function () {
       lastSuite = result.suite[0];
     }
 
-    runner.emit('test');
+    runner.emit('test', {
+        _currentRetry: 0
+    });
 
     if (result.skipped) {
       runner.emit('skipped');
