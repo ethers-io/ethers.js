@@ -94,13 +94,22 @@ export class LedgerSigner extends ethers.Signer {
     }
 
     async signTransaction(transaction: ethers.providers.TransactionRequest): Promise<string> {
-        const tx = transaction = await ethers.utils.resolveProperties(transaction);
-        const unsignedTx = ethers.utils.serializeTransaction(<ethers.utils.UnsignedTransaction>tx).substring(2);
+        const tx = await ethers.utils.resolveProperties(transaction);
+        const baseTx: ethers.utils.UnsignedTransaction = {
+            chainId: (tx.chainId || undefined),
+            data: (tx.data || undefined),
+            gasLimit: (tx.gasLimit || undefined),
+            gasPrice: (tx.gasPrice || undefined),
+            nonce: (tx.nonce ? ethers.BigNumber.from(tx.nonce).toNumber(): undefined),
+            to: (tx.to || undefined),
+            value: (tx.value || undefined),
+        };
 
+        const unsignedTx = ethers.utils.serializeTransaction(baseTx).substring(2);
         const sig = await this._retry((eth) => eth.signTransaction(this.path, unsignedTx));
 
-        return ethers.utils.serializeTransaction(<ethers.utils.UnsignedTransaction>tx, {
-            v: sig.v,
+        return ethers.utils.serializeTransaction(baseTx, {
+            v: ethers.BigNumber.from("0x" + sig.v).toNumber(),
             r: ("0x" + sig.r),
             s: ("0x" + sig.s),
         });
