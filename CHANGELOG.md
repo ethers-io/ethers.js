@@ -3,9 +3,10 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
-ethers/v5.0.11 (2020-09-05 23:33)
+ethers/v5.0.11 (2020-09-05 23:51)
 ---------------------------------
 
+  - Synced unorm in shims to most recent version. ([bdccf7b](https://github.com/ethers-io/ethers.js/commit/bdccf7b8d352ba400317266a0a37e6e290633e3c))
   - Fixed LedgerSigner sendTransaction. ([#936](https://github.com/ethers-io/ethers.js/issues/936); [cadb28d](https://github.com/ethers-io/ethers.js/commit/cadb28d6b364e68e43a06f7a9b8a31797afbd920))
   - Added BrainWallet to experimental exports. ([72385c2](https://github.com/ethers-io/ethers.js/commit/72385c228783a3158511b3cddc5cb4f9ce1dddae))
   - More readable server errors. ([201e5ce](https://github.com/ethers-io/ethers.js/commit/201e5ced9c38da2de1dd7518ffbf24284d477e80))
