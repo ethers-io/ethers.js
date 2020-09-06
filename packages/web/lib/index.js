@@ -37,6 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var base64_1 = require("@ethersproject/base64");
+var bytes_1 = require("@ethersproject/bytes");
 var properties_1 = require("@ethersproject/properties");
 var strings_1 = require("@ethersproject/strings");
 var logger_1 = require("@ethersproject/logger");
@@ -47,6 +48,25 @@ function staller(duration) {
     return new Promise(function (resolve) {
         setTimeout(resolve, duration);
     });
+}
+function bodyify(value, type) {
+    if (value == null) {
+        return null;
+    }
+    if (typeof (value) === "string") {
+        return value;
+    }
+    if (bytes_1.isBytesLike(value)) {
+        if (type && (type.split("/")[0] === "text" || type === "application/json")) {
+            try {
+                return strings_1.toUtf8String(value);
+            }
+            catch (error) { }
+            ;
+        }
+        return bytes_1.hexlify(value);
+    }
+    return value;
 }
 // This API is still a work in progress; the future changes will likely be:
 // - ConnectionInfo => FetchDataRequest<T = any>
@@ -122,7 +142,7 @@ function _fetchData(connection, body, processFunc) {
                     }
                     timer = null;
                     reject(logger.makeError("timeout", logger_1.Logger.errors.TIMEOUT, {
-                        requestBody: (options.body || null),
+                        requestBody: bodyify(options.body, flatHeaders["content-type"]),
                         requestMethod: options.method,
                         timeout: timeout,
                         url: url
@@ -186,7 +206,7 @@ function _fetchData(connection, body, processFunc) {
                         if (response == null) {
                             runningTimeout.cancel();
                             logger.throwError("missing response", logger_1.Logger.errors.SERVER_ERROR, {
-                                requestBody: (options.body || null),
+                                requestBody: bodyify(options.body, flatHeaders["content-type"]),
                                 requestMethod: options.method,
                                 serverError: error_1,
                                 url: url
@@ -203,8 +223,8 @@ function _fetchData(connection, body, processFunc) {
                             logger.throwError("bad response", logger_1.Logger.errors.SERVER_ERROR, {
                                 status: response.statusCode,
                                 headers: response.headers,
-                                body: body_1,
-                                requestBody: (options.body || null),
+                                body: bodyify(body_1, ((response.headers) ? response.headers["content-type"] : null)),
+                                requestBody: bodyify(options.body, flatHeaders["content-type"]),
                                 requestMethod: options.method,
                                 url: url
                             });
@@ -239,9 +259,9 @@ function _fetchData(connection, body, processFunc) {
                     case 16:
                         runningTimeout.cancel();
                         logger.throwError("processing response error", logger_1.Logger.errors.SERVER_ERROR, {
-                            body: body_1,
+                            body: bodyify(body_1, ((response.headers) ? response.headers["content-type"] : null)),
                             error: error_2,
-                            requestBody: (options.body || null),
+                            requestBody: bodyify(options.body, flatHeaders["content-type"]),
                             requestMethod: options.method,
                             url: url
                         });
@@ -255,7 +275,7 @@ function _fetchData(connection, body, processFunc) {
                         attempt++;
                         return [3 /*break*/, 1];
                     case 19: return [2 /*return*/, logger.throwError("failed response", logger_1.Logger.errors.SERVER_ERROR, {
-                            requestBody: (options.body || null),
+                            requestBody: bodyify(options.body, flatHeaders["content-type"]),
                             requestMethod: options.method,
                             url: url
                         })];

@@ -16485,7 +16485,7 @@ function computePublicKey(key, compressed) {
     return logger$g.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$e = "transactions/5.0.3";
+const version$e = "transactions/5.0.4";
 
 "use strict";
 const logger$h = new Logger(version$e);
@@ -16557,7 +16557,7 @@ function serialize(transaction, signature) {
     }
     // We have an EIP-155 transaction (chainId was specified and non-zero)
     if (chainId !== 0) {
-        raw.push(hexlify(chainId));
+        raw.push(hexlify(chainId)); // @TODO: hexValue?
         raw.push("0x");
         raw.push("0x");
     }
@@ -19233,7 +19233,7 @@ var browser$2 = /*#__PURE__*/Object.freeze({
 	encode: encode$1
 });
 
-const version$l = "web/5.0.4";
+const version$l = "web/5.0.5";
 
 "use strict";
 var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -19297,6 +19297,25 @@ function staller(duration) {
     return new Promise((resolve) => {
         setTimeout(resolve, duration);
     });
+}
+function bodyify(value, type) {
+    if (value == null) {
+        return null;
+    }
+    if (typeof (value) === "string") {
+        return value;
+    }
+    if (isBytesLike(value)) {
+        if (type && (type.split("/")[0] === "text" || type === "application/json")) {
+            try {
+                return toUtf8String(value);
+            }
+            catch (error) { }
+            ;
+        }
+        return hexlify(value);
+    }
+    return value;
 }
 // This API is still a work in progress; the future changes will likely be:
 // - ConnectionInfo => FetchDataRequest<T = any>
@@ -19372,7 +19391,7 @@ function _fetchData(connection, body, processFunc) {
                     }
                     timer = null;
                     reject(logger$p.makeError("timeout", Logger.errors.TIMEOUT, {
-                        requestBody: (options.body || null),
+                        requestBody: bodyify(options.body, flatHeaders["content-type"]),
                         requestMethod: options.method,
                         timeout: timeout,
                         url: url
@@ -19421,7 +19440,7 @@ function _fetchData(connection, body, processFunc) {
                     if (response == null) {
                         runningTimeout.cancel();
                         logger$p.throwError("missing response", Logger.errors.SERVER_ERROR, {
-                            requestBody: (options.body || null),
+                            requestBody: bodyify(options.body, flatHeaders["content-type"]),
                             requestMethod: options.method,
                             serverError: error,
                             url: url
@@ -19437,8 +19456,8 @@ function _fetchData(connection, body, processFunc) {
                     logger$p.throwError("bad response", Logger.errors.SERVER_ERROR, {
                         status: response.statusCode,
                         headers: response.headers,
-                        body: body,
-                        requestBody: (options.body || null),
+                        body: bodyify(body, ((response.headers) ? response.headers["content-type"] : null)),
+                        requestBody: bodyify(options.body, flatHeaders["content-type"]),
                         requestMethod: options.method,
                         url: url
                     });
@@ -19465,9 +19484,9 @@ function _fetchData(connection, body, processFunc) {
                         }
                         runningTimeout.cancel();
                         logger$p.throwError("processing response error", Logger.errors.SERVER_ERROR, {
-                            body: body,
+                            body: bodyify(body, ((response.headers) ? response.headers["content-type"] : null)),
                             error: error,
-                            requestBody: (options.body || null),
+                            requestBody: bodyify(options.body, flatHeaders["content-type"]),
                             requestMethod: options.method,
                             url: url
                         });
@@ -19479,7 +19498,7 @@ function _fetchData(connection, body, processFunc) {
                 return body;
             }
             return logger$p.throwError("failed response", Logger.errors.SERVER_ERROR, {
-                requestBody: (options.body || null),
+                requestBody: bodyify(options.body, flatHeaders["content-type"]),
                 requestMethod: options.method,
                 url: url
             });
@@ -23852,7 +23871,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.10";
+const version$o = "ethers/5.0.11";
 
 "use strict";
 const logger$E = new Logger(version$o);

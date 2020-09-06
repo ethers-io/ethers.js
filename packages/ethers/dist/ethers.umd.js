@@ -17802,7 +17802,7 @@
 	var _version$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "transactions/5.0.3";
+	exports.version = "transactions/5.0.4";
 
 	});
 
@@ -17900,7 +17900,7 @@
 	    }
 	    // We have an EIP-155 transaction (chainId was specified and non-zero)
 	    if (chainId !== 0) {
-	        raw.push(lib$1.hexlify(chainId));
+	        raw.push(lib$1.hexlify(chainId)); // @TODO: hexValue?
 	        raw.push("0x");
 	        raw.push("0x");
 	    }
@@ -21007,7 +21007,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "web/5.0.4";
+	exports.version = "web/5.0.5";
 
 	});
 
@@ -21151,12 +21151,32 @@
 
 
 
+
 	var logger = new lib.Logger(_version$G.version);
 
 	function staller(duration) {
 	    return new Promise(function (resolve) {
 	        setTimeout(resolve, duration);
 	    });
+	}
+	function bodyify(value, type) {
+	    if (value == null) {
+	        return null;
+	    }
+	    if (typeof (value) === "string") {
+	        return value;
+	    }
+	    if (lib$1.isBytesLike(value)) {
+	        if (type && (type.split("/")[0] === "text" || type === "application/json")) {
+	            try {
+	                return lib$8.toUtf8String(value);
+	            }
+	            catch (error) { }
+	            ;
+	        }
+	        return lib$1.hexlify(value);
+	    }
+	    return value;
 	}
 	// This API is still a work in progress; the future changes will likely be:
 	// - ConnectionInfo => FetchDataRequest<T = any>
@@ -21232,7 +21252,7 @@
 	                    }
 	                    timer = null;
 	                    reject(logger.makeError("timeout", lib.Logger.errors.TIMEOUT, {
-	                        requestBody: (options.body || null),
+	                        requestBody: bodyify(options.body, flatHeaders["content-type"]),
 	                        requestMethod: options.method,
 	                        timeout: timeout,
 	                        url: url
@@ -21296,7 +21316,7 @@
 	                        if (response == null) {
 	                            runningTimeout.cancel();
 	                            logger.throwError("missing response", lib.Logger.errors.SERVER_ERROR, {
-	                                requestBody: (options.body || null),
+	                                requestBody: bodyify(options.body, flatHeaders["content-type"]),
 	                                requestMethod: options.method,
 	                                serverError: error_1,
 	                                url: url
@@ -21313,8 +21333,8 @@
 	                            logger.throwError("bad response", lib.Logger.errors.SERVER_ERROR, {
 	                                status: response.statusCode,
 	                                headers: response.headers,
-	                                body: body_1,
-	                                requestBody: (options.body || null),
+	                                body: bodyify(body_1, ((response.headers) ? response.headers["content-type"] : null)),
+	                                requestBody: bodyify(options.body, flatHeaders["content-type"]),
 	                                requestMethod: options.method,
 	                                url: url
 	                            });
@@ -21349,9 +21369,9 @@
 	                    case 16:
 	                        runningTimeout.cancel();
 	                        logger.throwError("processing response error", lib.Logger.errors.SERVER_ERROR, {
-	                            body: body_1,
+	                            body: bodyify(body_1, ((response.headers) ? response.headers["content-type"] : null)),
 	                            error: error_2,
-	                            requestBody: (options.body || null),
+	                            requestBody: bodyify(options.body, flatHeaders["content-type"]),
 	                            requestMethod: options.method,
 	                            url: url
 	                        });
@@ -21365,7 +21385,7 @@
 	                        attempt++;
 	                        return [3 /*break*/, 1];
 	                    case 19: return [2 /*return*/, logger.throwError("failed response", lib.Logger.errors.SERVER_ERROR, {
-	                            requestBody: (options.body || null),
+	                            requestBody: bodyify(options.body, flatHeaders["content-type"]),
 	                            requestMethod: options.method,
 	                            url: url
 	                        })];
@@ -27101,7 +27121,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.10";
+	exports.version = "ethers/5.0.11";
 
 	});
 

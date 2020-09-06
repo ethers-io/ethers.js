@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { encode as base64Encode } from "@ethersproject/base64";
+import { hexlify, isBytesLike } from "@ethersproject/bytes";
 import { shallowCopy } from "@ethersproject/properties";
 import { toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
 import { Logger } from "@ethersproject/logger";
@@ -19,6 +20,25 @@ function staller(duration) {
     return new Promise((resolve) => {
         setTimeout(resolve, duration);
     });
+}
+function bodyify(value, type) {
+    if (value == null) {
+        return null;
+    }
+    if (typeof (value) === "string") {
+        return value;
+    }
+    if (isBytesLike(value)) {
+        if (type && (type.split("/")[0] === "text" || type === "application/json")) {
+            try {
+                return toUtf8String(value);
+            }
+            catch (error) { }
+            ;
+        }
+        return hexlify(value);
+    }
+    return value;
 }
 // This API is still a work in progress; the future changes will likely be:
 // - ConnectionInfo => FetchDataRequest<T = any>
@@ -94,7 +114,7 @@ export function _fetchData(connection, body, processFunc) {
                     }
                     timer = null;
                     reject(logger.makeError("timeout", Logger.errors.TIMEOUT, {
-                        requestBody: (options.body || null),
+                        requestBody: bodyify(options.body, flatHeaders["content-type"]),
                         requestMethod: options.method,
                         timeout: timeout,
                         url: url
@@ -143,7 +163,7 @@ export function _fetchData(connection, body, processFunc) {
                     if (response == null) {
                         runningTimeout.cancel();
                         logger.throwError("missing response", Logger.errors.SERVER_ERROR, {
-                            requestBody: (options.body || null),
+                            requestBody: bodyify(options.body, flatHeaders["content-type"]),
                             requestMethod: options.method,
                             serverError: error,
                             url: url
@@ -159,8 +179,8 @@ export function _fetchData(connection, body, processFunc) {
                     logger.throwError("bad response", Logger.errors.SERVER_ERROR, {
                         status: response.statusCode,
                         headers: response.headers,
-                        body: body,
-                        requestBody: (options.body || null),
+                        body: bodyify(body, ((response.headers) ? response.headers["content-type"] : null)),
+                        requestBody: bodyify(options.body, flatHeaders["content-type"]),
                         requestMethod: options.method,
                         url: url
                     });
@@ -187,9 +207,9 @@ export function _fetchData(connection, body, processFunc) {
                         }
                         runningTimeout.cancel();
                         logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
-                            body: body,
+                            body: bodyify(body, ((response.headers) ? response.headers["content-type"] : null)),
                             error: error,
-                            requestBody: (options.body || null),
+                            requestBody: bodyify(options.body, flatHeaders["content-type"]),
                             requestMethod: options.method,
                             url: url
                         });
@@ -201,7 +221,7 @@ export function _fetchData(connection, body, processFunc) {
                 return body;
             }
             return logger.throwError("failed response", Logger.errors.SERVER_ERROR, {
-                requestBody: (options.body || null),
+                requestBody: bodyify(options.body, flatHeaders["content-type"]),
                 requestMethod: options.method,
                 url: url
             });

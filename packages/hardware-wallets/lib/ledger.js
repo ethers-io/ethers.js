@@ -174,19 +174,28 @@ var LedgerSigner = /** @class */ (function (_super) {
     };
     LedgerSigner.prototype.signTransaction = function (transaction) {
         return __awaiter(this, void 0, void 0, function () {
-            var tx, unsignedTx, sig;
+            var tx, baseTx, unsignedTx, sig;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, ethers_1.ethers.utils.resolveProperties(transaction)];
                     case 1:
-                        tx = transaction = _a.sent();
-                        unsignedTx = ethers_1.ethers.utils.serializeTransaction(tx).substring(2);
+                        tx = _a.sent();
+                        baseTx = {
+                            chainId: (tx.chainId || undefined),
+                            data: (tx.data || undefined),
+                            gasLimit: (tx.gasLimit || undefined),
+                            gasPrice: (tx.gasPrice || undefined),
+                            nonce: (tx.nonce ? ethers_1.ethers.BigNumber.from(tx.nonce).toNumber() : undefined),
+                            to: (tx.to || undefined),
+                            value: (tx.value || undefined),
+                        };
+                        unsignedTx = ethers_1.ethers.utils.serializeTransaction(baseTx).substring(2);
                         return [4 /*yield*/, this._retry(function (eth) { return eth.signTransaction(_this.path, unsignedTx); })];
                     case 2:
                         sig = _a.sent();
-                        return [2 /*return*/, ethers_1.ethers.utils.serializeTransaction(tx, {
-                                v: sig.v,
+                        return [2 /*return*/, ethers_1.ethers.utils.serializeTransaction(baseTx, {
+                                v: ethers_1.ethers.BigNumber.from("0x" + sig.v).toNumber(),
                                 r: ("0x" + sig.r),
                                 s: ("0x" + sig.s),
                             })];

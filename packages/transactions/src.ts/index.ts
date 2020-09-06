@@ -125,7 +125,7 @@ export function serialize(transaction: UnsignedTransaction, signature?: Signatur
 
     // We have an EIP-155 transaction (chainId was specified and non-zero)
     if (chainId !== 0) {
-        raw.push(hexlify(chainId));
+        raw.push(hexlify(chainId)); // @TODO: hexValue?
         raw.push("0x");
         raw.push("0x");
     }
@@ -164,6 +164,7 @@ export function serialize(transaction: UnsignedTransaction, signature?: Signatur
 
 export function parse(rawTransaction: BytesLike): Transaction {
     const transaction = RLP.decode(rawTransaction);
+
     if (transaction.length !== 9 && transaction.length !== 6) {
         logger.throwArgumentError("invalid raw transaction", "rawTransaction", rawTransaction);
     }

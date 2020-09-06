@@ -78,7 +78,7 @@ export function serialize(transaction, signature) {
     }
     // We have an EIP-155 transaction (chainId was specified and non-zero)
     if (chainId !== 0) {
-        raw.push(hexlify(chainId));
+        raw.push(hexlify(chainId)); // @TODO: hexValue?
         raw.push("0x");
         raw.push("0x");
     }
