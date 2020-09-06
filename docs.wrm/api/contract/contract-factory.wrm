@@ -4,7 +4,7 @@ _section: ContractFactory @<ContractFactory> @SRC<contracts:class.ContractFactor
 
 _subsection: Creating Instances  @<ContractFactory--creating>
 
-_property: new ethers.ContractFactory(interface, bydecode [ , signer ]) @SRC<contracts:constructor.ContractFactory>
+_property: new ethers.ContractFactory(interface, bytecode [ , signer ]) @SRC<contracts:constructor.ContractFactory>
 
 _property: ContractFactory.fromSolidity(compilerOutput [ , signer ]) => [[ContractFactory]]
 
