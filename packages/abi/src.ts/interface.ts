@@ -475,7 +475,7 @@ export class Interface {
         });
 
         let resultIndexed = (topics != null) ? this._abiCoder.decode(indexed, concat(topics)): null;
-        let resultNonIndexed = this._abiCoder.decode(nonIndexed, data);
+        let resultNonIndexed = this._abiCoder.decode(nonIndexed, data, true);
 
         let result: (Array<any> & { [ key: string ]: any }) = [ ];
         let nonIndexedIndex = 0, indexedIndex = 0;

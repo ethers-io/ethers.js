@@ -83,8 +83,8 @@ export class AbiCoder {
 
     _getWordSize(): number { return 32; }
 
-    _getReader(data: Uint8Array): Reader {
-        return new Reader(data, this._getWordSize(), this.coerceFunc);
+    _getReader(data: Uint8Array, allowLoose?: boolean): Reader {
+        return new Reader(data, this._getWordSize(), this.coerceFunc, allowLoose);
     }
 
     _getWriter(): Writer {
@@ -107,10 +107,10 @@ export class AbiCoder {
         return writer.data;
     }
 
-    decode(types: Array<string | ParamType>, data: BytesLike): Result {
+    decode(types: Array<string | ParamType>, data: BytesLike, loose?: boolean): Result {
         const coders: Array<Coder> = types.map((type) => this._getCoder(ParamType.from(type)));
         const coder = new TupleCoder(coders, "_");
-        return coder.decode(this._getReader(arrayify(data)));
+        return coder.decode(this._getReader(arrayify(data), loose));
     }
 }
 

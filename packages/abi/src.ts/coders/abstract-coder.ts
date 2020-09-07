@@ -131,16 +131,18 @@ export class Writer {
 
 export class Reader {
     readonly wordSize: number;
+    readonly allowLoose: boolean;
 
     readonly _data: Uint8Array;
     readonly _coerceFunc: CoerceFunc;
 
     _offset: number;
 
-    constructor(data: BytesLike, wordSize?: number, coerceFunc?: CoerceFunc) {
+    constructor(data: BytesLike, wordSize?: number, coerceFunc?: CoerceFunc, allowLoose?: boolean) {
         defineReadOnly(this, "_data", arrayify(data));
         defineReadOnly(this, "wordSize", wordSize || 32);
         defineReadOnly(this, "_coerceFunc", coerceFunc);
+        defineReadOnly(this, "allowLoose", allowLoose);
 
         this._offset = 0;
     }
@@ -160,23 +162,27 @@ export class Reader {
         return Reader.coerce(name, value);
     }
 
-    _peekBytes(offset: number, length: number): Uint8Array {
+    _peekBytes(offset: number, length: number, loose?: boolean): Uint8Array {
         let alignedLength = Math.ceil(length / this.wordSize) * this.wordSize;
         if (this._offset + alignedLength > this._data.length) {
-            logger.throwError("data out-of-bounds", Logger.errors.BUFFER_OVERRUN, {
-                length: this._data.length,
-                offset: this._offset + alignedLength
-            });
+            if (this.allowLoose && loose && this._offset + length <= this._data.length) {
+                alignedLength = length;
+            } else {
+                logger.throwError("data out-of-bounds", Logger.errors.BUFFER_OVERRUN, {
+                    length: this._data.length,
+                    offset: this._offset + alignedLength
+                });
+            }
         }
         return this._data.slice(this._offset, this._offset + alignedLength)
     }
 
     subReader(offset: number): Reader {
-        return new Reader(this._data.slice(this._offset + offset), this.wordSize, this._coerceFunc);
+        return new Reader(this._data.slice(this._offset + offset), this.wordSize, this._coerceFunc, this.allowLoose);
     }
 
-    readBytes(length: number): Uint8Array {
-        let bytes = this._peekBytes(0, length);
+    readBytes(length: number, loose?: boolean): Uint8Array {
+        let bytes = this._peekBytes(0, length, !!loose);
         this._offset += bytes.length;
         // @TODO: Make sure the length..end bytes are all 0?
         return bytes.slice(0, length);
