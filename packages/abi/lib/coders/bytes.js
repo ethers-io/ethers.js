@@ -27,7 +27,7 @@ var DynamicBytesCoder = /** @class */ (function (_super) {
         return length;
     };
     DynamicBytesCoder.prototype.decode = function (reader) {
-        return reader.readBytes(reader.readValue().toNumber());
+        return reader.readBytes(reader.readValue().toNumber(), true);
     };
     return DynamicBytesCoder;
 }(abstract_coder_1.Coder));

@@ -5061,7 +5061,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.3";
+	exports.version = "abi/5.0.4";
 
 	});
 
@@ -6002,10 +6002,11 @@
 	}());
 	exports.Writer = Writer;
 	var Reader = /** @class */ (function () {
-	    function Reader(data, wordSize, coerceFunc) {
+	    function Reader(data, wordSize, coerceFunc, allowLoose) {
 	        lib$3.defineReadOnly(this, "_data", lib$1.arrayify(data));
 	        lib$3.defineReadOnly(this, "wordSize", wordSize || 32);
 	        lib$3.defineReadOnly(this, "_coerceFunc", coerceFunc);
+	        lib$3.defineReadOnly(this, "allowLoose", allowLoose);
 	        this._offset = 0;
 	    }
 	    Object.defineProperty(Reader.prototype, "data", {
@@ -6032,21 +6033,26 @@
 	        }
 	        return Reader.coerce(name, value);
 	    };
-	    Reader.prototype._peekBytes = function (offset, length) {
+	    Reader.prototype._peekBytes = function (offset, length, loose) {
 	        var alignedLength = Math.ceil(length / this.wordSize) * this.wordSize;
 	        if (this._offset + alignedLength > this._data.length) {
-	            logger.throwError("data out-of-bounds", lib.Logger.errors.BUFFER_OVERRUN, {
-	                length: this._data.length,
-	                offset: this._offset + alignedLength
-	            });
+	            if (this.allowLoose && loose && this._offset + length <= this._data.length) {
+	                alignedLength = length;
+	            }
+	            else {
+	                logger.throwError("data out-of-bounds", lib.Logger.errors.BUFFER_OVERRUN, {
+	                    length: this._data.length,
+	                    offset: this._offset + alignedLength
+	                });
+	            }
 	        }
 	        return this._data.slice(this._offset, this._offset + alignedLength);
 	    };
 	    Reader.prototype.subReader = function (offset) {
-	        return new Reader(this._data.slice(this._offset + offset), this.wordSize, this._coerceFunc);
+	        return new Reader(this._data.slice(this._offset + offset), this.wordSize, this._coerceFunc, this.allowLoose);
 	    };
-	    Reader.prototype.readBytes = function (length) {
-	        var bytes = this._peekBytes(0, length);
+	    Reader.prototype.readBytes = function (length, loose) {
+	        var bytes = this._peekBytes(0, length, !!loose);
 	        this._offset += bytes.length;
 	        // @TODO: Make sure the length..end bytes are all 0?
 	        return bytes.slice(0, length);
@@ -7034,8 +7040,6 @@
 	    var values = [];
 	    // A reader anchored to this base
 	    var baseReader = reader.subReader(0);
-	    // The amount of dynamic data read; to consume later to synchronize
-	    var dynamicLength = 0;
 	    coders.forEach(function (coder) {
 	        var value = null;
 	        if (coder.dynamic) {
@@ -7054,7 +7058,6 @@
 	                value.name = coder.localName;
 	                value.type = coder.type;
 	            }
-	            dynamicLength += offsetReader.consumed;
 	        }
 	        else {
 	            try {
@@ -7075,9 +7078,6 @@
 	            values.push(value);
 	        }
 	    });
-	    // @TODO: get rid of this an see if it still works?
-	    // Consume the dynamic components in the main reader
-	    reader.readBytes(dynamicLength);
 	    // We only output named properties for uniquely named coders
 	    var uniqueNames = coders.reduce(function (accum, coder) {
 	        var name = coder.localName;
@@ -7241,7 +7241,7 @@
 	        return length;
 	    };
 	    DynamicBytesCoder.prototype.decode = function (reader) {
-	        return reader.readBytes(reader.readValue().toNumber());
+	        return reader.readBytes(reader.readValue().toNumber(), true);
 	    };
 	    return DynamicBytesCoder;
 	}(abstractCoder.Coder));
@@ -8164,8 +8164,8 @@
 	        return logger.throwArgumentError("invalid type", "type", param.type);
 	    };
 	    AbiCoder.prototype._getWordSize = function () { return 32; };
-	    AbiCoder.prototype._getReader = function (data) {
-	        return new abstractCoder.Reader(data, this._getWordSize(), this.coerceFunc);
+	    AbiCoder.prototype._getReader = function (data, allowLoose) {
+	        return new abstractCoder.Reader(data, this._getWordSize(), this.coerceFunc, allowLoose);
 	    };
 	    AbiCoder.prototype._getWriter = function () {
 	        return new abstractCoder.Writer(this._getWordSize());
@@ -8184,11 +8184,11 @@
 	        coder.encode(writer, values);
 	        return writer.data;
 	    };
-	    AbiCoder.prototype.decode = function (types, data) {
+	    AbiCoder.prototype.decode = function (types, data, loose) {
 	        var _this = this;
 	        var coders = types.map(function (type) { return _this._getCoder(fragments.ParamType.from(type)); });
 	        var coder = new tuple.TupleCoder(coders, "_");
-	        return coder.decode(this._getReader(lib$1.arrayify(data)));
+	        return coder.decode(this._getReader(lib$1.arrayify(data), loose));
 	    };
 	    return AbiCoder;
 	}());
@@ -8707,7 +8707,7 @@
 	            }
 	        });
 	        var resultIndexed = (topics != null) ? this._abiCoder.decode(indexed, lib$1.concat(topics)) : null;
-	        var resultNonIndexed = this._abiCoder.decode(nonIndexed, data);
+	        var resultNonIndexed = this._abiCoder.decode(nonIndexed, data, true);
 	        var result = [];
 	        var nonIndexedIndex = 0, indexedIndex = 0;
 	        eventFragment.inputs.forEach(function (param, index) {
@@ -27121,7 +27121,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.11";
+	exports.version = "ethers/5.0.12";
 
 	});
 

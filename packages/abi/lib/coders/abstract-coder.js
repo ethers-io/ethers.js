@@ -99,10 +99,11 @@ var Writer = /** @class */ (function () {
 }());
 exports.Writer = Writer;
 var Reader = /** @class */ (function () {
-    function Reader(data, wordSize, coerceFunc) {
+    function Reader(data, wordSize, coerceFunc, allowLoose) {
         properties_1.defineReadOnly(this, "_data", bytes_1.arrayify(data));
         properties_1.defineReadOnly(this, "wordSize", wordSize || 32);
         properties_1.defineReadOnly(this, "_coerceFunc", coerceFunc);
+        properties_1.defineReadOnly(this, "allowLoose", allowLoose);
         this._offset = 0;
     }
     Object.defineProperty(Reader.prototype, "data", {
@@ -129,21 +130,26 @@ var Reader = /** @class */ (function () {
         }
         return Reader.coerce(name, value);
     };
-    Reader.prototype._peekBytes = function (offset, length) {
+    Reader.prototype._peekBytes = function (offset, length, loose) {
         var alignedLength = Math.ceil(length / this.wordSize) * this.wordSize;
         if (this._offset + alignedLength > this._data.length) {
-            logger.throwError("data out-of-bounds", logger_1.Logger.errors.BUFFER_OVERRUN, {
-                length: this._data.length,
-                offset: this._offset + alignedLength
-            });
+            if (this.allowLoose && loose && this._offset + length <= this._data.length) {
+                alignedLength = length;
+            }
+            else {
+                logger.throwError("data out-of-bounds", logger_1.Logger.errors.BUFFER_OVERRUN, {
+                    length: this._data.length,
+                    offset: this._offset + alignedLength
+                });
+            }
         }
         return this._data.slice(this._offset, this._offset + alignedLength);
     };
     Reader.prototype.subReader = function (offset) {
-        return new Reader(this._data.slice(this._offset + offset), this.wordSize, this._coerceFunc);
+        return new Reader(this._data.slice(this._offset + offset), this.wordSize, this._coerceFunc, this.allowLoose);
     };
-    Reader.prototype.readBytes = function (length) {
-        var bytes = this._peekBytes(0, length);
+    Reader.prototype.readBytes = function (length, loose) {
+        var bytes = this._peekBytes(0, length, !!loose);
         this._offset += bytes.length;
         // @TODO: Make sure the length..end bytes are all 0?
         return bytes.slice(0, length);

@@ -63,8 +63,8 @@ export class AbiCoder {
         return logger.throwArgumentError("invalid type", "type", param.type);
     }
     _getWordSize() { return 32; }
-    _getReader(data) {
-        return new Reader(data, this._getWordSize(), this.coerceFunc);
+    _getReader(data, allowLoose) {
+        return new Reader(data, this._getWordSize(), this.coerceFunc, allowLoose);
     }
     _getWriter() {
         return new Writer(this._getWordSize());
@@ -82,10 +82,10 @@ export class AbiCoder {
         coder.encode(writer, values);
         return writer.data;
     }
-    decode(types, data) {
+    decode(types, data, loose) {
         const coders = types.map((type) => this._getCoder(ParamType.from(type)));
         const coder = new TupleCoder(coders, "_");
-        return coder.decode(this._getReader(arrayify(data)));
+        return coder.decode(this._getReader(arrayify(data), loose));
     }
 }
 export const defaultAbiCoder = new AbiCoder();

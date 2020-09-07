@@ -82,8 +82,6 @@ function unpack(reader, coders) {
     var values = [];
     // A reader anchored to this base
     var baseReader = reader.subReader(0);
-    // The amount of dynamic data read; to consume later to synchronize
-    var dynamicLength = 0;
     coders.forEach(function (coder) {
         var value = null;
         if (coder.dynamic) {
@@ -102,7 +100,6 @@ function unpack(reader, coders) {
                 value.name = coder.localName;
                 value.type = coder.type;
             }
-            dynamicLength += offsetReader.consumed;
         }
         else {
             try {
@@ -123,9 +120,6 @@ function unpack(reader, coders) {
             values.push(value);
         }
     });
-    // @TODO: get rid of this an see if it still works?
-    // Consume the dynamic components in the main reader
-    reader.readBytes(dynamicLength);
     // We only output named properties for uniquely named coders
     var uniqueNames = coders.reduce(function (accum, coder) {
         var name = coder.localName;

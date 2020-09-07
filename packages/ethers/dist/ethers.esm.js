@@ -4859,7 +4859,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.0.3";
+const version$4 = "abi/5.0.4";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -5723,10 +5723,11 @@ class Writer {
     }
 }
 class Reader {
-    constructor(data, wordSize, coerceFunc) {
+    constructor(data, wordSize, coerceFunc, allowLoose) {
         defineReadOnly(this, "_data", arrayify(data));
         defineReadOnly(this, "wordSize", wordSize || 32);
         defineReadOnly(this, "_coerceFunc", coerceFunc);
+        defineReadOnly(this, "allowLoose", allowLoose);
         this._offset = 0;
     }
     get data() { return hexlify(this._data); }
@@ -5745,21 +5746,26 @@ class Reader {
         }
         return Reader.coerce(name, value);
     }
-    _peekBytes(offset, length) {
+    _peekBytes(offset, length, loose) {
         let alignedLength = Math.ceil(length / this.wordSize) * this.wordSize;
         if (this._offset + alignedLength > this._data.length) {
-            logger$5.throwError("data out-of-bounds", Logger.errors.BUFFER_OVERRUN, {
-                length: this._data.length,
-                offset: this._offset + alignedLength
-            });
+            if (this.allowLoose && loose && this._offset + length <= this._data.length) {
+                alignedLength = length;
+            }
+            else {
+                logger$5.throwError("data out-of-bounds", Logger.errors.BUFFER_OVERRUN, {
+                    length: this._data.length,
+                    offset: this._offset + alignedLength
+                });
+            }
         }
         return this._data.slice(this._offset, this._offset + alignedLength);
     }
     subReader(offset) {
-        return new Reader(this._data.slice(this._offset + offset), this.wordSize, this._coerceFunc);
+        return new Reader(this._data.slice(this._offset + offset), this.wordSize, this._coerceFunc, this.allowLoose);
     }
-    readBytes(length) {
-        let bytes = this._peekBytes(0, length);
+    readBytes(length, loose) {
+        let bytes = this._peekBytes(0, length, !!loose);
         this._offset += bytes.length;
         // @TODO: Make sure the length..end bytes are all 0?
         return bytes.slice(0, length);
@@ -6604,8 +6610,6 @@ function unpack(reader, coders) {
     let values = [];
     // A reader anchored to this base
     let baseReader = reader.subReader(0);
-    // The amount of dynamic data read; to consume later to synchronize
-    let dynamicLength = 0;
     coders.forEach((coder) => {
         let value = null;
         if (coder.dynamic) {
@@ -6624,7 +6628,6 @@ function unpack(reader, coders) {
                 value.name = coder.localName;
                 value.type = coder.type;
             }
-            dynamicLength += offsetReader.consumed;
         }
         else {
             try {
@@ -6645,9 +6648,6 @@ function unpack(reader, coders) {
             values.push(value);
         }
     });
-    // @TODO: get rid of this an see if it still works?
-    // Consume the dynamic components in the main reader
-    reader.readBytes(dynamicLength);
     // We only output named properties for uniquely named coders
     const uniqueNames = coders.reduce((accum, coder) => {
         const name = coder.localName;
@@ -6753,7 +6753,7 @@ class DynamicBytesCoder extends Coder {
         return length;
     }
     decode(reader) {
-        return reader.readBytes(reader.readValue().toNumber());
+        return reader.readBytes(reader.readValue().toNumber(), true);
     }
 }
 class BytesCoder extends DynamicBytesCoder {
@@ -7412,8 +7412,8 @@ class AbiCoder {
         return logger$a.throwArgumentError("invalid type", "type", param.type);
     }
     _getWordSize() { return 32; }
-    _getReader(data) {
-        return new Reader(data, this._getWordSize(), this.coerceFunc);
+    _getReader(data, allowLoose) {
+        return new Reader(data, this._getWordSize(), this.coerceFunc, allowLoose);
     }
     _getWriter() {
         return new Writer(this._getWordSize());
@@ -7431,10 +7431,10 @@ class AbiCoder {
         coder.encode(writer, values);
         return writer.data;
     }
-    decode(types, data) {
+    decode(types, data, loose) {
         const coders = types.map((type) => this._getCoder(ParamType.from(type)));
         const coder = new TupleCoder(coders, "_");
-        return coder.decode(this._getReader(arrayify(data)));
+        return coder.decode(this._getReader(arrayify(data), loose));
     }
 }
 const defaultAbiCoder = new AbiCoder();
@@ -7868,7 +7868,7 @@ class Interface {
             }
         });
         let resultIndexed = (topics != null) ? this._abiCoder.decode(indexed, concat(topics)) : null;
-        let resultNonIndexed = this._abiCoder.decode(nonIndexed, data);
+        let resultNonIndexed = this._abiCoder.decode(nonIndexed, data, true);
         let result = [];
         let nonIndexedIndex = 0, indexedIndex = 0;
         eventFragment.inputs.forEach((param, index) => {
@@ -23871,7 +23871,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.11";
+const version$o = "ethers/5.0.12";
 
 "use strict";
 const logger$E = new Logger(version$o);

@@ -66,8 +66,8 @@ var AbiCoder = /** @class */ (function () {
         return logger.throwArgumentError("invalid type", "type", param.type);
     };
     AbiCoder.prototype._getWordSize = function () { return 32; };
-    AbiCoder.prototype._getReader = function (data) {
-        return new abstract_coder_1.Reader(data, this._getWordSize(), this.coerceFunc);
+    AbiCoder.prototype._getReader = function (data, allowLoose) {
+        return new abstract_coder_1.Reader(data, this._getWordSize(), this.coerceFunc, allowLoose);
     };
     AbiCoder.prototype._getWriter = function () {
         return new abstract_coder_1.Writer(this._getWordSize());
@@ -86,11 +86,11 @@ var AbiCoder = /** @class */ (function () {
         coder.encode(writer, values);
         return writer.data;
     };
-    AbiCoder.prototype.decode = function (types, data) {
+    AbiCoder.prototype.decode = function (types, data, loose) {
         var _this = this;
         var coders = types.map(function (type) { return _this._getCoder(fragments_1.ParamType.from(type)); });
         var coder = new tuple_1.TupleCoder(coders, "_");
-        return coder.decode(this._getReader(bytes_1.arrayify(data)));
+        return coder.decode(this._getReader(bytes_1.arrayify(data), loose));
     };
     return AbiCoder;
 }());

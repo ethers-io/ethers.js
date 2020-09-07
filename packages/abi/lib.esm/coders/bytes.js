@@ -12,7 +12,7 @@ export class DynamicBytesCoder extends Coder {
         return length;
     }
     decode(reader) {
-        return reader.readBytes(reader.readValue().toNumber());
+        return reader.readBytes(reader.readValue().toNumber(), true);
     }
 }
 export class BytesCoder extends DynamicBytesCoder {

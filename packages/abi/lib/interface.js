@@ -426,7 +426,7 @@ var Interface = /** @class */ (function () {
             }
         });
         var resultIndexed = (topics != null) ? this._abiCoder.decode(indexed, bytes_1.concat(topics)) : null;
-        var resultNonIndexed = this._abiCoder.decode(nonIndexed, data);
+        var resultNonIndexed = this._abiCoder.decode(nonIndexed, data, true);
         var result = [];
         var nonIndexedIndex = 0, indexedIndex = 0;
         eventFragment.inputs.forEach(function (param, index) {

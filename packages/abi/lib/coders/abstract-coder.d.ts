@@ -33,16 +33,17 @@ export declare class Writer {
 }
 export declare class Reader {
     readonly wordSize: number;
+    readonly allowLoose: boolean;
     readonly _data: Uint8Array;
     readonly _coerceFunc: CoerceFunc;
     _offset: number;
-    constructor(data: BytesLike, wordSize?: number, coerceFunc?: CoerceFunc);
+    constructor(data: BytesLike, wordSize?: number, coerceFunc?: CoerceFunc, allowLoose?: boolean);
     get data(): string;
     get consumed(): number;
     static coerce(name: string, value: any): any;
     coerce(name: string, value: any): any;
-    _peekBytes(offset: number, length: number): Uint8Array;
+    _peekBytes(offset: number, length: number, loose?: boolean): Uint8Array;
     subReader(offset: number): Reader;
-    readBytes(length: number): Uint8Array;
+    readBytes(length: number, loose?: boolean): Uint8Array;
     readValue(): BigNumber;
 }
