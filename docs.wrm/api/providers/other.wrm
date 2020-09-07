@@ -156,7 +156,7 @@ WebSockets are much more intensive on your server resourses, as they must manage
 and maintain the state for each client. For this reason, many services may also
 charge additional fees for using their WebSocket endpoints.
 
-_property: new ethers.provider.WebSockerProvider([ url [ , network ] ])
+_property: new ethers.provider.WebSocketProvider([ url [ , network ] ])
 Returns a new [[WebSocketProvider]] connected to //url// as the //network//.
 
 If //url// is unspecified, the default ``"ws:/\/localhost:8546"`` will be used.

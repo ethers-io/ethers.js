@@ -1,0 +1,47 @@
+_section: React Native (and ilk) @<cookbook-reactnative>
+
+The [[link-react-native]] framework has become quite popular and
+has many popular forks, such as [[link-expo]].
+
+React Native is based on [[link-javascriptcore]] (part of WebKit) and
+does not use Node.js or the common Web and DOM APIs. As such,
+there are many operations missing that a normal web environment
+or Node.js instance would provide.
+
+For this reason, there is a [[link-npm-ethersproject-shims]] module
+provided to fill in the holes.
+
+
+_subsection: Installing @<cookbook-reactnative-shims>
+
+To use ethers in React Native, you must either provide shims for the needed
+missing functionality, or use the ethers.js shim.
+
+It is **HIGHLY RECOMMENDED** you check out the [security section](cookbook-reactnative-security>
+below for instructions on installing pacakges which can affect the security
+of your application.
+
+After installing packages, you may need to restart your packager and company.
+
+_code: Installing @lang<shell>
+
+/home/ricmoo/my-react-project> npm install @ethersproject/shims --save
+
+_code: Importing @lang<script>
+
+// Pull in the shims (BEFORE importing ethers)
+import "@ethersproject/shims"
+
+// Import the ethers library
+import { ethers } from "ethers";
+
+
+_subsection: Security @<cookbook-reactnative-security>
+
+The React Native environment does not contain a secure random source, which
+is used when computing random private keys. This could result in private
+keys that others could guess, allowing the funds to be stolen.
+
+For this reason, it is **HIGHLY RECOMMENDED** to get either the
+[[link-npm-react-native-crypto]] module working or some equivalent.
+
