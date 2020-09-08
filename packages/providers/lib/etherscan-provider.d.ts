@@ -7,5 +7,5 @@ export declare class EtherscanProvider extends BaseProvider {
     constructor(network?: Networkish, apiKey?: string);
     detectNetwork(): Promise<Network>;
     perform(method: string, params: any): Promise<any>;
-    getHistory(addressOrName: string | Promise<string>, startBlock?: BlockTag, endBlock?: BlockTag): Promise<Array<TransactionResponse>>;
+    getHistory(addressOrName: string | Promise<string>, startBlock?: BlockTag, endBlock?: BlockTag, contractAddress?: string): Promise<Array<TransactionResponse>>;
 }
