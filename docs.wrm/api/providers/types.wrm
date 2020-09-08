@@ -19,6 +19,15 @@ And **EventType** can be any of the following.
 - **//[[providers-EventFilter]]//** -- TODO...
 
 
+_subsection: Networkish @<providers-Networkish>
+A **Networkish** may be any of the following:
+
+- a [[providers-Network]] object
+- the name of a common network as a string (e.g. ``"homestead"``)
+- the chain ID a network as a number; if the chain ID is that of a
+  common network, the ``name`` and ``ensAddress`` will be populated, otherwise,
+  the deafults name ``"unknown"`` and no ``ensAddress`` is used
+
 _subsection: Network @<providers-Network>
 A **Network** represents an Etherem network.
 

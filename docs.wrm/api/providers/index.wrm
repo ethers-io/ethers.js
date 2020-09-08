@@ -34,6 +34,9 @@ Returns a new Provider, backed by multiple services, connected
 to //network//. Is no //network// is provided, **homestead**
 (i.e. mainnet) is used.
 
+The //network// may also be a URL to connect to, such as ``http:/\/localhost:8545``
+or ``wss:/\/example.com``.
+
 The //options// is an object, with the following properties:
 
 _table: Option Properties
@@ -67,6 +70,29 @@ used the most.
 Some services also provide additional paid features, which are only
 available when specifying an API Key.
 
+_subsection: Networks
+
+There are several official common Ethereum networks as well as custom
+networks and other compatible projects.
+
+Any API that accept a [[providers-Networkish]] can be passed a common name (such as
+``"mainnet"`` or ``"ropsten"``) to use that network definition or may specify
+custom parameters.
+
+_heading: Custom ENS Contract
+
+One common reason to specify custom properties for a [[providers-Network]] is to override
+the address of the root ENS registry, either on a common network to intercept
+the [ENS Methods](Provider--ens-methods) or to specify the ENS registry on a
+dev network (on most dev networks you must deploy the ENS contracts manually).
+
+_code: Example: Override the ENS registry @lang<script>
+
+const network = {
+    name: "dev",
+    chianId: 1337,
+    ensAddress: customEnsAddress
+};
 
 _subsection: Provider Documentation
 
