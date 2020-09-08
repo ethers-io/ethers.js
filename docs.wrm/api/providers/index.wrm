@@ -9,7 +9,7 @@ cover the vast majority of use-cases, but also includes the
 necessary functions and classes for sub-classing if a more
 custom configuration is necessary.
 
-Most users should be able to simply use the [[providers-getDefaultProvider]].
+Most users should use the [[providers-getDefaultProvider]].
 
 
 _subsection: Default Provider @<providers-getDefaultProvider>
