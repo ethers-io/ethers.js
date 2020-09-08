@@ -161,7 +161,7 @@ The [[Contract]] object makes it easier to use an on-chain
 Contract as a normal JavaScript object, with the methods
 mapped to encoding and decoding data for you.
 
-If you are familiar with Databases, this is similar to an ////Object Relational Mapper// (ORM).
+If you are familiar with Databases, this is similar to an //Object Relational Mapper// (ORM).
 
 In order to communicate with the Contract on-chain, this class
 needs to know what methods are available and how to encode and
