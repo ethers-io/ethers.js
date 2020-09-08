@@ -199,7 +199,7 @@ When you perform a static call, the current state is taken into account as best 
 Meta-Class Filters
 ------------------
 
-#### *erc20* . *filters* . **Transafer**( [ fromAddress [ , toAddress ] ] ) => *Filter*
+#### *erc20* . *filters* . **Transfer**( [ fromAddress [ , toAddress ] ] ) => *Filter*
 
 Returns a new Filter which can be used to [query](/v5/api/contract/example/#erc20-queryfilter) or to [subscribe/unsubscribe to events](/v5/api/contract/example/#erc20-events).
 

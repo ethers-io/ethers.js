@@ -11,7 +11,7 @@ Installing
 ----------
 
 ```
-/home/ricmoo> npm install --save ethers@next
+/home/ricmoo> npm install --save ethers
 ```
 
 Importing
@@ -58,6 +58,20 @@ const provider = new ethers.providers.Web3Provider(window.ethereum)
 
 // The Metamask plugin also allows signing transactions to
 // send ether and pay to change state within the blockchain.
+// For this, you need the account signer...
+const signer = provider.getSigner()
+```
+
+Connecting to Ethereum: RPC
+---------------------------
+
+```
+// If you don't specify a //url//, Ethers connects to the default 
+// (i.e. ``http:/\/localhost:8545``)
+const provider = new ethers.providers.JsonRpcProvider();
+
+// The provider also allows signing transactions to
+// send ether and pay to change state within the blockchain.
 // For this, we need the account signer...
 const signer = provider.getSigner()
 ```
@@ -67,18 +81,18 @@ const signer = provider.getSigner()
 ```javascript
 // Look up the current block number
 provider.getBlockNumber()
-// { Promise: 10397126 }
+// { Promise: 10819010 }
 
-// Get the balance of an account (by address or ENS name)
+// Get the balance of an account (by address or ENS name, if supported by network)
 balance = await provider.getBalance("ethers.eth")
 // { BigNumber: "2337132817842795605" }
 
-// Often you will need to format the output for the user
-// which prefer to see values in ether (instead of wei)
+// Often you need to format the output to something more user-friendly,
+// such as in ether (instead of wei)
 ethers.utils.formatEther(balance)
 // '2.337132817842795605'
 
-// Or if a user enters a string in an input field, you may need
+// If a user enters a string in an input field, you may need
 // to convert it from ether (as a string) to wei (as a BigNumber)
 ethers.utils.parseEther("1.0")
 // { BigNumber: "1000000000000000000" }
@@ -98,13 +112,13 @@ Contracts
 ---------
 
 ```javascript
-// We can use an ENS name for the contract address
+// You can also use an ENS name for the contract address
 const daiAddress = "dai.tokens.ethers.eth";
 
 // The ERC-20 Contract ABI, which is a common contract interface
 // for tokens (this is the Human-Readable ABI format)
 const daiAbi = [
-  // Some simple details about the token
+  // Some details about the token
   "function name() view returns (string)",
   "function symbol() view returns (string)",
 
@@ -135,19 +149,19 @@ daiContract.symbol()
 
 // Get the balance of an address
 balance = await daiContract.balanceOf("ricmoo.firefly.eth")
-// { BigNumber: "9709905125722568213383" }
+// { BigNumber: "11386855832278858351495" }
 
 // Format the DAI for displaying to the user
 ethers.utils.formatUnits(balance, 18)
-// '9709.905125722568213383'
+// '11386.855832278858351495'
 ```
 
 ### State Changing Methods
 
 ```
 // The DAI Contract is currently connected to the Provider,
-// which is read-only. We need to connect to a Signer, so
-// that we can pay to send state-changing transactions.
+// which is read-only. You need to connect to a Signer, so
+// that you can pay to send state-changing transactions.
 const daiWithSigner = contract.connect(signer);
 
 // Each DAI has 18 decimal places
@@ -279,7 +293,7 @@ daiContract.queryFilter(filterFrom, 9843470, 9843480)
 // number of entries; but they provide some useful examples
 //
 
-// List all transfers I sent in the last 10,000 blocks
+// List all transfers sent in the last 10,000 blocks
 daiContract.queryFilter(filterFrom, -10000)
 
 // List all transfers ever sent to me
@@ -290,11 +304,11 @@ Signing Messages
 ----------------
 
 ```javascript
-// To sign a simple string, which can often be used for
-// logging into a service, such as CryptoKitties simply
+// To sign a simple string, which are used for
+// logging into a service, such as CryptoKitties,
 // pass the string in.
 signature = await signer.signMessage("Hello World");
-// '0x7b8d663c680b165bb7b0601a65d730f532fa6427b2e30f1d91ff1d929712b3a50b427a672b90c1dc48a4e5fbde292fbded51f670ab57d15d5794b6ff015649611c'
+// '0x94fac815fc18f295c4860128d8960dfdb1d88acf891a48e345368f3f4d52c95e59d0f8b35d05d554905a39c63c11b66f61abf0211fcaba36bef5dfaf1ea5f1331c'
 
 //
 // A common case is also signing a hash, which is 32
@@ -302,7 +316,7 @@ signature = await signer.signMessage("Hello World");
 // data it MUST be an Array (or TypedArray)
 //
 
-// This string is 66 chacacters long
+// This string is 66 characters long
 message = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 
 // This array representation is 32 bytes long
@@ -311,6 +325,6 @@ messageBytes = ethers.utils.arrayify(message);
 
 // To sign a hash, you most often want to sign the bytes
 signature = await signer.signMessage(messageBytes)
-// '0xc791b3d29aa1754f9e392784273f076ef39ca5d81f2729c92af61f89db724a604074acbd725d9d95e1d3c9630211c8eee8e34f6d948d537dd82c11be4bcf676e1c'
+// '0xa77f9018a3ad3078056d529d5ccaca8796cdb5bc84e799d13b63a53646ab73f87f0895df7bbe2ee6016c95eb78a2e77013ab8f8d4855143d3567932cb5331e881c'
 ```
 

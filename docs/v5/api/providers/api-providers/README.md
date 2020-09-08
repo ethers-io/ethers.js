@@ -162,6 +162,9 @@ provider = new AlchemyProvider("ropsten");
 // Connect to mainnet with an API key (these are equivalent)
 provider = new AlchemyProvider(null, apiKey);
 provider = new AlchemyProvider("homestead", apiKey);
+
+// Connect to the Alchemy WebSocket endpoints with a WebSocketProvider
+provider = AlchemyProvider.getWebSocketProvider()
 ```
 
 CloudflareProvider

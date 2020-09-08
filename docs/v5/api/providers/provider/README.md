@@ -33,7 +33,7 @@ Returns the number of transactions *address* has ever **sent**, as of *blockTag*
 ```javascript
 // Get the balance for an account...
 provider.getBalance("ricmoo.firefly.eth");
-// { Promise: { BigNumber: "1578527309436018765" } }
+// { Promise: { BigNumber: "1492974808274631213" } }
 
 // Get the code for a contract...
 provider.getCode("registrar.firefly.eth");
@@ -45,7 +45,7 @@ provider.getStorageAt("registrar.firefly.eth", 0)
 
 // Get transaction count of an account...
 provider.getTransactionCount("ricmoo.firefly.eth");
-// { Promise: 673 }
+// { Promise: 679 }
 ```
 
 Blocks Methods
@@ -96,7 +96,7 @@ provider.getBlockWithTransactions(100004)
 //       blockHash: '0xf93283571ae16dcecbe1816adc126954a739350cd1523a1559eabeae155fbb63',
 //       blockNumber: 100004,
 //       chainId: 0,
-//       confirmations: 10297123,
+//       confirmations: 10719007,
 //       creates: null,
 //       data: '0x',
 //       from: '0xcf00A85f3826941e7A25BFcF9Aac575d40410852',
@@ -177,16 +177,16 @@ provider.getNetwork()
 
 // The current block number
 provider.getBlockNumber()
-// { Promise: 10397126 }
+// { Promise: 10819010 }
 
 // Get the current suggested gas price (in wei)...
 gasPrice = await provider.getGasPrice()
-// { BigNumber: "19000001123" }
+// { BigNumber: "69000000000" }
 
 // ...often this gas price is easier to understand or
 // display to the user in gwei (giga-wei, or 1e9 wei)
 utils.formatUnits(gasPrice, "gwei")
-// '19.000001123'
+// '69.0'
 ```
 
 Transactions Methods
@@ -302,7 +302,7 @@ provider.once(txHash, (transaction) => {
 filter = {
     address: "dai.tokens.ethers.eth",
     topics: [
-        utils.id("Transfer(address,address,uint256")
+        utils.id("Transfer(address,address,uint256)")
     ]
 }
 provider.on(filter, (log, event) => {
@@ -313,7 +313,7 @@ provider.on(filter, (log, event) => {
 // Notice this is an array of topic-sets and is identical to
 // using a filter with no address (i.e. match any address)
 topicSets = [
-    utils.id("Transfer(address,address,uint256"),
+    utils.id("Transfer(address,address,uint256)"),
     null,
     [
         myAddress,

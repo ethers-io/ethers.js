@@ -14,6 +14,8 @@ Default Provider
 
 Returns a new Provider, backed by multiple services, connected to *network*. Is no *network* is provided, **homestead** (i.e. mainnet) is used.
 
+The *network* may also be a URL to connect to, such as `http://localhost:8545` or `wss://example.com`.
+
 The *options* is an object, with the following properties:
 
 
@@ -31,6 +33,19 @@ Many services also have monitoring and usage metrics, which are only available i
 
 Some services also provide additional paid features, which are only available when specifying an API Key.
 
+
+Networks
+--------
+
+### Custom ENS Contract
+
+```
+const network = {
+    name: "dev",
+    chianId: 1337,
+    ensAddress: customEnsAddress
+};
+```
 
 Provider Documentation
 ----------------------
@@ -61,6 +76,7 @@ Provider Documentation
   * [WebSocketProvider](other)
 * [Types](types)
   * [BlockTag](types)
+  * [Networkish](types)
   * [Network](types)
   * [Block](types)
   * [Events and Logs](types)

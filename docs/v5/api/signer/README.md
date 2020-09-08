@@ -285,7 +285,7 @@ contract = new ethers.Contract("dai.tokens.ethers.eth", abi, signer)
 
 // Get the number of tokens for this account
 tokens = await contract.balanceOf(signer.getAddress())
-// { BigNumber: "9709905125722568213383" }
+// { BigNumber: "11386855832278858351495" }
 
 //
 // Pre-flight (check for revert) on DAI from the signer
@@ -302,7 +302,7 @@ contract.callStatic.transfer("donations.ethers.eth", tokens)
 
 // This will fail since it is greater than the token balance
 contract.callStatic.transfer("donations.ethers.eth", tokens.add(1))
-// Error: call revert exception (method="transfer(address,uint256)", errorSignature="Error(string)", errorArgs=["Dai/insufficient-balance"], reason="Dai/insufficient-balance", code=CALL_EXCEPTION, version=abi/5.0.1)
+// Error: call revert exception (method="transfer(address,uint256)", errorSignature="Error(string)", errorArgs=["Dai/insufficient-balance"], reason="Dai/insufficient-balance", code=CALL_EXCEPTION, version=abi/5.0.4)
 ```
 
 ExternallyOwnedAccount

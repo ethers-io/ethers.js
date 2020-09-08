@@ -123,7 +123,7 @@ This is identical to `sendAsync`. Historically, this used a synchronous web requ
 WebSocketProvider
 -----------------
 
-#### **new ***ethers* . *provider* . **WebSockerProvider**( [ url [ , network ] ] )
+#### **new ***ethers* . *provider* . **WebSocketProvider**( [ url [ , network ] ] )
 
 Returns a new [WebSocketProvider](/v5/api/providers/other/#WebSocketProvider) connected to *url* as the *network*.
 

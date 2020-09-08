@@ -10,21 +10,235 @@
         <div class="logo"><a href="/v5/"><div class="image"></div><div class="name">ethers</div><div class="version">v5.0</div></a></div>
       </div>
       <div class="toc"><div>
-        <div class="link title"><a href="/v5/">Documentation</a></div><div class="base show link depth-1"><a href="/v5/getting-started/">Getting Started</a></div><div class="base show link depth-1"><a href="/v5/concepts/">Ethereum Basics</a></div><div class="hide link depth-2"><a href="/v5/concepts/events/">Events</a></div><div class="hide link depth-2"><a href="/v5/concepts/gas/">Gas</a></div><div class="hide link depth-2"><a href="/v5/concepts/security/">Security</a></div><div class="base show link depth-1"><a href="/v5/api/">Application Programming Interface</a></div><div class="hide link depth-2"><a href="/v5/api/contract/">Contract Interaction</a></div><div class="hide link depth-3"><a href="/v5/api/contract/contract/">Contract</a></div><div class="hide link depth-3"><a href="/v5/api/contract/contract-factory/">ContractFactory</a></div><div class="hide link depth-3"><a href="/v5/api/contract/example/">Example: ERC-20 Contract</a></div><div class="hide link depth-2"><a href="/v5/api/signer/">Signers</a></div><div class="hide link depth-2"><a href="/v5/api/providers/">Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/provider/">Provider</a></div><div class="hide link depth-3"><a href="/v5/api/providers/jsonrpc-provider/">JsonRpcProvider</a></div><div class="hide link depth-3"><a href="/v5/api/providers/api-providers/">API Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/other/">Other Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/types/">Types</a></div><div class="hide link depth-2"><a href="/v5/api/utils/">Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/abi/">Application Binary Interface</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/coder/">AbiCoder</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/formats/">ABI Formats</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/fragments/">Fragments</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/interface/">Interface</a></div><div class="hide link depth-3"><a href="/v5/api/utils/address/">Addresses</a></div><div class="hide link depth-3"><a href="/v5/api/utils/bignumber/">BigNumber</a></div><div class="hide link depth-3"><a href="/v5/api/utils/bytes/">Byte Manipulation</a></div><div class="hide link depth-3"><a href="/v5/api/utils/constants/">Constants</a></div><div class="hide link depth-3"><a href="/v5/api/utils/display-logic/">Display Logic and Input</a></div><div class="hide link depth-3"><a href="/v5/api/utils/encoding/">Encoding Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/fixednumber/">FixedNumber</a></div><div class="hide link depth-3"><a href="/v5/api/utils/hashing/">Hashing Algorithms</a></div><div class="hide link depth-3"><a href="/v5/api/utils/hdnode/">HD Wallet</a></div><div class="hide link depth-3"><a href="/v5/api/utils/logger/">Logging</a></div><div class="hide link depth-3"><a href="/v5/api/utils/properties/">Property Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/signing-key/">Signing Key</a></div><div class="hide link depth-3"><a href="/v5/api/utils/strings/">Strings</a></div><div class="hide link depth-3"><a href="/v5/api/utils/transactions/">Transactions</a></div><div class="hide link depth-3"><a href="/v5/api/utils/web/">Web Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/wordlists/">Wordlists</a></div><div class="hide link depth-2"><a href="/v5/api/other/">Other Libraries</a></div><div class="hide link depth-3"><a href="/v5/api/other/assembly/">Assembly</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/dialect/">Ethers ASM Dialect</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/api/">Utilities</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/ast/">Abstract Syntax Tree</a></div><div class="hide link depth-3"><a href="/v5/api/other/hardware/">Hardware Wallets</a></div><div class="hide link depth-2"><a href="/v5/api/experimental/">Experimental</a></div><div class="base show link depth-1"><a href="/v5/cli/">Command Line Interfaces</a></div><div class="hide link depth-2"><a href="/v5/cli/ethers/">Sandbox Utility</a></div><div class="hide link depth-2"><a href="/v5/cli/asm/">Assembler</a></div><div class="hide link depth-2"><a href="/v5/cli/ens/">Ethereum Naming Service</a></div><div class="hide link depth-2"><a href="/v5/cli/typescript/">TypeScript</a></div><div class="hide link depth-2"><a href="/v5/cli/plugin/">Making Your Own</a></div><div class="base show link depth-1"><a href="/v5/cookbook/">Cookbook</a></div><div class="base show link depth-1"><a href="/v5/migration/">Migration Guide</a></div><div class="hide link depth-2"><a href="/v5/migration/web3/">Migration: From Web3.js</a></div><div class="hide link depth-2"><a href="/v5/migration/ethers-v4/">Migration: From Ethers v4</a></div><div class="base myself ancestor ancestor show link depth-1"><a href="/v5/testing/">Testing</a></div><div class="base show link depth-1"><a href="/v5/contributing/">Contributing and Hacking</a></div><div class="base show link depth-1"><a href="/v5/documentation/">Flatworm Docs</a></div><div class="base show link depth-1"><a href="/v5/license/">License and Copyright</a></div>
+        <div class="link title"><a href="/v5/">Documentation</a></div><div class="base show link depth-1"><a href="/v5/getting-started/">Getting Started</a></div><div class="base show link depth-1"><a href="/v5/concepts/">Ethereum Basics</a></div><div class="hide link depth-2"><a href="/v5/concepts/events/">Events</a></div><div class="hide link depth-2"><a href="/v5/concepts/gas/">Gas</a></div><div class="hide link depth-2"><a href="/v5/concepts/security/">Security</a></div><div class="base show link depth-1"><a href="/v5/api-keys/">Provider API Keys</a></div><div class="base show link depth-1"><a href="/v5/api/">Application Programming Interface</a></div><div class="hide link depth-2"><a href="/v5/api/providers/">Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/provider/">Provider</a></div><div class="hide link depth-3"><a href="/v5/api/providers/jsonrpc-provider/">JsonRpcProvider</a></div><div class="hide link depth-3"><a href="/v5/api/providers/api-providers/">API Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/other/">Other Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/types/">Types</a></div><div class="hide link depth-2"><a href="/v5/api/signer/">Signers</a></div><div class="hide link depth-2"><a href="/v5/api/contract/">Contract Interaction</a></div><div class="hide link depth-3"><a href="/v5/api/contract/contract/">Contract</a></div><div class="hide link depth-3"><a href="/v5/api/contract/contract-factory/">ContractFactory</a></div><div class="hide link depth-3"><a href="/v5/api/contract/example/">Example: ERC-20 Contract</a></div><div class="hide link depth-2"><a href="/v5/api/utils/">Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/abi/">Application Binary Interface</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/coder/">AbiCoder</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/formats/">ABI Formats</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/fragments/">Fragments</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/interface/">Interface</a></div><div class="hide link depth-3"><a href="/v5/api/utils/address/">Addresses</a></div><div class="hide link depth-3"><a href="/v5/api/utils/bignumber/">BigNumber</a></div><div class="hide link depth-3"><a href="/v5/api/utils/bytes/">Byte Manipulation</a></div><div class="hide link depth-3"><a href="/v5/api/utils/constants/">Constants</a></div><div class="hide link depth-3"><a href="/v5/api/utils/display-logic/">Display Logic and Input</a></div><div class="hide link depth-3"><a href="/v5/api/utils/encoding/">Encoding Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/fixednumber/">FixedNumber</a></div><div class="hide link depth-3"><a href="/v5/api/utils/hashing/">Hashing Algorithms</a></div><div class="hide link depth-3"><a href="/v5/api/utils/hdnode/">HD Wallet</a></div><div class="hide link depth-3"><a href="/v5/api/utils/logger/">Logging</a></div><div class="hide link depth-3"><a href="/v5/api/utils/properties/">Property Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/signing-key/">Signing Key</a></div><div class="hide link depth-3"><a href="/v5/api/utils/strings/">Strings</a></div><div class="hide link depth-3"><a href="/v5/api/utils/transactions/">Transactions</a></div><div class="hide link depth-3"><a href="/v5/api/utils/web/">Web Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/wordlists/">Wordlists</a></div><div class="hide link depth-2"><a href="/v5/api/other/">Other Libraries</a></div><div class="hide link depth-3"><a href="/v5/api/other/assembly/">Assembly</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/dialect/">Ethers ASM Dialect</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/api/">Utilities</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/ast/">Abstract Syntax Tree</a></div><div class="hide link depth-3"><a href="/v5/api/other/hardware/">Hardware Wallets</a></div><div class="hide link depth-2"><a href="/v5/api/experimental/">Experimental</a></div><div class="base show link depth-1"><a href="/v5/cli/">Command Line Interfaces</a></div><div class="hide link depth-2"><a href="/v5/cli/ethers/">Sandbox Utility</a></div><div class="hide link depth-2"><a href="/v5/cli/asm/">Assembler</a></div><div class="hide link depth-2"><a href="/v5/cli/ens/">Ethereum Naming Service</a></div><div class="hide link depth-2"><a href="/v5/cli/typescript/">TypeScript</a></div><div class="hide link depth-2"><a href="/v5/cli/plugin/">Making Your Own</a></div><div class="base show link depth-1"><a href="/v5/cookbook/">Cookbook</a></div><div class="hide link depth-2"><a href="/v5/cookbook/react-native/">React Native (and ilk)</a></div><div class="base show link depth-1"><a href="/v5/migration/">Migration Guide</a></div><div class="hide link depth-2"><a href="/v5/migration/web3/">Migration: From Web3.js</a></div><div class="hide link depth-2"><a href="/v5/migration/ethers-v4/">Migration: From Ethers v4</a></div><div class="base myself ancestor ancestor show link depth-1"><a href="/v5/testing/">Testing</a></div><div class="base show link depth-1"><a href="/v5/contributing/">Contributing and Hacking</a></div><div class="base show link depth-1"><a href="/v5/documentation/">Flatworm Docs</a></div><div class="base show link depth-1"><a href="/v5/license/">License and Copyright</a></div>
       </div></div>
     </div>
     <div class="content">
       <div class="breadcrumbs"><a href="/v5/">Documentation</a>&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<span class="current">Testing</span></div>
 
-<a name="testing"></a><h1 class="show-anchors"><div>Testing<div class="anchors"><a class="self" href="/v5/testing/#testing"></a></div></div></h1><p>Here goes info about testing</p>
+<a name="testing"></a><h1 class="show-anchors"><div>Testing<div class="anchors"><a class="self" href="/v5/testing/#testing"></a></div></div></h1><p>Testing is a critcial part of any library which wishes to remain secure, safe and reliable.</p>
 
+<p>Ethers currently has <b>over 23k tests</b> among its test suites, which are all made available for other projects to use as simple exported GZIP-JSON files.</p>
 
+<p>The tests are run on every check-in and the results can been seen on the <a href="https://github.com/ethers-io/ethers.js/actions/runs/158006903">GitHub CI Action</a>.</p>
+
+<p>We also strive to constantly add new test cases, especially when issues arise to ensure the issue is present prior to the fix, corrected after the fix and included to prevent future changes from causing a regression.</p>
+
+<p>A large number of the test cases were created procedurally by using known correct implementations from various sources (such as Geth) and written in different languages and verifyied with multiple libraries.</p>
+
+<p>For example, the ABI test suites were generated by procedurally generating a list of types, for each type choosing a random (valid) value, which then was converted into a Solidity source file, compiled using <code class="inline">solc</code> and deployed to a running Parity node and executed, with its outputs being captured. Similar to the how many of the hashing, event and selector test cases were created.</p>
+
+<a name="testing-supported"></a><a name="testing--testing-supported"></a><h2 class="show-anchors"><div>Supported Platforms<div class="anchors"><a class="self" href="/v5/testing/#testing-supported"></a></div></div></h2><p>While web technologies move quite fast, especially in the Web3 universe, we try to keep ethers as accessible as possible.</p>
+
+<p>Currently ethers should work on almost any ES3 or better environment and tests are run against:</p>
+
+<p><ul><li>node.js 8.x </li><li>node.js 10.x </li><li>node.js 12.x </li><li>node.js 13.x </li><li>Web Browsers (using UMD) </li><li>Web Browsers (using ES modules) </li></ul></p>
+
+<p>If there is an environment you feel has been overlooked or have suggestions, please feel free to reach out by opening an <a href="https://github.com/ethers-io/ethers.js/issues">issue on Github</a>.</p>
+
+<p>We would like to add a test build for Expo and React as those developers often seem to encounter pain points when using ethers, so if you have experience or ideas on this, <a href="https://github.com/ethers-io/ethers.js/issues">bug us</a>.</p>
+
+<p>The next Major version (probably summer 2021) will likely drop support for node 8.x and will require ES2015 for <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy</a>.</p>
+
+<p>Certain features in JavaScript are also avoided, such as look-behind tokens in regular expressions, since these have caused conflicts (at import time) with certain JavaScript environmants such as <a href="https://github.com/robertkrimen/otto">Otto</a>.</p>
+
+<p>Basically, the moral of the story is "be inclusive and don't drop people needlessly".</p>
+
+<a name="testing-suites"></a><a name="testing--testing-suites"></a><h2 class="show-anchors"><div>Test Suites<div class="anchors"><a class="self" href="/v5/testing/#testing-suites"></a></div></div></h2><p>The test suites are avaialble a gzipped JSON files in the <code class="inline">@ethersproject/testcases</code>, which makes it easy to install and import (both GZIP and JSON are quite easy to consume from most langauges). Each test suite also has its schema available in this package.</p>
+
+<table class="table full"><tr><td align="center" width="34%"><b>Filename</b></td><td align="center" colspan="2" width="66%"><b>Test Cases</b></td><td class="fix">&nbsp;</td></tr><tr><td align="left" width="34%">accounts.json.gz</td><td align="left" colspan="2" width="66%">Private Keys and addresses in checksum and ICAP formats</td><td class="fix">&nbsp;</td></tr><tr><td align="left" width="34%">contract-events.json.gz</td><td align="left" colspan="2" width="66%">Compiled Solidity, ABI interfaces, input types/values with the output types/values for emitted events; all tests were executed against real Ethereum nodes</td><td class="fix">&nbsp;</td></tr><tr><td align="left" width="34%">contract-interface.json.gz</td><td align="left" colspan="2" width="66%">Compiled Solidity, ABI interfaces, input types/values with the output types/values, encoded and decoded binrary data and normalized values for function calls executed against real Ethereum nodes.</td><td class="fix">&nbsp;</td></tr><tr><td align="left" width="34%">contract-interface-abi2.json.gz</td><td align="left" colspan="2" width="66%">Identical to <code class="inline">contract-interface</code>, except with emphasis on the ABIv2 coder which supports nested dynami types and strutured data</td><td class="fix">&nbsp;</td></tr><tr><td align="left" width="34%">contract-signatures.json.gz</td><td align="left" colspan="2" width="66%">Contract signatures and matching selectors</td><td class="fix">&nbsp;</td></tr><tr><td align="left" width="34%">hashes.json.gz</td><td align="left" colspan="2" width="66%">Data and respective hashes against a variety of hash functions</td><td class="fix">&nbsp;</td></tr><tr><td align="left" width="34%">hdnode.json.gz</td><td align="left" colspan="2" width="66%">HDNodes (BIP-32) with mnemonics, entropy, seed and computed nodes with pathes and addresses</td><td class="fix">&nbsp;</td></tr><tr><td align="left" width="34%">namehash.json.gz</td><td align="left" colspan="2" width="66%">ENS names along with computed [namehashes](link-namehash</td><td class="fix">&nbsp;</td></tr><tr><td align="left" width="34%">nameprep.json.gz</td><td align="left" colspan="2" width="66%">IDNA and Nameprep representations including official vectors</td><td class="fix">&nbsp;</td></tr><tr><td align="left" width="34%">rlp-coder.json.gz</td><td align="left" colspan="2" width="66%">Recursive-Length Prefix (RLP) data and encodings</td><td class="fix">&nbsp;</td></tr><tr><td align="left" width="34%">solidity-hashes.json.gz</td><td align="left" colspan="2" width="66%">Hashes based on the Solidity non-standard packed form</td><td class="fix">&nbsp;</td></tr><tr><td align="left" width="34%">transactions.json.gz</td><td align="left" colspan="2" width="66%">Signed and unsigned transactions with their serialized formats including both with and without EIP-155 replay protection</td><td class="fix">&nbsp;</td></tr><tr><td align="left" width="34%">units.json.gz</td><td align="left" colspan="2" width="66%">Values converted between various units</td><td class="fix">&nbsp;</td></tr><tr><td align="left" width="34%">wallets.json.gz</td><td align="left" colspan="2" width="66%">Keystore JSON format wallets, passwords and decrypted values</td><td class="fix">&nbsp;</td></tr><tr><td align="left" width="34%">wordlists.json.gz</td><td align="left" colspan="2" width="66%">Fully decompressed BIP-39 offcial wordlists</td><td class="fix">&nbsp;</td></tr><tr><td class="table-title" colspan="3">Test Suites</td><td class="fix">&nbsp;</td></tr></table><a name="testing-api"></a><a name="testing--testing-api"></a><h2 class="show-anchors"><div>Test Suite API<div class="anchors"><a class="self" href="/v5/testing/#testing-api"></a></div></div></h2><p>There are also convenience functions for those developing directly in TypeScript.</p>
+
+<div class="property show-anchors"><div class="signature"><span class="path">testcases</span><span class="symbol">.</span><span class="method">loadTests</span><span class="symbol">(</span> <span class="param">tag</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Array&lt; TestCase &gt;</span><div class="anchors"></div></div><div class="body"><p>Load all the given testcases for the <i>tag</i>.</p>
+
+<p>A tag is the string in the above list of test case names not including any extenstion (e.g. <code class="inline">"solidity-hashes"</code>)</p>
+
+</div></div><div class="property show-anchors"><div class="signature"><span class="path">testcases</span><span class="symbol">.</span><span class="path">TestCase</span><span class="symbol">.</span><span class="method">TEST_NAME</span><div class="anchors"></div></div><div class="body"><p>Most testcases have its schema available as a TypeScript type to make testing each property easier.</p>
+
+</div></div><a name="testing--testing-api--deterministic-random-numbers-drng"></a><h3 class="show-anchors"><div>Deterministic Random Numbers (DRNG)<div class="anchors"><a class="self" href="/v5/testing/#testing--testing-api--deterministic-random-numbers-drng"></a></div></div></h3><p>When creating test cases, often we want want random data from the perspective we do not case what values are used, however we want the values to be consistent accross runs. Otherwise it becomes difficult to reproduce an issue.</p>
+
+<p>In each of the following the seed is used to control the random value returned. Be sure to tweak the seed properly, for eaxmple on each iteration change the value and in recursive functions, concatentate to the seed.</p>
+
+<div class="property show-anchors"><div class="signature"><span class="path">testcases</span><span class="symbol">.</span><span class="method">randomBytes</span><span class="symbol">(</span> <span class="param">seed</span> <span class="symbol">,</span> <span class="param">lower</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">upper</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Uint8Array</span><div class="anchors"></div></div><div class="body"><p>Return at least <i>lower</i> random bytes, up to <i>upper</i> (exclusive) if specified, given <i>seed</i>. If <i>upper</i> is omitted, exactly <i>/lower</i> bytes are returned.</p>
+
+</div></div><div class="property show-anchors"><div class="signature"><span class="path">testcases</span><span class="symbol">.</span><span class="method">randomHexString</span><span class="symbol">(</span> <span class="param">seed</span> <span class="symbol">,</span> <span class="param">lower</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">upper</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="/v5/api/utils/bytes/#DataHexString">DataHexString</a> &gt;</span><div class="anchors"></div></div><div class="body"><p>Identical to randomBytes, except returns the value as a <a href="/v5/api/utils/bytes/#DataHexString">DataHexString</a> instead of a Uint8Array.</p>
+
+</div></div><div class="property show-anchors"><div class="signature"><span class="path">testcases</span><span class="symbol">.</span><span class="method">randomNumber</span><span class="symbol">(</span> <span class="param">seed</span> <span class="symbol">,</span> <span class="param">lower</span> <span class="symbol">,</span> <span class="param">upper</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">number</span><div class="anchors"></div></div><div class="body"><p>Returns a random number of at least <i>lower</i> and less than <i>upper</i> given <i>seed</i>.</p>
+
+</div></div><a name="testing-schemas"></a><a name="testing--testing-schemas"></a><h2 class="show-anchors"><div>Schemas<div class="anchors"><a class="self" href="/v5/testing/#testing-schemas"></a></div></div></h2><p>This section is still a work in progress, but will outline some of the more nuanced aspects of the test cases and their values.</p>
+
+<p>There will likely be an overhaul of the test cases in the next major version, to make code coverage testing more straight forward and to collapse some of the redundancy.</p>
+
+<p>For example, there is no longer a need to separate the ABI and ABIv2 test case and the accounts and transactions suites can be merged into one large collection.</p>
+
+<a name="testing--testing-schemas--accounts"></a><h3 class="show-anchors"><div>Accounts<div class="anchors"><a class="self" href="/v5/testing/#testing--testing-schemas--accounts"></a></div></div></h3><p>Basic account information using a private key and computing various addrss forms.</p>
+
+<p>Tests were verfified against [EthereumJS](https://github.com/ethereumjs) and custom scripts created to directly interact with Geth and cpp implementations.</p>
+
+<p><i>See: <code class="inline">accounts.json.gz</code></i></p>
+
+<table class="table minimal"><tr><td align="center"><b>Property</b></td><td align="center"><b>Meaning</b></td><td class="fix">&nbsp;</td></tr><tr><td align="center">name</td><td align="center">The testcase name</td><td class="fix">&nbsp;</td></tr><tr><td align="center">privateKey</td><td align="center">The private key</td><td class="fix">&nbsp;</td></tr><tr><td align="center">address</td><td align="center">The address (lowercase)</td><td class="fix">&nbsp;</td></tr><tr><td align="center">checksumAddress</td><td align="center">The address with checksum-adjusted case</td><td class="fix">&nbsp;</td></tr><tr><td align="center">icapAddress</td><td align="center">The ICAP address</td><td class="fix">&nbsp;</td></tr><tr><td class="table-title" colspan="2">Properties</td><td class="fix">&nbsp;</td></tr></table><div class="code-title"><div>Example</div></div><div class="code">{
+  "name":            "random-1023",
+  "address":         "0x53bff74b9af2e3853f758a8d2bd61cd115d27782",
+  "privateKey":      "0x8ab0e165c2ea461b01cdd49aec882d179dccdbdb5c85c3f9c94c448aa65c5ace",
+  "checksumAddress": "0x53bFf74b9Af2E3853f758A8D2Bd61CD115d27782",
+  "icapAddress":     "XE709S6NUSJR6SXQERCMYENAYYOZ2Y91M6A"
+}
+</div><a name="testing--testing-schemas--contract-interface"></a><h3 class="show-anchors"><div>Contract Interface<div class="anchors"><a class="self" href="/v5/testing/#testing--testing-schemas--contract-interface"></a></div></div></h3><p>Procedurally generated test cases to test ABI coding.</p>
+
+<div class="code-title"><div>Example</div></div><div class="code">{
+  "name":             "random-1999",
+  "source":           "contract Test {\n    function test() constant returns (address, bool, bytes14[1]) {\n        address a = address(0x061C7F399Ee738c97C7b7cD840892B281bf772B5);\n        bool b = bool(true);\n        bytes14[1] memory c;\n        c[0] = bytes14(0x327621c4abe12d4f21804ed40455);\n        return (a, b, c);\n    }\n}\n",
+  "types":            "[\"address\",\"bool\",\"bytes14[1]\"]",
+  "interface":        "[{\"constant\":true,\"inputs\":[],\"name\":\"test\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"},{\"name\":\"\",\"type\":\"bool\"},{\"name\":\"\",\"type\":\"bytes14[1]\"}],\"type\":\"function\"}]\n",
+  "bytecode":         "0x6060604052610175806100126000396000f360606040526000357c010000000000000000000000000000000000000000000000000000000090048063f8a8fd6d1461003957610037565b005b610046600480505061009d565b604051808473ffffffffffffffffffffffffffffffffffffffff1681526020018315158152602001826001602002808383829060006004602084601f0104600f02600301f150905001935050505060405180910390f35b600060006020604051908101604052806001905b60008152602001906001900390816100b157905050600060006020604051908101604052806001905b60008152602001906001900390816100da5790505073061c7f399ee738c97c7b7cd840892b281bf772b59250600191506d327621c4abe12d4f21804ed404557201000000000000000000000000000000000000028160006001811015610002579090602002019071ffffffffffffffffffffffffffffffffffff191690818152602001505082828295509550955061016d565b50505090919256",
+  "result":           "0x000000000000000000000000061c7f399ee738c97c7b7cd840892b281bf772b50000000000000000000000000000000000000000000000000000000000000001327621c4abe12d4f21804ed40455000000000000000000000000000000000000",
+  "values":           "[{\"type\":\"string\",\"value\":\"0x061C7F399Ee738c97C7b7cD840892B281bf772B5\"},{\"type\":\"boolean\",\"value\":true},[{\"type\":\"buffer\",\"value\":\"0x327621c4abe12d4f21804ed40455\"}]]",
+  "normalizedValues": "[{\"type\":\"string\",\"value\":\"0x061C7F399Ee738c97C7b7cD840892B281bf772B5\"},{\"type\":\"boolean\",\"value\":true},[{\"type\":\"buffer\",\"value\":\"0x327621c4abe12d4f21804ed40455\"}]]",
+  "runtimeBytecode":  "0x60606040526000357c010000000000000000000000000000000000000000000000000000000090048063f8a8fd6d1461003957610037565b005b610046600480505061009d565b604051808473ffffffffffffffffffffffffffffffffffffffff1681526020018315158152602001826001602002808383829060006004602084601f0104600f02600301f150905001935050505060405180910390f35b600060006020604051908101604052806001905b60008152602001906001900390816100b157905050600060006020604051908101604052806001905b60008152602001906001900390816100da5790505073061c7f399ee738c97c7b7cd840892b281bf772b59250600191506d327621c4abe12d4f21804ed404557201000000000000000000000000000000000000028160006001811015610002579090602002019071ffffffffffffffffffffffffffffffffffff191690818152602001505082828295509550955061016d565b50505090919256"
+}
+</div><a name="testing--testing-schemas--contract-signatures"></a><h3 class="show-anchors"><div>Contract Signatures<div class="anchors"><a class="self" href="/v5/testing/#testing--testing-schemas--contract-signatures"></a></div></div></h3><p>Computed ABI signatures and the selector hash.</p>
+
+<div class="code-title"><div>Example</div></div><div class="code">{
+  "name":      "random-1999",
+  "sigHash":   "0xf51e9244",
+  "abi":       "[{\"constant\":false,\"inputs\":[{\"name\":\"r0\",\"type\":\"string[2]\"},{\"name\":\"r1\",\"type\":\"uint128\"},{\"components\":[{\"name\":\"a\",\"type\":\"bytes\"},{\"name\":\"b\",\"type\":\"bytes\"},{\"name\":\"c\",\"type\":\"bytes\"}],\"name\":\"r2\",\"type\":\"tuple\"},{\"name\":\"r3\",\"type\":\"bytes\"}],\"name\":\"testSig\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"test\",\"outputs\":[{\"name\":\"r0\",\"type\":\"string[2]\"},{\"name\":\"r1\",\"type\":\"uint128\"},{\"components\":[{\"name\":\"a\",\"type\":\"bytes\"},{\"name\":\"b\",\"type\":\"bytes\"},{\"name\":\"c\",\"type\":\"bytes\"}],\"name\":\"r2\",\"type\":\"tuple\"},{\"name\":\"r3\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"}]",
+  "signature": "testSig(string[2],uint128,(bytes,bytes,bytes),bytes)"
+}
+</div><a name="testing--testing-schemas--hashes"></a><h3 class="show-anchors"><div>Hashes<div class="anchors"><a class="self" href="/v5/testing/#testing--testing-schemas--hashes"></a></div></div></h3>
+<div class="code-title"><div>Examples</div></div><div class="code">{
+  "data":      "0x3718a88ceb214c1480c32a9d",
+  "keccak256": "0x82d7d2dc3d384ddb289f41917b8280675bb1283f4fe2b601ac7c8f0a2c2824fa",
+  "sha512":    "0xe93462bb1de62ba3e6a980c3cb0b61728d3f771cea9680b0fa947b6f8fb2198a2690a3a837495c753b57f936401258dfe333a819e85f958b7d786fb9ab2b066c",
+  "sha256":    "0xe761d897e667aa72141dd729264c393c4ddda5c62312bbd21b0f4d954eba1a8d"
+}
+</div><a name="testing--testing-schemas--hierarchal-deterministic-node-bip-32"></a><h3 class="show-anchors"><div>Hierarchal Deterministic Node (BIP-32)<div class="anchors"><a class="self" href="/v5/testing/#testing--testing-schemas--hierarchal-deterministic-node-bip-32"></a></div></div></h3><p>Tests for <a href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki">BIP-32</a> HD Wallets.</p>
+
+<div class="code-title"><div>Example</div></div><div class="code">{
+  "name":     "trezor-23",
+  "entropy":  "0xf585c11aec520db57dd353c69554b21a89b20fb0650966fa0a9d6f74fd989d8f",
+  "mnemonic": "void come effort suffer camp survey warrior heavy shoot primary clutch crush open amazing screen patrol group space point ten exist slush involve unfold",
+  "locale":   "en",
+  "password": "TREZOR",
+  "hdnodes": [
+    {
+      "path":       "m",
+      "address":    "0xfd8eb95169ce57eab52fb69bc6922e9b6454d9aa",
+      "privateKey": "0x679bf92c04cf16307053cbed33784f3c4266b362bf5f3d7ee13bed6f2719743c"
+    },
+    {
+      "address":    "0xada964e9f10c4fc9787f9e17f00c63fe188722b0",
+      "privateKey": "0xdcbcb48a2b11eef0aab93a8f88d83f60a3aaabb34f9ffdbe939b8f059b30f2b7",
+      "path":       "m/8'/8'/2/3/4"
+    },
+    {
+      "privateKey": "0x10fd3776145dbeccb3d6925e4fdc0d58b452fce40cb8760b12f8b4223fafdfa6",
+      "address":    "0xf3f6b1ef343d5f5f231a2287e801a46add43eb06",
+      "path":       "m/1'/3'"
+    },
+    {
+      "address":    "0xb7b0fdb6e0f79f0529e95400903321e8a601b411",
+      "privateKey": "0x093a8ff506c95a2b79d397aed59703f6212ff3084731c2f03089b069ae76e69d",
+      "path":       "m/8'/4'/7'"
+    },
+    {
+      "path":       "m/7'/5'/11",
+      "privateKey": "0x6bd79da4dfa7dd0abf566a011bdb7cba0d28bba9ca249ba25880d5dabf861b42",
+      "address":    "0x1b3ad5fa50ae32875748107f4b2160829cc10536"
+    },
+    {
+      "path":       "m/9'/6'/2'/7'/3'",
+      "address":    "0x42eb4bed59f3291d02387cf0fb23098c55d82611",
+      "privateKey": "0xfc173acba7bc8bb2c434965d9e99f5a221f81add421bae96a891d08d60be11dd"
+    }
+  ],
+  "seed": "0x01f5bced59dec48e362f2c45b5de68b9fd6c92c6634f44d6d40aab69056506f0e35524a518034ddc1192e1dacd32c1ed3eaa3c3b131c88ed8e7e54c49a5d0998"
+}
+</div><a name="testing--testing-schemas--ens-namehash"></a><h3 class="show-anchors"><div>ENS Namehash<div class="anchors"><a class="self" href="/v5/testing/#testing--testing-schemas--ens-namehash"></a></div></div></h3><p>Test cases for the <a href="https://docs.ens.domains/contract-api-reference/name-processing#hashing-names">ENS Namehash Algorithm</a>.</p>
+
+<div class="code-title"><div>Examples</div></div><div class="code">{
+  "expected": "0x33868cc5c3fd3a9cd3adbc1e868ea133d2218f60dc2660c3bc48d8b1f4961384",
+  "name":     "ViTalIk.WALlet.Eth",
+  "test":     "mixed case"
+}</div><a name="testing--testing-schemas--rlp-coder"></a><h3 class="show-anchors"><div>RLP Coder<div class="anchors"><a class="self" href="/v5/testing/#testing--testing-schemas--rlp-coder"></a></div></div></h3>
+<div class="code-title"><div>Examples</div></div><div class="code">{
+  "name":    "arrayWithNullString3",
+  "encoded": "0xc3808080",
+  "decoded": [ "0x", "0x", "0x" ]
+}
+</div><a name="testing--testing-schemas--solidity-hashes"></a><h3 class="show-anchors"><div>Solidity Hashes<div class="anchors"><a class="self" href="/v5/testing/#testing--testing-schemas--solidity-hashes"></a></div></div></h3><p>Tests for the non-standard packed form of the Solidity hash functions.</p>
+
+<p>These tests were created by procedurally generating random signatures and values that match those signatures, constructing the equivalent Soldity, compiling it and deploying it to a Parity node then evaluating the response.</p>
+
+<div class="code-title"><div>Example</div></div><div class="code">{
+  "name":      "random-1999",
+  "keccak256": "0x7d98f1144a0cd689f720aa2f11f0a73bd52a2da1117175bc4bacd93c130966a1",
+  "ripemd160": "0x59384617f8a06efd57ab106c9e0c20c3e64137ac000000000000000000000000",
+  "sha256":    "0xf9aeea729ff39f8d372d8552bca81eb2a3c5d433dc8f98140040a03b7d81ac92",
+  "values": [
+    "0xcdffcb5242e6",
+    "0xc1e101b60ebe4688",
+    "0x5819f0ef5537796e43bdcd48309f717d6f7ccffa",
+    "0xec3f3f9f",
+    false,
+    true
+  ],
+  "types": [
+    "int184",
+    "int176",
+    "address",
+    "int64",
+    "bool",
+    "bool"
+  ]
+}
+</div><a name="testing--testing-schemas--transactions"></a><h3 class="show-anchors"><div>Transactions<div class="anchors"><a class="self" href="/v5/testing/#testing--testing-schemas--transactions"></a></div></div></h3><p>Serialized signed and unsigned transactions with both EIP-155 enabled and disabled.</p>
+
+<div class="code-title"><div>Examples</div></div><div class="code">{
+  "name":                        "random-998",
+  "privateKey":                  "0xd16c8076a15f7fb583f05dc12686fe526bc59d298f1eb7b9a237b458133d1dec",
+  "signedTransactionChainId5":   "0xf8708391d450848517cfba8736fcf36da03ee4949577303fd4e0acbe72c6c116acab5bf63f0b1e9c8365fdc7827dc82ea059891894eb180cb7c6c45a52f62d2103420d3ad0bc3ba518d0a25ed910842522a0155c0ea2aee2ea82e75843aab297420bad907d46809d046b13d692928f4d78aa",
+  "gasLimit":                    "0x36fcf36da03ee4",
+  "to":                          "0x9577303fd4e0acbe72c6c116acab5bf63f0b1e9c",
+  "data":                        "0x7dc8",
+  "accountAddress":              "0x6d4a6aff30ca5ca4b8422eea0ebcb669c7d79859",
+  "unsignedTransaction":         "0xed8391d450848517cfba8736fcf36da03ee4949577303fd4e0acbe72c6c116acab5bf63f0b1e9c8365fdc7827dc8",
+  "nonce":                       "0x91d450",
+  "gasPrice":                    "0x8517cfba",
+  "signedTransaction":           "0xf8708391d450848517cfba8736fcf36da03ee4949577303fd4e0acbe72c6c116acab5bf63f0b1e9c8365fdc7827dc81ba05030832331e6be48c95e1569a1ca9505c495486f72d6009b3a30fadfa05d9686a05cd3116b416d2362da1e9b0ca7fb1856c4e591cc22e63b395bd881ce2d3735e6",
+  "unsignedTransactionChainId5": "0xf08391d450848517cfba8736fcf36da03ee4949577303fd4e0acbe72c6c116acab5bf63f0b1e9c8365fdc7827dc8058080",
+  "value":                       "0x65fdc7"
+}
+</div><a name="testing--testing-schemas--units"></a><h3 class="show-anchors"><div>Units<div class="anchors"><a class="self" href="/v5/testing/#testing--testing-schemas--units"></a></div></div></h3><p>Unit conversion.</p>
+
+<div class="code-title"><div>Example</div></div><div class="code">{
+  "name":          "one-two-three-3",
+  "gwei_format":   "-1234567890123456.789012345",
+  "ether_format":  "-1234567.890123456789012345",
+  "gwei":          "-1234567890123456.789012345",
+  "ether":         "-1234567.890123456789012345",
+  "finney":        "-1234567890.123456789012345",
+  "wei":           "-1234567890123456789012345",
+  "finney_format": "-1234567890.123456789012345"
+}
+</div><a name="testing--testing-schemas--wallets"></a><h3 class="show-anchors"><div>Wallets<div class="anchors"><a class="self" href="/v5/testing/#testing--testing-schemas--wallets"></a></div></div></h3><p>Tests for the JSON keystore format.</p>
+
+<div class="code-title"><div>Example</div></div><div class="code">{
+  "mnemonic":   null,
+  "name":       "secretstorage_password",
+  "type":       "secret-storage",
+  "password":   "foo",
+  "privateKey": "0xf03e581353c794928373fb0893bc731aefc4c4e234e643f3a46998b03cd4d7c5",
+  "hasAddress": true,
+  "json":       "{\"address\":\"88a5c2d9919e46f883eb62f7b8dd9d0cc45bc290\",\"Crypto\":{\"cipher\":\"aes-128-ctr\",\"ciphertext\":\"10adcc8bcaf49474c6710460e0dc974331f71ee4c7baa7314b4a23d25fd6c406\",\"cipherparams\":{\"iv\":\"1dcdf13e49cea706994ed38804f6d171\"},\"kdf\":\"scrypt\",\"kdfparams\":{\"dklen\":32,\"n\":262144,\"p\":1,\"r\":8,\"salt\":\"bbfa53547e3e3bfcc9786a2cbef8504a5031d82734ecef02153e29daeed658fd\"},\"mac\":\"1cf53b5ae8d75f8c037b453e7c3c61b010225d916768a6b145adf5cf9cb3a703\"},\"id\":\"fb1280c0-d646-4e40-9550-7026b1be504a\",\"version\":3}\n",
+  "address":    "0x88a5c2d9919e46f883eb62f7b8dd9d0cc45bc290"
+}
+</div>
 
       <div class="footer">
         <div class="nav previous"><a href="/v5/migration/ethers-v4/"><span class="arrow">&larr;</span>Migration: From Ethers v4</a></div>
         <div class="nav next"><a href="/v5/contributing/">Contributing and Hacking<span class="arrow">&rarr;</span></a></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on July 5, 2020, 12:0am.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on September 8, 2020, 1:8am.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
   </body>

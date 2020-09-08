@@ -38,8 +38,64 @@ ethers.BigNumber.from(someValue)
 Contracts
 ---------
 
+### ENS Name Resolution
+
 ```
-// @TODO
+// v4
+contract.addressPromise
+
+// v5
+contract.resolvedAddress
+```
+
+### Gas Estimation
+
+```
+// v4
+contract.estimate.transfer(toAddress, amount)
+
+// v5
+contract.estimateGas.transfer(toAddress, amount)
+```
+
+### Functions
+
+```
+const abi = [
+
+  // Returns a single value
+  "function single() view returns (uint8)",
+
+  // Returns two values
+  "function double() view returns (uint8, uint8)",
+];
+
+// v4
+await contract.single()
+// 123
+await contract.functions.single()
+// 123
+
+
+// v5 (notice the change in the .function variant)
+await contract.single()
+// 123
+await contract.functions.single()
+// [ 123 ]
+
+
+// v4
+await contract.double()
+// [ 123, 5 ]
+await contract.functions.double()
+// [ 123, 5 ]
+
+
+// v5 (no difference from v4)
+await contract.double()
+// [ 123, 5 ]
+await contract.functions.double()
+// [ 123, 5 ]
 ```
 
 Errors
@@ -162,15 +218,6 @@ const sighash = interface.getSighash(functionFragment)
 
 const eventSig = eventFragment.format()
 const topic = interface.getTopic(eventFragment)
-```
-
-Utilities
----------
-
-### Renaming
-
-```
-// @TODO
 ```
 
 Wallet
