@@ -20,7 +20,7 @@ refresh the page. This should cause all your UI components to
 reset to a known-safe state, including any banners and warnings
 to your users if they are on an unsupported network.
 
-This can be acomplished by using the following function:
+This can be accomplished by using the following function:
 
 _code: Automatically Refresh on Network Change @lang<script>
 

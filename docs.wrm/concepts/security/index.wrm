@@ -21,7 +21,7 @@ _heading: Why does it take so long?
 The goal is to use as much CPU and memory as possible during
 this algorithm, so that a single computer can only compute a
 very small number of results for some fixed amount of time. To
-scale up an attack, the attacker requires additional compuers,
+scale up an attack, the attacker requires additional computers,
 increasing the cost to [brute-force attack](link-wiki-bruteforce)
 to guess the password.
 
