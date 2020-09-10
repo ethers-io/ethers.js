@@ -240,29 +240,56 @@ export class FixedNumber {
         return FixedNumber.fromValue(a.mul(this.format._multiplier).div(b), this.format.decimals, this.format);
     }
 
+    floor(): FixedNumber {
+        let comps = this.toString().split(".");
+
+        let result = FixedNumber.from(comps[0], this.format);
+
+        const hasFraction = !comps[1].match(/^(0*)$/);
+        if (this.isNegative() && hasFraction) {
+            result = result.subUnsafe(ONE);
+        }
+
+        return result;
+    }
+
+    ceiling(): FixedNumber {
+        let comps = this.toString().split(".");
+
+        let result = FixedNumber.from(comps[0], this.format);
+
+        const hasFraction = !comps[1].match(/^(0*)$/);
+        if (!this.isNegative() && hasFraction) {
+            result = result.addUnsafe(ONE);
+        }
+
+        return result;
+    }
+
     // @TODO: Support other rounding algorithms
     round(decimals?: number): FixedNumber {
         if (decimals == null) { decimals = 0; }
+
+        // If we are already in range, we're done
+        let comps = this.toString().split(".");
+
         if (decimals < 0 || decimals > 80 || (decimals % 1)) {
             logger.throwArgumentError("invalid decimal count", "decimals", decimals);
         }
 
-        // If we are already in range, we're done
-        let comps = this.toString().split(".");
         if (comps[1].length <= decimals) { return this; }
 
-        // Bump the value up by the 0.00...0005
-        const bump = "0." + zeros.substring(0, decimals) + "5";
-        comps = this.addUnsafe(FixedNumber.fromString(bump, this.format))._value.split(".");
-
-        // Now it is safe to truncate
-        return FixedNumber.fromString(comps[0] + "." + comps[1].substring(0, decimals));
+        const factor = FixedNumber.from("1" + zeros.substring(0, decimals));
+        return this.mulUnsafe(factor).addUnsafe(BUMP).floor().divUnsafe(factor);
     }
 
     isZero(): boolean {
         return (this._value === "0.0");
     }
 
+    isNegative(): boolean {
+        return (this._value[0] === "-");
+    }
 
     toString(): string { return this._value; }
 
@@ -361,3 +388,6 @@ export class FixedNumber {
         return !!(value && value._isFixedNumber);
     }
 }
+
+const ONE = FixedNumber.from(1);
+const BUMP = FixedNumber.from("0.5");
