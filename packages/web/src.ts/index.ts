@@ -154,6 +154,9 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
         if (headers["content-type"] == null) {
             headers["content-type"] = { key: "Content-Type", value: "application/octet-stream" };
         }
+        if (headers["content-length"] == null) {
+            headers["content-length"] = { key: "Content-Length", value: String(body.length) };
+        }
     }
 
     const flatHeaders: { [ key: string ]: string } = { };
