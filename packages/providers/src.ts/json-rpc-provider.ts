@@ -18,6 +18,18 @@ const logger = new Logger(version);
 import { BaseProvider, Event } from "./base-provider";
 
 
+const ErrorGas = [ "call", "estimateGas" ];
+
+function getMessage(error: any): string {
+    let message = error.message;
+    if (error.code === Logger.errors.SERVER_ERROR && error.error && typeof(error.error.message) === "string") {
+        message = error.error.message;
+    } else if (typeof(error.responseText) === "string") {
+        message = error.responseText;
+    }
+    return message || "";
+}
+
 function timer(timeout: number): Promise<any> {
     return new Promise(function(resolve) {
         setTimeout(resolve, timeout);
@@ -401,7 +413,7 @@ export class JsonRpcProvider extends BaseProvider {
         return null;
     }
 
-    perform(method: string, params: any): Promise<any> {
+    async perform(method: string, params: any): Promise<any> {
         const args = this.prepareRequest(method,  params);
 
         if (args == null) {
@@ -410,26 +422,41 @@ export class JsonRpcProvider extends BaseProvider {
 
         // We need a little extra logic to process errors from sendTransaction
         if (method === "sendTransaction") {
-            return this.send(args[0], args[1]).catch((error) => {
-                if (error.responseText) {
-                    // "insufficient funds for gas * price + value"
-                    if (error.responseText.indexOf("insufficient funds") > 0) {
-                        logger.throwError("insufficient funds", Logger.errors.INSUFFICIENT_FUNDS, { });
-                    }
-                    // "nonce too low"
-                    if (error.responseText.indexOf("nonce too low") > 0) {
-                        logger.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, { });
-                    }
-                    // "replacement transaction underpriced"
-                    if (error.responseText.indexOf("replacement transaction underpriced") > 0) {
-                        logger.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, { });
-                    }
+            try {
+                return await this.send(args[0], args[1]);
+            } catch (error) {
+                const message = getMessage(error);
+
+                // "insufficient funds for gas * price + value"
+                if (message.match(/insufficient funds/)) {
+                    logger.throwError("insufficient funds", Logger.errors.INSUFFICIENT_FUNDS, { });
                 }
+
+                // "nonce too low"
+                if (message.match(/nonce too low/)) {
+                    logger.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, { });
+                }
+
+                // "replacement transaction underpriced"
+                if (message.match(/replacement transaction underpriced/)) {
+                    logger.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, { });
+                }
+
                 throw error;
-            });
+            }
         }
 
-        return this.send(args[0], args[1])
+        try {
+            return await this.send(args[0], args[1])
+        } catch (error) {
+            if (ErrorGas.indexOf(method) >= 0 && getMessage(error).match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
+                logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+                    transaction: params.transaction,
+                    error: error
+                });
+            }
+            throw error;
+        }
     }
 
     _startEvent(event: Event): void {

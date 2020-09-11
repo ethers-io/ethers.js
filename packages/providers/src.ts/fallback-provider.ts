@@ -148,6 +148,24 @@ function stall(duration: number): Staller {
     return { cancel, getPromise, wait };
 }
 
+const ForwardErrors = [
+    Logger.errors.CALL_EXCEPTION,
+    Logger.errors.INSUFFICIENT_FUNDS,
+    Logger.errors.NONCE_EXPIRED,
+    Logger.errors.REPLACEMENT_UNDERPRICED,
+    Logger.errors.UNPREDICTABLE_GAS_LIMIT
+];
+
+const ForwardProperties = [
+    "address",
+    "args",
+    "errorArgs",
+    "errorSignature",
+    "method",
+    "transaction",
+];
+
+
 // @TODO: Make this an object with staller and cancel built-in
 interface RunningConfig extends FallbackProviderConfig {
     start?: number;
@@ -161,9 +179,9 @@ interface RunningConfig extends FallbackProviderConfig {
 
 function exposeDebugConfig(config: RunningConfig, now?: number): any {
     const result: any = {
-        provider: config.provider,
         weight: config.weight
     };
+    Object.defineProperty(result, "provider", { get: () => config.provider });
     if (config.start) { result.start = config.start; }
     if (now) { result.duration = (now - config.start); }
     if (config.done) {
@@ -573,6 +591,40 @@ export class FallbackProvider extends BaseProvider {
                 if (!first) { await stall(100).getPromise(); }
                 first = false;
             }
+
+            // No result, check for errors that should be forwarded
+            const errors = configs.reduce((accum, c) => {
+                if (!c.done || c.error == null) { return accum; }
+
+                const code = (<any>(c.error)).code;
+                if (ForwardErrors.indexOf(code) >= 0) {
+                    if (!accum[code]) { accum[code] = { error: c.error, weight: 0 }; }
+                    accum[code].weight += c.weight;
+                }
+
+                return accum;
+            }, <{ [ code: string ]: { error: Error, weight: number } }>({ }));
+
+            Object.keys(errors).forEach((errorCode: string) => {
+                const tally = errors[errorCode];
+                if (tally.weight < this.quorum) { return; }
+
+                // Shut down any stallers
+                configs.forEach(c => {
+                    if (c.staller) { c.staller.cancel(); }
+                    c.cancelled = true;
+                });
+
+                const e = <any>(tally.error);
+
+                const props: { [ name: string ]: any } = { };
+                ForwardProperties.forEach((name) => {
+                    if (e[name] == null) { return; }
+                    props[name] = e[name];
+                });
+
+                logger.throwError(e.reason || e.message, <any>errorCode, props);
+            });
 
             // All configs have run to completion; we will never get more data
             if (configs.filter((c) => !c.done).length === 0) { break; }
