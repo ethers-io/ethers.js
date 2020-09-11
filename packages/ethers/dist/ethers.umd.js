@@ -4225,7 +4225,7 @@
 	var _version$4 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bignumber/5.0.6";
+	exports.version = "bignumber/5.0.7";
 
 	});
 
@@ -4735,27 +4735,45 @@
 	        var b = parseFixed(other._value, other.format.decimals);
 	        return FixedNumber.fromValue(a.mul(this.format._multiplier).div(b), this.format.decimals, this.format);
 	    };
+	    FixedNumber.prototype.floor = function () {
+	        var comps = this.toString().split(".");
+	        var result = FixedNumber.from(comps[0], this.format);
+	        var hasFraction = !comps[1].match(/^(0*)$/);
+	        if (this.isNegative() && hasFraction) {
+	            result = result.subUnsafe(ONE);
+	        }
+	        return result;
+	    };
+	    FixedNumber.prototype.ceiling = function () {
+	        var comps = this.toString().split(".");
+	        var result = FixedNumber.from(comps[0], this.format);
+	        var hasFraction = !comps[1].match(/^(0*)$/);
+	        if (!this.isNegative() && hasFraction) {
+	            result = result.addUnsafe(ONE);
+	        }
+	        return result;
+	    };
 	    // @TODO: Support other rounding algorithms
 	    FixedNumber.prototype.round = function (decimals) {
 	        if (decimals == null) {
 	            decimals = 0;
 	        }
+	        // If we are already in range, we're done
+	        var comps = this.toString().split(".");
 	        if (decimals < 0 || decimals > 80 || (decimals % 1)) {
 	            logger.throwArgumentError("invalid decimal count", "decimals", decimals);
 	        }
-	        // If we are already in range, we're done
-	        var comps = this.toString().split(".");
 	        if (comps[1].length <= decimals) {
 	            return this;
 	        }
-	        // Bump the value up by the 0.00...0005
-	        var bump = "0." + zeros.substring(0, decimals) + "5";
-	        comps = this.addUnsafe(FixedNumber.fromString(bump, this.format))._value.split(".");
-	        // Now it is safe to truncate
-	        return FixedNumber.fromString(comps[0] + "." + comps[1].substring(0, decimals));
+	        var factor = FixedNumber.from("1" + zeros.substring(0, decimals));
+	        return this.mulUnsafe(factor).addUnsafe(BUMP).floor().divUnsafe(factor);
 	    };
 	    FixedNumber.prototype.isZero = function () {
 	        return (this._value === "0.0");
+	    };
+	    FixedNumber.prototype.isNegative = function () {
+	        return (this._value[0] === "-");
 	    };
 	    FixedNumber.prototype.toString = function () { return this._value; };
 	    FixedNumber.prototype.toHexString = function (width) {
@@ -4846,6 +4864,8 @@
 	    return FixedNumber;
 	}());
 	exports.FixedNumber = FixedNumber;
+	var ONE = FixedNumber.from(1);
+	var BUMP = FixedNumber.from("0.5");
 
 	});
 
@@ -5061,7 +5081,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.4";
+	exports.version = "abi/5.0.5";
 
 	});
 
@@ -6711,7 +6731,7 @@
 	var _version$c = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "address/5.0.3";
+	exports.version = "address/5.0.4";
 
 	});
 
@@ -7456,7 +7476,7 @@
 	var _version$e = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "strings/5.0.3";
+	exports.version = "strings/5.0.4";
 
 	});
 
@@ -8204,7 +8224,7 @@
 	var _version$g = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hash/5.0.3";
+	exports.version = "hash/5.0.4";
 
 	});
 
@@ -8864,7 +8884,7 @@
 	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-provider/5.0.3";
+	exports.version = "abstract-provider/5.0.4";
 
 	});
 
@@ -9001,7 +9021,7 @@
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-signer/5.0.3";
+	exports.version = "abstract-signer/5.0.4";
 
 	});
 
@@ -9329,7 +9349,7 @@
 	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.3";
+	exports.version = "contracts/5.0.4";
 
 	});
 
@@ -17802,7 +17822,7 @@
 	var _version$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "transactions/5.0.4";
+	exports.version = "transactions/5.0.5";
 
 	});
 
@@ -18002,7 +18022,7 @@
 	var _version$u = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wordlists/5.0.3";
+	exports.version = "wordlists/5.0.4";
 
 	});
 
@@ -18147,7 +18167,7 @@
 	var _version$w = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hdnode/5.0.3";
+	exports.version = "hdnode/5.0.4";
 
 	});
 
@@ -19391,7 +19411,7 @@
 	var _version$A = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "json-wallets/5.0.5";
+	exports.version = "json-wallets/5.0.6";
 
 	});
 
@@ -20560,7 +20580,7 @@
 	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wallet/5.0.3";
+	exports.version = "wallet/5.0.4";
 
 	});
 
@@ -21007,7 +21027,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "web/5.0.5";
+	exports.version = "web/5.0.6";
 
 	});
 
@@ -21234,6 +21254,9 @@
 	        options.body = body;
 	        if (headers["content-type"] == null) {
 	            headers["content-type"] = { key: "Content-Type", value: "application/octet-stream" };
+	        }
+	        if (headers["content-length"] == null) {
+	            headers["content-length"] = { key: "Content-Length", value: String(body.length) };
 	        }
 	    }
 	    var flatHeaders = {};
@@ -21719,7 +21742,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.7";
+	exports.version = "providers/5.0.8";
 
 	});
 
@@ -23974,6 +23997,17 @@
 
 	var logger = new lib.Logger(_version$I.version);
 
+	var ErrorGas = ["call", "estimateGas"];
+	function getMessage(error) {
+	    var message = error.message;
+	    if (error.code === lib.Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
+	        message = error.error.message;
+	    }
+	    else if (typeof (error.responseText) === "string") {
+	        message = error.responseText;
+	    }
+	    return message || "";
+	}
 	function timer(timeout) {
 	    return new Promise(function (resolve) {
 	        setTimeout(resolve, timeout);
@@ -24344,31 +24378,54 @@
 	        return null;
 	    };
 	    JsonRpcProvider.prototype.perform = function (method, params) {
-	        var args = this.prepareRequest(method, params);
-	        if (args == null) {
-	            logger.throwError(method + " not implemented", lib.Logger.errors.NOT_IMPLEMENTED, { operation: method });
-	        }
-	        // We need a little extra logic to process errors from sendTransaction
-	        if (method === "sendTransaction") {
-	            return this.send(args[0], args[1]).catch(function (error) {
-	                if (error.responseText) {
-	                    // "insufficient funds for gas * price + value"
-	                    if (error.responseText.indexOf("insufficient funds") > 0) {
-	                        logger.throwError("insufficient funds", lib.Logger.errors.INSUFFICIENT_FUNDS, {});
-	                    }
-	                    // "nonce too low"
-	                    if (error.responseText.indexOf("nonce too low") > 0) {
-	                        logger.throwError("nonce has already been used", lib.Logger.errors.NONCE_EXPIRED, {});
-	                    }
-	                    // "replacement transaction underpriced"
-	                    if (error.responseText.indexOf("replacement transaction underpriced") > 0) {
-	                        logger.throwError("replacement fee too low", lib.Logger.errors.REPLACEMENT_UNDERPRICED, {});
-	                    }
+	        return __awaiter(this, void 0, void 0, function () {
+	            var args, error_3, message, error_4;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        args = this.prepareRequest(method, params);
+	                        if (args == null) {
+	                            logger.throwError(method + " not implemented", lib.Logger.errors.NOT_IMPLEMENTED, { operation: method });
+	                        }
+	                        if (!(method === "sendTransaction")) return [3 /*break*/, 4];
+	                        _a.label = 1;
+	                    case 1:
+	                        _a.trys.push([1, 3, , 4]);
+	                        return [4 /*yield*/, this.send(args[0], args[1])];
+	                    case 2: return [2 /*return*/, _a.sent()];
+	                    case 3:
+	                        error_3 = _a.sent();
+	                        message = getMessage(error_3);
+	                        // "insufficient funds for gas * price + value"
+	                        if (message.match(/insufficient funds/)) {
+	                            logger.throwError("insufficient funds", lib.Logger.errors.INSUFFICIENT_FUNDS, {});
+	                        }
+	                        // "nonce too low"
+	                        if (message.match(/nonce too low/)) {
+	                            logger.throwError("nonce has already been used", lib.Logger.errors.NONCE_EXPIRED, {});
+	                        }
+	                        // "replacement transaction underpriced"
+	                        if (message.match(/replacement transaction underpriced/)) {
+	                            logger.throwError("replacement fee too low", lib.Logger.errors.REPLACEMENT_UNDERPRICED, {});
+	                        }
+	                        throw error_3;
+	                    case 4:
+	                        _a.trys.push([4, 6, , 7]);
+	                        return [4 /*yield*/, this.send(args[0], args[1])];
+	                    case 5: return [2 /*return*/, _a.sent()];
+	                    case 6:
+	                        error_4 = _a.sent();
+	                        if (ErrorGas.indexOf(method) >= 0 && getMessage(error_4).match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
+	                            logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", lib.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+	                                transaction: params.transaction,
+	                                error: error_4
+	                            });
+	                        }
+	                        throw error_4;
+	                    case 7: return [2 /*return*/];
 	                }
-	                throw error;
 	            });
-	        }
-	        return this.send(args[0], args[1]);
+	        });
 	    };
 	    JsonRpcProvider.prototype._startEvent = function (event) {
 	        if (event.tag === "pending") {
@@ -25295,6 +25352,18 @@
 	    return parseInt(blockTag.substring(2), 16);
 	}
 	var defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
+	function checkGasError(error, transaction) {
+	    var message = error.message;
+	    if (error.code === lib.Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
+	        message = error.error.message;
+	    }
+	    if (message.match(/execution failed due to an exception/)) {
+	        logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", lib.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+	            error: error, transaction: transaction
+	        });
+	    }
+	    throw error;
+	}
 	var EtherscanProvider = /** @class */ (function (_super) {
 	    __extends(EtherscanProvider, _super);
 	    function EtherscanProvider(network, apiKey) {
@@ -25339,7 +25408,7 @@
 	    };
 	    EtherscanProvider.prototype.perform = function (method, params) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var url, apiKey, get, _a, transaction, transaction, topic0, logs, txs, i, log, tx, _b;
+	            var url, apiKey, get, _a, transaction, error_1, transaction, error_2, topic0, logs, txs, i, log, tx, _b;
 	            var _this = this;
 	            return __generator(this, function (_c) {
 	                switch (_c.label) {
@@ -25396,11 +25465,11 @@
 	                            case "getTransaction": return [3 /*break*/, 9];
 	                            case "getTransactionReceipt": return [3 /*break*/, 10];
 	                            case "call": return [3 /*break*/, 11];
-	                            case "estimateGas": return [3 /*break*/, 12];
-	                            case "getLogs": return [3 /*break*/, 13];
-	                            case "getEtherPrice": return [3 /*break*/, 20];
+	                            case "estimateGas": return [3 /*break*/, 15];
+	                            case "getLogs": return [3 /*break*/, 19];
+	                            case "getEtherPrice": return [3 /*break*/, 26];
 	                        }
-	                        return [3 /*break*/, 22];
+	                        return [3 /*break*/, 28];
 	                    case 1:
 	                        url += "/api?module=proxy&action=eth_blockNumber" + apiKey;
 	                        return [2 /*return*/, get(url)];
@@ -25467,32 +25536,40 @@
 	                        url += apiKey;
 	                        return [2 /*return*/, get(url)];
 	                    case 11:
-	                        {
-	                            transaction = getTransactionString(params.transaction);
-	                            if (transaction) {
-	                                transaction = "&" + transaction;
-	                            }
-	                            url += "/api?module=proxy&action=eth_call" + transaction;
-	                            //url += "&tag=" + params.blockTag + apiKey;
-	                            if (params.blockTag !== "latest") {
-	                                throw new Error("EtherscanProvider does not support blockTag for call");
-	                            }
-	                            url += apiKey;
-	                            return [2 /*return*/, get(url)];
+	                        transaction = getTransactionString(params.transaction);
+	                        if (transaction) {
+	                            transaction = "&" + transaction;
 	                        }
+	                        url += "/api?module=proxy&action=eth_call" + transaction;
+	                        //url += "&tag=" + params.blockTag + apiKey;
+	                        if (params.blockTag !== "latest") {
+	                            throw new Error("EtherscanProvider does not support blockTag for call");
+	                        }
+	                        url += apiKey;
 	                        _c.label = 12;
 	                    case 12:
-	                        {
-	                            transaction = getTransactionString(params.transaction);
-	                            if (transaction) {
-	                                transaction = "&" + transaction;
-	                            }
-	                            url += "/api?module=proxy&action=eth_estimateGas&" + transaction;
-	                            url += apiKey;
-	                            return [2 /*return*/, get(url)];
+	                        _c.trys.push([12, 14, , 15]);
+	                        return [4 /*yield*/, get(url)];
+	                    case 13: return [2 /*return*/, _c.sent()];
+	                    case 14:
+	                        error_1 = _c.sent();
+	                        return [2 /*return*/, checkGasError(error_1, params.transaction)];
+	                    case 15:
+	                        transaction = getTransactionString(params.transaction);
+	                        if (transaction) {
+	                            transaction = "&" + transaction;
 	                        }
-	                        _c.label = 13;
-	                    case 13:
+	                        url += "/api?module=proxy&action=eth_estimateGas&" + transaction;
+	                        url += apiKey;
+	                        _c.label = 16;
+	                    case 16:
+	                        _c.trys.push([16, 18, , 19]);
+	                        return [4 /*yield*/, get(url)];
+	                    case 17: return [2 /*return*/, _c.sent()];
+	                    case 18:
+	                        error_2 = _c.sent();
+	                        return [2 /*return*/, checkGasError(error_2, params.transaction)];
+	                    case 19:
 	                        url += "/api?module=logs&action=getLogs";
 	                        if (params.filter.fromBlock) {
 	                            url += "&fromBlock=" + checkLogTag(params.filter.fromBlock);
@@ -25518,33 +25595,33 @@
 	                        }
 	                        url += apiKey;
 	                        return [4 /*yield*/, get(url, getResult)];
-	                    case 14:
+	                    case 20:
 	                        logs = _c.sent();
 	                        txs = {};
 	                        i = 0;
-	                        _c.label = 15;
-	                    case 15:
-	                        if (!(i < logs.length)) return [3 /*break*/, 19];
+	                        _c.label = 21;
+	                    case 21:
+	                        if (!(i < logs.length)) return [3 /*break*/, 25];
 	                        log = logs[i];
 	                        if (log.blockHash != null) {
-	                            return [3 /*break*/, 18];
+	                            return [3 /*break*/, 24];
 	                        }
-	                        if (!(txs[log.transactionHash] == null)) return [3 /*break*/, 17];
+	                        if (!(txs[log.transactionHash] == null)) return [3 /*break*/, 23];
 	                        return [4 /*yield*/, this.getTransaction(log.transactionHash)];
-	                    case 16:
+	                    case 22:
 	                        tx = _c.sent();
 	                        if (tx) {
 	                            txs[log.transactionHash] = tx.blockHash;
 	                        }
-	                        _c.label = 17;
-	                    case 17:
+	                        _c.label = 23;
+	                    case 23:
 	                        log.blockHash = txs[log.transactionHash];
-	                        _c.label = 18;
-	                    case 18:
+	                        _c.label = 24;
+	                    case 24:
 	                        i++;
-	                        return [3 /*break*/, 15];
-	                    case 19: return [2 /*return*/, logs];
-	                    case 20:
+	                        return [3 /*break*/, 21];
+	                    case 25: return [2 /*return*/, logs];
+	                    case 26:
 	                        if (this.network.name !== "homestead") {
 	                            return [2 /*return*/, 0.0];
 	                        }
@@ -25552,9 +25629,9 @@
 	                        url += apiKey;
 	                        _b = parseFloat;
 	                        return [4 /*yield*/, get(url, getResult)];
-	                    case 21: return [2 /*return*/, _b.apply(void 0, [(_c.sent()).ethusd])];
-	                    case 22: return [3 /*break*/, 23];
-	                    case 23: return [2 /*return*/, _super.prototype.perform.call(this, method, params)];
+	                    case 27: return [2 /*return*/, _b.apply(void 0, [(_c.sent()).ethusd])];
+	                    case 28: return [3 /*break*/, 29];
+	                    case 29: return [2 /*return*/, _super.prototype.perform.call(this, method, params)];
 	                }
 	            });
 	        });
@@ -25786,12 +25863,27 @@
 	    }
 	    return { cancel: cancel, getPromise: getPromise, wait: wait };
 	}
+	var ForwardErrors = [
+	    lib.Logger.errors.CALL_EXCEPTION,
+	    lib.Logger.errors.INSUFFICIENT_FUNDS,
+	    lib.Logger.errors.NONCE_EXPIRED,
+	    lib.Logger.errors.REPLACEMENT_UNDERPRICED,
+	    lib.Logger.errors.UNPREDICTABLE_GAS_LIMIT
+	];
+	var ForwardProperties = [
+	    "address",
+	    "args",
+	    "errorArgs",
+	    "errorSignature",
+	    "method",
+	    "transaction",
+	];
 	;
 	function exposeDebugConfig(config, now) {
 	    var result = {
-	        provider: config.provider,
 	        weight: config.weight
 	    };
+	    Object.defineProperty(result, "provider", { get: function () { return config.provider; } });
 	    if (config.start) {
 	        result.start = config.start;
 	    }
@@ -26136,7 +26228,7 @@
 	                        i = 0;
 	                        first = true;
 	                        _loop_1 = function () {
-	                            var t0, inflightWeight, _loop_2, waiting, results, result;
+	                            var t0, inflightWeight, _loop_2, waiting, results, result, errors;
 	                            return __generator(this, function (_a) {
 	                                switch (_a.label) {
 	                                    case 0:
@@ -26227,6 +26319,41 @@
 	                                        first = false;
 	                                        _a.label = 5;
 	                                    case 5:
+	                                        errors = configs.reduce(function (accum, c) {
+	                                            if (!c.done || c.error == null) {
+	                                                return accum;
+	                                            }
+	                                            var code = (c.error).code;
+	                                            if (ForwardErrors.indexOf(code) >= 0) {
+	                                                if (!accum[code]) {
+	                                                    accum[code] = { error: c.error, weight: 0 };
+	                                                }
+	                                                accum[code].weight += c.weight;
+	                                            }
+	                                            return accum;
+	                                        }, ({}));
+	                                        Object.keys(errors).forEach(function (errorCode) {
+	                                            var tally = errors[errorCode];
+	                                            if (tally.weight < _this.quorum) {
+	                                                return;
+	                                            }
+	                                            // Shut down any stallers
+	                                            configs.forEach(function (c) {
+	                                                if (c.staller) {
+	                                                    c.staller.cancel();
+	                                                }
+	                                                c.cancelled = true;
+	                                            });
+	                                            var e = (tally.error);
+	                                            var props = {};
+	                                            ForwardProperties.forEach(function (name) {
+	                                                if (e[name] == null) {
+	                                                    return;
+	                                                }
+	                                                props[name] = e[name];
+	                                            });
+	                                            logger.throwError(e.reason || e.message, errorCode, props);
+	                                        });
 	                                        // All configs have run to completion; we will never get more data
 	                                        if (configs.filter(function (c) { return !c.done; }).length === 0) {
 	                                            return [2 /*return*/, "break"];
@@ -26794,7 +26921,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "units/5.0.3";
+	exports.version = "units/5.0.4";
 
 	});
 
@@ -27121,7 +27248,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.12";
+	exports.version = "ethers/5.0.13";
 
 	});
 

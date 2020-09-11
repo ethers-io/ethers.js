@@ -513,6 +513,69 @@ describe("BigNumber", function () {
     });
     // @TODO: Add more tests here
 });
+describe("FixedNumber", function () {
+    {
+        var Tests = [
+            { value: "0.0", expected: "0.0" },
+            { value: "-0.0", expected: "0.0" },
+            { value: "1.0", expected: "1.0" },
+            { value: "1.00", expected: "1.0" },
+            { value: "01.00", expected: "1.0" },
+            { value: 1, expected: "1.0" },
+            { value: "-1.0", expected: "-1.0" },
+            { value: "-1.00", expected: "-1.0" },
+            { value: "-01.00", expected: "-1.0" },
+            { value: -1, expected: "-1.0" },
+        ];
+        Tests.forEach(function (test) {
+            it("Create from=" + test.value, function () {
+                var value = ethers_1.ethers.FixedNumber.from(test.value);
+                assert_1.default.equal(value.toString(), test.expected);
+            });
+        });
+    }
+    {
+        var Tests = [
+            { value: "1.0", round: 1, expected: "1.0" },
+            { value: "1.4", round: 1, expected: "1.4" },
+            { value: "1.4", round: 2, expected: "1.4" },
+            { value: "1.4", round: 0, expected: "1.0" },
+            { value: "1.5", round: 0, expected: "2.0" },
+            { value: "1.6", round: 0, expected: "2.0" },
+            { value: "-1.0", round: 1, expected: "-1.0" },
+            { value: "-1.4", round: 1, expected: "-1.4" },
+            { value: "-1.4", round: 2, expected: "-1.4" },
+            { value: "-1.4", round: 0, expected: "-1.0" },
+            { value: "-1.5", round: 0, expected: "-1.0" },
+            { value: "-1.6", round: 0, expected: "-2.0" },
+            { value: "1.51", round: 1, expected: "1.5" },
+            { value: "1.55", round: 1, expected: "1.6" },
+        ];
+        Tests.forEach(function (test) {
+            it("Rounding value=" + test.value + ", decimals=" + test.round, function () {
+                var value = ethers_1.ethers.FixedNumber.from(test.value).round(test.round);
+                assert_1.default.equal(value.toString(), test.expected);
+            });
+        });
+    }
+    {
+        var Tests = [
+            { value: "1.0", ceiling: "1.0", floor: "1.0" },
+            { value: "1.1", ceiling: "2.0", floor: "1.0" },
+            { value: "1.9", ceiling: "2.0", floor: "1.0" },
+            { value: "-1.0", ceiling: "-1.0", floor: "-1.0" },
+            { value: "-1.1", ceiling: "-1.0", floor: "-2.0" },
+            { value: "-1.9", ceiling: "-1.0", floor: "-2.0" },
+        ];
+        Tests.forEach(function (test) {
+            it("Clamping value=" + test.value, function () {
+                var value = ethers_1.ethers.FixedNumber.from(test.value);
+                assert_1.default.equal(value.floor().toString(), test.floor);
+                assert_1.default.equal(value.ceiling().toString(), test.ceiling);
+            });
+        });
+    }
+});
 describe("Logger", function () {
     var logger = new ethers_1.ethers.utils.Logger("testing/0.0");
     it("setLogLevel", function () {

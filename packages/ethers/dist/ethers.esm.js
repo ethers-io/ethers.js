@@ -4161,7 +4161,7 @@ var lib_esm$1 = /*#__PURE__*/Object.freeze({
 	joinSignature: joinSignature
 });
 
-const version$2 = "bignumber/5.0.6";
+const version$2 = "bignumber/5.0.7";
 
 "use strict";
 const logger$1 = new Logger(version$2);
@@ -4632,27 +4632,45 @@ class FixedNumber {
         const b = parseFixed(other._value, other.format.decimals);
         return FixedNumber.fromValue(a.mul(this.format._multiplier).div(b), this.format.decimals, this.format);
     }
+    floor() {
+        let comps = this.toString().split(".");
+        let result = FixedNumber.from(comps[0], this.format);
+        const hasFraction = !comps[1].match(/^(0*)$/);
+        if (this.isNegative() && hasFraction) {
+            result = result.subUnsafe(ONE);
+        }
+        return result;
+    }
+    ceiling() {
+        let comps = this.toString().split(".");
+        let result = FixedNumber.from(comps[0], this.format);
+        const hasFraction = !comps[1].match(/^(0*)$/);
+        if (!this.isNegative() && hasFraction) {
+            result = result.addUnsafe(ONE);
+        }
+        return result;
+    }
     // @TODO: Support other rounding algorithms
     round(decimals) {
         if (decimals == null) {
             decimals = 0;
         }
+        // If we are already in range, we're done
+        let comps = this.toString().split(".");
         if (decimals < 0 || decimals > 80 || (decimals % 1)) {
             logger$2.throwArgumentError("invalid decimal count", "decimals", decimals);
         }
-        // If we are already in range, we're done
-        let comps = this.toString().split(".");
         if (comps[1].length <= decimals) {
             return this;
         }
-        // Bump the value up by the 0.00...0005
-        const bump = "0." + zeros.substring(0, decimals) + "5";
-        comps = this.addUnsafe(FixedNumber.fromString(bump, this.format))._value.split(".");
-        // Now it is safe to truncate
-        return FixedNumber.fromString(comps[0] + "." + comps[1].substring(0, decimals));
+        const factor = FixedNumber.from("1" + zeros.substring(0, decimals));
+        return this.mulUnsafe(factor).addUnsafe(BUMP).floor().divUnsafe(factor);
     }
     isZero() {
         return (this._value === "0.0");
+    }
+    isNegative() {
+        return (this._value[0] === "-");
     }
     toString() { return this._value; }
     toHexString(width) {
@@ -4741,6 +4759,8 @@ class FixedNumber {
         return !!(value && value._isFixedNumber);
     }
 }
+const ONE = FixedNumber.from(1);
+const BUMP = FixedNumber.from("0.5");
 
 const version$3 = "properties/5.0.3";
 
@@ -4859,7 +4879,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.0.4";
+const version$4 = "abi/5.0.5";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -6381,7 +6401,7 @@ var index = /*#__PURE__*/Object.freeze({
 	decode: decode
 });
 
-const version$6 = "address/5.0.3";
+const version$6 = "address/5.0.4";
 
 "use strict";
 const logger$7 = new Logger(version$6);
@@ -6862,7 +6882,7 @@ class NumberCoder extends Coder {
     }
 }
 
-const version$7 = "strings/5.0.3";
+const version$7 = "strings/5.0.4";
 
 "use strict";
 const logger$9 = new Logger(version$7);
@@ -7439,7 +7459,7 @@ class AbiCoder {
 }
 const defaultAbiCoder = new AbiCoder();
 
-const version$8 = "hash/5.0.3";
+const version$8 = "hash/5.0.4";
 
 "use strict";
 const logger$b = new Logger(version$8);
@@ -7973,7 +7993,7 @@ class Interface {
 
 "use strict";
 
-const version$9 = "abstract-provider/5.0.3";
+const version$9 = "abstract-provider/5.0.4";
 
 "use strict";
 const logger$d = new Logger(version$9);
@@ -8050,7 +8070,7 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.0.3";
+const version$a = "abstract-signer/5.0.4";
 
 "use strict";
 var __awaiter$1 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8250,7 +8270,7 @@ class VoidSigner extends Signer {
     }
 }
 
-const version$b = "contracts/5.0.3";
+const version$b = "contracts/5.0.4";
 
 "use strict";
 var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -16485,7 +16505,7 @@ function computePublicKey(key, compressed) {
     return logger$g.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$e = "transactions/5.0.4";
+const version$e = "transactions/5.0.5";
 
 "use strict";
 const logger$h = new Logger(version$e);
@@ -16646,7 +16666,7 @@ function parse(rawTransaction) {
     return tx;
 }
 
-const version$f = "wordlists/5.0.3";
+const version$f = "wordlists/5.0.4";
 
 "use strict";
 // This gets overridden by rollup
@@ -16730,7 +16750,7 @@ Wordlist.register(langEn);
 "use strict";
 const wordlists = { en: langEn };
 
-const version$g = "hdnode/5.0.3";
+const version$g = "hdnode/5.0.4";
 
 "use strict";
 const logger$j = new Logger(version$g);
@@ -17901,7 +17921,7 @@ var aesJs = createCommonjsModule(function (module, exports) {
 })(commonjsGlobal);
 });
 
-const version$i = "json-wallets/5.0.5";
+const version$i = "json-wallets/5.0.6";
 
 "use strict";
 function looseArrayify(hexString) {
@@ -18873,7 +18893,7 @@ function decryptJsonWalletSync(json, password) {
     throw new Error("invalid JSON wallet");
 }
 
-const version$j = "wallet/5.0.3";
+const version$j = "wallet/5.0.4";
 
 "use strict";
 const logger$n = new Logger(version$j);
@@ -19233,7 +19253,7 @@ var browser$2 = /*#__PURE__*/Object.freeze({
 	encode: encode$1
 });
 
-const version$l = "web/5.0.5";
+const version$l = "web/5.0.6";
 
 "use strict";
 var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -19373,6 +19393,9 @@ function _fetchData(connection, body, processFunc) {
         options.body = body;
         if (headers["content-type"] == null) {
             headers["content-type"] = { key: "Content-Type", value: "application/octet-stream" };
+        }
+        if (headers["content-length"] == null) {
+            headers["content-length"] = { key: "Content-Length", value: String(body.length) };
         }
     }
     const flatHeaders = {};
@@ -19817,7 +19840,7 @@ var bech32_5 = bech32.toWords;
 var bech32_6 = bech32.fromWordsUnsafe;
 var bech32_7 = bech32.fromWords;
 
-const version$m = "providers/5.0.7";
+const version$m = "providers/5.0.8";
 
 "use strict";
 const logger$q = new Logger(version$m);
@@ -21515,7 +21538,7 @@ class BaseProvider extends Provider {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.7";
+exports.version = "providers/5.0.8";
 
 });
 
@@ -21559,6 +21582,17 @@ var __awaiter$7 = (window && window.__awaiter) || function (thisArg, _arguments,
     });
 };
 const logger$s = new Logger(version$m);
+const ErrorGas = ["call", "estimateGas"];
+function getMessage(error) {
+    let message = error.message;
+    if (error.code === Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
+        message = error.error.message;
+    }
+    else if (typeof (error.responseText) === "string") {
+        message = error.responseText;
+    }
+    return message || "";
+}
 function timer(timeout) {
     return new Promise(function (resolve) {
         setTimeout(resolve, timeout);
@@ -21887,31 +21921,46 @@ class JsonRpcProvider extends BaseProvider {
         return null;
     }
     perform(method, params) {
-        const args = this.prepareRequest(method, params);
-        if (args == null) {
-            logger$s.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });
-        }
-        // We need a little extra logic to process errors from sendTransaction
-        if (method === "sendTransaction") {
-            return this.send(args[0], args[1]).catch((error) => {
-                if (error.responseText) {
+        return __awaiter$7(this, void 0, void 0, function* () {
+            const args = this.prepareRequest(method, params);
+            if (args == null) {
+                logger$s.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });
+            }
+            // We need a little extra logic to process errors from sendTransaction
+            if (method === "sendTransaction") {
+                try {
+                    return yield this.send(args[0], args[1]);
+                }
+                catch (error) {
+                    const message = getMessage(error);
                     // "insufficient funds for gas * price + value"
-                    if (error.responseText.indexOf("insufficient funds") > 0) {
+                    if (message.match(/insufficient funds/)) {
                         logger$s.throwError("insufficient funds", Logger.errors.INSUFFICIENT_FUNDS, {});
                     }
                     // "nonce too low"
-                    if (error.responseText.indexOf("nonce too low") > 0) {
+                    if (message.match(/nonce too low/)) {
                         logger$s.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {});
                     }
                     // "replacement transaction underpriced"
-                    if (error.responseText.indexOf("replacement transaction underpriced") > 0) {
+                    if (message.match(/replacement transaction underpriced/)) {
                         logger$s.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {});
                     }
+                    throw error;
+                }
+            }
+            try {
+                return yield this.send(args[0], args[1]);
+            }
+            catch (error) {
+                if (ErrorGas.indexOf(method) >= 0 && getMessage(error).match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
+                    logger$s.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+                        transaction: params.transaction,
+                        error: error
+                    });
                 }
                 throw error;
-            });
-        }
-        return this.send(args[0], args[1]);
+            }
+        });
     }
     _startEvent(event) {
         if (event.tag === "pending") {
@@ -22530,6 +22579,18 @@ function checkLogTag(blockTag) {
     return parseInt(blockTag.substring(2), 16);
 }
 const defaultApiKey$1 = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
+function checkGasError(error, transaction) {
+    let message = error.message;
+    if (error.code === Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
+        message = error.error.message;
+    }
+    if (message.match(/execution failed due to an exception/)) {
+        logger$x.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+            error, transaction
+        });
+    }
+    throw error;
+}
 class EtherscanProvider extends BaseProvider {
     constructor(network, apiKey) {
         logger$x.checkNew(new.target, EtherscanProvider);
@@ -22678,7 +22739,12 @@ class EtherscanProvider extends BaseProvider {
                         throw new Error("EtherscanProvider does not support blockTag for call");
                     }
                     url += apiKey;
-                    return get(url);
+                    try {
+                        return yield get(url);
+                    }
+                    catch (error) {
+                        return checkGasError(error, params.transaction);
+                    }
                 }
                 case "estimateGas": {
                     let transaction = getTransactionString(params.transaction);
@@ -22687,7 +22753,12 @@ class EtherscanProvider extends BaseProvider {
                     }
                     url += "/api?module=proxy&action=eth_estimateGas&" + transaction;
                     url += apiKey;
-                    return get(url);
+                    try {
+                        return yield get(url);
+                    }
+                    catch (error) {
+                        return checkGasError(error, params.transaction);
+                    }
                 }
                 case "getLogs": {
                     url += "/api?module=logs&action=getLogs";
@@ -22914,12 +22985,27 @@ function stall$1(duration) {
     }
     return { cancel, getPromise, wait };
 }
+const ForwardErrors = [
+    Logger.errors.CALL_EXCEPTION,
+    Logger.errors.INSUFFICIENT_FUNDS,
+    Logger.errors.NONCE_EXPIRED,
+    Logger.errors.REPLACEMENT_UNDERPRICED,
+    Logger.errors.UNPREDICTABLE_GAS_LIMIT
+];
+const ForwardProperties = [
+    "address",
+    "args",
+    "errorArgs",
+    "errorSignature",
+    "method",
+    "transaction",
+];
 ;
 function exposeDebugConfig(config, now) {
     const result = {
-        provider: config.provider,
         weight: config.weight
     };
+    Object.defineProperty(result, "provider", { get: () => config.provider });
     if (config.start) {
         result.start = config.start;
     }
@@ -23303,6 +23389,42 @@ class FallbackProvider extends BaseProvider {
                     }
                     first = false;
                 }
+                // No result, check for errors that should be forwarded
+                const errors = configs.reduce((accum, c) => {
+                    if (!c.done || c.error == null) {
+                        return accum;
+                    }
+                    const code = (c.error).code;
+                    if (ForwardErrors.indexOf(code) >= 0) {
+                        if (!accum[code]) {
+                            accum[code] = { error: c.error, weight: 0 };
+                        }
+                        accum[code].weight += c.weight;
+                    }
+                    return accum;
+                }, ({}));
+                Object.keys(errors).forEach((errorCode) => {
+                    const tally = errors[errorCode];
+                    if (tally.weight < this.quorum) {
+                        return;
+                    }
+                    // Shut down any stallers
+                    configs.forEach(c => {
+                        if (c.staller) {
+                            c.staller.cancel();
+                        }
+                        c.cancelled = true;
+                    });
+                    const e = (tally.error);
+                    const props = {};
+                    ForwardProperties.forEach((name) => {
+                        if (e[name] == null) {
+                            return;
+                        }
+                        props[name] = e[name];
+                    });
+                    logger$y.throwError(e.reason || e.message, errorCode, props);
+                });
                 // All configs have run to completion; we will never get more data
                 if (configs.filter((c) => !c.done).length === 0) {
                     break;
@@ -23696,7 +23818,7 @@ function sha256$1(types, values) {
     return browser_3(pack$1(types, values));
 }
 
-const version$n = "units/5.0.3";
+const version$n = "units/5.0.4";
 
 "use strict";
 const logger$D = new Logger(version$n);
@@ -23871,7 +23993,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.12";
+const version$o = "ethers/5.0.13";
 
 "use strict";
 const logger$E = new Logger(version$o);

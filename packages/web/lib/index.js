@@ -125,6 +125,9 @@ function _fetchData(connection, body, processFunc) {
         if (headers["content-type"] == null) {
             headers["content-type"] = { key: "Content-Type", value: "application/octet-stream" };
         }
+        if (headers["content-length"] == null) {
+            headers["content-length"] = { key: "Content-Length", value: String(body.length) };
+        }
     }
     var flatHeaders = {};
     Object.keys(headers).forEach(function (key) {

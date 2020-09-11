@@ -84,6 +84,18 @@ function checkLogTag(blockTag) {
     return parseInt(blockTag.substring(2), 16);
 }
 const defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
+function checkGasError(error, transaction) {
+    let message = error.message;
+    if (error.code === Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
+        message = error.error.message;
+    }
+    if (message.match(/execution failed due to an exception/)) {
+        logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+            error, transaction
+        });
+    }
+    throw error;
+}
 export class EtherscanProvider extends BaseProvider {
     constructor(network, apiKey) {
         logger.checkNew(new.target, EtherscanProvider);
@@ -232,7 +244,12 @@ export class EtherscanProvider extends BaseProvider {
                         throw new Error("EtherscanProvider does not support blockTag for call");
                     }
                     url += apiKey;
-                    return get(url);
+                    try {
+                        return yield get(url);
+                    }
+                    catch (error) {
+                        return checkGasError(error, params.transaction);
+                    }
                 }
                 case "estimateGas": {
                     let transaction = getTransactionString(params.transaction);
@@ -241,7 +258,12 @@ export class EtherscanProvider extends BaseProvider {
                     }
                     url += "/api?module=proxy&action=eth_estimateGas&" + transaction;
                     url += apiKey;
-                    return get(url);
+                    try {
+                        return yield get(url);
+                    }
+                    catch (error) {
+                        return checkGasError(error, params.transaction);
+                    }
                 }
                 case "getLogs": {
                     url += "/api?module=logs&action=getLogs";

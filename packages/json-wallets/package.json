@@ -1,17 +1,17 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/abstract-signer": "^5.0.3",
-    "@ethersproject/address": "^5.0.3",
+    "@ethersproject/abstract-signer": "^5.0.4",
+    "@ethersproject/address": "^5.0.4",
     "@ethersproject/bytes": "^5.0.4",
-    "@ethersproject/hdnode": "^5.0.3",
+    "@ethersproject/hdnode": "^5.0.4",
     "@ethersproject/keccak256": "^5.0.3",
     "@ethersproject/logger": "^5.0.5",
     "@ethersproject/pbkdf2": "^5.0.3",
     "@ethersproject/properties": "^5.0.3",
     "@ethersproject/random": "^5.0.3",
-    "@ethersproject/strings": "^5.0.3",
-    "@ethersproject/transactions": "^5.0.3",
+    "@ethersproject/strings": "^5.0.4",
+    "@ethersproject/transactions": "^5.0.5",
     "aes-js": "3.0.0",
     "scrypt-js": "3.0.1"
   },
@@ -35,7 +35,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xcff3f234273ff7c412bb3be96324f5d35e74de5cb2354bd6bfbf05997518e970",
+  "tarballHash": "0x31d0664f26911242b457afa08959443b108145b3dee2d843dfeff45933a8c8cb",
   "types": "./lib/index.d.ts",
-  "version": "5.0.5"
+  "version": "5.0.6"
 }

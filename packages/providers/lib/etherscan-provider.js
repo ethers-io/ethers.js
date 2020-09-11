@@ -125,6 +125,18 @@ function checkLogTag(blockTag) {
     return parseInt(blockTag.substring(2), 16);
 }
 var defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
+function checkGasError(error, transaction) {
+    var message = error.message;
+    if (error.code === logger_1.Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
+        message = error.error.message;
+    }
+    if (message.match(/execution failed due to an exception/)) {
+        logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+            error: error, transaction: transaction
+        });
+    }
+    throw error;
+}
 var EtherscanProvider = /** @class */ (function (_super) {
     __extends(EtherscanProvider, _super);
     function EtherscanProvider(network, apiKey) {
@@ -169,7 +181,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
     };
     EtherscanProvider.prototype.perform = function (method, params) {
         return __awaiter(this, void 0, void 0, function () {
-            var url, apiKey, get, _a, transaction, transaction, topic0, logs, txs, i, log, tx, _b;
+            var url, apiKey, get, _a, transaction, error_1, transaction, error_2, topic0, logs, txs, i, log, tx, _b;
             var _this = this;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -226,11 +238,11 @@ var EtherscanProvider = /** @class */ (function (_super) {
                             case "getTransaction": return [3 /*break*/, 9];
                             case "getTransactionReceipt": return [3 /*break*/, 10];
                             case "call": return [3 /*break*/, 11];
-                            case "estimateGas": return [3 /*break*/, 12];
-                            case "getLogs": return [3 /*break*/, 13];
-                            case "getEtherPrice": return [3 /*break*/, 20];
+                            case "estimateGas": return [3 /*break*/, 15];
+                            case "getLogs": return [3 /*break*/, 19];
+                            case "getEtherPrice": return [3 /*break*/, 26];
                         }
-                        return [3 /*break*/, 22];
+                        return [3 /*break*/, 28];
                     case 1:
                         url += "/api?module=proxy&action=eth_blockNumber" + apiKey;
                         return [2 /*return*/, get(url)];
@@ -297,32 +309,40 @@ var EtherscanProvider = /** @class */ (function (_super) {
                         url += apiKey;
                         return [2 /*return*/, get(url)];
                     case 11:
-                        {
-                            transaction = getTransactionString(params.transaction);
-                            if (transaction) {
-                                transaction = "&" + transaction;
-                            }
-                            url += "/api?module=proxy&action=eth_call" + transaction;
-                            //url += "&tag=" + params.blockTag + apiKey;
-                            if (params.blockTag !== "latest") {
-                                throw new Error("EtherscanProvider does not support blockTag for call");
-                            }
-                            url += apiKey;
-                            return [2 /*return*/, get(url)];
+                        transaction = getTransactionString(params.transaction);
+                        if (transaction) {
+                            transaction = "&" + transaction;
                         }
+                        url += "/api?module=proxy&action=eth_call" + transaction;
+                        //url += "&tag=" + params.blockTag + apiKey;
+                        if (params.blockTag !== "latest") {
+                            throw new Error("EtherscanProvider does not support blockTag for call");
+                        }
+                        url += apiKey;
                         _c.label = 12;
                     case 12:
-                        {
-                            transaction = getTransactionString(params.transaction);
-                            if (transaction) {
-                                transaction = "&" + transaction;
-                            }
-                            url += "/api?module=proxy&action=eth_estimateGas&" + transaction;
-                            url += apiKey;
-                            return [2 /*return*/, get(url)];
+                        _c.trys.push([12, 14, , 15]);
+                        return [4 /*yield*/, get(url)];
+                    case 13: return [2 /*return*/, _c.sent()];
+                    case 14:
+                        error_1 = _c.sent();
+                        return [2 /*return*/, checkGasError(error_1, params.transaction)];
+                    case 15:
+                        transaction = getTransactionString(params.transaction);
+                        if (transaction) {
+                            transaction = "&" + transaction;
                         }
-                        _c.label = 13;
-                    case 13:
+                        url += "/api?module=proxy&action=eth_estimateGas&" + transaction;
+                        url += apiKey;
+                        _c.label = 16;
+                    case 16:
+                        _c.trys.push([16, 18, , 19]);
+                        return [4 /*yield*/, get(url)];
+                    case 17: return [2 /*return*/, _c.sent()];
+                    case 18:
+                        error_2 = _c.sent();
+                        return [2 /*return*/, checkGasError(error_2, params.transaction)];
+                    case 19:
                         url += "/api?module=logs&action=getLogs";
                         if (params.filter.fromBlock) {
                             url += "&fromBlock=" + checkLogTag(params.filter.fromBlock);
@@ -348,33 +368,33 @@ var EtherscanProvider = /** @class */ (function (_super) {
                         }
                         url += apiKey;
                         return [4 /*yield*/, get(url, getResult)];
-                    case 14:
+                    case 20:
                         logs = _c.sent();
                         txs = {};
                         i = 0;
-                        _c.label = 15;
-                    case 15:
-                        if (!(i < logs.length)) return [3 /*break*/, 19];
+                        _c.label = 21;
+                    case 21:
+                        if (!(i < logs.length)) return [3 /*break*/, 25];
                         log = logs[i];
                         if (log.blockHash != null) {
-                            return [3 /*break*/, 18];
+                            return [3 /*break*/, 24];
                         }
-                        if (!(txs[log.transactionHash] == null)) return [3 /*break*/, 17];
+                        if (!(txs[log.transactionHash] == null)) return [3 /*break*/, 23];
                         return [4 /*yield*/, this.getTransaction(log.transactionHash)];
-                    case 16:
+                    case 22:
                         tx = _c.sent();
                         if (tx) {
                             txs[log.transactionHash] = tx.blockHash;
                         }
-                        _c.label = 17;
-                    case 17:
+                        _c.label = 23;
+                    case 23:
                         log.blockHash = txs[log.transactionHash];
-                        _c.label = 18;
-                    case 18:
+                        _c.label = 24;
+                    case 24:
                         i++;
-                        return [3 /*break*/, 15];
-                    case 19: return [2 /*return*/, logs];
-                    case 20:
+                        return [3 /*break*/, 21];
+                    case 25: return [2 /*return*/, logs];
+                    case 26:
                         if (this.network.name !== "homestead") {
                             return [2 /*return*/, 0.0];
                         }
@@ -382,9 +402,9 @@ var EtherscanProvider = /** @class */ (function (_super) {
                         url += apiKey;
                         _b = parseFloat;
                         return [4 /*yield*/, get(url, getResult)];
-                    case 21: return [2 /*return*/, _b.apply(void 0, [(_c.sent()).ethusd])];
-                    case 22: return [3 /*break*/, 23];
-                    case 23: return [2 /*return*/, _super.prototype.perform.call(this, method, params)];
+                    case 27: return [2 /*return*/, _b.apply(void 0, [(_c.sent()).ethusd])];
+                    case 28: return [3 /*break*/, 29];
+                    case 29: return [2 /*return*/, _super.prototype.perform.call(this, method, params)];
                 }
             });
         });

@@ -5,10 +5,10 @@
   "browser.umd": "./lib/browser.js",
   "dependencies": {
     "@ethersproject/bytes": "^5.0.4",
-    "@ethersproject/hash": "^5.0.3",
+    "@ethersproject/hash": "^5.0.4",
     "@ethersproject/logger": "^5.0.5",
     "@ethersproject/properties": "^5.0.3",
-    "@ethersproject/strings": "^5.0.3"
+    "@ethersproject/strings": "^5.0.4"
   },
   "description": "Word lists for BIP39 wallets.",
   "ethereum": "donations.ethers.eth",
@@ -30,7 +30,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x0a8f55ab0c4f3f1392466b623290636b5bf8c36247d9db679170f7a37771ae72",
+  "tarballHash": "0xe3b21a8c5de06fb202e8fd076d709691bb066b303a5978bf9d459e8f4264efe7",
   "types": "./lib/index.d.ts",
-  "version": "5.0.3"
+  "version": "5.0.4"
 }

@@ -2,8 +2,8 @@
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ensdomains/address-encoder": "^0.1.2",
-    "@ethersproject/web": "^5.0.4",
-    "ethers": "^5.0.9",
+    "@ethersproject/web": "^5.0.6",
+    "ethers": "^5.0.13",
     "scrypt-js": "3.0.1"
   },
   "description": "Experimental libraries for ethers. These should not be considered stable.",
@@ -26,7 +26,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xc761cb198c017af53b5224e86bcca4be6e96cb4b3b9ce3dd953b5d7fe18a4680",
+  "tarballHash": "0x01ef84a8aca1865c9cf2c1ee98a3363f48ecd6897b668dc06143ed9431049375",
   "types": "./lib/index.d.ts",
-  "version": "5.0.3"
+  "version": "5.0.4"
 }

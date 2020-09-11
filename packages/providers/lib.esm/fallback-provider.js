@@ -113,12 +113,27 @@ function stall(duration) {
     }
     return { cancel, getPromise, wait };
 }
+const ForwardErrors = [
+    Logger.errors.CALL_EXCEPTION,
+    Logger.errors.INSUFFICIENT_FUNDS,
+    Logger.errors.NONCE_EXPIRED,
+    Logger.errors.REPLACEMENT_UNDERPRICED,
+    Logger.errors.UNPREDICTABLE_GAS_LIMIT
+];
+const ForwardProperties = [
+    "address",
+    "args",
+    "errorArgs",
+    "errorSignature",
+    "method",
+    "transaction",
+];
 ;
 function exposeDebugConfig(config, now) {
     const result = {
-        provider: config.provider,
         weight: config.weight
     };
+    Object.defineProperty(result, "provider", { get: () => config.provider });
     if (config.start) {
         result.start = config.start;
     }
@@ -502,6 +517,42 @@ export class FallbackProvider extends BaseProvider {
                     }
                     first = false;
                 }
+                // No result, check for errors that should be forwarded
+                const errors = configs.reduce((accum, c) => {
+                    if (!c.done || c.error == null) {
+                        return accum;
+                    }
+                    const code = (c.error).code;
+                    if (ForwardErrors.indexOf(code) >= 0) {
+                        if (!accum[code]) {
+                            accum[code] = { error: c.error, weight: 0 };
+                        }
+                        accum[code].weight += c.weight;
+                    }
+                    return accum;
+                }, ({}));
+                Object.keys(errors).forEach((errorCode) => {
+                    const tally = errors[errorCode];
+                    if (tally.weight < this.quorum) {
+                        return;
+                    }
+                    // Shut down any stallers
+                    configs.forEach(c => {
+                        if (c.staller) {
+                            c.staller.cancel();
+                        }
+                        c.cancelled = true;
+                    });
+                    const e = (tally.error);
+                    const props = {};
+                    ForwardProperties.forEach((name) => {
+                        if (e[name] == null) {
+                            return;
+                        }
+                        props[name] = e[name];
+                    });
+                    logger.throwError(e.reason || e.message, errorCode, props);
+                });
                 // All configs have run to completion; we will never get more data
                 if (configs.filter((c) => !c.done).length === 0) {
                     break;

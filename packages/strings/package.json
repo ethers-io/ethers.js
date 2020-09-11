@@ -2,7 +2,7 @@
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ethersproject/bytes": "^5.0.4",
-    "@ethersproject/constants": "^5.0.3",
+    "@ethersproject/constants": "^5.0.4",
     "@ethersproject/logger": "^5.0.5"
   },
   "description": "String utility functions.",
@@ -27,7 +27,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x172ac2720dfbc80eba395f8f713decd246ed1cf6ecd524954a94ee92c398d7b9",
+  "tarballHash": "0xc8f1e5ecd60664af00abfb9bee52332e4d4ccb7d8b805699eab6f6a706d00fbd",
   "types": "./lib/index.d.ts",
-  "version": "5.0.3"
+  "version": "5.0.4"
 }

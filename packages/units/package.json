@@ -1,8 +1,8 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bignumber": "^5.0.6",
-    "@ethersproject/constants": "^5.0.3",
+    "@ethersproject/bignumber": "^5.0.7",
+    "@ethersproject/constants": "^5.0.4",
     "@ethersproject/logger": "^5.0.5"
   },
   "description": "Unit conversion functions for Ethereum.",
@@ -27,7 +27,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x53bda63c1c8a15b009bfe81da76d5c542f8351827fa814a63932955249b79381",
+  "tarballHash": "0xb0351ffc264f52db595cee49c502638ffe9c11d55f3047612107feebf5d8701c",
   "types": "./lib/index.d.ts",
-  "version": "5.0.3"
+  "version": "5.0.4"
 }

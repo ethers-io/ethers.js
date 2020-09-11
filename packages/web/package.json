@@ -14,7 +14,7 @@
     "@ethersproject/bytes": "^5.0.4",
     "@ethersproject/logger": "^5.0.5",
     "@ethersproject/properties": "^5.0.3",
-    "@ethersproject/strings": "^5.0.3"
+    "@ethersproject/strings": "^5.0.4"
   },
   "description": "Utility fucntions for managing web requests for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -36,7 +36,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x88202b25f3f0b7966bdaf7f6eee99ca39a2680b68ac0871a750d349866f17727",
+  "tarballHash": "0x15cf7ac63d44623bbad9c1aa766639af3008658cea3bc6b9309bd0eb3f7f3e85",
   "types": "./lib/index.d.ts",
-  "version": "5.0.5"
+  "version": "5.0.6"
 }

@@ -16,23 +16,23 @@
     "ws": "./lib/browser-ws.js"
   },
   "dependencies": {
-    "@ethersproject/abstract-provider": "^5.0.3",
-    "@ethersproject/abstract-signer": "^5.0.3",
-    "@ethersproject/address": "^5.0.3",
+    "@ethersproject/abstract-provider": "^5.0.4",
+    "@ethersproject/abstract-signer": "^5.0.4",
+    "@ethersproject/address": "^5.0.4",
     "@ethersproject/basex": "^5.0.3",
-    "@ethersproject/bignumber": "^5.0.6",
+    "@ethersproject/bignumber": "^5.0.7",
     "@ethersproject/bytes": "^5.0.4",
-    "@ethersproject/constants": "^5.0.3",
-    "@ethersproject/hash": "^5.0.3",
+    "@ethersproject/constants": "^5.0.4",
+    "@ethersproject/hash": "^5.0.4",
     "@ethersproject/logger": "^5.0.5",
     "@ethersproject/networks": "^5.0.3",
     "@ethersproject/properties": "^5.0.3",
     "@ethersproject/random": "^5.0.3",
     "@ethersproject/rlp": "^5.0.3",
     "@ethersproject/sha2": "^5.0.3",
-    "@ethersproject/strings": "^5.0.3",
-    "@ethersproject/transactions": "^5.0.3",
-    "@ethersproject/web": "^5.0.4",
+    "@ethersproject/strings": "^5.0.4",
+    "@ethersproject/transactions": "^5.0.5",
+    "@ethersproject/web": "^5.0.6",
     "bech32": "1.1.4",
     "ws": "7.2.3"
   },
@@ -59,7 +59,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xf1d2d008e00dcdc417a3359ff5ca06d3f8d9702ecab0bd1662dd782c124e932a",
+  "tarballHash": "0x6497c83c317c075e1d3ec251abbafb15b297694697fe000fd9642f71c5b44350",
   "types": "./lib/index.d.ts",
-  "version": "5.0.7"
+  "version": "5.0.8"
 }

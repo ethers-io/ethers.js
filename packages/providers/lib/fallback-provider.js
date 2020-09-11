@@ -154,12 +154,27 @@ function stall(duration) {
     }
     return { cancel: cancel, getPromise: getPromise, wait: wait };
 }
+var ForwardErrors = [
+    logger_1.Logger.errors.CALL_EXCEPTION,
+    logger_1.Logger.errors.INSUFFICIENT_FUNDS,
+    logger_1.Logger.errors.NONCE_EXPIRED,
+    logger_1.Logger.errors.REPLACEMENT_UNDERPRICED,
+    logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT
+];
+var ForwardProperties = [
+    "address",
+    "args",
+    "errorArgs",
+    "errorSignature",
+    "method",
+    "transaction",
+];
 ;
 function exposeDebugConfig(config, now) {
     var result = {
-        provider: config.provider,
         weight: config.weight
     };
+    Object.defineProperty(result, "provider", { get: function () { return config.provider; } });
     if (config.start) {
         result.start = config.start;
     }
@@ -504,7 +519,7 @@ var FallbackProvider = /** @class */ (function (_super) {
                         i = 0;
                         first = true;
                         _loop_1 = function () {
-                            var t0, inflightWeight, _loop_2, waiting, results, result;
+                            var t0, inflightWeight, _loop_2, waiting, results, result, errors;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
@@ -595,6 +610,41 @@ var FallbackProvider = /** @class */ (function (_super) {
                                         first = false;
                                         _a.label = 5;
                                     case 5:
+                                        errors = configs.reduce(function (accum, c) {
+                                            if (!c.done || c.error == null) {
+                                                return accum;
+                                            }
+                                            var code = (c.error).code;
+                                            if (ForwardErrors.indexOf(code) >= 0) {
+                                                if (!accum[code]) {
+                                                    accum[code] = { error: c.error, weight: 0 };
+                                                }
+                                                accum[code].weight += c.weight;
+                                            }
+                                            return accum;
+                                        }, ({}));
+                                        Object.keys(errors).forEach(function (errorCode) {
+                                            var tally = errors[errorCode];
+                                            if (tally.weight < _this.quorum) {
+                                                return;
+                                            }
+                                            // Shut down any stallers
+                                            configs.forEach(function (c) {
+                                                if (c.staller) {
+                                                    c.staller.cancel();
+                                                }
+                                                c.cancelled = true;
+                                            });
+                                            var e = (tally.error);
+                                            var props = {};
+                                            ForwardProperties.forEach(function (name) {
+                                                if (e[name] == null) {
+                                                    return;
+                                                }
+                                                props[name] = e[name];
+                                            });
+                                            logger.throwError(e.reason || e.message, errorCode, props);
+                                        });
                                         // All configs have run to completion; we will never get more data
                                         if (configs.filter(function (c) { return !c.done; }).length === 0) {
                                             return [2 /*return*/, "break"];

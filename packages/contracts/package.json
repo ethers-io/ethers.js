@@ -1,13 +1,13 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/abi": "^5.0.3",
-    "@ethersproject/abstract-provider": "^5.0.3",
-    "@ethersproject/abstract-signer": "^5.0.3",
-    "@ethersproject/address": "^5.0.3",
-    "@ethersproject/bignumber": "^5.0.6",
+    "@ethersproject/abi": "^5.0.5",
+    "@ethersproject/abstract-provider": "^5.0.4",
+    "@ethersproject/abstract-signer": "^5.0.4",
+    "@ethersproject/address": "^5.0.4",
+    "@ethersproject/bignumber": "^5.0.7",
     "@ethersproject/bytes": "^5.0.4",
-    "@ethersproject/constants": "^5.0.3",
+    "@ethersproject/constants": "^5.0.4",
     "@ethersproject/logger": "^5.0.5",
     "@ethersproject/properties": "^5.0.3"
   },
@@ -31,7 +31,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xbb157719e14c1a0eedf43a06ece1ebd6bb882fe701ff40996c21e2216e4a41a3",
+  "tarballHash": "0xd0aff3ce335bf7127682dba635cd151f1076281e3917c7076c33b36c8f7b4afa",
   "types": "./lib/index.d.ts",
-  "version": "5.0.3"
+  "version": "5.0.4"
 }

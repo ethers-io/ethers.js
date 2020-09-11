@@ -1,10 +1,10 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/address": "^5.0.3",
-    "@ethersproject/bignumber": "^5.0.6",
+    "@ethersproject/address": "^5.0.4",
+    "@ethersproject/bignumber": "^5.0.7",
     "@ethersproject/bytes": "^5.0.4",
-    "@ethersproject/constants": "^5.0.3",
+    "@ethersproject/constants": "^5.0.4",
     "@ethersproject/keccak256": "^5.0.3",
     "@ethersproject/logger": "^5.0.5",
     "@ethersproject/properties": "^5.0.3",
@@ -31,7 +31,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x19ca05e60c577153cfe14359a406456d09e288360583b149c136347bb085bc47",
+  "tarballHash": "0xaa7185a9a15e3c8313a5d40e63eb01eb4b26c70648329e363cc84878f538d896",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

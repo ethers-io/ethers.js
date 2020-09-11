@@ -4,7 +4,7 @@
     "@ethersproject/bytes": "^5.0.4",
     "@ethersproject/keccak256": "^5.0.3",
     "@ethersproject/logger": "^5.0.5",
-    "@ethersproject/strings": "^5.0.3"
+    "@ethersproject/strings": "^5.0.4"
   },
   "description": "Hash utility functions for Ethereum.",
   "ethereum": "donations.ethers.eth",
@@ -26,7 +26,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xa972f9e664477ea37ac601c1266151b06059262c0faafe75f5afd37c467a5d18",
+  "tarballHash": "0x749d62288550b6b2f701c55b2b3a039ba8e32e049ea52660aeace7cb06dc1156",
   "types": "./lib/index.d.ts",
-  "version": "5.0.3"
+  "version": "5.0.4"
 }
