@@ -24,6 +24,9 @@ jobs:
 
       - uses: actions/checkout@v2
 
+      - name: Install node-hid requirements
+        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
+
       - run: npm ci
       - run: npm run build-all
       - run: npm run test-node
