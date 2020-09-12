@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [8.x, 10.x, 12.x, 13.x ]
+        node-version: [ 8.x, 10.x, 12.x, 13.x ]
 
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
@@ -22,14 +22,20 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
       - name: Install node-hid requirements
         run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
 
-      - run: npm ci
-      - run: npm run build-all
-      - run: npm run test-node
+      - name: Install dependencies (and link per package)
+        run: npm ci
+
+      - name: Build CommonJS and ESM (from TypeScript)
+        run: npm run build-all
+
+      - name: Run tests
+        run: npm run test-node
 
 
   test-browser:
@@ -46,12 +52,20 @@ jobs:
         with:
           node-version: 12.x
 
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      - run: npm ci
-      - run: npm run build-all
-      - run: npm run test-browser-${{ matrix.module }}
+      - name: Install node-hid requirements
+        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
 
+      - name: Install dependencies (and link per package)
+        run: npm ci
+
+      - name: Build CommonJS and ESM (from TypeScript)
+        run: npm run build-all
+
+      - name: Run tests
+        run: npm run test-browser-${{ matrix.module }}
 
   test-react-native:
 
@@ -69,11 +83,17 @@ jobs:
         with:
           node-version: 12.x
 
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      - run: npm ci
-      - run: npm run build-all
-      - run: npm run test-react
+      - name: Install dependencies (and link per package)
+        run: npm ci
+
+      - name: Build CommonJS and ESM (from TypeScript)
+        run: npm run build-all
+
+      - name: Run tests
+        run: npm run test-react
 
 
   coverage:
@@ -89,11 +109,20 @@ jobs:
         with:
           node-version: 12.x
 
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      - run: npm ci
-      - run: npm run build-all
-      - run: npm run test-coverage
+      - name: Install node-hid requirements
+        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
+
+      - name: Install dependencies (and link per package)
+        run: npm ci
+
+      - name: Build CommonJS and ESM (from TypeScript)
+        run: npm run build-all
+
+      - name: Run tests
+        run: npm run test-coverage
 
       - name: Upload coverage summary
         uses: actions/upload-artifact@v2
