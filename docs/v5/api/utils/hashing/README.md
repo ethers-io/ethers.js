@@ -12,7 +12,7 @@ Cryptographic Hash Functions
 
 #### *ethers* . *utils* . **id**( text ) => *string< [DataHexString](/v5/api/utils/bytes/#DataHexString)< 32 > >*
 
-The Ethereum Identity function computs the [KECCAK256](https://en.wikipedia.org/wiki/SHA-3) hash of the *text* bytes.
+The Ethereum Identity function computes the [KECCAK256](https://en.wikipedia.org/wiki/SHA-3) hash of the *text* bytes.
 
 
 #### *ethers* . *utils* . **keccak256**( aBytesLike ) => *string< [DataHexString](/v5/api/utils/bytes/#DataHexString)< 32 > >*
