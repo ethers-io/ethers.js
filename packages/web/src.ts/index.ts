@@ -23,7 +23,7 @@ function bodyify(value: any, type: string): string {
     if (typeof(value) === "string") { return value; }
 
     if (isBytesLike(value)) {
-        if (type && (type.split("/")[0] === "text" || type === "application/json")) {
+        if (type && (type.split("/")[0] === "text" || type.split(";")[0].trim() === "application/json")) {
             try {
                 return toUtf8String(value);
             } catch (error) { };
