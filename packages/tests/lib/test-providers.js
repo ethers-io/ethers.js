@@ -565,6 +565,178 @@ function testProvider(providerName, networkName) {
                 return testTransactionReceipt(test);
             });
         });
+        if (networkName === "ropsten") {
+            it("throws correct NONCE_EXPIRED errors", function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    var tx, error_1;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                this.timeout(60000);
+                                _a.label = 1;
+                            case 1:
+                                _a.trys.push([1, 3, , 4]);
+                                return [4 /*yield*/, provider.sendTransaction("0xf86480850218711a0082520894000000000000000000000000000000000000000002801ba038aaddcaaae7d3fa066dfd6f196c8348e1bb210f2c121d36cb2c24ef20cea1fba008ae378075d3cd75aae99ab75a70da82161dffb2c8263dabc5d8adecfa9447fa")];
+                            case 2:
+                                tx = _a.sent();
+                                console.log(tx);
+                                assert_1.default.ok(false);
+                                return [3 /*break*/, 4];
+                            case 3:
+                                error_1 = _a.sent();
+                                assert_1.default.equal(error_1.code, ethers_1.ethers.utils.Logger.errors.NONCE_EXPIRED);
+                                return [3 /*break*/, 4];
+                            case 4: return [4 /*yield*/, waiter(delay)];
+                            case 5:
+                                _a.sent();
+                                return [2 /*return*/];
+                        }
+                    });
+                });
+            });
+            it("throws correct INSUFFICIENT_FUNDS errors", function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    var txProps, wallet, tx, error_2;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                this.timeout(60000);
+                                txProps = {
+                                    to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+                                    gasPrice: 9000000000,
+                                    gasLimit: 21000,
+                                    value: 1
+                                };
+                                wallet = ethers_1.ethers.Wallet.createRandom();
+                                return [4 /*yield*/, wallet.signTransaction(txProps)];
+                            case 1:
+                                tx = _a.sent();
+                                _a.label = 2;
+                            case 2:
+                                _a.trys.push([2, 4, , 5]);
+                                return [4 /*yield*/, provider.sendTransaction(tx)];
+                            case 3:
+                                _a.sent();
+                                assert_1.default.ok(false);
+                                return [3 /*break*/, 5];
+                            case 4:
+                                error_2 = _a.sent();
+                                assert_1.default.equal(error_2.code, ethers_1.ethers.utils.Logger.errors.INSUFFICIENT_FUNDS);
+                                return [3 /*break*/, 5];
+                            case 5: return [4 /*yield*/, waiter(delay)];
+                            case 6:
+                                _a.sent();
+                                return [2 /*return*/];
+                        }
+                    });
+                });
+            });
+            it("throws correct INSUFFICIENT_FUNDS errors (signer)", function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    var txProps, wallet, error_3;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                this.timeout(60000);
+                                txProps = {
+                                    to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+                                    gasPrice: 9000000000,
+                                    gasLimit: 21000,
+                                    value: 1
+                                };
+                                wallet = ethers_1.ethers.Wallet.createRandom().connect(provider);
+                                _a.label = 1;
+                            case 1:
+                                _a.trys.push([1, 3, , 4]);
+                                return [4 /*yield*/, wallet.sendTransaction(txProps)];
+                            case 2:
+                                _a.sent();
+                                assert_1.default.ok(false);
+                                return [3 /*break*/, 4];
+                            case 3:
+                                error_3 = _a.sent();
+                                assert_1.default.equal(error_3.code, ethers_1.ethers.utils.Logger.errors.INSUFFICIENT_FUNDS);
+                                return [3 /*break*/, 4];
+                            case 4: return [4 /*yield*/, waiter(delay)];
+                            case 5:
+                                _a.sent();
+                                return [2 /*return*/];
+                        }
+                    });
+                });
+            });
+            it("throws correct UNPREDICTABLE_GAS_LIMIT errors", function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    var error_4;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                this.timeout(60000);
+                                _a.label = 1;
+                            case 1:
+                                _a.trys.push([1, 3, , 4]);
+                                return [4 /*yield*/, provider.estimateGas({
+                                        to: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e" // ENS; no payable fallback
+                                    })];
+                            case 2:
+                                _a.sent();
+                                assert_1.default.ok(false);
+                                return [3 /*break*/, 4];
+                            case 3:
+                                error_4 = _a.sent();
+                                assert_1.default.equal(error_4.code, ethers_1.ethers.utils.Logger.errors.UNPREDICTABLE_GAS_LIMIT);
+                                return [3 /*break*/, 4];
+                            case 4: return [4 /*yield*/, waiter(delay)];
+                            case 5:
+                                _a.sent();
+                                return [2 /*return*/];
+                        }
+                    });
+                });
+            });
+            it("sends a transaction", function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    var wallet, funder, addr, gasPrice, balance, tx;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                this.timeout(360000);
+                                wallet = ethers_1.ethers.Wallet.createRandom().connect(provider);
+                                return [4 /*yield*/, ethers_1.ethers.utils.fetchJson("https://api.ethers.io/api/v1/?action=fundAccount&address=" + wallet.address.toLowerCase())];
+                            case 1:
+                                funder = _a.sent();
+                                return [4 /*yield*/, provider.waitForTransaction(funder.hash)];
+                            case 2:
+                                _a.sent();
+                                addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
+                                gasPrice = 9000000000;
+                                return [4 /*yield*/, provider.getBalance(wallet.address)];
+                            case 3:
+                                balance = _a.sent();
+                                assert_1.default.ok(balance.eq(ethers_1.ethers.utils.parseEther("3.141592653589793238")), "balance is pi after funding");
+                                return [4 /*yield*/, wallet.sendTransaction({
+                                        to: addr,
+                                        gasPrice: gasPrice,
+                                        value: balance.sub(21000 * gasPrice)
+                                    })];
+                            case 4:
+                                tx = _a.sent();
+                                return [4 /*yield*/, tx.wait()];
+                            case 5:
+                                _a.sent();
+                                return [4 /*yield*/, provider.getBalance(wallet.address)];
+                            case 6:
+                                balance = _a.sent();
+                                assert_1.default.ok(balance.eq(ethers_1.ethers.constants.Zero), "balance is zero after after sweeping");
+                                return [4 /*yield*/, waiter(delay)];
+                            case 7:
+                                _a.sent();
+                                return [2 /*return*/];
+                        }
+                    });
+                });
+            });
+        }
         // Obviously many more cases to add here
         // - getTransactionCount
         // - getBlockNumber

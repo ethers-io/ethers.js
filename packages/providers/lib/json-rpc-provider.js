@@ -59,16 +59,44 @@ var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var base_provider_1 = require("./base-provider");
-var ErrorGas = ["call", "estimateGas"];
-function getMessage(error) {
+var errorGas = ["call", "estimateGas"];
+function checkError(method, error, params) {
     var message = error.message;
     if (error.code === logger_1.Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
         message = error.error.message;
     }
+    else if (typeof (error.body) === "string") {
+        message = error.body;
+    }
     else if (typeof (error.responseText) === "string") {
         message = error.responseText;
     }
-    return message || "";
+    message = (message || "").toLowerCase();
+    var transaction = params.transaction || params.signedTransaction;
+    // "insufficient funds for gas * price + value + cost(data)"
+    if (message.match(/insufficient funds/)) {
+        logger.throwError("insufficient funds for intrinsic transaction cost", logger_1.Logger.errors.INSUFFICIENT_FUNDS, {
+            error: error, method: method, transaction: transaction
+        });
+    }
+    // "nonce too low"
+    if (message.match(/nonce too low/)) {
+        logger.throwError("nonce has already been used", logger_1.Logger.errors.NONCE_EXPIRED, {
+            error: error, method: method, transaction: transaction
+        });
+    }
+    // "replacement transaction underpriced"
+    if (message.match(/replacement transaction underpriced/)) {
+        logger.throwError("replacement fee too low", logger_1.Logger.errors.REPLACEMENT_UNDERPRICED, {
+            error: error, method: method, transaction: transaction
+        });
+    }
+    if (errorGas.indexOf(method) >= 0 && message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
+        logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+            error: error, method: method, transaction: transaction
+        });
+    }
+    throw error;
 }
 function timer(timeout) {
     return new Promise(function (resolve) {
@@ -175,25 +203,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             return _this.provider.send("eth_sendTransaction", [hexTx]).then(function (hash) {
                 return hash;
             }, function (error) {
-                if (error.responseText) {
-                    // See: JsonRpcProvider.sendTransaction (@TODO: Expose a ._throwError??)
-                    if (error.responseText.indexOf("insufficient funds") >= 0) {
-                        logger.throwError("insufficient funds", logger_1.Logger.errors.INSUFFICIENT_FUNDS, {
-                            transaction: tx
-                        });
-                    }
-                    if (error.responseText.indexOf("nonce too low") >= 0) {
-                        logger.throwError("nonce has already been used", logger_1.Logger.errors.NONCE_EXPIRED, {
-                            transaction: tx
-                        });
-                    }
-                    if (error.responseText.indexOf("replacement transaction underpriced") >= 0) {
-                        logger.throwError("replacement fee too low", logger_1.Logger.errors.REPLACEMENT_UNDERPRICED, {
-                            transaction: tx
-                        });
-                    }
-                }
-                throw error;
+                return checkError("sendTransaction", error, hexTx);
             });
         });
     };
@@ -441,7 +451,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
     };
     JsonRpcProvider.prototype.perform = function (method, params) {
         return __awaiter(this, void 0, void 0, function () {
-            var args, error_3, message, error_4;
+            var args, error_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -449,7 +459,6 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                         if (args == null) {
                             logger.throwError(method + " not implemented", logger_1.Logger.errors.NOT_IMPLEMENTED, { operation: method });
                         }
-                        if (!(method === "sendTransaction")) return [3 /*break*/, 4];
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
@@ -457,34 +466,8 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                     case 2: return [2 /*return*/, _a.sent()];
                     case 3:
                         error_3 = _a.sent();
-                        message = getMessage(error_3);
-                        // "insufficient funds for gas * price + value"
-                        if (message.match(/insufficient funds/)) {
-                            logger.throwError("insufficient funds", logger_1.Logger.errors.INSUFFICIENT_FUNDS, {});
-                        }
-                        // "nonce too low"
-                        if (message.match(/nonce too low/)) {
-                            logger.throwError("nonce has already been used", logger_1.Logger.errors.NONCE_EXPIRED, {});
-                        }
-                        // "replacement transaction underpriced"
-                        if (message.match(/replacement transaction underpriced/)) {
-                            logger.throwError("replacement fee too low", logger_1.Logger.errors.REPLACEMENT_UNDERPRICED, {});
-                        }
-                        throw error_3;
-                    case 4:
-                        _a.trys.push([4, 6, , 7]);
-                        return [4 /*yield*/, this.send(args[0], args[1])];
-                    case 5: return [2 /*return*/, _a.sent()];
-                    case 6:
-                        error_4 = _a.sent();
-                        if (ErrorGas.indexOf(method) >= 0 && getMessage(error_4).match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
-                            logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
-                                transaction: params.transaction,
-                                error: error_4
-                            });
-                        }
-                        throw error_4;
-                    case 7: return [2 /*return*/];
+                        return [2 /*return*/, checkError(method, error_3, params)];
+                    case 4: return [2 /*return*/];
                 }
             });
         });

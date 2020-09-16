@@ -84,14 +84,42 @@ function checkLogTag(blockTag) {
     return parseInt(blockTag.substring(2), 16);
 }
 const defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
-function checkGasError(error, transaction) {
+function checkError(method, error, transaction) {
+    // Get the message from any nested error structure
     let message = error.message;
-    if (error.code === Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
-        message = error.error.message;
+    if (error.code === Logger.errors.SERVER_ERROR) {
+        if (error.error && typeof (error.error.message) === "string") {
+            message = error.error.message;
+        }
+        else if (typeof (error.body) === "string") {
+            message = error.body;
+        }
+        else if (typeof (error.responseText) === "string") {
+            message = error.responseText;
+        }
+    }
+    message = (message || "").toLowerCase();
+    // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
+    if (message.match(/insufficient funds/)) {
+        logger.throwError("insufficient funds for intrinsic transaction cost", Logger.errors.INSUFFICIENT_FUNDS, {
+            error, method, transaction
+        });
+    }
+    // "Transaction with the same hash was already imported."
+    if (message.match(/same hash was already imported|transaction nonce is too low/)) {
+        logger.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {
+            error, method, transaction
+        });
+    }
+    // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
+    if (message.match(/another transaction with same nonce/)) {
+        logger.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {
+            error, method, transaction
+        });
     }
     if (message.match(/execution failed due to an exception/)) {
         logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
-            error, transaction
+            error, method, transaction
         });
     }
     throw error;
@@ -196,21 +224,7 @@ export class EtherscanProvider extends BaseProvider {
                     url += "/api?module=proxy&action=eth_sendRawTransaction&hex=" + params.signedTransaction;
                     url += apiKey;
                     return get(url).catch((error) => {
-                        if (error.responseText) {
-                            // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
-                            if (error.responseText.toLowerCase().indexOf("insufficient funds") >= 0) {
-                                logger.throwError("insufficient funds", Logger.errors.INSUFFICIENT_FUNDS, {});
-                            }
-                            // "Transaction with the same hash was already imported."
-                            if (error.responseText.indexOf("same hash was already imported") >= 0) {
-                                logger.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {});
-                            }
-                            // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
-                            if (error.responseText.indexOf("another transaction with same nonce") >= 0) {
-                                logger.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {});
-                            }
-                        }
-                        throw error;
+                        return checkError("sendTransaction", error, params.signedTransaction);
                     });
                 case "getBlock":
                     if (params.blockTag) {
@@ -248,7 +262,7 @@ export class EtherscanProvider extends BaseProvider {
                         return yield get(url);
                     }
                     catch (error) {
-                        return checkGasError(error, params.transaction);
+                        return checkError("call", error, params.transaction);
                     }
                 }
                 case "estimateGas": {
@@ -262,7 +276,7 @@ export class EtherscanProvider extends BaseProvider {
                         return yield get(url);
                     }
                     catch (error) {
-                        return checkGasError(error, params.transaction);
+                        return checkError("estimateGas", error, params.transaction);
                     }
                 }
                 case "getLogs": {

@@ -534,6 +534,99 @@ function testProvider(providerName, networkName) {
                 return testTransactionReceipt(test);
             });
         });
+        if (networkName === "ropsten") {
+            it("throws correct NONCE_EXPIRED errors", function () {
+                return __awaiter(this, void 0, void 0, function* () {
+                    this.timeout(60000);
+                    try {
+                        const tx = yield provider.sendTransaction("0xf86480850218711a0082520894000000000000000000000000000000000000000002801ba038aaddcaaae7d3fa066dfd6f196c8348e1bb210f2c121d36cb2c24ef20cea1fba008ae378075d3cd75aae99ab75a70da82161dffb2c8263dabc5d8adecfa9447fa");
+                        console.log(tx);
+                        assert.ok(false);
+                    }
+                    catch (error) {
+                        assert.equal(error.code, ethers.utils.Logger.errors.NONCE_EXPIRED);
+                    }
+                    yield waiter(delay);
+                });
+            });
+            it("throws correct INSUFFICIENT_FUNDS errors", function () {
+                return __awaiter(this, void 0, void 0, function* () {
+                    this.timeout(60000);
+                    const txProps = {
+                        to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+                        gasPrice: 9000000000,
+                        gasLimit: 21000,
+                        value: 1
+                    };
+                    const wallet = ethers.Wallet.createRandom();
+                    const tx = yield wallet.signTransaction(txProps);
+                    try {
+                        yield provider.sendTransaction(tx);
+                        assert.ok(false);
+                    }
+                    catch (error) {
+                        assert.equal(error.code, ethers.utils.Logger.errors.INSUFFICIENT_FUNDS);
+                    }
+                    yield waiter(delay);
+                });
+            });
+            it("throws correct INSUFFICIENT_FUNDS errors (signer)", function () {
+                return __awaiter(this, void 0, void 0, function* () {
+                    this.timeout(60000);
+                    const txProps = {
+                        to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+                        gasPrice: 9000000000,
+                        gasLimit: 21000,
+                        value: 1
+                    };
+                    const wallet = ethers.Wallet.createRandom().connect(provider);
+                    try {
+                        yield wallet.sendTransaction(txProps);
+                        assert.ok(false);
+                    }
+                    catch (error) {
+                        assert.equal(error.code, ethers.utils.Logger.errors.INSUFFICIENT_FUNDS);
+                    }
+                    yield waiter(delay);
+                });
+            });
+            it("throws correct UNPREDICTABLE_GAS_LIMIT errors", function () {
+                return __awaiter(this, void 0, void 0, function* () {
+                    this.timeout(60000);
+                    try {
+                        yield provider.estimateGas({
+                            to: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e" // ENS; no payable fallback
+                        });
+                        assert.ok(false);
+                    }
+                    catch (error) {
+                        assert.equal(error.code, ethers.utils.Logger.errors.UNPREDICTABLE_GAS_LIMIT);
+                    }
+                    yield waiter(delay);
+                });
+            });
+            it("sends a transaction", function () {
+                return __awaiter(this, void 0, void 0, function* () {
+                    this.timeout(360000);
+                    const wallet = ethers.Wallet.createRandom().connect(provider);
+                    const funder = yield ethers.utils.fetchJson(`https:/\/api.ethers.io/api/v1/?action=fundAccount&address=${wallet.address.toLowerCase()}`);
+                    yield provider.waitForTransaction(funder.hash);
+                    const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
+                    const gasPrice = 9000000000;
+                    let balance = yield provider.getBalance(wallet.address);
+                    assert.ok(balance.eq(ethers.utils.parseEther("3.141592653589793238")), "balance is pi after funding");
+                    const tx = yield wallet.sendTransaction({
+                        to: addr,
+                        gasPrice: gasPrice,
+                        value: balance.sub(21000 * gasPrice)
+                    });
+                    yield tx.wait();
+                    balance = yield provider.getBalance(wallet.address);
+                    assert.ok(balance.eq(ethers.constants.Zero), "balance is zero after after sweeping");
+                    yield waiter(delay);
+                });
+            });
+        }
         // Obviously many more cases to add here
         // - getTransactionCount
         // - getBlockNumber

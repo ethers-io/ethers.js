@@ -56,6 +56,11 @@ var logger = new logger_1.Logger(_version_1.version);
 var allowedTransactionKeys = [
     "chainId", "data", "from", "gasLimit", "gasPrice", "nonce", "to", "value"
 ];
+var forwardErrors = [
+    logger_1.Logger.errors.INSUFFICIENT_FUNDS,
+    logger_1.Logger.errors.NONCE_EXPIRED,
+    logger_1.Logger.errors.REPLACEMENT_UNDERPRICED,
+];
 // Sub-Class Notes:
 //  - A Signer MUST always make sure, that if present, the "from" field
 //    matches the Signer, before sending or signing a transaction
@@ -236,6 +241,9 @@ var Signer = /** @class */ (function () {
                         }
                         if (tx.gasLimit == null) {
                             tx.gasLimit = this.estimateGas(tx).catch(function (error) {
+                                if (forwardErrors.indexOf(error.code) >= 0) {
+                                    throw error;
+                                }
                                 return logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
                                     error: error,
                                     tx: tx

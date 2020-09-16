@@ -57,7 +57,7 @@ function bodyify(value, type) {
         return value;
     }
     if (bytes_1.isBytesLike(value)) {
-        if (type && (type.split("/")[0] === "text" || type === "application/json")) {
+        if (type && (type.split("/")[0] === "text" || type.split(";")[0].trim() === "application/json")) {
             try {
                 return strings_1.toUtf8String(value);
             }

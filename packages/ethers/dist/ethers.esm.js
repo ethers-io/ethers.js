@@ -8070,7 +8070,7 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.0.4";
+const version$a = "abstract-signer/5.0.5";
 
 "use strict";
 var __awaiter$1 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8085,6 +8085,11 @@ var __awaiter$1 = (window && window.__awaiter) || function (thisArg, _arguments,
 const logger$e = new Logger(version$a);
 const allowedTransactionKeys = [
     "chainId", "data", "from", "gasLimit", "gasPrice", "nonce", "to", "value"
+];
+const forwardErrors = [
+    Logger.errors.INSUFFICIENT_FUNDS,
+    Logger.errors.NONCE_EXPIRED,
+    Logger.errors.REPLACEMENT_UNDERPRICED,
 ];
 // Sub-Class Notes:
 //  - A Signer MUST always make sure, that if present, the "from" field
@@ -8208,6 +8213,9 @@ class Signer {
             }
             if (tx.gasLimit == null) {
                 tx.gasLimit = this.estimateGas(tx).catch((error) => {
+                    if (forwardErrors.indexOf(error.code) >= 0) {
+                        throw error;
+                    }
                     return logger$e.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
                         error: error,
                         tx: tx
@@ -19253,7 +19261,7 @@ var browser$2 = /*#__PURE__*/Object.freeze({
 	encode: encode$1
 });
 
-const version$l = "web/5.0.6";
+const version$l = "web/5.0.7";
 
 "use strict";
 var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -19326,7 +19334,7 @@ function bodyify(value, type) {
         return value;
     }
     if (isBytesLike(value)) {
-        if (type && (type.split("/")[0] === "text" || type === "application/json")) {
+        if (type && (type.split("/")[0] === "text" || type.split(";")[0].trim() === "application/json")) {
             try {
                 return toUtf8String(value);
             }
@@ -19840,7 +19848,7 @@ var bech32_5 = bech32.toWords;
 var bech32_6 = bech32.fromWordsUnsafe;
 var bech32_7 = bech32.fromWords;
 
-const version$m = "providers/5.0.8";
+const version$m = "providers/5.0.9";
 
 "use strict";
 const logger$q = new Logger(version$m);
@@ -21538,7 +21546,7 @@ class BaseProvider extends Provider {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.8";
+exports.version = "providers/5.0.9";
 
 });
 
@@ -21582,16 +21590,44 @@ var __awaiter$7 = (window && window.__awaiter) || function (thisArg, _arguments,
     });
 };
 const logger$s = new Logger(version$m);
-const ErrorGas = ["call", "estimateGas"];
-function getMessage(error) {
+const errorGas = ["call", "estimateGas"];
+function checkError(method, error, params) {
     let message = error.message;
     if (error.code === Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
         message = error.error.message;
     }
+    else if (typeof (error.body) === "string") {
+        message = error.body;
+    }
     else if (typeof (error.responseText) === "string") {
         message = error.responseText;
     }
-    return message || "";
+    message = (message || "").toLowerCase();
+    const transaction = params.transaction || params.signedTransaction;
+    // "insufficient funds for gas * price + value + cost(data)"
+    if (message.match(/insufficient funds/)) {
+        logger$s.throwError("insufficient funds for intrinsic transaction cost", Logger.errors.INSUFFICIENT_FUNDS, {
+            error, method, transaction
+        });
+    }
+    // "nonce too low"
+    if (message.match(/nonce too low/)) {
+        logger$s.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {
+            error, method, transaction
+        });
+    }
+    // "replacement transaction underpriced"
+    if (message.match(/replacement transaction underpriced/)) {
+        logger$s.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {
+            error, method, transaction
+        });
+    }
+    if (errorGas.indexOf(method) >= 0 && message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
+        logger$s.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+            error, method, transaction
+        });
+    }
+    throw error;
 }
 function timer(timeout) {
     return new Promise(function (resolve) {
@@ -21691,25 +21727,7 @@ class JsonRpcSigner extends Signer {
             return this.provider.send("eth_sendTransaction", [hexTx]).then((hash) => {
                 return hash;
             }, (error) => {
-                if (error.responseText) {
-                    // See: JsonRpcProvider.sendTransaction (@TODO: Expose a ._throwError??)
-                    if (error.responseText.indexOf("insufficient funds") >= 0) {
-                        logger$s.throwError("insufficient funds", Logger.errors.INSUFFICIENT_FUNDS, {
-                            transaction: tx
-                        });
-                    }
-                    if (error.responseText.indexOf("nonce too low") >= 0) {
-                        logger$s.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {
-                            transaction: tx
-                        });
-                    }
-                    if (error.responseText.indexOf("replacement transaction underpriced") >= 0) {
-                        logger$s.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {
-                            transaction: tx
-                        });
-                    }
-                }
-                throw error;
+                return checkError("sendTransaction", error, hexTx);
             });
         });
     }
@@ -21926,39 +21944,11 @@ class JsonRpcProvider extends BaseProvider {
             if (args == null) {
                 logger$s.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });
             }
-            // We need a little extra logic to process errors from sendTransaction
-            if (method === "sendTransaction") {
-                try {
-                    return yield this.send(args[0], args[1]);
-                }
-                catch (error) {
-                    const message = getMessage(error);
-                    // "insufficient funds for gas * price + value"
-                    if (message.match(/insufficient funds/)) {
-                        logger$s.throwError("insufficient funds", Logger.errors.INSUFFICIENT_FUNDS, {});
-                    }
-                    // "nonce too low"
-                    if (message.match(/nonce too low/)) {
-                        logger$s.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {});
-                    }
-                    // "replacement transaction underpriced"
-                    if (message.match(/replacement transaction underpriced/)) {
-                        logger$s.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {});
-                    }
-                    throw error;
-                }
-            }
             try {
                 return yield this.send(args[0], args[1]);
             }
             catch (error) {
-                if (ErrorGas.indexOf(method) >= 0 && getMessage(error).match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
-                    logger$s.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
-                        transaction: params.transaction,
-                        error: error
-                    });
-                }
-                throw error;
+                return checkError(method, error, params);
             }
         });
     }
@@ -22579,14 +22569,42 @@ function checkLogTag(blockTag) {
     return parseInt(blockTag.substring(2), 16);
 }
 const defaultApiKey$1 = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
-function checkGasError(error, transaction) {
+function checkError$1(method, error, transaction) {
+    // Get the message from any nested error structure
     let message = error.message;
-    if (error.code === Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
-        message = error.error.message;
+    if (error.code === Logger.errors.SERVER_ERROR) {
+        if (error.error && typeof (error.error.message) === "string") {
+            message = error.error.message;
+        }
+        else if (typeof (error.body) === "string") {
+            message = error.body;
+        }
+        else if (typeof (error.responseText) === "string") {
+            message = error.responseText;
+        }
+    }
+    message = (message || "").toLowerCase();
+    // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
+    if (message.match(/insufficient funds/)) {
+        logger$x.throwError("insufficient funds for intrinsic transaction cost", Logger.errors.INSUFFICIENT_FUNDS, {
+            error, method, transaction
+        });
+    }
+    // "Transaction with the same hash was already imported."
+    if (message.match(/same hash was already imported|transaction nonce is too low/)) {
+        logger$x.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {
+            error, method, transaction
+        });
+    }
+    // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
+    if (message.match(/another transaction with same nonce/)) {
+        logger$x.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {
+            error, method, transaction
+        });
     }
     if (message.match(/execution failed due to an exception/)) {
         logger$x.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
-            error, transaction
+            error, method, transaction
         });
     }
     throw error;
@@ -22691,21 +22709,7 @@ class EtherscanProvider extends BaseProvider {
                     url += "/api?module=proxy&action=eth_sendRawTransaction&hex=" + params.signedTransaction;
                     url += apiKey;
                     return get(url).catch((error) => {
-                        if (error.responseText) {
-                            // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
-                            if (error.responseText.toLowerCase().indexOf("insufficient funds") >= 0) {
-                                logger$x.throwError("insufficient funds", Logger.errors.INSUFFICIENT_FUNDS, {});
-                            }
-                            // "Transaction with the same hash was already imported."
-                            if (error.responseText.indexOf("same hash was already imported") >= 0) {
-                                logger$x.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {});
-                            }
-                            // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
-                            if (error.responseText.indexOf("another transaction with same nonce") >= 0) {
-                                logger$x.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {});
-                            }
-                        }
-                        throw error;
+                        return checkError$1("sendTransaction", error, params.signedTransaction);
                     });
                 case "getBlock":
                     if (params.blockTag) {
@@ -22743,7 +22747,7 @@ class EtherscanProvider extends BaseProvider {
                         return yield get(url);
                     }
                     catch (error) {
-                        return checkGasError(error, params.transaction);
+                        return checkError$1("call", error, params.transaction);
                     }
                 }
                 case "estimateGas": {
@@ -22757,7 +22761,7 @@ class EtherscanProvider extends BaseProvider {
                         return yield get(url);
                     }
                     catch (error) {
-                        return checkGasError(error, params.transaction);
+                        return checkError$1("estimateGas", error, params.transaction);
                     }
                 }
                 case "getLogs": {
@@ -23993,7 +23997,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.13";
+const version$o = "ethers/5.0.14";
 
 "use strict";
 const logger$E = new Logger(version$o);
