@@ -18,7 +18,7 @@ module.exports = function(config) {
     browsers: [ 'ChromeHeadless', "HeadlessLittleLiar" ],
     autoWatch: false,
     singleRun: true,
-    browserNoActivityTimeout: 60000,
+    browserNoActivityTimeout: 360000,
     customLaunchers: {
       HeadlessLittleLiar: {
         base: 'ChromeHeadless',
