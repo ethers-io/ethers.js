@@ -564,6 +564,110 @@ function testProvider(providerName: string, networkName: string) {
             });
         });
 
+        if (networkName === "ropsten") {
+
+            it("throws correct NONCE_EXPIRED errors", async function() {
+                this.timeout(60000);
+
+                try {
+                    const tx = await provider.sendTransaction("0xf86480850218711a0082520894000000000000000000000000000000000000000002801ba038aaddcaaae7d3fa066dfd6f196c8348e1bb210f2c121d36cb2c24ef20cea1fba008ae378075d3cd75aae99ab75a70da82161dffb2c8263dabc5d8adecfa9447fa");
+                    console.log(tx);
+                    assert.ok(false);
+                } catch (error) {
+                    assert.equal(error.code, ethers.utils.Logger.errors.NONCE_EXPIRED);
+                }
+
+                await waiter(delay);
+            });
+
+            it("throws correct INSUFFICIENT_FUNDS errors", async function() {
+                this.timeout(60000);
+
+                const txProps = {
+                    to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+                    gasPrice: 9000000000,
+                    gasLimit: 21000,
+                    value: 1
+                };
+
+                const wallet = ethers.Wallet.createRandom();
+                const tx = await wallet.signTransaction(txProps);
+
+                try {
+                    await provider.sendTransaction(tx);
+                    assert.ok(false);
+                } catch (error) {
+                    assert.equal(error.code, ethers.utils.Logger.errors.INSUFFICIENT_FUNDS);
+                }
+
+                await waiter(delay);
+            });
+
+            it("throws correct INSUFFICIENT_FUNDS errors (signer)", async function() {
+                this.timeout(60000);
+
+                const txProps = {
+                    to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+                    gasPrice: 9000000000,
+                    gasLimit: 21000,
+                    value: 1
+                };
+
+                const wallet = ethers.Wallet.createRandom().connect(provider);
+
+                try {
+                    await wallet.sendTransaction(txProps);
+                    assert.ok(false);
+                } catch (error) {
+                    assert.equal(error.code, ethers.utils.Logger.errors.INSUFFICIENT_FUNDS);
+                }
+
+                await waiter(delay);
+            });
+
+            it("throws correct UNPREDICTABLE_GAS_LIMIT errors", async function() {
+                this.timeout(60000);
+
+                try {
+                    await provider.estimateGas({
+                        to: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e" // ENS; no payable fallback
+                    });
+                    assert.ok(false);
+                } catch (error) {
+                    assert.equal(error.code, ethers.utils.Logger.errors.UNPREDICTABLE_GAS_LIMIT);
+                }
+
+                await waiter(delay);
+            });
+
+            it("sends a transaction", async function() {
+                this.timeout(360000);
+
+                const wallet = ethers.Wallet.createRandom().connect(provider);
+                const funder = await ethers.utils.fetchJson(`https:/\/api.ethers.io/api/v1/?action=fundAccount&address=${ wallet.address.toLowerCase() }`);
+                await provider.waitForTransaction(funder.hash);
+
+                const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
+                const gasPrice = 9000000000;
+
+                let balance = await provider.getBalance(wallet.address);
+                assert.ok(balance.eq(ethers.utils.parseEther("3.141592653589793238")), "balance is pi after funding");
+
+                const tx = await wallet.sendTransaction({
+                    to: addr,
+                    gasPrice: gasPrice,
+                    value: balance.sub(21000 * gasPrice)
+                });
+
+                await tx.wait();
+
+                balance = await provider.getBalance(wallet.address);
+                assert.ok(balance.eq(ethers.constants.Zero), "balance is zero after after sweeping");
+
+                await waiter(delay);
+            });
+        }
+
 
         // Obviously many more cases to add here
         // - getTransactionCount
