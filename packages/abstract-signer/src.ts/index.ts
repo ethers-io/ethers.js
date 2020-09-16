@@ -13,6 +13,12 @@ const allowedTransactionKeys: Array<string> = [
     "chainId", "data", "from", "gasLimit", "gasPrice", "nonce", "to", "value"
 ];
 
+const forwardErrors = [
+    Logger.errors.INSUFFICIENT_FUNDS,
+    Logger.errors.NONCE_EXPIRED,
+    Logger.errors.REPLACEMENT_UNDERPRICED,
+];
+
 // Sub-classes of Signer may optionally extend this interface to indicate
 // they have a private key available synchronously
 export interface ExternallyOwnedAccount {
@@ -169,6 +175,10 @@ export abstract class Signer {
 
         if (tx.gasLimit == null) {
             tx.gasLimit = this.estimateGas(tx).catch((error) => {
+                if (forwardErrors.indexOf(error.code) >= 0) {
+                    throw error;
+                }
+
                 return logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
                     error: error,
                     tx: tx
