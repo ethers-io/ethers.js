@@ -65,7 +65,7 @@ const blockchainData = {
                 s: "0x269c3e5b3558267ad91b0a887d51f9f10098771c67b82ea6cb74f29638754f54",
                 v: 38,
                 creates: null,
-                raw: "0xf8d2808504a817c8008303d090946fc21092da55b392b045ed78f4732bff3c580e2c880186cc6acd4b0000b864f2c298be000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000067269636d6f6f000000000000000000000000000000000000000000000000000026a01e5605197a03e3f0a168f14749168dfeefc44c9228312dacbffdcbbb13263265a0269c3e5b3558267ad91b0a887d51f9f10098771c67b82ea6cb74f29638754f54",
+                //raw: "0xf8d2808504a817c8008303d090946fc21092da55b392b045ed78f4732bff3c580e2c880186cc6acd4b0000b864f2c298be000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000067269636d6f6f000000000000000000000000000000000000000000000000000026a01e5605197a03e3f0a168f14749168dfeefc44c9228312dacbffdcbbb13263265a0269c3e5b3558267ad91b0a887d51f9f10098771c67b82ea6cb74f29638754f54",
                 chainId: 1
             }
         ],
@@ -364,6 +364,8 @@ function equals(name, actual, expected) {
         if (actual == null) {
             assert.ok(false, name + " - actual big number null");
         }
+        expected = ethers.BigNumber.from(expected);
+        actual = ethers.BigNumber.from(actual);
         assert.ok(expected.eq(actual), name + " matches");
     }
     else if (Array.isArray(expected)) {
@@ -398,265 +400,315 @@ function equals(name, actual, expected) {
 }
 function waiter(duration) {
     return new Promise((resolve) => {
-        setTimeout(resolve, duration);
+        const timer = setTimeout(resolve, duration);
+        if (timer.unref) {
+            timer.unref();
+        }
     });
 }
-function testProvider(providerName, networkName) {
-    // Delay (ms) after each test case to prevent the backends from throttling
-    const delay = 1000;
-    describe(("Read-Only " + providerName + " (" + networkName + ")"), function () {
-        this.retries(3);
-        // Get the Provider based on the name of the provider we are testing and the network
-        let provider = null;
-        if (networkName === "default") {
-            if (providerName === "getDefaultProvider") {
-                provider = ethers.getDefaultProvider();
+const allNetworks = ["default", "homestead", "ropsten", "rinkeby", "kovan", "goerli"];
+const providerFunctions = [
+    {
+        name: "getDefaultProvider",
+        networks: allNetworks,
+        create: (network) => {
+            if (network == "default") {
+                return ethers.getDefaultProvider();
             }
-            else {
-                provider = new (ethers.providers)[providerName]();
-            }
+            return ethers.getDefaultProvider(network);
         }
-        else {
-            if (providerName === "getDefaultProvider") {
-                provider = ethers.getDefaultProvider(networkName);
+    },
+    {
+        name: "AlchemyProvider",
+        networks: allNetworks,
+        create: (network) => {
+            if (network == "default") {
+                return new ethers.providers.AlchemyProvider();
             }
-            else {
-                provider = new (ethers.providers)[providerName](networkName);
-            }
+            return new ethers.providers.AlchemyProvider(network);
         }
-        const tests = blockchainData[networkName];
-        // And address test case can have any of the following:
-        // - balance
-        // - code
-        // - storage
-        // - ENS name
-        tests.addresses.forEach((test) => {
-            if (test.balance) {
-                it(`fetches address balance: ${test.address}`, function () {
-                    // Note: These tests could be fiddled with if someone sends ether
-                    // to our address; we just have to live with jerks sending us
-                    // money. *smile emoji*
-                    this.timeout(60000);
-                    return provider.getBalance(test.address).then((balance) => {
-                        equals("Balance", test.balance, balance);
-                        return waiter(delay);
-                    });
-                });
+    },
+    {
+        name: "CloudflareProvider",
+        networks: ["homestead"],
+        create: (network) => {
+            return new ethers.providers.AlchemyProvider(network);
+        }
+    },
+    {
+        name: "InfuraProvider",
+        networks: allNetworks,
+        create: (network) => {
+            if (network == "default") {
+                return new ethers.providers.InfuraProvider();
             }
-            if (test.code) {
-                it(`fetches address code: ${test.address}`, function () {
-                    this.timeout(60000);
-                    return provider.getCode(test.address).then((code) => {
-                        equals("Code", test.code, code);
-                        return waiter(delay);
-                    });
-                });
+            return new ethers.providers.InfuraProvider(network);
+        }
+    },
+    {
+        name: "EtherscanProvider",
+        networks: allNetworks,
+        create: (network) => {
+            if (network == "default") {
+                return new ethers.providers.EtherscanProvider();
             }
-            if (test.storage) {
-                Object.keys(test.storage).forEach((position) => {
-                    it(`fetches storage: ${test.address}:${position}`, function () {
-                        this.timeout(60000);
-                        return provider.getStorageAt(test.address, bnify(position)).then((value) => {
-                            equals("Storage", test.storage[position], value);
-                            return waiter(delay);
-                        });
-                    });
-                });
-            }
-            if (test.name) {
-                it(`fetches the ENS name: ${test.name}`, function () {
-                    this.timeout(60000);
-                    return provider.resolveName(test.name).then((address) => {
-                        equals("ENS Name", test.address, address);
-                        return waiter(delay);
-                    });
-                });
-            }
+            return new ethers.providers.EtherscanProvider(network);
+        }
+    },
+    {
+        name: "NodesmithProvider",
+        networks: [],
+        create: (network) => {
+            throw new Error("not tested");
+        }
+    },
+    {
+        name: "Web3Provider",
+        networks: [],
+        create: (network) => {
+            throw new Error("not tested");
+        }
+    }
+];
+// This wallet can be funded and used for various test cases
+const fundWallet = ethers.Wallet.createRandom();
+const testFunctions = [];
+Object.keys(blockchainData).forEach((network) => {
+    function addSimpleTest(name, func, expected) {
+        testFunctions.push({
+            name: name,
+            networks: [network],
+            execute: (provider) => __awaiter(this, void 0, void 0, function* () {
+                const value = yield func(provider);
+                equals(name, expected, value);
+            })
         });
-        tests.blocks.forEach((test) => {
-            function checkBlock(promise) {
-                return promise.then((block) => {
-                    for (let key in test) {
-                        equals("Block " + key, block[key], test[key]);
-                    }
-                    return waiter(delay);
+    }
+    function addObjectTest(name, func, expected, checkSkip) {
+        testFunctions.push({
+            name,
+            networks: [network],
+            checkSkip,
+            execute: (provider) => __awaiter(this, void 0, void 0, function* () {
+                const value = yield func(provider);
+                Object.keys(expected).forEach((key) => {
+                    equals(`${name}.${key}`, value[key], expected[key]);
                 });
-            }
-            it(`fetches block (by number) #${test.number}`, function () {
-                this.timeout(60000);
-                return checkBlock(provider.getBlock(test.number));
-            });
-            // Etherscan does not support getBlockByBlockhash... *sad emoji*
-            if (providerName === "EtherscanProvider") {
-                return;
-            }
-            it(`fetches block (by hash) ${test.hash}`, function () {
-                this.timeout(60000);
-                return checkBlock(provider.getBlock(test.hash));
-            });
+            })
         });
-        tests.transactions.forEach((test) => {
-            function testTransaction(expected) {
-                const title = ("Transaction " + expected.hash.substring(0, 10) + " - ");
-                return provider.getTransaction(expected.hash).then((tx) => {
-                    // This changes with every block
-                    assert.equal(typeof (tx.confirmations), "number", "confirmations is a number");
-                    delete tx.confirmations;
-                    assert.equal(typeof (tx.wait), "function", "wait is a function");
-                    delete tx.wait;
-                    for (const key in tx) {
-                        equals((title + key), tx[key], expected[key]);
-                    }
-                    return waiter(delay);
-                });
-            }
-            it(`fetches transaction: ${test.hash}`, function () {
-                this.timeout(60000);
-                return testTransaction(test);
-            });
-        });
-        tests.transactionReceipts.forEach((test) => {
-            function testTransactionReceipt(expected) {
-                const title = ("Receipt " + expected.transactionHash.substring(0, 10) + " - ");
-                return provider.getTransactionReceipt(expected.transactionHash).then(function (receipt) {
-                    // This changes with every block; so just make sure it is a number
-                    assert.equal(typeof (receipt.confirmations), "number", "confirmations is a number");
-                    delete receipt.confirmations;
-                    for (const key in receipt) {
-                        equals((title + key), receipt[key], expected[key]);
-                    }
-                    //equals(("Receipt " + expected.transactionHash.substring(0, 10)), receipt, expected);
-                    return waiter(delay);
-                });
-            }
-            it(`fetches transaction receipt: ${test.transactionHash}`, function () {
-                this.timeout(60000);
-                return testTransactionReceipt(test);
-            });
-        });
-        if (networkName === "ropsten") {
-            it("throws correct NONCE_EXPIRED errors", function () {
-                return __awaiter(this, void 0, void 0, function* () {
-                    this.timeout(60000);
-                    try {
-                        const tx = yield provider.sendTransaction("0xf86480850218711a0082520894000000000000000000000000000000000000000002801ba038aaddcaaae7d3fa066dfd6f196c8348e1bb210f2c121d36cb2c24ef20cea1fba008ae378075d3cd75aae99ab75a70da82161dffb2c8263dabc5d8adecfa9447fa");
-                        console.log(tx);
-                        assert.ok(false);
-                    }
-                    catch (error) {
-                        assert.equal(error.code, ethers.utils.Logger.errors.NONCE_EXPIRED);
-                    }
-                    yield waiter(delay);
-                });
-            });
-            it("throws correct INSUFFICIENT_FUNDS errors", function () {
-                return __awaiter(this, void 0, void 0, function* () {
-                    this.timeout(60000);
-                    const txProps = {
-                        to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-                        gasPrice: 9000000000,
-                        gasLimit: 21000,
-                        value: 1
-                    };
-                    const wallet = ethers.Wallet.createRandom();
-                    const tx = yield wallet.signTransaction(txProps);
-                    try {
-                        yield provider.sendTransaction(tx);
-                        assert.ok(false);
-                    }
-                    catch (error) {
-                        assert.equal(error.code, ethers.utils.Logger.errors.INSUFFICIENT_FUNDS);
-                    }
-                    yield waiter(delay);
-                });
-            });
-            it("throws correct INSUFFICIENT_FUNDS errors (signer)", function () {
-                return __awaiter(this, void 0, void 0, function* () {
-                    this.timeout(60000);
-                    const txProps = {
-                        to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-                        gasPrice: 9000000000,
-                        gasLimit: 21000,
-                        value: 1
-                    };
-                    const wallet = ethers.Wallet.createRandom().connect(provider);
-                    try {
-                        yield wallet.sendTransaction(txProps);
-                        assert.ok(false);
-                    }
-                    catch (error) {
-                        assert.equal(error.code, ethers.utils.Logger.errors.INSUFFICIENT_FUNDS);
-                    }
-                    yield waiter(delay);
-                });
-            });
-            it("throws correct UNPREDICTABLE_GAS_LIMIT errors", function () {
-                return __awaiter(this, void 0, void 0, function* () {
-                    this.timeout(60000);
-                    try {
-                        yield provider.estimateGas({
-                            to: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e" // ENS; no payable fallback
-                        });
-                        assert.ok(false);
-                    }
-                    catch (error) {
-                        assert.equal(error.code, ethers.utils.Logger.errors.UNPREDICTABLE_GAS_LIMIT);
-                    }
-                    yield waiter(delay);
-                });
-            });
-            it("sends a transaction", function () {
-                return __awaiter(this, void 0, void 0, function* () {
-                    this.timeout(360000);
-                    const wallet = ethers.Wallet.createRandom().connect(provider);
-                    const funder = yield ethers.utils.fetchJson(`https:/\/api.ethers.io/api/v1/?action=fundAccount&address=${wallet.address.toLowerCase()}`);
-                    yield provider.waitForTransaction(funder.hash);
-                    const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
-                    const gasPrice = 9000000000;
-                    let balance = yield provider.getBalance(wallet.address);
-                    assert.ok(balance.eq(ethers.utils.parseEther("3.141592653589793238")), "balance is pi after funding");
-                    const tx = yield wallet.sendTransaction({
-                        to: addr,
-                        gasPrice: gasPrice,
-                        value: balance.sub(21000 * gasPrice)
-                    });
-                    yield tx.wait();
-                    balance = yield provider.getBalance(wallet.address);
-                    assert.ok(balance.eq(ethers.constants.Zero), "balance is zero after after sweeping");
-                    yield waiter(delay);
-                });
+    }
+    const tests = blockchainData[network];
+    // And address test case can have any of the following:
+    // - balance
+    // - code
+    // - storage
+    // - ENS name
+    tests.addresses.forEach((test) => {
+        if (test.balance) {
+            addSimpleTest(`fetches account balance: ${test.address}`, (provider) => {
+                return provider.getBalance(test.address);
+            }, test.balance);
+        }
+        if (test.code) {
+            addSimpleTest(`fetches account code: ${test.address}`, (provider) => {
+                return provider.getCode(test.address);
+            }, test.code);
+        }
+        if (test.storage) {
+            Object.keys(test.storage).forEach((position) => {
+                addSimpleTest(`fetches storage: ${test.address}:${position}`, (provider) => {
+                    return provider.getStorageAt(test.address, bnify(position));
+                }, test.storage[position]);
             });
         }
-        // Obviously many more cases to add here
-        // - getTransactionCount
-        // - getBlockNumber
-        // - getGasPrice
-        // - estimateGas
-        // - sendTransaction
-        // - call
-        // - getLogs
-        //
-        //  Many of these are tLegacyParametersested in run-providers, which uses nodeunit, but
-        //  also creates a local private key which must then be funded to
-        //  execute the tests. I am working on a better test contract to deploy
-        //  to all the networks to help test these.
+        if (test.name) {
+            addSimpleTest(`fetches ENS name: ${test.address}`, (provider) => {
+                return provider.resolveName(test.name);
+            }, test.address);
+        }
     });
-}
-["default", "homestead", "ropsten", "rinkeby", "kovan", "goerli"].forEach(function (networkName) {
-    ["getDefaultProvider", "AlchemyProvider", "CloudflareProvider", "InfuraProvider", "EtherscanProvider", "NodesmithProvider", "Web3Provider"].forEach(function (providerName) {
-        if (providerName === "NodesmithProvider") {
-            return;
-        }
-        if (providerName === "CloudflareProvider") {
-            return;
-        }
-        if (providerName === "Web3Provider") {
-            return;
-        }
-        if ((networkName !== "homestead" && networkName !== "default") && providerName === "CloudflareProvider") {
-            return;
-        }
-        testProvider(providerName, networkName);
+    tests.blocks.forEach((test) => {
+        addObjectTest(`fetches block (by number) #${test.number}`, (provider) => {
+            return provider.getBlock(test.number);
+        }, test);
+    });
+    tests.blocks.forEach((test) => {
+        addObjectTest(`fetches block (by hash) ${test.hash}`, (provider) => {
+            return provider.getBlock(test.hash);
+        }, test, (provider, network, test) => {
+            return (provider === "EtherscanProvider");
+        });
+    });
+    tests.transactions.forEach((test) => {
+        addObjectTest(`fetches transaction ${test.hash}`, (provider) => __awaiter(void 0, void 0, void 0, function* () {
+            const tx = yield provider.getTransaction(test.hash);
+            // This changes with every block
+            assert.equal(typeof (tx.confirmations), "number", "confirmations is a number");
+            delete tx.confirmations;
+            assert.equal(typeof (tx.wait), "function", "wait is a function");
+            delete tx.wait;
+            return tx;
+        }), test, (provider, network, test) => {
+            return (provider === "EtherscanProvider");
+        });
+    });
+    tests.transactionReceipts.forEach((test) => {
+        addObjectTest(`fetches transaction receipt ${test.transactionHash}`, (provider) => __awaiter(void 0, void 0, void 0, function* () {
+            const receipt = yield provider.getTransactionReceipt(test.transactionHash);
+            if (test.status === null) {
+                assert.ok(receipt.status === undefined, "no status");
+                receipt.status = null;
+            }
+            // This changes with every block; so just make sure it is a number
+            assert.equal(typeof (receipt.confirmations), "number", "confirmations is a number");
+            delete receipt.confirmations;
+            return receipt;
+        }), test);
+    });
+});
+(function () {
+    function addErrorTest(code, func) {
+        testFunctions.push({
+            name: `throws correct ${code} error`,
+            networks: ["ropsten"],
+            execute: (provider) => __awaiter(this, void 0, void 0, function* () {
+                try {
+                    const value = yield func(provider);
+                    console.log(value);
+                    assert.ok(false, "did not throw");
+                }
+                catch (error) {
+                    assert.equal(error.code, code, "incorrect error thrown");
+                }
+            })
+        });
+    }
+    addErrorTest(ethers.utils.Logger.errors.NONCE_EXPIRED, (provider) => __awaiter(this, void 0, void 0, function* () {
+        return provider.sendTransaction("0xf86480850218711a0082520894000000000000000000000000000000000000000002801ba038aaddcaaae7d3fa066dfd6f196c8348e1bb210f2c121d36cb2c24ef20cea1fba008ae378075d3cd75aae99ab75a70da82161dffb2c8263dabc5d8adecfa9447fa");
+    }));
+    addErrorTest(ethers.utils.Logger.errors.INSUFFICIENT_FUNDS, (provider) => __awaiter(this, void 0, void 0, function* () {
+        const txProps = {
+            to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+            gasPrice: 9000000000,
+            gasLimit: 21000,
+            value: 1
+        };
+        const wallet = ethers.Wallet.createRandom();
+        const tx = yield wallet.signTransaction(txProps);
+        return provider.sendTransaction(tx);
+    }));
+    addErrorTest(ethers.utils.Logger.errors.INSUFFICIENT_FUNDS, (provider) => __awaiter(this, void 0, void 0, function* () {
+        const txProps = {
+            to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+            gasPrice: 9000000000,
+            gasLimit: 21000,
+            value: 1
+        };
+        const wallet = ethers.Wallet.createRandom().connect(provider);
+        return wallet.sendTransaction(txProps);
+    }));
+    addErrorTest(ethers.utils.Logger.errors.UNPREDICTABLE_GAS_LIMIT, (provider) => __awaiter(this, void 0, void 0, function* () {
+        return provider.estimateGas({
+            to: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e" // ENS contract
+        });
+    }));
+})();
+testFunctions.push({
+    name: "sends a transaction",
+    extras: ["funding"],
+    timeout: 300,
+    networks: ["ropsten"],
+    execute: (provider) => __awaiter(void 0, void 0, void 0, function* () {
+        const wallet = fundWallet.connect(provider);
+        const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
+        const b0 = yield provider.getBalance(wallet.address);
+        assert.ok(b0.gt(ethers.constants.Zero), "balance is non-zero");
+        const tx = yield wallet.sendTransaction({
+            to: addr,
+            value: 123
+        });
+        yield tx.wait();
+        const b1 = yield provider.getBalance(wallet.address);
+        assert.ok(b0.gt(b1), "balance is decreased");
+    })
+});
+describe("Test Provider Methods", function () {
+    let fundReceipt = null;
+    const faucet = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
+    before(function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Get some ether from the faucet
+            const provider = ethers.getDefaultProvider("ropsten");
+            const funder = yield ethers.utils.fetchJson(`https:/\/api.ethers.io/api/v1/?action=fundAccount&address=${fundWallet.address.toLowerCase()}`);
+            fundReceipt = provider.waitForTransaction(funder.hash);
+            fundReceipt.then((receipt) => {
+                console.log(`*** Funded: ${fundWallet.address}`);
+            });
+        });
+    });
+    after(function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Wait until the funding is complete
+            yield fundReceipt;
+            // Refund all unused ether to the faucet
+            const provider = ethers.getDefaultProvider("ropsten");
+            const gasPrice = yield provider.getGasPrice();
+            const balance = yield provider.getBalance(fundWallet.address);
+            fundWallet.connect(provider).sendTransaction({
+                to: faucet,
+                gasLimit: 21000,
+                gasPrice: gasPrice,
+                value: balance.sub(gasPrice.mul(21000))
+            });
+        });
+    });
+    providerFunctions.forEach(({ name, networks, create }) => {
+        networks.forEach((network) => {
+            const provider = create(network);
+            testFunctions.forEach((test) => {
+                // Skip tests not supported on this network
+                if (test.networks.indexOf(network) === -1) {
+                    return;
+                }
+                if (test.checkSkip && test.checkSkip(name, network, test)) {
+                    return;
+                }
+                // How many attempts to try?
+                const attempts = (test.attempts != null) ? test.attempts : 3;
+                const timeout = (test.timeout != null) ? test.timeout : 60;
+                const extras = (test.extras || []).reduce((accum, key) => {
+                    accum[key] = true;
+                    return accum;
+                }, {});
+                it(`${name}.${network ? network : "default"} ${test.name}`, function () {
+                    return __awaiter(this, void 0, void 0, function* () {
+                        this.timeout(timeout * 1000 * attempts);
+                        // Wait for the funding transaction to be mined
+                        if (extras.funding) {
+                            yield fundReceipt;
+                        }
+                        // We wait at least 1 seconds between tests
+                        if (!extras.nowait) {
+                            yield waiter(1000);
+                        }
+                        let error = null;
+                        for (let attempt = 0; attempt < attempts; attempt++) {
+                            try {
+                                return yield Promise.race([
+                                    test.execute(provider),
+                                    waiter(timeout * 1000).then((resolve) => { throw new Error("timeout"); })
+                                ]);
+                            }
+                            catch (attemptError) {
+                                console.log(`*** Failed attempt ${attempt + 1}: ${attemptError.message}`);
+                                error = attemptError;
+                            }
+                        }
+                        throw error;
+                    });
+                });
+            });
+        });
     });
 });
 /*
@@ -679,7 +731,7 @@ describe("Test extra Etherscan operations", function() {
 });
 */
 describe("Test Basic Authentication", function () {
-    this.retries(3);
+    //this.retries(3);
     function test(name, url) {
         it("tests " + name, function () {
             this.timeout(60000);

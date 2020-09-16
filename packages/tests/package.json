@@ -39,7 +39,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0xeba001b6d7814b9df776d8a5b395ba7080d99ea8a6dfc8fad70888a5f7d01f3e",
+  "tarballHash": "0x71309e6063699613deb6d5d29f7c87963ee1d71e252f006cdd3ad930e187e47c",
   "types": "./lib/index.d.ts",
   "version": "5.0.8"
 }
