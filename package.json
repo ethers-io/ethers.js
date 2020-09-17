@@ -6,10 +6,12 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "scripts": {
-    "postinstall": "npm run bootstrap",
+    "preinstall": "npm run bootstrap-hoist",
+    "postinstall": "node ./admin/cmds/reset-build.js && node ./admin/cmds/update-depgraph && npm run bootstrap-link",
+    "bootstrap-hoist": "node ./misc/admin/lib/cmds/hoist",
+    "bootstrap-link": "node ./misc/admin/lib/cmds/link",
     "auto-build": "node ./admin/cmds/reset-build.js && npm run build -- -w",
     "auto-build-esm": "node ./admin/cmds/set-option esm && npm run build -- -w",
-    "bootstrap": "node ./admin/cmds/reset-build.js && node ./admin/cmds/update-depgraph && lerna bootstrap --hoist",
     "build": "tsc --build ./tsconfig.project.json",
     "_build-cjs": "node ./admin/cmds/set-option cjs && npm run build",
     "_build-esm": "node ./admin/cmds/set-option esm && npm run build",
@@ -19,7 +21,7 @@
     "_dist-esm": "node ./admin/cmds/set-option esm browser-lang-all && rollup -c --configModule && mv ./packages/ethers/dist/ethers.esm.min.js ./packages/ethers/dist/ethers-all.esm.min.js && node ./admin/cmds/set-option esm && rollup -c --configModule",
     "_dist-all": "npm run _dist-esm && npm run _dist-ancillary && npm run _dist-umd",
     "_dist": "node admin/cmds/npm-skip-node8.js || npm run _dist-all",
-    "clean": "node ./admin/cmds/reset-build.js && tsc --build --clean ./tsconfig.project.json",
+    "clean": "node ./admin/cmds/reset-build.js && tsc --build --clean ./tsconfig.project.json && rm -rf packages/*/node_modules node_modules .package_node_modules package-lock.json",
     "dist-shims": "cd packages/shims && npm run dist",
     "_dist-test-esm": "rollup -c rollup-tests.config.js --configModule",
     "_dist-test-umd": "rollup -c rollup-tests.config.js",
@@ -54,7 +56,6 @@
     "karma": "5.1.0",
     "karma-chrome-launcher": "3.1.0",
     "karma-mocha": "2.0.1",
-    "lerna": "3.22.1",
     "libnpmpublish": "1.1.3",
     "mocha": "^7.1.1",
     "npm-packlist": "1.4.1",
@@ -70,5 +71,26 @@
     "semver": "^5.6.0",
     "tar": "4.4.8",
     "typescript": "3.8.3"
+  },
+  "dependencies": {
+    "@babel/parser": "7.8.4",
+    "@babel/types": "7.8.3",
+    "@ensdomains/address-encoder": "^0.1.2",
+    "@ledgerhq/hw-app-eth": "5.3.0",
+    "@ledgerhq/hw-transport": "5.3.0",
+    "@ledgerhq/hw-transport-u2f": "5.3.0",
+    "@types/mocha": "^5.2.0",
+    "aes-js": "3.0.0",
+    "bech32": "1.1.4",
+    "bn.js": "^4.4.0",
+    "browserify-zlib": "^0.2.0",
+    "elliptic": "6.5.3",
+    "hash.js": "1.1.3",
+    "js-sha3": "0.5.7",
+    "mime-types": "2.1.11",
+    "scrypt-js": "3.0.1",
+    "solc": "0.5.10",
+    "solidity-parser-antlr": "^0.3.2",
+    "ws": "7.2.3"
   }
 }
