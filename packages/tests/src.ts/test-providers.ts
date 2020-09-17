@@ -477,9 +477,9 @@ const providerFunctions: Array<ProviderDescription> = [
         networks: allNetworks,
         create: (network: string) => {
             if (network == "default") {
-                return new ethers.providers.EtherscanProvider();
+                return new ethers.providers.EtherscanProvider(null, "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX");
             }
-            return new ethers.providers.EtherscanProvider(network);
+            return new ethers.providers.EtherscanProvider(network, "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX");
         }
     },
     {
