@@ -32,6 +32,7 @@ const {
     EtherscanProvider,
     InfuraProvider,
     NodesmithProvider,
+    PocketGatewayProvider,
 
     IpcProvider,
 

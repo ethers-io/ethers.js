@@ -31,6 +31,12 @@ function ethDefaultProvider(network) {
             }
             catch (error) { }
         }
+        if (providers.PocketGatewayProvider) {
+            try {
+                providerList.push(new providers.PocketGatewayProvider(network, options.pocket_gateway));
+            }
+            catch (error) { }
+        }
         if (providers.CloudflareProvider) {
             try {
                 providerList.push(new providers.CloudflareProvider(network));

@@ -966,6 +966,63 @@ describe("Test Basic Authentication", function () {
     });
 });
 describe("Test API Key Formatting", function () {
+    it("Pocket Gateway", function () {
+        var applicationId = "appId";
+        var applicationSecretKey = "appSecret";
+        // Test simple applicationId
+        var apiKeyString = ethers_1.ethers.providers.PocketGatewayProvider.getApiKey(applicationId);
+        assert_1.default.equal(apiKeyString.applicationId, applicationId);
+        assert_1.default.ok(apiKeyString.secretKey == null);
+        // Test complex API key with applicationId
+        var apiKeyObject = ethers_1.ethers.providers.PocketGatewayProvider.getApiKey({
+            applicationId: applicationId
+        });
+        assert_1.default.equal(apiKeyObject.applicationId, applicationId);
+        assert_1.default.ok(apiKeyObject.applicationSecretKey == null);
+        // Test complex API key with applicationId and applicationSecretKey
+        var apiKeyObject2 = ethers_1.ethers.providers.PocketGatewayProvider.getApiKey({
+            applicationId: applicationId,
+            applicationSecretKey: applicationSecretKey
+        });
+        assert_1.default.equal(apiKeyObject2.applicationId, applicationId);
+        assert_1.default.equal(apiKeyObject2.applicationSecretKey, applicationSecretKey);
+        // Fails on invalid applicationId type
+        assert_1.default.throws(function () {
+            var apiKey = ethers_1.ethers.providers.PocketGatewayProvider.getApiKey({
+                applicationId: 1234,
+                applicationSecretKey: applicationSecretKey
+            });
+            console.log(apiKey);
+        }, function (error) {
+            return (error.argument === "applicationId" && error.reason === "applicationSecretKey requires an applicationId");
+        });
+        // Fails on invalid projectSecret type
+        assert_1.default.throws(function () {
+            var apiKey = ethers_1.ethers.providers.PocketGatewayProvider.getApiKey({
+                applicationId: applicationId,
+                applicationSecretKey: 1234
+            });
+            console.log(apiKey);
+        }, function (error) {
+            return (error.argument === "applicationSecretKey" && error.reason === "invalid applicationSecretKey");
+        });
+        {
+            var provider = new ethers_1.ethers.providers.PocketGatewayProvider("homestead", {
+                applicationId: applicationId,
+                applicationSecretKey: applicationSecretKey
+            });
+            assert_1.default.equal(provider.network.name, "homestead");
+            assert_1.default.equal(provider.applicationId, applicationId);
+            assert_1.default.equal(provider.applicationSecretKey, applicationSecretKey);
+        }
+        // Attempt an unsupported network
+        assert_1.default.throws(function () {
+            var provider = new ethers_1.ethers.providers.PocketGatewayProvider("imaginary");
+            console.log(provider);
+        }, function (error) {
+            return (error.argument === "network" && error.reason === "unsupported network");
+        });
+    });
     it("Infura API Key", function () {
         var projectId = "someProjectId";
         var projectSecret = "someSecretKey";

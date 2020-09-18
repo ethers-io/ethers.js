@@ -35,6 +35,8 @@ var web3_provider_1 = require("./web3-provider");
 exports.Web3Provider = web3_provider_1.Web3Provider;
 var websocket_provider_1 = require("./websocket-provider");
 exports.WebSocketProvider = websocket_provider_1.WebSocketProvider;
+var pocket_gateway_provider_1 = require("./pocket-gateway-provider");
+exports.PocketGatewayProvider = pocket_gateway_provider_1.PocketGatewayProvider;
 var formatter_1 = require("./formatter");
 exports.Formatter = formatter_1.Formatter;
 exports.isCommunityResourcable = formatter_1.isCommunityResourcable;
@@ -82,6 +84,7 @@ function getDefaultProvider(network, options) {
         NodesmithProvider: nodesmith_provider_1.NodesmithProvider,
         PocketProvider: pocket_provider_1.PocketProvider,
         Web3Provider: web3_provider_1.Web3Provider,
+        PocketGatewayProvider: pocket_gateway_provider_1.PocketGatewayProvider,
         IpcProvider: ipc_provider_1.IpcProvider,
     }, options);
 }

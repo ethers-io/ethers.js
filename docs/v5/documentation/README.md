@@ -234,7 +234,7 @@ url.parse("https://www.ricmoo.com/").protocol
 // 'https:'
 
 url.parse(45)
-// Error: The "url" argument must be of type string. Received type number
+// Error: The "url" argument must be of type string. Received type number (45)
 
 // You want to assign (doesn't emit eval) AND display the value
 const foo = 4 + 5;

@@ -23,6 +23,7 @@ Application Programming Interface
     * [Node-Specific Methods](providers/jsonrpc-provider)
   * [API Providers](providers/api-providers)
     * [EtherscanProvider](providers/api-providers)
+    * [PocketGatewayProvider](providers/api-providers)
     * [InfuraProvider](providers/api-providers)
     * [AlchemyProvider](providers/api-providers)
     * [CloudflareProvider](providers/api-providers)

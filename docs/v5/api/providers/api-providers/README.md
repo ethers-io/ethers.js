@@ -64,6 +64,60 @@ provider = new EtherscanProvider("homestead", apiKey);
 @TODO... Explain
 
 
+PocketGatewayProvider
+---------------------
+
+#### **new ***ethers* . *providers* . **PocketGatewayProvider**( [ network = "homestead" , [ apiKey ] ] )
+
+Create a new **PocketGatewayProvider** connected to *network* with the optional *apiKey*.
+
+The *network* may be specified as **string** for a common network name, a **number** for a common chain ID or a [Network Object]provider-(network).
+
+Depending on how you configure your Application in the Pocket Network Gateway the *apiKey* can be one of:
+
+- **string**: In this case this will be assumed to be the `applicationID` property of your application.
+- **object**: In this case you will be required one of the following combinations:
+- `applicationID`: If you only specify this property this will have the same effect as passing it as a **string**.
+- `applicationID` and `applicationSecretKey`: If you specify the `applicationSecretKey`, you also need to specify the `applicationID` property.
+- `applicationOrigin`: By specifying this property you are setting the `Origin` header in your request (remember that browsers will swap this header based on the actual origin of the website loaded).
+- `applicationUserAgent`: By specifying this property you are setting the `User-Agent` header in your request.
+
+
+
+The *network* and *apiKey* are specified the same as [the constructor](/v5/api/providers/api-providers/#PocketGatewayProvider).
+
+
+#### Note: Default API keys
+
+In the event of the *apiKey* not being present in the constructor, a shared ApplicationID will be provided, which has the capacity of sending up to 1 million requests per day (41,750 per hour).
+
+For production applications it is highly recommended to register your application on the [Pocket Gateway](https://pokt.network/pocket-gateway-ethereum-mainnet/) for your own API key.
+
+
+#### **Supported Networks**
+
+- Homestead (Mainnet Full nodes (Archival Support coming soon))
+
+
+
+
+```javascript
+// Connect to mainnet (homestead)
+provider = new PocketGatewayProvider();
+
+// Connect to mainnet with a Project ID (these are equivalent)
+provider = new PocketGatewayProvider(null, applicationId);
+provider = new PocketGatewayProvider("homestead", applicationId);
+
+// Connect to mainnet with a Project ID and Project Secret
+provider = new PocketGatewayProvider("homestead", {
+    applicationId: applicationId,
+    applicationSecretKey: applicationSecretKey,
+    applicationOrigin: applicationOrigin,
+    applicationUserAgent: applicationUserAgent
+});
+```
+
 InfuraProvider
 --------------
 

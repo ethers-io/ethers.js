@@ -65,6 +65,7 @@ Provider Documentation
   * [Node-Specific Methods](jsonrpc-provider)
 * [API Providers](api-providers)
   * [EtherscanProvider](api-providers)
+  * [PocketGatewayProvider](api-providers)
   * [InfuraProvider](api-providers)
   * [AlchemyProvider](api-providers)
   * [CloudflareProvider](api-providers)
