@@ -485,6 +485,16 @@ var providerFunctions = [
         }
     },
     {
+        name: "PocketGatewayProvider",
+        networks: ["homestead"],
+        create: function (network) {
+            if (network == "default") {
+                return new ethers_1.ethers.providers.PocketGatewayProvider();
+            }
+            return new ethers_1.ethers.providers.PocketGatewayProvider(network);
+        }
+    },
+    {
         name: "InfuraProvider",
         networks: allNetworks,
         create: function (network) {
