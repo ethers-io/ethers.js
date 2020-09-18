@@ -273,7 +273,7 @@ walletMnemonic.publicKey
 walletMnemonic.mnemonic
 // {
 //   locale: 'en',
-//   path: 'm/44\'/60\'/0\'/0/0',
+//   path: "m/44'/60'/0'/0/0",
 //   phrase: 'announce room limb pattern dry unit scale effort smooth jazz weasel alcohol'
 // }
 
@@ -335,7 +335,11 @@ contract = new ethers.Contract("dai.tokens.ethers.eth", abi, signer)
 
 // Get the number of tokens for this account
 tokens = await contract.balanceOf(signer.getAddress())
+<<<<<<< HEAD
 // { BigNumber: "15923148775162018481031" }
+=======
+// { BigNumber: "11434355832278858351495" }
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 //
 // Pre-flight (check for revert) on DAI from the signer
@@ -352,7 +356,11 @@ contract.callStatic.transfer("donations.ethers.eth", tokens)
 
 // This will fail since it is greater than the token balance
 contract.callStatic.transfer("donations.ethers.eth", tokens.add(1))
+<<<<<<< HEAD
 // Error: call revert exception (method="transfer(address,uint256)", errorSignature="Error(string)", errorArgs=["Dai/insufficient-balance"], reason="Dai/insufficient-balance", code=CALL_EXCEPTION, version=abi/5.0.9)
+=======
+// Error: call revert exception (method="transfer(address,uint256)", errorSignature="Error(string)", errorArgs=["Dai/insufficient-balance"], reason="Dai/insufficient-balance", code=CALL_EXCEPTION, version=abi/5.0.5)
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 ```
 
 ExternallyOwnedAccount

@@ -24,7 +24,11 @@
 
 <p>However, this reliance on third-party services can reduce resilience, security and increase the amount of required trust. To mitigate these issues, it is recommended you use a <a href="/v5/api/providers/#providers-getDefaultProvider">Default Provider</a>.</p>
 
+<<<<<<< HEAD
 <a name="EtherscanProvider"></a><a name="api-providers--EtherscanProvider"></a><h2 class="show-anchors"><div>EtherscanProvider<span class="inherits"> inherits <a href="/v5/api/providers/provider/">Provider</a></span><div class="anchors"><a class="self" href="/v5/api/providers/api-providers/#EtherscanProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/etherscan-provider.ts#L142">source</a></div></div></h2><p>The <b>EtherscanProvider</b> is backed by a combination of the various <a href="https://etherscan.io/apis">Etherscan APIs</a>.</p>
+=======
+<a name="EtherscanProvider"></a><a name="api-providers--EtherscanProvider"></a><h2 class="show-anchors"><div>EtherscanProvider<span class="inherits"> inherits <a href="/v5/api/providers/provider/">Provider</a></span><div class="anchors"><a class="self" href="/v5/api/providers/api-providers/#EtherscanProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/etherscan-provider.ts#L133">source</a></div></div></h2><p>The <b>EtherscanProvider</b> is backed by a combination of the various <a href="https://etherscan.io/apis">Etherscan APIs</a>.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="path">ethers</span><span class="symbol">.</span><span class="path">providers</span><span class="symbol">.</span><span class="method">EtherscanProvider</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">network</span> = "<span class="param">homestead</span>" <span class="symbol">,</span> <span class="symbol">[</span> <span class="param">apiKey</span> <span class="symbol">]</span> <span class="symbol">]</span> <span class="symbol">)</span><div class="anchors"></div></div><div class="body"><p>Create a new <b>EtherscanProvider</b> connected to <i>network</i> with the optional <i>apiKey</i>.</p>
 
@@ -57,9 +61,47 @@ provider = new EtherscanProvider(network);
 <span class="comment">// Connect to mainnet (homestead) with an API key
 </span>provider = new EtherscanProvider(null, apiKey);
 provider = new EtherscanProvider("homestead", apiKey);
+<<<<<<< HEAD
 </div><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getHistory</span><span class="symbol">(</span> <span class="param">address</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Array&lt; History &gt;</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/etherscan-provider.ts#L392">source</a></div></div><div class="body"><p>@TODO... Explain</p>
 
 </div></div><a name="InfuraProvider"></a><a name="api-providers--InfuraProvider"></a><h2 class="show-anchors"><div>InfuraProvider<span class="inherits"> inherits <a href="/v5/api/providers/other/#UrlJsonRpcProvider">UrlJsonRpcProvider</a></span><div class="anchors"><a class="self" href="/v5/api/providers/api-providers/#InfuraProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/infura-provider.ts#L46">source</a></div></div></h2><p>The <b>InfuraProvider</b> is backed by the popular <a href="https://infura.io">INFURA</a> Ethereum service.</p>
+=======
+</div><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getHistory</span><span class="symbol">(</span> <span class="param">address</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Array&lt; History &gt;</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/etherscan-provider.ts#L370">source</a></div></div><div class="body"><p>@TODO... Explain</p>
+
+</div></div><a name="PocketGatewayProvider"></a><a name="api-providers--PocketGatewayProvider"></a><h2 class="show-anchors"><div>PocketGatewayProvider<span class="inherits"> inherits <a href="/v5/api/providers/other/#UrlJsonRpcProvider">UrlJsonRpcProvider</a></span><div class="anchors"><a class="self" href="/v5/api/providers/api-providers/#PocketGatewayProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/pocket-gateway-provider.ts#L14">source</a></div></div></h2><p><a href="https://pokt.network">Pocket Network</a> is a Decentralized API that connects any app to any blockchain. The <b>PocketGatewayProvider</b> is an interface that allows your application to connect to Ethereum via the <a href="https://pokt.network/pocket-gateway-ethereum-mainnet/">Pocket Network Gateway</a></p>
+
+<div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="path">ethers</span><span class="symbol">.</span><span class="path">providers</span><span class="symbol">.</span><span class="method">PocketGatewayProvider</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">network</span> = "<span class="param">homestead</span>" <span class="symbol">,</span> <span class="symbol">[</span> <span class="param">apiKey</span> <span class="symbol">]</span> <span class="symbol">]</span> <span class="symbol">)</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/pocket-gateway-provider.ts#L14">source</a></div></div><div class="body"><p>Create a new <b>PocketGatewayProvider</b> connected to <i>network</i> with the optional <i>apiKey</i>.</p>
+
+<p>The <i>network</i> may be specified as <b>string</b> for a common network name, a <b>number</b> for a common chain ID or a [Network Object]provider-(network).</p>
+
+<p>Depending on how you configure your Application in the Pocket Network Gateway the <i>apiKey</i> can be one of:</p>
+
+<p><ul><li><b>string</b>: In this case this will be assumed to be the <code class="inline">applicationID</code> property of your application. </li><li><b>object</b>: In this case you will be required one of the following combinations: </li><li><code class="inline">applicationID</code>: If you only specify this property this will have the same effect as passing it as a <b>string</b>. </li><li><code class="inline">applicationID</code> and <code class="inline">applicationSecretKey</code>: If you specify the <code class="inline">applicationSecretKey</code>, you also need to specify the <code class="inline">applicationID</code> property. </li><li><code class="inline">applicationOrigin</code>: By specifying this property you are setting the `Origin` header in your request (remember that browsers will swap this header based on the actual origin of the website loaded). </li><li><code class="inline">applicationUserAgent</code>: By specifying this property you are setting the `User-Agent` header in your request. </li></ul></p>
+
+<p>The <i>network</i> and <i>apiKey</i> are specified the same as <a href="/v5/api/providers/api-providers/#PocketGatewayProvider">the constructor</a>.</p>
+
+</div></div><div class="definition container-box note"><div class="term">Note: Default API keys</div><div class="body"><p>In the event of the <i>apiKey</i> not being present in the constructor, a shared ApplicationID will be provided, which has the capacity of sending up to 1 million requests per day (41,750 per hour).</p>
+
+<p>For production applications it is highly recommended to register your application on the <a href="https://pokt.network/pocket-gateway-ethereum-mainnet/">Pocket Gateway</a> for your own API key.</p>
+
+</div></div><div class="definition"><div class="term"><b>Supported Networks</b></div><div class="body"><p><ul><li>Homestead (Mainnet Full nodes (Archival Support coming soon)) </li></ul></p>
+
+</div></div><div class="code-title"><div>Pocket Gateway Examples</div></div><div class="code"><span class="comment">// Connect to mainnet (homestead)
+</span>provider = new PocketGatewayProvider();
+
+<span class="comment">// Connect to mainnet with a Project ID (these are equivalent)
+</span>provider = new PocketGatewayProvider(null, applicationId);
+provider = new PocketGatewayProvider("homestead", applicationId);
+
+<span class="comment">// Connect to mainnet with a Project ID and Project Secret
+</span>provider = new PocketGatewayProvider("homestead", {
+    applicationId: applicationId,
+    applicationSecretKey: applicationSecretKey,
+    applicationOrigin: applicationOrigin,
+    applicationUserAgent: applicationUserAgent
+});
+</div><a name="InfuraProvider"></a><a name="api-providers--InfuraProvider"></a><h2 class="show-anchors"><div>InfuraProvider<span class="inherits"> inherits <a href="/v5/api/providers/other/#UrlJsonRpcProvider">UrlJsonRpcProvider</a></span><div class="anchors"><a class="self" href="/v5/api/providers/api-providers/#InfuraProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/infura-provider.ts#L18">source</a></div></div></h2><p>The <b>InfuraProvider</b> is backed by the popular <a href="https://infura.io">INFURA</a> Ethereum service.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="path">ethers</span><span class="symbol">.</span><span class="path">providers</span><span class="symbol">.</span><span class="method">InfuraProvider</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">network</span> = "<span class="param">homestead</span>" <span class="symbol">,</span> <span class="symbol">[</span> <span class="param">apiKey</span> <span class="symbol">]</span> <span class="symbol">]</span> <span class="symbol">)</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/infura-provider.ts#L46">source</a></div></div><div class="body"><p>Create a new <b>InfuraProvider</b> connected to <i>network</i> with the optional <i>apiKey</i>.</p>
 
@@ -135,7 +177,11 @@ provider = new AlchemyProvider("homestead", apiKey);
         <div class="nav previous"><a href="/v5/api/providers/jsonrpc-provider/"><span class="arrow">&larr;</span>JsonRpcProvider</a></div>
         <div class="nav next"><a href="/v5/api/providers/other/">Other Providers<span class="arrow">&rarr;</span></a></div>
       </div>
+<<<<<<< HEAD
       <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on November 22, 2020, 11:5pm.</div>
+=======
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on September 17, 2020, 9:43pm.</div>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
     <!--EXTRASCRIPT-->

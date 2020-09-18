@@ -75,12 +75,21 @@ The *network* may be specified as **string** for a common network name, a **numb
 
 Depending on how you configure your Application in the Pocket Network Gateway the *apiKey* can be one of:
 
+<<<<<<< HEAD
 - **string**: In this case this will be assumed to be the `applicationID` property of your application.
 - **object**: In this case you will be required one of the following combinations:
 - `applicationID`: If you only specify this property this will have the same effect as passing it as a **string**.
 - `applicationID` and `applicationSecretKey`: If you specify the `applicationSecretKey`, you also need to specify the `applicationID` property.
 - `applicationOrigin`: By specifying this property you are setting the `Origin` header in your request (remember that browsers will swap this header based on the actual origin of the website loaded).
 - `applicationUserAgent`: By specifying this property you are setting the `User-Agent` header in your request.
+=======
+- **string**: In this case this will be assumed to be the `applicationID` property of your application. 
+- **object**: In this case you will be required one of the following combinations: 
+- `applicationID`: If you only specify this property this will have the same effect as passing it as a **string**. 
+- `applicationID` and `applicationSecretKey`: If you specify the `applicationSecretKey`, you also need to specify the `applicationID` property. 
+- `applicationOrigin`: By specifying this property you are setting the `Origin` header in your request (remember that browsers will swap this header based on the actual origin of the website loaded). 
+- `applicationUserAgent`: By specifying this property you are setting the `User-Agent` header in your request. 
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 
 
@@ -96,7 +105,11 @@ For production applications it is highly recommended to register your applicatio
 
 #### **Supported Networks**
 
+<<<<<<< HEAD
 - Homestead (Mainnet Full nodes (Archival Support coming soon))
+=======
+- Homestead (Mainnet Full nodes (Archival Support coming soon)) 
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 
 

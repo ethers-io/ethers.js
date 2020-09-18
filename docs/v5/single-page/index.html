@@ -74,7 +74,11 @@
 
 <div class="code-title"><div>Basic Queries</div></div><div class="code"><span class="comment">// Look up the current block number
 </span>provider.getBlockNumber()
+<<<<<<< HEAD
 <span class="result ok">// { Promise: 11312227 }
+=======
+<span class="result ok">// { Promise: 10883306 }
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span>
 <span class="comment">// Get the balance of an account (by address or ENS name, if supported by network)
 </span>balance = await provider.getBalance("ethers.eth")
@@ -142,11 +146,19 @@
 </span>
 <span class="comment">// Get the balance of an address
 </span>balance = await daiContract.balanceOf("ricmoo.firefly.eth")
+<<<<<<< HEAD
 <span class="result ok">// { BigNumber: "15923148775162018481031" }
 </span>
 <span class="comment">// Format the DAI for displaying to the user
 </span>ethers.utils.formatUnits(balance, 18)
 <span class="result ok">// '15923.148775162018481031'
+=======
+<span class="result ok">// { BigNumber: "11434355832278858351495" }
+</span>
+<span class="comment">// Format the DAI for displaying to the user
+</span>ethers.utils.formatUnits(balance, 18)
+<span class="result ok">// '11434.355832278858351495'
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span></div><a name="/v5/getting-started/-%23-getting-started--writing"></a><a name="/v5/getting-started/-%23-getting-started--getting-started--contracts--getting-started--writing"></a><a name="/v5/getting-started/"></a><h3 class="show-anchors"><div>State Changing Methods<div class="anchors"><a class="self" href="#/v5/getting-started/-%23-getting-started--writing"></a></div></div></h3>
 <div class="code-title"><div>Sending DAI</div></div><div class="code"><span class="comment">// The DAI Contract is currently connected to the Provider,
 </span><span class="comment">// which is read-only. You need to connect to a Signer, so
@@ -284,7 +296,11 @@ filter = daiContract.filters.Transfer(null, myAddress)
 </span><span class="comment">// logging into a service, such as CryptoKitties,
 </span><span class="comment">// pass the string in.
 </span>signature = await signer.signMessage("Hello World");
+<<<<<<< HEAD
 <span class="result ok">// '0xc2c9a0db8e9ae4266d6aa1974b36efabd8e270452587857922c5fd696838a22b6dd8f0536c24a73c0df512eefac68bc118fb91b10640fcc576e44a57bc024ca31b'
+=======
+<span class="result ok">// '0x40e5eeffe7abd0835f9ab98919bf982f590049bce18f2a0a503ff39d53724c21377db6b4303e5b8c03afad8038b88c65ffe12f5d97a434f211a14c5b14e0c4831c'
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span>
 //
 <span class="comment">// A common case is also signing a hash, which is 32
@@ -301,7 +317,11 @@ filter = daiContract.filters.Transfer(null, myAddress)
 </span>
 <span class="comment">// To sign a hash, you most often want to sign the bytes
 </span>signature = await signer.signMessage(messageBytes)
+<<<<<<< HEAD
 <span class="result ok">// '0x66b35b262989bc88c5c5c1fadcd8bcd5ae410cdae06abf33ce2c3c98a04d4e892fd2f61717a46f81372146019c2e95646a6cfc3a7ae74e78338f40d905fa69fc1b'
+=======
+<span class="result ok">// '0xa4a6943b3063213f3274790612a91c1b0e11195fd985bf575ada05f08b7da70a1c5fdb9f9e1643719c319573fc6bbf111cef75db7e0f41bdff4b18ddd14f1b631c'
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span></div><div class="page-separator"></div><a name="/v5/concepts/-%23-ethereum-basics"></a><a name="/v5/concepts/"></a><h1 class="show-anchors"><div>Ethereum Basics<div class="anchors"><a class="self" href="#/v5/concepts/-%23-ethereum-basics"></a></div></div></h1><p>This is a brief overview of some aspects of <i>Ethereum</i> and blockchains which developers can make use of or should be aware of.</p>
 
 <p>This section is sparse at the moment, but will be expanded as time goes on.</p>
@@ -527,7 +547,19 @@ const contract = new Contract(tokenAddress, abi, provider);
 
 <p><ul><li>higher rate limit (since you are not using the <a href="https://info.etherscan.com/api-return-errors/">shared rate limit</a>) </li><li>customer usage metrics </li></ul></p>
 
+<<<<<<< HEAD
 <a name="/v5/api-keys/-%23-api-keys--infura"></a><a name="/v5/api-keys/-%23-api-keys--api-keys--infura"></a><a name="/v5/api-keys/"></a><h2 class="show-anchors"><div>INFURA<div class="anchors"><a class="self" href="#/v5/api-keys/-%23-api-keys--infura"></a></div></div></h2><p>The INFURA service has been around for quite some time and is very robust and reliable and highly recommended.</p>
+=======
+<a name="/v5/api-keys/-%23-api-keys--pocket-gateway"></a><a name="/v5/api-keys/-%23-api-keys--api-keys--pocket-gateway"></a><a name="/v5/api-keys/"></a><h2 class="show-anchors"><div>Pocket Gateway<div class="anchors"><a class="self" href="#/v5/api-keys/-%23-api-keys--pocket-gateway"></a></div></div></h2><p><a href="https://pokt.network">Pocket Network</a> is a Decentralized API that connects any app to any blockchain. Stake Pocket Network's native token POKT to get access to a global set of blockchain infrastructure.</p>
+
+<p>Connect your application to Ethereum via the <a href="https://pokt.network/pocket-gateway-ethereum-mainnet/">Pocket Network Gateway</a>.</p>
+
+<p><b>Benefits:</b></p>
+
+<p><ul><li>Decentralized Access to Blockchain Infrastructure. </li><li>Stake as opposed to paying a monthly fee. </li><li>Highly redundant global set of nodes incentivized by cryptoeconomic incentives. </li></ul></p>
+
+<a name="/v5/api-keys/-%23-api-keys--infura"></a><a name="/v5/api-keys/-%23-api-keys--api-keys--infura"></a><a name="/v5/api-keys/"></a><h2 class="show-anchors"><div>INFURA<div class="anchors"><a class="self" href="#/v5/api-keys/-%23-api-keys--infura"></a></div></div></h2><p>The INFURA service has been around for quite some time and is very robust and reliable and highly recommend.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <p>They offer a standard JSON-RPC interface and a WebSocket interface, which makes interaction with standard tools versatile, simple and straight forward.</p>
 
@@ -568,6 +600,7 @@ const contract = new Contract(tokenAddress, abi, provider);
 </span>const provider = ethers.getDefaultProvider(network, {
     etherscan: YOUR_ETHERSCAN_API_KEY,
     infura: YOUR_INFURA_PROJECT_ID,
+<<<<<<< HEAD
 <span class="comment">    // Or if using a project secret:
 </span><span class="comment">    // infura: {
 </span><span class="comment">    //   projectId: YOUR_INFURA_PROJECT_ID,
@@ -581,6 +614,11 @@ const contract = new Contract(tokenAddress, abi, provider);
 </span><span class="comment">    //   applicationSecretKey:
 </span><span class="comment">    // }
 </span>});
+=======
+    alchemy: YOUR_ALCHEMY_API_KEY,
+    pocket_gateway: YOUR_POCKET_GATEWAY_APPLICATION_ID
+});
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </div><div class="page-separator"></div><a name="/v5/api/-%23-api"></a><a name="/v5/api/-%23-api"></a><a name="/v5/api/"></a><h1 class="show-anchors"><div>Application Programming Interface<div class="anchors"><a class="self" href="#/v5/api/-%23-api"></a></div></div></h1><p>An Application Programming Interface (API) is the formal specification of the library.</p>
 
 <div class="toc"><div style="padding-left: 0px"><span class="bullet">&bull;</span><a href="#/v5/api/providers/">Providers</a></div><div style="padding-left: 0px"><span class="bullet">&bull;</span><a href="#/v5/api/signer/">Signers</a></div><div style="padding-left: 0px"><span class="bullet">&bull;</span><a href="#/v5/api/contract/">Contract Interaction</a></div><div style="padding-left: 0px"><span class="bullet">&bull;</span><a href="#/v5/api/utils/">Utilities</a></div><div style="padding-left: 0px"><span class="bullet">&bull;</span><a href="#/v5/api/other/">Other Libraries</a></div><div style="padding-left: 0px"><span class="bullet">&bull;</span><a href="#/v5/api/experimental/">Experimental</a></div></div><div class="page-separator"></div><a name="/v5/api/providers/-%23-providers"></a><a name="/v5/api/providers/-%23-providers"></a><a name="/v5/api/providers/"></a><h1 class="show-anchors"><div>Providers<div class="anchors"><a class="self" href="#/v5/api/providers/-%23-providers"></a></div></div></h1><p>A <b>Provider</b> is an abstraction of a connection to the Ethereum network, providing a concise, consistent interface to standard Ethereum node functionality.</p>
@@ -601,7 +639,11 @@ const contract = new Contract(tokenAddress, abi, provider);
 
 <p>The <i>options</i> is an object, with the following properties:</p>
 
+<<<<<<< HEAD
 </div></div><table class="table minimal"><tr><td align="center"><b>Property</b></td><td align="center"><b>Description</b></td><td class="fix">&nbsp;</td></tr><tr><td align="center"><i>alchemy</i></td><td align="left"><a href="https://alchemyapi.io">Alchemy</a> API Token</td><td class="fix">&nbsp;</td></tr><tr><td align="center"><i>etherscan</i></td><td align="left"><a href="https://etherscan.io">Etherscan</a> API Token</td><td class="fix">&nbsp;</td></tr><tr><td align="center"><i>infura</i></td><td align="left"><a href="https://infura.io">INFURA</a> Project ID or <code class="inline">{ projectId, projectSecret }</code></td><td class="fix">&nbsp;</td></tr><tr><td align="center"><i>pocket</i></td><td align="left"><a href="https://pokt.network">Pocket Network</a> Application ID or <code class="inline">{ applicationId, applicationSecretKey }</code></td><td class="fix">&nbsp;</td></tr><tr><td align="center"><i>quorum</i></td><td align="left">The number of backends that must agree <i>(default: 2 for mainnet, 1 for testnets)</i></td><td class="fix">&nbsp;</td></tr><tr><td class="table-title" colspan="2">Option Properties</td><td class="fix">&nbsp;</td></tr></table><div class="definition container-box note"><div class="term">Note: API Keys</div><div class="body"><p>It is highly recommended for production services to acquire and specify an API Key for each service.</p>
+=======
+</div></div><table class="table minimal"><tr><td align="center"><b>Property</b></td><td align="center"><b>Description</b></td><td class="fix">&nbsp;</td></tr><tr><td align="center"><i>alchemy</i></td><td align="left"><a href="https://alchemyapi.io">Alchemy</a> API Token</td><td class="fix">&nbsp;</td></tr><tr><td align="center"><i>etherscan</i></td><td align="left"><a href="https://etherscan.io">Etherscan</a> API Token</td><td class="fix">&nbsp;</td></tr><tr><td align="center"><i>infura</i></td><td align="left"><a href="https://infura.io">INFURA</a> Project ID or ProjectID and Project Secret</td><td class="fix">&nbsp;</td></tr><tr><td align="right"><i>pocket_gateway</i></td><td align="left"><a href="https://pokt.network/pocket-gateway-ethereum-mainnet/">Pocket Gateway</a> Application ID, Application ID and Application Secret Key, Application Origin or Application User Agent.</td><td class="fix">&nbsp;</td></tr><tr><td align="center"><i>quorum</i></td><td align="left">The number of backends that must agree <i>(default: 2 for mainnet, 1 for testnets)</i></td><td class="fix">&nbsp;</td></tr><tr><td class="table-title" colspan="2">Option Properties</td><td class="fix">&nbsp;</td></tr></table><div class="definition container-box note"><div class="term">Note: API Keys</div><div class="body"><p>It is highly recommended for production services that to acquire and specify an API Key for each sercice.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <p>The default API Keys used by ethers are shared across all users, so services may throttle all services that are using the default API Keys during periods of load without realizing it.</p>
 
@@ -634,7 +676,11 @@ const contract = new Contract(tokenAddress, abi, provider);
 
 </div></div><div class="code-title"><div>Account Examples</div></div><div class="code"><span class="comment">// Get the balance for an account...
 </span>provider.getBalance("ricmoo.firefly.eth");
+<<<<<<< HEAD
 <span class="result ok">// { Promise: { BigNumber: "284831012276355695" } }
+=======
+<span class="result ok">// { Promise: { BigNumber: "1569569617209888063" } }
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span>
 <span class="comment">// Get the code for a contract...
 </span>provider.getCode("registrar.firefly.eth");
@@ -646,7 +692,11 @@ const contract = new Contract(tokenAddress, abi, provider);
 </span>
 <span class="comment">// Get transaction count of an account...
 </span>provider.getTransactionCount("ricmoo.firefly.eth");
+<<<<<<< HEAD
 <span class="result ok">// { Promise: 689 }
+=======
+<span class="result ok">// { Promise: 680 }
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span></div><a name="/v5/api/providers/provider/-%23-Provider--block-methods"></a><a name="/v5/api/providers/provider/-%23-Provider--Provider--block-methods"></a><a name="/v5/api/providers/provider/"></a><h2 class="show-anchors"><div>Blocks Methods<div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider--block-methods"></a></div></div></h2>
 <a name="/v5/api/providers/provider/-%23-Provider-getBlock"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getBlock</span><span class="symbol">(</span> <span class="param">block</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="#/v5/api/providers/types/-%23-providers-Block">Block</a> &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider-getBlock"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/base-provider.ts#L1175">source</a></div></div><div class="body"><p>Get the <i>block</i> from the network, where the <code class="inline">result.transactions</code> is a list of transaction hashes.</p>
 
@@ -686,7 +736,11 @@ provider.getBlockWithTransactions(100004)
 </span><span class="result ok">//       blockHash: '0xf93283571ae16dcecbe1816adc126954a739350cd1523a1559eabeae155fbb63',
 </span><span class="result ok">//       blockNumber: 100004,
 </span><span class="result ok">//       chainId: 0,
+<<<<<<< HEAD
 </span><span class="result ok">//       confirmations: 11212224,
+=======
+</span><span class="result ok">//       confirmations: 10783303,
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span><span class="result ok">//       creates: null,
 </span><span class="result ok">//       data: '0x',
 </span><span class="result ok">//       from: '0xcf00A85f3826941e7A25BFcF9Aac575d40410852',
@@ -744,16 +798,28 @@ provider.getBlockWithTransactions(100004)
 </span>
 <span class="comment">// The current block number
 </span>provider.getBlockNumber()
+<<<<<<< HEAD
 <span class="result ok">// { Promise: 11312227 }
 </span>
 <span class="comment">// Get the current suggested gas price (in wei)...
 </span>gasPrice = await provider.getGasPrice()
 <span class="result ok">// { BigNumber: "46200000000" }
+=======
+<span class="result ok">// { Promise: 10883306 }
+</span>
+<span class="comment">// Get the current suggested gas price (in wei)...
+</span>gasPrice = await provider.getGasPrice()
+<span class="result ok">// { BigNumber: "194000000000" }
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span>
 <span class="comment">// ...often this gas price is easier to understand or
 </span><span class="comment">// display to the user in gwei (giga-wei, or 1e9 wei)
 </span>utils.formatUnits(gasPrice, "gwei")
+<<<<<<< HEAD
 <span class="result ok">// '46.2'
+=======
+<span class="result ok">// '194.0'
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span></div><a name="/v5/api/providers/provider/-%23-Provider--transaction-methods"></a><a name="/v5/api/providers/provider/-%23-Provider--Provider--transaction-methods"></a><a name="/v5/api/providers/provider/"></a><h2 class="show-anchors"><div>Transactions Methods<div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider--transaction-methods"></a></div></div></h2>
 <a name="/v5/api/providers/provider/-%23-Provider-call"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">call</span><span class="symbol">(</span> <span class="param">transaction</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">blockTag</span> = <span class="param">latest</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="#/v5/api/utils/bytes/-%23-DataHexString">DataHexString</a> &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider-call"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/base-provider.ts#L1075">source</a></div></div><div class="body"><p>Returns the result of executing the <i>transaction</i>, using <i>call</i>. A call does not require any ether, but cannot change any state. This is useful for calling getters on Contracts.</p>
 
@@ -849,6 +915,7 @@ provider.on("error", (tx) =&gt; {
 </div><a name="/v5/api/providers/provider/-%23-Provider--inspection-methods"></a><a name="/v5/api/providers/provider/-%23-Provider--Provider--inspection-methods"></a><a name="/v5/api/providers/provider/"></a><h2 class="show-anchors"><div>Inspection Methods<div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider--inspection-methods"></a></div></div></h2>
 <a name="/v5/api/providers/provider/-%23-Provider-isProvider"></a><div class="property show-anchors"><div class="signature"><span class="path">Provider</span><span class="symbol">.</span><span class="method">isProvider</span><span class="symbol">(</span> <span class="param">object</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">boolean</span><div class="anchors"><a class="self" href="#/v5/api/providers/provider/-%23-Provider-isProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-provider/src.ts/index.ts#L269">source</a></div></div><div class="body"><p>Returns true if and only if <i>object</i> is a Provider.</p>
 
+<<<<<<< HEAD
 </div></div><div class="page-separator"></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider"></a><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider"></a><a name="/v5/api/providers/jsonrpc-provider/"></a><h1 class="show-anchors"><div>JsonRpcProvider<span class="inherits"> inherits <a href="#/v5/api/providers/provider/">Provider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/json-rpc-provider.ts#L270">source</a></div></div></h1><p>The <a href="https://github.com/ethereum/wiki/wiki/JSON-RPC">JSON-RPC API</a> is a popular method for interacting with Ethereum and is available in all major Ethereum node implementations (e.g. <a href="https://geth.ethereum.org">Geth</a> and <a href="https://www.parity.io">Parity</a>) as well as many third-party web services (e.g. <a href="https://infura.io">INFURA</a>)</p>
 
 <div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="path">ethers</span><span class="symbol">.</span><span class="path">providers</span><span class="symbol">.</span><span class="method">JsonRpcProvider</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">url</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">aNetworkish</span> <span class="symbol">]</span> <span class="symbol">]</span> <span class="symbol">)</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/json-rpc-provider.ts#L276">source</a></div></div><div class="body"><p>Connect to a JSON-RPC API located at <i>url</i> using the <i>aNetworkish</i> network. If <i>url</i> is not specified, the default (i.e. <code class="inline">http://localhost:8545</code>) is used and if no network is specified, it will be determined automatically by querying the node.</p>
@@ -875,6 +942,34 @@ provider.on("error", (tx) =&gt; {
 </div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-unlock"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">unlock</span><span class="symbol">(</span> <span class="param">password</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; boolean &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-unlock"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/json-rpc-provider.ts#L238">source</a></div></div><div class="body"><p>Request the node unlock the account (if locked) using <i>password</i>.</p>
 
 </div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-UncheckedJsonRpcSigner"></a><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider--UncheckedJsonRpcSigner"></a><a name="/v5/api/providers/jsonrpc-provider/"></a><h2 class="show-anchors"><div>JsonRpcUncheckedSigner<span class="inherits"> inherits <a href="#/v5/api/signer/-%23-Signer">Signer</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-UncheckedJsonRpcSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/json-rpc-provider.ts#L247">source</a></div></div></h2><p>The JSON-RPC API only provides a transaction hash as the response when a transaction is sent, but the ethers Provider requires populating all details of a transaction before returning it. For example, the gas price and gas limit may be adjusted by the node or the nonce automatically included, in which case the opaque transaction hash has discarded this.</p>
+=======
+</div></div><div class="page-separator"></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider"></a><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider"></a><a name="/v5/api/providers/jsonrpc-provider/"></a><h1 class="show-anchors"><div>JsonRpcProvider<span class="inherits"> inherits <a href="#/v5/api/providers/provider/">Provider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/json-rpc-provider.ts#L247">source</a></div></div></h1><p>The <a href="https://github.com/ethereum/wiki/wiki/JSON-RPC">JSON-RPC API</a> is a popular method for interacting with Ethereum and is available in all major Ethereum node implementations (e.g. <a href="https://geth.ethereum.org">Geth</a> and <a href="https://www.parity.io">Parity</a>) as well as many third-party web services (e.g. <a href="https://infura.io">INFURA</a>)</p>
+
+<div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="path">ethers</span><span class="symbol">.</span><span class="path">providers</span><span class="symbol">.</span><span class="method">JsonRpcProvider</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">url</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">aNetworkish</span> <span class="symbol">]</span> <span class="symbol">]</span> <span class="symbol">)</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/json-rpc-provider.ts#L253">source</a></div></div><div class="body"><p>Connect to a JSON-RPC API located at <i>url</i> using the <i>aNetworkish</i> network. If <i>url</i> is not specified, the default (i.e. <code class="inline">http://localhost:8545</code>) is used and if no network is specified, it will be determined automatically by querying the node.</p>
+
+</div></div><div class="definition container-box note"><div class="term">Note: Connecting to a Local Node</div><div class="body"><p>Each node implementation is slightly different and may require specific command-line flags, configuration or settings in their UI to enable JSON-RPC, unlock accounts or expose specific APIs. Please consult their documentation.</p>
+
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-getSigner"></a><div class="property show-anchors"><div class="signature"><span class="path">jsonRpcProvider</span><span class="symbol">.</span><span class="method">getSigner</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">addressOrIndex</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner">JsonRpcSigner</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-getSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/json-rpc-provider.ts#L321">source</a></div></div><div class="body"><p>Returns a <a href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner">JsonRpcSigner</a> which is managed by this Ethereum node, at <i>addressOrIndex</i>. If no <i>addressOrIndex</i> is provided, the first account (account #0) is used.</p>
+
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-getUncheckedSigner"></a><div class="property show-anchors"><div class="signature"><span class="path">jsonRpcProvider</span><span class="symbol">.</span><span class="method">getUncheckedSigner</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">addressOrIndex</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/providers/jsonrpc-provider/-%23-UncheckedJsonRpcSigner">JsonRpcUncheckedSigner</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-getUncheckedSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/json-rpc-provider.ts#L325">source</a></div></div><div class="body">
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-listAccounts"></a><div class="property show-anchors"><div class="signature"><span class="path">jsonRpcProvider</span><span class="symbol">.</span><span class="method">listAccounts</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Array&lt; string &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-listAccounts"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/json-rpc-provider.ts#L329">source</a></div></div><div class="body"><p>Returns a list of all account addresses managed by this provider.</p>
+
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-send"></a><div class="property show-anchors"><div class="signature"><span class="path">jsonRpcProvider</span><span class="symbol">.</span><span class="method">send</span><span class="symbol">(</span> <span class="param">method</span> <span class="symbol">,</span> <span class="param">params</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; any &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-send"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/json-rpc-provider.ts#L335">source</a></div></div><div class="body"><p>Allows sending raw messages to the provider.</p>
+
+<p>This can be used for backend-specific calls, such as for debugging or specific account management.</p>
+
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner"></a><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider--JsonRpcSigner"></a><a name="/v5/api/providers/jsonrpc-provider/"></a><h2 class="show-anchors"><div>JsonRpcSigner<span class="inherits"> inherits <a href="#/v5/api/signer/-%23-Signer">Signer</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/json-rpc-provider.ts#L91">source</a></div></div></h2><p>A <b>JsonRpcSigner</b> is a simple Signer which is backed by a connected <a href="#/v5/api/providers/jsonrpc-provider/">JsonRpcProvider</a>.</p>
+
+<div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">provider</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/providers/jsonrpc-provider/">JsonRpcProvider</a></span><div class="anchors"></div></div><div class="body"><p>The provider this signer was established from.</p>
+
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-connectUnchecked"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">connectUnchecked</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/providers/jsonrpc-provider/-%23-UncheckedJsonRpcSigner">JsonRpcUncheckedSigner</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-connectUnchecked"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/json-rpc-provider.ts#L128">source</a></div></div><div class="body"><p>Returns a new Signer object which does not perform additional checks when sending a transaction. See <a href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-getUncheckedSigner">getUncheckedSigner</a> for more details.</p>
+
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-sendUncheckedTransaction"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">sendUncheckedTransaction</span><span class="symbol">(</span> <span class="param">transaction</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="#/v5/api/utils/bytes/-%23-DataHexString">DataHexString</a>&lt; 32 &gt; &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-sendUncheckedTransaction"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/json-rpc-provider.ts#L147">source</a></div></div><div class="body"><p>Sends the <i>transaction</i> and returns a Promise which resolves to the opaque transaction hash.</p>
+
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-unlock"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">unlock</span><span class="symbol">(</span> <span class="param">password</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; boolean &gt;</span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner-unlock"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/json-rpc-provider.ts#L215">source</a></div></div><div class="body"><p>Request the node unlock the account (if locked) using <i>password</i>.</p>
+
+</div></div><a name="/v5/api/providers/jsonrpc-provider/-%23-UncheckedJsonRpcSigner"></a><a name="/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider--UncheckedJsonRpcSigner"></a><a name="/v5/api/providers/jsonrpc-provider/"></a><h2 class="show-anchors"><div>JsonRpcUncheckedSigner<span class="inherits"> inherits <a href="#/v5/api/signer/-%23-Signer">Signer</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/jsonrpc-provider/-%23-UncheckedJsonRpcSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/json-rpc-provider.ts#L224">source</a></div></div></h2><p>The JSON-RPC API only provides a transaction hash as the response when a transaction is sent, but the ethers Provider requires populating all details of a transaction before returning it. For example, the gas price and gas limit may be adjusted by the node or the nonce automatically included, in which case the opaque transaction hash has discarded this.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <p>To remedy this, the <a href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner">JsonRpcSigner</a> immediately queries the provider for the details using the returned transaction hash to populate the <a href="#/v5/api/providers/types/-%23-providers-TransactionResponse">TransactionResponse</a> object.</p>
 
@@ -892,7 +987,11 @@ provider.on("error", (tx) =&gt; {
 
 <p>However, this reliance on third-party services can reduce resilience, security and increase the amount of required trust. To mitigate these issues, it is recommended you use a <a href="#/v5/api/providers/-%23-providers-getDefaultProvider">Default Provider</a>.</p>
 
+<<<<<<< HEAD
 <a name="/v5/api/providers/api-providers/-%23-EtherscanProvider"></a><a name="/v5/api/providers/api-providers/-%23-api-providers--EtherscanProvider"></a><a name="/v5/api/providers/api-providers/"></a><h2 class="show-anchors"><div>EtherscanProvider<span class="inherits"> inherits <a href="#/v5/api/providers/provider/">Provider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/api-providers/-%23-EtherscanProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/etherscan-provider.ts#L142">source</a></div></div></h2><p>The <b>EtherscanProvider</b> is backed by a combination of the various <a href="https://etherscan.io/apis">Etherscan APIs</a>.</p>
+=======
+<a name="/v5/api/providers/api-providers/-%23-EtherscanProvider"></a><a name="/v5/api/providers/api-providers/-%23-api-providers--EtherscanProvider"></a><a name="/v5/api/providers/api-providers/"></a><h2 class="show-anchors"><div>EtherscanProvider<span class="inherits"> inherits <a href="#/v5/api/providers/provider/">Provider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/api-providers/-%23-EtherscanProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/etherscan-provider.ts#L133">source</a></div></div></h2><p>The <b>EtherscanProvider</b> is backed by a combination of the various <a href="https://etherscan.io/apis">Etherscan APIs</a>.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="path">ethers</span><span class="symbol">.</span><span class="path">providers</span><span class="symbol">.</span><span class="method">EtherscanProvider</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">network</span> = "<span class="param">homestead</span>" <span class="symbol">,</span> <span class="symbol">[</span> <span class="param">apiKey</span> <span class="symbol">]</span> <span class="symbol">]</span> <span class="symbol">)</span><div class="anchors"></div></div><div class="body"><p>Create a new <b>EtherscanProvider</b> connected to <i>network</i> with the optional <i>apiKey</i>.</p>
 
@@ -925,9 +1024,47 @@ provider = new EtherscanProvider(network);
 <span class="comment">// Connect to mainnet (homestead) with an API key
 </span>provider = new EtherscanProvider(null, apiKey);
 provider = new EtherscanProvider("homestead", apiKey);
+<<<<<<< HEAD
 </div><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getHistory</span><span class="symbol">(</span> <span class="param">address</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Array&lt; History &gt;</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/etherscan-provider.ts#L392">source</a></div></div><div class="body"><p>@TODO... Explain</p>
 
 </div></div><a name="/v5/api/providers/api-providers/-%23-InfuraProvider"></a><a name="/v5/api/providers/api-providers/-%23-api-providers--InfuraProvider"></a><a name="/v5/api/providers/api-providers/"></a><h2 class="show-anchors"><div>InfuraProvider<span class="inherits"> inherits <a href="#/v5/api/providers/other/-%23-UrlJsonRpcProvider">UrlJsonRpcProvider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/api-providers/-%23-InfuraProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/infura-provider.ts#L46">source</a></div></div></h2><p>The <b>InfuraProvider</b> is backed by the popular <a href="https://infura.io">INFURA</a> Ethereum service.</p>
+=======
+</div><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getHistory</span><span class="symbol">(</span> <span class="param">address</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Array&lt; History &gt;</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/etherscan-provider.ts#L370">source</a></div></div><div class="body"><p>@TODO... Explain</p>
+
+</div></div><a name="/v5/api/providers/api-providers/-%23-PocketGatewayProvider"></a><a name="/v5/api/providers/api-providers/-%23-api-providers--PocketGatewayProvider"></a><a name="/v5/api/providers/api-providers/"></a><h2 class="show-anchors"><div>PocketGatewayProvider<span class="inherits"> inherits <a href="#/v5/api/providers/other/-%23-UrlJsonRpcProvider">UrlJsonRpcProvider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/api-providers/-%23-PocketGatewayProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/pocket-gateway-provider.ts#L14">source</a></div></div></h2><p><a href="https://pokt.network">Pocket Network</a> is a Decentralized API that connects any app to any blockchain. The <b>PocketGatewayProvider</b> is an interface that allows your application to connect to Ethereum via the <a href="https://pokt.network/pocket-gateway-ethereum-mainnet/">Pocket Network Gateway</a></p>
+
+<div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="path">ethers</span><span class="symbol">.</span><span class="path">providers</span><span class="symbol">.</span><span class="method">PocketGatewayProvider</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">network</span> = "<span class="param">homestead</span>" <span class="symbol">,</span> <span class="symbol">[</span> <span class="param">apiKey</span> <span class="symbol">]</span> <span class="symbol">]</span> <span class="symbol">)</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/pocket-gateway-provider.ts#L14">source</a></div></div><div class="body"><p>Create a new <b>PocketGatewayProvider</b> connected to <i>network</i> with the optional <i>apiKey</i>.</p>
+
+<p>The <i>network</i> may be specified as <b>string</b> for a common network name, a <b>number</b> for a common chain ID or a [Network Object]provider-(network).</p>
+
+<p>Depending on how you configure your Application in the Pocket Network Gateway the <i>apiKey</i> can be one of:</p>
+
+<p><ul><li><b>string</b>: In this case this will be assumed to be the <code class="inline">applicationID</code> property of your application. </li><li><b>object</b>: In this case you will be required one of the following combinations: </li><li><code class="inline">applicationID</code>: If you only specify this property this will have the same effect as passing it as a <b>string</b>. </li><li><code class="inline">applicationID</code> and <code class="inline">applicationSecretKey</code>: If you specify the <code class="inline">applicationSecretKey</code>, you also need to specify the <code class="inline">applicationID</code> property. </li><li><code class="inline">applicationOrigin</code>: By specifying this property you are setting the `Origin` header in your request (remember that browsers will swap this header based on the actual origin of the website loaded). </li><li><code class="inline">applicationUserAgent</code>: By specifying this property you are setting the `User-Agent` header in your request. </li></ul></p>
+
+<p>The <i>network</i> and <i>apiKey</i> are specified the same as <a href="#/v5/api/providers/api-providers/-%23-PocketGatewayProvider">the constructor</a>.</p>
+
+</div></div><div class="definition container-box note"><div class="term">Note: Default API keys</div><div class="body"><p>In the event of the <i>apiKey</i> not being present in the constructor, a shared ApplicationID will be provided, which has the capacity of sending up to 1 million requests per day (41,750 per hour).</p>
+
+<p>For production applications it is highly recommended to register your application on the <a href="https://pokt.network/pocket-gateway-ethereum-mainnet/">Pocket Gateway</a> for your own API key.</p>
+
+</div></div><div class="definition"><div class="term"><b>Supported Networks</b></div><div class="body"><p><ul><li>Homestead (Mainnet Full nodes (Archival Support coming soon)) </li></ul></p>
+
+</div></div><div class="code-title"><div>Pocket Gateway Examples</div></div><div class="code"><span class="comment">// Connect to mainnet (homestead)
+</span>provider = new PocketGatewayProvider();
+
+<span class="comment">// Connect to mainnet with a Project ID (these are equivalent)
+</span>provider = new PocketGatewayProvider(null, applicationId);
+provider = new PocketGatewayProvider("homestead", applicationId);
+
+<span class="comment">// Connect to mainnet with a Project ID and Project Secret
+</span>provider = new PocketGatewayProvider("homestead", {
+    applicationId: applicationId,
+    applicationSecretKey: applicationSecretKey,
+    applicationOrigin: applicationOrigin,
+    applicationUserAgent: applicationUserAgent
+});
+</div><a name="/v5/api/providers/api-providers/-%23-InfuraProvider"></a><a name="/v5/api/providers/api-providers/-%23-api-providers--InfuraProvider"></a><a name="/v5/api/providers/api-providers/"></a><h2 class="show-anchors"><div>InfuraProvider<span class="inherits"> inherits <a href="#/v5/api/providers/other/-%23-UrlJsonRpcProvider">UrlJsonRpcProvider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/api-providers/-%23-InfuraProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/infura-provider.ts#L18">source</a></div></div></h2><p>The <b>InfuraProvider</b> is backed by the popular <a href="https://infura.io">INFURA</a> Ethereum service.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="path">ethers</span><span class="symbol">.</span><span class="path">providers</span><span class="symbol">.</span><span class="method">InfuraProvider</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">network</span> = "<span class="param">homestead</span>" <span class="symbol">,</span> <span class="symbol">[</span> <span class="param">apiKey</span> <span class="symbol">]</span> <span class="symbol">]</span> <span class="symbol">)</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/infura-provider.ts#L46">source</a></div></div><div class="body"><p>Create a new <b>InfuraProvider</b> connected to <i>network</i> with the optional <i>apiKey</i>.</p>
 
@@ -999,7 +1136,11 @@ provider = new AlchemyProvider("homestead", apiKey);
 </span>provider = new CloudflareProvider();
 </div><div class="page-separator"></div><a name="/v5/api/providers/other/-%23-other-providers"></a><a name="/v5/api/providers/other/"></a><h1 class="show-anchors"><div>Other Providers<div class="anchors"><a class="self" href="#/v5/api/providers/other/-%23-other-providers"></a></div></div></h1><p>Others...</p>
 
+<<<<<<< HEAD
 <a name="/v5/api/providers/other/-%23-FallbackProvider"></a><a name="/v5/api/providers/other/-%23-other-providers--FallbackProvider"></a><a name="/v5/api/providers/other/"></a><h2 class="show-anchors"><div>FallbackProvider<span class="inherits"> inherits <a href="#/v5/api/providers/provider/">Provider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/other/-%23-FallbackProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/fallback-provider.ts#L403">source</a></div></div></h2><p>The <b>FallbackProvider</b> is the most advanced <a href="#/v5/api/providers/provider/">Provider</a> available in ethers.</p>
+=======
+<a name="/v5/api/providers/other/-%23-FallbackProvider"></a><a name="/v5/api/providers/other/-%23-other-providers--FallbackProvider"></a><a name="/v5/api/providers/other/"></a><h2 class="show-anchors"><div>FallbackProvider<span class="inherits"> inherits <a href="#/v5/api/providers/provider/">Provider</a></span><div class="anchors"><a class="self" href="#/v5/api/providers/other/-%23-FallbackProvider"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/fallback-provider.ts#L402">source</a></div></div></h2><p>The <b>FallbackProvider</b> is the most advanced <a href="#/v5/api/providers/provider/">Provider</a> available in ethers.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <p>It uses a quorum and connects to multiple <a href="#/v5/api/providers/provider/">Providers</a> as backends, each configured with a <i>priority</i> and a <i>weight</i> .</p>
 
@@ -1255,18 +1396,27 @@ provider = new AlchemyProvider("homestead", apiKey);
 
 <p><ul><li><a href="#/v5/api/signer/-%23-Wallet">Wallet</a>, which is a class which knows its private key and can execute any operations with it </li><li><a href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner">JsonRpcSigner</a>, which is connected to a <a href="#/v5/api/providers/jsonrpc-provider/">JsonRpcProvider</a> (or sub-class) and is acquired using <a href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider-getSigner">getSigner</a> </li></ul></p>
 
+<<<<<<< HEAD
 <a name="/v5/api/signer/-%23-Signer"></a><a name="/v5/api/signer/-%23-signers--Signer"></a><a name="/v5/api/signer/"></a><h2 class="show-anchors"><div>Signer<div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L58">source</a></div></div></h2><p>The <b>Signer</b> class is abstract and cannot be directly instantiated.</p>
+=======
+<a name="/v5/api/signer/-%23-Signer"></a><a name="/v5/api/signer/-%23-signers--Signer"></a><a name="/v5/api/signer/"></a><h2 class="show-anchors"><div>Signer<div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L36">source</a></div></div></h2><p>The <b>Signer</b> class is abstract and cannot be directly instaniated.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <p>Instead use one of the concrete sub-classes, such as the <a href="#/v5/api/signer/-%23-Wallet">Wallet</a>, <a href="#/v5/api/signer/-%23-VoidSigner">VoidSigner</a> or <a href="#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcSigner">JsonRpcSigner</a>.</p>
 
 <a name="/v5/api/signer/-%23-Signer-connect"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">connect</span><span class="symbol">(</span> <span class="param">provider</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/signer/-%23-Signer">Signer</a></span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-connect"></a></div></div><div class="body"><p>Sub-classes <b>must</b> implement this, however they may simply throw an error if changing providers is not supported.</p>
 
+<<<<<<< HEAD
 </div></div><a name="/v5/api/signer/-%23-Signer-getaddress"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">getAddress</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="#/v5/api/utils/address/-%23-address">Address</a> &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-getaddress"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L81">source</a></div></div><div class="body"><p>Returns a Promise that resolves to the account address.</p>
+=======
+</div></div><a name="/v5/api/signer/-%23-Signer-getaddress"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">getAddress</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="#/v5/api/utils/address/-%23-address">Address</a> &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-getaddress"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L59">source</a></div></div><div class="body"><p>Returns a Promise that resolves to the account address.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <p>This is a Promise so that a <b>Signer</b> can be designed around an asynchronous source, such as hardware wallets.</p>
 
 <p>Sub-classes <b>must</b> implement this.</p>
 
+<<<<<<< HEAD
 </div></div><a name="/v5/api/signer/-%23-Signer-isSigner"></a><div class="property show-anchors"><div class="signature"><span class="path">Signer</span><span class="symbol">.</span><span class="method">isSigner</span><span class="symbol">(</span> <span class="param">object</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">boolean</span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-isSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L238">source</a></div></div><div class="body"><p>Returns true if an only if <i>object</i> is a <b>Signer</b>.</p>
 
 </div></div><a name="/v5/api/signer/-%23-Signer--blockchain-methods"></a><a name="/v5/api/signer/-%23-signers--Signer--Signer--blockchain-methods"></a><a name="/v5/api/signer/"></a><h3 class="show-anchors"><div>Blockchain Methods<div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer--blockchain-methods"></a></div></div></h3>
@@ -1283,6 +1433,24 @@ provider = new AlchemyProvider("homestead", apiKey);
 </div></div><a name="/v5/api/signer/-%23-Signer-estimateGas"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">estimateGas</span><span class="symbol">(</span> <span class="param">transactionRequest</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="#/v5/api/utils/bignumber/">BigNumber</a> &gt;</span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-estimateGas"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L108">source</a></div></div><div class="body"><p>Returns the result of estimating the cost to send the <i>transactionRequest</i>, with this account address being used as the <code class="inline">from</code> field.</p>
 
 </div></div><a name="/v5/api/signer/-%23-Signer-resolveName"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">resolveName</span><span class="symbol">(</span> <span class="param">ensName</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="#/v5/api/utils/address/-%23-address">Address</a> &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-resolveName"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L142">source</a></div></div><div class="body"><p>Returns the address associated with the <i>ensName</i>.</p>
+=======
+</div></div><a name="/v5/api/signer/-%23-Signer-isSigner"></a><div class="property show-anchors"><div class="signature"><span class="path">Signer</span><span class="symbol">.</span><span class="method">isSigner</span><span class="symbol">(</span> <span class="param">object</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">boolean</span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-isSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L216">source</a></div></div><div class="body"><p>Returns true if an only if <i>object</i> is a <b>Signer</b>.</p>
+
+</div></div><a name="/v5/api/signer/-%23-Signer--blockchain-methods"></a><a name="/v5/api/signer/-%23-signers--Signer--Signer--blockchain-methods"></a><a name="/v5/api/signer/"></a><h3 class="show-anchors"><div>Blockchain Methods<div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer--blockchain-methods"></a></div></div></h3>
+<a name="/v5/api/signer/-%23-Signer-getBalance"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">getBalance</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">blockTag</span> = "<span class="param">latest</span>" <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="#/v5/api/utils/bignumber/">BigNumber</a> &gt;</span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-getBalance"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L75">source</a></div></div><div class="body"><p>Returns the balance of this wallet at <i>blockTag</i>.</p>
+
+</div></div><a name="/v5/api/signer/-%23-Signer-getChainId"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">getChainId</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; number &gt;</span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-getChainId"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L109">source</a></div></div><div class="body"><p>Returns the chain ID this wallet is connected to.</p>
+
+</div></div><a name="/v5/api/signer/-%23-Signer-getGasPrice"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">getGasPrice</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="#/v5/api/utils/bignumber/">BigNumber</a> &gt;</span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-getGasPrice"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L115">source</a></div></div><div class="body"><p>Returns the current gas price.</p>
+
+</div></div><a name="/v5/api/signer/-%23-Signer-getTransactionCount"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">getTransactionCount</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">blockTag</span> = "<span class="param">latest</span>" <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; number &gt;</span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-getTransactionCount"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L80">source</a></div></div><div class="body"><p>Returns the number of transactions this account has ever sent. This is the value required to be included in transactions as the <code class="inline">nonce</code>.</p>
+
+</div></div><a name="/v5/api/signer/-%23-Signer-call"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">call</span><span class="symbol">(</span> <span class="param">transactionRequest</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="#/v5/api/utils/bytes/-%23-DataHexString">DataHexString</a> &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-call"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L93">source</a></div></div><div class="body"><p>Returns the result of calling using the <i>transactionRequest</i>, with this account address being used as the <code class="inline">from</code> field.</p>
+
+</div></div><a name="/v5/api/signer/-%23-Signer-estimateGas"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">estimateGas</span><span class="symbol">(</span> <span class="param">transactionRequest</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="#/v5/api/utils/bignumber/">BigNumber</a> &gt;</span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-estimateGas"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L86">source</a></div></div><div class="body"><p>Returns the result of estimating the cost to send the <i>transactionRequest</i>, with this account address being used as the <code class="inline">from</code> field.</p>
+
+</div></div><a name="/v5/api/signer/-%23-Signer-resolveName"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">resolveName</span><span class="symbol">(</span> <span class="param">ensName</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="#/v5/api/utils/address/-%23-address">Address</a> &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-resolveName"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L120">source</a></div></div><div class="body"><p>Returns the address associated with the <i>ensName</i>.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 </div></div><a name="/v5/api/signer/-%23-Signer--signing-methods"></a><a name="/v5/api/signer/-%23-signers--Signer--Signer--signing-methods"></a><a name="/v5/api/signer/"></a><h3 class="show-anchors"><div>Signing<div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer--signing-methods"></a></div></div></h3>
 <a name="/v5/api/signer/-%23-Signer-signMessage"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">signMessage</span><span class="symbol">(</span> <span class="param">message</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="#/v5/api/utils/bytes/-%23-signature-raw">RawSignature</a> &gt; &gt;</span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-signMessage"></a></div></div><div class="body"><p>This returns a Promise which resolves to the <a href="#/v5/api/utils/bytes/-%23-signature-raw">Raw Signature</a> of <i>message</i>.</p>
@@ -1351,7 +1519,11 @@ const signature = await signer._signTypedData(domain, types, value);
 
 <p>A sub-class <b>must</b> extend Signer and <b>must</b> call <code class="inline">super()</code>.</p>
 
+<<<<<<< HEAD
 <a name="/v5/api/signer/-%23-Signer-checkTransaction"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">checkTransaction</span><span class="symbol">(</span> <span class="param">transactionRequest</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/providers/types/-%23-providers-TransactionRequest">TransactionRequest</a></span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-checkTransaction"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L159">source</a></div></div><div class="body"><p>This is generally not required to be overridden, but may be needed to provide custom behaviour in sub-classes.</p>
+=======
+<a name="/v5/api/signer/-%23-Signer-checkTransaction"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">checkTransaction</span><span class="symbol">(</span> <span class="param">transactionRequest</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="#/v5/api/providers/types/-%23-providers-TransactionRequest">TransactionRequest</a></span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-checkTransaction"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L137">source</a></div></div><div class="body"><p>This is generally not required to be overridden, but may needed to provide custom behaviour in sub-classes.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <p>This should return a <b>copy</b> of the <i>transactionRequest</i>, with any properties needed by <code class="inline">call</code>, <code class="inline">estimateGas</code> and <code class="inline">populateTransaction</code> (which is used by sendTransaction). It should also throw an error if any unknown key is specified.</p>
 
@@ -1359,7 +1531,11 @@ const signature = await signer._signTypedData(domain, types, value);
 
 <p>If there is a <code class="inline">from</code> field it <b>must</b> be verified to be equal to the Signer's address.</p>
 
+<<<<<<< HEAD
 </div></div><a name="/v5/api/signer/-%23-Signer-populateTransaction"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">populateTransaction</span><span class="symbol">(</span> <span class="param">transactionRequest</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="#/v5/api/providers/types/-%23-providers-TransactionRequest">TransactionRequest</a> &gt;</span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-populateTransaction"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L190">source</a></div></div><div class="body"><p>This is generally not required to be overridden, but may be needed to provide custom behaviour in sub-classes.</p>
+=======
+</div></div><a name="/v5/api/signer/-%23-Signer-populateTransaction"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">populateTransaction</span><span class="symbol">(</span> <span class="param">transactionRequest</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="#/v5/api/providers/types/-%23-providers-TransactionRequest">TransactionRequest</a> &gt;</span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-Signer-populateTransaction"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L168">source</a></div></div><div class="body"><p>This is generally not required to be overridden, but may needed to provide custom behaviour in sub-classes.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <p>This should return a <b>copy</b> of <i>transactionRequest</i>, follow the same procedure as <code class="inline">checkTransaction</code> and fill in any properties required for sending a transaction. The result should have all promises resolved; if needed the <a href="#/v5/api/utils/properties/-%23-utils-resolveproperties">resolveProperties</a> utility function can be used for this.</p>
 
@@ -1429,7 +1605,7 @@ walletMnemonic.address === walletPrivateKey.address
 </span>walletMnemonic.mnemonic
 <span class="result ok">// {
 </span><span class="result ok">//   locale: 'en',
-</span><span class="result ok">//   path: 'm/44\'/60\'/0\'/0/0',
+</span><span class="result ok">//   path: "m/44'/60'/0'/0/0",
 </span><span class="result ok">//   phrase: 'announce room limb pattern dry unit scale effort smooth jazz weasel alcohol'
 </span><span class="result ok">// }
 </span>
@@ -1463,7 +1639,11 @@ tx = {
 </span>
 <span class="comment">// Sending ether
 </span>wallet.sendTransaction(tx)
+<<<<<<< HEAD
 </div><a name="/v5/api/signer/-%23-VoidSigner"></a><a name="/v5/api/signer/-%23-signers--VoidSigner"></a><a name="/v5/api/signer/"></a><h2 class="show-anchors"><div>VoidSigner<span class="inherits"> inherits <a href="#/v5/api/signer/-%23-Signer">Signer</a></span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-VoidSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L243">source</a></div></div></h2><p>A <b>VoidSigner</b> is a simple Signer which cannot sign.</p>
+=======
+</div><a name="/v5/api/signer/-%23-VoidSigner"></a><a name="/v5/api/signer/-%23-signers--VoidSigner"></a><a name="/v5/api/signer/"></a><h2 class="show-anchors"><div>VoidSigner<span class="inherits"> inherits <a href="#/v5/api/signer/-%23-Signer">Signer</a></span><div class="anchors"><a class="self" href="#/v5/api/signer/-%23-VoidSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L221">source</a></div></div></h2><p>A <b>VoidSigner</b> is a simple Signer which cannot sign.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <p>It is useful as a read-only signer, when an API requires a Signer as a parameter, but it is known only read-only operations will be carried.</p>
 
@@ -1485,7 +1665,11 @@ contract = new ethers.Contract("dai.tokens.ethers.eth", abi, signer)
 
 <span class="comment">// Get the number of tokens for this account
 </span>tokens = await contract.balanceOf(signer.getAddress())
+<<<<<<< HEAD
 <span class="result ok">// { BigNumber: "15923148775162018481031" }
+=======
+<span class="result ok">// { BigNumber: "11434355832278858351495" }
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span>
 //
 <span class="comment">// Pre-flight (check for revert) on DAI from the signer
@@ -1502,7 +1686,11 @@ contract = new ethers.Contract("dai.tokens.ethers.eth", abi, signer)
 </span>
 <span class="comment">// This will fail since it is greater than the token balance
 </span>contract.callStatic.transfer("donations.ethers.eth", tokens.add(1))
+<<<<<<< HEAD
 <span class="result error">// Error: call revert exception (method="transfer(address,uint256)", errorSignature="Error(string)", errorArgs=["Dai/insufficient-balance"], reason="Dai/insufficient-balance", code=CALL_EXCEPTION, version=abi/5.0.9)
+=======
+<span class="result error">// Error: call revert exception (method="transfer(address,uint256)", errorSignature="Error(string)", errorArgs=["Dai/insufficient-balance"], reason="Dai/insufficient-balance", code=CALL_EXCEPTION, version=abi/5.0.5)
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span></div><a name="/v5/api/signer/-%23-ExternallyOwnedAccount"></a><a name="/v5/api/signer/-%23-signers--ExternallyOwnedAccount"></a><a name="/v5/api/signer/"></a><h2 class="show-anchors"><div>ExternallyOwnedAccount<div class="anchors"><a class="self" href="#/v5/api/signer/-%23-ExternallyOwnedAccount"></a></div></div></h2><p>This is an interface which contains a minimal set of properties required for Externally Owned Accounts which can have certain operations performed, such as encoding as a JSON wallet.</p>
 
 <div class="property show-anchors"><div class="signature"><span class="path">eoa</span><span class="symbol">.</span><span class="method">address</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="#/v5/api/utils/address/-%23-address">Address</a> &gt;</span><div class="anchors"></div></div><div class="body"><p>The <a href="#/v5/api/utils/address/-%23-address">Address</a> of this EOA.</p>
@@ -2101,7 +2289,11 @@ one2
 </span>
 <span class="comment">// Numbers outside the safe range fail:
 </span>BigNumber.from(Number.MAX_SAFE_INTEGER);
+<<<<<<< HEAD
 <span class="result error">// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740991, code=NUMERIC_FAULT, version=bignumber/5.0.11)
+=======
+<span class="result error">// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740991, code=NUMERIC_FAULT, version=bignumber/5.0.7)
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span></div><a name="/v5/api/utils/bignumber/-%23-BigNumber--methods"></a><a name="/v5/api/utils/bignumber/-%23-BigNumber--BigNumber--methods"></a><a name="/v5/api/utils/bignumber/"></a><h2 class="show-anchors"><div>Methods<div class="anchors"><a class="self" href="#/v5/api/utils/bignumber/-%23-BigNumber--methods"></a></div></div></h2><p>The BigNumber class is immutable, so no operations can change the value it represents.</p>
 
 <a name="/v5/api/utils/bignumber/-%23-BigNumber--BigNumber--methods--math-operations"></a><a name="/v5/api/utils/bignumber/"></a><h3 class="show-anchors"><div>Math Operations<div class="anchors"><a class="self" href="#/v5/api/utils/bignumber/-%23-BigNumber--BigNumber--methods--math-operations"></a></div></div></h3>
@@ -2285,13 +2477,18 @@ a.mul(b);
 </div></div><a name="/v5/api/utils/bytes/-%23-utils-shuffled"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">shuffled</span><span class="symbol">(</span> <span class="param">array</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Array&lt; any &gt;</span><div class="anchors"><a class="self" href="#/v5/api/utils/bytes/-%23-utils-shuffled"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/random/src.ts/shuffle.ts#L3">source</a></div></div><div class="body"><p>Return a copy of <i>array</i> shuffled using <a href="https://en.wikipedia.org/wiki/Fisher-Yates_shuffle">Fisher-Yates Shuffle</a>.</p>
 
 </div></div><div class="code-title"><div>Examples</div></div><div class="code">utils.randomBytes(8)
+<<<<<<< HEAD
 <span class="result ok">// Uint8Array [ 82, 221, 254, 37, 192, 138, 147, 109 ]
+=======
+<span class="result ok">// Uint8Array [ 168, 156, 99, 46, 210, 32, 243, 216 ]
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span>
 const data = [ 1, 2, 3, 4, 5, 6, 7 ];
 
 <span class="comment">// Returns a new Array
 </span>utils.shuffled(data);
 <span class="result ok">// [
+<<<<<<< HEAD
 </span><span class="result ok">//   6,
 </span><span class="result ok">//   5,
 </span><span class="result ok">//   3,
@@ -2299,6 +2496,15 @@ const data = [ 1, 2, 3, 4, 5, 6, 7 ];
 </span><span class="result ok">//   7,
 </span><span class="result ok">//   4,
 </span><span class="result ok">//   1
+=======
+</span><span class="result ok">//   4,
+</span><span class="result ok">//   7,
+</span><span class="result ok">//   2,
+</span><span class="result ok">//   6,
+</span><span class="result ok">//   3,
+</span><span class="result ok">//   1,
+</span><span class="result ok">//   5
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span><span class="result ok">// ]
 </span>
 <span class="comment">// The Original is unscathed...
@@ -4743,7 +4949,7 @@ foo
 <span class="result ok">// 'https:'
 </span>
 url.parse(45)
-<span class="result error">// Error: The "url" argument must be of type string. Received type number
+<span class="result error">// Error: The "url" argument must be of type string. Received type number (45)
 </span>
 <span class="comment">// You want to assign (doesn't emit eval) AND display the value
 </span>const foo = 4 + 5;
@@ -4830,7 +5036,11 @@ $bottom: This just represents an example of
         <div class="nav previous"><!--PREV_LINK--></div>
         <div class="nav next"><!--NEXT_LINK--></div>
       </div>
+<<<<<<< HEAD
       <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on November 22, 2020, 11:5pm.</div>
+=======
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on September 17, 2020, 9:43pm.</div>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
     <!--EXTRASCRIPT-->

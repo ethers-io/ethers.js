@@ -30,18 +30,27 @@
 
 <p><ul><li><a href="/v5/api/signer/#Wallet">Wallet</a>, which is a class which knows its private key and can execute any operations with it </li><li><a href="/v5/api/providers/jsonrpc-provider/#JsonRpcSigner">JsonRpcSigner</a>, which is connected to a <a href="/v5/api/providers/jsonrpc-provider/">JsonRpcProvider</a> (or sub-class) and is acquired using <a href="/v5/api/providers/jsonrpc-provider/#JsonRpcProvider-getSigner">getSigner</a> </li></ul></p>
 
+<<<<<<< HEAD
 <a name="Signer"></a><a name="signers--Signer"></a><h2 class="show-anchors"><div>Signer<div class="anchors"><a class="self" href="/v5/api/signer/#Signer"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L58">source</a></div></div></h2><p>The <b>Signer</b> class is abstract and cannot be directly instantiated.</p>
+=======
+<a name="Signer"></a><a name="signers--Signer"></a><h2 class="show-anchors"><div>Signer<div class="anchors"><a class="self" href="/v5/api/signer/#Signer"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L36">source</a></div></div></h2><p>The <b>Signer</b> class is abstract and cannot be directly instaniated.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <p>Instead use one of the concrete sub-classes, such as the <a href="/v5/api/signer/#Wallet">Wallet</a>, <a href="/v5/api/signer/#VoidSigner">VoidSigner</a> or <a href="/v5/api/providers/jsonrpc-provider/#JsonRpcSigner">JsonRpcSigner</a>.</p>
 
 <a name="Signer-connect"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">connect</span><span class="symbol">(</span> <span class="param">provider</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/signer/#Signer">Signer</a></span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-connect"></a></div></div><div class="body"><p>Sub-classes <b>must</b> implement this, however they may simply throw an error if changing providers is not supported.</p>
 
+<<<<<<< HEAD
 </div></div><a name="Signer-getaddress"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">getAddress</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="/v5/api/utils/address/#address">Address</a> &gt; &gt;</span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-getaddress"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L81">source</a></div></div><div class="body"><p>Returns a Promise that resolves to the account address.</p>
+=======
+</div></div><a name="Signer-getaddress"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">getAddress</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="/v5/api/utils/address/#address">Address</a> &gt; &gt;</span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-getaddress"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L59">source</a></div></div><div class="body"><p>Returns a Promise that resolves to the account address.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <p>This is a Promise so that a <b>Signer</b> can be designed around an asynchronous source, such as hardware wallets.</p>
 
 <p>Sub-classes <b>must</b> implement this.</p>
 
+<<<<<<< HEAD
 </div></div><a name="Signer-isSigner"></a><div class="property show-anchors"><div class="signature"><span class="path">Signer</span><span class="symbol">.</span><span class="method">isSigner</span><span class="symbol">(</span> <span class="param">object</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">boolean</span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-isSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L238">source</a></div></div><div class="body"><p>Returns true if an only if <i>object</i> is a <b>Signer</b>.</p>
 
 </div></div><a name="Signer--blockchain-methods"></a><a name="signers--Signer--Signer--blockchain-methods"></a><h3 class="show-anchors"><div>Blockchain Methods<div class="anchors"><a class="self" href="/v5/api/signer/#Signer--blockchain-methods"></a></div></div></h3>
@@ -58,6 +67,24 @@
 </div></div><a name="Signer-estimateGas"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">estimateGas</span><span class="symbol">(</span> <span class="param">transactionRequest</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="/v5/api/utils/bignumber/">BigNumber</a> &gt;</span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-estimateGas"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L108">source</a></div></div><div class="body"><p>Returns the result of estimating the cost to send the <i>transactionRequest</i>, with this account address being used as the <code class="inline">from</code> field.</p>
 
 </div></div><a name="Signer-resolveName"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">resolveName</span><span class="symbol">(</span> <span class="param">ensName</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="/v5/api/utils/address/#address">Address</a> &gt; &gt;</span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-resolveName"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L142">source</a></div></div><div class="body"><p>Returns the address associated with the <i>ensName</i>.</p>
+=======
+</div></div><a name="Signer-isSigner"></a><div class="property show-anchors"><div class="signature"><span class="path">Signer</span><span class="symbol">.</span><span class="method">isSigner</span><span class="symbol">(</span> <span class="param">object</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">boolean</span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-isSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L216">source</a></div></div><div class="body"><p>Returns true if an only if <i>object</i> is a <b>Signer</b>.</p>
+
+</div></div><a name="Signer--blockchain-methods"></a><a name="signers--Signer--Signer--blockchain-methods"></a><h3 class="show-anchors"><div>Blockchain Methods<div class="anchors"><a class="self" href="/v5/api/signer/#Signer--blockchain-methods"></a></div></div></h3>
+<a name="Signer-getBalance"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">getBalance</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">blockTag</span> = "<span class="param">latest</span>" <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="/v5/api/utils/bignumber/">BigNumber</a> &gt;</span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-getBalance"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L75">source</a></div></div><div class="body"><p>Returns the balance of this wallet at <i>blockTag</i>.</p>
+
+</div></div><a name="Signer-getChainId"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">getChainId</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; number &gt;</span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-getChainId"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L109">source</a></div></div><div class="body"><p>Returns the chain ID this wallet is connected to.</p>
+
+</div></div><a name="Signer-getGasPrice"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">getGasPrice</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="/v5/api/utils/bignumber/">BigNumber</a> &gt;</span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-getGasPrice"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L115">source</a></div></div><div class="body"><p>Returns the current gas price.</p>
+
+</div></div><a name="Signer-getTransactionCount"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">getTransactionCount</span><span class="symbol">(</span> <span class="symbol">[</span> <span class="param">blockTag</span> = "<span class="param">latest</span>" <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; number &gt;</span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-getTransactionCount"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L80">source</a></div></div><div class="body"><p>Returns the number of transactions this account has ever sent. This is the value required to be included in transactions as the <code class="inline">nonce</code>.</p>
+
+</div></div><a name="Signer-call"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">call</span><span class="symbol">(</span> <span class="param">transactionRequest</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="/v5/api/utils/bytes/#DataHexString">DataHexString</a> &gt; &gt;</span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-call"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L93">source</a></div></div><div class="body"><p>Returns the result of calling using the <i>transactionRequest</i>, with this account address being used as the <code class="inline">from</code> field.</p>
+
+</div></div><a name="Signer-estimateGas"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">estimateGas</span><span class="symbol">(</span> <span class="param">transactionRequest</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="/v5/api/utils/bignumber/">BigNumber</a> &gt;</span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-estimateGas"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L86">source</a></div></div><div class="body"><p>Returns the result of estimating the cost to send the <i>transactionRequest</i>, with this account address being used as the <code class="inline">from</code> field.</p>
+
+</div></div><a name="Signer-resolveName"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">resolveName</span><span class="symbol">(</span> <span class="param">ensName</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="/v5/api/utils/address/#address">Address</a> &gt; &gt;</span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-resolveName"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L120">source</a></div></div><div class="body"><p>Returns the address associated with the <i>ensName</i>.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 </div></div><a name="Signer--signing-methods"></a><a name="signers--Signer--Signer--signing-methods"></a><h3 class="show-anchors"><div>Signing<div class="anchors"><a class="self" href="/v5/api/signer/#Signer--signing-methods"></a></div></div></h3>
 <a name="Signer-signMessage"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">signMessage</span><span class="symbol">(</span> <span class="param">message</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="/v5/api/utils/bytes/#signature-raw">RawSignature</a> &gt; &gt;</span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-signMessage"></a></div></div><div class="body"><p>This returns a Promise which resolves to the <a href="/v5/api/utils/bytes/#signature-raw">Raw Signature</a> of <i>message</i>.</p>
@@ -126,7 +153,11 @@ const signature = await signer._signTypedData(domain, types, value);
 
 <p>A sub-class <b>must</b> extend Signer and <b>must</b> call <code class="inline">super()</code>.</p>
 
+<<<<<<< HEAD
 <a name="Signer-checkTransaction"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">checkTransaction</span><span class="symbol">(</span> <span class="param">transactionRequest</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/providers/types/#providers-TransactionRequest">TransactionRequest</a></span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-checkTransaction"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L159">source</a></div></div><div class="body"><p>This is generally not required to be overridden, but may be needed to provide custom behaviour in sub-classes.</p>
+=======
+<a name="Signer-checkTransaction"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">checkTransaction</span><span class="symbol">(</span> <span class="param">transactionRequest</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/providers/types/#providers-TransactionRequest">TransactionRequest</a></span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-checkTransaction"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L137">source</a></div></div><div class="body"><p>This is generally not required to be overridden, but may needed to provide custom behaviour in sub-classes.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <p>This should return a <b>copy</b> of the <i>transactionRequest</i>, with any properties needed by <code class="inline">call</code>, <code class="inline">estimateGas</code> and <code class="inline">populateTransaction</code> (which is used by sendTransaction). It should also throw an error if any unknown key is specified.</p>
 
@@ -134,7 +165,11 @@ const signature = await signer._signTypedData(domain, types, value);
 
 <p>If there is a <code class="inline">from</code> field it <b>must</b> be verified to be equal to the Signer's address.</p>
 
+<<<<<<< HEAD
 </div></div><a name="Signer-populateTransaction"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">populateTransaction</span><span class="symbol">(</span> <span class="param">transactionRequest</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="/v5/api/providers/types/#providers-TransactionRequest">TransactionRequest</a> &gt;</span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-populateTransaction"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L190">source</a></div></div><div class="body"><p>This is generally not required to be overridden, but may be needed to provide custom behaviour in sub-classes.</p>
+=======
+</div></div><a name="Signer-populateTransaction"></a><div class="property show-anchors"><div class="signature"><span class="path">signer</span><span class="symbol">.</span><span class="method">populateTransaction</span><span class="symbol">(</span> <span class="param">transactionRequest</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="/v5/api/providers/types/#providers-TransactionRequest">TransactionRequest</a> &gt;</span><div class="anchors"><a class="self" href="/v5/api/signer/#Signer-populateTransaction"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L168">source</a></div></div><div class="body"><p>This is generally not required to be overridden, but may needed to provide custom behaviour in sub-classes.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <p>This should return a <b>copy</b> of <i>transactionRequest</i>, follow the same procedure as <code class="inline">checkTransaction</code> and fill in any properties required for sending a transaction. The result should have all promises resolved; if needed the <a href="/v5/api/utils/properties/#utils-resolveproperties">resolveProperties</a> utility function can be used for this.</p>
 
@@ -204,7 +239,7 @@ walletMnemonic.address === walletPrivateKey.address
 </span>walletMnemonic.mnemonic
 <span class="result ok">// {
 </span><span class="result ok">//   locale: 'en',
-</span><span class="result ok">//   path: 'm/44\'/60\'/0\'/0/0',
+</span><span class="result ok">//   path: "m/44'/60'/0'/0/0",
 </span><span class="result ok">//   phrase: 'announce room limb pattern dry unit scale effort smooth jazz weasel alcohol'
 </span><span class="result ok">// }
 </span>
@@ -238,7 +273,11 @@ tx = {
 </span>
 <span class="comment">// Sending ether
 </span>wallet.sendTransaction(tx)
+<<<<<<< HEAD
 </div><a name="VoidSigner"></a><a name="signers--VoidSigner"></a><h2 class="show-anchors"><div>VoidSigner<span class="inherits"> inherits <a href="/v5/api/signer/#Signer">Signer</a></span><div class="anchors"><a class="self" href="/v5/api/signer/#VoidSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L243">source</a></div></div></h2><p>A <b>VoidSigner</b> is a simple Signer which cannot sign.</p>
+=======
+</div><a name="VoidSigner"></a><a name="signers--VoidSigner"></a><h2 class="show-anchors"><div>VoidSigner<span class="inherits"> inherits <a href="/v5/api/signer/#Signer">Signer</a></span><div class="anchors"><a class="self" href="/v5/api/signer/#VoidSigner"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-signer/src.ts/index.ts#L221">source</a></div></div></h2><p>A <b>VoidSigner</b> is a simple Signer which cannot sign.</p>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 <p>It is useful as a read-only signer, when an API requires a Signer as a parameter, but it is known only read-only operations will be carried.</p>
 
@@ -260,7 +299,11 @@ contract = new ethers.Contract("dai.tokens.ethers.eth", abi, signer)
 
 <span class="comment">// Get the number of tokens for this account
 </span>tokens = await contract.balanceOf(signer.getAddress())
+<<<<<<< HEAD
 <span class="result ok">// { BigNumber: "15923148775162018481031" }
+=======
+<span class="result ok">// { BigNumber: "11434355832278858351495" }
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span>
 //
 <span class="comment">// Pre-flight (check for revert) on DAI from the signer
@@ -277,7 +320,11 @@ contract = new ethers.Contract("dai.tokens.ethers.eth", abi, signer)
 </span>
 <span class="comment">// This will fail since it is greater than the token balance
 </span>contract.callStatic.transfer("donations.ethers.eth", tokens.add(1))
+<<<<<<< HEAD
 <span class="result error">// Error: call revert exception (method="transfer(address,uint256)", errorSignature="Error(string)", errorArgs=["Dai/insufficient-balance"], reason="Dai/insufficient-balance", code=CALL_EXCEPTION, version=abi/5.0.9)
+=======
+<span class="result error">// Error: call revert exception (method="transfer(address,uint256)", errorSignature="Error(string)", errorArgs=["Dai/insufficient-balance"], reason="Dai/insufficient-balance", code=CALL_EXCEPTION, version=abi/5.0.5)
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span></div><a name="ExternallyOwnedAccount"></a><a name="signers--ExternallyOwnedAccount"></a><h2 class="show-anchors"><div>ExternallyOwnedAccount<div class="anchors"><a class="self" href="/v5/api/signer/#ExternallyOwnedAccount"></a></div></div></h2><p>This is an interface which contains a minimal set of properties required for Externally Owned Accounts which can have certain operations performed, such as encoding as a JSON wallet.</p>
 
 <div class="property show-anchors"><div class="signature"><span class="path">eoa</span><span class="symbol">.</span><span class="method">address</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="/v5/api/utils/address/#address">Address</a> &gt;</span><div class="anchors"></div></div><div class="body"><p>The <a href="/v5/api/utils/address/#address">Address</a> of this EOA.</p>
@@ -292,7 +339,11 @@ contract = new ethers.Contract("dai.tokens.ethers.eth", abi, signer)
         <div class="nav previous"><a href="/v5/api/providers/types/"><span class="arrow">&larr;</span>Types</a></div>
         <div class="nav next"><a href="/v5/api/contract/">Contract Interaction<span class="arrow">&rarr;</span></a></div>
       </div>
+<<<<<<< HEAD
       <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on November 22, 2020, 11:5pm.</div>
+=======
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on September 17, 2020, 9:43pm.</div>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
     <!--EXTRASCRIPT-->

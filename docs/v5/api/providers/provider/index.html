@@ -33,7 +33,11 @@
 
 </div></div><div class="code-title"><div>Account Examples</div></div><div class="code"><span class="comment">// Get the balance for an account...
 </span>provider.getBalance("ricmoo.firefly.eth");
+<<<<<<< HEAD
 <span class="result ok">// { Promise: { BigNumber: "284831012276355695" } }
+=======
+<span class="result ok">// { Promise: { BigNumber: "1569569617209888063" } }
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span>
 <span class="comment">// Get the code for a contract...
 </span>provider.getCode("registrar.firefly.eth");
@@ -45,7 +49,11 @@
 </span>
 <span class="comment">// Get transaction count of an account...
 </span>provider.getTransactionCount("ricmoo.firefly.eth");
+<<<<<<< HEAD
 <span class="result ok">// { Promise: 689 }
+=======
+<span class="result ok">// { Promise: 680 }
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span></div><a name="Provider--block-methods"></a><a name="Provider--Provider--block-methods"></a><h2 class="show-anchors"><div>Blocks Methods<div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider--block-methods"></a></div></div></h2>
 <a name="Provider-getBlock"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">getBlock</span><span class="symbol">(</span> <span class="param">block</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="/v5/api/providers/types/#providers-Block">Block</a> &gt;</span><div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider-getBlock"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/base-provider.ts#L1175">source</a></div></div><div class="body"><p>Get the <i>block</i> from the network, where the <code class="inline">result.transactions</code> is a list of transaction hashes.</p>
 
@@ -85,7 +93,11 @@ provider.getBlockWithTransactions(100004)
 </span><span class="result ok">//       blockHash: '0xf93283571ae16dcecbe1816adc126954a739350cd1523a1559eabeae155fbb63',
 </span><span class="result ok">//       blockNumber: 100004,
 </span><span class="result ok">//       chainId: 0,
+<<<<<<< HEAD
 </span><span class="result ok">//       confirmations: 11212224,
+=======
+</span><span class="result ok">//       confirmations: 10783303,
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span><span class="result ok">//       creates: null,
 </span><span class="result ok">//       data: '0x',
 </span><span class="result ok">//       from: '0xcf00A85f3826941e7A25BFcF9Aac575d40410852',
@@ -143,16 +155,28 @@ provider.getBlockWithTransactions(100004)
 </span>
 <span class="comment">// The current block number
 </span>provider.getBlockNumber()
+<<<<<<< HEAD
 <span class="result ok">// { Promise: 11312227 }
 </span>
 <span class="comment">// Get the current suggested gas price (in wei)...
 </span>gasPrice = await provider.getGasPrice()
 <span class="result ok">// { BigNumber: "46200000000" }
+=======
+<span class="result ok">// { Promise: 10883306 }
+</span>
+<span class="comment">// Get the current suggested gas price (in wei)...
+</span>gasPrice = await provider.getGasPrice()
+<span class="result ok">// { BigNumber: "194000000000" }
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span>
 <span class="comment">// ...often this gas price is easier to understand or
 </span><span class="comment">// display to the user in gwei (giga-wei, or 1e9 wei)
 </span>utils.formatUnits(gasPrice, "gwei")
+<<<<<<< HEAD
 <span class="result ok">// '46.2'
+=======
+<span class="result ok">// '194.0'
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 </span></div><a name="Provider--transaction-methods"></a><a name="Provider--Provider--transaction-methods"></a><h2 class="show-anchors"><div>Transactions Methods<div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider--transaction-methods"></a></div></div></h2>
 <a name="Provider-call"></a><div class="property show-anchors"><div class="signature"><span class="path">provider</span><span class="symbol">.</span><span class="method">call</span><span class="symbol">(</span> <span class="param">transaction</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">blockTag</span> = <span class="param">latest</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; string&lt; <a href="/v5/api/utils/bytes/#DataHexString">DataHexString</a> &gt; &gt;</span><div class="anchors"><a class="self" href="/v5/api/providers/provider/#Provider-call"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/providers/src.ts/base-provider.ts#L1075">source</a></div></div><div class="body"><p>Returns the result of executing the <i>transaction</i>, using <i>call</i>. A call does not require any ether, but cannot change any state. This is useful for calling getters on Contracts.</p>
 
@@ -254,7 +278,11 @@ provider.on("error", (tx) =&gt; {
         <div class="nav previous"><a href="/v5/api/providers/"><span class="arrow">&larr;</span>Providers</a></div>
         <div class="nav next"><a href="/v5/api/providers/jsonrpc-provider/">JsonRpcProvider<span class="arrow">&rarr;</span></a></div>
       </div>
+<<<<<<< HEAD
       <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on November 22, 2020, 11:5pm.</div>
+=======
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on September 17, 2020, 9:43pm.</div>
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
     <!--EXTRASCRIPT-->

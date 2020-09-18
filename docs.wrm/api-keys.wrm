@@ -40,6 +40,19 @@ operations required to interact with the Ethereum Blockchain.
 - higher rate limit (since you are not using the [shared rate limit](link-etherscan-ratelimit))
 - customer usage metrics
 
+_subsection: Pocket Gateway@<api-keys--pocket-gateway>
+
+[Pocket Network](link-pocket) is a Decentralized API that connects any app to any blockchain. Stake Pocket Network's
+native token POKT to get access to a global set of blockchain infrastructure.
+
+Connect your application to Ethereum via the [Pocket Network Gateway](link-pocket-gateway).
+
+**Benefits:**
+
+- Decentralized Access to Blockchain Infrastructure.
+- Stake as opposed to paying a monthly fee.
+- Highly redundant global set of nodes incentivized by cryptoeconomic incentives.
+
 _subsection: INFURA @<api-keys--infura>
 
 The INFURA service has been around for quite some time and is very robust

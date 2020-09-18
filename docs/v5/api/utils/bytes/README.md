@@ -164,13 +164,18 @@ Return a copy of *array* shuffled using [Fisher-Yates Shuffle](https://en.wikipe
 
 ```javascript
 utils.randomBytes(8)
+<<<<<<< HEAD
 // Uint8Array [ 82, 221, 254, 37, 192, 138, 147, 109 ]
+=======
+// Uint8Array [ 168, 156, 99, 46, 210, 32, 243, 216 ]
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 const data = [ 1, 2, 3, 4, 5, 6, 7 ];
 
 // Returns a new Array
 utils.shuffled(data);
 // [
+<<<<<<< HEAD
 //   6,
 //   5,
 //   3,
@@ -178,6 +183,15 @@ utils.shuffled(data);
 //   7,
 //   4,
 //   1
+=======
+//   4,
+//   7,
+//   2,
+//   6,
+//   3,
+//   1,
+//   5
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 // ]
 
 // The Original is unscathed...

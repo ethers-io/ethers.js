@@ -33,7 +33,11 @@ Returns the number of transactions *address* has ever **sent**, as of *blockTag*
 ```javascript
 // Get the balance for an account...
 provider.getBalance("ricmoo.firefly.eth");
+<<<<<<< HEAD
 // { Promise: { BigNumber: "284831012276355695" } }
+=======
+// { Promise: { BigNumber: "1569569617209888063" } }
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 // Get the code for a contract...
 provider.getCode("registrar.firefly.eth");
@@ -45,7 +49,11 @@ provider.getStorageAt("registrar.firefly.eth", 0)
 
 // Get transaction count of an account...
 provider.getTransactionCount("ricmoo.firefly.eth");
+<<<<<<< HEAD
 // { Promise: 689 }
+=======
+// { Promise: 680 }
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 ```
 
 Blocks Methods
@@ -96,7 +104,11 @@ provider.getBlockWithTransactions(100004)
 //       blockHash: '0xf93283571ae16dcecbe1816adc126954a739350cd1523a1559eabeae155fbb63',
 //       blockNumber: 100004,
 //       chainId: 0,
+<<<<<<< HEAD
 //       confirmations: 11212224,
+=======
+//       confirmations: 10783303,
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 //       creates: null,
 //       data: '0x',
 //       from: '0xcf00A85f3826941e7A25BFcF9Aac575d40410852',
@@ -177,16 +189,28 @@ provider.getNetwork()
 
 // The current block number
 provider.getBlockNumber()
+<<<<<<< HEAD
 // { Promise: 11312227 }
 
 // Get the current suggested gas price (in wei)...
 gasPrice = await provider.getGasPrice()
 // { BigNumber: "46200000000" }
+=======
+// { Promise: 10883306 }
+
+// Get the current suggested gas price (in wei)...
+gasPrice = await provider.getGasPrice()
+// { BigNumber: "194000000000" }
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 // ...often this gas price is easier to understand or
 // display to the user in gwei (giga-wei, or 1e9 wei)
 utils.formatUnits(gasPrice, "gwei")
+<<<<<<< HEAD
 // '46.2'
+=======
+// '194.0'
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 ```
 
 Transactions Methods

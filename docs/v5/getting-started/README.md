@@ -81,7 +81,11 @@ const signer = provider.getSigner()
 ```javascript
 // Look up the current block number
 provider.getBlockNumber()
+<<<<<<< HEAD
 // { Promise: 11312227 }
+=======
+// { Promise: 10883306 }
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 // Get the balance of an account (by address or ENS name, if supported by network)
 balance = await provider.getBalance("ethers.eth")
@@ -149,11 +153,19 @@ daiContract.symbol()
 
 // Get the balance of an address
 balance = await daiContract.balanceOf("ricmoo.firefly.eth")
+<<<<<<< HEAD
 // { BigNumber: "15923148775162018481031" }
 
 // Format the DAI for displaying to the user
 ethers.utils.formatUnits(balance, 18)
 // '15923.148775162018481031'
+=======
+// { BigNumber: "11434355832278858351495" }
+
+// Format the DAI for displaying to the user
+ethers.utils.formatUnits(balance, 18)
+// '11434.355832278858351495'
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 ```
 
 ### State Changing Methods
@@ -308,7 +320,11 @@ Signing Messages
 // logging into a service, such as CryptoKitties,
 // pass the string in.
 signature = await signer.signMessage("Hello World");
+<<<<<<< HEAD
 // '0xc2c9a0db8e9ae4266d6aa1974b36efabd8e270452587857922c5fd696838a22b6dd8f0536c24a73c0df512eefac68bc118fb91b10640fcc576e44a57bc024ca31b'
+=======
+// '0x40e5eeffe7abd0835f9ab98919bf982f590049bce18f2a0a503ff39d53724c21377db6b4303e5b8c03afad8038b88c65ffe12f5d97a434f211a14c5b14e0c4831c'
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 
 //
 // A common case is also signing a hash, which is 32
@@ -325,6 +341,10 @@ messageBytes = ethers.utils.arrayify(message);
 
 // To sign a hash, you most often want to sign the bytes
 signature = await signer.signMessage(messageBytes)
+<<<<<<< HEAD
 // '0x66b35b262989bc88c5c5c1fadcd8bcd5ae410cdae06abf33ce2c3c98a04d4e892fd2f61717a46f81372146019c2e95646a6cfc3a7ae74e78338f40d905fa69fc1b'
+=======
+// '0xa4a6943b3063213f3274790612a91c1b0e11195fd985bf575ada05f08b7da70a1c5fdb9f9e1643719c319573fc6bbf111cef75db7e0f41bdff4b18ddd14f1b631c'
+>>>>>>> Added PocketGatewayProvider, updated tests and docs
 ```
 

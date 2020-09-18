@@ -16842,6 +16842,12 @@ function ethDefaultProvider(network) {
             }
             catch (error) { }
         }
+        if (providers.PocketGatewayProvider) {
+            try {
+                providerList.push(new providers.PocketGatewayProvider(network, options.pocket_gateway));
+            }
+            catch (error) { }
+        }
         if (providers.CloudflareProvider) {
             try {
                 providerList.push(new providers.CloudflareProvider(network));
@@ -21620,6 +21626,77 @@ class Web3Provider extends JsonRpcProvider {
 
 "use strict";
 const logger$F = new Logger(version$m);
+const defaultApplicationId$1 = "5f3ab133f7ca96c59972ff51";
+class PocketGatewayProvider extends UrlJsonRpcProvider {
+    static getApiKey(apiKey) {
+        const apiKeyObj = {
+            applicationId: defaultApplicationId$1,
+            applicationSecretKey: null,
+            applicationOrigin: null,
+            applicationUserAgent: null
+        };
+        if (apiKey == null) {
+            return apiKeyObj;
+        }
+        // Parse applicationId and applicationSecretKey
+        if (typeof (apiKey) === "string") {
+            apiKeyObj.applicationId = apiKey;
+        }
+        else if (apiKey.applicationSecretKey != null) {
+            logger$F.assertArgument((typeof (apiKey.applicationId) === "string"), "applicationSecretKey requires an applicationId", "applicationId", apiKey.applicationId);
+            logger$F.assertArgument((typeof (apiKey.applicationSecretKey) === "string"), "invalid applicationSecretKey", "applicationSecretKey", "[*********]");
+            apiKeyObj.applicationId = apiKey.applicationId;
+            apiKeyObj.applicationSecretKey = apiKey.applicationSecretKey;
+        }
+        else if (apiKey.applicationId) {
+            apiKeyObj.applicationId = apiKey.applicationId;
+        }
+        // Parse Origin
+        if (typeof (apiKey.applicationOrigin) === "string") {
+            apiKeyObj.applicationOrigin = apiKey.applicationOrigin;
+        }
+        // Parse User Agent
+        if (typeof (apiKey.applicationUserAgent) === "string") {
+            apiKeyObj.applicationUserAgent = apiKey.applicationUserAgent;
+        }
+        return apiKeyObj;
+    }
+    static getUrl(network, apiKey) {
+        let host = null;
+        switch (network ? network.name : "unknown") {
+            case "homestead":
+                host = "eth-mainnet.gateway.pokt.network";
+                break;
+            default:
+                logger$F.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
+                    argument: "network",
+                    value: network
+                });
+        }
+        const connection = {
+            url: ("https:/" + "/" + host + "/v1/" + apiKey.applicationId),
+        };
+        // Initialize empty headers
+        connection.headers = {};
+        // Apply application secret key
+        if (apiKey.applicationSecretKey != null) {
+            connection.user = "";
+            connection.password = apiKey.applicationSecretKey;
+        }
+        // Apply origin header
+        if (apiKey.applicationOrigin != null) {
+            connection.headers["Origin"] = apiKey.applicationOrigin;
+        }
+        // Apply user agent header
+        if (apiKey.applicationUserAgent != null) {
+            connection.headers["User-Agent"] = apiKey.applicationUserAgent;
+        }
+        return connection;
+    }
+}
+
+"use strict";
+const logger$G = new Logger(version$m);
 ////////////////////////
 // Helper Functions
 function getDefaultProvider(network, options) {
@@ -21638,13 +21715,13 @@ function getDefaultProvider(network, options) {
                 case "ws":
                     return new WebSocketProvider(network);
                 default:
-                    logger$F.throwArgumentError("unsupported URL scheme", "network", network);
+                    logger$G.throwArgumentError("unsupported URL scheme", "network", network);
             }
         }
     }
     const n = getNetwork(network);
     if (!n || !n._defaultProvider) {
-        logger$F.throwError("unsupported getDefaultProvider network", Logger.errors.NETWORK_ERROR, {
+        logger$G.throwError("unsupported getDefaultProvider network", Logger.errors.NETWORK_ERROR, {
             operation: "getDefaultProvider",
             network: network
         });
@@ -21659,6 +21736,7 @@ function getDefaultProvider(network, options) {
         NodesmithProvider,
         PocketProvider,
         Web3Provider,
+        PocketGatewayProvider,
         IpcProvider,
     }, options);
 }
@@ -21682,6 +21760,7 @@ var index$3 = /*#__PURE__*/Object.freeze({
 	StaticJsonRpcProvider: StaticJsonRpcProvider,
 	Web3Provider: Web3Provider,
 	WebSocketProvider: WebSocketProvider,
+	PocketGatewayProvider: PocketGatewayProvider,
 	IpcProvider: IpcProvider,
 	JsonRpcSigner: JsonRpcSigner,
 	getDefaultProvider: getDefaultProvider,
@@ -21778,7 +21857,7 @@ function sha256$2(types, values) {
 const version$n = "units/5.0.9";
 
 "use strict";
-const logger$G = new Logger(version$n);
+const logger$H = new Logger(version$n);
 const names = [
     "wei",
     "kwei",
@@ -21793,7 +21872,7 @@ const names = [
 function commify(value) {
     const comps = String(value).split(".");
     if (comps.length > 2 || !comps[0].match(/^-?[0-9]*$/) || (comps[1] && !comps[1].match(/^[0-9]*$/)) || value === "." || value === "-.") {
-        logger$G.throwArgumentError("invalid value", "value", value);
+        logger$H.throwArgumentError("invalid value", "value", value);
     }
     // Make sure we have at least one whole digit (0 if none)
     let whole = comps[0];
@@ -21841,7 +21920,7 @@ function formatUnits(value, unitName) {
 }
 function parseUnits(value, unitName) {
     if (typeof (value) !== "string") {
-        logger$G.throwArgumentError("value must be a string", "value", value);
+        logger$H.throwArgumentError("value must be a string", "value", value);
     }
     if (typeof (unitName) === "string") {
         const index = names.indexOf(unitName);
@@ -21960,7 +22039,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 const version$o = "ethers/5.0.26";
 
 "use strict";
-const logger$H = new Logger(version$o);
+const logger$I = new Logger(version$o);
 
 var ethers = /*#__PURE__*/Object.freeze({
 	__proto__: null,
@@ -21975,7 +22054,7 @@ var ethers = /*#__PURE__*/Object.freeze({
 	FixedNumber: FixedNumber,
 	constants: index$1,
 	get errors () { return ErrorCode; },
-	logger: logger$H,
+	logger: logger$I,
 	utils: utils$1,
 	wordlists: wordlists,
 	version: version$o,
@@ -21991,5 +22070,5 @@ try {
 }
 catch (error) { }
 
-export { BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, Wordlist, index$1 as constants, ErrorCode as errors, ethers, getDefaultProvider, logger$H as logger, index$3 as providers, utils$1 as utils, version$o as version, wordlists };
+export { BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, Wordlist, index$1 as constants, ErrorCode as errors, ethers, getDefaultProvider, logger$I as logger, index$3 as providers, utils$1 as utils, version$o as version, wordlists };
 //# sourceMappingURL=ethers.esm.js.map
