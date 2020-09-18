@@ -444,6 +444,16 @@ const providerFunctions = [
     },
     */
     {
+        name: "PocketGatewayProvider",
+        networks: ["homestead"],
+        create: (network) => {
+            if (network == "default") {
+                return new ethers.providers.PocketGatewayProvider();
+            }
+            return new ethers.providers.PocketGatewayProvider(network);
+        }
+    },
+    {
         name: "InfuraProvider",
         networks: allNetworks,
         create: (network) => {
