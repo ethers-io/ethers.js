@@ -1,12 +1,14 @@
 "use strict";
 
-const { resolve } = require("path");
-const fs = require("fs");
+import fs from "fs";
+import  { resolve } from "path";
+
+import ts from "typescript";
 
 const Words = fs.readFileSync("/usr/share/dict/words").toString().split("\n").reduce((accum, word) => {
     accum[word.toLowerCase()] = true;
     return accum;
-}, { });
+}, <Record<string, boolean>>{ });
 
 `
 // Words missing from the dictionary
@@ -79,20 +81,28 @@ OYAa IJBEJqXZJ
     Words[word.toLowerCase()] = true;
 });
 
-const ts = require("typescript");
+type Bar = {
+    value: string;
+    lineNo: number;
+}
 
-function getStrings(source) {
-    const sourceFile = ts.createSourceFile("filename.ts", source);
+type Foo = {
+    filename: string;
+    values: Array<Bar>;
+};
 
-    const result = [ ];
+function getStrings(source: string): Array<Bar> {
+    const sourceFile = ts.createSourceFile("filename.ts", source, ts.ScriptTarget.Latest);
 
-    function add(value, pos) {
+    const result: Array<Bar> = [ ];
+
+    function add(value: string, pos: number): void {
         const lineNo = sourceFile.getLineAndCharacterOfPosition(pos).line + 1;
         result.push({ value, lineNo });
     }
 
-    let lastClass = null, lastEnum = null;
-    function visit(node, depth) {
+    //let lastClass = null, lastEnum = null;
+    function visit(node: ts.Node, depth: number): void {
         switch (node.kind) {
             //case ts.SyntaxKind.TemplateExpression:
             //    if (node.head) { visit(node.head); }
@@ -103,7 +113,7 @@ function getStrings(source) {
             case ts.SyntaxKind.TemplateTail:
             case ts.SyntaxKind.StringLiteral:
             case ts.SyntaxKind.NoSubstitutionTemplateLiteral:
-                add(node.text, node.pos);
+                add((<ts.LiteralLikeNode>node).text, node.pos);
                 break;
         }
 
@@ -118,10 +128,11 @@ function getStrings(source) {
 const Include = new RegExp("packages/.*/src.ts/.*\.ts$");
 const Exclude = new RegExp("/node_modules/|src.ts/.*browser.*");
 
-function getAllStrings(path) {
+
+function getAllStrings(path: string): Array<Foo> {
     const Root = resolve(__dirname, path);
 
-    const readdir = function(path) {
+    const readdir = function(path: string): Array<Foo> {
         if (path.match(Exclude)) { return [ ]; }
 
         const stat = fs.statSync(path);
@@ -145,7 +156,7 @@ function getAllStrings(path) {
     return readdir(Root);
 }
 
-function checkWord(word) {
+function checkWord(word: string): boolean {
     word = word.toLowerCase();
 
     // A word
@@ -156,20 +167,22 @@ function checkWord(word) {
 
     // Hex string
     if (word.match(/^(0x)?[0-9a-f]*$/i)) { return true; }
+
+    return false;
 }
 
-function starts(text, prefix) {
+function starts(text: string, prefix: string): boolean {
     return (text.substring(0, prefix.length) === prefix);
 }
 
 (async function() {
     let count = 0;
-    getAllStrings(resolve(__dirname, "../../packages")).forEach((file) => {
+    getAllStrings(resolve(__dirname, "../../../../packages")).forEach((file: Foo) => {
         if (starts(file.filename, "/testcases/src.ts/generation-scripts")) { return; }
         if (starts(file.filename, "/asm/src.ts/opcodes.ts")) { return; }
 
         file.values.forEach((entry) => {
-            function problem(word) {
+            function problem(word: string): void {
                 count++;
                 console.log({
                     filename: file.filename,
@@ -196,16 +209,23 @@ function starts(text, prefix) {
             value.replace(/([a-z+])([A-Z])/g, (all, first, secondLetter) => {
                 return first + " " + secondLetter;
             }).replace(/((?:0x)?[A-Za-z]+)/gi, (all, word) => {
-                if (checkWord(word)) { return; }
+                if (checkWord(word)) { return ""; }
                 problem(word);
                 return "";
             });;
         });
     });
+
     if (count) {
         console.log(`Found ${ count } typos.`);
         process.exit(1)
     }
+
+
     process.exit(0)
-})();
+})().catch((error) => {
+    console.log(error);
+    process.exit(1);
+});
+
 

@@ -9,16 +9,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const path_1 = require("../path");
 const local_1 = require("../local");
+const log_1 = require("../log");
+const path_1 = require("../path");
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
-        const dependencies = local_1.getDependencies(null, (name) => {
-            return !path_1.isEthers(name);
-        });
-        local_1.updateJson(path_1.dirs.rootPackageJsonPath, { dependencies });
+        const progress = log_1.getProgressBar(log_1.colorify.bold("Updating package.json hashes"));
+        // Updating all tarball hashes now that versions have been updated
+        for (let i = 0; i < path_1.dirnames.length; i++) {
+            progress(i / path_1.dirnames.length);
+            const dirname = path_1.dirnames[i];
+            const tarballHash = local_1.computeTarballHash(dirname);
+            //console.log(dirname, tarballHash);
+            local_1.updateJson(path_1.getPackageJsonPath(dirname), { tarballHash });
+        }
+        progress(1);
     });
 })().catch((error) => {
-    console.log(`Error running ${process.argv[0]}: ${error.message}`);
+    console.log(error);
     process.exit(1);
 });
+;

@@ -23,6 +23,7 @@
     "noUnusedLocals": true
   },
   "include": [
+      "./thirdparty.d.ts",
       "./src.ts/*.ts",
       "./src.ts/cmds/*.ts"
   ],

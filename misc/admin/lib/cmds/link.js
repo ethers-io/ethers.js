@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const path_1 = require("path");
 const path_2 = require("../path");
+const local_1 = require("../local");
 function link(existing, path) {
     try {
         const current = fs_1.default.readlinkSync(path);
@@ -48,10 +49,14 @@ function link(existing, path) {
         });
         path_2.packages.forEach((name) => {
             const nodeModules = path_1.resolve(nodeModulesBase, path_2.getDirname(name));
-            const deps = path_2.getDependencies(name);
+            const deps = local_1.getDependencies(name);
             Object.keys(deps).forEach((name) => {
                 link(path_1.resolve(path_2.dirs.root, "node_modules", name), path_1.resolve(nodeModules, name));
             });
         });
     });
-})();
+})().catch((error) => {
+    console.log(`Error running ${process.argv[0]}: ${error.message}`);
+    process.exit(1);
+});
+;

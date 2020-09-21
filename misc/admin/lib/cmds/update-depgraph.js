@@ -9,16 +9,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const depgraph_1 = require("../depgraph");
 const path_1 = require("../path");
 const local_1 = require("../local");
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
-        const dependencies = local_1.getDependencies(null, (name) => {
-            return !path_1.isEthers(name);
+        const ordered = depgraph_1.getOrdered(true);
+        local_1.updateJson(path_1.resolve("tsconfig.project.json"), {
+            references: ordered.map((name) => ({ path: ("./packages/" + name) }))
         });
-        local_1.updateJson(path_1.dirs.rootPackageJsonPath, { dependencies });
     });
 })().catch((error) => {
-    console.log(`Error running ${process.argv[0]}: ${error.message}`);
+    console.log(error);
     process.exit(1);
 });

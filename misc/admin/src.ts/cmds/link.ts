@@ -1,7 +1,8 @@
 import fs from "fs";
 import { dirname, resolve } from "path";
 
-import { dirs, getDependencies, getDirname, getPackagePath, packages } from "../path";
+import { dirs, getDirname, getPackagePath, packages } from "../path";
+import { getDependencies } from "../local";
 
 function link(existing: string, path: string): void {
     try {
@@ -45,4 +46,7 @@ function link(existing: string, path: string): void {
         });
     });
 
-})();
+})().catch((error) => {
+    console.log(`Error running ${ process.argv[0] }: ${ error.message }`);
+    process.exit(1);
+});;
