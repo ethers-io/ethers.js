@@ -7,7 +7,7 @@ module.exports = function(config) {
         { pattern: "./packages/ethers/dist/ethers-all.esm.min.js", type: "module" },
         { pattern: "./packages/tests/dist/tests.esm.js", type: "module" }
     ],
-    reporters: ['karma'],
+    reporters: [ 'karma' ],
     plugins: [
       'karma-mocha',
       'karma-chrome-launcher',
@@ -18,7 +18,7 @@ module.exports = function(config) {
     browsers: [ 'ChromeHeadless', "HeadlessLittleLiar" ],
     autoWatch: false,
     singleRun: true,
-    browserNoActivityTimeout: 360000,
+    browserNoActivityTimeout: 3600000,
     customLaunchers: {
       HeadlessLittleLiar: {
         base: 'ChromeHeadless',
