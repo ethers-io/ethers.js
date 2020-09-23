@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.1;
 
 import "./libraries/lib.sol";
 
