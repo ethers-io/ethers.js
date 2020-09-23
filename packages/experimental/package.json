@@ -1,13 +1,13 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ensdomains/address-encoder": "^0.1.2",
     "@ethersproject/web": "^5.0.6",
     "ethers": "^5.0.13",
     "scrypt-js": "3.0.1"
   },
   "description": "Experimental libraries for ethers. These should not be considered stable.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -26,7 +26,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x01ef84a8aca1865c9cf2c1ee98a3363f48ecd6897b668dc06143ed9431049375",
+  "tarballHash": "0xe8978b5a1dbec971509704f95cd3ec691693759e40b602977ee2ee4dcaf189b0",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

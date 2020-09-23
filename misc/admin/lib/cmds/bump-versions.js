@@ -50,7 +50,7 @@ const utils_1 = require("../utils");
                     log_1.colorify.bold(" => "),
                     log_1.colorify.green(version)
                 ].join(""));
-                local.updateJson(path_1.getPackageJsonPath(dirname), { gitHead: undefined, tarballHash, version });
+                local.updateJson(path_1.getPackageJsonPath(dirname), { gitHead: undefined, tarballHash, version }, true);
                 updated = true;
             }
             latestVersions[pLocal.name] = version;

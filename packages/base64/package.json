@@ -8,6 +8,7 @@
   },
   "description": "Base64 coder.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -26,7 +27,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xd87924f90f2c2a9122dc0de216f0eeec3d4c371b4241fe22ea1df3970873c757",
+  "tarballHash": "0xf9edd66aa5131bf0bca2ea188265e0e333d781e4b0ef5e92090a7cef8556cb30",
   "types": "./lib/index.d.ts",
-  "version": "5.0.3"
+  "version": "5.0.4"
 }

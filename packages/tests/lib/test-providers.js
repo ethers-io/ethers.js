@@ -481,9 +481,9 @@ var providerFunctions = [
         networks: allNetworks,
         create: function (network) {
             if (network == "default") {
-                return new ethers_1.ethers.providers.EtherscanProvider();
+                return new ethers_1.ethers.providers.EtherscanProvider(null, "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX");
             }
-            return new ethers_1.ethers.providers.EtherscanProvider(network);
+            return new ethers_1.ethers.providers.EtherscanProvider(network, "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX");
         }
     },
     {

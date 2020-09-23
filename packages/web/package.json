@@ -18,6 +18,7 @@
   },
   "description": "Utility fucntions for managing web requests for ethers.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -36,7 +37,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x1f274a77544d4f64d2f8a10c084670396dba509920a9fc5dbca2e321c7dde98d",
+  "tarballHash": "0x42701d8d5a4a2f01d4bee64412072a1a8738a99d570b0b576ae17c9472cc37a1",
   "types": "./lib/index.d.ts",
-  "version": "5.0.7"
+  "version": "5.0.8"
 }

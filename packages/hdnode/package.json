@@ -16,6 +16,7 @@
   },
   "description": "BIP32 Hierarchal Deterministic Node operations.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -34,7 +35,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x1f5dad9fb05efd443de0fe9e8ce6dae571fe5acda7087302321dd46e83d5b6a9",
+  "tarballHash": "0xc198bf952694f69869fa084578b644c4bc0541a0aaf803da3fb026cace875659",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

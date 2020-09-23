@@ -450,9 +450,9 @@ const providerFunctions = [
         networks: allNetworks,
         create: (network) => {
             if (network == "default") {
-                return new ethers.providers.EtherscanProvider();
+                return new ethers.providers.EtherscanProvider(null, "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX");
             }
-            return new ethers.providers.EtherscanProvider(network);
+            return new ethers.providers.EtherscanProvider(network, "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX");
         }
     },
     {

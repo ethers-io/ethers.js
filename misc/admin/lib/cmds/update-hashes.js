@@ -22,7 +22,7 @@ const path_1 = require("../path");
             const dirname = path_1.dirnames[i];
             const gitHead = yield git_1.getGitTag(path_1.resolve("packages", dirname));
             const tarballHash = local_1.computeTarballHash(dirname);
-            local_1.updateJson(path_1.getPackageJsonPath(dirname), { gitHead, tarballHash });
+            local_1.updateJson(path_1.getPackageJsonPath(dirname), { gitHead, tarballHash }, true);
         }
         progress(1);
     });

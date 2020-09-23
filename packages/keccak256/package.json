@@ -6,6 +6,7 @@
   },
   "description": "The keccak256 hash function for ethers.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -24,7 +25,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x7d31a8968c835e8e01460c7689d75349a6da927a60bf1411989ae5fe0d0ba93e",
+  "tarballHash": "0xa15a28050c6b479c3488697aa5fdc3dec0a74248fbfc8978aac8312c211d2cca",
   "types": "./lib/index.d.ts",
-  "version": "5.0.3"
+  "version": "5.0.4"
 }

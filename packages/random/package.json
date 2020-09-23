@@ -8,10 +8,8 @@
     "@ethersproject/logger": "^5.0.5"
   },
   "description": "Random utility functions for ethers.",
-  "devDependencies": {
-    "@types/node": "^12.7.4"
-  },
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers",
@@ -31,7 +29,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x224187d0e6a7f42c78b085aef070056ecca744dfa0713159f01dbd4b5e0b9def",
+  "tarballHash": "0x075d32afd4747ad55567bb9ff2da736a10911e202c04e9c61ba879688c82442a",
   "types": "./lib/index.d.ts",
-  "version": "5.0.3"
+  "version": "5.0.4"
 }

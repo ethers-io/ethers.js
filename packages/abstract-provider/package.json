@@ -11,6 +11,7 @@
   },
   "description": "An Abstract Class for describing an Ethereum Provider for ethers.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -29,7 +30,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x52502139a2bef66a50b385687f2430a91183a996bf2844ede0e5b9cae8cdc4e6",
+  "tarballHash": "0x87fdc7d7ee69d8c228c0e6946be702acd027a832b5a3deaa5b60e3c9f7110e58",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

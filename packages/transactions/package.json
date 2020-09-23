@@ -13,6 +13,7 @@
   },
   "description": "Utilities for decoding and encoding Ethereum transaction for ethers.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -31,7 +32,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xaa7185a9a15e3c8313a5d40e63eb01eb4b26c70648329e363cc84878f538d896",
+  "tarballHash": "0x892a42c68798431329aabf5c14b72f357c85b8f0a86439c9f158becf66f7c600",
   "types": "./lib/index.d.ts",
-  "version": "5.0.5"
+  "version": "5.0.6"
 }

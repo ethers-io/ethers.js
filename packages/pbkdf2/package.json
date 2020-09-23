@@ -9,6 +9,7 @@
   },
   "description": "The PBKDF2 password-pbased key derivation function for ethers.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers",
@@ -28,7 +29,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x8c46f9e051013b8c652e065d03c7c92afd02fd33cdc87b106b8e4bfe35dff605",
+  "tarballHash": "0xdc38ff486e5c21e43a6da0dbdb35a5fc32ae529fdee17d7ce8d207863bbfce7e",
   "types": "./lib/index.d.ts",
-  "version": "5.0.3"
+  "version": "5.0.4"
 }

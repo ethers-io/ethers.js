@@ -3,7 +3,10 @@ import path from 'path';
 import zlib from "browserify-zlib";
 import { randomBytes, randomHexString, randomNumber } from "./random";
 export { randomBytes, randomHexString, randomNumber };
-import * as data from "./browser-fs.json";
+import * as _data from "./browser-fs.json";
+// TypeScript, rollup and friends don't play nice with this JSON
+const _anyData = _data;
+const data = _anyData["default"] ? _anyData["default"] : _anyData;
 const Cache = {};
 export function loadTests(tag) {
     let filename = 'testcases/' + tag + ".json.gz";

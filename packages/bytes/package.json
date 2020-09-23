@@ -5,6 +5,7 @@
   },
   "description": "Bytes utility functions for ethers.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -25,7 +26,7 @@
     "build": "tsc -p ./tsconfig.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xa07a7f838f037d4fae18f8877e868590567fe55052f629da882680b5e0eca355",
+  "tarballHash": "0x132538d3d8927299393c28ac01243ebc0e7ea34f5af1feadf23b364745f7c130",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

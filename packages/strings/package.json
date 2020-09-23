@@ -7,6 +7,7 @@
   },
   "description": "String utility functions.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers",
@@ -27,7 +28,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xc8f1e5ecd60664af00abfb9bee52332e4d4ccb7d8b805699eab6f6a706d00fbd",
+  "tarballHash": "0x0bb95a9555010137f1bfc3c427ce6750e00bfa6aa98f36c3cf94979b635fda6d",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

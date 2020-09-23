@@ -4,11 +4,8 @@
     "ethers": "^5.0.13"
   },
   "description": "ASM libraries and tools for the Ethereum EVM.",
-  "devDependencies": {
-    "@types/node": "^12.7.4",
-    "jison": "^0.4.18"
-  },
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "asm",
@@ -29,7 +26,7 @@
     "generate": "node ./generate.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x2071ce1b680b0cc39db6ae3b4bc4bf170f73feb376e5474fa78f5541c3cf35ab",
+  "tarballHash": "0x29773f2f77c16dcd4e7f6cb0cc1929a249f165cfc128380558a64cc5dff87cb7",
   "types": "./lib/index.d.ts",
-  "version": "5.0.5"
+  "version": "5.0.6"
 }

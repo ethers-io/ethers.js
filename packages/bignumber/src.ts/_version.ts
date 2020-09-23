@@ -1,1 +1,1 @@
-export const version = "bignumber/5.0.7";
+export const version = "bignumber/5.0.8";

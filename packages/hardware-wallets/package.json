@@ -19,10 +19,8 @@
     "ethers": "^5.0.13"
   },
   "description": "Hardware Wallet support for ethers.",
-  "devDependencies": {
-    "@types/node": "^12.7.4"
-  },
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers",
@@ -45,7 +43,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0x637899daba3fc0d6827159ee6727598c590b8c1d812eff940ac6365bac25befa",
+  "tarballHash": "0x995111481185b67f52580863317b51bf7487379865a3dd3046f24ba9f1d7c0bf",
   "types": "./lib/index.d.ts",
-  "version": "5.0.6"
+  "version": "5.0.7"
 }

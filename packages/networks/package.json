@@ -5,6 +5,7 @@
   },
   "description": "Network definitions for ethers.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -23,7 +24,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xfc39a0c93435f3b42bc3d1c11d79eb72bfa5cb82f3bed0140d314d96b5581601",
+  "tarballHash": "0xedc2324ccf327f94bdd5488dc6b791873ff73f49022fd98fbb26da79fb304e85",
   "types": "./lib/index.d.ts",
-  "version": "5.0.3"
+  "version": "5.0.4"
 }

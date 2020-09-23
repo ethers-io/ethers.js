@@ -22,6 +22,7 @@
   },
   "description": "Testcases for Ethereum and scripts to generate testcases.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -40,7 +41,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x0e1c35db603fc8cb62d397afed08d258ed9749c146ab85b3f5406d238a905d7e",
+  "tarballHash": "0x78804876e5d1ebed36b2ac23a00c6f693dc9c4b7a64127c4aa08938d9a3de222",
   "types": "./lib/index.d.ts",
-  "version": "5.0.5"
+  "version": "5.0.6"
 }

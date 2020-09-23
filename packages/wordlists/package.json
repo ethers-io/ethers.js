@@ -12,6 +12,7 @@
   },
   "description": "Word lists for BIP39 wallets.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -30,7 +31,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xe3b21a8c5de06fb202e8fd076d709691bb066b303a5978bf9d459e8f4264efe7",
+  "tarballHash": "0x8f19c86a1036f6ba944c3d17e549fb6e819e522933bbb86e5f0a6b87adf1655a",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

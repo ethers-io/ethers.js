@@ -1,4 +1,4 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "abstract-signer/5.0.5";
+exports.version = "abstract-signer/5.0.6";
 //# sourceMappingURL=_version.js.map

@@ -14,14 +14,12 @@
     "ethers": "^5.0.13",
     "mime-types": "2.1.11",
     "scrypt-js": "3.0.1",
-    "solc": "0.5.10",
+    "solc": "0.7.1",
     "solidity-parser-antlr": "^0.3.2"
   },
   "description": "Command-Line Interface scripts and releated utilities.",
-  "devDependencies": {
-    "@types/node": "^12.7.4"
-  },
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers",
@@ -41,7 +39,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0x04c904286c107a703835434d6a65babd10d2f44b334a74359bb76fcd32e3de6f",
+  "tarballHash": "0xad49d7dce8e8e73a60406dcdfcc2ec6038de876663cf508f929feed975c29f3b",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

@@ -14,6 +14,7 @@ const KarmaReporter = function () {
     console.log('\x1b[36m%s\x1b[0m', log);
   }
 
+  let dummyStarted = false;
   this.onRunComplete = function (browsers, results) {
     if (lastSuite !== null) {
       runner.emit('suite end');
@@ -21,15 +22,17 @@ const KarmaReporter = function () {
     }
 
     // end the dummy suite for total test count
-    runner.emit('suite end');
+    if (dummyStarted) {
+        runner.emit('suite end');
+    }
   }
 
   this.onSpecComplete = function (browser, result) {
-
     if (result.suite[0] !== lastSuite) {
       if (lastSuite === null) {
         // this is the first test, start a dummy suite to track total test count
         runner.emit('suite', {});
+        dummyStarted = true;
       }
       else {
         // end previous suite

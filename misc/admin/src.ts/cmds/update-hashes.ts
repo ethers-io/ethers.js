@@ -15,7 +15,7 @@ import { dirnames, getPackageJsonPath, resolve } from "../path";
         const gitHead = await getGitTag(resolve("packages", dirname));
         const tarballHash = computeTarballHash(dirname);
 
-        updateJson(getPackageJsonPath(dirname), { gitHead, tarballHash });
+        updateJson(getPackageJsonPath(dirname), { gitHead, tarballHash }, true);
     }
 
     progress(1);

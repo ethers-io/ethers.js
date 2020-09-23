@@ -7,6 +7,7 @@
   },
   "description": "Unit conversion functions for Ethereum.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers",
@@ -27,7 +28,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xb0351ffc264f52db595cee49c502638ffe9c11d55f3047612107feebf5d8701c",
+  "tarballHash": "0xce64e78086f460a418bde7c4d75c6b9a5dc145e6540110aca7b3410cec6b4875",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

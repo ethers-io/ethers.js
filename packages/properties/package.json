@@ -5,6 +5,7 @@
   },
   "description": "Properties utility functions for ethers.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -25,7 +26,7 @@
     "build": "tsc -p ./tsconfig.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x6e95b217c1c9b2a9436b5a3e9fe049d74bc90ebc2cd5b913d2f4104cecde1056",
+  "tarballHash": "0x1150770f21e18d2b616708ecba357485be3227a8d474ff40edf9ed2603af62b4",
   "types": "./lib/index.d.ts",
-  "version": "5.0.3"
+  "version": "5.0.4"
 }

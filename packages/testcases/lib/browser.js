@@ -16,7 +16,10 @@ var random_1 = require("./random");
 exports.randomBytes = random_1.randomBytes;
 exports.randomHexString = random_1.randomHexString;
 exports.randomNumber = random_1.randomNumber;
-var data = __importStar(require("./browser-fs.json"));
+var _data = __importStar(require("./browser-fs.json"));
+// TypeScript, rollup and friends don't play nice with this JSON
+var _anyData = _data;
+var data = _anyData["default"] ? _anyData["default"] : _anyData;
 var Cache = {};
 function loadTests(tag) {
     var filename = 'testcases/' + tag + ".json.gz";

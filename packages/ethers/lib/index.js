@@ -7,7 +7,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// To modify this file, you must update ./admin/cmds/update-exports.js
+// To modify this file, you must update ./misc/admin/lib/cmds/update-exports.js
 var ethers = __importStar(require("./ethers"));
 exports.ethers = ethers;
 try {

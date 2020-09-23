@@ -6,6 +6,7 @@
   },
   "description": "Base-X without Buffer.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -24,7 +25,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x6474b3e488a215b45db9ab589839a5b44146e6e720a86ccd81de292447325fc0",
+  "tarballHash": "0x680c45cf36dc0bc442c80238ff9fbfc482b7ac0486c24559c349277f395e0fa9",
   "types": "./lib/index.d.ts",
-  "version": "5.0.3"
+  "version": "5.0.4"
 }

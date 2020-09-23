@@ -13,6 +13,7 @@
   },
   "description": "Contract abstraction meta-class for ethers.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -31,7 +32,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xd0aff3ce335bf7127682dba635cd151f1076281e3917c7076c33b36c8f7b4afa",
+  "tarballHash": "0xed3fab794106371b8a00dfe74ad8a494e463ec23b431962ffa368694a554f464",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

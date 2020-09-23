@@ -8,6 +8,7 @@
   },
   "description": "Hash utility functions for Ethereum.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -26,7 +27,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x749d62288550b6b2f701c55b2b3a039ba8e32e049ea52660aeace7cb06dc1156",
+  "tarballHash": "0x531ad5d951cfc5739f4169e065b67b30811c4505f045b9f79dc6fef38b1541a0",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

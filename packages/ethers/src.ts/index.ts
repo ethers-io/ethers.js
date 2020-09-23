@@ -1,6 +1,6 @@
 "use strict";
 
-// To modify this file, you must update ./admin/cmds/update-exports.js
+// To modify this file, you must update ./misc/admin/lib/cmds/update-exports.js
 
 import * as ethers from "./ethers";
 

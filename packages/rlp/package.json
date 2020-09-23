@@ -6,6 +6,7 @@
   },
   "description": "Recursive-Length Prefix (RLP) coder.",
   "ethereum": "donations.ethers.eth",
+  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers",
@@ -25,7 +26,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x00d3a2aebe8440aa261236b427a65530e12336b50b79252fde705f2ea5616af2",
+  "tarballHash": "0x2a870663cf91328de26e8b3e5cb1ac3004eefa78ffbdad7b08b61c2685c3f018",
   "types": "./lib/index.d.ts",
-  "version": "5.0.3"
+  "version": "5.0.4"
 }
