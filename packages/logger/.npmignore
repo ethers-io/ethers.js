@@ -1,5 +1,4 @@
-# We do not need the TypeScipt source in deployments
+.DS_Store
 tsconfig.json
 src.ts/
-
 tsconfig.tsbuildinfo
