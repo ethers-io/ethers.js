@@ -1,5 +1,5 @@
 import fs from "fs";
-import { resolve } from "path";
+import { dirname, resolve } from "path";
 
 import { createHash } from "crypto";
 
@@ -65,4 +65,21 @@ export async function resolveProperties(props: Record<string, Promise<any>>): Pr
         accum[key] = promises[index];
         return accum;
     }, <Record<string, any>>{});
+}
+
+// Node 8 does not support recursive mkdir... Remove this in v6.
+export function mkdir(path: string): void {
+    let bail = 0;
+    const dirs = [ ];
+    while (path !== "/") {
+        if (bail++ > 50) { throw new Error("something bad happened..."); }
+
+        if (fs.existsSync(path)) { break; }
+        dirs.push(path);
+        path = dirname(path);
+    }
+
+    while (dirs.length) {
+        fs.mkdirSync(dirs.pop());
+    }
 }

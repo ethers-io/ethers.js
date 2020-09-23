@@ -8,7 +8,7 @@ import { colorify } from "../log";
         return !isEthers(name);
     });
 
-    console.log(colorify.bold(`Hoisting ${ dependencies.length } dependencies into root package...`));
+    console.log(colorify.bold(`Hoisting ${ Object.keys(dependencies).length } dependencies into root package...`));
 
     updateJson(dirs.rootPackageJsonPath, { dependencies });
 })().catch((error) => {

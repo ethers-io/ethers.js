@@ -4,6 +4,7 @@ import { dirname, resolve } from "path";
 import { getDependencies } from "../local";
 import { colorify } from "../log";
 import { dirs, getDirname, getPackagePath, packages } from "../path";
+import { mkdir } from "../utils";
 
 function link(existing: string, path: string): void {
     try {
@@ -19,7 +20,7 @@ function link(existing: string, path: string): void {
 
     // Link
     const dir = dirname(path);
-    fs.mkdirSync(dir, { recursive: true });
+    mkdir(dir);
     fs.symlinkSync(existing, path);
 }
 
@@ -36,7 +37,7 @@ function link(existing: string, path: string): void {
 
         // e.g. /packages/abi/node_modules => /.package_node_modules/abi/
         const nodeModules = resolve(nodeModulesBase, getDirname(name));
-        fs.mkdirSync(nodeModules, { recursive: true });
+        mkdir(nodeModules);
         link(nodeModules, resolve(getPackagePath(name), "node_modules"));
     });
 

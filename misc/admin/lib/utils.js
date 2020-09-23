@@ -83,3 +83,22 @@ function resolveProperties(props) {
     });
 }
 exports.resolveProperties = resolveProperties;
+// Node 8 does not support recursive mkdir... Remove this in v6.
+function mkdir(path) {
+    let bail = 0;
+    const dirs = [];
+    while (path !== "/") {
+        if (bail++ > 50) {
+            throw new Error("something bad happened...");
+        }
+        if (fs_1.default.existsSync(path)) {
+            break;
+        }
+        dirs.push(path);
+        path = path_1.dirname(path);
+    }
+    while (dirs.length) {
+        fs_1.default.mkdirSync(dirs.pop());
+    }
+}
+exports.mkdir = mkdir;

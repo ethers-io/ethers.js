@@ -17,6 +17,7 @@ const path_1 = require("path");
 const local_1 = require("../local");
 const log_1 = require("../log");
 const path_2 = require("../path");
+const utils_1 = require("../utils");
 function link(existing, path) {
     try {
         const current = fs_1.default.readlinkSync(path);
@@ -33,7 +34,7 @@ function link(existing, path) {
     }
     // Link
     const dir = path_1.dirname(path);
-    fs_1.default.mkdirSync(dir, { recursive: true });
+    utils_1.mkdir(dir);
     fs_1.default.symlinkSync(existing, path);
 }
 (function () {
@@ -46,7 +47,7 @@ function link(existing, path) {
             link(path_2.getPackagePath(name), path_1.resolve(path_2.dirs.root, "node_modules", name));
             // e.g. /packages/abi/node_modules => /.package_node_modules/abi/
             const nodeModules = path_1.resolve(nodeModulesBase, path_2.getDirname(name));
-            fs_1.default.mkdirSync(nodeModules, { recursive: true });
+            utils_1.mkdir(nodeModules);
             link(nodeModules, path_1.resolve(path_2.getPackagePath(name), "node_modules"));
         });
         path_2.packages.forEach((name) => {

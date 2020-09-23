@@ -17,7 +17,7 @@ const log_1 = require("../log");
         const dependencies = local_1.getDependencies(null, (name) => {
             return !path_1.isEthers(name);
         });
-        console.log(log_1.colorify.bold(`Hoisting ${dependencies.length} dependencies into root package...`));
+        console.log(log_1.colorify.bold(`Hoisting ${Object.keys(dependencies).length} dependencies into root package...`));
         local_1.updateJson(path_1.dirs.rootPackageJsonPath, { dependencies });
     });
 })().catch((error) => {
