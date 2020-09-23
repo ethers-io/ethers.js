@@ -9,7 +9,7 @@ The [Cryptographic Hash Functions](link-wiki-cryptographichash)
 are a specific family of hash functions.
 
 _property: ethers.utils.id(text) => string<[[DataHexString]]<32>>  @<utils-id> @SRC<hash>
-The Ethereum Identity function computs the [KECCAK256](link-wiki-sha3) hash of the //text// bytes.
+The Ethereum Identity function computes the [KECCAK256](link-wiki-sha3) hash of the //text// bytes.
 
 _property:  ethers.utils.keccak256(aBytesLike) => string<[[DataHexString]]<32>>  @<utils-keccak256> @SRC<keccak256>
 Returns the [KECCAK256](link-wiki-sha3) digest //aBytesLike//.
