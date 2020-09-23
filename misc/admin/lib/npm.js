@@ -50,6 +50,7 @@ function getPackage(name, version) {
         return {
             dependencies: (info.dependencies || {}),
             devDependencies: (info.devDependencies || {}),
+            gitHead: info.gitHead,
             location: "remote",
             name: info.name,
             tarballHash: info.tarballHash,

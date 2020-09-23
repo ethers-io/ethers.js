@@ -1,8 +1,9 @@
 "use strict";
 
-const fs = require("fs");
+import fs from "fs";
 
-const { resolve } = require("../path");
+import { colorify } from "../log";
+import { resolve } from "../path";
 
 const sourceEthers = fs.readFileSync(resolve("packages/ethers/src.ts/ethers.ts")).toString();
 const targets = sourceEthers.match(/export\s*{\s*((.|\s)*)}/)[1].trim();
@@ -35,5 +36,7 @@ export {
 ////////////////////
 // End template
 ////////////////////
+
+console.log(colorify.bold(`Flattening exports...`))
 
 fs.writeFileSync(resolve("packages/ethers/src.ts/index.ts"), output);

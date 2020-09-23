@@ -57,3 +57,12 @@ export function saveJson(filename: string, data: any, sort?: boolean): any {
 
     atomicWrite(filename, JSON.stringify(data, replacer, 2) + "\n");
 }
+
+export async function resolveProperties(props: Record<string, Promise<any>>): Promise<Record<string, any>> {
+    const keys = Object.keys(props);
+    const promises = await Promise.all(keys.map((k) => props[k]));
+    return keys.reduce((accum, key, index) => {
+        accum[key] = promises[index];
+        return accum;
+    }, <Record<string, any>>{});
+}

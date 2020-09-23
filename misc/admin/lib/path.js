@@ -18,7 +18,9 @@ exports.dirs = Object.freeze({
     packages: pathPackages,
     root: exports.root,
 });
-exports.dirnames = Object.freeze(fs_1.default.readdirSync(exports.dirs.packages));
+exports.dirnames = Object.freeze(fs_1.default.readdirSync(exports.dirs.packages).filter((dirname) => {
+    return (dirname[0] !== ".");
+}));
 const packageLookup = exports.dirnames.reduce((accum, dirname) => {
     const packagePath = path_1.resolve(exports.dirs.packages, dirname);
     const packageJsonPath = path_1.resolve(packagePath, "package.json");

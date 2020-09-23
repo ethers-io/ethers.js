@@ -41,7 +41,7 @@ import { loadJson, repeat, saveJson } from "../utils";
                 colorify.green(version)
             ].join(""));
 
-            local.updateJson(getPackageJsonPath(dirname), { tarballHash, version });
+            local.updateJson(getPackageJsonPath(dirname), { gitHead: undefined, tarballHash, version });
 
             updated = true;
         }

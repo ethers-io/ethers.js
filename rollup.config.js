@@ -30,7 +30,7 @@ function Replacer(basePath, options = {}) {
                 const suffix = suffixes[i];
                 if (id.match(new RegExp(suffix))) {
                     const newCode = options.replace[suffix];
-                    console.log(`Replace: ${ id.substring(pathUp.length + 1) } (${ code.length } => ${ newCode.length })`);
+                    //console.log(`Replace: ${ id.substring(pathUp.length + 1) } (${ code.length } => ${ newCode.length })`);
                     return {
                         code: newCode,
                         map: { mappings: '' }
@@ -40,7 +40,7 @@ function Replacer(basePath, options = {}) {
             }
 
             if (id.substring(0, basePath.length) !== basePath) {
-                console.log(`Keep:    ${ id.substring(pathUp.length + 1) }`);
+                //console.log(`Keep:    ${ id.substring(pathUp.length + 1) }`);
             }
 
             return null;
@@ -97,7 +97,8 @@ function getConfig(minify, buildModule, testing) {
         replacer,
         json(),
         resolve({
-            mainFields: mainFields
+            mainFields: mainFields,
+            preferBuiltins: false
         }),
         commonjs({
             namedExports: {

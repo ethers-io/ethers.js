@@ -26,7 +26,9 @@ type PackageInfo = {
     version: string;
 };
 
-export const dirnames: ReadonlyArray<string> = Object.freeze(fs.readdirSync(dirs.packages));
+export const dirnames: ReadonlyArray<string> = Object.freeze(fs.readdirSync(dirs.packages).filter((dirname) => {
+    return (dirname[0] !== ".");
+}));
 
 const packageLookup = dirnames.reduce((accum, dirname) => {
     const packagePath = _resolve(dirs.packages, dirname);

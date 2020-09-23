@@ -7,6 +7,7 @@ import { loadJson, saveJson, sha256, sortRecords } from "./utils";
 export type Package = {
     dependencies: { [ name: string ]: string };
     devDependencies: { [ name: string ]: string };
+    gitHead: string;
     name: string;
     version: string;
     tarballHash: string;
@@ -23,6 +24,7 @@ export function getPackage(name: string): Package {
         devDependencies: (value.dependencies || { }),
         location: "local",
         tarballHash: (value.tarballHash || null),
+        gitHead: (value.gitHead || null),
         _ethers_nobuild: !!value._ethers_nobuild,
     };
 }
@@ -131,6 +133,7 @@ export function computeTarballHash(name: string): string {
         // The package.json includes the hash, so we need to nix it to get a consistent hash
         if (filename === "package.json") {
             const info = JSON.parse(content.toString());
+            delete info.gitHead;
             delete info.tarballHash;
             content = Buffer.from(JSON.stringify(info, null, 2));
         }

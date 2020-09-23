@@ -11,11 +11,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = require("../path");
 const local_1 = require("../local");
+const log_1 = require("../log");
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
         const dependencies = local_1.getDependencies(null, (name) => {
             return !path_1.isEthers(name);
         });
+        console.log(log_1.colorify.bold(`Hoisting ${dependencies.length} dependencies into root package...`));
         local_1.updateJson(path_1.dirs.rootPackageJsonPath, { dependencies });
     });
 })().catch((error) => {

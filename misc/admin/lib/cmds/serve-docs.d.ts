@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { Server } from "http";
 export declare function getMime(filename: string): string;
 export declare type Options = {

@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const path_1 = require("path");
 const typescript_1 = __importDefault(require("typescript"));
+const log_1 = require("../log");
 const Words = fs_1.default.readFileSync("/usr/share/dict/words").toString().split("\n").reduce((accum, word) => {
     accum[word.toLowerCase()] = true;
     return accum;
@@ -164,6 +165,7 @@ function starts(text, prefix) {
 }
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
+        console.log(log_1.colorify.bold("Spell checking source code strings..."));
         let count = 0;
         getAllStrings(path_1.resolve(__dirname, "../../../../packages")).forEach((file) => {
             if (starts(file.filename, "/testcases/src.ts/generation-scripts")) {

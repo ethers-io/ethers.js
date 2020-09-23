@@ -1,24 +1,24 @@
 {
   "compilerOptions": {
     "composite": true,
+    "declaration": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "lib": [
       "es2015",
       "es5",
       "dom"
     ],
+    "module": "commonjs",
     "moduleResolution": "node",
-    "declaration": true,
-    "preserveSymlinks": true,
-    "preserveWatchOutput": true,
-    "pretty": false,
-    "forceConsistentCasingInFileNames": true,
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "module": "commonjs",
+    "preserveSymlinks": true,
+    "preserveWatchOutput": true,
+    "pretty": false,
     "sourceMap": true,
     "target": "es5"
   }

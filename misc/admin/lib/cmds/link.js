@@ -14,8 +14,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const path_1 = require("path");
-const path_2 = require("../path");
 const local_1 = require("../local");
+const log_1 = require("../log");
+const path_2 = require("../path");
 function link(existing, path) {
     try {
         const current = fs_1.default.readlinkSync(path);
@@ -37,6 +38,7 @@ function link(existing, path) {
 }
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
+        console.log(log_1.colorify.bold(`Linking ${path_2.packages.length} package node_modules rat nests...`));
         const nodeModulesBase = path_1.resolve(path_2.dirs.root, ".package_node_modules");
         // Make a symlink in the ROOT/node_mpdules to each package in this repo
         path_2.packages.forEach((name) => {

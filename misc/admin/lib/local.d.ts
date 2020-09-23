@@ -5,6 +5,7 @@ export declare type Package = {
     devDependencies: {
         [name: string]: string;
     };
+    gitHead: string;
     name: string;
     version: string;
     tarballHash: string;

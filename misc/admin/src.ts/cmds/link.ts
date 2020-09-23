@@ -1,8 +1,9 @@
 import fs from "fs";
 import { dirname, resolve } from "path";
 
-import { dirs, getDirname, getPackagePath, packages } from "../path";
 import { getDependencies } from "../local";
+import { colorify } from "../log";
+import { dirs, getDirname, getPackagePath, packages } from "../path";
 
 function link(existing: string, path: string): void {
     try {
@@ -23,6 +24,8 @@ function link(existing: string, path: string): void {
 }
 
 (async function() {
+    console.log(colorify.bold(`Linking ${ packages.length } package node_modules rat nests...`));
+
     const nodeModulesBase = resolve(dirs.root, ".package_node_modules");
 
     // Make a symlink in the ROOT/node_mpdules to each package in this repo

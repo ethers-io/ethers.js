@@ -9,25 +9,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const git_1 = require("../git");
-const local_1 = require("../local");
-const log_1 = require("../log");
-const path_1 = require("../path");
-(function () {
+const run_1 = require("./run");
+// Returns the most recent git commit hash for a given filename
+function getGitTag(filename) {
     return __awaiter(this, void 0, void 0, function* () {
-        const progress = log_1.getProgressBar(log_1.colorify.bold("Updating package.json hashes"));
-        // Updating all tarball hashes now that versions have been updated
-        for (let i = 0; i < path_1.dirnames.length; i++) {
-            progress(i / path_1.dirnames.length);
-            const dirname = path_1.dirnames[i];
-            const gitHead = yield git_1.getGitTag(path_1.resolve("packages", dirname));
-            const tarballHash = local_1.computeTarballHash(dirname);
-            local_1.updateJson(path_1.getPackageJsonPath(dirname), { gitHead, tarballHash });
+        const result = yield run_1.run("git", ["log", "-n", "1", "--", filename]);
+        if (!result.ok) {
+            throw new Error(`git log error`);
         }
-        progress(1);
+        let log = result.stdout.trim();
+        if (!log) {
+            return null;
+        }
+        const hashMatch = log.match(/^commit\s+([0-9a-f]{40})\n/i);
+        if (!hashMatch) {
+            return null;
+        }
+        return hashMatch[1];
     });
-})().catch((error) => {
-    console.log(error);
-    process.exit(1);
-});
-;
+}
+exports.getGitTag = getGitTag;
+//getGitTag("/Users/ricmoo/Development/ethers/ethers.js/packages/abi").then(console.log);

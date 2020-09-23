@@ -38,6 +38,7 @@ export async function getPackage(name: string, version?: string): Promise<Packag
     return {
         dependencies: (info.dependencies || {}),
         devDependencies: (info.devDependencies || {}),
+        gitHead: info.gitHead,
         location: "remote",
         name: info.name,
         tarballHash: info.tarballHash,

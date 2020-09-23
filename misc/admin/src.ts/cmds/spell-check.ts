@@ -2,8 +2,9 @@
 
 import fs from "fs";
 import  { resolve } from "path";
-
 import ts from "typescript";
+
+import { colorify } from "../log";
 
 const Words = fs.readFileSync("/usr/share/dict/words").toString().split("\n").reduce((accum, word) => {
     accum[word.toLowerCase()] = true;
@@ -176,6 +177,8 @@ function starts(text: string, prefix: string): boolean {
 }
 
 (async function() {
+    console.log(colorify.bold("Spell checking source code strings..."));
+
     let count = 0;
     getAllStrings(resolve(__dirname, "../../../../packages")).forEach((file: Foo) => {
         if (starts(file.filename, "/testcases/src.ts/generation-scripts")) { return; }
