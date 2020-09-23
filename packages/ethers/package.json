@@ -35,7 +35,6 @@
   },
   "description": "Umbrella package for most common Ethers libraries.",
   "ethereum": "donations.ethers.eth",
-  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"

@@ -17,7 +17,6 @@
   },
   "description": "Testing package for ethers.",
   "ethereum": "donations.ethers.eth",
-  "gitHead": "261eb04e97cdc1ff11e4716e9c7f421d681aceb1",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -36,7 +35,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0x93d635b41e3952f67e2bace71f0583c4e40f642bedd17cb53e4d9c8f17b42f56",
+  "tarballHash": "0x50f6bae588a3a265af916d19c220662855bca4c655d2eadbcd2c7bdb985d1118",
   "types": "./lib/index.d.ts",
   "version": "5.0.9"
 }

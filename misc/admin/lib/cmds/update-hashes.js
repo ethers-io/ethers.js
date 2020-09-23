@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const git_1 = require("../git");
+//import { getGitTag } from "../git";
 const local_1 = require("../local");
 const log_1 = require("../log");
 const path_1 = require("../path");
@@ -20,9 +20,9 @@ const path_1 = require("../path");
         for (let i = 0; i < path_1.dirnames.length; i++) {
             progress(i / path_1.dirnames.length);
             const dirname = path_1.dirnames[i];
-            const gitHead = yield git_1.getGitTag(path_1.resolve("packages", dirname));
+            //const gitHead = await getGitTag(resolve("packages", dirname));
             const tarballHash = local_1.computeTarballHash(dirname);
-            local_1.updateJson(path_1.getPackageJsonPath(dirname), { gitHead, tarballHash }, true);
+            local_1.updateJson(path_1.getPackageJsonPath(dirname), { tarballHash }, true);
         }
         progress(1);
     });

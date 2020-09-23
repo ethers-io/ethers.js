@@ -47,8 +47,8 @@ function _compile(_solc, source, options) {
         throw new Error("unknown version");
     }
     const version = parseFloat(ver[2] + "." + ver[3]);
-    //if (version < 4.11 || version >= 7) {
-    if (version < 5.0 || version >= 7.0) {
+    //if (version < 4.11 || version >= 8) {
+    if (version < 5.0 || version >= 8.0) {
         throw new Error(`unsupported version: ${ver[1]}.${ver[2]}.${ver[3]}`);
     }
     options = populateOptions(options);

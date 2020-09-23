@@ -1,7 +1,7 @@
-import { getGitTag } from "../git";
+//import { getGitTag } from "../git";
 import { computeTarballHash, updateJson } from "../local";
 import { colorify, getProgressBar } from "../log";
-import { dirnames, getPackageJsonPath, resolve } from "../path";
+import { dirnames, getPackageJsonPath } from "../path";
 
 (async function() {
     const progress = getProgressBar(colorify.bold("Updating package.json hashes"));
@@ -12,10 +12,10 @@ import { dirnames, getPackageJsonPath, resolve } from "../path";
 
         const dirname = dirnames[i];
 
-        const gitHead = await getGitTag(resolve("packages", dirname));
+        //const gitHead = await getGitTag(resolve("packages", dirname));
         const tarballHash = computeTarballHash(dirname);
 
-        updateJson(getPackageJsonPath(dirname), { gitHead, tarballHash }, true);
+        updateJson(getPackageJsonPath(dirname), { tarballHash }, true);
     }
 
     progress(1);
