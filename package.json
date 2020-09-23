@@ -24,7 +24,7 @@
     "test-browser-esm": "npm run _test-esm-dist && npm run _test-browser-esm",
     "test-coverage": "nyc --report-dir=output --reporter=lcov --reporter=text mocha --reporter ./packages/tests/reporter-keepalive ./packages/tests/lib/test-*.js | tee output/summary.txt",
     "test-node": "mocha --no-colors --reporter ./packages/tests/reporter ./packages/tests/lib/test-*.js",
-    "test-react": "npm run _dist-test-umd && npm run dist-shims && pushd misc/ReactNativeTestApp && ./run-tests.sh && popd",
+    "test-react": "npm run _test-umd-dist && npm run build-dist-shims && pushd misc/ReactNativeTestApp && ./run-tests.sh && popd",
     "test": "npm run build-all && npm run test-node",
     "build-docs": "flatworm docs.wrm docs",
     "serve-docs": "node ./misc/admin/lib/cmds/serve-docs.js",
