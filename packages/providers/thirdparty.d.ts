@@ -1,5 +1,5 @@
 declare module "ws" {
-    export interface WebSocker {
+    export interface WebSocket {
         send(): void;
         onopen: () => void;
         onmessage: (messageEvent: { target: any, type: string, data: string }) => void
