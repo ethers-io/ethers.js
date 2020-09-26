@@ -6,7 +6,6 @@ import { Signer, VoidSigner } from "@ethersproject/abstract-signer";
 import { getAddress, getContractAddress } from "@ethersproject/address";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike, concat, hexlify, isBytes, isHexString } from "@ethersproject/bytes";
-//import { AddressZero } from "@ethersproject/constants";
 import { Deferrable, defineReadOnly, deepCopy, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 // @TOOD remove dependences transactions
 
@@ -112,13 +111,19 @@ async function resolveName(resolver: Signer | Provider, nameOrPromise: string | 
         });
     }
 
-    return await resolver.resolveName(name);
+    const address = await resolver.resolveName(name);
+
+    if (address == null) {
+        logger.throwArgumentError("resolver or addr is not configured for ENS name", "name", name);
+    }
+
+    return address;
 }
 
 // Recursively replaces ENS names with promises to resolve the name and resolves all properties
-function resolveAddresses(resolver: Signer | Provider, value: any, paramType: ParamType | Array<ParamType>): Promise<any> {
+async function resolveAddresses(resolver: Signer | Provider, value: any, paramType: ParamType | Array<ParamType>): Promise<any> {
     if (Array.isArray(paramType)) {
-        return Promise.all(paramType.map((paramType, index) => {
+        return await Promise.all(paramType.map((paramType, index) => {
             return resolveAddresses(
                 resolver,
                 ((Array.isArray(value)) ? value[index]: value[paramType.name]),
@@ -128,23 +133,22 @@ function resolveAddresses(resolver: Signer | Provider, value: any, paramType: Pa
     }
 
     if (paramType.type === "address") {
-        return resolveName(resolver, value);
+        return await resolveName(resolver, value);
     }
 
     if (paramType.type === "tuple") {
-        return resolveAddresses(resolver, value, paramType.components);
+        return await resolveAddresses(resolver, value, paramType.components);
     }
 
     if (paramType.baseType === "array") {
-        if (!Array.isArray(value)) { throw new Error("invalid value for array"); }
-        return Promise.all(value.map((v) => resolveAddresses(resolver, v, paramType.arrayChildren)));
+        if (!Array.isArray(value)) { return Promise.reject(new Error("invalid value for array")); }
+        return await Promise.all(value.map((v) => resolveAddresses(resolver, v, paramType.arrayChildren)));
     }
 
-    return Promise.resolve(value);
+    return value;
 }
 
 async function populateTransaction(contract: Contract, fragment: FunctionFragment, args: Array<any>): Promise<PopulatedTransaction> {
-
     // If an extra argument is given, it is overrides
     let overrides: CallOverrides = { };
     if (args.length === fragment.inputs.length + 1 && typeof(args[args.length - 1]) === "object") {
@@ -168,8 +172,10 @@ async function populateTransaction(contract: Contract, fragment: FunctionFragmen
                         operation: "overrides.from"
                     });
                 }
+
                 return check.override;
             });
+
         } else {
             overrides.from = contract.signer.getAddress();
         }
@@ -244,7 +250,7 @@ async function populateTransaction(contract: Contract, fragment: FunctionFragmen
 
 
 function buildPopulate(contract: Contract, fragment: FunctionFragment): ContractFunction<PopulatedTransaction> {
-    return async function(...args: Array<any>): Promise<PopulatedTransaction> {
+    return function(...args: Array<any>): Promise<PopulatedTransaction> {
         return populateTransaction(contract, fragment, args);
     };
 }
@@ -642,13 +648,7 @@ export class Contract {
 
         defineReadOnly(this, "address", addressOrName);
         if (this.provider) {
-            defineReadOnly(this, "resolvedAddress", this.provider.resolveName(addressOrName).then((address) => {
-                if (address == null) { throw new Error("name not found"); }
-                return address;
-            }).catch((error: Error) => {
-                console.log("ERROR: Cannot find Contract - " + addressOrName);
-                throw error;
-            }));
+            defineReadOnly(this, "resolvedAddress", resolveName(this.provider, addressOrName));
         } else {
             try {
                 defineReadOnly(this, "resolvedAddress", Promise.resolve(getAddress(addressOrName)));
