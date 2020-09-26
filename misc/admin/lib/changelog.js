@@ -24,33 +24,83 @@ const local = __importStar(require("./local"));
 const log_1 = require("./log");
 const npm = __importStar(require("./npm"));
 const path_1 = require("./path");
+const run_1 = require("./run");
 const utils_1 = require("./utils");
 const changelogPath = path_1.resolve("CHANGELOG.md");
 function generate() {
     return __awaiter(this, void 0, void 0, function* () {
         const lines = fs_1.default.readFileSync(changelogPath).toString().trim().split("\n");
-        const versions = Object.keys(lines.reduce((accum, line) => {
+        let firstLine = null;
+        const versions = Object.keys(lines.reduce((accum, line, index) => {
             const match = line.match(/^ethers\/v([^ ]*)/);
             if (match) {
+                if (firstLine == null) {
+                    firstLine = index;
+                }
                 accum[match[1]] = true;
             }
             return accum;
         }, {}));
         const version = local.getPackage("ethers").version;
         ;
-        const publishedVersion = (yield npm.getPackage("ethers")).version;
-        console.log(versions, version, publishedVersion);
+        const published = yield npm.getPackage("ethers");
         if (versions.indexOf(version) >= 0) {
             const line = `Version ${version} already in CHANGELOG. Please edit before committing.`;
             console.log(log_1.colorify.red(utils_1.repeat("=", line.length)));
             console.log(log_1.colorify.red(line));
             console.log(log_1.colorify.red(utils_1.repeat("=", line.length)));
         }
+        const gitResult = yield run_1.run("git", ["log", (published.gitHead + "..")]);
+        if (!gitResult.ok) {
+            console.log(gitResult);
+            throw new Error("Error running git log");
+        }
+        let changes = [];
+        gitResult.stdout.split("\n").forEach((line) => {
+            if (line.toLowerCase().substring(0, 6) === "commit") {
+                changes.push({
+                    commit: line.substring(6).trim(),
+                    date: null,
+                    body: ""
+                });
+            }
+            else if (line.toLowerCase().substring(0, 5) === "date:") {
+                changes[changes.length - 1].date = utils_1.getDateTime(new Date(line.substring(5).trim()));
+            }
+            else if (line.substring(0, 1) === " ") {
+                line = line.trim();
+                if (line === "") {
+                    return;
+                }
+                changes[changes.length - 1].body += line + " ";
+            }
+        });
+        const output = [];
+        for (let i = 0; i < firstLine; i++) {
+            output.push(lines[i]);
+        }
+        const newTitle = `ethers/v${version} (${utils_1.getDateTime(new Date())})`;
+        output.push(newTitle);
+        output.push(utils_1.repeat("-", newTitle.length));
+        output.push("");
+        changes.forEach((change) => {
+            let body = change.body.trim();
+            let linkMatch = body.match(/(\((.*#.*)\))/);
+            let commit = `[${change.commit.substring(0, 7)}](https://github.com/ethers-io/ethers.js/commit/${change.commit})`;
+            let link = commit;
+            if (linkMatch) {
+                body = body.replace(/ *(\(.*#.*)\) */, "");
+                link = linkMatch[2].replace(/#([0-9]+)/g, (all, issue) => {
+                    return `[#${issue}](https://github.com/ethers-io/ethers.js/issues/${issue})`;
+                }) + "; " + commit;
+            }
+            output.push(`  - ${body} (${link})`);
+        });
+        output.push("");
+        for (let i = firstLine; i < lines.length; i++) {
+            output.push(lines[i]);
+        }
+        return output.join("\n");
     });
 }
 exports.generate = generate;
-(function () {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield generate();
-    });
-})();

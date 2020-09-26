@@ -39,7 +39,7 @@
     "build-dist": "node ./misc/admin/lib/cmds/npm-skip-node8.js || npm run _build-dist",
     "build-libs": "node ./misc/admin/lib/cmds/update-exports.js && npm run _build-cjs && npm run _build-esm && node ./misc/admin/lib/cmds/set-build-option cjs && node packages/asm/generate.js && chmod 755 packages/*/lib/bin/*.js",
     "build-all": "npm run build-libs && npm run build-dist",
-    "update-versions": "npm run clean && npm install && npm run spell-check && npm run build-all && node ./misc/admin/lib/cmds/bump-versions && npm run build-all && node ./misc/admin/lib/cmds/update-hashes",
+    "update-versions": "npm run clean && npm install && npm run spell-check && npm run build-all && node ./misc/admin/lib/cmds/bump-versions && npm run build-all && node ./misc/admin/lib/cmds/update-hashes && node ./misc/admin/lib/cmds/update-changelog",
     "TODO-publish-all": "node ./admin/cmds/publish",
     "TODO-sync-github": "node ./admin/cmds/cache-github"
   },

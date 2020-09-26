@@ -7,3 +7,4 @@ export declare function loadJson(path: string): any;
 export declare function saveJson(filename: string, data: any, sort?: boolean): any;
 export declare function resolveProperties(props: Record<string, Promise<any>>): Promise<Record<string, any>>;
 export declare function mkdir(path: string): void;
+export declare function getDateTime(date: Date): string;

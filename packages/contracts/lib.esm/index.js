@@ -13,8 +13,7 @@ import { Provider } from "@ethersproject/abstract-provider";
 import { Signer, VoidSigner } from "@ethersproject/abstract-signer";
 import { getAddress, getContractAddress } from "@ethersproject/address";
 import { BigNumber } from "@ethersproject/bignumber";
-import { concat, hexlify, isBytes, isHexString } from "@ethersproject/bytes";
-//import { AddressZero } from "@ethersproject/constants";
+import { arrayify, concat, hexlify, isBytes, isHexString } from "@ethersproject/bytes";
 import { defineReadOnly, deepCopy, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 // @TOOD remove dependences transactions
 import { Logger } from "@ethersproject/logger";
@@ -39,29 +38,35 @@ function resolveName(resolver, nameOrPromise) {
                 operation: "resolveName"
             });
         }
-        return yield resolver.resolveName(name);
+        const address = yield resolver.resolveName(name);
+        if (address == null) {
+            logger.throwArgumentError("resolver or addr is not configured for ENS name", "name", name);
+        }
+        return address;
     });
 }
 // Recursively replaces ENS names with promises to resolve the name and resolves all properties
 function resolveAddresses(resolver, value, paramType) {
-    if (Array.isArray(paramType)) {
-        return Promise.all(paramType.map((paramType, index) => {
-            return resolveAddresses(resolver, ((Array.isArray(value)) ? value[index] : value[paramType.name]), paramType);
-        }));
-    }
-    if (paramType.type === "address") {
-        return resolveName(resolver, value);
-    }
-    if (paramType.type === "tuple") {
-        return resolveAddresses(resolver, value, paramType.components);
-    }
-    if (paramType.baseType === "array") {
-        if (!Array.isArray(value)) {
-            throw new Error("invalid value for array");
+    return __awaiter(this, void 0, void 0, function* () {
+        if (Array.isArray(paramType)) {
+            return yield Promise.all(paramType.map((paramType, index) => {
+                return resolveAddresses(resolver, ((Array.isArray(value)) ? value[index] : value[paramType.name]), paramType);
+            }));
         }
-        return Promise.all(value.map((v) => resolveAddresses(resolver, v, paramType.arrayChildren)));
-    }
-    return Promise.resolve(value);
+        if (paramType.type === "address") {
+            return yield resolveName(resolver, value);
+        }
+        if (paramType.type === "tuple") {
+            return yield resolveAddresses(resolver, value, paramType.components);
+        }
+        if (paramType.baseType === "array") {
+            if (!Array.isArray(value)) {
+                return Promise.reject(new Error("invalid value for array"));
+            }
+            return yield Promise.all(value.map((v) => resolveAddresses(resolver, v, paramType.arrayChildren)));
+        }
+        return value;
+    });
 }
 function populateTransaction(contract, fragment, args) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -107,8 +112,9 @@ function populateTransaction(contract, fragment, args) {
             overrides: (resolveProperties(overrides) || {})
         });
         // The ABI coded transaction
+        const data = contract.interface.encodeFunctionData(fragment, resolved.args);
         const tx = {
-            data: contract.interface.encodeFunctionData(fragment, resolved.args),
+            data: data,
             to: resolved.address
         };
         // Resolved Overrides
@@ -128,7 +134,20 @@ function populateTransaction(contract, fragment, args) {
         }
         // If there was no "gasLimit" override, but the ABI specifies a default, use it
         if (tx.gasLimit == null && fragment.gas != null) {
-            tx.gasLimit = BigNumber.from(fragment.gas).add(21000);
+            // Conmpute the intrinisic gas cost for this transaction
+            // @TODO: This is based on the yellow paper as of Petersburg; this is something
+            // we may wish to parameterize in v6 as part of the Network object. Since this
+            // is always a non-nil to address, we can ignore G_create, but may wish to add
+            // similar logic to the ContractFactory.
+            let intrinsic = 21000;
+            const bytes = arrayify(data);
+            for (let i = 0; i < bytes.length; i++) {
+                intrinsic += 4;
+                if (bytes[i]) {
+                    intrinsic += 64;
+                }
+            }
+            tx.gasLimit = BigNumber.from(fragment.gas).add(intrinsic);
         }
         // Populate "value" override
         if (ro.value) {
@@ -161,9 +180,7 @@ function populateTransaction(contract, fragment, args) {
 }
 function buildPopulate(contract, fragment) {
     return function (...args) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return populateTransaction(contract, fragment, args);
-        });
+        return populateTransaction(contract, fragment, args);
     };
 }
 function buildEstimate(contract, fragment) {
@@ -475,15 +492,7 @@ export class Contract {
         defineReadOnly(this, "_wrappedEmits", {});
         defineReadOnly(this, "address", addressOrName);
         if (this.provider) {
-            defineReadOnly(this, "resolvedAddress", this.provider.resolveName(addressOrName).then((address) => {
-                if (address == null) {
-                    throw new Error("name not found");
-                }
-                return address;
-            }).catch((error) => {
-                console.log("ERROR: Cannot find Contract - " + addressOrName);
-                throw error;
-            }));
+            defineReadOnly(this, "resolvedAddress", resolveName(this.provider, addressOrName));
         }
         else {
             try {

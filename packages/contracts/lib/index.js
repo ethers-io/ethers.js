@@ -62,7 +62,6 @@ var abstract_signer_1 = require("@ethersproject/abstract-signer");
 var address_1 = require("@ethersproject/address");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
-//import { AddressZero } from "@ethersproject/constants";
 var properties_1 = require("@ethersproject/properties");
 // @TOOD remove dependences transactions
 var logger_1 = require("@ethersproject/logger");
@@ -76,7 +75,7 @@ var allowedTransactionKeys = {
 };
 function resolveName(resolver, nameOrPromise) {
     return __awaiter(this, void 0, void 0, function () {
-        var name;
+        var name, address;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, nameOrPromise];
@@ -93,35 +92,50 @@ function resolveName(resolver, nameOrPromise) {
                         });
                     }
                     return [4 /*yield*/, resolver.resolveName(name)];
-                case 2: return [2 /*return*/, _a.sent()];
+                case 2:
+                    address = _a.sent();
+                    if (address == null) {
+                        logger.throwArgumentError("resolver or addr is not configured for ENS name", "name", name);
+                    }
+                    return [2 /*return*/, address];
             }
         });
     });
 }
 // Recursively replaces ENS names with promises to resolve the name and resolves all properties
 function resolveAddresses(resolver, value, paramType) {
-    if (Array.isArray(paramType)) {
-        return Promise.all(paramType.map(function (paramType, index) {
-            return resolveAddresses(resolver, ((Array.isArray(value)) ? value[index] : value[paramType.name]), paramType);
-        }));
-    }
-    if (paramType.type === "address") {
-        return resolveName(resolver, value);
-    }
-    if (paramType.type === "tuple") {
-        return resolveAddresses(resolver, value, paramType.components);
-    }
-    if (paramType.baseType === "array") {
-        if (!Array.isArray(value)) {
-            throw new Error("invalid value for array");
-        }
-        return Promise.all(value.map(function (v) { return resolveAddresses(resolver, v, paramType.arrayChildren); }));
-    }
-    return Promise.resolve(value);
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!Array.isArray(paramType)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, Promise.all(paramType.map(function (paramType, index) {
+                            return resolveAddresses(resolver, ((Array.isArray(value)) ? value[index] : value[paramType.name]), paramType);
+                        }))];
+                case 1: return [2 /*return*/, _a.sent()];
+                case 2:
+                    if (!(paramType.type === "address")) return [3 /*break*/, 4];
+                    return [4 /*yield*/, resolveName(resolver, value)];
+                case 3: return [2 /*return*/, _a.sent()];
+                case 4:
+                    if (!(paramType.type === "tuple")) return [3 /*break*/, 6];
+                    return [4 /*yield*/, resolveAddresses(resolver, value, paramType.components)];
+                case 5: return [2 /*return*/, _a.sent()];
+                case 6:
+                    if (!(paramType.baseType === "array")) return [3 /*break*/, 8];
+                    if (!Array.isArray(value)) {
+                        return [2 /*return*/, Promise.reject(new Error("invalid value for array"))];
+                    }
+                    return [4 /*yield*/, Promise.all(value.map(function (v) { return resolveAddresses(resolver, v, paramType.arrayChildren); }))];
+                case 7: return [2 /*return*/, _a.sent()];
+                case 8: return [2 /*return*/, value];
+            }
+        });
+    });
 }
 function populateTransaction(contract, fragment, args) {
     return __awaiter(this, void 0, void 0, function () {
-        var overrides, resolved, tx, ro, roValue, leftovers;
+        var overrides, resolved, data, tx, ro, intrinsic, bytes, i, roValue, leftovers;
         var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -169,8 +183,9 @@ function populateTransaction(contract, fragment, args) {
                         })];
                 case 1:
                     resolved = _a.sent();
+                    data = contract.interface.encodeFunctionData(fragment, resolved.args);
                     tx = {
-                        data: contract.interface.encodeFunctionData(fragment, resolved.args),
+                        data: data,
                         to: resolved.address
                     };
                     ro = resolved.overrides;
@@ -189,7 +204,15 @@ function populateTransaction(contract, fragment, args) {
                     }
                     // If there was no "gasLimit" override, but the ABI specifies a default, use it
                     if (tx.gasLimit == null && fragment.gas != null) {
-                        tx.gasLimit = bignumber_1.BigNumber.from(fragment.gas).add(21000);
+                        intrinsic = 21000;
+                        bytes = bytes_1.arrayify(data);
+                        for (i = 0; i < bytes.length; i++) {
+                            intrinsic += 4;
+                            if (bytes[i]) {
+                                intrinsic += 64;
+                            }
+                        }
+                        tx.gasLimit = bignumber_1.BigNumber.from(fragment.gas).add(intrinsic);
                     }
                     // Populate "value" override
                     if (ro.value) {
@@ -226,11 +249,7 @@ function buildPopulate(contract, fragment) {
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
         }
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2 /*return*/, populateTransaction(contract, fragment, args)];
-            });
-        });
+        return populateTransaction(contract, fragment, args);
     };
 }
 function buildEstimate(contract, fragment) {
@@ -606,15 +625,7 @@ var Contract = /** @class */ (function () {
         properties_1.defineReadOnly(this, "_wrappedEmits", {});
         properties_1.defineReadOnly(this, "address", addressOrName);
         if (this.provider) {
-            properties_1.defineReadOnly(this, "resolvedAddress", this.provider.resolveName(addressOrName).then(function (address) {
-                if (address == null) {
-                    throw new Error("name not found");
-                }
-                return address;
-            }).catch(function (error) {
-                console.log("ERROR: Cannot find Contract - " + addressOrName);
-                throw error;
-            }));
+            properties_1.defineReadOnly(this, "resolvedAddress", resolveName(this.provider, addressOrName));
         }
         else {
             try {
