@@ -5,7 +5,7 @@ import { Block, BlockTag, Filter, FilterByBlockHash, Listener, Log, Provider, Tr
 import { Signer, VoidSigner } from "@ethersproject/abstract-signer";
 import { getAddress, getContractAddress } from "@ethersproject/address";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
-import { BytesLike, concat, hexlify, isBytes, isHexString } from "@ethersproject/bytes";
+import { arrayify, BytesLike, concat, hexlify, isBytes, isHexString } from "@ethersproject/bytes";
 import { Deferrable, defineReadOnly, deepCopy, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 // @TOOD remove dependences transactions
 
@@ -197,8 +197,9 @@ async function populateTransaction(contract: Contract, fragment: FunctionFragmen
     });
 
     // The ABI coded transaction
+    const data = contract.interface.encodeFunctionData(fragment, resolved.args);
     const tx: PopulatedTransaction = {
-      data: contract.interface.encodeFunctionData(fragment, resolved.args),
+      data: data,
       to: resolved.address
     };
 
@@ -213,7 +214,18 @@ async function populateTransaction(contract: Contract, fragment: FunctionFragmen
 
     // If there was no "gasLimit" override, but the ABI specifies a default, use it
     if (tx.gasLimit == null && fragment.gas != null) {
-        tx.gasLimit = BigNumber.from(fragment.gas).add(21000);
+        // Conmpute the intrinisic gas cost for this transaction
+        // @TODO: This is based on the yellow paper as of Petersburg; this is something
+        // we may wish to parameterize in v6 as part of the Network object. Since this
+        // is always a non-nil to address, we can ignore G_create, but may wish to add
+        // similar logic to the ContractFactory.
+        let intrinsic = 21000;
+        const bytes = arrayify(data);
+        for (let i = 0; i < bytes.length; i++) {
+            intrinsic += 4;
+            if (bytes[i]) { intrinsic += 64; }
+        }
+        tx.gasLimit = BigNumber.from(fragment.gas).add(intrinsic);
     }
 
     // Populate "value" override
