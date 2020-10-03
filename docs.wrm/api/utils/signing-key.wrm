@@ -8,11 +8,11 @@ The private key for this Signing Key.
 
 _property: signingKey.publicKey => string<[[DataHexString]]<65>>
 The uncompressed public key for this Signing Key. It will always be
-65 bytes (130 nibbles) and begin with ``0x04``.
+65 bytes (130 nibbles) and begins with ``0x04``.
 
 _property: signingKey.compressedPublicKey => string<[[DataHexString]]<33>>
 The compressed public key for this Signing Key. It will always be
-33 bytes (66 nibbles) and begin with either ``0x02`` or ``0x03``.
+33 bytes (66 nibbles) and begins with either ``0x02`` or ``0x03``.
 
 _property: signingKey.signDigest(digest) => [[Signature]]
 Sign the //digest// and return the signature.
