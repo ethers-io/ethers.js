@@ -122,18 +122,18 @@ Returns a BigNumber with the value of //BigNumber// with bits beyond
 the //bitcount// least significant bits set to zero.
 
 
-_heading: Two's Compliment
+_heading: Two's Complement
 
-[Two's Complicment](link-wiki-twoscomplement)
+[Two's Complement](link-wiki-twoscomplement)
 is an elegant method used to encode and decode fixed-width signed values
 while efficiently preserving mathematic operations.
 Most users will not need to interact with these.
 
 _property: BigNumber.fromTwos(bitwidth) => [[BigNumber]]  @SRC<bignumber>
-Returns a BigNumber with the value of //BigNumber// converted from twos-compliment with //bitwidth//.
+Returns a BigNumber with the value of //BigNumber// converted from twos-complement with //bitwidth//.
 
 _property: BigNumber.toTwos(bitwidth) => [[BigNumber]]  @SRC<bignumber>
-Returns a BigNumber with the value of //BigNumber// converted to twos-compliment with //bitwidth//.
+Returns a BigNumber with the value of //BigNumber// converted to twos-complement with //bitwidth//.
 
 
 _heading: Comparison and Equivalence
