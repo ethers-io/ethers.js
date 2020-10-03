@@ -3,7 +3,7 @@
 import WebSocket from "ws";
 
 import { BigNumber } from "@ethersproject/bignumber";
-import { Networkish } from "@ethersproject/networks";
+import { Network, Networkish } from "@ethersproject/networks";
 import { defineReadOnly } from "@ethersproject/properties";
 
 import { Event } from "./base-provider";
@@ -47,6 +47,7 @@ export type Subscription = {
 export class WebSocketProvider extends JsonRpcProvider {
     readonly _websocket: any;
     readonly _requests: { [ name: string ]: InflightRequest };
+    readonly _detectNetwork: Promise<Network>;
 
     // Maps event tag to subscription ID (we dedupe identical events)
     readonly _subIds: { [ tag: string ]: Promise<string> };
@@ -67,13 +68,15 @@ export class WebSocketProvider extends JsonRpcProvider {
         super(url, network);
         this._pollingInterval = -1;
 
+        this._wsReady = false;
+
         defineReadOnly(this, "_websocket", new WebSocket(this.connection.url));
         defineReadOnly(this, "_requests", { });
         defineReadOnly(this, "_subs", { });
         defineReadOnly(this, "_subIds", { });
+        defineReadOnly(this, "_detectNetwork", super.detectNetwork());
 
         // Stall sending requests until the socket is open...
-        this._wsReady = false;
         this._websocket.onopen = () => {
             this._wsReady = true;
             Object.keys(this._requests).forEach((id) => {
@@ -123,6 +126,10 @@ export class WebSocketProvider extends JsonRpcProvider {
             this.emit("poll");
         }, 1000);
         if (fauxPoll.unref) { fauxPoll.unref(); }
+    }
+
+    detectNetwork(): Promise<Network> {
+        return this._detectNetwork;
     }
 
     get pollingInterval(): number {
