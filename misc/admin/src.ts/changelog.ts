@@ -9,6 +9,13 @@ import { getDateTime, repeat } from "./utils";
 
 const changelogPath = resolve("CHANGELOG.md");
 
+export type Change = {
+    title: string;
+    version: string;
+    date: string;
+    content: string;
+};
+
 export async function generate(): Promise<string> {
     const lines = fs.readFileSync(changelogPath).toString().trim().split("\n");
 
@@ -88,3 +95,28 @@ export async function generate(): Promise<string> {
     return output.join("\n");
 }
 
+export function getLatestChange(): Change {
+    let result: Change = null;
+
+    const lines = fs.readFileSync(changelogPath).toString().split("\n");
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const match = line.match(/ethers\/([^\(]*)\(([^\)]*)\)/);
+        if (match) {
+            if (result) { break; }
+            result = {
+                title: line.trim(),
+                version: match[1].trim(),
+                date: match[2].trim(),
+                content: ""
+            };
+        } else if (result) {
+            if (!line.trim().match(/^-+$/)) {
+                result.content += line.trim() + "\n";
+            }
+        }
+    }
+    result.content = result.content.trim();
+
+    return result;
+}

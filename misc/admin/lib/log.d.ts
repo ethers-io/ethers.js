@@ -8,5 +8,5 @@ export declare type PromptOptions = {
     defaultChoice?: string;
     mask?: string;
 };
-export declare function getPrompt(prompt: string, options: PromptOptions): Promise<string>;
+export declare function getPrompt(prompt: string, options?: PromptOptions): Promise<string>;
 export declare function getPassword(prompt: string): Promise<string>;

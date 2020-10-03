@@ -17,8 +17,8 @@ export function getProgressBar(action: string): (percent: number) => void {
             return;
         }
 
-        //process.stdin.setRawMode(false);
-        //process.stdin.pause();
+        process.stdin.setRawMode(false);
+        process.stdin.pause();
 
         if (progress === lastProgress || lastProgress === 100) { return; }
         lastProgress = progress;
@@ -151,9 +151,9 @@ function _getPrompt(prompt: string, options: PromptOptions, callback: (ctrlC: bo
     stdin.on('data', handler);
 }
 
-export function getPrompt(prompt: string, options: PromptOptions): Promise<string> {
+export function getPrompt(prompt: string, options?: PromptOptions): Promise<string> {
     return new Promise((resolve, reject) => {
-        _getPrompt(prompt, options, (ctrlC, password) => {
+        _getPrompt(prompt, (options || { }), (ctrlC, password) => {
              if (ctrlC) {
                  return reject(new Error("cancelled"));
              }

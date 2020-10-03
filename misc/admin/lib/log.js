@@ -14,8 +14,8 @@ function getProgressBar(action) {
             lastProgress = progress;
             return;
         }
-        //process.stdin.setRawMode(false);
-        //process.stdin.pause();
+        process.stdin.setRawMode(false);
+        process.stdin.pause();
         if (progress === lastProgress || lastProgress === 100) {
             return;
         }
@@ -134,7 +134,7 @@ function _getPrompt(prompt, options, callback) {
 }
 function getPrompt(prompt, options) {
     return new Promise((resolve, reject) => {
-        _getPrompt(prompt, options, (ctrlC, password) => {
+        _getPrompt(prompt, (options || {}), (ctrlC, password) => {
             if (ctrlC) {
                 return reject(new Error("cancelled"));
             }

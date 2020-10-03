@@ -1,8 +1,10 @@
 
+import { Options, publish as npmPublish } from "libnpmpublish";
 import semver from "semver";
 
 import { getUrl } from "./geturl";
 import { Package, getPackage as _getPackage } from "./local";
+import { colorify, getPrompt } from "./log";
 
 
 const cache: Record<string, any> = { };
@@ -45,4 +47,22 @@ export async function getPackage(name: string, version?: string): Promise<Packag
         version : info.version,
         _ethers_nobuild: !!info._ethers_nobuild,
     };
+}
+
+export async function publish(path: string, manifest: any, options: Options): Promise<void> {
+    try {
+        await npmPublish(path, manifest, options);
+
+    } catch (error) {
+
+        // We need an OTP
+        if (error.code === "EOTP") {
+            const otp = await getPrompt(colorify.bold("Enter OTP: "));
+            options.otp = otp.replace(" ", "");
+
+            // Retry with the new OTP
+            return await publish(path, manifest, options);
+        }
+        throw error;
+    }
 }

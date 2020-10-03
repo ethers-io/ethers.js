@@ -12,5 +12,7 @@ export declare type Options = {
     headers?: {
         [key: string]: string;
     };
+    user?: string;
+    password?: string;
 };
 export declare function getUrl(href: string, options?: Options): Promise<GetUrlResponse>;

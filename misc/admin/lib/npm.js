@@ -12,9 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const libnpmpublish_1 = require("libnpmpublish");
 const semver_1 = __importDefault(require("semver"));
 const geturl_1 = require("./geturl");
 const local_1 = require("./local");
+const log_1 = require("./log");
 const cache = {};
 function getPackageInfo(name) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -60,3 +62,21 @@ function getPackage(name, version) {
     });
 }
 exports.getPackage = getPackage;
+function publish(path, manifest, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield libnpmpublish_1.publish(path, manifest, options);
+        }
+        catch (error) {
+            // We need an OTP
+            if (error.code === "EOTP") {
+                const otp = yield log_1.getPrompt(log_1.colorify.bold("Enter OTP: "));
+                options.otp = otp.replace(" ", "");
+                // Retry with the new OTP
+                return yield publish(path, manifest, options);
+            }
+            throw error;
+        }
+    });
+}
+exports.publish = publish;

@@ -104,3 +104,30 @@ function generate() {
     });
 }
 exports.generate = generate;
+function getLatestChange() {
+    let result = null;
+    const lines = fs_1.default.readFileSync(changelogPath).toString().split("\n");
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const match = line.match(/ethers\/([^\(]*)\(([^\)]*)\)/);
+        if (match) {
+            if (result) {
+                break;
+            }
+            result = {
+                title: line.trim(),
+                version: match[1].trim(),
+                date: match[2].trim(),
+                content: ""
+            };
+        }
+        else if (result) {
+            if (!line.trim().match(/^-+$/)) {
+                result.content += line.trim() + "\n";
+            }
+        }
+    }
+    result.content = result.content.trim();
+    return result;
+}
+exports.getLatestChange = getLatestChange;

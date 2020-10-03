@@ -12,7 +12,11 @@ export type GetUrlResponse = {
 export type Options = {
     method?: string,
     body?: Uint8Array
+
     headers?: { [ key: string] : string },
+
+    user?: string,
+    password?: string,
 };
 
 function getResponse(request: http.ClientRequest): Promise<GetUrlResponse> {
@@ -72,7 +76,7 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
     //        to this request object
     const url = parse(href);
 
-    const request = {
+    const request: http.ClientRequestArgs = {
         protocol: nonnull(url.protocol),
         hostname: nonnull(url.hostname),
         port: nonnull(url.port),
@@ -81,6 +85,10 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
         method: (options.method || "GET"),
         headers: (options.headers || { }),
     };
+
+    if (options.user && options.password) {
+        request.auth = `${ options.user }:${ options.password }`;
+    }
 
     let req: http.ClientRequest = null;
     switch (nonnull(url.protocol)) {

@@ -77,6 +77,9 @@ function getUrl(href, options) {
             method: (options.method || "GET"),
             headers: (options.headers || {}),
         };
+        if (options.user && options.password) {
+            request.auth = `${options.user}:${options.password}`;
+        }
         let req = null;
         switch (nonnull(url.protocol)) {
             case "http:":
