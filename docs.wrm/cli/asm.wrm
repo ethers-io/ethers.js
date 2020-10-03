@@ -2,7 +2,7 @@ _section: Assembler @<cli-asm>
 
 The assembler Command-Line utility allows you to assemble the
 [Ethers ASM Dialect](asm-dialect) into deployable EVM bytecode
-and disassemle EVM bytecode into human-readable mnemonics.
+and disassemble EVM bytecode into human-readable mnemonics.
 
 
 _subsection: Help
@@ -31,7 +31,7 @@ _code: SimpleStore.asm  @lang<asm>
 
 ; SimpleStore (uint)
 
-; Set the inital value of 42
+; Set the initial value of 42
 sstore(0, 42)
 
 ; Init code to deploy myContract
@@ -144,7 +144,7 @@ Byt specifying the **Position Independent Code** flag, code
 will be generated in a way such that all offsets are relative, allowing
 the program to be moved without any impact to its logic.
 
-This does incur an additional gsas cost of 8 gas per offset access though.
+This does incur an additional gas cost of 8 gas per offset access though.
 
 _definition: **-\-target LABEL**
 All programs have a root scope named ``_`` which is by default

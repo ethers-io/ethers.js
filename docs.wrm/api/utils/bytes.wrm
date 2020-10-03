@@ -25,7 +25,7 @@ binary data as a string.
 _heading: HexString @<HexString>
 
 A **Hexstring** is a string which has a ``0x`` prefix followed by any
-number of nibbles (i.e. case-insensitive hexidecumal characters, ``0-9`` and ``a-f``).
+number of nibbles (i.e. case-insensitive hexadecimal characters, ``0-9`` and ``a-f``).
 
 _heading: Signature @<Signature>
 
@@ -37,7 +37,7 @@ _heading: Signature @<Signature>
 _heading: Raw Signature @<signature-raw> @inherit<string\<[[DataHexString]]\<65\>\>>
 
 A **Raw Signature** is a common Signature format where the r, s and v are
-concanenated into a 65 byte (130 nibble) [[DataHexString]].
+concatenated into a 65 byte (130 nibble) [[DataHexString]].
 
 
 _heading: SignatureLike @<SignatureLike>
@@ -112,7 +112,7 @@ _property: ethers.utils.stripZeros(aBytesLike) => Uint8Array  @<utils-stripZeros
 Returns a Uint8Array with all leading ``0`` bytes of //aBtyesLike// removed.
 
 _property: ethers.utils.zeroPad(aBytesLike, length) => Uint8Array  @<utils-zeroPad> @SRC<bytes>
-Retutns a Uint8Array of the data in //aBytesLike// with ``0`` bytes prepended to
+Returns a Uint8Array of the data in //aBytesLike// with ``0`` bytes prepended to
 //length// bytes long.
 
 If //aBytesLike// is already longer than //length// bytes long, an InvalidArgument

@@ -1,7 +1,7 @@
 _section: Sandbox Utility
 
 The sandbox utility provides a simple way to use the most common
-ethers utilities required during learning, debuging and managing
+ethers utilities required during learning, debugging and managing
 interactions with the Ethereum network.
 
 If no command is given, it will enter a REPL interface with many
@@ -64,7 +64,7 @@ TRANSACTION OPTIONS (default: query network)
   --gasPrice GWEI             Default gas price for transactions(in wei)
   --gasLimit GAS              Default gas limit for transactions
   --nonce NONCE               Initial nonce for the first transaction
-  --yes                       Always accept Siging and Sending
+  --yes                       Always accept Signing and Sending
 
 OTHER OPTIONS
   --wait                      Wait until transactions are mined

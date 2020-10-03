@@ -11,7 +11,7 @@ It uses a quorum and connects to multiple [Providers](Provider) as backends,
 each configured with a //priority// and a //weight// .
 
 When a request is made, the request is dispatched to multiple backends, randomly
-choosen (higher prioirty backends are always selected first) and the results from
+chosen (higher priority backends are always selected first) and the results from
 each are compared against the others. Only once the quorum has been reached will that
 result be accepted and returned to the caller.
 
@@ -41,7 +41,7 @@ The provider for this configuration.
 
 _property: fallbackProviderConfig.priority => number
 The priority used for the provider. Higher priorities are favoured over lower
-priorities. If multiple providers share the same prioirty, they are choosen
+priorities. If multiple providers share the same prioirty, they are chosen
 at random.
 
 _property: fallbackProviderConfig.stallTimeout => number
@@ -96,7 +96,7 @@ The URL to use for the JsonRpcProvider instance.
 _subsection: Web3Provider @<Web3Provider> @INHERIT<[[JsonRpcProvider]]> @SRC<providers:class.Web3Provider>
 
 The Web3Provider is meant to ease moving from a [web3.js based](link-web3)
-application to ethers by wraping an existing Web3-compatible (such as a
+application to ethers by wrapping an existing Web3-compatible (such as a
 [Web3HttpProvider](link-web3-http), [Web3IpcProvider](link-web3-ipc) or
 [Web3WsProvider](link-web3-ws)) and exposing it as an ethers.js [[Provider]]
 which can then be used with the rest of the library.

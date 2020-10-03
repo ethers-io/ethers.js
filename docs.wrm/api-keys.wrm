@@ -14,7 +14,7 @@ These API keys are a provided as a community resource by the backend services
 for low-traffic projects and for early prototyping.
 
 Since these API keys are shared by all users (that have not acquired their
-own API key), they are aggressively throttled which means reties occur more
+own API key), they are aggressively throttled which means retries occur more
 frequently and the responses are slower.
 
 It is **highly recommended** that you sign up for a free API key from each service for their

@@ -163,7 +163,7 @@ the tightly packing algorithm.
 
 _property: ethers.utils.solidityPack(types, values) => string<[[DataHexString]]>  @<utils-solidityPack> @SRC<solidity:pack>
 Returns the non-standard encoded //values// packed according to
-their respecive type in //types//.
+their respective type in //types//.
 
 _property: ethers.utils.solidityKeccak256(types, values) => string<[[DataHexString]]<32>>  @<utils-solidityKeccak256> @SRC<solidity:keccak256>
 Returns the [KECCAK256](link-wiki-sha3) of the non-standard encoded //values// packed

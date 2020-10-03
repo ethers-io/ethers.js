@@ -65,7 +65,7 @@ $Signer:    A Signer is a class which (usually) in some way directly or
             ether to perform operations.
 $Contract:  A Contract is an abstraction which represents a connection to a
             specific contract on the Ethereum Network, so that applications 
-            can use it like a normal JavaScipt object.
+            can use it like a normal JavaScript object.
 
 
 | **Provider**     | $Provider      |
@@ -225,7 +225,7 @@ const daiContract = new ethers.Contract("dai.tokens.ethers.eth", daiAbi, provide
 daiContract.name()
 //!
 
-// Get the ERC-20 token synbol (for tickers and UIs)
+// Get the ERC-20 token symbol (for tickers and UIs)
 daiContract.symbol()
 //!
 
