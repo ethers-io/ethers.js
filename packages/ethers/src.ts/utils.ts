@@ -4,7 +4,7 @@ import { AbiCoder, checkResultErrors, defaultAbiCoder, EventFragment, FormatType
 import { getAddress, getCreate2Address, getContractAddress, getIcapAddress, isAddress } from "@ethersproject/address";
 import * as base64 from "@ethersproject/base64";
 import { Base58 as base58 } from "@ethersproject/basex";
-import { arrayify, concat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexValue, hexZeroPad, isBytes, isBytesLike, isHexString, joinSignature, zeroPad, splitSignature, stripZeros } from "@ethersproject/bytes";
+import { arrayify, concat, hexConcat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexValue, hexZeroPad, isBytes, isBytesLike, isHexString, joinSignature, zeroPad, splitSignature, stripZeros } from "@ethersproject/bytes";
 import { hashMessage, id, isValidName, namehash } from "@ethersproject/hash";
 import { defaultPath, entropyToMnemonic, HDNode, isValidMnemonic, mnemonicToEntropy, mnemonicToSeed } from "@ethersproject/hdnode";
 import { getJsonWalletAddress } from "@ethersproject/json-wallets";
@@ -94,6 +94,7 @@ export {
 
     hexlify,
     isHexString,
+    hexConcat,
     hexStripZeros,
     hexValue,
     hexZeroPad,
