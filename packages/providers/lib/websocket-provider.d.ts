@@ -1,4 +1,4 @@
-import { Networkish } from "@ethersproject/networks";
+import { Network, Networkish } from "@ethersproject/networks";
 import { Event } from "./base-provider";
 import { JsonRpcProvider } from "./json-rpc-provider";
 export declare type InflightRequest = {
@@ -14,6 +14,7 @@ export declare class WebSocketProvider extends JsonRpcProvider {
     readonly _requests: {
         [name: string]: InflightRequest;
     };
+    readonly _detectNetwork: Promise<Network>;
     readonly _subIds: {
         [tag: string]: Promise<string>;
     };
@@ -22,6 +23,7 @@ export declare class WebSocketProvider extends JsonRpcProvider {
     };
     _wsReady: boolean;
     constructor(url: string, network?: Networkish);
+    detectNetwork(): Promise<Network>;
     get pollingInterval(): number;
     resetEventsBlock(blockNumber: number): void;
     set pollingInterval(value: number);

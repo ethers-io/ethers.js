@@ -20,12 +20,14 @@ export declare abstract class Coder {
 }
 export declare class Writer {
     readonly wordSize: number;
-    _data: Uint8Array;
+    _data: Array<Uint8Array>;
+    _dataLength: number;
     _padding: Uint8Array;
     constructor(wordSize?: number);
     get data(): string;
     get length(): number;
     _writeData(data: Uint8Array): number;
+    appendWriter(writer: Writer): number;
     writeBytes(value: BytesLike): number;
     _getValue(value: BigNumberish): Uint8Array;
     writeValue(value: BigNumberish): number;

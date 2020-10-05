@@ -8010,28 +8010,36 @@
 	var Writer = /** @class */ (function () {
 	    function Writer(wordSize) {
 	        lib$3.defineReadOnly(this, "wordSize", wordSize || 32);
-	        this._data = lib$1.arrayify([]);
+	        this._data = [];
+	        this._dataLength = 0;
 	        this._padding = new Uint8Array(wordSize);
 	    }
 	    Object.defineProperty(Writer.prototype, "data", {
-	        get: function () { return lib$1.hexlify(this._data); },
+	        get: function () {
+	            return lib$1.hexConcat(this._data);
+	        },
 	        enumerable: true,
 	        configurable: true
 	    });
 	    Object.defineProperty(Writer.prototype, "length", {
-	        get: function () { return this._data.length; },
+	        get: function () { return this._dataLength; },
 	        enumerable: true,
 	        configurable: true
 	    });
 	    Writer.prototype._writeData = function (data) {
-	        this._data = lib$1.concat([this._data, data]);
+	        this._data.push(data);
+	        this._dataLength += data.length;
 	        return data.length;
+	    };
+	    Writer.prototype.appendWriter = function (writer) {
+	        return this._writeData(lib$1.concat(writer._data));
 	    };
 	    // Arrayish items; padded on the right to wordSize
 	    Writer.prototype.writeBytes = function (value) {
 	        var bytes = lib$1.arrayify(value);
-	        if (bytes.length % this.wordSize) {
-	            bytes = lib$1.concat([bytes, this._padding.slice(bytes.length % this.wordSize)]);
+	        var paddingOffset = bytes.length % this.wordSize;
+	        if (paddingOffset) {
+	            bytes = lib$1.concat([bytes, this._padding.slice(paddingOffset)]);
 	        }
 	        return this._writeData(bytes);
 	    };
@@ -8054,10 +8062,11 @@
 	    };
 	    Writer.prototype.writeUpdatableValue = function () {
 	        var _this = this;
-	        var offset = this.length;
-	        this.writeValue(0);
+	        var offset = this._data.length;
+	        this._data.push(this._padding);
+	        this._dataLength += this.wordSize;
 	        return function (value) {
-	            _this._data.set(_this._getValue(value), offset);
+	            _this._data[offset] = _this._getValue(value);
 	        };
 	    };
 	    return Writer;
@@ -9093,8 +9102,8 @@
 	    });
 	    // Backfill all the dynamic offsets, now that we know the static length
 	    updateFuncs.forEach(function (func) { func(staticWriter.length); });
-	    var length = writer.writeBytes(staticWriter.data);
-	    length += writer.writeBytes(dynamicWriter.data);
+	    var length = writer.appendWriter(staticWriter);
+	    length += writer.appendWriter(dynamicWriter);
 	    return length;
 	}
 	exports.pack = pack;
@@ -20367,7 +20376,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.10";
+	exports.version = "providers/5.0.11";
 
 	});
 
@@ -23228,12 +23237,13 @@
 	        }
 	        _this = _super.call(this, url, network) || this;
 	        _this._pollingInterval = -1;
+	        _this._wsReady = false;
 	        lib$3.defineReadOnly(_this, "_websocket", new ws_1.default(_this.connection.url));
 	        lib$3.defineReadOnly(_this, "_requests", {});
 	        lib$3.defineReadOnly(_this, "_subs", {});
 	        lib$3.defineReadOnly(_this, "_subIds", {});
+	        lib$3.defineReadOnly(_this, "_detectNetwork", _super.prototype.detectNetwork.call(_this));
 	        // Stall sending requests until the socket is open...
-	        _this._wsReady = false;
 	        _this._websocket.onopen = function () {
 	            _this._wsReady = true;
 	            Object.keys(_this._requests).forEach(function (id) {
@@ -23285,6 +23295,9 @@
 	        }
 	        return _this;
 	    }
+	    WebSocketProvider.prototype.detectNetwork = function () {
+	        return this._detectNetwork;
+	    };
 	    Object.defineProperty(WebSocketProvider.prototype, "pollingInterval", {
 	        get: function () {
 	            return 0;
@@ -25683,6 +25696,7 @@
 
 	exports.arrayify = lib$1.arrayify;
 	exports.concat = lib$1.concat;
+	exports.hexConcat = lib$1.hexConcat;
 	exports.hexDataSlice = lib$1.hexDataSlice;
 	exports.hexDataLength = lib$1.hexDataLength;
 	exports.hexlify = lib$1.hexlify;
@@ -25797,80 +25811,81 @@
 	var utils_19 = utils$3.base58;
 	var utils_20 = utils$3.arrayify;
 	var utils_21 = utils$3.concat;
-	var utils_22 = utils$3.hexDataSlice;
-	var utils_23 = utils$3.hexDataLength;
-	var utils_24 = utils$3.hexlify;
-	var utils_25 = utils$3.hexStripZeros;
-	var utils_26 = utils$3.hexValue;
-	var utils_27 = utils$3.hexZeroPad;
-	var utils_28 = utils$3.isBytes;
-	var utils_29 = utils$3.isBytesLike;
-	var utils_30 = utils$3.isHexString;
-	var utils_31 = utils$3.joinSignature;
-	var utils_32 = utils$3.zeroPad;
-	var utils_33 = utils$3.splitSignature;
-	var utils_34 = utils$3.stripZeros;
-	var utils_35 = utils$3.hashMessage;
-	var utils_36 = utils$3.id;
-	var utils_37 = utils$3.isValidName;
-	var utils_38 = utils$3.namehash;
-	var utils_39 = utils$3.defaultPath;
-	var utils_40 = utils$3.entropyToMnemonic;
-	var utils_41 = utils$3.HDNode;
-	var utils_42 = utils$3.isValidMnemonic;
-	var utils_43 = utils$3.mnemonicToEntropy;
-	var utils_44 = utils$3.mnemonicToSeed;
-	var utils_45 = utils$3.getJsonWalletAddress;
-	var utils_46 = utils$3.keccak256;
-	var utils_47 = utils$3.Logger;
-	var utils_48 = utils$3.computeHmac;
-	var utils_49 = utils$3.ripemd160;
-	var utils_50 = utils$3.sha256;
-	var utils_51 = utils$3.sha512;
-	var utils_52 = utils$3.solidityKeccak256;
-	var utils_53 = utils$3.solidityPack;
-	var utils_54 = utils$3.soliditySha256;
-	var utils_55 = utils$3.randomBytes;
-	var utils_56 = utils$3.shuffled;
-	var utils_57 = utils$3.checkProperties;
-	var utils_58 = utils$3.deepCopy;
-	var utils_59 = utils$3.defineReadOnly;
-	var utils_60 = utils$3.getStatic;
-	var utils_61 = utils$3.resolveProperties;
-	var utils_62 = utils$3.shallowCopy;
-	var utils_63 = utils$3.RLP;
-	var utils_64 = utils$3.computePublicKey;
-	var utils_65 = utils$3.recoverPublicKey;
-	var utils_66 = utils$3.SigningKey;
-	var utils_67 = utils$3.formatBytes32String;
-	var utils_68 = utils$3.nameprep;
-	var utils_69 = utils$3.parseBytes32String;
-	var utils_70 = utils$3._toEscapedUtf8String;
-	var utils_71 = utils$3.toUtf8Bytes;
-	var utils_72 = utils$3.toUtf8CodePoints;
-	var utils_73 = utils$3.toUtf8String;
-	var utils_74 = utils$3.Utf8ErrorFuncs;
-	var utils_75 = utils$3.computeAddress;
-	var utils_76 = utils$3.parseTransaction;
-	var utils_77 = utils$3.recoverAddress;
-	var utils_78 = utils$3.serializeTransaction;
-	var utils_79 = utils$3.commify;
-	var utils_80 = utils$3.formatEther;
-	var utils_81 = utils$3.parseEther;
-	var utils_82 = utils$3.formatUnits;
-	var utils_83 = utils$3.parseUnits;
-	var utils_84 = utils$3.verifyMessage;
-	var utils_85 = utils$3._fetchData;
-	var utils_86 = utils$3.fetchJson;
-	var utils_87 = utils$3.poll;
-	var utils_88 = utils$3.SupportedAlgorithm;
-	var utils_89 = utils$3.UnicodeNormalizationForm;
-	var utils_90 = utils$3.Utf8ErrorReason;
+	var utils_22 = utils$3.hexConcat;
+	var utils_23 = utils$3.hexDataSlice;
+	var utils_24 = utils$3.hexDataLength;
+	var utils_25 = utils$3.hexlify;
+	var utils_26 = utils$3.hexStripZeros;
+	var utils_27 = utils$3.hexValue;
+	var utils_28 = utils$3.hexZeroPad;
+	var utils_29 = utils$3.isBytes;
+	var utils_30 = utils$3.isBytesLike;
+	var utils_31 = utils$3.isHexString;
+	var utils_32 = utils$3.joinSignature;
+	var utils_33 = utils$3.zeroPad;
+	var utils_34 = utils$3.splitSignature;
+	var utils_35 = utils$3.stripZeros;
+	var utils_36 = utils$3.hashMessage;
+	var utils_37 = utils$3.id;
+	var utils_38 = utils$3.isValidName;
+	var utils_39 = utils$3.namehash;
+	var utils_40 = utils$3.defaultPath;
+	var utils_41 = utils$3.entropyToMnemonic;
+	var utils_42 = utils$3.HDNode;
+	var utils_43 = utils$3.isValidMnemonic;
+	var utils_44 = utils$3.mnemonicToEntropy;
+	var utils_45 = utils$3.mnemonicToSeed;
+	var utils_46 = utils$3.getJsonWalletAddress;
+	var utils_47 = utils$3.keccak256;
+	var utils_48 = utils$3.Logger;
+	var utils_49 = utils$3.computeHmac;
+	var utils_50 = utils$3.ripemd160;
+	var utils_51 = utils$3.sha256;
+	var utils_52 = utils$3.sha512;
+	var utils_53 = utils$3.solidityKeccak256;
+	var utils_54 = utils$3.solidityPack;
+	var utils_55 = utils$3.soliditySha256;
+	var utils_56 = utils$3.randomBytes;
+	var utils_57 = utils$3.shuffled;
+	var utils_58 = utils$3.checkProperties;
+	var utils_59 = utils$3.deepCopy;
+	var utils_60 = utils$3.defineReadOnly;
+	var utils_61 = utils$3.getStatic;
+	var utils_62 = utils$3.resolveProperties;
+	var utils_63 = utils$3.shallowCopy;
+	var utils_64 = utils$3.RLP;
+	var utils_65 = utils$3.computePublicKey;
+	var utils_66 = utils$3.recoverPublicKey;
+	var utils_67 = utils$3.SigningKey;
+	var utils_68 = utils$3.formatBytes32String;
+	var utils_69 = utils$3.nameprep;
+	var utils_70 = utils$3.parseBytes32String;
+	var utils_71 = utils$3._toEscapedUtf8String;
+	var utils_72 = utils$3.toUtf8Bytes;
+	var utils_73 = utils$3.toUtf8CodePoints;
+	var utils_74 = utils$3.toUtf8String;
+	var utils_75 = utils$3.Utf8ErrorFuncs;
+	var utils_76 = utils$3.computeAddress;
+	var utils_77 = utils$3.parseTransaction;
+	var utils_78 = utils$3.recoverAddress;
+	var utils_79 = utils$3.serializeTransaction;
+	var utils_80 = utils$3.commify;
+	var utils_81 = utils$3.formatEther;
+	var utils_82 = utils$3.parseEther;
+	var utils_83 = utils$3.formatUnits;
+	var utils_84 = utils$3.parseUnits;
+	var utils_85 = utils$3.verifyMessage;
+	var utils_86 = utils$3._fetchData;
+	var utils_87 = utils$3.fetchJson;
+	var utils_88 = utils$3.poll;
+	var utils_89 = utils$3.SupportedAlgorithm;
+	var utils_90 = utils$3.UnicodeNormalizationForm;
+	var utils_91 = utils$3.Utf8ErrorReason;
 
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.15";
+	exports.version = "ethers/5.0.16";
 
 	});
 

@@ -42,12 +42,13 @@ export class WebSocketProvider extends JsonRpcProvider {
         }
         super(url, network);
         this._pollingInterval = -1;
+        this._wsReady = false;
         defineReadOnly(this, "_websocket", new WebSocket(this.connection.url));
         defineReadOnly(this, "_requests", {});
         defineReadOnly(this, "_subs", {});
         defineReadOnly(this, "_subIds", {});
+        defineReadOnly(this, "_detectNetwork", super.detectNetwork());
         // Stall sending requests until the socket is open...
-        this._wsReady = false;
         this._websocket.onopen = () => {
             this._wsReady = true;
             Object.keys(this._requests).forEach((id) => {
@@ -97,6 +98,9 @@ export class WebSocketProvider extends JsonRpcProvider {
         if (fauxPoll.unref) {
             fauxPoll.unref();
         }
+    }
+    detectNetwork() {
+        return this._detectNetwork;
     }
     get pollingInterval() {
         return 0;

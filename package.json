@@ -29,7 +29,7 @@
     "build-docs": "flatworm docs.wrm docs",
     "serve-docs": "node ./misc/admin/lib/cmds/serve-docs.js",
     "test-docs": "npm run build-docs && npm run serve-docs",
-    "TODO-upload-docs": " node ./admin/cmds/upload-docs.js",
+    "upload-docs": " node ./admin/cmds/upload-docs.js",
     "spell-check": "node ./misc/admin/lib/cmds/spell-check.js",
     "build-dist-ancillary": "node ./misc/admin/lib/cmds/set-build-option esm && rollup -c rollup-ancillary.config.js",
     "build-dist-shims": "browserify ./packages/shims/src/index.js -o ./packages/shims/dist/index.js && uglifyjs --compress --mangle --output ./packages/shims/dist/index.min.js -- ./packages/shims/dist/index.js",
@@ -70,7 +70,8 @@
     "rollup-pluginutils": "2.8.1",
     "scrypt-js": "3.0.1",
     "semver": "^5.6.0",
-    "typescript": "3.8.3"
+    "typescript": "3.8.3",
+    "uglify-es": "3.3.9"
   },
   "dependencies": {
     "@babel/parser": "7.8.4",

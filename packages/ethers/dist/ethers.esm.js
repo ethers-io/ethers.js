@@ -7742,20 +7742,28 @@ class Coder {
 class Writer {
     constructor(wordSize) {
         defineReadOnly(this, "wordSize", wordSize || 32);
-        this._data = arrayify([]);
+        this._data = [];
+        this._dataLength = 0;
         this._padding = new Uint8Array(wordSize);
     }
-    get data() { return hexlify(this._data); }
-    get length() { return this._data.length; }
+    get data() {
+        return hexConcat(this._data);
+    }
+    get length() { return this._dataLength; }
     _writeData(data) {
-        this._data = concat([this._data, data]);
+        this._data.push(data);
+        this._dataLength += data.length;
         return data.length;
+    }
+    appendWriter(writer) {
+        return this._writeData(concat(writer._data));
     }
     // Arrayish items; padded on the right to wordSize
     writeBytes(value) {
         let bytes = arrayify(value);
-        if (bytes.length % this.wordSize) {
-            bytes = concat([bytes, this._padding.slice(bytes.length % this.wordSize)]);
+        const paddingOffset = bytes.length % this.wordSize;
+        if (paddingOffset) {
+            bytes = concat([bytes, this._padding.slice(paddingOffset)]);
         }
         return this._writeData(bytes);
     }
@@ -7777,10 +7785,11 @@ class Writer {
         return this._writeData(this._getValue(value));
     }
     writeUpdatableValue() {
-        let offset = this.length;
-        this.writeValue(0);
+        const offset = this._data.length;
+        this._data.push(this._padding);
+        this._dataLength += this.wordSize;
         return (value) => {
-            this._data.set(this._getValue(value), offset);
+            this._data[offset] = this._getValue(value);
         };
     }
 }
@@ -8664,8 +8673,8 @@ function pack(writer, coders, values) {
     });
     // Backfill all the dynamic offsets, now that we know the static length
     updateFuncs.forEach((func) => { func(staticWriter.length); });
-    let length = writer.writeBytes(staticWriter.data);
-    length += writer.writeBytes(dynamicWriter.data);
+    let length = writer.appendWriter(staticWriter);
+    length += writer.appendWriter(dynamicWriter);
     return length;
 }
 function unpack(reader, coders) {
@@ -18464,7 +18473,7 @@ var bech32_5 = bech32.toWords;
 var bech32_6 = bech32.fromWordsUnsafe;
 var bech32_7 = bech32.fromWords;
 
-const version$m = "providers/5.0.10";
+const version$m = "providers/5.0.11";
 
 "use strict";
 const logger$q = new Logger(version$m);
@@ -20162,7 +20171,7 @@ class BaseProvider extends Provider {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.10";
+exports.version = "providers/5.0.11";
 
 });
 
@@ -20700,12 +20709,13 @@ class WebSocketProvider extends JsonRpcProvider {
         }
         super(url, network);
         this._pollingInterval = -1;
+        this._wsReady = false;
         defineReadOnly(this, "_websocket", new WebSocket$1(this.connection.url));
         defineReadOnly(this, "_requests", {});
         defineReadOnly(this, "_subs", {});
         defineReadOnly(this, "_subIds", {});
+        defineReadOnly(this, "_detectNetwork", super.detectNetwork());
         // Stall sending requests until the socket is open...
-        this._wsReady = false;
         this._websocket.onopen = () => {
             this._wsReady = true;
             Object.keys(this._requests).forEach((id) => {
@@ -20755,6 +20765,9 @@ class WebSocketProvider extends JsonRpcProvider {
         if (fauxPoll.unref) {
             fauxPoll.unref();
         }
+    }
+    detectNetwork() {
+        return this._detectNetwork;
     }
     get pollingInterval() {
         return 0;
@@ -22556,6 +22569,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	base64: browser$2,
 	hexlify: hexlify,
 	isHexString: isHexString,
+	hexConcat: hexConcat,
 	hexStripZeros: hexStripZeros,
 	hexValue: hexValue,
 	hexZeroPad: hexZeroPad,
@@ -22613,7 +22627,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.15";
+const version$o = "ethers/5.0.16";
 
 "use strict";
 const logger$E = new Logger(version$o);

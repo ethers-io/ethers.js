@@ -45,28 +45,36 @@ exports.Coder = Coder;
 var Writer = /** @class */ (function () {
     function Writer(wordSize) {
         properties_1.defineReadOnly(this, "wordSize", wordSize || 32);
-        this._data = bytes_1.arrayify([]);
+        this._data = [];
+        this._dataLength = 0;
         this._padding = new Uint8Array(wordSize);
     }
     Object.defineProperty(Writer.prototype, "data", {
-        get: function () { return bytes_1.hexlify(this._data); },
+        get: function () {
+            return bytes_1.hexConcat(this._data);
+        },
         enumerable: true,
         configurable: true
     });
     Object.defineProperty(Writer.prototype, "length", {
-        get: function () { return this._data.length; },
+        get: function () { return this._dataLength; },
         enumerable: true,
         configurable: true
     });
     Writer.prototype._writeData = function (data) {
-        this._data = bytes_1.concat([this._data, data]);
+        this._data.push(data);
+        this._dataLength += data.length;
         return data.length;
+    };
+    Writer.prototype.appendWriter = function (writer) {
+        return this._writeData(bytes_1.concat(writer._data));
     };
     // Arrayish items; padded on the right to wordSize
     Writer.prototype.writeBytes = function (value) {
         var bytes = bytes_1.arrayify(value);
-        if (bytes.length % this.wordSize) {
-            bytes = bytes_1.concat([bytes, this._padding.slice(bytes.length % this.wordSize)]);
+        var paddingOffset = bytes.length % this.wordSize;
+        if (paddingOffset) {
+            bytes = bytes_1.concat([bytes, this._padding.slice(paddingOffset)]);
         }
         return this._writeData(bytes);
     };
@@ -89,10 +97,11 @@ var Writer = /** @class */ (function () {
     };
     Writer.prototype.writeUpdatableValue = function () {
         var _this = this;
-        var offset = this.length;
-        this.writeValue(0);
+        var offset = this._data.length;
+        this._data.push(this._padding);
+        this._dataLength += this.wordSize;
         return function (value) {
-            _this._data.set(_this._getValue(value), offset);
+            _this._data[offset] = _this._getValue(value);
         };
     };
     return Writer;

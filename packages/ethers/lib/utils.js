@@ -33,6 +33,7 @@ exports.base58 = basex_1.Base58;
 var bytes_1 = require("@ethersproject/bytes");
 exports.arrayify = bytes_1.arrayify;
 exports.concat = bytes_1.concat;
+exports.hexConcat = bytes_1.hexConcat;
 exports.hexDataSlice = bytes_1.hexDataSlice;
 exports.hexDataLength = bytes_1.hexDataLength;
 exports.hexlify = bytes_1.hexlify;

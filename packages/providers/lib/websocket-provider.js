@@ -88,12 +88,13 @@ var WebSocketProvider = /** @class */ (function (_super) {
         }
         _this = _super.call(this, url, network) || this;
         _this._pollingInterval = -1;
+        _this._wsReady = false;
         properties_1.defineReadOnly(_this, "_websocket", new ws_1.default(_this.connection.url));
         properties_1.defineReadOnly(_this, "_requests", {});
         properties_1.defineReadOnly(_this, "_subs", {});
         properties_1.defineReadOnly(_this, "_subIds", {});
+        properties_1.defineReadOnly(_this, "_detectNetwork", _super.prototype.detectNetwork.call(_this));
         // Stall sending requests until the socket is open...
-        _this._wsReady = false;
         _this._websocket.onopen = function () {
             _this._wsReady = true;
             Object.keys(_this._requests).forEach(function (id) {
@@ -145,6 +146,9 @@ var WebSocketProvider = /** @class */ (function (_super) {
         }
         return _this;
     }
+    WebSocketProvider.prototype.detectNetwork = function () {
+        return this._detectNetwork;
+    };
     Object.defineProperty(WebSocketProvider.prototype, "pollingInterval", {
         get: function () {
             return 0;
