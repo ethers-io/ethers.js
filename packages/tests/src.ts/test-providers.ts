@@ -449,10 +449,11 @@ const providerFunctions: Array<ProviderDescription> = [
         name: "AlchemyProvider",
         networks: allNetworks,
         create: (network: string) => {
+            const testKey = "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM";
             if (network == "default") {
-                return new ethers.providers.AlchemyProvider();
+                return new ethers.providers.AlchemyProvider(null, testKey);
             }
-            return new ethers.providers.AlchemyProvider(network);
+            return new ethers.providers.AlchemyProvider(network, testKey);
         }
     },
     {
@@ -476,10 +477,11 @@ const providerFunctions: Array<ProviderDescription> = [
         name: "EtherscanProvider",
         networks: allNetworks,
         create: (network: string) => {
+            const testKey = "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX";
             if (network == "default") {
-                return new ethers.providers.EtherscanProvider(null, "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX");
+                return new ethers.providers.EtherscanProvider(null, testKey);
             }
-            return new ethers.providers.EtherscanProvider(network, "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX");
+            return new ethers.providers.EtherscanProvider(network, testKey);
         }
     },
     {
