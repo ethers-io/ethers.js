@@ -453,10 +453,11 @@ var providerFunctions = [
         name: "AlchemyProvider",
         networks: allNetworks,
         create: function (network) {
+            var testKey = "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM";
             if (network == "default") {
-                return new ethers_1.ethers.providers.AlchemyProvider();
+                return new ethers_1.ethers.providers.AlchemyProvider(null, testKey);
             }
-            return new ethers_1.ethers.providers.AlchemyProvider(network);
+            return new ethers_1.ethers.providers.AlchemyProvider(network, testKey);
         }
     },
     {
@@ -480,10 +481,11 @@ var providerFunctions = [
         name: "EtherscanProvider",
         networks: allNetworks,
         create: function (network) {
+            var testKey = "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX";
             if (network == "default") {
-                return new ethers_1.ethers.providers.EtherscanProvider(null, "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX");
+                return new ethers_1.ethers.providers.EtherscanProvider(null, testKey);
             }
-            return new ethers_1.ethers.providers.EtherscanProvider(network, "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX");
+            return new ethers_1.ethers.providers.EtherscanProvider(network, testKey);
         }
     },
     {

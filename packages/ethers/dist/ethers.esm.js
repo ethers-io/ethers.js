@@ -6921,7 +6921,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.0.6";
+const version$4 = "abi/5.0.7";
 
 "use strict";
 const logger$4 = new Logger(version$4);
