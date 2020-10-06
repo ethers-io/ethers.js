@@ -47,7 +47,7 @@ _code: ES6 in the Browser @lang<html>
 _code: ES3 (UMD) in the Browser @lang<html>
 
 <script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js"
-        type="application/javascipt"></script>
+        type="application/javascript"></script>
 
 
 _subsection: Common Terminology @<getting-started--glossary>
