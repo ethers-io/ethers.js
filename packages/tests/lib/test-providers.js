@@ -440,7 +440,7 @@ function waiter(duration) {
 var allNetworks = ["default", "homestead", "ropsten", "rinkeby", "kovan", "goerli"];
 var ApiKeys = {
     alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
-    etherscan: "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX",
+    etherscan: "FPFGK6JSW2UHJJ2666FG93KP7WC999MNW7",
     infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",
 };
 var providerFunctions = [
@@ -488,9 +488,9 @@ var providerFunctions = [
         networks: allNetworks,
         create: function (network) {
             if (network == "default") {
-                return new ethers_1.ethers.providers.EtherscanProvider(null, ApiKeys.infura);
+                return new ethers_1.ethers.providers.EtherscanProvider(null, ApiKeys.etherscan);
             }
-            return new ethers_1.ethers.providers.EtherscanProvider(network, ApiKeys.infura);
+            return new ethers_1.ethers.providers.EtherscanProvider(network, ApiKeys.etherscan);
         }
     },
     {

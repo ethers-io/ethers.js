@@ -436,7 +436,7 @@ const allNetworks = [ "default", "homestead", "ropsten", "rinkeby", "kovan", "go
 
 const ApiKeys: Record<string, string> = {
     alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
-    etherscan: "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX",
+    etherscan: "FPFGK6JSW2UHJJ2666FG93KP7WC999MNW7",
     infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",
 };
 
@@ -485,9 +485,9 @@ const providerFunctions: Array<ProviderDescription> = [
         networks: allNetworks,
         create: (network: string) => {
             if (network == "default") {
-                return new ethers.providers.EtherscanProvider(null, ApiKeys.infura);
+                return new ethers.providers.EtherscanProvider(null, ApiKeys.etherscan);
             }
-            return new ethers.providers.EtherscanProvider(network, ApiKeys.infura);
+            return new ethers.providers.EtherscanProvider(network, ApiKeys.etherscan);
         }
     },
     {
