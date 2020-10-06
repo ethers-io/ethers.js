@@ -1,9 +1,9 @@
 _section: Ethers ASM Dialect @<asm-dialect>
 
-This provides a quick, high-level overcview of the **Ethers ASM Dialect**
+This provides a quick, high-level overview of the **Ethers ASM Dialect**
 for EVM, which is defined by the [Ethers ASM Dialect Grammar](link-ethers-asm-grammar)
 
-Once a program is compiled by a higher level langauge into ASM (assembly),
+Once a program is compiled by a higher level language into ASM (assembly),
 or hand-coded directly in ASM, it needs to be assembled into bytecode.
 
 The assembly process performs a very small set of operations and is
@@ -34,7 +34,7 @@ A **Label** is a position in the program which can be jumped to. A
 ``JUMPDEST`` is automatically added to this point in the assembled
 output.
 
-@TODO: Exmaples
+@TODO: Examples
 
 
 _subsection: Literals @<asm-dialect-literal>
@@ -45,7 +45,7 @@ operation.
 A **Literal** can be provided using a [[DataHexString]] or a decimal
 byte value.
 
-@TODO: exmples
+@TODO: examples
 
 
 _subsection: Comments @<asm-dialect-comment>
@@ -64,7 +64,7 @@ within a **deployment bytecode**, which can be used as **init code**.
 When deploying a program to Ethereum, an **init transaction** is used. An
 //init transaction// has a null ``to`` address and contains bytecode in
 the ``data``. This ``data`` bytecode is a program, that when executed
-returns some other bytecode as a result, this restul is the bytecode
+returns some other bytecode as a result, this result is the bytecode
 to be installed.
 
 Therefore it is important that embedded code uses jumps relative to itself,
@@ -84,7 +84,7 @@ _subsection: Data Segment @<asm-dialect-datasegment>
 A **Data Segment** allows arbitrary data to be embedded into a program,
 which can be useful for lookup tables or deploy-time constants.
 
-An emtpty **Data Segment** can also be used when a labelled location is
+An empty **Data Segment** can also be used when a labelled location is
 required, but without the ``JUMPDEST`` which a [[asm-dialect-label]] adds.
 
 @TODO: Example
@@ -111,5 +111,5 @@ _subsection: Stack Placeholders @<asm-dialect-placeholder>
 @TODO: exampl
 
 
-_subsection: Evaluation and Excution @<asm-dialect-scripting>
+_subsection: Evaluation and Execution @<asm-dialect-scripting>
 

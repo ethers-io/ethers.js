@@ -21,7 +21,7 @@ associated plugin class will be instantiated and run.
 
 _property: setPlugin(pluginClass) => void  @<cli-setplugin> @SRC<cli/cli>
 Set a dedicated [[cli-plugin]] class which will handle all input. This
-may not be used in conjuction with addPlugin and will not automatically
+may not be used in conjunction with addPlugin and will not automatically
 accept a command from the arguments.
 
 _property: showUsage([ message = "" [ , status = 0 ] ]) => never  @<cli-showusage> @SRC<cli/cli>
@@ -36,7 +36,7 @@ _subsection: Plugin  @<cli-plugin> @SRC<cli:class.Plugin>
 Each **Plugin** manages each command of a CLI and is executed in phases.
 
 If the usage (i.e. help) of a CLI is requested, the static methods ``getHelp``
-and ``getOptionHelp`` are used to geneate the help screen.
+and ``getOptionHelp`` are used to generate the help screen.
 
 Otherwise, a plugin is instantiated and the ``prepareOptions`` is called. Each
 plugin **must** call ``super.prepareOptions``, otherwise the basic options are
@@ -83,7 +83,7 @@ _property: plugin.prepareArgs(args) =>  Promise<void>  @<plugin-prepareargs> @SR
 _property: plugin.run() => Promise<void>  @<plugin-run> @SRC<cli/cli:Plugin.run>
 
 _property: plugin.getAddress(addressOrName [ , message = "", [ allowZero = false ] ]) => Promise<string>  @<plugin-getaddress> @SRC<cli/cli:Plugin.getAddress>
-A plugin should use this method to resolve an address. If the resovled address is
+A plugin should use this method to resolve an address. If the resolved address is
 the zero address and //allowZero// is not true, an error is raised.
 
 _property: plugin.dump(header, info) => void  @<plugin-dump> @SRC<cli/cli:Plugin.dump>
@@ -92,7 +92,7 @@ formatted style. In the future, plugins may support a JSON output format
 which will automatically work with this method.
 
 _property: plugin.throwUsageError([ message = "" ]) => never  @<plugin-throwusageerror> @SRC<cli/cli>
-Stops exectuion of the plugin and shows the help screen of the plugin with
+Stops execution of the plugin and shows the help screen of the plugin with
 the optional //message//.
 
 _property: plugin.throwError(message) => never  @<plugin-throwerror> @SRC<cli/cli>
@@ -133,7 +133,7 @@ Flags are simple binary options (such as the ``--yes``), which are true if prese
 otherwise false.
 
 Options require a single parameter follow them on the command line
-(such as ``--account wallet.json``, which nhas the name ``account`` and the value
+(such as ``--account wallet.json``, which has the name ``account`` and the value
 ``wallet.json``)
 
 Arguments are all other values on the command line, and are not accessed through

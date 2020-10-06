@@ -26,10 +26,10 @@ A **Networkish** may be any of the following:
 - the name of a common network as a string (e.g. ``"homestead"``)
 - the chain ID a network as a number; if the chain ID is that of a
   common network, the ``name`` and ``ensAddress`` will be populated, otherwise,
-  the deafults name ``"unknown"`` and no ``ensAddress`` is used
+  the default name ``"unknown"`` and no ``ensAddress`` is used
 
 _subsection: Network @<providers-Network>
-A **Network** represents an Etherem network.
+A **Network** represents an Ethereum network.
 
 _property: network.name => string
 The human-readable name of the network, such as ``homestead``. If the network
@@ -273,7 +273,7 @@ The amount of gas actually used by this transaction.
 
 _property: receipt.logsBloom => string<[[DataHexString]]>
 A [bloom-filter](link-wiki-bloomfilter), which
-incldues all the addresses and topics included in any log in this
+includes all the addresses and topics included in any log in this
 transaction.
 
 _property: receipt.blockHash => string<[[DataHexString]]<32>>

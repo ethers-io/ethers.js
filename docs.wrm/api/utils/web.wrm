@@ -37,7 +37,7 @@ Additional headers to include in the connection.
 _heading: PollOptions @<PollOptions>
 
 _property: options.timeout => number
-The amount of time allowed to ellapse before triggering a timeout
+The amount of time allowed to elapse before triggering a timeout
 error.
 
 _property: options.floor => number

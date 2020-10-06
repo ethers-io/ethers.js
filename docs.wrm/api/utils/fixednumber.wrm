@@ -93,7 +93,7 @@ A signed format string begins with ``fixed``, which an unsigned format
 string begins with ``ufixed``, followed by the width (in bits) and the
 number of decimals.
 
-The width must be conguent to 0 mod 8 (i.e. ``(width % 8) == 0``) and no
+The width must be congruent to 0 mod 8 (i.e. ``(width % 8) == 0``) and no
 larger than 256 bits and the number of decimals must be no larger than 80.
 
 For example:

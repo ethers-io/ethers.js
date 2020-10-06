@@ -49,7 +49,7 @@ string of a decimal number.
 
 _property: literalNode.verbatim => boolean
 This is true in a [[asm-datanode]] context, since in that case the
-value should be taken verbatim and no ``PUSH`` operation shoud be
+value should be taken verbatim and no ``PUSH`` operation should be
 added, otherwise false.
 
 
@@ -96,7 +96,7 @@ any output assembly, using the ``{{! code here }}`` syntax.
 
 _property: literalNode.verbatim => boolean
 This is true in a [[asm-datanode]] context, since in that case the
-value should be taken verbatim and no ``PUSH`` operation shoud be
+value should be taken verbatim and no ``PUSH`` operation should be
 added, otherwise false.
 
 _property: evaluationNode.script => string
