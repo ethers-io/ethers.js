@@ -433,13 +433,15 @@ const providerFunctions = [
             return new ethers.providers.AlchemyProvider(network, ApiKeys.alchemy);
         }
     },
+    /*
     {
         name: "CloudflareProvider",
-        networks: ["homestead"],
-        create: (network) => {
+        networks: [ "homestead" ],
+        create: (network: string) => {
             return new ethers.providers.CloudflareProvider(network);
         }
     },
+    */
     {
         name: "InfuraProvider",
         networks: allNetworks,

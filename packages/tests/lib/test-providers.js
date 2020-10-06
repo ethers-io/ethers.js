@@ -464,13 +464,15 @@ var providerFunctions = [
             return new ethers_1.ethers.providers.AlchemyProvider(network, ApiKeys.alchemy);
         }
     },
+    /*
     {
         name: "CloudflareProvider",
-        networks: ["homestead"],
-        create: function (network) {
-            return new ethers_1.ethers.providers.CloudflareProvider(network);
+        networks: [ "homestead" ],
+        create: (network: string) => {
+            return new ethers.providers.CloudflareProvider(network);
         }
     },
+    */
     {
         name: "InfuraProvider",
         networks: allNetworks,

@@ -461,6 +461,7 @@ const providerFunctions: Array<ProviderDescription> = [
             return new ethers.providers.AlchemyProvider(network, ApiKeys.alchemy);
         }
     },
+    /*
     {
         name: "CloudflareProvider",
         networks: [ "homestead" ],
@@ -468,6 +469,7 @@ const providerFunctions: Array<ProviderDescription> = [
             return new ethers.providers.CloudflareProvider(network);
         }
     },
+    */
     {
         name: "InfuraProvider",
         networks: allNetworks,
