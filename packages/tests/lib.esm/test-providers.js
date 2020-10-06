@@ -644,6 +644,7 @@ describe("Test Provider Methods", function () {
     const faucet = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
     before(function () {
         return __awaiter(this, void 0, void 0, function* () {
+            this.timeout(120000);
             // Get some ether from the faucet
             const provider = ethers.getDefaultProvider("ropsten");
             const funder = yield ethers.utils.fetchJson(`https:/\/api.ethers.io/api/v1/?action=fundAccount&address=${fundWallet.address.toLowerCase()}`);
@@ -655,13 +656,14 @@ describe("Test Provider Methods", function () {
     });
     after(function () {
         return __awaiter(this, void 0, void 0, function* () {
+            this.timeout(120000);
             // Wait until the funding is complete
             yield fundReceipt;
             // Refund all unused ether to the faucet
             const provider = ethers.getDefaultProvider("ropsten");
             const gasPrice = yield provider.getGasPrice();
             const balance = yield provider.getBalance(fundWallet.address);
-            fundWallet.connect(provider).sendTransaction({
+            yield fundWallet.connect(provider).sendTransaction({
                 to: faucet,
                 gasLimit: 21000,
                 gasPrice: gasPrice,
@@ -704,10 +706,11 @@ describe("Test Provider Methods", function () {
                         let error = null;
                         for (let attempt = 0; attempt < attempts; attempt++) {
                             try {
-                                return yield Promise.race([
+                                const result = yield Promise.race([
                                     test.execute(provider),
                                     waiter(timeout * 1000).then((result) => { throw new Error("timeout"); })
                                 ]);
+                                return result;
                             }
                             catch (attemptError) {
                                 console.log(`*** Failed attempt ${attempt + 1}: ${attemptError.message}`);

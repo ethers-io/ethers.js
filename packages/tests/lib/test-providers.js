@@ -753,6 +753,7 @@ describe("Test Provider Methods", function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        this.timeout(120000);
                         provider = ethers_1.ethers.getDefaultProvider("ropsten");
                         return [4 /*yield*/, ethers_1.ethers.utils.fetchJson("https://api.ethers.io/api/v1/?action=fundAccount&address=" + fundWallet.address.toLowerCase())];
                     case 1:
@@ -771,9 +772,10 @@ describe("Test Provider Methods", function () {
             var provider, gasPrice, balance;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: 
-                    // Wait until the funding is complete
-                    return [4 /*yield*/, fundReceipt];
+                    case 0:
+                        this.timeout(120000);
+                        // Wait until the funding is complete
+                        return [4 /*yield*/, fundReceipt];
                     case 1:
                         // Wait until the funding is complete
                         _a.sent();
@@ -784,12 +786,14 @@ describe("Test Provider Methods", function () {
                         return [4 /*yield*/, provider.getBalance(fundWallet.address)];
                     case 3:
                         balance = _a.sent();
-                        fundWallet.connect(provider).sendTransaction({
-                            to: faucet,
-                            gasLimit: 21000,
-                            gasPrice: gasPrice,
-                            value: balance.sub(gasPrice.mul(21000))
-                        });
+                        return [4 /*yield*/, fundWallet.connect(provider).sendTransaction({
+                                to: faucet,
+                                gasLimit: 21000,
+                                gasPrice: gasPrice,
+                                value: balance.sub(gasPrice.mul(21000))
+                            })];
+                    case 4:
+                        _a.sent();
                         return [2 /*return*/];
                 }
             });
@@ -816,7 +820,7 @@ describe("Test Provider Methods", function () {
                 }, {});
                 it(name + "." + (network ? network : "default") + " " + test.name, function () {
                     return __awaiter(this, void 0, void 0, function () {
-                        var error, attempt, attemptError_1;
+                        var error, attempt, result, attemptError_1;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
@@ -848,7 +852,9 @@ describe("Test Provider Methods", function () {
                                             test.execute(provider),
                                             waiter(timeout * 1000).then(function (result) { throw new Error("timeout"); })
                                         ])];
-                                case 7: return [2 /*return*/, _a.sent()];
+                                case 7:
+                                    result = _a.sent();
+                                    return [2 /*return*/, result];
                                 case 8:
                                     attemptError_1 = _a.sent();
                                     console.log("*** Failed attempt " + (attempt + 1) + ": " + attemptError_1.message);

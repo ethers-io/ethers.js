@@ -26,4 +26,4 @@ describe('Test solc', function () {
         }
     });
 });
-//# sourceMappingURL=test-solc.js.map
+//# sourceMappingURL=skip-test-solc.js.map

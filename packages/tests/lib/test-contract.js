@@ -105,7 +105,7 @@ function TestContractEvents() {
                 case 0: return [4 /*yield*/, ethers_1.ethers.utils.fetchJson('https://api.ethers.io/api/v1/?action=triggerTest&address=' + contract.address)];
                 case 1:
                     data = _a.sent();
-                    console.log('  *** Triggered Transaction Hash: ' + data.hash);
+                    console.log('*** Triggered Transaction Hash: ' + data.hash);
                     contract.on("error", function (error) {
                         console.log(error);
                         assert_1.default(false);
