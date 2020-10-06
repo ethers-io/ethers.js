@@ -438,26 +438,30 @@ function waiter(duration) {
     });
 }
 var allNetworks = ["default", "homestead", "ropsten", "rinkeby", "kovan", "goerli"];
+var ApiKeys = {
+    alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
+    etherscan: "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX",
+    infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",
+};
 var providerFunctions = [
     {
         name: "getDefaultProvider",
         networks: allNetworks,
         create: function (network) {
             if (network == "default") {
-                return ethers_1.ethers.getDefaultProvider();
+                return ethers_1.ethers.getDefaultProvider(null, ApiKeys);
             }
-            return ethers_1.ethers.getDefaultProvider(network);
+            return ethers_1.ethers.getDefaultProvider(network, ApiKeys);
         }
     },
     {
         name: "AlchemyProvider",
         networks: allNetworks,
         create: function (network) {
-            var testKey = "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM";
             if (network == "default") {
-                return new ethers_1.ethers.providers.AlchemyProvider(null, testKey);
+                return new ethers_1.ethers.providers.AlchemyProvider(null, ApiKeys.alchemy);
             }
-            return new ethers_1.ethers.providers.AlchemyProvider(network, testKey);
+            return new ethers_1.ethers.providers.AlchemyProvider(network, ApiKeys.alchemy);
         }
     },
     {
@@ -472,20 +476,19 @@ var providerFunctions = [
         networks: allNetworks,
         create: function (network) {
             if (network == "default") {
-                return new ethers_1.ethers.providers.InfuraProvider();
+                return new ethers_1.ethers.providers.InfuraProvider(null, ApiKeys.infura);
             }
-            return new ethers_1.ethers.providers.InfuraProvider(network);
+            return new ethers_1.ethers.providers.InfuraProvider(network, ApiKeys.infura);
         }
     },
     {
         name: "EtherscanProvider",
         networks: allNetworks,
         create: function (network) {
-            var testKey = "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX";
             if (network == "default") {
-                return new ethers_1.ethers.providers.EtherscanProvider(null, testKey);
+                return new ethers_1.ethers.providers.EtherscanProvider(null, ApiKeys.infura);
             }
-            return new ethers_1.ethers.providers.EtherscanProvider(network, testKey);
+            return new ethers_1.ethers.providers.EtherscanProvider(network, ApiKeys.infura);
         }
     },
     {

@@ -407,26 +407,30 @@ function waiter(duration) {
     });
 }
 const allNetworks = ["default", "homestead", "ropsten", "rinkeby", "kovan", "goerli"];
+const ApiKeys = {
+    alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
+    etherscan: "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX",
+    infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",
+};
 const providerFunctions = [
     {
         name: "getDefaultProvider",
         networks: allNetworks,
         create: (network) => {
             if (network == "default") {
-                return ethers.getDefaultProvider();
+                return ethers.getDefaultProvider(null, ApiKeys);
             }
-            return ethers.getDefaultProvider(network);
+            return ethers.getDefaultProvider(network, ApiKeys);
         }
     },
     {
         name: "AlchemyProvider",
         networks: allNetworks,
         create: (network) => {
-            const testKey = "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM";
             if (network == "default") {
-                return new ethers.providers.AlchemyProvider(null, testKey);
+                return new ethers.providers.AlchemyProvider(null, ApiKeys.alchemy);
             }
-            return new ethers.providers.AlchemyProvider(network, testKey);
+            return new ethers.providers.AlchemyProvider(network, ApiKeys.alchemy);
         }
     },
     {
@@ -441,20 +445,19 @@ const providerFunctions = [
         networks: allNetworks,
         create: (network) => {
             if (network == "default") {
-                return new ethers.providers.InfuraProvider();
+                return new ethers.providers.InfuraProvider(null, ApiKeys.infura);
             }
-            return new ethers.providers.InfuraProvider(network);
+            return new ethers.providers.InfuraProvider(network, ApiKeys.infura);
         }
     },
     {
         name: "EtherscanProvider",
         networks: allNetworks,
         create: (network) => {
-            const testKey = "YTCX255XJGH9SCBUDP2K48S4YWACUEFSJX";
             if (network == "default") {
-                return new ethers.providers.EtherscanProvider(null, testKey);
+                return new ethers.providers.EtherscanProvider(null, ApiKeys.infura);
             }
-            return new ethers.providers.EtherscanProvider(network, testKey);
+            return new ethers.providers.EtherscanProvider(network, ApiKeys.infura);
         }
     },
     {
