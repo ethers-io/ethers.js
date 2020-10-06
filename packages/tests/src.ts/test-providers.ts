@@ -460,7 +460,7 @@ const providerFunctions: Array<ProviderDescription> = [
         name: "CloudflareProvider",
         networks: [ "homestead" ],
         create: (network: string) => {
-            return new ethers.providers.AlchemyProvider(network);
+            return new ethers.providers.CloudflareProvider(network);
         }
     },
     {
@@ -747,7 +747,10 @@ describe("Test Provider Methods", function() {
                 }, <{ [ key: string ]: boolean }>{ });
 
                 it(`${ name }.${ network ? network: "default" } ${ test.name}`, async function() {
-                    this.timeout(timeout * 1000 * attempts);
+                    // Multiply by 2 to make sure this never happens; we want our
+                    // timeout logic to success, not allow a done() called multiple
+                    // times because our logic returns after the timeout has occurred.
+                    this.timeout(2 * (1000 + timeout * 1000 * attempts));
 
                     // Wait for the funding transaction to be mined
                     if (extras.funding) { await fundReceipt; }
@@ -760,7 +763,7 @@ describe("Test Provider Methods", function() {
                         try {
                             return await Promise.race([
                                 test.execute(provider),
-                                waiter(timeout * 1000).then((resolve) => { throw new Error("timeout"); })
+                                waiter(timeout * 1000).then((result) => { throw new Error("timeout"); })
                             ]);
                         } catch (attemptError) {
                             console.log(`*** Failed attempt ${ attempt + 1 }: ${ attemptError.message }`);
