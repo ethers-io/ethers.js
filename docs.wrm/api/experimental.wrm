@@ -17,7 +17,7 @@ Generates a brain wallet, with a slightly improved experience, in which
 the generated wallet has a mnemonic.
 
 _property: BrainWallet.generateLegacy(username, password [ , progressCallback ]) => [[experimental-brainwallet]]
-Generate a brain wallet which is compatibile with the ethers v3 and earlier.
+Generate a brain wallet which is compatible with the ethers v3 and earlier.
 
 
 _subsection: EIP1193Bridge @<experimental-eip1193bridge> @INHERIT<[[link-npm-events]]>

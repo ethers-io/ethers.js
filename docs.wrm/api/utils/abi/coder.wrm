@@ -12,7 +12,7 @@ _subsection: Creating Instance @<AbiCoder--creating>
 
 For the most part, there should never be a need to manually create
 an instance of an [[AbiCoder]], since one is created with the
-default coersion function when the library is loaded which can
+default coercion function when the library is loaded which can
 be used universally.
 
 This is likely only needed by those with specific needs to override

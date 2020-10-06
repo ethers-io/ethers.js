@@ -54,7 +54,7 @@ _property: transaction.gasLimit => [[BigNumber]]
 The gas limit for //transaction//. An account must have enough ether to
 cover the gas (at the specified **gasPrice**). Any unused gas is
 refunded at the end of the transaction, and if there is insufficient gas
-to complete execution, the effects of the trasaction are reverted, but
+to complete execution, the effects of the transaction are reverted, but
 the gas is **fully consumed** and an out-of-gas error occurs.
 
 _property: transaction.gasPrice => [[BigNumber]]

@@ -18,7 +18,7 @@ To use ethers in React Native, you must either provide shims for the needed
 missing functionality, or use the ethers.js shim.
 
 It is **HIGHLY RECOMMENDED** you check out the [security section](cookbook-reactnative-security>
-below for instructions on installing pacakges which can affect the security
+below for instructions on installing packages which can affect the security
 of your application.
 
 After installing packages, you may need to restart your packager and company.

@@ -212,7 +212,7 @@ to parameters which are part of an [[EventFragment]].
 _property: paramType.arrayChildren => [[ParamType]] @<ParamType-arrayChildren>
 
 The type of children of the array. This is null for for any parameter
-wjhich is not an array.
+which is not an array.
 
 _property: paramType.arrayLength => number @<ParamType-arrayLength>
 

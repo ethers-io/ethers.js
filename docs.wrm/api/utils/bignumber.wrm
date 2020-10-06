@@ -17,7 +17,7 @@ _heading: BigNumberish @<BigNumberish>
 
 Many functions and methods in this library take in values which
 can be non-ambiguously and safely converted to a BigNumber. These
-values can be sepcified as:
+values can be specified as:
 
 _definition: **//string//**
 A [[HexString]] or a decimal string, either of which may
@@ -232,7 +232,7 @@ mathematical operations handled safely.
 _heading: Why not BigNumber.js, BN.js, BigDecimal, etc?
 
 Everyone has their own favourite Big Number library, and once someone
-has choosen one, it becomes part of their identity, like their editor,
+has chosen one, it becomes part of their identity, like their editor,
 vi vs emacs. There are over 100 Big Number libraries on [npm](link-npm-query-bignumber).
 
 One of the biggest differences between the Ethers [[BigNumber]] object and
@@ -246,7 +246,7 @@ low-level library's objects which supports myriad in-place operations.
 Second, the Ethers [[BigNumber]] provides all the functionality required
 internally and should generally be sufficient for most developers while
 not exposing some of the more advanced and rare functionality. So it will
-be eaiser to swap out the underlying library without impacting consumers.
+be easier to swap out the underlying library without impacting consumers.
 
 For example, if [[link-npm-bnjs]] was exposed, someone may use the
 greatest-common-denominator functions, which would then be functionality

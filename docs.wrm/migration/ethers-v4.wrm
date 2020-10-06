@@ -3,7 +3,7 @@ _section: Migration: From Ethers v4  @<migration-v4>
 This document only covers the features present in v4 which have changed
 in some important way in v5.
 
-It does not cover all the new additional featuers that have been added and
+It does not cover all the new additional features that have been added and
 mainly aims to help those updating their older scripts and applications to
 retain functional parity.
 
@@ -52,7 +52,7 @@ _subsection: Contracts
 _heading: ENS Name Resolution
 
 The name of the resolved address has changed. If the address passed into the
-constructor was an ENS name, the address will be resovled before any calls
+constructor was an ENS name, the address will be resolved before any calls
 are made to the contract.
 
 The name of the property where the resolved address has changed from ``addressPromise``
@@ -151,7 +151,7 @@ All errors now belong to the [[Logger]] class and the related functions
 have been moved to [[Logger]] instances, which can include a per-package
 version string.
 
-Global error fucntions have been moved [[Logger]] class methods.
+Global error functions have been moved [[Logger]] class methods.
 
 _code: @lang<script>
 

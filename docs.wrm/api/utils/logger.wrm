@@ -56,11 +56,11 @@ _heading: Usage Validation
 There can be used to ensure various properties and actions are safe.
 
 _property: logger.checkAbstract(target, kind) => void @SRC<logger>
-Checks that //target// is not //kind// and performs the same operatons
+Checks that //target// is not //kind// and performs the same operations
 as ``checkNew``. This is useful for ensuring abstract classes are not
 being instantiated.
 
-_property: logger.checkArgumentCount(count, expectedCound [ , message) => void @SRC<logger>
+_property: logger.checkArgumentCount(count, expectedCount [ , message) => void @SRC<logger>
 If //count// is not equal to //expectedCount//, throws a [MISSING_ARGUMENT](errors-MissingArgument)
 or [UNEXPECTED_ARGUMENT](errors-UnexpectedArgument) error.
 

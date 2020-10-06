@@ -4,7 +4,7 @@ The **Interface** Class abstracts the encoding and decoding required
 to interact with contracts on the Ethereum network.
 
 Many of the standards organically evolved along side the [[link-solidity]]
-language, which other languages have adopted to remain compatibile with
+language, which other languages have adopted to remain compatible with
 existing deployed contracts.
 
 The EVM itself does not understand what the ABI is. It is simply an agreed
