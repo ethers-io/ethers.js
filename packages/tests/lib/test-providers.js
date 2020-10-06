@@ -753,8 +753,8 @@ describe("Test Provider Methods", function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        this.timeout(120000);
-                        provider = ethers_1.ethers.getDefaultProvider("ropsten");
+                        this.timeout(300000);
+                        provider = new ethers_1.ethers.providers.InfuraProvider("ropsten", ApiKeys.infura);
                         return [4 /*yield*/, ethers_1.ethers.utils.fetchJson("https://api.ethers.io/api/v1/?action=fundAccount&address=" + fundWallet.address.toLowerCase())];
                     case 1:
                         funder = _a.sent();
@@ -769,17 +769,18 @@ describe("Test Provider Methods", function () {
     });
     after(function () {
         return __awaiter(this, void 0, void 0, function () {
-            var provider, gasPrice, balance;
+            var provider, gasPrice, balance, tx;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        this.timeout(120000);
+                        this.timeout(300000);
+                        console.log("*** Sweeping funds back to faucet");
                         // Wait until the funding is complete
                         return [4 /*yield*/, fundReceipt];
                     case 1:
                         // Wait until the funding is complete
                         _a.sent();
-                        provider = ethers_1.ethers.getDefaultProvider("ropsten");
+                        provider = new ethers_1.ethers.providers.InfuraProvider("ropsten", ApiKeys.infura);
                         return [4 /*yield*/, provider.getGasPrice()];
                     case 2:
                         gasPrice = _a.sent();
@@ -793,7 +794,8 @@ describe("Test Provider Methods", function () {
                                 value: balance.sub(gasPrice.mul(21000))
                             })];
                     case 4:
-                        _a.sent();
+                        tx = _a.sent();
+                        console.log("*** Sweep Transaction:", tx.hash);
                         return [2 /*return*/];
                 }
             });

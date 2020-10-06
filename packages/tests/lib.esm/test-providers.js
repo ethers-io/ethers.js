@@ -644,9 +644,9 @@ describe("Test Provider Methods", function () {
     const faucet = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
     before(function () {
         return __awaiter(this, void 0, void 0, function* () {
-            this.timeout(120000);
+            this.timeout(300000);
             // Get some ether from the faucet
-            const provider = ethers.getDefaultProvider("ropsten");
+            const provider = new ethers.providers.InfuraProvider("ropsten", ApiKeys.infura);
             const funder = yield ethers.utils.fetchJson(`https:/\/api.ethers.io/api/v1/?action=fundAccount&address=${fundWallet.address.toLowerCase()}`);
             fundReceipt = provider.waitForTransaction(funder.hash);
             fundReceipt.then((receipt) => {
@@ -656,19 +656,21 @@ describe("Test Provider Methods", function () {
     });
     after(function () {
         return __awaiter(this, void 0, void 0, function* () {
-            this.timeout(120000);
+            this.timeout(300000);
+            console.log("*** Sweeping funds back to faucet");
             // Wait until the funding is complete
             yield fundReceipt;
             // Refund all unused ether to the faucet
-            const provider = ethers.getDefaultProvider("ropsten");
+            const provider = new ethers.providers.InfuraProvider("ropsten", ApiKeys.infura);
             const gasPrice = yield provider.getGasPrice();
             const balance = yield provider.getBalance(fundWallet.address);
-            yield fundWallet.connect(provider).sendTransaction({
+            const tx = yield fundWallet.connect(provider).sendTransaction({
                 to: faucet,
                 gasLimit: 21000,
                 gasPrice: gasPrice,
                 value: balance.sub(gasPrice.mul(21000))
             });
+            console.log(`*** Sweep Transaction:`, tx.hash);
         });
     });
     providerFunctions.forEach(({ name, networks, create }) => {
