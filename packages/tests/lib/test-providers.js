@@ -464,7 +464,7 @@ var providerFunctions = [
         name: "CloudflareProvider",
         networks: ["homestead"],
         create: function (network) {
-            return new ethers_1.ethers.providers.AlchemyProvider(network);
+            return new ethers_1.ethers.providers.CloudflareProvider(network);
         }
     },
     {
@@ -815,7 +815,10 @@ describe("Test Provider Methods", function () {
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
-                                    this.timeout(timeout * 1000 * attempts);
+                                    // Multiply by 2 to make sure this never happens; we want our
+                                    // timeout logic to success, not allow a done() called multiple
+                                    // times because our logic returns after the timeout has occurred.
+                                    this.timeout(2 * (1000 + timeout * 1000 * attempts));
                                     if (!extras.funding) return [3 /*break*/, 2];
                                     return [4 /*yield*/, fundReceipt];
                                 case 1:
@@ -838,7 +841,7 @@ describe("Test Provider Methods", function () {
                                     _a.trys.push([6, 8, , 9]);
                                     return [4 /*yield*/, Promise.race([
                                             test.execute(provider),
-                                            waiter(timeout * 1000).then(function (resolve) { throw new Error("timeout"); })
+                                            waiter(timeout * 1000).then(function (result) { throw new Error("timeout"); })
                                         ])];
                                 case 7: return [2 /*return*/, _a.sent()];
                                 case 8:
