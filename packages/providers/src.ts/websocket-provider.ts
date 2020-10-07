@@ -95,15 +95,32 @@ export class WebSocketProvider extends JsonRpcProvider {
                 if (result.result !== undefined) {
                     request.callback(null, result.result);
 
+                    this.emit("debug", {
+                        action: "response",
+                        request: JSON.parse(request.payload),
+                        response: result.result,
+                        provider: this
+                    });
+
                 } else {
+                    let error: Error = null;
                     if (result.error) {
-                        const error: any = new Error(result.error.message || "unknown error");
-                        defineReadOnly(error, "code", result.error.code || null);
-                        defineReadOnly(error, "response", data);
-                        request.callback(error, undefined);
+                        error = new Error(result.error.message || "unknown error");
+                        defineReadOnly(<any>error, "code", result.error.code || null);
+                        defineReadOnly(<any>error, "response", data);
                     } else {
-                        request.callback(new Error("unknown error"), undefined);
+                        error = new Error("unknown error");
                     }
+
+                    request.callback(error, undefined);
+
+                    this.emit("debug", {
+                        action: "response",
+                        error: error,
+                        request: JSON.parse(request.payload),
+                        provider: this
+                    });
+
                 }
 
             } else if (result.method === "eth_subscription") {
@@ -174,6 +191,12 @@ export class WebSocketProvider extends JsonRpcProvider {
                 params: params,
                 id: rid,
                 jsonrpc: "2.0"
+            });
+
+            this.emit("debug", {
+                action: "request",
+                request: JSON.parse(payload),
+                provider: this
             });
 
             this._requests[String(rid)] = { callback, payload };
