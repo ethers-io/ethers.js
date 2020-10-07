@@ -107,13 +107,14 @@ export class InfuraProvider extends UrlJsonRpcProvider {
         }
 
         const connection: ConnectionInfo = {
-             url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId),
-             throttleCallback: (attempt: number, url: string) => {
-                 if (apiKey.projectId === defaultProjectId) {
-                     showThrottleMessage();
-                 }
-                 return Promise.resolve(true);
-             }
+            allowGzip: true,
+            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId),
+            throttleCallback: (attempt: number, url: string) => {
+                if (apiKey.projectId === defaultProjectId) {
+                    showThrottleMessage();
+                }
+                return Promise.resolve(true);
+            }
         };
 
         if (apiKey.projectSecret != null) {
