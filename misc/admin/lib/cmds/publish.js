@@ -176,14 +176,13 @@ exports.invalidate = invalidate;
                 ];
                 for (let i = 0; i < fileInfos.length; i++) {
                     const { filename, key } = fileInfos[i];
-                    const status = yield putObject(s3, {
+                    yield putObject(s3, {
                         ACL: "public-read",
                         Body: fs_1.default.readFileSync(path_1.resolve(filename)),
                         Bucket: bucketName,
                         ContentType: "application/javascript; charset=utf-8",
                         Key: (originRoot + key)
                     });
-                    console.log(status);
                     console.log(`${log_1.colorify.bold("Uploaded:")} https://cdn.ethers.io/lib/${key}`);
                 }
             }

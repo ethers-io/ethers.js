@@ -56,7 +56,7 @@ const utils_1 = require("../utils");
             latestVersions[pLocal.name] = version;
             // Write out the _version.ts
             if (!pLocal._ethers_nobuild) {
-                const code = "export const version = " + JSON.stringify(dirname + "/" + pLocal.version) + ";\n";
+                const code = "export const version = " + JSON.stringify(dirname + "/" + version) + ";\n";
                 fs_1.default.writeFileSync(path_1.resolve(path_1.getPackagePath(dirname), "src.ts/_version.ts"), code);
             }
         }

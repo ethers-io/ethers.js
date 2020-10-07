@@ -50,7 +50,7 @@ import { loadJson, repeat, saveJson } from "../utils";
 
         // Write out the _version.ts
         if (!pLocal._ethers_nobuild) {
-            const code = "export const version = " + JSON.stringify(dirname + "/" + pLocal.version) + ";\n";
+            const code = "export const version = " + JSON.stringify(dirname + "/" + version) + ";\n";
             fs.writeFileSync(resolve(getPackagePath(dirname), "src.ts/_version.ts"), code);
         }
     }

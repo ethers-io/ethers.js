@@ -68,7 +68,14 @@ function nonnull(value: string): string {
     return value;
 }
 
-export async function getUrl(href: string, options?: Options): Promise<GetUrlResponse> {
+function staller(duration: number): Promise<void> {
+    return new Promise((resolve) => {
+        const timer = setTimeout(resolve, duration);
+        timer.unref();
+    });
+}
+
+async function _getUrl(href: string, options?: Options): Promise<GetUrlResponse> {
     if (options == null) { options = { }; }
 
     // @TODO: Once we drop support for node 8, we can pass the href
@@ -112,3 +119,19 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
     return response;
 }
 
+export async function getUrl(href: string, options?: Options): Promise<GetUrlResponse> {
+    let error: Error = null;
+    for (let i = 0; i < 3; i++) {
+        try {
+            const result = await Promise.race([
+                _getUrl(href, options),
+                staller(30000).then((result) => { throw new Error("timeout") })
+            ]);
+            return result;
+        } catch (e) {
+            error = e;
+        }
+        await staller(1000);
+    }
+    throw error;
+}

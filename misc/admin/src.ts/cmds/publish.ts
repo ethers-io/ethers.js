@@ -184,15 +184,13 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
 
             for (let i = 0; i < fileInfos.length; i++) {
                 const { filename, key } = fileInfos[i];
-                const status = await putObject(s3, {
+                await putObject(s3, {
                     ACL: "public-read",
                     Body: fs.readFileSync(resolve(filename)),
                     Bucket: bucketName,
                     ContentType: "application/javascript; charset=utf-8",
                     Key: (originRoot + key)
                 });
-                console.log(status);
-
                 console.log(`${ colorify.bold("Uploaded:") } https://cdn.ethers.io/lib/${ key }`);
             }
         }

@@ -60,7 +60,13 @@ function nonnull(value) {
     }
     return value;
 }
-function getUrl(href, options) {
+function staller(duration) {
+    return new Promise((resolve) => {
+        const timer = setTimeout(resolve, duration);
+        timer.unref();
+    });
+}
+function _getUrl(href, options) {
     return __awaiter(this, void 0, void 0, function* () {
         if (options == null) {
             options = {};
@@ -98,6 +104,25 @@ function getUrl(href, options) {
         req.end();
         const response = yield getResponse(req);
         return response;
+    });
+}
+function getUrl(href, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let error = null;
+        for (let i = 0; i < 3; i++) {
+            try {
+                const result = yield Promise.race([
+                    _getUrl(href, options),
+                    staller(30000).then((result) => { throw new Error("timeout"); })
+                ]);
+                return result;
+            }
+            catch (e) {
+                error = e;
+            }
+            yield staller(1000);
+        }
+        throw error;
     });
 }
 exports.getUrl = getUrl;
