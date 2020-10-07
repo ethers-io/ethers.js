@@ -2,9 +2,11 @@
 
 import http from "http";
 import https from "https";
+import { gunzipSync } from "zlib";
 import { parse } from "url"
 
-import { concat } from "@ethersproject/bytes";
+import { arrayify, concat } from "@ethersproject/bytes";
+import { shallowCopy } from "@ethersproject/properties";
 
 import type { GetUrlResponse, Options } from "./types";
 
@@ -38,6 +40,11 @@ function getResponse(request: http.ClientRequest): Promise<GetUrlResponse> {
             });
 
             resp.on("end", () => {
+                if (response.headers["content-encoding"] === "gzip") {
+                    //const size = response.body.length;
+                    response.body = arrayify(gunzipSync(response.body));
+                    //console.log("Delta:", response.body.length - size, Buffer.from(response.body).toString());
+                }
                 resolve(response);
             });
 
@@ -73,8 +80,12 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
         path: (nonnull(url.pathname) + nonnull(url.search)),
 
         method: (options.method || "GET"),
-        headers: (options.headers || { }),
+        headers: shallowCopy(options.headers || { }),
     };
+
+    if (options.allowGzip) {
+        request.headers["accept-encoding"] = "gzip";
+    }
 
     let req: http.ClientRequest = null;
     switch (nonnull(url.protocol)) {

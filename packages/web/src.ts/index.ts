@@ -9,7 +9,7 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 
-import { getUrl, GetUrlResponse } from "./geturl";
+import { getUrl, GetUrlResponse, Options } from "./geturl";
 
 function staller(duration: number): Promise<void> {
     return new Promise((resolve) => {
@@ -43,6 +43,7 @@ export type ConnectionInfo = {
     password?: string,
 
     allowInsecureAuthentication?: boolean,
+    allowGzip?: boolean,
 
     throttleLimit?: number,
     throttleSlotInterval?: number;
@@ -100,7 +101,7 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
     let url: string = null;
 
     // @TODO: Allow ConnectionInfo to override some of these values
-    const options: any = {
+    const options: Options = {
         method: "GET",
     };
 
@@ -130,6 +131,8 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
                 }
             }
         }
+
+        options.allowGzip = !!connection.allowGzip;
 
         if (connection.user != null && connection.password != null) {
             if (url.substring(0, 6) !== "https:" && connection.allowInsecureAuthentication !== true) {
