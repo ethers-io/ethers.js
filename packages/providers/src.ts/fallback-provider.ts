@@ -9,6 +9,7 @@ import { shuffled } from "@ethersproject/random";
 import { poll } from "@ethersproject/web";
 
 import { BaseProvider } from "./base-provider";
+import { isCommunityResource } from "./formatter";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -417,13 +418,17 @@ export class FallbackProvider extends BaseProvider {
 
         const providerConfigs: Array<FallbackProviderConfig> = providers.map((configOrProvider, index) => {
             if (Provider.isProvider(configOrProvider)) {
-                return Object.freeze({ provider: configOrProvider, weight: 1, stallTimeout: 750, priority: 1 });
+                const stallTimeout = isCommunityResource(configOrProvider) ? 2000: 750;
+                const priority = 1;
+                return Object.freeze({ provider: configOrProvider, weight: 1, stallTimeout, priority });
             }
 
             const config: FallbackProviderConfig = shallowCopy(configOrProvider);
 
             if (config.priority == null) { config.priority = 1; }
-            if (config.stallTimeout == null) { config.stallTimeout = 750; }
+            if (config.stallTimeout == null) {
+                config.stallTimeout = isCommunityResource(configOrProvider) ? 2000: 750;
+            }
             if (config.weight == null) { config.weight = 1; }
 
             const weight = config.weight;

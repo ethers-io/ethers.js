@@ -9,6 +9,7 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 
+import { CommunityResourcable } from "./formatter";
 import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 
 type getUrlFunc = (network: Network, apiKey: string) => string | ConnectionInfo;
@@ -46,7 +47,7 @@ export class StaticJsonRpcProvider extends JsonRpcProvider {
     }
 }
 
-export abstract class UrlJsonRpcProvider extends StaticJsonRpcProvider {
+export abstract class UrlJsonRpcProvider extends StaticJsonRpcProvider implements CommunityResourcable {
     readonly apiKey: any;
 
     constructor(network?: Networkish, apiKey?: any) {
@@ -71,6 +72,10 @@ export abstract class UrlJsonRpcProvider extends StaticJsonRpcProvider {
 
     _startPending(): void {
         logger.warn("WARNING: API provider does not support pending filters");
+    }
+
+    isCommunityResource(): boolean {
+        return false;
     }
 
     getSigner(address?: string): JsonRpcSigner {

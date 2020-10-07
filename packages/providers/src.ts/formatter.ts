@@ -455,6 +455,18 @@ export class Formatter {
     }
 }
 
+export interface CommunityResourcable {
+    isCommunityResource(): boolean;
+}
+
+export function isCommunityResourcable(value: any): value is CommunityResourcable {
+    return (value && typeof(value.isCommunityResource) === "function");
+}
+
+export function isCommunityResource(value: any): boolean {
+    return (isCommunityResourcable(value) && value.isCommunityResource());
+}
+
 // Show the throttle message only once
 let throttleMessage = false;
 export function showThrottleMessage() {

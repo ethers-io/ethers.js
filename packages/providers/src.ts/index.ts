@@ -18,12 +18,12 @@ import { Network, Networkish } from "@ethersproject/networks";
 
 import { BaseProvider, EnsProvider, EnsResolver, Resolver } from "./base-provider";
 
-import { AlchemyProvider } from "./alchemy-provider";
+import { AlchemyProvider, AlchemyWebSocketProvider } from "./alchemy-provider";
 import { CloudflareProvider } from "./cloudflare-provider";
 import { EtherscanProvider } from "./etherscan-provider";
 import { FallbackProvider } from "./fallback-provider";
 import { IpcProvider } from "./ipc-provider";
-import { InfuraProvider } from "./infura-provider";
+import { InfuraProvider, InfuraWebSocketProvider } from "./infura-provider";
 import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 import { NodesmithProvider } from "./nodesmith-provider";
 import { StaticJsonRpcProvider, UrlJsonRpcProvider } from "./url-json-rpc-provider";
@@ -31,7 +31,7 @@ import { Web3Provider } from "./web3-provider";
 import { WebSocketProvider } from "./websocket-provider";
 import { ExternalProvider, JsonRpcFetchFunc } from "./web3-provider";
 
-import { Formatter } from "./formatter";
+import { CommunityResourcable, Formatter, isCommunityResourcable, isCommunityResource, showThrottleMessage } from "./formatter";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -103,9 +103,11 @@ export {
     FallbackProvider,
 
     AlchemyProvider,
+    AlchemyWebSocketProvider,
     CloudflareProvider,
     EtherscanProvider,
     InfuraProvider,
+    InfuraWebSocketProvider,
     JsonRpcProvider,
     NodesmithProvider,
     StaticJsonRpcProvider,
@@ -126,6 +128,9 @@ export {
 
     getDefaultProvider,
     getNetwork,
+    isCommunityResource,
+    isCommunityResourcable,
+    showThrottleMessage,
 
 
     ///////////////////////
@@ -154,6 +159,8 @@ export {
     Networkish,
 
     EnsProvider,
-    EnsResolver
+    EnsResolver,
+
+    CommunityResourcable
 };
 

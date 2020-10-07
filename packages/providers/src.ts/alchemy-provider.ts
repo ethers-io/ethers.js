@@ -1,9 +1,10 @@
 "use strict";
 
 import { Network, Networkish } from "@ethersproject/networks";
+import { defineReadOnly } from "@ethersproject/properties";
 import { ConnectionInfo } from "@ethersproject/web";
 
-import { showThrottleMessage } from "./formatter";
+import { CommunityResourcable, showThrottleMessage } from "./formatter";
 import { WebSocketProvider } from "./websocket-provider";
 
 import { Logger } from "@ethersproject/logger";
@@ -19,15 +20,28 @@ import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 
 const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC"
 
-export class AlchemyProvider extends UrlJsonRpcProvider {
+export class AlchemyWebSocketProvider extends WebSocketProvider implements CommunityResourcable {
+    readonly apiKey: string;
 
-    static getWebSocketProvider(network?: Networkish, apiKey?: any): WebSocketProvider {
+    constructor(network?: Networkish, apiKey?: any) {
         const provider = new AlchemyProvider(network, apiKey);
 
         const url = provider.connection.url.replace(/^http/i, "ws")
                                            .replace(".alchemyapi.", ".ws.alchemyapi.");
 
-        return new WebSocketProvider(url, provider.network);
+        super(url, provider.network);
+        defineReadOnly(this, "apiKey", provider.apiKey);
+    }
+
+    isCommunityResource(): boolean {
+        return (this.apiKey === defaultApiKey);
+    }
+}
+
+export class AlchemyProvider extends UrlJsonRpcProvider {
+
+    static getWebSocketProvider(network?: Networkish, apiKey?: any): AlchemyWebSocketProvider {
+        return new AlchemyWebSocketProvider(network, apiKey);
     }
 
     static getApiKey(apiKey: any): any {
@@ -69,5 +83,9 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
                 return Promise.resolve(true);
             }
         };
+    }
+
+    isCommunityResource(): boolean {
+        return (this.apiKey === defaultApiKey);
     }
 }

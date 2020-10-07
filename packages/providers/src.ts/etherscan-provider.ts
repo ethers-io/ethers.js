@@ -189,7 +189,7 @@ export class EtherscanProvider extends BaseProvider{
                 url: url,
                 throttleSlotInterval: 1000,
                 throttleCallback: (attempt: number, url: string) => {
-                    if (this.apiKey === defaultApiKey) {
+                    if (this.isCommunityResource()) {
                         showThrottleMessage();
                     }
                     return Promise.resolve(true);
@@ -423,5 +423,9 @@ export class EtherscanProvider extends BaseProvider{
                 return output;
             });
         });
+    }
+
+    isCommunityResource(): boolean {
+        return (this.apiKey === defaultApiKey);
     }
 }
