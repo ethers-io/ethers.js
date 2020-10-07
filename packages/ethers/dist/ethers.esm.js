@@ -18473,7 +18473,7 @@ var bech32_5 = bech32.toWords;
 var bech32_6 = bech32.fromWordsUnsafe;
 var bech32_7 = bech32.fromWords;
 
-const version$m = "providers/5.0.11";
+const version$m = "providers/5.0.12";
 
 "use strict";
 const logger$q = new Logger(version$m);
@@ -20171,7 +20171,7 @@ class BaseProvider extends Provider {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.11";
+exports.version = "providers/5.0.12";
 
 });
 
@@ -20731,17 +20731,30 @@ class WebSocketProvider extends JsonRpcProvider {
                 delete this._requests[id];
                 if (result.result !== undefined) {
                     request.callback(null, result.result);
+                    this.emit("debug", {
+                        action: "response",
+                        request: JSON.parse(request.payload),
+                        response: result.result,
+                        provider: this
+                    });
                 }
                 else {
+                    let error = null;
                     if (result.error) {
-                        const error = new Error(result.error.message || "unknown error");
+                        error = new Error(result.error.message || "unknown error");
                         defineReadOnly(error, "code", result.error.code || null);
                         defineReadOnly(error, "response", data);
-                        request.callback(error, undefined);
                     }
                     else {
-                        request.callback(new Error("unknown error"), undefined);
+                        error = new Error("unknown error");
                     }
+                    request.callback(error, undefined);
+                    this.emit("debug", {
+                        action: "response",
+                        error: error,
+                        request: JSON.parse(request.payload),
+                        provider: this
+                    });
                 }
             }
             else if (result.method === "eth_subscription") {
@@ -20809,6 +20822,11 @@ class WebSocketProvider extends JsonRpcProvider {
                 params: params,
                 id: rid,
                 jsonrpc: "2.0"
+            });
+            this.emit("debug", {
+                action: "request",
+                request: JSON.parse(payload),
+                provider: this
             });
             this._requests[String(rid)] = { callback, payload };
             if (this._wsReady) {
@@ -22627,7 +22645,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.16";
+const version$o = "ethers/5.0.17";
 
 "use strict";
 const logger$E = new Logger(version$o);

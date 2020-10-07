@@ -20376,7 +20376,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.11";
+	exports.version = "providers/5.0.12";
 
 	});
 
@@ -23259,17 +23259,30 @@
 	                delete _this._requests[id];
 	                if (result.result !== undefined) {
 	                    request.callback(null, result.result);
+	                    _this.emit("debug", {
+	                        action: "response",
+	                        request: JSON.parse(request.payload),
+	                        response: result.result,
+	                        provider: _this
+	                    });
 	                }
 	                else {
+	                    var error = null;
 	                    if (result.error) {
-	                        var error = new Error(result.error.message || "unknown error");
+	                        error = new Error(result.error.message || "unknown error");
 	                        lib$3.defineReadOnly(error, "code", result.error.code || null);
 	                        lib$3.defineReadOnly(error, "response", data);
-	                        request.callback(error, undefined);
 	                    }
 	                    else {
-	                        request.callback(new Error("unknown error"), undefined);
+	                        error = new Error("unknown error");
 	                    }
+	                    request.callback(error, undefined);
+	                    _this.emit("debug", {
+	                        action: "response",
+	                        error: error,
+	                        request: JSON.parse(request.payload),
+	                        provider: _this
+	                    });
 	                }
 	            }
 	            else if (result.method === "eth_subscription") {
@@ -23349,6 +23362,11 @@
 	                params: params,
 	                id: rid,
 	                jsonrpc: "2.0"
+	            });
+	            _this.emit("debug", {
+	                action: "request",
+	                request: JSON.parse(payload),
+	                provider: _this
 	            });
 	            _this._requests[String(rid)] = { callback: callback, payload: payload };
 	            if (_this._wsReady) {
@@ -25885,7 +25903,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.16";
+	exports.version = "ethers/5.0.17";
 
 	});
 

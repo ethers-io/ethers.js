@@ -110,17 +110,30 @@ var WebSocketProvider = /** @class */ (function (_super) {
                 delete _this._requests[id];
                 if (result.result !== undefined) {
                     request.callback(null, result.result);
+                    _this.emit("debug", {
+                        action: "response",
+                        request: JSON.parse(request.payload),
+                        response: result.result,
+                        provider: _this
+                    });
                 }
                 else {
+                    var error = null;
                     if (result.error) {
-                        var error = new Error(result.error.message || "unknown error");
+                        error = new Error(result.error.message || "unknown error");
                         properties_1.defineReadOnly(error, "code", result.error.code || null);
                         properties_1.defineReadOnly(error, "response", data);
-                        request.callback(error, undefined);
                     }
                     else {
-                        request.callback(new Error("unknown error"), undefined);
+                        error = new Error("unknown error");
                     }
+                    request.callback(error, undefined);
+                    _this.emit("debug", {
+                        action: "response",
+                        error: error,
+                        request: JSON.parse(request.payload),
+                        provider: _this
+                    });
                 }
             }
             else if (result.method === "eth_subscription") {
@@ -200,6 +213,11 @@ var WebSocketProvider = /** @class */ (function (_super) {
                 params: params,
                 id: rid,
                 jsonrpc: "2.0"
+            });
+            _this.emit("debug", {
+                action: "request",
+                request: JSON.parse(payload),
+                provider: _this
             });
             _this._requests[String(rid)] = { callback: callback, payload: payload };
             if (_this._wsReady) {

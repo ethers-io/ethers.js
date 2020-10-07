@@ -64,17 +64,30 @@ export class WebSocketProvider extends JsonRpcProvider {
                 delete this._requests[id];
                 if (result.result !== undefined) {
                     request.callback(null, result.result);
+                    this.emit("debug", {
+                        action: "response",
+                        request: JSON.parse(request.payload),
+                        response: result.result,
+                        provider: this
+                    });
                 }
                 else {
+                    let error = null;
                     if (result.error) {
-                        const error = new Error(result.error.message || "unknown error");
+                        error = new Error(result.error.message || "unknown error");
                         defineReadOnly(error, "code", result.error.code || null);
                         defineReadOnly(error, "response", data);
-                        request.callback(error, undefined);
                     }
                     else {
-                        request.callback(new Error("unknown error"), undefined);
+                        error = new Error("unknown error");
                     }
+                    request.callback(error, undefined);
+                    this.emit("debug", {
+                        action: "response",
+                        error: error,
+                        request: JSON.parse(request.payload),
+                        provider: this
+                    });
                 }
             }
             else if (result.method === "eth_subscription") {
@@ -142,6 +155,11 @@ export class WebSocketProvider extends JsonRpcProvider {
                 params: params,
                 id: rid,
                 jsonrpc: "2.0"
+            });
+            this.emit("debug", {
+                action: "request",
+                request: JSON.parse(payload),
+                provider: this
             });
             this._requests[String(rid)] = { callback, payload };
             if (this._wsReady) {
