@@ -70,6 +70,9 @@ export function formatUnits(value: BigNumberish, unitName?: string | BigNumberis
 }
 
 export function parseUnits(value: string, unitName?: BigNumberish): BigNumber {
+    if (typeof(value) !== "string") {
+        logger.throwArgumentError("value must be a string", "value", value);
+    }
     if (typeof(unitName) === "string") {
         const index = names.indexOf(unitName);
         if (index !== -1) { unitName = 3 * index; }
