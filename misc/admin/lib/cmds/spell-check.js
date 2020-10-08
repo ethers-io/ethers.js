@@ -57,7 +57,7 @@ ABIEncoder testcase numberish Wordlist
 abi addr api app arg arrayify asm basex bigint bignumber bn byte
 bytecode callback calldata checksum ciphertext cli codepoint commify config
 contenthash ctr ctrl debug dd dklen eexist encseed eof ethaddr
-ethseed ethers eval exec filename func gz hid http https hw iv
+ethseed ethers eval exec filename func gz gzip hid http https hw iv
 info init ipc json kdf kdfparams labelhash lang lib mm multihash nfc
 nfkc nfd nfkd nodehash notok nowait nullish oob opcode pbkdf pc plugin
 pragma pre prf repl rpc sighash topichash solc stdin stdout subclasses
