@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+var properties_1 = require("@ethersproject/properties");
 var websocket_provider_1 = require("./websocket-provider");
 var formatter_1 = require("./formatter");
 var logger_1 = require("@ethersproject/logger");
@@ -20,12 +21,10 @@ var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var url_json_rpc_provider_1 = require("./url-json-rpc-provider");
 var defaultProjectId = "84842078b09946638c03157f83405213";
-var InfuraProvider = /** @class */ (function (_super) {
-    __extends(InfuraProvider, _super);
-    function InfuraProvider() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    InfuraProvider.getWebSocketProvider = function (network, apiKey) {
+var InfuraWebSocketProvider = /** @class */ (function (_super) {
+    __extends(InfuraWebSocketProvider, _super);
+    function InfuraWebSocketProvider(network, apiKey) {
+        var _this = this;
         var provider = new InfuraProvider(network, apiKey);
         var connection = provider.connection;
         if (connection.password) {
@@ -34,7 +33,25 @@ var InfuraProvider = /** @class */ (function (_super) {
             });
         }
         var url = connection.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
-        return new websocket_provider_1.WebSocketProvider(url, network);
+        _this = _super.call(this, url, network) || this;
+        properties_1.defineReadOnly(_this, "apiKey", provider.projectId);
+        properties_1.defineReadOnly(_this, "projectId", provider.projectId);
+        properties_1.defineReadOnly(_this, "projectSecret", provider.projectSecret);
+        return _this;
+    }
+    InfuraWebSocketProvider.prototype.isCommunityResource = function () {
+        return (this.projectId === defaultProjectId);
+    };
+    return InfuraWebSocketProvider;
+}(websocket_provider_1.WebSocketProvider));
+exports.InfuraWebSocketProvider = InfuraWebSocketProvider;
+var InfuraProvider = /** @class */ (function (_super) {
+    __extends(InfuraProvider, _super);
+    function InfuraProvider() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    InfuraProvider.getWebSocketProvider = function (network, apiKey) {
+        return new InfuraWebSocketProvider(network, apiKey);
     };
     InfuraProvider.getApiKey = function (apiKey) {
         var apiKeyObj = {
@@ -85,6 +102,7 @@ var InfuraProvider = /** @class */ (function (_super) {
                 });
         }
         var connection = {
+            allowGzip: true,
             url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId),
             throttleCallback: function (attempt, url) {
                 if (apiKey.projectId === defaultProjectId) {
@@ -98,6 +116,9 @@ var InfuraProvider = /** @class */ (function (_super) {
             connection.password = apiKey.projectSecret;
         }
         return connection;
+    };
+    InfuraProvider.prototype.isCommunityResource = function () {
+        return (this.projectId === defaultProjectId);
     };
     return InfuraProvider;
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));

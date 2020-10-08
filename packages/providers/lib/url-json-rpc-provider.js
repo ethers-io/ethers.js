@@ -123,6 +123,9 @@ var UrlJsonRpcProvider = /** @class */ (function (_super) {
     UrlJsonRpcProvider.prototype._startPending = function () {
         logger.warn("WARNING: API provider does not support pending filters");
     };
+    UrlJsonRpcProvider.prototype.isCommunityResource = function () {
+        return false;
+    };
     UrlJsonRpcProvider.prototype.getSigner = function (address) {
         return logger.throwError("API provider does not support signing", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "getSigner" });
     };

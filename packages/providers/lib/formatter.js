@@ -386,6 +386,14 @@ var Formatter = /** @class */ (function () {
     return Formatter;
 }());
 exports.Formatter = Formatter;
+function isCommunityResourcable(value) {
+    return (value && typeof (value.isCommunityResource) === "function");
+}
+exports.isCommunityResourcable = isCommunityResourcable;
+function isCommunityResource(value) {
+    return (isCommunityResourcable(value) && value.isCommunityResource());
+}
+exports.isCommunityResource = isCommunityResource;
 // Show the throttle message only once
 var throttleMessage = false;
 function showThrottleMessage() {

@@ -380,6 +380,12 @@ export class Formatter {
         });
     }
 }
+export function isCommunityResourcable(value) {
+    return (value && typeof (value.isCommunityResource) === "function");
+}
+export function isCommunityResource(value) {
+    return (isCommunityResourcable(value) && value.isCommunityResource());
+}
 // Show the throttle message only once
 let throttleMessage = false;
 export function showThrottleMessage() {

@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+var properties_1 = require("@ethersproject/properties");
 var formatter_1 = require("./formatter");
 var websocket_provider_1 = require("./websocket-provider");
 var logger_1 = require("@ethersproject/logger");
@@ -24,16 +25,30 @@ var url_json_rpc_provider_1 = require("./url-json-rpc-provider");
 // production environments, that you acquire your own API key at:
 //   https://dashboard.alchemyapi.io
 var defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC";
+var AlchemyWebSocketProvider = /** @class */ (function (_super) {
+    __extends(AlchemyWebSocketProvider, _super);
+    function AlchemyWebSocketProvider(network, apiKey) {
+        var _this = this;
+        var provider = new AlchemyProvider(network, apiKey);
+        var url = provider.connection.url.replace(/^http/i, "ws")
+            .replace(".alchemyapi.", ".ws.alchemyapi.");
+        _this = _super.call(this, url, provider.network) || this;
+        properties_1.defineReadOnly(_this, "apiKey", provider.apiKey);
+        return _this;
+    }
+    AlchemyWebSocketProvider.prototype.isCommunityResource = function () {
+        return (this.apiKey === defaultApiKey);
+    };
+    return AlchemyWebSocketProvider;
+}(websocket_provider_1.WebSocketProvider));
+exports.AlchemyWebSocketProvider = AlchemyWebSocketProvider;
 var AlchemyProvider = /** @class */ (function (_super) {
     __extends(AlchemyProvider, _super);
     function AlchemyProvider() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     AlchemyProvider.getWebSocketProvider = function (network, apiKey) {
-        var provider = new AlchemyProvider(network, apiKey);
-        var url = provider.connection.url.replace(/^http/i, "ws")
-            .replace(".alchemyapi.", ".ws.alchemyapi.");
-        return new websocket_provider_1.WebSocketProvider(url, provider.network);
+        return new AlchemyWebSocketProvider(network, apiKey);
     };
     AlchemyProvider.getApiKey = function (apiKey) {
         if (apiKey == null) {
@@ -66,6 +81,7 @@ var AlchemyProvider = /** @class */ (function (_super) {
                 logger.throwArgumentError("unsupported network", "network", arguments[0]);
         }
         return {
+            allowGzip: true,
             url: ("https:/" + "/" + host + apiKey),
             throttleCallback: function (attempt, url) {
                 if (apiKey === defaultApiKey) {
@@ -74,6 +90,9 @@ var AlchemyProvider = /** @class */ (function (_super) {
                 return Promise.resolve(true);
             }
         };
+    };
+    AlchemyProvider.prototype.isCommunityResource = function () {
+        return (this.apiKey === defaultApiKey);
     };
     return AlchemyProvider;
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));

@@ -80,6 +80,7 @@ export function _fetchData(connection, body, processFunc) {
                 }
             }
         }
+        options.allowGzip = !!connection.allowGzip;
         if (connection.user != null && connection.password != null) {
             if (url.substring(0, 6) !== "https:" && connection.allowInsecureAuthentication !== true) {
                 logger.throwError("basic authentication requires a secure https url", Logger.errors.INVALID_ARGUMENT, { argument: "url", url: url, user: connection.user, password: "[REDACTED]" });

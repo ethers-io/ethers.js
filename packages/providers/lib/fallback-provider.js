@@ -56,6 +56,7 @@ var properties_1 = require("@ethersproject/properties");
 var random_1 = require("@ethersproject/random");
 var web_1 = require("@ethersproject/web");
 var base_provider_1 = require("./base-provider");
+var formatter_1 = require("./formatter");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
@@ -424,14 +425,16 @@ var FallbackProvider = /** @class */ (function (_super) {
         }
         var providerConfigs = providers.map(function (configOrProvider, index) {
             if (abstract_provider_1.Provider.isProvider(configOrProvider)) {
-                return Object.freeze({ provider: configOrProvider, weight: 1, stallTimeout: 750, priority: 1 });
+                var stallTimeout = formatter_1.isCommunityResource(configOrProvider) ? 2000 : 750;
+                var priority = 1;
+                return Object.freeze({ provider: configOrProvider, weight: 1, stallTimeout: stallTimeout, priority: priority });
             }
             var config = properties_1.shallowCopy(configOrProvider);
             if (config.priority == null) {
                 config.priority = 1;
             }
             if (config.stallTimeout == null) {
-                config.stallTimeout = 750;
+                config.stallTimeout = formatter_1.isCommunityResource(configOrProvider) ? 2000 : 750;
             }
             if (config.weight == null) {
                 config.weight = 1;

@@ -17886,7 +17886,7 @@ var browser$2 = /*#__PURE__*/Object.freeze({
 	encode: encode$1
 });
 
-const version$l = "web/5.0.8";
+const version$l = "web/5.0.9";
 
 "use strict";
 var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -18010,6 +18010,7 @@ function _fetchData(connection, body, processFunc) {
                 }
             }
         }
+        options.allowGzip = !!connection.allowGzip;
         if (connection.user != null && connection.password != null) {
             if (url.substring(0, 6) !== "https:" && connection.allowInsecureAuthentication !== true) {
                 logger$p.throwError("basic authentication requires a secure https url", Logger.errors.INVALID_ARGUMENT, { argument: "url", url: url, user: connection.user, password: "[REDACTED]" });
@@ -18848,6 +18849,12 @@ class Formatter {
             return result;
         });
     }
+}
+function isCommunityResourcable(value) {
+    return (value && typeof (value.isCommunityResource) === "function");
+}
+function isCommunityResource(value) {
+    return (isCommunityResourcable(value) && value.isCommunityResource());
 }
 // Show the throttle message only once
 let throttleMessage = false;
@@ -21016,6 +21023,9 @@ class UrlJsonRpcProvider extends StaticJsonRpcProvider {
     _startPending() {
         logger$u.warn("WARNING: API provider does not support pending filters");
     }
+    isCommunityResource() {
+        return false;
+    }
     getSigner(address) {
         return logger$u.throwError("API provider does not support signing", Logger.errors.UNSUPPORTED_OPERATION, { operation: "getSigner" });
     }
@@ -21043,12 +21053,21 @@ const logger$v = new Logger(version$m);
 // production environments, that you acquire your own API key at:
 //   https://dashboard.alchemyapi.io
 const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC";
-class AlchemyProvider extends UrlJsonRpcProvider {
-    static getWebSocketProvider(network, apiKey) {
+class AlchemyWebSocketProvider extends WebSocketProvider {
+    constructor(network, apiKey) {
         const provider = new AlchemyProvider(network, apiKey);
         const url = provider.connection.url.replace(/^http/i, "ws")
             .replace(".alchemyapi.", ".ws.alchemyapi.");
-        return new WebSocketProvider(url, provider.network);
+        super(url, provider.network);
+        defineReadOnly(this, "apiKey", provider.apiKey);
+    }
+    isCommunityResource() {
+        return (this.apiKey === defaultApiKey);
+    }
+}
+class AlchemyProvider extends UrlJsonRpcProvider {
+    static getWebSocketProvider(network, apiKey) {
+        return new AlchemyWebSocketProvider(network, apiKey);
     }
     static getApiKey(apiKey) {
         if (apiKey == null) {
@@ -21081,6 +21100,7 @@ class AlchemyProvider extends UrlJsonRpcProvider {
                 logger$v.throwArgumentError("unsupported network", "network", arguments[0]);
         }
         return {
+            allowGzip: true,
             url: ("https:/" + "/" + host + apiKey),
             throttleCallback: (attempt, url) => {
                 if (apiKey === defaultApiKey) {
@@ -21089,6 +21109,9 @@ class AlchemyProvider extends UrlJsonRpcProvider {
                 return Promise.resolve(true);
             }
         };
+    }
+    isCommunityResource() {
+        return (this.apiKey === defaultApiKey);
     }
 }
 
@@ -21312,7 +21335,7 @@ class EtherscanProvider extends BaseProvider {
                     url: url,
                     throttleSlotInterval: 1000,
                     throttleCallback: (attempt, url) => {
-                        if (this.apiKey === defaultApiKey$1) {
+                        if (this.isCommunityResource()) {
                             showThrottleMessage();
                         }
                         return Promise.resolve(true);
@@ -21527,6 +21550,9 @@ class EtherscanProvider extends BaseProvider {
                 return output;
             });
         });
+    }
+    isCommunityResource() {
+        return (this.apiKey === defaultApiKey$1);
     }
 }
 
@@ -21877,14 +21903,16 @@ class FallbackProvider extends BaseProvider {
         }
         const providerConfigs = providers.map((configOrProvider, index) => {
             if (Provider.isProvider(configOrProvider)) {
-                return Object.freeze({ provider: configOrProvider, weight: 1, stallTimeout: 750, priority: 1 });
+                const stallTimeout = isCommunityResource(configOrProvider) ? 2000 : 750;
+                const priority = 1;
+                return Object.freeze({ provider: configOrProvider, weight: 1, stallTimeout, priority });
             }
             const config = shallowCopy(configOrProvider);
             if (config.priority == null) {
                 config.priority = 1;
             }
             if (config.stallTimeout == null) {
-                config.stallTimeout = 750;
+                config.stallTimeout = isCommunityResource(configOrProvider) ? 2000 : 750;
             }
             if (config.weight == null) {
                 config.weight = 1;
@@ -22111,8 +22139,8 @@ var browserIpcProvider = {
 "use strict";
 const logger$z = new Logger(version$m);
 const defaultProjectId = "84842078b09946638c03157f83405213";
-class InfuraProvider extends UrlJsonRpcProvider {
-    static getWebSocketProvider(network, apiKey) {
+class InfuraWebSocketProvider extends WebSocketProvider {
+    constructor(network, apiKey) {
         const provider = new InfuraProvider(network, apiKey);
         const connection = provider.connection;
         if (connection.password) {
@@ -22121,7 +22149,18 @@ class InfuraProvider extends UrlJsonRpcProvider {
             });
         }
         const url = connection.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
-        return new WebSocketProvider(url, network);
+        super(url, network);
+        defineReadOnly(this, "apiKey", provider.projectId);
+        defineReadOnly(this, "projectId", provider.projectId);
+        defineReadOnly(this, "projectSecret", provider.projectSecret);
+    }
+    isCommunityResource() {
+        return (this.projectId === defaultProjectId);
+    }
+}
+class InfuraProvider extends UrlJsonRpcProvider {
+    static getWebSocketProvider(network, apiKey) {
+        return new InfuraWebSocketProvider(network, apiKey);
     }
     static getApiKey(apiKey) {
         const apiKeyObj = {
@@ -22172,6 +22211,7 @@ class InfuraProvider extends UrlJsonRpcProvider {
                 });
         }
         const connection = {
+            allowGzip: true,
             url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId),
             throttleCallback: (attempt, url) => {
                 if (apiKey.projectId === defaultProjectId) {
@@ -22185,6 +22225,9 @@ class InfuraProvider extends UrlJsonRpcProvider {
             connection.password = apiKey.projectSecret;
         }
         return connection;
+    }
+    isCommunityResource() {
+        return (this.projectId === defaultProjectId);
     }
 }
 
@@ -22371,9 +22414,11 @@ var index$2 = /*#__PURE__*/Object.freeze({
 	UrlJsonRpcProvider: UrlJsonRpcProvider,
 	FallbackProvider: FallbackProvider,
 	AlchemyProvider: AlchemyProvider,
+	AlchemyWebSocketProvider: AlchemyWebSocketProvider,
 	CloudflareProvider: CloudflareProvider,
 	EtherscanProvider: EtherscanProvider,
 	InfuraProvider: InfuraProvider,
+	InfuraWebSocketProvider: InfuraWebSocketProvider,
 	JsonRpcProvider: JsonRpcProvider,
 	NodesmithProvider: NodesmithProvider,
 	StaticJsonRpcProvider: StaticJsonRpcProvider,
@@ -22383,6 +22428,9 @@ var index$2 = /*#__PURE__*/Object.freeze({
 	JsonRpcSigner: JsonRpcSigner,
 	getDefaultProvider: getDefaultProvider,
 	getNetwork: getNetwork,
+	isCommunityResource: isCommunityResource,
+	isCommunityResourcable: isCommunityResourcable,
+	showThrottleMessage: showThrottleMessage,
 	Formatter: Formatter
 });
 
@@ -22469,7 +22517,7 @@ function sha256$1(types, values) {
     return browser_3(pack$1(types, values));
 }
 
-const version$n = "units/5.0.5";
+const version$n = "units/5.0.6";
 
 "use strict";
 const logger$D = new Logger(version$n);
@@ -22534,6 +22582,9 @@ function formatUnits(value, unitName) {
     return formatFixed(value, (unitName != null) ? unitName : 18);
 }
 function parseUnits(value, unitName) {
+    if (typeof (value) !== "string") {
+        logger$D.throwArgumentError("value must be a string", "value", value);
+    }
     if (typeof (unitName) === "string") {
         const index = names.indexOf(unitName);
         if (index !== -1) {

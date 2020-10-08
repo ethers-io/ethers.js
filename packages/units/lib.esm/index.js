@@ -64,6 +64,9 @@ export function formatUnits(value, unitName) {
     return formatFixed(value, (unitName != null) ? unitName : 18);
 }
 export function parseUnits(value, unitName) {
+    if (typeof (value) !== "string") {
+        logger.throwArgumentError("value must be a string", "value", value);
+    }
     if (typeof (unitName) === "string") {
         const index = names.indexOf(unitName);
         if (index !== -1) {

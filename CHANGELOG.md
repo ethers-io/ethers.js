@@ -3,6 +3,15 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.17 (2020-10-07 20:08)
+---------------------------------
+
+  - Better error message for parseUnits of non-strings. ([#981](https://github.com/ethers-io/ethers.js/issues/981); [5abc2f3](https://github.com/ethers-io/ethers.js/commit/5abc2f36e20eef79a935961f3dd8133b5528d9e5))
+  - Add gzip support to AlchemyProivder and InfuraProvider fetching. ([#1085](https://github.com/ethers-io/ethers.js/issues/1085); [38a068b](https://github.com/ethers-io/ethers.js/commit/38a068bcea3f251c8f3a349a90fcb077a39d23ad))
+  - Add gzip support to getUrl in node. ([#1085](https://github.com/ethers-io/ethers.js/issues/1085); [65772a8](https://github.com/ethers-io/ethers.js/commit/65772a8e1a55d663bdb67e3a2b160fecc9f986ef))
+  - Added CommunityResourcable to mark Providers as highly throttled. ([a022093](https://github.com/ethers-io/ethers.js/commit/a022093ce03f55db7ba2cac36e365d1af39ac45b))
+  - Added debug event info to WebSocketProvider. ([#1018](https://github.com/ethers-io/ethers.js/issues/1018); [8e682cc](https://github.com/ethers-io/ethers.js/commit/8e682cc8481c6051a6f8115b29d78f4996120ccd))
+
 ethers/v5.0.16 (2020-10-05 15:44)
 ---------------------------------
 

@@ -10,8 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import http from "http";
 import https from "https";
+import { gunzipSync } from "zlib";
 import { parse } from "url";
-import { concat } from "@ethersproject/bytes";
+import { arrayify, concat } from "@ethersproject/bytes";
+import { shallowCopy } from "@ethersproject/properties";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
@@ -39,6 +41,11 @@ function getResponse(request) {
                 response.body = concat([response.body, chunk]);
             });
             resp.on("end", () => {
+                if (response.headers["content-encoding"] === "gzip") {
+                    //const size = response.body.length;
+                    response.body = arrayify(gunzipSync(response.body));
+                    //console.log("Delta:", response.body.length - size, Buffer.from(response.body).toString());
+                }
                 resolve(response);
             });
             resp.on("error", (error) => {
@@ -72,8 +79,11 @@ export function getUrl(href, options) {
             port: nonnull(url.port),
             path: (nonnull(url.pathname) + nonnull(url.search)),
             method: (options.method || "GET"),
-            headers: (options.headers || {}),
+            headers: shallowCopy(options.headers || {}),
         };
+        if (options.allowGzip) {
+            request.headers["accept-encoding"] = "gzip";
+        }
         let req = null;
         switch (nonnull(url.protocol)) {
             case "http:":

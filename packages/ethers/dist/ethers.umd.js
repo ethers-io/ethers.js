@@ -19661,7 +19661,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "web/5.0.8";
+	exports.version = "web/5.0.9";
 
 	});
 
@@ -19872,6 +19872,7 @@
 	                }
 	            }
 	        }
+	        options.allowGzip = !!connection.allowGzip;
 	        if (connection.user != null && connection.password != null) {
 	            if (url.substring(0, 6) !== "https:" && connection.allowInsecureAuthentication !== true) {
 	                logger.throwError("basic authentication requires a secure https url", lib.Logger.errors.INVALID_ARGUMENT, { argument: "url", url: url, user: connection.user, password: "[REDACTED]" });
@@ -20772,6 +20773,14 @@
 	    return Formatter;
 	}());
 	exports.Formatter = Formatter;
+	function isCommunityResourcable(value) {
+	    return (value && typeof (value.isCommunityResource) === "function");
+	}
+	exports.isCommunityResourcable = isCommunityResourcable;
+	function isCommunityResource(value) {
+	    return (isCommunityResourcable(value) && value.isCommunityResource());
+	}
+	exports.isCommunityResource = isCommunityResource;
 	// Show the throttle message only once
 	var throttleMessage = false;
 	function showThrottleMessage() {
@@ -20798,7 +20807,9 @@
 
 	var formatter$1 = unwrapExports(formatter);
 	var formatter_1 = formatter.Formatter;
-	var formatter_2 = formatter.showThrottleMessage;
+	var formatter_2 = formatter.isCommunityResourcable;
+	var formatter_3 = formatter.isCommunityResource;
+	var formatter_4 = formatter.showThrottleMessage;
 
 	var baseProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -23645,6 +23656,9 @@
 	    UrlJsonRpcProvider.prototype._startPending = function () {
 	        logger.warn("WARNING: API provider does not support pending filters");
 	    };
+	    UrlJsonRpcProvider.prototype.isCommunityResource = function () {
+	        return false;
+	    };
 	    UrlJsonRpcProvider.prototype.getSigner = function (address) {
 	        return logger.throwError("API provider does not support signing", lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: "getSigner" });
 	    };
@@ -23693,6 +23707,7 @@
 
 
 
+
 	var logger = new lib.Logger(_version$I.version);
 
 	// This key was provided to ethers.js by Alchemy to be used by the
@@ -23700,16 +23715,30 @@
 	// production environments, that you acquire your own API key at:
 	//   https://dashboard.alchemyapi.io
 	var defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC";
+	var AlchemyWebSocketProvider = /** @class */ (function (_super) {
+	    __extends(AlchemyWebSocketProvider, _super);
+	    function AlchemyWebSocketProvider(network, apiKey) {
+	        var _this = this;
+	        var provider = new AlchemyProvider(network, apiKey);
+	        var url = provider.connection.url.replace(/^http/i, "ws")
+	            .replace(".alchemyapi.", ".ws.alchemyapi.");
+	        _this = _super.call(this, url, provider.network) || this;
+	        lib$3.defineReadOnly(_this, "apiKey", provider.apiKey);
+	        return _this;
+	    }
+	    AlchemyWebSocketProvider.prototype.isCommunityResource = function () {
+	        return (this.apiKey === defaultApiKey);
+	    };
+	    return AlchemyWebSocketProvider;
+	}(websocketProvider.WebSocketProvider));
+	exports.AlchemyWebSocketProvider = AlchemyWebSocketProvider;
 	var AlchemyProvider = /** @class */ (function (_super) {
 	    __extends(AlchemyProvider, _super);
 	    function AlchemyProvider() {
 	        return _super !== null && _super.apply(this, arguments) || this;
 	    }
 	    AlchemyProvider.getWebSocketProvider = function (network, apiKey) {
-	        var provider = new AlchemyProvider(network, apiKey);
-	        var url = provider.connection.url.replace(/^http/i, "ws")
-	            .replace(".alchemyapi.", ".ws.alchemyapi.");
-	        return new websocketProvider.WebSocketProvider(url, provider.network);
+	        return new AlchemyWebSocketProvider(network, apiKey);
 	    };
 	    AlchemyProvider.getApiKey = function (apiKey) {
 	        if (apiKey == null) {
@@ -23742,6 +23771,7 @@
 	                logger.throwArgumentError("unsupported network", "network", arguments[0]);
 	        }
 	        return {
+	            allowGzip: true,
 	            url: ("https:/" + "/" + host + apiKey),
 	            throttleCallback: function (attempt, url) {
 	                if (apiKey === defaultApiKey) {
@@ -23751,6 +23781,9 @@
 	            }
 	        };
 	    };
+	    AlchemyProvider.prototype.isCommunityResource = function () {
+	        return (this.apiKey === defaultApiKey);
+	    };
 	    return AlchemyProvider;
 	}(urlJsonRpcProvider.UrlJsonRpcProvider));
 	exports.AlchemyProvider = AlchemyProvider;
@@ -23758,7 +23791,8 @@
 	});
 
 	var alchemyProvider$1 = unwrapExports(alchemyProvider);
-	var alchemyProvider_1 = alchemyProvider.AlchemyProvider;
+	var alchemyProvider_1 = alchemyProvider.AlchemyWebSocketProvider;
+	var alchemyProvider_2 = alchemyProvider.AlchemyProvider;
 
 	var cloudflareProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -24100,7 +24134,7 @@
 	                                            url: url,
 	                                            throttleSlotInterval: 1000,
 	                                            throttleCallback: function (attempt, url) {
-	                                                if (_this.apiKey === defaultApiKey) {
+	                                                if (_this.isCommunityResource()) {
 	                                                    formatter.showThrottleMessage();
 	                                                }
 	                                                return Promise.resolve(true);
@@ -24350,6 +24384,9 @@
 	            });
 	        });
 	    };
+	    EtherscanProvider.prototype.isCommunityResource = function () {
+	        return (this.apiKey === defaultApiKey);
+	    };
 	    return EtherscanProvider;
 	}(baseProvider.BaseProvider));
 	exports.EtherscanProvider = EtherscanProvider;
@@ -24411,6 +24448,7 @@
 	    }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+
 
 
 
@@ -24786,14 +24824,16 @@
 	        }
 	        var providerConfigs = providers.map(function (configOrProvider, index) {
 	            if (lib$b.Provider.isProvider(configOrProvider)) {
-	                return Object.freeze({ provider: configOrProvider, weight: 1, stallTimeout: 750, priority: 1 });
+	                var stallTimeout = formatter.isCommunityResource(configOrProvider) ? 2000 : 750;
+	                var priority = 1;
+	                return Object.freeze({ provider: configOrProvider, weight: 1, stallTimeout: stallTimeout, priority: priority });
 	            }
 	            var config = lib$3.shallowCopy(configOrProvider);
 	            if (config.priority == null) {
 	                config.priority = 1;
 	            }
 	            if (config.stallTimeout == null) {
-	                config.stallTimeout = 750;
+	                config.stallTimeout = formatter.isCommunityResource(configOrProvider) ? 2000 : 750;
 	            }
 	            if (config.weight == null) {
 	                config.weight = 1;
@@ -25084,15 +25124,14 @@
 
 
 
+
 	var logger = new lib.Logger(_version$I.version);
 
 	var defaultProjectId = "84842078b09946638c03157f83405213";
-	var InfuraProvider = /** @class */ (function (_super) {
-	    __extends(InfuraProvider, _super);
-	    function InfuraProvider() {
-	        return _super !== null && _super.apply(this, arguments) || this;
-	    }
-	    InfuraProvider.getWebSocketProvider = function (network, apiKey) {
+	var InfuraWebSocketProvider = /** @class */ (function (_super) {
+	    __extends(InfuraWebSocketProvider, _super);
+	    function InfuraWebSocketProvider(network, apiKey) {
+	        var _this = this;
 	        var provider = new InfuraProvider(network, apiKey);
 	        var connection = provider.connection;
 	        if (connection.password) {
@@ -25101,7 +25140,25 @@
 	            });
 	        }
 	        var url = connection.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
-	        return new websocketProvider.WebSocketProvider(url, network);
+	        _this = _super.call(this, url, network) || this;
+	        lib$3.defineReadOnly(_this, "apiKey", provider.projectId);
+	        lib$3.defineReadOnly(_this, "projectId", provider.projectId);
+	        lib$3.defineReadOnly(_this, "projectSecret", provider.projectSecret);
+	        return _this;
+	    }
+	    InfuraWebSocketProvider.prototype.isCommunityResource = function () {
+	        return (this.projectId === defaultProjectId);
+	    };
+	    return InfuraWebSocketProvider;
+	}(websocketProvider.WebSocketProvider));
+	exports.InfuraWebSocketProvider = InfuraWebSocketProvider;
+	var InfuraProvider = /** @class */ (function (_super) {
+	    __extends(InfuraProvider, _super);
+	    function InfuraProvider() {
+	        return _super !== null && _super.apply(this, arguments) || this;
+	    }
+	    InfuraProvider.getWebSocketProvider = function (network, apiKey) {
+	        return new InfuraWebSocketProvider(network, apiKey);
 	    };
 	    InfuraProvider.getApiKey = function (apiKey) {
 	        var apiKeyObj = {
@@ -25152,6 +25209,7 @@
 	                });
 	        }
 	        var connection = {
+	            allowGzip: true,
 	            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId),
 	            throttleCallback: function (attempt, url) {
 	                if (apiKey.projectId === defaultProjectId) {
@@ -25166,6 +25224,9 @@
 	        }
 	        return connection;
 	    };
+	    InfuraProvider.prototype.isCommunityResource = function () {
+	        return (this.projectId === defaultProjectId);
+	    };
 	    return InfuraProvider;
 	}(urlJsonRpcProvider.UrlJsonRpcProvider));
 	exports.InfuraProvider = InfuraProvider;
@@ -25173,7 +25234,8 @@
 	});
 
 	var infuraProvider$1 = unwrapExports(infuraProvider);
-	var infuraProvider_1 = infuraProvider.InfuraProvider;
+	var infuraProvider_1 = infuraProvider.InfuraWebSocketProvider;
+	var infuraProvider_2 = infuraProvider.InfuraProvider;
 
 	var nodesmithProvider = createCommonjsModule(function (module, exports) {
 	/* istanbul ignore file */
@@ -25378,6 +25440,7 @@
 	exports.Resolver = baseProvider.Resolver;
 
 	exports.AlchemyProvider = alchemyProvider.AlchemyProvider;
+	exports.AlchemyWebSocketProvider = alchemyProvider.AlchemyWebSocketProvider;
 
 	exports.CloudflareProvider = cloudflareProvider.CloudflareProvider;
 
@@ -25388,6 +25451,7 @@
 	exports.IpcProvider = browserIpcProvider.IpcProvider;
 
 	exports.InfuraProvider = infuraProvider.InfuraProvider;
+	exports.InfuraWebSocketProvider = infuraProvider.InfuraWebSocketProvider;
 
 	exports.JsonRpcProvider = jsonRpcProvider.JsonRpcProvider;
 	exports.JsonRpcSigner = jsonRpcProvider.JsonRpcSigner;
@@ -25402,6 +25466,9 @@
 	exports.WebSocketProvider = websocketProvider.WebSocketProvider;
 
 	exports.Formatter = formatter.Formatter;
+	exports.isCommunityResourcable = formatter.isCommunityResourcable;
+	exports.isCommunityResource = formatter.isCommunityResource;
+	exports.showThrottleMessage = formatter.showThrottleMessage;
 
 
 	var logger = new lib.Logger(_version$I.version);
@@ -25456,20 +25523,25 @@
 	var lib_3$g = lib$m.BaseProvider;
 	var lib_4$c = lib$m.Resolver;
 	var lib_5$b = lib$m.AlchemyProvider;
-	var lib_6$7 = lib$m.CloudflareProvider;
-	var lib_7$6 = lib$m.EtherscanProvider;
-	var lib_8$5 = lib$m.FallbackProvider;
-	var lib_9$5 = lib$m.IpcProvider;
-	var lib_10$3 = lib$m.InfuraProvider;
-	var lib_11$2 = lib$m.JsonRpcProvider;
-	var lib_12$2 = lib$m.JsonRpcSigner;
-	var lib_13$2 = lib$m.NodesmithProvider;
-	var lib_14$1 = lib$m.StaticJsonRpcProvider;
-	var lib_15$1 = lib$m.UrlJsonRpcProvider;
-	var lib_16$1 = lib$m.Web3Provider;
-	var lib_17 = lib$m.WebSocketProvider;
-	var lib_18 = lib$m.Formatter;
-	var lib_19 = lib$m.getDefaultProvider;
+	var lib_6$7 = lib$m.AlchemyWebSocketProvider;
+	var lib_7$6 = lib$m.CloudflareProvider;
+	var lib_8$5 = lib$m.EtherscanProvider;
+	var lib_9$5 = lib$m.FallbackProvider;
+	var lib_10$3 = lib$m.IpcProvider;
+	var lib_11$2 = lib$m.InfuraProvider;
+	var lib_12$2 = lib$m.InfuraWebSocketProvider;
+	var lib_13$2 = lib$m.JsonRpcProvider;
+	var lib_14$1 = lib$m.JsonRpcSigner;
+	var lib_15$1 = lib$m.NodesmithProvider;
+	var lib_16$1 = lib$m.StaticJsonRpcProvider;
+	var lib_17 = lib$m.UrlJsonRpcProvider;
+	var lib_18 = lib$m.Web3Provider;
+	var lib_19 = lib$m.WebSocketProvider;
+	var lib_20 = lib$m.Formatter;
+	var lib_21 = lib$m.isCommunityResourcable;
+	var lib_22 = lib$m.isCommunityResource;
+	var lib_23 = lib$m.showThrottleMessage;
+	var lib_24 = lib$m.getDefaultProvider;
 
 	var lib$n = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -25574,7 +25646,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "units/5.0.5";
+	exports.version = "units/5.0.6";
 
 	});
 
@@ -25651,6 +25723,9 @@
 	}
 	exports.formatUnits = formatUnits;
 	function parseUnits(value, unitName) {
+	    if (typeof (value) !== "string") {
+	        logger.throwArgumentError("value must be a string", "value", value);
+	    }
 	    if (typeof (unitName) === "string") {
 	        var index = names.indexOf(unitName);
 	        if (index !== -1) {

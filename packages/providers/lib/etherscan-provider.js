@@ -234,7 +234,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                                             url: url,
                                             throttleSlotInterval: 1000,
                                             throttleCallback: function (attempt, url) {
-                                                if (_this.apiKey === defaultApiKey) {
+                                                if (_this.isCommunityResource()) {
                                                     formatter_1.showThrottleMessage();
                                                 }
                                                 return Promise.resolve(true);
@@ -483,6 +483,9 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 return output;
             });
         });
+    };
+    EtherscanProvider.prototype.isCommunityResource = function () {
+        return (this.apiKey === defaultApiKey);
     };
     return EtherscanProvider;
 }(base_provider_1.BaseProvider));

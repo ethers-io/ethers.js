@@ -48,4 +48,9 @@ export declare class Formatter {
     static allowFalsish(format: FormatFunc, replaceValue: any): FormatFunc;
     static arrayOf(format: FormatFunc): FormatFunc;
 }
+export interface CommunityResourcable {
+    isCommunityResource(): boolean;
+}
+export declare function isCommunityResourcable(value: any): value is CommunityResourcable;
+export declare function isCommunityResource(value: any): boolean;
 export declare function showThrottleMessage(): void;

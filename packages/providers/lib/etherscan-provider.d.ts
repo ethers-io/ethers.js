@@ -8,4 +8,5 @@ export declare class EtherscanProvider extends BaseProvider {
     detectNetwork(): Promise<Network>;
     perform(method: string, params: any): Promise<any>;
     getHistory(addressOrName: string | Promise<string>, startBlock?: BlockTag, endBlock?: BlockTag): Promise<Array<TransactionResponse>>;
+    isCommunityResource(): boolean;
 }

@@ -8,6 +8,7 @@ export declare type GetUrlResponse = {
 };
 export declare type Options = {
     method?: string;
+    allowGzip?: boolean;
     body?: Uint8Array;
     headers?: {
         [key: string]: string;

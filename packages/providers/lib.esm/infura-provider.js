@@ -1,4 +1,5 @@
 "use strict";
+import { defineReadOnly } from "@ethersproject/properties";
 import { WebSocketProvider } from "./websocket-provider";
 import { showThrottleMessage } from "./formatter";
 import { Logger } from "@ethersproject/logger";
@@ -6,8 +7,8 @@ import { version } from "./_version";
 const logger = new Logger(version);
 import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 const defaultProjectId = "84842078b09946638c03157f83405213";
-export class InfuraProvider extends UrlJsonRpcProvider {
-    static getWebSocketProvider(network, apiKey) {
+export class InfuraWebSocketProvider extends WebSocketProvider {
+    constructor(network, apiKey) {
         const provider = new InfuraProvider(network, apiKey);
         const connection = provider.connection;
         if (connection.password) {
@@ -16,7 +17,18 @@ export class InfuraProvider extends UrlJsonRpcProvider {
             });
         }
         const url = connection.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
-        return new WebSocketProvider(url, network);
+        super(url, network);
+        defineReadOnly(this, "apiKey", provider.projectId);
+        defineReadOnly(this, "projectId", provider.projectId);
+        defineReadOnly(this, "projectSecret", provider.projectSecret);
+    }
+    isCommunityResource() {
+        return (this.projectId === defaultProjectId);
+    }
+}
+export class InfuraProvider extends UrlJsonRpcProvider {
+    static getWebSocketProvider(network, apiKey) {
+        return new InfuraWebSocketProvider(network, apiKey);
     }
     static getApiKey(apiKey) {
         const apiKeyObj = {
@@ -67,6 +79,7 @@ export class InfuraProvider extends UrlJsonRpcProvider {
                 });
         }
         const connection = {
+            allowGzip: true,
             url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId),
             throttleCallback: (attempt, url) => {
                 if (apiKey.projectId === defaultProjectId) {
@@ -80,6 +93,9 @@ export class InfuraProvider extends UrlJsonRpcProvider {
             connection.password = apiKey.projectSecret;
         }
         return connection;
+    }
+    isCommunityResource() {
+        return (this.projectId === defaultProjectId);
     }
 }
 //# sourceMappingURL=infura-provider.js.map

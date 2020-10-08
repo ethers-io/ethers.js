@@ -67,6 +67,9 @@ export class UrlJsonRpcProvider extends StaticJsonRpcProvider {
     _startPending() {
         logger.warn("WARNING: API provider does not support pending filters");
     }
+    isCommunityResource() {
+        return false;
+    }
     getSigner(address) {
         return logger.throwError("API provider does not support signing", Logger.errors.UNSUPPORTED_OPERATION, { operation: "getSigner" });
     }

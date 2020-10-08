@@ -41,8 +41,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var http_1 = __importDefault(require("http"));
 var https_1 = __importDefault(require("https"));
+var zlib_1 = require("zlib");
 var url_1 = require("url");
 var bytes_1 = require("@ethersproject/bytes");
+var properties_1 = require("@ethersproject/properties");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
@@ -70,6 +72,11 @@ function getResponse(request) {
                 response.body = bytes_1.concat([response.body, chunk]);
             });
             resp.on("end", function () {
+                if (response.headers["content-encoding"] === "gzip") {
+                    //const size = response.body.length;
+                    response.body = bytes_1.arrayify(zlib_1.gunzipSync(response.body));
+                    //console.log("Delta:", response.body.length - size, Buffer.from(response.body).toString());
+                }
                 resolve(response);
             });
             resp.on("error", function (error) {
@@ -104,8 +111,11 @@ function getUrl(href, options) {
                         port: nonnull(url.port),
                         path: (nonnull(url.pathname) + nonnull(url.search)),
                         method: (options.method || "GET"),
-                        headers: (options.headers || {}),
+                        headers: properties_1.shallowCopy(options.headers || {}),
                     };
+                    if (options.allowGzip) {
+                        request.headers["accept-encoding"] = "gzip";
+                    }
                     req = null;
                     switch (nonnull(url.protocol)) {
                         case "http:":

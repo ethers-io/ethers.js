@@ -1,4 +1,5 @@
 "use strict";
+import { defineReadOnly } from "@ethersproject/properties";
 import { showThrottleMessage } from "./formatter";
 import { WebSocketProvider } from "./websocket-provider";
 import { Logger } from "@ethersproject/logger";
@@ -10,12 +11,21 @@ import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 // production environments, that you acquire your own API key at:
 //   https://dashboard.alchemyapi.io
 const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC";
-export class AlchemyProvider extends UrlJsonRpcProvider {
-    static getWebSocketProvider(network, apiKey) {
+export class AlchemyWebSocketProvider extends WebSocketProvider {
+    constructor(network, apiKey) {
         const provider = new AlchemyProvider(network, apiKey);
         const url = provider.connection.url.replace(/^http/i, "ws")
             .replace(".alchemyapi.", ".ws.alchemyapi.");
-        return new WebSocketProvider(url, provider.network);
+        super(url, provider.network);
+        defineReadOnly(this, "apiKey", provider.apiKey);
+    }
+    isCommunityResource() {
+        return (this.apiKey === defaultApiKey);
+    }
+}
+export class AlchemyProvider extends UrlJsonRpcProvider {
+    static getWebSocketProvider(network, apiKey) {
+        return new AlchemyWebSocketProvider(network, apiKey);
     }
     static getApiKey(apiKey) {
         if (apiKey == null) {
@@ -48,6 +58,7 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
                 logger.throwArgumentError("unsupported network", "network", arguments[0]);
         }
         return {
+            allowGzip: true,
             url: ("https:/" + "/" + host + apiKey),
             throttleCallback: (attempt, url) => {
                 if (apiKey === defaultApiKey) {
@@ -56,6 +67,9 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
                 return Promise.resolve(true);
             }
         };
+    }
+    isCommunityResource() {
+        return (this.apiKey === defaultApiKey);
     }
 }
 //# sourceMappingURL=alchemy-provider.js.map

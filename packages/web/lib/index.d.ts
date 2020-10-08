@@ -6,6 +6,7 @@ export declare type ConnectionInfo = {
     user?: string;
     password?: string;
     allowInsecureAuthentication?: boolean;
+    allowGzip?: boolean;
     throttleLimit?: number;
     throttleSlotInterval?: number;
     throttleCallback?: (attempt: number, url: string) => Promise<boolean>;
