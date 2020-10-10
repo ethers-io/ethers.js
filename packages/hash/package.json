@@ -1,9 +1,13 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
+    "@ethersproject/abstract-signer": "^5.0.6",
+    "@ethersproject/address": "^5.0.5",
+    "@ethersproject/bignumber": "^5.0.8",
     "@ethersproject/bytes": "^5.0.4",
     "@ethersproject/keccak256": "^5.0.3",
     "@ethersproject/logger": "^5.0.5",
+    "@ethersproject/properties": "^5.0.4",
     "@ethersproject/strings": "^5.0.4"
   },
   "description": "Hash utility functions for Ethereum.",

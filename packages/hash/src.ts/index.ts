@@ -8,6 +8,22 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 
+import {
+    getPrimaryType as _getPrimaryType,
+    hashStruct as _hashStruct,
+    hashTypedData as _hashTypedData,
+    hashTypedDataDomain as _hashTypedDataDomain,
+    TypedDataEncoder as _TypedDataEncoder
+} from "./typed-data";
+
+export {
+    _getPrimaryType,
+    _hashStruct,
+    _hashTypedData,
+    _hashTypedDataDomain,
+    _TypedDataEncoder
+}
+
 ///////////////////////////////
 
 const Zeros = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);

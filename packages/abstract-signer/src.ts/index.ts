@@ -1,8 +1,8 @@
 "use strict";
 
 import { BlockTag, Provider, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
-import { BigNumber } from "@ethersproject/bignumber";
-import { Bytes } from "@ethersproject/bytes";
+import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
+import { Bytes, BytesLike } from "@ethersproject/bytes";
 import { Deferrable, defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
 
 import { Logger } from "@ethersproject/logger";
@@ -18,6 +18,22 @@ const forwardErrors = [
     Logger.errors.NONCE_EXPIRED,
     Logger.errors.REPLACEMENT_UNDERPRICED,
 ];
+
+// EIP-712 Typed Data
+// See: https://eips.ethereum.org/EIPS/eip-712
+
+export interface TypedDataDomain {
+    name?: string;
+    version?: string;
+    chainId?: BigNumberish;
+    verifyingContract?: string;
+    salt?: BytesLike;
+};
+
+export interface TypedDataField {
+    name: string;
+    type: string;
+};
 
 // Sub-classes of Signer may optionally extend this interface to indicate
 // they have a private key available synchronously
@@ -53,6 +69,8 @@ export abstract class Signer {
     // - This MAY throw if signing transactions is not supports, but if
     //   it does, sentTransaction MUST be overridden.
     abstract signTransaction(transaction: Deferrable<TransactionRequest>): Promise<string>;
+
+//    abstract _signTypedData(domain: TypedDataDomain, types: Array<TypedDataField>, data: any): Promise<string>;
 
     // Returns a new instance of the Signer, connected to provider.
     // This MAY throw if changing providers is not supported.
@@ -244,6 +262,10 @@ export class VoidSigner extends Signer {
 
     signTransaction(transaction: Deferrable<TransactionRequest>): Promise<string> {
         return this._fail("VoidSigner cannot sign transactions", "signTransaction");
+    }
+
+    _signTypedData(domain: TypedDataDomain, types: Array<TypedDataField>, data: any): Promise<string> {
+        return this._fail("VoidSigner cannot sign typed data", "signTypedData");
     }
 
     connect(provider: Provider): VoidSigner {
