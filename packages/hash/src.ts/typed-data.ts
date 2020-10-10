@@ -9,7 +9,7 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 
-import { id } from "./index";
+import { id } from "./id";
 
 const padding = new Uint8Array(32);
 padding.fill(0);
@@ -109,11 +109,13 @@ export class TypedDataEncoder {
     readonly primaryType: string;
     readonly types: Record<string, Array<TypedDataField>>;
 
+    readonly _encoderCache: Record<string, (value: any) => string>;
     readonly _types: Record<string, string>;
 
     constructor(types: Record<string, Array<TypedDataField>>) {
         defineReadOnly(this, "types", Object.freeze(deepCopy(types)));
 
+        defineReadOnly(this, "_encoderCache", { });
         defineReadOnly(this, "_types", { });
 
         // Link struct types to their direct child structs
@@ -206,6 +208,14 @@ export class TypedDataEncoder {
         }
     }
 
+    getEncoder(type: string): (value: any) => string {
+        let encoder = this._encoderCache[type];
+        if (!encoder) {
+            encoder = this._encoderCache[type] = this._getEncoder(type);
+        }
+        return encoder;
+    }
+
     _getEncoder(type: string): (value: any) => string {
         const match = type.match(/^([^\x5b]*)(\x5b(\d*)\x5d)?$/);
         if (!match) { logger.throwArgumentError(`unknown type: ${ type }`, "type", type); }
@@ -222,7 +232,7 @@ export class TypedDataEncoder {
             const encodedType = id(this._types[baseType]);
             baseEncoder = (value: Record<string, any>) => {
                 const values = fields.map((f) => {
-                    const result = this._getEncoder(f.type)(value[f.name]);
+                    const result = this.getEncoder(f.type)(value[f.name]);
                     if (this._types[f.type]) { return keccak256(result); }
                     return result;
                 });
@@ -259,7 +269,7 @@ export class TypedDataEncoder {
     }
 
     encodeData(type: string, value: any): string {
-        return this._getEncoder(type)(value);
+        return this.getEncoder(type)(value);
     }
 
     hashStruct(name: string, value: Record<string, any>): string {
@@ -273,32 +283,37 @@ export class TypedDataEncoder {
     hash(value: Record<string, any>): string {
         return this.hashStruct(this.primaryType, value);
     }
-}
 
-export function getPrimaryType(types: Record<string, Array<TypedDataField>>): string {
-    return (new TypedDataEncoder(types)).primaryType;
-}
-
-export function hashStruct(name: string, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): string {
-    return (new TypedDataEncoder(types)).hashStruct(name, value);
-}
-
-export function hashTypedDataDomain(domain: TypedDataDomain): string {
-    const domainFields: Array<TypedDataField> = [ ];
-    for (const name in domain) {
-        const type = domainFieldTypes[name];
-        if (!type) {
-            logger.throwArgumentError(`invalid typed-data domain key: ${ JSON.stringify(name) }`, "domain", domain);
-        }
-        domainFields.push({ name, type });
+    static from(types: Record<string, Array<TypedDataField>>): TypedDataEncoder {
+        return new TypedDataEncoder(types);
     }
-    return hashStruct("EIP712Domain", { EIP712Domain: domainFields }, domain);
+
+    static getPrimaryType(types: Record<string, Array<TypedDataField>>): string {
+        return TypedDataEncoder.from(types).primaryType;
+    }
+
+    static hashStruct(name: string, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): string {
+        return TypedDataEncoder.from(types).hashStruct(name, value);
+    }
+
+    static hashTypedDataDomain(domain: TypedDataDomain): string {
+        const domainFields: Array<TypedDataField> = [ ];
+        for (const name in domain) {
+            const type = domainFieldTypes[name];
+            if (!type) {
+                logger.throwArgumentError(`invalid typed-data domain key: ${ JSON.stringify(name) }`, "domain", domain);
+            }
+            domainFields.push({ name, type });
+        }
+        return TypedDataEncoder.hashStruct("EIP712Domain", { EIP712Domain: domainFields }, domain);
+    }
+
+    static hashTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): string {
+        return keccak256(concat([
+            "0x1901",
+            TypedDataEncoder.hashTypedDataDomain(domain),
+            TypedDataEncoder.from(types).hash(value)
+        ]));
+    }
 }
 
-export function hashTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): string {
-    return keccak256(concat([
-        "0x1901",
-        hashTypedDataDomain(domain),
-        (new TypedDataEncoder(types)).hash(value)
-    ]));
-}

@@ -8,20 +8,14 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 
-import {
-    getPrimaryType as _getPrimaryType,
-    hashStruct as _hashStruct,
-    hashTypedData as _hashTypedData,
-    hashTypedDataDomain as _hashTypedDataDomain,
-    TypedDataEncoder as _TypedDataEncoder
-} from "./typed-data";
+import { TypedDataEncoder as _TypedDataEncoder } from "./typed-data";
+
+import { id } from "./id";
 
 export {
-    _getPrimaryType,
-    _hashStruct,
-    _hashTypedData,
-    _hashTypedDataDomain,
-    _TypedDataEncoder
+    _TypedDataEncoder,
+
+    id
 }
 
 ///////////////////////////////
@@ -60,10 +54,6 @@ export function namehash(name: string): string {
     return hexlify(result);
 }
 
-
-export function id(text: string): string {
-    return keccak256(toUtf8Bytes(text));
-}
 
 export const messagePrefix = "\x19Ethereum Signed Message:\n";
 
