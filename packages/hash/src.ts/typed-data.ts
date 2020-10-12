@@ -1,7 +1,7 @@
 import { TypedDataDomain, TypedDataField } from "@ethersproject/abstract-signer";
 import { getAddress } from "@ethersproject/address";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
-import { arrayify, BytesLike, concat, hexConcat, hexZeroPad } from "@ethersproject/bytes";
+import { arrayify, BytesLike, hexConcat, hexlify, hexZeroPad } from "@ethersproject/bytes";
 import { keccak256 } from "@ethersproject/keccak256";
 import { deepCopy, defineReadOnly } from "@ethersproject/properties";
 
@@ -21,7 +21,11 @@ const MaxUint256: BigNumber = BigNumber.from("0xffffffffffffffffffffffffffffffff
 
 function hexPadRight(value: BytesLike) {
     const bytes = arrayify(value);
-    return hexConcat([ bytes, padding.slice(bytes.length % 32) ]);
+    const padOffset = bytes.length % 32
+    if (padOffset) {
+        return hexConcat([ bytes, padding.slice(padOffset) ]);
+    }
+    return hexlify(bytes);
 }
 
 const hexTrue = hexZeroPad(One.toHexString(), 32);
@@ -34,6 +38,10 @@ const domainFieldTypes: Record<string, string> = {
     verifyingContract: "address",
     salt: "bytes32"
 };
+
+const domainFieldNames: Array<string> = [
+    "name", "version", "chainId", "verifyingContract", "salt"
+];
 
 function getBaseEncoder(type: string): (value: any) => string {
     // intXX and uintXX
@@ -217,20 +225,38 @@ export class TypedDataEncoder {
     }
 
     _getEncoder(type: string): (value: any) => string {
-        const match = type.match(/^([^\x5b]*)(\x5b(\d*)\x5d)?$/);
-        if (!match) { logger.throwArgumentError(`unknown type: ${ type }`, "type", type); }
 
-        const baseType = match[1];
+        // Basic encoder type
+        {
+            const encoder = getBaseEncoder(type);
+            if (encoder) { return encoder; }
+        }
 
-        let baseEncoder = getBaseEncoder(baseType);
+        // Array
+        const match = type.match(/^(.*)(\x5b(\d*)\x5d)$/);
+        if (match) {
+            const subtype = match[1];
+            const subEncoder = this.getEncoder(subtype);
+            const length = parseInt(match[3]);
+            return (value: Array<any>) => {
+                if (length >= 0 && value.length !== length) {
+                    logger.throwArgumentError("array length mismatch; expected length ${ arrayLength }", "value", value);
+                }
 
-        // A struct type
-        if (baseEncoder == null) {
-            const fields = this.types[baseType];
-            if (!fields) { logger.throwArgumentError(`unknown type: ${ type }`, "type", type); }
+                let result = value.map(subEncoder);
+                if (this._types[subtype]) {
+                    result = result.map(keccak256);
+                }
 
-            const encodedType = id(this._types[baseType]);
-            baseEncoder = (value: Record<string, any>) => {
+                return keccak256(hexConcat(result));
+            };
+        }
+
+        // Struct
+        const fields = this.types[type];
+        if (fields) {
+            const encodedType = id(this._types[type]);
+            return (value: Record<string, any>) => {
                 const values = fields.map((f) => {
                     const result = this.getEncoder(f.type)(value[f.name]);
                     if (this._types[f.type]) { return keccak256(result); }
@@ -241,23 +267,7 @@ export class TypedDataEncoder {
             }
         }
 
-        // An array type
-        if (match[2]) {
-            const length = (match[3] ? parseInt(match[3]): -1);
-            return (value: Array<any>) => {
-                if (length >= 0 && value.length !== length) {
-                    logger.throwArgumentError("array length mismatch; expected length ${ arrayLength }", "value", value);
-                }
-
-                let result = value.map(baseEncoder);
-                if (this._types[baseType]) {
-                    result = result.map(keccak256);
-                }
-                return keccak256(hexConcat(result));
-            };
-        }
-
-        return baseEncoder;
+        return logger.throwArgumentError(`unknown type: ${ type }`, "type", type);
     }
 
     encodeType(name: string): string {
@@ -296,7 +306,7 @@ export class TypedDataEncoder {
         return TypedDataEncoder.from(types).hashStruct(name, value);
     }
 
-    static hashTypedDataDomain(domain: TypedDataDomain): string {
+    static hashDomain(domain: TypedDataDomain): string {
         const domainFields: Array<TypedDataField> = [ ];
         for (const name in domain) {
             const type = domainFieldTypes[name];
@@ -305,15 +315,24 @@ export class TypedDataEncoder {
             }
             domainFields.push({ name, type });
         }
+
+        domainFields.sort((a, b) => {
+            return domainFieldNames.indexOf(a.name) - domainFieldNames.indexOf(b.name);
+        });
+
         return TypedDataEncoder.hashStruct("EIP712Domain", { EIP712Domain: domainFields }, domain);
     }
 
-    static hashTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): string {
-        return keccak256(concat([
+    static encode(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): string {
+        return hexConcat([
             "0x1901",
-            TypedDataEncoder.hashTypedDataDomain(domain),
+            TypedDataEncoder.hashDomain(domain),
             TypedDataEncoder.from(types).hash(value)
-        ]));
+        ]);
+    }
+
+    static hash(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): string {
+        return keccak256(TypedDataEncoder.encode(domain, types, value));
     }
 }
 
