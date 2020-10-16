@@ -46,6 +46,12 @@ const ethRegistrarAbi = [
     "function nameExpires(uint256 id) external view returns(uint)"
 ];
 
+const reverseRegistrarAbi = [
+    "function claim(address owner) public returns (bytes32)",
+    "function claimWithResolver(address owner, address resolver) public returns (bytes32)",
+    "function setName(string memory name) public returns (bytes32)",
+];
+
 const resolverAbi = [
     "function interfaceImplementer(bytes32 nodehash, bytes4 interfaceId) view returns (address)",
     "function addr(bytes32 nodehash) view returns (address)",
@@ -119,6 +125,11 @@ abstract class EnsPlugin extends Plugin {
         //let address = await this.getEthInterfaceAddress(InterfaceID_ERC721);
         let address = await this.getEns().owner(ethers.utils.namehash("eth"));
         return new ethers.Contract(address, ethRegistrarAbi, this.accounts[0] || this.provider);
+    }
+
+    async getReverseRegistrar(): Promise<ethers.Contract> {
+        let address = await this.getEns().owner(ethers.utils.namehash("addr.reverse"));
+        return new ethers.Contract(address, reverseRegistrarAbi, this.accounts[0] || this.provider);
     }
 }
 
@@ -454,7 +465,7 @@ abstract class AddressAccountPlugin extends AccountPlugin {
     address: string;
 
     static getOptionHelp(): Array<Help> {
-        return [ 
+        return [
             {
                 name: "[ --address ADDRESS ]",
                 help: "Specify another address"
@@ -1001,6 +1012,30 @@ class RenewPlugin extends EnsPlugin {
     }
 }
 cli.addPlugin("renew", RenewPlugin);
+
+class ReverseRegisterPlugin extends AddressAccountPlugin {
+    static getHelp(): Help {
+        return {
+            name: "reverse-register",
+            help: "Registers the reverse node (<youraddress>.addr.reverse) and associate a resolver (default: resolver.eth)"
+        }
+    }
+
+    async run(): Promise<void> {
+        await super.run();
+
+        let resolver = await this.getAddress("resolver.eth");
+        let reverseRegistrar = await this.getReverseRegistrar();
+
+        this.dump("Set ReverseRegistrar: " + this.address.substring(2).toLowerCase() + ".addr.reverse", {
+            "account": this.address,
+            "resolver": resolver
+        });
+
+        await reverseRegistrar.claimWithResolver(this.address, resolver);
+    }
+}
+cli.addPlugin("reverse-register", ReverseRegisterPlugin);
 
 /**
  *  To Do:
