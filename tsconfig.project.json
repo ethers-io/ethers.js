@@ -58,12 +58,6 @@
       "path": "./packages/strings"
     },
     {
-      "path": "./packages/hash"
-    },
-    {
-      "path": "./packages/abi"
-    },
-    {
       "path": "./packages/solidity"
     },
     {
@@ -80,6 +74,12 @@
     },
     {
       "path": "./packages/abstract-signer"
+    },
+    {
+      "path": "./packages/hash"
+    },
+    {
+      "path": "./packages/abi"
     },
     {
       "path": "./packages/contracts"
