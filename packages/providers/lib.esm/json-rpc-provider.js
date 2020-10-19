@@ -194,14 +194,17 @@ export class JsonRpcSigner extends Signer {
             const populated = yield _TypedDataEncoder.resolveNames(domain, types, value, (name) => {
                 return this.provider.resolveName(name);
             });
+            const address = yield this.getAddress();
             return yield this.provider.send("eth_signTypedData_v4", [
-                _TypedDataEncoder.getPayload(populated.domain, types, populated.value)
+                address.toLowerCase(),
+                JSON.stringify(_TypedDataEncoder.getPayload(populated.domain, types, populated.value))
             ]);
         });
     }
     unlock(password) {
-        const provider = this.provider;
-        return this.getAddress().then(function (address) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const provider = this.provider;
+            const address = yield this.getAddress();
             return provider.send("personal_unlockAccount", [address.toLowerCase(), password, null]);
         });
     }

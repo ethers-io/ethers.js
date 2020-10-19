@@ -249,7 +249,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
     };
     JsonRpcSigner.prototype._signTypedData = function (domain, types, value) {
         return __awaiter(this, void 0, void 0, function () {
-            var populated;
+            var populated, address;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -258,18 +258,31 @@ var JsonRpcSigner = /** @class */ (function (_super) {
                         })];
                     case 1:
                         populated = _a.sent();
+                        return [4 /*yield*/, this.getAddress()];
+                    case 2:
+                        address = _a.sent();
                         return [4 /*yield*/, this.provider.send("eth_signTypedData_v4", [
-                                hash_1._TypedDataEncoder.getPayload(populated.domain, types, populated.value)
+                                address.toLowerCase(),
+                                JSON.stringify(hash_1._TypedDataEncoder.getPayload(populated.domain, types, populated.value))
                             ])];
-                    case 2: return [2 /*return*/, _a.sent()];
+                    case 3: return [2 /*return*/, _a.sent()];
                 }
             });
         });
     };
     JsonRpcSigner.prototype.unlock = function (password) {
-        var provider = this.provider;
-        return this.getAddress().then(function (address) {
-            return provider.send("personal_unlockAccount", [address.toLowerCase(), password, null]);
+        return __awaiter(this, void 0, void 0, function () {
+            var provider, address;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        provider = this.provider;
+                        return [4 /*yield*/, this.getAddress()];
+                    case 1:
+                        address = _a.sent();
+                        return [2 /*return*/, provider.send("personal_unlockAccount", [address.toLowerCase(), password, null])];
+                }
+            });
         });
     };
     return JsonRpcSigner;
