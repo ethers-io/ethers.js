@@ -218,17 +218,20 @@ export class JsonRpcSigner extends Signer implements TypedDataSigner {
             return this.provider.resolveName(name);
         });
 
+        const address = await this.getAddress();
+
         return await this.provider.send("eth_signTypedData_v4", [
-            _TypedDataEncoder.getPayload(populated.domain, types, populated.value)
+            address.toLowerCase(),
+            JSON.stringify(_TypedDataEncoder.getPayload(populated.domain, types, populated.value))
         ]);
     }
 
-    unlock(password: string): Promise<boolean> {
+    async unlock(password: string): Promise<boolean> {
         const provider = this.provider;
 
-        return this.getAddress().then(function(address) {
-            return provider.send("personal_unlockAccount", [ address.toLowerCase(), password, null ]);
-        });
+        const address = await this.getAddress();
+
+        return provider.send("personal_unlockAccount", [ address.toLowerCase(), password, null ]);
     }
 }
 
