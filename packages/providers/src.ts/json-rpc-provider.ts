@@ -3,9 +3,10 @@
 // See: https://github.com/ethereum/wiki/wiki/JSON-RPC
 
 import { Provider, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
-import { Signer } from "@ethersproject/abstract-signer";
+import { Signer, TypedDataDomain, TypedDataField, TypedDataSigner } from "@ethersproject/abstract-signer";
 import { BigNumber } from "@ethersproject/bignumber";
 import { Bytes, hexlify, hexValue } from "@ethersproject/bytes";
+import { _TypedDataEncoder } from "@ethersproject/hash";
 import { Network, Networkish } from "@ethersproject/networks";
 import { checkProperties, deepCopy, Deferrable, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { toUtf8Bytes } from "@ethersproject/strings";
@@ -88,7 +89,7 @@ function getLowerCase(value: string): string {
 
 const _constructorGuard = {};
 
-export class JsonRpcSigner extends Signer {
+export class JsonRpcSigner extends Signer implements TypedDataSigner {
     readonly provider: JsonRpcProvider;
     _index: number;
     _address: string;
@@ -203,13 +204,23 @@ export class JsonRpcSigner extends Signer {
         });
     }
 
-    signMessage(message: Bytes | string): Promise<string> {
+    async signMessage(message: Bytes | string): Promise<string> {
         const data = ((typeof(message) === "string") ? toUtf8Bytes(message): message);
-        return this.getAddress().then((address) => {
+        const address = await this.getAddress();
 
-            // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
-            return this.provider.send("eth_sign", [ address.toLowerCase(), hexlify(data) ]);
+        // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
+        return await this.provider.send("eth_sign", [ address.toLowerCase(), hexlify(data) ]);
+    }
+
+    async _signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string> {
+        // Populate any ENS names (in-place)
+        const populated = await _TypedDataEncoder.resolveNames(domain, types, value, (name: string) => {
+            return this.provider.resolveName(name);
         });
+
+        return await this.provider.send("eth_signTypedData_v4", [
+            _TypedDataEncoder.getPayload(populated.domain, types, populated.value)
+        ]);
     }
 
     unlock(password: string): Promise<boolean> {

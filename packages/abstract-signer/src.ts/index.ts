@@ -49,6 +49,12 @@ export interface ExternallyOwnedAccount {
 //    key or mnemonic) in a function, so that console.log does not leak
 //    the data
 
+// @TODO: This is a temporary measure to preserse backwards compatibility
+//        In v6, the method on TypedDataSigner will be added to Signer
+export interface TypedDataSigner {
+    _signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
+}
+
 export abstract class Signer {
     readonly provider?: Provider;
 
@@ -69,8 +75,6 @@ export abstract class Signer {
     // - This MAY throw if signing transactions is not supports, but if
     //   it does, sentTransaction MUST be overridden.
     abstract signTransaction(transaction: Deferrable<TransactionRequest>): Promise<string>;
-
-//    abstract _signTypedData(domain: TypedDataDomain, types: Array<TypedDataField>, data: any): Promise<string>;
 
     // Returns a new instance of the Signer, connected to provider.
     // This MAY throw if changing providers is not supported.
@@ -236,7 +240,7 @@ export abstract class Signer {
     }
 }
 
-export class VoidSigner extends Signer {
+export class VoidSigner extends Signer implements TypedDataSigner {
     readonly address: string;
 
     constructor(address: string, provider?: Provider) {
@@ -264,7 +268,7 @@ export class VoidSigner extends Signer {
         return this._fail("VoidSigner cannot sign transactions", "signTransaction");
     }
 
-    _signTypedData(domain: TypedDataDomain, types: Array<TypedDataField>, data: any): Promise<string> {
+    _signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string> {
         return this._fail("VoidSigner cannot sign typed data", "signTypedData");
     }
 
