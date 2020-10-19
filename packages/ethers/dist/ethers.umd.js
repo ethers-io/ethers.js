@@ -10272,17 +10272,32 @@
 	var abiCoder_1 = abiCoder.AbiCoder;
 	var abiCoder_2 = abiCoder.defaultAbiCoder;
 
+	var id_1 = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+
+	function id(text) {
+	    return lib$4.keccak256(lib$8.toUtf8Bytes(text));
+	}
+	exports.id = id;
+
+	});
+
+	var id = unwrapExports(id_1);
+	var id_2 = id_1.id;
+
 	var _version$g = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hash/5.0.5";
+	exports.version = "hash/5.0.6";
 
 	});
 
 	var _version$h = unwrapExports(_version$g);
 	var _version_1$8 = _version$g.version;
 
-	var lib$9 = createCommonjsModule(function (module, exports) {
+	var namehash_1 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 
@@ -10291,8 +10306,8 @@
 
 
 	var logger = new lib.Logger(_version$g.version);
-	///////////////////////////////
-	var Zeros = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+	var Zeros = new Uint8Array(32);
+	Zeros.fill(0);
 	var Partition = new RegExp("^((.*)\\.)?([^.]+)$");
 	function isValidName(name) {
 	    try {
@@ -10323,10 +10338,19 @@
 	    return lib$1.hexlify(result);
 	}
 	exports.namehash = namehash;
-	function id(text) {
-	    return lib$4.keccak256(lib$8.toUtf8Bytes(text));
-	}
-	exports.id = id;
+
+	});
+
+	var namehash = unwrapExports(namehash_1);
+	var namehash_2 = namehash_1.isValidName;
+	var namehash_3 = namehash_1.namehash;
+
+	var message = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+
+
 	exports.messagePrefix = "\x19Ethereum Signed Message:\n";
 	function hashMessage(message) {
 	    if (typeof (message) === "string") {
@@ -10342,12 +10366,542 @@
 
 	});
 
+	var message$1 = unwrapExports(message);
+	var message_1 = message.messagePrefix;
+	var message_2 = message.hashMessage;
+
+	var typedData = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments || [])).next());
+	    });
+	};
+	var __generator = (commonjsGlobal && commonjsGlobal.__generator) || function (thisArg, body) {
+	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+	    function verb(n) { return function (v) { return step([n, v]); }; }
+	    function step(op) {
+	        if (f) throw new TypeError("Generator is already executing.");
+	        while (_) try {
+	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+	            if (y = 0, t) op = [op[0] & 2, t.value];
+	            switch (op[0]) {
+	                case 0: case 1: t = op; break;
+	                case 4: _.label++; return { value: op[1], done: false };
+	                case 5: _.label++; y = op[1]; op = [0]; continue;
+	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+	                default:
+	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+	                    if (t[2]) _.ops.pop();
+	                    _.trys.pop(); continue;
+	            }
+	            op = body.call(thisArg, _);
+	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+	    }
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+
+
+
+
+
+
+	var logger = new lib.Logger(_version$g.version);
+
+	var padding = new Uint8Array(32);
+	padding.fill(0);
+	var NegativeOne = lib$2.BigNumber.from(-1);
+	var Zero = lib$2.BigNumber.from(0);
+	var One = lib$2.BigNumber.from(1);
+	var MaxUint256 = lib$2.BigNumber.from("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+	function hexPadRight(value) {
+	    var bytes = lib$1.arrayify(value);
+	    var padOffset = bytes.length % 32;
+	    if (padOffset) {
+	        return lib$1.hexConcat([bytes, padding.slice(padOffset)]);
+	    }
+	    return lib$1.hexlify(bytes);
+	}
+	var hexTrue = lib$1.hexZeroPad(One.toHexString(), 32);
+	var hexFalse = lib$1.hexZeroPad(Zero.toHexString(), 32);
+	var domainFieldTypes = {
+	    name: "string",
+	    version: "string",
+	    chainId: "uint256",
+	    verifyingContract: "address",
+	    salt: "bytes32"
+	};
+	var domainFieldNames = [
+	    "name", "version", "chainId", "verifyingContract", "salt"
+	];
+	function checkString(key) {
+	    return function (value) {
+	        if (typeof (value) !== "string") {
+	            logger.throwArgumentError("invalid domain value for " + JSON.stringify(key), "domain." + key, value);
+	        }
+	        return value;
+	    };
+	}
+	var domainChecks = {
+	    name: checkString("name"),
+	    version: checkString("version"),
+	    chainId: function (value) {
+	        try {
+	            return lib$2.BigNumber.from(value).toString();
+	        }
+	        catch (error) { }
+	        return logger.throwArgumentError("invalid domain value for \"chainId\"", "domain.chainId", value);
+	    },
+	    verifyingContract: function (value) {
+	        try {
+	            return lib$6.getAddress(value).toLowerCase();
+	        }
+	        catch (error) { }
+	        return logger.throwArgumentError("invalid domain value \"verifyingContract\"", "domain.verifyingContract", value);
+	    },
+	    salt: function (value) {
+	        try {
+	            var bytes = lib$1.arrayify(value);
+	            if (bytes.length !== 32) {
+	                throw new Error("bad length");
+	            }
+	            return lib$1.hexlify(bytes);
+	        }
+	        catch (error) { }
+	        return logger.throwArgumentError("invalid domain value \"salt\"", "domain.salt", value);
+	    }
+	};
+	function getBaseEncoder(type) {
+	    // intXX and uintXX
+	    {
+	        var match = type.match(/^(u?)int(\d*)$/);
+	        if (match) {
+	            var signed = (match[1] === "");
+	            var width = parseInt(match[2] || "256");
+	            if (width % 8 !== 0 || width > 256 || (match[2] && match[2] !== String(width))) {
+	                logger.throwArgumentError("invalid numeric width", "type", type);
+	            }
+	            var boundsUpper_1 = MaxUint256.mask(signed ? (width - 1) : width);
+	            var boundsLower_1 = signed ? boundsUpper_1.add(One).mul(NegativeOne) : Zero;
+	            return function (value) {
+	                var v = lib$2.BigNumber.from(value);
+	                if (v.lt(boundsLower_1) || v.gt(boundsUpper_1)) {
+	                    logger.throwArgumentError("value out-of-bounds for " + type, "value", value);
+	                }
+	                return lib$1.hexZeroPad(v.toTwos(256).toHexString(), 32);
+	            };
+	        }
+	    }
+	    // bytesXX
+	    {
+	        var match = type.match(/^bytes(\d+)$/);
+	        if (match) {
+	            var width_1 = parseInt(match[1]);
+	            if (width_1 === 0 || width_1 > 32 || match[1] !== String(width_1)) {
+	                logger.throwArgumentError("invalid bytes width", "type", type);
+	            }
+	            return function (value) {
+	                var bytes = lib$1.arrayify(value);
+	                if (bytes.length !== width_1) {
+	                    logger.throwArgumentError("invalid length for " + type, "value", value);
+	                }
+	                return hexPadRight(value);
+	            };
+	        }
+	    }
+	    switch (type) {
+	        case "address": return function (value) {
+	            return lib$1.hexZeroPad(lib$6.getAddress(value), 32);
+	        };
+	        case "bool": return function (value) {
+	            return ((!value) ? hexFalse : hexTrue);
+	        };
+	        case "bytes": return function (value) {
+	            return lib$4.keccak256(value);
+	        };
+	        case "string": return function (value) {
+	            return id_1.id(value);
+	        };
+	    }
+	    return null;
+	}
+	function encodeType(name, fields) {
+	    return name + "(" + fields.map(function (_a) {
+	        var name = _a.name, type = _a.type;
+	        return (type + " " + name);
+	    }).join(",") + ")";
+	}
+	var TypedDataEncoder = /** @class */ (function () {
+	    function TypedDataEncoder(types) {
+	        lib$3.defineReadOnly(this, "types", Object.freeze(lib$3.deepCopy(types)));
+	        lib$3.defineReadOnly(this, "_encoderCache", {});
+	        lib$3.defineReadOnly(this, "_types", {});
+	        // Link struct types to their direct child structs
+	        var links = {};
+	        // Link structs to structs which contain them as a child
+	        var parents = {};
+	        // Link all subtypes within a given struct
+	        var subtypes = {};
+	        Object.keys(types).forEach(function (type) {
+	            links[type] = {};
+	            parents[type] = [];
+	            subtypes[type] = {};
+	        });
+	        var _loop_1 = function (name_1) {
+	            var uniqueNames = {};
+	            types[name_1].forEach(function (field) {
+	                // Check each field has a unique name
+	                if (uniqueNames[field.name]) {
+	                    logger.throwArgumentError("duplicate variable name " + JSON.stringify(field.name) + " in " + JSON.stringify(name_1), "types", types);
+	                }
+	                uniqueNames[field.name] = true;
+	                // Get the base type (drop any array specifiers)
+	                var baseType = field.type.match(/^([^\x5b]*)(\x5b|$)/)[1];
+	                if (baseType === name_1) {
+	                    logger.throwArgumentError("circular type reference to " + JSON.stringify(baseType), "types", types);
+	                }
+	                // Is this a base encoding type?
+	                var encoder = getBaseEncoder(baseType);
+	                if (encoder) {
+	                    return;
+	                }
+	                if (!parents[baseType]) {
+	                    logger.throwArgumentError("unknown type " + JSON.stringify(baseType), "types", types);
+	                }
+	                // Add linkage
+	                parents[baseType].push(name_1);
+	                links[name_1][baseType] = true;
+	            });
+	        };
+	        for (var name_1 in types) {
+	            _loop_1(name_1);
+	        }
+	        // Deduce the primary type
+	        var primaryTypes = Object.keys(parents).filter(function (n) { return (parents[n].length === 0); });
+	        if (primaryTypes.length === 0) {
+	            logger.throwArgumentError("missing primary type", "types", types);
+	        }
+	        else if (primaryTypes.length > 1) {
+	            logger.throwArgumentError("ambiguous primary types or unused types: " + primaryTypes.map(function (t) { return (JSON.stringify(t)); }).join(", "), "types", types);
+	        }
+	        lib$3.defineReadOnly(this, "primaryType", primaryTypes[0]);
+	        // Check for circular type references
+	        function checkCircular(type, found) {
+	            if (found[type]) {
+	                logger.throwArgumentError("circular type reference to " + JSON.stringify(type), "types", types);
+	            }
+	            found[type] = true;
+	            Object.keys(links[type]).forEach(function (child) {
+	                if (!parents[child]) {
+	                    return;
+	                }
+	                // Recursively check children
+	                checkCircular(child, found);
+	                // Mark all ancestors as having this decendant
+	                Object.keys(found).forEach(function (subtype) {
+	                    subtypes[subtype][child] = true;
+	                });
+	            });
+	            delete found[type];
+	        }
+	        checkCircular(this.primaryType, {});
+	        // Compute each fully describe type
+	        for (var name_2 in subtypes) {
+	            var st = Object.keys(subtypes[name_2]);
+	            st.sort();
+	            this._types[name_2] = encodeType(name_2, types[name_2]) + st.map(function (t) { return encodeType(t, types[t]); }).join("");
+	        }
+	    }
+	    TypedDataEncoder.prototype.getEncoder = function (type) {
+	        var encoder = this._encoderCache[type];
+	        if (!encoder) {
+	            encoder = this._encoderCache[type] = this._getEncoder(type);
+	        }
+	        return encoder;
+	    };
+	    TypedDataEncoder.prototype._getEncoder = function (type) {
+	        var _this = this;
+	        // Basic encoder type (address, bool, uint256, etc)
+	        {
+	            var encoder = getBaseEncoder(type);
+	            if (encoder) {
+	                return encoder;
+	            }
+	        }
+	        // Array
+	        var match = type.match(/^(.*)(\x5b(\d*)\x5d)$/);
+	        if (match) {
+	            var subtype_1 = match[1];
+	            var subEncoder_1 = this.getEncoder(subtype_1);
+	            var length_1 = parseInt(match[3]);
+	            return function (value) {
+	                if (length_1 >= 0 && value.length !== length_1) {
+	                    logger.throwArgumentError("array length mismatch; expected length ${ arrayLength }", "value", value);
+	                }
+	                var result = value.map(subEncoder_1);
+	                if (_this._types[subtype_1]) {
+	                    result = result.map(lib$4.keccak256);
+	                }
+	                return lib$4.keccak256(lib$1.hexConcat(result));
+	            };
+	        }
+	        // Struct
+	        var fields = this.types[type];
+	        if (fields) {
+	            var encodedType_1 = id_1.id(this._types[type]);
+	            return function (value) {
+	                var values = fields.map(function (_a) {
+	                    var name = _a.name, type = _a.type;
+	                    var result = _this.getEncoder(type)(value[name]);
+	                    if (_this._types[type]) {
+	                        return lib$4.keccak256(result);
+	                    }
+	                    return result;
+	                });
+	                values.unshift(encodedType_1);
+	                return lib$1.hexConcat(values);
+	            };
+	        }
+	        return logger.throwArgumentError("unknown type: " + type, "type", type);
+	    };
+	    TypedDataEncoder.prototype.encodeType = function (name) {
+	        var result = this._types[name];
+	        if (!result) {
+	            logger.throwArgumentError("unknown type: " + JSON.stringify(name), "name", name);
+	        }
+	        return result;
+	    };
+	    TypedDataEncoder.prototype.encodeData = function (type, value) {
+	        return this.getEncoder(type)(value);
+	    };
+	    TypedDataEncoder.prototype.hashStruct = function (name, value) {
+	        return lib$4.keccak256(this.encodeData(name, value));
+	    };
+	    TypedDataEncoder.prototype.encode = function (value) {
+	        return this.encodeData(this.primaryType, value);
+	    };
+	    TypedDataEncoder.prototype.hash = function (value) {
+	        return this.hashStruct(this.primaryType, value);
+	    };
+	    TypedDataEncoder.prototype._visit = function (type, value, callback) {
+	        var _this = this;
+	        // Basic encoder type (address, bool, uint256, etc)
+	        {
+	            var encoder = getBaseEncoder(type);
+	            if (encoder) {
+	                return callback(type, value);
+	            }
+	        }
+	        // Array
+	        var match = type.match(/^(.*)(\x5b(\d*)\x5d)$/);
+	        if (match) {
+	            var subtype_2 = match[1];
+	            var length_2 = parseInt(match[3]);
+	            if (length_2 >= 0 && value.length !== length_2) {
+	                logger.throwArgumentError("array length mismatch; expected length ${ arrayLength }", "value", value);
+	            }
+	            return value.map(function (v) { return _this._visit(subtype_2, v, callback); });
+	        }
+	        // Struct
+	        var fields = this.types[type];
+	        if (fields) {
+	            return fields.reduce(function (accum, _a) {
+	                var name = _a.name, type = _a.type;
+	                accum[name] = _this._visit(type, value[name], callback);
+	                return accum;
+	            }, {});
+	        }
+	        return logger.throwArgumentError("unknown type: " + type, "type", type);
+	    };
+	    TypedDataEncoder.prototype.visit = function (value, callback) {
+	        return this._visit(this.primaryType, value, callback);
+	    };
+	    TypedDataEncoder.from = function (types) {
+	        return new TypedDataEncoder(types);
+	    };
+	    TypedDataEncoder.getPrimaryType = function (types) {
+	        return TypedDataEncoder.from(types).primaryType;
+	    };
+	    TypedDataEncoder.hashStruct = function (name, types, value) {
+	        return TypedDataEncoder.from(types).hashStruct(name, value);
+	    };
+	    TypedDataEncoder.hashDomain = function (domain) {
+	        var domainFields = [];
+	        for (var name_3 in domain) {
+	            var type = domainFieldTypes[name_3];
+	            if (!type) {
+	                logger.throwArgumentError("invalid typed-data domain key: " + JSON.stringify(name_3), "domain", domain);
+	            }
+	            domainFields.push({ name: name_3, type: type });
+	        }
+	        domainFields.sort(function (a, b) {
+	            return domainFieldNames.indexOf(a.name) - domainFieldNames.indexOf(b.name);
+	        });
+	        return TypedDataEncoder.hashStruct("EIP712Domain", { EIP712Domain: domainFields }, domain);
+	    };
+	    TypedDataEncoder.encode = function (domain, types, value) {
+	        return lib$1.hexConcat([
+	            "0x1901",
+	            TypedDataEncoder.hashDomain(domain),
+	            TypedDataEncoder.from(types).hash(value)
+	        ]);
+	    };
+	    TypedDataEncoder.hash = function (domain, types, value) {
+	        return lib$4.keccak256(TypedDataEncoder.encode(domain, types, value));
+	    };
+	    // Replaces all address types with ENS names with their looked up address
+	    TypedDataEncoder.resolveNames = function (domain, types, value, resolveName) {
+	        return __awaiter(this, void 0, void 0, function () {
+	            var ensCache, encoder, _a, _b, _i, name_4, _c, _d;
+	            return __generator(this, function (_e) {
+	                switch (_e.label) {
+	                    case 0:
+	                        // Make a copy to isolate it from the object passed in
+	                        domain = lib$3.shallowCopy(domain);
+	                        ensCache = {};
+	                        // Do we need to look up the domain's verifyingContract?
+	                        if (domain.verifyingContract && !lib$1.isHexString(domain.verifyingContract, 20)) {
+	                            ensCache[domain.verifyingContract] = "0x";
+	                        }
+	                        encoder = TypedDataEncoder.from(types);
+	                        // Get a list of all the addresses
+	                        encoder.visit(value, function (type, value) {
+	                            if (type === "address" && !lib$1.isHexString(value, 20)) {
+	                                ensCache[value] = "0x";
+	                            }
+	                            return value;
+	                        });
+	                        _a = [];
+	                        for (_b in ensCache)
+	                            _a.push(_b);
+	                        _i = 0;
+	                        _e.label = 1;
+	                    case 1:
+	                        if (!(_i < _a.length)) return [3 /*break*/, 4];
+	                        name_4 = _a[_i];
+	                        _c = ensCache;
+	                        _d = name_4;
+	                        return [4 /*yield*/, resolveName(name_4)];
+	                    case 2:
+	                        _c[_d] = _e.sent();
+	                        _e.label = 3;
+	                    case 3:
+	                        _i++;
+	                        return [3 /*break*/, 1];
+	                    case 4:
+	                        // Replace the domain verifyingContract if needed
+	                        if (domain.verifyingContract && ensCache[domain.verifyingContract]) {
+	                            domain.verifyingContract = ensCache[domain.verifyingContract];
+	                        }
+	                        // Replace all ENS names with their address
+	                        value = encoder.visit(value, function (type, value) {
+	                            if (type === "address" && ensCache[value]) {
+	                                return ensCache[value];
+	                            }
+	                            return value;
+	                        });
+	                        return [2 /*return*/, { domain: domain, value: value }];
+	                }
+	            });
+	        });
+	    };
+	    TypedDataEncoder.getPayload = function (domain, types, value) {
+	        // Validate the domain fields
+	        TypedDataEncoder.hashDomain(domain);
+	        // Derive the EIP712Domain Struct reference type
+	        var domainValues = {};
+	        var domainTypes = [];
+	        domainFieldNames.forEach(function (name) {
+	            var value = domain[name];
+	            if (value == null) {
+	                return;
+	            }
+	            domainValues[name] = domainChecks[name](value);
+	            domainTypes.push({ name: name, type: domainFieldTypes[name] });
+	        });
+	        var encoder = TypedDataEncoder.from(types);
+	        var typesWithDomain = lib$3.shallowCopy(types);
+	        if (typesWithDomain.EIP712Domain) {
+	            typesWithDomain.EIP712Domain = domainTypes;
+	        }
+	        // Validate the data structures and types
+	        encoder.encode(value);
+	        return {
+	            types: typesWithDomain,
+	            domain: domainValues,
+	            primaryType: encoder.primaryType,
+	            message: encoder.visit(value, function (type, value) {
+	                // bytes
+	                if (type.match(/^bytes(\d*)/)) {
+	                    return lib$1.hexlify(lib$1.arrayify(value));
+	                }
+	                // uint or int
+	                if (type.match(/^u?int/)) {
+	                    var prefix = "";
+	                    var v = lib$2.BigNumber.from(value);
+	                    if (v.isNegative()) {
+	                        prefix = "-";
+	                        v = v.mul(-1);
+	                    }
+	                    return prefix + lib$1.hexValue(v.toHexString());
+	                }
+	                switch (type) {
+	                    case "address":
+	                        return value.toLowerCase();
+	                    case "bool":
+	                        return !!value;
+	                    case "string":
+	                        if (typeof (value) !== "string") {
+	                            logger.throwArgumentError("invalid string", "value", value);
+	                        }
+	                        return value;
+	                }
+	                return logger.throwArgumentError("unsupported type", "type", type);
+	            })
+	        };
+	    };
+	    return TypedDataEncoder;
+	}());
+	exports.TypedDataEncoder = TypedDataEncoder;
+
+	});
+
+	var typedData$1 = unwrapExports(typedData);
+	var typedData_1 = typedData.TypedDataEncoder;
+
+	var lib$9 = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+	exports.id = id_1.id;
+
+	exports.isValidName = namehash_1.isValidName;
+	exports.namehash = namehash_1.namehash;
+
+	exports.hashMessage = message.hashMessage;
+	exports.messagePrefix = message.messagePrefix;
+
+	exports._TypedDataEncoder = typedData.TypedDataEncoder;
+
+	});
+
 	var index$9 = unwrapExports(lib$9);
-	var lib_1$9 = lib$9.isValidName;
-	var lib_2$8 = lib$9.namehash;
-	var lib_3$7 = lib$9.id;
-	var lib_4$6 = lib$9.messagePrefix;
-	var lib_5$6 = lib$9.hashMessage;
+	var lib_1$9 = lib$9.id;
+	var lib_2$8 = lib$9.isValidName;
+	var lib_3$7 = lib$9.namehash;
+	var lib_4$6 = lib$9.hashMessage;
+	var lib_5$6 = lib$9.messagePrefix;
+	var lib_6$4 = lib$9._TypedDataEncoder;
 
 	var _interface = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -10923,7 +11477,7 @@
 	var lib_3$8 = lib$a.FormatTypes;
 	var lib_4$7 = lib$a.Fragment;
 	var lib_5$7 = lib$a.FunctionFragment;
-	var lib_6$4 = lib$a.ParamType;
+	var lib_6$5 = lib$a.ParamType;
 	var lib_7$4 = lib$a.AbiCoder;
 	var lib_8$3 = lib$a.defaultAbiCoder;
 	var lib_9$3 = lib$a.checkResultErrors;
@@ -11072,7 +11626,7 @@
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-signer/5.0.6";
+	exports.version = "abstract-signer/5.0.7";
 
 	});
 
@@ -11143,12 +11697,8 @@
 	    lib.Logger.errors.NONCE_EXPIRED,
 	    lib.Logger.errors.REPLACEMENT_UNDERPRICED,
 	];
-	// Sub-Class Notes:
-	//  - A Signer MUST always make sure, that if present, the "from" field
-	//    matches the Signer, before sending or signing a transaction
-	//  - A Signer SHOULD always wrap private information (such as a private
-	//    key or mnemonic) in a function, so that console.log does not leak
-	//    the data
+	;
+	;
 	var Signer = /** @class */ (function () {
 	    ///////////////////
 	    // Sub-classes MUST call super
@@ -11391,6 +11941,9 @@
 	    };
 	    VoidSigner.prototype.signTransaction = function (transaction) {
 	        return this._fail("VoidSigner cannot sign transactions", "signTransaction");
+	    };
+	    VoidSigner.prototype._signTypedData = function (domain, types, value) {
+	        return this._fail("VoidSigner cannot sign typed data", "signTypedData");
 	    };
 	    VoidSigner.prototype.connect = function (provider) {
 	        return new VoidSigner(this.address, provider);
@@ -17154,7 +17707,7 @@
 	var lib_3$d = lib$h.mnemonicToSeed;
 	var lib_4$a = lib$h.mnemonicToEntropy;
 	var lib_5$9 = lib$h.entropyToMnemonic;
-	var lib_6$5 = lib$h.isValidMnemonic;
+	var lib_6$6 = lib$h.isValidMnemonic;
 
 	var _version$y = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -19206,7 +19759,7 @@
 	var lib_3$e = lib$i.isCrowdsaleWallet;
 	var lib_4$b = lib$i.isKeystoreWallet;
 	var lib_5$a = lib$i.decryptKeystore;
-	var lib_6$6 = lib$i.decryptKeystoreSync;
+	var lib_6$7 = lib$i.decryptKeystoreSync;
 	var lib_7$5 = lib$i.encryptKeystore;
 	var lib_8$4 = lib$i.decryptJsonWallet;
 	var lib_9$4 = lib$i.decryptJsonWalletSync;
@@ -19214,7 +19767,7 @@
 	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wallet/5.0.5";
+	exports.version = "wallet/5.0.6";
 
 	});
 
@@ -19236,6 +19789,42 @@
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
+	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments || [])).next());
+	    });
+	};
+	var __generator = (commonjsGlobal && commonjsGlobal.__generator) || function (thisArg, body) {
+	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+	    function verb(n) { return function (v) { return step([n, v]); }; }
+	    function step(op) {
+	        if (f) throw new TypeError("Generator is already executing.");
+	        while (_) try {
+	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+	            if (y = 0, t) op = [op[0] & 2, t.value];
+	            switch (op[0]) {
+	                case 0: case 1: t = op; break;
+	                case 4: _.label++; return { value: op[1], done: false };
+	                case 5: _.label++; y = op[1]; op = [0]; continue;
+	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+	                default:
+	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+	                    if (t[2]) _.ops.pop();
+	                    _.trys.pop(); continue;
+	            }
+	            op = body.call(thisArg, _);
+	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+	    }
+	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 
@@ -19347,7 +19936,32 @@
 	        });
 	    };
 	    Wallet.prototype.signMessage = function (message) {
-	        return Promise.resolve(lib$1.joinSignature(this._signingKey().signDigest(lib$9.hashMessage(message))));
+	        return __awaiter(this, void 0, void 0, function () {
+	            return __generator(this, function (_a) {
+	                return [2 /*return*/, lib$1.joinSignature(this._signingKey().signDigest(lib$9.hashMessage(message)))];
+	            });
+	        });
+	    };
+	    Wallet.prototype._signTypedData = function (domain, types, value) {
+	        return __awaiter(this, void 0, void 0, function () {
+	            var populated;
+	            var _this = this;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0: return [4 /*yield*/, lib$9._TypedDataEncoder.resolveNames(domain, types, value, function (name) {
+	                            if (_this.provider == null) {
+	                                logger.throwError("cannot resolve ENS names without a provider", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                                    operation: "resolveName"
+	                                });
+	                            }
+	                            return _this.provider.resolveName(name);
+	                        })];
+	                    case 1:
+	                        populated = _a.sent();
+	                        return [2 /*return*/, lib$1.joinSignature(this._signingKey().signDigest(lib$9._TypedDataEncoder.hash(populated.domain, types, populated.value)))];
+	                }
+	            });
+	        });
 	    };
 	    Wallet.prototype.encrypt = function (password, options, progressCallback) {
 	        if (typeof (options) === "function" && !progressCallback) {
@@ -20377,7 +20991,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.12";
+	exports.version = "providers/5.0.13";
 
 	});
 
@@ -22640,6 +23254,7 @@
 
 
 
+
 	var logger = new lib.Logger(_version$I.version);
 
 	var errorGas = ["call", "estimateGas"];
@@ -22812,11 +23427,40 @@
 	        });
 	    };
 	    JsonRpcSigner.prototype.signMessage = function (message) {
-	        var _this = this;
-	        var data = ((typeof (message) === "string") ? lib$8.toUtf8Bytes(message) : message);
-	        return this.getAddress().then(function (address) {
-	            // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
-	            return _this.provider.send("eth_sign", [address.toLowerCase(), lib$1.hexlify(data)]);
+	        return __awaiter(this, void 0, void 0, function () {
+	            var data, address;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        data = ((typeof (message) === "string") ? lib$8.toUtf8Bytes(message) : message);
+	                        return [4 /*yield*/, this.getAddress()];
+	                    case 1:
+	                        address = _a.sent();
+	                        return [4 /*yield*/, this.provider.send("eth_sign", [address.toLowerCase(), lib$1.hexlify(data)])];
+	                    case 2: 
+	                    // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
+	                    return [2 /*return*/, _a.sent()];
+	                }
+	            });
+	        });
+	    };
+	    JsonRpcSigner.prototype._signTypedData = function (domain, types, value) {
+	        return __awaiter(this, void 0, void 0, function () {
+	            var populated;
+	            var _this = this;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0: return [4 /*yield*/, lib$9._TypedDataEncoder.resolveNames(domain, types, value, function (name) {
+	                            return _this.provider.resolveName(name);
+	                        })];
+	                    case 1:
+	                        populated = _a.sent();
+	                        return [4 /*yield*/, this.provider.send("eth_signTypedData_v4", [
+	                                lib$9._TypedDataEncoder.getPayload(populated.domain, types, populated.value)
+	                            ])];
+	                    case 2: return [2 /*return*/, _a.sent()];
+	                }
+	            });
 	        });
 	    };
 	    JsonRpcSigner.prototype.unlock = function (password) {
@@ -25304,6 +25948,91 @@
 	var nodesmithProvider$1 = unwrapExports(nodesmithProvider);
 	var nodesmithProvider_1 = nodesmithProvider.NodesmithProvider;
 
+	var pocketProvider = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
+	    var extendStatics = function (d, b) {
+	        extendStatics = Object.setPrototypeOf ||
+	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	        return extendStatics(d, b);
+	    };
+	    return function (d, b) {
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+
+	var logger = new lib.Logger(_version$I.version);
+
+	var defaultApplicationId = "5f7f8547b90218002e9ce9dd";
+	var PocketProvider = /** @class */ (function (_super) {
+	    __extends(PocketProvider, _super);
+	    function PocketProvider() {
+	        return _super !== null && _super.apply(this, arguments) || this;
+	    }
+	    PocketProvider.getApiKey = function (apiKey) {
+	        var apiKeyObj = {
+	            applicationId: defaultApplicationId,
+	            applicationSecretKey: null
+	        };
+	        if (apiKey == null) {
+	            return apiKeyObj;
+	        }
+	        // Parse applicationId and applicationSecretKey
+	        if (typeof (apiKey) === "string") {
+	            apiKeyObj.applicationId = apiKey;
+	        }
+	        else if (apiKey.applicationSecretKey != null) {
+	            logger.assertArgument((typeof (apiKey.applicationId) === "string"), "applicationSecretKey requires an applicationId", "applicationId", apiKey.applicationId);
+	            logger.assertArgument((typeof (apiKey.applicationSecretKey) === "string"), "invalid applicationSecretKey", "applicationSecretKey", "[REDACTED]");
+	            apiKeyObj.applicationId = apiKey.applicationId;
+	            apiKeyObj.applicationSecretKey = apiKey.applicationSecretKey;
+	        }
+	        else if (apiKey.applicationId) {
+	            apiKeyObj.applicationId = apiKey.applicationId;
+	        }
+	        return apiKeyObj;
+	    };
+	    PocketProvider.getUrl = function (network, apiKey) {
+	        var host = null;
+	        switch (network ? network.name : "unknown") {
+	            case "homestead":
+	                host = "eth-mainnet.gateway.pokt.network";
+	                break;
+	            default:
+	                logger.throwError("unsupported network", lib.Logger.errors.INVALID_ARGUMENT, {
+	                    argument: "network",
+	                    value: network
+	                });
+	        }
+	        var connection = {
+	            url: ("https://" + host + "/v1/" + apiKey.applicationId),
+	        };
+	        // Initialize empty headers
+	        connection.headers = {};
+	        // Apply application secret key
+	        if (apiKey.applicationSecretKey != null) {
+	            connection.user = "";
+	            connection.password = apiKey.applicationSecretKey;
+	        }
+	        return connection;
+	    };
+	    PocketProvider.prototype.isCommunityResource = function () {
+	        return (this.applicationId === defaultApplicationId);
+	    };
+	    return PocketProvider;
+	}(urlJsonRpcProvider.UrlJsonRpcProvider));
+	exports.PocketProvider = PocketProvider;
+
+	});
+
+	var pocketProvider$1 = unwrapExports(pocketProvider);
+	var pocketProvider_1 = pocketProvider.PocketProvider;
+
 	var web3Provider = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
@@ -25458,6 +26187,8 @@
 
 	exports.NodesmithProvider = nodesmithProvider.NodesmithProvider;
 
+	exports.PocketProvider = pocketProvider.PocketProvider;
+
 	exports.StaticJsonRpcProvider = urlJsonRpcProvider.StaticJsonRpcProvider;
 	exports.UrlJsonRpcProvider = urlJsonRpcProvider.UrlJsonRpcProvider;
 
@@ -25509,6 +26240,7 @@
 	        InfuraProvider: infuraProvider.InfuraProvider,
 	        JsonRpcProvider: jsonRpcProvider.JsonRpcProvider,
 	        NodesmithProvider: nodesmithProvider.NodesmithProvider,
+	        PocketProvider: pocketProvider.PocketProvider,
 	        Web3Provider: web3Provider.Web3Provider,
 	        IpcProvider: browserIpcProvider.IpcProvider,
 	    }, options);
@@ -25523,7 +26255,7 @@
 	var lib_3$g = lib$m.BaseProvider;
 	var lib_4$c = lib$m.Resolver;
 	var lib_5$b = lib$m.AlchemyProvider;
-	var lib_6$7 = lib$m.AlchemyWebSocketProvider;
+	var lib_6$8 = lib$m.AlchemyWebSocketProvider;
 	var lib_7$6 = lib$m.CloudflareProvider;
 	var lib_8$5 = lib$m.EtherscanProvider;
 	var lib_9$5 = lib$m.FallbackProvider;
@@ -25533,15 +26265,16 @@
 	var lib_13$2 = lib$m.JsonRpcProvider;
 	var lib_14$1 = lib$m.JsonRpcSigner;
 	var lib_15$1 = lib$m.NodesmithProvider;
-	var lib_16$1 = lib$m.StaticJsonRpcProvider;
-	var lib_17 = lib$m.UrlJsonRpcProvider;
-	var lib_18 = lib$m.Web3Provider;
-	var lib_19 = lib$m.WebSocketProvider;
-	var lib_20 = lib$m.Formatter;
-	var lib_21 = lib$m.isCommunityResourcable;
-	var lib_22 = lib$m.isCommunityResource;
-	var lib_23 = lib$m.showThrottleMessage;
-	var lib_24 = lib$m.getDefaultProvider;
+	var lib_16$1 = lib$m.PocketProvider;
+	var lib_17 = lib$m.StaticJsonRpcProvider;
+	var lib_18 = lib$m.UrlJsonRpcProvider;
+	var lib_19 = lib$m.Web3Provider;
+	var lib_20 = lib$m.WebSocketProvider;
+	var lib_21 = lib$m.Formatter;
+	var lib_22 = lib$m.isCommunityResourcable;
+	var lib_23 = lib$m.isCommunityResource;
+	var lib_24 = lib$m.showThrottleMessage;
+	var lib_25 = lib$m.getDefaultProvider;
 
 	var lib$n = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -25804,6 +26537,7 @@
 	exports.splitSignature = lib$1.splitSignature;
 	exports.stripZeros = lib$1.stripZeros;
 
+	exports._TypedDataEncoder = lib$9._TypedDataEncoder;
 	exports.hashMessage = lib$9.hashMessage;
 	exports.id = lib$9.id;
 	exports.isValidName = lib$9.isValidName;
@@ -25918,67 +26652,68 @@
 	var utils_33 = utils$3.zeroPad;
 	var utils_34 = utils$3.splitSignature;
 	var utils_35 = utils$3.stripZeros;
-	var utils_36 = utils$3.hashMessage;
-	var utils_37 = utils$3.id;
-	var utils_38 = utils$3.isValidName;
-	var utils_39 = utils$3.namehash;
-	var utils_40 = utils$3.defaultPath;
-	var utils_41 = utils$3.entropyToMnemonic;
-	var utils_42 = utils$3.HDNode;
-	var utils_43 = utils$3.isValidMnemonic;
-	var utils_44 = utils$3.mnemonicToEntropy;
-	var utils_45 = utils$3.mnemonicToSeed;
-	var utils_46 = utils$3.getJsonWalletAddress;
-	var utils_47 = utils$3.keccak256;
-	var utils_48 = utils$3.Logger;
-	var utils_49 = utils$3.computeHmac;
-	var utils_50 = utils$3.ripemd160;
-	var utils_51 = utils$3.sha256;
-	var utils_52 = utils$3.sha512;
-	var utils_53 = utils$3.solidityKeccak256;
-	var utils_54 = utils$3.solidityPack;
-	var utils_55 = utils$3.soliditySha256;
-	var utils_56 = utils$3.randomBytes;
-	var utils_57 = utils$3.shuffled;
-	var utils_58 = utils$3.checkProperties;
-	var utils_59 = utils$3.deepCopy;
-	var utils_60 = utils$3.defineReadOnly;
-	var utils_61 = utils$3.getStatic;
-	var utils_62 = utils$3.resolveProperties;
-	var utils_63 = utils$3.shallowCopy;
-	var utils_64 = utils$3.RLP;
-	var utils_65 = utils$3.computePublicKey;
-	var utils_66 = utils$3.recoverPublicKey;
-	var utils_67 = utils$3.SigningKey;
-	var utils_68 = utils$3.formatBytes32String;
-	var utils_69 = utils$3.nameprep;
-	var utils_70 = utils$3.parseBytes32String;
-	var utils_71 = utils$3._toEscapedUtf8String;
-	var utils_72 = utils$3.toUtf8Bytes;
-	var utils_73 = utils$3.toUtf8CodePoints;
-	var utils_74 = utils$3.toUtf8String;
-	var utils_75 = utils$3.Utf8ErrorFuncs;
-	var utils_76 = utils$3.computeAddress;
-	var utils_77 = utils$3.parseTransaction;
-	var utils_78 = utils$3.recoverAddress;
-	var utils_79 = utils$3.serializeTransaction;
-	var utils_80 = utils$3.commify;
-	var utils_81 = utils$3.formatEther;
-	var utils_82 = utils$3.parseEther;
-	var utils_83 = utils$3.formatUnits;
-	var utils_84 = utils$3.parseUnits;
-	var utils_85 = utils$3.verifyMessage;
-	var utils_86 = utils$3._fetchData;
-	var utils_87 = utils$3.fetchJson;
-	var utils_88 = utils$3.poll;
-	var utils_89 = utils$3.SupportedAlgorithm;
-	var utils_90 = utils$3.UnicodeNormalizationForm;
-	var utils_91 = utils$3.Utf8ErrorReason;
+	var utils_36 = utils$3._TypedDataEncoder;
+	var utils_37 = utils$3.hashMessage;
+	var utils_38 = utils$3.id;
+	var utils_39 = utils$3.isValidName;
+	var utils_40 = utils$3.namehash;
+	var utils_41 = utils$3.defaultPath;
+	var utils_42 = utils$3.entropyToMnemonic;
+	var utils_43 = utils$3.HDNode;
+	var utils_44 = utils$3.isValidMnemonic;
+	var utils_45 = utils$3.mnemonicToEntropy;
+	var utils_46 = utils$3.mnemonicToSeed;
+	var utils_47 = utils$3.getJsonWalletAddress;
+	var utils_48 = utils$3.keccak256;
+	var utils_49 = utils$3.Logger;
+	var utils_50 = utils$3.computeHmac;
+	var utils_51 = utils$3.ripemd160;
+	var utils_52 = utils$3.sha256;
+	var utils_53 = utils$3.sha512;
+	var utils_54 = utils$3.solidityKeccak256;
+	var utils_55 = utils$3.solidityPack;
+	var utils_56 = utils$3.soliditySha256;
+	var utils_57 = utils$3.randomBytes;
+	var utils_58 = utils$3.shuffled;
+	var utils_59 = utils$3.checkProperties;
+	var utils_60 = utils$3.deepCopy;
+	var utils_61 = utils$3.defineReadOnly;
+	var utils_62 = utils$3.getStatic;
+	var utils_63 = utils$3.resolveProperties;
+	var utils_64 = utils$3.shallowCopy;
+	var utils_65 = utils$3.RLP;
+	var utils_66 = utils$3.computePublicKey;
+	var utils_67 = utils$3.recoverPublicKey;
+	var utils_68 = utils$3.SigningKey;
+	var utils_69 = utils$3.formatBytes32String;
+	var utils_70 = utils$3.nameprep;
+	var utils_71 = utils$3.parseBytes32String;
+	var utils_72 = utils$3._toEscapedUtf8String;
+	var utils_73 = utils$3.toUtf8Bytes;
+	var utils_74 = utils$3.toUtf8CodePoints;
+	var utils_75 = utils$3.toUtf8String;
+	var utils_76 = utils$3.Utf8ErrorFuncs;
+	var utils_77 = utils$3.computeAddress;
+	var utils_78 = utils$3.parseTransaction;
+	var utils_79 = utils$3.recoverAddress;
+	var utils_80 = utils$3.serializeTransaction;
+	var utils_81 = utils$3.commify;
+	var utils_82 = utils$3.formatEther;
+	var utils_83 = utils$3.parseEther;
+	var utils_84 = utils$3.formatUnits;
+	var utils_85 = utils$3.parseUnits;
+	var utils_86 = utils$3.verifyMessage;
+	var utils_87 = utils$3._fetchData;
+	var utils_88 = utils$3.fetchJson;
+	var utils_89 = utils$3.poll;
+	var utils_90 = utils$3.SupportedAlgorithm;
+	var utils_91 = utils$3.UnicodeNormalizationForm;
+	var utils_92 = utils$3.Utf8ErrorReason;
 
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.17";
+	exports.version = "ethers/5.0.18";
 
 	});
 
@@ -26095,7 +26830,7 @@
 	var lib_3$j = lib$p.Wallet;
 	var lib_4$e = lib$p.VoidSigner;
 	var lib_5$d = lib$p.getDefaultProvider;
-	var lib_6$8 = lib$p.providers;
+	var lib_6$9 = lib$p.providers;
 	var lib_7$7 = lib$p.Contract;
 	var lib_8$6 = lib$p.ContractFactory;
 	var lib_9$6 = lib$p.BigNumber;
@@ -26122,7 +26857,7 @@
 	exports.ethers = lib_1$p;
 	exports.getDefaultProvider = lib_5$d;
 	exports.logger = lib_13$3;
-	exports.providers = lib_6$8;
+	exports.providers = lib_6$9;
 	exports.utils = lib_14$2;
 	exports.version = lib_16$2;
 	exports.wordlists = lib_15$2;

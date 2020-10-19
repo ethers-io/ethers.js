@@ -4,7 +4,7 @@
   "dependencies": {
     "@ethersproject/abi": "5.0.7",
     "@ethersproject/abstract-provider": "5.0.5",
-    "@ethersproject/abstract-signer": "5.0.6",
+    "@ethersproject/abstract-signer": "5.0.7",
     "@ethersproject/address": "5.0.5",
     "@ethersproject/base64": "5.0.4",
     "@ethersproject/basex": "5.0.4",
@@ -12,7 +12,7 @@
     "@ethersproject/bytes": "5.0.5",
     "@ethersproject/constants": "5.0.5",
     "@ethersproject/contracts": "5.0.5",
-    "@ethersproject/hash": "5.0.5",
+    "@ethersproject/hash": "5.0.6",
     "@ethersproject/hdnode": "5.0.5",
     "@ethersproject/json-wallets": "5.0.7",
     "@ethersproject/keccak256": "5.0.4",
@@ -20,7 +20,7 @@
     "@ethersproject/networks": "5.0.4",
     "@ethersproject/pbkdf2": "5.0.4",
     "@ethersproject/properties": "5.0.4",
-    "@ethersproject/providers": "5.0.12",
+    "@ethersproject/providers": "5.0.13",
     "@ethersproject/random": "5.0.4",
     "@ethersproject/rlp": "5.0.4",
     "@ethersproject/sha2": "5.0.4",
@@ -29,7 +29,7 @@
     "@ethersproject/strings": "5.0.5",
     "@ethersproject/transactions": "5.0.6",
     "@ethersproject/units": "5.0.6",
-    "@ethersproject/wallet": "5.0.5",
+    "@ethersproject/wallet": "5.0.6",
     "@ethersproject/web": "5.0.9",
     "@ethersproject/wordlists": "5.0.5"
   },
@@ -50,7 +50,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xf1d0e8625ba6f837a4f939029dde2b9d0e288a2f51a79d36d083f60b050d6913",
+  "tarballHash": "0xf82161857c9f2cd4739cf88de7526d1fad044d18145fa4ff9f42b7ea5731e12e",
   "types": "./lib/index.d.ts",
-  "version": "5.0.17"
+  "version": "5.0.18"
 }

@@ -1,9 +1,18 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { getAddress } from "@ethersproject/address";
 import { Provider } from "@ethersproject/abstract-provider";
 import { Signer } from "@ethersproject/abstract-signer";
 import { arrayify, concat, hexDataSlice, isHexString, joinSignature } from "@ethersproject/bytes";
-import { hashMessage } from "@ethersproject/hash";
+import { hashMessage, _TypedDataEncoder } from "@ethersproject/hash";
 import { defaultPath, HDNode, entropyToMnemonic } from "@ethersproject/hdnode";
 import { keccak256 } from "@ethersproject/keccak256";
 import { defineReadOnly, resolveProperties } from "@ethersproject/properties";
@@ -92,7 +101,23 @@ export class Wallet extends Signer {
         });
     }
     signMessage(message) {
-        return Promise.resolve(joinSignature(this._signingKey().signDigest(hashMessage(message))));
+        return __awaiter(this, void 0, void 0, function* () {
+            return joinSignature(this._signingKey().signDigest(hashMessage(message)));
+        });
+    }
+    _signTypedData(domain, types, value) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Populate any ENS names
+            const populated = yield _TypedDataEncoder.resolveNames(domain, types, value, (name) => {
+                if (this.provider == null) {
+                    logger.throwError("cannot resolve ENS names without a provider", Logger.errors.UNSUPPORTED_OPERATION, {
+                        operation: "resolveName"
+                    });
+                }
+                return this.provider.resolveName(name);
+            });
+            return joinSignature(this._signingKey().signDigest(_TypedDataEncoder.hash(populated.domain, types, populated.value)));
+        });
     }
     encrypt(password, options, progressCallback) {
         if (typeof (options) === "function" && !progressCallback) {

@@ -61,12 +61,8 @@ var forwardErrors = [
     logger_1.Logger.errors.NONCE_EXPIRED,
     logger_1.Logger.errors.REPLACEMENT_UNDERPRICED,
 ];
-// Sub-Class Notes:
-//  - A Signer MUST always make sure, that if present, the "from" field
-//    matches the Signer, before sending or signing a transaction
-//  - A Signer SHOULD always wrap private information (such as a private
-//    key or mnemonic) in a function, so that console.log does not leak
-//    the data
+;
+;
 var Signer = /** @class */ (function () {
     ///////////////////
     // Sub-classes MUST call super
@@ -309,6 +305,9 @@ var VoidSigner = /** @class */ (function (_super) {
     };
     VoidSigner.prototype.signTransaction = function (transaction) {
         return this._fail("VoidSigner cannot sign transactions", "signTransaction");
+    };
+    VoidSigner.prototype._signTypedData = function (domain, types, value) {
+        return this._fail("VoidSigner cannot sign typed data", "signTypedData");
     };
     VoidSigner.prototype.connect = function (provider) {
         return new VoidSigner(this.address, provider);

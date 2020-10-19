@@ -100,7 +100,7 @@
 });
 
 },{}],2:[function(require,module,exports){
-(function (global){
+(function (global){(function (){
 'use strict';
 
 (function() {
@@ -225,7 +225,7 @@
 
 
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./base64.js":1,"./unorm.js":3}],3:[function(require,module,exports){
 (function (root) {
    "use strict";

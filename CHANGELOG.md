@@ -3,6 +3,17 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.18 (2020-10-18 22:18)
+---------------------------------
+
+  - Added EIP-712 test cases. ([#687](https://github.com/ethers-io/ethers.js/issues/687); [1589353](https://github.com/ethers-io/ethers.js/commit/15893537c3d9c92fe8748a3e9617d133d1d5d6a7))
+  - Initial Signer support for EIP-712 signed typed data. ([#687](https://github.com/ethers-io/ethers.js/issues/687); [be4e216](https://github.com/ethers-io/ethers.js/commit/be4e2164e64dfa0697561763e8079120a485a566))
+  - Split hash library files up. ([3e676f2](https://github.com/ethers-io/ethers.js/commit/3e676f21b00931ed966f4561e4f28792a1f8f154))
+  - Added EIP-712 multi-dimensional array support. ([#687](https://github.com/ethers-io/ethers.js/issues/687); [5a4dd5a](https://github.com/ethers-io/ethers.js/commit/5a4dd5a70377d3e86823d279d6ff466d03767644))
+  - Consolidated TypedDataEncoder methods. ([#687](https://github.com/ethers-io/ethers.js/issues/687); [345a830](https://github.com/ethers-io/ethers.js/commit/345a830dc4bc869d5f3edfdc27465797e7663055))
+  - Initial EIP-712 utilities. ([#687](https://github.com/ethers-io/ethers.js/issues/687); [cfa6dec](https://github.com/ethers-io/ethers.js/commit/cfa6dec29314fe485df283974612d40550bc4179))
+  - Added initial PocketProvider. ([#1052](https://github.com/ethers-io/ethers.js/issues/1052); [a62d20d](https://github.com/ethers-io/ethers.js/commit/a62d20d86f2d545b9a7bcda5418993790b7db91c))
+
 ethers/v5.0.17 (2020-10-07 20:08)
 ---------------------------------
 

@@ -4,7 +4,7 @@ import { getAddress, getCreate2Address, getContractAddress, getIcapAddress, isAd
 import * as base64 from "@ethersproject/base64";
 import { Base58 as base58 } from "@ethersproject/basex";
 import { arrayify, concat, hexConcat, hexDataSlice, hexDataLength, hexlify, hexStripZeros, hexValue, hexZeroPad, isBytes, isBytesLike, isHexString, joinSignature, zeroPad, splitSignature, stripZeros } from "@ethersproject/bytes";
-import { hashMessage, id, isValidName, namehash } from "@ethersproject/hash";
+import { _TypedDataEncoder, hashMessage, id, isValidName, namehash } from "@ethersproject/hash";
 import { defaultPath, entropyToMnemonic, HDNode, isValidMnemonic, mnemonicToEntropy, mnemonicToSeed } from "@ethersproject/hdnode";
 import { getJsonWalletAddress } from "@ethersproject/json-wallets";
 import { keccak256 } from "@ethersproject/keccak256";
@@ -26,7 +26,7 @@ import { SupportedAlgorithm } from "@ethersproject/sha2";
 import { UnicodeNormalizationForm, Utf8ErrorReason } from "@ethersproject/strings";
 ////////////////////////
 // Exports
-export { AbiCoder, defaultAbiCoder, Fragment, EventFragment, FunctionFragment, ParamType, FormatTypes, checkResultErrors, Logger, RLP, _fetchData, fetchJson, poll, checkProperties, deepCopy, defineReadOnly, getStatic, resolveProperties, shallowCopy, arrayify, concat, stripZeros, zeroPad, isBytes, isBytesLike, defaultPath, HDNode, SigningKey, Interface, LogDescription, TransactionDescription, base58, base64, hexlify, isHexString, hexConcat, hexStripZeros, hexValue, hexZeroPad, hexDataLength, hexDataSlice, nameprep, _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String, Utf8ErrorFuncs, formatBytes32String, parseBytes32String, hashMessage, namehash, isValidName, id, getAddress, getIcapAddress, getContractAddress, getCreate2Address, isAddress, formatEther, parseEther, formatUnits, parseUnits, commify, computeHmac, keccak256, ripemd160, sha256, sha512, randomBytes, shuffled, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computeAddress, recoverAddress, computePublicKey, recoverPublicKey, verifyMessage, mnemonicToEntropy, entropyToMnemonic, isValidMnemonic, mnemonicToSeed, 
+export { AbiCoder, defaultAbiCoder, Fragment, EventFragment, FunctionFragment, ParamType, FormatTypes, checkResultErrors, Logger, RLP, _fetchData, fetchJson, poll, checkProperties, deepCopy, defineReadOnly, getStatic, resolveProperties, shallowCopy, arrayify, concat, stripZeros, zeroPad, isBytes, isBytesLike, defaultPath, HDNode, SigningKey, Interface, LogDescription, TransactionDescription, base58, base64, hexlify, isHexString, hexConcat, hexStripZeros, hexValue, hexZeroPad, hexDataLength, hexDataSlice, nameprep, _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String, Utf8ErrorFuncs, formatBytes32String, parseBytes32String, hashMessage, namehash, isValidName, id, _TypedDataEncoder, getAddress, getIcapAddress, getContractAddress, getCreate2Address, isAddress, formatEther, parseEther, formatUnits, parseUnits, commify, computeHmac, keccak256, ripemd160, sha256, sha512, randomBytes, shuffled, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, parseTransaction, serializeTransaction, getJsonWalletAddress, computeAddress, recoverAddress, computePublicKey, recoverPublicKey, verifyMessage, mnemonicToEntropy, entropyToMnemonic, isValidMnemonic, mnemonicToSeed, 
 ////////////////////////
 // Enums
 SupportedAlgorithm, UnicodeNormalizationForm, Utf8ErrorReason, Indexed };

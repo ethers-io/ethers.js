@@ -52,6 +52,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var abstract_signer_1 = require("@ethersproject/abstract-signer");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
+var hash_1 = require("@ethersproject/hash");
 var properties_1 = require("@ethersproject/properties");
 var strings_1 = require("@ethersproject/strings");
 var web_1 = require("@ethersproject/web");
@@ -229,11 +230,40 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         });
     };
     JsonRpcSigner.prototype.signMessage = function (message) {
-        var _this = this;
-        var data = ((typeof (message) === "string") ? strings_1.toUtf8Bytes(message) : message);
-        return this.getAddress().then(function (address) {
-            // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
-            return _this.provider.send("eth_sign", [address.toLowerCase(), bytes_1.hexlify(data)]);
+        return __awaiter(this, void 0, void 0, function () {
+            var data, address;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        data = ((typeof (message) === "string") ? strings_1.toUtf8Bytes(message) : message);
+                        return [4 /*yield*/, this.getAddress()];
+                    case 1:
+                        address = _a.sent();
+                        return [4 /*yield*/, this.provider.send("eth_sign", [address.toLowerCase(), bytes_1.hexlify(data)])];
+                    case 2: 
+                    // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
+                    return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    JsonRpcSigner.prototype._signTypedData = function (domain, types, value) {
+        return __awaiter(this, void 0, void 0, function () {
+            var populated;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, hash_1._TypedDataEncoder.resolveNames(domain, types, value, function (name) {
+                            return _this.provider.resolveName(name);
+                        })];
+                    case 1:
+                        populated = _a.sent();
+                        return [4 /*yield*/, this.provider.send("eth_signTypedData_v4", [
+                                hash_1._TypedDataEncoder.getPayload(populated.domain, types, populated.value)
+                            ])];
+                    case 2: return [2 /*return*/, _a.sent()];
+                }
+            });
         });
     };
     JsonRpcSigner.prototype.unlock = function (password) {

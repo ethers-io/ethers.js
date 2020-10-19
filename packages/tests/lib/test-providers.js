@@ -442,6 +442,7 @@ var ApiKeys = {
     alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
     etherscan: "FPFGK6JSW2UHJJ2666FG93KP7WC999MNW7",
     infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",
+    pocket: "5f7f8547b90218002e9ce9dd",
 };
 var providerFunctions = [
     {
@@ -467,7 +468,7 @@ var providerFunctions = [
     /*
     {
         name: "CloudflareProvider",
-        networks: [ "homestead" ],
+        networks: [ "default", "homestead" ],
         create: (network: string) => {
             return new ethers.providers.CloudflareProvider(network);
         }
@@ -498,6 +499,16 @@ var providerFunctions = [
         networks: [],
         create: function (network) {
             throw new Error("not tested");
+        }
+    },
+    {
+        name: "PocketProvider",
+        networks: ["default", "homestead"],
+        create: function (network) {
+            if (network == "default") {
+                return new ethers_1.ethers.providers.PocketProvider(null, ApiKeys.pocket);
+            }
+            return new ethers_1.ethers.providers.PocketProvider(network, ApiKeys.pocket);
         }
     },
     {
@@ -774,7 +785,6 @@ describe("Test Provider Methods", function () {
                 switch (_a.label) {
                     case 0:
                         this.timeout(300000);
-                        console.log("*** Sweeping funds back to faucet");
                         // Wait until the funding is complete
                         return [4 /*yield*/, fundReceipt];
                     case 1:
@@ -987,6 +997,63 @@ describe("Test API Key Formatting", function () {
         // Attempt an unsupported network
         assert_1.default.throws(function () {
             var provider = new ethers_1.ethers.providers.InfuraProvider("imaginary");
+            console.log(provider);
+        }, function (error) {
+            return (error.argument === "network" && error.reason === "unsupported network");
+        });
+    });
+    it("Pocket API key", function () {
+        var applicationId = "someApplicationId";
+        var applicationSecretKey = "someApplicationSecret";
+        // Test simple applicationId
+        var apiKeyString = ethers_1.ethers.providers.PocketProvider.getApiKey(applicationId);
+        assert_1.default.equal(apiKeyString.applicationId, applicationId);
+        assert_1.default.ok(apiKeyString.applicationSecretKey == null);
+        // Test complex API key with applicationId
+        var apiKeyObject = ethers_1.ethers.providers.PocketProvider.getApiKey({
+            applicationId: applicationId
+        });
+        assert_1.default.equal(apiKeyObject.applicationId, applicationId);
+        assert_1.default.ok(apiKeyObject.applicationSecretKey == null);
+        // Test complex API key with applicationId and applicationSecretKey
+        var apiKeyObject2 = ethers_1.ethers.providers.PocketProvider.getApiKey({
+            applicationId: applicationId,
+            applicationSecretKey: applicationSecretKey
+        });
+        assert_1.default.equal(apiKeyObject2.applicationId, applicationId);
+        assert_1.default.equal(apiKeyObject2.applicationSecretKey, applicationSecretKey);
+        // Fails on invalid applicationId type
+        assert_1.default.throws(function () {
+            var apiKey = ethers_1.ethers.providers.PocketProvider.getApiKey({
+                applicationId: 1234,
+                applicationSecretKey: applicationSecretKey
+            });
+            console.log(apiKey);
+        }, function (error) {
+            return (error.argument === "applicationId" && error.reason === "applicationSecretKey requires an applicationId");
+        });
+        // Fails on invalid projectSecret type
+        assert_1.default.throws(function () {
+            var apiKey = ethers_1.ethers.providers.PocketProvider.getApiKey({
+                applicationId: applicationId,
+                applicationSecretKey: 1234
+            });
+            console.log(apiKey);
+        }, function (error) {
+            return (error.argument === "applicationSecretKey" && error.reason === "invalid applicationSecretKey");
+        });
+        {
+            var provider = new ethers_1.ethers.providers.PocketProvider("homestead", {
+                applicationId: applicationId,
+                applicationSecretKey: applicationSecretKey
+            });
+            assert_1.default.equal(provider.network.name, "homestead");
+            assert_1.default.equal(provider.applicationId, applicationId);
+            assert_1.default.equal(provider.applicationSecretKey, applicationSecretKey);
+        }
+        // Attempt an unsupported network
+        assert_1.default.throws(function () {
+            var provider = new ethers_1.ethers.providers.PocketProvider("imaginary");
             console.log(provider);
         }, function (error) {
             return (error.argument === "network" && error.reason === "unsupported network");

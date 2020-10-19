@@ -48,6 +48,7 @@ exports.zeroPad = bytes_1.zeroPad;
 exports.splitSignature = bytes_1.splitSignature;
 exports.stripZeros = bytes_1.stripZeros;
 var hash_1 = require("@ethersproject/hash");
+exports._TypedDataEncoder = hash_1._TypedDataEncoder;
 exports.hashMessage = hash_1.hashMessage;
 exports.id = hash_1.id;
 exports.isValidName = hash_1.isValidName;

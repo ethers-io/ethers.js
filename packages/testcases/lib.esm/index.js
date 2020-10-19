@@ -4,6 +4,8 @@ import path from 'path';
 import zlib from 'browserify-zlib';
 import { randomBytes, randomHexString, randomNumber } from "./random";
 export { randomBytes, randomHexString, randomNumber };
+import * as TestCase from "./testcases";
+export { TestCase };
 export function saveTests(tag, data) {
     //let filename = path.resolve(__dirname, 'testcases', tag + '.json.gz');
     let filename = path.resolve(__dirname, '../testcases', tag + '.json.gz');

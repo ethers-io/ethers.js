@@ -1,6 +1,5 @@
-import { Bytes } from "@ethersproject/bytes";
-export declare function isValidName(name: string): boolean;
-export declare function namehash(name: string): string;
-export declare function id(text: string): string;
-export declare const messagePrefix = "\u0019Ethereum Signed Message:\n";
-export declare function hashMessage(message: Bytes | string): string;
+import { id } from "./id";
+import { isValidName, namehash } from "./namehash";
+import { hashMessage, messagePrefix } from "./message";
+import { TypedDataEncoder as _TypedDataEncoder } from "./typed-data";
+export { id, namehash, isValidName, messagePrefix, hashMessage, _TypedDataEncoder, };

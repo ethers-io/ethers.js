@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { Signer } from "@ethersproject/abstract-signer";
 import { BigNumber } from "@ethersproject/bignumber";
 import { hexlify, hexValue } from "@ethersproject/bytes";
+import { _TypedDataEncoder } from "@ethersproject/hash";
 import { checkProperties, deepCopy, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { toUtf8Bytes } from "@ethersproject/strings";
 import { fetchJson, poll } from "@ethersproject/web";
@@ -180,10 +181,22 @@ export class JsonRpcSigner extends Signer {
         });
     }
     signMessage(message) {
-        const data = ((typeof (message) === "string") ? toUtf8Bytes(message) : message);
-        return this.getAddress().then((address) => {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = ((typeof (message) === "string") ? toUtf8Bytes(message) : message);
+            const address = yield this.getAddress();
             // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
-            return this.provider.send("eth_sign", [address.toLowerCase(), hexlify(data)]);
+            return yield this.provider.send("eth_sign", [address.toLowerCase(), hexlify(data)]);
+        });
+    }
+    _signTypedData(domain, types, value) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Populate any ENS names (in-place)
+            const populated = yield _TypedDataEncoder.resolveNames(domain, types, value, (name) => {
+                return this.provider.resolveName(name);
+            });
+            return yield this.provider.send("eth_signTypedData_v4", [
+                _TypedDataEncoder.getPayload(populated.domain, types, populated.value)
+            ]);
         });
     }
     unlock(password) {

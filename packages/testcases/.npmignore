@@ -3,3 +3,4 @@ tsconfig.json
 src.ts/
 input/
 tsconfig.tsbuildinfo
+generation/

@@ -1,10 +1,24 @@
 import { BlockTag, Provider, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
-import { BigNumber } from "@ethersproject/bignumber";
-import { Bytes } from "@ethersproject/bytes";
+import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
+import { Bytes, BytesLike } from "@ethersproject/bytes";
 import { Deferrable } from "@ethersproject/properties";
+export interface TypedDataDomain {
+    name?: string;
+    version?: string;
+    chainId?: BigNumberish;
+    verifyingContract?: string;
+    salt?: BytesLike;
+}
+export interface TypedDataField {
+    name: string;
+    type: string;
+}
 export interface ExternallyOwnedAccount {
     readonly address: string;
     readonly privateKey: string;
+}
+export interface TypedDataSigner {
+    _signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
 }
 export declare abstract class Signer {
     readonly provider?: Provider;
@@ -27,12 +41,13 @@ export declare abstract class Signer {
     _checkProvider(operation?: string): void;
     static isSigner(value: any): value is Signer;
 }
-export declare class VoidSigner extends Signer {
+export declare class VoidSigner extends Signer implements TypedDataSigner {
     readonly address: string;
     constructor(address: string, provider?: Provider);
     getAddress(): Promise<string>;
     _fail(message: string, operation: string): Promise<any>;
     signMessage(message: Bytes | string): Promise<string>;
     signTransaction(transaction: Deferrable<TransactionRequest>): Promise<string>;
+    _signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
     connect(provider: Provider): VoidSigner;
 }
