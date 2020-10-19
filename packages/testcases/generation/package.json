@@ -1,0 +1,18 @@
+{
+  "name": "private-generation-scripts",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Scripts to geenrate test cases.",
+  "main": "index.js",
+  "scripts": {
+    "auto-build": "npm run build -- -w",
+    "build": "tsc --build ./tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^14.11.8",
+    "eth-sig-util": "^2.5.3",
+    "typescript": "3.8.3"
+  },
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT"
+}
