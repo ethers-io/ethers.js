@@ -15,6 +15,8 @@ import { loadJson, repeat } from "../utils";
 const USER_AGENT = "ethers-dist@0.0.1";
 const TAG = "latest";
 
+const forcePublish = (process.argv.slice(2).indexOf("--publish") >= 0);
+
 type PutInfo = {
     ACL: "public-read";
     Body: string | Buffer;
@@ -143,7 +145,7 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
         local.updateJson(pathJson, { gitHead: undefined }, true);
     }
 
-    if (publishNames.indexOf("ethers") >= 0) {
+    if (publishNames.indexOf("ethers") >= 0 || forcePublish) {
         const change = getLatestChange();
 
         const awsAccessId = await config.get("aws-upload-scripts-accesskey");

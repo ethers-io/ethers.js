@@ -33,6 +33,7 @@ const path_1 = require("../path");
 const utils_1 = require("../utils");
 const USER_AGENT = "ethers-dist@0.0.1";
 const TAG = "latest";
+const forcePublish = (process.argv.slice(2).indexOf("--publish") >= 0);
 function putObject(s3, info) {
     return new Promise((resolve, reject) => {
         s3.putObject(info, function (error, data) {
@@ -143,7 +144,7 @@ exports.invalidate = invalidate;
             yield npm.publish(path, info, options);
             local.updateJson(pathJson, { gitHead: undefined }, true);
         }
-        if (publishNames.indexOf("ethers") >= 0) {
+        if (publishNames.indexOf("ethers") >= 0 || forcePublish) {
             const change = changelog_1.getLatestChange();
             const awsAccessId = yield config_1.config.get("aws-upload-scripts-accesskey");
             const awsSecretKey = yield config_1.config.get("aws-upload-scripts-secretkey");

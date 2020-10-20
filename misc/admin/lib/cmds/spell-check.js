@@ -25,7 +25,7 @@ const Words = fs_1.default.readFileSync("/usr/share/dict/words").toString().spli
 accessing addresses aligned autofill called cancelled changed censored
 clamping compiled computed configured consumed creating decoded decoding
 decreased decrypt decrypted decrypting deployed deploying deprecated detected
-discontinued earliest email enabled encoded encoding encrypt
+discontinued earliest email enabled encoded encoder encoding encrypt
 encrypted encrypting entries euro exceeded existing expected
 expired failed fetches formatted formatting funding generated
 hardened has highly ignoring implemented implementer imported including instantiate
@@ -34,7 +34,7 @@ named needed nested neutered numeric offline optimizer overriding owned packed
 padded parsed parsing passed placeholder processing properties prototyping reached
 recommended recovered redacted remaining replaced required
 serializes shared signed signing skipped stored supported tagging targetted
-throttled transactions uninstall unstake unsubscribe using verifies website
+throttled transactions typed uninstall unstake unsubscribe using verifies verifying website
 
 // Overly Specific Words
 bech BIP BIP39 BIP44 btc bzz crypto eip etc hashes hmac icap
@@ -84,6 +84,11 @@ ALCat BiDi LCat nameprep
 // Lanauge Codes (and short binary data)
 cn cz en es fr it ja tw zh zh_cn zh_tw
 OYAa IJBEJqXZJ
+
+// Encoded data
+Jx Trw BMd
+lorem ipsum dolor sit amet  consectetur adipiscing elit  sed do eiusmod tempor incididunt ut labore et dolore magna aliqua  ut enim ad minim veniam  quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat  duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur  excepteur sint occaecat cupidatat non proident  sunt in culpa qui officia deserunt mollit anim id est laborum
+
 
 `.split("\n").filter((l) => (l.substring(0, 2) != "/\/")).join("\n").split(/\s+/g).forEach((word) => {
     word = word.trim();
