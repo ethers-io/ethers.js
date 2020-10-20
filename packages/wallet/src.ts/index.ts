@@ -188,3 +188,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
 export function verifyMessage(message: Bytes | string, signature: SignatureLike): string {
     return recoverAddress(hashMessage(message), signature);
 }
+
+export function verifyTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>, signature: SignatureLike): string {
+    return recoverAddress(_TypedDataEncoder.hash(domain, types, value), signature);
+}
