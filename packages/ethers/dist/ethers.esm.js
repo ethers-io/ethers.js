@@ -19051,6 +19051,9 @@ class Formatter {
     // Requires a BigNumberish that is within the IEEE754 safe integer range; returns a number
     // Strict! Used on input.
     number(number) {
+        if (number === "0x") {
+            return 0;
+        }
         return BigNumber.from(number).toNumber();
     }
     // Strict! Used on input.
@@ -21948,20 +21951,20 @@ class EtherscanProvider extends BaseProvider {
                     url += apiKey;
                     const logs = yield get(url, null, getResult$1);
                     // Cache txHash => blockHash
-                    let txs = {};
+                    let blocks = {};
                     // Add any missing blockHash to the logs
                     for (let i = 0; i < logs.length; i++) {
                         const log = logs[i];
                         if (log.blockHash != null) {
                             continue;
                         }
-                        if (txs[log.transactionHash] == null) {
-                            const tx = yield this.getTransaction(log.transactionHash);
-                            if (tx) {
-                                txs[log.transactionHash] = tx.blockHash;
+                        if (blocks[log.blockNumber] == null) {
+                            const block = yield this.getBlock(log.blockNumber);
+                            if (block) {
+                                blocks[log.blockNumber] = block.hash;
                             }
                         }
-                        log.blockHash = txs[log.transactionHash];
+                        log.blockHash = blocks[log.blockNumber];
                     }
                     return logs;
                 }

@@ -118,6 +118,9 @@ var Formatter = /** @class */ (function () {
     // Requires a BigNumberish that is within the IEEE754 safe integer range; returns a number
     // Strict! Used on input.
     Formatter.prototype.number = function (number) {
+        if (number === "0x") {
+            return 0;
+        }
         return bignumber_1.BigNumber.from(number).toNumber();
     };
     // Strict! Used on input.

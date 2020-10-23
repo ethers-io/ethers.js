@@ -21124,6 +21124,9 @@
 	    // Requires a BigNumberish that is within the IEEE754 safe integer range; returns a number
 	    // Strict! Used on input.
 	    Formatter.prototype.number = function (number) {
+	        if (number === "0x") {
+	            return 0;
+	        }
 	        return lib$2.BigNumber.from(number).toNumber();
 	    };
 	    // Strict! Used on input.
@@ -24772,7 +24775,7 @@
 	    };
 	    EtherscanProvider.prototype.perform = function (method, params) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var url, apiKey, get, _a, postData, error_1, postData, error_2, topic0, logs, txs, i, log, tx, _b;
+	            var url, apiKey, get, _a, postData, error_1, postData, error_2, topic0, logs, blocks, i, log, block, _b;
 	            var _this = this;
 	            return __generator(this, function (_c) {
 	                switch (_c.label) {
@@ -24951,7 +24954,7 @@
 	                        return [4 /*yield*/, get(url, null, getResult)];
 	                    case 20:
 	                        logs = _c.sent();
-	                        txs = {};
+	                        blocks = {};
 	                        i = 0;
 	                        _c.label = 21;
 	                    case 21:
@@ -24960,16 +24963,16 @@
 	                        if (log.blockHash != null) {
 	                            return [3 /*break*/, 24];
 	                        }
-	                        if (!(txs[log.transactionHash] == null)) return [3 /*break*/, 23];
-	                        return [4 /*yield*/, this.getTransaction(log.transactionHash)];
+	                        if (!(blocks[log.blockNumber] == null)) return [3 /*break*/, 23];
+	                        return [4 /*yield*/, this.getBlock(log.blockNumber)];
 	                    case 22:
-	                        tx = _c.sent();
-	                        if (tx) {
-	                            txs[log.transactionHash] = tx.blockHash;
+	                        block = _c.sent();
+	                        if (block) {
+	                            blocks[log.blockNumber] = block.hash;
 	                        }
 	                        _c.label = 23;
 	                    case 23:
-	                        log.blockHash = txs[log.transactionHash];
+	                        log.blockHash = blocks[log.blockNumber];
 	                        _c.label = 24;
 	                    case 24:
 	                        i++;
