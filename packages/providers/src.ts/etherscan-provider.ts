@@ -349,19 +349,19 @@ export class EtherscanProvider extends BaseProvider{
                 const logs: Array<any> = await get(url, null, getResult);
 
                 // Cache txHash => blockHash
-                let txs: { [hash: string]: string } = {};
+                let blocks: { [tag: string]: string } = {};
 
                 // Add any missing blockHash to the logs
                 for (let i = 0; i < logs.length; i++) {
                     const log = logs[i];
                     if (log.blockHash != null) { continue; }
-                    if (txs[log.transactionHash] == null) {
-                        const tx = await this.getTransaction(log.transactionHash);
-                        if (tx) {
-                            txs[log.transactionHash] = tx.blockHash
+                    if (blocks[log.blockNumber] == null) {
+                        const block = await this.getBlock(log.blockNumber);
+                        if (block) {
+                            blocks[log.blockNumber] = block.hash;
                         }
                     }
-                    log.blockHash = txs[log.transactionHash];
+                    log.blockHash = blocks[log.blockNumber];
                 }
 
                 return logs;
