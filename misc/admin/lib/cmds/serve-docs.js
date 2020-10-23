@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const http_1 = require("http");
 const path_1 = require("path");
+const path_2 = require("../path");
 function getMime(filename) {
     switch (filename.split('.').pop().toLowerCase()) {
         case 'css': return 'text/css';
@@ -16,6 +17,7 @@ function getMime(filename) {
         case 'js': return 'application/javascript';
         case 'jpg': return 'image/jpeg';
         case 'jpeg': return 'image/jpeg';
+        case 'json': return 'application/json';
         case 'md': return 'text/markdown';
         case 'pickle': return 'application/x-pickle';
         case 'png': return 'image/png';
@@ -40,15 +42,16 @@ function start(root, options) {
     }
     root = path_1.resolve(root);
     const server = http_1.createServer((req, resp) => {
+        const url = req.url.split("?")[0];
         // Follow redirects in options
-        if (options.redirects && options.redirects[req.url]) {
-            resp.writeHead(301, { Location: options.redirects[req.url] });
+        if (options.redirects && options.redirects[url]) {
+            resp.writeHead(301, { Location: options.redirects[url] });
             resp.end();
             return;
         }
-        let filename = path_1.resolve(root, "." + req.url);
+        let filename = path_1.resolve(root, "." + url);
         // Make sure we aren't crawling out of our sandbox
-        if (req.url[0] !== "/" || filename.substring(0, filename.length) !== filename) {
+        if (url[0] !== "/" || filename.substring(0, filename.length) !== filename) {
             resp.writeHead(403);
             resp.end();
             return;
@@ -57,8 +60,8 @@ function start(root, options) {
             const stat = fs_1.default.statSync(filename);
             if (stat.isDirectory()) {
                 // Redirect bare directory to its path (i.e. "/foo" => "/foo/")
-                if (req.url[req.url.length - 1] !== "/") {
-                    resp.writeHead(301, { Location: req.url + "/" });
+                if (url[url.length - 1] !== "/") {
+                    resp.writeHead(301, { Location: url + "/" });
                     resp.end();
                     return;
                 }
@@ -89,7 +92,7 @@ function start(root, options) {
     return server;
 }
 exports.start = start;
-start(path_1.resolve(__dirname, "../../docs"), {
+start(path_2.resolve("docs"), {
     redirects: {
         "/": "/v5/"
     }
