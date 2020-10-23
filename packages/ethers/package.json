@@ -41,7 +41,6 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./dist/ethers.esm.js",
   "name": "ethers",
   "repository": {
     "type": "git",
