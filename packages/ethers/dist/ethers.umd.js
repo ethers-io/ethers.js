@@ -19767,7 +19767,7 @@
 	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wallet/5.0.6";
+	exports.version = "wallet/5.0.7";
 
 	});
 
@@ -20011,12 +20011,17 @@
 	    return lib$g.recoverAddress(lib$9.hashMessage(message), signature);
 	}
 	exports.verifyMessage = verifyMessage;
+	function verifyTypedData(domain, types, value, signature) {
+	    return lib$g.recoverAddress(lib$9._TypedDataEncoder.hash(domain, types, value), signature);
+	}
+	exports.verifyTypedData = verifyTypedData;
 
 	});
 
 	var index$j = unwrapExports(lib$j);
 	var lib_1$j = lib$j.Wallet;
 	var lib_2$i = lib$j.verifyMessage;
+	var lib_3$f = lib$j.verifyTypedData;
 
 	var _version$E = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -20796,7 +20801,7 @@
 	var index$l = unwrapExports(lib$l);
 	var lib_1$l = lib$l._fetchData;
 	var lib_2$j = lib$l.fetchJson;
-	var lib_3$f = lib$l.poll;
+	var lib_3$g = lib$l.poll;
 
 	'use strict';
 	var ALPHABET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
@@ -20991,7 +20996,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.13";
+	exports.version = "providers/5.0.14";
 
 	});
 
@@ -24615,19 +24620,20 @@
 	var logger = new lib.Logger(_version$I.version);
 
 	// The transaction has already been sanitized by the calls in Provider
-	function getTransactionString(transaction) {
-	    var result = [];
+	function getTransactionPostData(transaction) {
+	    var result = {};
 	    for (var key in transaction) {
 	        if (transaction[key] == null) {
 	            continue;
 	        }
 	        var value = lib$1.hexlify(transaction[key]);
+	        // Quantity-types require no leading zero, unless 0
 	        if ({ gasLimit: true, gasPrice: true, nonce: true, value: true }[key]) {
 	            value = lib$1.hexValue(value);
 	        }
-	        result.push(key + "=" + value);
+	        result[key] = value;
 	    }
-	    return result.join("&");
+	    return result;
 	}
 	function getResult(result) {
 	    // getLogs, getHistory have weird success responses
@@ -24766,18 +24772,18 @@
 	    };
 	    EtherscanProvider.prototype.perform = function (method, params) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var url, apiKey, get, _a, transaction, error_1, transaction, error_2, topic0, logs, txs, i, log, tx, _b;
+	            var url, apiKey, get, _a, postData, error_1, postData, error_2, topic0, logs, txs, i, log, tx, _b;
 	            var _this = this;
 	            return __generator(this, function (_c) {
 	                switch (_c.label) {
 	                    case 0:
-	                        url = this.baseUrl;
+	                        url = this.baseUrl + "/api";
 	                        apiKey = "";
 	                        if (this.apiKey) {
 	                            apiKey += "&apikey=" + this.apiKey;
 	                        }
-	                        get = function (url, procFunc) { return __awaiter(_this, void 0, void 0, function () {
-	                            var connection, result;
+	                        get = function (url, payload, procFunc) { return __awaiter(_this, void 0, void 0, function () {
+	                            var connection, payloadStr, result;
 	                            var _this = this;
 	                            return __generator(this, function (_a) {
 	                                switch (_a.label) {
@@ -24797,7 +24803,14 @@
 	                                                return Promise.resolve(true);
 	                                            }
 	                                        };
-	                                        return [4 /*yield*/, lib$l.fetchJson(connection, null, procFunc || getJsonResult)];
+	                                        payloadStr = null;
+	                                        if (payload) {
+	                                            connection.headers = { "content-type": "application/x-www-form-urlencoded; charset=UTF-8" };
+	                                            payloadStr = Object.keys(payload).map(function (key) {
+	                                                return key + "=" + payload[key];
+	                                            }).join("&");
+	                                        }
+	                                        return [4 /*yield*/, lib$l.fetchJson(connection, payloadStr, procFunc || getJsonResult)];
 	                                    case 1:
 	                                        result = _a.sent();
 	                                        this.emit("debug", {
@@ -24829,38 +24842,40 @@
 	                        }
 	                        return [3 /*break*/, 28];
 	                    case 1:
-	                        url += "/api?module=proxy&action=eth_blockNumber" + apiKey;
-	                        return [2 /*return*/, get(url)];
+	                        url += "?module=proxy&action=eth_blockNumber" + apiKey;
+	                        return [2 /*return*/, get(url, null)];
 	                    case 2:
-	                        url += "/api?module=proxy&action=eth_gasPrice" + apiKey;
-	                        return [2 /*return*/, get(url)];
+	                        url += "?module=proxy&action=eth_gasPrice" + apiKey;
+	                        return [2 /*return*/, get(url, null)];
 	                    case 3:
 	                        // Returns base-10 result
-	                        url += "/api?module=account&action=balance&address=" + params.address;
+	                        url += "?module=account&action=balance&address=" + params.address;
 	                        url += "&tag=" + params.blockTag + apiKey;
-	                        return [2 /*return*/, get(url, getResult)];
+	                        return [2 /*return*/, get(url, null, getResult)];
 	                    case 4:
-	                        url += "/api?module=proxy&action=eth_getTransactionCount&address=" + params.address;
+	                        url += "?module=proxy&action=eth_getTransactionCount&address=" + params.address;
 	                        url += "&tag=" + params.blockTag + apiKey;
-	                        return [2 /*return*/, get(url)];
+	                        return [2 /*return*/, get(url, null)];
 	                    case 5:
-	                        url += "/api?module=proxy&action=eth_getCode&address=" + params.address;
+	                        url += "?module=proxy&action=eth_getCode&address=" + params.address;
 	                        url += "&tag=" + params.blockTag + apiKey;
-	                        return [2 /*return*/, get(url)];
+	                        return [2 /*return*/, get(url, null)];
 	                    case 6:
-	                        url += "/api?module=proxy&action=eth_getStorageAt&address=" + params.address;
+	                        url += "?module=proxy&action=eth_getStorageAt&address=" + params.address;
 	                        url += "&position=" + params.position;
 	                        url += "&tag=" + params.blockTag + apiKey;
-	                        return [2 /*return*/, get(url)];
-	                    case 7:
-	                        url += "/api?module=proxy&action=eth_sendRawTransaction&hex=" + params.signedTransaction;
-	                        url += apiKey;
-	                        return [2 /*return*/, get(url).catch(function (error) {
-	                                return checkError("sendTransaction", error, params.signedTransaction);
-	                            })];
+	                        return [2 /*return*/, get(url, null)];
+	                    case 7: return [2 /*return*/, get(url, {
+	                            module: "proxy",
+	                            action: "eth_sendRawTransaction",
+	                            hex: params.signedTransaction,
+	                            apikey: this.apiKey
+	                        }).catch(function (error) {
+	                            return checkError("sendTransaction", error, params.signedTransaction);
+	                        })];
 	                    case 8:
 	                        if (params.blockTag) {
-	                            url += "/api?module=proxy&action=eth_getBlockByNumber&tag=" + params.blockTag;
+	                            url += "?module=proxy&action=eth_getBlockByNumber&tag=" + params.blockTag;
 	                            if (params.includeTransactions) {
 	                                url += "&boolean=true";
 	                            }
@@ -24868,53 +24883,48 @@
 	                                url += "&boolean=false";
 	                            }
 	                            url += apiKey;
-	                            return [2 /*return*/, get(url)];
+	                            return [2 /*return*/, get(url, null)];
 	                        }
 	                        throw new Error("getBlock by blockHash not implemented");
 	                    case 9:
-	                        url += "/api?module=proxy&action=eth_getTransactionByHash&txhash=" + params.transactionHash;
+	                        url += "?module=proxy&action=eth_getTransactionByHash&txhash=" + params.transactionHash;
 	                        url += apiKey;
-	                        return [2 /*return*/, get(url)];
+	                        return [2 /*return*/, get(url, null)];
 	                    case 10:
-	                        url += "/api?module=proxy&action=eth_getTransactionReceipt&txhash=" + params.transactionHash;
+	                        url += "?module=proxy&action=eth_getTransactionReceipt&txhash=" + params.transactionHash;
 	                        url += apiKey;
-	                        return [2 /*return*/, get(url)];
+	                        return [2 /*return*/, get(url, null)];
 	                    case 11:
-	                        transaction = getTransactionString(params.transaction);
-	                        if (transaction) {
-	                            transaction = "&" + transaction;
-	                        }
-	                        url += "/api?module=proxy&action=eth_call" + transaction;
-	                        //url += "&tag=" + params.blockTag + apiKey;
 	                        if (params.blockTag !== "latest") {
 	                            throw new Error("EtherscanProvider does not support blockTag for call");
 	                        }
-	                        url += apiKey;
+	                        postData = getTransactionPostData(params.transaction);
+	                        postData.module = "proxy";
+	                        postData.action = "eth_call";
+	                        postData.apikey = this.apiKey;
 	                        _c.label = 12;
 	                    case 12:
 	                        _c.trys.push([12, 14, , 15]);
-	                        return [4 /*yield*/, get(url)];
+	                        return [4 /*yield*/, get(url, postData)];
 	                    case 13: return [2 /*return*/, _c.sent()];
 	                    case 14:
 	                        error_1 = _c.sent();
 	                        return [2 /*return*/, checkError("call", error_1, params.transaction)];
 	                    case 15:
-	                        transaction = getTransactionString(params.transaction);
-	                        if (transaction) {
-	                            transaction = "&" + transaction;
-	                        }
-	                        url += "/api?module=proxy&action=eth_estimateGas&" + transaction;
-	                        url += apiKey;
+	                        postData = getTransactionPostData(params.transaction);
+	                        postData.module = "proxy";
+	                        postData.action = "eth_estimateGas";
+	                        postData.apikey = this.apiKey;
 	                        _c.label = 16;
 	                    case 16:
 	                        _c.trys.push([16, 18, , 19]);
-	                        return [4 /*yield*/, get(url)];
+	                        return [4 /*yield*/, get(url, postData)];
 	                    case 17: return [2 /*return*/, _c.sent()];
 	                    case 18:
 	                        error_2 = _c.sent();
 	                        return [2 /*return*/, checkError("estimateGas", error_2, params.transaction)];
 	                    case 19:
-	                        url += "/api?module=logs&action=getLogs";
+	                        url += "?module=logs&action=getLogs";
 	                        if (params.filter.fromBlock) {
 	                            url += "&fromBlock=" + checkLogTag(params.filter.fromBlock);
 	                        }
@@ -24938,7 +24948,7 @@
 	                            }
 	                        }
 	                        url += apiKey;
-	                        return [4 /*yield*/, get(url, getResult)];
+	                        return [4 /*yield*/, get(url, null, getResult)];
 	                    case 20:
 	                        logs = _c.sent();
 	                        txs = {};
@@ -24969,10 +24979,10 @@
 	                        if (this.network.name !== "homestead") {
 	                            return [2 /*return*/, 0.0];
 	                        }
-	                        url += "/api?module=stats&action=ethprice";
+	                        url += "?module=stats&action=ethprice";
 	                        url += apiKey;
 	                        _b = parseFloat;
-	                        return [4 /*yield*/, get(url, getResult)];
+	                        return [4 /*yield*/, get(url, null, getResult)];
 	                    case 27: return [2 /*return*/, _b.apply(void 0, [(_c.sent()).ethusd])];
 	                    case 28: return [3 /*break*/, 29];
 	                    case 29: return [2 /*return*/, _super.prototype.perform.call(this, method, params)];
@@ -26265,7 +26275,7 @@
 	var index$m = unwrapExports(lib$m);
 	var lib_1$m = lib$m.Provider;
 	var lib_2$k = lib$m.getNetwork;
-	var lib_3$g = lib$m.BaseProvider;
+	var lib_3$h = lib$m.BaseProvider;
 	var lib_4$c = lib$m.Resolver;
 	var lib_5$b = lib$m.AlchemyProvider;
 	var lib_6$8 = lib$m.AlchemyWebSocketProvider;
@@ -26387,7 +26397,7 @@
 	var index$n = unwrapExports(lib$n);
 	var lib_1$n = lib$n.pack;
 	var lib_2$l = lib$n.keccak256;
-	var lib_3$h = lib$n.sha256;
+	var lib_3$i = lib$n.sha256;
 
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -26495,7 +26505,7 @@
 	var index$o = unwrapExports(lib$o);
 	var lib_1$o = lib$o.commify;
 	var lib_2$m = lib$o.formatUnits;
-	var lib_3$i = lib$o.parseUnits;
+	var lib_3$j = lib$o.parseUnits;
 	var lib_4$d = lib$o.formatEther;
 	var lib_5$c = lib$o.parseEther;
 
@@ -26615,6 +26625,7 @@
 	exports.parseUnits = lib$o.parseUnits;
 
 	exports.verifyMessage = lib$j.verifyMessage;
+	exports.verifyTypedData = lib$j.verifyTypedData;
 
 	exports._fetchData = lib$l._fetchData;
 	exports.fetchJson = lib$l.fetchJson;
@@ -26716,17 +26727,18 @@
 	var utils_84 = utils$3.formatUnits;
 	var utils_85 = utils$3.parseUnits;
 	var utils_86 = utils$3.verifyMessage;
-	var utils_87 = utils$3._fetchData;
-	var utils_88 = utils$3.fetchJson;
-	var utils_89 = utils$3.poll;
-	var utils_90 = utils$3.SupportedAlgorithm;
-	var utils_91 = utils$3.UnicodeNormalizationForm;
-	var utils_92 = utils$3.Utf8ErrorReason;
+	var utils_87 = utils$3.verifyTypedData;
+	var utils_88 = utils$3._fetchData;
+	var utils_89 = utils$3.fetchJson;
+	var utils_90 = utils$3.poll;
+	var utils_91 = utils$3.SupportedAlgorithm;
+	var utils_92 = utils$3.UnicodeNormalizationForm;
+	var utils_93 = utils$3.Utf8ErrorReason;
 
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.18";
+	exports.version = "ethers/5.0.19";
 
 	});
 
@@ -26840,7 +26852,7 @@
 	var index$p = unwrapExports(lib$p);
 	var lib_1$p = lib$p.ethers;
 	var lib_2$n = lib$p.Signer;
-	var lib_3$j = lib$p.Wallet;
+	var lib_3$k = lib$p.Wallet;
 	var lib_4$e = lib$p.VoidSigner;
 	var lib_5$d = lib$p.getDefaultProvider;
 	var lib_6$9 = lib$p.providers;
@@ -26862,7 +26874,7 @@
 	exports.FixedNumber = lib_10$4;
 	exports.Signer = lib_2$n;
 	exports.VoidSigner = lib_4$e;
-	exports.Wallet = lib_3$j;
+	exports.Wallet = lib_3$k;
 	exports.Wordlist = lib_17$1;
 	exports.constants = lib_11$3;
 	exports.default = index$p;

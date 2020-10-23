@@ -164,4 +164,7 @@ export class Wallet extends Signer {
 export function verifyMessage(message, signature) {
     return recoverAddress(hashMessage(message), signature);
 }
+export function verifyTypedData(domain, types, value, signature) {
+    return recoverAddress(_TypedDataEncoder.hash(domain, types, value), signature);
+}
 //# sourceMappingURL=index.js.map

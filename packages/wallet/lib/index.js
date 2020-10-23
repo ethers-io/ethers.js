@@ -234,4 +234,8 @@ function verifyMessage(message, signature) {
     return transactions_1.recoverAddress(hash_1.hashMessage(message), signature);
 }
 exports.verifyMessage = verifyMessage;
+function verifyTypedData(domain, types, value, signature) {
+    return transactions_1.recoverAddress(hash_1._TypedDataEncoder.hash(domain, types, value), signature);
+}
+exports.verifyTypedData = verifyTypedData;
 //# sourceMappingURL=index.js.map

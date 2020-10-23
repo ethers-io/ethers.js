@@ -20,7 +20,7 @@
     "@ethersproject/networks": "5.0.4",
     "@ethersproject/pbkdf2": "5.0.4",
     "@ethersproject/properties": "5.0.4",
-    "@ethersproject/providers": "5.0.13",
+    "@ethersproject/providers": "5.0.14",
     "@ethersproject/random": "5.0.4",
     "@ethersproject/rlp": "5.0.4",
     "@ethersproject/sha2": "5.0.4",
@@ -29,7 +29,7 @@
     "@ethersproject/strings": "5.0.5",
     "@ethersproject/transactions": "5.0.6",
     "@ethersproject/units": "5.0.6",
-    "@ethersproject/wallet": "5.0.6",
+    "@ethersproject/wallet": "5.0.7",
     "@ethersproject/web": "5.0.9",
     "@ethersproject/wordlists": "5.0.5"
   },
@@ -50,7 +50,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xf760aa9fa088c7485b93dc424c27937c25da18fc7396e0168d5dc48e1c544926",
+  "tarballHash": "0xbbaa32872eae7d717eab4645ef6db002467fe3fc616f3334641240d3356d19b2",
   "types": "./lib/index.d.ts",
-  "version": "5.0.18"
+  "version": "5.0.19"
 }

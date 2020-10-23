@@ -29,3 +29,4 @@ export declare class Wallet extends Signer implements ExternallyOwnedAccount, Ty
     static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet;
 }
 export declare function verifyMessage(message: Bytes | string, signature: SignatureLike): string;
+export declare function verifyTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>, signature: SignatureLike): string;

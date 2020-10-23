@@ -17964,7 +17964,7 @@ function decryptJsonWalletSync(json, password) {
     throw new Error("invalid JSON wallet");
 }
 
-const version$j = "wallet/5.0.6";
+const version$j = "wallet/5.0.7";
 
 "use strict";
 var __awaiter$5 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -18117,6 +18117,9 @@ class Wallet extends Signer {
 }
 function verifyMessage(message, signature) {
     return recoverAddress(hashMessage(message), signature);
+}
+function verifyTypedData(domain, types, value, signature) {
+    return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
 const version$k = "networks/5.0.4";
@@ -18937,7 +18940,7 @@ var bech32_5 = bech32.toWords;
 var bech32_6 = bech32.fromWordsUnsafe;
 var bech32_7 = bech32.fromWords;
 
-const version$m = "providers/5.0.13";
+const version$m = "providers/5.0.14";
 
 "use strict";
 const logger$r = new Logger(version$m);
@@ -20641,7 +20644,7 @@ class BaseProvider extends Provider {
 var _version$2 = createCommonjsModule(function (module, exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = "providers/5.0.13";
+exports.version = "providers/5.0.14";
 
 });
 
@@ -21650,19 +21653,20 @@ var __awaiter$d = (window && window.__awaiter) || function (thisArg, _arguments,
 };
 const logger$y = new Logger(version$m);
 // The transaction has already been sanitized by the calls in Provider
-function getTransactionString(transaction) {
-    const result = [];
+function getTransactionPostData(transaction) {
+    const result = {};
     for (let key in transaction) {
         if (transaction[key] == null) {
             continue;
         }
         let value = hexlify(transaction[key]);
+        // Quantity-types require no leading zero, unless 0
         if ({ gasLimit: true, gasPrice: true, nonce: true, value: true }[key]) {
             value = hexValue(value);
         }
-        result.push(key + "=" + value);
+        result[key] = value;
     }
-    return result.join("&");
+    return result;
 }
 function getResult$1(result) {
     // getLogs, getHistory have weird success responses
@@ -21798,12 +21802,12 @@ class EtherscanProvider extends BaseProvider {
             perform: { get: () => super.perform }
         });
         return __awaiter$d(this, void 0, void 0, function* () {
-            let url = this.baseUrl;
+            let url = this.baseUrl + "/api";
             let apiKey = "";
             if (this.apiKey) {
                 apiKey += "&apikey=" + this.apiKey;
             }
-            const get = (url, procFunc) => __awaiter$d(this, void 0, void 0, function* () {
+            const get = (url, payload, procFunc) => __awaiter$d(this, void 0, void 0, function* () {
                 this.emit("debug", {
                     action: "request",
                     request: url,
@@ -21819,7 +21823,14 @@ class EtherscanProvider extends BaseProvider {
                         return Promise.resolve(true);
                     }
                 };
-                const result = yield fetchJson(connection, null, procFunc || getJsonResult);
+                let payloadStr = null;
+                if (payload) {
+                    connection.headers = { "content-type": "application/x-www-form-urlencoded; charset=UTF-8" };
+                    payloadStr = Object.keys(payload).map((key) => {
+                        return `${key}=${payload[key]}`;
+                    }).join("&");
+                }
+                const result = yield fetchJson(connection, payloadStr, procFunc || getJsonResult);
                 this.emit("debug", {
                     action: "response",
                     request: url,
@@ -21830,38 +21841,41 @@ class EtherscanProvider extends BaseProvider {
             });
             switch (method) {
                 case "getBlockNumber":
-                    url += "/api?module=proxy&action=eth_blockNumber" + apiKey;
-                    return get(url);
+                    url += "?module=proxy&action=eth_blockNumber" + apiKey;
+                    return get(url, null);
                 case "getGasPrice":
-                    url += "/api?module=proxy&action=eth_gasPrice" + apiKey;
-                    return get(url);
+                    url += "?module=proxy&action=eth_gasPrice" + apiKey;
+                    return get(url, null);
                 case "getBalance":
                     // Returns base-10 result
-                    url += "/api?module=account&action=balance&address=" + params.address;
+                    url += "?module=account&action=balance&address=" + params.address;
                     url += "&tag=" + params.blockTag + apiKey;
-                    return get(url, getResult$1);
+                    return get(url, null, getResult$1);
                 case "getTransactionCount":
-                    url += "/api?module=proxy&action=eth_getTransactionCount&address=" + params.address;
+                    url += "?module=proxy&action=eth_getTransactionCount&address=" + params.address;
                     url += "&tag=" + params.blockTag + apiKey;
-                    return get(url);
+                    return get(url, null);
                 case "getCode":
-                    url += "/api?module=proxy&action=eth_getCode&address=" + params.address;
+                    url += "?module=proxy&action=eth_getCode&address=" + params.address;
                     url += "&tag=" + params.blockTag + apiKey;
-                    return get(url);
+                    return get(url, null);
                 case "getStorageAt":
-                    url += "/api?module=proxy&action=eth_getStorageAt&address=" + params.address;
+                    url += "?module=proxy&action=eth_getStorageAt&address=" + params.address;
                     url += "&position=" + params.position;
                     url += "&tag=" + params.blockTag + apiKey;
-                    return get(url);
+                    return get(url, null);
                 case "sendTransaction":
-                    url += "/api?module=proxy&action=eth_sendRawTransaction&hex=" + params.signedTransaction;
-                    url += apiKey;
-                    return get(url).catch((error) => {
+                    return get(url, {
+                        module: "proxy",
+                        action: "eth_sendRawTransaction",
+                        hex: params.signedTransaction,
+                        apikey: this.apiKey
+                    }).catch((error) => {
                         return checkError$1("sendTransaction", error, params.signedTransaction);
                     });
                 case "getBlock":
                     if (params.blockTag) {
-                        url += "/api?module=proxy&action=eth_getBlockByNumber&tag=" + params.blockTag;
+                        url += "?module=proxy&action=eth_getBlockByNumber&tag=" + params.blockTag;
                         if (params.includeTransactions) {
                             url += "&boolean=true";
                         }
@@ -21869,51 +21883,46 @@ class EtherscanProvider extends BaseProvider {
                             url += "&boolean=false";
                         }
                         url += apiKey;
-                        return get(url);
+                        return get(url, null);
                     }
                     throw new Error("getBlock by blockHash not implemented");
                 case "getTransaction":
-                    url += "/api?module=proxy&action=eth_getTransactionByHash&txhash=" + params.transactionHash;
+                    url += "?module=proxy&action=eth_getTransactionByHash&txhash=" + params.transactionHash;
                     url += apiKey;
-                    return get(url);
+                    return get(url, null);
                 case "getTransactionReceipt":
-                    url += "/api?module=proxy&action=eth_getTransactionReceipt&txhash=" + params.transactionHash;
+                    url += "?module=proxy&action=eth_getTransactionReceipt&txhash=" + params.transactionHash;
                     url += apiKey;
-                    return get(url);
+                    return get(url, null);
                 case "call": {
-                    let transaction = getTransactionString(params.transaction);
-                    if (transaction) {
-                        transaction = "&" + transaction;
-                    }
-                    url += "/api?module=proxy&action=eth_call" + transaction;
-                    //url += "&tag=" + params.blockTag + apiKey;
                     if (params.blockTag !== "latest") {
                         throw new Error("EtherscanProvider does not support blockTag for call");
                     }
-                    url += apiKey;
+                    const postData = getTransactionPostData(params.transaction);
+                    postData.module = "proxy";
+                    postData.action = "eth_call";
+                    postData.apikey = this.apiKey;
                     try {
-                        return yield get(url);
+                        return yield get(url, postData);
                     }
                     catch (error) {
                         return checkError$1("call", error, params.transaction);
                     }
                 }
                 case "estimateGas": {
-                    let transaction = getTransactionString(params.transaction);
-                    if (transaction) {
-                        transaction = "&" + transaction;
-                    }
-                    url += "/api?module=proxy&action=eth_estimateGas&" + transaction;
-                    url += apiKey;
+                    const postData = getTransactionPostData(params.transaction);
+                    postData.module = "proxy";
+                    postData.action = "eth_estimateGas";
+                    postData.apikey = this.apiKey;
                     try {
-                        return yield get(url);
+                        return yield get(url, postData);
                     }
                     catch (error) {
                         return checkError$1("estimateGas", error, params.transaction);
                     }
                 }
                 case "getLogs": {
-                    url += "/api?module=logs&action=getLogs";
+                    url += "?module=logs&action=getLogs";
                     if (params.filter.fromBlock) {
                         url += "&fromBlock=" + checkLogTag(params.filter.fromBlock);
                     }
@@ -21937,7 +21946,7 @@ class EtherscanProvider extends BaseProvider {
                         }
                     }
                     url += apiKey;
-                    const logs = yield get(url, getResult$1);
+                    const logs = yield get(url, null, getResult$1);
                     // Cache txHash => blockHash
                     let txs = {};
                     // Add any missing blockHash to the logs
@@ -21960,9 +21969,9 @@ class EtherscanProvider extends BaseProvider {
                     if (this.network.name !== "homestead") {
                         return 0.0;
                     }
-                    url += "/api?module=stats&action=ethprice";
+                    url += "?module=stats&action=ethprice";
                     url += apiKey;
-                    return parseFloat((yield get(url, getResult$1)).ethusd);
+                    return parseFloat((yield get(url, null, getResult$1)).ethusd);
                 default:
                     break;
             }
@@ -23223,6 +23232,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	computePublicKey: computePublicKey,
 	recoverPublicKey: recoverPublicKey,
 	verifyMessage: verifyMessage,
+	verifyTypedData: verifyTypedData,
 	mnemonicToEntropy: mnemonicToEntropy,
 	entropyToMnemonic: entropyToMnemonic,
 	isValidMnemonic: isValidMnemonic,
@@ -23233,7 +23243,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.18";
+const version$o = "ethers/5.0.19";
 
 "use strict";
 const logger$G = new Logger(version$o);

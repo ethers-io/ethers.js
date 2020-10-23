@@ -113,6 +113,7 @@ exports.formatUnits = units_1.formatUnits;
 exports.parseUnits = units_1.parseUnits;
 var wallet_1 = require("@ethersproject/wallet");
 exports.verifyMessage = wallet_1.verifyMessage;
+exports.verifyTypedData = wallet_1.verifyTypedData;
 var web_1 = require("@ethersproject/web");
 exports._fetchData = web_1._fetchData;
 exports.fetchJson = web_1.fetchJson;
