@@ -380,7 +380,7 @@ _heading: Variables  @<flatworm--table-variable>
 Often the layout of a table is easier to express and maintain without
 uneven or changing content within it. So the content can be defined
 separately within a table directive using **variables**. A variable
-name must being with a letter and must only contain letters and numbers.
+name must begin with a letter and must only contain letters and numbers.
 
 Variables are also useful when content is repeated throughout a table.
 

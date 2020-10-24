@@ -76,7 +76,7 @@ A scope may access the offset of any child [[asm-dialect-datasegment]] or
 child [[asm-dialect-scope]] (with respect to itself) and may access the length
 of any [[asm-dialect-datasegment]] or [[asm-dialect-scope]] anywhere in the program.
 
-Every program in the **Ethers ASM Dialect** has a top-leve scope named ``_``.
+Every program in the **Ethers ASM Dialect** has a top-level scope named ``_``.
 
 
 _subsection: Data Segment @<asm-dialect-datasegment>

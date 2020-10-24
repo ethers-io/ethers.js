@@ -57,7 +57,7 @@ _heading: PopNode @<asm-popnode> @INHERIT<[[asm-valuenode]]> @SRC<asm:class.PopN
 
 A **PopNode** is used to store a place-holder for an implicit pop from the
 stack. It represents the code for an implicit place-holder (i.e. ``$$``) or an
-explicit place-holder (e.g. ``$1``), which indicates the expect stack position
+explicit place-holder (e.g. ``$1``), which indicates the expected stack position
 to consume.
 
 _property: literalNode.index => number
@@ -72,7 +72,7 @@ A **LinkNode** represents a link to another [[asm-node]]'s data,
 for example ``$foo`` or ``#bar``.
 
 _property: linkNode.label => string
-Te name of the target node.
+The name of the target node.
 
 _property: linkNode.type => "offset" | "length"
 Whether this node is for an offset or a length value of the
@@ -115,7 +115,7 @@ The code to execute. Any result is ignored.
 _heading: LabelledNode @<asm-labellednode> @INHERIT<[[asm-node]]> @SRC<asm:class.LabelledNode>
 
 A **LabelledNode** is used for any Node that has a name, and can therefore
-be targetted by a [[asm-linknode]].
+be targeted by a [[asm-linknode]].
 
 _property: labelledNode.name => string
 The name of this node.

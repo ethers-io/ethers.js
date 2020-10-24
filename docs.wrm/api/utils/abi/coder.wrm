@@ -39,7 +39,7 @@ _subsection: Coding Methods @<AbiCoder--methods>
 
 _property: abiCoder.encode(types, values) => string<[[DataHexString]]> @<AbiCoder-encode> @SRC<abi/abi-coder>
 
-Encode the array //values// according the array of //types//, each of which may be a
+Encode the array //values// according to the array of //types//, each of which may be a
 string or a [[ParamType]].
 
 _property: abiCoder.decode(types, data) => [[Result]] @<AbiCoder-decode> @SRC<abi/abi-coder>

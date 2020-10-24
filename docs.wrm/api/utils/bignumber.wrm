@@ -4,7 +4,7 @@ Many operations in Ethereum operation on numbers which are
 [outside the range of safe values](BigNumber--notes-safenumbers) to use
 in JavaScript.
 
-A **BigNumber** is an object which safely allows mathematic operations
+A **BigNumber** is an object which safely allows mathematical operations
 on numbers of any magnitude.
 
 Most operations which need to return a value will return a **BigNumber**
@@ -126,7 +126,7 @@ _heading: Two's Complement
 
 [Two's Complement](link-wiki-twoscomplement)
 is an elegant method used to encode and decode fixed-width signed values
-while efficiently preserving mathematic operations.
+while efficiently preserving mathematical operations.
 Most users will not need to interact with these.
 
 _property: BigNumber.fromTwos(bitwidth) => [[BigNumber]]  @SRC<bignumber>
@@ -270,7 +270,7 @@ various purposes.
 
 _heading: Allow us to set a global Big Number library?
 
-Another comment that comes up frequently is tha desire to specify a
+Another comment that comes up frequently is the desire to specify a
 global user-defined Big Number library, which all functions would
 return.
 

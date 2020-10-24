@@ -151,7 +151,7 @@ All errors now belong to the [[Logger]] class and the related functions
 have been moved to [[Logger]] instances, which can include a per-package
 version string.
 
-Global error functions have been moved [[Logger]] class methods.
+Global error functions have been moved to [[Logger]] class methods.
 
 _code: @lang<script>
 

@@ -196,7 +196,7 @@ _property: Logger.levels.DEBUG
 Log all output, including debugging information.
 
 _property: Logger.levels.INFO
-Only log output for infomational, warnings and errors.
+Only log output for informational, warnings and errors.
 
 _property: Logger.levels.WARNING
 Only log output for warnings and errors.

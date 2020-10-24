@@ -6,7 +6,7 @@ to them, which simplifies development, since you do not need
 to run your own instance or cluster of Ethereum nodes.
 
 However, this reliance on third-party services can reduce
-resiliance, security and increase the amount of required trust.
+resilience, security and increase the amount of required trust.
 To mitigate these issues, it is recommended you use a
 [Default Provider](providers-getDefaultProvider).
 
@@ -20,7 +20,7 @@ _property: new ethers.providers.EtherscanProvider([ network = "homestead", [ api
 Create a new **EtherscanProvider** connected to //network// with the
 optional //apiKey//.
 
-The //network// may be specified as **string** for a common
+The //network// may be specified as a **string** for a common
 network name, a **number** for a common chain ID or a
 [Network Object]provider-(network).
 
@@ -86,7 +86,7 @@ _property: new ethers.providers.InfuraProvider([ network = "homestead", [ apiKey
 Create a new **InfuraProvider** connected to //network// with
 the optional //apiKey//.
 
-The //network// may be specified as **string** for a common
+The //network// may be specified as a **string** for a common
 network name, a **number** for a common chain ID or a
 [Network Object]provider-(network).
 
@@ -157,7 +157,7 @@ _property: new ethers.providers.AlchemyProvider([ network = "homestead", [ apiKe
 Create a new **AlchemyProvider** connected to //network// with
 the optional //apiKey//.
 
-The //network// may be specified as **string** for a common
+The //network// may be specified as a **string** for a common
 network name, a **number** for a common chain ID or a
 [Network Object](providers-Network).
 
