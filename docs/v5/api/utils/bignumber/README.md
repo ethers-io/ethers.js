@@ -198,7 +198,7 @@ Returns the value of *BigNumber* as a base-16, `0x`-prefixed [DataHexString](/v5
 
 ### Inspection
 
-#### *ethers* . *BigNumnber* . **isBigNumber**( object ) => *boolean*
+#### *ethers* . *BigNumber* . **isBigNumber**( object ) => *boolean*
 
 Returns true if and only if the *object* is a BigNumber object.
 
