@@ -50,7 +50,10 @@ function _pack(type: string, value: any, isArray?: boolean): Uint8Array {
         if (String(size) !== match[1] || size === 0 || size > 32) {
             throw new Error("invalid bytes type - " + type);
         }
-        if (arrayify(value).byteLength !== size) { throw new Error("invalid value for " + type); }
+        const actual = arrayify(value).byteLength;
+        if (actual !== size) {
+          throw new Error("invalid value for " + type + ", expected bytes of length " + size + ", but got " + actual);
+        }
         if (isArray) { return arrayify((value + Zeros).substring(0, 66)); }
         return value;
     }
@@ -59,7 +62,9 @@ function _pack(type: string, value: any, isArray?: boolean): Uint8Array {
     if (match && Array.isArray(value)) {
         const baseType = match[1];
         const count = parseInt(match[2] || String(value.length));
-        if (count != value.length) { throw new Error("invalid value for " + type); }
+        if (count != value.length) {
+          throw new Error("invalid value for " + type + ", expected array of length " + count + ", but got " + value.length);
+        }
         const result: Array<Uint8Array> = [];
         value.forEach(function(value) {
             result.push(_pack(baseType, value, true));
