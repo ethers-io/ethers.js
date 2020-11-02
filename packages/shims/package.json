@@ -9,8 +9,7 @@
     "ethers"
   ],
   "license": "MIT",
-  "main": "./lib/index.js",
-  "module": "./lib.esm/index.js",
+  "main": "./dist/index.js",
   "name": "@ethersproject/shims",
   "publishConfig": {
     "access": "public"
@@ -23,6 +22,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "tarballHash": "0x85af07a3f742fa175893245a1b4f1430a32d0f0fbd962cacdeb5f880fcbbc0d8",
-  "types": "./lib/index.d.ts",
   "version": "5.0.7"
 }
