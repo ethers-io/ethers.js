@@ -13,7 +13,7 @@ API
 import { LedgerSigner } from "@ethersproject/hardware-wallets";
 const signer = new LedgerSigner(provider, type, path);
 // By default:
-//   - in node, type = "usb"
+//   - in node, type = "hid"
 //   - path is the default Ethereum path (i.e.  `m/44'/60'/0'/0/0`)
 ```
 
