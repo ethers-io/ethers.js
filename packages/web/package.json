@@ -1,7 +1,8 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "browser": {
-    "./lib/geturl": "./lib/browser-geturl.js"
+    "./lib/geturl": "./lib/browser-geturl.js",
+    "./lib.esm/geturl": "./lib.esm/browser-geturl.js"
   },
   "browser.esm": {
     "./lib.esm/geturl": "./lib.esm/browser-geturl.js"
