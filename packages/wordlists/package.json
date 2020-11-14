@@ -1,8 +1,17 @@
 {
+  "_ethers.alias": {
+    "wordlists.js": "browser-wordlists.js"
+  },
   "author": "Richard Moore <me@ricmoo.com>",
-  "browser": "./lib/browser.js",
-  "browser.esm": "./lib.esm/browser.js",
-  "browser.umd": "./lib/browser.js",
+  "browser": {
+    "./lib/wordlists": "./lib/browser-wordlists.js"
+  },
+  "browser.esm": {
+    "./lib.esm/wordlists": "./lib.esm/browser-wordlists.js"
+  },
+  "browser.umd": {
+    "./lib/wordlists": "./lib/browser-wordlists.js"
+  },
   "dependencies": {
     "@ethersproject/bytes": "^5.0.4",
     "@ethersproject/hash": "^5.0.4",
@@ -18,7 +27,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.esm/index.js",
+  "module": "./lib.module/index.js",
   "name": "@ethersproject/wordlists",
   "publishConfig": {
     "access": "public"
@@ -30,6 +39,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "sideEffects": false,
   "tarballHash": "0x8f19c86a1036f6ba944c3d17e549fb6e819e522933bbb86e5f0a6b87adf1655a",
   "types": "./lib/index.d.ts",
   "version": "5.0.5"

@@ -1,6 +1,6 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
-  "browser": "./dist/ethers.umd.js",
+  "browser-old": "./dist/ethers.umd.js",
   "dependencies": {
     "@ethersproject/abi": "5.0.7",
     "@ethersproject/abstract-provider": "5.0.5",
@@ -41,7 +41,8 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./dist/ethers.esm.js",
+  "module": "./lib.esm/index.js",
+  "module-old": "./dist/ethers.esm.js",
   "name": "ethers",
   "repository": {
     "type": "git",
@@ -50,6 +51,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "sideEffects": false,
   "tarballHash": "0xf093f00a83d38639d15610b1b52db1512c582d817c0fab52d2e1f0049e748d03",
   "types": "./lib/index.d.ts",
   "version": "5.0.19"

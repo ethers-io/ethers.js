@@ -1,8 +1,17 @@
 {
+  "_ethers.alias": {
+    "sha2.js": "browser-sha2.js"
+  },
   "author": "Richard Moore <me@ricmoo.com>",
-  "browser": "./lib/browser.js",
-  "browser.esm": "./lib/browser.js",
-  "browser.umd": "./lib/browser.js",
+  "browser": {
+    "./lib/sha2": "./lib/browser-sha2.js"
+  },
+  "browser.esm": {
+    "./lib.esm/sha2": "./lib.esm/browser-sha2.js"
+  },
+  "browser.umd": {
+    "./lib/sha2": "./lib/browser-sha2.js"
+  },
   "dependencies": {
     "@ethersproject/bytes": "^5.0.4",
     "@ethersproject/logger": "^5.0.5",
@@ -16,7 +25,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.esm/index.js",
+  "module": "./lib.module/index.js",
   "name": "@ethersproject/sha2",
   "publishConfig": {
     "access": "public"
@@ -28,6 +37,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "sideEffects": false,
   "tarballHash": "0x7553e7409c1b5deee5301531eeb988b1acef161fb638c31a753f42bbab42b200",
   "types": "./lib/index.d.ts",
   "version": "5.0.4"

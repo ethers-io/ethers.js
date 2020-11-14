@@ -1,6 +1,6 @@
 .DS_Store
 tsconfig.json
-src.ts/
-input/
+lib._esm
 tsconfig.tsbuildinfo
+input/
 generation/

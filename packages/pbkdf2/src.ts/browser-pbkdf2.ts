@@ -3,7 +3,7 @@
 import { arrayify, BytesLike, hexlify } from "@ethersproject/bytes";
 import { computeHmac, SupportedAlgorithm } from "@ethersproject/sha2";
 
-export function pbkdf2(password: BytesLike, salt: BytesLike, iterations: number, keylen: number, hashAlgorithm: SupportedAlgorithm): string {
+export function pbkdf2(password: BytesLike, salt: BytesLike, iterations: number, keylen: number, hashAlgorithm: string): string {
     password = arrayify(password);
     salt = arrayify(salt);
     let hLen;
@@ -24,7 +24,7 @@ export function pbkdf2(password: BytesLike, salt: BytesLike, iterations: number,
         block1[salt.length + 3] = i & 0xff;
 
         //let U = createHmac(password).update(block1).digest();
-        let U = arrayify(computeHmac(hashAlgorithm, password, block1));
+        let U = arrayify(computeHmac(<SupportedAlgorithm>hashAlgorithm, password, block1));
 
         if (!hLen) {
             hLen = U.length
@@ -39,7 +39,7 @@ export function pbkdf2(password: BytesLike, salt: BytesLike, iterations: number,
 
         for (let j = 1; j < iterations; j++) {
             //U = createHmac(password).update(U).digest();
-            U = arrayify(computeHmac(hashAlgorithm, password, U));
+            U = arrayify(computeHmac(<SupportedAlgorithm>hashAlgorithm, password, U));
             for (let k = 0; k < hLen; k++) T[k] ^= U[k]
         }
 

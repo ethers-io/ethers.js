@@ -11,7 +11,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.esm/index.js",
+  "module": "./lib.module/index.js",
   "name": "@ethersproject/bytes",
   "publishConfig": {
     "access": "public"
@@ -25,6 +25,7 @@
     "build": "tsc -p ./tsconfig.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "sideEffects": false,
   "tarballHash": "0x132538d3d8927299393c28ac01243ebc0e7ea34f5af1feadf23b364745f7c130",
   "types": "./lib/index.d.ts",
   "version": "5.0.5"

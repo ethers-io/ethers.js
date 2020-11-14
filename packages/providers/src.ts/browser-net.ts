@@ -1,3 +1,3 @@
 "use strict";
 
-module.exports = { }
+export function connect() { }

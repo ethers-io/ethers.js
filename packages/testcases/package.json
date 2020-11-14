@@ -8,10 +8,19 @@
     "ethereumjs-tx": "^1.3.5",
     "ethereumjs-util": "^5.2.0"
   },
+  "_ethers.alias": {
+    "disk-utils.js": "browser-disk-utils.js"
+  },
   "author": "Richard Moore <me@ricmoo.com>",
-  "browser": "./lib/browser.js",
-  "browser.esm": "./lib.esm/browser.js",
-  "browser.umd": "./lib/browser.js",
+  "browser": {
+    "./lib/disk-utils:": "./lib/browser-disk-utils.js"
+  },
+  "browser.esm": {
+    "./lib.esm/disk-utils:": "./lib.esm/browser-disk-utils.js"
+  },
+  "browser.umd": {
+    "./lib/disk-utils:": "./lib/browser-disk-utils.js"
+  },
   "dependencies": {
     "@ethersproject/bignumber": "^5.0.7",
     "@ethersproject/bytes": "^5.0.4",
@@ -28,7 +37,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.esm/index.js",
+  "module": "./lib.module/index.js",
   "name": "@ethersproject/testcases",
   "publishConfig": {
     "access": "public"

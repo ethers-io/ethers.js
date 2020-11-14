@@ -22,7 +22,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.esm/index.js",
+  "module": "./lib.module/index.js",
   "name": "@ethersproject/hdnode",
   "publishConfig": {
     "access": "public"
@@ -34,6 +34,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "sideEffects": false,
   "tarballHash": "0xc198bf952694f69869fa084578b644c4bc0541a0aaf803da3fb026cace875659",
   "types": "./lib/index.d.ts",
   "version": "5.0.5"

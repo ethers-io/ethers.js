@@ -6,8 +6,6 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 
-export { shuffled } from "./shuffle";
-
 let anyGlobal: any = null;
 try {
     anyGlobal = (window as any);

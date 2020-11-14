@@ -1,8 +1,17 @@
 {
+  "_ethers.alias": {
+    "pbkdf2.js": "browser-pbkdf2.js"
+  },
   "author": "Richard Moore <me@ricmoo.com>",
-  "browser": "./lib/browser.js",
-  "browser.esm": "./lib.esm/browser.js",
-  "browser.umd": "./lib/browser.js",
+  "browser": {
+    "./lib/pbkdf2": "./lib/browser-pbkdf2.js"
+  },
+  "browser.esm": {
+    "./lib.esm/pbkdf2": "./lib.esm/browser-pbkdf2.js"
+  },
+  "browser.umd": {
+    "./lib/pbkdf2": "./lib/browser-pbkdf2.js"
+  },
   "dependencies": {
     "@ethersproject/bytes": "^5.0.4",
     "@ethersproject/sha2": "^5.0.3"
@@ -16,7 +25,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.esm/index.js",
+  "module": "./lib.module/index.js",
   "name": "@ethersproject/pbkdf2",
   "publishConfig": {
     "access": "public"
@@ -28,6 +37,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "sideEffects": false,
   "tarballHash": "0xdc38ff486e5c21e43a6da0dbdb35a5fc32ae529fdee17d7ce8d207863bbfce7e",
   "types": "./lib/index.d.ts",
   "version": "5.0.4"

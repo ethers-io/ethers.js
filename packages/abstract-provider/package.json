@@ -17,7 +17,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.esm/index.js",
+  "module": "./lib.module/index.js",
   "name": "@ethersproject/abstract-provider",
   "publishConfig": {
     "access": "public"
@@ -29,6 +29,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "sideEffects": false,
   "tarballHash": "0x87fdc7d7ee69d8c228c0e6946be702acd027a832b5a3deaa5b60e3c9f7110e58",
   "types": "./lib/index.d.ts",
   "version": "5.0.5"

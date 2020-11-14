@@ -1,4 +1,11 @@
 {
+  "_ethers.alias": {
+    "browser-net.d.ts": "",
+    "browser-net.js": "",
+    "browser-net.js.map": "",
+    "ipc-provider.js": "browser-ipc-provider.js",
+    "ws.js": "browser-ws.js"
+  },
   "author": "Richard Moore <me@ricmoo.com>",
   "browser": {
     "./lib/ipc-provider": "./lib/browser-ipc-provider.js",
@@ -8,7 +15,7 @@
   "browser.esm": {
     "./lib.esm/ipc-provider": "./lib.esm/browser-ipc-provider.js",
     "net": "./lib.esm/browser-net.js",
-    "ws": "./lib/browser-ws.js"
+    "ws": "./lib.esm/browser-ws.js"
   },
   "browser.umd": {
     "./lib/ipc-provider": "./lib/browser-ipc-provider.js",
@@ -44,7 +51,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.esm/index.js",
+  "module": "./lib.module/index.js",
   "name": "@ethersproject/providers",
   "publishConfig": {
     "access": "public"
@@ -56,6 +63,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "sideEffects": false,
   "tarballHash": "0x75f5062536d763196c0bb7681f1de3c93f6d747b799f525295039df8c9c46503",
   "types": "./lib/index.d.ts",
   "version": "5.0.14"

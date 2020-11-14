@@ -8,7 +8,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.esm/index.js",
+  "module": "./lib.module/index.js",
   "name": "@ethersproject/logger",
   "publishConfig": {
     "access": "public"
@@ -20,6 +20,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "sideEffects": false,
   "tarballHash": "0xf9537798be6f9a5bf14202fe9222696f1340c305b68b14831fdb8d975c53de7d",
   "types": "./lib/index.d.ts",
   "version": "5.0.6"

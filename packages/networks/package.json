@@ -11,7 +11,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.esm/index.js",
+  "module": "./lib.module/index.js",
   "name": "@ethersproject/networks",
   "publishConfig": {
     "access": "public"
@@ -23,6 +23,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "sideEffects": false,
   "tarballHash": "0xedc2324ccf327f94bdd5488dc6b791873ff73f49022fd98fbb26da79fb304e85",
   "types": "./lib/index.d.ts",
   "version": "5.0.4"

@@ -1,7 +1,7 @@
 "use strict";
 
 import aes from "aes-js";
-import * as scrypt from "scrypt-js";
+import scrypt from "scrypt-js";
 
 import { ExternallyOwnedAccount } from "@ethersproject/abstract-signer";
 import { getAddress } from "@ethersproject/address";

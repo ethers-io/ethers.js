@@ -1,3 +1,7 @@
 "use strict";
 
-module.exports.IpcProvider = null;
+const IpcProvider: any = null;
+
+export {
+    IpcProvider
+};

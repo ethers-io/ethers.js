@@ -19,7 +19,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.esm/index.js",
+  "module": "./lib.module/index.js",
   "name": "@ethersproject/transactions",
   "publishConfig": {
     "access": "public"
@@ -31,6 +31,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "sideEffects": false,
   "tarballHash": "0x892a42c68798431329aabf5c14b72f357c85b8f0a86439c9f158becf66f7c600",
   "types": "./lib/index.d.ts",
   "version": "5.0.6"

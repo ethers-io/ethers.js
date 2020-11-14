@@ -8,7 +8,8 @@
  *
  */
 
-import { BN } from "bn.js";
+import _BN from "bn.js";
+import BN = _BN.BN;
 
 import { Bytes, Hexable, hexlify, isBytes, isHexString } from "@ethersproject/bytes";
 
@@ -333,4 +334,14 @@ function throwFault(fault: string, operation: string, value?: any): never {
     if (value != null) { params.value = value; }
 
     return logger.throwError(fault, Logger.errors.NUMERIC_FAULT, params);
+}
+
+// value should have no prefix
+export function _base36To16(value: string): string {
+    return (new BN(value, 36)).toString(16);
+}
+
+// value should have no prefix
+export function _base16To36(value: string): string {
+    return (new BN(value, 16)).toString(36);
 }

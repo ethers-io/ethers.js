@@ -1,10 +1,7 @@
 "use strict";
 
-// We use this for base 36 maths
-import { BN } from "bn.js";
-
 import { arrayify, BytesLike, concat, hexDataLength, hexDataSlice, isHexString, stripZeros } from "@ethersproject/bytes";
-import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
+import { BigNumber, BigNumberish, _base16To36, _base36To16 } from "@ethersproject/bignumber";
 import { keccak256 } from "@ethersproject/keccak256";
 import { encode } from "@ethersproject/rlp";
 
@@ -104,7 +101,7 @@ export function getAddress(address: string): string {
             logger.throwArgumentError("bad icap checksum", "address", address);
         }
 
-        result = (new BN(address.substring(4), 36)).toString(16);
+        result = _base36To16(address.substring(4));
         while (result.length < 40) { result = "0" + result; }
         result = getChecksumAddress("0x" + result);
 
@@ -124,7 +121,7 @@ export function isAddress(address: string): boolean {
 }
 
 export function getIcapAddress(address: string): string {
-    let base36 = (new BN(getAddress(address).substring(2), 16)).toString(36).toUpperCase();
+    let base36 = _base16To36(getAddress(address).substring(2)).toUpperCase();
     while (base36.length < 30) { base36 = "0" + base36; }
     return "XE" + ibanChecksum("XE00" + base36) + base36;
 }

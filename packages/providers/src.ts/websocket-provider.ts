@@ -1,13 +1,12 @@
 "use strict";
 
-import WebSocket from "ws";
-
 import { BigNumber } from "@ethersproject/bignumber";
 import { Network, Networkish } from "@ethersproject/networks";
 import { defineReadOnly } from "@ethersproject/properties";
 
 import { Event } from "./base-provider";
 import { JsonRpcProvider } from "./json-rpc-provider";
+import { WebSocket } from "./ws";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";

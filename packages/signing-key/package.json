@@ -14,7 +14,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.esm/index.js",
+  "module": "./lib.module/index.js",
   "name": "@ethersproject/signing-key",
   "publishConfig": {
     "access": "public"
@@ -26,6 +26,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "sideEffects": false,
   "tarballHash": "0x7cdf71e1b21bab0612477150eae44b06dd82783fe23faa75e0e216c75b93d73c",
   "types": "./lib/index.d.ts",
   "version": "5.0.5"

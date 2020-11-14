@@ -16,5 +16,6 @@ try {
         });
     }
 }
-
-module.exports = WS;
+//export default WS;
+//module.exports = WS;
+export { WS as WebSocket };
