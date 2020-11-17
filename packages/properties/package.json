@@ -11,7 +11,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/properties",
   "publishConfig": {
     "access": "public"
@@ -26,7 +26,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x1150770f21e18d2b616708ecba357485be3227a8d474ff40edf9ed2603af62b4",
+  "tarballHash": "0xb445ebcef9b5ddaf8277c05fe53a8d72df47cb282e1b1eccb1ea03617c761263",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

@@ -6,12 +6,6 @@
   "browser": {
     "./lib/random": "./lib/browser-random.js"
   },
-  "browser.esm": {
-    "./lib/random": "./lib.esm/browser-random.js"
-  },
-  "browser.umd": {
-    "./lib/random": "./lib/browser-random.js"
-  },
   "dependencies": {
     "@ethersproject/bytes": "^5.0.4",
     "@ethersproject/logger": "^5.0.5"
@@ -25,7 +19,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/random",
   "publishConfig": {
     "access": "public"
@@ -38,7 +32,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x075d32afd4747ad55567bb9ff2da736a10911e202c04e9c61ba879688c82442a",
+  "tarballHash": "0x4a7b37a2e56ae759ac363b2ade2ba0286f6d2f6a79f46c56e267a16c62075cda",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

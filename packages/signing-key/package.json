@@ -1,4 +1,7 @@
 {
+  "_ethers.alias": {
+    "elliptic.js": "browser-elliptic.js"
+  },
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ethersproject/bytes": "^5.0.4",
@@ -14,7 +17,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/signing-key",
   "publishConfig": {
     "access": "public"
@@ -27,7 +30,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x7cdf71e1b21bab0612477150eae44b06dd82783fe23faa75e0e216c75b93d73c",
+  "tarballHash": "0x9cb48e4c6cb2262aa349541fcecf7219dc9d6c8adecb1a21974d0e2b4e590925",
   "types": "./lib/index.d.ts",
-  "version": "5.0.5"
+  "version": "5.0.6"
 }

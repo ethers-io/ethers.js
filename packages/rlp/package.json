@@ -13,7 +13,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/rlp",
   "publishConfig": {
     "access": "public"
@@ -26,7 +26,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x2a870663cf91328de26e8b3e5cb1ac3004eefa78ffbdad7b08b61c2685c3f018",
+  "tarballHash": "0xeb7a50f05552db2d9b1650fe6b04424756693eef37adc12f9b52f78f1a044f5b",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

@@ -23,7 +23,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/json-wallets",
   "publishConfig": {
     "access": "public"
@@ -36,7 +36,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xb4a979c5e6fd6dff4caf32dd6f891e9301a8c3855b5674ea32ce4c8c3267b942",
+  "tarballHash": "0xca169543368393bb678160dc42994207624307459f022ffa47b44ca47801aeeb",
   "types": "./lib/index.d.ts",
-  "version": "5.0.7"
+  "version": "5.0.8"
 }

@@ -51,16 +51,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var aes_js_1 = __importDefault(require("aes-js"));
-var scrypt = __importStar(require("scrypt-js"));
+var scrypt_js_1 = __importDefault(require("scrypt-js"));
 var address_1 = require("@ethersproject/address");
 var bytes_1 = require("@ethersproject/bytes");
 var hdnode_1 = require("@ethersproject/hdnode");
@@ -211,7 +204,7 @@ function _computeKdfKey(data, password, pbkdf2Func, scryptFunc, progressCallback
 }
 function decryptSync(json, password) {
     var data = JSON.parse(json);
-    var key = _computeKdfKey(data, password, pbkdf2Sync, scrypt.syncScrypt);
+    var key = _computeKdfKey(data, password, pbkdf2Sync, scrypt_js_1.default.syncScrypt);
     return _getAccount(data, key);
 }
 exports.decryptSync = decryptSync;
@@ -222,7 +215,7 @@ function decrypt(json, password, progressCallback) {
             switch (_a.label) {
                 case 0:
                     data = JSON.parse(json);
-                    return [4 /*yield*/, _computeKdfKey(data, password, pbkdf2, scrypt.scrypt, progressCallback)];
+                    return [4 /*yield*/, _computeKdfKey(data, password, pbkdf2, scrypt_js_1.default.scrypt, progressCallback)];
                 case 1:
                     key = _a.sent();
                     return [2 /*return*/, _getAccount(data, key)];
@@ -319,7 +312,7 @@ function encrypt(account, password, options, progressCallback) {
     // We take 64 bytes:
     //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
     //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
-    return scrypt.scrypt(passwordBytes, salt, N, r, p, 64, progressCallback).then(function (key) {
+    return scrypt_js_1.default.scrypt(passwordBytes, salt, N, r, p, 64, progressCallback).then(function (key) {
         key = bytes_1.arrayify(key);
         // This will be used to encrypt the wallet (as per Web3 secret storage)
         var derivedKey = key.slice(0, 16);

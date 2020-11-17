@@ -31,6 +31,9 @@ describe('Check Wordlists', function () {
     var tests = testcases_1.loadTests("wordlists");
     tests.forEach(function (test) {
         var wordlist = (ethers_1.ethers.wordlists)[test.locale];
+        if (wordlist == null) {
+            return;
+        }
         checkWordlist(test.content, wordlist);
     });
 });

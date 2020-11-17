@@ -48,14 +48,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var ws_1 = __importDefault(require("ws"));
 var bignumber_1 = require("@ethersproject/bignumber");
 var properties_1 = require("@ethersproject/properties");
 var json_rpc_provider_1 = require("./json-rpc-provider");
+var ws_1 = require("./ws");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
@@ -89,7 +86,7 @@ var WebSocketProvider = /** @class */ (function (_super) {
         _this = _super.call(this, url, network) || this;
         _this._pollingInterval = -1;
         _this._wsReady = false;
-        properties_1.defineReadOnly(_this, "_websocket", new ws_1.default(_this.connection.url));
+        properties_1.defineReadOnly(_this, "_websocket", new ws_1.WebSocket(_this.connection.url));
         properties_1.defineReadOnly(_this, "_requests", {});
         properties_1.defineReadOnly(_this, "_subs", {});
         properties_1.defineReadOnly(_this, "_subIds", {});
@@ -340,7 +337,7 @@ var WebSocketProvider = /** @class */ (function (_super) {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!(this._websocket.readyState === ws_1.default.CONNECTING)) return [3 /*break*/, 2];
+                        if (!(this._websocket.readyState === ws_1.WebSocket.CONNECTING)) return [3 /*break*/, 2];
                         return [4 /*yield*/, (new Promise(function (resolve) {
                                 _this._websocket.onopen = function () {
                                     resolve(true);

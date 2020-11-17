@@ -3,9 +3,9 @@
     "base64.js": "browser-base64.js"
   },
   "author": "Richard Moore <me@ricmoo.com>",
-  "browser": "./lib/browser.js",
-  "browser.esm": "./lib.esm/browser.js",
-  "browser.umd": "./lib/browser.js",
+  "browser": {
+    "./lib/base64": "./lib/browser-base64.js"
+  },
   "dependencies": {
     "@ethersproject/bytes": "^5.0.4"
   },
@@ -17,7 +17,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/base64",
   "publishConfig": {
     "access": "public"
@@ -30,7 +30,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xf9edd66aa5131bf0bca2ea188265e0e333d781e4b0ef5e92090a7cef8556cb30",
+  "tarballHash": "0xb364a54a1e2a4180ba3704634382e9280ed96801142e8f51eb956bf2d9853d4d",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

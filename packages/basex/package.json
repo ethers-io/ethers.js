@@ -12,7 +12,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/basex",
   "publishConfig": {
     "access": "public"
@@ -25,7 +25,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x680c45cf36dc0bc442c80238ff9fbfc482b7ac0486c24559c349277f395e0fa9",
+  "tarballHash": "0x7fa7045f05554887ced897ea35c569153ea65efc744d4b414cacc409145e6ff5",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

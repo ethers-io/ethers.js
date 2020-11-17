@@ -15,7 +15,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/solidity",
   "publishConfig": {
     "access": "public"
@@ -28,7 +28,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x112e6ec1297898adabbae7b963a260230addc7b84bd22da84be60419de8f10b2",
+  "tarballHash": "0x976d5f9e051d4cd15b8230f736df1766030f9e7c58c1bfdaaad2e0ca90d098f6",
   "types": "./lib/index.d.ts",
-  "version": "5.0.5"
+  "version": "5.0.6"
 }

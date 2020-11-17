@@ -12,7 +12,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/keccak256",
   "publishConfig": {
     "access": "public"
@@ -25,7 +25,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xa15a28050c6b479c3488697aa5fdc3dec0a74248fbfc8978aac8312c211d2cca",
+  "tarballHash": "0x817e897632180185c6605832665b2512b1376bb9a580eda0c1a08a7bcd49c4e9",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

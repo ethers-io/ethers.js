@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var elliptic_1 = require("elliptic");
+var elliptic_1 = require("./elliptic");
 var bytes_1 = require("@ethersproject/bytes");
 var properties_1 = require("@ethersproject/properties");
 var logger_1 = require("@ethersproject/logger");
@@ -9,7 +9,7 @@ var logger = new logger_1.Logger(_version_1.version);
 var _curve = null;
 function getCurve() {
     if (!_curve) {
-        _curve = new elliptic_1.ec("secp256k1");
+        _curve = new elliptic_1.EC("secp256k1");
     }
     return _curve;
 }

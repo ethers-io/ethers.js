@@ -1,9 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import zlib from 'browserify-zlib';
+import zlib from 'zlib';
 
 export function saveTests(tag: string, data: any) {
-   //let filename = path.resolve(__dirname, 'testcases', tag + '.json.gz');
    let filename = path.resolve(__dirname, '../testcases', tag + '.json.gz');
 
    fs.writeFileSync(filename, zlib.gzipSync(JSON.stringify(data, undefined, ' ') + '\n'));

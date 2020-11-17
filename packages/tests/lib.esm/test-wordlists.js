@@ -27,6 +27,9 @@ describe('Check Wordlists', function () {
     let tests = loadTests("wordlists");
     tests.forEach((test) => {
         let wordlist = (ethers.wordlists)[test.locale];
+        if (wordlist == null) {
+            return;
+        }
         checkWordlist(test.content, wordlist);
     });
 });

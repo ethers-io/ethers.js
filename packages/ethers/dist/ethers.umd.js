@@ -1,2076 +1,51 @@
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(global = global || self, factory(global.ethers = {}));
-}(this, function (exports) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.ethers = factory());
+}(this, (function () { 'use strict';
 
 	var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
-	function commonjsRequire () {
-		throw new Error('Dynamic requires are not currently supported by rollup-plugin-commonjs');
-	}
-
-	function unwrapExports (x) {
+	function getDefaultExportFromCjs (x) {
 		return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
 	}
 
-	function createCommonjsModule(fn, module) {
-		return module = { exports: {} }, fn(module, module.exports), module.exports;
+	function createCommonjsModule(fn, basedir, module) {
+		return module = {
+			path: basedir,
+			exports: {},
+			require: function (path, base) {
+				return commonjsRequire(path, (base === undefined || base === null) ? module.path : base);
+			}
+		}, fn(module, module.exports), module.exports;
 	}
 
-	function getCjsExportFromNamespace (n) {
-		return n && n['default'] || n;
+	function getDefaultExportFromNamespaceIfPresent (n) {
+		return n && Object.prototype.hasOwnProperty.call(n, 'default') ? n['default'] : n;
 	}
 
-	'use strict';
-
-	var byteLength_1 = byteLength;
-	var toByteArray_1 = toByteArray;
-	var fromByteArray_1 = fromByteArray;
-
-	var lookup = [];
-	var revLookup = [];
-	var Arr = typeof Uint8Array !== 'undefined' ? Uint8Array : Array;
-
-	var code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-	for (var i = 0, len = code.length; i < len; ++i) {
-	  lookup[i] = code[i];
-	  revLookup[code.charCodeAt(i)] = i;
+	function getDefaultExportFromNamespaceIfNotNamed (n) {
+		return n && Object.prototype.hasOwnProperty.call(n, 'default') && Object.keys(n).length === 1 ? n['default'] : n;
 	}
 
-	// Support decoding URL-safe base64 strings, as Node.js does.
-	// See: https://en.wikipedia.org/wiki/Base64#URL_applications
-	revLookup['-'.charCodeAt(0)] = 62;
-	revLookup['_'.charCodeAt(0)] = 63;
-
-	function getLens (b64) {
-	  var len = b64.length;
-
-	  if (len % 4 > 0) {
-	    throw new Error('Invalid string. Length must be a multiple of 4')
-	  }
-
-	  // Trim off extra bytes after placeholder bytes are found
-	  // See: https://github.com/beatgammit/base64-js/issues/42
-	  var validLen = b64.indexOf('=');
-	  if (validLen === -1) validLen = len;
-
-	  var placeHoldersLen = validLen === len
-	    ? 0
-	    : 4 - (validLen % 4);
-
-	  return [validLen, placeHoldersLen]
+	function getAugmentedNamespace(n) {
+		if (n.__esModule) return n;
+		var a = Object.defineProperty({}, '__esModule', {value: true});
+		Object.keys(n).forEach(function (k) {
+			var d = Object.getOwnPropertyDescriptor(n, k);
+			Object.defineProperty(a, k, d.get ? d : {
+				enumerable: true,
+				get: function () {
+					return n[k];
+				}
+			});
+		});
+		return a;
 	}
 
-	// base64 is 4/3 + up to two characters of the original data
-	function byteLength (b64) {
-	  var lens = getLens(b64);
-	  var validLen = lens[0];
-	  var placeHoldersLen = lens[1];
-	  return ((validLen + placeHoldersLen) * 3 / 4) - placeHoldersLen
+	function commonjsRequire () {
+		throw new Error('Dynamic requires are not currently supported by @rollup/plugin-commonjs');
 	}
-
-	function _byteLength (b64, validLen, placeHoldersLen) {
-	  return ((validLen + placeHoldersLen) * 3 / 4) - placeHoldersLen
-	}
-
-	function toByteArray (b64) {
-	  var tmp;
-	  var lens = getLens(b64);
-	  var validLen = lens[0];
-	  var placeHoldersLen = lens[1];
-
-	  var arr = new Arr(_byteLength(b64, validLen, placeHoldersLen));
-
-	  var curByte = 0;
-
-	  // if there are placeholders, only get up to the last complete 4 chars
-	  var len = placeHoldersLen > 0
-	    ? validLen - 4
-	    : validLen;
-
-	  var i;
-	  for (i = 0; i < len; i += 4) {
-	    tmp =
-	      (revLookup[b64.charCodeAt(i)] << 18) |
-	      (revLookup[b64.charCodeAt(i + 1)] << 12) |
-	      (revLookup[b64.charCodeAt(i + 2)] << 6) |
-	      revLookup[b64.charCodeAt(i + 3)];
-	    arr[curByte++] = (tmp >> 16) & 0xFF;
-	    arr[curByte++] = (tmp >> 8) & 0xFF;
-	    arr[curByte++] = tmp & 0xFF;
-	  }
-
-	  if (placeHoldersLen === 2) {
-	    tmp =
-	      (revLookup[b64.charCodeAt(i)] << 2) |
-	      (revLookup[b64.charCodeAt(i + 1)] >> 4);
-	    arr[curByte++] = tmp & 0xFF;
-	  }
-
-	  if (placeHoldersLen === 1) {
-	    tmp =
-	      (revLookup[b64.charCodeAt(i)] << 10) |
-	      (revLookup[b64.charCodeAt(i + 1)] << 4) |
-	      (revLookup[b64.charCodeAt(i + 2)] >> 2);
-	    arr[curByte++] = (tmp >> 8) & 0xFF;
-	    arr[curByte++] = tmp & 0xFF;
-	  }
-
-	  return arr
-	}
-
-	function tripletToBase64 (num) {
-	  return lookup[num >> 18 & 0x3F] +
-	    lookup[num >> 12 & 0x3F] +
-	    lookup[num >> 6 & 0x3F] +
-	    lookup[num & 0x3F]
-	}
-
-	function encodeChunk (uint8, start, end) {
-	  var tmp;
-	  var output = [];
-	  for (var i = start; i < end; i += 3) {
-	    tmp =
-	      ((uint8[i] << 16) & 0xFF0000) +
-	      ((uint8[i + 1] << 8) & 0xFF00) +
-	      (uint8[i + 2] & 0xFF);
-	    output.push(tripletToBase64(tmp));
-	  }
-	  return output.join('')
-	}
-
-	function fromByteArray (uint8) {
-	  var tmp;
-	  var len = uint8.length;
-	  var extraBytes = len % 3; // if we have 1 byte left, pad 2 bytes
-	  var parts = [];
-	  var maxChunkLength = 16383; // must be multiple of 3
-
-	  // go through the array every three bytes, we'll deal with trailing stuff later
-	  for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
-	    parts.push(encodeChunk(
-	      uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)
-	    ));
-	  }
-
-	  // pad the end with zeros, but make sure to not forget the extra bytes
-	  if (extraBytes === 1) {
-	    tmp = uint8[len - 1];
-	    parts.push(
-	      lookup[tmp >> 2] +
-	      lookup[(tmp << 4) & 0x3F] +
-	      '=='
-	    );
-	  } else if (extraBytes === 2) {
-	    tmp = (uint8[len - 2] << 8) + uint8[len - 1];
-	    parts.push(
-	      lookup[tmp >> 10] +
-	      lookup[(tmp >> 4) & 0x3F] +
-	      lookup[(tmp << 2) & 0x3F] +
-	      '='
-	    );
-	  }
-
-	  return parts.join('')
-	}
-
-	var base64Js = {
-		byteLength: byteLength_1,
-		toByteArray: toByteArray_1,
-		fromByteArray: fromByteArray_1
-	};
-
-	var read = function (buffer, offset, isLE, mLen, nBytes) {
-	  var e, m;
-	  var eLen = (nBytes * 8) - mLen - 1;
-	  var eMax = (1 << eLen) - 1;
-	  var eBias = eMax >> 1;
-	  var nBits = -7;
-	  var i = isLE ? (nBytes - 1) : 0;
-	  var d = isLE ? -1 : 1;
-	  var s = buffer[offset + i];
-
-	  i += d;
-
-	  e = s & ((1 << (-nBits)) - 1);
-	  s >>= (-nBits);
-	  nBits += eLen;
-	  for (; nBits > 0; e = (e * 256) + buffer[offset + i], i += d, nBits -= 8) {}
-
-	  m = e & ((1 << (-nBits)) - 1);
-	  e >>= (-nBits);
-	  nBits += mLen;
-	  for (; nBits > 0; m = (m * 256) + buffer[offset + i], i += d, nBits -= 8) {}
-
-	  if (e === 0) {
-	    e = 1 - eBias;
-	  } else if (e === eMax) {
-	    return m ? NaN : ((s ? -1 : 1) * Infinity)
-	  } else {
-	    m = m + Math.pow(2, mLen);
-	    e = e - eBias;
-	  }
-	  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
-	};
-
-	var write = function (buffer, value, offset, isLE, mLen, nBytes) {
-	  var e, m, c;
-	  var eLen = (nBytes * 8) - mLen - 1;
-	  var eMax = (1 << eLen) - 1;
-	  var eBias = eMax >> 1;
-	  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0);
-	  var i = isLE ? 0 : (nBytes - 1);
-	  var d = isLE ? 1 : -1;
-	  var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0;
-
-	  value = Math.abs(value);
-
-	  if (isNaN(value) || value === Infinity) {
-	    m = isNaN(value) ? 1 : 0;
-	    e = eMax;
-	  } else {
-	    e = Math.floor(Math.log(value) / Math.LN2);
-	    if (value * (c = Math.pow(2, -e)) < 1) {
-	      e--;
-	      c *= 2;
-	    }
-	    if (e + eBias >= 1) {
-	      value += rt / c;
-	    } else {
-	      value += rt * Math.pow(2, 1 - eBias);
-	    }
-	    if (value * c >= 2) {
-	      e++;
-	      c /= 2;
-	    }
-
-	    if (e + eBias >= eMax) {
-	      m = 0;
-	      e = eMax;
-	    } else if (e + eBias >= 1) {
-	      m = ((value * c) - 1) * Math.pow(2, mLen);
-	      e = e + eBias;
-	    } else {
-	      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen);
-	      e = 0;
-	    }
-	  }
-
-	  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
-
-	  e = (e << mLen) | m;
-	  eLen += mLen;
-	  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
-
-	  buffer[offset + i - d] |= s * 128;
-	};
-
-	var ieee754 = {
-		read: read,
-		write: write
-	};
-
-	var buffer = createCommonjsModule(function (module, exports) {
-	/*!
-	 * The buffer module from node.js, for the browser.
-	 *
-	 * @author   Feross Aboukhadijeh <https://feross.org>
-	 * @license  MIT
-	 */
-	/* eslint-disable no-proto */
-
-	'use strict';
-
-
-
-	var customInspectSymbol =
-	  (typeof Symbol === 'function' && typeof Symbol.for === 'function')
-	    ? Symbol.for('nodejs.util.inspect.custom')
-	    : null;
-
-	exports.Buffer = Buffer;
-	exports.SlowBuffer = SlowBuffer;
-	exports.INSPECT_MAX_BYTES = 50;
-
-	var K_MAX_LENGTH = 0x7fffffff;
-	exports.kMaxLength = K_MAX_LENGTH;
-
-	/**
-	 * If `Buffer.TYPED_ARRAY_SUPPORT`:
-	 *   === true    Use Uint8Array implementation (fastest)
-	 *   === false   Print warning and recommend using `buffer` v4.x which has an Object
-	 *               implementation (most compatible, even IE6)
-	 *
-	 * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
-	 * Opera 11.6+, iOS 4.2+.
-	 *
-	 * We report that the browser does not support typed arrays if the are not subclassable
-	 * using __proto__. Firefox 4-29 lacks support for adding new properties to `Uint8Array`
-	 * (See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438). IE 10 lacks support
-	 * for __proto__ and has a buggy typed array implementation.
-	 */
-	Buffer.TYPED_ARRAY_SUPPORT = typedArraySupport();
-
-	if (!Buffer.TYPED_ARRAY_SUPPORT && typeof console !== 'undefined' &&
-	    typeof console.error === 'function') {
-	  console.error(
-	    'This browser lacks typed array (Uint8Array) support which is required by ' +
-	    '`buffer` v5.x. Use `buffer` v4.x if you require old browser support.'
-	  );
-	}
-
-	function typedArraySupport () {
-	  // Can typed array instances can be augmented?
-	  try {
-	    var arr = new Uint8Array(1);
-	    var proto = { foo: function () { return 42 } };
-	    Object.setPrototypeOf(proto, Uint8Array.prototype);
-	    Object.setPrototypeOf(arr, proto);
-	    return arr.foo() === 42
-	  } catch (e) {
-	    return false
-	  }
-	}
-
-	Object.defineProperty(Buffer.prototype, 'parent', {
-	  enumerable: true,
-	  get: function () {
-	    if (!Buffer.isBuffer(this)) return undefined
-	    return this.buffer
-	  }
-	});
-
-	Object.defineProperty(Buffer.prototype, 'offset', {
-	  enumerable: true,
-	  get: function () {
-	    if (!Buffer.isBuffer(this)) return undefined
-	    return this.byteOffset
-	  }
-	});
-
-	function createBuffer (length) {
-	  if (length > K_MAX_LENGTH) {
-	    throw new RangeError('The value "' + length + '" is invalid for option "size"')
-	  }
-	  // Return an augmented `Uint8Array` instance
-	  var buf = new Uint8Array(length);
-	  Object.setPrototypeOf(buf, Buffer.prototype);
-	  return buf
-	}
-
-	/**
-	 * The Buffer constructor returns instances of `Uint8Array` that have their
-	 * prototype changed to `Buffer.prototype`. Furthermore, `Buffer` is a subclass of
-	 * `Uint8Array`, so the returned instances will have all the node `Buffer` methods
-	 * and the `Uint8Array` methods. Square bracket notation works as expected -- it
-	 * returns a single octet.
-	 *
-	 * The `Uint8Array` prototype remains unmodified.
-	 */
-
-	function Buffer (arg, encodingOrOffset, length) {
-	  // Common case.
-	  if (typeof arg === 'number') {
-	    if (typeof encodingOrOffset === 'string') {
-	      throw new TypeError(
-	        'The "string" argument must be of type string. Received type number'
-	      )
-	    }
-	    return allocUnsafe(arg)
-	  }
-	  return from(arg, encodingOrOffset, length)
-	}
-
-	Buffer.poolSize = 8192; // not used by this implementation
-
-	function from (value, encodingOrOffset, length) {
-	  if (typeof value === 'string') {
-	    return fromString(value, encodingOrOffset)
-	  }
-
-	  if (ArrayBuffer.isView(value)) {
-	    return fromArrayLike(value)
-	  }
-
-	  if (value == null) {
-	    throw new TypeError(
-	      'The first argument must be one of type string, Buffer, ArrayBuffer, Array, ' +
-	      'or Array-like Object. Received type ' + (typeof value)
-	    )
-	  }
-
-	  if (isInstance(value, ArrayBuffer) ||
-	      (value && isInstance(value.buffer, ArrayBuffer))) {
-	    return fromArrayBuffer(value, encodingOrOffset, length)
-	  }
-
-	  if (typeof SharedArrayBuffer !== 'undefined' &&
-	      (isInstance(value, SharedArrayBuffer) ||
-	      (value && isInstance(value.buffer, SharedArrayBuffer)))) {
-	    return fromArrayBuffer(value, encodingOrOffset, length)
-	  }
-
-	  if (typeof value === 'number') {
-	    throw new TypeError(
-	      'The "value" argument must not be of type number. Received type number'
-	    )
-	  }
-
-	  var valueOf = value.valueOf && value.valueOf();
-	  if (valueOf != null && valueOf !== value) {
-	    return Buffer.from(valueOf, encodingOrOffset, length)
-	  }
-
-	  var b = fromObject(value);
-	  if (b) return b
-
-	  if (typeof Symbol !== 'undefined' && Symbol.toPrimitive != null &&
-	      typeof value[Symbol.toPrimitive] === 'function') {
-	    return Buffer.from(
-	      value[Symbol.toPrimitive]('string'), encodingOrOffset, length
-	    )
-	  }
-
-	  throw new TypeError(
-	    'The first argument must be one of type string, Buffer, ArrayBuffer, Array, ' +
-	    'or Array-like Object. Received type ' + (typeof value)
-	  )
-	}
-
-	/**
-	 * Functionally equivalent to Buffer(arg, encoding) but throws a TypeError
-	 * if value is a number.
-	 * Buffer.from(str[, encoding])
-	 * Buffer.from(array)
-	 * Buffer.from(buffer)
-	 * Buffer.from(arrayBuffer[, byteOffset[, length]])
-	 **/
-	Buffer.from = function (value, encodingOrOffset, length) {
-	  return from(value, encodingOrOffset, length)
-	};
-
-	// Note: Change prototype *after* Buffer.from is defined to workaround Chrome bug:
-	// https://github.com/feross/buffer/pull/148
-	Object.setPrototypeOf(Buffer.prototype, Uint8Array.prototype);
-	Object.setPrototypeOf(Buffer, Uint8Array);
-
-	function assertSize (size) {
-	  if (typeof size !== 'number') {
-	    throw new TypeError('"size" argument must be of type number')
-	  } else if (size < 0) {
-	    throw new RangeError('The value "' + size + '" is invalid for option "size"')
-	  }
-	}
-
-	function alloc (size, fill, encoding) {
-	  assertSize(size);
-	  if (size <= 0) {
-	    return createBuffer(size)
-	  }
-	  if (fill !== undefined) {
-	    // Only pay attention to encoding if it's a string. This
-	    // prevents accidentally sending in a number that would
-	    // be interpretted as a start offset.
-	    return typeof encoding === 'string'
-	      ? createBuffer(size).fill(fill, encoding)
-	      : createBuffer(size).fill(fill)
-	  }
-	  return createBuffer(size)
-	}
-
-	/**
-	 * Creates a new filled Buffer instance.
-	 * alloc(size[, fill[, encoding]])
-	 **/
-	Buffer.alloc = function (size, fill, encoding) {
-	  return alloc(size, fill, encoding)
-	};
-
-	function allocUnsafe (size) {
-	  assertSize(size);
-	  return createBuffer(size < 0 ? 0 : checked(size) | 0)
-	}
-
-	/**
-	 * Equivalent to Buffer(num), by default creates a non-zero-filled Buffer instance.
-	 * */
-	Buffer.allocUnsafe = function (size) {
-	  return allocUnsafe(size)
-	};
-	/**
-	 * Equivalent to SlowBuffer(num), by default creates a non-zero-filled Buffer instance.
-	 */
-	Buffer.allocUnsafeSlow = function (size) {
-	  return allocUnsafe(size)
-	};
-
-	function fromString (string, encoding) {
-	  if (typeof encoding !== 'string' || encoding === '') {
-	    encoding = 'utf8';
-	  }
-
-	  if (!Buffer.isEncoding(encoding)) {
-	    throw new TypeError('Unknown encoding: ' + encoding)
-	  }
-
-	  var length = byteLength(string, encoding) | 0;
-	  var buf = createBuffer(length);
-
-	  var actual = buf.write(string, encoding);
-
-	  if (actual !== length) {
-	    // Writing a hex string, for example, that contains invalid characters will
-	    // cause everything after the first invalid character to be ignored. (e.g.
-	    // 'abxxcd' will be treated as 'ab')
-	    buf = buf.slice(0, actual);
-	  }
-
-	  return buf
-	}
-
-	function fromArrayLike (array) {
-	  var length = array.length < 0 ? 0 : checked(array.length) | 0;
-	  var buf = createBuffer(length);
-	  for (var i = 0; i < length; i += 1) {
-	    buf[i] = array[i] & 255;
-	  }
-	  return buf
-	}
-
-	function fromArrayBuffer (array, byteOffset, length) {
-	  if (byteOffset < 0 || array.byteLength < byteOffset) {
-	    throw new RangeError('"offset" is outside of buffer bounds')
-	  }
-
-	  if (array.byteLength < byteOffset + (length || 0)) {
-	    throw new RangeError('"length" is outside of buffer bounds')
-	  }
-
-	  var buf;
-	  if (byteOffset === undefined && length === undefined) {
-	    buf = new Uint8Array(array);
-	  } else if (length === undefined) {
-	    buf = new Uint8Array(array, byteOffset);
-	  } else {
-	    buf = new Uint8Array(array, byteOffset, length);
-	  }
-
-	  // Return an augmented `Uint8Array` instance
-	  Object.setPrototypeOf(buf, Buffer.prototype);
-
-	  return buf
-	}
-
-	function fromObject (obj) {
-	  if (Buffer.isBuffer(obj)) {
-	    var len = checked(obj.length) | 0;
-	    var buf = createBuffer(len);
-
-	    if (buf.length === 0) {
-	      return buf
-	    }
-
-	    obj.copy(buf, 0, 0, len);
-	    return buf
-	  }
-
-	  if (obj.length !== undefined) {
-	    if (typeof obj.length !== 'number' || numberIsNaN(obj.length)) {
-	      return createBuffer(0)
-	    }
-	    return fromArrayLike(obj)
-	  }
-
-	  if (obj.type === 'Buffer' && Array.isArray(obj.data)) {
-	    return fromArrayLike(obj.data)
-	  }
-	}
-
-	function checked (length) {
-	  // Note: cannot use `length < K_MAX_LENGTH` here because that fails when
-	  // length is NaN (which is otherwise coerced to zero.)
-	  if (length >= K_MAX_LENGTH) {
-	    throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
-	                         'size: 0x' + K_MAX_LENGTH.toString(16) + ' bytes')
-	  }
-	  return length | 0
-	}
-
-	function SlowBuffer (length) {
-	  if (+length != length) { // eslint-disable-line eqeqeq
-	    length = 0;
-	  }
-	  return Buffer.alloc(+length)
-	}
-
-	Buffer.isBuffer = function isBuffer (b) {
-	  return b != null && b._isBuffer === true &&
-	    b !== Buffer.prototype // so Buffer.isBuffer(Buffer.prototype) will be false
-	};
-
-	Buffer.compare = function compare (a, b) {
-	  if (isInstance(a, Uint8Array)) a = Buffer.from(a, a.offset, a.byteLength);
-	  if (isInstance(b, Uint8Array)) b = Buffer.from(b, b.offset, b.byteLength);
-	  if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b)) {
-	    throw new TypeError(
-	      'The "buf1", "buf2" arguments must be one of type Buffer or Uint8Array'
-	    )
-	  }
-
-	  if (a === b) return 0
-
-	  var x = a.length;
-	  var y = b.length;
-
-	  for (var i = 0, len = Math.min(x, y); i < len; ++i) {
-	    if (a[i] !== b[i]) {
-	      x = a[i];
-	      y = b[i];
-	      break
-	    }
-	  }
-
-	  if (x < y) return -1
-	  if (y < x) return 1
-	  return 0
-	};
-
-	Buffer.isEncoding = function isEncoding (encoding) {
-	  switch (String(encoding).toLowerCase()) {
-	    case 'hex':
-	    case 'utf8':
-	    case 'utf-8':
-	    case 'ascii':
-	    case 'latin1':
-	    case 'binary':
-	    case 'base64':
-	    case 'ucs2':
-	    case 'ucs-2':
-	    case 'utf16le':
-	    case 'utf-16le':
-	      return true
-	    default:
-	      return false
-	  }
-	};
-
-	Buffer.concat = function concat (list, length) {
-	  if (!Array.isArray(list)) {
-	    throw new TypeError('"list" argument must be an Array of Buffers')
-	  }
-
-	  if (list.length === 0) {
-	    return Buffer.alloc(0)
-	  }
-
-	  var i;
-	  if (length === undefined) {
-	    length = 0;
-	    for (i = 0; i < list.length; ++i) {
-	      length += list[i].length;
-	    }
-	  }
-
-	  var buffer = Buffer.allocUnsafe(length);
-	  var pos = 0;
-	  for (i = 0; i < list.length; ++i) {
-	    var buf = list[i];
-	    if (isInstance(buf, Uint8Array)) {
-	      buf = Buffer.from(buf);
-	    }
-	    if (!Buffer.isBuffer(buf)) {
-	      throw new TypeError('"list" argument must be an Array of Buffers')
-	    }
-	    buf.copy(buffer, pos);
-	    pos += buf.length;
-	  }
-	  return buffer
-	};
-
-	function byteLength (string, encoding) {
-	  if (Buffer.isBuffer(string)) {
-	    return string.length
-	  }
-	  if (ArrayBuffer.isView(string) || isInstance(string, ArrayBuffer)) {
-	    return string.byteLength
-	  }
-	  if (typeof string !== 'string') {
-	    throw new TypeError(
-	      'The "string" argument must be one of type string, Buffer, or ArrayBuffer. ' +
-	      'Received type ' + typeof string
-	    )
-	  }
-
-	  var len = string.length;
-	  var mustMatch = (arguments.length > 2 && arguments[2] === true);
-	  if (!mustMatch && len === 0) return 0
-
-	  // Use a for loop to avoid recursion
-	  var loweredCase = false;
-	  for (;;) {
-	    switch (encoding) {
-	      case 'ascii':
-	      case 'latin1':
-	      case 'binary':
-	        return len
-	      case 'utf8':
-	      case 'utf-8':
-	        return utf8ToBytes(string).length
-	      case 'ucs2':
-	      case 'ucs-2':
-	      case 'utf16le':
-	      case 'utf-16le':
-	        return len * 2
-	      case 'hex':
-	        return len >>> 1
-	      case 'base64':
-	        return base64ToBytes(string).length
-	      default:
-	        if (loweredCase) {
-	          return mustMatch ? -1 : utf8ToBytes(string).length // assume utf8
-	        }
-	        encoding = ('' + encoding).toLowerCase();
-	        loweredCase = true;
-	    }
-	  }
-	}
-	Buffer.byteLength = byteLength;
-
-	function slowToString (encoding, start, end) {
-	  var loweredCase = false;
-
-	  // No need to verify that "this.length <= MAX_UINT32" since it's a read-only
-	  // property of a typed array.
-
-	  // This behaves neither like String nor Uint8Array in that we set start/end
-	  // to their upper/lower bounds if the value passed is out of range.
-	  // undefined is handled specially as per ECMA-262 6th Edition,
-	  // Section 13.3.3.7 Runtime Semantics: KeyedBindingInitialization.
-	  if (start === undefined || start < 0) {
-	    start = 0;
-	  }
-	  // Return early if start > this.length. Done here to prevent potential uint32
-	  // coercion fail below.
-	  if (start > this.length) {
-	    return ''
-	  }
-
-	  if (end === undefined || end > this.length) {
-	    end = this.length;
-	  }
-
-	  if (end <= 0) {
-	    return ''
-	  }
-
-	  // Force coersion to uint32. This will also coerce falsey/NaN values to 0.
-	  end >>>= 0;
-	  start >>>= 0;
-
-	  if (end <= start) {
-	    return ''
-	  }
-
-	  if (!encoding) encoding = 'utf8';
-
-	  while (true) {
-	    switch (encoding) {
-	      case 'hex':
-	        return hexSlice(this, start, end)
-
-	      case 'utf8':
-	      case 'utf-8':
-	        return utf8Slice(this, start, end)
-
-	      case 'ascii':
-	        return asciiSlice(this, start, end)
-
-	      case 'latin1':
-	      case 'binary':
-	        return latin1Slice(this, start, end)
-
-	      case 'base64':
-	        return base64Slice(this, start, end)
-
-	      case 'ucs2':
-	      case 'ucs-2':
-	      case 'utf16le':
-	      case 'utf-16le':
-	        return utf16leSlice(this, start, end)
-
-	      default:
-	        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
-	        encoding = (encoding + '').toLowerCase();
-	        loweredCase = true;
-	    }
-	  }
-	}
-
-	// This property is used by `Buffer.isBuffer` (and the `is-buffer` npm package)
-	// to detect a Buffer instance. It's not possible to use `instanceof Buffer`
-	// reliably in a browserify context because there could be multiple different
-	// copies of the 'buffer' package in use. This method works even for Buffer
-	// instances that were created from another copy of the `buffer` package.
-	// See: https://github.com/feross/buffer/issues/154
-	Buffer.prototype._isBuffer = true;
-
-	function swap (b, n, m) {
-	  var i = b[n];
-	  b[n] = b[m];
-	  b[m] = i;
-	}
-
-	Buffer.prototype.swap16 = function swap16 () {
-	  var len = this.length;
-	  if (len % 2 !== 0) {
-	    throw new RangeError('Buffer size must be a multiple of 16-bits')
-	  }
-	  for (var i = 0; i < len; i += 2) {
-	    swap(this, i, i + 1);
-	  }
-	  return this
-	};
-
-	Buffer.prototype.swap32 = function swap32 () {
-	  var len = this.length;
-	  if (len % 4 !== 0) {
-	    throw new RangeError('Buffer size must be a multiple of 32-bits')
-	  }
-	  for (var i = 0; i < len; i += 4) {
-	    swap(this, i, i + 3);
-	    swap(this, i + 1, i + 2);
-	  }
-	  return this
-	};
-
-	Buffer.prototype.swap64 = function swap64 () {
-	  var len = this.length;
-	  if (len % 8 !== 0) {
-	    throw new RangeError('Buffer size must be a multiple of 64-bits')
-	  }
-	  for (var i = 0; i < len; i += 8) {
-	    swap(this, i, i + 7);
-	    swap(this, i + 1, i + 6);
-	    swap(this, i + 2, i + 5);
-	    swap(this, i + 3, i + 4);
-	  }
-	  return this
-	};
-
-	Buffer.prototype.toString = function toString () {
-	  var length = this.length;
-	  if (length === 0) return ''
-	  if (arguments.length === 0) return utf8Slice(this, 0, length)
-	  return slowToString.apply(this, arguments)
-	};
-
-	Buffer.prototype.toLocaleString = Buffer.prototype.toString;
-
-	Buffer.prototype.equals = function equals (b) {
-	  if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
-	  if (this === b) return true
-	  return Buffer.compare(this, b) === 0
-	};
-
-	Buffer.prototype.inspect = function inspect () {
-	  var str = '';
-	  var max = exports.INSPECT_MAX_BYTES;
-	  str = this.toString('hex', 0, max).replace(/(.{2})/g, '$1 ').trim();
-	  if (this.length > max) str += ' ... ';
-	  return '<Buffer ' + str + '>'
-	};
-	if (customInspectSymbol) {
-	  Buffer.prototype[customInspectSymbol] = Buffer.prototype.inspect;
-	}
-
-	Buffer.prototype.compare = function compare (target, start, end, thisStart, thisEnd) {
-	  if (isInstance(target, Uint8Array)) {
-	    target = Buffer.from(target, target.offset, target.byteLength);
-	  }
-	  if (!Buffer.isBuffer(target)) {
-	    throw new TypeError(
-	      'The "target" argument must be one of type Buffer or Uint8Array. ' +
-	      'Received type ' + (typeof target)
-	    )
-	  }
-
-	  if (start === undefined) {
-	    start = 0;
-	  }
-	  if (end === undefined) {
-	    end = target ? target.length : 0;
-	  }
-	  if (thisStart === undefined) {
-	    thisStart = 0;
-	  }
-	  if (thisEnd === undefined) {
-	    thisEnd = this.length;
-	  }
-
-	  if (start < 0 || end > target.length || thisStart < 0 || thisEnd > this.length) {
-	    throw new RangeError('out of range index')
-	  }
-
-	  if (thisStart >= thisEnd && start >= end) {
-	    return 0
-	  }
-	  if (thisStart >= thisEnd) {
-	    return -1
-	  }
-	  if (start >= end) {
-	    return 1
-	  }
-
-	  start >>>= 0;
-	  end >>>= 0;
-	  thisStart >>>= 0;
-	  thisEnd >>>= 0;
-
-	  if (this === target) return 0
-
-	  var x = thisEnd - thisStart;
-	  var y = end - start;
-	  var len = Math.min(x, y);
-
-	  var thisCopy = this.slice(thisStart, thisEnd);
-	  var targetCopy = target.slice(start, end);
-
-	  for (var i = 0; i < len; ++i) {
-	    if (thisCopy[i] !== targetCopy[i]) {
-	      x = thisCopy[i];
-	      y = targetCopy[i];
-	      break
-	    }
-	  }
-
-	  if (x < y) return -1
-	  if (y < x) return 1
-	  return 0
-	};
-
-	// Finds either the first index of `val` in `buffer` at offset >= `byteOffset`,
-	// OR the last index of `val` in `buffer` at offset <= `byteOffset`.
-	//
-	// Arguments:
-	// - buffer - a Buffer to search
-	// - val - a string, Buffer, or number
-	// - byteOffset - an index into `buffer`; will be clamped to an int32
-	// - encoding - an optional encoding, relevant is val is a string
-	// - dir - true for indexOf, false for lastIndexOf
-	function bidirectionalIndexOf (buffer, val, byteOffset, encoding, dir) {
-	  // Empty buffer means no match
-	  if (buffer.length === 0) return -1
-
-	  // Normalize byteOffset
-	  if (typeof byteOffset === 'string') {
-	    encoding = byteOffset;
-	    byteOffset = 0;
-	  } else if (byteOffset > 0x7fffffff) {
-	    byteOffset = 0x7fffffff;
-	  } else if (byteOffset < -0x80000000) {
-	    byteOffset = -0x80000000;
-	  }
-	  byteOffset = +byteOffset; // Coerce to Number.
-	  if (numberIsNaN(byteOffset)) {
-	    // byteOffset: it it's undefined, null, NaN, "foo", etc, search whole buffer
-	    byteOffset = dir ? 0 : (buffer.length - 1);
-	  }
-
-	  // Normalize byteOffset: negative offsets start from the end of the buffer
-	  if (byteOffset < 0) byteOffset = buffer.length + byteOffset;
-	  if (byteOffset >= buffer.length) {
-	    if (dir) return -1
-	    else byteOffset = buffer.length - 1;
-	  } else if (byteOffset < 0) {
-	    if (dir) byteOffset = 0;
-	    else return -1
-	  }
-
-	  // Normalize val
-	  if (typeof val === 'string') {
-	    val = Buffer.from(val, encoding);
-	  }
-
-	  // Finally, search either indexOf (if dir is true) or lastIndexOf
-	  if (Buffer.isBuffer(val)) {
-	    // Special case: looking for empty string/buffer always fails
-	    if (val.length === 0) {
-	      return -1
-	    }
-	    return arrayIndexOf(buffer, val, byteOffset, encoding, dir)
-	  } else if (typeof val === 'number') {
-	    val = val & 0xFF; // Search for a byte value [0-255]
-	    if (typeof Uint8Array.prototype.indexOf === 'function') {
-	      if (dir) {
-	        return Uint8Array.prototype.indexOf.call(buffer, val, byteOffset)
-	      } else {
-	        return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset)
-	      }
-	    }
-	    return arrayIndexOf(buffer, [val], byteOffset, encoding, dir)
-	  }
-
-	  throw new TypeError('val must be string, number or Buffer')
-	}
-
-	function arrayIndexOf (arr, val, byteOffset, encoding, dir) {
-	  var indexSize = 1;
-	  var arrLength = arr.length;
-	  var valLength = val.length;
-
-	  if (encoding !== undefined) {
-	    encoding = String(encoding).toLowerCase();
-	    if (encoding === 'ucs2' || encoding === 'ucs-2' ||
-	        encoding === 'utf16le' || encoding === 'utf-16le') {
-	      if (arr.length < 2 || val.length < 2) {
-	        return -1
-	      }
-	      indexSize = 2;
-	      arrLength /= 2;
-	      valLength /= 2;
-	      byteOffset /= 2;
-	    }
-	  }
-
-	  function read (buf, i) {
-	    if (indexSize === 1) {
-	      return buf[i]
-	    } else {
-	      return buf.readUInt16BE(i * indexSize)
-	    }
-	  }
-
-	  var i;
-	  if (dir) {
-	    var foundIndex = -1;
-	    for (i = byteOffset; i < arrLength; i++) {
-	      if (read(arr, i) === read(val, foundIndex === -1 ? 0 : i - foundIndex)) {
-	        if (foundIndex === -1) foundIndex = i;
-	        if (i - foundIndex + 1 === valLength) return foundIndex * indexSize
-	      } else {
-	        if (foundIndex !== -1) i -= i - foundIndex;
-	        foundIndex = -1;
-	      }
-	    }
-	  } else {
-	    if (byteOffset + valLength > arrLength) byteOffset = arrLength - valLength;
-	    for (i = byteOffset; i >= 0; i--) {
-	      var found = true;
-	      for (var j = 0; j < valLength; j++) {
-	        if (read(arr, i + j) !== read(val, j)) {
-	          found = false;
-	          break
-	        }
-	      }
-	      if (found) return i
-	    }
-	  }
-
-	  return -1
-	}
-
-	Buffer.prototype.includes = function includes (val, byteOffset, encoding) {
-	  return this.indexOf(val, byteOffset, encoding) !== -1
-	};
-
-	Buffer.prototype.indexOf = function indexOf (val, byteOffset, encoding) {
-	  return bidirectionalIndexOf(this, val, byteOffset, encoding, true)
-	};
-
-	Buffer.prototype.lastIndexOf = function lastIndexOf (val, byteOffset, encoding) {
-	  return bidirectionalIndexOf(this, val, byteOffset, encoding, false)
-	};
-
-	function hexWrite (buf, string, offset, length) {
-	  offset = Number(offset) || 0;
-	  var remaining = buf.length - offset;
-	  if (!length) {
-	    length = remaining;
-	  } else {
-	    length = Number(length);
-	    if (length > remaining) {
-	      length = remaining;
-	    }
-	  }
-
-	  var strLen = string.length;
-
-	  if (length > strLen / 2) {
-	    length = strLen / 2;
-	  }
-	  for (var i = 0; i < length; ++i) {
-	    var parsed = parseInt(string.substr(i * 2, 2), 16);
-	    if (numberIsNaN(parsed)) return i
-	    buf[offset + i] = parsed;
-	  }
-	  return i
-	}
-
-	function utf8Write (buf, string, offset, length) {
-	  return blitBuffer(utf8ToBytes(string, buf.length - offset), buf, offset, length)
-	}
-
-	function asciiWrite (buf, string, offset, length) {
-	  return blitBuffer(asciiToBytes(string), buf, offset, length)
-	}
-
-	function latin1Write (buf, string, offset, length) {
-	  return asciiWrite(buf, string, offset, length)
-	}
-
-	function base64Write (buf, string, offset, length) {
-	  return blitBuffer(base64ToBytes(string), buf, offset, length)
-	}
-
-	function ucs2Write (buf, string, offset, length) {
-	  return blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length)
-	}
-
-	Buffer.prototype.write = function write (string, offset, length, encoding) {
-	  // Buffer#write(string)
-	  if (offset === undefined) {
-	    encoding = 'utf8';
-	    length = this.length;
-	    offset = 0;
-	  // Buffer#write(string, encoding)
-	  } else if (length === undefined && typeof offset === 'string') {
-	    encoding = offset;
-	    length = this.length;
-	    offset = 0;
-	  // Buffer#write(string, offset[, length][, encoding])
-	  } else if (isFinite(offset)) {
-	    offset = offset >>> 0;
-	    if (isFinite(length)) {
-	      length = length >>> 0;
-	      if (encoding === undefined) encoding = 'utf8';
-	    } else {
-	      encoding = length;
-	      length = undefined;
-	    }
-	  } else {
-	    throw new Error(
-	      'Buffer.write(string, encoding, offset[, length]) is no longer supported'
-	    )
-	  }
-
-	  var remaining = this.length - offset;
-	  if (length === undefined || length > remaining) length = remaining;
-
-	  if ((string.length > 0 && (length < 0 || offset < 0)) || offset > this.length) {
-	    throw new RangeError('Attempt to write outside buffer bounds')
-	  }
-
-	  if (!encoding) encoding = 'utf8';
-
-	  var loweredCase = false;
-	  for (;;) {
-	    switch (encoding) {
-	      case 'hex':
-	        return hexWrite(this, string, offset, length)
-
-	      case 'utf8':
-	      case 'utf-8':
-	        return utf8Write(this, string, offset, length)
-
-	      case 'ascii':
-	        return asciiWrite(this, string, offset, length)
-
-	      case 'latin1':
-	      case 'binary':
-	        return latin1Write(this, string, offset, length)
-
-	      case 'base64':
-	        // Warning: maxLength not taken into account in base64Write
-	        return base64Write(this, string, offset, length)
-
-	      case 'ucs2':
-	      case 'ucs-2':
-	      case 'utf16le':
-	      case 'utf-16le':
-	        return ucs2Write(this, string, offset, length)
-
-	      default:
-	        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
-	        encoding = ('' + encoding).toLowerCase();
-	        loweredCase = true;
-	    }
-	  }
-	};
-
-	Buffer.prototype.toJSON = function toJSON () {
-	  return {
-	    type: 'Buffer',
-	    data: Array.prototype.slice.call(this._arr || this, 0)
-	  }
-	};
-
-	function base64Slice (buf, start, end) {
-	  if (start === 0 && end === buf.length) {
-	    return base64Js.fromByteArray(buf)
-	  } else {
-	    return base64Js.fromByteArray(buf.slice(start, end))
-	  }
-	}
-
-	function utf8Slice (buf, start, end) {
-	  end = Math.min(buf.length, end);
-	  var res = [];
-
-	  var i = start;
-	  while (i < end) {
-	    var firstByte = buf[i];
-	    var codePoint = null;
-	    var bytesPerSequence = (firstByte > 0xEF) ? 4
-	      : (firstByte > 0xDF) ? 3
-	        : (firstByte > 0xBF) ? 2
-	          : 1;
-
-	    if (i + bytesPerSequence <= end) {
-	      var secondByte, thirdByte, fourthByte, tempCodePoint;
-
-	      switch (bytesPerSequence) {
-	        case 1:
-	          if (firstByte < 0x80) {
-	            codePoint = firstByte;
-	          }
-	          break
-	        case 2:
-	          secondByte = buf[i + 1];
-	          if ((secondByte & 0xC0) === 0x80) {
-	            tempCodePoint = (firstByte & 0x1F) << 0x6 | (secondByte & 0x3F);
-	            if (tempCodePoint > 0x7F) {
-	              codePoint = tempCodePoint;
-	            }
-	          }
-	          break
-	        case 3:
-	          secondByte = buf[i + 1];
-	          thirdByte = buf[i + 2];
-	          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80) {
-	            tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | (thirdByte & 0x3F);
-	            if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) {
-	              codePoint = tempCodePoint;
-	            }
-	          }
-	          break
-	        case 4:
-	          secondByte = buf[i + 1];
-	          thirdByte = buf[i + 2];
-	          fourthByte = buf[i + 3];
-	          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80 && (fourthByte & 0xC0) === 0x80) {
-	            tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | (fourthByte & 0x3F);
-	            if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) {
-	              codePoint = tempCodePoint;
-	            }
-	          }
-	      }
-	    }
-
-	    if (codePoint === null) {
-	      // we did not generate a valid codePoint so insert a
-	      // replacement char (U+FFFD) and advance only 1 byte
-	      codePoint = 0xFFFD;
-	      bytesPerSequence = 1;
-	    } else if (codePoint > 0xFFFF) {
-	      // encode to utf16 (surrogate pair dance)
-	      codePoint -= 0x10000;
-	      res.push(codePoint >>> 10 & 0x3FF | 0xD800);
-	      codePoint = 0xDC00 | codePoint & 0x3FF;
-	    }
-
-	    res.push(codePoint);
-	    i += bytesPerSequence;
-	  }
-
-	  return decodeCodePointsArray(res)
-	}
-
-	// Based on http://stackoverflow.com/a/22747272/680742, the browser with
-	// the lowest limit is Chrome, with 0x10000 args.
-	// We go 1 magnitude less, for safety
-	var MAX_ARGUMENTS_LENGTH = 0x1000;
-
-	function decodeCodePointsArray (codePoints) {
-	  var len = codePoints.length;
-	  if (len <= MAX_ARGUMENTS_LENGTH) {
-	    return String.fromCharCode.apply(String, codePoints) // avoid extra slice()
-	  }
-
-	  // Decode in chunks to avoid "call stack size exceeded".
-	  var res = '';
-	  var i = 0;
-	  while (i < len) {
-	    res += String.fromCharCode.apply(
-	      String,
-	      codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH)
-	    );
-	  }
-	  return res
-	}
-
-	function asciiSlice (buf, start, end) {
-	  var ret = '';
-	  end = Math.min(buf.length, end);
-
-	  for (var i = start; i < end; ++i) {
-	    ret += String.fromCharCode(buf[i] & 0x7F);
-	  }
-	  return ret
-	}
-
-	function latin1Slice (buf, start, end) {
-	  var ret = '';
-	  end = Math.min(buf.length, end);
-
-	  for (var i = start; i < end; ++i) {
-	    ret += String.fromCharCode(buf[i]);
-	  }
-	  return ret
-	}
-
-	function hexSlice (buf, start, end) {
-	  var len = buf.length;
-
-	  if (!start || start < 0) start = 0;
-	  if (!end || end < 0 || end > len) end = len;
-
-	  var out = '';
-	  for (var i = start; i < end; ++i) {
-	    out += hexSliceLookupTable[buf[i]];
-	  }
-	  return out
-	}
-
-	function utf16leSlice (buf, start, end) {
-	  var bytes = buf.slice(start, end);
-	  var res = '';
-	  for (var i = 0; i < bytes.length; i += 2) {
-	    res += String.fromCharCode(bytes[i] + (bytes[i + 1] * 256));
-	  }
-	  return res
-	}
-
-	Buffer.prototype.slice = function slice (start, end) {
-	  var len = this.length;
-	  start = ~~start;
-	  end = end === undefined ? len : ~~end;
-
-	  if (start < 0) {
-	    start += len;
-	    if (start < 0) start = 0;
-	  } else if (start > len) {
-	    start = len;
-	  }
-
-	  if (end < 0) {
-	    end += len;
-	    if (end < 0) end = 0;
-	  } else if (end > len) {
-	    end = len;
-	  }
-
-	  if (end < start) end = start;
-
-	  var newBuf = this.subarray(start, end);
-	  // Return an augmented `Uint8Array` instance
-	  Object.setPrototypeOf(newBuf, Buffer.prototype);
-
-	  return newBuf
-	};
-
-	/*
-	 * Need to make sure that buffer isn't trying to write out of bounds.
-	 */
-	function checkOffset (offset, ext, length) {
-	  if ((offset % 1) !== 0 || offset < 0) throw new RangeError('offset is not uint')
-	  if (offset + ext > length) throw new RangeError('Trying to access beyond buffer length')
-	}
-
-	Buffer.prototype.readUIntLE = function readUIntLE (offset, byteLength, noAssert) {
-	  offset = offset >>> 0;
-	  byteLength = byteLength >>> 0;
-	  if (!noAssert) checkOffset(offset, byteLength, this.length);
-
-	  var val = this[offset];
-	  var mul = 1;
-	  var i = 0;
-	  while (++i < byteLength && (mul *= 0x100)) {
-	    val += this[offset + i] * mul;
-	  }
-
-	  return val
-	};
-
-	Buffer.prototype.readUIntBE = function readUIntBE (offset, byteLength, noAssert) {
-	  offset = offset >>> 0;
-	  byteLength = byteLength >>> 0;
-	  if (!noAssert) {
-	    checkOffset(offset, byteLength, this.length);
-	  }
-
-	  var val = this[offset + --byteLength];
-	  var mul = 1;
-	  while (byteLength > 0 && (mul *= 0x100)) {
-	    val += this[offset + --byteLength] * mul;
-	  }
-
-	  return val
-	};
-
-	Buffer.prototype.readUInt8 = function readUInt8 (offset, noAssert) {
-	  offset = offset >>> 0;
-	  if (!noAssert) checkOffset(offset, 1, this.length);
-	  return this[offset]
-	};
-
-	Buffer.prototype.readUInt16LE = function readUInt16LE (offset, noAssert) {
-	  offset = offset >>> 0;
-	  if (!noAssert) checkOffset(offset, 2, this.length);
-	  return this[offset] | (this[offset + 1] << 8)
-	};
-
-	Buffer.prototype.readUInt16BE = function readUInt16BE (offset, noAssert) {
-	  offset = offset >>> 0;
-	  if (!noAssert) checkOffset(offset, 2, this.length);
-	  return (this[offset] << 8) | this[offset + 1]
-	};
-
-	Buffer.prototype.readUInt32LE = function readUInt32LE (offset, noAssert) {
-	  offset = offset >>> 0;
-	  if (!noAssert) checkOffset(offset, 4, this.length);
-
-	  return ((this[offset]) |
-	      (this[offset + 1] << 8) |
-	      (this[offset + 2] << 16)) +
-	      (this[offset + 3] * 0x1000000)
-	};
-
-	Buffer.prototype.readUInt32BE = function readUInt32BE (offset, noAssert) {
-	  offset = offset >>> 0;
-	  if (!noAssert) checkOffset(offset, 4, this.length);
-
-	  return (this[offset] * 0x1000000) +
-	    ((this[offset + 1] << 16) |
-	    (this[offset + 2] << 8) |
-	    this[offset + 3])
-	};
-
-	Buffer.prototype.readIntLE = function readIntLE (offset, byteLength, noAssert) {
-	  offset = offset >>> 0;
-	  byteLength = byteLength >>> 0;
-	  if (!noAssert) checkOffset(offset, byteLength, this.length);
-
-	  var val = this[offset];
-	  var mul = 1;
-	  var i = 0;
-	  while (++i < byteLength && (mul *= 0x100)) {
-	    val += this[offset + i] * mul;
-	  }
-	  mul *= 0x80;
-
-	  if (val >= mul) val -= Math.pow(2, 8 * byteLength);
-
-	  return val
-	};
-
-	Buffer.prototype.readIntBE = function readIntBE (offset, byteLength, noAssert) {
-	  offset = offset >>> 0;
-	  byteLength = byteLength >>> 0;
-	  if (!noAssert) checkOffset(offset, byteLength, this.length);
-
-	  var i = byteLength;
-	  var mul = 1;
-	  var val = this[offset + --i];
-	  while (i > 0 && (mul *= 0x100)) {
-	    val += this[offset + --i] * mul;
-	  }
-	  mul *= 0x80;
-
-	  if (val >= mul) val -= Math.pow(2, 8 * byteLength);
-
-	  return val
-	};
-
-	Buffer.prototype.readInt8 = function readInt8 (offset, noAssert) {
-	  offset = offset >>> 0;
-	  if (!noAssert) checkOffset(offset, 1, this.length);
-	  if (!(this[offset] & 0x80)) return (this[offset])
-	  return ((0xff - this[offset] + 1) * -1)
-	};
-
-	Buffer.prototype.readInt16LE = function readInt16LE (offset, noAssert) {
-	  offset = offset >>> 0;
-	  if (!noAssert) checkOffset(offset, 2, this.length);
-	  var val = this[offset] | (this[offset + 1] << 8);
-	  return (val & 0x8000) ? val | 0xFFFF0000 : val
-	};
-
-	Buffer.prototype.readInt16BE = function readInt16BE (offset, noAssert) {
-	  offset = offset >>> 0;
-	  if (!noAssert) checkOffset(offset, 2, this.length);
-	  var val = this[offset + 1] | (this[offset] << 8);
-	  return (val & 0x8000) ? val | 0xFFFF0000 : val
-	};
-
-	Buffer.prototype.readInt32LE = function readInt32LE (offset, noAssert) {
-	  offset = offset >>> 0;
-	  if (!noAssert) checkOffset(offset, 4, this.length);
-
-	  return (this[offset]) |
-	    (this[offset + 1] << 8) |
-	    (this[offset + 2] << 16) |
-	    (this[offset + 3] << 24)
-	};
-
-	Buffer.prototype.readInt32BE = function readInt32BE (offset, noAssert) {
-	  offset = offset >>> 0;
-	  if (!noAssert) checkOffset(offset, 4, this.length);
-
-	  return (this[offset] << 24) |
-	    (this[offset + 1] << 16) |
-	    (this[offset + 2] << 8) |
-	    (this[offset + 3])
-	};
-
-	Buffer.prototype.readFloatLE = function readFloatLE (offset, noAssert) {
-	  offset = offset >>> 0;
-	  if (!noAssert) checkOffset(offset, 4, this.length);
-	  return ieee754.read(this, offset, true, 23, 4)
-	};
-
-	Buffer.prototype.readFloatBE = function readFloatBE (offset, noAssert) {
-	  offset = offset >>> 0;
-	  if (!noAssert) checkOffset(offset, 4, this.length);
-	  return ieee754.read(this, offset, false, 23, 4)
-	};
-
-	Buffer.prototype.readDoubleLE = function readDoubleLE (offset, noAssert) {
-	  offset = offset >>> 0;
-	  if (!noAssert) checkOffset(offset, 8, this.length);
-	  return ieee754.read(this, offset, true, 52, 8)
-	};
-
-	Buffer.prototype.readDoubleBE = function readDoubleBE (offset, noAssert) {
-	  offset = offset >>> 0;
-	  if (!noAssert) checkOffset(offset, 8, this.length);
-	  return ieee754.read(this, offset, false, 52, 8)
-	};
-
-	function checkInt (buf, value, offset, ext, max, min) {
-	  if (!Buffer.isBuffer(buf)) throw new TypeError('"buffer" argument must be a Buffer instance')
-	  if (value > max || value < min) throw new RangeError('"value" argument is out of bounds')
-	  if (offset + ext > buf.length) throw new RangeError('Index out of range')
-	}
-
-	Buffer.prototype.writeUIntLE = function writeUIntLE (value, offset, byteLength, noAssert) {
-	  value = +value;
-	  offset = offset >>> 0;
-	  byteLength = byteLength >>> 0;
-	  if (!noAssert) {
-	    var maxBytes = Math.pow(2, 8 * byteLength) - 1;
-	    checkInt(this, value, offset, byteLength, maxBytes, 0);
-	  }
-
-	  var mul = 1;
-	  var i = 0;
-	  this[offset] = value & 0xFF;
-	  while (++i < byteLength && (mul *= 0x100)) {
-	    this[offset + i] = (value / mul) & 0xFF;
-	  }
-
-	  return offset + byteLength
-	};
-
-	Buffer.prototype.writeUIntBE = function writeUIntBE (value, offset, byteLength, noAssert) {
-	  value = +value;
-	  offset = offset >>> 0;
-	  byteLength = byteLength >>> 0;
-	  if (!noAssert) {
-	    var maxBytes = Math.pow(2, 8 * byteLength) - 1;
-	    checkInt(this, value, offset, byteLength, maxBytes, 0);
-	  }
-
-	  var i = byteLength - 1;
-	  var mul = 1;
-	  this[offset + i] = value & 0xFF;
-	  while (--i >= 0 && (mul *= 0x100)) {
-	    this[offset + i] = (value / mul) & 0xFF;
-	  }
-
-	  return offset + byteLength
-	};
-
-	Buffer.prototype.writeUInt8 = function writeUInt8 (value, offset, noAssert) {
-	  value = +value;
-	  offset = offset >>> 0;
-	  if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0);
-	  this[offset] = (value & 0xff);
-	  return offset + 1
-	};
-
-	Buffer.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert) {
-	  value = +value;
-	  offset = offset >>> 0;
-	  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0);
-	  this[offset] = (value & 0xff);
-	  this[offset + 1] = (value >>> 8);
-	  return offset + 2
-	};
-
-	Buffer.prototype.writeUInt16BE = function writeUInt16BE (value, offset, noAssert) {
-	  value = +value;
-	  offset = offset >>> 0;
-	  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0);
-	  this[offset] = (value >>> 8);
-	  this[offset + 1] = (value & 0xff);
-	  return offset + 2
-	};
-
-	Buffer.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert) {
-	  value = +value;
-	  offset = offset >>> 0;
-	  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0);
-	  this[offset + 3] = (value >>> 24);
-	  this[offset + 2] = (value >>> 16);
-	  this[offset + 1] = (value >>> 8);
-	  this[offset] = (value & 0xff);
-	  return offset + 4
-	};
-
-	Buffer.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert) {
-	  value = +value;
-	  offset = offset >>> 0;
-	  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0);
-	  this[offset] = (value >>> 24);
-	  this[offset + 1] = (value >>> 16);
-	  this[offset + 2] = (value >>> 8);
-	  this[offset + 3] = (value & 0xff);
-	  return offset + 4
-	};
-
-	Buffer.prototype.writeIntLE = function writeIntLE (value, offset, byteLength, noAssert) {
-	  value = +value;
-	  offset = offset >>> 0;
-	  if (!noAssert) {
-	    var limit = Math.pow(2, (8 * byteLength) - 1);
-
-	    checkInt(this, value, offset, byteLength, limit - 1, -limit);
-	  }
-
-	  var i = 0;
-	  var mul = 1;
-	  var sub = 0;
-	  this[offset] = value & 0xFF;
-	  while (++i < byteLength && (mul *= 0x100)) {
-	    if (value < 0 && sub === 0 && this[offset + i - 1] !== 0) {
-	      sub = 1;
-	    }
-	    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF;
-	  }
-
-	  return offset + byteLength
-	};
-
-	Buffer.prototype.writeIntBE = function writeIntBE (value, offset, byteLength, noAssert) {
-	  value = +value;
-	  offset = offset >>> 0;
-	  if (!noAssert) {
-	    var limit = Math.pow(2, (8 * byteLength) - 1);
-
-	    checkInt(this, value, offset, byteLength, limit - 1, -limit);
-	  }
-
-	  var i = byteLength - 1;
-	  var mul = 1;
-	  var sub = 0;
-	  this[offset + i] = value & 0xFF;
-	  while (--i >= 0 && (mul *= 0x100)) {
-	    if (value < 0 && sub === 0 && this[offset + i + 1] !== 0) {
-	      sub = 1;
-	    }
-	    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF;
-	  }
-
-	  return offset + byteLength
-	};
-
-	Buffer.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
-	  value = +value;
-	  offset = offset >>> 0;
-	  if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80);
-	  if (value < 0) value = 0xff + value + 1;
-	  this[offset] = (value & 0xff);
-	  return offset + 1
-	};
-
-	Buffer.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) {
-	  value = +value;
-	  offset = offset >>> 0;
-	  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000);
-	  this[offset] = (value & 0xff);
-	  this[offset + 1] = (value >>> 8);
-	  return offset + 2
-	};
-
-	Buffer.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) {
-	  value = +value;
-	  offset = offset >>> 0;
-	  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000);
-	  this[offset] = (value >>> 8);
-	  this[offset + 1] = (value & 0xff);
-	  return offset + 2
-	};
-
-	Buffer.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) {
-	  value = +value;
-	  offset = offset >>> 0;
-	  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000);
-	  this[offset] = (value & 0xff);
-	  this[offset + 1] = (value >>> 8);
-	  this[offset + 2] = (value >>> 16);
-	  this[offset + 3] = (value >>> 24);
-	  return offset + 4
-	};
-
-	Buffer.prototype.writeInt32BE = function writeInt32BE (value, offset, noAssert) {
-	  value = +value;
-	  offset = offset >>> 0;
-	  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000);
-	  if (value < 0) value = 0xffffffff + value + 1;
-	  this[offset] = (value >>> 24);
-	  this[offset + 1] = (value >>> 16);
-	  this[offset + 2] = (value >>> 8);
-	  this[offset + 3] = (value & 0xff);
-	  return offset + 4
-	};
-
-	function checkIEEE754 (buf, value, offset, ext, max, min) {
-	  if (offset + ext > buf.length) throw new RangeError('Index out of range')
-	  if (offset < 0) throw new RangeError('Index out of range')
-	}
-
-	function writeFloat (buf, value, offset, littleEndian, noAssert) {
-	  value = +value;
-	  offset = offset >>> 0;
-	  if (!noAssert) {
-	    checkIEEE754(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38);
-	  }
-	  ieee754.write(buf, value, offset, littleEndian, 23, 4);
-	  return offset + 4
-	}
-
-	Buffer.prototype.writeFloatLE = function writeFloatLE (value, offset, noAssert) {
-	  return writeFloat(this, value, offset, true, noAssert)
-	};
-
-	Buffer.prototype.writeFloatBE = function writeFloatBE (value, offset, noAssert) {
-	  return writeFloat(this, value, offset, false, noAssert)
-	};
-
-	function writeDouble (buf, value, offset, littleEndian, noAssert) {
-	  value = +value;
-	  offset = offset >>> 0;
-	  if (!noAssert) {
-	    checkIEEE754(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308);
-	  }
-	  ieee754.write(buf, value, offset, littleEndian, 52, 8);
-	  return offset + 8
-	}
-
-	Buffer.prototype.writeDoubleLE = function writeDoubleLE (value, offset, noAssert) {
-	  return writeDouble(this, value, offset, true, noAssert)
-	};
-
-	Buffer.prototype.writeDoubleBE = function writeDoubleBE (value, offset, noAssert) {
-	  return writeDouble(this, value, offset, false, noAssert)
-	};
-
-	// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
-	Buffer.prototype.copy = function copy (target, targetStart, start, end) {
-	  if (!Buffer.isBuffer(target)) throw new TypeError('argument should be a Buffer')
-	  if (!start) start = 0;
-	  if (!end && end !== 0) end = this.length;
-	  if (targetStart >= target.length) targetStart = target.length;
-	  if (!targetStart) targetStart = 0;
-	  if (end > 0 && end < start) end = start;
-
-	  // Copy 0 bytes; we're done
-	  if (end === start) return 0
-	  if (target.length === 0 || this.length === 0) return 0
-
-	  // Fatal error conditions
-	  if (targetStart < 0) {
-	    throw new RangeError('targetStart out of bounds')
-	  }
-	  if (start < 0 || start >= this.length) throw new RangeError('Index out of range')
-	  if (end < 0) throw new RangeError('sourceEnd out of bounds')
-
-	  // Are we oob?
-	  if (end > this.length) end = this.length;
-	  if (target.length - targetStart < end - start) {
-	    end = target.length - targetStart + start;
-	  }
-
-	  var len = end - start;
-
-	  if (this === target && typeof Uint8Array.prototype.copyWithin === 'function') {
-	    // Use built-in when available, missing from IE11
-	    this.copyWithin(targetStart, start, end);
-	  } else if (this === target && start < targetStart && targetStart < end) {
-	    // descending copy from end
-	    for (var i = len - 1; i >= 0; --i) {
-	      target[i + targetStart] = this[i + start];
-	    }
-	  } else {
-	    Uint8Array.prototype.set.call(
-	      target,
-	      this.subarray(start, end),
-	      targetStart
-	    );
-	  }
-
-	  return len
-	};
-
-	// Usage:
-	//    buffer.fill(number[, offset[, end]])
-	//    buffer.fill(buffer[, offset[, end]])
-	//    buffer.fill(string[, offset[, end]][, encoding])
-	Buffer.prototype.fill = function fill (val, start, end, encoding) {
-	  // Handle string cases:
-	  if (typeof val === 'string') {
-	    if (typeof start === 'string') {
-	      encoding = start;
-	      start = 0;
-	      end = this.length;
-	    } else if (typeof end === 'string') {
-	      encoding = end;
-	      end = this.length;
-	    }
-	    if (encoding !== undefined && typeof encoding !== 'string') {
-	      throw new TypeError('encoding must be a string')
-	    }
-	    if (typeof encoding === 'string' && !Buffer.isEncoding(encoding)) {
-	      throw new TypeError('Unknown encoding: ' + encoding)
-	    }
-	    if (val.length === 1) {
-	      var code = val.charCodeAt(0);
-	      if ((encoding === 'utf8' && code < 128) ||
-	          encoding === 'latin1') {
-	        // Fast path: If `val` fits into a single byte, use that numeric value.
-	        val = code;
-	      }
-	    }
-	  } else if (typeof val === 'number') {
-	    val = val & 255;
-	  } else if (typeof val === 'boolean') {
-	    val = Number(val);
-	  }
-
-	  // Invalid ranges are not set to a default, so can range check early.
-	  if (start < 0 || this.length < start || this.length < end) {
-	    throw new RangeError('Out of range index')
-	  }
-
-	  if (end <= start) {
-	    return this
-	  }
-
-	  start = start >>> 0;
-	  end = end === undefined ? this.length : end >>> 0;
-
-	  if (!val) val = 0;
-
-	  var i;
-	  if (typeof val === 'number') {
-	    for (i = start; i < end; ++i) {
-	      this[i] = val;
-	    }
-	  } else {
-	    var bytes = Buffer.isBuffer(val)
-	      ? val
-	      : Buffer.from(val, encoding);
-	    var len = bytes.length;
-	    if (len === 0) {
-	      throw new TypeError('The value "' + val +
-	        '" is invalid for argument "value"')
-	    }
-	    for (i = 0; i < end - start; ++i) {
-	      this[i + start] = bytes[i % len];
-	    }
-	  }
-
-	  return this
-	};
-
-	// HELPER FUNCTIONS
-	// ================
-
-	var INVALID_BASE64_RE = /[^+/0-9A-Za-z-_]/g;
-
-	function base64clean (str) {
-	  // Node takes equal signs as end of the Base64 encoding
-	  str = str.split('=')[0];
-	  // Node strips out invalid characters like \n and \t from the string, base64-js does not
-	  str = str.trim().replace(INVALID_BASE64_RE, '');
-	  // Node converts strings with length < 2 to ''
-	  if (str.length < 2) return ''
-	  // Node allows for non-padded base64 strings (missing trailing ===), base64-js does not
-	  while (str.length % 4 !== 0) {
-	    str = str + '=';
-	  }
-	  return str
-	}
-
-	function utf8ToBytes (string, units) {
-	  units = units || Infinity;
-	  var codePoint;
-	  var length = string.length;
-	  var leadSurrogate = null;
-	  var bytes = [];
-
-	  for (var i = 0; i < length; ++i) {
-	    codePoint = string.charCodeAt(i);
-
-	    // is surrogate component
-	    if (codePoint > 0xD7FF && codePoint < 0xE000) {
-	      // last char was a lead
-	      if (!leadSurrogate) {
-	        // no lead yet
-	        if (codePoint > 0xDBFF) {
-	          // unexpected trail
-	          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-	          continue
-	        } else if (i + 1 === length) {
-	          // unpaired lead
-	          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-	          continue
-	        }
-
-	        // valid lead
-	        leadSurrogate = codePoint;
-
-	        continue
-	      }
-
-	      // 2 leads in a row
-	      if (codePoint < 0xDC00) {
-	        if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-	        leadSurrogate = codePoint;
-	        continue
-	      }
-
-	      // valid surrogate pair
-	      codePoint = (leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00) + 0x10000;
-	    } else if (leadSurrogate) {
-	      // valid bmp char, but last char was a lead
-	      if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-	    }
-
-	    leadSurrogate = null;
-
-	    // encode utf8
-	    if (codePoint < 0x80) {
-	      if ((units -= 1) < 0) break
-	      bytes.push(codePoint);
-	    } else if (codePoint < 0x800) {
-	      if ((units -= 2) < 0) break
-	      bytes.push(
-	        codePoint >> 0x6 | 0xC0,
-	        codePoint & 0x3F | 0x80
-	      );
-	    } else if (codePoint < 0x10000) {
-	      if ((units -= 3) < 0) break
-	      bytes.push(
-	        codePoint >> 0xC | 0xE0,
-	        codePoint >> 0x6 & 0x3F | 0x80,
-	        codePoint & 0x3F | 0x80
-	      );
-	    } else if (codePoint < 0x110000) {
-	      if ((units -= 4) < 0) break
-	      bytes.push(
-	        codePoint >> 0x12 | 0xF0,
-	        codePoint >> 0xC & 0x3F | 0x80,
-	        codePoint >> 0x6 & 0x3F | 0x80,
-	        codePoint & 0x3F | 0x80
-	      );
-	    } else {
-	      throw new Error('Invalid code point')
-	    }
-	  }
-
-	  return bytes
-	}
-
-	function asciiToBytes (str) {
-	  var byteArray = [];
-	  for (var i = 0; i < str.length; ++i) {
-	    // Node's code seems to be doing this and not & 0x7F..
-	    byteArray.push(str.charCodeAt(i) & 0xFF);
-	  }
-	  return byteArray
-	}
-
-	function utf16leToBytes (str, units) {
-	  var c, hi, lo;
-	  var byteArray = [];
-	  for (var i = 0; i < str.length; ++i) {
-	    if ((units -= 2) < 0) break
-
-	    c = str.charCodeAt(i);
-	    hi = c >> 8;
-	    lo = c % 256;
-	    byteArray.push(lo);
-	    byteArray.push(hi);
-	  }
-
-	  return byteArray
-	}
-
-	function base64ToBytes (str) {
-	  return base64Js.toByteArray(base64clean(str))
-	}
-
-	function blitBuffer (src, dst, offset, length) {
-	  for (var i = 0; i < length; ++i) {
-	    if ((i + offset >= dst.length) || (i >= src.length)) break
-	    dst[i + offset] = src[i];
-	  }
-	  return i
-	}
-
-	// ArrayBuffer or Uint8Array objects from other contexts (i.e. iframes) do not pass
-	// the `instanceof` check but they should be treated as of that type.
-	// See: https://github.com/feross/buffer/issues/166
-	function isInstance (obj, type) {
-	  return obj instanceof type ||
-	    (obj != null && obj.constructor != null && obj.constructor.name != null &&
-	      obj.constructor.name === type.name)
-	}
-	function numberIsNaN (obj) {
-	  // For IE11 support
-	  return obj !== obj // eslint-disable-line no-self-compare
-	}
-
-	// Create lookup table for `toString('hex')`
-	// See: https://github.com/feross/buffer/issues/219
-	var hexSliceLookupTable = (function () {
-	  var alphabet = '0123456789abcdef';
-	  var table = new Array(256);
-	  for (var i = 0; i < 16; ++i) {
-	    var i16 = i * 16;
-	    for (var j = 0; j < 16; ++j) {
-	      table[i16 + j] = alphabet[i] + alphabet[j];
-	    }
-	  }
-	  return table
-	})();
-	});
-	var buffer_1 = buffer.Buffer;
-	var buffer_2 = buffer.SlowBuffer;
-	var buffer_3 = buffer.INSPECT_MAX_BYTES;
-	var buffer_4 = buffer.kMaxLength;
 
 	var bn = createCommonjsModule(function (module) {
 	(function (module, exports) {
@@ -2125,7 +100,7 @@
 
 	  var Buffer;
 	  try {
-	    Buffer = buffer.Buffer;
+	    Buffer = /*RicMoo:ethers:require(buffer)*/(null).Buffer;
 	  } catch (e) {
 	  }
 
@@ -5507,17 +3482,15 @@
 	  };
 	})('object' === 'undefined' || module, commonjsGlobal);
 	});
-	var bn_1 = bn.BN;
 
 	var _version = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "logger/5.0.6";
+	exports.version = "logger/5.0.7";
 
 	});
 
-	var _version$1 = unwrapExports(_version);
-	var _version_1 = _version.version;
+	var _version$1 = /*@__PURE__*/getDefaultExportFromCjs(_version);
 
 	var lib = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -5823,6 +3796,9 @@
 	        }
 	        _logLevel = level;
 	    };
+	    Logger.from = function (version) {
+	        return new Logger(version);
+	    };
 	    Logger.errors = ErrorCode;
 	    Logger.levels = LogLevel;
 	    return Logger;
@@ -5831,20 +3807,16 @@
 
 	});
 
-	var index = unwrapExports(lib);
-	var lib_1 = lib.LogLevel;
-	var lib_2 = lib.ErrorCode;
-	var lib_3 = lib.Logger;
+	var index = /*@__PURE__*/getDefaultExportFromCjs(lib);
 
 	var _version$2 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bytes/5.0.5";
+	exports.version = "bytes/5.0.6";
 
 	});
 
-	var _version$3 = unwrapExports(_version$2);
-	var _version_1$1 = _version$2.version;
+	var _version$3 = /*@__PURE__*/getDefaultExportFromCjs(_version$2);
 
 	var lib$1 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -6246,36 +4218,22 @@
 
 	});
 
-	var index$1 = unwrapExports(lib$1);
-	var lib_1$1 = lib$1.isBytesLike;
-	var lib_2$1 = lib$1.isBytes;
-	var lib_3$1 = lib$1.arrayify;
-	var lib_4 = lib$1.concat;
-	var lib_5 = lib$1.stripZeros;
-	var lib_6 = lib$1.zeroPad;
-	var lib_7 = lib$1.isHexString;
-	var lib_8 = lib$1.hexlify;
-	var lib_9 = lib$1.hexDataLength;
-	var lib_10 = lib$1.hexDataSlice;
-	var lib_11 = lib$1.hexConcat;
-	var lib_12 = lib$1.hexValue;
-	var lib_13 = lib$1.hexStripZeros;
-	var lib_14 = lib$1.hexZeroPad;
-	var lib_15 = lib$1.splitSignature;
-	var lib_16 = lib$1.joinSignature;
+	var index$1 = /*@__PURE__*/getDefaultExportFromCjs(lib$1);
 
 	var _version$4 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bignumber/5.0.8";
+	exports.version = "bignumber/5.0.9";
 
 	});
 
-	var _version$5 = unwrapExports(_version$4);
-	var _version_1$2 = _version$4.version;
+	var _version$5 = /*@__PURE__*/getDefaultExportFromCjs(_version$4);
 
 	var bignumber = createCommonjsModule(function (module, exports) {
 	"use strict";
+	var __importDefault = (commonjsGlobal && commonjsGlobal.__importDefault) || function (mod) {
+	    return (mod && mod.__esModule) ? mod : { "default": mod };
+	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	/**
 	 *  BigNumber
@@ -6284,7 +4242,8 @@
 	 *  because it is used by elliptic, so it is required regardles.
 	 *
 	 */
-
+	var bn_js_1 = __importDefault(bn);
+	var BN = bn_js_1.default.BN;
 
 
 
@@ -6446,7 +4405,7 @@
 	                return new BigNumber(_constructorGuard, toHex(value));
 	            }
 	            if (value.match(/^-?[0-9]+$/)) {
-	                return new BigNumber(_constructorGuard, toHex(new bn.BN(value)));
+	                return new BigNumber(_constructorGuard, toHex(new BN(value)));
 	            }
 	            return logger.throwArgumentError("invalid BigNumber string", "value", value);
 	        }
@@ -6543,9 +4502,9 @@
 	function toBN(value) {
 	    var hex = BigNumber.from(value).toHexString();
 	    if (hex[0] === "-") {
-	        return (new bn.BN("-" + hex.substring(3), 16));
+	        return (new BN("-" + hex.substring(3), 16));
 	    }
-	    return new bn.BN(hex.substring(2), 16);
+	    return new BN(hex.substring(2), 16);
 	}
 	function throwFault(fault, operation, value) {
 	    var params = { fault: fault, operation: operation };
@@ -6554,12 +4513,20 @@
 	    }
 	    return logger.throwError(fault, lib.Logger.errors.NUMERIC_FAULT, params);
 	}
+	// value should have no prefix
+	function _base36To16(value) {
+	    return (new BN(value, 36)).toString(16);
+	}
+	exports._base36To16 = _base36To16;
+	// value should have no prefix
+	function _base16To36(value) {
+	    return (new BN(value, 16)).toString(36);
+	}
+	exports._base16To36 = _base16To36;
 
 	});
 
-	var bignumber$1 = unwrapExports(bignumber);
-	var bignumber_1 = bignumber.isBigNumberish;
-	var bignumber_2 = bignumber.BigNumber;
+	var bignumber$1 = /*@__PURE__*/getDefaultExportFromCjs(bignumber);
 
 	var fixednumber = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -6911,11 +4878,7 @@
 
 	});
 
-	var fixednumber$1 = unwrapExports(fixednumber);
-	var fixednumber_1 = fixednumber.formatFixed;
-	var fixednumber_2 = fixednumber.parseFixed;
-	var fixednumber_3 = fixednumber.FixedFormat;
-	var fixednumber_4 = fixednumber.FixedNumber;
+	var fixednumber$1 = /*@__PURE__*/getDefaultExportFromCjs(fixednumber);
 
 	var lib$2 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -6927,25 +4890,23 @@
 	exports.FixedFormat = fixednumber.FixedFormat;
 	exports.FixedNumber = fixednumber.FixedNumber;
 	exports.parseFixed = fixednumber.parseFixed;
+	// Internal methods used by address
+	var bignumber_2 = bignumber;
+	exports._base16To36 = bignumber_2._base16To36;
+	exports._base36To16 = bignumber_2._base36To16;
 
 	});
 
-	var index$2 = unwrapExports(lib$2);
-	var lib_1$2 = lib$2.BigNumber;
-	var lib_2$2 = lib$2.formatFixed;
-	var lib_3$2 = lib$2.FixedFormat;
-	var lib_4$1 = lib$2.FixedNumber;
-	var lib_5$1 = lib$2.parseFixed;
+	var index$2 = /*@__PURE__*/getDefaultExportFromCjs(lib$2);
 
 	var _version$6 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "properties/5.0.4";
+	exports.version = "properties/5.0.5";
 
 	});
 
-	var _version$7 = unwrapExports(_version$6);
-	var _version_1$3 = _version$6.version;
+	var _version$7 = /*@__PURE__*/getDefaultExportFromCjs(_version$6);
 
 	var lib$3 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -7111,24 +5072,16 @@
 
 	});
 
-	var index$3 = unwrapExports(lib$3);
-	var lib_1$3 = lib$3.defineReadOnly;
-	var lib_2$3 = lib$3.getStatic;
-	var lib_3$3 = lib$3.resolveProperties;
-	var lib_4$2 = lib$3.checkProperties;
-	var lib_5$2 = lib$3.shallowCopy;
-	var lib_6$1 = lib$3.deepCopy;
-	var lib_7$1 = lib$3.Description;
+	var index$3 = /*@__PURE__*/getDefaultExportFromCjs(lib$3);
 
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.7";
+	exports.version = "abi/5.0.8";
 
 	});
 
-	var _version$9 = unwrapExports(_version$8);
-	var _version_1$4 = _version$8.version;
+	var _version$9 = /*@__PURE__*/getDefaultExportFromCjs(_version$8);
 
 	var fragments = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -7954,13 +5907,7 @@
 
 	});
 
-	var fragments$1 = unwrapExports(fragments);
-	var fragments_1 = fragments.FormatTypes;
-	var fragments_2 = fragments.ParamType;
-	var fragments_3 = fragments.Fragment;
-	var fragments_4 = fragments.EventFragment;
-	var fragments_5 = fragments.ConstructorFragment;
-	var fragments_6 = fragments.FunctionFragment;
+	var fragments$1 = /*@__PURE__*/getDefaultExportFromCjs(fragments);
 
 	var abstractCoder = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -8137,11 +6084,7 @@
 
 	});
 
-	var abstractCoder$1 = unwrapExports(abstractCoder);
-	var abstractCoder_1 = abstractCoder.checkResultErrors;
-	var abstractCoder_2 = abstractCoder.Coder;
-	var abstractCoder_3 = abstractCoder.Writer;
-	var abstractCoder_4 = abstractCoder.Reader;
+	var abstractCoder$1 = /*@__PURE__*/getDefaultExportFromCjs(abstractCoder);
 
 	var sha3 = createCommonjsModule(function (module) {
 	/**
@@ -8636,18 +6579,16 @@
 
 	});
 
-	var index$4 = unwrapExports(lib$4);
-	var lib_1$4 = lib$4.keccak256;
+	var index$4 = /*@__PURE__*/getDefaultExportFromCjs(lib$4);
 
 	var _version$a = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "rlp/5.0.4";
+	exports.version = "rlp/5.0.5";
 
 	});
 
-	var _version$b = unwrapExports(_version$a);
-	var _version_1$5 = _version$a.version;
+	var _version$b = /*@__PURE__*/getDefaultExportFromCjs(_version$a);
 
 	var lib$5 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -8775,25 +6716,20 @@
 
 	});
 
-	var index$5 = unwrapExports(lib$5);
-	var lib_1$5 = lib$5.encode;
-	var lib_2$4 = lib$5.decode;
+	var index$5 = /*@__PURE__*/getDefaultExportFromCjs(lib$5);
 
 	var _version$c = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "address/5.0.5";
+	exports.version = "address/5.0.6";
 
 	});
 
-	var _version$d = unwrapExports(_version$c);
-	var _version_1$6 = _version$c.version;
+	var _version$d = /*@__PURE__*/getDefaultExportFromCjs(_version$c);
 
 	var lib$6 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	// We use this for base 36 maths
-
 
 
 
@@ -8879,7 +6815,7 @@
 	        if (address.substring(2, 4) !== ibanChecksum(address)) {
 	            logger.throwArgumentError("bad icap checksum", "address", address);
 	        }
-	        result = (new bn.BN(address.substring(4), 36)).toString(16);
+	        result = lib$2._base36To16(address.substring(4));
 	        while (result.length < 40) {
 	            result = "0" + result;
 	        }
@@ -8901,7 +6837,7 @@
 	}
 	exports.isAddress = isAddress;
 	function getIcapAddress(address) {
-	    var base36 = (new bn.BN(getAddress(address).substring(2), 16)).toString(36).toUpperCase();
+	    var base36 = lib$2._base16To36(getAddress(address).substring(2)).toUpperCase();
 	    while (base36.length < 30) {
 	        base36 = "0" + base36;
 	    }
@@ -8934,12 +6870,7 @@
 
 	});
 
-	var index$6 = unwrapExports(lib$6);
-	var lib_1$6 = lib$6.getAddress;
-	var lib_2$5 = lib$6.isAddress;
-	var lib_3$4 = lib$6.getIcapAddress;
-	var lib_4$3 = lib$6.getContractAddress;
-	var lib_5$3 = lib$6.getCreate2Address;
+	var index$6 = /*@__PURE__*/getDefaultExportFromCjs(lib$6);
 
 	var address = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -8983,8 +6914,7 @@
 
 	});
 
-	var address$1 = unwrapExports(address);
-	var address_2 = address.AddressCoder;
+	var address$1 = /*@__PURE__*/getDefaultExportFromCjs(address);
 
 	var anonymous = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -9023,8 +6953,7 @@
 
 	});
 
-	var anonymous$1 = unwrapExports(anonymous);
-	var anonymous_1 = anonymous.AnonymousCoder;
+	var anonymous$1 = /*@__PURE__*/getDefaultExportFromCjs(anonymous);
 
 	var array = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -9240,10 +7169,7 @@
 
 	});
 
-	var array$1 = unwrapExports(array);
-	var array_1 = array.pack;
-	var array_2 = array.unpack;
-	var array_3 = array.ArrayCoder;
+	var array$1 = /*@__PURE__*/getDefaultExportFromCjs(array);
 
 	var boolean_1 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -9279,8 +7205,7 @@
 
 	});
 
-	var boolean = unwrapExports(boolean_1);
-	var boolean_2 = boolean_1.BooleanCoder;
+	var boolean = /*@__PURE__*/getDefaultExportFromCjs(boolean_1);
 
 	var bytes = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -9331,9 +7256,7 @@
 
 	});
 
-	var bytes$1 = unwrapExports(bytes);
-	var bytes_2 = bytes.DynamicBytesCoder;
-	var bytes_3 = bytes.BytesCoder;
+	var bytes$1 = /*@__PURE__*/getDefaultExportFromCjs(bytes);
 
 	var fixedBytes = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -9379,8 +7302,7 @@
 
 	});
 
-	var fixedBytes$1 = unwrapExports(fixedBytes);
-	var fixedBytes_1 = fixedBytes.FixedBytesCoder;
+	var fixedBytes$1 = /*@__PURE__*/getDefaultExportFromCjs(fixedBytes);
 
 	var _null = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -9420,45 +7342,77 @@
 
 	});
 
-	var _null$1 = unwrapExports(_null);
-	var _null_1 = _null.NullCoder;
+	var _null$1 = /*@__PURE__*/getDefaultExportFromCjs(_null);
+
+	var addresses = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.AddressZero = "0x0000000000000000000000000000000000000000";
+
+	});
+
+	var addresses$1 = /*@__PURE__*/getDefaultExportFromCjs(addresses);
+
+	var bignumbers = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+	var NegativeOne = ( /*#__PURE__*/lib$2.BigNumber.from(-1));
+	exports.NegativeOne = NegativeOne;
+	var Zero = ( /*#__PURE__*/lib$2.BigNumber.from(0));
+	exports.Zero = Zero;
+	var One = ( /*#__PURE__*/lib$2.BigNumber.from(1));
+	exports.One = One;
+	var Two = ( /*#__PURE__*/lib$2.BigNumber.from(2));
+	exports.Two = Two;
+	var WeiPerEther = ( /*#__PURE__*/lib$2.BigNumber.from("1000000000000000000"));
+	exports.WeiPerEther = WeiPerEther;
+	var MaxUint256 = ( /*#__PURE__*/lib$2.BigNumber.from("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+	exports.MaxUint256 = MaxUint256;
+
+	});
+
+	var bignumbers$1 = /*@__PURE__*/getDefaultExportFromCjs(bignumbers);
+
+	var hashes = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
+
+	});
+
+	var hashes$1 = /*@__PURE__*/getDefaultExportFromCjs(hashes);
+
+	var strings = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	// NFKC (composed)             // (decomposed)
+	exports.EtherSymbol = "\u039e"; // "\uD835\uDF63";
+
+	});
+
+	var strings$1 = /*@__PURE__*/getDefaultExportFromCjs(strings);
 
 	var lib$7 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 
-	var AddressZero = "0x0000000000000000000000000000000000000000";
-	exports.AddressZero = AddressZero;
-	var HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
-	exports.HashZero = HashZero;
-	// NFKC (composed)             // (decomposed)
-	var EtherSymbol = "\u039e"; // "\uD835\uDF63";
-	exports.EtherSymbol = EtherSymbol;
-	var NegativeOne = lib$2.BigNumber.from(-1);
-	exports.NegativeOne = NegativeOne;
-	var Zero = lib$2.BigNumber.from(0);
-	exports.Zero = Zero;
-	var One = lib$2.BigNumber.from(1);
-	exports.One = One;
-	var Two = lib$2.BigNumber.from(2);
-	exports.Two = Two;
-	var WeiPerEther = lib$2.BigNumber.from("1000000000000000000");
-	exports.WeiPerEther = WeiPerEther;
-	var MaxUint256 = lib$2.BigNumber.from("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-	exports.MaxUint256 = MaxUint256;
+	exports.AddressZero = addresses.AddressZero;
+
+	exports.NegativeOne = bignumbers.NegativeOne;
+	exports.Zero = bignumbers.Zero;
+	exports.One = bignumbers.One;
+	exports.Two = bignumbers.Two;
+	exports.WeiPerEther = bignumbers.WeiPerEther;
+	exports.MaxUint256 = bignumbers.MaxUint256;
+
+	exports.HashZero = hashes.HashZero;
+
+	exports.EtherSymbol = strings.EtherSymbol;
 
 	});
 
-	var index$7 = unwrapExports(lib$7);
-	var lib_1$7 = lib$7.AddressZero;
-	var lib_2$6 = lib$7.HashZero;
-	var lib_3$5 = lib$7.EtherSymbol;
-	var lib_4$4 = lib$7.NegativeOne;
-	var lib_5$4 = lib$7.Zero;
-	var lib_6$2 = lib$7.One;
-	var lib_7$2 = lib$7.Two;
-	var lib_8$1 = lib$7.WeiPerEther;
-	var lib_9$1 = lib$7.MaxUint256;
+	var index$7 = /*@__PURE__*/getDefaultExportFromCjs(lib$7);
 
 	var number = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -9521,18 +7475,16 @@
 
 	});
 
-	var number$1 = unwrapExports(number);
-	var number_1 = number.NumberCoder;
+	var number$1 = /*@__PURE__*/getDefaultExportFromCjs(number);
 
 	var _version$e = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "strings/5.0.5";
+	exports.version = "strings/5.0.6";
 
 	});
 
-	var _version$f = unwrapExports(_version$e);
-	var _version_1$7 = _version$e.version;
+	var _version$f = /*@__PURE__*/getDefaultExportFromCjs(_version$e);
 
 	var utf8 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -9793,15 +7745,7 @@
 
 	});
 
-	var utf8$1 = unwrapExports(utf8);
-	var utf8_1 = utf8.UnicodeNormalizationForm;
-	var utf8_2 = utf8.Utf8ErrorReason;
-	var utf8_3 = utf8.Utf8ErrorFuncs;
-	var utf8_4 = utf8.toUtf8Bytes;
-	var utf8_5 = utf8._toEscapedUtf8String;
-	var utf8_6 = utf8._toUtf8String;
-	var utf8_7 = utf8.toUtf8String;
-	var utf8_8 = utf8.toUtf8CodePoints;
+	var utf8$1 = /*@__PURE__*/getDefaultExportFromCjs(utf8);
 
 	var bytes32 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -9841,9 +7785,7 @@
 
 	});
 
-	var bytes32$1 = unwrapExports(bytes32);
-	var bytes32_1 = bytes32.formatBytes32String;
-	var bytes32_2 = bytes32.parseBytes32String;
+	var bytes32$1 = /*@__PURE__*/getDefaultExportFromCjs(bytes32);
 
 	var idna = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -10041,11 +7983,7 @@
 
 	});
 
-	var idna$1 = unwrapExports(idna);
-	var idna_1 = idna._nameprepTableA1;
-	var idna_2 = idna._nameprepTableB2;
-	var idna_3 = idna._nameprepTableC;
-	var idna_4 = idna.nameprep;
+	var idna$1 = /*@__PURE__*/getDefaultExportFromCjs(idna);
 
 	var lib$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -10066,17 +8004,7 @@
 
 	});
 
-	var index$8 = unwrapExports(lib$8);
-	var lib_1$8 = lib$8.formatBytes32String;
-	var lib_2$7 = lib$8.parseBytes32String;
-	var lib_3$6 = lib$8.nameprep;
-	var lib_4$5 = lib$8._toEscapedUtf8String;
-	var lib_5$5 = lib$8.toUtf8Bytes;
-	var lib_6$3 = lib$8.toUtf8CodePoints;
-	var lib_7$3 = lib$8.toUtf8String;
-	var lib_8$2 = lib$8.UnicodeNormalizationForm;
-	var lib_9$2 = lib$8.Utf8ErrorFuncs;
-	var lib_10$1 = lib$8.Utf8ErrorReason;
+	var index$8 = /*@__PURE__*/getDefaultExportFromCjs(lib$8);
 
 	var string = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -10113,8 +8041,7 @@
 
 	});
 
-	var string$1 = unwrapExports(string);
-	var string_1 = string.StringCoder;
+	var string$1 = /*@__PURE__*/getDefaultExportFromCjs(string);
 
 	var tuple = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -10163,8 +8090,7 @@
 
 	});
 
-	var tuple$1 = unwrapExports(tuple);
-	var tuple_1 = tuple.TupleCoder;
+	var tuple$1 = /*@__PURE__*/getDefaultExportFromCjs(tuple);
 
 	var abiCoder = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -10268,9 +8194,7 @@
 
 	});
 
-	var abiCoder$1 = unwrapExports(abiCoder);
-	var abiCoder_1 = abiCoder.AbiCoder;
-	var abiCoder_2 = abiCoder.defaultAbiCoder;
+	var abiCoder$1 = /*@__PURE__*/getDefaultExportFromCjs(abiCoder);
 
 	var id_1 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -10284,18 +8208,16 @@
 
 	});
 
-	var id = unwrapExports(id_1);
-	var id_2 = id_1.id;
+	var id = /*@__PURE__*/getDefaultExportFromCjs(id_1);
 
 	var _version$g = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hash/5.0.6";
+	exports.version = "hash/5.0.7";
 
 	});
 
-	var _version$h = unwrapExports(_version$g);
-	var _version_1$8 = _version$g.version;
+	var _version$h = /*@__PURE__*/getDefaultExportFromCjs(_version$g);
 
 	var namehash_1 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -10341,9 +8263,7 @@
 
 	});
 
-	var namehash = unwrapExports(namehash_1);
-	var namehash_2 = namehash_1.isValidName;
-	var namehash_3 = namehash_1.namehash;
+	var namehash = /*@__PURE__*/getDefaultExportFromCjs(namehash_1);
 
 	var message = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -10366,9 +8286,7 @@
 
 	});
 
-	var message$1 = unwrapExports(message);
-	var message_1 = message.messagePrefix;
-	var message_2 = message.hashMessage;
+	var message$1 = /*@__PURE__*/getDefaultExportFromCjs(message);
 
 	var typedData = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -10876,8 +8794,7 @@
 
 	});
 
-	var typedData$1 = unwrapExports(typedData);
-	var typedData_1 = typedData.TypedDataEncoder;
+	var typedData$1 = /*@__PURE__*/getDefaultExportFromCjs(typedData);
 
 	var lib$9 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -10895,13 +8812,7 @@
 
 	});
 
-	var index$9 = unwrapExports(lib$9);
-	var lib_1$9 = lib$9.id;
-	var lib_2$8 = lib$9.isValidName;
-	var lib_3$7 = lib$9.namehash;
-	var lib_4$6 = lib$9.hashMessage;
-	var lib_5$6 = lib$9.messagePrefix;
-	var lib_6$4 = lib$9._TypedDataEncoder;
+	var index$9 = /*@__PURE__*/getDefaultExportFromCjs(lib$9);
 
 	var _interface = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -11442,12 +9353,7 @@
 
 	});
 
-	var _interface$1 = unwrapExports(_interface);
-	var _interface_1 = _interface.checkResultErrors;
-	var _interface_2 = _interface.LogDescription;
-	var _interface_3 = _interface.TransactionDescription;
-	var _interface_4 = _interface.Indexed;
-	var _interface_5 = _interface.Interface;
+	var _interface$1 = /*@__PURE__*/getDefaultExportFromCjs(_interface);
 
 	var lib$a = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -11471,30 +9377,16 @@
 
 	});
 
-	var index$a = unwrapExports(lib$a);
-	var lib_1$a = lib$a.ConstructorFragment;
-	var lib_2$9 = lib$a.EventFragment;
-	var lib_3$8 = lib$a.FormatTypes;
-	var lib_4$7 = lib$a.Fragment;
-	var lib_5$7 = lib$a.FunctionFragment;
-	var lib_6$5 = lib$a.ParamType;
-	var lib_7$4 = lib$a.AbiCoder;
-	var lib_8$3 = lib$a.defaultAbiCoder;
-	var lib_9$3 = lib$a.checkResultErrors;
-	var lib_10$2 = lib$a.Indexed;
-	var lib_11$1 = lib$a.Interface;
-	var lib_12$1 = lib$a.LogDescription;
-	var lib_13$1 = lib$a.TransactionDescription;
+	var index$a = /*@__PURE__*/getDefaultExportFromCjs(lib$a);
 
 	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-provider/5.0.5";
+	exports.version = "abstract-provider/5.0.6";
 
 	});
 
-	var _version$j = unwrapExports(_version$i);
-	var _version_1$9 = _version$i.version;
+	var _version$j = /*@__PURE__*/getDefaultExportFromCjs(_version$i);
 
 	var lib$b = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -11616,22 +9508,16 @@
 
 	});
 
-	var index$b = unwrapExports(lib$b);
-	var lib_1$b = lib$b.ForkEvent;
-	var lib_2$a = lib$b.BlockForkEvent;
-	var lib_3$9 = lib$b.TransactionForkEvent;
-	var lib_4$8 = lib$b.TransactionOrderForkEvent;
-	var lib_5$8 = lib$b.Provider;
+	var index$b = /*@__PURE__*/getDefaultExportFromCjs(lib$b);
 
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-signer/5.0.7";
+	exports.version = "abstract-signer/5.0.8";
 
 	});
 
-	var _version$l = unwrapExports(_version$k);
-	var _version_1$a = _version$k.version;
+	var _version$l = /*@__PURE__*/getDefaultExportFromCjs(_version$k);
 
 	var lib$c = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -11954,19 +9840,16 @@
 
 	});
 
-	var index$c = unwrapExports(lib$c);
-	var lib_1$c = lib$c.Signer;
-	var lib_2$b = lib$c.VoidSigner;
+	var index$c = /*@__PURE__*/getDefaultExportFromCjs(lib$c);
 
 	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.5";
+	exports.version = "contracts/5.0.6";
 
 	});
 
-	var _version$n = unwrapExports(_version$m);
-	var _version_1$b = _version$m.version;
+	var _version$n = /*@__PURE__*/getDefaultExportFromCjs(_version$m);
 
 	var lib$d = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -13096,9 +10979,7 @@
 
 	});
 
-	var index$d = unwrapExports(lib$d);
-	var lib_1$d = lib$d.Contract;
-	var lib_2$c = lib$d.ContractFactory;
+	var index$d = /*@__PURE__*/getDefaultExportFromCjs(lib$d);
 
 	var lib$e = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -13227,10 +11108,7 @@
 
 	});
 
-	var index$e = unwrapExports(lib$e);
-	var lib_1$e = lib$e.BaseX;
-	var lib_2$d = lib$e.Base32;
-	var lib_3$a = lib$e.Base58;
+	var index$e = /*@__PURE__*/getDefaultExportFromCjs(lib$e);
 
 	var minimalisticAssert = assert;
 
@@ -13654,10 +11532,6 @@
 		BlockHash: BlockHash_1
 	};
 
-	var _1 = {};
-
-	var _224 = {};
-
 	'use strict';
 
 
@@ -13725,10 +11599,85 @@
 
 
 
-
+	var rotl32$1 = utils.rotl32;
 	var sum32$1 = utils.sum32;
-	var sum32_4$1 = utils.sum32_4;
 	var sum32_5$1 = utils.sum32_5;
+	var ft_1$1 = common$1.ft_1;
+	var BlockHash$1 = common.BlockHash;
+
+	var sha1_K = [
+	  0x5A827999, 0x6ED9EBA1,
+	  0x8F1BBCDC, 0xCA62C1D6
+	];
+
+	function SHA1() {
+	  if (!(this instanceof SHA1))
+	    return new SHA1();
+
+	  BlockHash$1.call(this);
+	  this.h = [
+	    0x67452301, 0xefcdab89, 0x98badcfe,
+	    0x10325476, 0xc3d2e1f0 ];
+	  this.W = new Array(80);
+	}
+
+	utils.inherits(SHA1, BlockHash$1);
+	var _1 = SHA1;
+
+	SHA1.blockSize = 512;
+	SHA1.outSize = 160;
+	SHA1.hmacStrength = 80;
+	SHA1.padLength = 64;
+
+	SHA1.prototype._update = function _update(msg, start) {
+	  var W = this.W;
+
+	  for (var i = 0; i < 16; i++)
+	    W[i] = msg[start + i];
+
+	  for(; i < W.length; i++)
+	    W[i] = rotl32$1(W[i - 3] ^ W[i - 8] ^ W[i - 14] ^ W[i - 16], 1);
+
+	  var a = this.h[0];
+	  var b = this.h[1];
+	  var c = this.h[2];
+	  var d = this.h[3];
+	  var e = this.h[4];
+
+	  for (i = 0; i < W.length; i++) {
+	    var s = ~~(i / 20);
+	    var t = sum32_5$1(rotl32$1(a, 5), ft_1$1(s, b, c, d), e, W[i], sha1_K[s]);
+	    e = d;
+	    d = c;
+	    c = rotl32$1(b, 30);
+	    b = a;
+	    a = t;
+	  }
+
+	  this.h[0] = sum32$1(this.h[0], a);
+	  this.h[1] = sum32$1(this.h[1], b);
+	  this.h[2] = sum32$1(this.h[2], c);
+	  this.h[3] = sum32$1(this.h[3], d);
+	  this.h[4] = sum32$1(this.h[4], e);
+	};
+
+	SHA1.prototype._digest = function digest(enc) {
+	  if (enc === 'hex')
+	    return utils.toHex32(this.h, 'big');
+	  else
+	    return utils.split32(this.h, 'big');
+	};
+
+	'use strict';
+
+
+
+
+
+
+	var sum32$2 = utils.sum32;
+	var sum32_4$1 = utils.sum32_4;
+	var sum32_5$2 = utils.sum32_5;
 	var ch32$1 = common$1.ch32;
 	var maj32$1 = common$1.maj32;
 	var s0_256$1 = common$1.s0_256;
@@ -13736,7 +11685,7 @@
 	var g0_256$1 = common$1.g0_256;
 	var g1_256$1 = common$1.g1_256;
 
-	var BlockHash$1 = common.BlockHash;
+	var BlockHash$2 = common.BlockHash;
 
 	var sha256_K = [
 	  0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
@@ -13761,7 +11710,7 @@
 	  if (!(this instanceof SHA256))
 	    return new SHA256();
 
-	  BlockHash$1.call(this);
+	  BlockHash$2.call(this);
 	  this.h = [
 	    0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
 	    0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
@@ -13769,7 +11718,7 @@
 	  this.k = sha256_K;
 	  this.W = new Array(64);
 	}
-	utils.inherits(SHA256, BlockHash$1);
+	utils.inherits(SHA256, BlockHash$2);
 	var _256 = SHA256;
 
 	SHA256.blockSize = 512;
@@ -13796,26 +11745,26 @@
 
 	  minimalisticAssert(this.k.length === W.length);
 	  for (i = 0; i < W.length; i++) {
-	    var T1 = sum32_5$1(h, s1_256$1(e), ch32$1(e, f, g), this.k[i], W[i]);
-	    var T2 = sum32$1(s0_256$1(a), maj32$1(a, b, c));
+	    var T1 = sum32_5$2(h, s1_256$1(e), ch32$1(e, f, g), this.k[i], W[i]);
+	    var T2 = sum32$2(s0_256$1(a), maj32$1(a, b, c));
 	    h = g;
 	    g = f;
 	    f = e;
-	    e = sum32$1(d, T1);
+	    e = sum32$2(d, T1);
 	    d = c;
 	    c = b;
 	    b = a;
-	    a = sum32$1(T1, T2);
+	    a = sum32$2(T1, T2);
 	  }
 
-	  this.h[0] = sum32$1(this.h[0], a);
-	  this.h[1] = sum32$1(this.h[1], b);
-	  this.h[2] = sum32$1(this.h[2], c);
-	  this.h[3] = sum32$1(this.h[3], d);
-	  this.h[4] = sum32$1(this.h[4], e);
-	  this.h[5] = sum32$1(this.h[5], f);
-	  this.h[6] = sum32$1(this.h[6], g);
-	  this.h[7] = sum32$1(this.h[7], h);
+	  this.h[0] = sum32$2(this.h[0], a);
+	  this.h[1] = sum32$2(this.h[1], b);
+	  this.h[2] = sum32$2(this.h[2], c);
+	  this.h[3] = sum32$2(this.h[3], d);
+	  this.h[4] = sum32$2(this.h[4], e);
+	  this.h[5] = sum32$2(this.h[5], f);
+	  this.h[6] = sum32$2(this.h[6], g);
+	  this.h[7] = sum32$2(this.h[7], h);
 	};
 
 	SHA256.prototype._digest = function digest(enc) {
@@ -13825,7 +11774,35 @@
 	    return utils.split32(this.h, 'big');
 	};
 
-	var _384 = {};
+	'use strict';
+
+
+
+
+	function SHA224() {
+	  if (!(this instanceof SHA224))
+	    return new SHA224();
+
+	  _256.call(this);
+	  this.h = [
+	    0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939,
+	    0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4 ];
+	}
+	utils.inherits(SHA224, _256);
+	var _224 = SHA224;
+
+	SHA224.blockSize = 512;
+	SHA224.outSize = 224;
+	SHA224.hmacStrength = 192;
+	SHA224.padLength = 64;
+
+	SHA224.prototype._digest = function digest(enc) {
+	  // Just truncate output
+	  if (enc === 'hex')
+	    return utils.toHex32(this.h.slice(0, 7), 'big');
+	  else
+	    return utils.split32(this.h.slice(0, 7), 'big');
+	};
 
 	'use strict';
 
@@ -13845,7 +11822,7 @@
 	var sum64_5_hi$1 = utils.sum64_5_hi;
 	var sum64_5_lo$1 = utils.sum64_5_lo;
 
-	var BlockHash$2 = common.BlockHash;
+	var BlockHash$3 = common.BlockHash;
 
 	var sha512_K = [
 	  0x428a2f98, 0xd728ae22, 0x71374491, 0x23ef65cd,
@@ -13894,7 +11871,7 @@
 	  if (!(this instanceof SHA512))
 	    return new SHA512();
 
-	  BlockHash$2.call(this);
+	  BlockHash$3.call(this);
 	  this.h = [
 	    0x6a09e667, 0xf3bcc908,
 	    0xbb67ae85, 0x84caa73b,
@@ -13907,7 +11884,7 @@
 	  this.k = sha512_K;
 	  this.W = new Array(160);
 	}
-	utils.inherits(SHA512, BlockHash$2);
+	utils.inherits(SHA512, BlockHash$3);
 	var _512 = SHA512;
 
 	SHA512.blockSize = 1024;
@@ -14160,6 +12137,42 @@
 
 	'use strict';
 
+
+
+
+
+	function SHA384() {
+	  if (!(this instanceof SHA384))
+	    return new SHA384();
+
+	  _512.call(this);
+	  this.h = [
+	    0xcbbb9d5d, 0xc1059ed8,
+	    0x629a292a, 0x367cd507,
+	    0x9159015a, 0x3070dd17,
+	    0x152fecd8, 0xf70e5939,
+	    0x67332667, 0xffc00b31,
+	    0x8eb44a87, 0x68581511,
+	    0xdb0c2e0d, 0x64f98fa7,
+	    0x47b5481d, 0xbefa4fa4 ];
+	}
+	utils.inherits(SHA384, _512);
+	var _384 = SHA384;
+
+	SHA384.blockSize = 1024;
+	SHA384.outSize = 384;
+	SHA384.hmacStrength = 192;
+	SHA384.padLength = 128;
+
+	SHA384.prototype._digest = function digest(enc) {
+	  if (enc === 'hex')
+	    return utils.toHex32(this.h.slice(0, 12), 'big');
+	  else
+	    return utils.split32(this.h.slice(0, 12), 'big');
+	};
+
+	'use strict';
+
 	var sha1 = _1;
 	var sha224 = _224;
 	var sha256 = _256;
@@ -14179,22 +12192,22 @@
 
 
 
-	var rotl32$1 = utils.rotl32;
-	var sum32$2 = utils.sum32;
+	var rotl32$2 = utils.rotl32;
+	var sum32$3 = utils.sum32;
 	var sum32_3$1 = utils.sum32_3;
 	var sum32_4$2 = utils.sum32_4;
-	var BlockHash$3 = common.BlockHash;
+	var BlockHash$4 = common.BlockHash;
 
 	function RIPEMD160() {
 	  if (!(this instanceof RIPEMD160))
 	    return new RIPEMD160();
 
-	  BlockHash$3.call(this);
+	  BlockHash$4.call(this);
 
 	  this.h = [ 0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0 ];
 	  this.endian = 'little';
 	}
-	utils.inherits(RIPEMD160, BlockHash$3);
+	utils.inherits(RIPEMD160, BlockHash$4);
 	var ripemd160 = RIPEMD160;
 
 	RIPEMD160.blockSize = 512;
@@ -14214,24 +12227,24 @@
 	  var Dh = D;
 	  var Eh = E;
 	  for (var j = 0; j < 80; j++) {
-	    var T = sum32$2(
-	      rotl32$1(
+	    var T = sum32$3(
+	      rotl32$2(
 	        sum32_4$2(A, f(j, B, C, D), msg[r[j] + start], K(j)),
 	        s[j]),
 	      E);
 	    A = E;
 	    E = D;
-	    D = rotl32$1(C, 10);
+	    D = rotl32$2(C, 10);
 	    C = B;
 	    B = T;
-	    T = sum32$2(
-	      rotl32$1(
+	    T = sum32$3(
+	      rotl32$2(
 	        sum32_4$2(Ah, f(79 - j, Bh, Ch, Dh), msg[rh[j] + start], Kh(j)),
 	        sh[j]),
 	      Eh);
 	    Ah = Eh;
 	    Eh = Dh;
-	    Dh = rotl32$1(Ch, 10);
+	    Dh = rotl32$2(Ch, 10);
 	    Ch = Bh;
 	    Bh = T;
 	  }
@@ -14390,75 +12403,86 @@
 	hash.sha512 = hash.sha.sha512;
 	hash.ripemd160 = hash.ripemd.ripemd160;
 	});
-	var hash_2 = hash_1.hmac;
-	var hash_3 = hash_1.ripemd160;
-	var hash_4 = hash_1.sha256;
-	var hash_5 = hash_1.sha512;
 
-	var _version$o = createCommonjsModule(function (module, exports) {
+	var types = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "sha2/5.0.4";
-
-	});
-
-	var _version$p = unwrapExports(_version$o);
-	var _version_1$c = _version$o.version;
-
-	var browser = createCommonjsModule(function (module, exports) {
-	"use strict";
-	var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
-	    if (mod && mod.__esModule) return mod;
-	    var result = {};
-	    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-	    result["default"] = mod;
-	    return result;
-	};
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var hash = __importStar(hash_1);
-
-
-
-	var logger = new lib.Logger(_version$o.version);
 	var SupportedAlgorithm;
 	(function (SupportedAlgorithm) {
 	    SupportedAlgorithm["sha256"] = "sha256";
 	    SupportedAlgorithm["sha512"] = "sha512";
 	})(SupportedAlgorithm = exports.SupportedAlgorithm || (exports.SupportedAlgorithm = {}));
 	;
+
+	});
+
+	var types$1 = /*@__PURE__*/getDefaultExportFromCjs(types);
+
+	var _version$o = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.version = "sha2/5.0.5";
+
+	});
+
+	var _version$p = /*@__PURE__*/getDefaultExportFromCjs(_version$o);
+
+	var browserSha2 = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __importDefault = (commonjsGlobal && commonjsGlobal.__importDefault) || function (mod) {
+	    return (mod && mod.__esModule) ? mod : { "default": mod };
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var hash_js_1 = __importDefault(hash_1);
+	//const _ripemd160 = _hash.ripemd160;
+
+
+
+
+	var logger = new lib.Logger(_version$o.version);
 	function ripemd160(data) {
-	    return "0x" + (hash.ripemd160().update(lib$1.arrayify(data)).digest("hex"));
+	    return "0x" + (hash_js_1.default.ripemd160().update(lib$1.arrayify(data)).digest("hex"));
 	}
 	exports.ripemd160 = ripemd160;
 	function sha256(data) {
-	    return "0x" + (hash.sha256().update(lib$1.arrayify(data)).digest("hex"));
+	    return "0x" + (hash_js_1.default.sha256().update(lib$1.arrayify(data)).digest("hex"));
 	}
 	exports.sha256 = sha256;
 	function sha512(data) {
-	    return "0x" + (hash.sha512().update(lib$1.arrayify(data)).digest("hex"));
+	    return "0x" + (hash_js_1.default.sha512().update(lib$1.arrayify(data)).digest("hex"));
 	}
 	exports.sha512 = sha512;
 	function computeHmac(algorithm, key, data) {
-	    if (!SupportedAlgorithm[algorithm]) {
+	    if (!types.SupportedAlgorithm[algorithm]) {
 	        logger.throwError("unsupported algorithm " + algorithm, lib.Logger.errors.UNSUPPORTED_OPERATION, {
 	            operation: "hmac",
 	            algorithm: algorithm
 	        });
 	    }
-	    return "0x" + hash.hmac(hash[algorithm], lib$1.arrayify(key)).update(lib$1.arrayify(data)).digest("hex");
+	    return "0x" + hash_js_1.default.hmac(hash_js_1.default[algorithm], lib$1.arrayify(key)).update(lib$1.arrayify(data)).digest("hex");
 	}
 	exports.computeHmac = computeHmac;
 
 	});
 
-	var browser$1 = unwrapExports(browser);
-	var browser_1 = browser.SupportedAlgorithm;
-	var browser_2 = browser.ripemd160;
-	var browser_3 = browser.sha256;
-	var browser_4 = browser.sha512;
-	var browser_5 = browser.computeHmac;
+	var browserSha2$1 = /*@__PURE__*/getDefaultExportFromCjs(browserSha2);
 
-	var browser$2 = createCommonjsModule(function (module, exports) {
+	var lib$f = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+	exports.computeHmac = browserSha2.computeHmac;
+	exports.ripemd160 = browserSha2.ripemd160;
+	exports.sha256 = browserSha2.sha256;
+	exports.sha512 = browserSha2.sha512;
+
+	exports.SupportedAlgorithm = types.SupportedAlgorithm;
+
+	});
+
+	var index$f = /*@__PURE__*/getDefaultExportFromCjs(lib$f);
+
+	var browserPbkdf2 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 
@@ -14481,7 +12505,7 @@
 	        block1[salt.length + 2] = (i >> 8) & 0xff;
 	        block1[salt.length + 3] = i & 0xff;
 	        //let U = createHmac(password).update(block1).digest();
-	        var U = lib$1.arrayify(browser.computeHmac(hashAlgorithm, password, block1));
+	        var U = lib$1.arrayify(lib$f.computeHmac(hashAlgorithm, password, block1));
 	        if (!hLen) {
 	            hLen = U.length;
 	            T = new Uint8Array(hLen);
@@ -14492,7 +12516,7 @@
 	        T.set(U);
 	        for (var j = 1; j < iterations; j++) {
 	            //U = createHmac(password).update(U).digest();
-	            U = lib$1.arrayify(browser.computeHmac(hashAlgorithm, password, U));
+	            U = lib$1.arrayify(lib$f.computeHmac(hashAlgorithm, password, U));
 	            for (var k = 0; k < hLen; k++)
 	                T[k] ^= U[k];
 	        }
@@ -14507,18 +12531,17 @@
 
 	});
 
-	var browser$3 = unwrapExports(browser$2);
-	var browser_1$1 = browser$2.pbkdf2;
+	var browserPbkdf2$1 = /*@__PURE__*/getDefaultExportFromCjs(browserPbkdf2);
 
-	var version = "6.5.3";
-	var _package = {
-		version: version
-	};
+	var lib$g = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 
-	var _package$1 = /*#__PURE__*/Object.freeze({
-		version: version,
-		'default': _package
+	exports.pbkdf2 = browserPbkdf2.pbkdf2;
+
 	});
+
+	var index$g = /*@__PURE__*/getDefaultExportFromCjs(lib$g);
 
 	var utils_1 = createCommonjsModule(function (module, exports) {
 	'use strict';
@@ -14701,8 +12724,6 @@
 	}
 	utils.intFromLE = intFromLE;
 	});
-
-	var brorand = function(length) { var result = new Uint8Array(length); (commonjsGlobal.crypto || commonjsGlobal.msCrypto).getRandomValues(result); return result; };
 
 	'use strict';
 
@@ -16019,10 +14040,6 @@
 	  return this.z.cmpn(0) === 0;
 	};
 
-	var mont = {};
-
-	var edwards = {};
-
 	var curve_1 = createCommonjsModule(function (module, exports) {
 	'use strict';
 
@@ -16030,11 +14047,9 @@
 
 	curve.base = base;
 	curve.short = short_1;
-	curve.mont = mont;
-	curve.edwards = edwards;
+	curve.mont = /*RicMoo:ethers:require(./mont)*/(null);
+	curve.edwards = /*RicMoo:ethers:require(./edwards)*/(null);
 	});
-
-	var secp256k1 = undefined;
 
 	var curves_1 = createCommonjsModule(function (module, exports) {
 	'use strict';
@@ -16207,7 +14222,7 @@
 
 	var pre;
 	try {
-	  pre = secp256k1;
+	  pre = /*RicMoo:ethers:require(./precomputed/secp256k1)*/(null).crash();
 	} catch (e) {
 	  pre = undefined;
 	}
@@ -16651,7 +14666,7 @@
 
 
 
-
+	var rand = /*RicMoo:ethers:require(brorand)*/(function() { throw new Error('unsupported'); });
 	var assert$5 = utils_1$1.assert;
 
 
@@ -16707,7 +14722,7 @@
 	    hash: this.hash,
 	    pers: options.pers,
 	    persEnc: options.persEnc || 'utf8',
-	    entropy: options.entropy || brorand(this.hash.hmacStrength),
+	    entropy: options.entropy || rand(this.hash.hmacStrength),
 	    entropyEnc: options.entropy && options.entropyEnc || 'utf8',
 	    nonce: this.n.toArray()
 	  });
@@ -16887,38 +14902,46 @@
 	  throw new Error('Unable to find valid recovery factor');
 	};
 
-	var eddsa = {};
-
-	var require$$0 = getCjsExportFromNamespace(_package$1);
-
 	var elliptic_1 = createCommonjsModule(function (module, exports) {
 	'use strict';
 
 	var elliptic = exports;
 
-	elliptic.version = require$$0.version;
+	elliptic.version = /*RicMoo:ethers*/{ version: "6.5.3" }.version;
 	elliptic.utils = utils_1$1;
-	elliptic.rand = brorand;
+	elliptic.rand = /*RicMoo:ethers:require(brorand)*/(function() { throw new Error('unsupported'); });
 	elliptic.curve = curve_1;
 	elliptic.curves = curves_1;
 
 	// Protocols
 	elliptic.ec = ec;
-	elliptic.eddsa = eddsa;
+	elliptic.eddsa = /*RicMoo:ethers:require(./elliptic/eddsa)*/(null);
 	});
-	var elliptic_2 = elliptic_1.ec;
+
+	var elliptic = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __importDefault = (commonjsGlobal && commonjsGlobal.__importDefault) || function (mod) {
+	    return (mod && mod.__esModule) ? mod : { "default": mod };
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var elliptic_1$1 = __importDefault(elliptic_1);
+	var EC = elliptic_1$1.default.ec;
+	exports.EC = EC;
+
+	});
+
+	var elliptic$1 = /*@__PURE__*/getDefaultExportFromCjs(elliptic);
 
 	var _version$q = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "signing-key/5.0.5";
+	exports.version = "signing-key/5.0.6";
 
 	});
 
-	var _version$r = unwrapExports(_version$q);
-	var _version_1$d = _version$q.version;
+	var _version$r = /*@__PURE__*/getDefaultExportFromCjs(_version$q);
 
-	var lib$f = createCommonjsModule(function (module, exports) {
+	var lib$h = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 
@@ -16930,7 +14953,7 @@
 	var _curve = null;
 	function getCurve() {
 	    if (!_curve) {
-	        _curve = new elliptic_1.ec("secp256k1");
+	        _curve = new elliptic.EC("secp256k1");
 	    }
 	    return _curve;
 	}
@@ -17001,22 +15024,18 @@
 
 	});
 
-	var index$f = unwrapExports(lib$f);
-	var lib_1$f = lib$f.SigningKey;
-	var lib_2$e = lib$f.recoverPublicKey;
-	var lib_3$b = lib$f.computePublicKey;
+	var index$h = /*@__PURE__*/getDefaultExportFromCjs(lib$h);
 
 	var _version$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "transactions/5.0.6";
+	exports.version = "transactions/5.0.7";
 
 	});
 
-	var _version$t = unwrapExports(_version$s);
-	var _version_1$e = _version$s.version;
+	var _version$t = /*@__PURE__*/getDefaultExportFromCjs(_version$s);
 
-	var lib$g = createCommonjsModule(function (module, exports) {
+	var lib$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
 	    if (mod && mod.__esModule) return mod;
@@ -17062,12 +15081,12 @@
 	    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
 	};
 	function computeAddress(key) {
-	    var publicKey = lib$f.computePublicKey(key);
+	    var publicKey = lib$h.computePublicKey(key);
 	    return lib$6.getAddress(lib$1.hexDataSlice(lib$4.keccak256(lib$1.hexDataSlice(publicKey, 1)), 12));
 	}
 	exports.computeAddress = computeAddress;
 	function recoverAddress(digest, signature) {
-	    return computeAddress(lib$f.recoverPublicKey(lib$1.arrayify(digest), signature));
+	    return computeAddress(lib$h.recoverPublicKey(lib$1.arrayify(digest), signature));
 	}
 	exports.recoverAddress = recoverAddress;
 	function serialize(transaction, signature) {
@@ -17200,21 +15219,16 @@
 
 	});
 
-	var index$g = unwrapExports(lib$g);
-	var lib_1$g = lib$g.computeAddress;
-	var lib_2$f = lib$g.recoverAddress;
-	var lib_3$c = lib$g.serialize;
-	var lib_4$9 = lib$g.parse;
+	var index$i = /*@__PURE__*/getDefaultExportFromCjs(lib$i);
 
 	var _version$u = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wordlists/5.0.5";
+	exports.version = "wordlists/5.0.6";
 
 	});
 
-	var _version$v = unwrapExports(_version$u);
-	var _version_1$f = _version$u.version;
+	var _version$v = /*@__PURE__*/getDefaultExportFromCjs(_version$u);
 
 	var wordlist = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -17275,9 +15289,61 @@
 
 	});
 
-	var wordlist$1 = unwrapExports(wordlist);
-	var wordlist_1 = wordlist.logger;
-	var wordlist_2 = wordlist.Wordlist;
+	var wordlist$1 = /*@__PURE__*/getDefaultExportFromCjs(wordlist);
+
+	var langCz_1 = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
+	    var extendStatics = function (d, b) {
+	        extendStatics = Object.setPrototypeOf ||
+	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	        return extendStatics(d, b);
+	    };
+	    return function (d, b) {
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+	var words = "AbdikaceAbecedaAdresaAgreseAkceAktovkaAlejAlkoholAmputaceAnanasAndulkaAnekdotaAnketaAntikaAnulovatArchaAroganceAsfaltAsistentAspiraceAstmaAstronomAtlasAtletikaAtolAutobusAzylBabkaBachorBacilBaculkaBadatelBagetaBagrBahnoBakterieBaladaBaletkaBalkonBalonekBalvanBalzaBambusBankomatBarbarBaretBarmanBarokoBarvaBaterkaBatohBavlnaBazalkaBazilikaBazukaBednaBeranBesedaBestieBetonBezinkaBezmocBeztakBicyklBidloBiftekBikinyBilanceBiografBiologBitvaBizonBlahobytBlatouchBlechaBleduleBleskBlikatBliznaBlokovatBlouditBludBobekBobrBodlinaBodnoutBohatostBojkotBojovatBokorysBolestBorecBoroviceBotaBoubelBouchatBoudaBouleBouratBoxerBradavkaBramboraBrankaBratrBreptaBriketaBrkoBrlohBronzBroskevBrunetkaBrusinkaBrzdaBrzyBublinaBubnovatBuchtaBuditelBudkaBudovaBufetBujarostBukviceBuldokBulvaBundaBunkrBurzaButikBuvolBuzolaBydletBylinaBytovkaBzukotCapartCarevnaCedrCeduleCejchCejnCelaCelerCelkemCelniceCeninaCennostCenovkaCentrumCenzorCestopisCetkaChalupaChapadloCharitaChataChechtatChemieChichotChirurgChladChlebaChlubitChmelChmuraChobotChocholChodbaCholeraChomoutChopitChorobaChovChrapotChrlitChrtChrupChtivostChudinaChutnatChvatChvilkaChvostChybaChystatChytitCibuleCigaretaCihelnaCihlaCinkotCirkusCisternaCitaceCitrusCizinecCizostClonaCokolivCouvatCtitelCtnostCudnostCuketaCukrCupotCvaknoutCvalCvikCvrkotCyklistaDalekoDarebaDatelDatumDceraDebataDechovkaDecibelDeficitDeflaceDeklDekretDemokratDepreseDerbyDeskaDetektivDikobrazDiktovatDiodaDiplomDiskDisplejDivadloDivochDlahaDlouhoDluhopisDnesDobroDobytekDocentDochutitDodnesDohledDohodaDohraDojemDojniceDokladDokolaDoktorDokumentDolarDolevaDolinaDomaDominantDomluvitDomovDonutitDopadDopisDoplnitDoposudDoprovodDopustitDorazitDorostDortDosahDoslovDostatekDosudDosytaDotazDotekDotknoutDoufatDoutnatDovozceDozaduDoznatDozorceDrahotaDrakDramatikDravecDrazeDrdolDrobnostDrogerieDrozdDrsnostDrtitDrzostDubenDuchovnoDudekDuhaDuhovkaDusitDusnoDutostDvojiceDvorecDynamitEkologEkonomieElektronElipsaEmailEmiseEmoceEmpatieEpizodaEpochaEpopejEposEsejEsenceEskortaEskymoEtiketaEuforieEvoluceExekuceExkurzeExpediceExplozeExportExtraktFackaFajfkaFakultaFanatikFantazieFarmacieFavoritFazoleFederaceFejetonFenkaFialkaFigurantFilozofFiltrFinanceFintaFixaceFjordFlanelFlirtFlotilaFondFosforFotbalFotkaFotonFrakceFreskaFrontaFukarFunkceFyzikaGalejeGarantGenetikaGeologGilotinaGlazuraGlejtGolemGolfistaGotikaGrafGramofonGranuleGrepGrilGrogGroteskaGumaHadiceHadrHalaHalenkaHanbaHanopisHarfaHarpunaHavranHebkostHejkalHejnoHejtmanHektarHelmaHematomHerecHernaHesloHezkyHistorikHladovkaHlasivkyHlavaHledatHlenHlodavecHlohHloupostHltatHlubinaHluchotaHmatHmotaHmyzHnisHnojivoHnoutHoblinaHobojHochHodinyHodlatHodnotaHodovatHojnostHokejHolinkaHolkaHolubHomoleHonitbaHonoraceHoralHordaHorizontHorkoHorlivecHormonHorninaHoroskopHorstvoHospodaHostinaHotovostHoubaHoufHoupatHouskaHovorHradbaHraniceHravostHrazdaHrbolekHrdinaHrdloHrdostHrnekHrobkaHromadaHrotHroudaHrozenHrstkaHrubostHryzatHubenostHubnoutHudbaHukotHumrHusitaHustotaHvozdHybnostHydrantHygienaHymnaHysterikIdylkaIhnedIkonaIluzeImunitaInfekceInflaceInkasoInovaceInspekceInternetInvalidaInvestorInzerceIronieJablkoJachtaJahodaJakmileJakostJalovecJantarJarmarkJaroJasanJasnoJatkaJavorJazykJedinecJedleJednatelJehlanJekotJelenJelitoJemnostJenomJepiceJeseterJevitJezdecJezeroJinakJindyJinochJiskraJistotaJitrniceJizvaJmenovatJogurtJurtaKabaretKabelKabinetKachnaKadetKadidloKahanKajakKajutaKakaoKaktusKalamitaKalhotyKalibrKalnostKameraKamkolivKamnaKanibalKanoeKantorKapalinaKapelaKapitolaKapkaKapleKapotaKaprKapustaKapybaraKaramelKarotkaKartonKasaKatalogKatedraKauceKauzaKavalecKazajkaKazetaKazivostKdekolivKdesiKedlubenKempKeramikaKinoKlacekKladivoKlamKlapotKlasikaKlaunKlecKlenbaKlepatKlesnoutKlidKlimaKlisnaKloboukKlokanKlopaKloubKlubovnaKlusatKluzkostKmenKmitatKmotrKnihaKnotKoaliceKoberecKobkaKoblihaKobylaKocourKohoutKojenecKokosKoktejlKolapsKoledaKolizeKoloKomandoKometaKomikKomnataKomoraKompasKomunitaKonatKonceptKondiceKonecKonfeseKongresKoninaKonkursKontaktKonzervaKopanecKopieKopnoutKoprovkaKorbelKorektorKormidloKoroptevKorpusKorunaKorytoKorzetKosatecKostkaKotelKotletaKotoulKoukatKoupelnaKousekKouzloKovbojKozaKozorohKrabiceKrachKrajinaKralovatKrasopisKravataKreditKrejcarKresbaKrevetaKriketKritikKrizeKrkavecKrmelecKrmivoKrocanKrokKronikaKropitKroupaKrovkaKrtekKruhadloKrupiceKrutostKrvinkaKrychleKryptaKrystalKrytKudlankaKufrKujnostKuklaKulajdaKulichKulkaKulometKulturaKunaKupodivuKurtKurzorKutilKvalitaKvasinkaKvestorKynologKyselinaKytaraKyticeKytkaKytovecKyvadloLabradorLachtanLadnostLaikLakomecLamelaLampaLanovkaLasiceLasoLasturaLatinkaLavinaLebkaLeckdyLedenLedniceLedovkaLedvinaLegendaLegieLegraceLehceLehkostLehnoutLektvarLenochodLentilkaLepenkaLepidloLetadloLetecLetmoLetokruhLevhartLevitaceLevobokLibraLichotkaLidojedLidskostLihovinaLijavecLilekLimetkaLinieLinkaLinoleumListopadLitinaLitovatLobistaLodivodLogikaLogopedLokalitaLoketLomcovatLopataLopuchLordLososLotrLoudalLouhLoukaLouskatLovecLstivostLucernaLuciferLumpLuskLustraceLviceLyraLyrikaLysinaMadamMadloMagistrMahagonMajetekMajitelMajoritaMakakMakoviceMakrelaMalbaMalinaMalovatMalviceMaminkaMandleMankoMarnostMasakrMaskotMasopustMaticeMatrikaMaturitaMazanecMazivoMazlitMazurkaMdlobaMechanikMeditaceMedovinaMelasaMelounMentolkaMetlaMetodaMetrMezeraMigraceMihnoutMihuleMikinaMikrofonMilenecMilimetrMilostMimikaMincovnaMinibarMinometMinulostMiskaMistrMixovatMladostMlhaMlhovinaMlokMlsatMluvitMnichMnohemMobilMocnostModelkaModlitbaMohylaMokroMolekulaMomentkaMonarchaMonoklMonstrumMontovatMonzunMosazMoskytMostMotivaceMotorkaMotykaMouchaMoudrostMozaikaMozekMozolMramorMravenecMrkevMrtvolaMrzetMrzutostMstitelMudrcMuflonMulatMumieMuniceMusetMutaceMuzeumMuzikantMyslivecMzdaNabouratNachytatNadaceNadbytekNadhozNadobroNadpisNahlasNahnatNahodileNahraditNaivitaNajednouNajistoNajmoutNaklonitNakonecNakrmitNalevoNamazatNamluvitNanometrNaokoNaopakNaostroNapadatNapevnoNaplnitNapnoutNaposledNaprostoNaroditNarubyNarychloNasaditNasekatNaslepoNastatNatolikNavenekNavrchNavzdoryNazvatNebeNechatNeckyNedalekoNedbatNeduhNegaceNehetNehodaNejenNejprveNeklidNelibostNemilostNemocNeochotaNeonkaNepokojNerostNervNesmyslNesouladNetvorNeuronNevinaNezvykleNicotaNijakNikamNikdyNiklNikterakNitroNoclehNohaviceNominaceNoraNorekNositelNosnostNouzeNovinyNovotaNozdraNudaNudleNugetNutitNutnostNutrieNymfaObalObarvitObavaObdivObecObehnatObejmoutObezitaObhajobaObilniceObjasnitObjektObklopitOblastOblekOblibaOblohaObludaObnosObohatitObojekOboutObrazecObrnaObrubaObrysObsahObsluhaObstaratObuvObvazObvinitObvodObvykleObyvatelObzorOcasOcelOcenitOchladitOchotaOchranaOcitnoutOdbojOdbytOdchodOdcizitOdebratOdeslatOdevzdatOdezvaOdhadceOdhoditOdjetOdjinudOdkazOdkoupitOdlivOdlukaOdmlkaOdolnostOdpadOdpisOdploutOdporOdpustitOdpykatOdrazkaOdsouditOdstupOdsunOdtokOdtudOdvahaOdvetaOdvolatOdvracetOdznakOfinaOfsajdOhlasOhniskoOhradaOhrozitOhryzekOkapOkeniceOklikaOknoOkouzlitOkovyOkrasaOkresOkrsekOkruhOkupantOkurkaOkusitOlejninaOlizovatOmakOmeletaOmezitOmladinaOmlouvatOmluvaOmylOnehdyOpakovatOpasekOperaceOpiceOpilostOpisovatOporaOpoziceOpravduOprotiOrbitalOrchestrOrgieOrliceOrlojOrtelOsadaOschnoutOsikaOsivoOslavaOslepitOslnitOslovitOsnovaOsobaOsolitOspalecOstenOstrahaOstudaOstychOsvojitOteplitOtiskOtopOtrhatOtrlostOtrokOtrubyOtvorOvanoutOvarOvesOvlivnitOvoceOxidOzdobaPachatelPacientPadouchPahorekPaktPalandaPalecPalivoPalubaPamfletPamlsekPanenkaPanikaPannaPanovatPanstvoPantoflePaprikaParketaParodiePartaParukaParybaPasekaPasivitaPastelkaPatentPatronaPavoukPaznehtPazourekPeckaPedagogPejsekPekloPelotonPenaltaPendrekPenzePeriskopPeroPestrostPetardaPeticePetrolejPevninaPexesoPianistaPihaPijavicePiklePiknikPilinaPilnostPilulkaPinzetaPipetaPisatelPistolePitevnaPivnicePivovarPlacentaPlakatPlamenPlanetaPlastikaPlatitPlavidloPlazPlechPlemenoPlentaPlesPletivoPlevelPlivatPlnitPlnoPlochaPlodinaPlombaPloutPlukPlynPobavitPobytPochodPocitPoctivecPodatPodcenitPodepsatPodhledPodivitPodkladPodmanitPodnikPodobaPodporaPodrazPodstataPodvodPodzimPoeziePohankaPohnutkaPohovorPohromaPohybPointaPojistkaPojmoutPokazitPoklesPokojPokrokPokutaPokynPolednePolibekPolknoutPolohaPolynomPomaluPominoutPomlkaPomocPomstaPomysletPonechatPonorkaPonurostPopadatPopelPopisekPoplachPoprositPopsatPopudPoradcePorcePorodPoruchaPoryvPosaditPosedPosilaPoskokPoslanecPosouditPospoluPostavaPosudekPosypPotahPotkanPotleskPotomekPotravaPotupaPotvoraPoukazPoutoPouzdroPovahaPovidlaPovlakPovozPovrchPovstatPovykPovzdechPozdravPozemekPoznatekPozorPozvatPracovatPrahoryPraktikaPralesPraotecPraporekPrasePravdaPrincipPrknoProbuditProcentoProdejProfeseProhraProjektProlomitPromilePronikatPropadProrokProsbaProtonProutekProvazPrskavkaPrstenPrudkostPrutPrvekPrvohoryPsanecPsovodPstruhPtactvoPubertaPuchPudlPukavecPuklinaPukrlePultPumpaPuncPupenPusaPusinkaPustinaPutovatPutykaPyramidaPyskPytelRacekRachotRadiaceRadniceRadonRaftRagbyRaketaRakovinaRamenoRampouchRandeRarachRaritaRasovnaRastrRatolestRazanceRazidloReagovatReakceReceptRedaktorReferentReflexRejnokReklamaRekordRekrutRektorReputaceRevizeRevmaRevolverRezervaRiskovatRizikoRobotikaRodokmenRohovkaRokleRokokoRomanetoRopovodRopuchaRorejsRosolRostlinaRotmistrRotopedRotundaRoubenkaRouchoRoupRouraRovinaRovniceRozborRozchodRozdatRozeznatRozhodceRozinkaRozjezdRozkazRozlohaRozmarRozpadRozruchRozsahRoztokRozumRozvodRubrikaRuchadloRukaviceRukopisRybaRybolovRychlostRydloRypadloRytinaRyzostSadistaSahatSakoSamecSamizdatSamotaSanitkaSardinkaSasankaSatelitSazbaSazeniceSborSchovatSebrankaSeceseSedadloSedimentSedloSehnatSejmoutSekeraSektaSekundaSekvojeSemenoSenoServisSesaditSeshoraSeskokSeslatSestraSesuvSesypatSetbaSetinaSetkatSetnoutSetrvatSeverSeznamShodaShrnoutSifonSilniceSirkaSirotekSirupSituaceSkafandrSkaliskoSkanzenSkautSkeptikSkicaSkladbaSkleniceSkloSkluzSkobaSkokanSkoroSkriptaSkrzSkupinaSkvostSkvrnaSlabikaSladidloSlaninaSlastSlavnostSledovatSlepecSlevaSlezinaSlibSlinaSlizniceSlonSloupekSlovoSluchSluhaSlunceSlupkaSlzaSmaragdSmetanaSmilstvoSmlouvaSmogSmradSmrkSmrtkaSmutekSmyslSnadSnahaSnobSobotaSochaSodovkaSokolSopkaSotvaSoubojSoucitSoudceSouhlasSouladSoumrakSoupravaSousedSoutokSouvisetSpalovnaSpasitelSpisSplavSpodekSpojenecSpoluSponzorSpornostSpoustaSprchaSpustitSrandaSrazSrdceSrnaSrnecSrovnatSrpenSrstSrubStaniceStarostaStatikaStavbaStehnoStezkaStodolaStolekStopaStornoStoupatStrachStresStrhnoutStromStrunaStudnaStupniceStvolStykSubjektSubtropySucharSudostSuknoSundatSunoutSurikataSurovinaSvahSvalstvoSvetrSvatbaSvazekSvisleSvitekSvobodaSvodidloSvorkaSvrabSykavkaSykotSynekSynovecSypatSypkostSyrovostSyselSytostTabletkaTabuleTahounTajemnoTajfunTajgaTajitTajnostTaktikaTamhleTamponTancovatTanecTankerTapetaTaveninaTazatelTechnikaTehdyTekutinaTelefonTemnotaTendenceTenistaTenorTeplotaTepnaTeprveTerapieTermoskaTextilTichoTiskopisTitulekTkadlecTkaninaTlapkaTleskatTlukotTlupaTmelToaletaTopinkaTopolTorzoTouhaToulecTradiceTraktorTrampTrasaTraverzaTrefitTrestTrezorTrhavinaTrhlinaTrochuTrojiceTroskaTroubaTrpceTrpitelTrpkostTrubecTruchlitTruhliceTrusTrvatTudyTuhnoutTuhostTundraTuristaTurnajTuzemskoTvarohTvorbaTvrdostTvrzTygrTykevUbohostUbozeUbratUbrousekUbrusUbytovnaUchoUctivostUdivitUhraditUjednatUjistitUjmoutUkazatelUklidnitUklonitUkotvitUkrojitUliceUlitaUlovitUmyvadloUnavitUniformaUniknoutUpadnoutUplatnitUplynoutUpoutatUpravitUranUrazitUsednoutUsilovatUsmrtitUsnadnitUsnoutUsouditUstlatUstrnoutUtahovatUtkatUtlumitUtonoutUtopenecUtrousitUvalitUvolnitUvozovkaUzdravitUzelUzeninaUzlinaUznatVagonValchaValounVanaVandalVanilkaVaranVarhanyVarovatVcelkuVchodVdovaVedroVegetaceVejceVelbloudVeletrhVelitelVelmocVelrybaVenkovVerandaVerzeVeselkaVeskrzeVesniceVespoduVestaVeterinaVeverkaVibraceVichrVideohraVidinaVidleVilaViniceVisetVitalitaVizeVizitkaVjezdVkladVkusVlajkaVlakVlasecVlevoVlhkostVlivVlnovkaVloupatVnucovatVnukVodaVodivostVodoznakVodstvoVojenskyVojnaVojskoVolantVolbaVolitVolnoVoskovkaVozidloVozovnaVpravoVrabecVracetVrahVrataVrbaVrcholekVrhatVrstvaVrtuleVsaditVstoupitVstupVtipVybavitVybratVychovatVydatVydraVyfotitVyhledatVyhnoutVyhoditVyhraditVyhubitVyjasnitVyjetVyjmoutVyklopitVykonatVylekatVymazatVymezitVymizetVymysletVynechatVynikatVynutitVypadatVyplatitVypravitVypustitVyrazitVyrovnatVyrvatVyslovitVysokoVystavitVysunoutVysypatVytasitVytesatVytratitVyvinoutVyvolatVyvrhelVyzdobitVyznatVzaduVzbuditVzchopitVzdorVzduchVzdychatVzestupVzhledemVzkazVzlykatVznikVzorekVzpouraVztahVztekXylofonZabratZabydletZachovatZadarmoZadusitZafoukatZahltitZahoditZahradaZahynoutZajatecZajetZajistitZaklepatZakoupitZalepitZamezitZamotatZamysletZanechatZanikatZaplatitZapojitZapsatZarazitZastavitZasunoutZatajitZatemnitZatknoutZaujmoutZavalitZaveletZavinitZavolatZavrtatZazvonitZbavitZbrusuZbudovatZbytekZdalekaZdarmaZdatnostZdivoZdobitZdrojZdvihZdymadloZeleninaZemanZeminaZeptatZezaduZezdolaZhatitZhltnoutZhlubokaZhotovitZhrubaZimaZimniceZjemnitZklamatZkoumatZkratkaZkumavkaZlatoZlehkaZlobaZlomZlostZlozvykZmapovatZmarZmatekZmijeZmizetZmocnitZmodratZmrzlinaZmutovatZnakZnalostZnamenatZnovuZobrazitZotavitZoubekZoufaleZploditZpomalitZpravaZprostitZprudkaZprvuZradaZranitZrcadloZrnitostZrnoZrovnaZrychlitZrzavostZtichaZtratitZubovinaZubrZvednoutZvenkuZveselaZvonZvratZvukovodZvyk";
+	var wordlist$1 = null;
+	function loadWords(lang) {
+	    if (wordlist$1 != null) {
+	        return;
+	    }
+	    wordlist$1 = words.replace(/([A-Z])/g, " $1").toLowerCase().substring(1).split(" ");
+	    // Verify the computed list matches the official list
+	    /* istanbul ignore if */
+	    if (wordlist.Wordlist.check(lang) !== "0x25f44555f4af25b51a711136e1c7d6e50ce9f8917d39d6b1f076b2bb4d2fac1a") {
+	        wordlist$1 = null;
+	        throw new Error("BIP39 Wordlist for en (English) FAILED");
+	    }
+	}
+	var LangCz = /** @class */ (function (_super) {
+	    __extends(LangCz, _super);
+	    function LangCz() {
+	        return _super.call(this, "cz") || this;
+	    }
+	    LangCz.prototype.getWord = function (index) {
+	        loadWords(this);
+	        return wordlist$1[index];
+	    };
+	    LangCz.prototype.getWordIndex = function (word) {
+	        loadWords(this);
+	        return wordlist$1.indexOf(word);
+	    };
+	    return LangCz;
+	}(wordlist.Wordlist));
+	var langCz = new LangCz();
+	exports.langCz = langCz;
+	wordlist.Wordlist.register(langCz);
+
+	});
+
+	var langCz = /*@__PURE__*/getDefaultExportFromCjs(langCz_1);
 
 	var langEn_1 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -17331,37 +15397,608 @@
 
 	});
 
-	var langEn = unwrapExports(langEn_1);
-	var langEn_2 = langEn_1.langEn;
+	var langEn = /*@__PURE__*/getDefaultExportFromCjs(langEn_1);
 
-	var browser$4 = createCommonjsModule(function (module, exports) {
+	var langEs_1 = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
+	    var extendStatics = function (d, b) {
+	        extendStatics = Object.setPrototypeOf ||
+	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	        return extendStatics(d, b);
+	    };
+	    return function (d, b) {
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+
+	var words = "A/bacoAbdomenAbejaAbiertoAbogadoAbonoAbortoAbrazoAbrirAbueloAbusoAcabarAcademiaAccesoAccio/nAceiteAcelgaAcentoAceptarA/cidoAclararAcne/AcogerAcosoActivoActoActrizActuarAcudirAcuerdoAcusarAdictoAdmitirAdoptarAdornoAduanaAdultoAe/reoAfectarAficio/nAfinarAfirmarA/gilAgitarAgoni/aAgostoAgotarAgregarAgrioAguaAgudoA/guilaAgujaAhogoAhorroAireAislarAjedrezAjenoAjusteAlacra/nAlambreAlarmaAlbaA/lbumAlcaldeAldeaAlegreAlejarAlertaAletaAlfilerAlgaAlgodo/nAliadoAlientoAlivioAlmaAlmejaAlmi/barAltarAltezaAltivoAltoAlturaAlumnoAlzarAmableAmanteAmapolaAmargoAmasarA/mbarA/mbitoAmenoAmigoAmistadAmorAmparoAmplioAnchoAncianoAnclaAndarAnde/nAnemiaA/nguloAnilloA/nimoAni/sAnotarAntenaAntiguoAntojoAnualAnularAnuncioA~adirA~ejoA~oApagarAparatoApetitoApioAplicarApodoAporteApoyoAprenderAprobarApuestaApuroAradoAra~aArarA/rbitroA/rbolArbustoArchivoArcoArderArdillaArduoA/reaA/ridoAriesArmoni/aArne/sAromaArpaArpo/nArregloArrozArrugaArteArtistaAsaAsadoAsaltoAscensoAsegurarAseoAsesorAsientoAsiloAsistirAsnoAsombroA/speroAstillaAstroAstutoAsumirAsuntoAtajoAtaqueAtarAtentoAteoA/ticoAtletaA/tomoAtraerAtrozAtu/nAudazAudioAugeAulaAumentoAusenteAutorAvalAvanceAvaroAveAvellanaAvenaAvestruzAvio/nAvisoAyerAyudaAyunoAzafra/nAzarAzoteAzu/carAzufreAzulBabaBaborBacheBahi/aBaileBajarBalanzaBalco/nBaldeBambu/BancoBandaBa~oBarbaBarcoBarnizBarroBa/sculaBasto/nBasuraBatallaBateri/aBatirBatutaBau/lBazarBebe/BebidaBelloBesarBesoBestiaBichoBienBingoBlancoBloqueBlusaBoaBobinaBoboBocaBocinaBodaBodegaBoinaBolaBoleroBolsaBombaBondadBonitoBonoBonsa/iBordeBorrarBosqueBoteBoti/nBo/vedaBozalBravoBrazoBrechaBreveBrilloBrincoBrisaBrocaBromaBronceBroteBrujaBruscoBrutoBuceoBucleBuenoBueyBufandaBufo/nBu/hoBuitreBultoBurbujaBurlaBurroBuscarButacaBuzo/nCaballoCabezaCabinaCabraCacaoCada/verCadenaCaerCafe/Cai/daCaima/nCajaCajo/nCalCalamarCalcioCaldoCalidadCalleCalmaCalorCalvoCamaCambioCamelloCaminoCampoCa/ncerCandilCanelaCanguroCanicaCantoCa~aCa~o/nCaobaCaosCapazCapita/nCapoteCaptarCapuchaCaraCarbo/nCa/rcelCaretaCargaCari~oCarneCarpetaCarroCartaCasaCascoCaseroCaspaCastorCatorceCatreCaudalCausaCazoCebollaCederCedroCeldaCe/lebreCelosoCe/lulaCementoCenizaCentroCercaCerdoCerezaCeroCerrarCertezaCe/spedCetroChacalChalecoChampu/ChanclaChapaCharlaChicoChisteChivoChoqueChozaChuletaChuparCiclo/nCiegoCieloCienCiertoCifraCigarroCimaCincoCineCintaCipre/sCircoCiruelaCisneCitaCiudadClamorClanClaroClaseClaveClienteClimaCli/nicaCobreCoccio/nCochinoCocinaCocoCo/digoCodoCofreCogerCoheteCoji/nCojoColaColchaColegioColgarColinaCollarColmoColumnaCombateComerComidaCo/modoCompraCondeConejoCongaConocerConsejoContarCopaCopiaCorazo/nCorbataCorchoCordo/nCoronaCorrerCoserCosmosCostaCra/neoCra/terCrearCrecerCrei/doCremaCri/aCrimenCriptaCrisisCromoCro/nicaCroquetaCrudoCruzCuadroCuartoCuatroCuboCubrirCucharaCuelloCuentoCuerdaCuestaCuevaCuidarCulebraCulpaCultoCumbreCumplirCunaCunetaCuotaCupo/nCu/pulaCurarCuriosoCursoCurvaCutisDamaDanzaDarDardoDa/tilDeberDe/bilDe/cadaDecirDedoDefensaDefinirDejarDelfi/nDelgadoDelitoDemoraDensoDentalDeporteDerechoDerrotaDesayunoDeseoDesfileDesnudoDestinoDesvi/oDetalleDetenerDeudaDi/aDiabloDiademaDiamanteDianaDiarioDibujoDictarDienteDietaDiezDifi/cilDignoDilemaDiluirDineroDirectoDirigirDiscoDise~oDisfrazDivaDivinoDobleDoceDolorDomingoDonDonarDoradoDormirDorsoDosDosisDrago/nDrogaDuchaDudaDueloDue~oDulceDu/oDuqueDurarDurezaDuroE/banoEbrioEcharEcoEcuadorEdadEdicio/nEdificioEditorEducarEfectoEficazEjeEjemploElefanteElegirElementoElevarElipseE/liteElixirElogioEludirEmbudoEmitirEmocio/nEmpateEmpe~oEmpleoEmpresaEnanoEncargoEnchufeEnci/aEnemigoEneroEnfadoEnfermoEnga~oEnigmaEnlaceEnormeEnredoEnsayoEnse~arEnteroEntrarEnvaseEnvi/oE/pocaEquipoErizoEscalaEscenaEscolarEscribirEscudoEsenciaEsferaEsfuerzoEspadaEspejoEspi/aEsposaEspumaEsqui/EstarEsteEstiloEstufaEtapaEternoE/ticaEtniaEvadirEvaluarEventoEvitarExactoExamenExcesoExcusaExentoExigirExilioExistirE/xitoExpertoExplicarExponerExtremoFa/bricaFa/bulaFachadaFa/cilFactorFaenaFajaFaldaFalloFalsoFaltarFamaFamiliaFamosoFarao/nFarmaciaFarolFarsaFaseFatigaFaunaFavorFaxFebreroFechaFelizFeoFeriaFerozFe/rtilFervorFesti/nFiableFianzaFiarFibraFiccio/nFichaFideoFiebreFielFieraFiestaFiguraFijarFijoFilaFileteFilialFiltroFinFincaFingirFinitoFirmaFlacoFlautaFlechaFlorFlotaFluirFlujoFlu/orFobiaFocaFogataFogo/nFolioFolletoFondoFormaForroFortunaForzarFosaFotoFracasoFra/gilFranjaFraseFraudeFrei/rFrenoFresaFri/oFritoFrutaFuegoFuenteFuerzaFugaFumarFuncio/nFundaFurgo/nFuriaFusilFu/tbolFuturoGacelaGafasGaitaGajoGalaGaleri/aGalloGambaGanarGanchoGangaGansoGarajeGarzaGasolinaGastarGatoGavila/nGemeloGemirGenGe/neroGenioGenteGeranioGerenteGermenGestoGiganteGimnasioGirarGiroGlaciarGloboGloriaGolGolfoGolosoGolpeGomaGordoGorilaGorraGotaGoteoGozarGradaGra/ficoGranoGrasaGratisGraveGrietaGrilloGripeGrisGritoGrosorGru/aGruesoGrumoGrupoGuanteGuapoGuardiaGuerraGui/aGui~oGuionGuisoGuitarraGusanoGustarHaberHa/bilHablarHacerHachaHadaHallarHamacaHarinaHazHaza~aHebillaHebraHechoHeladoHelioHembraHerirHermanoHe/roeHervirHieloHierroHi/gadoHigieneHijoHimnoHistoriaHocicoHogarHogueraHojaHombreHongoHonorHonraHoraHormigaHornoHostilHoyoHuecoHuelgaHuertaHuesoHuevoHuidaHuirHumanoHu/medoHumildeHumoHundirHuraca/nHurtoIconoIdealIdiomaI/doloIglesiaIglu/IgualIlegalIlusio/nImagenIma/nImitarImparImperioImponerImpulsoIncapazI/ndiceInerteInfielInformeIngenioInicioInmensoInmuneInnatoInsectoInstanteIntere/sI/ntimoIntuirInu/tilInviernoIraIrisIroni/aIslaIsloteJabali/Jabo/nJamo/nJarabeJardi/nJarraJaulaJazmi/nJefeJeringaJineteJornadaJorobaJovenJoyaJuergaJuevesJuezJugadorJugoJugueteJuicioJuncoJunglaJunioJuntarJu/piterJurarJustoJuvenilJuzgarKiloKoalaLabioLacioLacraLadoLadro/nLagartoLa/grimaLagunaLaicoLamerLa/minaLa/mparaLanaLanchaLangostaLanzaLa/pizLargoLarvaLa/stimaLataLa/texLatirLaurelLavarLazoLealLeccio/nLecheLectorLeerLegio/nLegumbreLejanoLenguaLentoLe~aLeo/nLeopardoLesio/nLetalLetraLeveLeyendaLibertadLibroLicorLi/derLidiarLienzoLigaLigeroLimaLi/miteLimo/nLimpioLinceLindoLi/neaLingoteLinoLinternaLi/quidoLisoListaLiteraLitioLitroLlagaLlamaLlantoLlaveLlegarLlenarLlevarLlorarLloverLluviaLoboLocio/nLocoLocuraLo/gicaLogroLombrizLomoLonjaLoteLuchaLucirLugarLujoLunaLunesLupaLustroLutoLuzMacetaMachoMaderaMadreMaduroMaestroMafiaMagiaMagoMai/zMaldadMaletaMallaMaloMama/MamboMamutMancoMandoManejarMangaManiqui/ManjarManoMansoMantaMa~anaMapaMa/quinaMarMarcoMareaMarfilMargenMaridoMa/rmolMarro/nMartesMarzoMasaMa/scaraMasivoMatarMateriaMatizMatrizMa/ximoMayorMazorcaMechaMedallaMedioMe/dulaMejillaMejorMelenaMelo/nMemoriaMenorMensajeMenteMenu/MercadoMerengueMe/ritoMesMeso/nMetaMeterMe/todoMetroMezclaMiedoMielMiembroMigaMilMilagroMilitarMillo/nMimoMinaMineroMi/nimoMinutoMiopeMirarMisaMiseriaMisilMismoMitadMitoMochilaMocio/nModaModeloMohoMojarMoldeMolerMolinoMomentoMomiaMonarcaMonedaMonjaMontoMo~oMoradaMorderMorenoMorirMorroMorsaMortalMoscaMostrarMotivoMoverMo/vilMozoMuchoMudarMuebleMuelaMuerteMuestraMugreMujerMulaMuletaMultaMundoMu~ecaMuralMuroMu/sculoMuseoMusgoMu/sicaMusloNa/carNacio/nNadarNaipeNaranjaNarizNarrarNasalNatalNativoNaturalNa/useaNavalNaveNavidadNecioNe/ctarNegarNegocioNegroNeo/nNervioNetoNeutroNevarNeveraNichoNidoNieblaNietoNi~ezNi~oNi/tidoNivelNoblezaNocheNo/minaNoriaNormaNorteNotaNoticiaNovatoNovelaNovioNubeNucaNu/cleoNudilloNudoNueraNueveNuezNuloNu/meroNutriaOasisObesoObispoObjetoObraObreroObservarObtenerObvioOcaOcasoOce/anoOchentaOchoOcioOcreOctavoOctubreOcultoOcuparOcurrirOdiarOdioOdiseaOesteOfensaOfertaOficioOfrecerOgroOi/doOi/rOjoOlaOleadaOlfatoOlivoOllaOlmoOlorOlvidoOmbligoOndaOnzaOpacoOpcio/nO/peraOpinarOponerOptarO/pticaOpuestoOracio/nOradorOralO/rbitaOrcaOrdenOrejaO/rganoOrgi/aOrgulloOrienteOrigenOrillaOroOrquestaOrugaOsadi/aOscuroOseznoOsoOstraOto~oOtroOvejaO/vuloO/xidoOxi/genoOyenteOzonoPactoPadrePaellaPa/ginaPagoPai/sPa/jaroPalabraPalcoPaletaPa/lidoPalmaPalomaPalparPanPanalPa/nicoPanteraPa~ueloPapa/PapelPapillaPaquetePararParcelaParedParirParoPa/rpadoParquePa/rrafoPartePasarPaseoPasio/nPasoPastaPataPatioPatriaPausaPautaPavoPayasoPeato/nPecadoPeceraPechoPedalPedirPegarPeinePelarPelda~oPeleaPeligroPellejoPeloPelucaPenaPensarPe~o/nPeo/nPeorPepinoPeque~oPeraPerchaPerderPerezaPerfilPericoPerlaPermisoPerroPersonaPesaPescaPe/simoPesta~aPe/taloPetro/leoPezPezu~aPicarPicho/nPiePiedraPiernaPiezaPijamaPilarPilotoPimientaPinoPintorPinzaPi~aPiojoPipaPirataPisarPiscinaPisoPistaPito/nPizcaPlacaPlanPlataPlayaPlazaPleitoPlenoPlomoPlumaPluralPobrePocoPoderPodioPoemaPoesi/aPoetaPolenPolici/aPolloPolvoPomadaPomeloPomoPompaPonerPorcio/nPortalPosadaPoseerPosiblePostePotenciaPotroPozoPradoPrecozPreguntaPremioPrensaPresoPrevioPrimoPri/ncipePrisio/nPrivarProaProbarProcesoProductoProezaProfesorProgramaProlePromesaProntoPropioPro/ximoPruebaPu/blicoPucheroPudorPuebloPuertaPuestoPulgaPulirPulmo/nPulpoPulsoPumaPuntoPu~alPu~oPupaPupilaPure/QuedarQuejaQuemarQuererQuesoQuietoQui/micaQuinceQuitarRa/banoRabiaRaboRacio/nRadicalRai/zRamaRampaRanchoRangoRapazRa/pidoRaptoRasgoRaspaRatoRayoRazaRazo/nReaccio/nRealidadReba~oReboteRecaerRecetaRechazoRecogerRecreoRectoRecursoRedRedondoReducirReflejoReformaRefra/nRefugioRegaloRegirReglaRegresoRehe/nReinoRei/rRejaRelatoRelevoRelieveRellenoRelojRemarRemedioRemoRencorRendirRentaRepartoRepetirReposoReptilResRescateResinaRespetoRestoResumenRetiroRetornoRetratoReunirReve/sRevistaReyRezarRicoRiegoRiendaRiesgoRifaRi/gidoRigorRinco/nRi~o/nRi/oRiquezaRisaRitmoRitoRizoRobleRoceRociarRodarRodeoRodillaRoerRojizoRojoRomeroRomperRonRoncoRondaRopaRoperoRosaRoscaRostroRotarRubi/RuborRudoRuedaRugirRuidoRuinaRuletaRuloRumboRumorRupturaRutaRutinaSa/badoSaberSabioSableSacarSagazSagradoSalaSaldoSaleroSalirSalmo/nSalo/nSalsaSaltoSaludSalvarSambaSancio/nSandi/aSanearSangreSanidadSanoSantoSapoSaqueSardinaSarte/nSastreSata/nSaunaSaxofo/nSeccio/nSecoSecretoSectaSedSeguirSeisSelloSelvaSemanaSemillaSendaSensorSe~alSe~orSepararSepiaSequi/aSerSerieSermo/nServirSesentaSesio/nSetaSetentaSeveroSexoSextoSidraSiestaSieteSigloSignoSi/labaSilbarSilencioSillaSi/mboloSimioSirenaSistemaSitioSituarSobreSocioSodioSolSolapaSoldadoSoledadSo/lidoSoltarSolucio/nSombraSondeoSonidoSonoroSonrisaSopaSoplarSoporteSordoSorpresaSorteoSoste/nSo/tanoSuaveSubirSucesoSudorSuegraSueloSue~oSuerteSufrirSujetoSulta/nSumarSuperarSuplirSuponerSupremoSurSurcoSure~oSurgirSustoSutilTabacoTabiqueTablaTabu/TacoTactoTajoTalarTalcoTalentoTallaTalo/nTama~oTamborTangoTanqueTapaTapeteTapiaTapo/nTaquillaTardeTareaTarifaTarjetaTarotTarroTartaTatuajeTauroTazaTazo/nTeatroTechoTeclaTe/cnicaTejadoTejerTejidoTelaTele/fonoTemaTemorTemploTenazTenderTenerTenisTensoTeori/aTerapiaTercoTe/rminoTernuraTerrorTesisTesoroTestigoTeteraTextoTezTibioTiburo/nTiempoTiendaTierraTiesoTigreTijeraTildeTimbreTi/midoTimoTintaTi/oTi/picoTipoTiraTiro/nTita/nTi/tereTi/tuloTizaToallaTobilloTocarTocinoTodoTogaToldoTomarTonoTontoToparTopeToqueTo/raxToreroTormentaTorneoToroTorpedoTorreTorsoTortugaTosToscoToserTo/xicoTrabajoTractorTraerTra/ficoTragoTrajeTramoTranceTratoTraumaTrazarTre/bolTreguaTreintaTrenTreparTresTribuTrigoTripaTristeTriunfoTrofeoTrompaTroncoTropaTroteTrozoTrucoTruenoTrufaTuberi/aTuboTuertoTumbaTumorTu/nelTu/nicaTurbinaTurismoTurnoTutorUbicarU/lceraUmbralUnidadUnirUniversoUnoUntarU~aUrbanoUrbeUrgenteUrnaUsarUsuarioU/tilUtopi/aUvaVacaVaci/oVacunaVagarVagoVainaVajillaValeVa/lidoValleValorVa/lvulaVampiroVaraVariarVaro/nVasoVecinoVectorVehi/culoVeinteVejezVelaVeleroVelozVenaVencerVendaVenenoVengarVenirVentaVenusVerVeranoVerboVerdeVeredaVerjaVersoVerterVi/aViajeVibrarVicioVi/ctimaVidaVi/deoVidrioViejoViernesVigorVilVillaVinagreVinoVi~edoVioli/nViralVirgoVirtudVisorVi/speraVistaVitaminaViudoVivazViveroVivirVivoVolca/nVolumenVolverVorazVotarVotoVozVueloVulgarYacerYateYeguaYemaYernoYesoYodoYogaYogurZafiroZanjaZapatoZarzaZonaZorroZumoZurdo";
+	var lookup = {};
+	var wordlist$1 = null;
+	function dropDiacritic(word) {
+	    wordlist.logger.checkNormalize();
+	    return lib$8.toUtf8String(Array.prototype.filter.call(lib$8.toUtf8Bytes(word.normalize("NFD").toLowerCase()), function (c) {
+	        return ((c >= 65 && c <= 90) || (c >= 97 && c <= 123));
+	    }));
+	}
+	function expand(word) {
+	    var output = [];
+	    Array.prototype.forEach.call(lib$8.toUtf8Bytes(word), function (c) {
+	        // Acute accent
+	        if (c === 47) {
+	            output.push(204);
+	            output.push(129);
+	            // n-tilde
+	        }
+	        else if (c === 126) {
+	            output.push(110);
+	            output.push(204);
+	            output.push(131);
+	        }
+	        else {
+	            output.push(c);
+	        }
+	    });
+	    return lib$8.toUtf8String(output);
+	}
+	function loadWords(lang) {
+	    if (wordlist$1 != null) {
+	        return;
+	    }
+	    wordlist$1 = words.replace(/([A-Z])/g, " $1").toLowerCase().substring(1).split(" ").map(function (w) { return expand(w); });
+	    wordlist$1.forEach(function (word, index) {
+	        lookup[dropDiacritic(word)] = index;
+	    });
+	    // Verify the computed list matches the official list
+	    /* istanbul ignore if */
+	    if (wordlist.Wordlist.check(lang) !== "0xf74fb7092aeacdfbf8959557de22098da512207fb9f109cb526994938cf40300") {
+	        wordlist$1 = null;
+	        throw new Error("BIP39 Wordlist for es (Spanish) FAILED");
+	    }
+	}
+	var LangEs = /** @class */ (function (_super) {
+	    __extends(LangEs, _super);
+	    function LangEs() {
+	        return _super.call(this, "es") || this;
+	    }
+	    LangEs.prototype.getWord = function (index) {
+	        loadWords(this);
+	        return wordlist$1[index];
+	    };
+	    LangEs.prototype.getWordIndex = function (word) {
+	        loadWords(this);
+	        return lookup[dropDiacritic(word)];
+	    };
+	    return LangEs;
+	}(wordlist.Wordlist));
+	var langEs = new LangEs();
+	exports.langEs = langEs;
+	wordlist.Wordlist.register(langEs);
+
+	});
+
+	var langEs = /*@__PURE__*/getDefaultExportFromCjs(langEs_1);
+
+	var langFr_1 = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
+	    var extendStatics = function (d, b) {
+	        extendStatics = Object.setPrototypeOf ||
+	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	        return extendStatics(d, b);
+	    };
+	    return function (d, b) {
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+
+	var words = "AbaisserAbandonAbdiquerAbeilleAbolirAborderAboutirAboyerAbrasifAbreuverAbriterAbrogerAbruptAbsenceAbsoluAbsurdeAbusifAbyssalAcade/mieAcajouAcarienAccablerAccepterAcclamerAccoladeAccrocheAccuserAcerbeAchatAcheterAcidulerAcierAcompteAcque/rirAcronymeActeurActifActuelAdepteAde/quatAdhe/sifAdjectifAdjugerAdmettreAdmirerAdopterAdorerAdoucirAdresseAdroitAdulteAdverbeAe/rerAe/ronefAffaireAffecterAfficheAffreuxAffublerAgacerAgencerAgileAgiterAgraferAgre/ableAgrumeAiderAiguilleAilierAimableAisanceAjouterAjusterAlarmerAlchimieAlerteAlge-breAlgueAlie/nerAlimentAlle/gerAlliageAllouerAllumerAlourdirAlpagaAltesseAlve/oleAmateurAmbiguAmbreAme/nagerAmertumeAmidonAmiralAmorcerAmourAmovibleAmphibieAmpleurAmusantAnalyseAnaphoreAnarchieAnatomieAncienAne/antirAngleAngoisseAnguleuxAnimalAnnexerAnnonceAnnuelAnodinAnomalieAnonymeAnormalAntenneAntidoteAnxieuxApaiserApe/ritifAplanirApologieAppareilAppelerApporterAppuyerAquariumAqueducArbitreArbusteArdeurArdoiseArgentArlequinArmatureArmementArmoireArmureArpenterArracherArriverArroserArsenicArte/rielArticleAspectAsphalteAspirerAssautAsservirAssietteAssocierAssurerAsticotAstreAstuceAtelierAtomeAtriumAtroceAttaqueAttentifAttirerAttraperAubaineAubergeAudaceAudibleAugurerAuroreAutomneAutrucheAvalerAvancerAvariceAvenirAverseAveugleAviateurAvideAvionAviserAvoineAvouerAvrilAxialAxiomeBadgeBafouerBagageBaguetteBaignadeBalancerBalconBaleineBalisageBambinBancaireBandageBanlieueBannie-reBanquierBarbierBarilBaronBarqueBarrageBassinBastionBatailleBateauBatterieBaudrierBavarderBeletteBe/lierBeloteBe/ne/ficeBerceauBergerBerlineBermudaBesaceBesogneBe/tailBeurreBiberonBicycleBiduleBijouBilanBilingueBillardBinaireBiologieBiopsieBiotypeBiscuitBisonBistouriBitumeBizarreBlafardBlagueBlanchirBlessantBlinderBlondBloquerBlousonBobardBobineBoireBoiserBolideBonbonBondirBonheurBonifierBonusBordureBorneBotteBoucleBoueuxBougieBoulonBouquinBourseBoussoleBoutiqueBoxeurBrancheBrasierBraveBrebisBre-cheBreuvageBricolerBrigadeBrillantBriocheBriqueBrochureBroderBronzerBrousseBroyeurBrumeBrusqueBrutalBruyantBuffleBuissonBulletinBureauBurinBustierButinerButoirBuvableBuvetteCabanonCabineCachetteCadeauCadreCafe/ineCaillouCaissonCalculerCalepinCalibreCalmerCalomnieCalvaireCamaradeCame/raCamionCampagneCanalCanetonCanonCantineCanularCapableCaporalCapriceCapsuleCapterCapucheCarabineCarboneCaresserCaribouCarnageCarotteCarreauCartonCascadeCasierCasqueCassureCauserCautionCavalierCaverneCaviarCe/dilleCeintureCe/lesteCelluleCendrierCensurerCentralCercleCe/re/bralCeriseCernerCerveauCesserChagrinChaiseChaleurChambreChanceChapitreCharbonChasseurChatonChaussonChavirerChemiseChenilleChe/quierChercherChevalChienChiffreChignonChime-reChiotChlorureChocolatChoisirChoseChouetteChromeChuteCigareCigogneCimenterCine/maCintrerCirculerCirerCirqueCiterneCitoyenCitronCivilClaironClameurClaquerClasseClavierClientClignerClimatClivageClocheClonageCloporteCobaltCobraCocasseCocotierCoderCodifierCoffreCognerCohe/sionCoifferCoincerCole-reColibriCollineColmaterColonelCombatCome/dieCommandeCompactConcertConduireConfierCongelerConnoterConsonneContactConvexeCopainCopieCorailCorbeauCordageCornicheCorpusCorrectCorte-geCosmiqueCostumeCotonCoudeCoupureCourageCouteauCouvrirCoyoteCrabeCrainteCravateCrayonCre/atureCre/diterCre/meuxCreuserCrevetteCriblerCrierCristalCrite-reCroireCroquerCrotaleCrucialCruelCrypterCubiqueCueillirCuille-reCuisineCuivreCulminerCultiverCumulerCupideCuratifCurseurCyanureCycleCylindreCyniqueDaignerDamierDangerDanseurDauphinDe/battreDe/biterDe/borderDe/briderDe/butantDe/calerDe/cembreDe/chirerDe/ciderDe/clarerDe/corerDe/crireDe/cuplerDe/daleDe/ductifDe/esseDe/fensifDe/filerDe/frayerDe/gagerDe/givrerDe/glutirDe/graferDe/jeunerDe/liceDe/logerDemanderDemeurerDe/molirDe/nicherDe/nouerDentelleDe/nuderDe/partDe/penserDe/phaserDe/placerDe/poserDe/rangerDe/roberDe/sastreDescenteDe/sertDe/signerDe/sobe/irDessinerDestrierDe/tacherDe/testerDe/tourerDe/tresseDevancerDevenirDevinerDevoirDiableDialogueDiamantDicterDiffe/rerDige/rerDigitalDigneDiluerDimancheDiminuerDioxydeDirectifDirigerDiscuterDisposerDissiperDistanceDivertirDiviserDocileDocteurDogmeDoigtDomaineDomicileDompterDonateurDonjonDonnerDopamineDortoirDorureDosageDoseurDossierDotationDouanierDoubleDouceurDouterDoyenDragonDraperDresserDribblerDroitureDuperieDuplexeDurableDurcirDynastieE/blouirE/carterE/charpeE/chelleE/clairerE/clipseE/cloreE/cluseE/coleE/conomieE/corceE/couterE/craserE/cre/merE/crivainE/crouE/cumeE/cureuilE/difierE/duquerEffacerEffectifEffigieEffortEffrayerEffusionE/galiserE/garerE/jecterE/laborerE/largirE/lectronE/le/gantE/le/phantE/le-veE/ligibleE/litismeE/logeE/luciderE/luderEmballerEmbellirEmbryonE/meraudeE/missionEmmenerE/motionE/mouvoirEmpereurEmployerEmporterEmpriseE/mulsionEncadrerEnche-reEnclaveEncocheEndiguerEndosserEndroitEnduireE/nergieEnfanceEnfermerEnfouirEngagerEnginEngloberE/nigmeEnjamberEnjeuEnleverEnnemiEnnuyeuxEnrichirEnrobageEnseigneEntasserEntendreEntierEntourerEntraverE/nume/rerEnvahirEnviableEnvoyerEnzymeE/olienE/paissirE/pargneE/patantE/pauleE/picerieE/pide/mieE/pierE/pilogueE/pineE/pisodeE/pitapheE/poqueE/preuveE/prouverE/puisantE/querreE/quipeE/rigerE/rosionErreurE/ruptionEscalierEspadonEspe-ceEspie-gleEspoirEspritEsquiverEssayerEssenceEssieuEssorerEstimeEstomacEstradeE/tage-reE/talerE/tancheE/tatiqueE/teindreE/tendoirE/ternelE/thanolE/thiqueEthnieE/tirerE/tofferE/toileE/tonnantE/tourdirE/trangeE/troitE/tudeEuphorieE/valuerE/vasionE/ventailE/videnceE/viterE/volutifE/voquerExactExage/rerExaucerExcellerExcitantExclusifExcuseExe/cuterExempleExercerExhalerExhorterExigenceExilerExisterExotiqueExpe/dierExplorerExposerExprimerExquisExtensifExtraireExulterFableFabuleuxFacetteFacileFactureFaiblirFalaiseFameuxFamilleFarceurFarfeluFarineFaroucheFascinerFatalFatigueFauconFautifFaveurFavoriFe/brileFe/conderFe/de/rerFe/linFemmeFe/murFendoirFe/odalFermerFe/roceFerveurFestivalFeuilleFeutreFe/vrierFiascoFicelerFictifFide-leFigureFilatureFiletageFilie-reFilleulFilmerFilouFiltrerFinancerFinirFioleFirmeFissureFixerFlairerFlammeFlasqueFlatteurFle/auFle-cheFleurFlexionFloconFloreFluctuerFluideFluvialFolieFonderieFongibleFontaineForcerForgeronFormulerFortuneFossileFoudreFouge-reFouillerFoulureFourmiFragileFraiseFranchirFrapperFrayeurFre/gateFreinerFrelonFre/mirFre/ne/sieFre-reFriableFrictionFrissonFrivoleFroidFromageFrontalFrotterFruitFugitifFuiteFureurFurieuxFurtifFusionFuturGagnerGalaxieGalerieGambaderGarantirGardienGarnirGarrigueGazelleGazonGe/antGe/latineGe/luleGendarmeGe/ne/ralGe/nieGenouGentilGe/ologieGe/ome-treGe/raniumGermeGestuelGeyserGibierGiclerGirafeGivreGlaceGlaiveGlisserGlobeGloireGlorieuxGolfeurGommeGonflerGorgeGorilleGoudronGouffreGoulotGoupilleGourmandGoutteGraduelGraffitiGraineGrandGrappinGratuitGravirGrenatGriffureGrillerGrimperGrognerGronderGrotteGroupeGrugerGrutierGruye-reGue/pardGuerrierGuideGuimauveGuitareGustatifGymnasteGyrostatHabitudeHachoirHalteHameauHangarHannetonHaricotHarmonieHarponHasardHe/liumHe/matomeHerbeHe/rissonHermineHe/ronHe/siterHeureuxHibernerHibouHilarantHistoireHiverHomardHommageHomoge-neHonneurHonorerHonteuxHordeHorizonHorlogeHormoneHorribleHouleuxHousseHublotHuileuxHumainHumbleHumideHumourHurlerHydromelHygie-neHymneHypnoseIdylleIgnorerIguaneIlliciteIllusionImageImbiberImiterImmenseImmobileImmuableImpactImpe/rialImplorerImposerImprimerImputerIncarnerIncendieIncidentInclinerIncoloreIndexerIndiceInductifIne/ditIneptieInexactInfiniInfligerInformerInfusionInge/rerInhalerInhiberInjecterInjureInnocentInoculerInonderInscrireInsecteInsigneInsoliteInspirerInstinctInsulterIntactIntenseIntimeIntrigueIntuitifInutileInvasionInventerInviterInvoquerIroniqueIrradierIrre/elIrriterIsolerIvoireIvresseJaguarJaillirJambeJanvierJardinJaugerJauneJavelotJetableJetonJeudiJeunesseJoindreJoncherJonglerJoueurJouissifJournalJovialJoyauJoyeuxJubilerJugementJuniorJuponJuristeJusticeJuteuxJuve/nileKayakKimonoKiosqueLabelLabialLabourerLace/rerLactoseLaguneLaineLaisserLaitierLambeauLamelleLampeLanceurLangageLanterneLapinLargeurLarmeLaurierLavaboLavoirLectureLe/galLe/gerLe/gumeLessiveLettreLevierLexiqueLe/zardLiasseLibe/rerLibreLicenceLicorneLie-geLie-vreLigatureLigoterLigueLimerLimiteLimonadeLimpideLine/aireLingotLionceauLiquideLisie-reListerLithiumLitigeLittoralLivreurLogiqueLointainLoisirLombricLoterieLouerLourdLoutreLouveLoyalLubieLucideLucratifLueurLugubreLuisantLumie-reLunaireLundiLuronLutterLuxueuxMachineMagasinMagentaMagiqueMaigreMaillonMaintienMairieMaisonMajorerMalaxerMale/ficeMalheurMaliceMalletteMammouthMandaterManiableManquantManteauManuelMarathonMarbreMarchandMardiMaritimeMarqueurMarronMartelerMascotteMassifMate/rielMatie-reMatraqueMaudireMaussadeMauveMaximalMe/chantMe/connuMe/dailleMe/decinMe/diterMe/duseMeilleurMe/langeMe/lodieMembreMe/moireMenacerMenerMenhirMensongeMentorMercrediMe/riteMerleMessagerMesureMe/talMe/te/oreMe/thodeMe/tierMeubleMiaulerMicrobeMietteMignonMigrerMilieuMillionMimiqueMinceMine/ralMinimalMinorerMinuteMiracleMiroiterMissileMixteMobileModerneMoelleuxMondialMoniteurMonnaieMonotoneMonstreMontagneMonumentMoqueurMorceauMorsureMortierMoteurMotifMoucheMoufleMoulinMoussonMoutonMouvantMultipleMunitionMurailleMure-neMurmureMuscleMuse/umMusicienMutationMuterMutuelMyriadeMyrtilleMyste-reMythiqueNageurNappeNarquoisNarrerNatationNationNatureNaufrageNautiqueNavireNe/buleuxNectarNe/fasteNe/gationNe/gligerNe/gocierNeigeNerveuxNettoyerNeuroneNeutronNeveuNicheNickelNitrateNiveauNobleNocifNocturneNoirceurNoisetteNomadeNombreuxNommerNormatifNotableNotifierNotoireNourrirNouveauNovateurNovembreNoviceNuageNuancerNuireNuisibleNume/roNuptialNuqueNutritifObe/irObjectifObligerObscurObserverObstacleObtenirObturerOccasionOccuperOce/anOctobreOctroyerOctuplerOculaireOdeurOdorantOffenserOfficierOffrirOgiveOiseauOisillonOlfactifOlivierOmbrageOmettreOnctueuxOndulerOne/reuxOniriqueOpaleOpaqueOpe/rerOpinionOpportunOpprimerOpterOptiqueOrageuxOrangeOrbiteOrdonnerOreilleOrganeOrgueilOrificeOrnementOrqueOrtieOscillerOsmoseOssatureOtarieOuraganOursonOutilOutragerOuvrageOvationOxydeOxyge-neOzonePaisiblePalacePalmare-sPalourdePalperPanachePandaPangolinPaniquerPanneauPanoramaPantalonPapayePapierPapoterPapyrusParadoxeParcelleParesseParfumerParlerParoleParrainParsemerPartagerParureParvenirPassionPaste-quePaternelPatiencePatronPavillonPavoiserPayerPaysagePeignePeintrePelagePe/licanPellePelousePeluchePendulePe/ne/trerPe/niblePensifPe/nuriePe/pitePe/plumPerdrixPerforerPe/riodePermuterPerplexePersilPertePeserPe/talePetitPe/trirPeuplePharaonPhobiePhoquePhotonPhrasePhysiquePianoPicturalPie-cePierrePieuvrePilotePinceauPipettePiquerPiroguePiscinePistonPivoterPixelPizzaPlacardPlafondPlaisirPlanerPlaquePlastronPlateauPleurerPlexusPliagePlombPlongerPluiePlumagePochettePoe/siePoe-tePointePoirierPoissonPoivrePolairePolicierPollenPolygonePommadePompierPonctuelPonde/rerPoneyPortiquePositionPosse/derPosturePotagerPoteauPotionPoucePoulainPoumonPourprePoussinPouvoirPrairiePratiquePre/cieuxPre/direPre/fixePre/ludePre/nomPre/sencePre/textePre/voirPrimitifPrincePrisonPriverProble-meProce/derProdigeProfondProgre-sProieProjeterProloguePromenerPropreProspe-reProte/gerProuesseProverbePrudencePruneauPsychosePublicPuceronPuiserPulpePulsarPunaisePunitifPupitrePurifierPuzzlePyramideQuasarQuerelleQuestionQuie/tudeQuitterQuotientRacineRaconterRadieuxRagondinRaideurRaisinRalentirRallongeRamasserRapideRasageRatisserRavagerRavinRayonnerRe/actifRe/agirRe/aliserRe/animerRecevoirRe/citerRe/clamerRe/colterRecruterReculerRecyclerRe/digerRedouterRefaireRe/flexeRe/formerRefrainRefugeRe/galienRe/gionRe/glageRe/gulierRe/ite/rerRejeterRejouerRelatifReleverReliefRemarqueReme-deRemiseRemonterRemplirRemuerRenardRenfortReniflerRenoncerRentrerRenvoiReplierReporterRepriseReptileRequinRe/serveRe/sineuxRe/soudreRespectResterRe/sultatRe/tablirRetenirRe/ticuleRetomberRetracerRe/unionRe/ussirRevancheRevivreRe/volteRe/vulsifRichesseRideauRieurRigideRigolerRincerRiposterRisibleRisqueRituelRivalRivie-reRocheuxRomanceRompreRonceRondinRoseauRosierRotatifRotorRotuleRougeRouilleRouleauRoutineRoyaumeRubanRubisRucheRuelleRugueuxRuinerRuisseauRuserRustiqueRythmeSablerSaboterSabreSacocheSafariSagesseSaisirSaladeSaliveSalonSaluerSamediSanctionSanglierSarcasmeSardineSaturerSaugrenuSaumonSauterSauvageSavantSavonnerScalpelScandaleSce/le/ratSce/narioSceptreSche/maScienceScinderScoreScrutinSculpterSe/anceSe/cableSe/cherSecouerSe/cre/terSe/datifSe/duireSeigneurSe/jourSe/lectifSemaineSemblerSemenceSe/minalSe/nateurSensibleSentenceSe/parerSe/quenceSereinSergentSe/rieuxSerrureSe/rumServiceSe/sameSe/virSevrageSextupleSide/ralSie-cleSie/gerSifflerSigleSignalSilenceSiliciumSimpleSince-reSinistreSiphonSiropSismiqueSituerSkierSocialSocleSodiumSoigneuxSoldatSoleilSolitudeSolubleSombreSommeilSomnolerSondeSongeurSonnetteSonoreSorcierSortirSosieSottiseSoucieuxSoudureSouffleSouleverSoupapeSourceSoutirerSouvenirSpacieuxSpatialSpe/cialSphe-reSpiralStableStationSternumStimulusStipulerStrictStudieuxStupeurStylisteSublimeSubstratSubtilSubvenirSucce-sSucreSuffixeSugge/rerSuiveurSulfateSuperbeSupplierSurfaceSuricateSurmenerSurpriseSursautSurvieSuspectSyllabeSymboleSyme/trieSynapseSyntaxeSyste-meTabacTablierTactileTaillerTalentTalismanTalonnerTambourTamiserTangibleTapisTaquinerTarderTarifTartineTasseTatamiTatouageTaupeTaureauTaxerTe/moinTemporelTenailleTendreTeneurTenirTensionTerminerTerneTerribleTe/tineTexteThe-meThe/orieThe/rapieThoraxTibiaTie-deTimideTirelireTiroirTissuTitaneTitreTituberTobogganTole/rantTomateToniqueTonneauToponymeTorcheTordreTornadeTorpilleTorrentTorseTortueTotemToucherTournageTousserToxineTractionTraficTragiqueTrahirTrainTrancherTravailTre-fleTremperTre/sorTreuilTriageTribunalTricoterTrilogieTriompheTriplerTriturerTrivialTromboneTroncTropicalTroupeauTuileTulipeTumulteTunnelTurbineTuteurTutoyerTuyauTympanTyphonTypiqueTyranUbuesqueUltimeUltrasonUnanimeUnifierUnionUniqueUnitaireUniversUraniumUrbainUrticantUsageUsineUsuelUsureUtileUtopieVacarmeVaccinVagabondVagueVaillantVaincreVaisseauValableValiseVallonValveVampireVanilleVapeurVarierVaseuxVassalVasteVecteurVedetteVe/ge/talVe/hiculeVeinardVe/loceVendrediVe/ne/rerVengerVenimeuxVentouseVerdureVe/rinVernirVerrouVerserVertuVestonVe/te/ranVe/tusteVexantVexerViaducViandeVictoireVidangeVide/oVignetteVigueurVilainVillageVinaigreViolonVipe-reVirementVirtuoseVirusVisageViseurVisionVisqueuxVisuelVitalVitesseViticoleVitrineVivaceVivipareVocationVoguerVoileVoisinVoitureVolailleVolcanVoltigerVolumeVoraceVortexVoterVouloirVoyageVoyelleWagonXe/nonYachtZe-breZe/nithZesteZoologie";
+	var wordlist$1 = null;
+	var lookup = {};
+	function dropDiacritic(word) {
+	    wordlist.logger.checkNormalize();
+	    return lib$8.toUtf8String(Array.prototype.filter.call(lib$8.toUtf8Bytes(word.normalize("NFD").toLowerCase()), function (c) {
+	        return ((c >= 65 && c <= 90) || (c >= 97 && c <= 123));
+	    }));
+	}
+	function expand(word) {
+	    var output = [];
+	    Array.prototype.forEach.call(lib$8.toUtf8Bytes(word), function (c) {
+	        // Acute accent
+	        if (c === 47) {
+	            output.push(204);
+	            output.push(129);
+	            // Grave accent
+	        }
+	        else if (c === 45) {
+	            output.push(204);
+	            output.push(128);
+	        }
+	        else {
+	            output.push(c);
+	        }
+	    });
+	    return lib$8.toUtf8String(output);
+	}
+	function loadWords(lang) {
+	    if (wordlist$1 != null) {
+	        return;
+	    }
+	    wordlist$1 = words.replace(/([A-Z])/g, " $1").toLowerCase().substring(1).split(" ").map(function (w) { return expand(w); });
+	    wordlist$1.forEach(function (word, index) {
+	        lookup[dropDiacritic(word)] = index;
+	    });
+	    // Verify the computed list matches the official list
+	    /* istanbul ignore if */
+	    if (wordlist.Wordlist.check(lang) !== "0x51deb7ae009149dc61a6bd18a918eb7ac78d2775726c68e598b92d002519b045") {
+	        wordlist$1 = null;
+	        throw new Error("BIP39 Wordlist for fr (French) FAILED");
+	    }
+	}
+	var LangFr = /** @class */ (function (_super) {
+	    __extends(LangFr, _super);
+	    function LangFr() {
+	        return _super.call(this, "fr") || this;
+	    }
+	    LangFr.prototype.getWord = function (index) {
+	        loadWords(this);
+	        return wordlist$1[index];
+	    };
+	    LangFr.prototype.getWordIndex = function (word) {
+	        loadWords(this);
+	        return lookup[dropDiacritic(word)];
+	    };
+	    return LangFr;
+	}(wordlist.Wordlist));
+	var langFr = new LangFr();
+	exports.langFr = langFr;
+	wordlist.Wordlist.register(langFr);
+
+	});
+
+	var langFr = /*@__PURE__*/getDefaultExportFromCjs(langFr_1);
+
+	var langJa_1 = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
+	    var extendStatics = function (d, b) {
+	        extendStatics = Object.setPrototypeOf ||
+	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	        return extendStatics(d, b);
+	    };
+	    return function (d, b) {
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+
+
+	var data = [
+	    // 4-kana words
+	    "AQRASRAGBAGUAIRAHBAghAURAdBAdcAnoAMEAFBAFCBKFBQRBSFBCXBCDBCHBGFBEQBpBBpQBIkBHNBeOBgFBVCBhBBhNBmOBmRBiHBiFBUFBZDBvFBsXBkFBlcBjYBwDBMBBTBBTRBWBBWXXaQXaRXQWXSRXCFXYBXpHXOQXHRXhRXuRXmXXbRXlXXwDXTRXrCXWQXWGaBWaKcaYgasFadQalmaMBacAKaRKKBKKXKKjKQRKDRKCYKCRKIDKeVKHcKlXKjHKrYNAHNBWNaRNKcNIBNIONmXNsXNdXNnBNMBNRBNrXNWDNWMNFOQABQAHQBrQXBQXFQaRQKXQKDQKOQKFQNBQNDQQgQCXQCDQGBQGDQGdQYXQpBQpQQpHQLXQHuQgBQhBQhCQuFQmXQiDQUFQZDQsFQdRQkHQbRQlOQlmQPDQjDQwXQMBQMDQcFQTBQTHQrDDXQDNFDGBDGQDGRDpFDhFDmXDZXDbRDMYDRdDTRDrXSAhSBCSBrSGQSEQSHBSVRShYShkSyQSuFSiBSdcSoESocSlmSMBSFBSFKSFNSFdSFcCByCaRCKcCSBCSRCCrCGbCEHCYXCpBCpQCIBCIHCeNCgBCgFCVECVcCmkCmwCZXCZFCdRClOClmClFCjDCjdCnXCwBCwXCcRCFQCFjGXhGNhGDEGDMGCDGCHGIFGgBGVXGVEGVRGmXGsXGdYGoSGbRGnXGwXGwDGWRGFNGFLGFOGFdGFkEABEBDEBFEXOEaBEKSENBENDEYXEIgEIkEgBEgQEgHEhFEudEuFEiBEiHEiFEZDEvBEsXEsFEdXEdREkFEbBEbRElFEPCEfkEFNYAEYAhYBNYQdYDXYSRYCEYYoYgQYgRYuRYmCYZTYdBYbEYlXYjQYRbYWRpKXpQopQnpSFpCXpIBpISphNpdBpdRpbRpcZpFBpFNpFDpFopFrLADLBuLXQLXcLaFLCXLEhLpBLpFLHXLeVLhILdHLdRLoDLbRLrXIABIBQIBCIBsIBoIBMIBRIXaIaRIKYIKRINBINuICDIGBIIDIIkIgRIxFIyQIiHIdRIbYIbRIlHIwRIMYIcRIRVITRIFBIFNIFQOABOAFOBQOaFONBONMOQFOSFOCDOGBOEQOpBOLXOIBOIFOgQOgFOyQOycOmXOsXOdIOkHOMEOMkOWWHBNHXNHXWHNXHDuHDRHSuHSRHHoHhkHmRHdRHkQHlcHlRHwBHWcgAEgAggAkgBNgBQgBEgXOgYcgLXgHjgyQgiBgsFgdagMYgWSgFQgFEVBTVXEVKBVKNVKDVKYVKRVNBVNYVDBVDxVSBVSRVCjVGNVLXVIFVhBVhcVsXVdRVbRVlRhBYhKYhDYhGShxWhmNhdahdkhbRhjohMXhTRxAXxXSxKBxNBxEQxeNxeQxhXxsFxdbxlHxjcxFBxFNxFQxFOxFoyNYyYoybcyMYuBQuBRuBruDMuCouHBudQukkuoBulVuMXuFEmCYmCRmpRmeDmiMmjdmTFmFQiADiBOiaRiKRiNBiNRiSFiGkiGFiERipRiLFiIFihYibHijBijEiMXiWBiFBiFCUBQUXFUaRUNDUNcUNRUNFUDBUSHUCDUGBUGFUEqULNULoUIRUeEUeYUgBUhFUuRUiFUsXUdFUkHUbBUjSUjYUwXUMDUcHURdUTBUrBUrXUrQZAFZXZZaRZKFZNBZQFZCXZGBZYdZpBZLDZIFZHXZHNZeQZVRZVFZmXZiBZvFZdFZkFZbHZbFZwXZcCZcRZRBvBQvBGvBLvBWvCovMYsAFsBDsaRsKFsNFsDrsSHsSFsCXsCRsEBsEHsEfspBsLBsLDsIgsIRseGsbRsFBsFQsFSdNBdSRdCVdGHdYDdHcdVbdySduDdsXdlRdwXdWYdWcdWRkBMkXOkaRkNIkNFkSFkCFkYBkpRkeNkgBkhVkmXksFklVkMBkWDkFNoBNoaQoaFoNBoNXoNaoNEoSRoEroYXoYCoYbopRopFomXojkowXorFbBEbEIbdBbjYlaRlDElMXlFDjKjjSRjGBjYBjYkjpRjLXjIBjOFjeVjbRjwBnXQnSHnpFnLXnINnMBnTRwXBwXNwXYwNFwQFwSBwGFwLXwLDweNwgBwuHwjDwnXMBXMpFMIBMeNMTHcaQcNBcDHcSFcCXcpBcLXcLDcgFcuFcnXcwXccDcTQcrFTQErXNrCHrpFrgFrbFrTHrFcWNYWNbWEHWMXWTR",
+	    // 5-kana words
+	    "ABGHABIJAEAVAYJQALZJAIaRAHNXAHdcAHbRAZJMAZJRAZTRAdVJAklmAbcNAjdRAMnRAMWYAWpRAWgRAFgBAFhBAFdcBNJBBNJDBQKBBQhcBQlmBDEJBYJkBYJTBpNBBpJFBIJBBIJDBIcABOKXBOEJBOVJBOiJBOZJBepBBeLXBeIFBegBBgGJBVJXBuocBiJRBUJQBlXVBlITBwNFBMYVBcqXBTlmBWNFBWiJBWnRBFGHBFwXXKGJXNJBXNZJXDTTXSHSXSVRXSlHXCJDXGQJXEhXXYQJXYbRXOfXXeNcXVJFXhQJXhEJXdTRXjdXXMhBXcQTXRGBXTEBXTnQXFCXXFOFXFgFaBaFaBNJaBCJaBpBaBwXaNJKaNJDaQIBaDpRaEPDaHMFamDJalEJaMZJaFaFaFNBaFQJaFLDaFVHKBCYKBEBKBHDKXaFKXGdKXEJKXpHKXIBKXZDKXwXKKwLKNacKNYJKNJoKNWcKDGdKDTRKChXKGaRKGhBKGbRKEBTKEaRKEPTKLMDKLWRKOHDKVJcKdBcKlIBKlOPKFSBKFEPKFpFNBNJNJBQNBGHNBEPNBHXNBgFNBVXNBZDNBsXNBwXNNaRNNJDNNJENNJkNDCJNDVDNGJRNJiDNZJNNsCJNJFNNFSBNFCXNFEPNFLXNFIFQJBFQCaRQJEQQLJDQLJFQIaRQOqXQHaFQHHQQVJXQVJDQhNJQmEIQZJFQsJXQJrFQWbRDJABDBYJDXNFDXCXDXLXDXZDDXsJDQqXDSJFDJCXDEPkDEqXDYmQDpSJDOCkDOGQDHEIDVJDDuDuDWEBDJFgSBNDSBSFSBGHSBIBSBTQSKVYSJQNSJQiSJCXSEqXSJYVSIiJSOMYSHAHSHaQSeCFSepQSegBSHdHSHrFShSJSJuHSJUFSkNRSrSrSWEBSFaHSJFQSFCXSFGDSFYXSFODSFgBSFVXSFhBSFxFSFkFSFbBSFMFCADdCJXBCXaFCXKFCXNFCXCXCXGBCXEJCXYBCXLDCXIBCXOPCXHXCXgBCXhBCXiBCXlDCXcHCJNBCJNFCDCJCDGBCDVXCDhBCDiDCDJdCCmNCpJFCIaRCOqXCHCHCHZJCViJCuCuCmddCJiFCdNBCdHhClEJCnUJCreSCWlgCWTRCFBFCFNBCFYBCFVFCFhFCFdSCFTBCFWDGBNBGBQFGJBCGBEqGBpBGBgQGNBEGNJYGNkOGNJRGDUFGJpQGHaBGJeNGJeEGVBlGVKjGiJDGvJHGsVJGkEBGMIJGWjNGFBFGFCXGFGBGFYXGFpBGFMFEASJEAWpEJNFECJVEIXSEIQJEOqXEOcFEeNcEHEJEHlFEJgFEhlmEmDJEmZJEiMBEUqXEoSREPBFEPXFEPKFEPSFEPEFEPpFEPLXEPIBEJPdEPcFEPTBEJnXEqlHEMpREFCXEFODEFcFYASJYJAFYBaBYBVXYXpFYDhBYCJBYJGFYYbRYeNcYJeVYiIJYZJcYvJgYvJRYJsXYsJFYMYMYreVpBNHpBEJpBwXpQxFpYEJpeNDpJeDpeSFpeCHpHUJpHbBpHcHpmUJpiiJpUJrpsJuplITpFaBpFQqpFGBpFEfpFYBpFpBpFLJpFIDpFgBpFVXpFyQpFuFpFlFpFjDpFnXpFwXpJFMpFTBLXCJLXEFLXhFLXUJLXbFLalmLNJBLSJQLCLCLGJBLLDJLHaFLeNFLeSHLeCXLepFLhaRLZsJLsJDLsJrLocaLlLlLMdbLFNBLFSBLFEHLFkFIBBFIBXFIBaQIBKXIBSFIBpHIBLXIBgBIBhBIBuHIBmXIBiFIBZXIBvFIBbFIBjQIBwXIBWFIKTRIQUJIDGFICjQIYSRIINXIJeCIVaRImEkIZJFIvJRIsJXIdCJIJoRIbBQIjYBIcqXITFVIreVIFKFIFSFIFCJIFGFIFLDIFIBIJFOIFgBIFVXIJFhIFxFIFmXIFdHIFbBIJFrIJFWOBGBOQfXOOKjOUqXOfXBOqXEOcqXORVJOFIBOFlDHBIOHXiFHNTRHCJXHIaRHHJDHHEJHVbRHZJYHbIBHRsJHRkDHWlmgBKFgBSBgBCDgBGHgBpBgBIBgBVJgBuBgBvFgKDTgQVXgDUJgGSJgOqXgmUMgZIJgTUJgWIEgFBFgFNBgFDJgFSFgFGBgFYXgJFOgFgQgFVXgFhBgFbHgJFWVJABVQKcVDgFVOfXVeDFVhaRVmGdViJYVMaRVFNHhBNDhBCXhBEqhBpFhBLXhNJBhSJRheVXhhKEhxlmhZIJhdBQhkIJhbMNhMUJhMZJxNJgxQUJxDEkxDdFxSJRxplmxeSBxeCXxeGFxeYXxepQxegBxWVcxFEQxFLXxFIBxFgBxFxDxFZtxFdcxFbBxFwXyDJXyDlcuASJuDJpuDIBuCpJuGSJuIJFueEFuZIJusJXudWEuoIBuWGJuFBcuFKEuFNFuFQFuFDJuFGJuFVJuFUtuFdHuFTBmBYJmNJYmQhkmLJDmLJomIdXmiJYmvJRmsJRmklmmMBymMuCmclmmcnQiJABiJBNiJBDiBSFiBCJiBEFiBYBiBpFiBLXiBTHiJNciDEfiCZJiECJiJEqiOkHiHKFieNDiHJQieQcieDHieSFieCXieGFieEFieIHiegFihUJixNoioNXiFaBiFKFiFNDiFEPiFYXitFOitFHiFgBiFVEiFmXiFitiFbBiFMFiFrFUCXQUIoQUIJcUHQJUeCEUHwXUUJDUUqXUdWcUcqXUrnQUFNDUFSHUFCFUFEfUFLXUtFOZBXOZXSBZXpFZXVXZEQJZEJkZpDJZOqXZeNHZeCDZUqXZFBQZFEHZFLXvBAFvBKFvBCXvBEPvBpHvBIDvBgFvBuHvQNJvFNFvFGBvFIBvJFcsXCDsXLXsXsXsXlFsXcHsQqXsJQFsEqXseIFsFEHsFjDdBxOdNpRdNJRdEJbdpJRdhZJdnSJdrjNdFNJdFQHdFhNkNJDkYaRkHNRkHSRkVbRkuMRkjSJkcqDoSJFoEiJoYZJoOfXohEBoMGQocqXbBAFbBXFbBaFbBNDbBGBbBLXbBTBbBWDbGJYbIJHbFQqbFpQlDgQlOrFlVJRjGEBjZJRnXvJnXbBnEfHnOPDngJRnxfXnUJWwXEJwNpJwDpBwEfXwrEBMDCJMDGHMDIJMLJDcQGDcQpHcqXccqNFcqCXcFCJRBSBRBGBRBEJRBpQTBNFTBQJTBpBTBVXTFABTFSBTFCFTFGBTFMDrXCJrXLDrDNJrEfHrFQJrFitWNjdWNTR",
+	    // 6-kana words
+	    "AKLJMANOPFASNJIAEJWXAYJNRAIIbRAIcdaAeEfDAgidRAdjNYAMYEJAMIbRAFNJBAFpJFBBIJYBDZJFBSiJhBGdEBBEJfXBEJqXBEJWRBpaUJBLXrXBIYJMBOcfXBeEfFBestXBjNJRBcDJOBFEqXXNvJRXDMBhXCJNYXOAWpXONJWXHDEBXeIaRXhYJDXZJSJXMDJOXcASJXFVJXaBQqXaBZJFasXdQaFSJQaFEfXaFpJHaFOqXKBNSRKXvJBKQJhXKEJQJKEJGFKINJBKIJjNKgJNSKVElmKVhEBKiJGFKlBgJKjnUJKwsJYKMFIJKFNJDKFIJFKFOfXNJBSFNJBCXNBpJFNJBvQNJBMBNJLJXNJOqXNJeCXNJeGFNdsJCNbTKFNwXUJQNFEPQDiJcQDMSJQSFpBQGMQJQJeOcQyCJEQUJEBQJFBrQFEJqDXDJFDJXpBDJXIMDGiJhDIJGRDJeYcDHrDJDVXgFDkAWpDkIgRDjDEqDMvJRDJFNFDJFIBSKclmSJQOFSJQVHSJQjDSJGJBSJGJFSECJoSHEJqSJHTBSJVJDSViJYSZJNBSJsJDSFSJFSFEfXSJFLXCBUJVCJXSBCJXpBCXVJXCJXsXCJXdFCJNJHCLIJgCHiJFCVNJMChCJhCUHEJCsJTRCJdYcCoQJCCFEfXCFIJgCFUJxCFstFGJBaQGJBIDGQJqXGYJNRGJHKFGeQqDGHEJFGJeLXGHIiJGHdBlGUJEBGkIJTGFQPDGJFEqEAGegEJIJBEJVJXEhQJTEiJNcEJZJFEJoEqEjDEqEPDsXEPGJBEPOqXEPeQFEfDiDEJfEFEfepQEfMiJEqXNBEqDIDEqeSFEqVJXEMvJRYXNJDYXEJHYKVJcYYJEBYJeEcYJUqXYFpJFYFstXpAZJMpBSJFpNBNFpeQPDpHLJDpHIJFpHgJFpeitFpHZJFpJFADpFSJFpJFCJpFOqXpFitBpJFZJLXIJFLIJgRLVNJWLVHJMLwNpJLFGJBLFLJDLFOqXLJFUJIBDJXIBGJBIJBYQIJBIBIBOqXIBcqDIEGJFILNJTIIJEBIOiJhIJeNBIJeIBIhiJIIWoTRIJFAHIJFpBIJFuHIFUtFIJFTHOSBYJOEcqXOHEJqOvBpFOkVJrObBVJOncqDOcNJkHhNJRHuHJuHdMhBgBUqXgBsJXgONJBgHNJDgHHJQgJeitgHsJXgJyNagyDJBgZJDrgsVJQgkEJNgkjSJgJFAHgFCJDgFZtMVJXNFVXQfXVJXDJVXoQJVQVJQVDEfXVDvJHVEqNFVeQfXVHpJFVHxfXVVJSRVVmaRVlIJOhCXVJhHjYkhxCJVhWVUJhWiJcxBNJIxeEqDxfXBFxcFEPxFSJFxFYJXyBDQJydaUJyFOPDuYCJYuLvJRuHLJXuZJLDuFOPDuFZJHuFcqXmKHJdmCQJcmOsVJiJAGFitLCFieOfXiestXiZJMEikNJQirXzFiFQqXiFIJFiFZJFiFvtFUHpJFUteIcUteOcUVCJkUhdHcUbEJEUJqXQUMNJhURjYkUFitFZDGJHZJIxDZJVJXZJFDJZJFpQvBNJBvBSJFvJxBrseQqDsVFVJdFLJDkEJNBkmNJYkFLJDoQJOPoGsJRoEAHBoEJfFbBQqDbBZJHbFVJXlFIJBjYIrXjeitcjjCEBjWMNBwXQfXwXOaFwDsJXwCJTRwrCZJMDNJQcDDJFcqDOPRYiJFTBsJXTQIJBTFEfXTFLJDrXEJFrEJXMrFZJFWEJdEWYTlm",
+	    // 7-kana words
+	    "ABCDEFACNJTRAMBDJdAcNJVXBLNJEBXSIdWRXErNJkXYDJMBXZJCJaXMNJaYKKVJKcKDEJqXKDcNJhKVJrNYKbgJVXKFVJSBNBYBwDNJeQfXNJeEqXNhGJWENJFiJRQlIJbEQJfXxDQqXcfXQFNDEJQFwXUJDYcnUJDJIBgQDIUJTRDJFEqDSJQSJFSJQIJFSOPeZtSJFZJHCJXQfXCTDEqFGJBSJFGJBOfXGJBcqXGJHNJDGJRLiJEJfXEqEJFEJPEFpBEJYJBZJFYBwXUJYiJMEBYJZJyTYTONJXpQMFXFpeGIDdpJFstXpJFcPDLBVSJRLHQJqXLJFZJFIJBNJDIJBUqXIBkFDJIJEJPTIYJGWRIJeQPDIJeEfHIJFsJXOqGDSFHXEJqXgJCsJCgGQJqXgdQYJEgFMFNBgJFcqDVJwXUJVJFZJchIgJCCxOEJqXxOwXUJyDJBVRuscisciJBiJBieUtqXiJFDJkiFsJXQUGEZJcUJFsJXZtXIrXZDZJDrZJFNJDZJFstXvJFQqXvJFCJEsJXQJqkhkNGBbDJdTRbYJMEBlDwXUJMEFiJFcfXNJDRcNJWMTBLJXC",
+	    // 8-kana words
+	    "BraFUtHBFSJFdbNBLJXVJQoYJNEBSJBEJfHSJHwXUJCJdAZJMGjaFVJXEJPNJBlEJfFiJFpFbFEJqIJBVJCrIBdHiJhOPFChvJVJZJNJWxGFNIFLueIBQJqUHEJfUFstOZJDrlXEASJRlXVJXSFwVJNJWD",
+	    // 9-kana words
+	    "QJEJNNJDQJEJIBSFQJEJxegBQJEJfHEPSJBmXEJFSJCDEJqXLXNJFQqXIcQsFNJFIFEJqXUJgFsJXIJBUJEJfHNFvJxEqXNJnXUJFQqD",
+	    // 10-kana words
+	    "IJBEJqXZJ"
+	];
+	// Maps each character into its kana value (the index)
+	var mapping = "~~AzB~X~a~KN~Q~D~S~C~G~E~Y~p~L~I~O~eH~g~V~hxyumi~~U~~Z~~v~~s~~dkoblPjfnqwMcRTr~W~~~F~~~~~Jt";
+	var wordlist$1 = null;
+	function hex(word) {
+	    return lib$1.hexlify(lib$8.toUtf8Bytes(word));
+	}
+	var KiYoKu = "0xe3818de38284e3818f";
+	var KyoKu = "0xe3818de38283e3818f";
+	function loadWords(lang) {
+	    if (wordlist$1 !== null) {
+	        return;
+	    }
+	    wordlist$1 = [];
+	    // Transforms for normalizing (sort is a not quite UTF-8)
+	    var transform = {};
+	    // Delete the diacritic marks
+	    transform[lib$8.toUtf8String([227, 130, 154])] = false;
+	    transform[lib$8.toUtf8String([227, 130, 153])] = false;
+	    // Some simple transforms that sort out most of the order
+	    transform[lib$8.toUtf8String([227, 130, 133])] = lib$8.toUtf8String([227, 130, 134]);
+	    transform[lib$8.toUtf8String([227, 129, 163])] = lib$8.toUtf8String([227, 129, 164]);
+	    transform[lib$8.toUtf8String([227, 130, 131])] = lib$8.toUtf8String([227, 130, 132]);
+	    transform[lib$8.toUtf8String([227, 130, 135])] = lib$8.toUtf8String([227, 130, 136]);
+	    // Normalize words using the transform
+	    function normalize(word) {
+	        var result = "";
+	        for (var i = 0; i < word.length; i++) {
+	            var kana = word[i];
+	            var target = transform[kana];
+	            if (target === false) {
+	                continue;
+	            }
+	            if (target) {
+	                kana = target;
+	            }
+	            result += kana;
+	        }
+	        return result;
+	    }
+	    // Sort how the Japanese list is sorted
+	    function sortJapanese(a, b) {
+	        a = normalize(a);
+	        b = normalize(b);
+	        if (a < b) {
+	            return -1;
+	        }
+	        if (a > b) {
+	            return 1;
+	        }
+	        return 0;
+	    }
+	    // Load all the words
+	    for (var length_1 = 3; length_1 <= 9; length_1++) {
+	        var d = data[length_1 - 3];
+	        for (var offset = 0; offset < d.length; offset += length_1) {
+	            var word = [];
+	            for (var i = 0; i < length_1; i++) {
+	                var k = mapping.indexOf(d[offset + i]);
+	                word.push(227);
+	                word.push((k & 0x40) ? 130 : 129);
+	                word.push((k & 0x3f) + 128);
+	            }
+	            wordlist$1.push(lib$8.toUtf8String(word));
+	        }
+	    }
+	    wordlist$1.sort(sortJapanese);
+	    // For some reason kyoku and kiyoku are flipped in node (!!).
+	    // The order SHOULD be:
+	    //   - kyoku
+	    //   - kiyoku
+	    // This should ignore "if", but that doesn't work here??
+	    /* istanbul ignore next */
+	    if (hex(wordlist$1[442]) === KiYoKu && hex(wordlist$1[443]) === KyoKu) {
+	        var tmp = wordlist$1[442];
+	        wordlist$1[442] = wordlist$1[443];
+	        wordlist$1[443] = tmp;
+	    }
+	    // Verify the computed list matches the official list
+	    /* istanbul ignore if */
+	    if (wordlist.Wordlist.check(lang) !== "0xcb36b09e6baa935787fd762ce65e80b0c6a8dabdfbc3a7f86ac0e2c4fd111600") {
+	        wordlist$1 = null;
+	        throw new Error("BIP39 Wordlist for ja (Japanese) FAILED");
+	    }
+	}
+	var LangJa = /** @class */ (function (_super) {
+	    __extends(LangJa, _super);
+	    function LangJa() {
+	        return _super.call(this, "ja") || this;
+	    }
+	    LangJa.prototype.getWord = function (index) {
+	        loadWords(this);
+	        return wordlist$1[index];
+	    };
+	    LangJa.prototype.getWordIndex = function (word) {
+	        loadWords(this);
+	        return wordlist$1.indexOf(word);
+	    };
+	    LangJa.prototype.split = function (mnemonic) {
+	        wordlist.logger.checkNormalize();
+	        return mnemonic.split(/(?:\u3000| )+/g);
+	    };
+	    LangJa.prototype.join = function (words) {
+	        return words.join("\u3000");
+	    };
+	    return LangJa;
+	}(wordlist.Wordlist));
+	var langJa = new LangJa();
+	exports.langJa = langJa;
+	wordlist.Wordlist.register(langJa);
+
+	});
+
+	var langJa = /*@__PURE__*/getDefaultExportFromCjs(langJa_1);
+
+	var langKo_1 = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
+	    var extendStatics = function (d, b) {
+	        extendStatics = Object.setPrototypeOf ||
+	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	        return extendStatics(d, b);
+	    };
+	    return function (d, b) {
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+
+	var data = [
+	    "OYAa",
+	    "ATAZoATBl3ATCTrATCl8ATDloATGg3ATHT8ATJT8ATJl3ATLlvATLn4ATMT8ATMX8ATMboATMgoAToLbAToMTATrHgATvHnAT3AnAT3JbAT3MTAT8DbAT8JTAT8LmAT8MYAT8MbAT#LnAUHT8AUHZvAUJXrAUJX8AULnrAXJnvAXLUoAXLgvAXMn6AXRg3AXrMbAX3JTAX3QbAYLn3AZLgvAZrSUAZvAcAZ8AaAZ8AbAZ8AnAZ8HnAZ8LgAZ8MYAZ8MgAZ8OnAaAboAaDTrAaFTrAaJTrAaJboAaLVoAaMXvAaOl8AaSeoAbAUoAbAg8AbAl4AbGnrAbMT8AbMXrAbMn4AbQb8AbSV8AbvRlAb8AUAb8AnAb8HgAb8JTAb8NTAb8RbAcGboAcLnvAcMT8AcMX8AcSToAcrAaAcrFnAc8AbAc8MgAfGgrAfHboAfJnvAfLV8AfLkoAfMT8AfMnoAfQb8AfScrAfSgrAgAZ8AgFl3AgGX8AgHZvAgHgrAgJXoAgJX8AgJboAgLZoAgLn4AgOX8AgoATAgoAnAgoCUAgoJgAgoLXAgoMYAgoSeAgrDUAgrJTAhrFnAhrLjAhrQgAjAgoAjJnrAkMX8AkOnoAlCTvAlCV8AlClvAlFg4AlFl6AlFn3AloSnAlrAXAlrAfAlrFUAlrFbAlrGgAlrOXAlvKnAlvMTAl3AbAl3MnAnATrAnAcrAnCZ3AnCl8AnDg8AnFboAnFl3AnHX4AnHbrAnHgrAnIl3AnJgvAnLXoAnLX4AnLbrAnLgrAnLhrAnMXoAnMgrAnOn3AnSbrAnSeoAnvLnAn3OnCTGgvCTSlvCTvAUCTvKnCTvNTCT3CZCT3GUCT3MTCT8HnCUCZrCULf8CULnvCU3HnCU3JUCY6NUCbDb8CbFZoCbLnrCboOTCboScCbrFnCbvLnCb8AgCb8HgCb$LnCkLfoClBn3CloDUDTHT8DTLl3DTSU8DTrAaDTrLXDTrLjDTrOYDTrOgDTvFXDTvFnDT3HUDT3LfDUCT9DUDT4DUFVoDUFV8DUFkoDUGgrDUJnrDULl8DUMT8DUMXrDUMX4DUMg8DUOUoDUOgvDUOg8DUSToDUSZ8DbDXoDbDgoDbGT8DbJn3DbLg3DbLn4DbMXrDbMg8DbOToDboJXGTClvGTDT8GTFZrGTLVoGTLlvGTLl3GTMg8GTOTvGTSlrGToCUGTrDgGTrJYGTrScGTtLnGTvAnGTvQgGUCZrGUDTvGUFZoGUHXrGULnvGUMT8GUoMgGXoLnGXrMXGXrMnGXvFnGYLnvGZOnvGZvOnGZ8LaGZ8LmGbAl3GbDYvGbDlrGbHX3GbJl4GbLV8GbLn3GbMn4GboJTGboRfGbvFUGb3GUGb4JnGgDX3GgFl$GgJlrGgLX6GgLZoGgLf8GgOXoGgrAgGgrJXGgrMYGgrScGgvATGgvOYGnAgoGnJgvGnLZoGnLg3GnLnrGnQn8GnSbrGnrMgHTClvHTDToHTFT3HTQT8HToJTHToJgHTrDUHTrMnHTvFYHTvRfHT8MnHT8SUHUAZ8HUBb4HUDTvHUoMYHXFl6HXJX6HXQlrHXrAUHXrMnHXrSbHXvFYHXvKXHX3LjHX3MeHYvQlHZrScHZvDbHbAcrHbFT3HbFl3HbJT8HbLTrHbMT8HbMXrHbMbrHbQb8HbSX3HboDbHboJTHbrFUHbrHgHbrJTHb8JTHb8MnHb8QgHgAlrHgDT3HgGgrHgHgrHgJTrHgJT8HgLX@HgLnrHgMT8HgMX8HgMboHgOnrHgQToHgRg3HgoHgHgrCbHgrFnHgrLVHgvAcHgvAfHnAloHnCTrHnCnvHnGTrHnGZ8HnGnvHnJT8HnLf8HnLkvHnMg8HnRTrITvFUITvFnJTAXrJTCV8JTFT3JTFT8JTFn4JTGgvJTHT8JTJT8JTJXvJTJl3JTJnvJTLX4JTLf8JTLhvJTMT8JTMXrJTMnrJTObrJTQT8JTSlvJT8DUJT8FkJT8MTJT8OXJT8OgJT8QUJT8RfJUHZoJXFT4JXFlrJXGZ8JXGnrJXLV8JXLgvJXMXoJXMX3JXNboJXPlvJXoJTJXoLkJXrAXJXrHUJXrJgJXvJTJXvOnJX4KnJYAl3JYJT8JYLhvJYQToJYrQXJY6NUJbAl3JbCZrJbDloJbGT8JbGgrJbJXvJbJboJbLf8JbLhrJbLl3JbMnvJbRg8JbSZ8JboDbJbrCZJbrSUJb3KnJb8LnJfRn8JgAXrJgCZrJgDTrJgGZrJgGZ8JgHToJgJT8JgJXoJgJgvJgLX4JgLZ3JgLZ8JgLn4JgMgrJgMn4JgOgvJgPX6JgRnvJgSToJgoCZJgoJbJgoMYJgrJXJgrJgJgrLjJg6MTJlCn3JlGgvJlJl8Jl4AnJl8FnJl8HgJnAToJnATrJnAbvJnDUoJnGnrJnJXrJnJXvJnLhvJnLnrJnLnvJnMToJnMT8JnMXvJnMX3JnMg8JnMlrJnMn4JnOX8JnST4JnSX3JnoAgJnoAnJnoJTJnoObJnrAbJnrAkJnrHnJnrJTJnrJYJnrOYJnrScJnvCUJnvFaJnvJgJnvJnJnvOYJnvQUJnvRUJn3FnJn3JTKnFl3KnLT6LTDlvLTMnoLTOn3LTRl3LTSb4LTSlrLToAnLToJgLTrAULTrAcLTrCULTrHgLTrMgLT3JnLULnrLUMX8LUoJgLVATrLVDTrLVLb8LVoJgLV8MgLV8RTLXDg3LXFlrLXrCnLXrLXLX3GTLX4GgLX4OYLZAXrLZAcrLZAgrLZAhrLZDXyLZDlrLZFbrLZFl3LZJX6LZJX8LZLc8LZLnrLZSU8LZoJTLZoJnLZrAgLZrAnLZrJYLZrLULZrMgLZrSkLZvAnLZvGULZvJeLZvOTLZ3FZLZ4JXLZ8STLZ8ScLaAT3LaAl3LaHT8LaJTrLaJT8LaJXrLaJgvLaJl4LaLVoLaMXrLaMXvLaMX8LbClvLbFToLbHlrLbJn4LbLZ3LbLhvLbMXrLbMnoLbvSULcLnrLc8HnLc8MTLdrMnLeAgoLeOgvLeOn3LfAl3LfLnvLfMl3LfOX8Lf8AnLf8JXLf8LXLgJTrLgJXrLgJl8LgMX8LgRZrLhCToLhrAbLhrFULhrJXLhvJYLjHTrLjHX4LjJX8LjLhrLjSX3LjSZ4LkFX4LkGZ8LkGgvLkJTrLkMXoLkSToLkSU8LkSZ8LkoOYLl3FfLl3MgLmAZrLmCbrLmGgrLmHboLmJnoLmJn3LmLfoLmLhrLmSToLnAX6LnAb6LnCZ3LnCb3LnDTvLnDb8LnFl3LnGnrLnHZvLnHgvLnITvLnJT8LnJX8LnJlvLnLf8LnLg6LnLhvLnLnoLnMXrLnMg8LnQlvLnSbrLnrAgLnrAnLnrDbLnrFkLnrJdLnrMULnrOYLnrSTLnvAnLnvDULnvHgLnvOYLnvOnLn3GgLn4DULn4JTLn4JnMTAZoMTAloMTDb8MTFT8MTJnoMTJnrMTLZrMTLhrMTLkvMTMX8MTRTrMToATMTrDnMTrOnMT3JnMT4MnMT8FUMT8FaMT8FlMT8GTMT8GbMT8GnMT8HnMT8JTMT8JbMT8OTMUCl8MUJTrMUJU8MUMX8MURTrMUSToMXAX6MXAb6MXCZoMXFXrMXHXrMXLgvMXOgoMXrAUMXrAnMXrHgMXrJYMXrJnMXrMTMXrMgMXrOYMXrSZMXrSgMXvDUMXvOTMX3JgMX3OTMX4JnMX8DbMX8FnMX8HbMX8HgMX8HnMX8LbMX8MnMX8OnMYAb8MYGboMYHTvMYHX4MYLTrMYLnvMYMToMYOgvMYRg3MYSTrMbAToMbAXrMbAl3MbAn8MbGZ8MbJT8MbJXrMbMXvMbMX8MbMnoMbrMUMb8AfMb8FbMb8FkMcJXoMeLnrMgFl3MgGTvMgGXoMgGgrMgGnrMgHT8MgHZrMgJnoMgLnrMgLnvMgMT8MgQUoMgrHnMgvAnMg8HgMg8JYMg8LfMloJnMl8ATMl8AXMl8JYMnAToMnAT4MnAZ8MnAl3MnAl4MnCl8MnHT8MnHg8MnJnoMnLZoMnLhrMnMXoMnMX3MnMnrMnOgvMnrFbMnrFfMnrFnMnrNTMnvJXNTMl8OTCT3OTFV8OTFn3OTHZvOTJXrOTOl3OT3ATOT3JUOT3LZOT3LeOT3MbOT8ATOT8AbOT8AgOT8MbOUCXvOUMX3OXHXvOXLl3OXrMUOXvDbOX6NUOX8JbOYFZoOYLbrOYLkoOYMg8OYSX3ObHTrObHT4ObJgrObLhrObMX3ObOX8Ob8FnOeAlrOeJT8OeJXrOeJnrOeLToOeMb8OgJXoOgLXoOgMnrOgOXrOgOloOgoAgOgoJbOgoMYOgoSTOg8AbOjLX4OjMnoOjSV8OnLVoOnrAgOn3DUPXQlrPXvFXPbvFTPdAT3PlFn3PnvFbQTLn4QToAgQToMTQULV8QURg8QUoJnQXCXvQbFbrQb8AaQb8AcQb8FbQb8MYQb8ScQeAlrQeLhrQjAn3QlFXoQloJgQloSnRTLnvRTrGURTrJTRUJZrRUoJlRUrQnRZrLmRZrMnRZrSnRZ8ATRZ8JbRZ8ScRbMT8RbST3RfGZrRfMX8RfMgrRfSZrRnAbrRnGT8RnvJgRnvLfRnvMTRn8AaSTClvSTJgrSTOXrSTRg3STRnvSToAcSToAfSToAnSToHnSToLjSToMTSTrAaSTrEUST3BYST8AgST8LmSUAZvSUAgrSUDT4SUDT8SUGgvSUJXoSUJXvSULTrSU8JTSU8LjSV8AnSV8JgSXFToSXLf8SYvAnSZrDUSZrMUSZrMnSZ8HgSZ8JTSZ8JgSZ8MYSZ8QUSaQUoSbCT3SbHToSbQYvSbSl4SboJnSbvFbSb8HbSb8JgSb8OTScGZrScHgrScJTvScMT8ScSToScoHbScrMTScvAnSeAZrSeAcrSeHboSeJUoSeLhrSeMT8SeMXrSe6JgSgHTrSkJnoSkLnvSk8CUSlFl3SlrSnSl8GnSmAboSmGT8SmJU8",
+	    "ATLnDlATrAZoATrJX4ATrMT8ATrMX4ATrRTrATvDl8ATvJUoATvMl8AT3AToAT3MX8AT8CT3AT8DT8AT8HZrAT8HgoAUAgFnAUCTFnAXoMX8AXrAT8AXrGgvAXrJXvAXrOgoAXvLl3AZvAgoAZvFbrAZvJXoAZvJl8AZvJn3AZvMX8AZvSbrAZ8FZoAZ8LZ8AZ8MU8AZ8OTvAZ8SV8AZ8SX3AbAgFZAboJnoAbvGboAb8ATrAb8AZoAb8AgrAb8Al4Ab8Db8Ab8JnoAb8LX4Ab8LZrAb8LhrAb8MT8Ab8OUoAb8Qb8Ab8ST8AcrAUoAcrAc8AcrCZ3AcrFT3AcrFZrAcrJl4AcrJn3AcrMX3AcrOTvAc8AZ8Ac8MT8AfAcJXAgoFn4AgoGgvAgoGnrAgoLc8AgoMXoAgrLnrAkrSZ8AlFXCTAloHboAlrHbrAlrLhrAlrLkoAl3CZrAl3LUoAl3LZrAnrAl4AnrMT8An3HT4BT3IToBX4MnvBb!Ln$CTGXMnCToLZ4CTrHT8CT3JTrCT3RZrCT#GTvCU6GgvCU8Db8CU8GZrCU8HT8CboLl3CbrGgrCbrMU8Cb8DT3Cb8GnrCb8LX4Cb8MT8Cb8ObrCgrGgvCgrKX4Cl8FZoDTrAbvDTrDboDTrGT6DTrJgrDTrMX3DTrRZrDTrRg8DTvAVvDTvFZoDT3DT8DT3Ln3DT4HZrDT4MT8DT8AlrDT8MT8DUAkGbDUDbJnDYLnQlDbDUOYDbMTAnDbMXSnDboAT3DboFn4DboLnvDj6JTrGTCgFTGTGgFnGTJTMnGTLnPlGToJT8GTrCT3GTrLVoGTrLnvGTrMX3GTrMboGTvKl3GZClFnGZrDT3GZ8DTrGZ8FZ8GZ8MXvGZ8On8GZ8ST3GbCnQXGbMbFnGboFboGboJg3GboMXoGb3JTvGb3JboGb3Mn6Gb3Qb8GgDXLjGgMnAUGgrDloGgrHX4GgrSToGgvAXrGgvAZvGgvFbrGgvLl3GgvMnvGnDnLXGnrATrGnrMboGnuLl3HTATMnHTAgCnHTCTCTHTrGTvHTrHTvHTrJX8HTrLl8HTrMT8HTrMgoHTrOTrHTuOn3HTvAZrHTvDTvHTvGboHTvJU8HTvLl3HTvMXrHTvQb4HT4GT6HT4JT8HT4Jb#HT8Al3HT8GZrHT8GgrHT8HX4HT8Jb8HT8JnoHT8LTrHT8LgvHT8SToHT8SV8HUoJUoHUoJX8HUoLnrHXrLZoHXvAl3HX3LnrHX4FkvHX4LhrHX4MXoHX4OnoHZrAZ8HZrDb8HZrGZ8HZrJnrHZvGZ8HZvLnvHZ8JnvHZ8LhrHbCXJlHbMTAnHboJl4HbpLl3HbrJX8HbrLnrHbrMnvHbvRYrHgoSTrHgrFV8HgrGZ8HgrJXoHgrRnvHgvBb!HgvGTrHgvHX4HgvHn!HgvLTrHgvSU8HnDnLbHnFbJbHnvDn8Hn6GgvHn!BTvJTCTLnJTQgFnJTrAnvJTrLX4JTrOUoJTvFn3JTvLnrJTvNToJT3AgoJT3Jn4JT3LhvJT3ObrJT8AcrJT8Al3JT8JT8JT8JnoJT8LX4JT8LnrJT8MX3JT8Rg3JT8Sc8JUoBTvJU8AToJU8GZ8JU8GgvJU8JTrJU8JXrJU8JnrJU8LnvJU8ScvJXHnJlJXrGgvJXrJU8JXrLhrJXrMT8JXrMXrJXrQUoJXvCTvJXvGZ8JXvGgrJXvQT8JX8Ab8JX8DT8JX8GZ8JX8HZvJX8LnrJX8MT8JX8MXoJX8MnvJX8ST3JYGnCTJbAkGbJbCTAnJbLTAcJboDT3JboLb6JbrAnvJbrCn3JbrDl8JbrGboJbrIZoJbrJnvJbrMnvJbrQb4Jb8RZrJeAbAnJgJnFbJgScAnJgrATrJgvHZ8JgvMn4JlJlFbJlLiQXJlLjOnJlRbOlJlvNXoJlvRl3Jl4AcrJl8AUoJl8MnrJnFnMlJnHgGbJnoDT8JnoFV8JnoGgvJnoIT8JnoQToJnoRg3JnrCZ3JnrGgrJnrHTvJnrLf8JnrOX8JnvAT3JnvFZoJnvGT8JnvJl4JnvMT8JnvMX8JnvOXrJnvPX6JnvSX3JnvSZrJn3MT8Jn3MX8Jn3RTrLTATKnLTJnLTLTMXKnLTRTQlLToGb8LTrAZ8LTrCZ8LTrDb8LTrHT8LT3PX6LT4FZoLT$CTvLT$GgrLUvHX3LVoATrLVoAgoLVoJboLVoMX3LVoRg3LV8CZ3LV8FZoLV8GTvLXrDXoLXrFbrLXvAgvLXvFlrLXvLl3LXvRn6LX4Mb8LX8GT8LYCXMnLYrMnrLZoSTvLZrAZvLZrAloLZrFToLZrJXvLZrJboLZrJl4LZrLnrLZrMT8LZrOgvLZrRnvLZrST4LZvMX8LZvSlvLZ8AgoLZ8CT3LZ8JT8LZ8LV8LZ8LZoLZ8Lg8LZ8SV8LZ8SbrLZ$HT8LZ$Mn4La6CTvLbFbMnLbRYFTLbSnFZLboJT8LbrAT9LbrGb3LbrQb8LcrJX8LcrMXrLerHTvLerJbrLerNboLgrDb8LgrGZ8LgrHTrLgrMXrLgrSU8LgvJTrLgvLl3Lg6Ll3LhrLnrLhrMT8LhvAl4LiLnQXLkoAgrLkoJT8LkoJn4LlrSU8Ll3FZoLl3HTrLl3JX8Ll3JnoLl3LToLmLeFbLnDUFbLnLVAnLnrATrLnrAZoLnrAb8LnrAlrLnrGgvLnrJU8LnrLZrLnrLhrLnrMb8LnrOXrLnrSZ8LnvAb4LnvDTrLnvDl8LnvHTrLnvHbrLnvJT8LnvJU8LnvJbrLnvLhvLnvMX8LnvMb8LnvNnoLnvSU8Ln3Al3Ln4FZoLn4GT6Ln4JgvLn4LhrLn4MT8Ln4SToMToCZrMToJX8MToLX4MToLf8MToRg3MTrEloMTvGb6MT3BTrMT3Lb6MT8AcrMT8AgrMT8GZrMT8JnoMT8LnrMT8MX3MUOUAnMXAbFnMXoAloMXoJX8MXoLf8MXoLl8MXrAb8MXrDTvMXrGT8MXrGgrMXrHTrMXrLf8MXrMU8MXrOXvMXrQb8MXvGT8MXvHTrMXvLVoMX3AX3MX3Jn3MX3LhrMX3MX3MX4AlrMX4OboMX8GTvMX8GZrMX8GgrMX8JT8MX8JX8MX8LhrMX8MT8MYDUFbMYMgDbMbGnFfMbvLX4MbvLl3Mb8Mb8Mb8ST4MgGXCnMg8ATrMg8AgoMg8CZrMg8DTrMg8DboMg8HTrMg8JgrMg8LT8MloJXoMl8AhrMl8JT8MnLgAUMnoJXrMnoLX4MnoLhrMnoMT8MnrAl4MnrDb8MnrOTvMnrOgvMnrQb8MnrSU8MnvGgrMnvHZ8Mn3MToMn4DTrMn4LTrMn4Mg8NnBXAnOTFTFnOToAToOTrGgvOTrJX8OT3JXoOT6MTrOT8GgrOT8HTpOT8MToOUoHT8OUoJT8OUoLn3OXrAgoOXrDg8OXrMT8OXvSToOX6CTvOX8CZrOX8OgrOb6HgvOb8AToOb8MT8OcvLZ8OgvAlrOgvHTvOgvJTrOgvJnrOgvLZrOgvLn4OgvMT8OgvRTrOg8AZoOg8DbvOnrOXoOnvJn4OnvLhvOnvRTrOn3GgoOn3JnvOn6JbvOn8OTrPTGYFTPbBnFnPbGnDnPgDYQTPlrAnvPlrETvPlrLnvPlrMXvPlvFX4QTMTAnQTrJU8QYCnJlQYJlQlQbGTQbQb8JnrQb8LZoQb8LnvQb8MT8Qb8Ml8Qb8ST4QloAl4QloHZvQloJX8QloMn8QnJZOlRTrAZvRTrDTrRTvJn4RTvLhvRT4Jb8RZrAZrRZ8AkrRZ8JU8RZ8LV8RZ8LnvRbJlQXRg3GboRg3MnvRg8AZ8Rg8JboRg8Jl4RnLTCbRnvFl3RnvQb8SToAl4SToCZrSToFZoSToHXrSToJU8SToJgvSToJl4SToLhrSToMX3STrAlvSTrCT9STrCgrSTrGgrSTrHXrSTrHboSTrJnoSTrNboSTvLnrST4AZoST8Ab8ST8JT8SUoJn3SU6HZ#SU6JTvSU8Db8SU8HboSU8LgrSV8JT8SZrAcrSZrAl3SZrJT8SZrJnvSZrMT8SZvLUoSZ4FZoSZ8JnoSZ8RZrScoLnrScoMT8ScoMX8ScrAT4ScrAZ8ScrLZ8ScrLkvScvDb8ScvLf8ScvNToSgrFZrShvKnrSloHUoSloLnrSlrMXoSl8HgrSmrJUoSn3BX6",
+	    "ATFlOn3ATLgrDYAT4MTAnAT8LTMnAYJnRTrAbGgJnrAbLV8LnAbvNTAnAeFbLg3AgOYMXoAlQbFboAnDboAfAnJgoJTBToDgAnBUJbAl3BboDUAnCTDlvLnCTFTrSnCYoQTLnDTwAbAnDUDTrSnDUHgHgrDX8LXFnDbJXAcrETvLTLnGTFTQbrGTMnGToGT3DUFbGUJlPX3GbQg8LnGboJbFnGb3GgAYGgAg8ScGgMbAXrGgvAbAnGnJTLnvGnvATFgHTDT6ATHTrDlJnHYLnMn8HZrSbJTHZ8LTFnHbFTJUoHgSeMT8HgrLjAnHgvAbAnHlFUrDlHnDgvAnHnHTFT3HnQTGnrJTAaMXvJTGbCn3JTOgrAnJXvAXMnJbMg8SnJbMnRg3Jb8LTMnJnAl3OnJnGYrQlJnJlQY3LTDlCn3LTJjLg3LTLgvFXLTMg3GTLV8HUOgLXFZLg3LXNXrMnLX8QXFnLX9AlMYLYLXPXrLZAbJU8LZDUJU8LZMXrSnLZ$AgFnLaPXrDULbFYrMnLbMn8LXLboJgJgLeFbLg3LgLZrSnLgOYAgoLhrRnJlLkCTrSnLkOnLhrLnFX%AYLnFZoJXLnHTvJbLnLloAbMTATLf8MTHgJn3MTMXrAXMT3MTFnMUITvFnMXFX%AYMXMXvFbMXrFTDbMYAcMX3MbLf8SnMb8JbFnMgMXrMTMgvAXFnMgvGgCmMnAloSnMnFnJTrOXvMXSnOX8HTMnObJT8ScObLZFl3ObMXCZoPTLgrQXPUFnoQXPU3RXJlPX3RkQXPbrJXQlPlrJbFnQUAhrDbQXGnCXvQYLnHlvQbLfLnvRTOgvJbRXJYrQlRYLnrQlRbLnrQlRlFT8JlRlFnrQXSTClCn3STHTrAnSTLZQlrSTMnGTrSToHgGbSTrGTDnSTvGXCnST3HgFbSU3HXAXSbAnJn3SbFT8LnScLfLnv",
+	    "AT3JgJX8AT8FZoSnAT8JgFV8AT8LhrDbAZ8JT8DbAb8GgLhrAb8SkLnvAe8MT8SnAlMYJXLVAl3GYDTvAl3LfLnvBUDTvLl3CTOn3HTrCT3DUGgrCU8MT8AbCbFTrJUoCgrDb8MTDTLV8JX8DTLnLXQlDT8LZrSnDUQb8FZ8DUST4JnvDb8ScOUoDj6GbJl4GTLfCYMlGToAXvFnGboAXvLnGgAcrJn3GgvFnSToGnLf8JnvGn#HTDToHTLnFXJlHTvATFToHTvHTDToHTvMTAgoHT3STClvHT4AlFl6HT8HTDToHUoDgJTrHUoScMX3HbRZrMXoHboJg8LTHgDb8JTrHgMToLf8HgvLnLnoHnHn3HT4Hn6MgvAnJTJU8ScvJT3AaQT8JT8HTrAnJXrRg8AnJbAloMXoJbrATFToJbvMnoSnJgDb6GgvJgDb8MXoJgSX3JU8JguATFToJlPYLnQlJlQkDnLbJlQlFYJlJl8Lf8OTJnCTFnLbJnLTHXMnJnLXGXCnJnoFfRg3JnrMYRg3Jn3HgFl3KT8Dg8LnLTRlFnPTLTvPbLbvLVoSbrCZLXMY6HT3LXNU7DlrLXNXDTATLX8DX8LnLZDb8JU8LZMnoLhrLZSToJU8LZrLaLnrLZvJn3SnLZ8LhrSnLaJnoMT8LbFlrHTvLbrFTLnrLbvATLlvLb6OTFn3LcLnJZOlLeAT6Mn4LeJT3ObrLg6LXFlrLhrJg8LnLhvDlPX4LhvLfLnvLj6JTFT3LnFbrMXoLnQluCTvLnrQXCY6LnvLfLnvLnvMgLnvLnvSeLf8MTMbrJn3MT3JgST3MT8AnATrMT8LULnrMUMToCZrMUScvLf8MXoDT8SnMX6ATFToMX8AXMT8MX8FkMT8MX8HTrDUMX8ScoSnMYJT6CTvMgAcrMXoMg8SToAfMlvAXLg3MnFl3AnvOT3AnFl3OUoATHT8OU3RnLXrOXrOXrSnObPbvFn6Og8HgrSnOg8OX8DbPTvAgoJgPU3RYLnrPXrDnJZrPb8CTGgvPlrLTDlvPlvFUJnoQUvFXrQlQeMnoAl3QlrQlrSnRTFTrJUoSTDlLiLXSTFg6HT3STJgoMn4STrFTJTrSTrLZFl3ST4FnMXoSUrDlHUoScvHTvSnSfLkvMXo",
+	    "AUoAcrMXoAZ8HboAg8AbOg6ATFgAg8AloMXoAl3AT8JTrAl8MX8MXoCT3SToJU8Cl8Db8MXoDT8HgrATrDboOT8MXoGTOTrATMnGT8LhrAZ8GnvFnGnQXHToGgvAcrHTvAXvLl3HbrAZoMXoHgBlFXLg3HgMnFXrSnHgrSb8JUoHn6HT8LgvITvATrJUoJUoLZrRnvJU8HT8Jb8JXvFX8QT8JXvLToJTrJYrQnGnQXJgrJnoATrJnoJU8ScvJnvMnvMXoLTCTLgrJXLTJlRTvQlLbRnJlQYvLbrMb8LnvLbvFn3RnoLdCVSTGZrLeSTvGXCnLg3MnoLn3MToLlrETvMT8SToAl3MbrDU6GTvMb8LX4LhrPlrLXGXCnSToLf8Rg3STrDb8LTrSTvLTHXMnSb3RYLnMnSgOg6ATFg",
+	    "HUDlGnrQXrJTrHgLnrAcJYMb8DULc8LTvFgGnCk3Mg8JbAnLX4QYvFYHnMXrRUoJnGnvFnRlvFTJlQnoSTrBXHXrLYSUJgLfoMT8Se8DTrHbDb",
+	    "AbDl8SToJU8An3RbAb8ST8DUSTrGnrAgoLbFU6Db8LTrMg8AaHT8Jb8ObDl8SToJU8Pb3RlvFYoJl"
+	];
+	var codes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+	function getHangul(code) {
+	    if (code >= 40) {
+	        code = code + 168 - 40;
+	    }
+	    else if (code >= 19) {
+	        code = code + 97 - 19;
+	    }
+	    return lib$8.toUtf8String([225, (code >> 6) + 132, (code & 0x3f) + 128]);
+	}
+	var wordlist$1 = null;
+	function loadWords(lang) {
+	    if (wordlist$1 != null) {
+	        return;
+	    }
+	    wordlist$1 = [];
+	    data.forEach(function (data, length) {
+	        length += 4;
+	        for (var i = 0; i < data.length; i += length) {
+	            var word = "";
+	            for (var j = 0; j < length; j++) {
+	                word += getHangul(codes.indexOf(data[i + j]));
+	            }
+	            wordlist$1.push(word);
+	        }
+	    });
+	    wordlist$1.sort();
+	    // Verify the computed list matches the official list
+	    /* istanbul ignore if */
+	    if (wordlist.Wordlist.check(lang) !== "0xf9eddeace9c5d3da9c93cf7d3cd38f6a13ed3affb933259ae865714e8a3ae71a") {
+	        wordlist$1 = null;
+	        throw new Error("BIP39 Wordlist for ko (Korean) FAILED");
+	    }
+	}
+	var LangKo = /** @class */ (function (_super) {
+	    __extends(LangKo, _super);
+	    function LangKo() {
+	        return _super.call(this, "ko") || this;
+	    }
+	    LangKo.prototype.getWord = function (index) {
+	        loadWords(this);
+	        return wordlist$1[index];
+	    };
+	    LangKo.prototype.getWordIndex = function (word) {
+	        loadWords(this);
+	        return wordlist$1.indexOf(word);
+	    };
+	    return LangKo;
+	}(wordlist.Wordlist));
+	var langKo = new LangKo();
+	exports.langKo = langKo;
+	wordlist.Wordlist.register(langKo);
+
+	});
+
+	var langKo = /*@__PURE__*/getDefaultExportFromCjs(langKo_1);
+
+	var langIt_1 = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
+	    var extendStatics = function (d, b) {
+	        extendStatics = Object.setPrototypeOf ||
+	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	        return extendStatics(d, b);
+	    };
+	    return function (d, b) {
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+	var words = "AbacoAbbaglioAbbinatoAbeteAbissoAbolireAbrasivoAbrogatoAccadereAccennoAccusatoAcetoneAchilleAcidoAcquaAcreAcrilicoAcrobataAcutoAdagioAddebitoAddomeAdeguatoAderireAdipeAdottareAdulareAffabileAffettoAffissoAffrantoAforismaAfosoAfricanoAgaveAgenteAgevoleAggancioAgireAgitareAgonismoAgricoloAgrumetoAguzzoAlabardaAlatoAlbatroAlberatoAlboAlbumeAlceAlcolicoAlettoneAlfaAlgebraAlianteAlibiAlimentoAllagatoAllegroAllievoAllodolaAllusivoAlmenoAlogenoAlpacaAlpestreAltalenaAlternoAlticcioAltroveAlunnoAlveoloAlzareAmalgamaAmanitaAmarenaAmbitoAmbratoAmebaAmericaAmetistaAmicoAmmassoAmmendaAmmirareAmmonitoAmoreAmpioAmpliareAmuletoAnacardoAnagrafeAnalistaAnarchiaAnatraAncaAncellaAncoraAndareAndreaAnelloAngeloAngolareAngustoAnimaAnnegareAnnidatoAnnoAnnuncioAnonimoAnticipoAnziApaticoAperturaApodeApparireAppetitoAppoggioApprodoAppuntoAprileArabicaArachideAragostaAraldicaArancioAraturaArazzoArbitroArchivioArditoArenileArgentoArgineArgutoAriaArmoniaArneseArredatoArringaArrostoArsenicoArsoArteficeArzilloAsciuttoAscoltoAsepsiAsetticoAsfaltoAsinoAsolaAspiratoAsproAssaggioAsseAssolutoAssurdoAstaAstenutoAsticeAstrattoAtavicoAteismoAtomicoAtonoAttesaAttivareAttornoAttritoAttualeAusilioAustriaAutistaAutonomoAutunnoAvanzatoAvereAvvenireAvvisoAvvolgereAzioneAzotoAzzimoAzzurroBabeleBaccanoBacinoBacoBadessaBadilataBagnatoBaitaBalconeBaldoBalenaBallataBalzanoBambinoBandireBaraondaBarbaroBarcaBaritonoBarlumeBaroccoBasilicoBassoBatostaBattutoBauleBavaBavosaBeccoBeffaBelgioBelvaBendaBenevoleBenignoBenzinaBereBerlinaBetaBibitaBiciBidoneBifidoBigaBilanciaBimboBinocoloBiologoBipedeBipolareBirbanteBirraBiscottoBisestoBisnonnoBisonteBisturiBizzarroBlandoBlattaBollitoBonificoBordoBoscoBotanicoBottinoBozzoloBraccioBradipoBramaBrancaBravuraBretellaBrevettoBrezzaBrigliaBrillanteBrindareBroccoloBrodoBronzinaBrulloBrunoBubboneBucaBudinoBuffoneBuioBulboBuonoBurloneBurrascaBussolaBustaCadettoCaducoCalamaroCalcoloCalesseCalibroCalmoCaloriaCambusaCamerataCamiciaCamminoCamolaCampaleCanapaCandelaCaneCaninoCanottoCantinaCapaceCapelloCapitoloCapogiroCapperoCapraCapsulaCarapaceCarcassaCardoCarismaCarovanaCarrettoCartolinaCasaccioCascataCasermaCasoCassoneCastelloCasualeCatastaCatenaCatrameCautoCavilloCedibileCedrataCefaloCelebreCellulareCenaCenoneCentesimoCeramicaCercareCertoCerumeCervelloCesoiaCespoCetoChelaChiaroChiccaChiedereChimeraChinaChirurgoChitarraCiaoCiclismoCifrareCignoCilindroCiottoloCircaCirrosiCitricoCittadinoCiuffoCivettaCivileClassicoClinicaCloroCoccoCodardoCodiceCoerenteCognomeCollareColmatoColoreColposoColtivatoColzaComaCometaCommandoComodoComputerComuneConcisoCondurreConfermaCongelareConiugeConnessoConoscereConsumoContinuoConvegnoCopertoCopioneCoppiaCopricapoCorazzaCordataCoricatoCorniceCorollaCorpoCorredoCorsiaCorteseCosmicoCostanteCotturaCovatoCratereCravattaCreatoCredereCremosoCrescitaCretaCricetoCrinaleCrisiCriticoCroceCronacaCrostataCrucialeCruscaCucireCuculoCuginoCullatoCupolaCuratoreCursoreCurvoCuscinoCustodeDadoDainoDalmataDamerinoDanielaDannosoDanzareDatatoDavantiDavveroDebuttoDecennioDecisoDeclinoDecolloDecretoDedicatoDefinitoDeformeDegnoDelegareDelfinoDelirioDeltaDemenzaDenotatoDentroDepositoDerapataDerivareDerogaDescrittoDesertoDesiderioDesumereDetersivoDevotoDiametroDicembreDiedroDifesoDiffusoDigerireDigitaleDiluvioDinamicoDinnanziDipintoDiplomaDipoloDiradareDireDirottoDirupoDisagioDiscretoDisfareDisgeloDispostoDistanzaDisumanoDitoDivanoDiveltoDividereDivoratoDobloneDocenteDoganaleDogmaDolceDomatoDomenicaDominareDondoloDonoDormireDoteDottoreDovutoDozzinaDragoDruidoDubbioDubitareDucaleDunaDuomoDupliceDuraturoEbanoEccessoEccoEclissiEconomiaEderaEdicolaEdileEditoriaEducareEgemoniaEgliEgoismoEgregioElaboratoElargireEleganteElencatoElettoElevareElficoElicaElmoElsaElusoEmanatoEmblemaEmessoEmiroEmotivoEmozioneEmpiricoEmuloEndemicoEnduroEnergiaEnfasiEnotecaEntrareEnzimaEpatiteEpilogoEpisodioEpocaleEppureEquatoreErarioErbaErbosoEredeEremitaErigereErmeticoEroeErosivoErranteEsagonoEsameEsanimeEsaudireEscaEsempioEsercitoEsibitoEsigenteEsistereEsitoEsofagoEsortatoEsosoEspansoEspressoEssenzaEssoEstesoEstimareEstoniaEstrosoEsultareEtilicoEtnicoEtruscoEttoEuclideoEuropaEvasoEvidenzaEvitatoEvolutoEvvivaFabbricaFaccendaFachiroFalcoFamigliaFanaleFanfaraFangoFantasmaFareFarfallaFarinosoFarmacoFasciaFastosoFasulloFaticareFatoFavolosoFebbreFecolaFedeFegatoFelpaFeltroFemminaFendereFenomenoFermentoFerroFertileFessuraFestivoFettaFeudoFiabaFiduciaFifaFiguratoFiloFinanzaFinestraFinireFioreFiscaleFisicoFiumeFlaconeFlamencoFleboFlemmaFloridoFluenteFluoroFobicoFocacciaFocosoFoderatoFoglioFolataFolcloreFolgoreFondenteFoneticoFoniaFontanaForbitoForchettaForestaFormicaFornaioForoFortezzaForzareFosfatoFossoFracassoFranaFrassinoFratelloFreccettaFrenataFrescoFrigoFrollinoFrondeFrugaleFruttaFucilataFucsiaFuggenteFulmineFulvoFumanteFumettoFumosoFuneFunzioneFuocoFurboFurgoneFuroreFusoFutileGabbianoGaffeGalateoGallinaGaloppoGamberoGammaGaranziaGarboGarofanoGarzoneGasdottoGasolioGastricoGattoGaudioGazeboGazzellaGecoGelatinaGelsoGemelloGemmatoGeneGenitoreGennaioGenotipoGergoGhepardoGhiaccioGhisaGialloGildaGineproGiocareGioielloGiornoGioveGiratoGironeGittataGiudizioGiuratoGiustoGlobuloGlutineGnomoGobbaGolfGomitoGommoneGonfioGonnaGovernoGracileGradoGraficoGrammoGrandeGrattareGravosoGraziaGrecaGreggeGrifoneGrigioGrinzaGrottaGruppoGuadagnoGuaioGuantoGuardareGufoGuidareIbernatoIconaIdenticoIdillioIdoloIdraIdricoIdrogenoIgieneIgnaroIgnoratoIlareIllesoIllogicoIlludereImballoImbevutoImboccoImbutoImmaneImmersoImmolatoImpaccoImpetoImpiegoImportoImprontaInalareInarcareInattivoIncantoIncendioInchinoIncisivoInclusoIncontroIncrocioIncuboIndagineIndiaIndoleIneditoInfattiInfilareInflittoIngaggioIngegnoIngleseIngordoIngrossoInnescoInodoreInoltrareInondatoInsanoInsettoInsiemeInsonniaInsulinaIntasatoInteroIntonacoIntuitoInumidireInvalidoInveceInvitoIperboleIpnoticoIpotesiIppicaIrideIrlandaIronicoIrrigatoIrrorareIsolatoIsotopoIstericoIstitutoIstriceItaliaIterareLabbroLabirintoLaccaLaceratoLacrimaLacunaLaddoveLagoLampoLancettaLanternaLardosoLargaLaringeLastraLatenzaLatinoLattugaLavagnaLavoroLegaleLeggeroLemboLentezzaLenzaLeoneLepreLesivoLessatoLestoLetteraleLevaLevigatoLiberoLidoLievitoLillaLimaturaLimitareLimpidoLineareLinguaLiquidoLiraLiricaLiscaLiteLitigioLivreaLocandaLodeLogicaLombareLondraLongevoLoquaceLorenzoLotoLotteriaLuceLucidatoLumacaLuminosoLungoLupoLuppoloLusingaLussoLuttoMacabroMacchinaMaceroMacinatoMadamaMagicoMagliaMagneteMagroMaiolicaMalafedeMalgradoMalintesoMalsanoMaltoMalumoreManaManciaMandorlaMangiareManifestoMannaroManovraMansardaMantideManubrioMappaMaratonaMarcireMarettaMarmoMarsupioMascheraMassaiaMastinoMaterassoMatricolaMattoneMaturoMazurcaMeandroMeccanicoMecenateMedesimoMeditareMegaMelassaMelisMelodiaMeningeMenoMensolaMercurioMerendaMerloMeschinoMeseMessereMestoloMetalloMetodoMettereMiagolareMicaMicelioMicheleMicroboMidolloMieleMiglioreMilanoMiliteMimosaMineraleMiniMinoreMirinoMirtilloMiscelaMissivaMistoMisurareMitezzaMitigareMitraMittenteMnemonicoModelloModificaModuloMoganoMogioMoleMolossoMonasteroMoncoMondinaMonetarioMonileMonotonoMonsoneMontatoMonvisoMoraMordereMorsicatoMostroMotivatoMotosegaMottoMovenzaMovimentoMozzoMuccaMucosaMuffaMughettoMugnaioMulattoMulinelloMultiploMummiaMuntoMuovereMuraleMusaMuscoloMusicaMutevoleMutoNababboNaftaNanometroNarcisoNariceNarratoNascereNastrareNaturaleNauticaNaviglioNebulosaNecrosiNegativoNegozioNemmenoNeofitaNerettoNervoNessunoNettunoNeutraleNeveNevroticoNicchiaNinfaNitidoNobileNocivoNodoNomeNominaNordicoNormaleNorvegeseNostranoNotareNotiziaNotturnoNovellaNucleoNullaNumeroNuovoNutrireNuvolaNuzialeOasiObbedireObbligoObeliscoOblioOboloObsoletoOccasioneOcchioOccidenteOccorrereOccultareOcraOculatoOdiernoOdorareOffertaOffrireOffuscatoOggettoOggiOgnunoOlandeseOlfattoOliatoOlivaOlogrammaOltreOmaggioOmbelicoOmbraOmegaOmissioneOndosoOnereOniceOnnivoroOnorevoleOntaOperatoOpinioneOppostoOracoloOrafoOrdineOrecchinoOreficeOrfanoOrganicoOrigineOrizzonteOrmaOrmeggioOrnativoOrologioOrrendoOrribileOrtensiaOrticaOrzataOrzoOsareOscurareOsmosiOspedaleOspiteOssaOssidareOstacoloOsteOtiteOtreOttagonoOttimoOttobreOvaleOvestOvinoOviparoOvocitoOvunqueOvviareOzioPacchettoPacePacificoPadellaPadronePaesePagaPaginaPalazzinaPalesarePallidoPaloPaludePandoroPannelloPaoloPaonazzoPapricaParabolaParcellaParerePargoloPariParlatoParolaPartireParvenzaParzialePassivoPasticcaPataccaPatologiaPattumePavonePeccatoPedalarePedonalePeggioPelosoPenarePendicePenisolaPennutoPenombraPensarePentolaPepePepitaPerbenePercorsoPerdonatoPerforarePergamenaPeriodoPermessoPernoPerplessoPersuasoPertugioPervasoPesatorePesistaPesoPestiferoPetaloPettinePetulantePezzoPiacerePiantaPiattinoPiccinoPicozzaPiegaPietraPifferoPigiamaPigolioPigroPilaPiliferoPillolaPilotaPimpantePinetaPinnaPinoloPioggiaPiomboPiramidePireticoPiritePirolisiPitonePizzicoPlaceboPlanarePlasmaPlatanoPlenarioPochezzaPoderosoPodismoPoesiaPoggiarePolentaPoligonoPollicePolmonitePolpettaPolsoPoltronaPolverePomicePomodoroPontePopolosoPorfidoPorosoPorporaPorrePortataPosaPositivoPossessoPostulatoPotassioPoterePranzoPrassiPraticaPreclusoPredicaPrefissoPregiatoPrelievoPremerePrenotarePreparatoPresenzaPretestoPrevalsoPrimaPrincipePrivatoProblemaProcuraProdurreProfumoProgettoProlungaPromessaPronomePropostaProrogaProtesoProvaPrudentePrugnaPruritoPsichePubblicoPudicaPugilatoPugnoPulcePulitoPulsantePuntarePupazzoPupillaPuroQuadroQualcosaQuasiQuerelaQuotaRaccoltoRaddoppioRadicaleRadunatoRafficaRagazzoRagioneRagnoRamarroRamingoRamoRandagioRantolareRapatoRapinaRappresoRasaturaRaschiatoRasenteRassegnaRastrelloRataRavvedutoRealeRecepireRecintoReclutaReconditoRecuperoRedditoRedimereRegalatoRegistroRegolaRegressoRelazioneRemareRemotoRennaReplicaReprimereReputareResaResidenteResponsoRestauroReteRetinaRetoricaRettificaRevocatoRiassuntoRibadireRibelleRibrezzoRicaricaRiccoRicevereRiciclatoRicordoRicredutoRidicoloRidurreRifasareRiflessoRiformaRifugioRigareRigettatoRighelloRilassatoRilevatoRimanereRimbalzoRimedioRimorchioRinascitaRincaroRinforzoRinnovoRinomatoRinsavitoRintoccoRinunciaRinvenireRiparatoRipetutoRipienoRiportareRipresaRipulireRisataRischioRiservaRisibileRisoRispettoRistoroRisultatoRisvoltoRitardoRitegnoRitmicoRitrovoRiunioneRivaRiversoRivincitaRivoltoRizomaRobaRoboticoRobustoRocciaRocoRodaggioRodereRoditoreRogitoRollioRomanticoRompereRonzioRosolareRospoRotanteRotondoRotulaRovescioRubizzoRubricaRugaRullinoRumineRumorosoRuoloRupeRussareRusticoSabatoSabbiareSabotatoSagomaSalassoSaldaturaSalgemmaSalivareSalmoneSaloneSaltareSalutoSalvoSapereSapidoSaporitoSaracenoSarcasmoSartoSassosoSatelliteSatiraSatolloSaturnoSavanaSavioSaziatoSbadiglioSbalzoSbancatoSbarraSbattereSbavareSbendareSbirciareSbloccatoSbocciatoSbrinareSbruffoneSbuffareScabrosoScadenzaScalaScambiareScandaloScapolaScarsoScatenareScavatoSceltoScenicoScettroSchedaSchienaSciarpaScienzaScindereScippoSciroppoScivoloSclerareScodellaScolpitoScompartoSconfortoScoprireScortaScossoneScozzeseScribaScrollareScrutinioScuderiaScultoreScuolaScuroScusareSdebitareSdoganareSeccaturaSecondoSedanoSeggiolaSegnalatoSegregatoSeguitoSelciatoSelettivoSellaSelvaggioSemaforoSembrareSemeSeminatoSempreSensoSentireSepoltoSequenzaSerataSerbatoSerenoSerioSerpenteSerraglioServireSestinaSetolaSettimanaSfaceloSfaldareSfamatoSfarzosoSfaticatoSferaSfidaSfilatoSfingeSfocatoSfoderareSfogoSfoltireSforzatoSfrattoSfruttatoSfuggitoSfumareSfusoSgabelloSgarbatoSgonfiareSgorbioSgrassatoSguardoSibiloSiccomeSierraSiglaSignoreSilenzioSillabaSimboloSimpaticoSimulatoSinfoniaSingoloSinistroSinoSintesiSinusoideSiparioSismaSistoleSituatoSlittaSlogaturaSlovenoSmarritoSmemoratoSmentitoSmeraldoSmilzoSmontareSmottatoSmussatoSnellireSnervatoSnodoSobbalzoSobrioSoccorsoSocialeSodaleSoffittoSognoSoldatoSolenneSolidoSollazzoSoloSolubileSolventeSomaticoSommaSondaSonettoSonniferoSopireSoppesoSopraSorgereSorpassoSorrisoSorsoSorteggioSorvolatoSospiroSostaSottileSpadaSpallaSpargereSpatolaSpaventoSpazzolaSpecieSpedireSpegnereSpelaturaSperanzaSpessoreSpettraleSpezzatoSpiaSpigolosoSpillatoSpinosoSpiraleSplendidoSportivoSposoSprangaSprecareSpronatoSpruzzoSpuntinoSquilloSradicareSrotolatoStabileStaccoStaffaStagnareStampatoStantioStarnutoStaseraStatutoSteloSteppaSterzoStilettoStimaStirpeStivaleStizzosoStonatoStoricoStrappoStregatoStriduloStrozzareStruttoStuccareStufoStupendoSubentroSuccosoSudoreSuggeritoSugoSultanoSuonareSuperboSupportoSurgelatoSurrogatoSussurroSuturaSvagareSvedeseSveglioSvelareSvenutoSveziaSviluppoSvistaSvizzeraSvoltaSvuotareTabaccoTabulatoTacciareTaciturnoTaleTalismanoTamponeTanninoTaraTardivoTargatoTariffaTarpareTartarugaTastoTatticoTavernaTavolataTazzaTecaTecnicoTelefonoTemerarioTempoTemutoTendoneTeneroTensioneTentacoloTeoremaTermeTerrazzoTerzettoTesiTesseratoTestatoTetroTettoiaTifareTigellaTimbroTintoTipicoTipografoTiraggioTiroTitanioTitoloTitubanteTizioTizzoneToccareTollerareToltoTombolaTomoTonfoTonsillaTopazioTopologiaToppaTorbaTornareTorroneTortoraToscanoTossireTostaturaTotanoTraboccoTracheaTrafilaTragediaTralcioTramontoTransitoTrapanoTrarreTraslocoTrattatoTraveTrecciaTremolioTrespoloTributoTrichecoTrifoglioTrilloTrinceaTrioTristezzaTrituratoTrivellaTrombaTronoTroppoTrottolaTrovareTruccatoTubaturaTuffatoTulipanoTumultoTunisiaTurbareTurchinoTutaTutelaUbicatoUccelloUccisoreUdireUditivoUffaUfficioUgualeUlisseUltimatoUmanoUmileUmorismoUncinettoUngereUnghereseUnicornoUnificatoUnisonoUnitarioUnteUovoUpupaUraganoUrgenzaUrloUsanzaUsatoUscitoUsignoloUsuraioUtensileUtilizzoUtopiaVacanteVaccinatoVagabondoVagliatoValangaValgoValicoVallettaValorosoValutareValvolaVampataVangareVanitosoVanoVantaggioVanveraVaporeVaranoVarcatoVarianteVascaVedettaVedovaVedutoVegetaleVeicoloVelcroVelinaVellutoVeloceVenatoVendemmiaVentoVeraceVerbaleVergognaVerificaVeroVerrucaVerticaleVescicaVessilloVestaleVeteranoVetrinaVetustoViandanteVibranteVicendaVichingoVicinanzaVidimareVigiliaVignetoVigoreVileVillanoViminiVincitoreViolaViperaVirgolaVirologoVirulentoViscosoVisioneVispoVissutoVisuraVitaVitelloVittimaVivandaVividoViziareVoceVogaVolatileVolereVolpeVoragineVulcanoZampognaZannaZappatoZatteraZavorraZefiroZelanteZeloZenzeroZerbinoZibettoZincoZirconeZittoZollaZoticoZuccheroZufoloZuluZuppa";
+	var wordlist$1 = null;
+	function loadWords(lang) {
+	    if (wordlist$1 != null) {
+	        return;
+	    }
+	    wordlist$1 = words.replace(/([A-Z])/g, " $1").toLowerCase().substring(1).split(" ");
+	    // Verify the computed list matches the official list
+	    /* istanbul ignore if */
+	    if (wordlist.Wordlist.check(lang) !== "0x5c1362d88fd4cf614a96f3234941d29f7d37c08c5292fde03bf62c2db6ff7620") {
+	        wordlist$1 = null;
+	        throw new Error("BIP39 Wordlist for it (Italian) FAILED");
+	    }
+	}
+	var LangIt = /** @class */ (function (_super) {
+	    __extends(LangIt, _super);
+	    function LangIt() {
+	        return _super.call(this, "it") || this;
+	    }
+	    LangIt.prototype.getWord = function (index) {
+	        loadWords(this);
+	        return wordlist$1[index];
+	    };
+	    LangIt.prototype.getWordIndex = function (word) {
+	        loadWords(this);
+	        return wordlist$1.indexOf(word);
+	    };
+	    return LangIt;
+	}(wordlist.Wordlist));
+	var langIt = new LangIt();
+	exports.langIt = langIt;
+	wordlist.Wordlist.register(langIt);
+
+	});
+
+	var langIt = /*@__PURE__*/getDefaultExportFromCjs(langIt_1);
+
+	var langZh = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
+	    var extendStatics = function (d, b) {
+	        extendStatics = Object.setPrototypeOf ||
+	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	        return extendStatics(d, b);
+	    };
+	    return function (d, b) {
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+
+	var data = "}aE#4A=Yv&co#4N#6G=cJ&SM#66|/Z#4t&kn~46#4K~4q%b9=IR#7l,mB#7W_X2*dl}Uo~7s}Uf&Iw#9c&cw~6O&H6&wx&IG%v5=IQ~8a&Pv#47$PR&50%Ko&QM&3l#5f,D9#4L|/H&tQ;v0~6n]nN<di,AM=W5%QO&ka&ua,hM^tm=zV=JA=wR&+X]7P&NB#4J#5L|/b[dA}tJ<Do&6m&u2[U1&Kb.HM&mC=w0&MW<rY,Hq#6M}QG,13&wP}Jp]Ow%ue&Kg<HP<D9~4k~9T&I2_c6$9T#9/[C5~7O~4a=cs&O7=KK=An&l9$6U$8A&uD&QI|/Y&bg}Ux&F2#6b}E2&JN&kW&kp=U/&bb=Xl<Cj}k+~5J#6L&5z&9i}b4&Fo,ho(X0_g3~4O$Fz&QE<HN=Ww]6/%GF-Vw=tj&/D&PN#9g=YO}cL&Of&PI~5I&Ip=vU=IW#9G;0o-wU}ss&QR<BT&R9=tk$PY_dh&Pq-yh]7T,nj.Xu=EP&76=cI&Fs*Xg}z7$Gb&+I=DF,AF=cA}rL#7j=Dz&3y<Aa$52=PQ}b0(iY$Fa}oL&xV#6U=ec=WZ,xh%RY<dp#9N&Fl&44=WH*A7=sh&TB&8P=07;u+&PK}uh}J5#72)V/=xC,AB$k0&f6;1E|+5=1B,3v]6n&wR%b+&xx]7f=Ol}fl;+D^wG]7E;nB;uh^Ir&l5=JL,nS=cf=g5;u6|/Q$Gc=MH%Hg#5d%M6^86=U+$Gz,l/,ir^5y&Ba&/F-IY&FI&be%IZ#77&PW_Nu$kE(Yf&NX]7Z,Jy&FJ(Xo&Nz#/d=y7&MX<Ag}Z+;nE]Dt(iG#4D=13&Pj~4c%v8&Zo%OL&/X#4W<HR&ie~6J_1O(Y2=y5=Ad*cv_eB#6k&PX:BU#7A;uk&Ft&Fx_dD=U2;vB=U5=4F}+O&GN.HH:9s=b0%NV(jO&IH=JT}Z9=VZ<Af,Kx^4m&uJ%c6,6r;9m#+L}cf%Kh&F3~4H=vP}bu,Hz|++,1w]nv}k6;uu$jw*Kl*WX&uM[x7&Fr[m7$NO&QN]hu=JN}nR^8g#/h(ps|KC;vd}xz=V0}p6&FD$G1#7K<bG_4p~8g&cf;u4=tl}+k%5/}fz;uw<cA=u1}gU}VM=LJ=eX&+L&Pr#4U}p2:nC,2K]7H:jF&9x}uX#9O=MB<fz~8X~5m&4D&kN&u5%E/(h7(ZF&VG<de(qM|/e-Wt=3x(a+,/R]f/&ND$Ro&nU}0g=KA%kH&NK$Ke<dS}cB&IX~5g$TN]6m=Uv,Is&Py=Ef%Kz#+/%bi&+A<F4$OG&4C&FL#9V<Zk=2I_eE&6c]nw&kq$HG}y+&A8$P3}OH=XP]70%IS(AJ_gH%GZ&tY&AZ=vb~6y&/r=VI=Wv<Zi=fl=xf&eL}c8}OL=MJ=g8$F7=YT}9u=0+^xC}JH&nL^N0~4T]K2,Cy%OC#6s;vG(AC^xe^cG&MF}Br#9P;wD-7h$O/&xA}Fn^PC]6i]7G&8V$Qs;vl(TB~73~4l<mW&6V=2y&uY&+3)aP}XF;LP&kx$wU=t7;uy<FN&lz)7E=Oo*Y+;wI}9q}le;J6&Ri&4t&Qr#8B=cb&vG=J5|Ql(h5<Yy~4+}QD,Lx=wn%K/&RK=dO&Pw,Q9=co%4u;9u}g0@6a^4I%b0=zo|/c&tX=dQ=OS#+b=yz_AB&wB&Pm=W9$HP_gR=62=AO=ti=hI,oA&jr&dH=tm&b6$P2(x8=zi;nG~7F;05]0n[Ix&3m}rg=Xp=cd&uz]7t;97=cN;vV<jf&FF&F1=6Q&Ik*Kk&P4,2z=fQ]7D&3u,H0=d/}Uw<ZN<7R}Kv;0f$H7,MD]7n$F0#88~9Z%da=by;+T#/u=VF&fO&kr^kf<AB]sU,I5$Ng&Pz;0i&QD&vM=Yl:BM;nJ_xJ]U7&Kf&30,3f|Z9*dC)je_jA&Q4&Kp$NH(Yz#6S&Id%Ib=KX,AD=KV%dP}tW&Pk^+E_Ni=cq,3R}VZ(Si=b+}rv;0j}rZ]uA,/w(Sx&Jv$w9&4d&wE,NJ$Gy=J/]Ls#7k<ZQ<Y/&uj]Ov$PM;v3,2F&+u:up=On&3e,Jv;90=J+&Qm]6q}bK#+d~8Y(h2]hA;99&AS=I/}qB&dQ}yJ-VM}Vl&ui,iB&G3|Dc]7d=eQ%dX%JC_1L~4d^NP;vJ&/1)ZI#7N]9X[bQ&PL=0L(UZ,Lm&kc&IR}n7(iR<AQ<dg=33=vN}ft}au]7I,Ba=x9=dR~6R&Tq=Xi,3d$Nr&Bc}DI&ku&vf]Dn,/F&iD,Ll&Nw=0y&I7=Ls=/A&tU=Qe}Ua&uk&+F=g4=gh=Vj#+1&Qn}Uy*44#5F,Pc&Rz*Xn=oh=5W;0n_Nf(iE<Y7=vr=Zu]oz#5Z%mI=kN=Bv_Jp(T2;vt_Ml<FS&uI=L/&6P]64$M7}86<bo%QX(SI%IY&VK=Al&Ux;vv;ut*E/%uh<ZE|O3,M2(yc]yu=Wk&tp:Ex}hr,Cl&WE)+Z=8U}I2_4Q,hA_si=iw=OM=tM=yZ%Ia=U7;wT}b+;uo=Za}yS!5x}HD}fb#5O_dA;Nv%uB(yB;01(Sf}Fk;v7}Pt#8v<mZ#7L,/r&Pl~4w&f5=Ph$Fw_LF&8m,bL=yJ&BH}p/*Jn}tU~5Q;wB(h6]Df]8p^+B;E4&Wc=d+;Ea&bw$8C&FN,DM=Yf}mP~5w=fT#6V=mC=Fi=AV}jB&AN}lW}aH#/D)dZ;hl;vE}/7,CJ;31&w8,hj%u9_Js=jJ&4M~8k=TN&eC}nL&uc-wi&lX}dj=Mv=e2#6u=cr$uq$6G]8W}Jb:nm=Yg<b3(UA;vX&6n&xF=KT,jC,De&R8&oY=Zv&oB]7/=Z2&Oa}bf,hh(4h^tZ&72&Nx;D2&xL~5h~40)ZG)h+=OJ&RA]Bv$yB=Oq=df,AQ%Jn}OJ;11,3z&Tl&tj;v+^Hv,Dh(id=s+]7N&N3)9Q~8f,S4=uW=w4&uX,LX&3d]CJ&yp&8x<b2_do&lP=y/<cy_dG=Oi=7R(VH(lt_1T,Iq_AA;12^6T%k6#8K[B1{oO<AU[Bt;1b$9S&Ps<8T=St{bY,jB(Zp&63&Uv$9V,PM]6v&Af}zW[bW_oq}sm}nB&Kq&gC&ff_eq_2m&5F&TI}rf}Gf;Zr_z9;ER&jk}iz_sn<BN~+n&vo=Vi%97|ZR=Wc,WE&6t]6z%85(ly#84=KY)6m_5/=aX,N3}Tm&he&6K]tR_B2-I3;u/&hU&lH<AP=iB&IA=XL;/5&Nh=wv<BH#79=vS=zl<AA=0X_RG}Bw&9p$NW,AX&kP_Lp&/Z(Tc]Mu}hs#6I}5B&cI<bq&H9#6m=K9}vH(Y1(Y0#4B&w6,/9&gG<bE,/O=zb}I4_l8<B/;wL%Qo<HO[Mq=XX}0v&BP&F4(mG}0i}nm,EC=9u{I3,xG&/9=JY*DK&hR)BX=EI=cx=b/{6k}yX%A+&wa}Xb=la;wi^lL;0t}jo&Qb=xg=XB}iO<qo{bR=NV&8f=a0&Jy;0v=uK)HK;vN#6h&jB(h/%ud&NI%wY.X7=Pt}Cu-uL&Gs_hl%mH,tm]78=Lb^Q0#7Y=1u<Bt&+Q=Co_RH,w3;1e}ux<aU;ui}U3&Q5%bt]63&UQ|0l&uL}O7&3o,AV&dm|Nj(Xt*5+(Uu&Hh(p7(UF=VR=Bp^Jl&Hd[ix)9/=Iq]C8<67]66}mB%6f}bb}JI]8T$HA}db=YM&pa=2J}tS&Y0=PS&y4=cX$6E,hX,XP&nR;04,FQ&l0&Vm_Dv#5Y~8Z=Bi%MA]6x=JO:+p,Az&9q,Hj~6/}SD=K1:EJ}nA;Qo#/E]9R,Ie&6X%W3]61&v4=xX_MC=0q;06(Xq=fs}IG}Dv=0l}o7$iZ;9v&LH&DP-7a&OY,SZ,Kz,Cv&dh=fx|Nh,F/~7q=XF&w+;9n&Gw;0h}Z7<7O&JK(S7&LS<AD<ac=wo<Dt&zw%4B=4v#8P;9o~6p*vV=Tm,Or&I6=1q}nY=P0=gq&Bl&Uu,Ch%yb}UY=zh}dh}rl(T4_xk(YA#8R*xH,IN}Jn]7V}C4&Ty}j3]7p=cL=3h&wW%Qv<Z3=f0&RI&+S(ic_zq}oN&/Y=z1;Td=LW=0e=OI(Vc,+b^ju(UL;0r:Za%8v=Rp=zw&58&73&wK}qX]6y&8E)a2}WR=wP^ur&nQ<cH}Re=Aq&wk}Q0&+q=PP,Gc|/d^k5,Fw]8Y}Pg]p3=ju=ed}r5_yf&Cs]7z$/G<Cm&Jp&54_1G_gP_Ll}JZ;0u]k8_7k(Sg]65{9i=LN&Sx&WK,iW&fD&Lk{9a}Em-9c#8N&io=sy]8d&nT&IK(lx#7/$lW(Td<s8~49,3o<7Y=MW(T+_Jr&Wd,iL}Ct=xh&5V;v4&8n%Kx=iF&l2_0B{B+,If(J0,Lv;u8=Kx-vB=HC&vS=Z6&fU&vE^xK;3D=4h=MR#45:Jw;0d}iw=LU}I5=I0]gB*im,K9}GU,1k_4U&Tt=Vs(iX&lU(TF#7y,ZO}oA&m5#5P}PN}Uz=hM<B1&FB<aG,e6~7T<tP(UQ_ZT=wu&F8)aQ]iN,1r_Lo&/g:CD}84{J1_Ki&Na&3n$jz&FE=dc;uv;va}in}ll=fv(h1&3h}fp=Cy}BM(+E~8m}lo%v7=hC(T6$cj=BQ=Bw(DR,2j=Ks,NS|F+;00=fU=70}Mb(YU;+G&m7&hr=Sk%Co]t+(X5_Jw}0r}gC(AS-IP&QK<Z2#8Q$WC]WX}T2&pG_Ka,HC=R4&/N;Z+;ch(C7,D4$3p_Mk&B2$8D=n9%Ky#5z(CT&QJ#7B]DC]gW}nf~5M;Iw#80}Tc_1F#4Z-aC}Hl=ph=fz,/3=aW}JM}nn;DG;vm}wn,4P}T3;wx&RG$u+}zK=0b;+J_Ek{re<aZ=AS}yY#5D]7q,Cp}xN=VP*2C}GZ}aG~+m_Cs=OY#6r]6g<GS}LC(UB=3A=Bo}Jy<c4}Is;1P<AG}Op<Z1}ld}nS=1Z,yM&95&98=CJ(4t:2L$Hk=Zo}Vc;+I}np&N1}9y=iv}CO*7p=jL)px]tb^zh&GS&Vl%v/;vR=14=zJ&49|/f]hF}WG;03=8P}o/&Gg&rp;DB,Kv}Ji&Pb;aA^ll(4j%yt}+K$Ht#4y&hY]7Y<F1,eN}bG(Uh%6Z]t5%G7;+F_RE;it}tL=LS&Da=Xx(S+(4f=8G=yI}cJ}WP=37=jS}pX}hd)fp<A8=Jt~+o$HJ=M6}iX=g9}CS=dv=Cj(mP%Kd,xq|+9&LD(4/=Xm&QP=Lc}LX&fL;+K=Op(lu=Qs.qC:+e&L+=Jj#8w;SL]7S(b+#4I=c1&nG_Lf&uH;+R)ZV<bV%B/,TE&0H&Jq&Ah%OF&Ss(p2,Wv&I3=Wl}Vq;1L&lJ#9b_1H=8r=b8=JH(SZ=hD=J2#7U,/U#/X~6P,FU<eL=jx,mG=hG=CE&PU=Se(qX&LY=X6=y4&tk&QQ&tf=4g&xI}W+&mZ=Dc#7w}Lg;DA;wQ_Kb(cJ=hR%yX&Yb,hw{bX_4X;EP;1W_2M}Uc=b5(YF,CM&Tp^OJ{DD]6s=vF=Yo~8q}XH}Fu%P5(SJ=Qt;MO]s8<F3&B3&8T(Ul-BS*dw&dR<87}/8]62$PZ]Lx<Au}9Q]7c=ja=KR,Go,Us&v6(qk}pG&G2=ev^GM%w4&H4]7F&dv]J6}Ew:9w=sj-ZL}Ym$+h(Ut(Um~4n=Xs(U7%eE=Qc_JR<CA#6t<Fv|/I,IS,EG<F2(Xy$/n<Fa(h9}+9_2o&N4#7X<Zq|+f_Dp=dt&na,Ca=NJ)jY=8C=YG=s6&Q+<DO}D3=xB&R1(lw;Qn<bF(Cu|/B}HV=SS&n7,10&u0]Dm%A6^4Q=WR(TD=Xo<GH,Rj(l8)bP&n/=LM&CF,F5&ml=PJ;0k=LG=tq,Rh,D6@4i=1p&+9=YC%er_Mh;nI;0q=Fw]80=xq=FM$Gv;v6&nc;wK%H2&Kj;vs,AA=YP,66}bI(qR~5U=6q~4b$Ni=K5.X3$So&Iu(p+]8G=Cf=RY(TS_O3(iH&57=fE=Dg_Do#9z#7H;FK{qd_2k%JR}en&gh_z8;Rx}9p<cN_Ne,DO;LN_7o~/p=NF=5Y}gN<ce<C1,QE]Wv=3u<BC}GK]yq}DY&u/_hj=II(pz&rC,jV&+Z}ut=NQ;Cg-SR_ZS,+o=u/;Oy_RK_QF(Fx&xP}Wr&TA,Uh&g1=yr{ax[VF$Pg(YB;Ox=Vy;+W(Sp}XV%dd&33(l/]l4#4Y}OE=6c=bw(A7&9t%wd&N/&mo,JH&Qe)fm=Ao}fu=tH";
+	var deltaData = "FAZDC6BALcLZCA+GBARCW8wNCcDDZ8LVFBOqqDUiou+M42TFAyERXFb7EjhP+vmBFpFrUpfDV2F7eB+eCltCHJFWLFCED+pWTojEIHFXc3aFn4F68zqjEuKidS1QBVPDEhE7NA4mhMF7oThD49ot3FgtzHFCK0acW1x8DH1EmLoIlrWFBLE+y5+NA3Cx65wJHTaEZVaK1mWAmPGxgYCdxwOjTDIt/faOEhTl1vqNsKtJCOhJWuio2g07KLZEQsFBUpNtwEByBgxFslFheFbiEPvi61msDvApxCzB6rBCzox7joYA5UdDc+Cb4FSgIabpXFAj3bjkmFAxCZE+mD/SFf/0ELecYCt3nLoxC6WEZf2tKDB4oZvrEmqFkKk7BwILA7gtYBpsTq//D4jD0F0wEB9pyQ1BD5Ba0oYHDI+sbDFhvrHXdDHfgFEIJLi5r8qercNFBgFLC4bo5ERJtamWBDFy73KCEb6M8VpmEt330ygCTK58EIIFkYgF84gtGA9Uyh3m68iVrFbWFbcbqiCYHZ9J1jeRPbL8yswhMiDbhEhdNoSwFbZrLT740ABEqgCkO8J1BLd1VhKKR4sD1yUo0z+FF59Mvg71CFbyEhbHSFBKEIKyoQNgQppq9T0KAqePu0ZFGrXOHdKJqkoTFhYvpDNyuuznrN84thJbsCoO6Cu6Xlvntvy0QYuAExQEYtTUBf3CoCqwgGFZ4u1HJFzDVwEy3cjcpV4QvsPaBC3rCGyCF23o4K3pp2gberGgFEJEHo4nHICtyKH2ZqyxhN05KBBJIQlKh/Oujv/DH32VrlqFdIFC7Fz9Ct4kaqFME0UETLprnN9kfy+kFmtQBB0+5CFu0N9Ij8l/VvJDh2oq3hT6EzjTHKFN7ZjZwoTsAZ4Exsko6Fpa6WC+sduz8jyrLpegTv2h1EBeYpLpm2czQW0KoCcS0bCVXCmuWJDBjN1nQNLdF58SFJ0h7i3pC3oEOKy/FjBklL70XvBEEIWp2yZ04xObzAWDDJG7f+DbqBEA7LyiR95j7MDVdDViz2RE5vWlBMv5e4+VfhP3aXNPhvLSynb9O2x4uFBV+3jqu6d5pCG28/sETByvmu/+IJ0L3wb4rj9DNOLBF6XPIODr4L19U9RRofAG6Nxydi8Bki8BhGJbBAJKzbJxkZSlF9Q2Cu8oKqggB9hBArwLLqEBWEtFowy8XK8bEyw9snT+BeyFk1ZCSrdmgfEwFePTgCjELBEnIbjaDDPJm36rG9pztcEzT8dGk23SBhXBB1H4z+OWze0ooFzz8pDBYFvp9j9tvFByf9y4EFdVnz026CGR5qMr7fxMHN8UUdlyJAzlTBDRC28k+L4FB8078ljyD91tUj1ocnTs8vdEf7znbzm+GIjEZnoZE5rnLL700Xc7yHfz05nWxy03vBB9YGHYOWxgMQGBCR24CVYNE1hpfKxN0zKnfJDmmMgMmBWqNbjfSyFCBWSCGCgR8yFXiHyEj+VtD1FB3FpC1zI0kFbzifiKTLm9yq5zFmur+q8FHqjoOBWsBPiDbnCC2ErunV6cJ6TygXFYHYp7MKN9RUlSIS8/xBAGYLzeqUnBF4QbsTuUkUqGs6CaiDWKWjQK9EJkjpkTmNCPYXL";
+	// @TODO: Load lazily
+	var wordlist$1 = {
+	    zh_cn: null,
+	    zh_tw: null
+	};
+	var Checks = {
+	    zh_cn: "0x17bcc4d8547e5a7135e365d1ab443aaae95e76d8230c2782c67305d4f21497a1",
+	    zh_tw: "0x51e720e90c7b87bec1d70eb6e74a21a449bd3ec9c020b01d3a40ed991b60ce5d"
+	};
+	var codes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	var style = "~!@#$%^&*_-=[]{}|;:,.()<>?";
+	function loadWords(lang) {
+	    if (wordlist$1[lang.locale] !== null) {
+	        return;
+	    }
+	    wordlist$1[lang.locale] = [];
+	    var deltaOffset = 0;
+	    for (var i = 0; i < 2048; i++) {
+	        var s = style.indexOf(data[i * 3]);
+	        var bytes = [
+	            228 + (s >> 2),
+	            128 + codes.indexOf(data[i * 3 + 1]),
+	            128 + codes.indexOf(data[i * 3 + 2]),
+	        ];
+	        if (lang.locale === "zh_tw") {
+	            var common = s % 4;
+	            for (var i_1 = common; i_1 < 3; i_1++) {
+	                bytes[i_1] = codes.indexOf(deltaData[deltaOffset++]) + ((i_1 == 0) ? 228 : 128);
+	            }
+	        }
+	        wordlist$1[lang.locale].push(lib$8.toUtf8String(bytes));
+	    }
+	    // Verify the computed list matches the official list
+	    /* istanbul ignore if */
+	    if (wordlist.Wordlist.check(lang) !== Checks[lang.locale]) {
+	        wordlist$1[lang.locale] = null;
+	        throw new Error("BIP39 Wordlist for " + lang.locale + " (Chinese) FAILED");
+	    }
+	}
+	var LangZh = /** @class */ (function (_super) {
+	    __extends(LangZh, _super);
+	    function LangZh(country) {
+	        return _super.call(this, "zh_" + country) || this;
+	    }
+	    LangZh.prototype.getWord = function (index) {
+	        loadWords(this);
+	        return wordlist$1[this.locale][index];
+	    };
+	    LangZh.prototype.getWordIndex = function (word) {
+	        loadWords(this);
+	        return wordlist$1[this.locale].indexOf(word);
+	    };
+	    LangZh.prototype.split = function (mnemonic) {
+	        mnemonic = mnemonic.replace(/(?:\u3000| )+/g, "");
+	        return mnemonic.split("");
+	    };
+	    return LangZh;
+	}(wordlist.Wordlist));
+	var langZhCn = new LangZh("cn");
+	exports.langZhCn = langZhCn;
+	wordlist.Wordlist.register(langZhCn);
+	wordlist.Wordlist.register(langZhCn, "zh");
+	var langZhTw = new LangZh("tw");
+	exports.langZhTw = langZhTw;
+	wordlist.Wordlist.register(langZhTw);
+
+	});
+
+	var langZh$1 = /*@__PURE__*/getDefaultExportFromCjs(langZh);
+
+	var wordlists = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+
+
+
+
+
+
+
+	exports.wordlists = {
+	    cz: langCz_1.langCz,
+	    en: langEn_1.langEn,
+	    es: langEs_1.langEs,
+	    fr: langFr_1.langFr,
+	    it: langIt_1.langIt,
+	    ja: langJa_1.langJa,
+	    ko: langKo_1.langKo,
+	    zh: langZh.langZhCn,
+	    zh_cn: langZh.langZhCn,
+	    zh_tw: langZh.langZhTw
+	};
+
+	});
+
+	var wordlists$1 = /*@__PURE__*/getDefaultExportFromCjs(wordlists);
+
+	var lib$j = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	// Wordlists
 	// See: https://github.com/bitcoin/bips/blob/master/bip-0039/bip-0039-wordlists.md
 
+	exports.logger = wordlist.logger;
 	exports.Wordlist = wordlist.Wordlist;
 
-	var wordlists = { en: langEn_1.langEn };
-	exports.wordlists = wordlists;
+	exports.wordlists = wordlists.wordlists;
 
 	});
 
-	var browser$5 = unwrapExports(browser$4);
-	var browser_1$2 = browser$4.Wordlist;
-	var browser_2$1 = browser$4.wordlists;
+	var index$j = /*@__PURE__*/getDefaultExportFromCjs(lib$j);
 
 	var _version$w = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hdnode/5.0.5";
+	exports.version = "hdnode/5.0.6";
 
 	});
 
-	var _version$x = unwrapExports(_version$w);
-	var _version_1$g = _version$w.version;
+	var _version$x = /*@__PURE__*/getDefaultExportFromCjs(_version$w);
 
-	var lib$h = createCommonjsModule(function (module, exports) {
+	var lib$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 
@@ -17393,14 +16030,14 @@
 	    return lib$1.hexZeroPad(lib$1.hexlify(value), 32);
 	}
 	function base58check(data) {
-	    return lib$e.Base58.encode(lib$1.concat([data, lib$1.hexDataSlice(browser.sha256(browser.sha256(data)), 0, 4)]));
+	    return lib$e.Base58.encode(lib$1.concat([data, lib$1.hexDataSlice(lib$f.sha256(lib$f.sha256(data)), 0, 4)]));
 	}
 	function getWordlist(wordlist) {
 	    if (wordlist == null) {
-	        return browser$4.wordlists["en"];
+	        return lib$j.wordlists["en"];
 	    }
 	    if (typeof (wordlist) === "string") {
-	        var words = browser$4.wordlists[wordlist];
+	        var words = lib$j.wordlists[wordlist];
 	        if (words == null) {
 	            logger.throwArgumentError("unknown locale", "wordlist", wordlist);
 	        }
@@ -17427,7 +16064,7 @@
 	            throw new Error("HDNode constructor cannot be called directly");
 	        }
 	        if (privateKey) {
-	            var signingKey = new lib$f.SigningKey(privateKey);
+	            var signingKey = new lib$h.SigningKey(privateKey);
 	            lib$3.defineReadOnly(this, "privateKey", signingKey.privateKey);
 	            lib$3.defineReadOnly(this, "publicKey", signingKey.compressedPublicKey);
 	        }
@@ -17436,8 +16073,8 @@
 	            lib$3.defineReadOnly(this, "publicKey", lib$1.hexlify(publicKey));
 	        }
 	        lib$3.defineReadOnly(this, "parentFingerprint", parentFingerprint);
-	        lib$3.defineReadOnly(this, "fingerprint", lib$1.hexDataSlice(browser.ripemd160(browser.sha256(this.publicKey)), 0, 4));
-	        lib$3.defineReadOnly(this, "address", lib$g.computeAddress(this.publicKey));
+	        lib$3.defineReadOnly(this, "fingerprint", lib$1.hexDataSlice(lib$f.ripemd160(lib$f.sha256(this.publicKey)), 0, 4));
+	        lib$3.defineReadOnly(this, "address", lib$i.computeAddress(this.publicKey));
 	        lib$3.defineReadOnly(this, "chainCode", chainCode);
 	        lib$3.defineReadOnly(this, "index", index);
 	        lib$3.defineReadOnly(this, "depth", depth);
@@ -17511,7 +16148,7 @@
 	        for (var i = 24; i >= 0; i -= 8) {
 	            data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff);
 	        }
-	        var I = lib$1.arrayify(browser.computeHmac(browser.SupportedAlgorithm.sha512, this.chainCode, data));
+	        var I = lib$1.arrayify(lib$f.computeHmac(lib$f.SupportedAlgorithm.sha512, this.chainCode, data));
 	        var IL = I.slice(0, 32);
 	        var IR = I.slice(32);
 	        // The private key
@@ -17522,7 +16159,7 @@
 	            ki = bytes32(lib$2.BigNumber.from(IL).add(this.privateKey).mod(N));
 	        }
 	        else {
-	            var ek = new lib$f.SigningKey(lib$1.hexlify(IL));
+	            var ek = new lib$h.SigningKey(lib$1.hexlify(IL));
 	            Ki = ek._addPoint(this.publicKey);
 	        }
 	        var mnemonicOrPath = path;
@@ -17572,7 +16209,7 @@
 	        if (seedArray.length < 16 || seedArray.length > 64) {
 	            throw new Error("invalid seed");
 	        }
-	        var I = lib$1.arrayify(browser.computeHmac(browser.SupportedAlgorithm.sha512, MasterSecret, seedArray));
+	        var I = lib$1.arrayify(lib$f.computeHmac(lib$f.SupportedAlgorithm.sha512, MasterSecret, seedArray));
 	        return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic);
 	    };
 	    HDNode.fromMnemonic = function (mnemonic, password, wordlist) {
@@ -17622,7 +16259,7 @@
 	        password = "";
 	    }
 	    var salt = lib$8.toUtf8Bytes("mnemonic" + password, lib$8.UnicodeNormalizationForm.NFKD);
-	    return browser$2.pbkdf2(lib$8.toUtf8Bytes(mnemonic, lib$8.UnicodeNormalizationForm.NFKD), salt, 2048, 64, "sha512");
+	    return lib$g.pbkdf2(lib$8.toUtf8Bytes(mnemonic, lib$8.UnicodeNormalizationForm.NFKD), salt, 2048, 64, "sha512");
 	}
 	exports.mnemonicToSeed = mnemonicToSeed;
 	function mnemonicToEntropy(mnemonic, wordlist) {
@@ -17649,7 +16286,7 @@
 	    var entropyBits = 32 * words.length / 3;
 	    var checksumBits = words.length / 3;
 	    var checksumMask = getUpperMask(checksumBits);
-	    var checksum = lib$1.arrayify(browser.sha256(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
+	    var checksum = lib$1.arrayify(lib$f.sha256(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
 	    if (checksum !== (entropy[entropy.length - 1] & checksumMask)) {
 	        throw new Error("invalid checksum");
 	    }
@@ -17682,7 +16319,7 @@
 	    }
 	    // Compute the checksum bits
 	    var checksumBits = entropy.length / 4;
-	    var checksum = lib$1.arrayify(browser.sha256(entropy))[0] & getUpperMask(checksumBits);
+	    var checksum = lib$1.arrayify(lib$f.sha256(entropy))[0] & getUpperMask(checksumBits);
 	    // Shift the checksum into the word indices
 	    indices[indices.length - 1] <<= checksumBits;
 	    indices[indices.length - 1] |= (checksum >> (8 - checksumBits));
@@ -17701,53 +16338,24 @@
 
 	});
 
-	var index$h = unwrapExports(lib$h);
-	var lib_1$h = lib$h.defaultPath;
-	var lib_2$g = lib$h.HDNode;
-	var lib_3$d = lib$h.mnemonicToSeed;
-	var lib_4$a = lib$h.mnemonicToEntropy;
-	var lib_5$9 = lib$h.entropyToMnemonic;
-	var lib_6$6 = lib$h.isValidMnemonic;
+	var index$k = /*@__PURE__*/getDefaultExportFromCjs(lib$k);
 
 	var _version$y = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "random/5.0.4";
+	exports.version = "random/5.0.5";
 
 	});
 
-	var _version$z = unwrapExports(_version$y);
-	var _version_1$h = _version$y.version;
+	var _version$z = /*@__PURE__*/getDefaultExportFromCjs(_version$y);
 
-	var shuffle = createCommonjsModule(function (module, exports) {
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	function shuffled(array) {
-	    array = array.slice();
-	    for (var i = array.length - 1; i > 0; i--) {
-	        var j = Math.floor(Math.random() * (i + 1));
-	        var tmp = array[i];
-	        array[i] = array[j];
-	        array[j] = tmp;
-	    }
-	    return array;
-	}
-	exports.shuffled = shuffled;
-
-	});
-
-	var shuffle$1 = unwrapExports(shuffle);
-	var shuffle_1 = shuffle.shuffled;
-
-	var browser$6 = createCommonjsModule(function (module, exports) {
+	var browserRandom = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 
 
 	var logger = new lib.Logger(_version$y.version);
-
-	exports.shuffled = shuffle.shuffled;
 	var anyGlobal = null;
 	try {
 	    anyGlobal = window;
@@ -17790,9 +16398,38 @@
 
 	});
 
-	var browser$7 = unwrapExports(browser$6);
-	var browser_1$3 = browser$6.shuffled;
-	var browser_2$2 = browser$6.randomBytes;
+	var browserRandom$1 = /*@__PURE__*/getDefaultExportFromCjs(browserRandom);
+
+	var shuffle = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	function shuffled(array) {
+	    array = array.slice();
+	    for (var i = array.length - 1; i > 0; i--) {
+	        var j = Math.floor(Math.random() * (i + 1));
+	        var tmp = array[i];
+	        array[i] = array[j];
+	        array[j] = tmp;
+	    }
+	    return array;
+	}
+	exports.shuffled = shuffled;
+
+	});
+
+	var shuffle$1 = /*@__PURE__*/getDefaultExportFromCjs(shuffle);
+
+	var lib$l = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+	exports.randomBytes = browserRandom.randomBytes;
+
+	exports.shuffled = shuffle.shuffled;
+
+	});
+
+	var index$l = /*@__PURE__*/getDefaultExportFromCjs(lib$l);
 
 	var aesJs = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -18598,12 +17235,11 @@
 	var _version$A = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "json-wallets/5.0.7";
+	exports.version = "json-wallets/5.0.8";
 
 	});
 
-	var _version$B = unwrapExports(_version$A);
-	var _version_1$i = _version$A.version;
+	var _version$B = /*@__PURE__*/getDefaultExportFromCjs(_version$A);
 
 	var utils$1 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -18677,12 +17313,7 @@
 
 	});
 
-	var utils$2 = unwrapExports(utils$1);
-	var utils_1$2 = utils$1.looseArrayify;
-	var utils_2 = utils$1.zpad;
-	var utils_3 = utils$1.getPassword;
-	var utils_4 = utils$1.searchPath;
-	var utils_5 = utils$1.uuidV4;
+	var utils$2 = /*@__PURE__*/getDefaultExportFromCjs(utils$1);
 
 	var crowdsale = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -18736,7 +17367,7 @@
 	    if (!encseed || (encseed.length % 16) !== 0) {
 	        logger.throwArgumentError("invalid encseed", "json", json);
 	    }
-	    var key = lib$1.arrayify(browser$2.pbkdf2(password, password, 2000, 32, "sha256")).slice(0, 16);
+	    var key = lib$1.arrayify(lib$g.pbkdf2(password, password, 2000, 32, "sha256")).slice(0, 16);
 	    var iv = encseed.slice(0, 16);
 	    var encryptedSeed = encseed.slice(16);
 	    // Decrypt the seed
@@ -18759,9 +17390,7 @@
 
 	});
 
-	var crowdsale$1 = unwrapExports(crowdsale);
-	var crowdsale_1 = crowdsale.CrowdsaleAccount;
-	var crowdsale_2 = crowdsale.decrypt;
+	var crowdsale$1 = /*@__PURE__*/getDefaultExportFromCjs(crowdsale);
 
 	var inspect = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -18819,10 +17448,7 @@
 
 	});
 
-	var inspect$1 = unwrapExports(inspect);
-	var inspect_1 = inspect.isCrowdsaleWallet;
-	var inspect_2 = inspect.isKeystoreWallet;
-	var inspect_3 = inspect.getJsonWalletAddress;
+	var inspect$1 = /*@__PURE__*/getDefaultExportFromCjs(inspect);
 
 	var scrypt = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -19314,8 +17940,6 @@
 
 	})(commonjsGlobal);
 	});
-	var scrypt_1 = scrypt.scrypt;
-	var scrypt_2 = scrypt.syncScrypt;
 
 	var keystore = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -19371,16 +17995,9 @@
 	var __importDefault = (commonjsGlobal && commonjsGlobal.__importDefault) || function (mod) {
 	    return (mod && mod.__esModule) ? mod : { "default": mod };
 	};
-	var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
-	    if (mod && mod.__esModule) return mod;
-	    var result = {};
-	    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-	    result["default"] = mod;
-	    return result;
-	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var aes_js_1 = __importDefault(aesJs);
-	var scrypt$1 = __importStar(scrypt);
+	var scrypt_js_1 = __importDefault(scrypt);
 
 
 
@@ -19431,7 +18048,7 @@
 	        });
 	    }
 	    var mnemonicKey = key.slice(32, 64);
-	    var address = lib$g.computeAddress(privateKey);
+	    var address = lib$i.computeAddress(privateKey);
 	    if (data.address) {
 	        var check = data.address.toLowerCase();
 	        if (check.substring(0, 2) !== "0x") {
@@ -19452,12 +18069,12 @@
 	        var mnemonicIv = utils$1.looseArrayify(utils$1.searchPath(data, "x-ethers/mnemonicCounter"));
 	        var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
 	        var mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
-	        var path = utils$1.searchPath(data, "x-ethers/path") || lib$h.defaultPath;
+	        var path = utils$1.searchPath(data, "x-ethers/path") || lib$k.defaultPath;
 	        var locale = utils$1.searchPath(data, "x-ethers/locale") || "en";
 	        var entropy = lib$1.arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
 	        try {
-	            var mnemonic = lib$h.entropyToMnemonic(entropy, locale);
-	            var node = lib$h.HDNode.fromMnemonic(mnemonic, null, locale).derivePath(path);
+	            var mnemonic = lib$k.entropyToMnemonic(entropy, locale);
+	            var node = lib$k.HDNode.fromMnemonic(mnemonic, null, locale).derivePath(path);
 	            if (node.privateKey != account.privateKey) {
 	                throw new Error("mnemonic mismatch");
 	            }
@@ -19475,7 +18092,7 @@
 	    return new KeystoreAccount(account);
 	}
 	function pbkdf2Sync(passwordBytes, salt, count, dkLen, prfFunc) {
-	    return lib$1.arrayify(browser$2.pbkdf2(passwordBytes, salt, count, dkLen, prfFunc));
+	    return lib$1.arrayify(lib$g.pbkdf2(passwordBytes, salt, count, dkLen, prfFunc));
 	}
 	function pbkdf2(passwordBytes, salt, count, dkLen, prfFunc) {
 	    return Promise.resolve(pbkdf2Sync(passwordBytes, salt, count, dkLen, prfFunc));
@@ -19531,7 +18148,7 @@
 	}
 	function decryptSync(json, password) {
 	    var data = JSON.parse(json);
-	    var key = _computeKdfKey(data, password, pbkdf2Sync, scrypt$1.syncScrypt);
+	    var key = _computeKdfKey(data, password, pbkdf2Sync, scrypt_js_1.default.syncScrypt);
 	    return _getAccount(data, key);
 	}
 	exports.decryptSync = decryptSync;
@@ -19542,7 +18159,7 @@
 	            switch (_a.label) {
 	                case 0:
 	                    data = JSON.parse(json);
-	                    return [4 /*yield*/, _computeKdfKey(data, password, pbkdf2, scrypt$1.scrypt, progressCallback)];
+	                    return [4 /*yield*/, _computeKdfKey(data, password, pbkdf2, scrypt_js_1.default.scrypt, progressCallback)];
 	                case 1:
 	                    key = _a.sent();
 	                    return [2 /*return*/, _getAccount(data, key)];
@@ -19554,13 +18171,13 @@
 	function encrypt(account, password, options, progressCallback) {
 	    try {
 	        // Check the address matches the private key
-	        if (lib$6.getAddress(account.address) !== lib$g.computeAddress(account.privateKey)) {
+	        if (lib$6.getAddress(account.address) !== lib$i.computeAddress(account.privateKey)) {
 	            throw new Error("address/privateKey mismatch");
 	        }
 	        // Check the mnemonic (if any) matches the private key
 	        if (hasMnemonic(account)) {
 	            var mnemonic = account.mnemonic;
-	            var node = lib$h.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path || lib$h.defaultPath);
+	            var node = lib$k.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path || lib$k.defaultPath);
 	            if (node.privateKey != account.privateKey) {
 	                throw new Error("mnemonic mismatch");
 	            }
@@ -19584,8 +18201,8 @@
 	    var locale = null;
 	    if (hasMnemonic(account)) {
 	        var srcMnemonic = account.mnemonic;
-	        entropy = lib$1.arrayify(lib$h.mnemonicToEntropy(srcMnemonic.phrase, srcMnemonic.locale || "en"));
-	        path = srcMnemonic.path || lib$h.defaultPath;
+	        entropy = lib$1.arrayify(lib$k.mnemonicToEntropy(srcMnemonic.phrase, srcMnemonic.locale || "en"));
+	        path = srcMnemonic.path || lib$k.defaultPath;
 	        locale = srcMnemonic.locale || "en";
 	    }
 	    var client = options.client;
@@ -19598,7 +18215,7 @@
 	        salt = lib$1.arrayify(options.salt);
 	    }
 	    else {
-	        salt = browser$6.randomBytes(32);
+	        salt = lib$l.randomBytes(32);
 	        ;
 	    }
 	    // Override initialization vector
@@ -19610,7 +18227,7 @@
 	        }
 	    }
 	    else {
-	        iv = browser$6.randomBytes(16);
+	        iv = lib$l.randomBytes(16);
 	    }
 	    // Override the uuid
 	    var uuidRandom = null;
@@ -19621,7 +18238,7 @@
 	        }
 	    }
 	    else {
-	        uuidRandom = browser$6.randomBytes(16);
+	        uuidRandom = lib$l.randomBytes(16);
 	    }
 	    // Override the scrypt password-based key derivation function parameters
 	    var N = (1 << 17), r = 8, p = 1;
@@ -19639,7 +18256,7 @@
 	    // We take 64 bytes:
 	    //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
 	    //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
-	    return scrypt$1.scrypt(passwordBytes, salt, N, r, p, 64, progressCallback).then(function (key) {
+	    return scrypt_js_1.default.scrypt(passwordBytes, salt, N, r, p, 64, progressCallback).then(function (key) {
 	        key = lib$1.arrayify(key);
 	        // This will be used to encrypt the wallet (as per Web3 secret storage)
 	        var derivedKey = key.slice(0, 16);
@@ -19676,7 +18293,7 @@
 	        };
 	        // If we have a mnemonic, encrypt it into the JSON wallet
 	        if (entropy) {
-	            var mnemonicIv = browser$6.randomBytes(16);
+	            var mnemonicIv = lib$l.randomBytes(16);
 	            var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
 	            var mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
 	            var mnemonicCiphertext = lib$1.arrayify(mnemonicAesCtr.encrypt(entropy));
@@ -19704,13 +18321,9 @@
 
 	});
 
-	var keystore$1 = unwrapExports(keystore);
-	var keystore_1 = keystore.KeystoreAccount;
-	var keystore_2 = keystore.decryptSync;
-	var keystore_3 = keystore.decrypt;
-	var keystore_4 = keystore.encrypt;
+	var keystore$1 = /*@__PURE__*/getDefaultExportFromCjs(keystore);
 
-	var lib$i = createCommonjsModule(function (module, exports) {
+	var lib$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 
@@ -19753,28 +18366,18 @@
 
 	});
 
-	var index$i = unwrapExports(lib$i);
-	var lib_1$i = lib$i.decryptCrowdsale;
-	var lib_2$h = lib$i.getJsonWalletAddress;
-	var lib_3$e = lib$i.isCrowdsaleWallet;
-	var lib_4$b = lib$i.isKeystoreWallet;
-	var lib_5$a = lib$i.decryptKeystore;
-	var lib_6$7 = lib$i.decryptKeystoreSync;
-	var lib_7$5 = lib$i.encryptKeystore;
-	var lib_8$4 = lib$i.decryptJsonWallet;
-	var lib_9$4 = lib$i.decryptJsonWalletSync;
+	var index$m = /*@__PURE__*/getDefaultExportFromCjs(lib$m);
 
 	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wallet/5.0.7";
+	exports.version = "wallet/5.0.8";
 
 	});
 
-	var _version$D = unwrapExports(_version$C);
-	var _version_1$j = _version$C.version;
+	var _version$D = /*@__PURE__*/getDefaultExportFromCjs(_version$C);
 
-	var lib$j = createCommonjsModule(function (module, exports) {
+	var lib$n = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
 	    var extendStatics = function (d, b) {
@@ -19856,9 +18459,9 @@
 	        logger.checkNew(_newTarget, Wallet);
 	        _this = _super.call(this) || this;
 	        if (isAccount(privateKey)) {
-	            var signingKey_1 = new lib$f.SigningKey(privateKey.privateKey);
+	            var signingKey_1 = new lib$h.SigningKey(privateKey.privateKey);
 	            lib$3.defineReadOnly(_this, "_signingKey", function () { return signingKey_1; });
-	            lib$3.defineReadOnly(_this, "address", lib$g.computeAddress(_this.publicKey));
+	            lib$3.defineReadOnly(_this, "address", lib$i.computeAddress(_this.publicKey));
 	            if (_this.address !== lib$6.getAddress(privateKey.address)) {
 	                logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDACTED]");
 	            }
@@ -19866,12 +18469,12 @@
 	                var srcMnemonic_1 = privateKey.mnemonic;
 	                lib$3.defineReadOnly(_this, "_mnemonic", function () { return ({
 	                    phrase: srcMnemonic_1.phrase,
-	                    path: srcMnemonic_1.path || lib$h.defaultPath,
+	                    path: srcMnemonic_1.path || lib$k.defaultPath,
 	                    locale: srcMnemonic_1.locale || "en"
 	                }); });
 	                var mnemonic = _this.mnemonic;
-	                var node = lib$h.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
-	                if (lib$g.computeAddress(node.privateKey) !== _this.address) {
+	                var node = lib$k.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
+	                if (lib$i.computeAddress(node.privateKey) !== _this.address) {
 	                    logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDACTED]");
 	                }
 	            }
@@ -19880,7 +18483,7 @@
 	            }
 	        }
 	        else {
-	            if (lib$f.SigningKey.isSigningKey(privateKey)) {
+	            if (lib$h.SigningKey.isSigningKey(privateKey)) {
 	                /* istanbul ignore if */
 	                if (privateKey.curve !== "secp256k1") {
 	                    logger.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
@@ -19888,11 +18491,11 @@
 	                lib$3.defineReadOnly(_this, "_signingKey", function () { return privateKey; });
 	            }
 	            else {
-	                var signingKey_2 = new lib$f.SigningKey(privateKey);
+	                var signingKey_2 = new lib$h.SigningKey(privateKey);
 	                lib$3.defineReadOnly(_this, "_signingKey", function () { return signingKey_2; });
 	            }
 	            lib$3.defineReadOnly(_this, "_mnemonic", function () { return null; });
-	            lib$3.defineReadOnly(_this, "address", lib$g.computeAddress(_this.publicKey));
+	            lib$3.defineReadOnly(_this, "address", lib$i.computeAddress(_this.publicKey));
 	        }
 	        /* istanbul ignore if */
 	        if (provider && !lib$b.Provider.isProvider(provider)) {
@@ -19931,8 +18534,8 @@
 	                }
 	                delete tx.from;
 	            }
-	            var signature = _this._signingKey().signDigest(lib$4.keccak256(lib$g.serialize(tx)));
-	            return lib$g.serialize(tx, signature);
+	            var signature = _this._signingKey().signDigest(lib$4.keccak256(lib$i.serialize(tx)));
+	            return lib$i.serialize(tx, signature);
 	        });
 	    };
 	    Wallet.prototype.signMessage = function (message) {
@@ -19951,7 +18554,8 @@
 	                    case 0: return [4 /*yield*/, lib$9._TypedDataEncoder.resolveNames(domain, types, value, function (name) {
 	                            if (_this.provider == null) {
 	                                logger.throwError("cannot resolve ENS names without a provider", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                                    operation: "resolveName"
+	                                    operation: "resolveName",
+	                                    value: name
 	                                });
 	                            }
 	                            return _this.provider.resolveName(name);
@@ -19974,66 +18578,62 @@
 	        if (!options) {
 	            options = {};
 	        }
-	        return lib$i.encryptKeystore(this, password, options, progressCallback);
+	        return lib$m.encryptKeystore(this, password, options, progressCallback);
 	    };
 	    /**
 	     *  Static methods to create Wallet instances.
 	     */
 	    Wallet.createRandom = function (options) {
-	        var entropy = browser$6.randomBytes(16);
+	        var entropy = lib$l.randomBytes(16);
 	        if (!options) {
 	            options = {};
 	        }
 	        if (options.extraEntropy) {
 	            entropy = lib$1.arrayify(lib$1.hexDataSlice(lib$4.keccak256(lib$1.concat([entropy, options.extraEntropy])), 0, 16));
 	        }
-	        var mnemonic = lib$h.entropyToMnemonic(entropy, options.locale);
+	        var mnemonic = lib$k.entropyToMnemonic(entropy, options.locale);
 	        return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
 	    };
 	    Wallet.fromEncryptedJson = function (json, password, progressCallback) {
-	        return lib$i.decryptJsonWallet(json, password, progressCallback).then(function (account) {
+	        return lib$m.decryptJsonWallet(json, password, progressCallback).then(function (account) {
 	            return new Wallet(account);
 	        });
 	    };
 	    Wallet.fromEncryptedJsonSync = function (json, password) {
-	        return new Wallet(lib$i.decryptJsonWalletSync(json, password));
+	        return new Wallet(lib$m.decryptJsonWalletSync(json, password));
 	    };
 	    Wallet.fromMnemonic = function (mnemonic, path, wordlist) {
 	        if (!path) {
-	            path = lib$h.defaultPath;
+	            path = lib$k.defaultPath;
 	        }
-	        return new Wallet(lib$h.HDNode.fromMnemonic(mnemonic, null, wordlist).derivePath(path));
+	        return new Wallet(lib$k.HDNode.fromMnemonic(mnemonic, null, wordlist).derivePath(path));
 	    };
 	    return Wallet;
 	}(lib$c.Signer));
 	exports.Wallet = Wallet;
 	function verifyMessage(message, signature) {
-	    return lib$g.recoverAddress(lib$9.hashMessage(message), signature);
+	    return lib$i.recoverAddress(lib$9.hashMessage(message), signature);
 	}
 	exports.verifyMessage = verifyMessage;
 	function verifyTypedData(domain, types, value, signature) {
-	    return lib$g.recoverAddress(lib$9._TypedDataEncoder.hash(domain, types, value), signature);
+	    return lib$i.recoverAddress(lib$9._TypedDataEncoder.hash(domain, types, value), signature);
 	}
 	exports.verifyTypedData = verifyTypedData;
 
 	});
 
-	var index$j = unwrapExports(lib$j);
-	var lib_1$j = lib$j.Wallet;
-	var lib_2$i = lib$j.verifyMessage;
-	var lib_3$f = lib$j.verifyTypedData;
+	var index$n = /*@__PURE__*/getDefaultExportFromCjs(lib$n);
 
 	var _version$E = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "networks/5.0.4";
+	exports.version = "networks/5.0.5";
 
 	});
 
-	var _version$F = unwrapExports(_version$E);
-	var _version_1$k = _version$E.version;
+	var _version$F = /*@__PURE__*/getDefaultExportFromCjs(_version$E);
 
-	var lib$k = createCommonjsModule(function (module, exports) {
+	var lib$o = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 
@@ -20245,10 +18845,9 @@
 
 	});
 
-	var index$k = unwrapExports(lib$k);
-	var lib_1$k = lib$k.getNetwork;
+	var index$o = /*@__PURE__*/getDefaultExportFromCjs(lib$o);
 
-	var browser$8 = createCommonjsModule(function (module, exports) {
+	var browserBase64 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 
@@ -20273,19 +18872,27 @@
 
 	});
 
-	var browser$9 = unwrapExports(browser$8);
-	var browser_1$4 = browser$8.decode;
-	var browser_2$3 = browser$8.encode;
+	var browserBase64$1 = /*@__PURE__*/getDefaultExportFromCjs(browserBase64);
+
+	var lib$p = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+	exports.decode = browserBase64.decode;
+	exports.encode = browserBase64.encode;
+
+	});
+
+	var index$p = /*@__PURE__*/getDefaultExportFromCjs(lib$p);
 
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "web/5.0.9";
+	exports.version = "web/5.0.10";
 
 	});
 
-	var _version$H = unwrapExports(_version$G);
-	var _version_1$l = _version$G.version;
+	var _version$H = /*@__PURE__*/getDefaultExportFromCjs(_version$G);
 
 	var browserGeturl = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -20377,10 +18984,9 @@
 
 	});
 
-	var browserGeturl$1 = unwrapExports(browserGeturl);
-	var browserGeturl_1 = browserGeturl.getUrl;
+	var browserGeturl$1 = /*@__PURE__*/getDefaultExportFromCjs(browserGeturl);
 
-	var lib$l = createCommonjsModule(function (module, exports) {
+	var lib$q = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -20499,7 +19105,7 @@
 	            var authorization = connection.user + ":" + connection.password;
 	            headers["authorization"] = {
 	                key: "Authorization",
-	                value: "Basic " + browser$8.encode(lib$8.toUtf8Bytes(authorization))
+	                value: "Basic " + lib$p.encode(lib$8.toUtf8Bytes(authorization))
 	            };
 	        }
 	    }
@@ -20798,10 +19404,7 @@
 
 	});
 
-	var index$l = unwrapExports(lib$l);
-	var lib_1$l = lib$l._fetchData;
-	var lib_2$j = lib$l.fetchJson;
-	var lib_3$g = lib$l.poll;
+	var index$q = /*@__PURE__*/getDefaultExportFromCjs(lib$q);
 
 	'use strict';
 	var ALPHABET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
@@ -20985,23 +19588,15 @@
 	  fromWordsUnsafe: fromWordsUnsafe,
 	  fromWords: fromWords
 	};
-	var bech32_1 = bech32.decodeUnsafe;
-	var bech32_2 = bech32.decode;
-	var bech32_3 = bech32.encode;
-	var bech32_4 = bech32.toWordsUnsafe;
-	var bech32_5 = bech32.toWords;
-	var bech32_6 = bech32.fromWordsUnsafe;
-	var bech32_7 = bech32.fromWords;
 
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.14";
+	exports.version = "providers/5.0.15";
 
 	});
 
-	var _version$J = unwrapExports(_version$I);
-	var _version_1$m = _version$I.version;
+	var _version$J = /*@__PURE__*/getDefaultExportFromCjs(_version$I);
 
 	var formatter = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -21316,7 +19911,7 @@
 	        return result;
 	    };
 	    Formatter.prototype.transaction = function (value) {
-	        return lib$g.parse(value);
+	        return lib$i.parse(value);
 	    };
 	    Formatter.prototype.receiptLog = function (value) {
 	        return Formatter.check(this.formats.receiptLog, value);
@@ -21427,11 +20022,7 @@
 
 	});
 
-	var formatter$1 = unwrapExports(formatter);
-	var formatter_1 = formatter.Formatter;
-	var formatter_2 = formatter.isCommunityResourcable;
-	var formatter_3 = formatter.isCommunityResource;
-	var formatter_4 = formatter.showThrottleMessage;
+	var formatter$1 = /*@__PURE__*/getDefaultExportFromCjs(formatter);
 
 	var baseProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -21484,6 +20075,9 @@
 	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
 	    }
 	};
+	var __importDefault = (commonjsGlobal && commonjsGlobal.__importDefault) || function (mod) {
+	    return (mod && mod.__esModule) ? mod : { "default": mod };
+	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 
@@ -21496,7 +20090,7 @@
 
 
 
-
+	var bech32_1 = __importDefault(bech32);
 
 
 	var logger = new lib.Logger(_version$I.version);
@@ -21674,7 +20268,7 @@
 	}
 	// Compute the Base58Check encoded data (checksum is first 4 bytes of sha256d)
 	function base58Encode(data) {
-	    return lib$e.Base58.encode(lib$1.concat([data, lib$1.hexDataSlice(browser.sha256(browser.sha256(data)), 0, 4)]));
+	    return lib$e.Base58.encode(lib$1.concat([data, lib$1.hexDataSlice(lib$f.sha256(lib$f.sha256(data)), 0, 4)]));
 	}
 	var Resolver = /** @class */ (function () {
 	    function Resolver(provider, address, name) {
@@ -21750,9 +20344,9 @@
 	                version_1 = -1;
 	            }
 	            if (version_1 >= 0 && bytes.length === 2 + length_3 && length_3 >= 1 && length_3 <= 75) {
-	                var words = bech32.toWords(bytes.slice(2));
+	                var words = bech32_1.default.toWords(bytes.slice(2));
 	                words.unshift(version_1);
-	                return bech32.encode(coinInfo.prefix, words);
+	                return bech32_1.default.encode(coinInfo.prefix, words);
 	            }
 	        }
 	        return null;
@@ -21965,7 +20559,7 @@
 	        // any change is refelcted); otherwise this cannot change
 	        get: function () {
 	            var _this = this;
-	            return lib$l.poll(function () {
+	            return lib$q.poll(function () {
 	                return _this._ready().then(function (network) {
 	                    return network;
 	                }, function (error) {
@@ -21989,7 +20583,7 @@
 	    };
 	    // @TODO: Remove this and just use getNetwork
 	    BaseProvider.getNetwork = function (network) {
-	        return lib$k.getNetwork((network == null) ? "homestead" : network);
+	        return lib$o.getNetwork((network == null) ? "homestead" : network);
 	    };
 	    // Fetches the blockNumber, but will reuse any result that is less
 	    // than maxAge old or has been requested since the last request
@@ -22705,7 +21299,7 @@
 	                        error_3 = _d.sent();
 	                        logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
 	                        return [3 /*break*/, 6];
-	                    case 6: return [2 /*return*/, lib$l.poll(function () { return __awaiter(_this, void 0, void 0, function () {
+	                    case 6: return [2 /*return*/, lib$q.poll(function () { return __awaiter(_this, void 0, void 0, function () {
 	                            var block, blockNumber_1, i, tx, confirmations;
 	                            return __generator(this, function (_a) {
 	                                switch (_a.label) {
@@ -22786,7 +21380,7 @@
 	                    case 2:
 	                        transactionHash = _a.sent();
 	                        params = { transactionHash: this.formatter.hash(transactionHash, true) };
-	                        return [2 /*return*/, lib$l.poll(function () { return __awaiter(_this, void 0, void 0, function () {
+	                        return [2 /*return*/, lib$q.poll(function () { return __awaiter(_this, void 0, void 0, function () {
 	                                var result, tx, blockNumber, confirmations;
 	                                return __generator(this, function (_a) {
 	                                    switch (_a.label) {
@@ -22835,7 +21429,7 @@
 	                    case 2:
 	                        transactionHash = _a.sent();
 	                        params = { transactionHash: this.formatter.hash(transactionHash, true) };
-	                        return [2 /*return*/, lib$l.poll(function () { return __awaiter(_this, void 0, void 0, function () {
+	                        return [2 /*return*/, lib$q.poll(function () { return __awaiter(_this, void 0, void 0, function () {
 	                                var result, receipt, blockNumber, confirmations;
 	                                return __generator(this, function (_a) {
 	                                    switch (_a.label) {
@@ -23171,36 +21765,7 @@
 
 	});
 
-	var baseProvider$1 = unwrapExports(baseProvider);
-	var baseProvider_1 = baseProvider.Event;
-	var baseProvider_2 = baseProvider.Resolver;
-	var baseProvider_3 = baseProvider.BaseProvider;
-
-	var browserWs = createCommonjsModule(function (module, exports) {
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-
-
-	var WS = null;
-	try {
-	    WS = WebSocket;
-	    if (WS == null) {
-	        throw new Error("inject please");
-	    }
-	}
-	catch (error) {
-	    var logger_2 = new lib.Logger(_version$I.version);
-	    WS = function () {
-	        logger_2.throwError("WebSockets not supported in this environment", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	            operation: "new WebSocket()"
-	        });
-	    };
-	}
-	module.exports = WS;
-
-	});
-
-	var browserWs$1 = unwrapExports(browserWs);
+	var baseProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(baseProvider);
 
 	var jsonRpcProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -23421,7 +21986,7 @@
 	    JsonRpcSigner.prototype.sendTransaction = function (transaction) {
 	        var _this = this;
 	        return this.sendUncheckedTransaction(transaction).then(function (hash) {
-	            return lib$l.poll(function () {
+	            return lib$q.poll(function () {
 	                return _this.provider.getTransaction(hash).then(function (tx) {
 	                    if (tx === null) {
 	                        return undefined;
@@ -23633,7 +22198,7 @@
 	            request: lib$3.deepCopy(request),
 	            provider: this
 	        });
-	        return lib$l.fetchJson(this.connection, JSON.stringify(request), getResult).then(function (result) {
+	        return lib$q.fetchJson(this.connection, JSON.stringify(request), getResult).then(function (result) {
 	            _this.emit("debug", {
 	                action: "response",
 	                request: request,
@@ -23818,9 +22383,33 @@
 
 	});
 
-	var jsonRpcProvider$1 = unwrapExports(jsonRpcProvider);
-	var jsonRpcProvider_1 = jsonRpcProvider.JsonRpcSigner;
-	var jsonRpcProvider_2 = jsonRpcProvider.JsonRpcProvider;
+	var jsonRpcProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(jsonRpcProvider);
+
+	var browserWs = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+
+
+	var WS = null;
+	exports.WebSocket = WS;
+	try {
+	    exports.WebSocket = WS = WebSocket;
+	    if (WS == null) {
+	        throw new Error("inject please");
+	    }
+	}
+	catch (error) {
+	    var logger_2 = new lib.Logger(_version$I.version);
+	    exports.WebSocket = WS = function () {
+	        logger_2.throwError("WebSockets not supported in this environment", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	            operation: "new WebSocket()"
+	        });
+	    };
+	}
+
+	});
+
+	var browserWs$1 = /*@__PURE__*/getDefaultExportFromCjs(browserWs);
 
 	var websocketProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -23873,11 +22462,8 @@
 	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
 	    }
 	};
-	var __importDefault = (commonjsGlobal && commonjsGlobal.__importDefault) || function (mod) {
-	    return (mod && mod.__esModule) ? mod : { "default": mod };
-	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var ws_1 = __importDefault(browserWs);
+
 
 
 
@@ -23914,7 +22500,7 @@
 	        _this = _super.call(this, url, network) || this;
 	        _this._pollingInterval = -1;
 	        _this._wsReady = false;
-	        lib$3.defineReadOnly(_this, "_websocket", new ws_1.default(_this.connection.url));
+	        lib$3.defineReadOnly(_this, "_websocket", new browserWs.WebSocket(_this.connection.url));
 	        lib$3.defineReadOnly(_this, "_requests", {});
 	        lib$3.defineReadOnly(_this, "_subs", {});
 	        lib$3.defineReadOnly(_this, "_subIds", {});
@@ -24165,7 +22751,7 @@
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
-	                        if (!(this._websocket.readyState === ws_1.default.CONNECTING)) return [3 /*break*/, 2];
+	                        if (!(this._websocket.readyState === browserWs.WebSocket.CONNECTING)) return [3 /*break*/, 2];
 	                        return [4 /*yield*/, (new Promise(function (resolve) {
 	                                _this._websocket.onopen = function () {
 	                                    resolve(true);
@@ -24192,8 +22778,7 @@
 
 	});
 
-	var websocketProvider$1 = unwrapExports(websocketProvider);
-	var websocketProvider_1 = websocketProvider.WebSocketProvider;
+	var websocketProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(websocketProvider);
 
 	var urlJsonRpcProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -24348,9 +22933,7 @@
 
 	});
 
-	var urlJsonRpcProvider$1 = unwrapExports(urlJsonRpcProvider);
-	var urlJsonRpcProvider_1 = urlJsonRpcProvider.StaticJsonRpcProvider;
-	var urlJsonRpcProvider_2 = urlJsonRpcProvider.UrlJsonRpcProvider;
+	var urlJsonRpcProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(urlJsonRpcProvider);
 
 	var alchemyProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -24455,9 +23038,7 @@
 
 	});
 
-	var alchemyProvider$1 = unwrapExports(alchemyProvider);
-	var alchemyProvider_1 = alchemyProvider.AlchemyWebSocketProvider;
-	var alchemyProvider_2 = alchemyProvider.AlchemyProvider;
+	var alchemyProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(alchemyProvider);
 
 	var cloudflareProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -24559,8 +23140,7 @@
 
 	});
 
-	var cloudflareProvider$1 = unwrapExports(cloudflareProvider);
-	var cloudflareProvider_1 = cloudflareProvider.CloudflareProvider;
+	var cloudflareProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(cloudflareProvider);
 
 	var etherscanProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -24813,7 +23393,7 @@
 	                                                return key + "=" + payload[key];
 	                                            }).join("&");
 	                                        }
-	                                        return [4 /*yield*/, lib$l.fetchJson(connection, payloadStr, procFunc || getJsonResult)];
+	                                        return [4 /*yield*/, lib$q.fetchJson(connection, payloadStr, procFunc || getJsonResult)];
 	                                    case 1:
 	                                        result = _a.sent();
 	                                        this.emit("debug", {
@@ -25027,7 +23607,7 @@
 	                    return Promise.resolve(true);
 	                }
 	            };
-	            return lib$l.fetchJson(connection, null, getResult).then(function (result) {
+	            return lib$q.fetchJson(connection, null, getResult).then(function (result) {
 	                _this.emit("debug", {
 	                    action: "response",
 	                    request: url,
@@ -25063,8 +23643,7 @@
 
 	});
 
-	var etherscanProvider$1 = unwrapExports(etherscanProvider);
-	var etherscanProvider_1 = etherscanProvider.EtherscanProvider;
+	var etherscanProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(etherscanProvider);
 
 	var fallbackProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -25389,7 +23968,7 @@
 	            if ((provider.blockNumber != null && provider.blockNumber >= blockNumber) || blockNumber === -1) {
 	                return [2 /*return*/, provider];
 	            }
-	            return [2 /*return*/, lib$l.poll(function () {
+	            return [2 /*return*/, lib$q.poll(function () {
 	                    return new Promise(function (resolve, reject) {
 	                        setTimeout(function () {
 	                            // We are synced
@@ -25585,7 +24164,7 @@
 	                        _a.label = 4;
 	                    case 4:
 	                        processFunc = getProcessFunc(this, method, params);
-	                        configs = browser$6.shuffled(this.providerConfigs.map(lib$3.shallowCopy));
+	                        configs = lib$l.shuffled(this.providerConfigs.map(lib$3.shallowCopy));
 	                        configs.sort(function (a, b) { return (a.priority - b.priority); });
 	                        currentBlockNumber = this._highestBlockNumber;
 	                        i = 0;
@@ -25763,16 +24342,17 @@
 
 	});
 
-	var fallbackProvider$1 = unwrapExports(fallbackProvider);
-	var fallbackProvider_1 = fallbackProvider.FallbackProvider;
+	var fallbackProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(fallbackProvider);
 
+	var browserIpcProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var IpcProvider = null;
+	exports.IpcProvider = IpcProvider;
 
+	});
 
-	var browserIpcProvider = {
-		IpcProvider: IpcProvider
-	};
+	var browserIpcProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(browserIpcProvider);
 
 	var infuraProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -25903,9 +24483,7 @@
 
 	});
 
-	var infuraProvider$1 = unwrapExports(infuraProvider);
-	var infuraProvider_1 = infuraProvider.InfuraWebSocketProvider;
-	var infuraProvider_2 = infuraProvider.InfuraProvider;
+	var infuraProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(infuraProvider);
 
 	var nodesmithProvider = createCommonjsModule(function (module, exports) {
 	/* istanbul ignore file */
@@ -25971,8 +24549,7 @@
 
 	});
 
-	var nodesmithProvider$1 = unwrapExports(nodesmithProvider);
-	var nodesmithProvider_1 = nodesmithProvider.NodesmithProvider;
+	var nodesmithProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(nodesmithProvider);
 
 	var pocketProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -26056,8 +24633,7 @@
 
 	});
 
-	var pocketProvider$1 = unwrapExports(pocketProvider);
-	var pocketProvider_1 = pocketProvider.PocketProvider;
+	var pocketProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(pocketProvider);
 
 	var web3Provider = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -26180,16 +24756,15 @@
 
 	});
 
-	var web3Provider$1 = unwrapExports(web3Provider);
-	var web3Provider_1 = web3Provider.Web3Provider;
+	var web3Provider$1 = /*@__PURE__*/getDefaultExportFromCjs(web3Provider);
 
-	var lib$m = createCommonjsModule(function (module, exports) {
+	var lib$r = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 	exports.Provider = lib$b.Provider;
 
-	exports.getNetwork = lib$k.getNetwork;
+	exports.getNetwork = lib$o.getNetwork;
 
 	exports.BaseProvider = baseProvider.BaseProvider;
 	exports.Resolver = baseProvider.Resolver;
@@ -26251,7 +24826,7 @@
 	            }
 	        }
 	    }
-	    var n = lib$k.getNetwork(network);
+	    var n = lib$o.getNetwork(network);
 	    if (!n || !n._defaultProvider) {
 	        logger.throwError("unsupported getDefaultProvider network", lib.Logger.errors.NETWORK_ERROR, {
 	            operation: "getDefaultProvider",
@@ -26275,34 +24850,9 @@
 
 	});
 
-	var index$m = unwrapExports(lib$m);
-	var lib_1$m = lib$m.Provider;
-	var lib_2$k = lib$m.getNetwork;
-	var lib_3$h = lib$m.BaseProvider;
-	var lib_4$c = lib$m.Resolver;
-	var lib_5$b = lib$m.AlchemyProvider;
-	var lib_6$8 = lib$m.AlchemyWebSocketProvider;
-	var lib_7$6 = lib$m.CloudflareProvider;
-	var lib_8$5 = lib$m.EtherscanProvider;
-	var lib_9$5 = lib$m.FallbackProvider;
-	var lib_10$3 = lib$m.IpcProvider;
-	var lib_11$2 = lib$m.InfuraProvider;
-	var lib_12$2 = lib$m.InfuraWebSocketProvider;
-	var lib_13$2 = lib$m.JsonRpcProvider;
-	var lib_14$1 = lib$m.JsonRpcSigner;
-	var lib_15$1 = lib$m.NodesmithProvider;
-	var lib_16$1 = lib$m.PocketProvider;
-	var lib_17 = lib$m.StaticJsonRpcProvider;
-	var lib_18 = lib$m.UrlJsonRpcProvider;
-	var lib_19 = lib$m.Web3Provider;
-	var lib_20 = lib$m.WebSocketProvider;
-	var lib_21 = lib$m.Formatter;
-	var lib_22 = lib$m.isCommunityResourcable;
-	var lib_23 = lib$m.isCommunityResource;
-	var lib_24 = lib$m.showThrottleMessage;
-	var lib_25 = lib$m.getDefaultProvider;
+	var index$r = /*@__PURE__*/getDefaultExportFromCjs(lib$r);
 
-	var lib$n = createCommonjsModule(function (module, exports) {
+	var lib$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 
@@ -26391,28 +24941,24 @@
 	}
 	exports.keccak256 = keccak256;
 	function sha256(types, values) {
-	    return browser.sha256(pack(types, values));
+	    return lib$f.sha256(pack(types, values));
 	}
 	exports.sha256 = sha256;
 
 	});
 
-	var index$n = unwrapExports(lib$n);
-	var lib_1$n = lib$n.pack;
-	var lib_2$l = lib$n.keccak256;
-	var lib_3$i = lib$n.sha256;
+	var index$s = /*@__PURE__*/getDefaultExportFromCjs(lib$s);
 
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "units/5.0.6";
+	exports.version = "units/5.0.7";
 
 	});
 
-	var _version$L = unwrapExports(_version$K);
-	var _version_1$n = _version$K.version;
+	var _version$L = /*@__PURE__*/getDefaultExportFromCjs(_version$K);
 
-	var lib$o = createCommonjsModule(function (module, exports) {
+	var lib$t = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 
@@ -26505,12 +25051,7 @@
 
 	});
 
-	var index$o = unwrapExports(lib$o);
-	var lib_1$o = lib$o.commify;
-	var lib_2$m = lib$o.formatUnits;
-	var lib_3$j = lib$o.parseUnits;
-	var lib_4$d = lib$o.formatEther;
-	var lib_5$c = lib$o.parseEther;
+	var index$t = /*@__PURE__*/getDefaultExportFromCjs(lib$t);
 
 	var utils$3 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -26541,7 +25082,7 @@
 	exports.getContractAddress = lib$6.getContractAddress;
 	exports.getIcapAddress = lib$6.getIcapAddress;
 	exports.isAddress = lib$6.isAddress;
-	var base64 = __importStar(browser$8);
+	var base64 = __importStar(lib$p);
 	exports.base64 = base64;
 
 	exports.base58 = lib$e.Base58;
@@ -26569,30 +25110,30 @@
 	exports.isValidName = lib$9.isValidName;
 	exports.namehash = lib$9.namehash;
 
-	exports.defaultPath = lib$h.defaultPath;
-	exports.entropyToMnemonic = lib$h.entropyToMnemonic;
-	exports.HDNode = lib$h.HDNode;
-	exports.isValidMnemonic = lib$h.isValidMnemonic;
-	exports.mnemonicToEntropy = lib$h.mnemonicToEntropy;
-	exports.mnemonicToSeed = lib$h.mnemonicToSeed;
+	exports.defaultPath = lib$k.defaultPath;
+	exports.entropyToMnemonic = lib$k.entropyToMnemonic;
+	exports.HDNode = lib$k.HDNode;
+	exports.isValidMnemonic = lib$k.isValidMnemonic;
+	exports.mnemonicToEntropy = lib$k.mnemonicToEntropy;
+	exports.mnemonicToSeed = lib$k.mnemonicToSeed;
 
-	exports.getJsonWalletAddress = lib$i.getJsonWalletAddress;
+	exports.getJsonWalletAddress = lib$m.getJsonWalletAddress;
 
 	exports.keccak256 = lib$4.keccak256;
 
 	exports.Logger = lib.Logger;
 
-	exports.computeHmac = browser.computeHmac;
-	exports.ripemd160 = browser.ripemd160;
-	exports.sha256 = browser.sha256;
-	exports.sha512 = browser.sha512;
+	exports.computeHmac = lib$f.computeHmac;
+	exports.ripemd160 = lib$f.ripemd160;
+	exports.sha256 = lib$f.sha256;
+	exports.sha512 = lib$f.sha512;
 
-	exports.solidityKeccak256 = lib$n.keccak256;
-	exports.solidityPack = lib$n.pack;
-	exports.soliditySha256 = lib$n.sha256;
+	exports.solidityKeccak256 = lib$s.keccak256;
+	exports.solidityPack = lib$s.pack;
+	exports.soliditySha256 = lib$s.sha256;
 
-	exports.randomBytes = browser$6.randomBytes;
-	exports.shuffled = browser$6.shuffled;
+	exports.randomBytes = lib$l.randomBytes;
+	exports.shuffled = lib$l.shuffled;
 
 	exports.checkProperties = lib$3.checkProperties;
 	exports.deepCopy = lib$3.deepCopy;
@@ -26603,9 +25144,9 @@
 	var RLP = __importStar(lib$5);
 	exports.RLP = RLP;
 
-	exports.computePublicKey = lib$f.computePublicKey;
-	exports.recoverPublicKey = lib$f.recoverPublicKey;
-	exports.SigningKey = lib$f.SigningKey;
+	exports.computePublicKey = lib$h.computePublicKey;
+	exports.recoverPublicKey = lib$h.recoverPublicKey;
+	exports.SigningKey = lib$h.SigningKey;
 
 	exports.formatBytes32String = lib$8.formatBytes32String;
 	exports.nameprep = lib$8.nameprep;
@@ -26616,26 +25157,26 @@
 	exports.toUtf8String = lib$8.toUtf8String;
 	exports.Utf8ErrorFuncs = lib$8.Utf8ErrorFuncs;
 
-	exports.computeAddress = lib$g.computeAddress;
-	exports.parseTransaction = lib$g.parse;
-	exports.recoverAddress = lib$g.recoverAddress;
-	exports.serializeTransaction = lib$g.serialize;
+	exports.computeAddress = lib$i.computeAddress;
+	exports.parseTransaction = lib$i.parse;
+	exports.recoverAddress = lib$i.recoverAddress;
+	exports.serializeTransaction = lib$i.serialize;
 
-	exports.commify = lib$o.commify;
-	exports.formatEther = lib$o.formatEther;
-	exports.parseEther = lib$o.parseEther;
-	exports.formatUnits = lib$o.formatUnits;
-	exports.parseUnits = lib$o.parseUnits;
+	exports.commify = lib$t.commify;
+	exports.formatEther = lib$t.formatEther;
+	exports.parseEther = lib$t.parseEther;
+	exports.formatUnits = lib$t.formatUnits;
+	exports.parseUnits = lib$t.parseUnits;
 
-	exports.verifyMessage = lib$j.verifyMessage;
-	exports.verifyTypedData = lib$j.verifyTypedData;
+	exports.verifyMessage = lib$n.verifyMessage;
+	exports.verifyTypedData = lib$n.verifyTypedData;
 
-	exports._fetchData = lib$l._fetchData;
-	exports.fetchJson = lib$l.fetchJson;
-	exports.poll = lib$l.poll;
+	exports._fetchData = lib$q._fetchData;
+	exports.fetchJson = lib$q.fetchJson;
+	exports.poll = lib$q.poll;
 	////////////////////////
 	// Enums
-	var sha2_2 = browser;
+	var sha2_2 = lib$f;
 	exports.SupportedAlgorithm = sha2_2.SupportedAlgorithm;
 	var strings_2 = lib$8;
 	exports.UnicodeNormalizationForm = strings_2.UnicodeNormalizationForm;
@@ -26643,110 +25184,16 @@
 
 	});
 
-	var utils$4 = unwrapExports(utils$3);
-	var utils_1$3 = utils$3.AbiCoder;
-	var utils_2$1 = utils$3.checkResultErrors;
-	var utils_3$1 = utils$3.defaultAbiCoder;
-	var utils_4$1 = utils$3.EventFragment;
-	var utils_5$1 = utils$3.FormatTypes;
-	var utils_6 = utils$3.Fragment;
-	var utils_7 = utils$3.FunctionFragment;
-	var utils_8 = utils$3.Indexed;
-	var utils_9 = utils$3.Interface;
-	var utils_10 = utils$3.LogDescription;
-	var utils_11 = utils$3.ParamType;
-	var utils_12 = utils$3.TransactionDescription;
-	var utils_13 = utils$3.getAddress;
-	var utils_14 = utils$3.getCreate2Address;
-	var utils_15 = utils$3.getContractAddress;
-	var utils_16 = utils$3.getIcapAddress;
-	var utils_17 = utils$3.isAddress;
-	var utils_18 = utils$3.base64;
-	var utils_19 = utils$3.base58;
-	var utils_20 = utils$3.arrayify;
-	var utils_21 = utils$3.concat;
-	var utils_22 = utils$3.hexConcat;
-	var utils_23 = utils$3.hexDataSlice;
-	var utils_24 = utils$3.hexDataLength;
-	var utils_25 = utils$3.hexlify;
-	var utils_26 = utils$3.hexStripZeros;
-	var utils_27 = utils$3.hexValue;
-	var utils_28 = utils$3.hexZeroPad;
-	var utils_29 = utils$3.isBytes;
-	var utils_30 = utils$3.isBytesLike;
-	var utils_31 = utils$3.isHexString;
-	var utils_32 = utils$3.joinSignature;
-	var utils_33 = utils$3.zeroPad;
-	var utils_34 = utils$3.splitSignature;
-	var utils_35 = utils$3.stripZeros;
-	var utils_36 = utils$3._TypedDataEncoder;
-	var utils_37 = utils$3.hashMessage;
-	var utils_38 = utils$3.id;
-	var utils_39 = utils$3.isValidName;
-	var utils_40 = utils$3.namehash;
-	var utils_41 = utils$3.defaultPath;
-	var utils_42 = utils$3.entropyToMnemonic;
-	var utils_43 = utils$3.HDNode;
-	var utils_44 = utils$3.isValidMnemonic;
-	var utils_45 = utils$3.mnemonicToEntropy;
-	var utils_46 = utils$3.mnemonicToSeed;
-	var utils_47 = utils$3.getJsonWalletAddress;
-	var utils_48 = utils$3.keccak256;
-	var utils_49 = utils$3.Logger;
-	var utils_50 = utils$3.computeHmac;
-	var utils_51 = utils$3.ripemd160;
-	var utils_52 = utils$3.sha256;
-	var utils_53 = utils$3.sha512;
-	var utils_54 = utils$3.solidityKeccak256;
-	var utils_55 = utils$3.solidityPack;
-	var utils_56 = utils$3.soliditySha256;
-	var utils_57 = utils$3.randomBytes;
-	var utils_58 = utils$3.shuffled;
-	var utils_59 = utils$3.checkProperties;
-	var utils_60 = utils$3.deepCopy;
-	var utils_61 = utils$3.defineReadOnly;
-	var utils_62 = utils$3.getStatic;
-	var utils_63 = utils$3.resolveProperties;
-	var utils_64 = utils$3.shallowCopy;
-	var utils_65 = utils$3.RLP;
-	var utils_66 = utils$3.computePublicKey;
-	var utils_67 = utils$3.recoverPublicKey;
-	var utils_68 = utils$3.SigningKey;
-	var utils_69 = utils$3.formatBytes32String;
-	var utils_70 = utils$3.nameprep;
-	var utils_71 = utils$3.parseBytes32String;
-	var utils_72 = utils$3._toEscapedUtf8String;
-	var utils_73 = utils$3.toUtf8Bytes;
-	var utils_74 = utils$3.toUtf8CodePoints;
-	var utils_75 = utils$3.toUtf8String;
-	var utils_76 = utils$3.Utf8ErrorFuncs;
-	var utils_77 = utils$3.computeAddress;
-	var utils_78 = utils$3.parseTransaction;
-	var utils_79 = utils$3.recoverAddress;
-	var utils_80 = utils$3.serializeTransaction;
-	var utils_81 = utils$3.commify;
-	var utils_82 = utils$3.formatEther;
-	var utils_83 = utils$3.parseEther;
-	var utils_84 = utils$3.formatUnits;
-	var utils_85 = utils$3.parseUnits;
-	var utils_86 = utils$3.verifyMessage;
-	var utils_87 = utils$3.verifyTypedData;
-	var utils_88 = utils$3._fetchData;
-	var utils_89 = utils$3.fetchJson;
-	var utils_90 = utils$3.poll;
-	var utils_91 = utils$3.SupportedAlgorithm;
-	var utils_92 = utils$3.UnicodeNormalizationForm;
-	var utils_93 = utils$3.Utf8ErrorReason;
+	var utils$4 = /*@__PURE__*/getDefaultExportFromCjs(utils$3);
 
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.19";
+	exports.version = "ethers/5.0.20";
 
 	});
 
-	var _version$N = unwrapExports(_version$M);
-	var _version_1$o = _version$M.version;
+	var _version$N = /*@__PURE__*/getDefaultExportFromCjs(_version$M);
 
 	var ethers = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -26768,16 +25215,16 @@
 	exports.Signer = lib$c.Signer;
 	exports.VoidSigner = lib$c.VoidSigner;
 
-	exports.Wallet = lib$j.Wallet;
+	exports.Wallet = lib$n.Wallet;
 	var constants = __importStar(lib$7);
 	exports.constants = constants;
-	var providers = __importStar(lib$m);
+	var providers = __importStar(lib$r);
 	exports.providers = providers;
-	var providers_1 = lib$m;
+	var providers_1 = lib$r;
 	exports.getDefaultProvider = providers_1.getDefaultProvider;
 
-	exports.Wordlist = browser$4.Wordlist;
-	exports.wordlists = browser$4.wordlists;
+	exports.Wordlist = lib$j.Wordlist;
+	exports.wordlists = lib$j.wordlists;
 	var utils = __importStar(utils$3);
 	exports.utils = utils;
 
@@ -26792,25 +25239,9 @@
 
 	});
 
-	var ethers$1 = unwrapExports(ethers);
-	var ethers_1 = ethers.Contract;
-	var ethers_2 = ethers.ContractFactory;
-	var ethers_3 = ethers.BigNumber;
-	var ethers_4 = ethers.FixedNumber;
-	var ethers_5 = ethers.Signer;
-	var ethers_6 = ethers.VoidSigner;
-	var ethers_7 = ethers.Wallet;
-	var ethers_8 = ethers.constants;
-	var ethers_9 = ethers.providers;
-	var ethers_10 = ethers.getDefaultProvider;
-	var ethers_11 = ethers.Wordlist;
-	var ethers_12 = ethers.wordlists;
-	var ethers_13 = ethers.utils;
-	var ethers_14 = ethers.errors;
-	var ethers_15 = ethers.version;
-	var ethers_16 = ethers.logger;
+	var ethers$1 = /*@__PURE__*/getDefaultExportFromCjs(ethers);
 
-	var lib$p = createCommonjsModule(function (module, exports) {
+	var lib$u = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
 	    if (mod && mod.__esModule) return mod;
@@ -26852,44 +25283,9 @@
 
 	});
 
-	var index$p = unwrapExports(lib$p);
-	var lib_1$p = lib$p.ethers;
-	var lib_2$n = lib$p.Signer;
-	var lib_3$k = lib$p.Wallet;
-	var lib_4$e = lib$p.VoidSigner;
-	var lib_5$d = lib$p.getDefaultProvider;
-	var lib_6$9 = lib$p.providers;
-	var lib_7$7 = lib$p.Contract;
-	var lib_8$6 = lib$p.ContractFactory;
-	var lib_9$6 = lib$p.BigNumber;
-	var lib_10$4 = lib$p.FixedNumber;
-	var lib_11$3 = lib$p.constants;
-	var lib_12$3 = lib$p.errors;
-	var lib_13$3 = lib$p.logger;
-	var lib_14$2 = lib$p.utils;
-	var lib_15$2 = lib$p.wordlists;
-	var lib_16$2 = lib$p.version;
-	var lib_17$1 = lib$p.Wordlist;
+	var index$u = /*@__PURE__*/getDefaultExportFromCjs(lib$u);
 
-	exports.BigNumber = lib_9$6;
-	exports.Contract = lib_7$7;
-	exports.ContractFactory = lib_8$6;
-	exports.FixedNumber = lib_10$4;
-	exports.Signer = lib_2$n;
-	exports.VoidSigner = lib_4$e;
-	exports.Wallet = lib_3$k;
-	exports.Wordlist = lib_17$1;
-	exports.constants = lib_11$3;
-	exports.default = index$p;
-	exports.errors = lib_12$3;
-	exports.ethers = lib_1$p;
-	exports.getDefaultProvider = lib_5$d;
-	exports.logger = lib_13$3;
-	exports.providers = lib_6$9;
-	exports.utils = lib_14$2;
-	exports.version = lib_16$2;
-	exports.wordlists = lib_15$2;
+	return index$u;
 
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-}));
+})));
+//# sourceMappingURL=ethers.umd.js.map

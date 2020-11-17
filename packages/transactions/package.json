@@ -19,7 +19,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/transactions",
   "publishConfig": {
     "access": "public"
@@ -32,7 +32,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x892a42c68798431329aabf5c14b72f357c85b8f0a86439c9f158becf66f7c600",
+  "tarballHash": "0x6bf555a8147847b4863b9a43c301c319daf3ed104a7ff14e0636346c6e021304",
   "types": "./lib/index.d.ts",
-  "version": "5.0.6"
+  "version": "5.0.7"
 }

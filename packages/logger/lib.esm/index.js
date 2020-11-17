@@ -288,6 +288,9 @@ export class Logger {
         }
         _logLevel = level;
     }
+    static from(version) {
+        return new Logger(version);
+    }
 }
 Logger.errors = ErrorCode;
 Logger.levels = LogLevel;

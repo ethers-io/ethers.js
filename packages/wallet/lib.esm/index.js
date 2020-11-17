@@ -111,7 +111,8 @@ export class Wallet extends Signer {
             const populated = yield _TypedDataEncoder.resolveNames(domain, types, value, (name) => {
                 if (this.provider == null) {
                     logger.throwError("cannot resolve ENS names without a provider", Logger.errors.UNSUPPORTED_OPERATION, {
-                        operation: "resolveName"
+                        operation: "resolveName",
+                        value: name
                     });
                 }
                 return this.provider.resolveName(name);

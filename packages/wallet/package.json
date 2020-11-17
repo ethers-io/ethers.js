@@ -25,7 +25,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/wallet",
   "publishConfig": {
     "access": "public"
@@ -38,7 +38,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xfb6daa970e4ca698f8d4d47c5f5b0ae099c7da00cfe5dd2f06a6636e24a89d0e",
+  "tarballHash": "0xe72a82af893261e932470d462d7a54667654ff8f85da24d58c0ffc04cf186744",
   "types": "./lib/index.d.ts",
-  "version": "5.0.7"
+  "version": "5.0.8"
 }

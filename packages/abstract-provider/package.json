@@ -17,7 +17,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/abstract-provider",
   "publishConfig": {
     "access": "public"
@@ -30,7 +30,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x87fdc7d7ee69d8c228c0e6946be702acd027a832b5a3deaa5b60e3c9f7110e58",
+  "tarballHash": "0x7f7031bb38c6ca4604423fb6ed651450b9992537548ae9b3848f249d107a88a7",
   "types": "./lib/index.d.ts",
-  "version": "5.0.5"
+  "version": "5.0.6"
 }

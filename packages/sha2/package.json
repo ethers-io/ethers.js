@@ -6,12 +6,6 @@
   "browser": {
     "./lib/sha2": "./lib/browser-sha2.js"
   },
-  "browser.esm": {
-    "./lib.esm/sha2": "./lib.esm/browser-sha2.js"
-  },
-  "browser.umd": {
-    "./lib/sha2": "./lib/browser-sha2.js"
-  },
   "dependencies": {
     "@ethersproject/bytes": "^5.0.4",
     "@ethersproject/logger": "^5.0.5",
@@ -25,7 +19,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/sha2",
   "publishConfig": {
     "access": "public"
@@ -38,7 +32,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x7553e7409c1b5deee5301531eeb988b1acef161fb638c31a753f42bbab42b200",
+  "tarballHash": "0x7a613990297ba319cd1a32bdcdd995993b06862b6829eb62eb32e3ccb6fec35a",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

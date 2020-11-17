@@ -82,10 +82,8 @@
     "elliptic": "6.5.3",
     "hash.js": "1.1.3",
     "js-sha3": "0.5.7",
-    "mime-types": "2.1.11",
     "scrypt-js": "3.0.1",
     "solc": "0.7.1",
-    "solidity-parser-antlr": "^0.3.2",
     "tiny-inflate": "1.0.3",
     "ws": "7.2.3"
   }

@@ -19,7 +19,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/abi",
   "publishConfig": {
     "access": "public"
@@ -31,7 +31,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x1cb0dc8fd334cbf9dba1c9746ed316852af2f5dbbd61f07048e737f452568352",
+  "tarballHash": "0xd0da395b7622fd7dd82ecb018055bab5f061029c1f526b2577457d83da3739e1",
   "types": "./lib/index.d.ts",
-  "version": "5.0.7"
+  "version": "5.0.8"
 }

@@ -6,12 +6,6 @@
   "browser": {
     "./lib/geturl": "./lib/browser-geturl.js"
   },
-  "browser.esm": {
-    "./lib.esm/geturl": "./lib.esm/browser-geturl.js"
-  },
-  "browser.umd": {
-    "./lib/geturl": "./lib/browser-geturl.js"
-  },
   "dependencies": {
     "@ethersproject/base64": "^5.0.3",
     "@ethersproject/bytes": "^5.0.4",
@@ -27,7 +21,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/web",
   "publishConfig": {
     "access": "public"
@@ -40,7 +34,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xffb63ec25a04effef1c5201b55770f2636a338339be2a7b770cc5e8914a6d56b",
+  "tarballHash": "0x511a65b3468b050eda4b462a1195abe2b7ae0da2154888641e02eaef17c6c681",
   "types": "./lib/index.d.ts",
-  "version": "5.0.9"
+  "version": "5.0.10"
 }

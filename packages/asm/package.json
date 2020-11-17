@@ -12,7 +12,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/asm",
   "publishConfig": {
     "access": "public"
@@ -25,7 +25,7 @@
     "generate": "node ./generate.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x29773f2f77c16dcd4e7f6cb0cc1929a249f165cfc128380558a64cc5dff87cb7",
+  "tarballHash": "0xa34335f80d32a66c7b35829a2f4c253b231e4b33607c73c1b3df61201fe31068",
   "types": "./lib/index.d.ts",
-  "version": "5.0.6"
+  "version": "5.0.7"
 }

@@ -13,21 +13,15 @@
   },
   "author": "Richard Moore <me@ricmoo.com>",
   "browser": {
-    "./lib/disk-utils:": "./lib/browser-disk-utils.js"
-  },
-  "browser.esm": {
-    "./lib.esm/disk-utils:": "./lib.esm/browser-disk-utils.js"
-  },
-  "browser.umd": {
-    "./lib/disk-utils:": "./lib/browser-disk-utils.js"
+    "./lib/disk-utils": "./lib/browser-disk-utils.js"
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.0.7",
     "@ethersproject/bytes": "^5.0.4",
     "@ethersproject/keccak256": "^5.0.3",
     "@ethersproject/strings": "^5.0.4",
-    "browserify-zlib": "^0.2.0",
-    "ethers": "^5.0.13"
+    "ethers": "^5.0.13",
+    "tiny-inflate": "1.0.3"
   },
   "description": "Testcases for Ethereum and scripts to generate testcases.",
   "ethereum": "donations.ethers.eth",
@@ -37,7 +31,7 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "module": "./lib.module/index.js",
+  "module": "./lib.esm/index.js",
   "name": "@ethersproject/testcases",
   "publishConfig": {
     "access": "public"
@@ -49,7 +43,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x6ce4c86cf19b2a2d9859cced252e0c057bc1a8034710415c7ccc1ed54f6313b6",
+  "tarballHash": "0x415390e85501f179671ba96e9317226bdc9043a45ee5700413e8b46765b7cd71",
   "types": "./lib/index.d.ts",
-  "version": "5.0.7"
+  "version": "5.0.8"
 }

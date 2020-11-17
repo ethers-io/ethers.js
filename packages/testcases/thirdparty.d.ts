@@ -16,6 +16,11 @@ declare module "browserify-zlib" {
     export function gunzipSync(buf: InputType, options?: ZlibOptions): Buffer;
 }
 
+declare module "tiny-inflate" {
+    export function inflate(compressedBuffer: Uint8Array, outputBuffer: Uint8Array): void;
+    export default inflate;
+}
+
 declare module "*.json" {
     const value: any;
     export default value;
