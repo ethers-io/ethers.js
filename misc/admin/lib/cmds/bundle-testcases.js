@@ -25,6 +25,7 @@ const path_1 = require("path");
 const zlib_1 = __importDefault(require("zlib"));
 const log_1 = require("../log");
 const path_2 = require("../path");
+const utils_1 = require("../utils");
 const config = {
     dirs: [
         "./input/easyseed-bip39",
@@ -51,6 +52,9 @@ const config = {
                 console.log(`  - Added ${key} (${data[key].length} bytes)`);
             });
         });
+        utils_1.mkdir(path_2.resolve("packages/testcases/lib"));
+        utils_1.mkdir(path_2.resolve("packages/testcases/lib._esm"));
+        utils_1.mkdir(path_2.resolve("packages/testcases/lib.esm"));
         // We write it out to all needed places
         fs_1.default.writeFileSync(path_2.resolve("packages/testcases/lib/browser-data.json"), JSON.stringify(data));
         fs_1.default.writeFileSync(path_2.resolve("packages/testcases/lib._esm/browser-data.json"), JSON.stringify(data));

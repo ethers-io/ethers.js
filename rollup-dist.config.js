@@ -149,7 +149,7 @@ function getConfig() {
 }
 */
 const configs = [
-//    getEsmConfig(),
+    getEsmConfig(),
     getUmdConfig()
 ];
 

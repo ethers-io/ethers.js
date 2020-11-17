@@ -16,6 +16,7 @@ import zlib from "zlib";
 
 import { colorify } from "../log";
 import { resolve } from "../path";
+import { mkdir } from "../utils";
 
 const config = {
     dirs: [
@@ -44,6 +45,10 @@ const config = {
             console.log(`  - Added ${ key } (${ data[key].length } bytes)`);
         });
     });
+
+    mkdir(resolve("packages/testcases/lib"));
+    mkdir(resolve("packages/testcases/lib._esm"));
+    mkdir(resolve("packages/testcases/lib.esm"));
 
     // We write it out to all needed places
     fs.writeFileSync(resolve("packages/testcases/lib/browser-data.json"), JSON.stringify(data));
