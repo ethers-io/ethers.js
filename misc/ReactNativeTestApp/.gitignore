@@ -59,3 +59,4 @@ buck-out/
 /ios/Pods/
 
 webserver.log
+faux-registry/*.tgz

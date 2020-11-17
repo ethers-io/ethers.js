@@ -1,12 +1,17 @@
 #!/bin/bash
 
-cp ../../packages/ethers/dist/ethers.umd.min.js libs/ethers.js
 cp ../../node_modules/mocha/mocha.js libs/mocha.js
-cp ../../packages/tests/dist/tests.umd.js libs/tests.js
-cp ../../packages/shims/dist/index.js libs/shims.js
+cp ../../packages/tests/dist/tests.esm.js libs/tests.js
+
+# Start our fake registry
+node faux-registry/server.js &
+REGISTRY=$!
 
 # Install React (comment this out during debugging)
-npm install
+npm install --registry http://localhost:8043
+
+# Shutdown our fake registry
+kill $REGISTRY
 
 # Link any native modules
 npx react-native link
@@ -30,7 +35,7 @@ npx react-native run-ios
 wait $WATCHER
 RESULT=$?
 
-# Kill the server
+# Shutdown the server
 kill $SERVER
 
 # Forward the status
