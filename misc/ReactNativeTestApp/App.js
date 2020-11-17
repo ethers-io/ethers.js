@@ -21,15 +21,16 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 
 
-
-// Inject the crpyot shims (BEFORE the ethers shims)
-import "./crypto-shims.js";
+// Inject the crypto shims (BEFORE the ethers shims)
+import "react-native-get-random-values";
 
 // Inject the missing features with the ethers shims
-import "./libs/shims.js";
+//import "@ethersproject/shims";
+import "./libs/shims";
 
 // Import ethers
-import { ethers } from "./libs/ethers.js";
+//import { ethers } from "ethers";
+import { ethers } from "./libs/ethers";
 
 // Import the test framework
 import "./libs/mocha.js";

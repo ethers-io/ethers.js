@@ -10,9 +10,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "get-random-values-polypony": "^1.0.0",
     "react": "16.13.1",
-    "react-native": "0.63.2"
+    "react-native": "0.63.2",
+    "react-native-get-random-values": "1.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.8.4",

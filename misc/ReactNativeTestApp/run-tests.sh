@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cp ../../packages/ethers/dist/ethers-all.umd.min.js libs/ethers.js
+cp ../../packages/ethers/dist/ethers.umd.min.js libs/ethers.js
 cp ../../node_modules/mocha/mocha.js libs/mocha.js
 cp ../../packages/tests/dist/tests.umd.js libs/tests.js
 cp ../../packages/shims/dist/index.js libs/shims.js
