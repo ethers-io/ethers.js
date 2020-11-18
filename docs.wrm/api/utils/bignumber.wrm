@@ -175,7 +175,7 @@ Returns the value of //BigNumber// as a base-16, ``0x``-prefixed [[DataHexString
 
 _heading: Inspection
 
-_property: ethers.BigNumnber.isBigNumber(object) => boolean  @SRC<bignumber>
+_property: ethers.BigNumber.isBigNumber(object) => boolean  @SRC<bignumber>
 Returns true if and only if the //object// is a BigNumber object.
 
 
