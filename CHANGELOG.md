@@ -3,6 +3,13 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.20 (2020-11-17 20:32)
+---------------------------------
+
+  - Fix browser ws alias for WebSockets. ([02546b9](https://github.com/ethers-io/ethers.js/commit/02546b9401d8066135b4453da917f7ef49c95ad8))
+  - Fixing React Native tests. ([f10977a](https://github.com/ethers-io/ethers.js/commit/f10977ab35f953c3148d99b61799788f47d2a5a2), [fff72ef](https://github.com/ethers-io/ethers.js/commit/fff72ef369f5420bf8283b0808e8fec71f26dd2b))
+  - Refactoring dist build process. ([4809325](https://github.com/ethers-io/ethers.js/commit/4809325bee9cbdd269b099d7b12b218f441ac840), [22bd0c7](https://github.com/ethers-io/ethers.js/commit/22bd0c76dddef7134618ec70ac1b084a054e616e), [8933467](https://github.com/ethers-io/ethers.js/commit/8933467c01b64ead547d7c136f22f3c05c85ca1f))
+
 ethers/v5.0.19 (2020-10-22 21:55)
 ---------------------------------
 

@@ -61,6 +61,7 @@ function getMime(filename) {
         case 'js':       return 'application/javascript';
         case 'jpg':      return 'image/jpeg';
         case 'jpeg':     return 'image/jpeg';
+        case 'json':     return 'application/json';
         case 'md':       return 'text/markdown';
         case 'pickle':   return 'application/x-pickle';
         case 'png':      return 'image/png';

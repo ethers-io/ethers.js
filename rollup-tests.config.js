@@ -36,10 +36,7 @@ function getConfig(format) {
         nodePolyfills({
             assert: true
         }),
-        resolveNode({
-            mainFields,
-            //preferBuiltins: true
-        }),
+        resolveNode({ mainFields }),
     ];
 
     return {
