@@ -9,7 +9,7 @@
   "author": "Richard Moore <me@ricmoo.com>",
   "browser": {
     "./lib/ipc-provider": "./lib/browser-ipc-provider.js",
-    "./ws": "./lib/browser-ws.js",
+    "./lib/ws": "./lib/browser-ws.js",
     "net": "./lib/browser-net.js"
   },
   "dependencies": {
