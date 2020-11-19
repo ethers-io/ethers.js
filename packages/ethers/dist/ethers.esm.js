@@ -4155,7 +4155,7 @@ function joinSignature(signature) {
     ]));
 }
 
-const version$2 = "bignumber/5.0.9";
+const version$2 = "bignumber/5.0.10";
 
 "use strict";
 var BN = bn.BN;
@@ -8734,7 +8734,7 @@ class VoidSigner extends Signer {
     }
 }
 
-const version$b = "contracts/5.0.6";
+const version$b = "contracts/5.0.7";
 
 "use strict";
 var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -21807,7 +21807,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.20";
+const version$o = "ethers/5.0.21";
 
 "use strict";
 const logger$H = new Logger(version$o);

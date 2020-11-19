@@ -4223,7 +4223,7 @@
 	var _version$4 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bignumber/5.0.9";
+	exports.version = "bignumber/5.0.10";
 
 	});
 
@@ -4239,7 +4239,7 @@
 	 *  BigNumber
 	 *
 	 *  A wrapper around the BN.js object. We use the BN.js library
-	 *  because it is used by elliptic, so it is required regardles.
+	 *  because it is used by elliptic, so it is required regardless.
 	 *
 	 */
 	var bn_js_1 = __importDefault(bn);
@@ -9845,7 +9845,7 @@
 	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.6";
+	exports.version = "contracts/5.0.7";
 
 	});
 
@@ -25189,7 +25189,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.20";
+	exports.version = "ethers/5.0.21";
 
 	});
 

@@ -8,10 +8,10 @@
     "@ethersproject/address": "5.0.6",
     "@ethersproject/base64": "5.0.5",
     "@ethersproject/basex": "5.0.5",
-    "@ethersproject/bignumber": "5.0.9",
+    "@ethersproject/bignumber": "5.0.10",
     "@ethersproject/bytes": "5.0.6",
     "@ethersproject/constants": "5.0.6",
-    "@ethersproject/contracts": "5.0.6",
+    "@ethersproject/contracts": "5.0.7",
     "@ethersproject/hash": "5.0.7",
     "@ethersproject/hdnode": "5.0.6",
     "@ethersproject/json-wallets": "5.0.8",
@@ -51,7 +51,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x4aac00492cb43d7904d965c279ef87426d3ef1436c10fd31c6a7bdd10cc71055",
+  "tarballHash": "0xceb273b0a5116251617c3034f4411ecdf8384677eaa437a52e70b5eda1d49740",
   "types": "./lib/index.d.ts",
-  "version": "5.0.20"
+  "version": "5.0.21"
 }

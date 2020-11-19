@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *  BigNumber
  *
  *  A wrapper around the BN.js object. We use the BN.js library
- *  because it is used by elliptic, so it is required regardles.
+ *  because it is used by elliptic, so it is required regardless.
  *
  */
 var bn_js_1 = __importDefault(require("bn.js"));

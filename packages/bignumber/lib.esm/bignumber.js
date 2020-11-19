@@ -3,7 +3,7 @@
  *  BigNumber
  *
  *  A wrapper around the BN.js object. We use the BN.js library
- *  because it is used by elliptic, so it is required regardles.
+ *  because it is used by elliptic, so it is required regardless.
  *
  */
 import _BN from "bn.js";
