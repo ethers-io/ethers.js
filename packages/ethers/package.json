@@ -5,7 +5,7 @@
     "@ethersproject/abi": "5.0.8",
     "@ethersproject/abstract-provider": "5.0.6",
     "@ethersproject/abstract-signer": "5.0.8",
-    "@ethersproject/address": "5.0.6",
+    "@ethersproject/address": "5.0.7",
     "@ethersproject/base64": "5.0.5",
     "@ethersproject/basex": "5.0.5",
     "@ethersproject/bignumber": "5.0.10",
@@ -51,7 +51,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xceb273b0a5116251617c3034f4411ecdf8384677eaa437a52e70b5eda1d49740",
+  "tarballHash": "0xfb79029029086ccdf43e92e0b9a3b3187c05702990a5c63612d75f6c905c6311",
   "types": "./lib/index.d.ts",
   "version": "5.0.21"
 }

@@ -3,9 +3,10 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
-ethers/v5.0.21 (2020-11-19 17:36)
+ethers/v5.0.21 (2020-11-19 18:52)
 ---------------------------------
 
+  - Force address to use bignumber package with base36 private functions. ([#1163](https://github.com/ethers-io/ethers.js/issues/1163); [c9e5480](https://github.com/ethers-io/ethers.js/commit/c9e548071e9ed03e3b12f40f0be779c16422a73f))
   - Remove stray console.log in hardware wallets. ([#1136](https://github.com/ethers-io/ethers.js/issues/1136); [cc63e61](https://github.com/ethers-io/ethers.js/commit/cc63e61f73d530c28655f9421506a25fc0a49df0))
   - Added some funding links for the sponsor button. ([2816850](https://github.com/ethers-io/ethers.js/commit/2816850716d4bf2b458f1db4e0c7a5dc09fb14f7))
   - Remove invalid pkg.module reference. ([#1133](https://github.com/ethers-io/ethers.js/issues/1133); [cddc258](https://github.com/ethers-io/ethers.js/commit/cddc258c963ab63de426b89ef190b83aefe6f6cd))

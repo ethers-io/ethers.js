@@ -6414,7 +6414,7 @@ var index = /*#__PURE__*/Object.freeze({
 	decode: decode
 });
 
-const version$6 = "address/5.0.6";
+const version$6 = "address/5.0.7";
 
 "use strict";
 const logger$7 = new Logger(version$6);

@@ -6721,7 +6721,7 @@
 	var _version$c = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "address/5.0.6";
+	exports.version = "address/5.0.7";
 
 	});
 
