@@ -28,7 +28,6 @@ const hidWrapper = Object.freeze({
         }
 
         return hidCache.then((hid) => {
-            console.log(hid, hid.create);
             return hid.create()
         });
     }
