@@ -1,1 +1,1 @@
-export const version = "signing-key/5.0.5";
+export const version = "signing-key/5.0.6";

@@ -18,19 +18,6 @@ function setupConfig(outDir: string, moduleType: string, targetType: string) {
 
         if (info._ethers_nobuild) { return; }
 
-        if (targetType === "es2015") {
-            if (info["browser.esm"]) {
-                info.browser = info["browser.esm"];
-            }
-        } else if (targetType === "es5") {
-            if (info["browser.umd"]) {
-                info.browser = info["browser.umd"];
-            }
-        } else {
-            throw new Error("unsupported target");
-        }
-        saveJson(filename, info, true);
-
         let path = resolve("packages", dirname, "tsconfig.json");
         let content = loadJson(path);
         content.compilerOptions.outDir = outDir;
@@ -40,7 +27,7 @@ function setupConfig(outDir: string, moduleType: string, targetType: string) {
 
 export function setupBuild(buildModule: boolean): void {
     if (buildModule) {
-        setupConfig("./lib.esm/", "es2015", "es2015");
+        setupConfig("./lib._esm/", "es2015", "es2015");
     } else {
         setupConfig("./lib/", "commonjs", "es5");
     }

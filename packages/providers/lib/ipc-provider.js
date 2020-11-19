@@ -12,11 +12,8 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var net_1 = __importDefault(require("net"));
+var net_1 = require("net");
 var properties_1 = require("@ethersproject/properties");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
@@ -50,7 +47,7 @@ var IpcProvider = /** @class */ (function (_super) {
         });
         return new Promise(function (resolve, reject) {
             var response = Buffer.alloc(0);
-            var stream = net_1.default.connect(_this.path);
+            var stream = net_1.connect(_this.path);
             stream.on("data", function (data) {
                 response = Buffer.concat([response, data]);
             });

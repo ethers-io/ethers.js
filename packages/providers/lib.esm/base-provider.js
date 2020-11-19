@@ -19,7 +19,7 @@ import { defineReadOnly, getStatic, resolveProperties } from "@ethersproject/pro
 import { sha256 } from "@ethersproject/sha2";
 import { toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
 import { poll } from "@ethersproject/web";
-import { encode, toWords } from "bech32";
+import bech32 from "bech32";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
@@ -248,9 +248,9 @@ export class Resolver {
                 version = -1;
             }
             if (version >= 0 && bytes.length === 2 + length && length >= 1 && length <= 75) {
-                const words = toWords(bytes.slice(2));
+                const words = bech32.toWords(bytes.slice(2));
                 words.unshift(version);
-                return encode(coinInfo.prefix, words);
+                return bech32.encode(coinInfo.prefix, words);
             }
         }
         return null;

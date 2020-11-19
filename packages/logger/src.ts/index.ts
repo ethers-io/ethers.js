@@ -336,4 +336,8 @@ export class Logger {
         }
         _logLevel = level;
     }
+
+    static from(version: string): Logger {
+        return new Logger(version);
+    }
 }

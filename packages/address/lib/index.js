@@ -1,7 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// We use this for base 36 maths
-var bn_js_1 = require("bn.js");
 var bytes_1 = require("@ethersproject/bytes");
 var bignumber_1 = require("@ethersproject/bignumber");
 var keccak256_1 = require("@ethersproject/keccak256");
@@ -87,7 +85,7 @@ function getAddress(address) {
         if (address.substring(2, 4) !== ibanChecksum(address)) {
             logger.throwArgumentError("bad icap checksum", "address", address);
         }
-        result = (new bn_js_1.BN(address.substring(4), 36)).toString(16);
+        result = bignumber_1._base36To16(address.substring(4));
         while (result.length < 40) {
             result = "0" + result;
         }
@@ -109,7 +107,7 @@ function isAddress(address) {
 }
 exports.isAddress = isAddress;
 function getIcapAddress(address) {
-    var base36 = (new bn_js_1.BN(getAddress(address).substring(2), 16)).toString(36).toUpperCase();
+    var base36 = bignumber_1._base16To36(getAddress(address).substring(2)).toUpperCase();
     while (base36.length < 30) {
         base36 = "0" + base36;
     }

@@ -48,6 +48,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
 var basex_1 = require("@ethersproject/basex");
@@ -60,7 +63,7 @@ var properties_1 = require("@ethersproject/properties");
 var sha2_1 = require("@ethersproject/sha2");
 var strings_1 = require("@ethersproject/strings");
 var web_1 = require("@ethersproject/web");
-var bech32_1 = require("bech32");
+var bech32_1 = __importDefault(require("bech32"));
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
@@ -314,9 +317,9 @@ var Resolver = /** @class */ (function () {
                 version_1 = -1;
             }
             if (version_1 >= 0 && bytes.length === 2 + length_3 && length_3 >= 1 && length_3 <= 75) {
-                var words = bech32_1.toWords(bytes.slice(2));
+                var words = bech32_1.default.toWords(bytes.slice(2));
                 words.unshift(version_1);
-                return bech32_1.encode(coinInfo.prefix, words);
+                return bech32_1.default.encode(coinInfo.prefix, words);
             }
         }
         return null;

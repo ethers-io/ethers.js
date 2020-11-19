@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import aes from "aes-js";
-import * as scrypt from "scrypt-js";
+import scrypt from "scrypt-js";
 import { getAddress } from "@ethersproject/address";
 import { arrayify, concat, hexlify } from "@ethersproject/bytes";
 import { defaultPath, entropyToMnemonic, HDNode, mnemonicToEntropy } from "@ethersproject/hdnode";

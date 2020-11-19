@@ -174,7 +174,8 @@ var Wallet = /** @class */ (function (_super) {
                     case 0: return [4 /*yield*/, hash_1._TypedDataEncoder.resolveNames(domain, types, value, function (name) {
                             if (_this.provider == null) {
                                 logger.throwError("cannot resolve ENS names without a provider", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
-                                    operation: "resolveName"
+                                    operation: "resolveName",
+                                    value: name
                                 });
                             }
                             return _this.provider.resolveName(name);

@@ -1,14 +1,5 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
-  "browser": {
-    "ethers": "./lib/browser-ethers.js"
-  },
-  "browser.esm": {
-    "ethers": "./lib.esm/browser-ethers.js"
-  },
-  "browser.umd": {
-    "ethers": "./lib/browser-ethers.js"
-  },
   "dependencies": {
     "@ethersproject/cli": "^5.0.4",
     "@ethersproject/testcases": "^5.0.5",
@@ -35,7 +26,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0x9351071005d663f4c8f4b086e8c9364c06a924127a3ff14e52d5478a332dbeb1",
+  "tarballHash": "0x72a8c61ee29157354d55ef74471c3c70836f72d654e092dc560517f0edeefa14",
   "types": "./lib/index.d.ts",
-  "version": "5.0.12"
+  "version": "5.0.13"
 }

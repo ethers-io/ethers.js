@@ -1,8 +1,11 @@
 {
+  "_ethers.alias": {
+    "sha2.js": "browser-sha2.js"
+  },
   "author": "Richard Moore <me@ricmoo.com>",
-  "browser": "./lib/browser.js",
-  "browser.esm": "./lib/browser.js",
-  "browser.umd": "./lib/browser.js",
+  "browser": {
+    "./lib/sha2": "./lib/browser-sha2.js"
+  },
   "dependencies": {
     "@ethersproject/bytes": "^5.0.4",
     "@ethersproject/logger": "^5.0.5",
@@ -28,7 +31,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x7553e7409c1b5deee5301531eeb988b1acef161fb638c31a753f42bbab42b200",
+  "sideEffects": false,
+  "tarballHash": "0x7a613990297ba319cd1a32bdcdd995993b06862b6829eb62eb32e3ccb6fec35a",
   "types": "./lib/index.d.ts",
-  "version": "5.0.4"
+  "version": "5.0.5"
 }

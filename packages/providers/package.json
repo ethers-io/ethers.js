@@ -1,19 +1,16 @@
 {
+  "_ethers.alias": {
+    "browser-net.d.ts": "",
+    "browser-net.js": "",
+    "browser-net.js.map": "",
+    "ipc-provider.js": "browser-ipc-provider.js",
+    "ws.js": "browser-ws.js"
+  },
   "author": "Richard Moore <me@ricmoo.com>",
   "browser": {
     "./lib/ipc-provider": "./lib/browser-ipc-provider.js",
-    "net": "./lib/browser-net.js",
-    "ws": "./lib/browser-ws.js"
-  },
-  "browser.esm": {
-    "./lib.esm/ipc-provider": "./lib.esm/browser-ipc-provider.js",
-    "net": "./lib.esm/browser-net.js",
-    "ws": "./lib/browser-ws.js"
-  },
-  "browser.umd": {
-    "./lib/ipc-provider": "./lib/browser-ipc-provider.js",
-    "net": "./lib/browser-net.js",
-    "ws": "./lib/browser-ws.js"
+    "./lib/ws": "./lib/browser-ws.js",
+    "net": "./lib/browser-net.js"
   },
   "dependencies": {
     "@ethersproject/abstract-provider": "^5.0.4",
@@ -56,7 +53,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x75f5062536d763196c0bb7681f1de3c93f6d747b799f525295039df8c9c46503",
+  "sideEffects": false,
+  "tarballHash": "0x340a68f90eade2692353494d9a4b80b009cc3e39375d05e05acc069589bf8e83",
   "types": "./lib/index.d.ts",
-  "version": "5.0.14"
+  "version": "5.0.15"
 }

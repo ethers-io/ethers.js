@@ -6,7 +6,8 @@
  *  because it is used by elliptic, so it is required regardles.
  *
  */
-import { BN } from "bn.js";
+import _BN from "bn.js";
+var BN = _BN.BN;
 import { hexlify, isBytes, isHexString } from "@ethersproject/bytes";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -271,5 +272,13 @@ function throwFault(fault, operation, value) {
         params.value = value;
     }
     return logger.throwError(fault, Logger.errors.NUMERIC_FAULT, params);
+}
+// value should have no prefix
+export function _base36To16(value) {
+    return (new BN(value, 36)).toString(16);
+}
+// value should have no prefix
+export function _base16To36(value) {
+    return (new BN(value, 16)).toString(36);
 }
 //# sourceMappingURL=bignumber.js.map

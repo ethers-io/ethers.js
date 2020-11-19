@@ -2,10 +2,11 @@
 
 module.exports = function(config) {
   config.set({
+    basePath: "./output/karma",
     frameworks: [ 'mocha' ],
     files: [
-        { pattern: "./packages/ethers/dist/ethers-all.esm.min.js", type: "module" },
-        { pattern: "./packages/tests/dist/tests.esm.js", type: "module" }
+        { pattern: "./ethers.esm.js", type: "module" },
+        { pattern: "./tests.esm.js", type: "module" }
     ],
     reporters: [ 'karma' ],
     plugins: [

@@ -422,7 +422,7 @@ describe('Test UTF-8 coder', function () {
             var bytes = ethers_1.ethers.utils.toUtf8Bytes(str);
             var str2 = ethers_1.ethers.utils.toUtf8String(bytes);
             var escaped = JSON.parse(ethers_1.ethers.utils._toEscapedUtf8String(bytes));
-            assert_1.default.ok(Buffer.from(str).equals(Buffer.from(bytes)), 'bytes not generated correctly - ' + bytes);
+            //            assert.ok(Buffer.from(str).equals(Buffer.from(bytes)), 'bytes not generated correctly - ' + bytes)
             assert_1.default.equal(str2, str, 'conversion not reflexive - ' + bytes);
             assert_1.default.equal(escaped, str, 'conversion not reflexive - ' + bytes);
         }
@@ -439,7 +439,7 @@ describe('Test Bytes32String coder', function () {
     });
 });
 function getHex(value) {
-    return "0x" + Buffer.from(value).toString("hex");
+    return ethers_1.ethers.utils.hexlify(ethers_1.ethers.utils.toUtf8Bytes(value));
 }
 describe("Test nameprep", function () {
     var Tests = testcases_1.loadTests("nameprep");

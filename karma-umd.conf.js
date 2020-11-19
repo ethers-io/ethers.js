@@ -2,10 +2,11 @@
 
 module.exports = function(config) {
   config.set({
+    basePath: "./output/karma",
     frameworks: [ 'mocha' ],
     files: [
-        "./packages/ethers/dist/ethers-all.umd.min.js",
-        "./packages/tests/dist/tests.umd.js",
+        "./ethers.umd.js",
+        "./tests.umd.js",
     ],
     reporters: [ 'karma' ],
     plugins: [
@@ -41,7 +42,7 @@ module.exports = function(config) {
     /*
     client: {
       mocha: {
-        grep: 'Etherscan',
+        grep: 'Test WebSocketProvider',
       }
     }
     */

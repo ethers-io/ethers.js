@@ -1,6 +1,6 @@
 "use strict";
 
-import { ec as EC } from "elliptic";
+import { EC } from "./elliptic";
 
 import { arrayify, BytesLike, hexlify, hexZeroPad, Signature, SignatureLike, splitSignature } from "@ethersproject/bytes";
 import { defineReadOnly } from "@ethersproject/properties";

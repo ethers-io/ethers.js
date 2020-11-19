@@ -1,1 +1,1 @@
-export const version = "random/5.0.4";
+export const version = "random/5.0.5";

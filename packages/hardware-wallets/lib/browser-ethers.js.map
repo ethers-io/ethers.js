@@ -1,1 +1,0 @@
-{"version":3,"file":"browser-ethers.js","sourceRoot":"","sources":["../src.ts/browser-ethers.ts"],"names":[],"mappings":"AAAA,YAAY,CAAC;;AAEb,IAAI,MAAM,GAAQ,EAAG,CAAC;AASb,wBAAM;AAPf,IAAM,CAAC,GAAI,MAAc,CAAC;AAC1B,IAAI,CAAC,CAAC,OAAO,IAAI,IAAI,EAAE;IACnB,OAAO,CAAC,GAAG,CAAC,sEAAsE,CAAC,CAAC;CACvF;KAAM;IACH,iBAAA,MAAM,GAAG,CAAC,CAAC,OAAO,CAAC;CACtB"}

@@ -301,6 +301,9 @@ var Logger = /** @class */ (function () {
         }
         _logLevel = level;
     };
+    Logger.from = function (version) {
+        return new Logger(version);
+    };
     Logger.errors = ErrorCode;
     Logger.levels = LogLevel;
     return Logger;

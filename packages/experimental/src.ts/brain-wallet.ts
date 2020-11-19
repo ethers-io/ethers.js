@@ -2,7 +2,7 @@
 
 import { ethers } from "ethers";
 
-import { scrypt } from "scrypt-js";
+import scrypt from "scrypt-js";
 
 import { version } from "./_version";
 
@@ -34,7 +34,7 @@ export class BrainWallet extends ethers.Wallet {
             passwordBytes = ethers.utils.arrayify(password);
         }
 
-        return scrypt(passwordBytes, usernameBytes, (1 << 18), 8, 1, 32, progressCallback).then((key: Uint8Array) => {
+        return scrypt.scrypt(passwordBytes, usernameBytes, (1 << 18), 8, 1, 32, progressCallback).then((key: Uint8Array) => {
             if (legacy) {
                 return new BrainWallet(key);
 

@@ -34,3 +34,5 @@ export declare class BigNumber implements Hexable {
     static from(value: any): BigNumber;
     static isBigNumber(value: any): value is BigNumber;
 }
+export declare function _base36To16(value: string): string;
+export declare function _base16To36(value: string): string;

@@ -1,6 +1,6 @@
 "use strict";
 import { ethers } from "ethers";
-import { scrypt } from "scrypt-js";
+import scrypt from "scrypt-js";
 import { version } from "./_version";
 const logger = new ethers.utils.Logger(version);
 let warned = false;
@@ -26,7 +26,7 @@ export class BrainWallet extends ethers.Wallet {
         else {
             passwordBytes = ethers.utils.arrayify(password);
         }
-        return scrypt(passwordBytes, usernameBytes, (1 << 18), 8, 1, 32, progressCallback).then((key) => {
+        return scrypt.scrypt(passwordBytes, usernameBytes, (1 << 18), 8, 1, 32, progressCallback).then((key) => {
             if (legacy) {
                 return new BrainWallet(key);
             }

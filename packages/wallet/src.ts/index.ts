@@ -128,7 +128,8 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
         const populated = await _TypedDataEncoder.resolveNames(domain, types, value, (name: string) => {
             if (this.provider == null) {
                 logger.throwError("cannot resolve ENS names without a provider", Logger.errors.UNSUPPORTED_OPERATION, {
-                    operation: "resolveName"
+                    operation: "resolveName",
+                    value: name
                 });
             }
             return this.provider.resolveName(name);

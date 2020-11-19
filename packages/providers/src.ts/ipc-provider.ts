@@ -1,6 +1,6 @@
 "use strict";
 
-import net from "net";
+import { connect } from "net";
 
 import { defineReadOnly } from "@ethersproject/properties";
 import { Networkish } from "@ethersproject/networks";
@@ -45,7 +45,7 @@ export class IpcProvider extends JsonRpcProvider {
         return new Promise((resolve, reject) => {
             let response = Buffer.alloc(0);
 
-            let stream = net.connect(this.path);
+            let stream = connect(this.path);
 
             stream.on("data", (data) => {
                 response = Buffer.concat([ response, data ]);

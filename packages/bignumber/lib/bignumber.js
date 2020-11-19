@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  *  BigNumber
@@ -7,7 +10,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *  because it is used by elliptic, so it is required regardles.
  *
  */
-var bn_js_1 = require("bn.js");
+var bn_js_1 = __importDefault(require("bn.js"));
+var BN = bn_js_1.default.BN;
 var bytes_1 = require("@ethersproject/bytes");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
@@ -169,7 +173,7 @@ var BigNumber = /** @class */ (function () {
                 return new BigNumber(_constructorGuard, toHex(value));
             }
             if (value.match(/^-?[0-9]+$/)) {
-                return new BigNumber(_constructorGuard, toHex(new bn_js_1.BN(value)));
+                return new BigNumber(_constructorGuard, toHex(new BN(value)));
             }
             return logger.throwArgumentError("invalid BigNumber string", "value", value);
         }
@@ -266,9 +270,9 @@ function toBigNumber(value) {
 function toBN(value) {
     var hex = BigNumber.from(value).toHexString();
     if (hex[0] === "-") {
-        return (new bn_js_1.BN("-" + hex.substring(3), 16));
+        return (new BN("-" + hex.substring(3), 16));
     }
-    return new bn_js_1.BN(hex.substring(2), 16);
+    return new BN(hex.substring(2), 16);
 }
 function throwFault(fault, operation, value) {
     var params = { fault: fault, operation: operation };
@@ -277,4 +281,14 @@ function throwFault(fault, operation, value) {
     }
     return logger.throwError(fault, logger_1.Logger.errors.NUMERIC_FAULT, params);
 }
+// value should have no prefix
+function _base36To16(value) {
+    return (new BN(value, 36)).toString(16);
+}
+exports._base36To16 = _base36To16;
+// value should have no prefix
+function _base16To36(value) {
+    return (new BN(value, 16)).toString(36);
+}
+exports._base16To36 = _base16To36;
 //# sourceMappingURL=bignumber.js.map
