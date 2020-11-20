@@ -76,11 +76,20 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
                 if (privateKey.curve !== "secp256k1") {
                     logger.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
                 }
-                defineReadOnly(this, "_signingKey", () => privateKey);
+                defineReadOnly(this, "_signingKey", () => (<SigningKey>privateKey));
+
             } else {
+                // A lot of common tools do not prefix private keys with a 0x (see: #1166)
+                if (typeof(privateKey) === "string") {
+                    if (privateKey.match(/^[0-9a-f]*$/i) && privateKey.length === 64) {
+                        privateKey = "0x" + privateKey;
+                    }
+                }
+
                 const signingKey = new SigningKey(privateKey);
                 defineReadOnly(this, "_signingKey", () => signingKey);
             }
+
             defineReadOnly(this, "_mnemonic", (): Mnemonic => null);
             defineReadOnly(this, "address", computeAddress(this.publicKey));
         }
