@@ -1,7 +1,7 @@
 "use strict";
 
 import { BlockTag, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
-import { hexlify, hexValue } from "@ethersproject/bytes";
+import { hexlify, hexValue, isHexString } from "@ethersproject/bytes";
 import { Network, Networkish } from "@ethersproject/networks";
 import { deepCopy, defineReadOnly } from "@ethersproject/properties";
 import { ConnectionInfo, fetchJson } from "@ethersproject/web";
@@ -86,7 +86,15 @@ function checkLogTag(blockTag: string): number | "latest" {
 
 const defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 
-function checkError(method: string, error: any, transaction: any): never {
+function checkError(method: string, error: any, transaction: any): any {
+    // Undo the "convenience" some nodes are attempting to prevent backwards
+    // incompatibility; maybe for v6 consider forwarding reverts as errors
+    if (method === "call" && error.code === Logger.errors.SERVER_ERROR) {
+        const e = error.error;
+        if (e && e.message.match("reverted") && isHexString(e.data)) {
+            return e.data;
+        }
+    }
 
     // Get the message from any nested error structure
     let message = error.message;

@@ -5,7 +5,7 @@
 import { Provider, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { Signer, TypedDataDomain, TypedDataField, TypedDataSigner } from "@ethersproject/abstract-signer";
 import { BigNumber } from "@ethersproject/bignumber";
-import { Bytes, hexlify, hexValue } from "@ethersproject/bytes";
+import { Bytes, hexlify, hexValue, isHexString } from "@ethersproject/bytes";
 import { _TypedDataEncoder } from "@ethersproject/hash";
 import { Network, Networkish } from "@ethersproject/networks";
 import { checkProperties, deepCopy, Deferrable, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
@@ -21,7 +21,16 @@ import { BaseProvider, Event } from "./base-provider";
 
 const errorGas = [ "call", "estimateGas" ];
 
-function checkError(method: string, error: any, params: any): never {
+function checkError(method: string, error: any, params: any): any {
+    // Undo the "convenience" some nodes are attempting to prevent backwards
+    // incompatibility; maybe for v6 consider forwarding reverts as errors
+    if (method === "call" && error.code === Logger.errors.SERVER_ERROR) {
+        const e = error.error;
+        if (e && e.message.match("reverted") && isHexString(e.data)) {
+            return e.data;
+        }
+    }
+
     let message = error.message;
     if (error.code === Logger.errors.SERVER_ERROR && error.error && typeof(error.error.message) === "string") {
         message = error.error.message;
@@ -448,7 +457,6 @@ export class JsonRpcProvider extends BaseProvider {
         if (args == null) {
             logger.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });
         }
-
         try {
             return await this.send(args[0], args[1])
         } catch (error) {
