@@ -35,6 +35,9 @@ export function isBigNumberish(value: any): value is BigNumberish {
     );
 }
 
+// Only warn about passing 10 into radix once
+let _warnedToStringRadix = false;
+
 export class BigNumber implements Hexable {
     readonly _hex: string;
     readonly _isBigNumber: boolean;
@@ -188,9 +191,18 @@ export class BigNumber implements Hexable {
     }
 
     toString(): string {
-        // Lots of people expect this, which we do not support, so check
-        if (arguments.length !== 0) {
-            logger.throwError("bigNumber.toString does not accept parameters", Logger.errors.UNEXPECTED_ARGUMENT, { });
+        // Lots of people expect this, which we do not support, so check (See: #889)
+        if (arguments.length > 0) {
+            if (arguments[0] === 10) {
+                if (!_warnedToStringRadix) {
+                    _warnedToStringRadix = true;
+                    logger.warn("BigNumber.toString does not accept any parameters; base-10 is assumed");
+                }
+            } else if (arguments[0] === 16) {
+                logger.throwError("BigNumber.toString does not accept any parameters; use bigNumber.toHexString()", Logger.errors.UNEXPECTED_ARGUMENT, { });
+            } else {
+                logger.throwError("BigNumber.toString does not accept parametes", Logger.errors.UNEXPECTED_ARGUMENT, { });
+            }
         }
         return toBN(this).toString(10);
     }
