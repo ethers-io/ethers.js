@@ -201,7 +201,7 @@ export class BigNumber implements Hexable {
             } else if (arguments[0] === 16) {
                 logger.throwError("BigNumber.toString does not accept any parameters; use bigNumber.toHexString()", Logger.errors.UNEXPECTED_ARGUMENT, { });
             } else {
-                logger.throwError("BigNumber.toString does not accept parametes", Logger.errors.UNEXPECTED_ARGUMENT, { });
+                logger.throwError("BigNumber.toString does not accept parameters", Logger.errors.UNEXPECTED_ARGUMENT, { });
             }
         }
         return toBN(this).toString(10);
