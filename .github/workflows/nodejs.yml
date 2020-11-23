@@ -25,12 +25,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Add Ubuntu package repo
+        run: sudo echo "deb http://us.archive.ubuntu.com/ubuntu/ bionic main restricted" > /etc/apt/sources.list && sudo cat /etc/apt/sources.list
+
       - name: Install node-hid requirements
-#        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
-        run: cat /etc/apt/sources.list
-        run: echo "" > /etc/apt/sources.list
-        run: echo "deb http://us.archive.ubuntu.com/ubuntu/ bionic main restricted" > /etc/apt/sources.list
-        run: cat /etc/apt/sources.list
+        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
 
       - name: Install dependencies (and link per package)
         run: npm ci
