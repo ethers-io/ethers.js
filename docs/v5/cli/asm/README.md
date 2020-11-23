@@ -33,7 +33,7 @@ Example Input Files
 ```
 ; SimpleStore (uint)
 
-; Set the inital value of 42
+; Set the initial value of 42
 sstore(0, 42)
 
 ; Init code to deploy myContract
@@ -132,7 +132,7 @@ When a program is assembled, the labels are usually given as an absolute byte po
 
 Byt specifying the **Position Independent Code** flag, code will be generated in a way such that all offsets are relative, allowing the program to be moved without any impact to its logic.
 
-This does incur an additional gsas cost of 8 gas per offset access though.
+This does incur an additional gas cost of 8 gas per offset access though.
 
 
 #### **--target LABEL**

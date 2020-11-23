@@ -14,7 +14,7 @@ EtherscanProvider
 
 Create a new **EtherscanProvider** connected to *network* with the optional *apiKey*.
 
-The *network* may be specified as **string** for a common network name, a **number** for a common chain ID or a [Network Object]provider-(network).
+The *network* may be specified as a **string** for a common network name, a **number** for a common chain ID or a [Network Object]provider-(network).
 
 If no *apiKey* is provided, a shared API key will be used, which may result in reduced performance and throttled requests. It is highly recommended for production, you register with [Etherscan](https://etherscan.io) for your own API key.
 
@@ -71,7 +71,7 @@ InfuraProvider
 
 Create a new **InfuraProvider** connected to *network* with the optional *apiKey*.
 
-The *network* may be specified as **string** for a common network name, a **number** for a common chain ID or a [Network Object]provider-(network).
+The *network* may be specified as a **string** for a common network name, a **number** for a common chain ID or a [Network Object]provider-(network).
 
 The *apiKey* can be a **string** Project ID or an **object** with the properties `projectId` and `projectSecret` to specify a [Project Secret](https://infura.io/docs/gettingStarted/authentication) which can be used on non-public sources (like on a server) to further secure your API access and quotas.
 
@@ -130,7 +130,7 @@ AlchemyProvider
 
 Create a new **AlchemyProvider** connected to *network* with the optional *apiKey*.
 
-The *network* may be specified as **string** for a common network name, a **number** for a common chain ID or a [Network Object](/v5/api/providers/types/#providers-Network).
+The *network* may be specified as a **string** for a common network name, a **number** for a common chain ID or a [Network Object](/v5/api/providers/types/#providers-Network).
 
 
 #### Note: Default API keys

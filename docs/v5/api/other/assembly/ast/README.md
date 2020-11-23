@@ -53,7 +53,7 @@ The literal value of this node, which may be a [DataHexString](/v5/api/utils/byt
 
 #### *literalNode* . **verbatim** => *boolean*
 
-This is true in a [DataNode](/v5/api/other/assembly/ast/#asm-datanode) context, since in that case the value should be taken verbatim and no `PUSH` operation shoud be added, otherwise false.
+This is true in a [DataNode](/v5/api/other/assembly/ast/#asm-datanode) context, since in that case the value should be taken verbatim and no `PUSH` operation should be added, otherwise false.
 
 
 ### PopNode
@@ -67,7 +67,7 @@ The index this **PopNode** is representing. For an implicit place-holder this is
 
 #### *linkNode* . **label** => *string*
 
-Te name of the target node.
+The name of the target node.
 
 
 #### *linkNode* . **type** => *"offset" | "length"*
@@ -91,7 +91,7 @@ A list of all operands passed into this Node.
 
 #### *literalNode* . **verbatim** => *boolean*
 
-This is true in a [DataNode](/v5/api/other/assembly/ast/#asm-datanode) context, since in that case the value should be taken verbatim and no `PUSH` operation shoud be added, otherwise false.
+This is true in a [DataNode](/v5/api/other/assembly/ast/#asm-datanode) context, since in that case the value should be taken verbatim and no `PUSH` operation should be added, otherwise false.
 
 
 #### *evaluationNode* . **script** => *string*

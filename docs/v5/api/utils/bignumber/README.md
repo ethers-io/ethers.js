@@ -85,7 +85,7 @@ BigNumber.from(42n)
 
 // Numbers outside the safe range fail:
 BigNumber.from(Number.MAX_SAFE_INTEGER);
-// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740991, code=NUMERIC_FAULT, version=bignumber/5.0.6)
+// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740991, code=NUMERIC_FAULT, version=bignumber/5.0.11)
 ```
 
 Methods
@@ -133,16 +133,16 @@ Returns a BigNumber with the absolute value of *BigNumber*.
 Returns a BigNumber with the value of *BigNumber* with bits beyond the *bitcount* least significant bits set to zero.
 
 
-### Two's Compliment
+### Two's Complement
 
 #### *BigNumber* . **fromTwos**( bitwidth ) => *[BigNumber](/v5/api/utils/bignumber/)*
 
-Returns a BigNumber with the value of *BigNumber* converted from twos-compliment with *bitwidth*.
+Returns a BigNumber with the value of *BigNumber* converted from twos-complement with *bitwidth*.
 
 
 #### *BigNumber* . **toTwos**( bitwidth ) => *[BigNumber](/v5/api/utils/bignumber/)*
 
-Returns a BigNumber with the value of *BigNumber* converted to twos-compliment with *bitwidth*.
+Returns a BigNumber with the value of *BigNumber* converted to twos-complement with *bitwidth*.
 
 
 ### Comparison and Equivalence
@@ -198,7 +198,7 @@ Returns the value of *BigNumber* as a base-16, `0x`-prefixed [DataHexString](/v5
 
 ### Inspection
 
-#### *ethers* . *BigNumnber* . **isBigNumber**( object ) => *boolean*
+#### *ethers* . *BigNumber* . **isBigNumber**( object ) => *boolean*
 
 Returns true if and only if the *object* is a BigNumber object.
 

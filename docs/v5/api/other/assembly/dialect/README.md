@@ -31,6 +31,6 @@ Links
 Stack Placeholders
 ------------------
 
-Evaluation and Excution
------------------------
+Evaluation and Execution
+------------------------
 

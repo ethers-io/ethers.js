@@ -12,7 +12,7 @@ Default Provider
 
 #### *ethers* . **getDefaultProvider**( [ network , [ options ] ] ) => *[Provider](/v5/api/providers/provider/)*
 
-Returns a new Provider, backed by multiple services, connected to *network*. Is no *network* is provided, **homestead** (i.e. mainnet) is used.
+Returns a new Provider, backed by multiple services, connected to *network*. If no *network* is provided, **homestead** (i.e. mainnet) is used.
 
 The *network* may also be a URL to connect to, such as `http://localhost:8545` or `wss://example.com`.
 
@@ -25,7 +25,7 @@ Option Properties
 
 #### Note: API Keys
 
-It is highly recommended for production services that to acquire and specify an API Key for each sercice.
+It is highly recommended for production services to acquire and specify an API Key for each service.
 
 The default API Keys used by ethers are shared across all users, so services may throttle all services that are using the default API Keys during periods of load without realizing it.
 

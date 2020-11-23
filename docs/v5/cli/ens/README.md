@@ -69,7 +69,7 @@ TRANSACTION OPTIONS (default: query network)
   --gasPrice GWEI             Default gas price for transactions(in wei)
   --gasLimit GAS              Default gas limit for transactions
   --nonce NONCE               Initial nonce for the first transaction
-  --yes                       Always accept Siging and Sending
+  --yes                       Always accept Signing and Sending
 
 OTHER OPTIONS
   --wait                      Wait until transactions are mined

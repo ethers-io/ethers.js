@@ -15,4 +15,6 @@ Ethereum Basics
   * [Gas Limit](gas)
 * [Security](security)
   * [Key Derivation Functions](security)
+* [Best Practices](best-practices)
+  * [Network Changes](best-practices)
 

@@ -58,10 +58,10 @@ Throw an [INVALID_ARGUMENT](/v5/api/utils/logger/#errors-InvalidArgument) Error 
 
 #### *logger* . **checkAbstract**( target , kind ) => *void*
 
-Checks that *target* is not *kind* and performs the same operatons as `checkNew`. This is useful for ensuring abstract classes are not being instantiated.
+Checks that *target* is not *kind* and performs the same operations as `checkNew`. This is useful for ensuring abstract classes are not being instantiated.
 
 
-#### *logger* . **checkArgumentCount**( count , expectedCound [ , message ) => *void*
+#### *logger* . **checkArgumentCount**( count , expectedCount [ , message ) => *void*
 
 If *count* is not equal to *expectedCount*, throws a [MISSING_ARGUMENT](/v5/api/utils/logger/#errors-MissingArgument) or [UNEXPECTED_ARGUMENT](/v5/api/utils/logger/#errors-UnexpectedArgument) error.
 
@@ -215,7 +215,7 @@ Log all output, including debugging information.
 
 #### *Logger* . *levels* . **INFO**
 
-Only log output for infomational, warnings and errors.
+Only log output for informational, warnings and errors.
 
 
 #### *Logger* . *levels* . **WARNING**

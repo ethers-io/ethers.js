@@ -40,7 +40,7 @@ Returns the Array of codepoints of *text*, optionally normalized using the [Unic
 
 #### Note
 
-This function correctly splits each **user-perceived character** into its codepoint, accounting for surrogate pairs. This should not be confused with `string.split("")`, which destroys surrogate pairs, spliting between each UTF-16 codeunit instead.
+This function correctly splits each **user-perceived character** into its codepoint, accounting for surrogate pairs. This should not be confused with `string.split("")`, which destroys surrogate pairs, splitting between each UTF-16 codeunit instead.
 
 
 #### *ethers* . *utils* . **toUtf8String**( aBytesLike [ , onError = error ] ) => *string*
@@ -86,7 +86,7 @@ The Decomposed Normalization Form with Canonical Equivalence. See NFKC for more 
 
 #### Note
 
-Only certain specified characters are folded in Canonical Equivalence, and thus it should **not** be considered a method to acheive *any* level of security from [homoglyph attacks](https://en.wikipedia.org/wiki/IDN_homograph_attack).
+Only certain specified characters are folded in Canonical Equivalence, and thus it should **not** be considered a method to achieve *any* level of security from [homoglyph attacks](https://en.wikipedia.org/wiki/IDN_homograph_attack).
 
 
 Custom UTF-8 Error Handling

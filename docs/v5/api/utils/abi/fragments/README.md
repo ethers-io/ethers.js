@@ -18,7 +18,7 @@ Formats
 
 #### *ethers* . *utils* . *FragmentTypes* . **full** => *string*
 
-This is a full human-readable string, including all parameter names, any optional modifiers (e.g. `indexed`, `public`, etc) and white-space to aid in human readabiliy.
+This is a full human-readable string, including all parameter names, any optional modifiers (e.g. `indexed`, `public`, etc) and white-space to aid in human readability.
 
 
 #### *ethers* . *utils* . *FragmentTypes* . **minimal** => *string*
@@ -64,7 +64,7 @@ This is a string which indicates the type of the [Fragment](/v5/api/utils/abi/fr
 
 #### *fragment* . **inputs** => *Array< [ParamType](/v5/api/utils/abi/fragments/#ParamType) >*
 
-This is an array of of each [ParamType](/v5/api/utils/abi/fragments/#ParamType) for the input parameters to the Constructor, Event of Function.
+This is an array of each [ParamType](/v5/api/utils/abi/fragments/#ParamType) for the input parameters to the Constructor, Event of Function.
 
 
 ### Methods
@@ -204,12 +204,12 @@ Whether the parameter has been marked as indexed. This **only** applies to param
 
 #### *paramType* . **arrayChildren** => *[ParamType](/v5/api/utils/abi/fragments/#ParamType)*
 
-The type of children of the array. This is null for for any parameter wjhich is not an array.
+The type of children of the array. This is null for any parameter which is not an array.
 
 
 #### *paramType* . **arrayLength** => *number*
 
-The length of the array, or `-1` for dynamic-length arrays. This is null for parameters which is not arrays.
+The length of the array, or `-1` for dynamic-length arrays. This is null for parameters which are not arrays.
 
 
 #### *paramType* . **components** => *Array< [ParamType](/v5/api/utils/abi/fragments/#ParamType) >*

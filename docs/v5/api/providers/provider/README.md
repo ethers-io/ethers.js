@@ -33,7 +33,7 @@ Returns the number of transactions *address* has ever **sent**, as of *blockTag*
 ```javascript
 // Get the balance for an account...
 provider.getBalance("ricmoo.firefly.eth");
-// { Promise: { BigNumber: "1492974808274631213" } }
+// { Promise: { BigNumber: "284831012276355695" } }
 
 // Get the code for a contract...
 provider.getCode("registrar.firefly.eth");
@@ -45,7 +45,7 @@ provider.getStorageAt("registrar.firefly.eth", 0)
 
 // Get transaction count of an account...
 provider.getTransactionCount("ricmoo.firefly.eth");
-// { Promise: 679 }
+// { Promise: 689 }
 ```
 
 Blocks Methods
@@ -96,7 +96,7 @@ provider.getBlockWithTransactions(100004)
 //       blockHash: '0xf93283571ae16dcecbe1816adc126954a739350cd1523a1559eabeae155fbb63',
 //       blockNumber: 100004,
 //       chainId: 0,
-//       confirmations: 10719007,
+//       confirmations: 11212224,
 //       creates: null,
 //       data: '0x',
 //       from: '0xcf00A85f3826941e7A25BFcF9Aac575d40410852',
@@ -177,16 +177,16 @@ provider.getNetwork()
 
 // The current block number
 provider.getBlockNumber()
-// { Promise: 10819010 }
+// { Promise: 11312227 }
 
 // Get the current suggested gas price (in wei)...
 gasPrice = await provider.getGasPrice()
-// { BigNumber: "69000000000" }
+// { BigNumber: "46200000000" }
 
 // ...often this gas price is easier to understand or
 // display to the user in gwei (giga-wei, or 1e9 wei)
 utils.formatUnits(gasPrice, "gwei")
-// '69.0'
+// '46.2'
 ```
 
 Transactions Methods
@@ -194,7 +194,7 @@ Transactions Methods
 
 #### *provider* . **call**( transaction [ , blockTag = latest ] ) => *Promise< string< [DataHexString](/v5/api/utils/bytes/#DataHexString) > >*
 
-Returns the result of executing the *transaction*, using *call*. A call does not require any ether, but cannot change any state. This is useful for calling gettings on Contracts.
+Returns the result of executing the *transaction*, using *call*. A call does not require any ether, but cannot change any state. This is useful for calling getters on Contracts.
 
 
 #### *provider* . **estimateGas**( transaction ) => *Promise< [BigNumber](/v5/api/utils/bignumber/) >*
@@ -224,7 +224,7 @@ Add a *listener* to be triggered for each *eventName*.
 
 #### *provider* . **once**( eventName , listener ) => *this*
 
-Add a *listener* to be triggered for only the next *eventName*, at which time it be removed.
+Add a *listener* to be triggered for only the next *eventName*, at which time it will be removed.
 
 
 #### *provider* . **emit**( eventName , ...args ) => *boolean*

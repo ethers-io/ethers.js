@@ -9,7 +9,7 @@ Web Utilities
 
 #### *ethers* . *utils* . **fetchJson**( urlOrConnectionInfo [ , json [ , processFunc ] ] ) => *Promise< any >*
 
-Fetch and parse the JSON content from *urlOrConnectionInfo*, with the optiona body *json* and optionally processing the result with *processFun* before returning it.
+Fetch and parse the JSON content from *urlOrConnectionInfo*, with the optional body *json* and optionally processing the result with *processFun* before returning it.
 
 
 #### *ethers* . *utils* . **poll**( pollFunc [ , options ] ) => *Promise< any >*
@@ -53,7 +53,7 @@ Additional headers to include in the connection.
 
 #### *options* . **timeout** => *number*
 
-The amount of time allowed to ellapse before triggering a timeout error.
+The amount of time allowed to elapse before triggering a timeout error.
 
 
 #### *options* . **floor** => *number*

@@ -19,12 +19,12 @@ The private key for this Signing Key.
 
 #### *signingKey* . **publicKey** => *string< [DataHexString](/v5/api/utils/bytes/#DataHexString)< 65 > >*
 
-The uncompressed public key for this Signing Key. It will always be 65 bytes (130 nibbles) and begine with `0x04`.
+The uncompressed public key for this Signing Key. It will always be 65 bytes (130 nibbles) and begins with `0x04`.
 
 
 #### *signingKey* . **compressedPublicKey** => *string< [DataHexString](/v5/api/utils/bytes/#DataHexString)< 33 > >*
 
-The compressed public key for this Signing Key. It will always be 33 bytes (66 nibbles) and begine with either `0x02` or `0x03`.
+The compressed public key for this Signing Key. It will always be 33 bytes (66 nibbles) and begins with either `0x02` or `0x03`.
 
 
 #### *signingKey* . **signDigest**( digest ) => *[Signature](/v5/api/utils/bytes/#Signature)*
@@ -52,8 +52,14 @@ Other Functions
 Returns the address that signed *message* producing *signature*. The signature may have a non-canonical v (i.e. does not need to be 27 or 28), in which case it will be normalized to compute the `recoveryParam` which will then be used to compute the address; this allows systems which use the v to encode additional data (such as [EIP-155](https://eips.ethereum.org/EIPS/eip-155)) to be used since the v parameter is still completely non-ambiguous.
 
 
+#### *ethers* . *utils* . **verifyTypedData**( domain , types , value , signature ) => *string< [Address](/v5/api/utils/address/#address) >*
+
+Returns the address that signed the [EIP-712](https://eips.ethereum.org/EIPS/eip-712) *value* for the *domain* and *types* to produce the signature.
+
+
 #### *ethers* . *utils* . **recoverPublicKey**( digest , signature ) => *string< [DataHexString](/v5/api/utils/bytes/#DataHexString)< 65 > >*
 
+Returns the uncompressed public key (i.e. the first byte will be `0x04`) of the private key that was used to sign *digest* which gave the *signature*.
 
 
 #### *ethers* . *utils* . **computePublicKey**( key [ , compressed = false ] ) => *string< [DataHexString](/v5/api/utils/bytes/#DataHexString) >*

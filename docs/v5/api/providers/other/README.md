@@ -36,7 +36,7 @@ The provider for this configuration.
 
 #### *fallbackProviderConfig* . **priority** => *number*
 
-The priority used for the provider. Higher priorities are favoured over lower priorities. If multiple providers share the same prioirty, they are choosen at random.
+The priority used for the provider. Higher priorities are favoured over lower priorities. If multiple providers share the same priority, they are chosen at random.
 
 
 #### *fallbackProviderConfig* . **stallTimeout** => *number*

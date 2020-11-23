@@ -17,7 +17,7 @@ Other Libraries
     * [Data Segment](assembly/dialect)
     * [Links](assembly/dialect)
     * [Stack Placeholders](assembly/dialect)
-    * [Evaluation and Excution](assembly/dialect)
+    * [Evaluation and Execution](assembly/dialect)
   * [Utilities](assembly/api)
     * [Assembler](assembly/api)
     * [Disassembler](assembly/api)

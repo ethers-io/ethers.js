@@ -16,7 +16,7 @@ Assembly
   * [Data Segment](dialect)
   * [Links](dialect)
   * [Stack Placeholders](dialect)
-  * [Evaluation and Excution](dialect)
+  * [Evaluation and Execution](dialect)
 * [Utilities](api)
   * [Assembler](api)
   * [Disassembler](api)

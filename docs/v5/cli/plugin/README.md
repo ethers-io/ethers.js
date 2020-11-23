@@ -17,7 +17,7 @@ Add a *plugin* class for the *command*. After all options and flags have been co
 
 #### **setPlugin**( pluginClass ) => *void*
 
-Set a dedicated [Plugin](/v5/cli/plugin/#cli-plugin) class which will handle all input. This may not be used in conjuction with addPlugin and will not automatically accept a command from the arguments.
+Set a dedicated [Plugin](/v5/cli/plugin/#cli-plugin) class which will handle all input. This may not be used in conjunction with addPlugin and will not automatically accept a command from the arguments.
 
 
 #### **showUsage**( [ message = "" [ , status = 0 ] ] ) => *never*
@@ -79,7 +79,7 @@ The initial nonce for the account this plugin should use.
 
 #### *plugin* . **getAddress**( addressOrName [ , message = "" , [ allowZero = false ] ] ) => *Promise< string >*
 
-A plugin should use this method to resolve an address. If the resovled address is the zero address and *allowZero* is not true, an error is raised.
+A plugin should use this method to resolve an address. If the resolved address is the zero address and *allowZero* is not true, an error is raised.
 
 
 #### *plugin* . **dump**( header , info ) => *void*
@@ -89,7 +89,7 @@ Dumps the contents of *info* to the console with a *header* in a nicely formatte
 
 #### *plugin* . **throwUsageError**( [ message = "" ] ) => *never*
 
-Stops exectuion of the plugin and shows the help screen of the plugin with the optional *message*.
+Stops execution of the plugin and shows the help screen of the plugin with the optional *message*.
 
 
 #### *plugin* . **throwError**( message ) => *never*
@@ -128,7 +128,7 @@ ArgParser
 
 Flags are simple binary options (such as the `--yes`), which are true if present otherwise false.
 
-Options require a single parameter follow them on the command line (such as `--account wallet.json`, which nhas the name `account` and the value `wallet.json`)
+Options require a single parameter follow them on the command line (such as `--account wallet.json`, which has the name `account` and the value `wallet.json`)
 
 Arguments are all other values on the command line, and are not accessed through the **ArgParser** directly.
 

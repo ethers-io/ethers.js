@@ -101,7 +101,7 @@ Returns a Uint8Array with all leading `0` bytes of *aBtyesLike* removed.
 
 #### *ethers* . *utils* . **zeroPad**( aBytesLike , length ) => *Uint8Array*
 
-Retutns a Uint8Array of the data in *aBytesLike* with `0` bytes prepended to *length* bytes long.
+Returns a Uint8Array of the data in *aBytesLike* with `0` bytes prepended to *length* bytes long.
 
 If *aBytesLike* is already longer than *length* bytes long, an InvalidArgument error will be thrown.
 
@@ -164,20 +164,20 @@ Return a copy of *array* shuffled using [Fisher-Yates Shuffle](https://en.wikipe
 
 ```javascript
 utils.randomBytes(8)
-// Uint8Array [ 98, 93, 74, 126, 111, 146, 146, 3 ]
+// Uint8Array [ 82, 221, 254, 37, 192, 138, 147, 109 ]
 
 const data = [ 1, 2, 3, 4, 5, 6, 7 ];
 
 // Returns a new Array
 utils.shuffled(data);
 // [
-//   5,
-//   2,
 //   6,
-//   1,
-//   4,
+//   5,
+//   3,
+//   2,
 //   7,
-//   3
+//   4,
+//   1
 // ]
 
 // The Original is unscathed...

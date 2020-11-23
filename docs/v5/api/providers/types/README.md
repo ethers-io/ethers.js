@@ -60,21 +60,21 @@ The timestamp of this block.
 
 The nonce used as part of the proof-of-work to mine this block.
 
-This property is generally of little interest developers.
+This property is generally of little interest to developers.
 
 
 #### *block* . **difficulty** => *number*
 
 The difficulty target required to be met by the miner of the block.
 
-This property is generally of little interest developers.
+This property is generally of little interest to developers.
 
 
 #### *block* . **gasLimit** => *[BigNumber](/v5/api/utils/bignumber/)*
 
 The maximum amount of gas that this block was permitted to use. This is a value that can be voted up or voted down by miners and is used to automatically adjust the bandwidth requirements of the network.
 
-This property is generally of little interest developers.
+This property is generally of little interest to developers.
 
 
 #### *block* . **gasUsed** => *[BigNumber](/v5/api/utils/bignumber/)*
@@ -91,7 +91,7 @@ The coinbase address of this block, which indicates the address the miner that m
 
 This is extra data a miner may choose to include when mining a block.
 
-This property is generally of little interest developers.
+This property is generally of little interest to developers.
 
 
 ### Block (with transaction hashes)
@@ -277,7 +277,7 @@ Wait for *confirmations*. If 0, and the transaction has not been mined, `null` i
 
 #### *receipt* . **to** => *string< [Address](/v5/api/utils/address/#address) >*
 
-The address this transaction is to. This is `null` if the the transaction was an **init transaction**, used to deploy a contract.
+The address this transaction is to. This is `null` if the transaction was an **init transaction**, used to deploy a contract.
 
 
 #### *receipt* . **from** => *string< [Address](/v5/api/utils/address/#address) >*
@@ -313,7 +313,7 @@ The amount of gas actually used by this transaction.
 
 #### *receipt* . **logsBloom** => *string< [DataHexString](/v5/api/utils/bytes/#DataHexString) >*
 
-A [bloom-filter](https://en.wikipedia.org/wiki/Bloom_filter), which incldues all the addresses and topics included in any log in this transaction.
+A [bloom-filter](https://en.wikipedia.org/wiki/Bloom_filter), which includes all the addresses and topics included in any log in this transaction.
 
 
 #### *receipt* . **blockHash** => *string< [DataHexString](/v5/api/utils/bytes/#DataHexString)< 32 > >*
@@ -343,7 +343,7 @@ The number of blocks that have been mined since this transaction, including the 
 
 #### *receipt* . **cumulativeGasUsed** => *[BigNumber](/v5/api/utils/bignumber/)*
 
-For the block this transaction was included in, this is the sum of the gas used used by each transaction in the ordered list of transactions up to (and including) this transaction.
+For the block this transaction was included in, this is the sum of the gas used by each transaction in the ordered list of transactions up to (and including) this transaction.
 
 This is generally of little interest to developers.
 

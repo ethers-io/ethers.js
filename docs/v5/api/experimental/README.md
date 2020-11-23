@@ -17,7 +17,7 @@ Generates a brain wallet, with a slightly improved experience, in which the gene
 
 #### *BrainWallet* . **generateLegacy**( username , password [ , progressCallback ] ) => *[BrainWallet](/v5/api/experimental/#experimental-brainwallet)*
 
-Generate a brain wallet which is compatibile with the ethers v3 and earlier.
+Generate a brain wallet which is compatible with the ethers v3 and earlier.
 
 
 EIP1193Bridge
@@ -45,13 +45,13 @@ The provider associated with the signer.
 
 Set the current transaction count (nonce) for the signer.
 
-This may be useful it interacting with the signer outside of using this class.
+This may be useful in interacting with the signer outside of using this class.
 
 
 #### *nonceManager* . **increaseTransactionCount**( [ count = 1 ] ) => *void*
 
 Bump the current transaction count (nonce) by *count*.
 
-This may be useful it interacting with the signer outside of using this class.
+This may be useful in interacting with the signer outside of using this class.
 
 

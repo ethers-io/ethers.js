@@ -40,7 +40,7 @@ Recursive-Length Prefix
 
 Encode a structured Data Object into its RLP-encoded representation.
 
-Each Data component may be an valid [BytesLike](/v5/api/utils/bytes/#BytesLike).
+Each Data component may be a valid [BytesLike](/v5/api/utils/bytes/#BytesLike).
 
 
 #### *ethers* . *utils* . *RLP* . **decode**( aBytesLike ) => *[DataObject](/v5/api/utils/encoding/#rlp--dataobject)*

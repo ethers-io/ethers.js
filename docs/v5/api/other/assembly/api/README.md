@@ -62,7 +62,7 @@ Opcode
 
 #### *asm* . *Opcode* . **from**( valueOrMnemonic ) => *[Opcode](/v5/api/other/assembly/api/#asm-opcode)*
 
-Create a new instnace of an Opcode for a given numeric value (e.g. 0x60 is PUSH1) or mnemonic string (e.g. "PUSH1").
+Create a new instance of an Opcode for a given numeric value (e.g. 0x60 is PUSH1) or mnemonic string (e.g. "PUSH1").
 
 
 ### Properties

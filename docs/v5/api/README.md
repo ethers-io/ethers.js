@@ -161,7 +161,7 @@ Application Programming Interface
       * [Data Segment](other/assembly/dialect)
       * [Links](other/assembly/dialect)
       * [Stack Placeholders](other/assembly/dialect)
-      * [Evaluation and Excution](other/assembly/dialect)
+      * [Evaluation and Execution](other/assembly/dialect)
     * [Utilities](other/assembly/api)
       * [Assembler](other/assembly/api)
       * [Disassembler](other/assembly/api)

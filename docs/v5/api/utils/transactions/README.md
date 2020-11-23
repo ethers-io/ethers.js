@@ -14,7 +14,7 @@ Types
 
 #### *unsignedTransaction* . **to** => *string< [Address](/v5/api/utils/address/#address) >*
 
-The addres this transaction is to.
+The address this transaction is to.
 
 
 #### *unsignedTransaction* . **nonce** => *number*
@@ -71,7 +71,7 @@ The nonce for *transaction*. Each transaction sent to the network from an accoun
 
 #### *transaction* . **gasLimit** => *[BigNumber](/v5/api/utils/bignumber/)*
 
-The gas limit for *transaction*. An account must have enough ether to cover the gas (at the specified **gasPrice**). Any unused gas is refunded at the end of the transaction, and if there is insufficient gas to complete execution, the effects of the trasaction are reverted, but the gas is **fully consumed** and an out-of-gas error occurs.
+The gas limit for *transaction*. An account must have enough ether to cover the gas (at the specified **gasPrice**). Any unused gas is refunded at the end of the transaction, and if there is insufficient gas to complete execution, the effects of the transaction are reverted, but the gas is **fully consumed** and an out-of-gas error occurs.
 
 
 #### *transaction* . **gasPrice** => *[BigNumber](/v5/api/utils/bignumber/)*
@@ -118,7 +118,7 @@ Functions
 
 #### *ethers* . *utils* . **parseTransaction**( aBytesLike ) => *[Transaction](/v5/api/utils/transactions/#Transaction)*
 
-Parses the transaction properties from a serialized transactions.
+Parses the transaction properties from a serialized transaction.
 
 
 #### *ethers* . *utils* . **serializeTransaction**( tx [ , signature ] ) => *string< [DataHexString](/v5/api/utils/bytes/#DataHexString) >*

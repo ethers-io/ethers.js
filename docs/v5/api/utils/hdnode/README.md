@@ -125,7 +125,7 @@ A serialized string representation of this HDNode. Not all properties are includ
 
 #### *hdNode* . **neuter**( ) => *[HDNode](/v5/api/utils/hdnode/#HDNode)*
 
-Return a new instance of *hdNode* with its private key removed but all otehr properties preserved. This ensures that the key can not leak the private key of itself or any derived children, but may still be used to compute the addresses of itself and any non-hardened children.
+Return a new instance of *hdNode* with its private key removed but all other properties preserved. This ensures that the key can not leak the private key of itself or any derived children, but may still be used to compute the addresses of itself and any non-hardened children.
 
 
 #### *hdNode* . **derivePath**( path ) => *[HDNode](/v5/api/utils/hdnode/#HDNode)*

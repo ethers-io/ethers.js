@@ -24,7 +24,7 @@ Test Suite API
 
 Load all the given testcases for the *tag*.
 
-A tag is the string in the above list of test case names not including any extenstion (e.g. `"solidity-hashes"`)
+A tag is the string in the above list of test case names not including any extension (e.g. `"solidity-hashes"`)
 
 
 #### *testcases* . *TestCase* . **TEST_NAME**

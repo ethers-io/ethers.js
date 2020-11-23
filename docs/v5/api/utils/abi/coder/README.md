@@ -29,7 +29,7 @@ Coding Methods
 
 #### *abiCoder* . **encode**( types , values ) => *string< [DataHexString](/v5/api/utils/bytes/#DataHexString) >*
 
-Encode the array *values* according the array of *types*, each of which may be a string or a [ParamType](/v5/api/utils/abi/fragments/#ParamType).
+Encode the array *values* according to the array of *types*, each of which may be a string or a [ParamType](/v5/api/utils/abi/fragments/#ParamType).
 
 
 #### *abiCoder* . **decode**( types , data ) => *[Result](/v5/api/utils/abi/interface/#Result)*

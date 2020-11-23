@@ -163,12 +163,23 @@ div.breadcrumbs span.current {
 .sidebar .header {
     background: #2535a0;
     box-shadow: 0px 5px 15px 0px #115;
-    height: 160px;
+    height: 180px;
     position: fixed;
     left: 0;
     top: 0;
     width: 260px;
-    height: 160px;
+}
+
+.sidebar .footer {
+    background: #2535a0;
+    bottom: 0;
+    box-shadow: 0px -5px 15px 0px #115;
+    height: 40px;
+    position: fixed;
+    left: 0;
+    line-height: 40px;
+    text-align: center;
+    width: 260px;
 }
 
 .sidebar .logo {
@@ -193,6 +204,52 @@ div.breadcrumbs span.current {
 .sidebar .logo:hover {
     opacity: 1;
     transition: opacity 0.1s linear;
+}
+
+.sidebar form {
+   display: inline;
+}
+
+.sidebar .header .search {
+    bottom: 0px;
+    padding: 10px 0;
+    position: absolute;
+    text-align: center;
+    width: 100%;
+}
+
+.sidebar .header .search input {
+    border: 0;
+    border-radius: 15px;
+    color: #008;
+    font-size: 25px;
+    line-height: 30px;
+    margin: 0;
+    opacity: 0.4;
+    outline: none;
+    padding-left: 30px;
+    padding-right: 10px;
+    transition: opacity 0.3s linear;
+    width: 70%;
+}
+
+.sidebar .header .search input:focus {
+    opacity: 1;
+}
+
+.sidebar .header .search:hover input {
+    opacity: 1;
+    transition: opacity 0.3s linear 0.3s;
+}
+
+.sidebar .header .search-icon {
+    color: #004;
+    font-weight: bold;
+    font-size: 27px;
+    position: absolute;
+    left: 26px;
+    top: 6px;
+    transform: rotate(-45deg);
 }
 
 .sidebar a {
@@ -233,7 +290,7 @@ div.breadcrumbs span.current {
 }
 
 .sidebar .toc {
-    padding: 20px 0 40px;
+    padding: 20px 0 70px;
 }
 
 .sidebar .toc .link.title {
@@ -329,6 +386,10 @@ div.breadcrumbs span.current {
     padding: 0px 90px 30px 210px;
     padding-left: 270px;
     width: 800px;
+}
+
+.content .highlight {
+    background: #fe0;
 }
 
 .show-anchors > div {
@@ -580,7 +641,7 @@ code.inline {
    text-align: center;
 }
 
-.footer {
+.content .footer {
     border-top: 1px solid #ddd;
     border-bottom: 1px solid #ddd;
     color: #333;
@@ -589,7 +650,7 @@ code.inline {
     margin: 50px 0 10px 15px;
 }
 
-.footer .nav {
+.content .footer .nav {
     line-height: 30px;
     height: 30px;
     padding: 0;
@@ -599,7 +660,7 @@ code.inline {
     width: 300px;
 }
 
-.footer .nav span {
+.content .footer .nav span {
     background: #449;
     border-radius: 15px;
     color: #fff;
@@ -614,25 +675,25 @@ code.inline {
     width: 30px;
 }
 
-.footer .nav:hover span {
+.content .footer .nav:hover span {
     opacity: 1;
     transition: opacity 0.1s linear;
 }
 
-.footer .nav.previous {
+.content .footer .nav.previous {
     left: 0;
 }
 
-.footer .nav.previous span {
+.content .footer .nav.previous span {
     margin-right: 20px;
 }
 
-.footer .nav.next {
+.content .footer .nav.next {
     right: 0;
     text-align: right;
 }
 
-.footer .nav.next span {
+.content .footer .nav.next span {
     margin-left: 20px;
 }
 
@@ -653,7 +714,7 @@ html.single-page .page-separator {
     height: 0;
 }
 
-html.single-page .footer {
+html.single-page .content .footer {
     padding: 0;
 }
 

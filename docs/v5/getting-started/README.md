@@ -38,7 +38,7 @@ import { ethers } from "ethers";
 
 ```
 <script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js"
-        type="application/javascipt"></script>
+        type="application/javascript"></script>
 ```
 
 Common Terminology
@@ -81,7 +81,7 @@ const signer = provider.getSigner()
 ```javascript
 // Look up the current block number
 provider.getBlockNumber()
-// { Promise: 10819010 }
+// { Promise: 11312227 }
 
 // Get the balance of an account (by address or ENS name, if supported by network)
 balance = await provider.getBalance("ethers.eth")
@@ -143,17 +143,17 @@ const daiContract = new ethers.Contract(daiAddress, daiAbi, provider);
 daiContract.name()
 // { Promise: 'Dai Stablecoin' }
 
-// Get the ERC-20 token synbol (for tickers and UIs)
+// Get the ERC-20 token symbol (for tickers and UIs)
 daiContract.symbol()
 // { Promise: 'DAI' }
 
 // Get the balance of an address
 balance = await daiContract.balanceOf("ricmoo.firefly.eth")
-// { BigNumber: "11386855832278858351495" }
+// { BigNumber: "15923148775162018481031" }
 
 // Format the DAI for displaying to the user
 ethers.utils.formatUnits(balance, 18)
-// '11386.855832278858351495'
+// '15923.148775162018481031'
 ```
 
 ### State Changing Methods
@@ -308,7 +308,7 @@ Signing Messages
 // logging into a service, such as CryptoKitties,
 // pass the string in.
 signature = await signer.signMessage("Hello World");
-// '0x94fac815fc18f295c4860128d8960dfdb1d88acf891a48e345368f3f4d52c95e59d0f8b35d05d554905a39c63c11b66f61abf0211fcaba36bef5dfaf1ea5f1331c'
+// '0xc2c9a0db8e9ae4266d6aa1974b36efabd8e270452587857922c5fd696838a22b6dd8f0536c24a73c0df512eefac68bc118fb91b10640fcc576e44a57bc024ca31b'
 
 //
 // A common case is also signing a hash, which is 32
@@ -325,6 +325,6 @@ messageBytes = ethers.utils.arrayify(message);
 
 // To sign a hash, you most often want to sign the bytes
 signature = await signer.signMessage(messageBytes)
-// '0xa77f9018a3ad3078056d529d5ccaca8796cdb5bc84e799d13b63a53646ab73f87f0895df7bbe2ee6016c95eb78a2e77013ab8f8d4855143d3567932cb5331e881c'
+// '0x66b35b262989bc88c5c5c1fadcd8bcd5ae410cdae06abf33ce2c3c98a04d4e892fd2f61717a46f81372146019c2e95646a6cfc3a7ae74e78338f40d905fa69fc1b'
 ```
 

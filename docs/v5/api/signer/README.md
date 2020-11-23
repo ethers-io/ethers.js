@@ -103,22 +103,72 @@ This method populates the transactionRequest with missing fields, using [populat
 Sub-classes **must** implement this, however they may throw if sending a transaction is not supported, such as the [VoidSigner](/v5/api/signer/#VoidSigner) or if the Wallet is offline and not connected to a [Provider](/v5/api/providers/provider/).
 
 
+#### *signer* . **_signTypedData**( domain , types , value ) => *Promise< string< [RawSignature](/v5/api/utils/bytes/#signature-raw) > >*
+
+Signs the typed data *value* with *types* data structure for *domain* using the [EIP-712](https://eips.ethereum.org/EIPS/eip-712) specification.
+
+
+#### Experimental feature (this method name will change)
+
+This is still an experimental feature. If using it, please specify the **exact** version of ethers you are using (e.g. spcify `"5.0.18"`, **not** `"^5.0.18"`) as the method name will be renamed from `_signTypedData` to `signTypedData` once it has been used in the field a bit.
+
+
+```javascript
+// All properties on a domain are optional
+const domain = {
+    name: 'Ether Mail',
+    version: '1',
+    chainId: 1,
+    verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC'
+};
+
+// The named list of all type definitions
+const types = {
+    Person: [
+        { name: 'name', type: 'string' },
+        { name: 'wallet', type: 'address' }
+    ],
+    Mail: [
+        { name: 'from', type: 'Person' },
+        { name: 'to', type: 'Person' },
+        { name: 'contents', type: 'string' }
+    ]
+};
+
+// The data to sign
+const value = {
+    from: {
+        name: 'Cow',
+        wallet: '0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826'
+    },
+    to: {
+        name: 'Bob',
+        wallet: '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB'
+    },
+    contents: 'Hello, Bob!'
+};
+
+
+const signature = await signer._signTypedData(domain, types, value);
+// '0x463b9c9971d1a144507d2e905f4e98becd159139421a4bb8d3c9c2ed04eb401057dd0698d504fd6ca48829a3c8a7a98c1c961eae617096cb54264bbdd082e13d1c'
+```
+
 ### Sub-Classes
 
 #### *signer* . **checkTransaction**( transactionRequest ) => *[TransactionRequest](/v5/api/providers/types/#providers-TransactionRequest)*
 
-This is generally not required to be overridden, but may needed to provide custom behaviour in sub-classes.
+This is generally not required to be overridden, but may be needed to provide custom behaviour in sub-classes.
 
 This should return a **copy** of the *transactionRequest*, with any properties needed by `call`, `estimateGas` and `populateTransaction` (which is used by sendTransaction). It should also throw an error if any unknown key is specified.
 
-The default implementation checks only valid [TransactionRequest](/v5/api/providers/types/#providers-TransactionRequest) properties exist and adds `from` to the transaction if it does not exist.
+The default implementation checks only if valid [TransactionRequest](/v5/api/providers/types/#providers-TransactionRequest) properties exist and adds `from` to the transaction if it does not exist.
 
 If there is a `from` field it **must** be verified to be equal to the Signer's address.
 
 
 #### *signer* . **populateTransaction**( transactionRequest ) => *Promise< [TransactionRequest](/v5/api/providers/types/#providers-TransactionRequest) >*
 
-This is generally not required to be overridden, but may needed to provide custom behaviour in sub-classes.
+This is generally not required to be overridden, but may be needed to provide custom behaviour in sub-classes.
 
 This should return a **copy** of *transactionRequest*, follow the same procedure as `checkTransaction` and fill in any properties required for sending a transaction. The result should have all promises resolved; if needed the [resolveProperties](/v5/api/utils/properties/#utils-resolveproperties) utility function can be used for this.
 
@@ -172,7 +222,7 @@ The address for the account this Wallet represents.
 
 #### *wallet* . **provider** => *[Provider](/v5/api/providers/provider/)*
 
-The provider this wallet is connected to, which will ge used for any [Blockchain Methods](/v5/api/signer/#Signer--blockchain-methods) methods. This can be null.
+The provider this wallet is connected to, which will be used for any [Blockchain Methods](/v5/api/signer/#Signer--blockchain-methods) methods. This can be null.
 
 
 #### Note
@@ -285,7 +335,7 @@ contract = new ethers.Contract("dai.tokens.ethers.eth", abi, signer)
 
 // Get the number of tokens for this account
 tokens = await contract.balanceOf(signer.getAddress())
-// { BigNumber: "11386855832278858351495" }
+// { BigNumber: "15923148775162018481031" }
 
 //
 // Pre-flight (check for revert) on DAI from the signer
@@ -302,7 +352,7 @@ contract.callStatic.transfer("donations.ethers.eth", tokens)
 
 // This will fail since it is greater than the token balance
 contract.callStatic.transfer("donations.ethers.eth", tokens.add(1))
-// Error: call revert exception (method="transfer(address,uint256)", errorSignature="Error(string)", errorArgs=["Dai/insufficient-balance"], reason="Dai/insufficient-balance", code=CALL_EXCEPTION, version=abi/5.0.4)
+// Error: call revert exception (method="transfer(address,uint256)", errorSignature="Error(string)", errorArgs=["Dai/insufficient-balance"], reason="Dai/insufficient-balance", code=CALL_EXCEPTION, version=abi/5.0.9)
 ```
 
 ExternallyOwnedAccount
@@ -320,6 +370,6 @@ The privateKey of this EOA
 
 #### *eoa* . **mnemonic** => *[Mnemonic](/v5/api/utils/hdnode/#Mnemonic)*
 
-*Optional*. The account HD mnemonic, if it has one and can be determined. Some sources do not encode the mnemonic, such as an HD extended keys.
+*Optional*. The account HD mnemonic, if it has one and can be determined. Some sources do not encode the mnemonic, such as HD extended keys.
 
 
