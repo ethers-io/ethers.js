@@ -155,7 +155,7 @@ Any missing properties will be computed.
 
 _subsection: Random Bytes
 
-_property: ethers.utils.randomBytes(length) => Uint8Array  @<utils-randomBytes> @SRC<random/index>
+_property: ethers.utils.randomBytes(length) => Uint8Array  @<utils-randomBytes> @SRC<random/random>
 Return a new Uint8Array of //length// random bytes.
 
 _property: ethers.utils.shuffled(array) => Array<any>  @<utils-shuffled> @SRC<random>
