@@ -9,7 +9,8 @@ jobs:
 
   test-node:
 
-    runs-on: ubuntu-latest
+#    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     strategy:
       fail-fast: false
@@ -25,11 +26,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Add Ubuntu package repo
-        run: sudo echo "deb http://us.archive.ubuntu.com/ubuntu/ bionic main restricted" > /etc/apt/sources.list && sudo cat /etc/apt/sources.list
-
-      - name: Install node-hid requirements
-        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
+#      - name: Install node-hid requirements
+#        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
 
       - name: Install dependencies (and link per package)
         run: npm ci
@@ -43,7 +41,8 @@ jobs:
 
   test-browser:
 
-    runs-on: ubuntu-latest
+#    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     strategy:
       fail-fast: false
@@ -58,8 +57,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Install node-hid requirements
-        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
+#      - name: Install node-hid requirements
+#        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
 
       - name: Install dependencies (and link per package)
         run: npm ci
