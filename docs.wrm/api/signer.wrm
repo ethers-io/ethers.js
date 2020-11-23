@@ -6,7 +6,7 @@ which can be used to sign messages and transactions and send
 signed transactions to the Ethereum Network to execute state
 changing operations.
 
-The available operations depends largely on the sub-class used.
+The available operations depend largely on the sub-class used.
 
 For example, a Signer from MetaMask can send transactions and sign
 messages but cannot sign a transaction (without broadcasting it).
@@ -20,9 +20,9 @@ The most common Signers you will encounter are:
 
 _subsection: Signer @<Signer> @SRC<abstract-signer:class.Signer>
 
-The **Signer** class is abstract and cannot be directly instaniated.
+The **Signer** class is abstract and cannot be directly instantiated.
 
-Instead use one of the concreate sub-classes, such as the [[Wallet]],
+Instead use one of the concrete sub-classes, such as the [[Wallet]],
 [[VoidSigner]] or [[JsonRpcSigner]].
 
 _property: signer.connect(provider) => [[Signer]]  @<Signer-connect>
@@ -112,6 +112,63 @@ Sub-classes **must** implement this, however they may throw if sending a
 transaction is not supported, such as the [[VoidSigner]] or if the
 Wallet is offline and not connected to a [[Provider]].
 
+_property: signer._signTypedData(domain, types, value) => Promise<string<[RawSignature](signature-raw)>>  @<Signer-signTypedData>
+
+Signs the typed data //value// with //types// data structure for //domain// using
+the [[link-eip-712]] specification.
+
+_warning: Experimental feature (this method name will change)
+
+This is still an experimental feature. If using it, please specify the **exact**
+version of ethers you are using (e.g. spcify ``"5.0.18"``, **not** ``"^5.0.18"``) as
+the method name will be renamed from ``_signTypedData`` to ``signTypedData`` once
+it has been used in the field a bit.
+
+_code: Typed Data Example @lang<javascript>
+
+// <hide>
+signer = new Wallet("0x1234567890123456789012345678901234567890123456789012345678901234");
+// </hide>
+
+// All properties on a domain are optional
+const domain = {
+    name: 'Ether Mail',
+    version: '1',
+    chainId: 1,
+    verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC'
+};
+
+// The named list of all type definitions
+const types = {
+    Person: [
+        { name: 'name', type: 'string' },
+        { name: 'wallet', type: 'address' }
+    ],
+    Mail: [
+        { name: 'from', type: 'Person' },
+        { name: 'to', type: 'Person' },
+        { name: 'contents', type: 'string' }
+    ]
+};
+
+// The data to sign
+const value = {
+    from: {
+        name: 'Cow',
+        wallet: '0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826'
+    },
+    to: {
+        name: 'Bob',
+        wallet: '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB'
+    },
+    contents: 'Hello, Bob!'
+};
+
+
+const signature = await signer._signTypedData(domain, types, value);
+//! async signature
+
+
 _heading: Sub-Classes @<Signer--subclassing>
 
 It is very important that all important properties of a **Signer** are
@@ -124,20 +181,20 @@ and libraries make this assumption.
 A sub-class **must** extend Signer and **must** call ``super()``.
 
 _property: signer.checkTransaction(transactionRequest) => [[providers-TransactionRequest]]  @<Signer-checkTransaction> @SRC<abstract-signer>
-This is generally not required to be overridden, but may needed to provide
+This is generally not required to be overridden, but may be needed to provide
 custom behaviour in sub-classes.
 
 This should return a **copy** of the //transactionRequest//, with any properties
 needed by ``call``, ``estimateGas`` and ``populateTransaction`` (which is used
 by sendTransaction). It should also throw an error if any unknown key is specified.
 
-The default implementation checks only valid [[providers-TransactionRequest]] properties
+The default implementation checks only if valid [[providers-TransactionRequest]] properties
 exist and adds ``from`` to the transaction if it does not exist.
 
 If there is a ``from`` field it **must** be verified to be equal to the Signer's address.
 
 _property: signer.populateTransaction(transactionRequest) => Promise<[[providers-TransactionRequest]]> @<Signer-populateTransaction> @SRC<abstract-signer>
-This is generally not required to be overridden, but may needed to provide
+This is generally not required to be overridden, but may be needed to provide
 custom behaviour in sub-classes.
 
 This should return a **copy** of //transactionRequest//, follow the same procedure
@@ -193,7 +250,7 @@ _property: wallet.address => string<[[address]]>
 The address for the account this Wallet represents.
 
 _property: wallet.provider => [[Provider]]
-The provider this wallet is connected to, which will ge used for any [[Signer--blockchain-methods]]
+The provider this wallet is connected to, which will be used for any [[Signer--blockchain-methods]]
 methods. This can be null.
 
 _note: Note
@@ -352,5 +409,5 @@ The privateKey of this EOA
 _property: eoa.mnemonic => [[Mnemonic]]
 
 //Optional//. The account HD mnemonic, if it has one and can be
-determined. Some sources do not encode the mnemonic, such as an
+determined. Some sources do not encode the mnemonic, such as
 HD extended keys.

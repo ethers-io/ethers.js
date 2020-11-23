@@ -28,7 +28,7 @@ structures of Arrays and data.
 _property: ethers.utils.RLP.encode(dataObject) => string<[[DataHexString]]>  @<utils-rlpEncode> @SRC<rlp>
 Encode a structured Data Object into its RLP-encoded representation.
 
-Each Data component may be an valid [[BytesLike]].
+Each Data component may be a valid [[BytesLike]].
 
 _property: ethers.utils.RLP.decode(aBytesLike) => [DataObject](rlp--dataobject)  @<utils.rlpDecode> @SRC<rlp>
 Decode an RLP-encoded //aBytesLike// into its structured Data Object.

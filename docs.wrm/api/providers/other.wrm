@@ -41,7 +41,7 @@ The provider for this configuration.
 
 _property: fallbackProviderConfig.priority => number
 The priority used for the provider. Higher priorities are favoured over lower
-priorities. If multiple providers share the same prioirty, they are chosen
+priorities. If multiple providers share the same priority, they are chosen
 at random.
 
 _property: fallbackProviderConfig.stallTimeout => number
@@ -152,7 +152,7 @@ which allows for a persistent connection, multiplexing requests and pub-sub
 events for a more immediate event dispatching.
 
 The WebSocket API is newer, and if running your own infrastructure, note that
-WebSockets are much more intensive on your server resourses, as they must manage
+WebSockets are much more intensive on your server resources, as they must manage
 and maintain the state for each client. For this reason, many services may also
 charge additional fees for using their WebSocket endpoints.
 

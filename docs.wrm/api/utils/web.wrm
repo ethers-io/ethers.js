@@ -3,7 +3,7 @@ _section: Web Utilities  @<web>
 
 _property: ethers.utils.fetchJson(urlOrConnectionInfo [, json [ , processFunc ] ]) => Promise<any> @<utils-fetchJson>
 Fetch and parse the JSON content from //urlOrConnectionInfo//, with the
-optiona body //json// and optionally processing the result with //processFun//
+optional body //json// and optionally processing the result with //processFun//
 before returning it.
 
 _property: ethers.utils.poll(pollFunc [, options ]) => Promise<any> @<utils-poll>

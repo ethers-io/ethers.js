@@ -47,8 +47,8 @@ for a given option is invalid or some combination of options and flags is not
 allowed.
 
 Once the prepareOptions is complete (the returned promise is resolved), the ``prepareArguments``
-is called. This should validate the number of arguments is expected and throw
-and error if there are too many or too few arguments or if any arguments do not
+is called. This should validate the number of arguments expected and throw
+an error if there are too many or too few arguments or if any arguments do not
 make sense.
 
 Once the prepareArguments is complete (the returned promise is resolved), the ``run``

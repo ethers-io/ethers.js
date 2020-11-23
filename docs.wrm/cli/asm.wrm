@@ -104,8 +104,8 @@ bytecode by running multiple passes of an assemble stage, each pass
 more closely approximating the final result.
 
 This allows small portions of the bytecode to be massaged and tweaked
-until the bytecode stablizes. This allows for more compact jump
-destinations and for code to be include more advanced meta-programming
+until the bytecode stabilizes. This allows for more compact jump
+destinations and for code to include more advanced meta-programming
 techniques.
 
 _code: @lang<shell>

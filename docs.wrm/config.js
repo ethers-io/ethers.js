@@ -127,7 +127,7 @@ function codeContextify(context) {
     context.hexlify = ethers.utils.hexlify;
     context.hexValue = ethers.utils.hexValue;
     context.Wallet = ethers.Wallet;
-    context.provider = new ethers.providers.InfuraProvider();
+    context.provider = new ethers.providers.InfuraProvider("mainnet", "49a0efa3aaee4fd99797bfa94d8ce2f1");
 
     context.BigNumber.prototype[inspect.custom] = function(depth, options) {
         return `{ BigNumber: ${JSON.stringify(this.toString()) } }`;
@@ -142,6 +142,7 @@ function codeContextify(context) {
         //return JSON.stringify(value);
         return inspect(value, {
             compact: false,
+            depth: null,
             breakLength: Infinity,
             sorted: true,
         });
@@ -185,6 +186,7 @@ module.exports = {
       "link-metamask": { name: "Metamask", url: "https:/\/metamask.io/" },
       "link-otto": "https:/\/github.com/robertkrimen/otto",
       "link-parity": { name: "Parity", url: "https:/\/www.parity.io" },
+      "link-pocket": { name: "Pocket Network", url: "https:/\/pokt.network" },
       "link-react-native": { name: "React Native", url: "https:/\/reactnative.dev" },
       "link-rtd": "https:/\/github.com/readthedocs/sphinx_rtd_theme",
       "link-semver": { name: "semver", url: "https:/\/semver.org" },
@@ -195,6 +197,7 @@ module.exports = {
       "link-etherscan-signup": "https:/\/etherscan.io/apis",
       "link-etherscan-ratelimit": "https:/\/info.etherscan.com/api-return-errors/",
       "link-infura-signup": "https:/\/infura.io/register",
+      "link-pocket-signup": "https:/\/pokt.network/pocket-gateway-ethereum-mainnet/",
 
       "link-json-rpc": "https:/\/github.com/ethereum/wiki/wiki/JSON-RPC",
       "link-web3-send": "https:/\/github.com/ethereum/web3.js/blob/1.x/packages/web3-providers-http/types/index.d.ts#L57",
@@ -236,6 +239,7 @@ module.exports = {
       "link-eip-155": { name: "EIP-155", url: "https:/\/eips.ethereum.org/EIPS/eip-155" },
       "link-eip-191": { name: "EIP-191", url: "https:/\/eips.ethereum.org/EIPS/eip-191" },
       "link-eip-609": { name: "EIP-609", url: "https:/\/eips.ethereum.org/EIPS/eip-609" },
+      "link-eip-712": { name: "EIP-712", url: "https:/\/eips.ethereum.org/EIPS/eip-712" },
       "link-eip-1014": { name: "EIP-1014", url: "https:/\/eips.ethereum.org/EIPS/eip-1014" },
       "link-eip-1193": { name: "EIP-1193", url: "https:/\/eips.ethereum.org/EIPS/eip-1193" },
       "link-eip-2098": { name: "EIP-2098", url: "https:/\/eips.ethereum.org/EIPS/eip-2098" },
@@ -247,7 +251,7 @@ module.exports = {
       "link-npm-events": { name: "EventEmitter", url: "https:/\/nodejs.org/dist/latest-v13.x/docs/api/events.html#events_class_eventemitter" },
       "link-npm-bnjs": { name: "BN.js", url: "https:/\/www.npmjs.com/package/bn.js" },
       "link-npm-query-bignumber": "https:/\/www.npmjs.com/search?q=bignumber",
-      "link-npm-react-native-crypto": { name: "React Native Crypto", url: "https:/\/www.npmjs.com/package/react-native-crypto" },
+      "link-npm-react-native-get-random-values": { name: "React Native get-random-values", url: "https:/\/www.npmjs.com/package/react-native-get-random-values" },
 
       "link-js-array": "https:/\/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array",
       "link-js-bigint": "https:/\/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt",

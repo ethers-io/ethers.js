@@ -31,7 +31,7 @@ _property: ethers.utils.FragmentTypes.full => string
 
 This is a full human-readable string, including all parameter names, any
 optional modifiers (e.g. ``indexed``, ``public``, etc) and white-space
-to aid in human readabiliy.
+to aid in human readability.
 
 _property: ethers.utils.FragmentTypes.minimal => string
 
@@ -81,7 +81,7 @@ will be one of:
 
 _property: fragment.inputs => Array<[[ParamType]]>
 
-This is an array of of each [[ParamType]] for the input parameters to
+This is an array of each [[ParamType]] for the input parameters to
 the Constructor, Event of Function.
 
 _heading: Methods
@@ -211,13 +211,13 @@ to parameters which are part of an [[EventFragment]].
 
 _property: paramType.arrayChildren => [[ParamType]] @<ParamType-arrayChildren>
 
-The type of children of the array. This is null for for any parameter
+The type of children of the array. This is null for any parameter
 which is not an array.
 
 _property: paramType.arrayLength => number @<ParamType-arrayLength>
 
 The length of the array, or ``-1`` for dynamic-length arrays. This is
-null for parameters which is not arrays.
+null for parameters which are not arrays.
 
 _property: paramType.components => Array<[[ParamType]]> @<ParamType-components>
 

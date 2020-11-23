@@ -81,7 +81,7 @@ _subsection: FixedFormat @<FixedFormat>
 
 A **FixedFormat** is a simple object which represents a decimal
 (base-10) Fixed-Point data representation. Usually using this
-class directly is uneccessary, as passing in a [[FixedFormat--strings]]
+class directly is unnecessary, as passing in a [[FixedFormat--strings]]
 directly into the [[FixedNumber]] will automatically create this.
 
 _heading: Format Strings  @<FixedFormat--strings>

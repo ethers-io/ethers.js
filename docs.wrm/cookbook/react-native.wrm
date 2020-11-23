@@ -40,8 +40,21 @@ _subsection: Security @<cookbook-reactnative-security>
 
 The React Native environment does not contain a secure random source, which
 is used when computing random private keys. This could result in private
-keys that others could guess, allowing the funds to be stolen.
+keys that others could possibly guess, allowing funds to be stolen and assets
+manipulated.
 
-For this reason, it is **HIGHLY RECOMMENDED** to get either the
-[[link-npm-react-native-crypto]] module working or some equivalent.
+For this reason, it is **HIGHLY RECOMMENDED** to also install the
+[[link-npm-react-native-get-random-values]], which **must** be included
+before the shims. If it worked correctly you should not receive any
+warning in the console regarding missing secure random sources.
 
+_code: Importing with Secure Random Sources @lang<script>
+
+// Import the crypto getRandomValues shim (**BEFORE** the shims)
+import "react-native-get-random-values"
+
+// Import the the ethers shims (**BEFORE** ethers)
+import "@ethersproject/shims"
+
+// Import the ethers library
+import { ethers } from "ethers";

@@ -7,7 +7,7 @@ An unsigned transaction represents a transaction that has not been
 signed and its values are flexible as long as they are not ambiguous.
 
 _property: unsignedTransaction.to => string<[Address](address)>
-The addres this transaction is to.
+The address this transaction is to.
 
 _property: unsignedTransaction.nonce => number
 The nonce of this transaction.
@@ -98,7 +98,7 @@ used to encode the chain ID into the serialized transaction.
 _subsection: Functions  @<transactions--functions>
 
 _property: ethers.utils.parseTransaction(aBytesLike) => [[Transaction]]  @<utils-parseTransaction> @SRC<transactions:parse>
-Parses the transaction properties from a serialized transactions.
+Parses the transaction properties from a serialized transaction.
 
 _property: ethers.utils.serializeTransaction(tx [ , signature ]) => string<[[DataHexString]]>  @<utils-serializeTransaction> @SRC<transactions:serialize>
 Computes the serialized //transaction//, optionally serialized with

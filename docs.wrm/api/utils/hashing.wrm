@@ -1,6 +1,8 @@
 _section: Hashing Algorithms @<hashing-algorithms>
 
-Explain what hash functions are?
+There are many hashing algorithms used throughout the blockchain
+space as well as some more complex usages which require utilities
+to facilitate these common operations.
 
 
 _subsection: Cryptographic Hash Functions @<cryptographic-hash-functions>
@@ -66,7 +68,7 @@ utils.keccak256("0x1234")
 utils.keccak256([ 0x12, 0x34 ])
 //!
 
-const bytes = utils.toUtf8Bytes("0x1234");
+const bytes = utils.toUtf8Bytes("0x1234")
 // <hide>
 bytes
 // </hide>
@@ -119,8 +121,8 @@ Use the [SHA2-512](link-wiki-sha2) hash algorithm.
 
 _code: HMAC  @lang<javascript>
 
-const key = "0x0102";
-const data = "0x1234";
+const key = "0x0102"
+const data = "0x1234"
 utils.computeHmac("sha256", key, data)
 //!
 
@@ -132,13 +134,39 @@ Computes the [[link-eip-191]] personal message digest of //message//. Personal m
 converted to UTF-8 bytes and prefixed with ``\\x19Ethereum Signed Message:``
 and the length of //message//.
 
-_property: ethers.utils.namehash(name) => string<[[DataHexString]]<32>>  @<utils-namehash> @SRC<hash>
-Returns the [ENS Namehash](link-namehash) of //name//.
-
 _code: Hashing Messages  @lang<javascript>
 
-// @TODO: include examples of hashMessage; it can be complex. :)
+// Hashing a string message
+utils.hashMessage("Hello World")
+//!
 
+// Hashing binary data (also "Hello World", but as bytes)
+utils.hashMessage( [ 72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100 ])
+//!
+
+// NOTE: It is important to understand how strings and binary
+//       data is handled differently. A string is ALWAYS processed
+//       as the bytes of the string, so a hexstring MUST be
+//       converted to an ArrayLike object first.
+
+// Hashing a hex string is the same as hashing a STRING
+// Note: this is the hash of the 4 characters [ '0', 'x', '4', '2' ]
+utils.hashMessage("0x42")
+//!
+
+// Hashing the binary data
+// Note: this is the hash of the 1 byte [ 0x42 ]
+utils.hashMessage([ 0x42 ])
+//!
+
+// Hashing the binary data
+// Note: similarly, this is the hash of the 1 byte [ 0x42 ]
+utils.hashMessage(utils.arrayify("0x42"))
+//!
+
+
+_property: ethers.utils.namehash(name) => string<[[DataHexString]]<32>>  @<utils-namehash> @SRC<hash>
+Returns the [ENS Namehash](link-namehash) of //name//.
 
 _code: Namehash  @lang<javascript>
 
@@ -152,6 +180,121 @@ utils.namehash("ricmoo.firefly.eth")
 //!
 
 utils.namehash("ricmoo.xyz")
+//!
+
+_heading: Typed Data Encoder @<TypedDataEncoder> @SRC<hash:class.TypedDataEncoder>
+
+The **TypedDataEncoder** is used to compute the various encoded data required
+for [[link-eip-712]] signed data.
+
+Signed data requires a domain, list of structures and their members and the data
+itself.
+
+The **domain** is an object with values for any of the standard domain
+properties.
+
+The **types** is an object with each property being the name of a structure, mapping
+to an array of field descriptions. It should **not** include the ``EIP712Domain``
+property unless it is required as a child structure of another.
+
+_note: Experimental Feature (this exported class name will change)
+This is still an experimental feature. If using it, please specify the **exact**
+version of ethers you are using (e.g. spcify ``"5.0.18"``, **not** ``"^5.0.18"``) as
+the exported class name will be renamed from ``_TypedDataEncoder`` to ``TypedDataEncoder`` once
+it has been used in the field a bit.
+
+_property: ethers.utils._TypedDataEncoder.from(types) => [TypedDataEncoder] @<TypedDataEncoder-from> @SRC<hash:TypedDataEncoder.from>
+
+Creates a new **TypedDataEncoder** for //types//. This object is a fairly
+low-level object that most developers should not require using instances
+directly.
+
+Most developers will find the static class methods below the most useful.
+
+_property: TypedDataEncoder.encode(domain, types, values) => string @<TypedDataEncoder-encode> @SRC<hash:staticmethod.TypedDataEncoder.encode>
+
+Encodes the Returns the hashed [[link-eip-712]] domain.
+
+_property: TypedDataEncoder.getPayload(domain, types, value) => any @<TypedDataEncoder-getPayload> @SRC<hash:TypedDataEncoder.getPayload>
+
+Returns the standard payload used by various JSON-RPC ``eth_signTypedData*``
+calls.
+
+All domain values and entries in value are normalized and the types are
+verified.
+
+_property: TypedDataEncoder.getPrimaryType(types) => string @<TypedDataEncoder-getPrimaryType> @SRC<hash:TypedDataEncoder.getPrimaryType>
+
+Constructs a directed acyclic graph of the types and returns the
+root type, which can be used as the **primaryType** for [[link-eip-712]]
+payloads.
+
+_property: TypedDataEncoder.hash(domain, types, values) => string<[[DataHexString]]<32>> @<TypedDataEncoder-hash> @SRC<hash:staticmethod.TypedDataEncoder.hash>
+
+Returns the computed [[link-eip-712]] hash.
+
+_property: TypedDataEncoder.hashDomain(domain) => string<[[DataHexString]]<32>> @<TypedDataEncoder-hashDomain> @SRC<hash:TypedDataEncoder.hashDomain>
+
+Returns the hashed [[link-eip-712]] domain.
+
+_property: TypedDataEncoder.resolveNames(domain, types, value, resolveName) => Promise<any> @<TypedDataEncoder-resolveNames> @SRC<hash:TypedDataEncoder.resolveNames>
+
+Returns a copy of value, where any leaf value with a type of ``address`` will have
+been recursively replacedwith the value of calling //resolveName// with that value.
+
+_code: Typed Data Example @lang<javascript>
+
+// <hide>
+TypedDataEncoder = ethers.utils._TypedDataEncoder
+// </hide>
+
+const domain = {
+    name: 'Ether Mail',
+    version: '1',
+    chainId: 1,
+    verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC'
+}
+
+// The named list of all type definitions
+const types = {
+    Person: [
+        { name: 'name', type: 'string' },
+        { name: 'wallet', type: 'address' }
+    ],
+    Mail: [
+        { name: 'from', type: 'Person' },
+        { name: 'to', type: 'Person' },
+        { name: 'contents', type: 'string' }
+    ]
+}
+
+// The data to sign
+const value = {
+    from: {
+        name: 'Cow',
+        wallet: '0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826'
+    },
+    to: {
+        name: 'Bob',
+        wallet: '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB'
+    },
+    contents: 'Hello, Bob!'
+}
+
+
+TypedDataEncoder.encode(domain, types, value)
+//!
+
+TypedDataEncoder.getPayload(domain, types, value)
+//!
+
+TypedDataEncoder.getPrimaryType(types)
+//!
+
+TypedDataEncoder.hash(domain, types, value)
+//!
+
+TypedDataEncoder.hashDomain(domain)
 //!
 
 
@@ -187,3 +330,20 @@ utils.solidityKeccak256([ "int16", "uint48" ], [ -1, 12 ])
 utils.soliditySha256([ "int16", "uint48" ], [ -1, 12 ])
 //!
 
+// As a short example of the non-distinguished nature of
+// Solidity tight-packing (which is why it is inappropriate
+// for many things from a security point of view), consider
+// the following examples are all equal, despite representing
+// very different values and layouts.
+
+utils.solidityPack([ "string", "string" ], [ "hello", "world01" ])
+//!
+
+utils.solidityPack([ "string", "string" ], [ "helloworld", "01" ])
+//!
+
+utils.solidityPack([ "string", "string", "uint16" ], [ "hell", "oworld", 0x3031 ])
+//!
+
+utils.solidityPack([ "uint96" ], [ "32309054545061485574011236401" ])
+//!

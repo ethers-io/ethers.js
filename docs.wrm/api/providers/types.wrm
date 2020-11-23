@@ -59,19 +59,19 @@ The timestamp of this block.
 _property: block.nonce => string<[[DataHexString]]>
 The nonce used as part of the proof-of-work to mine this block.
 
-This property is generally of little interest developers.
+This property is generally of little interest to developers.
 
 _property: block.difficulty => number
 The difficulty target required to be met by the miner of the block.
 
-This property is generally of little interest developers.
+This property is generally of little interest to developers.
 
 _property: block.gasLimit => [[BigNumber]]
 The maximum amount of gas that this block was permitted to use. This
 is a value that can be voted up or voted down by miners and is used
 to automatically adjust the bandwidth requirements of the network.
 
-This property is generally of little interest developers.
+This property is generally of little interest to developers.
 
 _property: block.gasUsed => [[BigNumber]]
 The total amount of gas used by all transactions in this block.
@@ -83,7 +83,7 @@ miner that mined this block would like the subsidy reward to go to.
 _property: block.extraData => string
 This is extra data a miner may choose to include when mining a block.
 
-This property is generally of little interest developers.
+This property is generally of little interest to developers.
 
 _heading: Block (with transaction hashes)
 
@@ -238,7 +238,7 @@ Wait for //confirmations//. If 0, and the transaction has not been mined,
 _heading: TransactionReceipt @<providers-TransactionReceipt>
 
 _property: receipt.to => string<[[address]]>
-The address this transaction is to. This is ``null`` if the the
+The address this transaction is to. This is ``null`` if the
 transaction was an **init transaction**, used to deploy a contract.
 
 _property: receipt.from => string<[[address]]>
@@ -295,7 +295,7 @@ including the actual block it was mined in.
 
 _property: receipt.cumulativeGasUsed => [[BigNumber]]
 For the block this transaction was included in, this is the sum of the
-gas used used by each transaction in the ordered list of transactions
+gas used by each transaction in the ordered list of transactions
 up to (and including) this transaction.
 
 This is generally of little interest to developers.

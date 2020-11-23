@@ -1,4 +1,4 @@
-_section: Display Logic and Input
+_section: Display Logic and Input @<display-logic>
 
 When creating an Application, it is useful to convert between
 user-friendly strings (usually displaying **ether**) and the
@@ -17,11 +17,11 @@ The [formatUnits](unit-conversion) will format a [BigNumberish](BigNumberish)
 into a string, which is useful when displaying a balance.
 
 
-_subsection: Units
+_subsection: Units @<display-logic--units>
 
 _heading: Decimal Count
 
-A **Unit** can be specified as an number, which indicates the
+A **Unit** can be specified as a number, which indicates the
 number of decimal places that should be used.
 
 **Examples:**
@@ -29,7 +29,7 @@ number of decimal places that should be used.
 - 1 ether in wei, has **18** decimal places (i.e. 1 ether represents 10^^18^^ wei)
 - 1 bitcoin in Satoshi, has **8** decimal places (i.e. 1 bitcoin represents 10^^8^^ satoshi)
 
-_heading: Named Units
+_heading: Named Units @<display-logic--named-units>
 
 There are also several common **Named Units**, in which case their name (as
 a string) may be used.
@@ -46,9 +46,9 @@ _table: @STYLE<compact>
 |  //ether//   |     18         |
 
 
-_subsection: Functions
+_subsection: Functions @<display-logic--functions>
 
-_heading: Formatting
+_heading: Formatting @<display-logic--formatting>
 
 _property: ethers.utils.commify(value) => string  @<utils-commify> @SRC<units>
 Returns a string with value grouped by 3 digits, separated by ``,``.

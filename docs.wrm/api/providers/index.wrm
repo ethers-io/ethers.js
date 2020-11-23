@@ -20,7 +20,7 @@ for use in production.
 
 It creates a [[FallbackProvider]] connected to as many backend
 services as possible. When a request is made, it is sent to
-multiple backends simulatenously. As responses from each backend
+multiple backends simultaneously. As responses from each backend
 are returned, they are checked that they agree. Once a quorum
 has been reached (i.e. enough of the backends agree), the response
 is provided to your application.
@@ -31,7 +31,7 @@ responses that match the majority.
 
 _property: ethers.getDefaultProvider([ network, [ options ] ]) => [[Provider]]
 Returns a new Provider, backed by multiple services, connected
-to //network//. Is no //network// is provided, **homestead**
+to //network//. If no //network// is provided, **homestead**
 (i.e. mainnet) is used.
 
 The //network// may also be a URL to connect to, such as ``http:/\/localhost:8545``
@@ -43,20 +43,22 @@ _table: Option Properties
 
 $Alchemy:     [[link-alchemy]] API Token
 $Etherscan:   [[link-etherscan]] API Token
-$Infura:      [[link-infura]] Project ID or ProjectID and Project Secret
+$Infura:      [[link-infura]] Project ID or ``{ projectId, projectSecret }``
+$Pocket:      [[link-pocket]] Application ID or ``{ applicationId, applicationSecretKey }``
 $Quorum:      The number of backends that must agree
               //(default: 2 for mainnet, 1 for testnets)//
-    
+
 |    **Property**    |  **Description**  |
 |    //alchemy//     | $Alchemy          |
 |   //etherscan//    | $Etherscan        |
 |    //infura//      | $Infura           |
+|    //pocket//      | $Pocket           |
 |    //quorum//      | $Quorum           |
 
 _note: Note: API Keys
 
-It is highly recommended for production services that to acquire
-and specify an API Key for each sercice.
+It is highly recommended for production services to acquire
+and specify an API Key for each service.
 
 The default API Keys used by ethers are shared across all users,
 so services may throttle all services that are using the default

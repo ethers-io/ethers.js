@@ -30,7 +30,7 @@ the registered //name//.
 
 _subsection: Languages @<wordlists--languages>
 
-The [official wordlists](link-bip39-wordlists) available in at
+The [official wordlists](link-bip39-wordlists) available at
 `ethers.wordlists`. In the browser, only the english language is
 available by default; to include the others (which increases the
 size of the library), see the dist files in the `ethers` package.

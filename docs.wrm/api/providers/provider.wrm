@@ -146,7 +146,7 @@ _subsection: Transactions Methods  @<Provider--transaction-methods>
 _property: provider.call(transaction [ , blockTag = latest ]) => Promise<string<[[DataHexString]]>>  @<Provider-call> @SRC<providers/base-provider>
 Returns the result of executing the //transaction//, using //call//. A call
 does not require any ether, but cannot change any state. This is useful
-for calling gettings on Contracts.
+for calling getters on Contracts.
 
 _property: provider.estimateGas(transaction) => Promise<[[BigNumber]]>  @<Provider-estimateGas> @SRC<providers/base-provider>
 Returns an estimate of the amount of gas that would be required to submit //transaction//
@@ -174,7 +174,7 @@ Add a //listener// to be triggered for each //eventName//.
 
 _property: provider.once(eventName, listener) => this  @<Provider-once> @SRC<providers/base-provider>
 Add a //listener// to be triggered for only the next //eventName//,
-at which time it be removed.
+at which time it will be removed.
 
 _property: provider.emit(eventName, ...args) => boolean  @<Provider-emit> @SRC<providers/base-provider>
 Notify all listeners of //eventName//, passing //args// to each listener. This

@@ -26,7 +26,7 @@ _property: contractFactory.attach(address) => [[Contract]] @<ContractFactory-att
 
 Return an instance of a [[Contract]] attached to //address//. This is the
 same as using the [Contract constructor](Contract--creating) with
-//address// and this the the //interface// and //signerOrProvider// passed
+//address// and this the //interface// and //signerOrProvider// passed
 in when creating the ContractFactory.
 
 _property: contractFactory.getDeployTransaction(...args) => [[UnsignedTransaction]]
