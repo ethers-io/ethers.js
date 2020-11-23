@@ -9,6 +9,10 @@ export class DynamicBytesCoder extends Coder {
        super(type, type, localName, true);
     }
 
+    defaultValue(): string {
+        return "0x";
+    }
+
     encode(writer: Writer, value: any): number {
         value = arrayify(value);
         let length = writer.writeValue(value.length);

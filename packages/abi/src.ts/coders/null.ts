@@ -8,6 +8,10 @@ export class NullCoder extends Coder {
         super("null", "", localName, false);
     }
 
+    defaultValue(): null {
+        return null;
+    }
+
     encode(writer: Writer, value: any): number {
         if (value != null) { this._throwError("not null", value); }
         return writer.writeBytes([ ]);

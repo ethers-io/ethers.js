@@ -17,6 +17,10 @@ export class NumberCoder extends Coder {
         this.signed = signed;
     }
 
+    defaultValue(): number {
+        return 0;
+    }
+
     encode(writer: Writer, value: BigNumberish): number {
         let v = BigNumber.from(value);
 

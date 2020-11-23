@@ -177,6 +177,17 @@ export class ArrayCoder extends Coder {
         this.length = length;
     }
 
+    defaultValue(): Array<any> {
+        // Verifies the child coder is valid (even if the array is dynamic or 0-length)
+        const defaultChild = this.coder.defaultValue();
+
+        const result: Array<any> = [];
+        for (let i = 0; i < this.length; i++) {
+            result.push(defaultChild);
+        }
+        return result;
+    }
+
     encode(writer: Writer, value: Array<any>): number {
         if (!Array.isArray(value)) {
             this._throwError("expected array value", value);

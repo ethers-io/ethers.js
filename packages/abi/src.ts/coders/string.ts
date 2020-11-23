@@ -11,6 +11,10 @@ export class StringCoder extends DynamicBytesCoder {
         super("string", localName);
     }
 
+    defaultValue(): string {
+        return "";
+    }
+
     encode(writer: Writer, value: any): number {
         return super.encode(writer, toUtf8Bytes(value));
     }

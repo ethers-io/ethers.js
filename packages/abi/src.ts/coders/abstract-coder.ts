@@ -70,6 +70,8 @@ export abstract class Coder {
 
     abstract encode(writer: Writer, value: any): number;
     abstract decode(reader: Reader): any;
+
+    abstract defaultValue(): any;
 }
 
 export class Writer {

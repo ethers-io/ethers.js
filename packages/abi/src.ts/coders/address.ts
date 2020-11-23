@@ -11,6 +11,10 @@ export class AddressCoder extends Coder {
         super("address", "address", localName, false);
     }
 
+    defaultValue(): string {
+        return "0x0000000000000000000000000000000000000000";
+    }
+
     encode(writer: Writer, value: string): number {
         try {
             getAddress(value);

@@ -19,6 +19,37 @@ export class TupleCoder extends Coder {
         this.coders = coders;
     }
 
+    defaultValue(): any {
+        const values: any = [ ];
+        this.coders.forEach((coder) => {
+            values.push(coder.defaultValue());
+        });
+
+        // We only output named properties for uniquely named coders
+        const uniqueNames = this.coders.reduce((accum, coder) => {
+            const name = coder.localName;
+            if (name) {
+                if (!accum[name]) { accum[name] = 0; }
+                accum[name]++;
+            }
+            return accum;
+        }, <{ [ name: string ]: number }>{ });
+
+        // Add named values
+        this.coders.forEach((coder: Coder, index: number) => {
+            let name = coder.localName;
+            if (!name || uniqueNames[name] !== 1) { return; }
+
+            if (name === "length") { name = "_length"; }
+
+            if (values[name] != null) { return; }
+
+            values[name] = values[index];
+        });
+
+        return Object.freeze(values);
+    }
+
     encode(writer: Writer, value: Array<any> | { [ name: string ]: any }): number {
         return pack(writer, this.coders, value);
     }

@@ -8,6 +8,10 @@ export class BooleanCoder extends Coder {
         super("bool", "bool", localName, false);
     }
 
+    defaultValue(): boolean {
+        return false;
+    }
+
     encode(writer: Writer, value: boolean): number {
         return writer.writeValue(value ? 1: 0);
     }

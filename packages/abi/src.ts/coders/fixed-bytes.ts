@@ -14,6 +14,10 @@ export class FixedBytesCoder extends Coder {
         this.size = size;
     }
 
+    defaultValue(): string {
+        return ("0x0000000000000000000000000000000000000000000000000000000000000000").substring(0, 2 + this.size * 2);
+    }
+
     encode(writer: Writer, value: BytesLike): number {
         let data = arrayify(value);
         if (data.length !== this.size) { this._throwError("incorrect data length", value); }

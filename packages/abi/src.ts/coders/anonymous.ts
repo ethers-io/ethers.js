@@ -11,6 +11,10 @@ export class AnonymousCoder extends Coder {
         this.coder = coder;
     }
 
+    defaultValue(): any {
+        return this.coder.defaultValue();
+    }
+
     encode(writer: Writer, value: any): number {
         return this.coder.encode(writer, value);
     }
