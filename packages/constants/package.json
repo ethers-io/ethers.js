@@ -17,6 +17,7 @@
     "access": "public"
   },
   "repository": {
+    "directory": "packages/constants",
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },

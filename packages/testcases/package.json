@@ -37,6 +37,7 @@
     "access": "public"
   },
   "repository": {
+    "directory": "packages/testcases",
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },

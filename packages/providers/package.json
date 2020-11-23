@@ -47,6 +47,7 @@
     "access": "public"
   },
   "repository": {
+    "directory": "packages/providers",
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },

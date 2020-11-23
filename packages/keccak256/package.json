@@ -18,6 +18,7 @@
     "access": "public"
   },
   "repository": {
+    "directory": "packages/keccak256",
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },

@@ -44,6 +44,7 @@
   "module": "./lib.esm/index.js",
   "name": "ethers",
   "repository": {
+    "directory": "packages/ethers",
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },

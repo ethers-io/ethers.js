@@ -15,6 +15,7 @@
     "access": "public"
   },
   "repository": {
+    "directory": "packages/shims",
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },

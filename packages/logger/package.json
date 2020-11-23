@@ -14,6 +14,7 @@
     "access": "public"
   },
   "repository": {
+    "directory": "packages/logger",
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },

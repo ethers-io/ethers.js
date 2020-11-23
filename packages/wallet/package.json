@@ -31,6 +31,7 @@
     "access": "public"
   },
   "repository": {
+    "directory": "packages/wallet",
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },

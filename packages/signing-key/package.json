@@ -23,6 +23,7 @@
     "access": "public"
   },
   "repository": {
+    "directory": "packages/signing-key",
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },

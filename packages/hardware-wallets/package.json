@@ -30,6 +30,7 @@
     "access": "public"
   },
   "repository": {
+    "directory": "packages/hardware-wallets",
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },

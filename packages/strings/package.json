@@ -21,6 +21,7 @@
     "access": "public"
   },
   "repository": {
+    "directory": "packages/strings",
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },

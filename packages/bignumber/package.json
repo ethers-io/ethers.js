@@ -20,6 +20,7 @@
     "access": "public"
   },
   "repository": {
+    "directory": "packages/bignumber",
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
