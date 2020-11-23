@@ -26,7 +26,11 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install node-hid requirements
-        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
+#        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
+        run: cat /etc/apt/sources.list
+        run: echo "" > /etc/apt/sources.list
+        run: echo "deb http://us.archive.ubuntu.com/ubuntu/ bionic main restricted" > /etc/apt/sources.list
+        run: cat /etc/apt/sources.list
 
       - name: Install dependencies (and link per package)
         run: npm ci
