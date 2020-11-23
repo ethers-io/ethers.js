@@ -111,6 +111,12 @@ var Wallet = /** @class */ (function (_super) {
                 properties_1.defineReadOnly(_this, "_signingKey", function () { return privateKey; });
             }
             else {
+                // A lot of common tools do not prefix private keys with a 0x (see: #1166)
+                if (typeof (privateKey) === "string") {
+                    if (privateKey.match(/^[0-9a-f]*$/i) && privateKey.length === 64) {
+                        privateKey = "0x" + privateKey;
+                    }
+                }
                 var signingKey_2 = new signing_key_1.SigningKey(privateKey);
                 properties_1.defineReadOnly(_this, "_signingKey", function () { return signingKey_2; });
             }

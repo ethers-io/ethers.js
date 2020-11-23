@@ -4223,7 +4223,7 @@
 	var _version$4 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bignumber/5.0.10";
+	exports.version = "bignumber/5.0.11";
 
 	});
 
@@ -4259,6 +4259,8 @@
 	        lib$1.isBytes(value));
 	}
 	exports.isBigNumberish = isBigNumberish;
+	// Only warn about passing 10 into radix once
+	var _warnedToStringRadix = false;
 	var BigNumber = /** @class */ (function () {
 	    function BigNumber(constructorGuard, hex) {
 	        var _newTarget = this.constructor;
@@ -4384,9 +4386,20 @@
 	        return null;
 	    };
 	    BigNumber.prototype.toString = function () {
-	        // Lots of people expect this, which we do not support, so check
-	        if (arguments.length !== 0) {
-	            logger.throwError("bigNumber.toString does not accept parameters", lib.Logger.errors.UNEXPECTED_ARGUMENT, {});
+	        // Lots of people expect this, which we do not support, so check (See: #889)
+	        if (arguments.length > 0) {
+	            if (arguments[0] === 10) {
+	                if (!_warnedToStringRadix) {
+	                    _warnedToStringRadix = true;
+	                    logger.warn("BigNumber.toString does not accept any parameters; base-10 is assumed");
+	                }
+	            }
+	            else if (arguments[0] === 16) {
+	                logger.throwError("BigNumber.toString does not accept any parameters; use bigNumber.toHexString()", lib.Logger.errors.UNEXPECTED_ARGUMENT, {});
+	            }
+	            else {
+	                logger.throwError("BigNumber.toString does not accept parameters", lib.Logger.errors.UNEXPECTED_ARGUMENT, {});
+	            }
 	        }
 	        return toBN(this).toString(10);
 	    };
@@ -5077,7 +5090,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.8";
+	exports.version = "abi/5.0.9";
 
 	});
 
@@ -18371,7 +18384,7 @@
 	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wallet/5.0.8";
+	exports.version = "wallet/5.0.9";
 
 	});
 
@@ -18491,6 +18504,12 @@
 	                lib$3.defineReadOnly(_this, "_signingKey", function () { return privateKey; });
 	            }
 	            else {
+	                // A lot of common tools do not prefix private keys with a 0x (see: #1166)
+	                if (typeof (privateKey) === "string") {
+	                    if (privateKey.match(/^[0-9a-f]*$/i) && privateKey.length === 64) {
+	                        privateKey = "0x" + privateKey;
+	                    }
+	                }
 	                var signingKey_2 = new lib$h.SigningKey(privateKey);
 	                lib$3.defineReadOnly(_this, "_signingKey", function () { return signingKey_2; });
 	            }
@@ -19592,7 +19611,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.15";
+	exports.version = "providers/5.0.16";
 
 	});
 
@@ -21832,6 +21851,14 @@
 
 	var errorGas = ["call", "estimateGas"];
 	function checkError(method, error, params) {
+	    // Undo the "convenience" some nodes are attempting to prevent backwards
+	    // incompatibility; maybe for v6 consider forwarding reverts as errors
+	    if (method === "call" && error.code === lib.Logger.errors.SERVER_ERROR) {
+	        var e = error.error;
+	        if (e && e.message.match("reverted") && lib$1.isHexString(e.data)) {
+	            return e.data;
+	        }
+	    }
 	    var message = error.message;
 	    if (error.code === lib.Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
 	        message = error.error.message;
@@ -23272,6 +23299,14 @@
 	}
 	var defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 	function checkError(method, error, transaction) {
+	    // Undo the "convenience" some nodes are attempting to prevent backwards
+	    // incompatibility; maybe for v6 consider forwarding reverts as errors
+	    if (method === "call" && error.code === lib.Logger.errors.SERVER_ERROR) {
+	        var e = error.error;
+	        if (e && e.message.match("reverted") && lib$1.isHexString(e.data)) {
+	            return e.data;
+	        }
+	    }
 	    // Get the message from any nested error structure
 	    var message = error.message;
 	    if (error.code === lib.Logger.errors.SERVER_ERROR) {
@@ -25189,7 +25224,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.21";
+	exports.version = "ethers/5.0.22";
 
 	});
 

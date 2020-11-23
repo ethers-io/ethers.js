@@ -27,6 +27,8 @@ function isBigNumberish(value) {
         bytes_1.isBytes(value));
 }
 exports.isBigNumberish = isBigNumberish;
+// Only warn about passing 10 into radix once
+var _warnedToStringRadix = false;
 var BigNumber = /** @class */ (function () {
     function BigNumber(constructorGuard, hex) {
         var _newTarget = this.constructor;
@@ -152,9 +154,20 @@ var BigNumber = /** @class */ (function () {
         return null;
     };
     BigNumber.prototype.toString = function () {
-        // Lots of people expect this, which we do not support, so check
-        if (arguments.length !== 0) {
-            logger.throwError("bigNumber.toString does not accept parameters", logger_1.Logger.errors.UNEXPECTED_ARGUMENT, {});
+        // Lots of people expect this, which we do not support, so check (See: #889)
+        if (arguments.length > 0) {
+            if (arguments[0] === 10) {
+                if (!_warnedToStringRadix) {
+                    _warnedToStringRadix = true;
+                    logger.warn("BigNumber.toString does not accept any parameters; base-10 is assumed");
+                }
+            }
+            else if (arguments[0] === 16) {
+                logger.throwError("BigNumber.toString does not accept any parameters; use bigNumber.toHexString()", logger_1.Logger.errors.UNEXPECTED_ARGUMENT, {});
+            }
+            else {
+                logger.throwError("BigNumber.toString does not accept parameters", logger_1.Logger.errors.UNEXPECTED_ARGUMENT, {});
+            }
         }
         return toBN(this).toString(10);
     };

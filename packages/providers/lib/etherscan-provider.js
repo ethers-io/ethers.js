@@ -127,6 +127,14 @@ function checkLogTag(blockTag) {
 }
 var defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 function checkError(method, error, transaction) {
+    // Undo the "convenience" some nodes are attempting to prevent backwards
+    // incompatibility; maybe for v6 consider forwarding reverts as errors
+    if (method === "call" && error.code === logger_1.Logger.errors.SERVER_ERROR) {
+        var e = error.error;
+        if (e && e.message.match("reverted") && bytes_1.isHexString(e.data)) {
+            return e.data;
+        }
+    }
     // Get the message from any nested error structure
     var message = error.message;
     if (error.code === logger_1.Logger.errors.SERVER_ERROR) {

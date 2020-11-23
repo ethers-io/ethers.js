@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { hexlify, hexValue } from "@ethersproject/bytes";
+import { hexlify, hexValue, isHexString } from "@ethersproject/bytes";
 import { deepCopy, defineReadOnly } from "@ethersproject/properties";
 import { fetchJson } from "@ethersproject/web";
 import { showThrottleMessage } from "./formatter";
@@ -86,6 +86,14 @@ function checkLogTag(blockTag) {
 }
 const defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 function checkError(method, error, transaction) {
+    // Undo the "convenience" some nodes are attempting to prevent backwards
+    // incompatibility; maybe for v6 consider forwarding reverts as errors
+    if (method === "call" && error.code === Logger.errors.SERVER_ERROR) {
+        const e = error.error;
+        if (e && e.message.match("reverted") && isHexString(e.data)) {
+            return e.data;
+        }
+    }
     // Get the message from any nested error structure
     let message = error.message;
     if (error.code === Logger.errors.SERVER_ERROR) {

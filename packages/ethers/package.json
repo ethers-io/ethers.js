@@ -2,13 +2,13 @@
   "author": "Richard Moore <me@ricmoo.com>",
   "browser-old": "./dist/ethers.umd.js",
   "dependencies": {
-    "@ethersproject/abi": "5.0.8",
+    "@ethersproject/abi": "5.0.9",
     "@ethersproject/abstract-provider": "5.0.6",
     "@ethersproject/abstract-signer": "5.0.8",
     "@ethersproject/address": "5.0.7",
     "@ethersproject/base64": "5.0.5",
     "@ethersproject/basex": "5.0.5",
-    "@ethersproject/bignumber": "5.0.10",
+    "@ethersproject/bignumber": "5.0.11",
     "@ethersproject/bytes": "5.0.6",
     "@ethersproject/constants": "5.0.6",
     "@ethersproject/contracts": "5.0.7",
@@ -20,7 +20,7 @@
     "@ethersproject/networks": "5.0.5",
     "@ethersproject/pbkdf2": "5.0.5",
     "@ethersproject/properties": "5.0.5",
-    "@ethersproject/providers": "5.0.15",
+    "@ethersproject/providers": "5.0.16",
     "@ethersproject/random": "5.0.5",
     "@ethersproject/rlp": "5.0.5",
     "@ethersproject/sha2": "5.0.5",
@@ -29,7 +29,7 @@
     "@ethersproject/strings": "5.0.6",
     "@ethersproject/transactions": "5.0.7",
     "@ethersproject/units": "5.0.7",
-    "@ethersproject/wallet": "5.0.8",
+    "@ethersproject/wallet": "5.0.9",
     "@ethersproject/web": "5.0.10",
     "@ethersproject/wordlists": "5.0.6"
   },
@@ -51,7 +51,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xfb79029029086ccdf43e92e0b9a3b3187c05702990a5c63612d75f6c905c6311",
+  "tarballHash": "0x45a2b28b7d4e37eb28a9db8a3ffdf8a5060f86d6fd603c648dabac2b7048ab0f",
   "types": "./lib/index.d.ts",
-  "version": "5.0.21"
+  "version": "5.0.22"
 }

@@ -62,6 +62,14 @@ var logger = new logger_1.Logger(_version_1.version);
 var base_provider_1 = require("./base-provider");
 var errorGas = ["call", "estimateGas"];
 function checkError(method, error, params) {
+    // Undo the "convenience" some nodes are attempting to prevent backwards
+    // incompatibility; maybe for v6 consider forwarding reverts as errors
+    if (method === "call" && error.code === logger_1.Logger.errors.SERVER_ERROR) {
+        var e = error.error;
+        if (e && e.message.match("reverted") && bytes_1.isHexString(e.data)) {
+            return e.data;
+        }
+    }
     var message = error.message;
     if (error.code === logger_1.Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
         message = error.error.message;

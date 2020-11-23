@@ -67,6 +67,12 @@ export class Wallet extends Signer {
                 defineReadOnly(this, "_signingKey", () => privateKey);
             }
             else {
+                // A lot of common tools do not prefix private keys with a 0x (see: #1166)
+                if (typeof (privateKey) === "string") {
+                    if (privateKey.match(/^[0-9a-f]*$/i) && privateKey.length === 64) {
+                        privateKey = "0x" + privateKey;
+                    }
+                }
                 const signingKey = new SigningKey(privateKey);
                 defineReadOnly(this, "_signingKey", () => signingKey);
             }

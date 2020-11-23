@@ -4155,7 +4155,7 @@ function joinSignature(signature) {
     ]));
 }
 
-const version$2 = "bignumber/5.0.10";
+const version$2 = "bignumber/5.0.11";
 
 "use strict";
 var BN = bn.BN;
@@ -4170,6 +4170,8 @@ function isBigNumberish(value) {
         (typeof (value) === "bigint") ||
         isBytes(value));
 }
+// Only warn about passing 10 into radix once
+let _warnedToStringRadix = false;
 class BigNumber {
     constructor(constructorGuard, hex) {
         logger$1.checkNew(new.target, BigNumber);
@@ -4294,9 +4296,20 @@ class BigNumber {
         return null;
     }
     toString() {
-        // Lots of people expect this, which we do not support, so check
-        if (arguments.length !== 0) {
-            logger$1.throwError("bigNumber.toString does not accept parameters", Logger.errors.UNEXPECTED_ARGUMENT, {});
+        // Lots of people expect this, which we do not support, so check (See: #889)
+        if (arguments.length > 0) {
+            if (arguments[0] === 10) {
+                if (!_warnedToStringRadix) {
+                    _warnedToStringRadix = true;
+                    logger$1.warn("BigNumber.toString does not accept any parameters; base-10 is assumed");
+                }
+            }
+            else if (arguments[0] === 16) {
+                logger$1.throwError("BigNumber.toString does not accept any parameters; use bigNumber.toHexString()", Logger.errors.UNEXPECTED_ARGUMENT, {});
+            }
+            else {
+                logger$1.throwError("BigNumber.toString does not accept parameters", Logger.errors.UNEXPECTED_ARGUMENT, {});
+            }
         }
         return toBN(this).toString(10);
     }
@@ -4882,7 +4895,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.0.8";
+const version$4 = "abi/5.0.9";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -16550,7 +16563,7 @@ function decryptJsonWalletSync(json, password) {
     throw new Error("invalid JSON wallet");
 }
 
-const version$j = "wallet/5.0.8";
+const version$j = "wallet/5.0.9";
 
 "use strict";
 var __awaiter$5 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -16607,6 +16620,12 @@ class Wallet extends Signer {
                 defineReadOnly(this, "_signingKey", () => privateKey);
             }
             else {
+                // A lot of common tools do not prefix private keys with a 0x (see: #1166)
+                if (typeof (privateKey) === "string") {
+                    if (privateKey.match(/^[0-9a-f]*$/i) && privateKey.length === 64) {
+                        privateKey = "0x" + privateKey;
+                    }
+                }
                 const signingKey = new SigningKey(privateKey);
                 defineReadOnly(this, "_signingKey", () => signingKey);
             }
@@ -17523,7 +17542,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.0.15";
+const version$m = "providers/5.0.16";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -19240,6 +19259,14 @@ var __awaiter$9 = (window && window.__awaiter) || function (thisArg, _arguments,
 const logger$u = new Logger(version$m);
 const errorGas = ["call", "estimateGas"];
 function checkError(method, error, params) {
+    // Undo the "convenience" some nodes are attempting to prevent backwards
+    // incompatibility; maybe for v6 consider forwarding reverts as errors
+    if (method === "call" && error.code === Logger.errors.SERVER_ERROR) {
+        const e = error.error;
+        if (e && e.message.match("reverted") && isHexString(e.data)) {
+            return e.data;
+        }
+    }
     let message = error.message;
     if (error.code === Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
         message = error.error.message;
@@ -20289,6 +20316,14 @@ function checkLogTag(blockTag) {
 }
 const defaultApiKey$1 = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 function checkError$1(method, error, transaction) {
+    // Undo the "convenience" some nodes are attempting to prevent backwards
+    // incompatibility; maybe for v6 consider forwarding reverts as errors
+    if (method === "call" && error.code === Logger.errors.SERVER_ERROR) {
+        const e = error.error;
+        if (e && e.message.match("reverted") && isHexString(e.data)) {
+            return e.data;
+        }
+    }
     // Get the message from any nested error structure
     let message = error.message;
     if (error.code === Logger.errors.SERVER_ERROR) {
@@ -21807,7 +21842,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.21";
+const version$o = "ethers/5.0.22";
 
 "use strict";
 const logger$H = new Logger(version$o);

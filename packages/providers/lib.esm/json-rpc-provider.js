@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { Signer } from "@ethersproject/abstract-signer";
 import { BigNumber } from "@ethersproject/bignumber";
-import { hexlify, hexValue } from "@ethersproject/bytes";
+import { hexlify, hexValue, isHexString } from "@ethersproject/bytes";
 import { _TypedDataEncoder } from "@ethersproject/hash";
 import { checkProperties, deepCopy, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { toUtf8Bytes } from "@ethersproject/strings";
@@ -21,6 +21,14 @@ const logger = new Logger(version);
 import { BaseProvider } from "./base-provider";
 const errorGas = ["call", "estimateGas"];
 function checkError(method, error, params) {
+    // Undo the "convenience" some nodes are attempting to prevent backwards
+    // incompatibility; maybe for v6 consider forwarding reverts as errors
+    if (method === "call" && error.code === Logger.errors.SERVER_ERROR) {
+        const e = error.error;
+        if (e && e.message.match("reverted") && isHexString(e.data)) {
+            return e.data;
+        }
+    }
     let message = error.message;
     if (error.code === Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
         message = error.error.message;
