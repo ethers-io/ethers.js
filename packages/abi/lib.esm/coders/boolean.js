@@ -4,6 +4,9 @@ export class BooleanCoder extends Coder {
     constructor(localName) {
         super("bool", "bool", localName, false);
     }
+    defaultValue() {
+        return false;
+    }
     encode(writer, value) {
         return writer.writeValue(value ? 1 : 0);
     }

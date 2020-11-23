@@ -19,6 +19,9 @@ var NullCoder = /** @class */ (function (_super) {
     function NullCoder(localName) {
         return _super.call(this, "null", "", localName, false) || this;
     }
+    NullCoder.prototype.defaultValue = function () {
+        return null;
+    };
     NullCoder.prototype.encode = function (writer, value) {
         if (value != null) {
             this._throwError("not null", value);

@@ -72,6 +72,12 @@ var AbiCoder = /** @class */ (function () {
     AbiCoder.prototype._getWriter = function () {
         return new abstract_coder_1.Writer(this._getWordSize());
     };
+    AbiCoder.prototype.getDefaultValue = function (types) {
+        var _this = this;
+        var coders = types.map(function (type) { return _this._getCoder(fragments_1.ParamType.from(type)); });
+        var coder = new tuple_1.TupleCoder(coders, "_");
+        return coder.defaultValue();
+    };
     AbiCoder.prototype.encode = function (types, values) {
         var _this = this;
         if (types.length !== values.length) {

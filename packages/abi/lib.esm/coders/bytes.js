@@ -5,6 +5,9 @@ export class DynamicBytesCoder extends Coder {
     constructor(type, localName) {
         super(type, type, localName, true);
     }
+    defaultValue() {
+        return "0x";
+    }
     encode(writer, value) {
         value = arrayify(value);
         let length = writer.writeValue(value.length);

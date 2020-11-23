@@ -6562,6 +6562,9 @@ class AddressCoder extends Coder {
     constructor(localName) {
         super("address", "address", localName, false);
     }
+    defaultValue() {
+        return "0x0000000000000000000000000000000000000000";
+    }
     encode(writer, value) {
         try {
             getAddress(value);
@@ -6582,6 +6585,9 @@ class AnonymousCoder extends Coder {
     constructor(coder) {
         super(coder.name, coder.type, undefined, coder.dynamic);
         this.coder = coder;
+    }
+    defaultValue() {
+        return this.coder.defaultValue();
     }
     encode(writer, value) {
         return this.coder.encode(writer, value);
@@ -6745,6 +6751,15 @@ class ArrayCoder extends Coder {
         this.coder = coder;
         this.length = length;
     }
+    defaultValue() {
+        // Verifies the child coder is valid (even if the array is dynamic or 0-length)
+        const defaultChild = this.coder.defaultValue();
+        const result = [];
+        for (let i = 0; i < this.length; i++) {
+            result.push(defaultChild);
+        }
+        return result;
+    }
     encode(writer, value) {
         if (!Array.isArray(value)) {
             this._throwError("expected array value", value);
@@ -6779,6 +6794,9 @@ class BooleanCoder extends Coder {
     constructor(localName) {
         super("bool", "bool", localName, false);
     }
+    defaultValue() {
+        return false;
+    }
     encode(writer, value) {
         return writer.writeValue(value ? 1 : 0);
     }
@@ -6791,6 +6809,9 @@ class BooleanCoder extends Coder {
 class DynamicBytesCoder extends Coder {
     constructor(type, localName) {
         super(type, type, localName, true);
+    }
+    defaultValue() {
+        return "0x";
     }
     encode(writer, value) {
         value = arrayify(value);
@@ -6819,6 +6840,9 @@ class FixedBytesCoder extends Coder {
         super(name, name, localName, false);
         this.size = size;
     }
+    defaultValue() {
+        return ("0x0000000000000000000000000000000000000000000000000000000000000000").substring(0, 2 + this.size * 2);
+    }
     encode(writer, value) {
         let data = arrayify(value);
         if (data.length !== this.size) {
@@ -6835,6 +6859,9 @@ class FixedBytesCoder extends Coder {
 class NullCoder extends Coder {
     constructor(localName) {
         super("null", "", localName, false);
+    }
+    defaultValue() {
+        return null;
     }
     encode(writer, value) {
         if (value != null) {
@@ -6884,6 +6911,9 @@ class NumberCoder extends Coder {
         super(name, name, localName, false);
         this.size = size;
         this.signed = signed;
+    }
+    defaultValue() {
+        return 0;
     }
     encode(writer, value) {
         let v = BigNumber.from(value);
@@ -7383,6 +7413,9 @@ class StringCoder extends DynamicBytesCoder {
     constructor(localName) {
         super("string", localName);
     }
+    defaultValue() {
+        return "";
+    }
     encode(writer, value) {
         return super.encode(writer, toUtf8Bytes(value));
     }
@@ -7405,6 +7438,38 @@ class TupleCoder extends Coder {
         const type = ("tuple(" + types.join(",") + ")");
         super("tuple", type, localName, dynamic);
         this.coders = coders;
+    }
+    defaultValue() {
+        const values = [];
+        this.coders.forEach((coder) => {
+            values.push(coder.defaultValue());
+        });
+        // We only output named properties for uniquely named coders
+        const uniqueNames = this.coders.reduce((accum, coder) => {
+            const name = coder.localName;
+            if (name) {
+                if (!accum[name]) {
+                    accum[name] = 0;
+                }
+                accum[name]++;
+            }
+            return accum;
+        }, {});
+        // Add named values
+        this.coders.forEach((coder, index) => {
+            let name = coder.localName;
+            if (!name || uniqueNames[name] !== 1) {
+                return;
+            }
+            if (name === "length") {
+                name = "_length";
+            }
+            if (values[name] != null) {
+                return;
+            }
+            values[name] = values[index];
+        });
+        return Object.freeze(values);
     }
     encode(writer, value) {
         return pack(writer, this.coders, value);
@@ -7468,6 +7533,11 @@ class AbiCoder {
     }
     _getWriter() {
         return new Writer(this._getWordSize());
+    }
+    getDefaultValue(types) {
+        const coders = types.map((type) => this._getCoder(ParamType.from(type)));
+        const coder = new TupleCoder(coders, "_");
+        return coder.defaultValue();
     }
     encode(types, values) {
         if (types.length !== values.length) {

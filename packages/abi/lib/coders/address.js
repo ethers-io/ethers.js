@@ -21,6 +21,9 @@ var AddressCoder = /** @class */ (function (_super) {
     function AddressCoder(localName) {
         return _super.call(this, "address", "address", localName, false) || this;
     }
+    AddressCoder.prototype.defaultValue = function () {
+        return "0x0000000000000000000000000000000000000000";
+    };
     AddressCoder.prototype.encode = function (writer, value) {
         try {
             address_1.getAddress(value);

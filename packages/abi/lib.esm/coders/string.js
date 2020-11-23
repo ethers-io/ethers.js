@@ -5,6 +5,9 @@ export class StringCoder extends DynamicBytesCoder {
     constructor(localName) {
         super("string", localName);
     }
+    defaultValue() {
+        return "";
+    }
     encode(writer, value) {
         return super.encode(writer, toUtf8Bytes(value));
     }

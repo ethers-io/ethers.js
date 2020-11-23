@@ -32,7 +32,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x03e17f73acc95dd078e40f0d2fe5488fcb199de896083f5e84687960928bb362",
+  "tarballHash": "0xfa8ac814b4d5178e80753512ac7ac5f949295370012751d1869ff7018100cb0f",
   "types": "./lib/index.d.ts",
   "version": "5.0.9"
 }

@@ -69,6 +69,11 @@ export class AbiCoder {
     _getWriter() {
         return new Writer(this._getWordSize());
     }
+    getDefaultValue(types) {
+        const coders = types.map((type) => this._getCoder(ParamType.from(type)));
+        const coder = new TupleCoder(coders, "_");
+        return coder.defaultValue();
+    }
     encode(types, values) {
         if (types.length !== values.length) {
             logger.throwError("types/values length mismatch", Logger.errors.INVALID_ARGUMENT, {

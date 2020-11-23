@@ -8,6 +8,9 @@ export class FixedBytesCoder extends Coder {
         super(name, name, localName, false);
         this.size = size;
     }
+    defaultValue() {
+        return ("0x0000000000000000000000000000000000000000000000000000000000000000").substring(0, 2 + this.size * 2);
+    }
     encode(writer, value) {
         let data = arrayify(value);
         if (data.length !== this.size) {

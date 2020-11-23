@@ -19,6 +19,9 @@ var BooleanCoder = /** @class */ (function (_super) {
     function BooleanCoder(localName) {
         return _super.call(this, "bool", "bool", localName, false) || this;
     }
+    BooleanCoder.prototype.defaultValue = function () {
+        return false;
+    };
     BooleanCoder.prototype.encode = function (writer, value) {
         return writer.writeValue(value ? 1 : 0);
     };

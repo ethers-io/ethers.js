@@ -25,6 +25,9 @@ var FixedBytesCoder = /** @class */ (function (_super) {
         _this.size = size;
         return _this;
     }
+    FixedBytesCoder.prototype.defaultValue = function () {
+        return ("0x0000000000000000000000000000000000000000000000000000000000000000").substring(0, 2 + this.size * 2);
+    };
     FixedBytesCoder.prototype.encode = function (writer, value) {
         var data = bytes_1.arrayify(value);
         if (data.length !== this.size) {

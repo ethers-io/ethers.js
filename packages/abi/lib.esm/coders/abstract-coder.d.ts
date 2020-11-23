@@ -17,6 +17,7 @@ export declare abstract class Coder {
     _throwError(message: string, value: any): void;
     abstract encode(writer: Writer, value: any): number;
     abstract decode(reader: Reader): any;
+    abstract defaultValue(): any;
 }
 export declare class Writer {
     readonly wordSize: number;

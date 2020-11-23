@@ -20,6 +20,9 @@ var StringCoder = /** @class */ (function (_super) {
     function StringCoder(localName) {
         return _super.call(this, "string", localName) || this;
     }
+    StringCoder.prototype.defaultValue = function () {
+        return "";
+    };
     StringCoder.prototype.encode = function (writer, value) {
         return _super.prototype.encode.call(this, writer, strings_1.toUtf8Bytes(value));
     };

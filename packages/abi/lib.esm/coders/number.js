@@ -9,6 +9,9 @@ export class NumberCoder extends Coder {
         this.size = size;
         this.signed = signed;
     }
+    defaultValue() {
+        return 0;
+    }
     encode(writer, value) {
         let v = BigNumber.from(value);
         // Check bounds are safe for encoding

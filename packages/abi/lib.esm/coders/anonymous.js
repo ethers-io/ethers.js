@@ -6,6 +6,9 @@ export class AnonymousCoder extends Coder {
         super(coder.name, coder.type, undefined, coder.dynamic);
         this.coder = coder;
     }
+    defaultValue() {
+        return this.coder.defaultValue();
+    }
     encode(writer, value) {
         return this.coder.encode(writer, value);
     }

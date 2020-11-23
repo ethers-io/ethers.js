@@ -6909,6 +6909,9 @@
 	    function AddressCoder(localName) {
 	        return _super.call(this, "address", "address", localName, false) || this;
 	    }
+	    AddressCoder.prototype.defaultValue = function () {
+	        return "0x0000000000000000000000000000000000000000";
+	    };
 	    AddressCoder.prototype.encode = function (writer, value) {
 	        try {
 	            lib$6.getAddress(value);
@@ -6954,6 +6957,9 @@
 	        _this.coder = coder;
 	        return _this;
 	    }
+	    AnonymousCoder.prototype.defaultValue = function () {
+	        return this.coder.defaultValue();
+	    };
 	    AnonymousCoder.prototype.encode = function (writer, value) {
 	        return this.coder.encode(writer, value);
 	    };
@@ -7149,6 +7155,15 @@
 	        _this.length = length;
 	        return _this;
 	    }
+	    ArrayCoder.prototype.defaultValue = function () {
+	        // Verifies the child coder is valid (even if the array is dynamic or 0-length)
+	        var defaultChild = this.coder.defaultValue();
+	        var result = [];
+	        for (var i = 0; i < this.length; i++) {
+	            result.push(defaultChild);
+	        }
+	        return result;
+	    };
 	    ArrayCoder.prototype.encode = function (writer, value) {
 	        if (!Array.isArray(value)) {
 	            this._throwError("expected array value", value);
@@ -7206,6 +7221,9 @@
 	    function BooleanCoder(localName) {
 	        return _super.call(this, "bool", "bool", localName, false) || this;
 	    }
+	    BooleanCoder.prototype.defaultValue = function () {
+	        return false;
+	    };
 	    BooleanCoder.prototype.encode = function (writer, value) {
 	        return writer.writeValue(value ? 1 : 0);
 	    };
@@ -7243,6 +7261,9 @@
 	    function DynamicBytesCoder(type, localName) {
 	        return _super.call(this, type, type, localName, true) || this;
 	    }
+	    DynamicBytesCoder.prototype.defaultValue = function () {
+	        return "0x";
+	    };
 	    DynamicBytesCoder.prototype.encode = function (writer, value) {
 	        value = lib$1.arrayify(value);
 	        var length = writer.writeValue(value.length);
@@ -7299,6 +7320,9 @@
 	        _this.size = size;
 	        return _this;
 	    }
+	    FixedBytesCoder.prototype.defaultValue = function () {
+	        return ("0x0000000000000000000000000000000000000000000000000000000000000000").substring(0, 2 + this.size * 2);
+	    };
 	    FixedBytesCoder.prototype.encode = function (writer, value) {
 	        var data = lib$1.arrayify(value);
 	        if (data.length !== this.size) {
@@ -7339,6 +7363,9 @@
 	    function NullCoder(localName) {
 	        return _super.call(this, "null", "", localName, false) || this;
 	    }
+	    NullCoder.prototype.defaultValue = function () {
+	        return null;
+	    };
 	    NullCoder.prototype.encode = function (writer, value) {
 	        if (value != null) {
 	            this._throwError("not null", value);
@@ -7456,6 +7483,9 @@
 	        _this.signed = signed;
 	        return _this;
 	    }
+	    NumberCoder.prototype.defaultValue = function () {
+	        return 0;
+	    };
 	    NumberCoder.prototype.encode = function (writer, value) {
 	        var v = lib$2.BigNumber.from(value);
 	        // Check bounds are safe for encoding
@@ -8042,6 +8072,9 @@
 	    function StringCoder(localName) {
 	        return _super.call(this, "string", localName) || this;
 	    }
+	    StringCoder.prototype.defaultValue = function () {
+	        return "";
+	    };
 	    StringCoder.prototype.encode = function (writer, value) {
 	        return _super.prototype.encode.call(this, writer, lib$8.toUtf8Bytes(value));
 	    };
@@ -8091,6 +8124,38 @@
 	        _this.coders = coders;
 	        return _this;
 	    }
+	    TupleCoder.prototype.defaultValue = function () {
+	        var values = [];
+	        this.coders.forEach(function (coder) {
+	            values.push(coder.defaultValue());
+	        });
+	        // We only output named properties for uniquely named coders
+	        var uniqueNames = this.coders.reduce(function (accum, coder) {
+	            var name = coder.localName;
+	            if (name) {
+	                if (!accum[name]) {
+	                    accum[name] = 0;
+	                }
+	                accum[name]++;
+	            }
+	            return accum;
+	        }, {});
+	        // Add named values
+	        this.coders.forEach(function (coder, index) {
+	            var name = coder.localName;
+	            if (!name || uniqueNames[name] !== 1) {
+	                return;
+	            }
+	            if (name === "length") {
+	                name = "_length";
+	            }
+	            if (values[name] != null) {
+	                return;
+	            }
+	            values[name] = values[index];
+	        });
+	        return Object.freeze(values);
+	    };
 	    TupleCoder.prototype.encode = function (writer, value) {
 	        return array.pack(writer, this.coders, value);
 	    };
@@ -8179,6 +8244,12 @@
 	    };
 	    AbiCoder.prototype._getWriter = function () {
 	        return new abstractCoder.Writer(this._getWordSize());
+	    };
+	    AbiCoder.prototype.getDefaultValue = function (types) {
+	        var _this = this;
+	        var coders = types.map(function (type) { return _this._getCoder(fragments.ParamType.from(type)); });
+	        var coder = new tuple.TupleCoder(coders, "_");
+	        return coder.defaultValue();
 	    };
 	    AbiCoder.prototype.encode = function (types, values) {
 	        var _this = this;

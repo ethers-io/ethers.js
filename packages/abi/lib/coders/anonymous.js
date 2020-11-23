@@ -22,6 +22,9 @@ var AnonymousCoder = /** @class */ (function (_super) {
         _this.coder = coder;
         return _this;
     }
+    AnonymousCoder.prototype.defaultValue = function () {
+        return this.coder.defaultValue();
+    };
     AnonymousCoder.prototype.encode = function (writer, value) {
         return this.coder.encode(writer, value);
     };

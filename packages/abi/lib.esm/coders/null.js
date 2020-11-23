@@ -4,6 +4,9 @@ export class NullCoder extends Coder {
     constructor(localName) {
         super("null", "", localName, false);
     }
+    defaultValue() {
+        return null;
+    }
     encode(writer, value) {
         if (value != null) {
             this._throwError("not null", value);

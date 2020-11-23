@@ -178,6 +178,15 @@ var ArrayCoder = /** @class */ (function (_super) {
         _this.length = length;
         return _this;
     }
+    ArrayCoder.prototype.defaultValue = function () {
+        // Verifies the child coder is valid (even if the array is dynamic or 0-length)
+        var defaultChild = this.coder.defaultValue();
+        var result = [];
+        for (var i = 0; i < this.length; i++) {
+            result.push(defaultChild);
+        }
+        return result;
+    };
     ArrayCoder.prototype.encode = function (writer, value) {
         if (!Array.isArray(value)) {
             this._throwError("expected array value", value);

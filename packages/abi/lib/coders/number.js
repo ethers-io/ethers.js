@@ -26,6 +26,9 @@ var NumberCoder = /** @class */ (function (_super) {
         _this.signed = signed;
         return _this;
     }
+    NumberCoder.prototype.defaultValue = function () {
+        return 0;
+    };
     NumberCoder.prototype.encode = function (writer, value) {
         var v = bignumber_1.BigNumber.from(value);
         // Check bounds are safe for encoding

@@ -20,6 +20,9 @@ var DynamicBytesCoder = /** @class */ (function (_super) {
     function DynamicBytesCoder(type, localName) {
         return _super.call(this, type, type, localName, true) || this;
     }
+    DynamicBytesCoder.prototype.defaultValue = function () {
+        return "0x";
+    };
     DynamicBytesCoder.prototype.encode = function (writer, value) {
         value = bytes_1.arrayify(value);
         var length = writer.writeValue(value.length);

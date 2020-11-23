@@ -32,6 +32,38 @@ var TupleCoder = /** @class */ (function (_super) {
         _this.coders = coders;
         return _this;
     }
+    TupleCoder.prototype.defaultValue = function () {
+        var values = [];
+        this.coders.forEach(function (coder) {
+            values.push(coder.defaultValue());
+        });
+        // We only output named properties for uniquely named coders
+        var uniqueNames = this.coders.reduce(function (accum, coder) {
+            var name = coder.localName;
+            if (name) {
+                if (!accum[name]) {
+                    accum[name] = 0;
+                }
+                accum[name]++;
+            }
+            return accum;
+        }, {});
+        // Add named values
+        this.coders.forEach(function (coder, index) {
+            var name = coder.localName;
+            if (!name || uniqueNames[name] !== 1) {
+                return;
+            }
+            if (name === "length") {
+                name = "_length";
+            }
+            if (values[name] != null) {
+                return;
+            }
+            values[name] = values[index];
+        });
+        return Object.freeze(values);
+    };
     TupleCoder.prototype.encode = function (writer, value) {
         return array_1.pack(writer, this.coders, value);
     };
