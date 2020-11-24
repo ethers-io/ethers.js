@@ -7,6 +7,16 @@
   },
   "description": "String utility functions.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers",
@@ -29,7 +39,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x37630ecb447e1ff5da512b98e9475e057714a35f8e37391ada89bfd03ce96c82",
+  "tarballHash": "0x42ffa49083b4547b2b55ac72ff5149dda38f5eac3ecbd1a1456713f418f9a04c",
   "types": "./lib/index.d.ts",
-  "version": "5.0.6"
+  "version": "5.0.7"
 }

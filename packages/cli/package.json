@@ -17,6 +17,16 @@
   },
   "description": "Command-Line Interface scripts and releated utilities.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers",
@@ -38,7 +48,7 @@
     "test": "exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xd05c7c4dee574a6c9ba55c49b36d415ae879f1219f131d2e25ff887cabd909a6",
+  "tarballHash": "0x2e19e09a91c3169955c6dc7562d2f87d666f1abe9f79485a3a95f17b4f123a2a",
   "types": "./lib/index.d.ts",
   "version": "5.0.7"
 }

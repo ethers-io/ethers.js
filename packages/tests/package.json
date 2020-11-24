@@ -8,6 +8,16 @@
   },
   "description": "Testing package for ethers.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -27,7 +37,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0x72a8c61ee29157354d55ef74471c3c70836f72d654e092dc560517f0edeefa14",
+  "tarballHash": "0x35dff9653e20a7bbf58096d6e73dce098a297e1ed167f5afbf5b18c8df3eaa67",
   "types": "./lib/index.d.ts",
-  "version": "5.0.13"
+  "version": "5.0.14"
 }

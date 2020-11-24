@@ -11,6 +11,16 @@
   },
   "description": "Elliptic curve library functions for the secp256k1 curve.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -31,7 +41,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x9cb48e4c6cb2262aa349541fcecf7219dc9d6c8adecb1a21974d0e2b4e590925",
+  "tarballHash": "0xaec083b8dfc51cc0e1b79437e605b47762c22de76019e15df5daa3662e173f04",
   "types": "./lib/index.d.ts",
-  "version": "5.0.6"
+  "version": "5.0.7"
 }

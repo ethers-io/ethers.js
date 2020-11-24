@@ -11,6 +11,16 @@
   },
   "description": "Base64 coder.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -31,7 +41,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xb364a54a1e2a4180ba3704634382e9280ed96801142e8f51eb956bf2d9853d4d",
+  "tarballHash": "0x0b21de3d1f836a61564b43b95d9272c0034c20b70eae82bbe99538676a1f9780",
   "types": "./lib/index.d.ts",
-  "version": "5.0.5"
+  "version": "5.0.6"
 }

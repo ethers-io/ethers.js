@@ -5,6 +5,16 @@
   },
   "description": "Bytes utility functions for ethers.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -27,7 +37,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x1434c3e1df18ea4906cefbb68a6f0e70f389b2f16c6632153a1dbd7c0004af94",
+  "tarballHash": "0x5214e9a9ce03a07a98b5c2eb30713ca5e90ae04e69367a93806b951b20ae854b",
   "types": "./lib/index.d.ts",
-  "version": "5.0.6"
+  "version": "5.0.7"
 }

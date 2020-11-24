@@ -2,6 +2,16 @@
   "author": "Richard Moore <me@ricmoo.com>",
   "description": "Logger utility functions for ethers.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -22,7 +32,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xa38f2e6ca43337036e3e83a08c3c7c2f69821d2d5db6929d33c26d096673e731",
+  "tarballHash": "0x5017c8da7b7d8467daee3cc7b637d9e30727756d541cb32523362b701ef0dd36",
   "types": "./lib/index.d.ts",
-  "version": "5.0.7"
+  "version": "5.0.8"
 }

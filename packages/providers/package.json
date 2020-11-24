@@ -35,6 +35,16 @@
   },
   "description": "Ethereum Providers for ethers.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -55,7 +65,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x493f3d9b2a118810a5326d7f955801a70178258b990e6ddee06b7a204880aa5c",
+  "tarballHash": "0x79fea80b4b09da16ca89badcf846b9613a8db0e35f9a0d6141fe8f60a67bc50b",
   "types": "./lib/index.d.ts",
   "version": "5.0.16"
 }

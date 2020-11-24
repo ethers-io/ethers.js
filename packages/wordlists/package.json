@@ -15,6 +15,16 @@
   },
   "description": "Word lists for BIP39 wallets.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -35,7 +45,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xb5b929d4d6a294bb906e5b2cea1cb543960c5d53fa07a9da2ed4c8533c0ce9fd",
+  "tarballHash": "0x24ff13ad968fa0820463de3ca244565d674295ae12e20370ecd1d4b835dbc322",
   "types": "./lib/index.d.ts",
-  "version": "5.0.6"
+  "version": "5.0.7"
 }

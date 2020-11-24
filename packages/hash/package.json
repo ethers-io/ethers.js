@@ -12,6 +12,16 @@
   },
   "description": "Hash utility functions for Ethereum.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -32,7 +42,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x719c4fb0b74ef1f430ff7001c3ae214dbe14ebe092a4fe5429c6f0ef09f0d790",
+  "tarballHash": "0x69068823dad28c4c52956a89a1b710dc12f0206b45971bc6a8756d2c133dcef8",
   "types": "./lib/index.d.ts",
-  "version": "5.0.7"
+  "version": "5.0.8"
 }

@@ -5,6 +5,16 @@
   },
   "description": "Network definitions for ethers.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -25,7 +35,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x4b2294270238534efd5ecb85d575099c09d9667a8acafc2f901ce6dc70c61e57",
+  "tarballHash": "0x231d7ac65c30d31eaae4d912e639ac45c3a34fc0a947f0251edeb62cbd079c43",
   "types": "./lib/index.d.ts",
-  "version": "5.0.5"
+  "version": "5.0.6"
 }

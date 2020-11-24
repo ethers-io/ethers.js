@@ -19,6 +19,16 @@
   },
   "description": "Classes for managing, encrypting and decrypting Ethereum private keys as a Signer for ethers.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -39,7 +49,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xe42974f146a81273c16b407b3a53525a9f9304412dba7c9766b9ca0508575efb",
+  "tarballHash": "0x5a20d69b99052391b9cf659f97f9993e8a1a4ce96758afd05a184df1ecf6c30f",
   "types": "./lib/index.d.ts",
   "version": "5.0.9"
 }

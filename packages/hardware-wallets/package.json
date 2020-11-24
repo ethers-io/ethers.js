@@ -14,6 +14,16 @@
   },
   "description": "Hardware Wallet support for ethers.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers",
@@ -38,7 +48,7 @@
     "test": "exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x7aaddc5ab90e85199ec5be684ca9046ce177f3b1223aa771946626bd2a96cd6b",
+  "tarballHash": "0xa0aa3a1b351d2c457227777643bfc25e24e5ebb5f5d06f539bfd8326eb15a8f4",
   "types": "./lib/index.d.ts",
   "version": "5.0.11"
 }

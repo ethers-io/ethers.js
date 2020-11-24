@@ -7,6 +7,16 @@
   },
   "description": "BigNumber library used in ethers.js.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "bignumber",
@@ -28,7 +38,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xbc4679a67d8d8bfe78c40c558604a017b0f9eb20b2a9e216958a6b1e0a8459c7",
+  "tarballHash": "0x739322073858f78c27573dbc36177b17681730a7bbb953aba9fe190fd36b7bda",
   "types": "./lib/index.d.ts",
   "version": "5.0.11"
 }

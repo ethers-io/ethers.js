@@ -6,6 +6,16 @@
   },
   "description": "Base-X without Buffer.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -26,7 +36,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x7fa7045f05554887ced897ea35c569153ea65efc744d4b414cacc409145e6ff5",
+  "tarballHash": "0x329cc06e27c00836bfbfbb871fe2f601e1532b2a85a3ef79aa48706338264b84",
   "types": "./lib/index.d.ts",
-  "version": "5.0.5"
+  "version": "5.0.6"
 }

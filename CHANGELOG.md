@@ -3,9 +3,10 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
-ethers/v5.0.22 (2020-11-23 03:42)
+ethers/v5.0.22 (2020-11-23 19:16)
 ---------------------------------
 
+  - Added directory to repo field for each package. ([799896a](https://github.com/ethers-io/ethers.js/commit/799896ac13cce857ce0124d2fb480f5d1eed114c))
   - Add ABI coder function to compute default values. ([#1101](https://github.com/ethers-io/ethers.js/issues/1101); [a8e3380](https://github.com/ethers-io/ethers.js/commit/a8e3380ed547b6368be5fe40b48be6e31b5cdd93))
   - Fix for new versions of Geth which return formatted data on revert rather than standard data. ([#949](https://github.com/ethers-io/ethers.js/issues/949); [4a8d579](https://github.com/ethers-io/ethers.js/commit/4a8d579dcaf026d0c232e20176605d34cba4767d))
   - Addd missing sideEffects flag to some packages. ([20defec](https://github.com/ethers-io/ethers.js/commit/20defec9f1683487b6ea9c8730d2ab7b3745bfa5))

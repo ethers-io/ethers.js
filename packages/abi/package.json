@@ -13,6 +13,16 @@
   },
   "description": "Utilities and Classes for parsing, formatting and managing Ethereum ABIs.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -33,7 +43,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xfa8ac814b4d5178e80753512ac7ac5f949295370012751d1869ff7018100cb0f",
+  "tarballHash": "0xff31d43d9c97aa55fb2980106be2e4ffbe77ad4c6efcba95263c70f86239e8e0",
   "types": "./lib/index.d.ts",
   "version": "5.0.9"
 }

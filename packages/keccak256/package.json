@@ -6,6 +6,16 @@
   },
   "description": "The keccak256 hash function for ethers.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -26,7 +36,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x817e897632180185c6605832665b2512b1376bb9a580eda0c1a08a7bcd49c4e9",
+  "tarballHash": "0x4a2af5bda795727a239a3d441907e673ee4d7e1ffe488afbee570958a113d1b1",
   "types": "./lib/index.d.ts",
-  "version": "5.0.5"
+  "version": "5.0.6"
 }

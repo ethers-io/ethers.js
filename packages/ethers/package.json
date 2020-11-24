@@ -3,38 +3,48 @@
   "browser-old": "./dist/ethers.umd.js",
   "dependencies": {
     "@ethersproject/abi": "5.0.9",
-    "@ethersproject/abstract-provider": "5.0.6",
-    "@ethersproject/abstract-signer": "5.0.8",
-    "@ethersproject/address": "5.0.7",
-    "@ethersproject/base64": "5.0.5",
-    "@ethersproject/basex": "5.0.5",
+    "@ethersproject/abstract-provider": "5.0.7",
+    "@ethersproject/abstract-signer": "5.0.9",
+    "@ethersproject/address": "5.0.8",
+    "@ethersproject/base64": "5.0.6",
+    "@ethersproject/basex": "5.0.6",
     "@ethersproject/bignumber": "5.0.11",
-    "@ethersproject/bytes": "5.0.6",
-    "@ethersproject/constants": "5.0.6",
-    "@ethersproject/contracts": "5.0.7",
-    "@ethersproject/hash": "5.0.7",
-    "@ethersproject/hdnode": "5.0.6",
-    "@ethersproject/json-wallets": "5.0.8",
-    "@ethersproject/keccak256": "5.0.5",
-    "@ethersproject/logger": "5.0.7",
-    "@ethersproject/networks": "5.0.5",
-    "@ethersproject/pbkdf2": "5.0.5",
-    "@ethersproject/properties": "5.0.5",
+    "@ethersproject/bytes": "5.0.7",
+    "@ethersproject/constants": "5.0.7",
+    "@ethersproject/contracts": "5.0.8",
+    "@ethersproject/hash": "5.0.8",
+    "@ethersproject/hdnode": "5.0.7",
+    "@ethersproject/json-wallets": "5.0.9",
+    "@ethersproject/keccak256": "5.0.6",
+    "@ethersproject/logger": "5.0.8",
+    "@ethersproject/networks": "5.0.6",
+    "@ethersproject/pbkdf2": "5.0.6",
+    "@ethersproject/properties": "5.0.6",
     "@ethersproject/providers": "5.0.16",
-    "@ethersproject/random": "5.0.5",
-    "@ethersproject/rlp": "5.0.5",
-    "@ethersproject/sha2": "5.0.5",
-    "@ethersproject/signing-key": "5.0.6",
-    "@ethersproject/solidity": "5.0.6",
-    "@ethersproject/strings": "5.0.6",
-    "@ethersproject/transactions": "5.0.7",
-    "@ethersproject/units": "5.0.7",
+    "@ethersproject/random": "5.0.6",
+    "@ethersproject/rlp": "5.0.6",
+    "@ethersproject/sha2": "5.0.6",
+    "@ethersproject/signing-key": "5.0.7",
+    "@ethersproject/solidity": "5.0.7",
+    "@ethersproject/strings": "5.0.7",
+    "@ethersproject/transactions": "5.0.8",
+    "@ethersproject/units": "5.0.8",
     "@ethersproject/wallet": "5.0.9",
-    "@ethersproject/web": "5.0.10",
-    "@ethersproject/wordlists": "5.0.6"
+    "@ethersproject/web": "5.0.11",
+    "@ethersproject/wordlists": "5.0.7"
   },
   "description": "Umbrella package for most common Ethers libraries.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -52,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x38beb7068681fe952ad52a07652e4f090ba77ce9c5e50debea611326df651063",
+  "tarballHash": "0x85545ff01b424d41a3f574dae2377024a8e4ef811342b6050a16b42d85286b28",
   "types": "./lib/index.d.ts",
   "version": "5.0.22"
 }

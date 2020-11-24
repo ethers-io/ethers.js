@@ -1,5 +1,18 @@
 {
   "name": "ethers",
+  "common": {
+    "ethereum": "donations.ethers.eth",
+    "funding": [
+      {
+        "type": "individual",
+        "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+      },
+      {
+        "type": "individual",
+        "url": "https://www.buymeacoffee.com/ricmoo"
+      }
+    ]
+  },
   "private": true,
   "repository": {
     "type": "git",

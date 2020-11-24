@@ -12,6 +12,16 @@
   },
   "description": "Random utility functions for ethers.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers",
@@ -33,7 +43,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x4a7b37a2e56ae759ac363b2ade2ba0286f6d2f6a79f46c56e267a16c62075cda",
+  "tarballHash": "0x25597a4c4e6b33b6f7b7da1604e5eab48d5ad9cecb6ec1baf713e2af890f9b63",
   "types": "./lib/index.d.ts",
-  "version": "5.0.5"
+  "version": "5.0.6"
 }

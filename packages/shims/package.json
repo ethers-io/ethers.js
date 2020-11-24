@@ -4,6 +4,16 @@
   "browser": "./dist/index.min.js",
   "description": "Shims required for ethers in constrained environments.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -22,7 +32,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x9e1228ba0a188979a1c98f336d845d24f4846b08d8e02ef6fa2247f7223ce154",
+  "tarballHash": "0x533d308926d3d1946b4d41c8902cc203cc06ac205f1b4df68314fb0402a5b50d",
   "types": "./lib/index.d.ts",
-  "version": "5.0.9"
+  "version": "5.0.10"
 }

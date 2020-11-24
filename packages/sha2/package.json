@@ -13,6 +13,16 @@
   },
   "description": "The SHA2 family hash functions and HMAC functions for ethers.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -33,7 +43,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x7a613990297ba319cd1a32bdcdd995993b06862b6829eb62eb32e3ccb6fec35a",
+  "tarballHash": "0x4d71b6b24d20756f3b1ec76d76d0e34155a3bad2debdc7579f3bf91be04f8de3",
   "types": "./lib/index.d.ts",
-  "version": "5.0.5"
+  "version": "5.0.6"
 }

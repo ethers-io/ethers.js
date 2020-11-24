@@ -7,6 +7,16 @@
   },
   "description": "Experimental libraries for ethers. These should not be considered stable.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -27,7 +37,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xcafbed00a70f6e9ef25b768900dddd786d6b17e61e67aa10d64d2e9a508cf60e",
+  "tarballHash": "0x1dae55c33ec27af2df99f78f786587e79bf6c10c528a27ee9f346ecb368ee1b5",
   "types": "./lib/index.d.ts",
-  "version": "5.0.6"
+  "version": "5.0.7"
 }

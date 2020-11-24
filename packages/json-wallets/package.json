@@ -17,6 +17,16 @@
   },
   "description": "Wallet management utilities for KeyStore and Crowdsale JSON wallets.",
   "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "keywords": [
     "Ethereum",
     "ethers"
@@ -37,7 +47,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xca169543368393bb678160dc42994207624307459f022ffa47b44ca47801aeeb",
+  "tarballHash": "0xedee0adfa5943550e36bcf5123c329d91db7edf6a9bfe2f654e4d252ef127651",
   "types": "./lib/index.d.ts",
-  "version": "5.0.8"
+  "version": "5.0.9"
 }
