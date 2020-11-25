@@ -36,7 +36,7 @@ function isBytes(value) {
     }
     for (var i = 0; i < value.length; i++) {
         var v = value[i];
-        if (v < 0 || v >= 256 || (v % 1)) {
+        if (typeof (v) !== "number" || v < 0 || v >= 256 || (v % 1)) {
             return false;
         }
     }

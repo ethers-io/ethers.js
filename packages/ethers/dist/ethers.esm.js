@@ -3775,7 +3775,7 @@ class Logger {
 Logger.errors = ErrorCode;
 Logger.levels = LogLevel;
 
-const version$1 = "bytes/5.0.7";
+const version$1 = "bytes/5.0.8";
 
 "use strict";
 const logger = new Logger(version$1);
@@ -3811,7 +3811,7 @@ function isBytes(value) {
     }
     for (let i = 0; i < value.length; i++) {
         const v = value[i];
-        if (v < 0 || v >= 256 || (v % 1)) {
+        if (typeof (v) !== "number" || v < 0 || v >= 256 || (v % 1)) {
             return false;
         }
     }
@@ -4155,7 +4155,7 @@ function joinSignature(signature) {
     ]));
 }
 
-const version$2 = "bignumber/5.0.11";
+const version$2 = "bignumber/5.0.12";
 
 "use strict";
 var BN = bn.BN;
@@ -17612,7 +17612,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.0.16";
+const version$m = "providers/5.0.17";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -21912,7 +21912,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.22";
+const version$o = "ethers/5.0.23";
 
 "use strict";
 const logger$H = new Logger(version$o);

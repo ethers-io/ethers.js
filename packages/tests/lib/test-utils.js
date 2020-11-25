@@ -547,6 +547,16 @@ describe("BigNumber", function () {
             assert_1.default.ok(value.abs().eq(expected));
         });
     });
+    // Fails to create from BN (or any junk with a length) (See: #1172)
+    it("Fails on junk with a length property", function () {
+        var junk = { negative: 0, words: [1000], length: 1, red: null };
+        assert_1.default.throws(function () {
+            var value = ethers_1.ethers.BigNumber.from("100").add(junk);
+            console.log("ERROR", value);
+        }, function (error) {
+            return true;
+        });
+    });
     // @TODO: Add more tests here
 });
 describe("FixedNumber", function () {

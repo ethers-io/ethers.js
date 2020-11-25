@@ -8,8 +8,8 @@
     "@ethersproject/address": "5.0.8",
     "@ethersproject/base64": "5.0.6",
     "@ethersproject/basex": "5.0.6",
-    "@ethersproject/bignumber": "5.0.11",
-    "@ethersproject/bytes": "5.0.7",
+    "@ethersproject/bignumber": "5.0.12",
+    "@ethersproject/bytes": "5.0.8",
     "@ethersproject/constants": "5.0.7",
     "@ethersproject/contracts": "5.0.8",
     "@ethersproject/hash": "5.0.8",
@@ -20,7 +20,7 @@
     "@ethersproject/networks": "5.0.6",
     "@ethersproject/pbkdf2": "5.0.6",
     "@ethersproject/properties": "5.0.6",
-    "@ethersproject/providers": "5.0.16",
+    "@ethersproject/providers": "5.0.17",
     "@ethersproject/random": "5.0.6",
     "@ethersproject/rlp": "5.0.6",
     "@ethersproject/sha2": "5.0.6",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x85545ff01b424d41a3f574dae2377024a8e4ef811342b6050a16b42d85286b28",
+  "tarballHash": "0x83b17f3e49b95f2126bb624832a0199300d914fbebcc9a404fef2917ee0b87eb",
   "types": "./lib/index.d.ts",
-  "version": "5.0.22"
+  "version": "5.0.23"
 }

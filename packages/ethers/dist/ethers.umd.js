@@ -3812,7 +3812,7 @@
 	var _version$2 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bytes/5.0.7";
+	exports.version = "bytes/5.0.8";
 
 	});
 
@@ -3857,7 +3857,7 @@
 	    }
 	    for (var i = 0; i < value.length; i++) {
 	        var v = value[i];
-	        if (v < 0 || v >= 256 || (v % 1)) {
+	        if (typeof (v) !== "number" || v < 0 || v >= 256 || (v % 1)) {
 	            return false;
 	        }
 	    }
@@ -4223,7 +4223,7 @@
 	var _version$4 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bignumber/5.0.11";
+	exports.version = "bignumber/5.0.12";
 
 	});
 
@@ -19682,7 +19682,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.16";
+	exports.version = "providers/5.0.17";
 
 	});
 
@@ -25295,7 +25295,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.22";
+	exports.version = "ethers/5.0.23";
 
 	});
 

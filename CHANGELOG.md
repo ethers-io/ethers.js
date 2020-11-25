@@ -3,6 +3,16 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.23 (2020-11-25 15:25)
+---------------------------------
+
+  - Fix BigNumber when passed something with a length property. ([#1172](https://github.com/ethers-io/ethers.js/issues/1172); [45a2902](https://github.com/ethers-io/ethers.js/commit/45a2902874e828a16396a253548bcb00bceccf95))
+
+ethers/v5.0.23 (2020-11-25 15:13)
+---------------------------------
+
+  - Fix BigNumber when passed something with a length property. ([#1172](https://github.com/ethers-io/ethers.js/issues/1172); [45a2902](https://github.com/ethers-io/ethers.js/commit/45a2902874e828a16396a253548bcb00bceccf95))
+
 ethers/v5.0.22 (2020-11-23 19:16)
 ---------------------------------
 
