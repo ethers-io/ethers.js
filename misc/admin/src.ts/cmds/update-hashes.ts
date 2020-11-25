@@ -1,4 +1,4 @@
-//import { getGitTag } from "../git";
+
 import { computeTarballHash, updateJson } from "../local";
 import { colorify, getProgressBar } from "../log";
 import { dirnames, getPackageJsonPath } from "../path";

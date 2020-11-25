@@ -19,8 +19,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const aws_sdk_1 = __importDefault(require("aws-sdk"));
+const { createHash } = require("crypto");
 const fs_1 = __importDefault(require("fs"));
+const aws_sdk_1 = __importDefault(require("aws-sdk"));
 const changelog_1 = require("../changelog");
 const config_1 = require("../config");
 const depgraph_1 = require("../depgraph");
@@ -153,16 +154,29 @@ exports.invalidate = invalidate;
                 // The password above already succeeded
                 const username = yield config_1.config.get("github-user");
                 const password = yield config_1.config.get("github-release");
+                const hash = createHash("sha384").update(fs_1.default.readFileSync(path_1.resolve("packages/ethers/dist/ethers.umd.min.js"))).digest("base64");
                 const gitCommit = yield git_1.getGitTag(path_1.resolve("CHANGELOG.md"));
+                let content = change.content.trim();
+                content += '\n\n----\n\n';
+                content += '**Embedding UMD with [SRI](https:/\/developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity):**\n';
+                content += '```html\n';
+                content += '<script type="text/javascript"\n';
+                content += `        integrity="sha384-${hash}"\n`;
+                content += '        crossorigin="anonymous"\n';
+                content += `        src="https:/\/cdn-cors.ethers.io/lib/ethers-${change.version.substring(1)}.umd.min.js">\n`;
+                content += '</script>\n';
+                content += '```';
                 // Publish the release
                 const beta = false;
-                const link = yield github_1.createRelease(username, password, change.version, change.title, change.content, beta, gitCommit);
+                const link = yield github_1.createRelease(username, password, change.version, change.title, content, beta, gitCommit);
                 console.log(`${log_1.colorify.bold("Published release:")} ${link}`);
             }
             // Upload libs to the CDN (as ethers-v5.0 and ethers-5.0.x)
             {
-                const bucketName = yield config_1.config.get("aws-upload-scripts-bucket");
-                const originRoot = yield config_1.config.get("aws-upload-scripts-root");
+                const bucketNameLib = yield config_1.config.get("aws-upload-scripts-bucket");
+                const originRootLib = yield config_1.config.get("aws-upload-scripts-root");
+                const bucketNameCors = yield config_1.config.get("aws-upload-scripts-bucket-cors");
+                const originRootCors = yield config_1.config.get("aws-upload-scripts-root-cors");
                 const s3 = new aws_sdk_1.default.S3({
                     apiVersion: '2006-03-01',
                     accessKeyId: awsAccessId,
@@ -170,13 +184,49 @@ exports.invalidate = invalidate;
                 });
                 // Upload the libs to ethers-v5.0 and ethers-5.0.x
                 const fileInfos = [
-                    { filename: "packages/ethers/dist/ethers.esm.min.js", key: `ethers-${change.version.substring(1)}.esm.min.js` },
-                    { filename: "packages/ethers/dist/ethers.umd.min.js", key: `ethers-${change.version.substring(1)}.umd.min.js` },
-                    { filename: "packages/ethers/dist/ethers.esm.min.js", key: "ethers-5.0.esm.min.js" },
-                    { filename: "packages/ethers/dist/ethers.umd.min.js", key: "ethers-5.0.umd.min.js" },
+                    // The CORS-enabled versions on cdn-cors.ethers.io
+                    {
+                        bucketName: bucketNameCors,
+                        originRoot: originRootCors,
+                        suffix: "-cors",
+                        filename: "packages/ethers/dist/ethers.esm.min.js",
+                        key: `ethers-${change.version.substring(1)}.esm.min.js`
+                    },
+                    {
+                        bucketName: bucketNameCors,
+                        originRoot: originRootCors,
+                        suffix: "-cors",
+                        filename: "packages/ethers/dist/ethers.umd.min.js",
+                        key: `ethers-${change.version.substring(1)}.umd.min.js`
+                    },
+                    // The non-CORS-enabled versions on cdn.ethers.io
+                    {
+                        bucketName: bucketNameLib,
+                        originRoot: originRootLib,
+                        filename: "packages/ethers/dist/ethers.esm.min.js",
+                        key: `ethers-${change.version.substring(1)}.esm.min.js`
+                    },
+                    {
+                        bucketName: bucketNameLib,
+                        originRoot: originRootLib,
+                        filename: "packages/ethers/dist/ethers.umd.min.js",
+                        key: `ethers-${change.version.substring(1)}.umd.min.js`
+                    },
+                    {
+                        bucketName: bucketNameLib,
+                        originRoot: originRootLib,
+                        filename: "packages/ethers/dist/ethers.esm.min.js",
+                        key: "ethers-5.0.esm.min.js"
+                    },
+                    {
+                        bucketName: bucketNameLib,
+                        originRoot: originRootLib,
+                        filename: "packages/ethers/dist/ethers.umd.min.js",
+                        key: "ethers-5.0.umd.min.js"
+                    },
                 ];
                 for (let i = 0; i < fileInfos.length; i++) {
-                    const { filename, key } = fileInfos[i];
+                    const { bucketName, originRoot, filename, key, suffix } = fileInfos[i];
                     yield putObject(s3, {
                         ACL: "public-read",
                         Body: fs_1.default.readFileSync(path_1.resolve(filename)),
@@ -184,7 +234,7 @@ exports.invalidate = invalidate;
                         ContentType: "application/javascript; charset=utf-8",
                         Key: (originRoot + key)
                     });
-                    console.log(`${log_1.colorify.bold("Uploaded:")} https://cdn.ethers.io/lib/${key}`);
+                    console.log(`${log_1.colorify.bold("Uploaded:")} https://cdn${suffix || ""}.ethers.io/lib/${key}`);
                 }
             }
             // Flush the edge caches

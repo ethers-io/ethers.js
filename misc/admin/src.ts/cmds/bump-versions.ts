@@ -9,6 +9,8 @@ import * as npm from "../npm";
 import { loadJson, repeat, saveJson } from "../utils";
 
 (async function() {
+    const common = loadJson(resolve("package.json")).common;
+
     const progress = getProgressBar(colorify.bold("Bumping package.json versions"));
 
     const latestVersions: Record<string, string> = { };
@@ -21,6 +23,10 @@ import { loadJson, repeat, saveJson } from "../utils";
         progress(i / dirnames.length);
 
         const dirname = dirnames[i];
+        const packageJsonPath = getPackageJsonPath(dirname);
+
+        // Set the common elements to the package.json
+        local.updateJson(packageJsonPath, common, true);
 
         const pLocal = local.getPackage(dirname);
         const pNpm = await npm.getPackage(dirname);
@@ -41,7 +47,7 @@ import { loadJson, repeat, saveJson } from "../utils";
                 colorify.green(version)
             ].join(""));
 
-            local.updateJson(getPackageJsonPath(dirname), { gitHead: undefined, tarballHash, version }, true);
+            local.updateJson(packageJsonPath, { gitHead: undefined, tarballHash, version }, true);
 
             updated = true;
         }
