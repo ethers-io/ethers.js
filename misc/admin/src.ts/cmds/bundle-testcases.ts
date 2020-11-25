@@ -42,7 +42,7 @@ const config = {
             } else {
                 data[key] = content.toString("base64");
             }
-            console.log(`  - Added ${ key } (${ data[key].length } bytes)`);
+            //console.log(`  - Added ${ key } (${ data[key].length } bytes)`);
         });
     });
 

@@ -37,7 +37,7 @@ const colorSequences = {
     magenta: "\x1b[35m",
     red: "\x1b[31m",
     yellow: "\x1b[33m",
-    bold: ""
+    bold: "\x1b[97m"
 };
 function getColor(color) {
     if (!color || color === "normal") {
