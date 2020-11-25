@@ -619,6 +619,17 @@ describe("BigNumber", function() {
         });
     });
 
+    // Fails to create from BN (or any junk with a length) (See: #1172)
+    it("Fails on junk with a length property", function() {
+        const junk: any = { negative: 0, words: [ 1000 ], length: 1, red: null };
+        assert.throws(() => {
+            const value = ethers.BigNumber.from("100").add(junk);
+            console.log("ERROR", value);
+        }, (error: Error) => {
+            return true;
+        });
+    });
+
     // @TODO: Add more tests here
 
 });
