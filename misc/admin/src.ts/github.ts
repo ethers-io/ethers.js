@@ -21,7 +21,6 @@ export async function createRelease(user: string, password: string, tagName: str
         password: password
     });
 
-
     return JSON.parse(Buffer.from(result.body).toString("utf8")).html_url;
 }
 

@@ -28,6 +28,7 @@ const npm = __importStar(require("../npm"));
 const utils_1 = require("../utils");
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
+        const common = utils_1.loadJson(path_1.resolve("package.json")).common;
         const progress = log_1.getProgressBar(log_1.colorify.bold("Bumping package.json versions"));
         const latestVersions = {};
         let updated = false;
@@ -36,6 +37,9 @@ const utils_1 = require("../utils");
         for (let i = 0; i < path_1.dirnames.length; i++) {
             progress(i / path_1.dirnames.length);
             const dirname = path_1.dirnames[i];
+            const packageJsonPath = path_1.getPackageJsonPath(dirname);
+            // Set the common elements to the package.json
+            local.updateJson(packageJsonPath, common, true);
             const pLocal = local.getPackage(dirname);
             const pNpm = yield npm.getPackage(dirname);
             const tarballHash = local.computeTarballHash(dirname);
@@ -50,7 +54,7 @@ const utils_1 = require("../utils");
                     log_1.colorify.bold(" => "),
                     log_1.colorify.green(version)
                 ].join(""));
-                local.updateJson(path_1.getPackageJsonPath(dirname), { gitHead: undefined, tarballHash, version }, true);
+                local.updateJson(packageJsonPath, { gitHead: undefined, tarballHash, version }, true);
                 updated = true;
             }
             latestVersions[pLocal.name] = version;

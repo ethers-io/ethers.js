@@ -1,5 +1,7 @@
-import AWS from 'aws-sdk';
+const { createHash } = require("crypto");
 import fs from "fs";
+
+import AWS from 'aws-sdk';
 
 import { getLatestChange } from "../changelog";
 import { config } from "../config";
@@ -157,18 +159,34 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
             const username = await config.get("github-user");
             const password = await config.get("github-release");
 
+            const hash = createHash("sha384").update(fs.readFileSync(resolve("packages/ethers/dist/ethers.umd.min.js"))).digest("base64");
+
             const gitCommit = await getGitTag(resolve("CHANGELOG.md"));
+
+            let content = change.content.trim();
+            content += '\n\n----\n\n';
+            content += '**Embedding UMD with [SRI](https:/\/developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity):**\n';
+            content += '```html\n';
+            content += '<script type="text/javascript"\n';
+            content += `        integrity="sha384-${ hash }"\n`;
+            content += '        crossorigin="anonymous"\n';
+            content += `        src="https:/\/cdn-cors.ethers.io/lib/ethers-${ change.version.substring(1) }.umd.min.js">\n`;
+            content += '</script>\n';
+            content += '```';
 
             // Publish the release
             const beta = false;
-            const link = await createRelease(username, password, change.version, change.title, change.content, beta, gitCommit);
+            const link = await createRelease(username, password, change.version, change.title, content, beta, gitCommit);
             console.log(`${ colorify.bold("Published release:") } ${ link }`);
         }
 
         // Upload libs to the CDN (as ethers-v5.0 and ethers-5.0.x)
         {
-            const bucketName = await config.get("aws-upload-scripts-bucket");
-            const originRoot = await config.get("aws-upload-scripts-root");
+            const bucketNameLib = await config.get("aws-upload-scripts-bucket");
+            const originRootLib = await config.get("aws-upload-scripts-root");
+
+            const bucketNameCors = await config.get("aws-upload-scripts-bucket-cors");
+            const originRootCors = await config.get("aws-upload-scripts-root-cors");
 
             const s3 = new AWS.S3({
                 apiVersion: '2006-03-01',
@@ -177,15 +195,52 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
             });
 
             // Upload the libs to ethers-v5.0 and ethers-5.0.x
-            const fileInfos: Array<{ filename: string, key: string }> = [
-                { filename: "packages/ethers/dist/ethers.esm.min.js", key: `ethers-${ change.version.substring(1) }.esm.min.js` },
-                { filename: "packages/ethers/dist/ethers.umd.min.js", key: `ethers-${ change.version.substring(1) }.umd.min.js` },
-                { filename: "packages/ethers/dist/ethers.esm.min.js", key: "ethers-5.0.esm.min.js" },
-                { filename: "packages/ethers/dist/ethers.umd.min.js", key: "ethers-5.0.umd.min.js" },
+            const fileInfos: Array<{ bucketName: string, originRoot: string, filename: string, key: string, suffix?: string }> = [
+                // The CORS-enabled versions on cdn-cors.ethers.io
+                {
+                    bucketName: bucketNameCors,
+                    originRoot: originRootCors,
+                    suffix: "-cors",
+                    filename: "packages/ethers/dist/ethers.esm.min.js",
+                    key: `ethers-${ change.version.substring(1) }.esm.min.js`
+                },
+                {
+                    bucketName: bucketNameCors,
+                    originRoot: originRootCors,
+                    suffix: "-cors",
+                    filename: "packages/ethers/dist/ethers.umd.min.js",
+                    key: `ethers-${ change.version.substring(1) }.umd.min.js`
+                },
+
+                // The non-CORS-enabled versions on cdn.ethers.io
+                {
+                    bucketName: bucketNameLib,
+                    originRoot: originRootLib,
+                    filename: "packages/ethers/dist/ethers.esm.min.js",
+                    key: `ethers-${ change.version.substring(1) }.esm.min.js`
+                },
+                {
+                    bucketName: bucketNameLib,
+                    originRoot: originRootLib,
+                    filename: "packages/ethers/dist/ethers.umd.min.js",
+                    key: `ethers-${ change.version.substring(1) }.umd.min.js`
+                },
+                {
+                    bucketName: bucketNameLib,
+                    originRoot: originRootLib,
+                    filename: "packages/ethers/dist/ethers.esm.min.js",
+                    key: "ethers-5.0.esm.min.js"
+                },
+                {
+                    bucketName: bucketNameLib,
+                    originRoot: originRootLib,
+                    filename: "packages/ethers/dist/ethers.umd.min.js",
+                    key: "ethers-5.0.umd.min.js"
+                },
             ];
 
             for (let i = 0; i < fileInfos.length; i++) {
-                const { filename, key } = fileInfos[i];
+                const { bucketName, originRoot, filename, key, suffix } = fileInfos[i];
                 await putObject(s3, {
                     ACL: "public-read",
                     Body: fs.readFileSync(resolve(filename)),
@@ -193,7 +248,7 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
                     ContentType: "application/javascript; charset=utf-8",
                     Key: (originRoot + key)
                 });
-                console.log(`${ colorify.bold("Uploaded:") } https://cdn.ethers.io/lib/${ key }`);
+                console.log(`${ colorify.bold("Uploaded:") } https://cdn${ suffix || "" }.ethers.io/lib/${ key }`);
             }
         }
 
