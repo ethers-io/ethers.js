@@ -208,7 +208,7 @@ daiContract.on(filter, (from, to, amount, event) => {
 myAddress = await signer.getAddress()
 // '0x8ba1f109551bD432803012645Ac136ddd64DBA72'
 
-// Filter for all token transfers to me
+// Filter for all token transfers from me
 filterFrom = daiContract.filters.Transfer(myAddress, null);
 // {
 //   address: 'dai.tokens.ethers.eth',
@@ -218,7 +218,7 @@ filterFrom = daiContract.filters.Transfer(myAddress, null);
 //   ]
 // }
 
-// Filter for all token transfers from me
+// Filter for all token transfers to me
 filterTo = daiContract.filters.Transfer(null, myAddress);
 // {
 //   address: 'dai.tokens.ethers.eth',
