@@ -12,7 +12,7 @@
     "@ethersproject/bytes": "5.0.8",
     "@ethersproject/constants": "5.0.7",
     "@ethersproject/contracts": "5.0.8",
-    "@ethersproject/hash": "5.0.8",
+    "@ethersproject/hash": "5.0.9",
     "@ethersproject/hdnode": "5.0.7",
     "@ethersproject/json-wallets": "5.0.9",
     "@ethersproject/keccak256": "5.0.6",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x83b17f3e49b95f2126bb624832a0199300d914fbebcc9a404fef2917ee0b87eb",
+  "tarballHash": "0x29af40c513a6ae9f1f3d3b9281e9dab348f682dd7cc6a69f4f8977a03eb651eb",
   "types": "./lib/index.d.ts",
-  "version": "5.0.23"
+  "version": "5.0.24"
 }

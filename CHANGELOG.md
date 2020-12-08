@@ -3,6 +3,12 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.24 (2020-12-08 01:43)
+---------------------------------
+
+  - Fixed EIP-712 getPayload dropping EIP712Domain from types for JSON-RPC calls. ([#687](https://github.com/ethers-io/ethers.js/issues/687); [d3b1ac0](https://github.com/ethers-io/ethers.js/commit/d3b1ac046aaf2a46f6c3efbd93c55adb0cb8f16d))
+  - Remvoed dead files. ([70c2b1b](https://github.com/ethers-io/ethers.js/commit/70c2b1b3002f44c39f4fd87fc2cfc3f5dc6555ed))
+
 ethers/v5.0.23 (2020-11-25 15:25)
 ---------------------------------
 

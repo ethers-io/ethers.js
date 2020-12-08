@@ -8297,7 +8297,7 @@
 	var _version$g = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hash/5.0.8";
+	exports.version = "hash/5.0.9";
 
 	});
 
@@ -8834,6 +8834,9 @@
 	        var encoder = TypedDataEncoder.from(types);
 	        var typesWithDomain = lib$3.shallowCopy(types);
 	        if (typesWithDomain.EIP712Domain) {
+	            logger.throwArgumentError("types must not contain EIP712Domain type", "types.EIP712Domain", types);
+	        }
+	        else {
 	            typesWithDomain.EIP712Domain = domainTypes;
 	        }
 	        // Validate the data structures and types
@@ -25295,7 +25298,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.23";
+	exports.version = "ethers/5.0.24";
 
 	});
 

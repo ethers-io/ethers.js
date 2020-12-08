@@ -7564,7 +7564,7 @@ function id(text) {
     return keccak256(toUtf8Bytes(text));
 }
 
-const version$8 = "hash/5.0.8";
+const version$8 = "hash/5.0.9";
 
 const logger$b = new Logger(version$8);
 const Zeros = new Uint8Array(32);
@@ -8006,6 +8006,9 @@ class TypedDataEncoder {
         const encoder = TypedDataEncoder.from(types);
         const typesWithDomain = shallowCopy(types);
         if (typesWithDomain.EIP712Domain) {
+            logger$c.throwArgumentError("types must not contain EIP712Domain type", "types.EIP712Domain", types);
+        }
+        else {
             typesWithDomain.EIP712Domain = domainTypes;
         }
         // Validate the data structures and types
@@ -21912,7 +21915,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.23";
+const version$o = "ethers/5.0.24";
 
 "use strict";
 const logger$H = new Logger(version$o);
