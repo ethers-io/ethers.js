@@ -463,6 +463,8 @@ export class TypedDataEncoder {
 
         const typesWithDomain = shallowCopy(types);
         if (typesWithDomain.EIP712Domain) {
+            logger.throwArgumentError("types must not contain EIP712Domain type", "types.EIP712Domain", types);
+        } else {
             typesWithDomain.EIP712Domain = domainTypes;
         }
 
