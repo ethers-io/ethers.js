@@ -129,6 +129,13 @@ function codeContextify(context) {
     context.Wallet = ethers.Wallet;
     context.provider = new ethers.providers.InfuraProvider("mainnet", "49a0efa3aaee4fd99797bfa94d8ce2f1");
 
+    // We use a local dev node for some signing examples, but want to
+    // resolve ENS names against mainnet; super hacky but makes the
+    // docs nicer
+    context.localProvider = new ethers.providers.JsonRpcProvider();
+    context.localSigner = context.localProvider.getSigner();
+    context.localProvider.resolveName = context.provider.resolveName.bind(context.provider);
+
     context.BigNumber.prototype[inspect.custom] = function(depth, options) {
         return `{ BigNumber: ${JSON.stringify(this.toString()) } }`;
     }
