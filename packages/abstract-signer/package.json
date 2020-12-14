@@ -1,11 +1,11 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/abstract-provider": "^5.0.4",
-    "@ethersproject/bignumber": "^5.0.7",
-    "@ethersproject/bytes": "^5.0.4",
-    "@ethersproject/logger": "^5.0.5",
-    "@ethersproject/properties": "^5.0.3"
+    "@ethersproject/abstract-provider": "^5.0.8",
+    "@ethersproject/bignumber": "^5.0.13",
+    "@ethersproject/bytes": "^5.0.9",
+    "@ethersproject/logger": "^5.0.8",
+    "@ethersproject/properties": "^5.0.7"
   },
   "description": "An Abstract Class for desribing an Ethereum Signer for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -39,7 +39,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xf30b173e3bee012c273e09ae94387f410714faa640b9dc27213a192db77a0303",
+  "tarballHash": "0xa9c8ee5aa0f46e6615e22e43934a549706174ab8346355e0969620277899d632",
   "types": "./lib/index.d.ts",
-  "version": "5.0.9"
+  "version": "5.0.10"
 }

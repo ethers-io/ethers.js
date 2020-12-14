@@ -10,7 +10,7 @@
     "@ledgerhq/hw-app-eth": "5.27.2",
     "@ledgerhq/hw-transport": "5.26.0",
     "@ledgerhq/hw-transport-u2f": "5.26.0",
-    "ethers": "^5.0.13"
+    "ethers": "^5.0.25"
   },
   "description": "Hardware Wallet support for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -48,7 +48,7 @@
     "test": "exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xa0aa3a1b351d2c457227777643bfc25e24e5ebb5f5d06f539bfd8326eb15a8f4",
+  "tarballHash": "0x3a4f81856bd2ba5f2c0905c07513528bc179892933d45e5a876a0643be641626",
   "types": "./lib/index.d.ts",
-  "version": "5.0.11"
+  "version": "5.0.12"
 }

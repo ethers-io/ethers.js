@@ -1,9 +1,9 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bytes": "^5.0.4",
-    "@ethersproject/constants": "^5.0.4",
-    "@ethersproject/logger": "^5.0.5"
+    "@ethersproject/bytes": "^5.0.9",
+    "@ethersproject/constants": "^5.0.8",
+    "@ethersproject/logger": "^5.0.8"
   },
   "description": "String utility functions.",
   "ethereum": "donations.ethers.eth",
@@ -39,7 +39,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x42ffa49083b4547b2b55ac72ff5149dda38f5eac3ecbd1a1456713f418f9a04c",
+  "tarballHash": "0x789e0fdc5debed37b6fea60316f92ec8bf4e2ccfc62c53a7c1768b42105570a7",
   "types": "./lib/index.d.ts",
-  "version": "5.0.7"
+  "version": "5.0.8"
 }

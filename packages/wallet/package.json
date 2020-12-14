@@ -1,21 +1,21 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/abstract-provider": "^5.0.4",
-    "@ethersproject/abstract-signer": "^5.0.4",
-    "@ethersproject/address": "^5.0.4",
-    "@ethersproject/bignumber": "^5.0.7",
-    "@ethersproject/bytes": "^5.0.4",
-    "@ethersproject/hash": "^5.0.4",
-    "@ethersproject/hdnode": "^5.0.4",
-    "@ethersproject/json-wallets": "^5.0.6",
-    "@ethersproject/keccak256": "^5.0.3",
-    "@ethersproject/logger": "^5.0.5",
-    "@ethersproject/properties": "^5.0.3",
-    "@ethersproject/random": "^5.0.3",
-    "@ethersproject/signing-key": "^5.0.4",
-    "@ethersproject/transactions": "^5.0.5",
-    "@ethersproject/wordlists": "^5.0.4"
+    "@ethersproject/abstract-provider": "^5.0.8",
+    "@ethersproject/abstract-signer": "^5.0.10",
+    "@ethersproject/address": "^5.0.9",
+    "@ethersproject/bignumber": "^5.0.13",
+    "@ethersproject/bytes": "^5.0.9",
+    "@ethersproject/hash": "^5.0.10",
+    "@ethersproject/hdnode": "^5.0.8",
+    "@ethersproject/json-wallets": "^5.0.10",
+    "@ethersproject/keccak256": "^5.0.7",
+    "@ethersproject/logger": "^5.0.8",
+    "@ethersproject/properties": "^5.0.7",
+    "@ethersproject/random": "^5.0.7",
+    "@ethersproject/signing-key": "^5.0.8",
+    "@ethersproject/transactions": "^5.0.9",
+    "@ethersproject/wordlists": "^5.0.8"
   },
   "description": "Classes for managing, encrypting and decrypting Ethereum private keys as a Signer for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -49,7 +49,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x5a20d69b99052391b9cf659f97f9993e8a1a4ce96758afd05a184df1ecf6c30f",
+  "tarballHash": "0xdd75c6d8cfbca6c7157a06dde33f3854513925303201b44aa448fba189d116f0",
   "types": "./lib/index.d.ts",
-  "version": "5.0.9"
+  "version": "5.0.10"
 }
