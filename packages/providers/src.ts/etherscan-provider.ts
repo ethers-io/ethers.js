@@ -172,7 +172,7 @@ export class EtherscanProvider extends BaseProvider{
                 baseUrl = "https://api.bscscan.com";
                 break;
             case "bsc-testnet":
-                baseUrl = "https://api-testnet.etherscan.io";
+                baseUrl = "https://api-testnet.bscscan.com";
                 break;
             default:
                 throw new Error("unsupported network");
