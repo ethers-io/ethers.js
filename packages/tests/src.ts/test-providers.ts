@@ -1037,6 +1037,16 @@ describe("Test WebSocketProvider", function() {
         const provider = ethers.providers.InfuraProvider.getWebSocketProvider();
         await testWebSocketProvider(provider);
     });
+
+    it("WebSocketProvider emits error when connecting to unreachable endpoints", async function() {
+        new Promise<void>((resolve) => {
+            const provider = new ethers.providers.WebSocketProvider("");
+            provider.on('error', (error) => {
+                assert.strictEqual(error.code, "ECONNREFUSED");
+                resolve();
+            });
+        });
+    });
 });
 
 describe("Test Events", function() {

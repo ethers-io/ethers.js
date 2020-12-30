@@ -48,6 +48,9 @@ export class WebSocketProvider extends JsonRpcProvider {
         defineReadOnly(this, "_subs", {});
         defineReadOnly(this, "_subIds", {});
         defineReadOnly(this, "_detectNetwork", super.detectNetwork());
+        this._websocket.on("error", (error) => {
+            this.emit("error", error);
+        });
         // Stall sending requests until the socket is open...
         this._websocket.onopen = () => {
             this._wsReady = true;

@@ -1114,6 +1114,20 @@ describe("Test WebSocketProvider", function () {
             });
         });
     });
+    it("WebSocketProvider emits error when connecting to unreachable endpoints", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                new Promise(function (resolve) {
+                    var provider = new ethers_1.ethers.providers.WebSocketProvider("");
+                    provider.on('error', function (error) {
+                        assert_1.default.strictEqual(error.code, "ECONNREFUSED");
+                        resolve();
+                    });
+                });
+                return [2 /*return*/];
+            });
+        });
+    });
 });
 describe("Test Events", function () {
     this.retries(3);
