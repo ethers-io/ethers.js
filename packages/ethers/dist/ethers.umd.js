@@ -22606,6 +22606,9 @@
 	        lib$3.defineReadOnly(_this, "_subs", {});
 	        lib$3.defineReadOnly(_this, "_subIds", {});
 	        lib$3.defineReadOnly(_this, "_detectNetwork", _super.prototype.detectNetwork.call(_this));
+	        _this._websocket.on("error", function (error) {
+	            _this.emit("error", error);
+	        });
 	        // Stall sending requests until the socket is open...
 	        _this._websocket.onopen = function () {
 	            _this._wsReady = true;

@@ -91,6 +91,9 @@ var WebSocketProvider = /** @class */ (function (_super) {
         properties_1.defineReadOnly(_this, "_subs", {});
         properties_1.defineReadOnly(_this, "_subIds", {});
         properties_1.defineReadOnly(_this, "_detectNetwork", _super.prototype.detectNetwork.call(_this));
+        _this._websocket.on("error", function (error) {
+            _this.emit("error", error);
+        });
         // Stall sending requests until the socket is open...
         _this._websocket.onopen = function () {
             _this._wsReady = true;
