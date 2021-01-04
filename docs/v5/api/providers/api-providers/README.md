@@ -64,12 +64,12 @@ provider = new EtherscanProvider("homestead", apiKey);
 @TODO... Explain
 
 
-PocketProvider
+PocketGatewayProvider
 ---------------------
 
-#### **new ***ethers* . *providers* . **PocketProvider**( [ network = "homestead" , [ apiKey ] ] )
+#### **new ***ethers* . *providers* . **PocketGatewayProvider**( [ network = "homestead" , [ apiKey ] ] )
 
-Create a new **PocketProvider** connected to *network* with the optional *apiKey*.
+Create a new **PocketGatewayProvider** connected to *network* with the optional *apiKey*.
 
 The *network* may be specified as **string** for a common network name, a **number** for a common chain ID or a [Network Object]provider-(network).
 
@@ -130,14 +130,14 @@ For production applications it is highly recommended to register your applicatio
 
 ```javascript
 // Connect to mainnet (homestead)
-provider = new PocketProvider();
+provider = new PocketGatewayProvider();
 
 // Connect to mainnet with a Project ID (these are equivalent)
-provider = new PocketProvider(null, applicationId);
-provider = new PocketProvider("homestead", applicationId);
+provider = new PocketGatewayProvider(null, applicationId);
+provider = new PocketGatewayProvider("homestead", applicationId);
 
 // Connect to mainnet with a Project ID and Project Secret
-provider = new PocketProvider("homestead", {
+provider = new PocketGatewayProvider("homestead", {
     applicationId: applicationId,
     applicationSecretKey: applicationSecretKey,
     applicationOrigin: applicationOrigin,

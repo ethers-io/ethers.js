@@ -26,7 +26,6 @@ import { IpcProvider } from "./ipc-provider";
 import { InfuraProvider, InfuraWebSocketProvider } from "./infura-provider";
 import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 import { NodesmithProvider } from "./nodesmith-provider";
-import { PocketProvider } from "./pocket-provider";
 import { StaticJsonRpcProvider, UrlJsonRpcProvider } from "./url-json-rpc-provider";
 import { Web3Provider } from "./web3-provider";
 import { WebSocketProvider } from "./websocket-provider";
@@ -80,7 +79,6 @@ function getDefaultProvider(network?: Network | string, options?: any): BaseProv
         InfuraProvider,
         JsonRpcProvider,
         NodesmithProvider,
-        PocketProvider,
         Web3Provider,
         PocketGatewayProvider,
 
@@ -114,7 +112,6 @@ export {
     InfuraWebSocketProvider,
     JsonRpcProvider,
     NodesmithProvider,
-    PocketProvider,
     StaticJsonRpcProvider,
     Web3Provider,
     WebSocketProvider,

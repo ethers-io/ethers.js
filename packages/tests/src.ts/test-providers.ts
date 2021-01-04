@@ -519,13 +519,13 @@ const providerFunctions: Array<ProviderDescription> = [
         }
     },
     {
-        name: "PocketProvider",
+        name: "PocketGatewayProvider",
         networks: [ "default", "homestead" ],
         create: (network: string) => {
             if (network == "default") {
-                return new ethers.providers.PocketProvider(null, ApiKeys.pocket);
+                return new ethers.providers.PocketGatewayProvider(null, ApiKeys.pocket);
             }
-            return new ethers.providers.PocketProvider(network, ApiKeys.pocket);
+            return new ethers.providers.PocketGatewayProvider(network, ApiKeys.pocket);
         }
     },
     {
@@ -1049,19 +1049,19 @@ describe("Test API Key Formatting", function() {
         const applicationSecretKey = "someApplicationSecret";
 
         // Test simple applicationId
-        const apiKeyString = ethers.providers.PocketProvider.getApiKey(applicationId);
+        const apiKeyString = ethers.providers.PocketGatewayProvider.getApiKey(applicationId);
         assert.equal(apiKeyString.applicationId, applicationId);
         assert.ok(apiKeyString.applicationSecretKey == null);
 
         // Test complex API key with applicationId
-        const apiKeyObject = ethers.providers.PocketProvider.getApiKey({
+        const apiKeyObject = ethers.providers.PocketGatewayProvider.getApiKey({
             applicationId
         });
         assert.equal(apiKeyObject.applicationId, applicationId);
         assert.ok(apiKeyObject.applicationSecretKey == null);
 
         // Test complex API key with applicationId and applicationSecretKey
-        const apiKeyObject2 = ethers.providers.PocketProvider.getApiKey({
+        const apiKeyObject2 = ethers.providers.PocketGatewayProvider.getApiKey({
             applicationId: applicationId,
             applicationSecretKey: applicationSecretKey
         });
@@ -1070,7 +1070,7 @@ describe("Test API Key Formatting", function() {
 
         // Fails on invalid applicationId type
         assert.throws(() => {
-            const apiKey = ethers.providers.PocketProvider.getApiKey({
+            const apiKey = ethers.providers.PocketGatewayProvider.getApiKey({
                 applicationId: 1234,
                 applicationSecretKey: applicationSecretKey
             });
@@ -1081,7 +1081,7 @@ describe("Test API Key Formatting", function() {
 
         // Fails on invalid projectSecret type
         assert.throws(() => {
-            const apiKey = ethers.providers.PocketProvider.getApiKey({
+            const apiKey = ethers.providers.PocketGatewayProvider.getApiKey({
                 applicationId: applicationId,
                 applicationSecretKey: 1234
             });
@@ -1091,7 +1091,7 @@ describe("Test API Key Formatting", function() {
         });
 
         {
-            const provider = new ethers.providers.PocketProvider("homestead", {
+            const provider = new ethers.providers.PocketGatewayProvider("homestead", {
                 applicationId: applicationId,
                 applicationSecretKey: applicationSecretKey
             });
@@ -1102,7 +1102,7 @@ describe("Test API Key Formatting", function() {
 
         // Attempt an unsupported network
         assert.throws(() => {
-            const provider = new ethers.providers.PocketProvider("imaginary");
+            const provider = new ethers.providers.PocketGatewayProvider("imaginary");
             console.log(provider);
         }, (error: any) => {
             return (error.argument === "network" && error.reason === "unsupported network");

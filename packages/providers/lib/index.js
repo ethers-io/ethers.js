@@ -26,8 +26,6 @@ exports.JsonRpcProvider = json_rpc_provider_1.JsonRpcProvider;
 exports.JsonRpcSigner = json_rpc_provider_1.JsonRpcSigner;
 var nodesmith_provider_1 = require("./nodesmith-provider");
 exports.NodesmithProvider = nodesmith_provider_1.NodesmithProvider;
-var pocket_provider_1 = require("./pocket-provider");
-exports.PocketProvider = pocket_provider_1.PocketProvider;
 var url_json_rpc_provider_1 = require("./url-json-rpc-provider");
 exports.StaticJsonRpcProvider = url_json_rpc_provider_1.StaticJsonRpcProvider;
 exports.UrlJsonRpcProvider = url_json_rpc_provider_1.UrlJsonRpcProvider;
@@ -82,7 +80,6 @@ function getDefaultProvider(network, options) {
         InfuraProvider: infura_provider_1.InfuraProvider,
         JsonRpcProvider: json_rpc_provider_1.JsonRpcProvider,
         NodesmithProvider: nodesmith_provider_1.NodesmithProvider,
-        PocketProvider: pocket_provider_1.PocketProvider,
         Web3Provider: web3_provider_1.Web3Provider,
         PocketGatewayProvider: pocket_gateway_provider_1.PocketGatewayProvider,
         IpcProvider: ipc_provider_1.IpcProvider,
