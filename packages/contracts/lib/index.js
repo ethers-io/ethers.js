@@ -935,8 +935,14 @@ var Contract = /** @class */ (function () {
         return result;
     };
     Contract.prototype.listenerCount = function (eventName) {
+        var _this = this;
         if (!this.provider) {
             return 0;
+        }
+        if (eventName == null) {
+            return Object.keys(this._runningEvents).reduce(function (accum, key) {
+                return accum + _this._runningEvents[key].listenerCount();
+            }, 0);
         }
         return this._getRunningEvent(eventName).listenerCount();
     };

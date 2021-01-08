@@ -796,6 +796,11 @@ export class Contract {
         if (!this.provider) {
             return 0;
         }
+        if (eventName == null) {
+            return Object.keys(this._runningEvents).reduce((accum, key) => {
+                return accum + this._runningEvents[key].listenerCount();
+            }, 0);
+        }
         return this._getRunningEvent(eventName).listenerCount();
     }
     listeners(eventName) {

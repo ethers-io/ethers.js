@@ -29,7 +29,11 @@ var SigningKey = /** @class */ (function () {
     };
     SigningKey.prototype.signDigest = function (digest) {
         var keyPair = getCurve().keyFromPrivate(bytes_1.arrayify(this.privateKey));
-        var signature = keyPair.sign(bytes_1.arrayify(digest), { canonical: true });
+        var digestBytes = bytes_1.arrayify(digest);
+        if (digestBytes.length !== 32) {
+            logger.throwArgumentError("bad digest length", "digest", digest);
+        }
+        var signature = keyPair.sign(digestBytes, { canonical: true });
         return bytes_1.splitSignature({
             recoveryParam: signature.recoveryParam,
             r: bytes_1.hexZeroPad("0x" + signature.r.toString(16), 32),

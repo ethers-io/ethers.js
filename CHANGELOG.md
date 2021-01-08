@@ -3,6 +3,13 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.25 (2021-01-08 03:31)
+---------------------------------
+
+  - Safety check on digest length for signing. ([20335e9](https://github.com/ethers-io/ethers.js/commit/20335e96c2429e851081b72031ea3fd4cd677904))
+  - Fixed listenerCount for contract when requesting for all events. ([#1205](https://github.com/ethers-io/ethers.js/issues/1205); [a56a0a3](https://github.com/ethers-io/ethers.js/commit/a56a0a33366ea9276fba5bc45f1e4678dd723fa6))
+  - Lock package versions for the ESM builds. ([#1009](https://github.com/ethers-io/ethers.js/issues/1009); [0e6cc9a](https://github.com/ethers-io/ethers.js/commit/0e6cc9a9a8ebceae4529ccbb7c107618eb54490a))
+
 ethers/v5.0.24 (2020-12-08 01:43)
 ---------------------------------
 
