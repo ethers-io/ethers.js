@@ -598,16 +598,8 @@ export class BaseProvider extends Provider implements EnsProvider {
 
         const checkInternalBlockNumber = resolveProperties({
             blockNumber: this.perform("getBlockNumber", { }),
-            networkError: this.getNetwork().then((network) => (null), (error) => (error))
-        }).then(({ blockNumber, networkError }) => {
-            if (networkError) {
-                // Unremember this bad internal block number
-                if (this._internalBlockNumber === checkInternalBlockNumber) {
-                    this._internalBlockNumber = null;
-                }
-                throw networkError;
-            }
-
+            networkError: this.getNetwork(),
+        }).then(({ blockNumber }) => {
             const respTime = getTime();
 
             blockNumber = BigNumber.from(blockNumber).toNumber();
@@ -616,6 +608,12 @@ export class BaseProvider extends Provider implements EnsProvider {
             this._maxInternalBlockNumber = blockNumber;
             this._setFastBlockNumber(blockNumber); // @TODO: Still need this?
             return { blockNumber, reqTime, respTime };
+        }).catch((error) => {
+            // Unremember this bad internal block number
+            if (this._internalBlockNumber === checkInternalBlockNumber) {
+                this._internalBlockNumber = null;
+            }
+            throw error;
         });
 
         this._internalBlockNumber = checkInternalBlockNumber;
