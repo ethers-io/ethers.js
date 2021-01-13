@@ -18470,20 +18470,30 @@ class BaseProvider extends Provider {
     _getInternalBlockNumber(maxAge) {
         return __awaiter$8(this, void 0, void 0, function* () {
             yield this._ready();
-            const internalBlockNumber = this._internalBlockNumber;
-            if (maxAge > 0 && internalBlockNumber) {
-                try {
-                    const result = yield internalBlockNumber;
-                    if ((getTime() - result.respTime) <= maxAge) {
-                        return result.blockNumber;
+            // Allowing stale data up to maxAge old
+            if (maxAge > 0) {
+                // While there are pending internal block requests...
+                while (this._internalBlockNumber) {
+                    // ..."remember" which fetch we started with
+                    const internalBlockNumber = this._internalBlockNumber;
+                    try {
+                        // Check the result is not too stale
+                        const result = yield internalBlockNumber;
+                        if ((getTime() - result.respTime) <= maxAge) {
+                            return result.blockNumber;
+                        }
+                        // Too old; fetch a new value
+                        break;
                     }
-                }
-                catch (error) {
-                    // Don't null the dead (rejected) fetch, if it has already been updated
-                    if (this._internalBlockNumber === internalBlockNumber) {
-                        this._internalBlockNumber = null;
+                    catch (error) {
+                        // The fetch rejected; if we are the first to get the
+                        // rejection, drop through so we replace it with a new
+                        // fetch; all others blocked will then get that fetch
+                        // which won't match the one they "remembered" and loop
+                        if (this._internalBlockNumber === internalBlockNumber) {
+                            break;
+                        }
                     }
-                    throw error;
                 }
             }
             const reqTime = getTime();

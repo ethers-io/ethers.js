@@ -3,10 +3,10 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
-ethers/v5.0.26 (2021-01-13 03:38)
+ethers/v5.0.26 (2021-01-13 14:47)
 ---------------------------------
 
-  - Fixed abundant UnhandledRejectErrors in provider polling. ([#1084](https://github.com/ethers-io/ethers.js/issues/1084), [#1208](https://github.com/ethers-io/ethers.js/issues/1208), [#1221](https://github.com/ethers-io/ethers.js/issues/1221), [#1235](https://github.com/ethers-io/ethers.js/issues/1235); [74470de](https://github.com/ethers-io/ethers.js/commit/74470defda5170338735bbbe676c207cdd5cc1cf))
+  - Fixed abundant UnhandledRejectErrors in provider polling. ([#1084](https://github.com/ethers-io/ethers.js/issues/1084), [#1208](https://github.com/ethers-io/ethers.js/issues/1208), [#1221](https://github.com/ethers-io/ethers.js/issues/1221), [#1235](https://github.com/ethers-io/ethers.js/issues/1235); [74470de](https://github.com/ethers-io/ethers.js/commit/74470defda5170338735bbbe676c207cdd5cc1cf), [20f6e16](https://github.com/ethers-io/ethers.js/commit/20f6e16394909a43498c1ac6c73152957bd121bd))
   - Fixed non-checksum address comparisons in abstract Signer. ([#1236](https://github.com/ethers-io/ethers.js/issues/1236); [8175c83](https://github.com/ethers-io/ethers.js/commit/8175c83026436b6335800780ca12b7257e1b490f))
 
 ethers/v5.0.25 (2021-01-08 03:31)

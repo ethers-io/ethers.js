@@ -20699,26 +20699,34 @@
 	                    case 0: return [4 /*yield*/, this._ready()];
 	                    case 1:
 	                        _a.sent();
-	                        internalBlockNumber = this._internalBlockNumber;
-	                        if (!(maxAge > 0 && internalBlockNumber)) return [3 /*break*/, 5];
+	                        if (!(maxAge > 0)) return [3 /*break*/, 7];
 	                        _a.label = 2;
 	                    case 2:
-	                        _a.trys.push([2, 4, , 5]);
-	                        return [4 /*yield*/, internalBlockNumber];
+	                        if (!this._internalBlockNumber) return [3 /*break*/, 7];
+	                        internalBlockNumber = this._internalBlockNumber;
+	                        _a.label = 3;
 	                    case 3:
+	                        _a.trys.push([3, 5, , 6]);
+	                        return [4 /*yield*/, internalBlockNumber];
+	                    case 4:
 	                        result = _a.sent();
 	                        if ((getTime() - result.respTime) <= maxAge) {
 	                            return [2 /*return*/, result.blockNumber];
 	                        }
-	                        return [3 /*break*/, 5];
-	                    case 4:
-	                        error_2 = _a.sent();
-	                        // Don't null the dead (rejected) fetch, if it has already been updated
-	                        if (this._internalBlockNumber === internalBlockNumber) {
-	                            this._internalBlockNumber = null;
-	                        }
-	                        throw error_2;
+	                        // Too old; fetch a new value
+	                        return [3 /*break*/, 7];
 	                    case 5:
+	                        error_2 = _a.sent();
+	                        // The fetch rejected; if we are the first to get the
+	                        // rejection, drop through so we replace it with a new
+	                        // fetch; all others blocked will then get that fetch
+	                        // which won't match the one they "remembered" and loop
+	                        if (this._internalBlockNumber === internalBlockNumber) {
+	                            return [3 /*break*/, 7];
+	                        }
+	                        return [3 /*break*/, 6];
+	                    case 6: return [3 /*break*/, 2];
+	                    case 7:
 	                        reqTime = getTime();
 	                        checkInternalBlockNumber = lib$3.resolveProperties({
 	                            blockNumber: this.perform("getBlockNumber", {}),
@@ -20750,7 +20758,7 @@
 	                            }
 	                        });
 	                        return [4 /*yield*/, checkInternalBlockNumber];
-	                    case 6: return [2 /*return*/, (_a.sent()).blockNumber];
+	                    case 8: return [2 /*return*/, (_a.sent()).blockNumber];
 	                }
 	            });
 	        });
