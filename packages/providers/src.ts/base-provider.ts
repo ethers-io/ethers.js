@@ -587,10 +587,18 @@ export class BaseProvider extends Provider implements EnsProvider {
 
         const internalBlockNumber = this._internalBlockNumber;
 
-        if (maxAge > 0 && this._internalBlockNumber) {
-            const result = await internalBlockNumber;
-            if ((getTime() - result.respTime) <= maxAge) {
-                return result.blockNumber;
+        if (maxAge > 0 && internalBlockNumber) {
+            try {
+                const result = await internalBlockNumber;
+                if ((getTime() - result.respTime) <= maxAge) {
+                    return result.blockNumber;
+                }
+            } catch(error) {
+                // Don't null the dead (rejected) fetch, if it has already been updated
+                if (this._internalBlockNumber === internalBlockNumber) {
+                    this._internalBlockNumber = null;
+                }
+                throw error;
             }
         }
 
@@ -620,6 +628,14 @@ export class BaseProvider extends Provider implements EnsProvider {
 
         this._internalBlockNumber = checkInternalBlockNumber;
 
+        // Swallow unhandled exceptions; if needed they are handled else where
+        checkInternalBlockNumber.catch((error) => {
+            // Don't null the dead (rejected) fetch, if it has already been updated
+            if (this._internalBlockNumber === checkInternalBlockNumber) {
+                this._internalBlockNumber = null;
+            }
+        });
+
         return (await checkInternalBlockNumber).blockNumber;
     }
 
@@ -629,7 +645,13 @@ export class BaseProvider extends Provider implements EnsProvider {
         // Track all running promises, so we can trigger a post-poll once they are complete
         const runners: Array<Promise<void>> = [];
 
-        const blockNumber = await this._getInternalBlockNumber(100 + this.pollingInterval / 2);
+        let blockNumber: number = null;
+        try {
+            blockNumber = await this._getInternalBlockNumber(100 + this.pollingInterval / 2);
+        } catch (error) {
+            this.emit("error", error);
+            return;
+        }
         this._setFastBlockNumber(blockNumber);
 
         // Emit a poll event after we have the latest (fast) block number
@@ -733,9 +755,9 @@ export class BaseProvider extends Provider implements EnsProvider {
         // Once all events for this loop have been processed, emit "didPoll"
         Promise.all(runners).then(() => {
             this.emit("didPoll", pollId);
-        });
+        }).catch((error) => { this.emit("error", error); });
 
-        return null;
+        return;
     }
 
     // Deprecated; do not use this
@@ -804,7 +826,7 @@ export class BaseProvider extends Provider implements EnsProvider {
     get blockNumber(): number {
         this._getInternalBlockNumber(100 + this.pollingInterval / 2).then((blockNumber) => {
             this._setFastBlockNumber(blockNumber);
-        });
+        }, (error) => { });
 
         return (this._fastBlockNumber != null) ? this._fastBlockNumber: -1;
     }
@@ -815,7 +837,7 @@ export class BaseProvider extends Provider implements EnsProvider {
 
     set polling(value: boolean) {
         if (value && !this._poller) {
-            this._poller = setInterval(this.poll.bind(this), this.pollingInterval);
+            this._poller = setInterval(() => { this.poll(); }, this.pollingInterval);
 
             if (!this._bootstrapPoll) {
                 this._bootstrapPoll = setTimeout(() => {
@@ -853,7 +875,7 @@ export class BaseProvider extends Provider implements EnsProvider {
 
         if (this._poller) {
             clearInterval(this._poller);
-            this._poller = setInterval(() => { this.poll() }, this._pollingInterval);
+            this._poller = setInterval(() => { this.poll(); }, this._pollingInterval);
         }
     }
 
