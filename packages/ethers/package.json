@@ -4,7 +4,7 @@
   "dependencies": {
     "@ethersproject/abi": "5.0.10",
     "@ethersproject/abstract-provider": "5.0.8",
-    "@ethersproject/abstract-signer": "5.0.10",
+    "@ethersproject/abstract-signer": "5.0.11",
     "@ethersproject/address": "5.0.9",
     "@ethersproject/base64": "5.0.7",
     "@ethersproject/basex": "5.0.7",
@@ -20,7 +20,7 @@
     "@ethersproject/networks": "5.0.7",
     "@ethersproject/pbkdf2": "5.0.7",
     "@ethersproject/properties": "5.0.7",
-    "@ethersproject/providers": "5.0.18",
+    "@ethersproject/providers": "5.0.19",
     "@ethersproject/random": "5.0.7",
     "@ethersproject/rlp": "5.0.7",
     "@ethersproject/sha2": "5.0.7",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x5a73efb8246e41c2dfb92dd665532ee944f15b1848ca84c61dd2405d141e3f2d",
+  "tarballHash": "0xbf1ac1f27016ee0adf01f398bda537589e9cd6c793520deadf3945014d759c3c",
   "types": "./lib/index.d.ts",
-  "version": "5.0.25"
+  "version": "5.0.26"
 }

@@ -9600,7 +9600,7 @@
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-signer/5.0.10";
+	exports.version = "abstract-signer/5.0.11";
 
 	});
 
@@ -9814,7 +9814,7 @@
 	                Promise.resolve(tx.from),
 	                this.getAddress()
 	            ]).then(function (result) {
-	                if (result[0] !== result[1]) {
+	                if (result[0].toLowerCase() !== result[1].toLowerCase()) {
 	                    logger.throwArgumentError("from address mismatch", "transaction", transaction);
 	                }
 	                return result[0];
@@ -19695,7 +19695,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.18";
+	exports.version = "providers/5.0.19";
 
 	});
 
@@ -20692,7 +20692,7 @@
 	    // than maxAge old or has been requested since the last request
 	    BaseProvider.prototype._getInternalBlockNumber = function (maxAge) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var internalBlockNumber, result, reqTime, checkInternalBlockNumber;
+	            var internalBlockNumber, result, error_2, reqTime, checkInternalBlockNumber;
 	            var _this = this;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
@@ -20700,15 +20700,25 @@
 	                    case 1:
 	                        _a.sent();
 	                        internalBlockNumber = this._internalBlockNumber;
-	                        if (!(maxAge > 0 && this._internalBlockNumber)) return [3 /*break*/, 3];
-	                        return [4 /*yield*/, internalBlockNumber];
+	                        if (!(maxAge > 0 && internalBlockNumber)) return [3 /*break*/, 5];
+	                        _a.label = 2;
 	                    case 2:
+	                        _a.trys.push([2, 4, , 5]);
+	                        return [4 /*yield*/, internalBlockNumber];
+	                    case 3:
 	                        result = _a.sent();
 	                        if ((getTime() - result.respTime) <= maxAge) {
 	                            return [2 /*return*/, result.blockNumber];
 	                        }
-	                        _a.label = 3;
-	                    case 3:
+	                        return [3 /*break*/, 5];
+	                    case 4:
+	                        error_2 = _a.sent();
+	                        // Don't null the dead (rejected) fetch, if it has already been updated
+	                        if (this._internalBlockNumber === internalBlockNumber) {
+	                            this._internalBlockNumber = null;
+	                        }
+	                        throw error_2;
+	                    case 5:
 	                        reqTime = getTime();
 	                        checkInternalBlockNumber = lib$3.resolveProperties({
 	                            blockNumber: this.perform("getBlockNumber", {}),
@@ -20732,24 +20742,41 @@
 	                            return { blockNumber: blockNumber, reqTime: reqTime, respTime: respTime };
 	                        });
 	                        this._internalBlockNumber = checkInternalBlockNumber;
+	                        // Swallow unhandled exceptions; if needed they are handled else where
+	                        checkInternalBlockNumber.catch(function (error) {
+	                            // Don't null the dead (rejected) fetch, if it has already been updated
+	                            if (_this._internalBlockNumber === checkInternalBlockNumber) {
+	                                _this._internalBlockNumber = null;
+	                            }
+	                        });
 	                        return [4 /*yield*/, checkInternalBlockNumber];
-	                    case 4: return [2 /*return*/, (_a.sent()).blockNumber];
+	                    case 6: return [2 /*return*/, (_a.sent()).blockNumber];
 	                }
 	            });
 	        });
 	    };
 	    BaseProvider.prototype.poll = function () {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var pollId, runners, blockNumber, i;
+	            var pollId, runners, blockNumber, error_3, i;
 	            var _this = this;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
 	                        pollId = nextPollId++;
 	                        runners = [];
-	                        return [4 /*yield*/, this._getInternalBlockNumber(100 + this.pollingInterval / 2)];
+	                        blockNumber = null;
+	                        _a.label = 1;
 	                    case 1:
+	                        _a.trys.push([1, 3, , 4]);
+	                        return [4 /*yield*/, this._getInternalBlockNumber(100 + this.pollingInterval / 2)];
+	                    case 2:
 	                        blockNumber = _a.sent();
+	                        return [3 /*break*/, 4];
+	                    case 3:
+	                        error_3 = _a.sent();
+	                        this.emit("error", error_3);
+	                        return [2 /*return*/];
+	                    case 4:
 	                        this._setFastBlockNumber(blockNumber);
 	                        // Emit a poll event after we have the latest (fast) block number
 	                        this.emit("poll", pollId, blockNumber);
@@ -20843,8 +20870,8 @@
 	                        // Once all events for this loop have been processed, emit "didPoll"
 	                        Promise.all(runners).then(function () {
 	                            _this.emit("didPoll", pollId);
-	                        });
-	                        return [2 /*return*/, null];
+	                        }).catch(function (error) { _this.emit("error", error); });
+	                        return [2 /*return*/];
 	                }
 	            });
 	        });
@@ -20922,7 +20949,7 @@
 	            var _this = this;
 	            this._getInternalBlockNumber(100 + this.pollingInterval / 2).then(function (blockNumber) {
 	                _this._setFastBlockNumber(blockNumber);
-	            });
+	            }, function (error) { });
 	            return (this._fastBlockNumber != null) ? this._fastBlockNumber : -1;
 	        },
 	        enumerable: true,
@@ -20935,7 +20962,7 @@
 	        set: function (value) {
 	            var _this = this;
 	            if (value && !this._poller) {
-	                this._poller = setInterval(this.poll.bind(this), this.pollingInterval);
+	                this._poller = setInterval(function () { _this.poll(); }, this.pollingInterval);
 	                if (!this._bootstrapPoll) {
 	                    this._bootstrapPoll = setTimeout(function () {
 	                        _this.poll();
@@ -21215,7 +21242,7 @@
 	    };
 	    BaseProvider.prototype.sendTransaction = function (signedTransaction) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var hexTx, tx, hash, error_2;
+	            var hexTx, tx, hash, error_4;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
@@ -21233,10 +21260,10 @@
 	                        hash = _a.sent();
 	                        return [2 /*return*/, this._wrapTransaction(tx, hash)];
 	                    case 5:
-	                        error_2 = _a.sent();
-	                        error_2.transaction = tx;
-	                        error_2.transactionHash = tx.hash;
-	                        throw error_2;
+	                        error_4 = _a.sent();
+	                        error_4.transaction = tx;
+	                        error_4.transactionHash = tx.hash;
+	                        throw error_4;
 	                    case 6: return [2 /*return*/];
 	                }
 	            });
@@ -21370,7 +21397,7 @@
 	    };
 	    BaseProvider.prototype._getBlock = function (blockHashOrBlockTag, includeTransactions) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var blockNumber, params, _a, _b, _c, error_3;
+	            var blockNumber, params, _a, _b, _c, error_5;
 	            var _this = this;
 	            return __generator(this, function (_d) {
 	                switch (_d.label) {
@@ -21399,7 +21426,7 @@
 	                        }
 	                        return [3 /*break*/, 6];
 	                    case 5:
-	                        error_3 = _d.sent();
+	                        error_5 = _d.sent();
 	                        logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
 	                        return [3 /*break*/, 6];
 	                    case 6: return [2 /*return*/, lib$q.poll(function () { return __awaiter(_this, void 0, void 0, function () {
@@ -25308,7 +25335,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.25";
+	exports.version = "ethers/5.0.26";
 
 	});
 

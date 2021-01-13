@@ -40,7 +40,7 @@
     "test": "npm run build-all && npm run test-node",
     "build-docs": "flatworm docs.wrm docs",
     "serve-docs": "node ./misc/admin/lib/cmds/serve-docs.js",
-    "upload-docs": " node ./admin/cmds/upload-docs.js",
+    "upload-docs": " node ./misc/admin/lib/cmds/upload-docs.js",
     "spell-check": "node ./misc/admin/lib/cmds/spell-check.js",
     "_reset-build": "node ./misc/admin/lib/cmds/set-build-option cjs",
     "_esm-alias-nodesafe": "node ./misc/admin/lib/cmds/echo 'Bundling ESM elliptic (lib._esm/browser-elliptic.js)...' && rollup -c rollup-pre-alias.config.js && node misc/admin/lib/cmds/esm-alias",

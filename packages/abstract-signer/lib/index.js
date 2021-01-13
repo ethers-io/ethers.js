@@ -205,7 +205,7 @@ var Signer = /** @class */ (function () {
                 Promise.resolve(tx.from),
                 this.getAddress()
             ]).then(function (result) {
-                if (result[0] !== result[1]) {
+                if (result[0].toLowerCase() !== result[1].toLowerCase()) {
                     logger.throwArgumentError("from address mismatch", "transaction", transaction);
                 }
                 return result[0];
