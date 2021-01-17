@@ -201,6 +201,13 @@ describe('Test Interface Signatures', function () {
             assert.equal(iface.getSighash(iface.getFunction("testSig")), test.sigHash, 'derived the correct signature hash');
         });
     });
+    it('formatted json output should contain correct keys', function () {
+        let iface = new ethers.utils.Interface(["function balanceOf(address) view returns (uint256)"]);
+        let parsed = JSON.parse(iface.format('json'))[0];
+        ['type', 'name', 'constant', 'stateMutability', 'payable', 'inputs', 'outputs'].forEach(function (key) {
+            assert.ok(parsed.hasOwnProperty(key), "json output has key - " + key);
+        });
+    });
     it('derives correct description for human-readable ABI', function () {
         let iface = new ethers.utils.Interface(["function transfer(address from, uint amount)"]);
         [

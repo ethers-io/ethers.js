@@ -5774,10 +5774,10 @@
 	                name: this.name,
 	                constant: this.constant,
 	                stateMutability: ((this.stateMutability !== "nonpayable") ? this.stateMutability : undefined),
-	                payble: this.payable,
+	                payable: this.payable,
 	                gas: (this.gas ? this.gas.toNumber() : undefined),
 	                inputs: this.inputs.map(function (input) { return JSON.parse(input.format(format)); }),
-	                ouputs: this.outputs.map(function (output) { return JSON.parse(output.format(format)); }),
+	                outputs: this.outputs.map(function (output) { return JSON.parse(output.format(format)); }),
 	            });
 	        }
 	        var result = "";
