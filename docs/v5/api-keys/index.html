@@ -44,9 +44,6 @@
 
 <p><ul><li>higher rate limit (since you are not using the <a href="https://info.etherscan.com/api-return-errors/">shared rate limit</a>) </li><li>customer usage metrics </li></ul></p>
 
-<<<<<<< HEAD
-<a name="api-keys--infura"></a><a name="api-keys--api-keys--infura"></a><h2 class="show-anchors"><div>INFURA<div class="anchors"><a class="self" href="/v5/api-keys/#api-keys--infura"></a></div></div></h2><p>The INFURA service has been around for quite some time and is very robust and reliable and highly recommended.</p>
-=======
 <a name="api-keys--pocket-gateway"></a><a name="api-keys--api-keys--pocket-gateway"></a><h2 class="show-anchors"><div>Pocket Gateway<div class="anchors"><a class="self" href="/v5/api-keys/#api-keys--pocket-gateway"></a></div></div></h2><p><a href="https://pokt.network">Pocket Network</a> is a Decentralized API that connects any app to any blockchain. Stake Pocket Network's native token POKT to get access to a global set of blockchain infrastructure.</p>
 
 <p>Connect your application to Ethereum via the <a href="https://pokt.network/pocket-gateway-ethereum-mainnet/">Pocket Network Gateway</a>.</p>
@@ -55,8 +52,9 @@
 
 <p><ul><li>Decentralized Access to Blockchain Infrastructure. </li><li>Stake as opposed to paying a monthly fee. </li><li>Highly redundant global set of nodes incentivized by cryptoeconomic incentives. </li></ul></p>
 
-<a name="api-keys--infura"></a><a name="api-keys--api-keys--infura"></a><h2 class="show-anchors"><div>INFURA<div class="anchors"><a class="self" href="/v5/api-keys/#api-keys--infura"></a></div></div></h2><p>The INFURA service has been around for quite some time and is very robust and reliable and highly recommend.</p>
->>>>>>> Added PocketGatewayProvider, updated tests and docs
+<p><a href="https://pokt.network/pocket-gateway-ethereum-mainnet/">Sign up for a free API key on Pocket</a></p>
+
+<a name="api-keys--infura"></a><a name="api-keys--api-keys--infura"></a><h2 class="show-anchors"><div>INFURA<div class="anchors"><a class="self" href="/v5/api-keys/#api-keys--infura"></a></div></div></h2><p>The INFURA service has been around for quite some time and is very robust and reliable and highly recommended.</p>
 
 <p>They offer a standard JSON-RPC interface and a WebSocket interface, which makes interaction with standard tools versatile, simple and straight forward.</p>
 
@@ -76,8 +74,6 @@
 
 <p><ul><li>higher rate limit </li><li>customer usage metrics </li><li>access to advanced token balance and metadata APIs </li><li>access to advanced debugging trace and revert reason APIs </li></ul></p>
 
-<a name="api-keys--pocket-gateway"></a><a name="api-keys--api-keys--pocket-gateway"></a><h2 class="show-anchors"><div>Pocket Gateway<div class="anchors"><a class="self" href="/v5/api-keys/#api-keys--pocket-gateway"></a></div></div></h2><p><a href="https://pokt.network/pocket-gateway-ethereum-mainnet/">Sign up for a free API key on Pocket</a></p>
-
 <p><b>Benefits:</b></p>
 
 <p><ul><li>customer usage metrics </li><li>decentralized Access to Blockchain Infrastructure </li><li>Stake as opposed to paying a monthly fee </li><li>Highly redundant global set of nodes incentivized by cryptoeconomic incentives </li></ul></p>
@@ -88,45 +84,35 @@
 
 <p>It is <b>highly recommended</b> that you provide an API for each service, to maximize your applications performance.</p>
 
-<div class="code-title"><div>Passing API Keys into getDefaultProvider</div></div><div class="code"><span class="comment">// Use the mainnet
-</span>const network = "homestead";
+<div class="code-title"><div>Passing API Keys into getDefaultProvider</div></div><div class="code">// Use the mainnet
+const network = "homestead";
 
-<span class="comment">// Specify your own API keys
-</span><span class="comment">// Each is optional, and if you omit it the default
-</span><span class="comment">// API key for that service will be used.
-</span>const provider = ethers.getDefaultProvider(network, {
+// Specify your own API keys
+// Each is optional, and if you omit it the default
+// API key for that service will be used.
+const provider = ethers.getDefaultProvider(network, {
     etherscan: YOUR_ETHERSCAN_API_KEY,
     infura: YOUR_INFURA_PROJECT_ID,
-<<<<<<< HEAD
-<span class="comment">    // Or if using a project secret:
-</span><span class="comment">    // infura: {
-</span><span class="comment">    //   projectId: YOUR_INFURA_PROJECT_ID,
-</span><span class="comment">    //   projectSecret: YOUR_INFURA_PROJECT_SECRET,
-</span><span class="comment">    // },
-</span>    alchemy: YOUR_ALCHEMY_API_KEY,
-    pocket: YOUR_POCKET_APPLICATION_KEY
-<span class="comment">    // Or if using an application secret key:
-</span><span class="comment">    // pocket: {
-</span><span class="comment">    //   applicationId: ,
-</span><span class="comment">    //   applicationSecretKey:
-</span><span class="comment">    // }
-</span>});
-=======
+    // Or if using a project secret:
+    // infura: {
+    //   projectId: YOUR_INFURA_PROJECT_ID,
+    //   projectSecret: YOUR_INFURA_PROJECT_SECRET,
+    // },
     alchemy: YOUR_ALCHEMY_API_KEY,
-    pocket_gateway: YOUR_POCKET_GATEWAY_APPLICATION_ID
-});
->>>>>>> Added PocketGatewayProvider, updated tests and docs
-</div>
+    pocket_gateway: YOUR_POCKET_APPLICATION_KEY
+    // Or if using an application secret key:
+    // pocket_gateway: {
+    //   applicationId: ,
+    //   applicationSecretKey:
+    //   endpointType: &lt;loadbalancer || application&gt;
+    // }
+});</div>
 
       <div class="footer">
         <div class="nav previous"><a href="/v5/concepts/best-practices/"><span class="arrow">&larr;</span>Best Practices</a></div>
         <div class="nav next"><a href="/v5/api/">Application Programming Interface<span class="arrow">&rarr;</span></a></div>
       </div>
-<<<<<<< HEAD
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on November 22, 2020, 11:5pm.</div>
-=======
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on September 17, 2020, 9:43pm.</div>
->>>>>>> Added PocketGatewayProvider, updated tests and docs
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on January 17, 2021, 10:26pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
     <!--EXTRASCRIPT-->

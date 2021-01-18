@@ -79,7 +79,7 @@ _property: provider.getHistory(address) => Array<History> @src<providers>
 _subsection: PocketGatewayProvider @<PocketGatewayProvider> @INHERIT<[[UrlJsonRpcProvider]]> @src<providers:class.PocketGatewayProvider>
 
 [Pocket Network](link-pocket) is a Decentralized API that connects any app to any blockchain. The **PocketGatewayProvider** is an interface that
-allows your application to connect to Ethereum via the [Pocket Network Gateway](link-pocket-gateway)
+allows your application to connect to Ethereum via the [Pocket Network Gateway](link-pocket-signup)
 
 _property: new ethers.providers.PocketGatewayProvider([ network = "homestead", [ apiKey ] ]) @SRC<providers>
 Create a new **PocketGatewayProvider** connected to //network// with
@@ -110,7 +110,7 @@ which has the capacity of sending up to 10 million requests per day (417,500 per
 for Ropsten, Rinkeby and G&ouml;rli there's a shared capacity of 1 million requests per day each (41,750 per hour).
 
 For production applications it is highly recommended to register your application on the
-[Pocket Gateway](link-pocket-gateway) for your own API key.
+[Pocket Gateway](link-pocket-signup) for your own API key.
 
 _definition: **Supported Networks**
 

@@ -81,25 +81,21 @@ const signer = provider.getSigner()
 ```javascript
 // Look up the current block number
 provider.getBlockNumber()
-<<<<<<< HEAD
-// { Promise: 11312227 }
-=======
-// { Promise: 10883306 }
->>>>>>> Added PocketGatewayProvider, updated tests and docs
+//!
 
 // Get the balance of an account (by address or ENS name, if supported by network)
 balance = await provider.getBalance("ethers.eth")
-// { BigNumber: "2337132817842795605" }
+//! async balance
 
 // Often you need to format the output to something more user-friendly,
 // such as in ether (instead of wei)
 ethers.utils.formatEther(balance)
-// '2.337132817842795605'
+//!
 
 // If a user enters a string in an input field, you may need
 // to convert it from ether (as a string) to wei (as a BigNumber)
 ethers.utils.parseEther("1.0")
-// { BigNumber: "1000000000000000000" }
+//!
 ```
 
 ### Writing to the Blockchain
@@ -143,29 +139,33 @@ const daiContract = new ethers.Contract(daiAddress, daiAbi, provider);
 ### Read-Only Methods
 
 ```javascript
+// <hide>
+const daiAbi = [
+  // Some simple details about the token
+  "function name() view returns (string)",
+  "function symbol() view returns (string)",
+
+  // Get the account balance
+  "function balanceOf(address) view returns (uint)",
+];
+const daiContract = new ethers.Contract("dai.tokens.ethers.eth", daiAbi, provider);
+// </hide>
+
 // Get the ERC-20 token name
 daiContract.name()
-// { Promise: 'Dai Stablecoin' }
+//!
 
 // Get the ERC-20 token symbol (for tickers and UIs)
 daiContract.symbol()
-// { Promise: 'DAI' }
+//!
 
 // Get the balance of an address
 balance = await daiContract.balanceOf("ricmoo.firefly.eth")
-<<<<<<< HEAD
-// { BigNumber: "15923148775162018481031" }
+//! async balance
 
 // Format the DAI for displaying to the user
 ethers.utils.formatUnits(balance, 18)
-// '15923.148775162018481031'
-=======
-// { BigNumber: "11434355832278858351495" }
-
-// Format the DAI for displaying to the user
-ethers.utils.formatUnits(balance, 18)
-// '11434.355832278858351495'
->>>>>>> Added PocketGatewayProvider, updated tests and docs
+//!
 ```
 
 ### State Changing Methods
@@ -186,6 +186,14 @@ tx = daiWithSigner.transfer("ricmoo.firefly.eth", dai);
 ### Listening to Events
 
 ```javascript
+// <hide>
+const daiAbi = [
+  "event Transfer(address indexed, address indexed, uint256)"
+];
+const daiContract = new ethers.Contract("dai.tokens.ethers.eth", daiAbi, provider);
+const formatEther = ethers.utils.formatEther;
+// </hide>
+
 // Receive an event when ANY transfer occurs
 daiContract.on("Transfer", (from, to, amount, event) => {
     console.log(`${ from } sent ${ formatEther(amount) } to ${ to}`);
@@ -197,108 +205,56 @@ daiContract.on("Transfer", (from, to, amount, event) => {
 // A filter for when a specific address receives tokens
 myAddress = "0x8ba1f109551bD432803012645Ac136ddd64DBA72";
 filter = daiContract.filters.Transfer(null, myAddress)
-// {
-//   address: 'dai.tokens.ethers.eth',
-//   topics: [
-//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-//     null,
-//     '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72'
-//   ]
-// }
+// <hide>
+filter
+// </hide>
+//!
 
 // Receive an event when that filter occurs
 daiContract.on(filter, (from, to, amount, event) => {
     // The to will always be "address"
     console.log(`I got ${ formatEther(amount) } from ${ from }.`);
 });
+
+// <hide>
+// Don't want to block the docs from compiling...
+daiContract.removeAllListeners();
+// </hide>
 ```
 
 ### Query Historic Events
 
 ```javascript
+// <hide>
+const signer = new ethers.VoidSigner("0x8ba1f109551bD432803012645Ac136ddd64DBA72");
+const daiAbi = [
+  "event Transfer(address indexed, address indexed, uint256)"
+];
+const daiContract = new ethers.Contract("dai.tokens.ethers.eth", daiAbi, provider);
+//!
+// </hide>
+
 // Get the address of the Signer
 myAddress = await signer.getAddress()
-// '0x8ba1f109551bD432803012645Ac136ddd64DBA72'
+//! async myAddress
 
 // Filter for all token transfers to me
 filterFrom = daiContract.filters.Transfer(myAddress, null);
-// {
-//   address: 'dai.tokens.ethers.eth',
-//   topics: [
-//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-//     '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72'
-//   ]
-// }
+// <hide>
+filterFrom
+// </hide>
+//!
 
 // Filter for all token transfers from me
 filterTo = daiContract.filters.Transfer(null, myAddress);
-// {
-//   address: 'dai.tokens.ethers.eth',
-//   topics: [
-//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-//     null,
-//     '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72'
-//   ]
-// }
+// <hide>
+filterTo
+// </hide>
+//!
 
 // List all transfers sent from me a specific block range
 daiContract.queryFilter(filterFrom, 9843470, 9843480)
-// { Promise: [
-//   {
-//     address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
-//     args: [
-//       '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
-//       '0x8B3765eDA5207fB21690874B722ae276B96260E0',
-//       { BigNumber: "4750000000000000000" }
-//     ],
-//     blockHash: '0x8462eb2fbcef5aa4861266f59ad5f47b9aa6525d767d713920fdbdfb6b0c0b78',
-//     blockNumber: 9843476,
-//     data: '0x00000000000000000000000000000000000000000000000041eb63d55b1b0000',
-//     decode: [Function],
-//     event: 'Transfer',
-//     eventSignature: 'Transfer(address,address,uint256)',
-//     getBlock: [Function],
-//     getTransaction: [Function],
-//     getTransactionReceipt: [Function],
-//     logIndex: 69,
-//     removeListener: [Function],
-//     removed: false,
-//     topics: [
-//       '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-//       '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72',
-//       '0x0000000000000000000000008b3765eda5207fb21690874b722ae276b96260e0'
-//     ],
-//     transactionHash: '0x1be23554545030e1ce47391a41098a46ff426382ed740db62d63d7676ff6fcf1',
-//     transactionIndex: 81
-//   },
-//   {
-//     address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
-//     args: [
-//       '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
-//       '0x00De4B13153673BCAE2616b67bf822500d325Fc3',
-//       { BigNumber: "250000000000000000" }
-//     ],
-//     blockHash: '0x8462eb2fbcef5aa4861266f59ad5f47b9aa6525d767d713920fdbdfb6b0c0b78',
-//     blockNumber: 9843476,
-//     data: '0x00000000000000000000000000000000000000000000000003782dace9d90000',
-//     decode: [Function],
-//     event: 'Transfer',
-//     eventSignature: 'Transfer(address,address,uint256)',
-//     getBlock: [Function],
-//     getTransaction: [Function],
-//     getTransactionReceipt: [Function],
-//     logIndex: 70,
-//     removeListener: [Function],
-//     removed: false,
-//     topics: [
-//       '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-//       '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72',
-//       '0x00000000000000000000000000de4b13153673bcae2616b67bf822500d325fc3'
-//     ],
-//     transactionHash: '0x1be23554545030e1ce47391a41098a46ff426382ed740db62d63d7676ff6fcf1',
-//     transactionIndex: 81
-//   }
-// ] }
+//!
 
 //
 // The following have had the results omitted due to the
@@ -316,15 +272,16 @@ Signing Messages
 ----------------
 
 ```javascript
+// <hide>
+const signer = ethers.Wallet.createRandom();
+//!
+// </hide>
+
 // To sign a simple string, which are used for
 // logging into a service, such as CryptoKitties,
 // pass the string in.
 signature = await signer.signMessage("Hello World");
-<<<<<<< HEAD
-// '0xc2c9a0db8e9ae4266d6aa1974b36efabd8e270452587857922c5fd696838a22b6dd8f0536c24a73c0df512eefac68bc118fb91b10640fcc576e44a57bc024ca31b'
-=======
-// '0x40e5eeffe7abd0835f9ab98919bf982f590049bce18f2a0a503ff39d53724c21377db6b4303e5b8c03afad8038b88c65ffe12f5d97a434f211a14c5b14e0c4831c'
->>>>>>> Added PocketGatewayProvider, updated tests and docs
+//! async signature
 
 //
 // A common case is also signing a hash, which is 32
@@ -337,14 +294,10 @@ message = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 
 // This array representation is 32 bytes long
 messageBytes = ethers.utils.arrayify(message);
-// Uint8Array [ 221, 242, 82, 173, 27, 226, 200, 155, 105, 194, 176, 104, 252, 55, 141, 170, 149, 43, 167, 241, 99, 196, 161, 22, 40, 245, 90, 77, 245, 35, 179, 239 ]
+//!
 
 // To sign a hash, you most often want to sign the bytes
 signature = await signer.signMessage(messageBytes)
-<<<<<<< HEAD
-// '0x66b35b262989bc88c5c5c1fadcd8bcd5ae410cdae06abf33ce2c3c98a04d4e892fd2f61717a46f81372146019c2e95646a6cfc3a7ae74e78338f40d905fa69fc1b'
-=======
-// '0xa4a6943b3063213f3274790612a91c1b0e11195fd985bf575ada05f08b7da70a1c5fdb9f9e1643719c319573fc6bbf111cef75db7e0f41bdff4b18ddd14f1b631c'
->>>>>>> Added PocketGatewayProvider, updated tests and docs
+//! async signature
 ```
 

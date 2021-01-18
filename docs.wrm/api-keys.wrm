@@ -45,13 +45,15 @@ _subsection: Pocket Gateway@<api-keys--pocket-gateway>
 [Pocket Network](link-pocket) is a Decentralized API that connects any app to any blockchain. Stake Pocket Network's
 native token POKT to get access to a global set of blockchain infrastructure.
 
-Connect your application to Ethereum via the [Pocket Network Gateway](link-pocket-gateway).
+Connect your application to Ethereum via the [Pocket Network Gateway](link-pocket-signup).
 
 **Benefits:**
 
 - Decentralized Access to Blockchain Infrastructure.
 - Stake as opposed to paying a monthly fee.
 - Highly redundant global set of nodes incentivized by cryptoeconomic incentives.
+
+[Sign up for a free API key on Pocket](link-pocket-signup)
 
 _subsection: INFURA @<api-keys--infura>
 
@@ -86,11 +88,6 @@ with debugging.
 - customer usage metrics
 - access to advanced token balance and metadata APIs
 - access to advanced debugging trace and revert reason APIs
-
-_subsection: Pocket Gateway@<api-keys--pocket-gateway>
-
-
-[Sign up for a free API key on Pocket](link-pocket-signup)
 
 **Benefits:**
 

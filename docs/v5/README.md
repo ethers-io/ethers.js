@@ -40,7 +40,6 @@ Developer Documentation
   * [Pocket Gateway](api-keys)
   * [INFURA](api-keys)
   * [Alchemy](api-keys)
-  * [Pocket Gateway](api-keys)
   * [Creating a Default Provider](api-keys)
 * [Application Programming Interface](api)
   * [Providers](api/providers)

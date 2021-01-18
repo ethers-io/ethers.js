@@ -38,6 +38,11 @@ It is highly recommended for production, you register with [Etherscan](https://e
 
 
 ```javascript
+// <hide>
+const EtherscanProvider = ethers.providers.EtherscanProvider;
+const apiKey = "...";
+// </hide>
+
 // Connect to mainnet (homestead)
 provider = new EtherscanProvider();
 
@@ -46,11 +51,11 @@ provider = new EtherscanProvider("rinkeby");
 provider = new EtherscanProvider(4);
 
 const network = ethers.providers.getNetwork("rinkeby");
-// {
-//   chainId: 4,
-//   ensAddress: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
-//   name: 'rinkeby'
-// }
+// <hide>
+delete network._defaultProvider;
+network
+// </hide>
+//!
 
 provider = new EtherscanProvider(network);
 
@@ -75,31 +80,13 @@ The *network* may be specified as **string** for a common network name, a **numb
 
 Depending on how you configure your Application in the Pocket Network Gateway the *apiKey* can be one of:
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-- **string**: In this case this will be assumed to be the `applicationID` property of your application.
-- **object**: In this case you will be required one of the following combinations:
-- `applicationID`: If you only specify this property this will have the same effect as passing it as a **string**.
-- `applicationID` and `applicationSecretKey`: If you specify the `applicationSecretKey`, you also need to specify the `applicationID` property.
-- `applicationOrigin`: By specifying this property you are setting the `Origin` header in your request (remember that browsers will swap this header based on the actual origin of the website loaded).
-- `applicationUserAgent`: By specifying this property you are setting the `User-Agent` header in your request.
-=======
 - **string**: In this case this will be assumed to be the `applicationID` property of your application. 
 - **object**: In this case you will be required one of the following combinations: 
 - `applicationID`: If you only specify this property this will have the same effect as passing it as a **string**. 
 - `applicationID` and `applicationSecretKey`: If you specify the `applicationSecretKey`, you also need to specify the `applicationID` property. 
 - `applicationOrigin`: By specifying this property you are setting the `Origin` header in your request (remember that browsers will swap this header based on the actual origin of the website loaded). 
 - `applicationUserAgent`: By specifying this property you are setting the `User-Agent` header in your request. 
->>>>>>> Added PocketGatewayProvider, updated tests and docs
-=======
-- **string**: In this case this will be assumed to be the `applicationId` property of your application. 
-- **object**: In this case you will be required one of the following combinations: 
-- `applicationId`: If you only specify this property this will have the same effect as passing it as a **string**. 
-- `applicationId` and `applicationSecretKey`: If you specify the `applicationSecretKey`, you also need to specify the `applicationId` property. 
-- `applicationOrigin`: By specifying this property you are setting the `Origin` header in your request (remember that browsers will swap this header based on the actual origin of the website loaded). 
-- `applicationUserAgent`: By specifying this property you are setting the `User-Agent` header in your request.
-- `endpointType`: By specifying this property you are setting which `Endpoint` you will be using. The values must be a **string** type and the accepted values are **Application** or **LoadBalancer**. This values are case-insensitive. 
->>>>>>> Updating Pocket provider
+- `endpointType`: By specifying this property you can select to connect via the Pocket Gateway Single Application endpoint or a Load Balancer Endpoint (defaults to Load Balancer) 
 
 
 
@@ -108,27 +95,32 @@ The *network* and *apiKey* are specified the same as [the constructor](/v5/api/p
 
 #### Note: Default API keys
 
-In the event of the *apiKey* not being present in the constructor, a shared ApplicationID will be provided, which has the capacity of sending up to 1 million requests per day (41,750 per hour).
+In the event of the *apiKey* not being present in the constructor, a shared ApplicationID will be provided, which has the capacity of sending up to 10 million requests per day (417,500 per hour) for Ethereum Mainnet, for Ropsten, Rinkeby and Gorli there's a shared capacity of 1 million requests per day each (41,750 per hour).
 
 For production applications it is highly recommended to register your application on the [Pocket Gateway](https://pokt.network/pocket-gateway-ethereum-mainnet/) for your own API key.
 
 
 #### **Supported Networks**
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-- Homestead (Mainnet Full nodes (Archival Support coming soon))
-=======
-- Homestead (Mainnet Full nodes (Archival Support coming soon)) 
->>>>>>> Added PocketGatewayProvider, updated tests and docs
-=======
-- Homestead (Mainnet Full nodes (Archival Support coming soon)) 
->>>>>>> Updating Pocket provider
+- Homestead (Mainnet Full nodes (non-Archival Nodes)) 
+- Ropsten (proof-of-work testnet) 
+- Rinkeby (proof-of-authority testnet) 
+- Gorli (clique testnet) 
 
 
 
 
 ```javascript
+// <hide>
+const PocketGatewayProvider = ethers.providers.PocketGatewayProvider;
+const applicationId = "...";
+const applicationSecretKey = "...";
+const applicationOrigin = "...";
+const applicationUserAgent = "...";
+// Endpoint Type can be either application or loadbalancer
+const endpointType = "...";
+// </hide>
+
 // Connect to mainnet (homestead)
 provider = new PocketGatewayProvider();
 
@@ -141,7 +133,8 @@ provider = new PocketGatewayProvider("homestead", {
     applicationId: applicationId,
     applicationSecretKey: applicationSecretKey,
     applicationOrigin: applicationOrigin,
-    applicationUserAgent: applicationUserAgent
+    applicationUserAgent: applicationUserAgent,
+    endpointType: endpointType
 });
 ```
 
@@ -183,6 +176,12 @@ It is highly recommended for production, you register with [INFURA](https://infu
 
 
 ```javascript
+// <hide>
+const InfuraProvider = ethers.providers.InfuraProvider;
+const projectId = "...";
+const projectSecret = "...";
+// </hide>
+
 // Connect to mainnet (homestead)
 provider = new InfuraProvider();
 
@@ -202,6 +201,9 @@ provider = new InfuraProvider("homestead", {
 
 // Connect to the INFURA WebSocket endpoints with a WebSocketProvider
 provider = InfuraProvider.getWebSocketProvider()
+// <hide>
+provider.destroy();
+// </hide>
 ```
 
 AlchemyProvider
@@ -233,6 +235,11 @@ It is highly recommended for production, you register with [Alchemy](https://alc
 
 
 ```javascript
+// <hide>
+const AlchemyProvider = ethers.providers.AlchemyProvider;
+const apiKey = "...";
+// </hide>
+
 // Connect to mainnet (homestead)
 provider = new AlchemyProvider();
 
@@ -246,6 +253,9 @@ provider = new AlchemyProvider("homestead", apiKey);
 
 // Connect to the Alchemy WebSocket endpoints with a WebSocketProvider
 provider = AlchemyProvider.getWebSocketProvider()
+// <hide>
+provider.destroy();
+// </hide>
 ```
 
 CloudflareProvider
@@ -264,6 +274,10 @@ Create a new **CloudflareProvider** connected to mainnet (i.e. "homestead").
 
 
 ```javascript
+// <hide>
+const CloudflareProvider = ethers.providers.CloudflareProvider;
+// </hide>
+
 // Connect to mainnet (homestead)
 provider = new CloudflareProvider();
 ```

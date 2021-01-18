@@ -43,34 +43,29 @@
 
 <p>The scrypt algorithm is designed to be tuned. The main purpose of this is to increase the difficulty as time goes on and computers get faster, but it can also be tuned down in situations where the security is less important.</p>
 
-<div class="code"><span class="comment">// Our wallet object
-</span>const wallet = Wallet.createRandom();
+<div class="code">// Our wallet object
+const wallet = Wallet.createRandom();
 
-<span class="comment">// The password to encrypt with
-</span>const password = "password123";
+// The password to encrypt with
+const password = "password123";
 
-<span class="comment">// WARNING: Doing this substantially reduces the security
-</span><span class="comment">//          of the wallet. This is highly NOT recommended.
-</span>
-<span class="comment">// We override the default scrypt.N value, which is used
-</span><span class="comment">// to indicate the difficulty to crack this wallet.
-</span>const json = wallet.encrypt(password, {
+// WARNING: Doing this substantially reduces the security
+//          of the wallet. This is highly NOT recommended.
+
+// We override the default scrypt.N value, which is used
+// to indicate the difficulty to crack this wallet.
+const json = wallet.encrypt(password, {
   scrypt: {
-<span class="comment">    // The number must be a power of 2 (default: 131072)
-</span>    N: 64
+    // The number must be a power of 2 (default: 131072)
+    N: 64
   }
-});
-</div>
+});</div>
 
       <div class="footer">
         <div class="nav previous"><a href="/v5/concepts/gas/"><span class="arrow">&larr;</span>Gas</a></div>
         <div class="nav next"><a href="/v5/concepts/best-practices/">Best Practices<span class="arrow">&rarr;</span></a></div>
       </div>
-<<<<<<< HEAD
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on November 22, 2020, 11:5pm.</div>
-=======
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on September 17, 2020, 9:43pm.</div>
->>>>>>> Added PocketGatewayProvider, updated tests and docs
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on January 17, 2021, 10:26pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
     <!--EXTRASCRIPT-->
