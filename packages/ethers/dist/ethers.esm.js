@@ -21476,62 +21476,6 @@ class NodesmithProvider extends UrlJsonRpcProvider {
 
 "use strict";
 const logger$D = new Logger(version$m);
-const defaultApplicationId = "5f7f8547b90218002e9ce9dd";
-class PocketProvider extends UrlJsonRpcProvider {
-    static getApiKey(apiKey) {
-        const apiKeyObj = {
-            applicationId: defaultApplicationId,
-            applicationSecretKey: null
-        };
-        if (apiKey == null) {
-            return apiKeyObj;
-        }
-        // Parse applicationId and applicationSecretKey
-        if (typeof (apiKey) === "string") {
-            apiKeyObj.applicationId = apiKey;
-        }
-        else if (apiKey.applicationSecretKey != null) {
-            logger$D.assertArgument((typeof (apiKey.applicationId) === "string"), "applicationSecretKey requires an applicationId", "applicationId", apiKey.applicationId);
-            logger$D.assertArgument((typeof (apiKey.applicationSecretKey) === "string"), "invalid applicationSecretKey", "applicationSecretKey", "[REDACTED]");
-            apiKeyObj.applicationId = apiKey.applicationId;
-            apiKeyObj.applicationSecretKey = apiKey.applicationSecretKey;
-        }
-        else if (apiKey.applicationId) {
-            apiKeyObj.applicationId = apiKey.applicationId;
-        }
-        return apiKeyObj;
-    }
-    static getUrl(network, apiKey) {
-        let host = null;
-        switch (network ? network.name : "unknown") {
-            case "homestead":
-                host = "eth-mainnet.gateway.pokt.network";
-                break;
-            default:
-                logger$D.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
-                    argument: "network",
-                    value: network
-                });
-        }
-        const connection = {
-            url: (`https:/\/${host}/v1/${apiKey.applicationId}`),
-        };
-        // Initialize empty headers
-        connection.headers = {};
-        // Apply application secret key
-        if (apiKey.applicationSecretKey != null) {
-            connection.user = "";
-            connection.password = apiKey.applicationSecretKey;
-        }
-        return connection;
-    }
-    isCommunityResource() {
-        return (this.applicationId === defaultApplicationId);
-    }
-}
-
-"use strict";
-const logger$E = new Logger(version$m);
 let _nextId = 1;
 function buildWeb3LegacyFetcher(provider, sendFunc) {
     return function (method, params) {
@@ -21579,9 +21523,9 @@ function buildEip1193Fetcher(provider) {
 }
 class Web3Provider extends JsonRpcProvider {
     constructor(provider, network) {
-        logger$E.checkNew(new.target, Web3Provider);
+        logger$D.checkNew(new.target, Web3Provider);
         if (provider == null) {
-            logger$E.throwArgumentError("missing provider", "provider", provider);
+            logger$D.throwArgumentError("missing provider", "provider", provider);
         }
         let path = null;
         let jsonRpcFetchFunc = null;
@@ -21609,7 +21553,7 @@ class Web3Provider extends JsonRpcProvider {
                 jsonRpcFetchFunc = buildWeb3LegacyFetcher(provider, provider.send.bind(provider));
             }
             else {
-                logger$E.throwArgumentError("unsupported provider", "provider", provider);
+                logger$D.throwArgumentError("unsupported provider", "provider", provider);
             }
             if (!path) {
                 path = "unknown:";
@@ -21625,40 +21569,17 @@ class Web3Provider extends JsonRpcProvider {
 }
 
 "use strict";
-const logger$F = new Logger(version$m);
-const defaultApplicationId$1 = "5f3ab133f7ca96c59972ff51";
+const logger$E = new Logger(version$m);
+const defaultApplicationId = "defaultApp";
+const defaultLoadBalancer = "defaultLB";
+var EndpointType;
+(function (EndpointType) {
+    EndpointType["LoadBalancer"] = "LoadBalancer";
+    EndpointType["Application"] = "Application";
+})(EndpointType || (EndpointType = {}));
 class PocketGatewayProvider extends UrlJsonRpcProvider {
     static getApiKey(apiKey) {
-        const apiKeyObj = {
-            applicationId: defaultApplicationId$1,
-            applicationSecretKey: null,
-            applicationOrigin: null,
-            applicationUserAgent: null
-        };
-        if (apiKey == null) {
-            return apiKeyObj;
-        }
-        // Parse applicationId and applicationSecretKey
-        if (typeof (apiKey) === "string") {
-            apiKeyObj.applicationId = apiKey;
-        }
-        else if (apiKey.applicationSecretKey != null) {
-            logger$F.assertArgument((typeof (apiKey.applicationId) === "string"), "applicationSecretKey requires an applicationId", "applicationId", apiKey.applicationId);
-            logger$F.assertArgument((typeof (apiKey.applicationSecretKey) === "string"), "invalid applicationSecretKey", "applicationSecretKey", "[*********]");
-            apiKeyObj.applicationId = apiKey.applicationId;
-            apiKeyObj.applicationSecretKey = apiKey.applicationSecretKey;
-        }
-        else if (apiKey.applicationId) {
-            apiKeyObj.applicationId = apiKey.applicationId;
-        }
-        // Parse Origin
-        if (typeof (apiKey.applicationOrigin) === "string") {
-            apiKeyObj.applicationOrigin = apiKey.applicationOrigin;
-        }
-        // Parse User Agent
-        if (typeof (apiKey.applicationUserAgent) === "string") {
-            apiKeyObj.applicationUserAgent = apiKey.applicationUserAgent;
-        }
+        let apiKeyObj = PocketApiKeyObject.build(apiKey);
         return apiKeyObj;
     }
     static getUrl(network, apiKey) {
@@ -21667,14 +21588,26 @@ class PocketGatewayProvider extends UrlJsonRpcProvider {
             case "homestead":
                 host = "eth-mainnet.gateway.pokt.network";
                 break;
+            case "mainnet":
+                host = "eth-mainnet.gateway.pokt.network";
+                break;
+            case "ropsten":
+                host = "eth-ropsten.gateway.pokt.network";
+                break;
+            case "goerli":
+                host = "eth-ropsten.gateway.pokt.network";
+                break;
+            case "rinkeby":
+                host = "eth-rinkeby.gateway.pokt.network";
+                break;
             default:
-                logger$F.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
+                logger$E.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
                     argument: "network",
                     value: network
                 });
         }
         const connection = {
-            url: ("https:/" + "/" + host + "/v1/" + apiKey.applicationId),
+            url: PocketApiKeyObject.getUrl(apiKey, host),
         };
         // Initialize empty headers
         connection.headers = {};
@@ -21683,20 +21616,136 @@ class PocketGatewayProvider extends UrlJsonRpcProvider {
             connection.user = "";
             connection.password = apiKey.applicationSecretKey;
         }
-        // Apply origin header
-        if (apiKey.applicationOrigin != null) {
-            connection.headers["Origin"] = apiKey.applicationOrigin;
-        }
-        // Apply user agent header
-        if (apiKey.applicationUserAgent != null) {
-            connection.headers["User-Agent"] = apiKey.applicationUserAgent;
-        }
         return connection;
+    }
+    isCommunityResource() {
+        if (typeof (this.apiKey) === "string") {
+            return (this.apiKey === defaultApplicationId || this.apiKey === defaultLoadBalancer);
+        }
+        else if (typeof (this.apiKey) === "object") {
+            return (this.apiKey.applicationId === defaultApplicationId || this.apiKey.applicationId === defaultLoadBalancer);
+        }
+        return true;
+    }
+}
+class PocketApiKeyObject {
+    constructor() {
+        this.applicationId = defaultLoadBalancer;
+        this.endpointType = EndpointType.LoadBalancer;
+        this.applicationSecretKey = null;
+        this.applicationOrigin = null;
+        this.applicationUserAgent = null;
+    }
+    static build(apiKey) {
+        if (apiKey == null)
+            return new PocketApiKeyObject();
+        var apiKeyObj = new PocketApiKeyObject();
+        // Parse Origin
+        if (typeof (apiKey.applicationOrigin) === "string") {
+            apiKeyObj.applicationOrigin = apiKey.applicationOrigin;
+        }
+        // Parse User Agent
+        if (typeof (apiKey.applicationUserAgent) === "string") {
+            apiKeyObj.applicationUserAgent = apiKey.applicationUserAgent;
+        }
+        if (typeof (apiKey.endpointType) === "string") {
+            switch (apiKey.endpointType.toLowerCase()) {
+                case "application":
+                    apiKeyObj.endpointType = EndpointType.Application;
+                    apiKeyObj.applicationId = defaultApplicationId;
+                    break;
+                default:
+                    apiKeyObj.endpointType = EndpointType.LoadBalancer;
+                    apiKeyObj.applicationId = defaultLoadBalancer;
+                    break;
+            }
+        }
+        switch (true) {
+            case typeof (apiKey) === "string":
+                apiKeyObj.applicationId = apiKey;
+                break;
+            case apiKey.applicationSecretKey != null:
+                logger$E.assertArgument((typeof (apiKey.applicationId) === "string"), "applicationSecretKey requires an applicationId", "applicationId", apiKey.applicationId);
+                logger$E.assertArgument((typeof (apiKey.applicationSecretKey) === "string"), "invalid applicationSecretKey", "applicationSecretKey", "[*********]");
+                apiKeyObj.applicationId = apiKey.applicationId;
+                apiKeyObj.applicationSecretKey = apiKey.applicationSecretKey;
+                break;
+            case apiKey !== null && typeof (apiKey.applicationId) === "string":
+                apiKeyObj.applicationId = apiKey.applicationId;
+                break;
+        }
+        return apiKeyObj;
+    }
+    static getDefaultAppForHost(host) {
+        let defaultAppId = null;
+        switch (host) {
+            case "eth-mainnet.gateway.pokt.network":
+                defaultAppId = "6004b7060aea5b606775f4d9";
+                break;
+            case "eth-ropsten.gateway.pokt.network":
+                defaultAppId = "6004b9aa0aea5b606775f4de";
+                break;
+            case "eth-goerli.gateway.pokt.network":
+                defaultAppId = "6004b9e30aea5b606775f4df";
+                break;
+            case "eth-rinkeby.gateway.pokt.network":
+                defaultAppId = "6004ba310aea5b606775f4e0";
+                break;
+            default:
+                logger$E.throwError("unsupported host for default app", Logger.errors.INVALID_ARGUMENT, {
+                    argument: "host",
+                    value: host
+                });
+        }
+        return defaultAppId;
+    }
+    static getDefaultLoadBalancerForHost(host) {
+        let defaultLbId = null;
+        switch (host) {
+            case "eth-mainnet.gateway.pokt.network":
+                defaultLbId = "6004bcd10040261633ade990";
+                break;
+            case "eth-ropsten.gateway.pokt.network":
+                defaultLbId = "6004bd4d0040261633ade991";
+                break;
+            case "eth-goerli.gateway.pokt.network":
+                defaultLbId = "6004bd860040261633ade992";
+                break;
+            case "eth-rinkeby.gateway.pokt.network":
+                defaultLbId = "6004bda20040261633ade994";
+                break;
+            default:
+                logger$E.throwError("unsupported host for default app", Logger.errors.INVALID_ARGUMENT, {
+                    argument: "host",
+                    value: host
+                });
+        }
+        return defaultLbId;
+    }
+    static getUrl(apiKey, host) {
+        var appId = null;
+        if (apiKey.applicationId === defaultLoadBalancer) {
+            appId = PocketApiKeyObject.getDefaultLoadBalancerForHost(host);
+        }
+        else {
+            appId = apiKey.applicationId;
+        }
+        var url = ("https:/" + "/" + host + "/v1/lb/" + appId);
+        if (typeof (apiKey.endpointType) === "string" && apiKey.endpointType.toLowerCase() === "application") {
+            if (appId === defaultApplicationId) {
+                appId = PocketApiKeyObject.getDefaultAppForHost(host);
+            }
+            else {
+                appId = apiKey.applicationId;
+            }
+            url = ("https:/" + "/" + host + "/v1/" + appId);
+        }
+        return url;
     }
 }
 
 "use strict";
-const logger$G = new Logger(version$m);
+const logger$F = new Logger(version$m);
 ////////////////////////
 // Helper Functions
 function getDefaultProvider(network, options) {
@@ -21715,13 +21764,13 @@ function getDefaultProvider(network, options) {
                 case "ws":
                     return new WebSocketProvider(network);
                 default:
-                    logger$G.throwArgumentError("unsupported URL scheme", "network", network);
+                    logger$F.throwArgumentError("unsupported URL scheme", "network", network);
             }
         }
     }
     const n = getNetwork(network);
     if (!n || !n._defaultProvider) {
-        logger$G.throwError("unsupported getDefaultProvider network", Logger.errors.NETWORK_ERROR, {
+        logger$F.throwError("unsupported getDefaultProvider network", Logger.errors.NETWORK_ERROR, {
             operation: "getDefaultProvider",
             network: network
         });
@@ -21734,7 +21783,6 @@ function getDefaultProvider(network, options) {
         InfuraProvider,
         JsonRpcProvider,
         NodesmithProvider,
-        PocketProvider,
         Web3Provider,
         PocketGatewayProvider,
         IpcProvider,
@@ -21756,7 +21804,6 @@ var index$3 = /*#__PURE__*/Object.freeze({
 	InfuraWebSocketProvider: InfuraWebSocketProvider,
 	JsonRpcProvider: JsonRpcProvider,
 	NodesmithProvider: NodesmithProvider,
-	PocketProvider: PocketProvider,
 	StaticJsonRpcProvider: StaticJsonRpcProvider,
 	Web3Provider: Web3Provider,
 	WebSocketProvider: WebSocketProvider,
@@ -21857,7 +21904,7 @@ function sha256$2(types, values) {
 const version$n = "units/5.0.9";
 
 "use strict";
-const logger$H = new Logger(version$n);
+const logger$G = new Logger(version$n);
 const names = [
     "wei",
     "kwei",
@@ -21872,7 +21919,7 @@ const names = [
 function commify(value) {
     const comps = String(value).split(".");
     if (comps.length > 2 || !comps[0].match(/^-?[0-9]*$/) || (comps[1] && !comps[1].match(/^[0-9]*$/)) || value === "." || value === "-.") {
-        logger$H.throwArgumentError("invalid value", "value", value);
+        logger$G.throwArgumentError("invalid value", "value", value);
     }
     // Make sure we have at least one whole digit (0 if none)
     let whole = comps[0];
@@ -21920,7 +21967,7 @@ function formatUnits(value, unitName) {
 }
 function parseUnits(value, unitName) {
     if (typeof (value) !== "string") {
-        logger$H.throwArgumentError("value must be a string", "value", value);
+        logger$G.throwArgumentError("value must be a string", "value", value);
     }
     if (typeof (unitName) === "string") {
         const index = names.indexOf(unitName);
@@ -22039,7 +22086,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 const version$o = "ethers/5.0.26";
 
 "use strict";
-const logger$I = new Logger(version$o);
+const logger$H = new Logger(version$o);
 
 var ethers = /*#__PURE__*/Object.freeze({
 	__proto__: null,
@@ -22054,7 +22101,7 @@ var ethers = /*#__PURE__*/Object.freeze({
 	FixedNumber: FixedNumber,
 	constants: index$1,
 	get errors () { return ErrorCode; },
-	logger: logger$I,
+	logger: logger$H,
 	utils: utils$1,
 	wordlists: wordlists,
 	version: version$o,
@@ -22070,5 +22117,5 @@ try {
 }
 catch (error) { }
 
-export { BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, Wordlist, index$1 as constants, ErrorCode as errors, ethers, getDefaultProvider, logger$I as logger, index$3 as providers, utils$1 as utils, version$o as version, wordlists };
+export { BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, Wordlist, index$1 as constants, ErrorCode as errors, ethers, getDefaultProvider, logger$H as logger, index$3 as providers, utils$1 as utils, version$o as version, wordlists };
 //# sourceMappingURL=ethers.esm.js.map

@@ -24711,90 +24711,6 @@
 
 	var nodesmithProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(nodesmithProvider);
 
-	var pocketProvider = createCommonjsModule(function (module, exports) {
-	"use strict";
-	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
-	    var extendStatics = function (d, b) {
-	        extendStatics = Object.setPrototypeOf ||
-	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-	        return extendStatics(d, b);
-	    };
-	    return function (d, b) {
-	        extendStatics(d, b);
-	        function __() { this.constructor = d; }
-	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	    };
-	})();
-	Object.defineProperty(exports, "__esModule", { value: true });
-
-
-	var logger = new lib.Logger(_version$I.version);
-
-	var defaultApplicationId = "5f7f8547b90218002e9ce9dd";
-	var PocketProvider = /** @class */ (function (_super) {
-	    __extends(PocketProvider, _super);
-	    function PocketProvider() {
-	        return _super !== null && _super.apply(this, arguments) || this;
-	    }
-	    PocketProvider.getApiKey = function (apiKey) {
-	        var apiKeyObj = {
-	            applicationId: defaultApplicationId,
-	            applicationSecretKey: null
-	        };
-	        if (apiKey == null) {
-	            return apiKeyObj;
-	        }
-	        // Parse applicationId and applicationSecretKey
-	        if (typeof (apiKey) === "string") {
-	            apiKeyObj.applicationId = apiKey;
-	        }
-	        else if (apiKey.applicationSecretKey != null) {
-	            logger.assertArgument((typeof (apiKey.applicationId) === "string"), "applicationSecretKey requires an applicationId", "applicationId", apiKey.applicationId);
-	            logger.assertArgument((typeof (apiKey.applicationSecretKey) === "string"), "invalid applicationSecretKey", "applicationSecretKey", "[REDACTED]");
-	            apiKeyObj.applicationId = apiKey.applicationId;
-	            apiKeyObj.applicationSecretKey = apiKey.applicationSecretKey;
-	        }
-	        else if (apiKey.applicationId) {
-	            apiKeyObj.applicationId = apiKey.applicationId;
-	        }
-	        return apiKeyObj;
-	    };
-	    PocketProvider.getUrl = function (network, apiKey) {
-	        var host = null;
-	        switch (network ? network.name : "unknown") {
-	            case "homestead":
-	                host = "eth-mainnet.gateway.pokt.network";
-	                break;
-	            default:
-	                logger.throwError("unsupported network", lib.Logger.errors.INVALID_ARGUMENT, {
-	                    argument: "network",
-	                    value: network
-	                });
-	        }
-	        var connection = {
-	            url: ("https://" + host + "/v1/" + apiKey.applicationId),
-	        };
-	        // Initialize empty headers
-	        connection.headers = {};
-	        // Apply application secret key
-	        if (apiKey.applicationSecretKey != null) {
-	            connection.user = "";
-	            connection.password = apiKey.applicationSecretKey;
-	        }
-	        return connection;
-	    };
-	    PocketProvider.prototype.isCommunityResource = function () {
-	        return (this.applicationId === defaultApplicationId);
-	    };
-	    return PocketProvider;
-	}(urlJsonRpcProvider.UrlJsonRpcProvider));
-	exports.PocketProvider = PocketProvider;
-
-	});
-
-	var pocketProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(pocketProvider);
-
 	var web3Provider = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
@@ -24938,43 +24854,20 @@
 
 	var logger = new lib.Logger(_version$I.version);
 
-	var defaultApplicationId = "5f3ab133f7ca96c59972ff51";
+	var defaultApplicationId = "defaultApp";
+	var defaultLoadBalancer = "defaultLB";
+	var EndpointType;
+	(function (EndpointType) {
+	    EndpointType["LoadBalancer"] = "LoadBalancer";
+	    EndpointType["Application"] = "Application";
+	})(EndpointType || (EndpointType = {}));
 	var PocketGatewayProvider = /** @class */ (function (_super) {
 	    __extends(PocketGatewayProvider, _super);
 	    function PocketGatewayProvider() {
 	        return _super !== null && _super.apply(this, arguments) || this;
 	    }
 	    PocketGatewayProvider.getApiKey = function (apiKey) {
-	        var apiKeyObj = {
-	            applicationId: defaultApplicationId,
-	            applicationSecretKey: null,
-	            applicationOrigin: null,
-	            applicationUserAgent: null
-	        };
-	        if (apiKey == null) {
-	            return apiKeyObj;
-	        }
-	        // Parse applicationId and applicationSecretKey
-	        if (typeof (apiKey) === "string") {
-	            apiKeyObj.applicationId = apiKey;
-	        }
-	        else if (apiKey.applicationSecretKey != null) {
-	            logger.assertArgument((typeof (apiKey.applicationId) === "string"), "applicationSecretKey requires an applicationId", "applicationId", apiKey.applicationId);
-	            logger.assertArgument((typeof (apiKey.applicationSecretKey) === "string"), "invalid applicationSecretKey", "applicationSecretKey", "[*********]");
-	            apiKeyObj.applicationId = apiKey.applicationId;
-	            apiKeyObj.applicationSecretKey = apiKey.applicationSecretKey;
-	        }
-	        else if (apiKey.applicationId) {
-	            apiKeyObj.applicationId = apiKey.applicationId;
-	        }
-	        // Parse Origin
-	        if (typeof (apiKey.applicationOrigin) === "string") {
-	            apiKeyObj.applicationOrigin = apiKey.applicationOrigin;
-	        }
-	        // Parse User Agent
-	        if (typeof (apiKey.applicationUserAgent) === "string") {
-	            apiKeyObj.applicationUserAgent = apiKey.applicationUserAgent;
-	        }
+	        var apiKeyObj = PocketApiKeyObject.build(apiKey);
 	        return apiKeyObj;
 	    };
 	    PocketGatewayProvider.getUrl = function (network, apiKey) {
@@ -24983,6 +24876,18 @@
 	            case "homestead":
 	                host = "eth-mainnet.gateway.pokt.network";
 	                break;
+	            case "mainnet":
+	                host = "eth-mainnet.gateway.pokt.network";
+	                break;
+	            case "ropsten":
+	                host = "eth-ropsten.gateway.pokt.network";
+	                break;
+	            case "goerli":
+	                host = "eth-ropsten.gateway.pokt.network";
+	                break;
+	            case "rinkeby":
+	                host = "eth-rinkeby.gateway.pokt.network";
+	                break;
 	            default:
 	                logger.throwError("unsupported network", lib.Logger.errors.INVALID_ARGUMENT, {
 	                    argument: "network",
@@ -24990,7 +24895,7 @@
 	                });
 	        }
 	        var connection = {
-	            url: ("https:/" + "/" + host + "/v1/" + apiKey.applicationId),
+	            url: PocketApiKeyObject.getUrl(apiKey, host),
 	        };
 	        // Initialize empty headers
 	        connection.headers = {};
@@ -24999,19 +24904,137 @@
 	            connection.user = "";
 	            connection.password = apiKey.applicationSecretKey;
 	        }
-	        // Apply origin header
-	        if (apiKey.applicationOrigin != null) {
-	            connection.headers["Origin"] = apiKey.applicationOrigin;
-	        }
-	        // Apply user agent header
-	        if (apiKey.applicationUserAgent != null) {
-	            connection.headers["User-Agent"] = apiKey.applicationUserAgent;
-	        }
 	        return connection;
+	    };
+	    PocketGatewayProvider.prototype.isCommunityResource = function () {
+	        if (typeof (this.apiKey) === "string") {
+	            return (this.apiKey === defaultApplicationId || this.apiKey === defaultLoadBalancer);
+	        }
+	        else if (typeof (this.apiKey) === "object") {
+	            return (this.apiKey.applicationId === defaultApplicationId || this.apiKey.applicationId === defaultLoadBalancer);
+	        }
+	        return true;
 	    };
 	    return PocketGatewayProvider;
 	}(urlJsonRpcProvider.UrlJsonRpcProvider));
 	exports.PocketGatewayProvider = PocketGatewayProvider;
+	var PocketApiKeyObject = /** @class */ (function () {
+	    function PocketApiKeyObject() {
+	        this.applicationId = defaultLoadBalancer;
+	        this.endpointType = EndpointType.LoadBalancer;
+	        this.applicationSecretKey = null;
+	        this.applicationOrigin = null;
+	        this.applicationUserAgent = null;
+	    }
+	    PocketApiKeyObject.build = function (apiKey) {
+	        if (apiKey == null)
+	            return new PocketApiKeyObject();
+	        var apiKeyObj = new PocketApiKeyObject();
+	        // Parse Origin
+	        if (typeof (apiKey.applicationOrigin) === "string") {
+	            apiKeyObj.applicationOrigin = apiKey.applicationOrigin;
+	        }
+	        // Parse User Agent
+	        if (typeof (apiKey.applicationUserAgent) === "string") {
+	            apiKeyObj.applicationUserAgent = apiKey.applicationUserAgent;
+	        }
+	        if (typeof (apiKey.endpointType) === "string") {
+	            switch (apiKey.endpointType.toLowerCase()) {
+	                case "application":
+	                    apiKeyObj.endpointType = EndpointType.Application;
+	                    apiKeyObj.applicationId = defaultApplicationId;
+	                    break;
+	                default:
+	                    apiKeyObj.endpointType = EndpointType.LoadBalancer;
+	                    apiKeyObj.applicationId = defaultLoadBalancer;
+	                    break;
+	            }
+	        }
+	        switch (true) {
+	            case typeof (apiKey) === "string":
+	                apiKeyObj.applicationId = apiKey;
+	                break;
+	            case apiKey.applicationSecretKey != null:
+	                logger.assertArgument((typeof (apiKey.applicationId) === "string"), "applicationSecretKey requires an applicationId", "applicationId", apiKey.applicationId);
+	                logger.assertArgument((typeof (apiKey.applicationSecretKey) === "string"), "invalid applicationSecretKey", "applicationSecretKey", "[*********]");
+	                apiKeyObj.applicationId = apiKey.applicationId;
+	                apiKeyObj.applicationSecretKey = apiKey.applicationSecretKey;
+	                break;
+	            case apiKey !== null && typeof (apiKey.applicationId) === "string":
+	                apiKeyObj.applicationId = apiKey.applicationId;
+	                break;
+	        }
+	        return apiKeyObj;
+	    };
+	    PocketApiKeyObject.getDefaultAppForHost = function (host) {
+	        var defaultAppId = null;
+	        switch (host) {
+	            case "eth-mainnet.gateway.pokt.network":
+	                defaultAppId = "6004b7060aea5b606775f4d9";
+	                break;
+	            case "eth-ropsten.gateway.pokt.network":
+	                defaultAppId = "6004b9aa0aea5b606775f4de";
+	                break;
+	            case "eth-goerli.gateway.pokt.network":
+	                defaultAppId = "6004b9e30aea5b606775f4df";
+	                break;
+	            case "eth-rinkeby.gateway.pokt.network":
+	                defaultAppId = "6004ba310aea5b606775f4e0";
+	                break;
+	            default:
+	                logger.throwError("unsupported host for default app", lib.Logger.errors.INVALID_ARGUMENT, {
+	                    argument: "host",
+	                    value: host
+	                });
+	        }
+	        return defaultAppId;
+	    };
+	    PocketApiKeyObject.getDefaultLoadBalancerForHost = function (host) {
+	        var defaultLbId = null;
+	        switch (host) {
+	            case "eth-mainnet.gateway.pokt.network":
+	                defaultLbId = "6004bcd10040261633ade990";
+	                break;
+	            case "eth-ropsten.gateway.pokt.network":
+	                defaultLbId = "6004bd4d0040261633ade991";
+	                break;
+	            case "eth-goerli.gateway.pokt.network":
+	                defaultLbId = "6004bd860040261633ade992";
+	                break;
+	            case "eth-rinkeby.gateway.pokt.network":
+	                defaultLbId = "6004bda20040261633ade994";
+	                break;
+	            default:
+	                logger.throwError("unsupported host for default app", lib.Logger.errors.INVALID_ARGUMENT, {
+	                    argument: "host",
+	                    value: host
+	                });
+	        }
+	        return defaultLbId;
+	    };
+	    PocketApiKeyObject.getUrl = function (apiKey, host) {
+	        var appId = null;
+	        if (apiKey.applicationId === defaultLoadBalancer) {
+	            appId = PocketApiKeyObject.getDefaultLoadBalancerForHost(host);
+	        }
+	        else {
+	            appId = apiKey.applicationId;
+	        }
+	        var url = ("https:/" + "/" + host + "/v1/lb/" + appId);
+	        if (typeof (apiKey.endpointType) === "string" && apiKey.endpointType.toLowerCase() === "application") {
+	            if (appId === defaultApplicationId) {
+	                appId = PocketApiKeyObject.getDefaultAppForHost(host);
+	            }
+	            else {
+	                appId = apiKey.applicationId;
+	            }
+	            url = ("https:/" + "/" + host + "/v1/" + appId);
+	        }
+	        return url;
+	    };
+	    return PocketApiKeyObject;
+	}());
+	exports.PocketApiKeyObject = PocketApiKeyObject;
 
 	});
 
@@ -25046,8 +25069,6 @@
 	exports.JsonRpcSigner = jsonRpcProvider.JsonRpcSigner;
 
 	exports.NodesmithProvider = nodesmithProvider.NodesmithProvider;
-
-	exports.PocketProvider = pocketProvider.PocketProvider;
 
 	exports.StaticJsonRpcProvider = urlJsonRpcProvider.StaticJsonRpcProvider;
 	exports.UrlJsonRpcProvider = urlJsonRpcProvider.UrlJsonRpcProvider;
@@ -25102,7 +25123,6 @@
 	        InfuraProvider: infuraProvider.InfuraProvider,
 	        JsonRpcProvider: jsonRpcProvider.JsonRpcProvider,
 	        NodesmithProvider: nodesmithProvider.NodesmithProvider,
-	        PocketProvider: pocketProvider.PocketProvider,
 	        Web3Provider: web3Provider.Web3Provider,
 	        PocketGatewayProvider: pocketGatewayProvider.PocketGatewayProvider,
 	        IpcProvider: browserIpcProvider.IpcProvider,

@@ -9,8 +9,8 @@ const logger = new Logger(version);
 
 import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 
-const defaultApplicationId = "5f3ab133f7ca96c59972ff51"
-const defaultLoadBalancer = "5f7c8e5edb07b3eabd388511"
+const defaultApplicationId = "defaultApp"
+const defaultLoadBalancer = "defaultLB"
 
 enum EndpointType {
     LoadBalancer = "LoadBalancer",
@@ -29,6 +29,18 @@ export class PocketGatewayProvider extends UrlJsonRpcProvider {
         switch (network ? network.name : "unknown") {
             case "homestead":
                 host = "eth-mainnet.gateway.pokt.network";
+                break;
+            case "mainnet":
+                host = "eth-mainnet.gateway.pokt.network";
+                break;
+            case "ropsten":
+                host = "eth-ropsten.gateway.pokt.network";
+                break;
+            case "goerli":
+                host = "eth-ropsten.gateway.pokt.network";
+                break;
+            case "rinkeby":
+                host = "eth-rinkeby.gateway.pokt.network";
                 break;
             default:
                 logger.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
@@ -56,9 +68,10 @@ export class PocketGatewayProvider extends UrlJsonRpcProvider {
     isCommunityResource(): boolean {
         if (typeof (this.apiKey) === "string") {
             return (this.apiKey === defaultApplicationId || this.apiKey === defaultLoadBalancer);
+        } else if (typeof (this.apiKey) === "object") {
+            return (this.apiKey.applicationId === defaultApplicationId || this.apiKey.applicationId === defaultLoadBalancer);
         }
-
-        return (this.apiKey.applicationId === defaultApplicationId || this.apiKey.applicationId === defaultLoadBalancer);
+        return true
     }
 }
 
@@ -107,19 +120,79 @@ export class PocketApiKeyObject {
                 apiKeyObj.applicationId = apiKey.applicationId;
                 apiKeyObj.applicationSecretKey = apiKey.applicationSecretKey;
                 break;
-            case apiKey.applicationId:
-                apiKeyObj.applicationId = apiKey;
+            case apiKey !== null && typeof(apiKey.applicationId) === "string":
+                apiKeyObj.applicationId = apiKey.applicationId;
                 break;
         }
 
         return apiKeyObj;
     }
 
+    static getDefaultAppForHost(host: string): string {
+        let defaultAppId: string = null;
+        switch (host) {
+            case "eth-mainnet.gateway.pokt.network":
+                defaultAppId = "6004b7060aea5b606775f4d9"
+                break;
+            case "eth-ropsten.gateway.pokt.network":
+                defaultAppId = "6004b9aa0aea5b606775f4de"
+                break;
+            case "eth-goerli.gateway.pokt.network":
+                defaultAppId = "6004b9e30aea5b606775f4df"
+                break;
+            case "eth-rinkeby.gateway.pokt.network":
+                defaultAppId = "6004ba310aea5b606775f4e0"
+                break;
+            default:
+                logger.throwError("unsupported host for default app", Logger.errors.INVALID_ARGUMENT, {
+                    argument: "host",
+                    value: host
+                });
+        }
+        return defaultAppId
+    }
+
+    static getDefaultLoadBalancerForHost(host: string): string {
+        let defaultLbId: string = null;
+        switch (host) {
+            case "eth-mainnet.gateway.pokt.network":
+                defaultLbId = "6004bcd10040261633ade990"
+                break;
+            case "eth-ropsten.gateway.pokt.network":
+                defaultLbId = "6004bd4d0040261633ade991"
+                break;
+            case "eth-goerli.gateway.pokt.network":
+                defaultLbId = "6004bd860040261633ade992"
+                break;
+            case "eth-rinkeby.gateway.pokt.network":
+                defaultLbId = "6004bda20040261633ade994"
+                break;
+            default:
+                logger.throwError("unsupported host for default app", Logger.errors.INVALID_ARGUMENT, {
+                    argument: "host",
+                    value: host
+                });
+        }
+        return defaultLbId
+    }
+
     static getUrl(apiKey: any, host: string): string {
-        var url: string = ("https:/" + "/" + host + "/v1/lb/" + apiKey.applicationId)
+        var appId: string = null
+        if (apiKey.applicationId === defaultLoadBalancer) {
+            appId = PocketApiKeyObject.getDefaultLoadBalancerForHost(host)
+        } else {
+            appId = apiKey.applicationId
+        }
+
+        var url: string = ("https:/" + "/" + host + "/v1/lb/" + appId)
 
         if (typeof (apiKey.endpointType) === "string" && apiKey.endpointType.toLowerCase() === "application") {
-            url = ("https:/" + "/" + host + "/v1/" + apiKey.applicationId)
+            if (appId === defaultApplicationId) {
+                appId = PocketApiKeyObject.getDefaultAppForHost(host)
+            } else {
+                appId = apiKey.applicationId
+            }
+            url = ("https:/" + "/" + host + "/v1/" + appId)
         }
 
         return url

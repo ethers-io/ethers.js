@@ -130,10 +130,11 @@ const provider = ethers.getDefaultProvider(network, {
     //   projectSecret: YOUR_INFURA_PROJECT_SECRET,
     // },
     alchemy: YOUR_ALCHEMY_API_KEY,
-    pocket: YOUR_POCKET_APPLICATION_KEY
+    pocket_gateway: YOUR_POCKET_APPLICATION_KEY
     // Or if using an application secret key:
-    // pocket: {
+    // pocket_gateway: {
     //   applicationId: ,
     //   applicationSecretKey:
+    //   endpointType: <loadbalancer || application>
     // }
 });

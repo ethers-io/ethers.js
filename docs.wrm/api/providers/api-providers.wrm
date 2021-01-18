@@ -100,19 +100,24 @@ you also need to specify the ``applicationID`` property.
 - ``applicationOrigin``: By specifying this property you are setting the `Origin` header in your request
 (remember that browsers will swap this header based on the actual origin of the website loaded).
 - ``applicationUserAgent``: By specifying this property you are setting the `User-Agent` header in your request.
+- ``endpointType``: By specifying this property you can select to connect via the Pocket Gateway Single Application endpoint or a Load Balancer Endpoint (defaults to Load Balancer)
 
 The //network// and //apiKey// are specified the same as [the constructor](PocketGatewayProvider).
 
 _note: Note: Default API keys
 In the event of the //apiKey// not being present in the constructor, a shared ApplicationID will be provided,
-which has the capacity of sending up to 1 million requests per day (41,750 per hour).
+which has the capacity of sending up to 10 million requests per day (417,500 per hour) for Ethereum Mainnet, 
+for Ropsten, Rinkeby and G&ouml;rli there's a shared capacity of 1 million requests per day each (41,750 per hour).
 
 For production applications it is highly recommended to register your application on the
 [Pocket Gateway](link-pocket-gateway) for your own API key.
 
 _definition: **Supported Networks**
 
-- Homestead (Mainnet Full nodes (Archival Support coming soon))
+- Homestead (Mainnet Full nodes (non-Archival Nodes))
+- Ropsten (proof-of-work testnet)
+- Rinkeby (proof-of-authority testnet)
+- G&ouml;rli (clique testnet)
 
 _code: Pocket Gateway Examples @lang<javascript>
 
@@ -122,6 +127,8 @@ const applicationId = "...";
 const applicationSecretKey = "...";
 const applicationOrigin = "...";
 const applicationUserAgent = "...";
+// Endpoint Type can be either application or loadbalancer
+const endpointType = "...";
 // </hide>
 
 // Connect to mainnet (homestead)
@@ -136,7 +143,8 @@ provider = new PocketGatewayProvider("homestead", {
     applicationId: applicationId,
     applicationSecretKey: applicationSecretKey,
     applicationOrigin: applicationOrigin,
-    applicationUserAgent: applicationUserAgent
+    applicationUserAgent: applicationUserAgent,
+    endpointType: endpointType
 });
 
 _subsection: InfuraProvider @<InfuraProvider> @INHERIT<[[UrlJsonRpcProvider]]> @src<providers:class.InfuraProvider>

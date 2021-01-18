@@ -867,15 +867,6 @@ describe("Test API Key Formatting", function () {
         }, (error) => {
             return (error.argument === "applicationSecretKey" && error.reason === "invalid applicationSecretKey");
         });
-        {
-            const provider = new ethers.providers.PocketGatewayProvider("homestead", {
-                applicationId: applicationId,
-                applicationSecretKey: applicationSecretKey
-            });
-            assert.equal(provider.network.name, "homestead");
-            assert.equal(provider.applicationId, applicationId);
-            assert.equal(provider.applicationSecretKey, applicationSecretKey);
-        }
         // Attempt an unsupported network
         assert.throws(() => {
             const provider = new ethers.providers.PocketGatewayProvider("imaginary");
@@ -986,13 +977,12 @@ describe("Test API Key Formatting", function () {
             return (error.argument === "applicationSecretKey" && error.reason === "invalid applicationSecretKey");
         });
         {
-            const provider = new ethers.providers.PocketGatewayProvider("homestead", {
+            const apiKey = ethers.providers.PocketGatewayProvider.getApiKey({
                 applicationId: applicationId,
                 applicationSecretKey: applicationSecretKey
             });
-            assert.equal(provider.network.name, "homestead");
-            assert.equal(provider.applicationId, applicationId);
-            assert.equal(provider.applicationSecretKey, applicationSecretKey);
+            assert.equal(apiKey.applicationId, applicationId);
+            assert.equal(apiKey.applicationSecretKey, applicationSecretKey);
         }
         // Attempt an unsupported network
         assert.throws(() => {
