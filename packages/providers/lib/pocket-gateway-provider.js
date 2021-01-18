@@ -18,7 +18,7 @@ var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var url_json_rpc_provider_1 = require("./url-json-rpc-provider");
 var defaultApplicationId = "defaultApp";
-var defaultLoadBalancer = "defaultLB";
+var defaultLoadBalancer = "defaultLoadBalancer";
 var EndpointType;
 (function (EndpointType) {
     EndpointType["LoadBalancer"] = "LoadBalancer";
@@ -183,7 +183,7 @@ var PocketApiKeyObject = /** @class */ (function () {
         else {
             appId = apiKey.applicationId;
         }
-        var url = ("https:/" + "/" + host + "/v1/lb/" + appId);
+        var url = "https://" + host + "/v1/lb/" + appId;
         if (typeof (apiKey.endpointType) === "string" && apiKey.endpointType.toLowerCase() === "application") {
             if (appId === defaultApplicationId) {
                 appId = PocketApiKeyObject.getDefaultAppForHost(host);

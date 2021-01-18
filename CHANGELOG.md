@@ -3,6 +3,17 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.27 (2021-01-17 21:54)
+---------------------------------
+
+  - Added Ethereum testnets support and fixed bugs ([fa987a6](https://github.com/ethers-io/ethers.js/commit/fa987a678e29592e87a0354acdcc1ad1870ca6dd))
+  - Removing PocketProvider file ([6cc3434](https://github.com/ethers-io/ethers.js/commit/6cc3434c1c83936efbc74f4b6a127c4de4ee33d2))
+  - Updating Pocket provider ([f2b384d](https://github.com/ethers-io/ethers.js/commit/f2b384d3dc6fad628cb29433303b9560fb9412f2))
+  - Updated provider tests ([3c1c0be](https://github.com/ethers-io/ethers.js/commit/3c1c0be356a99a7d5479b40821a8822cddf9d588))
+  - Added PocketGatewayProvider, updated tests and docs ([7cf43b9](https://github.com/ethers-io/ethers.js/commit/7cf43b97985572e8cd50e89a4d4aeac50837d18f))
+  - Updated provider tests ([3949c17](https://github.com/ethers-io/ethers.js/commit/3949c170cf1a3a9aa1ad9ed1fc8c34427db59fde))
+  - Added PocketGatewayProvider, updated tests and docs ([f77c7d0](https://github.com/ethers-io/ethers.js/commit/f77c7d0081de3ce5d7a9832c438dbdcf4e7693d5))
+
 ethers/v5.0.26 (2021-01-13 14:47)
 ---------------------------------
 

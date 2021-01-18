@@ -10,7 +10,7 @@ const logger = new Logger(version);
 import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 
 const defaultApplicationId = "defaultApp"
-const defaultLoadBalancer = "defaultLB"
+const defaultLoadBalancer = "defaultLoadBalancer"
 
 enum EndpointType {
     LoadBalancer = "LoadBalancer",
@@ -184,7 +184,7 @@ export class PocketApiKeyObject {
             appId = apiKey.applicationId
         }
 
-        var url: string = ("https:/" + "/" + host + "/v1/lb/" + appId)
+        var url: string = `https://${host}/v1/lb/${appId}`
 
         if (typeof (apiKey.endpointType) === "string" && apiKey.endpointType.toLowerCase() === "application") {
             if (appId === defaultApplicationId) {

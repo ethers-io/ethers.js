@@ -16810,7 +16810,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.0.7";
+const version$k = "networks/5.0.8";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -17630,7 +17630,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.0.19";
+const version$m = "providers/5.0.20";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -21571,7 +21571,7 @@ class Web3Provider extends JsonRpcProvider {
 "use strict";
 const logger$E = new Logger(version$m);
 const defaultApplicationId = "defaultApp";
-const defaultLoadBalancer = "defaultLB";
+const defaultLoadBalancer = "defaultLoadBalancer";
 var EndpointType;
 (function (EndpointType) {
     EndpointType["LoadBalancer"] = "LoadBalancer";
@@ -21730,7 +21730,7 @@ class PocketApiKeyObject {
         else {
             appId = apiKey.applicationId;
         }
-        var url = ("https:/" + "/" + host + "/v1/lb/" + appId);
+        var url = `https://${host}/v1/lb/${appId}`;
         if (typeof (apiKey.endpointType) === "string" && apiKey.endpointType.toLowerCase() === "application") {
             if (appId === defaultApplicationId) {
                 appId = PocketApiKeyObject.getDefaultAppForHost(host);
@@ -22083,7 +22083,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.26";
+const version$o = "ethers/5.0.27";
 
 "use strict";
 const logger$H = new Logger(version$o);

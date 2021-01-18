@@ -18730,7 +18730,7 @@
 	var _version$E = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "networks/5.0.7";
+	exports.version = "networks/5.0.8";
 
 	});
 
@@ -19701,7 +19701,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.19";
+	exports.version = "providers/5.0.20";
 
 	});
 
@@ -24855,7 +24855,7 @@
 	var logger = new lib.Logger(_version$I.version);
 
 	var defaultApplicationId = "defaultApp";
-	var defaultLoadBalancer = "defaultLB";
+	var defaultLoadBalancer = "defaultLoadBalancer";
 	var EndpointType;
 	(function (EndpointType) {
 	    EndpointType["LoadBalancer"] = "LoadBalancer";
@@ -25020,7 +25020,7 @@
 	        else {
 	            appId = apiKey.applicationId;
 	        }
-	        var url = ("https:/" + "/" + host + "/v1/lb/" + appId);
+	        var url = "https://" + host + "/v1/lb/" + appId;
 	        if (typeof (apiKey.endpointType) === "string" && apiKey.endpointType.toLowerCase() === "application") {
 	            if (appId === defaultApplicationId) {
 	                appId = PocketApiKeyObject.getDefaultAppForHost(host);
@@ -25471,7 +25471,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.26";
+	exports.version = "ethers/5.0.27";
 
 	});
 
