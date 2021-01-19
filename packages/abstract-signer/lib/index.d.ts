@@ -51,3 +51,4 @@ export declare class VoidSigner extends Signer implements TypedDataSigner {
     _signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
     connect(provider: Provider): VoidSigner;
 }
+//# sourceMappingURL=index.d.ts.map

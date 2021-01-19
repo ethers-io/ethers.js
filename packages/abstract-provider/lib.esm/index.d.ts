@@ -137,3 +137,4 @@ export declare abstract class Provider implements OnceBlockable {
     static isProvider(value: any): value is Provider;
 }
 export {};
+//# sourceMappingURL=index.d.ts.map

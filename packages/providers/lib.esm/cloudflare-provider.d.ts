@@ -5,3 +5,4 @@ export declare class CloudflareProvider extends UrlJsonRpcProvider {
     static getUrl(network: Network, apiKey?: any): string;
     perform(method: string, params: any): Promise<any>;
 }
+//# sourceMappingURL=cloudflare-provider.d.ts.map

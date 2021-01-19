@@ -176,3 +176,4 @@ export declare type SemanticError = {
 export declare function parse(code: string, options?: ParserOptions): Node;
 export declare function assemble(ast: Node, options?: AssemblerOptions): Promise<string>;
 export {};
+//# sourceMappingURL=assembler.d.ts.map

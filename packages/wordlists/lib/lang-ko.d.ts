@@ -6,3 +6,4 @@ declare class LangKo extends Wordlist {
 }
 declare const langKo: LangKo;
 export { langKo };
+//# sourceMappingURL=lang-ko.d.ts.map

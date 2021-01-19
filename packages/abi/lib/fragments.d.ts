@@ -74,3 +74,4 @@ export declare class FunctionFragment extends ConstructorFragment {
     static fromString(value: string): FunctionFragment;
     static isFunctionFragment(value: any): value is FunctionFragment;
 }
+//# sourceMappingURL=fragments.d.ts.map

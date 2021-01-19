@@ -6,3 +6,4 @@ declare const Two: BigNumber;
 declare const WeiPerEther: BigNumber;
 declare const MaxUint256: BigNumber;
 export { NegativeOne, Zero, One, Two, WeiPerEther, MaxUint256 };
+//# sourceMappingURL=bignumbers.d.ts.map

@@ -99,3 +99,4 @@ export interface Eip712 {
     privateKey?: string;
     signature?: string;
 }
+//# sourceMappingURL=testcases.d.ts.map

@@ -8,3 +8,4 @@ export declare class NumberCoder extends Coder {
     encode(writer: Writer, value: BigNumberish): number;
     decode(reader: Reader): any;
 }
+//# sourceMappingURL=number.d.ts.map

@@ -6,3 +6,4 @@ declare class LangEs extends Wordlist {
 }
 declare const langEs: LangEs;
 export { langEs };
+//# sourceMappingURL=lang-es.d.ts.map

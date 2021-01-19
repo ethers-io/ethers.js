@@ -3,3 +3,4 @@ declare function randomHexString(seed: string, lower: number, upper?: number): s
 declare function randomNumber(seed: string, lower: number, upper: number): number;
 declare function equals(a: any, b: any): boolean;
 export { randomBytes, randomHexString, randomNumber, equals };
+//# sourceMappingURL=utils.d.ts.map

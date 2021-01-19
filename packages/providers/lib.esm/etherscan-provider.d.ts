@@ -10,3 +10,4 @@ export declare class EtherscanProvider extends BaseProvider {
     getHistory(addressOrName: string | Promise<string>, startBlock?: BlockTag, endBlock?: BlockTag): Promise<Array<TransactionResponse>>;
     isCommunityResource(): boolean;
 }
+//# sourceMappingURL=etherscan-provider.d.ts.map

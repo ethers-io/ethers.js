@@ -15,3 +15,4 @@ export declare class CrowdsaleAccount extends Description<_CrowdsaleAccount> imp
     isCrowdsaleAccount(value: any): value is CrowdsaleAccount;
 }
 export declare function decrypt(json: string, password: Bytes | string): ExternallyOwnedAccount;
+//# sourceMappingURL=crowdsale.d.ts.map

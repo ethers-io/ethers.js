@@ -2,3 +2,4 @@ import { ConstructorFragment, EventFragment, FormatTypes, Fragment, FunctionFrag
 import { AbiCoder, CoerceFunc, defaultAbiCoder } from "./abi-coder";
 import { checkResultErrors, Indexed, Interface, LogDescription, Result, TransactionDescription } from "./interface";
 export { ConstructorFragment, EventFragment, Fragment, FunctionFragment, ParamType, FormatTypes, AbiCoder, defaultAbiCoder, Interface, Indexed, CoerceFunc, JsonFragment, JsonFragmentType, Result, checkResultErrors, LogDescription, TransactionDescription };
+//# sourceMappingURL=index.d.ts.map

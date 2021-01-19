@@ -14,3 +14,4 @@ export declare class NonceManager extends ethers.Signer {
     signTransaction(transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>): Promise<string>;
     sendTransaction(transaction: ethers.utils.Deferrable<ethers.providers.TransactionRequest>): Promise<ethers.providers.TransactionResponse>;
 }
+//# sourceMappingURL=nonce-manager.d.ts.map

@@ -46,3 +46,4 @@ export declare class JsonRpcProvider extends BaseProvider {
     };
 }
 export {};
+//# sourceMappingURL=json-rpc-provider.d.ts.map

@@ -31,3 +31,4 @@ export declare type EncryptOptions = {
 export declare function decryptSync(json: string, password: Bytes | string): KeystoreAccount;
 export declare function decrypt(json: string, password: Bytes | string, progressCallback?: ProgressCallback): Promise<KeystoreAccount>;
 export declare function encrypt(account: ExternallyOwnedAccount, password: Bytes | string, options?: EncryptOptions, progressCallback?: ProgressCallback): Promise<string>;
+//# sourceMappingURL=keystore.d.ts.map

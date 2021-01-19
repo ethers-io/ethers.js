@@ -4,3 +4,4 @@ export declare function formatUnits(value: BigNumberish, unitName?: string | Big
 export declare function parseUnits(value: string, unitName?: BigNumberish): BigNumber;
 export declare function formatEther(wei: BigNumberish): string;
 export declare function parseEther(ether: string): BigNumber;
+//# sourceMappingURL=index.d.ts.map

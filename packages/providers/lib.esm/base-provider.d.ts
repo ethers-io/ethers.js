@@ -126,3 +126,4 @@ export declare class BaseProvider extends Provider implements EnsProvider {
     off(eventName: EventType, listener?: Listener): this;
     removeAllListeners(eventName?: EventType): this;
 }
+//# sourceMappingURL=base-provider.d.ts.map

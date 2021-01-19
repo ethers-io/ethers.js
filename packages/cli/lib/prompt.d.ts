@@ -7,3 +7,4 @@ export declare function getProgressBar(action: string): (percent: number) => voi
 export declare function getPassword(prompt: string): Promise<string>;
 export declare function getMessage(prompt: string): Promise<string>;
 export declare function getChoice(prompt: string, choices: string, defaultChoice?: string): Promise<string>;
+//# sourceMappingURL=prompt.d.ts.map

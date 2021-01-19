@@ -52,3 +52,4 @@ export declare class BaseX {
 declare const Base32: BaseX;
 declare const Base58: BaseX;
 export { Base32, Base58 };
+//# sourceMappingURL=index.d.ts.map

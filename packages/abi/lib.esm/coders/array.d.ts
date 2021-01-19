@@ -11,3 +11,4 @@ export declare class ArrayCoder extends Coder {
     encode(writer: Writer, value: Array<any>): number;
     decode(reader: Reader): any;
 }
+//# sourceMappingURL=array.d.ts.map

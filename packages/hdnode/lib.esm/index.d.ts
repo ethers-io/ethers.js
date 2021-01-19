@@ -39,3 +39,4 @@ export declare function mnemonicToSeed(mnemonic: string, password?: string): str
 export declare function mnemonicToEntropy(mnemonic: string, wordlist?: string | Wordlist): string;
 export declare function entropyToMnemonic(entropy: BytesLike, wordlist?: string | Wordlist): string;
 export declare function isValidMnemonic(mnemonic: string, wordlist?: Wordlist): boolean;
+//# sourceMappingURL=index.d.ts.map

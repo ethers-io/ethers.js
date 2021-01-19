@@ -48,3 +48,4 @@ export declare class Logger {
     static setLogLevel(logLevel: LogLevel): void;
     static from(version: string): Logger;
 }
+//# sourceMappingURL=index.d.ts.map

@@ -6,9 +6,9 @@ import { resolve } from "../path";
 import { loadJson, mkdir } from "../utils";
 import { colorify } from "../log";
 
-function diff(a: string, b: string): boolean {
-    return (Buffer.compare(fs.readFileSync(a), fs.readFileSync(b)) !== 0);
-}
+//function diff(a: string, b: string): boolean {
+//    return (Buffer.compare(fs.readFileSync(a), fs.readFileSync(b)) !== 0);
+//}
 
 async function alias(name: string): Promise<void> {
     console.log(`  Aliasing: ${ name }`);
@@ -22,6 +22,7 @@ async function alias(name: string): Promise<void> {
         accum[replace] = true;
         accum[replace + ".map"] = true;
         accum[replace.replace(/\.js$/, ".d.ts")] = true;
+        accum[replace.replace(/\.js$/, ".d.ts.map")] = true;
         return accum;
     }, <Record<string, boolean>>({ }));
 
@@ -70,9 +71,15 @@ async function alias(name: string): Promise<void> {
 
                 if (replace) {
                     inputFilename = replace.replace(/\.js$/i, ".d.ts");
-                    if (diff(join(baseDir, input, filename), join(baseDir, input, inputFilename))) {
-                        console.log(`Warning: TypeScript Definition files differ: ${ filename } != ${ inputFilename }`);
+                    transform = function(content: string) {
+                        content = content.replace(/(\/\/# sourceMappingURL=)(.*)$/g, (all, prefix, mapFilename) => {
+                            return prefix + filename + ".map";
+                        });
+                        return content;
                     }
+                    //if (diff(join(baseDir, input, filename), join(baseDir, input, inputFilename))) {
+                    //    console.log(`Warning: TypeScript Definition files differ: ${ filename } != ${ inputFilename }`);
+                    //}
                 }
 
             } else if (filename.match(/\.map$/)) {
@@ -80,16 +87,24 @@ async function alias(name: string): Promise<void> {
                 // e.g. (filename = geturl.js.map) => (inputFilename = browser-geturl.js.map)
                 //      + transform the map JSON to reference "geturl.js"
                 // We need to swap in the replacement and update its data
-                const replace = replacements[filename.replace(/\.js.map$/i, ".js")];
+                const replace = replacements[filename.replace(/\.d.ts\.map$|\.js\.map$/i, ".js")];
+                console.log(filename, replace);
 
                 // Skip!
                 if (replace === "") { return; }
 
                 if (replace) {
-                    inputFilename = replace + ".map";
+                    if (filename.match(/\.js\.map$/)) {
+                        inputFilename = replace + ".map";
+                    } else if (filename.match(/\.d\.ts\.map$/)) {
+                        inputFilename = replace.replace(/\.js$/, ".d.ts.map");
+                    } else {
+                        throw new Error(`unhandled map extension: ${ filename }`);
+                    }
+
                     transform = function(content: string) {
                         const data = JSON.parse(content);
-                        data["file"] = filename.replace(/\.js\.map$/, ".js");
+                        data["file"] = filename.replace(/\.map$/, "");
                         return JSON.stringify(data);
                     }
                 }
@@ -118,6 +133,7 @@ async function alias(name: string): Promise<void> {
     console.log(colorify.bold(`Aliasing Node ESM to Browser ESM...`));
     const dirnames = getOrdered(true);
     for (let i = 0; i < dirnames.length; i++) {
+        //if (dirnames[i] !== "base64") { continue; }
         await alias(dirnames[i]);
     }
 })();

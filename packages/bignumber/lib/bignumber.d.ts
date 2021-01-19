@@ -36,3 +36,4 @@ export declare class BigNumber implements Hexable {
 }
 export declare function _base36To16(value: string): string;
 export declare function _base16To36(value: string): string;
+//# sourceMappingURL=bignumber.d.ts.map

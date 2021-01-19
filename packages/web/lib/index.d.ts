@@ -36,3 +36,4 @@ export declare type FetchJsonResponse = {
 export declare function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, body?: Uint8Array, processFunc?: (value: Uint8Array, response: FetchJsonResponse) => T): Promise<T>;
 export declare function fetchJson(connection: string | ConnectionInfo, json?: string, processFunc?: (value: any, response: FetchJsonResponse) => any): Promise<any>;
 export declare function poll<T>(func: () => Promise<T>, options?: PollOptions): Promise<T>;
+//# sourceMappingURL=index.d.ts.map

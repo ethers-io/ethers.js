@@ -17,3 +17,4 @@ export declare class Opcode {
     isStatic(): boolean;
     static from(valueOrMnemonic: number | string): Opcode;
 }
+//# sourceMappingURL=opcodes.d.ts.map

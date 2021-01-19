@@ -13,3 +13,4 @@ export declare class SigningKey {
 }
 export declare function recoverPublicKey(digest: BytesLike, signature: SignatureLike): string;
 export declare function computePublicKey(key: BytesLike, compressed?: boolean): string;
+//# sourceMappingURL=index.d.ts.map

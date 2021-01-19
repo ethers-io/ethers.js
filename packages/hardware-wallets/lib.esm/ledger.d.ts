@@ -11,3 +11,4 @@ export declare class LedgerSigner extends ethers.Signer {
     signTransaction(transaction: ethers.providers.TransactionRequest): Promise<string>;
     connect(provider: ethers.providers.Provider): ethers.Signer;
 }
+//# sourceMappingURL=ledger.d.ts.map

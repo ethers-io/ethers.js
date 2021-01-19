@@ -14,3 +14,4 @@ export declare class AlchemyProvider extends UrlJsonRpcProvider {
     static getUrl(network: Network, apiKey: string): ConnectionInfo;
     isCommunityResource(): boolean;
 }
+//# sourceMappingURL=alchemy-provider.d.ts.map

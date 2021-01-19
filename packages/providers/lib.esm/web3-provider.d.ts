@@ -24,3 +24,4 @@ export declare class Web3Provider extends JsonRpcProvider {
     constructor(provider: ExternalProvider | JsonRpcFetchFunc, network?: Networkish);
     send(method: string, params: Array<any>): Promise<any>;
 }
+//# sourceMappingURL=web3-provider.d.ts.map

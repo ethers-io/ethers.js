@@ -14,3 +14,4 @@ export declare type Options = {
         [key: string]: string;
     };
 };
+//# sourceMappingURL=types.d.ts.map

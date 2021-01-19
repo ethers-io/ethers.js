@@ -15,3 +15,4 @@ export declare abstract class UrlJsonRpcProvider extends StaticJsonRpcProvider i
     static getApiKey(apiKey: any): any;
     static getUrl(network: Network, apiKey: any): string | ConnectionInfo;
 }
+//# sourceMappingURL=url-json-rpc-provider.d.ts.map

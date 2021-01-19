@@ -37,3 +37,4 @@ export declare class FixedNumber {
     static from(value: any, format?: FixedFormat | string): FixedNumber;
     static isFixedNumber(value: any): value is FixedNumber;
 }
+//# sourceMappingURL=fixednumber.d.ts.map

@@ -5,3 +5,4 @@ export declare class NullCoder extends Coder {
     encode(writer: Writer, value: any): number;
     decode(reader: Reader): any;
 }
+//# sourceMappingURL=null.d.ts.map

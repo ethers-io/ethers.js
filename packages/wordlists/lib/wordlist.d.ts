@@ -10,3 +10,4 @@ export declare abstract class Wordlist {
     static check(wordlist: Wordlist): string;
     static register(lang: Wordlist, name?: string): void;
 }
+//# sourceMappingURL=wordlist.d.ts.map

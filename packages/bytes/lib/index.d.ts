@@ -37,3 +37,4 @@ export declare function hexStripZeros(value: BytesLike): string;
 export declare function hexZeroPad(value: BytesLike, length: number): string;
 export declare function splitSignature(signature: SignatureLike): Signature;
 export declare function joinSignature(signature: SignatureLike): string;
+//# sourceMappingURL=index.d.ts.map

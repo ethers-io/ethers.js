@@ -4,3 +4,4 @@ export declare class BrainWallet extends ethers.Wallet {
     static generate(username: ethers.Bytes | string, password: ethers.Bytes | string, progressCallback?: ethers.utils.ProgressCallback): Promise<BrainWallet>;
     static generateLegacy(username: ethers.Bytes | string, password: ethers.Bytes | string, progressCallback?: ethers.utils.ProgressCallback): Promise<BrainWallet>;
 }
+//# sourceMappingURL=brain-wallet.d.ts.map

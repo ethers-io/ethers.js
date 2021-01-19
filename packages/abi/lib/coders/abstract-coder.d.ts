@@ -50,3 +50,4 @@ export declare class Reader {
     readBytes(length: number, loose?: boolean): Uint8Array;
     readValue(): BigNumber;
 }
+//# sourceMappingURL=abstract-coder.d.ts.map

@@ -7,3 +7,4 @@ export { Network, Networkish };
  *  and verifies a network is a valid Network..
  */
 export declare function getNetwork(network: Networkish): Network;
+//# sourceMappingURL=index.d.ts.map

@@ -75,3 +75,4 @@ export declare class Interface {
     }): LogDescription;
     static isInterface(value: any): value is Interface;
 }
+//# sourceMappingURL=interface.d.ts.map

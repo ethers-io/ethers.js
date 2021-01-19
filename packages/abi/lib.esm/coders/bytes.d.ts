@@ -9,3 +9,4 @@ export declare class BytesCoder extends DynamicBytesCoder {
     constructor(localName: string);
     decode(reader: Reader): any;
 }
+//# sourceMappingURL=bytes.d.ts.map

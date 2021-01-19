@@ -26,3 +26,4 @@ export declare class TypedDataEncoder {
     }>;
     static getPayload(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): any;
 }
+//# sourceMappingURL=typed-data.d.ts.map

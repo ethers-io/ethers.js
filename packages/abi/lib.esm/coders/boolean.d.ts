@@ -5,3 +5,4 @@ export declare class BooleanCoder extends Coder {
     encode(writer: Writer, value: boolean): number;
     decode(reader: Reader): any;
 }
+//# sourceMappingURL=boolean.d.ts.map

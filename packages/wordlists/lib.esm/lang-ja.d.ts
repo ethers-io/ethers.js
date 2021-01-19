@@ -8,3 +8,4 @@ declare class LangJa extends Wordlist {
 }
 declare const langJa: LangJa;
 export { langJa };
+//# sourceMappingURL=lang-ja.d.ts.map

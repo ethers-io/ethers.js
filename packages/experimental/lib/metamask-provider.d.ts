@@ -10,3 +10,4 @@ export declare class MetamaskProvider extends ethers.providers.Web3Provider {
     on(eventName: ethers.providers.EventType, listener: ethers.providers.Listener): this;
     off(eventName: ethers.providers.EventType, listener?: ethers.providers.Listener): this;
 }
+//# sourceMappingURL=metamask-provider.d.ts.map

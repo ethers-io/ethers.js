@@ -14,3 +14,4 @@ export declare class Description<T = any> {
         [K in keyof T]: T[K];
     });
 }
+//# sourceMappingURL=index.d.ts.map

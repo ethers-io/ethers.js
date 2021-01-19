@@ -8,3 +8,4 @@ import "./test-wallet";
 import "./test-wordlists";
 import { LogFunc, Reporter, setLogFunc } from "./reporter";
 export { LogFunc, Reporter, setLogFunc };
+//# sourceMappingURL=index.d.ts.map

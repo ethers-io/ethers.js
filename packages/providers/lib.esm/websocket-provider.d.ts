@@ -36,3 +36,4 @@ export declare class WebSocketProvider extends JsonRpcProvider {
     _stopEvent(event: Event): void;
     destroy(): Promise<void>;
 }
+//# sourceMappingURL=websocket-provider.d.ts.map

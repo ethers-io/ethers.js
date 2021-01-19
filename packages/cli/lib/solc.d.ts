@@ -15,3 +15,4 @@ export declare type CompilerOptions = {
 export declare function customRequire(path: string): (name: string) => any;
 export declare function wrapSolc(_solc: any): (source: string, options?: CompilerOptions) => Array<ContractCode>;
 export declare const compile: (source: string, options?: CompilerOptions) => ContractCode[];
+//# sourceMappingURL=solc.d.ts.map

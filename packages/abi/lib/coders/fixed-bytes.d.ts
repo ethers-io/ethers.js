@@ -7,3 +7,4 @@ export declare class FixedBytesCoder extends Coder {
     encode(writer: Writer, value: BytesLike): number;
     decode(reader: Reader): any;
 }
+//# sourceMappingURL=fixed-bytes.d.ts.map

@@ -54,3 +54,4 @@ export interface CommunityResourcable {
 export declare function isCommunityResourcable(value: any): value is CommunityResourcable;
 export declare function isCommunityResource(value: any): boolean;
 export declare function showThrottleMessage(): void;
+//# sourceMappingURL=formatter.d.ts.map

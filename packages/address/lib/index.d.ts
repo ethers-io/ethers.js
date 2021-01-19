@@ -8,3 +8,4 @@ export declare function getContractAddress(transaction: {
     nonce: BigNumberish;
 }): string;
 export declare function getCreate2Address(from: string, salt: BytesLike, initCodeHash: BytesLike): string;
+//# sourceMappingURL=index.d.ts.map

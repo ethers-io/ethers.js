@@ -4,3 +4,4 @@ export declare type TransportCreator = {
 export declare const transports: {
     [name: string]: TransportCreator;
 };
+//# sourceMappingURL=browser-ledger-transport.d.ts.map

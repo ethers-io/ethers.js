@@ -1,1 +1,2 @@
 export declare const HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
+//# sourceMappingURL=hashes.d.ts.map

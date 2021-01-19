@@ -8,3 +8,4 @@ export declare class PocketProvider extends UrlJsonRpcProvider {
     static getUrl(network: Network, apiKey: any): ConnectionInfo;
     isCommunityResource(): boolean;
 }
+//# sourceMappingURL=pocket-provider.d.ts.map

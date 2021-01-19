@@ -14,3 +14,4 @@ export declare class AbiCoder {
     decode(types: Array<string | ParamType>, data: BytesLike, loose?: boolean): Result;
 }
 export declare const defaultAbiCoder: AbiCoder;
+//# sourceMappingURL=abi-coder.d.ts.map

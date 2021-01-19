@@ -139,3 +139,4 @@ export declare class ContractFactory {
     static getContract(address: string, contractInterface: ContractInterface, signer?: Signer): Contract;
 }
 export {};
+//# sourceMappingURL=index.d.ts.map

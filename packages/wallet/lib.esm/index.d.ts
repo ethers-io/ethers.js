@@ -30,3 +30,4 @@ export declare class Wallet extends Signer implements ExternallyOwnedAccount, Ty
 }
 export declare function verifyMessage(message: Bytes | string, signature: SignatureLike): string;
 export declare function verifyTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>, signature: SignatureLike): string;
+//# sourceMappingURL=index.d.ts.map

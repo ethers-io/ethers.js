@@ -5,3 +5,4 @@ export declare class IpcProvider extends JsonRpcProvider {
     constructor(path: string, network?: Networkish);
     send(method: string, params: Array<any>): Promise<any>;
 }
+//# sourceMappingURL=ipc-provider.d.ts.map

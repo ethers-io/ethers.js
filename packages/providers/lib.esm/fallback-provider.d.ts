@@ -17,3 +17,4 @@ export declare class FallbackProvider extends BaseProvider {
         [name: string]: any;
     }): Promise<any>;
 }
+//# sourceMappingURL=fallback-provider.d.ts.map

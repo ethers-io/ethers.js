@@ -8,3 +8,4 @@ export declare class TupleCoder extends Coder {
     }): number;
     decode(reader: Reader): any;
 }
+//# sourceMappingURL=tuple.d.ts.map

@@ -7,3 +7,4 @@ export declare class _Eip1193Bridge extends EventEmitter {
     constructor(signer: ethers.Signer, provider?: ethers.providers.Provider);
     send(method: string, params?: Array<any>): Promise<any>;
 }
+//# sourceMappingURL=eip1193-bridge.d.ts.map

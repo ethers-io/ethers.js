@@ -18,9 +18,9 @@ const depgraph_1 = require("../depgraph");
 const path_2 = require("../path");
 const utils_1 = require("../utils");
 const log_1 = require("../log");
-function diff(a, b) {
-    return (Buffer.compare(fs_1.default.readFileSync(a), fs_1.default.readFileSync(b)) !== 0);
-}
+//function diff(a: string, b: string): boolean {
+//    return (Buffer.compare(fs.readFileSync(a), fs.readFileSync(b)) !== 0);
+//}
 function alias(name) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`  Aliasing: ${name}`);
@@ -32,6 +32,7 @@ function alias(name) {
             accum[replace] = true;
             accum[replace + ".map"] = true;
             accum[replace.replace(/\.js$/, ".d.ts")] = true;
+            accum[replace.replace(/\.js$/, ".d.ts.map")] = true;
             return accum;
         }, ({}));
         const transforms = [];
@@ -79,9 +80,15 @@ function alias(name) {
                     }
                     if (replace) {
                         inputFilename = replace.replace(/\.js$/i, ".d.ts");
-                        if (diff(path_1.join(baseDir, input, filename), path_1.join(baseDir, input, inputFilename))) {
-                            console.log(`Warning: TypeScript Definition files differ: ${filename} != ${inputFilename}`);
-                        }
+                        transform = function (content) {
+                            content = content.replace(/(\/\/# sourceMappingURL=)(.*)$/g, (all, prefix, mapFilename) => {
+                                return prefix + filename + ".map";
+                            });
+                            return content;
+                        };
+                        //if (diff(join(baseDir, input, filename), join(baseDir, input, inputFilename))) {
+                        //    console.log(`Warning: TypeScript Definition files differ: ${ filename } != ${ inputFilename }`);
+                        //}
                     }
                 }
                 else if (filename.match(/\.map$/)) {
@@ -89,16 +96,25 @@ function alias(name) {
                     // e.g. (filename = geturl.js.map) => (inputFilename = browser-geturl.js.map)
                     //      + transform the map JSON to reference "geturl.js"
                     // We need to swap in the replacement and update its data
-                    const replace = replacements[filename.replace(/\.js.map$/i, ".js")];
+                    const replace = replacements[filename.replace(/\.d.ts\.map$|\.js\.map$/i, ".js")];
+                    console.log(filename, replace);
                     // Skip!
                     if (replace === "") {
                         return;
                     }
                     if (replace) {
-                        inputFilename = replace + ".map";
+                        if (filename.match(/\.js\.map$/)) {
+                            inputFilename = replace + ".map";
+                        }
+                        else if (filename.match(/\.d\.ts\.map$/)) {
+                            inputFilename = replace.replace(/\.js$/, ".d.ts.map");
+                        }
+                        else {
+                            throw new Error(`unhandled map extension: ${filename}`);
+                        }
                         transform = function (content) {
                             const data = JSON.parse(content);
-                            data["file"] = filename.replace(/\.js\.map$/, ".js");
+                            data["file"] = filename.replace(/\.map$/, "");
                             return JSON.stringify(data);
                         };
                     }
@@ -125,6 +141,7 @@ function alias(name) {
         console.log(log_1.colorify.bold(`Aliasing Node ESM to Browser ESM...`));
         const dirnames = depgraph_1.getOrdered(true);
         for (let i = 0; i < dirnames.length; i++) {
+            //if (dirnames[i] !== "base64") { continue; }
             yield alias(dirnames[i]);
         }
     });

@@ -18,3 +18,4 @@ export declare class InfuraProvider extends UrlJsonRpcProvider {
     static getUrl(network: Network, apiKey: any): ConnectionInfo;
     isCommunityResource(): boolean;
 }
+//# sourceMappingURL=infura-provider.d.ts.map

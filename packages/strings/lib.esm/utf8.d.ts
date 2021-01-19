@@ -24,3 +24,4 @@ export declare function _toEscapedUtf8String(bytes: BytesLike, onError?: Utf8Err
 export declare function _toUtf8String(codePoints: Array<number>): string;
 export declare function toUtf8String(bytes: BytesLike, onError?: Utf8ErrorFunc): string;
 export declare function toUtf8CodePoints(str: string, form?: UnicodeNormalizationForm): Array<number>;
+//# sourceMappingURL=utf8.d.ts.map
