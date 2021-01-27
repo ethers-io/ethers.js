@@ -505,7 +505,7 @@ export class FallbackProvider extends BaseProvider {
         // Shuffle the providers and then sort them by their priority; we
         // shallowCopy them since we will store the result in them too
         const configs: Array<RunningConfig> = shuffled(this.providerConfigs.map(shallowCopy));
-        configs.sort((a, b) => (a.priority - b.priority));
+        configs.sort((a, b) => (b.priority - a.priority));
 
         const currentBlockNumber = this._highestBlockNumber;
 
