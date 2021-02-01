@@ -3486,7 +3486,7 @@
 	var _version = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "logger/5.0.8";
+	exports.version = "logger/5.0.9";
 
 	});
 
@@ -3812,7 +3812,7 @@
 	var _version$2 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bytes/5.0.9";
+	exports.version = "bytes/5.0.10";
 
 	});
 
@@ -4223,7 +4223,7 @@
 	var _version$4 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bignumber/5.0.13";
+	exports.version = "bignumber/5.0.14";
 
 	});
 
@@ -4915,7 +4915,7 @@
 	var _version$6 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "properties/5.0.7";
+	exports.version = "properties/5.0.8";
 
 	});
 
@@ -5090,7 +5090,7 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.10";
+	exports.version = "abi/5.0.11";
 
 	});
 
@@ -6597,7 +6597,7 @@
 	var _version$a = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "rlp/5.0.7";
+	exports.version = "rlp/5.0.8";
 
 	});
 
@@ -6734,7 +6734,7 @@
 	var _version$c = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "address/5.0.9";
+	exports.version = "address/5.0.10";
 
 	});
 
@@ -7523,7 +7523,7 @@
 	var _version$e = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "strings/5.0.8";
+	exports.version = "strings/5.0.9";
 
 	});
 
@@ -8297,7 +8297,7 @@
 	var _version$g = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hash/5.0.10";
+	exports.version = "hash/5.0.11";
 
 	});
 
@@ -9469,7 +9469,7 @@
 	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-provider/5.0.8";
+	exports.version = "abstract-provider/5.0.9";
 
 	});
 
@@ -9600,7 +9600,7 @@
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-signer/5.0.11";
+	exports.version = "abstract-signer/5.0.12";
 
 	});
 
@@ -9932,7 +9932,7 @@
 	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.9";
+	exports.version = "contracts/5.0.10";
 
 	});
 
@@ -12514,7 +12514,7 @@
 	var _version$o = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "sha2/5.0.7";
+	exports.version = "sha2/5.0.8";
 
 	});
 
@@ -15028,7 +15028,7 @@
 	var _version$q = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "signing-key/5.0.8";
+	exports.version = "signing-key/5.0.9";
 
 	});
 
@@ -15126,7 +15126,7 @@
 	var _version$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "transactions/5.0.9";
+	exports.version = "transactions/5.0.10";
 
 	});
 
@@ -15321,7 +15321,7 @@
 	var _version$u = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wordlists/5.0.8";
+	exports.version = "wordlists/5.0.9";
 
 	});
 
@@ -16089,7 +16089,7 @@
 	var _version$w = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hdnode/5.0.8";
+	exports.version = "hdnode/5.0.9";
 
 	});
 
@@ -16440,7 +16440,7 @@
 	var _version$y = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "random/5.0.7";
+	exports.version = "random/5.0.8";
 
 	});
 
@@ -17332,7 +17332,7 @@
 	var _version$A = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "json-wallets/5.0.10";
+	exports.version = "json-wallets/5.0.11";
 
 	});
 
@@ -18468,7 +18468,7 @@
 	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wallet/5.0.10";
+	exports.version = "wallet/5.0.11";
 
 	});
 
@@ -18730,7 +18730,7 @@
 	var _version$E = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "networks/5.0.7";
+	exports.version = "networks/5.0.8";
 
 	});
 
@@ -18991,7 +18991,7 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "web/5.0.12";
+	exports.version = "web/5.0.13";
 
 	});
 
@@ -19695,7 +19695,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.19";
+	exports.version = "providers/5.0.20";
 
 	});
 
@@ -25106,7 +25106,7 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "units/5.0.9";
+	exports.version = "units/5.0.10";
 
 	});
 
@@ -25343,7 +25343,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.26";
+	exports.version = "ethers/5.0.27";
 
 	});
 

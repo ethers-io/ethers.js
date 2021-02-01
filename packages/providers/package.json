@@ -1,6 +1,7 @@
 {
   "_ethers.alias": {
     "browser-net.d.ts": "",
+    "browser-net.d.ts.map": "",
     "browser-net.js": "",
     "browser-net.js.map": "",
     "ipc-provider.js": "browser-ipc-provider.js",
@@ -65,7 +66,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x36465de96f80a4a774f347200a79fdae0f7a579ed1493581cb1f1273756d9f94",
+  "tarballHash": "0x1301979ebea30d93a9b5d809f2f08a6cb238d59123bfdbc975b9586e6108f9a8",
   "types": "./lib/index.d.ts",
-  "version": "5.0.19"
+  "version": "5.0.20"
 }

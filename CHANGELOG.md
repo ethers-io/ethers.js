@@ -3,6 +3,11 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.27 (2021-01-31 19:36)
+---------------------------------
+
+  - Added TypeScript declaration maps. ([#401](https://github.com/ethers-io/ethers.js/issues/401); [3396846](https://github.com/ethers-io/ethers.js/commit/3396846a30a4be0ed58fe449589e7e4e54f3d32e))
+
 ethers/v5.0.26 (2021-01-13 14:47)
 ---------------------------------
 

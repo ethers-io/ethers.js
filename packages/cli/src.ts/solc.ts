@@ -91,6 +91,7 @@ function _compile(_solc: any, source: string, options?: CompilerOptions): Array<
         findImport = { import: findImport };
     }
 
+
     const outputJson = _solc.compile(JSON.stringify(input), findImport);
     const output = JSON.parse(outputJson);
 

@@ -1,1 +1,1 @@
-export const version = "logger/5.0.8";
+export const version = "logger/5.0.9";
