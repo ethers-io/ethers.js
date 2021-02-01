@@ -69,7 +69,8 @@ var Formatter = /** @class */ (function () {
             from: Formatter.allowNull(this.address, null),
             contractAddress: Formatter.allowNull(address, null),
             transactionIndex: number,
-            root: Formatter.allowNull(hash),
+            // should be allowNull(hash), but broken-EIP-658 support is handled in receipt
+            root: Formatter.allowNull(hex),
             gasUsed: bigNumber,
             logsBloom: Formatter.allowNull(data),
             blockHash: hash,
@@ -317,7 +318,29 @@ var Formatter = /** @class */ (function () {
     };
     Formatter.prototype.receipt = function (value) {
         var result = Formatter.check(this.formats.receipt, value);
-        if (value.status != null) {
+        // RSK incorrectly implemented EIP-658, so we munge things a bit here for it
+        if (result.root != null) {
+            if (result.root.length <= 4) {
+                // Could be 0x00, 0x0, 0x01 or 0x1
+                var value_1 = bignumber_1.BigNumber.from(result.root).toNumber();
+                if (value_1 === 0 || value_1 === 1) {
+                    // Make sure if both are specified, they match
+                    if (result.status != null && (result.status !== value_1)) {
+                        logger.throwArgumentError("alt-root-status/status mismatch", "value", { root: result.root, status: result.status });
+                    }
+                    result.status = value_1;
+                    delete result.root;
+                }
+                else {
+                    logger.throwArgumentError("invalid alt-root-status", "value.root", result.root);
+                }
+            }
+            else if (result.root.length !== 66) {
+                // Must be a valid bytes32
+                logger.throwArgumentError("invalid root hash", "value.root", result.root);
+            }
+        }
+        if (result.status != null) {
             result.byzantium = true;
         }
         return result;

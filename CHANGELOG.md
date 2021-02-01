@@ -3,9 +3,11 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
-ethers/v5.0.27 (2021-01-31 19:36)
+ethers/v5.0.27 (2021-02-01 15:55)
 ---------------------------------
 
+  - Added support for networks with slightly incorrect EIP-658 implementations. ([#952](https://github.com/ethers-io/ethers.js/issues/952), [#1251](https://github.com/ethers-io/ethers.js/issues/1251); [e727efc](https://github.com/ethers-io/ethers.js/commit/e727efc33eaa31c3af6adbb64a893caf354d0ba7))
+  - Added Pocket network to the default provider. ([#1030](https://github.com/ethers-io/ethers.js/issues/1030), [#1052](https://github.com/ethers-io/ethers.js/issues/1052); [4af2c19](https://github.com/ethers-io/ethers.js/commit/4af2c19f455bb43406d3cc5421c3b3fdda75f78f))
   - Added TypeScript declaration maps. ([#401](https://github.com/ethers-io/ethers.js/issues/401); [3396846](https://github.com/ethers-io/ethers.js/commit/3396846a30a4be0ed58fe449589e7e4e54f3d32e))
 
 ethers/v5.0.26 (2021-01-13 14:47)
