@@ -19701,7 +19701,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.20";
+	exports.version = "providers/5.0.21";
 
 	});
 
@@ -24752,22 +24752,57 @@
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 
+
 	var logger = new lib.Logger(_version$I.version);
 
-	var defaultApplicationId = "5f7f8547b90218002e9ce9dd";
+	// These are load-balancer-based applicatoin IDs
+	var defaultApplicationIds = {
+	    homestead: "6004bcd10040261633ade990",
+	    ropsten: "6004bd4d0040261633ade991",
+	    rinkeby: "6004bda20040261633ade994",
+	    goerli: "6004bd860040261633ade992",
+	};
 	var PocketProvider = /** @class */ (function (_super) {
 	    __extends(PocketProvider, _super);
-	    function PocketProvider() {
-	        return _super !== null && _super.apply(this, arguments) || this;
+	    function PocketProvider(network, apiKey) {
+	        // We need a bit of creativity in the constructor because
+	        // Pocket uses different default API keys based on the network
+	        var _newTarget = this.constructor;
+	        var _this = this;
+	        if (apiKey == null) {
+	            var n = lib$3.getStatic((_newTarget), "getNetwork")(network);
+	            if (n) {
+	                var applicationId = defaultApplicationIds[n.name];
+	                if (applicationId) {
+	                    apiKey = {
+	                        applicationId: applicationId,
+	                        loadBalancer: true
+	                    };
+	                }
+	            }
+	            // If there was any issue above, we don't know this network
+	            if (apiKey == null) {
+	                logger.throwError("unsupported network", lib.Logger.errors.INVALID_ARGUMENT, {
+	                    argument: "network",
+	                    value: network
+	                });
+	            }
+	        }
+	        _this = _super.call(this, network, apiKey) || this;
+	        return _this;
 	    }
 	    PocketProvider.getApiKey = function (apiKey) {
+	        // Most API Providers allow null to get the default configuration, but
+	        // Pocket requires the network to decide the default provider, so we
+	        // rely on hijacking the constructor to add a sensible default for us
+	        if (apiKey == null) {
+	            logger.throwArgumentError("PocketProvider.getApiKey does not support null apiKey", "apiKey", apiKey);
+	        }
 	        var apiKeyObj = {
-	            applicationId: defaultApplicationId,
+	            applicationId: null,
+	            loadBalancer: false,
 	            applicationSecretKey: null
 	        };
-	        if (apiKey == null) {
-	            return apiKeyObj;
-	        }
 	        // Parse applicationId and applicationSecretKey
 	        if (typeof (apiKey) === "string") {
 	            apiKeyObj.applicationId = apiKey;
@@ -24777,9 +24812,15 @@
 	            logger.assertArgument((typeof (apiKey.applicationSecretKey) === "string"), "invalid applicationSecretKey", "applicationSecretKey", "[REDACTED]");
 	            apiKeyObj.applicationId = apiKey.applicationId;
 	            apiKeyObj.applicationSecretKey = apiKey.applicationSecretKey;
+	            apiKeyObj.loadBalancer = !!apiKey.loadBalancer;
 	        }
 	        else if (apiKey.applicationId) {
+	            logger.assertArgument((typeof (apiKey.applicationId) === "string"), "apiKey.applicationId must be a string", "apiKey.applicationId", apiKey.applicationId);
 	            apiKeyObj.applicationId = apiKey.applicationId;
+	            apiKeyObj.loadBalancer = !!apiKey.loadBalancer;
+	        }
+	        else {
+	            logger.throwArgumentError("unsupported PocketProvider apiKey", "apiKey", apiKey);
 	        }
 	        return apiKeyObj;
 	    };
@@ -24789,15 +24830,29 @@
 	            case "homestead":
 	                host = "eth-mainnet.gateway.pokt.network";
 	                break;
+	            case "ropsten":
+	                host = "eth-ropsten.gateway.pokt.network";
+	                break;
+	            case "rinkeby":
+	                host = "eth-rinkeby.gateway.pokt.network";
+	                break;
+	            case "goerli":
+	                host = "eth-goerli.gateway.pokt.network";
+	                break;
 	            default:
 	                logger.throwError("unsupported network", lib.Logger.errors.INVALID_ARGUMENT, {
 	                    argument: "network",
 	                    value: network
 	                });
 	        }
-	        var connection = {
-	            url: ("https://" + host + "/v1/" + apiKey.applicationId),
-	        };
+	        var url = null;
+	        if (apiKey.loadBalancer) {
+	            url = "https://" + host + "/v1/lb/" + apiKey.applicationId;
+	        }
+	        else {
+	            url = "https://" + host + "/v1/" + apiKey.applicationId;
+	        }
+	        var connection = { url: url };
 	        // Initialize empty headers
 	        connection.headers = {};
 	        // Apply application secret key
@@ -24808,7 +24863,7 @@
 	        return connection;
 	    };
 	    PocketProvider.prototype.isCommunityResource = function () {
-	        return (this.applicationId === defaultApplicationId);
+	        return (this.applicationId === defaultApplicationIds[this.network.name]);
 	    };
 	    return PocketProvider;
 	}(urlJsonRpcProvider.UrlJsonRpcProvider));
@@ -25372,7 +25427,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.27";
+	exports.version = "ethers/5.0.28";
 
 	});
 

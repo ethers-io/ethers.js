@@ -17630,7 +17630,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.0.20";
+const version$m = "providers/5.0.21";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -21499,16 +21499,50 @@ class NodesmithProvider extends UrlJsonRpcProvider {
 
 "use strict";
 const logger$D = new Logger(version$m);
-const defaultApplicationId = "5f7f8547b90218002e9ce9dd";
+// These are load-balancer-based applicatoin IDs
+const defaultApplicationIds = {
+    homestead: "6004bcd10040261633ade990",
+    ropsten: "6004bd4d0040261633ade991",
+    rinkeby: "6004bda20040261633ade994",
+    goerli: "6004bd860040261633ade992",
+};
 class PocketProvider extends UrlJsonRpcProvider {
+    constructor(network, apiKey) {
+        // We need a bit of creativity in the constructor because
+        // Pocket uses different default API keys based on the network
+        if (apiKey == null) {
+            const n = getStatic((new.target), "getNetwork")(network);
+            if (n) {
+                const applicationId = defaultApplicationIds[n.name];
+                if (applicationId) {
+                    apiKey = {
+                        applicationId: applicationId,
+                        loadBalancer: true
+                    };
+                }
+            }
+            // If there was any issue above, we don't know this network
+            if (apiKey == null) {
+                logger$D.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
+                    argument: "network",
+                    value: network
+                });
+            }
+        }
+        super(network, apiKey);
+    }
     static getApiKey(apiKey) {
+        // Most API Providers allow null to get the default configuration, but
+        // Pocket requires the network to decide the default provider, so we
+        // rely on hijacking the constructor to add a sensible default for us
+        if (apiKey == null) {
+            logger$D.throwArgumentError("PocketProvider.getApiKey does not support null apiKey", "apiKey", apiKey);
+        }
         const apiKeyObj = {
-            applicationId: defaultApplicationId,
+            applicationId: null,
+            loadBalancer: false,
             applicationSecretKey: null
         };
-        if (apiKey == null) {
-            return apiKeyObj;
-        }
         // Parse applicationId and applicationSecretKey
         if (typeof (apiKey) === "string") {
             apiKeyObj.applicationId = apiKey;
@@ -21518,9 +21552,15 @@ class PocketProvider extends UrlJsonRpcProvider {
             logger$D.assertArgument((typeof (apiKey.applicationSecretKey) === "string"), "invalid applicationSecretKey", "applicationSecretKey", "[REDACTED]");
             apiKeyObj.applicationId = apiKey.applicationId;
             apiKeyObj.applicationSecretKey = apiKey.applicationSecretKey;
+            apiKeyObj.loadBalancer = !!apiKey.loadBalancer;
         }
         else if (apiKey.applicationId) {
+            logger$D.assertArgument((typeof (apiKey.applicationId) === "string"), "apiKey.applicationId must be a string", "apiKey.applicationId", apiKey.applicationId);
             apiKeyObj.applicationId = apiKey.applicationId;
+            apiKeyObj.loadBalancer = !!apiKey.loadBalancer;
+        }
+        else {
+            logger$D.throwArgumentError("unsupported PocketProvider apiKey", "apiKey", apiKey);
         }
         return apiKeyObj;
     }
@@ -21530,15 +21570,29 @@ class PocketProvider extends UrlJsonRpcProvider {
             case "homestead":
                 host = "eth-mainnet.gateway.pokt.network";
                 break;
+            case "ropsten":
+                host = "eth-ropsten.gateway.pokt.network";
+                break;
+            case "rinkeby":
+                host = "eth-rinkeby.gateway.pokt.network";
+                break;
+            case "goerli":
+                host = "eth-goerli.gateway.pokt.network";
+                break;
             default:
                 logger$D.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
                     argument: "network",
                     value: network
                 });
         }
-        const connection = {
-            url: (`https:/\/${host}/v1/${apiKey.applicationId}`),
-        };
+        let url = null;
+        if (apiKey.loadBalancer) {
+            url = `https:/\/${host}/v1/lb/${apiKey.applicationId}`;
+        }
+        else {
+            url = `https:/\/${host}/v1/${apiKey.applicationId}`;
+        }
+        const connection = { url };
         // Initialize empty headers
         connection.headers = {};
         // Apply application secret key
@@ -21549,7 +21603,7 @@ class PocketProvider extends UrlJsonRpcProvider {
         return connection;
     }
     isCommunityResource() {
-        return (this.applicationId === defaultApplicationId);
+        return (this.applicationId === defaultApplicationIds[this.network.name]);
     }
 }
 
@@ -21986,7 +22040,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.27";
+const version$o = "ethers/5.0.28";
 
 "use strict";
 const logger$H = new Logger(version$o);

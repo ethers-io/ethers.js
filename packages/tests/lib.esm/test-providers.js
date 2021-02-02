@@ -407,21 +407,36 @@ function waiter(duration) {
     });
 }
 const allNetworks = ["default", "homestead", "ropsten", "rinkeby", "kovan", "goerli"];
-const ApiKeys = {
+// We use separate API keys because otherwise the testcases sometimes
+// fail during CI because our default keys are pretty heavily used
+const _ApiKeys = {
     alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
     etherscan: "FPFGK6JSW2UHJJ2666FG93KP7WC999MNW7",
     infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",
-    pocket: "5f7f8547b90218002e9ce9dd",
 };
+const _ApiKeysPocket = {
+    homestead: "6004bcd10040261633ade990",
+    ropsten: "6004bd4d0040261633ade991",
+    rinkeby: "6004bda20040261633ade994",
+    goerli: "6004bd860040261633ade992",
+};
+function getApiKeys(network) {
+    if (network === "default" || network == null) {
+        network = "homestead";
+    }
+    const apiKeys = ethers.utils.shallowCopy(_ApiKeys);
+    apiKeys.pocket = _ApiKeysPocket[network];
+    return apiKeys;
+}
 const providerFunctions = [
     {
         name: "getDefaultProvider",
         networks: allNetworks,
         create: (network) => {
             if (network == "default") {
-                return ethers.getDefaultProvider(null, ApiKeys);
+                return ethers.getDefaultProvider(null, getApiKeys(network));
             }
-            return ethers.getDefaultProvider(network, ApiKeys);
+            return ethers.getDefaultProvider(network, getApiKeys(network));
         }
     },
     {
@@ -429,9 +444,9 @@ const providerFunctions = [
         networks: allNetworks,
         create: (network) => {
             if (network == "default") {
-                return new ethers.providers.AlchemyProvider(null, ApiKeys.alchemy);
+                return new ethers.providers.AlchemyProvider(null, getApiKeys(network).alchemy);
             }
-            return new ethers.providers.AlchemyProvider(network, ApiKeys.alchemy);
+            return new ethers.providers.AlchemyProvider(network, getApiKeys(network).alchemy);
         }
     },
     /*
@@ -448,9 +463,9 @@ const providerFunctions = [
         networks: allNetworks,
         create: (network) => {
             if (network == "default") {
-                return new ethers.providers.InfuraProvider(null, ApiKeys.infura);
+                return new ethers.providers.InfuraProvider(null, getApiKeys(network).infura);
             }
-            return new ethers.providers.InfuraProvider(network, ApiKeys.infura);
+            return new ethers.providers.InfuraProvider(network, getApiKeys(network).infura);
         }
     },
     {
@@ -458,9 +473,9 @@ const providerFunctions = [
         networks: allNetworks,
         create: (network) => {
             if (network == "default") {
-                return new ethers.providers.EtherscanProvider(null, ApiKeys.etherscan);
+                return new ethers.providers.EtherscanProvider(null, getApiKeys(network).etherscan);
             }
-            return new ethers.providers.EtherscanProvider(network, ApiKeys.etherscan);
+            return new ethers.providers.EtherscanProvider(network, getApiKeys(network).etherscan);
         }
     },
     {
@@ -472,12 +487,19 @@ const providerFunctions = [
     },
     {
         name: "PocketProvider",
-        networks: ["default", "homestead"],
+        // note: sans-kovan
+        networks: ["default", "homestead", "ropsten", "rinkeby", "goerli"],
         create: (network) => {
             if (network == "default") {
-                return new ethers.providers.PocketProvider(null, ApiKeys.pocket);
+                return new ethers.providers.PocketProvider(null, {
+                    applicationId: getApiKeys(network).pocket,
+                    loadBalancer: true
+                });
             }
-            return new ethers.providers.PocketProvider(network, ApiKeys.pocket);
+            return new ethers.providers.PocketProvider(network, {
+                applicationId: getApiKeys(network).pocket,
+                loadBalancer: true
+            });
         }
     },
     {
@@ -657,7 +679,7 @@ describe("Test Provider Methods", function () {
         return __awaiter(this, void 0, void 0, function* () {
             this.timeout(300000);
             // Get some ether from the faucet
-            const provider = new ethers.providers.InfuraProvider("ropsten", ApiKeys.infura);
+            const provider = new ethers.providers.InfuraProvider("ropsten", getApiKeys("ropsten").infura);
             const funder = yield ethers.utils.fetchJson(`https:/\/api.ethers.io/api/v1/?action=fundAccount&address=${fundWallet.address.toLowerCase()}`);
             fundReceipt = provider.waitForTransaction(funder.hash);
             fundReceipt.then((receipt) => {
@@ -671,7 +693,7 @@ describe("Test Provider Methods", function () {
             // Wait until the funding is complete
             yield fundReceipt;
             // Refund all unused ether to the faucet
-            const provider = new ethers.providers.InfuraProvider("ropsten", ApiKeys.infura);
+            const provider = new ethers.providers.InfuraProvider("ropsten", getApiKeys("ropsten").infura);
             const gasPrice = yield provider.getGasPrice();
             const balance = yield provider.getBalance(fundWallet.address);
             const tx = yield fundWallet.connect(provider).sendTransaction({
@@ -741,7 +763,7 @@ describe("Extra tests", function () {
         return __awaiter(this, void 0, void 0, function* () {
             this.timeout(60000);
             yield waiter(2000);
-            const provider = new ethers.providers.EtherscanProvider(null, ApiKeys.etherscan);
+            const provider = new ethers.providers.EtherscanProvider(null, getApiKeys(null).etherscan);
             const value = yield provider.call({
                 to: "0xbf320b8336b131e0270295c15478d91741f9fc11",
                 data: "0x3ad206cc000000000000000000000000f6e914d07d12636759868a61e52973d17ed7111b0000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000006400000000000000000000000022b3faaa8df978f6bafe18aade18dc2e3dfa0e0c000000000000000000000000998b3b82bc9dba173990be7afb772788b5acb8bd000000000000000000000000ba11d00c5f74255f56a5e366f4f77f5a186d7f55000000000000000000000000c7579bb99af590ec71c316e1ac4436c5350395940000000000000000000000002a05d22db079bc40c2f77a1d1ff703a56e631cc10000000000000000000000000d8775f648430679a709e98d2b0cb6250d2887ef0000000000000000000000009a0242b7a33dacbe40edb927834f96eb39f8fbcb000000000000000000000000c78593c17482ea5de44fdd84896ffd903972878e000000000000000000000000e7d3e4413e29ae35b0893140f4500965c74365e500000000000000000000000037d40510a2f5bc98aa7a0f7bf4b3453bcfb90ac10000000000000000000000004a6058666cf1057eac3cd3a5a614620547559fc900000000000000000000000035a69642857083ba2f30bfab735dacc7f0bac96900000000000000000000000084f7c44b6fed1080f647e354d552595be2cc602f0000000000000000000000001500205f50bf3fd976466d0662905c9ff254fc9c000000000000000000000000660b612ec57754d949ac1a09d0c2937a010dee05000000000000000000000000acfa209fb73bf3dd5bbfb1101b9bc999c49062a5000000000000000000000000865d176351f287fe1b0010805b110d08699c200a000000000000000000000000633a8f8e557702039463f9f2eb20b7936fff8c050000000000000000000000001961b3331969ed52770751fc718ef530838b6dee0000000000000000000000002fb12bccf6f5dd338b76be784a93ade0724256900000000000000000000000004d8fc1453a0f359e99c9675954e656d80d996fbf0000000000000000000000006aeb95f06cda84ca345c2de0f3b7f96923a44f4c0000000000000000000000008aa33a7899fcc8ea5fbe6a608a109c3893a1b8b200000000000000000000000014c926f2290044b647e1bf2072e67b495eff1905000000000000000000000000763186eb8d4856d536ed4478302971214febc6a90000000000000000000000008a1e3930fde1f151471c368fdbb39f3f63a65b55000000000000000000000000a8daa52ded91f7c82b4bb02b4b87c6a841db1fd500000000000000000000000033803edf44a71b9579f54cd429b53b06c0eeab83000000000000000000000000026e62dded1a6ad07d93d39f96b9eabd59665e0d00000000000000000000000047da42696a866cdc61a4c809a515500a242909c100000000000000000000000008b4c866ae9d1be56a06e0c302054b4ffe067b43000000000000000000000000420335d3deef2d5b87524ff9d0fb441f71ea621f000000000000000000000000983f7cc12d0b5d512b0f91f51a4aa478ac4def46000000000000000000000000b2bfeb70b903f1baac7f2ba2c62934c7e5b974c40000000000000000000000009b11b1b271a224a271619f3419b1b080fdec5b4a0000000000000000000000007b1309c1522afd4e66c31e1e6d0ec1319e1eba5e000000000000000000000000959529102cfde07b1196bd27adedc196d75f84f6000000000000000000000000107c4504cd79c5d2696ea0030a8dd4e92601b82e000000000000000000000000539efe69bcdd21a83efd9122571a64cc25e0282b000000000000000000000000e5a7c12972f3bbfe70ed29521c8949b8af6a0970000000000000000000000000f8ad7dfe656188a23e89da09506adf7ad9290d5d0000000000000000000000005732046a883704404f284ce41ffadd5b007fd668000000000000000000000000df6ef343350780bf8c3410bf062e0c015b1dd671000000000000000000000000f028adee51533b1b47beaa890feb54a457f51e89000000000000000000000000dd6bf56ca2ada24c683fac50e37783e55b57af9f000000000000000000000000ef51c9377feb29856e61625caf9390bd0b67ea18000000000000000000000000c80c5e40220172b36adee2c951f26f2a577810c50000000000000000000000001f573d6fb3f13d689ff844b4ce37794d79a7ff1c000000000000000000000000d2d6158683aee4cc838067727209a0aaf4359de30000000000000000000000007cdec53fe4770729dac314756c10e2f37b8d2b2f000000000000000000000000cc34366e3842ca1bd36c1f324d15257960fcc8010000000000000000000000006b01c3170ae1efebee1a3159172cb3f7a5ecf9e5000000000000000000000000139d9397274bb9e2c29a9aa8aa0b5874d30d62e300000000000000000000000063f584fa56e60e4d0fe8802b27c7e6e3b33e007f000000000000000000000000780116d91e5592e58a3b3c76a351571b39abcec60000000000000000000000000e511aa1a137aad267dfe3a6bfca0b856c1a3682000000000000000000000000327682779bab2bf4d1337e8974ab9de8275a7ca80000000000000000000000001b80eeeadcc590f305945bcc258cfa770bbe18900000000000000000000000005af2be193a6abca9c8817001f45744777db307560000000000000000000000009e77d5a1251b6f7d456722a6eac6d2d5980bd891000000000000000000000000e25f0974fea47682f6a7386e4217da70512ec997000000000000000000000000558ec3152e2eb2174905cd19aea4e34a23de9ad6000000000000000000000000b736ba66aad83adb2322d1f199bfa32b3962f13c000000000000000000000000509a38b7a1cc0dcd83aa9d06214663d9ec7c7f4a0000000000000000000000000327112423f3a68efdf1fcf402f6c5cb9f7c33fd0000000000000000000000005acd19b9c91e596b1f062f18e3d02da7ed8d1e5000000000000000000000000003df4c372a29376d2c8df33a1b5f001cd8d68b0e0000000000000000000000006aac8cb9861e42bf8259f5abdc6ae3ae89909e11000000000000000000000000d96b9fd7586d9ea24c950d24399be4fb65372fdd00000000000000000000000073dd069c299a5d691e9836243bcaec9c8c1d87340000000000000000000000005ecd84482176db90bb741ddc8c2f9ccc290e29ce000000000000000000000000fa456cf55250a839088b27ee32a424d7dacb54ff000000000000000000000000b683d83a532e2cb7dfa5275eed3698436371cc9f000000000000000000000000ccbf21ba6ef00802ab06637896b799f7101f54a20000000000000000000000007b123f53421b1bf8533339bfbdc7c98aa94163db0000000000000000000000006ecccf7ebc3497a9334f4fe957a7d5fa933c5bcc0000000000000000000000004fabb145d64652a948d72533023f6e7a623c7c53000000000000000000000000e1aee98495365fc179699c1bb3e761fa716bee6200000000000000000000000056d811088235f11c8920698a204a5010a788f4b300000000000000000000000026e75307fc0c021472feb8f727839531f112f3170000000000000000000000007d4b8cce0591c9044a22ee543533b72e976e36c30000000000000000000000003c6a7ab47b5f058be0e7c7fe1a4b7925b8aca40e0000000000000000000000001d462414fe14cf489c7a21cac78509f4bf8cd7c000000000000000000000000043044f861ec040db59a7e324c40507addb67314200000000000000000000000004f2e7221fdb1b52a68169b25793e51478ff0329000000000000000000000000954b890704693af242613edef1b603825afcd708000000000000000000000000a8f93faee440644f89059a2c88bdc9bf3be5e2ea0000000000000000000000001234567461d3f8db7496581774bd869c83d51c9300000000000000000000000056ba2ee7890461f463f7be02aac3099f6d5811a80000000000000000000000006c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e000000000000000000000000f444cd92e09cc8b2a23cd2eecb3c1e4cc8da6958000000000000000000000000cf8f9555d55ce45a3a33a81d6ef99a2a2e71dee2000000000000000000000000076c97e1c869072ee22f8c91978c99b4bcb0259100000000000000000000000017b26400621695c2d8c2d8869f6259e82d7544c4000000000000000000000000679badc551626e01b23ceecefbc9b877ea18fc46000000000000000000000000336f646f87d9f6bc6ed42dd46e8b3fd9dbd15c220000000000000000000000005d3a536e4d6dbd6114cc1ead35777bab948e3643000000000000000000000000f5dce57282a584d2746faf1593d3121fcac444dc0000000000000000000000001d9e20e581a5468644fe74ccb6a46278ef377f9e000000000000000000000000177d39ac676ed1c67a2b268ad7f1e58826e5b0af"
@@ -888,6 +910,21 @@ describe("Test API Key Formatting", function () {
         });
         assert.equal(apiKeyObject2.applicationId, applicationId);
         assert.equal(apiKeyObject2.applicationSecretKey, applicationSecretKey);
+        // Test complex API key with loadBalancer
+        [true, false].forEach((loadBalancer) => {
+            const apiKeyObject = ethers.providers.PocketProvider.getApiKey({
+                applicationId, loadBalancer
+            });
+            assert.equal(apiKeyObject.applicationId, applicationId);
+            assert.equal(apiKeyObject.loadBalancer, loadBalancer);
+            assert.ok(apiKeyObject.applicationSecretKey == null);
+            const apiKeyObject2 = ethers.providers.PocketProvider.getApiKey({
+                applicationId, applicationSecretKey, loadBalancer
+            });
+            assert.equal(apiKeyObject2.applicationId, applicationId);
+            assert.equal(apiKeyObject2.applicationSecretKey, applicationSecretKey);
+            assert.equal(apiKeyObject2.loadBalancer, loadBalancer);
+        });
         // Fails on invalid applicationId type
         assert.throws(() => {
             const apiKey = ethers.providers.PocketProvider.getApiKey({

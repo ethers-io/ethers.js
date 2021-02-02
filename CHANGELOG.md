@@ -3,6 +3,11 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.28 (2021-02-02 17:12)
+---------------------------------
+
+  - Added load balancer support to PocketProvider. ([#1052](https://github.com/ethers-io/ethers.js/issues/1052); [27a981c](https://github.com/ethers-io/ethers.js/commit/27a981c84b578feb762fdb37dd5325d9c335bd59))
+
 ethers/v5.0.27 (2021-02-01 15:55)
 ---------------------------------
 
