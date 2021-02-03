@@ -2,7 +2,7 @@
   "author": "Richard Moore <me@ricmoo.com>",
   "browser-old": "./dist/ethers.umd.js",
   "dependencies": {
-    "@ethersproject/abi": "5.0.11",
+    "@ethersproject/abi": "5.0.12",
     "@ethersproject/abstract-provider": "5.0.9",
     "@ethersproject/abstract-signer": "5.0.12",
     "@ethersproject/address": "5.0.10",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x800ebdb17ed136a1d3b7dffccfcac8b636c5aa7fe25daf97314b24a7346c9961",
+  "tarballHash": "0x39d88539494ba5a57753c5cd359d2bb66eaffb87d9046cdf4c04cf4b201bd442",
   "types": "./lib/index.d.ts",
-  "version": "5.0.28"
+  "version": "5.0.29"
 }

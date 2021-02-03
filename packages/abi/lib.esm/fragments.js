@@ -569,7 +569,7 @@ export class ConstructorFragment extends Fragment {
             return JSON.stringify({
                 type: "constructor",
                 stateMutability: ((this.stateMutability !== "nonpayable") ? this.stateMutability : undefined),
-                payble: this.payable,
+                payable: this.payable,
                 gas: (this.gas ? this.gas.toNumber() : undefined),
                 inputs: this.inputs.map((input) => JSON.parse(input.format(format)))
             });
@@ -641,10 +641,10 @@ export class FunctionFragment extends ConstructorFragment {
                 name: this.name,
                 constant: this.constant,
                 stateMutability: ((this.stateMutability !== "nonpayable") ? this.stateMutability : undefined),
-                payble: this.payable,
+                payable: this.payable,
                 gas: (this.gas ? this.gas.toNumber() : undefined),
                 inputs: this.inputs.map((input) => JSON.parse(input.format(format))),
-                ouputs: this.outputs.map((output) => JSON.parse(output.format(format))),
+                outputs: this.outputs.map((output) => JSON.parse(output.format(format))),
             });
         }
         let result = "";

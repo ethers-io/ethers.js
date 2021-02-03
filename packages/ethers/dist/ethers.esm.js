@@ -4895,7 +4895,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.0.11";
+const version$4 = "abi/5.0.12";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -5464,7 +5464,7 @@ class ConstructorFragment extends Fragment {
             return JSON.stringify({
                 type: "constructor",
                 stateMutability: ((this.stateMutability !== "nonpayable") ? this.stateMutability : undefined),
-                payble: this.payable,
+                payable: this.payable,
                 gas: (this.gas ? this.gas.toNumber() : undefined),
                 inputs: this.inputs.map((input) => JSON.parse(input.format(format)))
             });
@@ -5536,10 +5536,10 @@ class FunctionFragment extends ConstructorFragment {
                 name: this.name,
                 constant: this.constant,
                 stateMutability: ((this.stateMutability !== "nonpayable") ? this.stateMutability : undefined),
-                payble: this.payable,
+                payable: this.payable,
                 gas: (this.gas ? this.gas.toNumber() : undefined),
                 inputs: this.inputs.map((input) => JSON.parse(input.format(format))),
-                ouputs: this.outputs.map((output) => JSON.parse(output.format(format))),
+                outputs: this.outputs.map((output) => JSON.parse(output.format(format))),
             });
         }
         let result = "";
@@ -22040,7 +22040,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.28";
+const version$o = "ethers/5.0.29";
 
 "use strict";
 const logger$H = new Logger(version$o);

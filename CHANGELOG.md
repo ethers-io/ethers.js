@@ -3,6 +3,11 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.29 (2021-02-03 14:36)
+---------------------------------
+
+  - Fixed typos in JSON ABI formatting. ([#1275](https://github.com/ethers-io/ethers.js/issues/1275); [73b31b3](https://github.com/ethers-io/ethers.js/commit/73b31b371fa47bacc4f5f6bed01d0d1e5d66fa2c))
+
 ethers/v5.0.28 (2021-02-02 17:12)
 ---------------------------------
 
