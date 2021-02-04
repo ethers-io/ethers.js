@@ -45,13 +45,13 @@ _property: ethers.utils.getAddress(address) => string<[[address]]>  @<utils-getA
 Returns //address// as a Checksum Address.
 
 If //address// is an invalid 40-nibble [[HexString]] or if it contains mixed case and
-the checksum is invalid, an InvalidArgument Error is thrown.
+the checksum is invalid, an [INVALID_ARGUMENT](errors--invalid-argument) Error is thrown.
 
 The value of //address// may be any supported address format.
 
 _property: ethers.utils.getIcapAddress(address) => string<[IcapAddress](address-icap)>  @<utils-getIcapAddress> @SRC<address>
 Returns //address// as an [ICAP address](link-icap).
-Supports the same restrictions as [utils.getAddress](utils-getAddress).
+Supports the same restrictions as [getAddress](utils-getAddress).
 
 _property: ethers.utils.isAddress(address) => boolean  @<utils-isAddress> @SRC<address>
 Returns true if //address// is valid (in any supported format).
