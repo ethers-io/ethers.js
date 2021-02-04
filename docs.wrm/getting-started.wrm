@@ -165,7 +165,7 @@ If you are familiar with Databases, this is similar to an //Object Relational Ma
 
 In order to communicate with the Contract on-chain, this class
 needs to know what methods are available and how to encode and
-decode the data, which is what the //Application Binary Interface// (API)
+decode the data, which is what the //Application Binary Interface// (ABI)
 provides.
 
 This class is a //meta-class//, which means its methods are constructed
@@ -311,14 +311,14 @@ const daiContract = new ethers.Contract("dai.tokens.ethers.eth", daiAbi, provide
 myAddress = await signer.getAddress()
 //! async myAddress
 
-// Filter for all token transfers to me
+// Filter for all token transfers from me
 filterFrom = daiContract.filters.Transfer(myAddress, null);
 // <hide>
 filterFrom
 // </hide>
 //!
 
-// Filter for all token transfers from me
+// Filter for all token transfers to me
 filterTo = daiContract.filters.Transfer(null, myAddress);
 // <hide>
 filterTo
