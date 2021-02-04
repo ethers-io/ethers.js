@@ -1,6 +1,10 @@
 _section: Contract @<Contract> @SRC<contracts:class.Contract>
 
-Explain contract here...
+A **Contract** is an abstraction of code that has been deployed
+to the blockchain.
+
+A Contract may be sent transactions, which will trigger its code
+to be run with the input of the transaction data.
 
 _subsection: Creating Instances @<Contract--creating>
 
@@ -101,7 +105,10 @@ free and does not require any ether, but **cannot make changes** to
 the blockchain state..
 
 _property: contract.METHOD_NAME(...args [, overrides ]) => Promise<any>  @<Contract-functionsCall>
-The type of the result depends on the ABI.
+The type of the result depends on the ABI. If the method returns a single
+value, it will be returned directly, otherwise a [[Result]] object will
+be returned with each parameter available positionally and if the parameter
+is named, it will also be available by its name.
 
 For values that have a simple meaning in JavaScript, the types are fairly
 straight forward; strings and booleans are returned as JavaScript strings
@@ -112,6 +119,25 @@ than 53 bits, such as an ``int24`` or ``uint48``) a normal JavaScript
 number is used. Otherwise a [[BigNumber]] is returned.
 
 For bytes (both fixed length and dynamic), a [[DataHexString]] is returned.
+
+The //overrides// object for a read-only method may include any of:
+
+- ``overrides.from`` - the ``msg.sender`` (or ``CALLER``) to use during the
+  execution of the code
+- ``overrides.value`` - the ``msg.value`` (or ``CALLVALUE``) to use during the
+  exectuiont of the code
+- ``overrides.gasPrice`` - the price to pay per gas (theoretically); since there
+  is no transaction, there is not going to be any fee charged, but the EVM still
+  requires a value to report to ``tx.gasprice`` (or ``GASPRICE``);
+  //most developers will not require this//
+- ``overrides.gasLimit`` - the amount of gas (theoretically) to allow a node
+  to use during the execution of the code; since there is no transaction, there
+  is not going to be any fee charged, but the EVM still processes gas metering
+  so calls like ``gasleft`` (or ``GAS``) report meaningful values
+- ``overrides.blockTag`` - a block tag to simulate the execution at, which
+  can be used for hypothetical historic analysis; note that many backends
+  do not support this, or may require paid plans to access as the node database
+  storage and processing requirements are much higher
 
 _property: contract.functions.METHOD_NAME(...args [, overrides ]) => Promise<[[Result]]>
 
@@ -130,6 +156,8 @@ allowing an alternate UTF-8 error strategy to be used.
 
 Most developers should not require this.
 
+The //overrides// are identical to the read-only operations above.
+
 _heading: Write Methods (non-constant) @<Contract--write>
 
 A non-constant method requires a transaction to be signed and requires
@@ -147,6 +175,14 @@ Returns a [[providers-TransactionResponse]] for the transaction after
 it is sent to the network. This requires the **Contract** has a
 signer.
 
+The //overrides// object for write methods may include any of:
+
+- ``overrides.gasPrice`` - the price to pay per gas
+- ``overrides.gasLimit`` - the limit on the amount of gas to allow the transaction
+  to consume; any unused gas is returned at the gasPrice
+- ``overrides.value`` - the amount of ether (in wei) to forward with the call
+- ``overrides.nonce`` - the nonce to use for the [[Signer]]
+
 
 _heading: Write Methods Analysis @<Contract--check>
 
@@ -157,10 +193,16 @@ _property: contract.estimateGas.METHOD_NAME(...args [ , overrides ]) => Promise<
 Returns the estimate units of gas that would be required to
 execute the //METHOD_NAME// with //args// and //overrides//.
 
+The //overrides// are identical to the overrides above for read-only
+or write methods, depending on the type of call of //METHOD_NAME//.
+
 _property: contract.populateTransaction.METHOD_NAME(...args [ , overrides ]) => Promise<[UnsignedTx](UnsignedTransaction)>  @<contract-populateTransaction>
 Returns an [[UnsignedTransaction]] which represents the transaction
 that would need to be signed and submitted to the network to execute
 //METHOD_NAME// with //args// and //overrides//.
+
+The //overrides// are identical to the overrides above for read-only
+or write methods, depending on the type of call of //METHOD_NAME//.
 
 _property: contract.callStatic.METHOD_NAME(...args [ , overrides ]) => Promise<any>  @<contract-callStatic>
 Rather than executing the state-change of a transaction, it is possible
@@ -171,6 +213,8 @@ This does not actually change any state, but is free. This in some cases
 can be used to determine if a transaction will fail or succeed.
 
 This otherwise functions the same as a [Read-Only Method](Contract--readonly).
+
+The //overrides// are identical to the read-only operations above.
 
 _heading: Event Filters @<Contract--filters>
 An event filter is made up of topics, which are values logged in a
