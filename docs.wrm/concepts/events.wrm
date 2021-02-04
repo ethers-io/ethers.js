@@ -1,34 +1,40 @@
-_section: Events
-
-Explain how topics and such work
-
-_subsection: Solidity Topics
-
-How to compute the topic...
+_section: Events @<events>
 
 _subsection: Logs and Filtering
 
-Example hog logs are used.
+Logs and filtering are used quite often in blockchain applications,
+since they allow for efficient queries of indexed data and provide
+lower-cost data storage when the data is not required to be
+accessed on-chain.
 
-Link to provider.getLogs and contract.on
+These can be used in conjunction with the [Provider Events API](Provider--event-methods)
+and with the [Contract Events API](Contract--events).
 
-_heading: Filters
+The Contract Events API also provides [higher-level methods](Contract--filters)
+to compute and query this data, which should be preferred over the lower-level filter.
 
-Filter are used as a way to query ... efficient, explain bloom filters lightly
+_heading: Filters @<events--filters>
 
-A filter may have up to 4 topic-sets, where each topic-set refers
-to a condition that must match the log topic in that position (i.e. each
-condition is ``AND``-ed together).
+When a Contract creates a log, it can include up to 4 pieces of
+data to be indexed by. The indexed data is hashed and included in
+a [[link-wiki-bloomfilter]], which is a data structure that allows
+for efficient filtering.
 
-If a topic-set is ``null``, a log topic in that position is not filtered
+So, a filter may correspondingly have up to 4 topic-sets, where each
+topic-set refers to a condition that must match the indexed log topic
+in that position (i.e. each condition is ``AND``-ed together).
+
+If a topic-set is ``null``, a log topic in that position is **not filtered**
 at all and **any value** matches.
 
-If a topic-set is a single topic, a log topic in that position must match
+If a topic-set is a single topic, a log topic in that position **must** match
 **that topic**.
 
 If a topic-set is an array of topics, a log topic in that position must
-match any **one** of the topics (i.e. the topic in this position are ``OR``-ed).
+match **any one** of the topics (i.e. the topic in this position are ``OR``-ed).
 
+This may sound complicated at first, but is more easily understood with
+some examples.
 
 _table: Example Log Matching @style<full>
 
@@ -151,6 +157,56 @@ contract.filters.Transfer(myAddress, otherAddress)
 // List all token transfers *to* myAddress OR otherAddress:
 contract.filters.Transfer(null, [ myAddress, otherAddress ])
 //!
+
+
+_subsection: Solidity Topics @<events-solidity>
+
+This is a quick (and non-comprehensive) overview of how events are computed
+in Solidity.
+
+This is likely out of the scope for most developers, but may be intersting
+to those who want to learn a bit more about the underlying technology.
+
+Solidity provides two types of events, anonymous and non-anonymous. The
+default is non-anonymous, and most developers will not need to worry about
+anonymous events.
+
+For non-anonymous events, up to 3 topics may be indexed (instead of 4), since
+the first topic is reserved to specify the event signature. This allows
+non-anonymous events to always be filtered by their event signature.
+
+This topic hash is always in the first slot of the indexed data, and is
+computed by normalizing the Event signature and taking the keccak256 hash
+of it.
+
+For anonymous events, up to 4 topics may be indexed, and there is no
+signature topic hash, so the events cannot be filtered by the event
+signature.
+
+Each additional indexed property is processed depending on whether its
+length is fixed or dynamic.
+
+For fixed length types (e.g. ``uint``, ``bytes5``), all of which are
+internally exactly 32 bytes (shorter types are padded with zeros;
+numeric values are padded on the left, data values padded on the right),
+these are included directly by their actual value, 32 bytes of data.
+
+For dynamic types (e.g. ``string``, ``uint256[]``) , the value is hashed
+using keccak256 and this hash is used.
+
+Because dynamic types are hashed, there are important consequences in
+parsing events that should be kept in mind. Mainly that the original
+value is lost in the event. So, it is possible to tell is a topic is
+equal to a given string, but if they do not match, there is no way
+to determine what the value was.
+
+If a developer requires that a string value is required to be both
+able to be filtered and also able to be read, the value must be included
+in the signature twice, once indexed and once non-indexed (e.g.
+``someEvent(string indexed searchBy, string clearText)``).
+
+For a more detailed description, please refer to the
+[Solidity Event Documentation](link-solidity-events).
 
 _heading: Other Things? TODO
 

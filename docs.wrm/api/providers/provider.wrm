@@ -2,7 +2,6 @@ _section: Provider @<Provider>
 
 Explain what a provider is...
 
-
 _subsection: Accounts Methods  @<Provider--account-methods>
 
 _property: provider.getBalance(address [ , blockTag = latest ]) => Promise<[[BigNumber]]>  @<Provider-getBalance> @SRC<providers/base-provider>
@@ -73,6 +72,10 @@ reading and debugging much simpler.
 The provider offers some basic operations to help resolve and
 work with ENS names.
 
+_property: provider.getResolver(name) => Promise<[[EnsResolver]]>
+Returns an EnsResolver instance which can be used to further inquire
+about specific entries for an ENS name.
+
 _property: provider.lookupAddress(address) => Promise<string>  @<Provider-lookupAddress> @SRC<providers/base-provider>
 Performs a reverse lookup of the //address// in ENS using the
 //Reverse Registrar//.  If the name does not exist, or the
@@ -94,6 +97,25 @@ provider.resolveName("ricmoo.firefly.eth");
 //!
 
 
+_subsection: EnsResolver @<EnsResolver> 
+
+_property: resolver.name => string
+The name of this resolver.
+
+_property: resolver.address => string<[[address]]>
+The address of the Resolver.
+
+_property: resolver.getAddress([ cointType = 60 ]) => Promise<string>
+Returns a Promise which resolves to the [[link-eip-2304]] multicoin address
+stored for the //coinType//. By default an Ethereum [[address]]
+(``coinType = 60``) will be returned.
+
+_property: resolver.getContentHash() => Promise<string>
+Returns a Promise which resolves to any stored [[link-eip-1577]] content hash.
+
+_property: resolver.getText(key) => Promise<string>
+Returns a Promise which resolves to any stored [[link-eip-634]] text entry for //key//.
+
 _subsection: Logs Methods  @<Provider--log-methods>
 
 _property: provider.getLogs(filter) => Promise<Array<[[providers-Log]]>>  @<Provider-getLogs> @SRC<providers/base-provider>
@@ -114,6 +136,13 @@ Returns the block number (or height) of the most recently mined block.
 
 _property: provider.getGasPrice() => Promise<[[BigNumber]]>  @<Provider-getGasPrice> @SRC<providers/base-provider>
 Returns a //best guess// of the [[gas-price]] to use in a transaction.
+
+_property: provider.ready => Promise<[[providers-Network]]> @<Provider-ready> @src<providers/base-provider>
+Returns a Promise which will stall until the network has heen established,
+ignoring errors due to the target node not being active yet.
+
+This can be used for testing or attaching scripts to wait until the node is
+up and running smoothly.
 
 _code: Network Status Examples @lang<javascript>
 
@@ -156,6 +185,21 @@ An estimate may not be accurate since there could be another transaction
 on the network that was not accounted for, but after being mined affected
 relevant state.
 
+_property: provider.getTransaction(hash) => Promise<[[providers-TransactionResponse]]> @<Provider-getTransaction> @src<providers/base-provider>
+Returns the transaction with //hash// or null if the transaction is unknown.
+
+If a transaction has not been mined, this method will search the transaction
+pool. Various backends may have more restrictive transaction pool access (e.g.
+if the gas price is too low or the transaction was only recently sent and not
+yet indexed) in which case this method may also return null.
+
+_property: provider.getTransactionReceipt(hash) => Promise<[[providers-TransactionReceipt]]> @<Provider-getTransactionReceipt> @src<providers/base-provider>
+Returns the transaction receipt for //hash// or null if the transaction
+has not been mined.
+
+To stall until the transaction has been mined, consider the ``waitForTransaction``
+method below.
+
 _property: provider.sendTransaction(transaction) => Promise<[[providers-TransactionResponse]]>  @<Provider-sendTransaction> @SRC<providers/base-provider>
 Submits //transaction// to the network to be mined. The //transaction// **must** be signed,
 and be valid (i.e. the nonce is correct and the account has sufficient balance to pay
@@ -164,36 +208,47 @@ for the transaction).
 _property: provider.waitForTransaction(hash [ , confirms = 1 [ , timeout ] ]) => Promise<[TxReceipt](providers-TransactionReceipt)>  @<Provider-waitForTransaction> @SRC<providers/base-provider>
 Returns a Promise which will not resolve until //transactionHash// is mined.
 
+If //confirms// is 0, this method is non-blocking and if the
+transaction has not been mined returns null. Otherwise,
+this method will block until the transaction has //confirms//
+blocks mined on top of the block in which is was mined.
 
 _subsection: Event Emitter Methods @<Provider--event-methods>
 
-Explain events here...
+The EventEmitter API allows applications to use an
+[[link-wiki-observer-pattern]] to register callbacks for when
+various events occur.
+
+This closely follows the Event Emitter provided by other JavaScript
+libraries with the exception that event names support some more
+[complex objects](Provider--events), not only strings. The objects
+are normalized internally.
 
 _property: provider.on(eventName, listener) => this  @<Provider-on> @SRC<providers/base-provider>
-Add a //listener// to be triggered for each //eventName//.
+Add a //listener// to be triggered for each //eventName// [event](Provider--events).
 
 _property: provider.once(eventName, listener) => this  @<Provider-once> @SRC<providers/base-provider>
-Add a //listener// to be triggered for only the next //eventName//,
-at which time it will be removed.
+Add a //listener// to be triggered for only the next
+//eventName// [event](Provider--events), at which time it will be removed.
 
 _property: provider.emit(eventName, ...args) => boolean  @<Provider-emit> @SRC<providers/base-provider>
-Notify all listeners of //eventName//, passing //args// to each listener. This
-is generally only used internally.
+Notify all listeners of the //eventName// [event](Provider--events),
+passing //args// to each listener. This is generally only used internally.
 
 _property: provider.off(eventName [ , listener ]) => this  @<Provider-off> @SRC<providers/base-provider>
-Remove a //listener// for //eventName//. If no //listener// is provided,
-all listeners for //eventName// are removed.
+Remove a //listener// for the //eventName// [event](Provider--events).
+If no //listener// is provided, all listeners for //eventName// are removed.
 
 _property: provider.removeAllListeners([ eventName ]) => this  @<Provider-removeAllListeners> @SRC<providers/base-provider>
-Remove all the listeners for //eventName//. If no //eventName// is provided,
-**all** events are removed.
+Remove all the listeners for the //eventName// [events](Provider--events).
+If no //eventName// is provided, **all** events are removed.
 
 _property: provider.listenerCount([ eventName ]) => number  @<Provider-listenerCount> @SRC<providers/base-provider>
-Returns the number of listeners for //eventName//. If no //eventName// is
-provided, the total number of listeners is returned.
+Returns the number of listeners for the //eventName// [events](Provider--events).
+If no //eventName// is provided, the total number of listeners is returned.
 
 _property: provider.listeners(eventName) => Array<Listener>  @<Provider-listeners> @SRC<providers/base-provider>
-Returns the list of Listeners for //eventName//.
+Returns the list of Listeners for the //eventName// [events](Provider--events).
 
 
 _heading: Events  @<Provider--events>
@@ -207,7 +262,7 @@ properties ``address`` (the source contract) and ``topics`` (a topic-set to matc
 
 If ``address`` is unspecified, the filter matches any contract address.
 
-See events for more information on how to specify topic-sets.
+See [EventFilters](providers-EventFilter) for more information on filtering events.
 
 _definition: **Topic-Set Filter**
 
@@ -215,6 +270,8 @@ The value of a **Topic-Set Filter** is a array of Topic-Sets.
 
 This event is identical to a //Log Filter// with the address omitted (i.e. from
 any contract).
+
+See [EventFilters](providers-EventFilter) for more information on filtering events.
 
 _definition: **Transaction Filter**
 

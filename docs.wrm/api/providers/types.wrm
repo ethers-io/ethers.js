@@ -1,23 +1,15 @@
 _section: Types
 
 _subsection: BlockTag @<providers-BlockTag>
-A **BlockTag** specifies a specific location in the Blockchain.
+A **BlockTag** specifies a specific block location in the Blockchain.
 
-- **``"latest"``** -- The most recently mined block
-- **``"earliest"``** -- Block #0
-- **``"pending"``** -- The block currently being prepared for mining; not all
+- **``"latest"``** - The most recently mined block
+- **``"earliest"``** - Block #0
+- **``"pending"``** - The block currently being prepared for mining; not all
   operations and backends support this BlockTag
-- **//number//** -- The block at this height
-- **//a negative number//** -- The block this many blocks ago
-
-_heading: EventType @<providers-EventType>
-
-And **EventType** can be any of the following.
-
-- **//string//** -- TODO...
-- **//Array<string<[[DataHexString]]<32>> | Array<string<[[DataHexString]]<32>>>>//** -- TODO...
-- **//[[providers-EventFilter]]//** -- TODO...
-
+- **//number//** - The block at this height
+- **//a negative number//** - The block this many blocks ago
+- **//hex string//** - The block at this height (as a hexidecimal value)
 
 _subsection: Networkish @<providers-Networkish>
 A **Networkish** may be any of the following:
@@ -111,10 +103,15 @@ _heading: EventFilter @<providers-EventFilter>
 _property: filter.address => string<[[address]]>
 The address to filter by, or ``null`` to match any address.
 
-_property: filter.topics => Array<string<[[DataHexString]]<32>> | Array<string<[[DataHexString]]<32>>>>
-The topics to filter by, or ``null`` to match any topics. Each entry represents an
-**AND** condition that must match, or may be ``null`` to match anything. If a given
-entry is an Array, then that entry is treated as an **OR** for any value in the entry.
+_property: filter.topics => Array<string<[Data](DataHexString)<32>> | Array<string<[Data](DataHexString)<32>>>>
+The topics to filter by or ``null`` to match any topics.
+
+Each entry represents an **AND** condition that must match, or may
+be ``null`` to match anything. If a given entry is an Array, then
+that entry is treated as an **OR** for any value in the entry.
+
+See [Filters](events--filters) for more details and examples
+on specifying complex filters.
 
 _heading: Filter @<providers-Filter> @INHERIT<[[providers-EventFilter]]>
 
@@ -231,9 +228,18 @@ transaction was mined.
 _property: transaction.raw => string<[[DataHexString]]>
 The serialized transaction.
 
-_property: transaction.wait([ confirmations = 1 ]) => Promise<[[providers-TransactionReceipt]]>
-Wait for //confirmations//. If 0, and the transaction has not been mined,
-``null`` is returned.
+_property: transaction.wait([ confirms = 1 ]) => Promise<[[providers-TransactionReceipt]]>
+Resolves to the [[providers-TransactionReceipt]] once the transaction
+has been included in the chain for //confirms// blocks. If //confirms//
+is 0, and the transaction has not been mined, ``null`` is returned.
+
+If the transaction execution failed (i.e. the receipt status is ``0``),
+a [CALL_EXCEPTION](errors--call-exception) Error will be rejected with
+the following properties:
+
+- ``error.transaction`` - the original transaction
+- ``error.transactionHash`` - the hash of the transaction
+- ``error.receipt`` - the actual receipt, with the status of ``0``
 
 _heading: TransactionReceipt @<providers-TransactionReceipt>
 
