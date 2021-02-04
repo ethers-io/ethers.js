@@ -7,7 +7,7 @@ Many things are the way they are for good (at the time, at least) reasons,
 but I always welcome criticism, and am completely willing to have my mind
 changed on things.
 
-So, pull requests are always welcome, but please keep a few points in mind:
+Pull requests are always welcome, but please keep a few points in mind:
 
 - Backwards-compatibility-breaking changes will not be accepted; they may be
   considered for the next major version
@@ -15,6 +15,9 @@ So, pull requests are always welcome, but please keep a few points in mind:
   arguments as to why
 - The library aims to be lean, so keep an eye on the dist/ethers.min.js
   file size before and after your changes
+- Keep the PR simple and readable; only modify files in the ``docs.wrm/``
+  and ``packages/*/src.ts/`` folders, as this allows the changes to be easily
+  verified
 - Add test cases for both expected and unexpected input
 - Any new features need to be supported by me (future issues, documentation,
   testing, migration), so anything that is overly complicated or specific
@@ -27,59 +30,134 @@ have a public discussion and figure out the best way to address the problem/feat
 
 _subsection: Building @<contributing--building>
 
-If you wish to modify the source code, there are a few steps involved in
-setting up your environment.
+The build process for ethers is unfortunatly not super trivial, but
+I have attempted to make it as straight-forward as possible.
 
-Since the library uses a monorepo, you must install an initial required
-set of libraries, which can then be used to install the remaining libraries
-used within each package, as well as link all the packages within the repo
-with each other.
+It is a mono-repo which attempts to be compatibile with a large
+number of environments, build tools and platforms, which is why
+there are a some weird things it must do.
 
-_code: Preparing for builds @lang<shell>
+There are several custom scripts in the ``misc/admin`` folder
+to help manage the monorepo. Developers working on contributing
+to ethers should not generally need to worry about those, since
+they are wrapped up behind ``npm run SCRIPT`` operations.
+
+_code: Installing @lang<shell>
 
 # Clone the repository
-/home/ricmoo> git clone git@github.com:ethers-io/ethers.js.git
+/home/ricmoo> git clone https://github.com/ethers-io/ethers.js.git
+
 /home/ricmoo> cd ethers.js
 
-# Install the base dependencies
+# Install all dependencies:
+# - Hoists all sub-package dependencies in the package.json (preinstall)
+# - Installs all the (hoisted) dependencies and devDependencies (install)
+# - Build the rat-nests (in .package_node_modules) (postinstall)
+# - Create a dependency graph for the TypeScript (postinstall)
+# - Link the rat-nets into each project (postinstall)
 /home/ricmoo/ethers.js> npm install
 
-# Install each module's dependencies and link the libraries
-# internally, so they reference each other
-/home/ricmoo/ethers.js> npm run bootstrap
+_heading: Making Changes @<contributing--updating>
 
-
-_subsection: Making your changes @<contributing--updating>
-
-TODO: Add more information here.
+Once your environment is set up, you should be able to simply
+start the ``auto-build`` feature, and make changes to the
+TypeScript source.
 
 _code: Watching and Building @lang<shell>
 
 # Begin watching the files and re-building whenever they change
 /home/ricmoo/ethers.js> npm run auto-build
 
+# Or if you do not want to watch and just build
+/home/ricmoo/ethers.js> npm run build
 
-# Sometimes the issue only affects the ESM modules
-/home/ricmoo/ethers.js> npm run auto-build-esm
+_heading: Creating Browser-Ready Files
 
+To create files for use directly in a browser, the distribution
+files (located in ``packages/ethers/dist``) need to be built
+which requires several intermediate builds, scripts and for
+various rollup scripts to execute.
 
-# Or if you only need to run a single build
-/home/ricmoo/ethers.js> npm run _build-cjs
-/home/ricmoo/ethers.js> npm run _build-esm
+_code: Building Distribution Files @lang<shell>
 
+# If you need to rebuild all the libs (esm + cjs) and dist files
+# Note: this requires node 10 or newer
+/home/ricmoo/ethers.js> npm run build-all
+
+_heading: Testing
 
 _code: Testing @lang<shell>
 
-# Rebuilds all files and bundles testcases up for testing
+# Rebuilds all files (npm run build-all) and bundles testcases up for testing
 /home/ricmoo/ethers.js> npm test
 
 # Often you don't need the full CI experience
-/home/ricmoo/ethers.js> npm run _test-node
+/home/ricmoo/ethers.js> npm run test-node
 
+_heading: Distribution
+
+Most developers should not ever require this step, but for people
+forking ethers and creating alternates (for example if you have
+a non-EVM compatible chain but are trying to reuse this package).
+
+This script will rebuild the entire ethers project, compare it
+against npm, re-write package versions, update internal hashes,
+re-write various TypeScript files (to get around some ES+TS
+limitations for Tree Shaking and linking), re-write map files,
+bundle stripped versions of dependencies and basically just a
+whole bunch of stuff.
+
+If you use this and get stuck, [message me](link-mail).
 
 _code: Preparing the Distribution @lang<shell>
 
+# Prepare all the distribution files
+# - Remove all generated files (i.e. npm run clean)
+# - Re-install all dependencies, hoisting, etc. (npm install)
+# - Spell check all strings in every TypeScript files
+# - Build everything from scratch with this clean install
+# - Compare local with npm, bumping the version if changed
+# - Build everything again (with the updated versions)
+# - Update the CHANGELOG.md with the git history since the last change
 /home/ricmoo/ethers.js> npm run update-version
+
+_note: Do NOT check in dist files in a PR
+
+For Pull Requests, please ONLY commit files in the ``docs.wrm/`` and
+``packages/*/src.ts/`` folders. I will prepare the distribution builds
+myself and keeping the PR relevant makes it easier to verify the changes.
+
+_heading: Publishing
+
+Again, this should not be necessary for most developers. This step
+requires using the ``misc/admin/cmds/config-set`` script for a number
+of values, including private keys, NPM session keys, AWS access keys,
+GitHub API tokens, etc.
+
+The config file is encrypted with about 30 seconds of scrypt password-based
+key derivation function, so brute-forcing the file is quite expensive.
+
+The config file also contains a plain-text mnemonic. This is a money-pot.
+Place a tempting amount of ether or Bitcoin on this account and set up an
+e-mail alert for this account.
+
+If any attacker happens across your encrypted config, they will have instant
+access to the plain-text mnemonic, so they have the option to immediately
+steal the ether (i.e. the responsible-disclosure bond).
+
+If you ever see this ether taken, your encrypted file is compromised! Rotate
+all your AWS keys, NPM session keys, etc. immedately.
+
+@TODO: document all the keys that need to be set for each step
+
+_code: Preparing the Distribution @lang<shell>
+
+# Publish
+# - Update any changed packages to NPM
+# - Create a release on GitHub with the latest CHANGELOG.md description
+# - Upload the bundled files the the CDN
+# - Flush the CDN edge caches
+/home/ricmoo/ethers.js> npm run publish-all
 
 
 _subsection: Documentation @<contributing--documentation>
@@ -95,7 +173,7 @@ Style Guide (this section will have much more coming):
 - Prefix external links with ``link-``
 - Changing an anchor name must be well justified, as it will break all existing links
   to that section; flatworm will support symlinks in the future
-- In general, I aim for xonsistency; look to similar situations throughout the documentation
+- In general, I aim for consistency; look to similar situations throughout the documentation
 
 
 _heading: Building
