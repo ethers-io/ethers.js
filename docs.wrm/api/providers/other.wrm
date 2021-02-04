@@ -11,7 +11,7 @@ It uses a quorum and connects to multiple [Providers](Provider) as backends,
 each configured with a //priority// and a //weight// .
 
 When a request is made, the request is dispatched to multiple backends, randomly
-chosen (higher priority backends are always selected first) and the results from
+chosen (lower-value priority backends are always selected first) and the results from
 each are compared against the others. Only once the quorum has been reached will that
 result be accepted and returned to the caller.
 
@@ -40,9 +40,9 @@ _property: fallbackProviderConfig.provider => [[Provider]]
 The provider for this configuration.
 
 _property: fallbackProviderConfig.priority => number
-The priority used for the provider. Higher priorities are favoured over lower
-priorities. If multiple providers share the same priority, they are chosen
-at random.
+The priority used for the provider. Lower-value priorities are favoured over
+higher-value priorities. If multiple providers share the same priority, they
+are chosen at random.
 
 _property: fallbackProviderConfig.stallTimeout => number
 The timeout (in ms) after which another [[Provider]] will be attempted. This
@@ -156,7 +156,7 @@ WebSockets are much more intensive on your server resources, as they must manage
 and maintain the state for each client. For this reason, many services may also
 charge additional fees for using their WebSocket endpoints.
 
-_property: new ethers.provider.WebSocketProvider([ url [ , network ] ])
+_property: new ethers.providers.WebSocketProvider([ url [ , network ] ])
 Returns a new [[WebSocketProvider]] connected to //url// as the //network//.
 
 If //url// is unspecified, the default ``"ws:/\/localhost:8546"`` will be used.
