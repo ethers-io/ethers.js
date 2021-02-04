@@ -5,11 +5,13 @@ with Ethereum and is available in all major Ethereum node implementations
 (e.g. [[link-geth]] and [[link-parity]]) as well as many
 third-party web services (e.g. [[link-infura]])
 
-_property: new ethers.providers.JsonRpcProvider([ url [ , aNetworkish ] ])  @SRC<providers:constructor.JsonRpcProvider>
-Connect to a JSON-RPC API located at //url// using the //aNetworkish// network.
-If //url// is not specified, the default (i.e. ``http:/\/localhost:8545``) is used
-and if no network is specified, it will be determined automatically by
-querying the node.
+_property: new ethers.providers.JsonRpcProvider([ urlOrConnectionInfo [ , networkish ] ])  @SRC<providers:constructor.JsonRpcProvider>
+Connect to a JSON-RPC HTTP API using the URL or [[ConnectionInfo]] //urlOrConnectionInfo//
+connected to the //networkish// network.
+
+If //urlOrConnectionInfo// is not specified, the default (i.e. ``http:/\/localhost:8545``)
+is used and if no network is specified, it will be determined automatically by querying the
+node using ``eth_chaindId`` and falling back on ``eth_networkId``.
 
 _note: Note: Connecting to a Local Node
 Each node implementation is slightly different and may require specific
