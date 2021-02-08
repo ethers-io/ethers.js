@@ -64,7 +64,8 @@ function buildEip1193Fetcher(provider: ExternalProvider): JsonRpcFetchFunc {
         if (params == null) { params = [ ]; }
 
         // Metamask complains about eth_sign (and on some versions hangs)
-        if (method == "eth_sign" && provider.isMetaMask) {
+        // status.im doesn't support eth_sign because of security reasons
+        if (method == "eth_sign" && (provider.isMetaMask || provider.isStatus)) {
             // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
             method = "personal_sign";
             params = [ params[1], params[0] ];
