@@ -56,6 +56,7 @@ function getMime(filename: string): string {
         case 'eot':      return 'application/vnd.ms-fontobject';
         case 'gif':      return 'image/gif';
         case 'html':     return 'text/html';
+        case 'ico':      return 'image/x-icon';
         case 'js':       return 'application/javascript';
         case 'jpg':      return 'image/jpeg';
         case 'jpeg':     return 'image/jpeg';

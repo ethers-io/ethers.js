@@ -74,7 +74,7 @@ apikey asc endblock startblock
 alchemyapi Cloudflare Etherscan INFURA IPFS MetaMask Nodesmith
 Trezor ledgerhq axic bitcoinjs browserify easyseed ethereumjs
 goerli homestead kotti kovan mainnet morden mordor rinkeby
-ropsten testnet
+ropsten testnet lb
 
 // Demo words
 args foo eth foo foobar ll localhost passwd ricmoo tx xxx yna

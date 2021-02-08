@@ -79,7 +79,12 @@ const utils_1 = require("../utils");
         }
         output.forEach((line) => { console.log(line); });
     });
-})().catch((error) => {
+})().then((result) => {
+    // Something above causes this script to hang, so let's exit manually
+    setTimeout(() => {
+        process.exit(0);
+    }, 1000);
+}, (error) => {
     console.log(`Error running ${process.argv[0]}: ${error.message}`);
     process.exit(1);
 });

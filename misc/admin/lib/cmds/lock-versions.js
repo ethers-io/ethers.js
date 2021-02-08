@@ -19,19 +19,19 @@ const utils_1 = require("../utils");
             accum[pkg.name] = pkg.version;
             return accum;
         }, ({}));
-        console.log(versions);
         path_1.dirnames.forEach((dirname) => {
             // Skip ethers; it's versions are locked during update-versions
             if (dirname === "ethers") {
                 return;
             }
+            console.log(dirname);
             const path = path_1.resolve("packages", dirname, "package.json");
             const json = utils_1.loadJson(path);
             for (const name in (json.dependencies || {})) {
                 const version = json.dependencies[name];
                 const target = (versions[name] ? ("^" + versions[name]) : version);
                 if (version !== target) {
-                    console.log(name, version, "=>", target);
+                    console.log("  ", name, version, "=>", target);
                 }
                 json.dependencies[name] = target;
             }

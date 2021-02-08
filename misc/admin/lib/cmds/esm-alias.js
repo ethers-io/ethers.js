@@ -97,7 +97,6 @@ function alias(name) {
                     //      + transform the map JSON to reference "geturl.js"
                     // We need to swap in the replacement and update its data
                     const replace = replacements[filename.replace(/\.d.ts\.map$|\.js\.map$/i, ".js")];
-                    console.log(filename, replace);
                     // Skip!
                     if (replace === "") {
                         return;
