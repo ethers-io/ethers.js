@@ -183,6 +183,24 @@ The //overrides// object for write methods may include any of:
 - ``overrides.value`` - the amount of ether (in wei) to forward with the call
 - ``overrides.nonce`` - the nonce to use for the [[Signer]]
 
+If the ``wait()`` method on the returned [[providers-TransactionResponse]]
+is called, there will be additional properties on the receipt:
+
+- ``receipt.events`` - an array of the logs, with additional properties
+  (if the ABI included a description for the events)
+- ``receipt.events[n].args`` - the parsed arguments
+- ``receipt.events[n].decode`` - a method that can be used to parse the
+  log topics and data (this was used to compute ``args``)
+- ``receipt.events[n].event`` - the name of the event
+- ``receipt.events[n].eventSignature`` - the full signature of the event
+- ``receipt.removeListener()`` - a method to remove the listener that trigger
+  this event
+- ``receipt.getBlock()`` - a method to return the [Block](providers-Block) this event occurred in
+- ``receipt.getTransaction()`` - a method to return the
+  [Transaction](providers-TransactionResponse) this event occurred in
+- ``receipt.getTransactionReceipt()`` - a method to return the
+  [Transaction Receipt](providers-TransactionReceipt) this event occurred in
+
 
 _heading: Write Methods Analysis @<Contract--check>
 

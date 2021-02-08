@@ -1,7 +1,5 @@
 _section: Other Providers
 
-Others...
-
 _subsection: FallbackProvider  @<FallbackProvider> @INHERIT<[[Provider]]> @SRC<providers/fallback-provider:class.FallbackProvider>
 
 The **FallbackProvider** is the most advanced [[Provider]] available in

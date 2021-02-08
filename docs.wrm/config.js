@@ -262,6 +262,7 @@ module.exports = {
       "link-eip-2304": { name: "EIP-2304", url: "https:/\/eips.ethereum.org/EIPS/eip-2304" },
       "link-bip-39": { name: "BIP-39", url: "https:/\/en.bitcoin.it/wiki/BIP_0039" },
       "link-bip-32": { name: "BIP-32", url: "https:/\/github.com/bitcoin/bips/blob/master/bip-0032.mediawiki" },
+      "link-bip-44": { name: "BIP-44", url: "https:/\/en.bitcoin.it/wiki/BIP_0044" },
 
       "link-npm-elliptic": { name: "elliptic", url: "https:/\/www.npmjs.com/package/elliptic" },
       "link-npm-ethersproject-shims": { name: "Shims", url: "https:/\/www.npmjs.com/package/@ethersproject/shims" },

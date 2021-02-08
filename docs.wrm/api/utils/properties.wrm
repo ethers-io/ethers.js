@@ -1,9 +1,40 @@
 _section: Property Utilities
 
-_property: ethers.utils.checkProperties() => void
+This is a collection of utility functions used for handling
+properties in a platform-safe way.
+
+The next major version of ethers will no longer be compatible
+with ES3, so many of these will be removed in favor of the
+built-in options available in ES2015 and above.
+
+_property: ethers.utils.checkProperties(object, check) => void
+
+Checks that //object// only contains properties included
+in //check//, and throws [INVALID_ARGUMENT](errors--invalid-argument) if not.
 
 _property: ethers.utils.deepCopy(anObject) => any
+
+Creates a recursive copy of //anObject//. Frozen (i.e. and other known
+immutable) objects are copied by reference.
+
 _property: ethers.utils.defineReadOnly(anObject, name, value) => void
+
+Uses the ``Object.defineProperty`` method to set a read-only property
+on an object.
+
 _property: ethers.utils.getStatic(aConstructor, key) => any
+
+Recursively check for a static method //key// on an inheritance chain
+from //aConstructor// to all ancestors.
+
+This is used to mimic behaviour in other languages where ``this`` in
+a static method will also search ancestors.
+
 _property: ethers.utils.resolveProperties(anObject) => Promise<any> @<utils-resolveproperties> @SRC<properties>
+
+Retruns a Promise which resolves all child values on //anObject//.
+
 _property: ethers.utils.shallowCopy(anObject) => any
+
+Returns a shallow copy of //anObject//. This is the same as
+using ``Object.assign({ }, anObject)``.

@@ -1,6 +1,13 @@
 _section: Byte Manipulation
 
-Tra la la...
+While there are many high-level APIs for interacting with
+Ethereum, such as [Contracts](Contract) and [Providers](Provider),
+a lot of the low level access requires byte manipulation
+operations.
+
+Many of these operations are used internally, but can also be
+used to help normalize binary data representations from the
+output of various functions and methods.
 
 _subsection: Types
 

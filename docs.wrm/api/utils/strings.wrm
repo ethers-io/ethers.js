@@ -1,7 +1,11 @@
 _section: Strings  @<strings>
 
-Tra la la
+A **String** is a representation of a human-readable input of output,
+which are often taken for granted.
 
+When dealing with blockchains, properly handling human-readable and
+human-provided data is important to prevent loss of funds, assets,
+incorrect permissions, etc.
 
 _subsection: Bytes32String @<Bytes32String>
 

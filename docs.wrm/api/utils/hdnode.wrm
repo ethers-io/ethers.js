@@ -1,6 +1,16 @@
 _section: HD Wallet @<hdnodes>
 
-TODO: Explain [BIP32](link-bip-32) [BIP-39](link-bip-39) and whatnot here...
+The Hierarchal Desterministic (HD) Wallet was a standard
+created for Bitcoin, but lends itself well to a wide variety of
+Blockchains which rely on secp256k1 private keys.
+
+For a more detailed technical understanding:
+
+- [BIP-32](link-bip-32) - the hierarchal deterministic description
+- [BIP-39](link-bip-39) - the method used to derive the BIP-32 seed
+  from human-readable sequences of words (i.e. a mnemonic)
+- [BIP-44](link-bip-44) - a standard defined to make BIP-32 easy
+  to adapt to any future compatible blockchain
 
 _subsection: Types
 
