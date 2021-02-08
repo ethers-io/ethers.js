@@ -2,6 +2,7 @@ import { Networkish } from "@ethersproject/networks";
 import { JsonRpcProvider } from "./json-rpc-provider";
 export declare type ExternalProvider = {
     isMetaMask?: boolean;
+    isStatus?: boolean;
     host?: string;
     path?: string;
     sendAsync?: (request: {

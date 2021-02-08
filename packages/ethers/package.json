@@ -20,11 +20,11 @@
     "@ethersproject/networks": "5.0.8",
     "@ethersproject/pbkdf2": "5.0.8",
     "@ethersproject/properties": "5.0.8",
-    "@ethersproject/providers": "5.0.21",
+    "@ethersproject/providers": "5.0.22",
     "@ethersproject/random": "5.0.8",
     "@ethersproject/rlp": "5.0.8",
     "@ethersproject/sha2": "5.0.8",
-    "@ethersproject/signing-key": "5.0.9",
+    "@ethersproject/signing-key": "5.0.10",
     "@ethersproject/solidity": "5.0.9",
     "@ethersproject/strings": "5.0.9",
     "@ethersproject/transactions": "5.0.10",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x39d88539494ba5a57753c5cd359d2bb66eaffb87d9046cdf4c04cf4b201bd442",
+  "tarballHash": "0xdf3bae7db22cd8766586785ea3ed0021291d91740229d69a9215aba60edadfbb",
   "types": "./lib/index.d.ts",
-  "version": "5.0.29"
+  "version": "5.0.30"
 }

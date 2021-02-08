@@ -1,1 +1,1 @@
-export const version = "ethers/5.0.29";
+export const version = "ethers/5.0.30";

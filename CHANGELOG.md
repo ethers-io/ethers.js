@@ -3,6 +3,12 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.30 (2021-02-08 15:22)
+---------------------------------
+
+  - When in Status trigger personal_sign instead of eth_sign. ([#1285](https://github.com/ethers-io/ethers.js/issues/1285); [73e9434](https://github.com/ethers-io/ethers.js/commit/73e94349de94d2969ccb21c834119525ddfcb961))
+  - Bump elliptic version for CVE-2020-28498. ([#1284](https://github.com/ethers-io/ethers.js/issues/1284); [796954f](https://github.com/ethers-io/ethers.js/commit/796954f8807b0c464c7baa8f7ff299e22685e192))
+
 ethers/v5.0.29 (2021-02-03 14:36)
 ---------------------------------
 
