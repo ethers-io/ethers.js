@@ -134,4 +134,14 @@ if (document.getElementsByTagName("html")[0].classList.contains("single-page")) 
 
     // Set up the initial TOC highlight
     highlightToc(true);
+} else {
+    const sidebar = document.getElementsByClassName("sidebar")[0];
+
+    // Scroll to TOC to get the selected page visible
+    setTimeout(function() {
+        const selected = document.querySelector(".myself");
+        if (selected) {
+            sidebar.scrollTop = Math.max(selected.offsetTop - 230, 0);
+        }
+    }, 10);
 }

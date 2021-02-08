@@ -54,6 +54,7 @@ Provider Documentation
   * [Accounts Methods](provider)
   * [Blocks Methods](provider)
   * [Ethereum Naming Service (ENS) Methods](provider)
+  * [EnsResolver](provider)
   * [Logs Methods](provider)
   * [Network Status Methods](provider)
   * [Transactions Methods](provider)

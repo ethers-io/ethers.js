@@ -10,8 +10,6 @@ Types
 BlockTag
 --------
 
-### EventType
-
 Networkish
 ----------
 
@@ -118,9 +116,13 @@ Events and Logs
 The address to filter by, or `null` to match any address.
 
 
-#### *filter* . **topics** => *Array< string< [DataHexString](/v5/api/utils/bytes/#DataHexString)< 32 > > | Array< string< [DataHexString](/v5/api/utils/bytes/#DataHexString)< 32 > > > >*
+#### *filter* . **topics** => *Array< string< [Data](/v5/api/utils/bytes/#DataHexString)< 32 > > | Array< string< [Data](/v5/api/utils/bytes/#DataHexString)< 32 > > > >*
 
-The topics to filter by, or `null` to match any topics. Each entry represents an **AND** condition that must match, or may be `null` to match anything. If a given entry is an Array, then that entry is treated as an **OR** for any value in the entry.
+The topics to filter by or `null` to match any topics.
+
+Each entry represents an **AND** condition that must match, or may be `null` to match anything. If a given entry is an Array, then that entry is treated as an **OR** for any value in the entry.
+
+See [Filters](/v5/concepts/events/#events--filters) for more details and examples on specifying complex filters.
 
 
 ### Filter
@@ -268,9 +270,17 @@ The number of blocks that have been mined (including the initial block) since th
 The serialized transaction.
 
 
-#### *transaction* . **wait**( [ confirmations = 1 ] ) => *Promise< [TransactionReceipt](/v5/api/providers/types/#providers-TransactionReceipt) >*
+#### *transaction* . **wait**( [ confirms = 1 ] ) => *Promise< [TransactionReceipt](/v5/api/providers/types/#providers-TransactionReceipt) >*
 
-Wait for *confirmations*. If 0, and the transaction has not been mined, `null` is returned.
+Resolves to the [TransactionReceipt](/v5/api/providers/types/#providers-TransactionReceipt) once the transaction has been included in the chain for *confirms* blocks. If *confirms* is 0, and the transaction has not been mined, `null` is returned.
+
+If the transaction execution failed (i.e. the receipt status is `0`), a [CALL_EXCEPTION](/v5/api/utils/logger/#errors--call-exception) Error will be rejected with the following properties:
+
+- `error.transaction` - the original transaction 
+- `error.transactionHash` - the hash of the transaction 
+- `error.receipt` - the actual receipt, with the status of `0` 
+
+
 
 
 ### TransactionReceipt

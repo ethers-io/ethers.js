@@ -117,13 +117,23 @@ Meta-Class
 
 #### *contract* . **METHOD_NAME**( ...args [ , overrides ] ) => *Promise< any >*
 
-The type of the result depends on the ABI.
+The type of the result depends on the ABI. If the method returns a single value, it will be returned directly, otherwise a [Result](/v5/api/utils/abi/interface/#Result) object will be returned with each parameter available positionally and if the parameter is named, it will also be available by its name.
 
 For values that have a simple meaning in JavaScript, the types are fairly straight forward; strings and booleans are returned as JavaScript strings and booleans.
 
 For numbers, if the **type** is in the JavaScript safe range (i.e. less than 53 bits, such as an `int24` or `uint48`) a normal JavaScript number is used. Otherwise a [BigNumber](/v5/api/utils/bignumber/) is returned.
 
 For bytes (both fixed length and dynamic), a [DataHexString](/v5/api/utils/bytes/#DataHexString) is returned.
+
+The *overrides* object for a read-only method may include any of:
+
+- `overrides.from` - the `msg.sender` (or `CALLER`) to use during the execution of the code 
+- `overrides.value` - the `msg.value` (or `CALLVALUE`) to use during the exectuiont of the code 
+- `overrides.gasPrice` - the price to pay per gas (theoretically); since there is no transaction, there is not going to be any fee charged, but the EVM still requires a value to report to `tx.gasprice` (or `GASPRICE`); *most developers will not require this* 
+- `overrides.gasLimit` - the amount of gas (theoretically) to allow a node to use during the execution of the code; since there is no transaction, there is not going to be any fee charged, but the EVM still processes gas metering so calls like `gasleft` (or `GAS`) report meaningful values 
+- `overrides.blockTag` - a block tag to simulate the execution at, which can be used for hypothetical historic analysis; note that many backends do not support this, or may require paid plans to access as the node database storage and processing requirements are much higher 
+
+
 
 
 #### *contract* . *functions* . **METHOD_NAME**( ...args [ , overrides ] ) => *Promise< [Result](/v5/api/utils/abi/interface/#Result) >*
@@ -136,12 +146,37 @@ Another use for this method is for error recovery. For example, if a function re
 
 Most developers should not require this.
 
+The *overrides* are identical to the read-only operations above.
+
 
 ### Write Methods (non-constant)
 
 #### *contract* . **METHOD_NAME**( ...args [ , overrides ] ) => *Promise< [TransactionResponse](/v5/api/providers/types/#providers-TransactionResponse) >*
 
 Returns a [TransactionResponse](/v5/api/providers/types/#providers-TransactionResponse) for the transaction after it is sent to the network. This requires the **Contract** has a signer.
+
+The *overrides* object for write methods may include any of:
+
+- `overrides.gasPrice` - the price to pay per gas 
+- `overrides.gasLimit` - the limit on the amount of gas to allow the transaction to consume; any unused gas is returned at the gasPrice 
+- `overrides.value` - the amount of ether (in wei) to forward with the call 
+- `overrides.nonce` - the nonce to use for the [Signer](/v5/api/signer/#Signer) 
+
+
+
+If the `wait()` method on the returned [TransactionResponse](/v5/api/providers/types/#providers-TransactionResponse) is called, there will be additional properties on the receipt:
+
+- `receipt.events` - an array of the logs, with additional properties (if the ABI included a description for the events) 
+- `receipt.events[n].args` - the parsed arguments 
+- `receipt.events[n].decode` - a method that can be used to parse the log topics and data (this was used to compute `args`) 
+- `receipt.events[n].event` - the name of the event 
+- `receipt.events[n].eventSignature` - the full signature of the event 
+- `receipt.removeListener()` - a method to remove the listener that trigger this event 
+- `receipt.getBlock()` - a method to return the [Block](/v5/api/providers/types/#providers-Block) this event occurred in 
+- `receipt.getTransaction()` - a method to return the [Transaction](/v5/api/providers/types/#providers-TransactionResponse) this event occurred in 
+- `receipt.getTransactionReceipt()` - a method to return the [Transaction Receipt](/v5/api/providers/types/#providers-TransactionReceipt) this event occurred in 
+
+
 
 
 ### Write Methods Analysis
@@ -150,10 +185,14 @@ Returns a [TransactionResponse](/v5/api/providers/types/#providers-TransactionRe
 
 Returns the estimate units of gas that would be required to execute the *METHOD_NAME* with *args* and *overrides*.
 
+The *overrides* are identical to the overrides above for read-only or write methods, depending on the type of call of *METHOD_NAME*.
+
 
 #### *contract* . *populateTransaction* . **METHOD_NAME**( ...args [ , overrides ] ) => *Promise< [UnsignedTx](/v5/api/utils/transactions/#UnsignedTransaction) >*
 
 Returns an [UnsignedTransaction](/v5/api/utils/transactions/#UnsignedTransaction) which represents the transaction that would need to be signed and submitted to the network to execute *METHOD_NAME* with *args* and *overrides*.
+
+The *overrides* are identical to the overrides above for read-only or write methods, depending on the type of call of *METHOD_NAME*.
 
 
 #### *contract* . *callStatic* . **METHOD_NAME**( ...args [ , overrides ] ) => *Promise< any >*
@@ -163,6 +202,8 @@ Rather than executing the state-change of a transaction, it is possible to ask a
 This does not actually change any state, but is free. This in some cases can be used to determine if a transaction will fail or succeed.
 
 This otherwise functions the same as a [Read-Only Method](/v5/api/contract/contract/#Contract--readonly).
+
+The *overrides* are identical to the read-only operations above.
 
 
 ### Event Filters

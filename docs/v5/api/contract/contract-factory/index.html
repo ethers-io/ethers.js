@@ -3,6 +3,11 @@
   <head>
     <title>ContractFactory</title>
     <link rel="stylesheet" type="text/css" href="/v5/static/style.css">
+    <meta property="og:title" content="ContractFactory"/>
+    <meta property="og:description" content="Documentation for ethers, a complete, tiny and simple Ethereum library."/>
+    
+    <meta property="og:image" content="/v5/static/social.jpg"/>
+    
   </head>
   <body>
     <div class="sidebar">
@@ -11,7 +16,7 @@
         <div class="search"><form action="/v5/search/" method="GET"><input name="search" id="search" /></form><span class="search-icon">&#9906;</span></div>
       </div>
       <div class="toc"><div>
-        <div class="link title"><a href="/v5/">Documentation</a></div><div class="base show link depth-1"><a href="/v5/getting-started/">Getting Started</a></div><div class="base show link depth-1"><a href="/v5/concepts/">Ethereum Basics</a></div><div class="hide link depth-2"><a href="/v5/concepts/events/">Events</a></div><div class="hide link depth-2"><a href="/v5/concepts/gas/">Gas</a></div><div class="hide link depth-2"><a href="/v5/concepts/security/">Security</a></div><div class="hide link depth-2"><a href="/v5/concepts/best-practices/">Best Practices</a></div><div class="base show link depth-1"><a href="/v5/api-keys/">Provider API Keys</a></div><div class="base ancestor show link depth-1"><a href="/v5/api/">Application Programming Interface</a></div><div class="show link depth-2"><a href="/v5/api/providers/">Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/provider/">Provider</a></div><div class="hide link depth-3"><a href="/v5/api/providers/jsonrpc-provider/">JsonRpcProvider</a></div><div class="hide link depth-3"><a href="/v5/api/providers/api-providers/">API Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/other/">Other Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/types/">Types</a></div><div class="show link depth-2"><a href="/v5/api/signer/">Signers</a></div><div class="ancestor show link depth-2"><a href="/v5/api/contract/">Contract Interaction</a></div><div class="show link depth-3"><a href="/v5/api/contract/contract/">Contract</a></div><div class="myself ancestor ancestor show link depth-3"><a href="/v5/api/contract/contract-factory/">ContractFactory</a></div><div class="show link depth-3"><a href="/v5/api/contract/example/">Example: ERC-20 Contract</a></div><div class="show link depth-2"><a href="/v5/api/utils/">Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/abi/">Application Binary Interface</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/coder/">AbiCoder</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/formats/">ABI Formats</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/fragments/">Fragments</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/interface/">Interface</a></div><div class="hide link depth-3"><a href="/v5/api/utils/address/">Addresses</a></div><div class="hide link depth-3"><a href="/v5/api/utils/bignumber/">BigNumber</a></div><div class="hide link depth-3"><a href="/v5/api/utils/bytes/">Byte Manipulation</a></div><div class="hide link depth-3"><a href="/v5/api/utils/constants/">Constants</a></div><div class="hide link depth-3"><a href="/v5/api/utils/display-logic/">Display Logic and Input</a></div><div class="hide link depth-3"><a href="/v5/api/utils/encoding/">Encoding Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/fixednumber/">FixedNumber</a></div><div class="hide link depth-3"><a href="/v5/api/utils/hashing/">Hashing Algorithms</a></div><div class="hide link depth-3"><a href="/v5/api/utils/hdnode/">HD Wallet</a></div><div class="hide link depth-3"><a href="/v5/api/utils/logger/">Logging</a></div><div class="hide link depth-3"><a href="/v5/api/utils/properties/">Property Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/signing-key/">Signing Key</a></div><div class="hide link depth-3"><a href="/v5/api/utils/strings/">Strings</a></div><div class="hide link depth-3"><a href="/v5/api/utils/transactions/">Transactions</a></div><div class="hide link depth-3"><a href="/v5/api/utils/web/">Web Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/wordlists/">Wordlists</a></div><div class="show link depth-2"><a href="/v5/api/other/">Other Libraries</a></div><div class="hide link depth-3"><a href="/v5/api/other/assembly/">Assembly</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/dialect/">Ethers ASM Dialect</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/api/">Utilities</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/ast/">Abstract Syntax Tree</a></div><div class="hide link depth-3"><a href="/v5/api/other/hardware/">Hardware Wallets</a></div><div class="show link depth-2"><a href="/v5/api/experimental/">Experimental</a></div><div class="base show link depth-1"><a href="/v5/cli/">Command Line Interfaces</a></div><div class="hide link depth-2"><a href="/v5/cli/ethers/">Sandbox Utility</a></div><div class="hide link depth-2"><a href="/v5/cli/asm/">Assembler</a></div><div class="hide link depth-2"><a href="/v5/cli/ens/">Ethereum Naming Service</a></div><div class="hide link depth-2"><a href="/v5/cli/typescript/">TypeScript</a></div><div class="hide link depth-2"><a href="/v5/cli/plugin/">Making Your Own</a></div><div class="base show link depth-1"><a href="/v5/cookbook/">Cookbook</a></div><div class="hide link depth-2"><a href="/v5/cookbook/react-native/">React Native (and ilk)</a></div><div class="base show link depth-1"><a href="/v5/migration/">Migration Guide</a></div><div class="hide link depth-2"><a href="/v5/migration/web3/">Migration: From Web3.js</a></div><div class="hide link depth-2"><a href="/v5/migration/ethers-v4/">Migration: From Ethers v4</a></div><div class="base show link depth-1"><a href="/v5/testing/">Testing</a></div><div class="base show link depth-1"><a href="/v5/contributing/">Contributing and Hacking</a></div><div class="base show link depth-1"><a href="/v5/documentation/">Flatworm Docs</a></div><div class="base show link depth-1"><a href="/v5/license/">License and Copyright</a></div>
+        <div class="link title"><a href="/v5/">Documentation</a></div><div class="base show link depth-1"><a href="/v5/getting-started/">Getting Started</a></div><div class="base show link depth-1"><a href="/v5/concepts/">Ethereum Basics</a></div><div class="hide link depth-2"><a href="/v5/concepts/events/">Events</a></div><div class="hide link depth-2"><a href="/v5/concepts/gas/">Gas</a></div><div class="hide link depth-2"><a href="/v5/concepts/security/">Security</a></div><div class="hide link depth-2"><a href="/v5/concepts/best-practices/">Best Practices</a></div><div class="base show link depth-1"><a href="/v5/api-keys/">Provider API Keys</a></div><div class="base ancestor show link depth-1"><a href="/v5/api/">Application Programming Interface</a></div><div class="show link depth-2"><a href="/v5/api/providers/">Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/provider/">Provider</a></div><div class="hide link depth-3"><a href="/v5/api/providers/jsonrpc-provider/">JsonRpcProvider</a></div><div class="hide link depth-3"><a href="/v5/api/providers/api-providers/">API Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/other/">Other Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/types/">Types</a></div><div class="show link depth-2"><a href="/v5/api/signer/">Signers</a></div><div class="ancestor show link depth-2"><a href="/v5/api/contract/">Contract Interaction</a></div><div class="show link depth-3"><a href="/v5/api/contract/contract/">Contract</a></div><div class="myself ancestor ancestor show link depth-3"><a href="/v5/api/contract/contract-factory/">ContractFactory</a></div><div class="link show child depth-4"><a href="#ContractFactory--creating">Creating Instances</a></div><div class="link show child depth-4"><a href="#ContractFactory--properties">Properties</a></div><div class="link show child depth-4"><a href="#ContractFactory--methods">Methods</a></div><div class="show link depth-3"><a href="/v5/api/contract/example/">Example: ERC-20 Contract</a></div><div class="show link depth-2"><a href="/v5/api/utils/">Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/abi/">Application Binary Interface</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/coder/">AbiCoder</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/formats/">ABI Formats</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/fragments/">Fragments</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/interface/">Interface</a></div><div class="hide link depth-3"><a href="/v5/api/utils/address/">Addresses</a></div><div class="hide link depth-3"><a href="/v5/api/utils/bignumber/">BigNumber</a></div><div class="hide link depth-3"><a href="/v5/api/utils/bytes/">Byte Manipulation</a></div><div class="hide link depth-3"><a href="/v5/api/utils/constants/">Constants</a></div><div class="hide link depth-3"><a href="/v5/api/utils/display-logic/">Display Logic and Input</a></div><div class="hide link depth-3"><a href="/v5/api/utils/encoding/">Encoding Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/fixednumber/">FixedNumber</a></div><div class="hide link depth-3"><a href="/v5/api/utils/hashing/">Hashing Algorithms</a></div><div class="hide link depth-3"><a href="/v5/api/utils/hdnode/">HD Wallet</a></div><div class="hide link depth-3"><a href="/v5/api/utils/logger/">Logging</a></div><div class="hide link depth-3"><a href="/v5/api/utils/properties/">Property Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/signing-key/">Signing Key</a></div><div class="hide link depth-3"><a href="/v5/api/utils/strings/">Strings</a></div><div class="hide link depth-3"><a href="/v5/api/utils/transactions/">Transactions</a></div><div class="hide link depth-3"><a href="/v5/api/utils/web/">Web Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/wordlists/">Wordlists</a></div><div class="show link depth-2"><a href="/v5/api/other/">Other Libraries</a></div><div class="hide link depth-3"><a href="/v5/api/other/assembly/">Assembly</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/dialect/">Ethers ASM Dialect</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/api/">Utilities</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/ast/">Abstract Syntax Tree</a></div><div class="hide link depth-3"><a href="/v5/api/other/hardware/">Hardware Wallets</a></div><div class="show link depth-2"><a href="/v5/api/experimental/">Experimental</a></div><div class="base show link depth-1"><a href="/v5/cli/">Command Line Interfaces</a></div><div class="hide link depth-2"><a href="/v5/cli/ethers/">Sandbox Utility</a></div><div class="hide link depth-2"><a href="/v5/cli/asm/">Assembler</a></div><div class="hide link depth-2"><a href="/v5/cli/ens/">Ethereum Naming Service</a></div><div class="hide link depth-2"><a href="/v5/cli/typescript/">TypeScript</a></div><div class="hide link depth-2"><a href="/v5/cli/plugin/">Making Your Own</a></div><div class="base show link depth-1"><a href="/v5/cookbook/">Cookbook</a></div><div class="hide link depth-2"><a href="/v5/cookbook/react-native/">React Native (and ilk)</a></div><div class="base show link depth-1"><a href="/v5/migration/">Migration Guide</a></div><div class="hide link depth-2"><a href="/v5/migration/web3/">Migration: From Web3.js</a></div><div class="hide link depth-2"><a href="/v5/migration/ethers-v4/">Migration: From Ethers v4</a></div><div class="base show link depth-1"><a href="/v5/testing/">Testing</a></div><div class="base show link depth-1"><a href="/v5/contributing/">Contributing and Hacking</a></div><div class="base show link depth-1"><a href="/v5/other-resources/">Other Resources</a></div><div class="base show link depth-1"><a href="/v5/documentation/">Flatworm Docs</a></div><div class="base show link depth-1"><a href="/v5/license/">License and Copyright</a></div>
       </div></div>
       <div class="footer">
         <a href="/v5/single-page/">Single Page</a>
@@ -20,62 +25,111 @@
     <div class="content">
       <div class="breadcrumbs"><a href="/v5/">Documentation</a>&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<a href="/v5/api/">API</a>&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<a href="/v5/api/contract/">Contract Interaction</a>&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<span class="current">ContractFactory</span></div>
 
-<a name="ContractFactory"></a><a name="ContractFactory"></a><h1 class="show-anchors"><div>ContractFactory<div class="anchors"><a class="self" href="/v5/api/contract/contract-factory/#ContractFactory"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/contracts/src.ts/index.ts#L1072">source</a></div></div></h1><p>@TODO: Fill this in, including @SRC links</p>
+<a name="ContractFactory"></a><a name="ContractFactory"></a><h1 class="show-anchors"><div>ContractFactory<div class="anchors"><a class="self" href="/v5/api/contract/contract-factory/#ContractFactory"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/contracts/src.ts/index.ts#L1077">source</a></div></div></h1><p>To deploy a <a href="/v5/api/contract/contract/">Contract</a>, additional information is needed that is not available on a Contract object itself.</p>
+
+<p>Mainly, the bytecode (more specifically the initcode) of a contract is required.</p>
+
+<p>The <b>Contract Factory</b> sends a special type of transaction, an initcode transaction (i.e. the <code class="inline">to</code> field is null, and the <code class="inline">data</code> field is the initcode) where the initcode will be evaluated and the result becomes the new code to be deployed as a new contract.</p>
 
 <a name="ContractFactory--creating"></a><a name="ContractFactory--ContractFactory--creating"></a><h2 class="show-anchors"><div>Creating Instances<div class="anchors"><a class="self" href="/v5/api/contract/contract-factory/#ContractFactory--creating"></a></div></div></h2>
-<div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="path">ethers</span><span class="symbol">.</span><span class="method">ContractFactory</span><span class="symbol">(</span> <span class="param">interface</span> <span class="symbol">,</span> <span class="param">bytecode</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">signer</span> <span class="symbol">]</span> <span class="symbol">)</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/contracts/src.ts/index.ts#L1078">source</a></div></div><div class="body">
-</div></div><div class="property show-anchors"><div class="signature"><span class="path">ContractFactory</span><span class="symbol">.</span><span class="method">fromSolidity</span><span class="symbol">(</span> <span class="param">compilerOutput</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">signer</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/contract/contract-factory/">ContractFactory</a></span><div class="anchors"></div></div><div class="body">
-</div></div><a name="ContractFactory-connect"></a><div class="property show-anchors"><div class="signature"><span class="path">contractFactory</span><span class="symbol">.</span><span class="method">connect</span><span class="symbol">(</span> <span class="param">signer</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/contract/contract/">Contract</a></span><div class="anchors"><a class="self" href="/v5/api/contract/contract-factory/#ContractFactory-connect"></a></div></div><div class="body">
+<div class="property show-anchors"><div class="signature"><span class="modifier">new </span><span class="path">ethers</span><span class="symbol">.</span><span class="method">ContractFactory</span><span class="symbol">(</span> <span class="param">interface</span> <span class="symbol">,</span> <span class="param">bytecode</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">signer</span> <span class="symbol">]</span> <span class="symbol">)</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/contracts/src.ts/index.ts#L1083">source</a></div></div><div class="body"><p>Creates a new instance of a <b>ContractFactory</b> for the contract described by the <i>interface</i> and <i>bytecode</i> initcode.</p>
+
+</div></div><div class="property show-anchors"><div class="signature"><span class="path">ContractFactory</span><span class="symbol">.</span><span class="method">fromSolidity</span><span class="symbol">(</span> <span class="param">compilerOutput</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">signer</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/contract/contract-factory/">ContractFactory</a></span><div class="anchors"></div></div><div class="body"><p>Consumes the output of the Solidity compiler, extracting the ABI and bytecode from it, allowing for the various formats the solc compiler has emitted over its life.</p>
+
+</div></div><a name="ContractFactory-connect"></a><div class="property show-anchors"><div class="signature"><span class="path">contractFactory</span><span class="symbol">.</span><span class="method">connect</span><span class="symbol">(</span> <span class="param">signer</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/contract/contract/">Contract</a></span><div class="anchors"><a class="self" href="/v5/api/contract/contract-factory/#ContractFactory-connect"></a></div></div><div class="body"><p>Returns a <b>new instance</b> of the ContractFactory with the same <i>interface</i> and <i>bytecode</i>, but with a different <i>signer</i>.</p>
+
 </div></div><a name="ContractFactory--properties"></a><a name="ContractFactory--ContractFactory--properties"></a><h2 class="show-anchors"><div>Properties<div class="anchors"><a class="self" href="/v5/api/contract/contract-factory/#ContractFactory--properties"></a></div></div></h2>
-<div class="property show-anchors"><div class="signature"><span class="path">contractFactory</span><span class="symbol">.</span><span class="method">interface</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/utils/abi/interface/">Interface</a></span><div class="anchors"></div></div><div class="body">
-</div></div><div class="property show-anchors"><div class="signature"><span class="path">contractFactory</span><span class="symbol">.</span><span class="method">bytecode</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="/v5/api/utils/bytes/#DataHexString">DataHexString</a> &gt;</span><div class="anchors"></div></div><div class="body">
-</div></div><div class="property show-anchors"><div class="signature"><span class="path">contractFactory</span><span class="symbol">.</span><span class="method">signer</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/signer/#Signer">Signer</a></span><div class="anchors"></div></div><div class="body">
+<div class="property show-anchors"><div class="signature"><span class="path">contractFactory</span><span class="symbol">.</span><span class="method">interface</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/utils/abi/interface/">Interface</a></span><div class="anchors"></div></div><div class="body"><p>The <a href="/v5/api/contract/contract/">Contract</a> interface.</p>
+
+</div></div><div class="property show-anchors"><div class="signature"><span class="path">contractFactory</span><span class="symbol">.</span><span class="method">bytecode</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="/v5/api/utils/bytes/#DataHexString">DataHexString</a> &gt;</span><div class="anchors"></div></div><div class="body"><p>The bytecode (i.e. initcode) that this <b>ContractFactory</b> will use to deploy the Contract.</p>
+
+</div></div><div class="property show-anchors"><div class="signature"><span class="path">contractFactory</span><span class="symbol">.</span><span class="method">signer</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/signer/#Signer">Signer</a></span><div class="anchors"></div></div><div class="body"><p>The <a href="/v5/api/signer/#Signer">Signer</a> (if any) this ContractFactory will use to deploy instances of the Contract to the Blockchain.</p>
+
 </div></div><a name="ContractFactory--methods"></a><a name="ContractFactory--ContractFactory--methods"></a><h2 class="show-anchors"><div>Methods<div class="anchors"><a class="self" href="/v5/api/contract/contract-factory/#ContractFactory--methods"></a></div></div></h2>
 <a name="ContractFactory-attach"></a><div class="property show-anchors"><div class="signature"><span class="path">contractFactory</span><span class="symbol">.</span><span class="method">attach</span><span class="symbol">(</span> <span class="param">address</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/contract/contract/">Contract</a></span><div class="anchors"><a class="self" href="/v5/api/contract/contract-factory/#ContractFactory-attach"></a></div></div><div class="body"><p>Return an instance of a <a href="/v5/api/contract/contract/">Contract</a> attached to <i>address</i>. This is the same as using the <a href="/v5/api/contract/contract/#Contract--creating">Contract constructor</a> with <i>address</i> and this the <i>interface</i> and <i>signerOrProvider</i> passed in when creating the ContractFactory.</p>
 
-</div></div><div class="property show-anchors"><div class="signature"><span class="path">contractFactory</span><span class="symbol">.</span><span class="method">getDeployTransaction</span><span class="symbol">(</span> ...<span class="param">args</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/utils/transactions/#UnsignedTransaction">UnsignedTransaction</a></span><div class="anchors"></div></div><div class="body"><p>Returns the unsigned transaction which would deploy this Contract with <i>args</i> passed to the Contract's constructor.</p>
+</div></div><div class="property show-anchors"><div class="signature"><span class="path">contractFactory</span><span class="symbol">.</span><span class="method">getDeployTransaction</span><span class="symbol">(</span> ...<span class="param">args</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">overrides</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/utils/transactions/#UnsignedTransaction">UnsignedTransaction</a></span><div class="anchors"></div></div><div class="body"><p>Returns the unsigned transaction which would deploy this Contract with <i>args</i> passed to the Contract's constructor.</p>
 
-</div></div><a name="ContractFactory-deploy"></a><div class="property show-anchors"><div class="signature"><span class="path">contractFactory</span><span class="symbol">.</span><span class="method">deploy</span><span class="symbol">(</span> ...<span class="param">args</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="/v5/api/contract/contract/">Contract</a> &gt;</span><div class="anchors"><a class="self" href="/v5/api/contract/contract-factory/#ContractFactory-deploy"></a></div></div><div class="body"><p>Uses the signer to deploy the Contract with <i>args</i> passed into the constructor and returns a Contract which is attached to the address where this contract <b>will</b> be deployed once the transaction is mined.</p>
+<p>If the optional <i>overrides</i> is specified, they can be used to override the endowment <code class="inline">value</code>, transaction <code class="inline">nonce</code>, <code class="inline">gasLimit</code> or <code class="inline">gasPrice</code>.</p>
+
+</div></div><a name="ContractFactory-deploy"></a><div class="property show-anchors"><div class="signature"><span class="path">contractFactory</span><span class="symbol">.</span><span class="method">deploy</span><span class="symbol">(</span> ...<span class="param">args</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">overrides</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; <a href="/v5/api/contract/contract/">Contract</a> &gt;</span><div class="anchors"><a class="self" href="/v5/api/contract/contract-factory/#ContractFactory-deploy"></a></div></div><div class="body"><p>Uses the signer to deploy the Contract with <i>args</i> passed into the constructor and returns a Contract which is attached to the address where this contract <b>will</b> be deployed once the transaction is mined.</p>
 
 <p>The transaction can be found at <code class="inline">contract.deployTransaction</code>, and no interactions should be made until the transaction is mined.</p>
 
-</div></div><div class="code-title"><div>Deploying a Contract</div></div><div class="code">// &lt;hide&gt;
-const signer = ethers.LocalSigner();
-const ContractFactory = ethers.ContractFactory;
-// &lt;/hide&gt;
+<p>If the optional <i>overrides</i> is specified, they can be used to override the endowment <code class="inline">value</code>, transaction <code class="inline">nonce</code>, <code class="inline">gasLimit</code> or <code class="inline">gasPrice</code>.</p>
 
-// If your contract constructor requires parameters, the ABI
-// must include the constructor
-const abi = [
-  "constructor(address owner, uint256 initialValue)"
+</div></div><div class="code-title"><div>Deploying a Contract</div></div><div class="code"><span class="comment">// If your contract constructor requires parameters, the ABI
+</span><span class="comment">// must include the constructor
+</span>const abi = [
+  "constructor(address owner, uint256 initialValue)",
+  "function value() view returns (uint)"
 ];
 
-const factory = new ContractFactory(abi, bytecode, signer)
+<span class="comment">// The factory we use for deploying contracts
+</span>factory = new ContractFactory(abi, bytecode, signer)
 
-const contract = await factory.deploy("ricmoo.eth", 42);
+<span class="comment">// Deploy an instance of the contract
+</span>contract = await factory.deploy("ricmoo.eth", 42);
 
-// The address is available immediately, but the contract
-// is NOT deployed yet
-contract.address
-//!
-
-// The transaction that the signer sent to deploy
-contract.deployTransaction
-//!
-
-// Wait until the transaction is mined
-contract.deployTransaction.wait()
-//!
-
-// Now the contract is safe to interact with
-contract.value()
-//!</div>
+<span class="comment">// The address is available immediately, but the contract
+</span><span class="comment">// is NOT deployed yet
+</span>contract.address
+<span class="result ok">// '0x26E9685C018Bf3A401DFA632827e7e6C7D96b1C0'
+</span>
+<span class="comment">// The transaction that the signer sent to deploy
+</span>contract.deployTransaction
+<span class="result ok">// {
+</span><span class="result ok">//   blockHash: null,
+</span><span class="result ok">//   blockNumber: null,
+</span><span class="result ok">//   chainId: 1337,
+</span><span class="result ok">//   confirmations: 0,
+</span><span class="result ok">//   creates: '0x26E9685C018Bf3A401DFA632827e7e6C7D96b1C0',
+</span><span class="result ok">//   data: '0x608060405234801561001057600080fd5b5060405161012e38038061012e8339818101604052604081101561003357600080fd5b81019080805190602001909291908051906020019092919050505081600160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055508060008190555050506088806100a66000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80633fa4f24514602d575b600080fd5b60336049565b6040518082815260200191505060405180910390f35b6000805490509056fea2646970667358221220926465385af0e8706644e1ff3db7161af699dc063beaadd55405f2ccd6478d7564736f6c63430007040033000000000000000000000000ab7c8803962c0f2f5bbbe3fa8bf41cd82aa1923c000000000000000000000000000000000000000000000000000000000000002a',
+</span><span class="result ok">//   from: '0xf3e6942b256A60B596B24F633caE8aDB4983fCA6',
+</span><span class="result ok">//   gasLimit: { BigNumber: "126462" },
+</span><span class="result ok">//   gasPrice: { BigNumber: "1" },
+</span><span class="result ok">//   hash: '0x4037630fdadbbe0aac0bf90eba61118e35ee5fc28329e2134bb2bad0bfc12684',
+</span><span class="result ok">//   nonce: 1,
+</span><span class="result ok">//   r: '0xc3bb79ea4600864cd110fe74d31d38bb3702c327fd5aef9feddf66903cc87a4f',
+</span><span class="result ok">//   s: '0x35cc2ffe352c02b5fcfbbcd2e348001af670f64438d7a9b2c34756ec293a0784',
+</span><span class="result ok">//   to: null,
+</span><span class="result ok">//   transactionIndex: null,
+</span><span class="result ok">//   v: 2709,
+</span><span class="result ok">//   value: { BigNumber: "0" },
+</span><span class="result ok">//   wait: [Function]
+</span><span class="result ok">// }
+</span>
+<span class="comment">// Wait until the transaction is mined (i.e. contract is deployed)
+</span><span class="comment">//  - returns the receipt
+</span><span class="comment">//  - throws on failure (the reciept is on the error)
+</span>contract.deployTransaction.wait()
+<span class="result ok">// { Promise: {
+</span><span class="result ok">//   blockHash: '0x1715de2bdfec15a7f64fb79a8254699274be6776df244d24a04945a3218543e6',
+</span><span class="result ok">//   blockNumber: 2,
+</span><span class="result ok">//   byzantium: true,
+</span><span class="result ok">//   confirmations: 1,
+</span><span class="result ok">//   contractAddress: '0x26E9685C018Bf3A401DFA632827e7e6C7D96b1C0',
+</span><span class="result ok">//   cumulativeGasUsed: { BigNumber: "126462" },
+</span><span class="result ok">//   from: '0xf3e6942b256A60B596B24F633caE8aDB4983fCA6',
+</span><span class="result ok">//   gasUsed: { BigNumber: "126462" },
+</span><span class="result ok">//   logs: [],
+</span><span class="result ok">//   logsBloom: '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+</span><span class="result ok">//   status: 1,
+</span><span class="result ok">//   to: null,
+</span><span class="result ok">//   transactionHash: '0x4037630fdadbbe0aac0bf90eba61118e35ee5fc28329e2134bb2bad0bfc12684',
+</span><span class="result ok">//   transactionIndex: 0
+</span><span class="result ok">// } }
+</span>
+<span class="comment">// Now the contract is safe to interact with
+</span>contract.value()
+<span class="result ok">// { Promise: { BigNumber: "42" } }
+</span></div>
 
       <div class="footer">
         <div class="nav previous"><a href="/v5/api/contract/contract/"><span class="arrow">&larr;</span>Contract</a></div>
         <div class="nav next"><a href="/v5/api/contract/example/">Example: ERC-20 Contract<span class="arrow">&rarr;</span></a></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on November 22, 2020, 11:5pm.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on February 8, 2021, 3:25pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
     <!--EXTRASCRIPT-->

@@ -21,14 +21,14 @@ Converting and Verifying
 
 Returns *address* as a Checksum Address.
 
-If *address* is an invalid 40-nibble [HexString](/v5/api/utils/bytes/#HexString) or if it contains mixed case and the checksum is invalid, an InvalidArgument Error is thrown.
+If *address* is an invalid 40-nibble [HexString](/v5/api/utils/bytes/#HexString) or if it contains mixed case and the checksum is invalid, an [INVALID_ARGUMENT](/v5/api/utils/logger/#errors--invalid-argument) Error is thrown.
 
 The value of *address* may be any supported address format.
 
 
 #### *ethers* . *utils* . **getIcapAddress**( address ) => *string< [IcapAddress](/v5/api/utils/address/#address-icap) >*
 
-Returns *address* as an [ICAP address](https://github.com/ethereum/wiki/wiki/Inter-exchange-Client-Address-Protocol-%28ICAP%29). Supports the same restrictions as [utils.getAddress](/v5/api/utils/address/#utils-getAddress).
+Returns *address* as an [ICAP address](https://github.com/ethereum/wiki/wiki/Inter-exchange-Client-Address-Protocol-%28ICAP%29). Supports the same restrictions as [getAddress](/v5/api/utils/address/#utils-getAddress).
 
 
 #### *ethers* . *utils* . **isAddress**( address ) => *boolean*

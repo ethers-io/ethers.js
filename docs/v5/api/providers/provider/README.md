@@ -7,6 +7,15 @@ Documentation: [html](https://docs.ethers.io/)
 Provider
 ========
 
+#### Coming from Web3.js?
+
+If you are coming from Web3.js, this is one of the biggest differences you will encounter using ethers.
+
+The ethers library creates a strong division between the operation a **Provider** can perform and those of a [Signer](/v5/api/signer/#Signer), which Web3.js lumps together.
+
+This separation of concerns and a stricted subset of Provider operations allows for a larger variety of backends, a more consistent API and ensures other libraries to operate without being able to rely on any underlying assumption.
+
+
 Accounts Methods
 ----------------
 
@@ -33,7 +42,7 @@ Returns the number of transactions *address* has ever **sent**, as of *blockTag*
 ```javascript
 // Get the balance for an account...
 provider.getBalance("ricmoo.firefly.eth");
-// { Promise: { BigNumber: "284831012276355695" } }
+// { Promise: { BigNumber: "25334210474552466902" } }
 
 // Get the code for a contract...
 provider.getCode("registrar.firefly.eth");
@@ -45,7 +54,7 @@ provider.getStorageAt("registrar.firefly.eth", 0)
 
 // Get transaction count of an account...
 provider.getTransactionCount("ricmoo.firefly.eth");
-// { Promise: 689 }
+// { Promise: 712 }
 ```
 
 Blocks Methods
@@ -96,7 +105,7 @@ provider.getBlockWithTransactions(100004)
 //       blockHash: '0xf93283571ae16dcecbe1816adc126954a739350cd1523a1559eabeae155fbb63',
 //       blockNumber: 100004,
 //       chainId: 0,
-//       confirmations: 11212224,
+//       confirmations: 11717911,
 //       creates: null,
 //       data: '0x',
 //       from: '0xcf00A85f3826941e7A25BFcF9Aac575d40410852',
@@ -118,6 +127,11 @@ provider.getBlockWithTransactions(100004)
 Ethereum Naming Service (ENS) Methods
 -------------------------------------
 
+#### *provider* . **getResolver**( name ) => *Promise< [EnsResolver](/v5/api/providers/provider/#EnsResolver) >*
+
+Returns an EnsResolver instance which can be used to further inquire about specific entries for an ENS name.
+
+
 #### *provider* . **lookupAddress**( address ) => *Promise< string >*
 
 Performs a reverse lookup of the *address* in ENS using the *Reverse Registrar*. If the name does not exist, or the forward lookup does not match, `null` is returned.
@@ -137,6 +151,34 @@ provider.lookupAddress("0x6fC21092DA55B392b045eD78F4732bff3C580e2c");
 provider.resolveName("ricmoo.firefly.eth");
 // { Promise: '0x8ba1f109551bD432803012645Ac136ddd64DBA72' }
 ```
+
+EnsResolver
+-----------
+
+#### *resolver* . **name** => *string*
+
+The name of this resolver.
+
+
+#### *resolver* . **address** => *string< [Address](/v5/api/utils/address/#address) >*
+
+The address of the Resolver.
+
+
+#### *resolver* . **getAddress**( [ cointType = 60 ] ) => *Promise< string >*
+
+Returns a Promise which resolves to the [EIP-2304](https://eips.ethereum.org/EIPS/eip-2304) multicoin address stored for the *coinType*. By default an Ethereum [Address](/v5/api/utils/address/#address) (`coinType = 60`) will be returned.
+
+
+#### *resolver* . **getContentHash**( ) => *Promise< string >*
+
+Returns a Promise which resolves to any stored [EIP-1577](https://eips.ethereum.org/EIPS/eip-1577) content hash.
+
+
+#### *resolver* . **getText**( key ) => *Promise< string >*
+
+Returns a Promise which resolves to any stored [EIP-634](https://eips.ethereum.org/EIPS/eip-634) text entry for *key*.
+
 
 Logs Methods
 ------------
@@ -166,6 +208,13 @@ Returns the block number (or height) of the most recently mined block.
 Returns a *best guess* of the [Gas Price](/v5/concepts/gas/#gas-price) to use in a transaction.
 
 
+#### *provider* . **ready** => *Promise< [Network](/v5/api/providers/types/#providers-Network) >*
+
+Returns a Promise which will stall until the network has heen established, ignoring errors due to the target node not being active yet.
+
+This can be used for testing or attaching scripts to wait until the node is up and running smoothly.
+
+
 ```javascript
 // The network information
 provider.getNetwork()
@@ -177,16 +226,16 @@ provider.getNetwork()
 
 // The current block number
 provider.getBlockNumber()
-// { Promise: 11312227 }
+// { Promise: 11817914 }
 
 // Get the current suggested gas price (in wei)...
 gasPrice = await provider.getGasPrice()
-// { BigNumber: "46200000000" }
+// { BigNumber: "207000000000" }
 
 // ...often this gas price is easier to understand or
 // display to the user in gwei (giga-wei, or 1e9 wei)
 utils.formatUnits(gasPrice, "gwei")
-// '46.2'
+// '207.0'
 ```
 
 Transactions Methods
@@ -204,6 +253,20 @@ Returns an estimate of the amount of gas that would be required to submit *trans
 An estimate may not be accurate since there could be another transaction on the network that was not accounted for, but after being mined affected relevant state.
 
 
+#### *provider* . **getTransaction**( hash ) => *Promise< [TransactionResponse](/v5/api/providers/types/#providers-TransactionResponse) >*
+
+Returns the transaction with *hash* or null if the transaction is unknown.
+
+If a transaction has not been mined, this method will search the transaction pool. Various backends may have more restrictive transaction pool access (e.g. if the gas price is too low or the transaction was only recently sent and not yet indexed) in which case this method may also return null.
+
+
+#### *provider* . **getTransactionReceipt**( hash ) => *Promise< [TransactionReceipt](/v5/api/providers/types/#providers-TransactionReceipt) >*
+
+Returns the transaction receipt for *hash* or null if the transaction has not been mined.
+
+To stall until the transaction has been mined, consider the `waitForTransaction` method below.
+
+
 #### *provider* . **sendTransaction**( transaction ) => *Promise< [TransactionResponse](/v5/api/providers/types/#providers-TransactionResponse) >*
 
 Submits *transaction* to the network to be mined. The *transaction* **must** be signed, and be valid (i.e. the nonce is correct and the account has sufficient balance to pay for the transaction).
@@ -213,43 +276,45 @@ Submits *transaction* to the network to be mined. The *transaction* **must** be 
 
 Returns a Promise which will not resolve until *transactionHash* is mined.
 
+If *confirms* is 0, this method is non-blocking and if the transaction has not been mined returns null. Otherwise, this method will block until the transaction has *confirms* blocks mined on top of the block in which is was mined.
+
 
 Event Emitter Methods
 ---------------------
 
 #### *provider* . **on**( eventName , listener ) => *this*
 
-Add a *listener* to be triggered for each *eventName*.
+Add a *listener* to be triggered for each *eventName* [event](/v5/api/providers/provider/#Provider--events).
 
 
 #### *provider* . **once**( eventName , listener ) => *this*
 
-Add a *listener* to be triggered for only the next *eventName*, at which time it will be removed.
+Add a *listener* to be triggered for only the next *eventName* [event](/v5/api/providers/provider/#Provider--events), at which time it will be removed.
 
 
 #### *provider* . **emit**( eventName , ...args ) => *boolean*
 
-Notify all listeners of *eventName*, passing *args* to each listener. This is generally only used internally.
+Notify all listeners of the *eventName* [event](/v5/api/providers/provider/#Provider--events), passing *args* to each listener. This is generally only used internally.
 
 
 #### *provider* . **off**( eventName [ , listener ] ) => *this*
 
-Remove a *listener* for *eventName*. If no *listener* is provided, all listeners for *eventName* are removed.
+Remove a *listener* for the *eventName* [event](/v5/api/providers/provider/#Provider--events). If no *listener* is provided, all listeners for *eventName* are removed.
 
 
 #### *provider* . **removeAllListeners**( [ eventName ] ) => *this*
 
-Remove all the listeners for *eventName*. If no *eventName* is provided, **all** events are removed.
+Remove all the listeners for the *eventName* [events](/v5/api/providers/provider/#Provider--events). If no *eventName* is provided, **all** events are removed.
 
 
 #### *provider* . **listenerCount**( [ eventName ] ) => *number*
 
-Returns the number of listeners for *eventName*. If no *eventName* is provided, the total number of listeners is returned.
+Returns the number of listeners for the *eventName* [events](/v5/api/providers/provider/#Provider--events). If no *eventName* is provided, the total number of listeners is returned.
 
 
 #### *provider* . **listeners**( eventName ) => *Array< Listener >*
 
-Returns the list of Listeners for *eventName*.
+Returns the list of Listeners for the *eventName* [events](/v5/api/providers/provider/#Provider--events).
 
 
 ### Events
@@ -260,7 +325,7 @@ A filter is an object, representing a contract log Filter, which has the optiona
 
 If `address` is unspecified, the filter matches any contract address.
 
-See events for more information on how to specify topic-sets.
+See [EventFilters](/v5/api/providers/types/#providers-EventFilter) for more information on filtering events.
 
 
 #### **Topic-Set Filter**
@@ -268,6 +333,8 @@ See events for more information on how to specify topic-sets.
 The value of a **Topic-Set Filter** is a array of Topic-Sets.
 
 This event is identical to a *Log Filter* with the address omitted (i.e. from any contract).
+
+See [EventFilters](/v5/api/providers/types/#providers-EventFilter) for more information on filtering events.
 
 
 #### **Transaction Filter**

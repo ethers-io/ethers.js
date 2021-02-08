@@ -7,9 +7,11 @@ Documentation: [html](https://docs.ethers.io/)
 JsonRpcProvider
 ===============
 
-#### **new ***ethers* . *providers* . **JsonRpcProvider**( [ url [ , aNetworkish ] ] )
+#### **new ***ethers* . *providers* . **JsonRpcProvider**( [ urlOrConnectionInfo [ , networkish ] ] )
 
-Connect to a JSON-RPC API located at *url* using the *aNetworkish* network. If *url* is not specified, the default (i.e. `http://localhost:8545`) is used and if no network is specified, it will be determined automatically by querying the node.
+Connect to a JSON-RPC HTTP API using the URL or [ConnectionInfo](/v5/api/utils/web/#ConnectionInfo) *urlOrConnectionInfo* connected to the *networkish* network.
+
+If *urlOrConnectionInfo* is not specified, the default (i.e. `http://localhost:8545`) is used and if no network is specified, it will be determined automatically by querying the node using `eth_chaindId` and falling back on `eth_networkId`.
 
 
 #### Note: Connecting to a Local Node

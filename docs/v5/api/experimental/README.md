@@ -48,7 +48,7 @@ Set the current transaction count (nonce) for the signer.
 This may be useful in interacting with the signer outside of using this class.
 
 
-#### *nonceManager* . **increaseTransactionCount**( [ count = 1 ] ) => *void*
+#### *nonceManager* . **incrementTransactionCount**( [ count = 1 ] ) => *void*
 
 Bump the current transaction count (nonce) by *count*.
 

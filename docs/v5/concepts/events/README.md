@@ -7,9 +7,6 @@ Documentation: [html](https://docs.ethers.io/)
 Events
 ======
 
-Solidity Topics
----------------
-
 Logs and Filtering
 ------------------
 
@@ -134,6 +131,9 @@ contract.filters.Transfer(null, [ myAddress, otherAddress ])
 //   ]
 // }
 ```
+
+Solidity Topics
+---------------
 
 ### Other Things? TODO
 

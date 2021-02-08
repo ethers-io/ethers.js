@@ -36,7 +36,7 @@ The provider for this configuration.
 
 #### *fallbackProviderConfig* . **priority** => *number*
 
-The priority used for the provider. Higher priorities are favoured over lower priorities. If multiple providers share the same priority, they are chosen at random.
+The priority used for the provider. Lower-value priorities are favoured over higher-value priorities. If multiple providers share the same priority, they are chosen at random.
 
 
 #### *fallbackProviderConfig* . **stallTimeout** => *number*
@@ -123,7 +123,7 @@ This is identical to `sendAsync`. Historically, this used a synchronous web requ
 WebSocketProvider
 -----------------
 
-#### **new ***ethers* . *provider* . **WebSocketProvider**( [ url [ , network ] ] )
+#### **new ***ethers* . *providers* . **WebSocketProvider**( [ url [ , network ] ] )
 
 Returns a new [WebSocketProvider](/v5/api/providers/other/#WebSocketProvider) connected to *url* as the *network*.
 

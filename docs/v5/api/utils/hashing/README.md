@@ -52,7 +52,7 @@ utils.keccak256("0x1234")
 
 // Do NOT use UTF-8 strings that are not a DataHexstring
 utils.keccak256("hello world")
-// Error: invalid arrayify value (argument="value", value="hello world", code=INVALID_ARGUMENT, version=bytes/5.0.6)
+// Error: invalid arrayify value (argument="value", value="hello world", code=INVALID_ARGUMENT, version=bytes/5.0.10)
 
 // If needed, convert strings to bytes first:
 utils.keccak256(utils.toUtf8Bytes("hello world"))
@@ -300,6 +300,24 @@ TypedDataEncoder.getPayload(domain, types, value)
 //   },
 //   primaryType: 'Mail',
 //   types: {
+//     EIP712Domain: [
+//       {
+//         name: 'name',
+//         type: 'string'
+//       },
+//       {
+//         name: 'version',
+//         type: 'string'
+//       },
+//       {
+//         name: 'chainId',
+//         type: 'uint256'
+//       },
+//       {
+//         name: 'verifyingContract',
+//         type: 'address'
+//       }
+//     ],
 //     Mail: [
 //       {
 //         name: 'from',

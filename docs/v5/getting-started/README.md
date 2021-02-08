@@ -81,7 +81,7 @@ const signer = provider.getSigner()
 ```javascript
 // Look up the current block number
 provider.getBlockNumber()
-// { Promise: 11312227 }
+// { Promise: 11817915 }
 
 // Get the balance of an account (by address or ENS name, if supported by network)
 balance = await provider.getBalance("ethers.eth")
@@ -149,11 +149,11 @@ daiContract.symbol()
 
 // Get the balance of an address
 balance = await daiContract.balanceOf("ricmoo.firefly.eth")
-// { BigNumber: "15923148775162018481031" }
+// { BigNumber: "198172622063578627973" }
 
 // Format the DAI for displaying to the user
 ethers.utils.formatUnits(balance, 18)
-// '15923.148775162018481031'
+// '198.172622063578627973'
 ```
 
 ### State Changing Methods
@@ -208,7 +208,7 @@ daiContract.on(filter, (from, to, amount, event) => {
 myAddress = await signer.getAddress()
 // '0x8ba1f109551bD432803012645Ac136ddd64DBA72'
 
-// Filter for all token transfers to me
+// Filter for all token transfers from me
 filterFrom = daiContract.filters.Transfer(myAddress, null);
 // {
 //   address: 'dai.tokens.ethers.eth',
@@ -218,7 +218,7 @@ filterFrom = daiContract.filters.Transfer(myAddress, null);
 //   ]
 // }
 
-// Filter for all token transfers from me
+// Filter for all token transfers to me
 filterTo = daiContract.filters.Transfer(null, myAddress);
 // {
 //   address: 'dai.tokens.ethers.eth',
@@ -308,7 +308,7 @@ Signing Messages
 // logging into a service, such as CryptoKitties,
 // pass the string in.
 signature = await signer.signMessage("Hello World");
-// '0xc2c9a0db8e9ae4266d6aa1974b36efabd8e270452587857922c5fd696838a22b6dd8f0536c24a73c0df512eefac68bc118fb91b10640fcc576e44a57bc024ca31b'
+// '0x800d1d157d472b0cb567ec0d9e2825203aaa7e84db5a9b19169c0c85575f6e0761e99bd670ed82f71a346020cdec8326644132cdeffd8e327d888f94f21825e01b'
 
 //
 // A common case is also signing a hash, which is 32
@@ -325,6 +325,6 @@ messageBytes = ethers.utils.arrayify(message);
 
 // To sign a hash, you most often want to sign the bytes
 signature = await signer.signMessage(messageBytes)
-// '0x66b35b262989bc88c5c5c1fadcd8bcd5ae410cdae06abf33ce2c3c98a04d4e892fd2f61717a46f81372146019c2e95646a6cfc3a7ae74e78338f40d905fa69fc1b'
+// '0x3ec3dca35ae2712e7f9bb1e2819f9b40c818c567b1a01586d3b0d0a73bad1c303b7f39d4471ac0c9eb900438bc6b6a4bf5b2c120a5cb31edc2cfab11ede409381b'
 ```
 

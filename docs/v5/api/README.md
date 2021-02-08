@@ -12,6 +12,7 @@ Application Programming Interface
     * [Accounts Methods](providers/provider)
     * [Blocks Methods](providers/provider)
     * [Ethereum Naming Service (ENS) Methods](providers/provider)
+    * [EnsResolver](providers/provider)
     * [Logs Methods](providers/provider)
     * [Network Status Methods](providers/provider)
     * [Transactions Methods](providers/provider)

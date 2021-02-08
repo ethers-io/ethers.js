@@ -1,0 +1,9 @@
+server-error              => /v5/api/utils/logger/#errors--server-error
+unsupported-operation     => /v5/api/utils/logger/#errors--unsupported-operation
+numeric-fault             => /v5/api/utils/logger/#errors--numeric-fault
+call-exception            => /v5/api/utils/logger/#errors--numeric-fault
+insufficient-funds        => /v5/api/utils/logger/#errors--insufficient-funds
+nonce-expired             => /v5/api/utils/logger/#errors--nonce-expired
+replacement-underpriced   => /v5/api/utils/logger/#errors--replacement-underpriced
+unpredicatable-gas-limit  => /v5/api/utils/logger/#errors--unpredicatable-gas-limit
+

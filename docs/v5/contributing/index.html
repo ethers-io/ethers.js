@@ -3,6 +3,11 @@
   <head>
     <title>Contributing and Hacking</title>
     <link rel="stylesheet" type="text/css" href="/v5/static/style.css">
+    <meta property="og:title" content="Contributing and Hacking"/>
+    <meta property="og:description" content="Documentation for ethers, a complete, tiny and simple Ethereum library."/>
+    
+    <meta property="og:image" content="/v5/static/social.jpg"/>
+    
   </head>
   <body>
     <div class="sidebar">
@@ -11,7 +16,7 @@
         <div class="search"><form action="/v5/search/" method="GET"><input name="search" id="search" /></form><span class="search-icon">&#9906;</span></div>
       </div>
       <div class="toc"><div>
-        <div class="link title"><a href="/v5/">Documentation</a></div><div class="base show link depth-1"><a href="/v5/getting-started/">Getting Started</a></div><div class="base show link depth-1"><a href="/v5/concepts/">Ethereum Basics</a></div><div class="hide link depth-2"><a href="/v5/concepts/events/">Events</a></div><div class="hide link depth-2"><a href="/v5/concepts/gas/">Gas</a></div><div class="hide link depth-2"><a href="/v5/concepts/security/">Security</a></div><div class="hide link depth-2"><a href="/v5/concepts/best-practices/">Best Practices</a></div><div class="base show link depth-1"><a href="/v5/api-keys/">Provider API Keys</a></div><div class="base show link depth-1"><a href="/v5/api/">Application Programming Interface</a></div><div class="hide link depth-2"><a href="/v5/api/providers/">Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/provider/">Provider</a></div><div class="hide link depth-3"><a href="/v5/api/providers/jsonrpc-provider/">JsonRpcProvider</a></div><div class="hide link depth-3"><a href="/v5/api/providers/api-providers/">API Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/other/">Other Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/types/">Types</a></div><div class="hide link depth-2"><a href="/v5/api/signer/">Signers</a></div><div class="hide link depth-2"><a href="/v5/api/contract/">Contract Interaction</a></div><div class="hide link depth-3"><a href="/v5/api/contract/contract/">Contract</a></div><div class="hide link depth-3"><a href="/v5/api/contract/contract-factory/">ContractFactory</a></div><div class="hide link depth-3"><a href="/v5/api/contract/example/">Example: ERC-20 Contract</a></div><div class="hide link depth-2"><a href="/v5/api/utils/">Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/abi/">Application Binary Interface</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/coder/">AbiCoder</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/formats/">ABI Formats</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/fragments/">Fragments</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/interface/">Interface</a></div><div class="hide link depth-3"><a href="/v5/api/utils/address/">Addresses</a></div><div class="hide link depth-3"><a href="/v5/api/utils/bignumber/">BigNumber</a></div><div class="hide link depth-3"><a href="/v5/api/utils/bytes/">Byte Manipulation</a></div><div class="hide link depth-3"><a href="/v5/api/utils/constants/">Constants</a></div><div class="hide link depth-3"><a href="/v5/api/utils/display-logic/">Display Logic and Input</a></div><div class="hide link depth-3"><a href="/v5/api/utils/encoding/">Encoding Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/fixednumber/">FixedNumber</a></div><div class="hide link depth-3"><a href="/v5/api/utils/hashing/">Hashing Algorithms</a></div><div class="hide link depth-3"><a href="/v5/api/utils/hdnode/">HD Wallet</a></div><div class="hide link depth-3"><a href="/v5/api/utils/logger/">Logging</a></div><div class="hide link depth-3"><a href="/v5/api/utils/properties/">Property Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/signing-key/">Signing Key</a></div><div class="hide link depth-3"><a href="/v5/api/utils/strings/">Strings</a></div><div class="hide link depth-3"><a href="/v5/api/utils/transactions/">Transactions</a></div><div class="hide link depth-3"><a href="/v5/api/utils/web/">Web Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/wordlists/">Wordlists</a></div><div class="hide link depth-2"><a href="/v5/api/other/">Other Libraries</a></div><div class="hide link depth-3"><a href="/v5/api/other/assembly/">Assembly</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/dialect/">Ethers ASM Dialect</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/api/">Utilities</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/ast/">Abstract Syntax Tree</a></div><div class="hide link depth-3"><a href="/v5/api/other/hardware/">Hardware Wallets</a></div><div class="hide link depth-2"><a href="/v5/api/experimental/">Experimental</a></div><div class="base show link depth-1"><a href="/v5/cli/">Command Line Interfaces</a></div><div class="hide link depth-2"><a href="/v5/cli/ethers/">Sandbox Utility</a></div><div class="hide link depth-2"><a href="/v5/cli/asm/">Assembler</a></div><div class="hide link depth-2"><a href="/v5/cli/ens/">Ethereum Naming Service</a></div><div class="hide link depth-2"><a href="/v5/cli/typescript/">TypeScript</a></div><div class="hide link depth-2"><a href="/v5/cli/plugin/">Making Your Own</a></div><div class="base show link depth-1"><a href="/v5/cookbook/">Cookbook</a></div><div class="hide link depth-2"><a href="/v5/cookbook/react-native/">React Native (and ilk)</a></div><div class="base show link depth-1"><a href="/v5/migration/">Migration Guide</a></div><div class="hide link depth-2"><a href="/v5/migration/web3/">Migration: From Web3.js</a></div><div class="hide link depth-2"><a href="/v5/migration/ethers-v4/">Migration: From Ethers v4</a></div><div class="base show link depth-1"><a href="/v5/testing/">Testing</a></div><div class="base myself ancestor ancestor show link depth-1"><a href="/v5/contributing/">Contributing and Hacking</a></div><div class="base show link depth-1"><a href="/v5/documentation/">Flatworm Docs</a></div><div class="base show link depth-1"><a href="/v5/license/">License and Copyright</a></div>
+        <div class="link title"><a href="/v5/">Documentation</a></div><div class="base show link depth-1"><a href="/v5/getting-started/">Getting Started</a></div><div class="base show link depth-1"><a href="/v5/concepts/">Ethereum Basics</a></div><div class="hide link depth-2"><a href="/v5/concepts/events/">Events</a></div><div class="hide link depth-2"><a href="/v5/concepts/gas/">Gas</a></div><div class="hide link depth-2"><a href="/v5/concepts/security/">Security</a></div><div class="hide link depth-2"><a href="/v5/concepts/best-practices/">Best Practices</a></div><div class="base show link depth-1"><a href="/v5/api-keys/">Provider API Keys</a></div><div class="base show link depth-1"><a href="/v5/api/">Application Programming Interface</a></div><div class="hide link depth-2"><a href="/v5/api/providers/">Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/provider/">Provider</a></div><div class="hide link depth-3"><a href="/v5/api/providers/jsonrpc-provider/">JsonRpcProvider</a></div><div class="hide link depth-3"><a href="/v5/api/providers/api-providers/">API Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/other/">Other Providers</a></div><div class="hide link depth-3"><a href="/v5/api/providers/types/">Types</a></div><div class="hide link depth-2"><a href="/v5/api/signer/">Signers</a></div><div class="hide link depth-2"><a href="/v5/api/contract/">Contract Interaction</a></div><div class="hide link depth-3"><a href="/v5/api/contract/contract/">Contract</a></div><div class="hide link depth-3"><a href="/v5/api/contract/contract-factory/">ContractFactory</a></div><div class="hide link depth-3"><a href="/v5/api/contract/example/">Example: ERC-20 Contract</a></div><div class="hide link depth-2"><a href="/v5/api/utils/">Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/abi/">Application Binary Interface</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/coder/">AbiCoder</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/formats/">ABI Formats</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/fragments/">Fragments</a></div><div class="hide link depth-4"><a href="/v5/api/utils/abi/interface/">Interface</a></div><div class="hide link depth-3"><a href="/v5/api/utils/address/">Addresses</a></div><div class="hide link depth-3"><a href="/v5/api/utils/bignumber/">BigNumber</a></div><div class="hide link depth-3"><a href="/v5/api/utils/bytes/">Byte Manipulation</a></div><div class="hide link depth-3"><a href="/v5/api/utils/constants/">Constants</a></div><div class="hide link depth-3"><a href="/v5/api/utils/display-logic/">Display Logic and Input</a></div><div class="hide link depth-3"><a href="/v5/api/utils/encoding/">Encoding Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/fixednumber/">FixedNumber</a></div><div class="hide link depth-3"><a href="/v5/api/utils/hashing/">Hashing Algorithms</a></div><div class="hide link depth-3"><a href="/v5/api/utils/hdnode/">HD Wallet</a></div><div class="hide link depth-3"><a href="/v5/api/utils/logger/">Logging</a></div><div class="hide link depth-3"><a href="/v5/api/utils/properties/">Property Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/signing-key/">Signing Key</a></div><div class="hide link depth-3"><a href="/v5/api/utils/strings/">Strings</a></div><div class="hide link depth-3"><a href="/v5/api/utils/transactions/">Transactions</a></div><div class="hide link depth-3"><a href="/v5/api/utils/web/">Web Utilities</a></div><div class="hide link depth-3"><a href="/v5/api/utils/wordlists/">Wordlists</a></div><div class="hide link depth-2"><a href="/v5/api/other/">Other Libraries</a></div><div class="hide link depth-3"><a href="/v5/api/other/assembly/">Assembly</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/dialect/">Ethers ASM Dialect</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/api/">Utilities</a></div><div class="hide link depth-4"><a href="/v5/api/other/assembly/ast/">Abstract Syntax Tree</a></div><div class="hide link depth-3"><a href="/v5/api/other/hardware/">Hardware Wallets</a></div><div class="hide link depth-2"><a href="/v5/api/experimental/">Experimental</a></div><div class="base show link depth-1"><a href="/v5/cli/">Command Line Interfaces</a></div><div class="hide link depth-2"><a href="/v5/cli/ethers/">Sandbox Utility</a></div><div class="hide link depth-2"><a href="/v5/cli/asm/">Assembler</a></div><div class="hide link depth-2"><a href="/v5/cli/ens/">Ethereum Naming Service</a></div><div class="hide link depth-2"><a href="/v5/cli/typescript/">TypeScript</a></div><div class="hide link depth-2"><a href="/v5/cli/plugin/">Making Your Own</a></div><div class="base show link depth-1"><a href="/v5/cookbook/">Cookbook</a></div><div class="hide link depth-2"><a href="/v5/cookbook/react-native/">React Native (and ilk)</a></div><div class="base show link depth-1"><a href="/v5/migration/">Migration Guide</a></div><div class="hide link depth-2"><a href="/v5/migration/web3/">Migration: From Web3.js</a></div><div class="hide link depth-2"><a href="/v5/migration/ethers-v4/">Migration: From Ethers v4</a></div><div class="base show link depth-1"><a href="/v5/testing/">Testing</a></div><div class="base myself ancestor ancestor show link depth-1"><a href="/v5/contributing/">Contributing and Hacking</a></div><div class="link show child depth-2"><a href="#contributing--building">Building</a></div><div class="link show child depth-2"><a href="#contributing--documentation">Documentation</a></div><div class="base show link depth-1"><a href="/v5/other-resources/">Other Resources</a></div><div class="base show link depth-1"><a href="/v5/documentation/">Flatworm Docs</a></div><div class="base show link depth-1"><a href="/v5/license/">License and Copyright</a></div>
       </div></div>
       <div class="footer">
         <a href="/v5/single-page/">Single Page</a>
@@ -24,46 +29,82 @@
 
 <p>Many things are the way they are for good (at the time, at least) reasons, but I always welcome criticism, and am completely willing to have my mind changed on things.</p>
 
-<p>So, pull requests are always welcome, but please keep a few points in mind:</p>
+<p>Pull requests are always welcome, but please keep a few points in mind:</p>
 
-<p><ul><li>Backwards-compatibility-breaking changes will not be accepted; they may be considered for the next major version </li><li>Security is important; adding dependencies require fairly convincing arguments as to why </li><li>The library aims to be lean, so keep an eye on the dist/ethers.min.js file size before and after your changes </li><li>Add test cases for both expected and unexpected input </li><li>Any new features need to be supported by me (future issues, documentation, testing, migration), so anything that is overly complicated or specific may not be accepted </li></ul></p>
+<p><ul><li>Backwards-compatibility-breaking changes will not be accepted; they may be considered for the next major version </li><li>Security is important; adding dependencies require fairly convincing arguments as to why </li><li>The library aims to be lean, so keep an eye on the dist/ethers.min.js file size before and after your changes </li><li>Keep the PR simple and readable; only modify files in the <code class="inline">docs.wrm/</code> and <code class="inline">packages/*/src.ts/</code> folders, as this allows the changes to be easily verified </li><li>Add test cases for both expected and unexpected input </li><li>Any new features need to be supported by me (future issues, documentation, testing, migration), so anything that is overly complicated or specific may not be accepted </li></ul></p>
 
 <p>In general, <b>please start an issue <i>before</i> beginning a pull request</b>, so we can have a public discussion and figure out the best way to address the problem/feature. <b>:)</b></p>
 
-<a name="contributing--building"></a><a name="contributing--contributing--building"></a><h2 class="show-anchors"><div>Building<div class="anchors"><a class="self" href="/v5/contributing/#contributing--building"></a></div></div></h2><p>If you wish to modify the source code, there are a few steps involved in setting up your environment.</p>
+<a name="contributing--building"></a><a name="contributing--contributing--building"></a><h2 class="show-anchors"><div>Building<div class="anchors"><a class="self" href="/v5/contributing/#contributing--building"></a></div></div></h2><p>The build process for ethers is unfortunatly not super trivial, but I have attempted to make it as straight-forward as possible.</p>
 
-<p>Since the library uses a monorepo, you must install an initial required set of libraries, which can then be used to install the remaining libraries used within each package, as well as link all the packages within the repo with each other.</p>
+<p>It is a mono-repo which attempts to be compatibile with a large number of environments, build tools and platforms, which is why there are a some weird things it must do.</p>
 
-<div class="code-title"><div>Preparing for builds</div></div><div class="code"># Clone the repository
-/home/ricmoo&gt; git clone git@github.com:ethers-io/ethers.js.git
+<p>There are several custom scripts in the <code class="inline">misc/admin</code> folder to help manage the monorepo. Developers working on contributing to ethers should not generally need to worry about those, since they are wrapped up behind <code class="inline">npm run SCRIPT</code> operations.</p>
+
+<div class="code-title"><div>Installing</div></div><div class="code"># Clone the repository
+/home/ricmoo&gt; git clone https://github.com/ethers-io/ethers.js.git
+
 /home/ricmoo&gt; cd ethers.js
 
-# Install the base dependencies
-/home/ricmoo/ethers.js&gt; npm install
-
-# Install each module's dependencies and link the libraries
-# internally, so they reference each other
-/home/ricmoo/ethers.js&gt; npm run bootstrap</div><a name="contributing--updating"></a><a name="contributing--contributing--updating"></a><h2 class="show-anchors"><div>Making your changes<div class="anchors"><a class="self" href="/v5/contributing/#contributing--updating"></a></div></div></h2><p>TODO: Add more information here.</p>
+# Install all dependencies:
+# - Hoists all sub-package dependencies in the package.json (preinstall)
+# - Installs all the (hoisted) dependencies and devDependencies (install)
+# - Build the rat-nests (in .package_node_modules) (postinstall)
+# - Create a dependency graph for the TypeScript (postinstall)
+# - Link the rat-nets into each project (postinstall)
+/home/ricmoo/ethers.js&gt; npm install</div><a name="contributing--updating"></a><a name="contributing--contributing--building--contributing--updating"></a><h3 class="show-anchors"><div>Making Changes<div class="anchors"><a class="self" href="/v5/contributing/#contributing--updating"></a></div></div></h3><p>Once your environment is set up, you should be able to simply start the <code class="inline">auto-build</code> feature, and make changes to the TypeScript source.</p>
 
 <div class="code-title"><div>Watching and Building</div></div><div class="code"># Begin watching the files and re-building whenever they change
 /home/ricmoo/ethers.js&gt; npm run auto-build
 
+# Or if you do not want to watch and just build
+/home/ricmoo/ethers.js&gt; npm run build</div><a name="contributing--contributing--building--creating-browser-ready-files"></a><h3 class="show-anchors"><div>Creating Browser-Ready Files<div class="anchors"><a class="self" href="/v5/contributing/#contributing--contributing--building--creating-browser-ready-files"></a></div></div></h3><p>To create files for use directly in a browser, the distribution files (located in <code class="inline">packages/ethers/dist</code>) need to be built which requires several intermediate builds, scripts and for various rollup scripts to execute.</p>
 
-# Sometimes the issue only affects the ESM modules
-/home/ricmoo/ethers.js&gt; npm run auto-build-esm
-
-
-# Or if you only need to run a single build
-/home/ricmoo/ethers.js&gt; npm run _build-cjs
-/home/ricmoo/ethers.js&gt; npm run _build-esm</div><div class="code-title"><div>Testing</div></div><div class="code"># Rebuilds all files and bundles testcases up for testing
+<div class="code-title"><div>Building Distribution Files</div></div><div class="code"># If you need to rebuild all the libs (esm + cjs) and dist files
+# Note: this requires node 10 or newer
+/home/ricmoo/ethers.js&gt; npm run build-all</div><a name="contributing--contributing--building--testing"></a><h3 class="show-anchors"><div>Testing<div class="anchors"><a class="self" href="/v5/contributing/#contributing--contributing--building--testing"></a></div></div></h3>
+<div class="code-title"><div>Testing</div></div><div class="code"># Rebuilds all files (npm run build-all) and bundles testcases up for testing
 /home/ricmoo/ethers.js&gt; npm test
 
 # Often you don't need the full CI experience
-/home/ricmoo/ethers.js&gt; npm run _test-node</div><div class="code-title"><div>Preparing the Distribution</div></div><div class="code">/home/ricmoo/ethers.js&gt; npm run update-version</div><a name="contributing--documentation"></a><a name="contributing--contributing--documentation"></a><h2 class="show-anchors"><div>Documentation<div class="anchors"><a class="self" href="/v5/contributing/#contributing--documentation"></a></div></div></h2><p>The documents are generated using <a href="/v5/documentation/">Flatworm</a> documentation generation tool, which was written for the purpose of writing the documentation for ethers.</p>
+/home/ricmoo/ethers.js&gt; npm run test-node</div><a name="contributing--contributing--building--distribution"></a><h3 class="show-anchors"><div>Distribution<div class="anchors"><a class="self" href="/v5/contributing/#contributing--contributing--building--distribution"></a></div></div></h3><p>Most developers should not ever require this step, but for people forking ethers and creating alternates (for example if you have a non-EVM compatible chain but are trying to reuse this package).</p>
+
+<p>This script will rebuild the entire ethers project, compare it against npm, re-write package versions, update internal hashes, re-write various TypeScript files (to get around some ES+TS limitations for Tree Shaking and linking), re-write map files, bundle stripped versions of dependencies and basically just a whole bunch of stuff.</p>
+
+<p>If you use this and get stuck, <a href="mailto:me@ricmoo.com">message me</a>.</p>
+
+<div class="code-title"><div>Preparing the Distribution</div></div><div class="code"># Prepare all the distribution files
+# - Remove all generated files (i.e. npm run clean)
+# - Re-install all dependencies, hoisting, etc. (npm install)
+# - Spell check all strings in every TypeScript files
+# - Build everything from scratch with this clean install
+# - Compare local with npm, bumping the version if changed
+# - Build everything again (with the updated versions)
+# - Update the CHANGELOG.md with the git history since the last change
+/home/ricmoo/ethers.js&gt; npm run update-version</div><div class="definition container-box note"><div class="term">Do NOT check in dist files in a PR</div><div class="body"><p>For Pull Requests, please ONLY commit files in the <code class="inline">docs.wrm/</code> and <code class="inline">packages/*/src.ts/</code> folders. I will prepare the distribution builds myself and keeping the PR relevant makes it easier to verify the changes.</p>
+
+</div></div><a name="contributing--contributing--building--publishing"></a><h3 class="show-anchors"><div>Publishing<div class="anchors"><a class="self" href="/v5/contributing/#contributing--contributing--building--publishing"></a></div></div></h3><p>Again, this should not be necessary for most developers. This step requires using the <code class="inline">misc/admin/cmds/config-set</code> script for a number of values, including private keys, NPM session keys, AWS access keys, GitHub API tokens, etc.</p>
+
+<p>The config file is encrypted with about 30 seconds of scrypt password-based key derivation function, so brute-forcing the file is quite expensive.</p>
+
+<p>The config file also contains a plain-text mnemonic. This is a money-pot. Place a tempting amount of ether or Bitcoin on this account and set up an e-mail alert for this account.</p>
+
+<p>If any attacker happens across your encrypted config, they will have instant access to the plain-text mnemonic, so they have the option to immediately steal the ether (i.e. the responsible-disclosure bond).</p>
+
+<p>If you ever see this ether taken, your encrypted file is compromised! Rotate all your AWS keys, NPM session keys, etc. immedately.</p>
+
+<p>@TODO: document all the keys that need to be set for each step</p>
+
+<div class="code-title"><div>Preparing the Distribution</div></div><div class="code"># Publish
+# - Update any changed packages to NPM
+# - Create a release on GitHub with the latest CHANGELOG.md description
+# - Upload the bundled files the the CDN
+# - Flush the CDN edge caches
+/home/ricmoo/ethers.js&gt; npm run publish-all</div><a name="contributing--documentation"></a><a name="contributing--contributing--documentation"></a><h2 class="show-anchors"><div>Documentation<div class="anchors"><a class="self" href="/v5/contributing/#contributing--documentation"></a></div></div></h2><p>The documents are generated using <a href="/v5/documentation/">Flatworm</a> documentation generation tool, which was written for the purpose of writing the documentation for ethers.</p>
 
 <p>Style Guide (this section will have much more coming):</p>
 
-<p><ul><li>Try to keep lines no longer than <i>around</i> 80 characters </li><li>Avoid inline links in the source; use the <code class="inline">externalLinks</code> field in the config.js </li><li>Prefix external links with <code class="inline">link-</code> </li><li>Changing an anchor name must be well justified, as it will break all existing links to that section; flatworm will support symlinks in the future </li><li>In general, I aim for xonsistency; look to similar situations throughout the documentation </li></ul></p>
+<p><ul><li>Try to keep lines no longer than <i>around</i> 80 characters </li><li>Avoid inline links in the source; use the <code class="inline">externalLinks</code> field in the config.js </li><li>Prefix external links with <code class="inline">link-</code> </li><li>Changing an anchor name must be well justified, as it will break all existing links to that section; flatworm will support symlinks in the future </li><li>In general, I aim for consistency; look to similar situations throughout the documentation </li></ul></p>
 
 <a name="contributing--contributing--documentation--building"></a><h3 class="show-anchors"><div>Building<div class="anchors"><a class="self" href="/v5/contributing/#contributing--contributing--documentation--building"></a></div></div></h3><p>To build the documentation, you should first follow the <a href="/v5/contributing/#contributing--building">above steps</a> to build the ethers library.</p>
 
@@ -83,9 +124,9 @@
 
       <div class="footer">
         <div class="nav previous"><a href="/v5/testing/"><span class="arrow">&larr;</span>Testing</a></div>
-        <div class="nav next"><a href="/v5/documentation/">Flatworm Docs<span class="arrow">&rarr;</span></a></div>
+        <div class="nav next"><a href="/v5/other-resources/">Other Resources<span class="arrow">&rarr;</span></a></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on November 22, 2020, 11:5pm.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on February 8, 2021, 3:25pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
     <!--EXTRASCRIPT-->

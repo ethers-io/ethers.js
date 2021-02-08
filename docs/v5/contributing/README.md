@@ -12,44 +12,75 @@ Building
 
 ```
 # Clone the repository
-/home/ricmoo> git clone git@github.com:ethers-io/ethers.js.git
+/home/ricmoo> git clone https://github.com/ethers-io/ethers.js.git
+
 /home/ricmoo> cd ethers.js
 
-# Install the base dependencies
+# Install all dependencies:
+# - Hoists all sub-package dependencies in the package.json (preinstall)
+# - Installs all the (hoisted) dependencies and devDependencies (install)
+# - Build the rat-nests (in .package_node_modules) (postinstall)
+# - Create a dependency graph for the TypeScript (postinstall)
+# - Link the rat-nets into each project (postinstall)
 /home/ricmoo/ethers.js> npm install
-
-# Install each module's dependencies and link the libraries
-# internally, so they reference each other
-/home/ricmoo/ethers.js> npm run bootstrap
 ```
 
-Making your changes
--------------------
+### Making Changes
 
 ```
 # Begin watching the files and re-building whenever they change
 /home/ricmoo/ethers.js> npm run auto-build
 
-
-# Sometimes the issue only affects the ESM modules
-/home/ricmoo/ethers.js> npm run auto-build-esm
-
-
-# Or if you only need to run a single build
-/home/ricmoo/ethers.js> npm run _build-cjs
-/home/ricmoo/ethers.js> npm run _build-esm
+# Or if you do not want to watch and just build
+/home/ricmoo/ethers.js> npm run build
 ```
 
+### Creating Browser-Ready Files
+
 ```
-# Rebuilds all files and bundles testcases up for testing
+# If you need to rebuild all the libs (esm + cjs) and dist files
+# Note: this requires node 10 or newer
+/home/ricmoo/ethers.js> npm run build-all
+```
+
+### Testing
+
+```
+# Rebuilds all files (npm run build-all) and bundles testcases up for testing
 /home/ricmoo/ethers.js> npm test
 
 # Often you don't need the full CI experience
-/home/ricmoo/ethers.js> npm run _test-node
+/home/ricmoo/ethers.js> npm run test-node
 ```
 
+### Distribution
+
 ```
+# Prepare all the distribution files
+# - Remove all generated files (i.e. npm run clean)
+# - Re-install all dependencies, hoisting, etc. (npm install)
+# - Spell check all strings in every TypeScript files
+# - Build everything from scratch with this clean install
+# - Compare local with npm, bumping the version if changed
+# - Build everything again (with the updated versions)
+# - Update the CHANGELOG.md with the git history since the last change
 /home/ricmoo/ethers.js> npm run update-version
+```
+
+#### Do NOT check in dist files in a PR
+
+For Pull Requests, please ONLY commit files in the `docs.wrm/` and `packages/*/src.ts/` folders. I will prepare the distribution builds myself and keeping the PR relevant makes it easier to verify the changes.
+
+
+### Publishing
+
+```
+# Publish
+# - Update any changed packages to NPM
+# - Create a release on GitHub with the latest CHANGELOG.md description
+# - Upload the bundled files the the CDN
+# - Flush the CDN edge caches
+/home/ricmoo/ethers.js> npm run publish-all
 ```
 
 Documentation

@@ -8,8 +8,8 @@ Ethereum Basics
 ===============
 
 * [Events](events)
-  * [Solidity Topics](events)
   * [Logs and Filtering](events)
+  * [Solidity Topics](events)
 * [Gas](gas)
   * [Gas Price](gas)
   * [Gas Limit](gas)
