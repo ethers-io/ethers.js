@@ -7,7 +7,7 @@
     "@ethersproject/bytes": "^5.0.9",
     "@ethersproject/logger": "^5.0.8",
     "@ethersproject/properties": "^5.0.7",
-    "elliptic": "6.5.3"
+    "elliptic": "6.5.4"
   },
   "description": "Elliptic curve library functions for the secp256k1 curve.",
   "ethereum": "donations.ethers.eth",
