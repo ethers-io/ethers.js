@@ -422,7 +422,6 @@ let defaultFormatter: Formatter = null;
 
 let nextPollId = 1;
 
-
 export class BaseProvider extends Provider implements EnsProvider {
     _networkPromise: Promise<Network>;
     _network: Network;
@@ -970,7 +969,16 @@ export class BaseProvider extends Provider implements EnsProvider {
 
     async getGasPrice(): Promise<BigNumber> {
         await this.getNetwork();
-        return BigNumber.from(await this.perform("getGasPrice", { }));
+
+        const result = await this.perform("getGasPrice", { });
+        try {
+            return BigNumber.from(result);
+        } catch (error) {
+            return logger.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
+                method: "getGasPrice",
+                result, error
+            });
+        }
     }
 
     async getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber> {
@@ -979,7 +987,16 @@ export class BaseProvider extends Provider implements EnsProvider {
             address: this._getAddress(addressOrName),
             blockTag: this._getBlockTag(blockTag)
         });
-        return BigNumber.from(await this.perform("getBalance", params));
+
+        const result = await this.perform("getBalance", params);
+        try {
+            return BigNumber.from(result);
+        } catch (error) {
+            return logger.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
+                method: "getBalance",
+                params, result, error
+            });
+        }
     }
 
     async getTransactionCount(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<number> {
@@ -988,7 +1005,16 @@ export class BaseProvider extends Provider implements EnsProvider {
             address: this._getAddress(addressOrName),
             blockTag: this._getBlockTag(blockTag)
         });
-        return BigNumber.from(await this.perform("getTransactionCount", params)).toNumber();
+
+        const result = await this.perform("getTransactionCount", params);
+        try {
+            return BigNumber.from(result).toNumber();
+        } catch (error) {
+            return logger.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
+                method: "getTransactionCount",
+                params, result, error
+            });
+        }
     }
 
     async getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
@@ -997,7 +1023,16 @@ export class BaseProvider extends Provider implements EnsProvider {
             address: this._getAddress(addressOrName),
             blockTag: this._getBlockTag(blockTag)
         });
-        return hexlify(await this.perform("getCode", params));
+
+        const result = await this.perform("getCode", params);
+        try {
+            return hexlify(result);
+        } catch (error) {
+            return logger.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
+                method: "getCode",
+                params, result, error
+            });
+        }
     }
 
     async getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
@@ -1007,7 +1042,15 @@ export class BaseProvider extends Provider implements EnsProvider {
             blockTag: this._getBlockTag(blockTag),
             position: Promise.resolve(position).then((p) => hexValue(p))
         });
-        return hexlify(await this.perform("getStorageAt", params));
+        const result = await this.perform("getStorageAt", params);
+        try {
+            return hexlify(result);
+        } catch (error) {
+            return logger.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
+                method: "getStorageAt",
+                params, result, error
+            });
+        }
     }
 
     // This should be called by any subclass wrapping a TransactionResponse
@@ -1115,7 +1158,16 @@ export class BaseProvider extends Provider implements EnsProvider {
             transaction: this._getTransactionRequest(transaction),
             blockTag: this._getBlockTag(blockTag)
         });
-        return hexlify(await this.perform("call", params));
+
+        const result = await this.perform("call", params);
+        try {
+            return hexlify(result);
+        } catch (error) {
+            return logger.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
+                method: "call",
+                params, result, error
+            });
+        }
     }
 
     async estimateGas(transaction: Deferrable<TransactionRequest>): Promise<BigNumber> {
@@ -1123,7 +1175,15 @@ export class BaseProvider extends Provider implements EnsProvider {
         const params = await resolveProperties({
             transaction: this._getTransactionRequest(transaction)
         });
-        return BigNumber.from(await this.perform("estimateGas", params));
+        const result = await this.perform("estimateGas", params);
+        try {
+            return BigNumber.from(result);
+        } catch (error) {
+            return logger.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
+                method: "estimateGas",
+                params, result, error
+            });
+        }
     }
 
     async _getAddress(addressOrName: string | Promise<string>): Promise<string> {
