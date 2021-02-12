@@ -191,7 +191,16 @@ export abstract class Signer {
 
         const tx: Deferrable<TransactionRequest> = await resolveProperties(this.checkTransaction(transaction))
 
-        if (tx.to != null) { tx.to = Promise.resolve(tx.to).then((to) => this.resolveName(to)); }
+        if (tx.to != null) {
+            tx.to = Promise.resolve(tx.to).then(async (to) => {
+                if (to == null) { return null; }
+                const address = await this.resolveName(to);
+                if (address == null) {
+                    logger.throwArgumentError("provided ENS name resolves to null", "tx.to", to);
+                }
+                return address;
+            });
+        }
         if (tx.gasPrice == null) { tx.gasPrice = this.getGasPrice(); }
         if (tx.nonce == null) { tx.nonce = this.getTransactionCount("pending"); }
 
