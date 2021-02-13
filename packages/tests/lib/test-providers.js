@@ -1194,4 +1194,54 @@ describe("Test Events", function () {
         });
     });
 });
+describe("Bad ENS resolution", function () {
+    var provider = providerFunctions[0].create("ropsten");
+    it("signer has a bad ENS name", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var wallet, tx, error_2, tos, i, to, tx, error_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(300000);
+                        wallet = new ethers_1.ethers.Wallet(ethers_1.ethers.utils.id("random-wallet"), provider);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, wallet.sendTransaction({ to: "junk", value: 1 })];
+                    case 2:
+                        tx = _a.sent();
+                        console.log("TX", tx);
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_2 = _a.sent();
+                        assert_1.default.ok(error_2.argument === "tx.to" && error_2.value === "junk");
+                        return [3 /*break*/, 4];
+                    case 4:
+                        tos = [null, Promise.resolve(null)];
+                        i = 0;
+                        _a.label = 5;
+                    case 5:
+                        if (!(i < tos.length)) return [3 /*break*/, 10];
+                        to = tos[i];
+                        _a.label = 6;
+                    case 6:
+                        _a.trys.push([6, 8, , 9]);
+                        return [4 /*yield*/, wallet.sendTransaction({ to: to, value: 1 })];
+                    case 7:
+                        tx = _a.sent();
+                        console.log("TX", tx);
+                        return [3 /*break*/, 9];
+                    case 8:
+                        error_3 = _a.sent();
+                        assert_1.default.ok(error_3.code === "INSUFFICIENT_FUNDS");
+                        return [3 /*break*/, 9];
+                    case 9:
+                        i++;
+                        return [3 /*break*/, 5];
+                    case 10: return [2 /*return*/];
+                }
+            });
+        });
+    });
+});
 //# sourceMappingURL=test-providers.js.map

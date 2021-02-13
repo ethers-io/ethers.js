@@ -490,6 +490,9 @@ export class Contract {
         }
         defineReadOnly(this, "_runningEvents", {});
         defineReadOnly(this, "_wrappedEmits", {});
+        if (addressOrName == null) {
+            logger.throwArgumentError("invalid contract address or ENS name", "addressOrName", addressOrName);
+        }
         defineReadOnly(this, "address", addressOrName);
         if (this.provider) {
             defineReadOnly(this, "resolvedAddress", resolveName(this.provider, addressOrName));

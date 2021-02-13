@@ -9600,7 +9600,7 @@
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-signer/5.0.12";
+	exports.version = "abstract-signer/5.0.13";
 
 	});
 
@@ -9836,7 +9836,24 @@
 	                    case 1:
 	                        tx = _a.sent();
 	                        if (tx.to != null) {
-	                            tx.to = Promise.resolve(tx.to).then(function (to) { return _this.resolveName(to); });
+	                            tx.to = Promise.resolve(tx.to).then(function (to) { return __awaiter(_this, void 0, void 0, function () {
+	                                var address;
+	                                return __generator(this, function (_a) {
+	                                    switch (_a.label) {
+	                                        case 0:
+	                                            if (to == null) {
+	                                                return [2 /*return*/, null];
+	                                            }
+	                                            return [4 /*yield*/, this.resolveName(to)];
+	                                        case 1:
+	                                            address = _a.sent();
+	                                            if (address == null) {
+	                                                logger.throwArgumentError("provided ENS name resolves to null", "tx.to", to);
+	                                            }
+	                                            return [2 /*return*/, address];
+	                                    }
+	                                });
+	                            }); });
 	                        }
 	                        if (tx.gasPrice == null) {
 	                            tx.gasPrice = this.getGasPrice();
@@ -9932,7 +9949,7 @@
 	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.10";
+	exports.version = "contracts/5.0.11";
 
 	});
 
@@ -10564,6 +10581,9 @@
 	        }
 	        lib$3.defineReadOnly(this, "_runningEvents", {});
 	        lib$3.defineReadOnly(this, "_wrappedEmits", {});
+	        if (addressOrName == null) {
+	            logger.throwArgumentError("invalid contract address or ENS name", "addressOrName", addressOrName);
+	        }
 	        lib$3.defineReadOnly(this, "address", addressOrName);
 	        if (this.provider) {
 	            lib$3.defineReadOnly(this, "resolvedAddress", resolveName(this.provider, addressOrName));
@@ -19712,7 +19732,7 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.22";
+	exports.version = "providers/5.0.23";
 
 	});
 
@@ -21146,100 +21166,150 @@
 	    };
 	    BaseProvider.prototype.getGasPrice = function () {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var _a, _b;
-	            return __generator(this, function (_c) {
-	                switch (_c.label) {
+	            var result;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
-	                        _c.sent();
-	                        _b = (_a = lib$2.BigNumber).from;
+	                        _a.sent();
 	                        return [4 /*yield*/, this.perform("getGasPrice", {})];
-	                    case 2: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+	                    case 2:
+	                        result = _a.sent();
+	                        try {
+	                            return [2 /*return*/, lib$2.BigNumber.from(result)];
+	                        }
+	                        catch (error) {
+	                            return [2 /*return*/, logger.throwError("bad result from backend", lib.Logger.errors.SERVER_ERROR, {
+	                                    method: "getGasPrice",
+	                                    result: result, error: error
+	                                })];
+	                        }
+	                        return [2 /*return*/];
 	                }
 	            });
 	        });
 	    };
 	    BaseProvider.prototype.getBalance = function (addressOrName, blockTag) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var params, _a, _b;
-	            return __generator(this, function (_c) {
-	                switch (_c.label) {
+	            var params, result;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
-	                        _c.sent();
+	                        _a.sent();
 	                        return [4 /*yield*/, lib$3.resolveProperties({
 	                                address: this._getAddress(addressOrName),
 	                                blockTag: this._getBlockTag(blockTag)
 	                            })];
 	                    case 2:
-	                        params = _c.sent();
-	                        _b = (_a = lib$2.BigNumber).from;
+	                        params = _a.sent();
 	                        return [4 /*yield*/, this.perform("getBalance", params)];
-	                    case 3: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+	                    case 3:
+	                        result = _a.sent();
+	                        try {
+	                            return [2 /*return*/, lib$2.BigNumber.from(result)];
+	                        }
+	                        catch (error) {
+	                            return [2 /*return*/, logger.throwError("bad result from backend", lib.Logger.errors.SERVER_ERROR, {
+	                                    method: "getBalance",
+	                                    params: params, result: result, error: error
+	                                })];
+	                        }
+	                        return [2 /*return*/];
 	                }
 	            });
 	        });
 	    };
 	    BaseProvider.prototype.getTransactionCount = function (addressOrName, blockTag) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var params, _a, _b;
-	            return __generator(this, function (_c) {
-	                switch (_c.label) {
+	            var params, result;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
-	                        _c.sent();
+	                        _a.sent();
 	                        return [4 /*yield*/, lib$3.resolveProperties({
 	                                address: this._getAddress(addressOrName),
 	                                blockTag: this._getBlockTag(blockTag)
 	                            })];
 	                    case 2:
-	                        params = _c.sent();
-	                        _b = (_a = lib$2.BigNumber).from;
+	                        params = _a.sent();
 	                        return [4 /*yield*/, this.perform("getTransactionCount", params)];
-	                    case 3: return [2 /*return*/, _b.apply(_a, [_c.sent()]).toNumber()];
+	                    case 3:
+	                        result = _a.sent();
+	                        try {
+	                            return [2 /*return*/, lib$2.BigNumber.from(result).toNumber()];
+	                        }
+	                        catch (error) {
+	                            return [2 /*return*/, logger.throwError("bad result from backend", lib.Logger.errors.SERVER_ERROR, {
+	                                    method: "getTransactionCount",
+	                                    params: params, result: result, error: error
+	                                })];
+	                        }
+	                        return [2 /*return*/];
 	                }
 	            });
 	        });
 	    };
 	    BaseProvider.prototype.getCode = function (addressOrName, blockTag) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var params, _a;
-	            return __generator(this, function (_b) {
-	                switch (_b.label) {
+	            var params, result;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
-	                        _b.sent();
+	                        _a.sent();
 	                        return [4 /*yield*/, lib$3.resolveProperties({
 	                                address: this._getAddress(addressOrName),
 	                                blockTag: this._getBlockTag(blockTag)
 	                            })];
 	                    case 2:
-	                        params = _b.sent();
-	                        _a = lib$1.hexlify;
+	                        params = _a.sent();
 	                        return [4 /*yield*/, this.perform("getCode", params)];
-	                    case 3: return [2 /*return*/, _a.apply(void 0, [_b.sent()])];
+	                    case 3:
+	                        result = _a.sent();
+	                        try {
+	                            return [2 /*return*/, lib$1.hexlify(result)];
+	                        }
+	                        catch (error) {
+	                            return [2 /*return*/, logger.throwError("bad result from backend", lib.Logger.errors.SERVER_ERROR, {
+	                                    method: "getCode",
+	                                    params: params, result: result, error: error
+	                                })];
+	                        }
+	                        return [2 /*return*/];
 	                }
 	            });
 	        });
 	    };
 	    BaseProvider.prototype.getStorageAt = function (addressOrName, position, blockTag) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var params, _a;
-	            return __generator(this, function (_b) {
-	                switch (_b.label) {
+	            var params, result;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
-	                        _b.sent();
+	                        _a.sent();
 	                        return [4 /*yield*/, lib$3.resolveProperties({
 	                                address: this._getAddress(addressOrName),
 	                                blockTag: this._getBlockTag(blockTag),
 	                                position: Promise.resolve(position).then(function (p) { return lib$1.hexValue(p); })
 	                            })];
 	                    case 2:
-	                        params = _b.sent();
-	                        _a = lib$1.hexlify;
+	                        params = _a.sent();
 	                        return [4 /*yield*/, this.perform("getStorageAt", params)];
-	                    case 3: return [2 /*return*/, _a.apply(void 0, [_b.sent()])];
+	                    case 3:
+	                        result = _a.sent();
+	                        try {
+	                            return [2 /*return*/, lib$1.hexlify(result)];
+	                        }
+	                        catch (error) {
+	                            return [2 /*return*/, logger.throwError("bad result from backend", lib.Logger.errors.SERVER_ERROR, {
+	                                    method: "getStorageAt",
+	                                    params: params, result: result, error: error
+	                                })];
+	                        }
+	                        return [2 /*return*/];
 	                }
 	            });
 	        });
@@ -21386,41 +21456,61 @@
 	    };
 	    BaseProvider.prototype.call = function (transaction, blockTag) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var params, _a;
-	            return __generator(this, function (_b) {
-	                switch (_b.label) {
+	            var params, result;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
-	                        _b.sent();
+	                        _a.sent();
 	                        return [4 /*yield*/, lib$3.resolveProperties({
 	                                transaction: this._getTransactionRequest(transaction),
 	                                blockTag: this._getBlockTag(blockTag)
 	                            })];
 	                    case 2:
-	                        params = _b.sent();
-	                        _a = lib$1.hexlify;
+	                        params = _a.sent();
 	                        return [4 /*yield*/, this.perform("call", params)];
-	                    case 3: return [2 /*return*/, _a.apply(void 0, [_b.sent()])];
+	                    case 3:
+	                        result = _a.sent();
+	                        try {
+	                            return [2 /*return*/, lib$1.hexlify(result)];
+	                        }
+	                        catch (error) {
+	                            return [2 /*return*/, logger.throwError("bad result from backend", lib.Logger.errors.SERVER_ERROR, {
+	                                    method: "call",
+	                                    params: params, result: result, error: error
+	                                })];
+	                        }
+	                        return [2 /*return*/];
 	                }
 	            });
 	        });
 	    };
 	    BaseProvider.prototype.estimateGas = function (transaction) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var params, _a, _b;
-	            return __generator(this, function (_c) {
-	                switch (_c.label) {
+	            var params, result;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
-	                        _c.sent();
+	                        _a.sent();
 	                        return [4 /*yield*/, lib$3.resolveProperties({
 	                                transaction: this._getTransactionRequest(transaction)
 	                            })];
 	                    case 2:
-	                        params = _c.sent();
-	                        _b = (_a = lib$2.BigNumber).from;
+	                        params = _a.sent();
 	                        return [4 /*yield*/, this.perform("estimateGas", params)];
-	                    case 3: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+	                    case 3:
+	                        result = _a.sent();
+	                        try {
+	                            return [2 /*return*/, lib$2.BigNumber.from(result)];
+	                        }
+	                        catch (error) {
+	                            return [2 /*return*/, logger.throwError("bad result from backend", lib.Logger.errors.SERVER_ERROR, {
+	                                    method: "estimateGas",
+	                                    params: params, result: result, error: error
+	                                })];
+	                        }
+	                        return [2 /*return*/];
 	                }
 	            });
 	        });
@@ -25438,7 +25528,7 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.30";
+	exports.version = "ethers/5.0.31";
 
 	});
 

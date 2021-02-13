@@ -227,7 +227,24 @@ var Signer = /** @class */ (function () {
                     case 1:
                         tx = _a.sent();
                         if (tx.to != null) {
-                            tx.to = Promise.resolve(tx.to).then(function (to) { return _this.resolveName(to); });
+                            tx.to = Promise.resolve(tx.to).then(function (to) { return __awaiter(_this, void 0, void 0, function () {
+                                var address;
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0:
+                                            if (to == null) {
+                                                return [2 /*return*/, null];
+                                            }
+                                            return [4 /*yield*/, this.resolveName(to)];
+                                        case 1:
+                                            address = _a.sent();
+                                            if (address == null) {
+                                                logger.throwArgumentError("provided ENS name resolves to null", "tx.to", to);
+                                            }
+                                            return [2 /*return*/, address];
+                                    }
+                                });
+                            }); });
                         }
                         if (tx.gasPrice == null) {
                             tx.gasPrice = this.getGasPrice();

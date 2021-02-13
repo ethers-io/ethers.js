@@ -623,6 +623,9 @@ var Contract = /** @class */ (function () {
         }
         properties_1.defineReadOnly(this, "_runningEvents", {});
         properties_1.defineReadOnly(this, "_wrappedEmits", {});
+        if (addressOrName == null) {
+            logger.throwArgumentError("invalid contract address or ENS name", "addressOrName", addressOrName);
+        }
         properties_1.defineReadOnly(this, "address", addressOrName);
         if (this.provider) {
             properties_1.defineReadOnly(this, "resolvedAddress", resolveName(this.provider, addressOrName));

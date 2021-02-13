@@ -8613,7 +8613,7 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.0.12";
+const version$a = "abstract-signer/5.0.13";
 
 "use strict";
 var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8742,7 +8742,16 @@ class Signer {
         return __awaiter$2(this, void 0, void 0, function* () {
             const tx = yield resolveProperties(this.checkTransaction(transaction));
             if (tx.to != null) {
-                tx.to = Promise.resolve(tx.to).then((to) => this.resolveName(to));
+                tx.to = Promise.resolve(tx.to).then((to) => __awaiter$2(this, void 0, void 0, function* () {
+                    if (to == null) {
+                        return null;
+                    }
+                    const address = yield this.resolveName(to);
+                    if (address == null) {
+                        logger$f.throwArgumentError("provided ENS name resolves to null", "tx.to", to);
+                    }
+                    return address;
+                }));
             }
             if (tx.gasPrice == null) {
                 tx.gasPrice = this.getGasPrice();
@@ -8820,7 +8829,7 @@ class VoidSigner extends Signer {
     }
 }
 
-const version$b = "contracts/5.0.10";
+const version$b = "contracts/5.0.11";
 
 "use strict";
 var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -9304,6 +9313,9 @@ class Contract {
         }
         defineReadOnly(this, "_runningEvents", {});
         defineReadOnly(this, "_wrappedEmits", {});
+        if (addressOrName == null) {
+            logger$g.throwArgumentError("invalid contract address or ENS name", "addressOrName", addressOrName);
+        }
         defineReadOnly(this, "address", addressOrName);
         if (this.provider) {
             defineReadOnly(this, "resolvedAddress", resolveName(this.provider, addressOrName));
@@ -17641,7 +17653,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.0.22";
+const version$m = "providers/5.0.23";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -18863,7 +18875,16 @@ class BaseProvider extends Provider {
     getGasPrice() {
         return __awaiter$8(this, void 0, void 0, function* () {
             yield this.getNetwork();
-            return BigNumber.from(yield this.perform("getGasPrice", {}));
+            const result = yield this.perform("getGasPrice", {});
+            try {
+                return BigNumber.from(result);
+            }
+            catch (error) {
+                return logger$t.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
+                    method: "getGasPrice",
+                    result, error
+                });
+            }
         });
     }
     getBalance(addressOrName, blockTag) {
@@ -18873,7 +18894,16 @@ class BaseProvider extends Provider {
                 address: this._getAddress(addressOrName),
                 blockTag: this._getBlockTag(blockTag)
             });
-            return BigNumber.from(yield this.perform("getBalance", params));
+            const result = yield this.perform("getBalance", params);
+            try {
+                return BigNumber.from(result);
+            }
+            catch (error) {
+                return logger$t.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
+                    method: "getBalance",
+                    params, result, error
+                });
+            }
         });
     }
     getTransactionCount(addressOrName, blockTag) {
@@ -18883,7 +18913,16 @@ class BaseProvider extends Provider {
                 address: this._getAddress(addressOrName),
                 blockTag: this._getBlockTag(blockTag)
             });
-            return BigNumber.from(yield this.perform("getTransactionCount", params)).toNumber();
+            const result = yield this.perform("getTransactionCount", params);
+            try {
+                return BigNumber.from(result).toNumber();
+            }
+            catch (error) {
+                return logger$t.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
+                    method: "getTransactionCount",
+                    params, result, error
+                });
+            }
         });
     }
     getCode(addressOrName, blockTag) {
@@ -18893,7 +18932,16 @@ class BaseProvider extends Provider {
                 address: this._getAddress(addressOrName),
                 blockTag: this._getBlockTag(blockTag)
             });
-            return hexlify(yield this.perform("getCode", params));
+            const result = yield this.perform("getCode", params);
+            try {
+                return hexlify(result);
+            }
+            catch (error) {
+                return logger$t.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
+                    method: "getCode",
+                    params, result, error
+                });
+            }
         });
     }
     getStorageAt(addressOrName, position, blockTag) {
@@ -18904,7 +18952,16 @@ class BaseProvider extends Provider {
                 blockTag: this._getBlockTag(blockTag),
                 position: Promise.resolve(position).then((p) => hexValue(p))
             });
-            return hexlify(yield this.perform("getStorageAt", params));
+            const result = yield this.perform("getStorageAt", params);
+            try {
+                return hexlify(result);
+            }
+            catch (error) {
+                return logger$t.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
+                    method: "getStorageAt",
+                    params, result, error
+                });
+            }
         });
     }
     // This should be called by any subclass wrapping a TransactionResponse
@@ -19012,7 +19069,16 @@ class BaseProvider extends Provider {
                 transaction: this._getTransactionRequest(transaction),
                 blockTag: this._getBlockTag(blockTag)
             });
-            return hexlify(yield this.perform("call", params));
+            const result = yield this.perform("call", params);
+            try {
+                return hexlify(result);
+            }
+            catch (error) {
+                return logger$t.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
+                    method: "call",
+                    params, result, error
+                });
+            }
         });
     }
     estimateGas(transaction) {
@@ -19021,7 +19087,16 @@ class BaseProvider extends Provider {
             const params = yield resolveProperties({
                 transaction: this._getTransactionRequest(transaction)
             });
-            return BigNumber.from(yield this.perform("estimateGas", params));
+            const result = yield this.perform("estimateGas", params);
+            try {
+                return BigNumber.from(result);
+            }
+            catch (error) {
+                return logger$t.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
+                    method: "estimateGas",
+                    params, result, error
+                });
+            }
         });
     }
     _getAddress(addressOrName) {
@@ -22051,7 +22126,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.30";
+const version$o = "ethers/5.0.31";
 
 "use strict";
 const logger$H = new Logger(version$o);

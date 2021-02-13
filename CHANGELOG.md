@@ -3,6 +3,13 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.31 (2021-02-12 19:04)
+---------------------------------
+
+  - Prevent unhandled rejections when passing nullish into Contract constructor. ([#1234](https://github.com/ethers-io/ethers.js/issues/1234); [d937668](https://github.com/ethers-io/ethers.js/commit/d937668dc1d39cc293f64bbd30b99b29614d1607))
+  - Better error messaging when provider backends give bogus responses. ([#1243](https://github.com/ethers-io/ethers.js/issues/1243); [8279120](https://github.com/ethers-io/ethers.js/commit/8279120e0ad1cbb7aeabd32c08e168a4228abbec))
+  - Prevent unconfigured ENS names from making an init tx. ([#1290](https://github.com/ethers-io/ethers.js/issues/1290); [243beff](https://github.com/ethers-io/ethers.js/commit/243beffa4f83c910f5f1c5e0554531e5dcf3ab93))
+
 ethers/v5.0.30 (2021-02-08 15:22)
 ---------------------------------
 

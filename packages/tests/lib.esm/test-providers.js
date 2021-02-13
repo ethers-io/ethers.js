@@ -1008,4 +1008,33 @@ describe("Test Events", function () {
         });
     });
 });
+describe("Bad ENS resolution", function () {
+    const provider = providerFunctions[0].create("ropsten");
+    it("signer has a bad ENS name", function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.timeout(300000);
+            const wallet = new ethers.Wallet(ethers.utils.id("random-wallet"), provider);
+            // If "to" is specified as an ENS name, it cannot resolve to null
+            try {
+                const tx = yield wallet.sendTransaction({ to: "junk", value: 1 });
+                console.log("TX", tx);
+            }
+            catch (error) {
+                assert.ok(error.argument === "tx.to" && error.value === "junk");
+            }
+            // But promises that resolve to null are ok
+            const tos = [null, Promise.resolve(null)];
+            for (let i = 0; i < tos.length; i++) {
+                const to = tos[i];
+                try {
+                    const tx = yield wallet.sendTransaction({ to, value: 1 });
+                    console.log("TX", tx);
+                }
+                catch (error) {
+                    assert.ok(error.code === "INSUFFICIENT_FUNDS");
+                }
+            }
+        });
+    });
+});
 //# sourceMappingURL=test-providers.js.map
