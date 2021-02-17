@@ -42,6 +42,38 @@ _property: abiCoder.encode(types, values) => string<[[DataHexString]]> @<AbiCode
 Encode the array //values// according to the array of //types//, each of which may be a
 string or a [[ParamType]].
 
+_code: Encoding Examples @lang<javascript>
+
+// Encoding with single variables and values
+ethers.utils.defaultAbiCoder.encode(['uint256','string'], ['2345675643', 'Hello!%']);
+
+// Encoding with a custom struct and values 
+structExample = {
+    propertyOne: 42,
+    propertyTwo: 56,
+}
+
+ethers.utils.defaultAbiCoder.encode(
+    [
+        'uint256',
+        {
+          type: "tuple[]",
+          name: "structExample",
+          components: [
+            { name: "propertyOne", type: 'uint256' },
+            { name: "propertyTwo", type: 'uint256' },
+          ]
+        },
+    ], 
+    
+    [
+        '2345675643', 
+        [structExample]
+    ]
+
+);
+
+
 _property: abiCoder.decode(types, data) => [[Result]] @<AbiCoder-decode> @SRC<abi/abi-coder>
 
 Decode the //data// according to the array of //types//, each of which may be a
