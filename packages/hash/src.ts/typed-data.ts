@@ -1,7 +1,7 @@
 import { TypedDataDomain, TypedDataField } from "@ethersproject/abstract-signer";
 import { getAddress } from "@ethersproject/address";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
-import { arrayify, BytesLike, hexConcat, hexlify, hexValue, hexZeroPad, isHexString } from "@ethersproject/bytes";
+import { arrayify, BytesLike, hexConcat, hexlify, hexZeroPad, isHexString } from "@ethersproject/bytes";
 import { keccak256 } from "@ethersproject/keccak256";
 import { deepCopy, defineReadOnly, shallowCopy } from "@ethersproject/properties";
 
@@ -484,13 +484,7 @@ export class TypedDataEncoder {
 
                 // uint or int
                 if (type.match(/^u?int/)) {
-                    let prefix = "";
-                    let v = BigNumber.from(value);
-                    if (v.isNegative()) {
-                        prefix = "-";
-                        v = v.mul(-1);
-                    }
-                    return prefix + hexValue(v.toHexString());
+                    return BigNumber.from(value).toString();
                 }
 
                 switch (type) {
