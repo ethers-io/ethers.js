@@ -1126,6 +1126,7 @@ describe("Bad ENS resolution", function() {
         try {
             const tx = await wallet.sendTransaction({ to: "junk", value: 1 });
             console.log("TX", tx);
+            assert.ok(false, "failed to throw an exception");
         } catch (error) {
             assert.ok(error.argument === "tx.to" && error.value === "junk");
         }
