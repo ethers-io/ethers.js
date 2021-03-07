@@ -94,7 +94,11 @@ var bn = createCommonjsModule(function (module) {
 
   var Buffer;
   try {
-    Buffer = /*RicMoo:ethers:require(buffer)*/(null).Buffer;
+    if (typeof window !== 'undefined' && typeof window.Buffer !== 'undefined') {
+      Buffer = window.Buffer;
+    } else {
+      Buffer = /*RicMoo:ethers:require(buffer)*/(null).Buffer;
+    }
   } catch (e) {
   }
 
@@ -135,23 +139,19 @@ var bn = createCommonjsModule(function (module) {
     var start = 0;
     if (number[0] === '-') {
       start++;
-    }
-
-    if (base === 16) {
-      this._parseHex(number, start);
-    } else {
-      this._parseBase(number, base, start);
-    }
-
-    if (number[0] === '-') {
       this.negative = 1;
     }
 
-    this.strip();
-
-    if (endian !== 'le') return;
-
-    this._initArray(this.toArray(), base, endian);
+    if (start < number.length) {
+      if (base === 16) {
+        this._parseHex(number, start, endian);
+      } else {
+        this._parseBase(number, base, start);
+        if (endian === 'le') {
+          this._initArray(this.toArray(), base, endian);
+        }
+      }
+    }
   };
 
   BN.prototype._initNumber = function _initNumber (number, base, endian) {
@@ -227,31 +227,29 @@ var bn = createCommonjsModule(function (module) {
     return this.strip();
   };
 
-  function parseHex (str, start, end) {
-    var r = 0;
-    var len = Math.min(str.length, end);
-    for (var i = start; i < len; i++) {
-      var c = str.charCodeAt(i) - 48;
+  function parseHex4Bits (string, index) {
+    var c = string.charCodeAt(index);
+    // 'A' - 'F'
+    if (c >= 65 && c <= 70) {
+      return c - 55;
+    // 'a' - 'f'
+    } else if (c >= 97 && c <= 102) {
+      return c - 87;
+    // '0' - '9'
+    } else {
+      return (c - 48) & 0xf;
+    }
+  }
 
-      r <<= 4;
-
-      // 'a' - 'f'
-      if (c >= 49 && c <= 54) {
-        r |= c - 49 + 0xa;
-
-      // 'A' - 'F'
-      } else if (c >= 17 && c <= 22) {
-        r |= c - 17 + 0xa;
-
-      // '0' - '9'
-      } else {
-        r |= c & 0xf;
-      }
+  function parseHexByte (string, lowerBound, index) {
+    var r = parseHex4Bits(string, index);
+    if (index - 1 >= lowerBound) {
+      r |= parseHex4Bits(string, index - 1) << 4;
     }
     return r;
   }
 
-  BN.prototype._parseHex = function _parseHex (number, start) {
+  BN.prototype._parseHex = function _parseHex (number, start, endian) {
     // Create possibly bigger array to ensure that it fits the number
     this.length = Math.ceil((number.length - start) / 6);
     this.words = new Array(this.length);
@@ -259,25 +257,38 @@ var bn = createCommonjsModule(function (module) {
       this.words[i] = 0;
     }
 
-    var j, w;
-    // Scan 24-bit chunks and add them to the number
+    // 24-bits chunks
     var off = 0;
-    for (i = number.length - 6, j = 0; i >= start; i -= 6) {
-      w = parseHex(number, i, i + 6);
-      this.words[j] |= (w << off) & 0x3ffffff;
-      // NOTE: `0x3fffff` is intentional here, 26bits max shift + 24bit hex limb
-      this.words[j + 1] |= w >>> (26 - off) & 0x3fffff;
-      off += 24;
-      if (off >= 26) {
-        off -= 26;
-        j++;
+    var j = 0;
+
+    var w;
+    if (endian === 'be') {
+      for (i = number.length - 1; i >= start; i -= 2) {
+        w = parseHexByte(number, start, i) << off;
+        this.words[j] |= w & 0x3ffffff;
+        if (off >= 18) {
+          off -= 18;
+          j += 1;
+          this.words[j] |= w >>> 26;
+        } else {
+          off += 8;
+        }
+      }
+    } else {
+      var parseLength = number.length - start;
+      for (i = parseLength % 2 === 0 ? start + 1 : start; i < number.length; i += 2) {
+        w = parseHexByte(number, start, i) << off;
+        this.words[j] |= w & 0x3ffffff;
+        if (off >= 18) {
+          off -= 18;
+          j += 1;
+          this.words[j] |= w >>> 26;
+        } else {
+          off += 8;
+        }
       }
     }
-    if (i + 6 !== start) {
-      w = parseHex(number, start, i + 6);
-      this.words[j] |= (w << off) & 0x3ffffff;
-      this.words[j + 1] |= w >>> (26 - off) & 0x3fffff;
-    }
+
     this.strip();
   };
 
@@ -348,6 +359,8 @@ var bn = createCommonjsModule(function (module) {
         this._iaddn(word);
       }
     }
+
+    this.strip();
   };
 
   BN.prototype.copy = function copy (dest) {
@@ -3477,7 +3490,7 @@ var bn = createCommonjsModule(function (module) {
 })('object' === 'undefined' || module, commonjsGlobal);
 });
 
-const version = "logger/5.0.9";
+const version = "logger/5.0.10";
 
 "use strict";
 let _permanentCensorErrors = false;
@@ -3775,7 +3788,7 @@ class Logger {
 Logger.errors = ErrorCode;
 Logger.levels = LogLevel;
 
-const version$1 = "bytes/5.0.10";
+const version$1 = "bytes/5.0.11";
 
 "use strict";
 const logger = new Logger(version$1);
@@ -4155,7 +4168,7 @@ function joinSignature(signature) {
     ]));
 }
 
-const version$2 = "bignumber/5.0.14";
+const version$2 = "bignumber/5.0.15";
 
 "use strict";
 var BN = bn.BN;
@@ -4778,7 +4791,7 @@ class FixedNumber {
 const ONE = FixedNumber.from(1);
 const BUMP = FixedNumber.from("0.5");
 
-const version$3 = "properties/5.0.8";
+const version$3 = "properties/5.0.9";
 
 "use strict";
 var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -4895,7 +4908,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.0.12";
+const version$4 = "abi/5.0.13";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -6303,7 +6316,7 @@ function keccak256(data) {
     return '0x' + sha3.keccak_256(arrayify(data));
 }
 
-const version$5 = "rlp/5.0.8";
+const version$5 = "rlp/5.0.9";
 
 "use strict";
 const logger$6 = new Logger(version$5);
@@ -6427,7 +6440,7 @@ var index = /*#__PURE__*/Object.freeze({
 	decode: decode
 });
 
-const version$6 = "address/5.0.10";
+const version$6 = "address/5.0.11";
 
 "use strict";
 const logger$7 = new Logger(version$6);
@@ -6943,7 +6956,7 @@ class NumberCoder extends Coder {
     }
 }
 
-const version$7 = "strings/5.0.9";
+const version$7 = "strings/5.0.10";
 
 "use strict";
 const logger$9 = new Logger(version$7);
@@ -7564,7 +7577,7 @@ function id(text) {
     return keccak256(toUtf8Bytes(text));
 }
 
-const version$8 = "hash/5.0.11";
+const version$8 = "hash/5.0.12";
 
 const logger$b = new Logger(version$8);
 const Zeros = new Uint8Array(32);
@@ -8024,13 +8037,7 @@ class TypedDataEncoder {
                 }
                 // uint or int
                 if (type.match(/^u?int/)) {
-                    let prefix = "";
-                    let v = BigNumber.from(value);
-                    if (v.isNegative()) {
-                        prefix = "-";
-                        v = v.mul(-1);
-                    }
-                    return prefix + hexValue(v.toHexString());
+                    return BigNumber.from(value).toString();
                 }
                 switch (type) {
                     case "address":
@@ -8536,7 +8543,7 @@ class Interface {
 
 "use strict";
 
-const version$9 = "abstract-provider/5.0.9";
+const version$9 = "abstract-provider/5.0.10";
 
 "use strict";
 const logger$e = new Logger(version$9);
@@ -8613,7 +8620,7 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.0.13";
+const version$a = "abstract-signer/5.0.14";
 
 "use strict";
 var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8829,7 +8836,7 @@ class VoidSigner extends Signer {
     }
 }
 
-const version$b = "contracts/5.0.11";
+const version$b = "contracts/5.0.12";
 
 "use strict";
 var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -11221,7 +11228,7 @@ var SupportedAlgorithm;
 })(SupportedAlgorithm || (SupportedAlgorithm = {}));
 ;
 
-const version$c = "sha2/5.0.8";
+const version$c = "sha2/5.0.9";
 
 "use strict";
 const logger$h = new Logger(version$c);
@@ -13759,7 +13766,7 @@ elliptic.eddsa = /*RicMoo:ethers:require(./elliptic/eddsa)*/(null);
 
 var EC$1 = elliptic_1.ec;
 
-const version$d = "signing-key/5.0.10";
+const version$d = "signing-key/5.0.11";
 
 "use strict";
 const logger$i = new Logger(version$d);
@@ -13835,7 +13842,7 @@ function computePublicKey(key, compressed) {
     return logger$i.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$e = "transactions/5.0.10";
+const version$e = "transactions/5.0.11";
 
 "use strict";
 const logger$j = new Logger(version$e);
@@ -13996,7 +14003,7 @@ function parse(rawTransaction) {
     return tx;
 }
 
-const version$f = "wordlists/5.0.9";
+const version$f = "wordlists/5.0.10";
 
 "use strict";
 // This gets overridden by rollup
@@ -14525,7 +14532,7 @@ const wordlists = {
 
 "use strict";
 
-const version$g = "hdnode/5.0.9";
+const version$g = "hdnode/5.0.10";
 
 "use strict";
 const logger$l = new Logger(version$g);
@@ -14840,7 +14847,7 @@ function isValidMnemonic(mnemonic, wordlist) {
     return false;
 }
 
-const version$h = "random/5.0.8";
+const version$h = "random/5.0.9";
 
 "use strict";
 const logger$m = new Logger(version$h);
@@ -15698,7 +15705,7 @@ var aesJs = createCommonjsModule(function (module, exports) {
 })(commonjsGlobal);
 });
 
-const version$i = "json-wallets/5.0.11";
+const version$i = "json-wallets/5.0.12";
 
 "use strict";
 function looseArrayify(hexString) {
@@ -16668,7 +16675,7 @@ function decryptJsonWalletSync(json, password) {
     throw new Error("invalid JSON wallet");
 }
 
-const version$j = "wallet/5.0.11";
+const version$j = "wallet/5.0.12";
 
 "use strict";
 var __awaiter$5 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -16833,7 +16840,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.0.8";
+const version$k = "networks/5.0.9";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -17072,7 +17079,7 @@ var index$2 = /*#__PURE__*/Object.freeze({
 	encode: encode$1
 });
 
-const version$l = "web/5.0.13";
+const version$l = "web/5.0.14";
 
 "use strict";
 var __awaiter$6 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -17097,7 +17104,7 @@ function getUrl(href, options) {
             cache: "no-cache",
             credentials: "same-origin",
             redirect: "follow",
-            referrer: "client",
+            referrer: "client", // no-referrer, *client
         };
         const response = yield fetch(href, request);
         const body = yield response.arrayBuffer();
@@ -17653,7 +17660,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.0.23";
+const version$m = "providers/5.0.24";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -21944,7 +21951,7 @@ function sha256$2(types, values) {
     return sha256$1(pack$1(types, values));
 }
 
-const version$n = "units/5.0.10";
+const version$n = "units/5.0.11";
 
 "use strict";
 const logger$G = new Logger(version$n);
@@ -22126,7 +22133,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.31";
+const version$o = "ethers/5.0.32";
 
 "use strict";
 const logger$H = new Logger(version$o);

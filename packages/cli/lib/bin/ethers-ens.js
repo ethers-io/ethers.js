@@ -4,10 +4,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -244,9 +246,9 @@ var LookupPlugin = /** @class */ (function (_super) {
                     case 4:
                         legacyRegistrar = _a.sent();
                         _loop_1 = function (i) {
-                            var name_1, nodehash, details, owner, resolverAddress, _a, comps, _b, ownerOf, error_1, entry, deed, _c, resolver, _d, _e, email, website, content, ordered, key;
-                            return __generator(this, function (_f) {
-                                switch (_f.label) {
+                            var name_1, nodehash, details, owner, resolverAddress, _b, comps, _c, ownerOf, error_1, entry, deed, _d, resolver, _e, _f, email, website, content, ordered, key;
+                            return __generator(this, function (_g) {
+                                switch (_g.label) {
                                     case 0:
                                         name_1 = this_1.names[i];
                                         nodehash = ethers_1.ethers.utils.namehash(name_1);
@@ -255,14 +257,14 @@ var LookupPlugin = /** @class */ (function (_super) {
                                         };
                                         return [4 /*yield*/, ens.owner(nodehash)];
                                     case 1:
-                                        owner = _f.sent();
+                                        owner = _g.sent();
                                         resolverAddress = null;
                                         if (!(owner === ethers_1.ethers.constants.AddressZero)) return [3 /*break*/, 2];
                                         owner = null;
                                         return [3 /*break*/, 4];
                                     case 2:
                                         details.Controller = owner;
-                                        _a = details;
+                                        _b = details;
                                         return [4 /*yield*/, ens.resolver(nodehash).then(function (address) {
                                                 if (address === ethers_1.ethers.constants.AddressZero) {
                                                     return "(not configured)";
@@ -271,38 +273,38 @@ var LookupPlugin = /** @class */ (function (_super) {
                                                 return address;
                                             })];
                                     case 3:
-                                        _a.Resolver = _f.sent();
-                                        _f.label = 4;
+                                        _b.Resolver = _g.sent();
+                                        _g.label = 4;
                                     case 4:
                                         comps = name_1.split(".");
                                         if (!(comps.length === 2 && comps[1] === "eth")) return [3 /*break*/, 11];
                                         details.Labelhash = ethers_1.ethers.utils.id(comps[0].toLowerCase()); // @TODO: nameprep
-                                        _b = details;
+                                        _c = details;
                                         return [4 /*yield*/, controller.available(comps[0])];
                                     case 5:
-                                        _b.Available = _f.sent();
+                                        _c.Available = _g.sent();
                                         if (!!details.Available) return [3 /*break*/, 11];
-                                        _f.label = 6;
+                                        _g.label = 6;
                                     case 6:
-                                        _f.trys.push([6, 8, , 11]);
+                                        _g.trys.push([6, 8, , 11]);
                                         return [4 /*yield*/, registrar.ownerOf(details.Labelhash)];
                                     case 7:
-                                        ownerOf = _f.sent();
+                                        ownerOf = _g.sent();
                                         if (ownerOf !== ethers_1.ethers.constants.AddressZero) {
                                             details.Registrant = ownerOf;
                                             details.Registrar = "Permanent";
                                         }
                                         return [3 /*break*/, 11];
                                     case 8:
-                                        error_1 = _f.sent();
+                                        error_1 = _g.sent();
                                         return [4 /*yield*/, legacyRegistrar.entries(details.Labelhash)];
                                     case 9:
-                                        entry = _f.sent();
+                                        entry = _g.sent();
                                         deed = new ethers_1.ethers.Contract(entry.owner, deedAbi, this_1.provider);
-                                        _c = details;
+                                        _d = details;
                                         return [4 /*yield*/, deed.owner()];
                                     case 10:
-                                        _c.Registrant = _f.sent();
+                                        _d.Registrant = _g.sent();
                                         details.Registrar = "Legacy";
                                         details["Deed Value"] = (ethers_1.ethers.utils.formatEther(entry.value) + " ether");
                                         details["Highest Bid"] = (ethers_1.ethers.utils.formatEther(entry.highestBid) + " ether");
@@ -310,20 +312,20 @@ var LookupPlugin = /** @class */ (function (_super) {
                                     case 11:
                                         if (!resolverAddress) return [3 /*break*/, 16];
                                         resolver = new ethers_1.ethers.Contract(resolverAddress, resolverAbi, this_1.provider);
-                                        _d = details;
-                                        _e = "Address";
+                                        _e = details;
+                                        _f = "Address";
                                         return [4 /*yield*/, resolver.addr(nodehash)];
                                     case 12:
-                                        _d[_e] = _f.sent();
+                                        _e[_f] = _g.sent();
                                         return [4 /*yield*/, resolver.text(nodehash, "email").catch(function (error) { return (""); })];
                                     case 13:
-                                        email = _f.sent();
+                                        email = _g.sent();
                                         if (email) {
                                             details["E-mail"] = email;
                                         }
                                         return [4 /*yield*/, resolver.text(nodehash, "url").catch(function (error) { return (""); })];
                                     case 14:
-                                        website = _f.sent();
+                                        website = _g.sent();
                                         if (website) {
                                             details["Website"] = website;
                                         }
@@ -337,11 +339,11 @@ var LookupPlugin = /** @class */ (function (_super) {
                                                 return hash + " (unknown format)";
                                             }, function (error) { return (""); })];
                                     case 15:
-                                        content = _f.sent();
+                                        content = _g.sent();
                                         if (content) {
                                             details["Content Hash"] = content;
                                         }
-                                        _f.label = 16;
+                                        _g.label = 16;
                                     case 16:
                                         ordered = {};
                                         "Nodehash,Labelhash,Available,Registrant,Controller,Resolver,Address,Registrar,Deed Value,Highest Bid,E-mail,Website,Content Hash".split(",").forEach(function (key) {

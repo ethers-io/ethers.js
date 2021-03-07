@@ -88,7 +88,7 @@ function TestContractEvents() {
                 waitForEvent('TestV2', [{ indexed: true }, [p0, p1]]),
                 waitForEvent('TestV2Nested', [{ indexed: true }, [p0_1, p1_1, [p0, p1]]]),
             ]).then(function (result) {
-                resolve();
+                resolve(result);
             });
         });
     });

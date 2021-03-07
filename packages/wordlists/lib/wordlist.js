@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Wordlist = exports.logger = void 0;
 // This gets overridden by rollup
 var exportWordlist = false;
 var hash_1 = require("@ethersproject/hash");

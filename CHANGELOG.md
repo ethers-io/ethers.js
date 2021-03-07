@@ -3,6 +3,13 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.0.32 (2021-03-07 18:17)
+---------------------------------
+
+  - Bumped TypeScript to 4.2.2. ([#1288](https://github.com/ethers-io/ethers.js/issues/1288); [b2ecffb](https://github.com/ethers-io/ethers.js/commit/b2ecffb0c8d44c8ee65199e7866dc744abae4e6e))
+  - Fixed shims from not displaying debug information. ([a953f71](https://github.com/ethers-io/ethers.js/commit/a953f717523a844a3a45810a5acc6630383884d3))
+  - Force TypedData numbers to be in decimal. ([#1193](https://github.com/ethers-io/ethers.js/issues/1193); [c5a53d6](https://github.com/ethers-io/ethers.js/commit/c5a53d6911d7c41dd03a290b550e80f2919e9379))
+
 ethers/v5.0.31 (2021-02-12 19:04)
 ---------------------------------
 

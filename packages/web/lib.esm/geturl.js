@@ -22,7 +22,7 @@ export function getUrl(href, options) {
             cache: "no-cache",
             credentials: "same-origin",
             redirect: "follow",
-            referrer: "client",
+            referrer: "client", // no-referrer, *client
         };
         const response = yield fetch(href, request);
         const body = yield response.arrayBuffer();

@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -49,6 +51,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.WebSocketProvider = void 0;
 var bignumber_1 = require("@ethersproject/bignumber");
 var properties_1 = require("@ethersproject/properties");
 var json_rpc_provider_1 = require("./json-rpc-provider");
@@ -168,7 +171,7 @@ var WebSocketProvider = /** @class */ (function (_super) {
                 operation: "setPollingInterval"
             });
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     WebSocketProvider.prototype.resetEventsBlock = function (blockNumber) {
@@ -192,7 +195,7 @@ var WebSocketProvider = /** @class */ (function (_super) {
                 operation: "setPolling"
             });
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     WebSocketProvider.prototype.send = function (method, params) {

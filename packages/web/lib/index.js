@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.poll = exports.fetchJson = exports._fetchData = void 0;
 var base64_1 = require("@ethersproject/base64");
 var bytes_1 = require("@ethersproject/bytes");
 var properties_1 = require("@ethersproject/properties");

@@ -13,4 +13,5 @@ export interface TestCase {
 ;
 ;
 ;
+export {};
 //# sourceMappingURL=testcases.js.map

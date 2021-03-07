@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Reader = exports.Writer = exports.Coder = exports.checkResultErrors = void 0;
 var bytes_1 = require("@ethersproject/bytes");
 var bignumber_1 = require("@ethersproject/bignumber");
 var properties_1 = require("@ethersproject/properties");
@@ -53,12 +54,12 @@ var Writer = /** @class */ (function () {
         get: function () {
             return bytes_1.hexConcat(this._data);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Writer.prototype, "length", {
         get: function () { return this._dataLength; },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Writer.prototype._writeData = function (data) {
@@ -117,12 +118,12 @@ var Reader = /** @class */ (function () {
     }
     Object.defineProperty(Reader.prototype, "data", {
         get: function () { return bytes_1.hexlify(this._data); },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Reader.prototype, "consumed", {
         get: function () { return this._offset; },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     // The default Coerce function

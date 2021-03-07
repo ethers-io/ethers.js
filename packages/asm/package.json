@@ -36,7 +36,7 @@
     "generate": "node ./generate.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x258af9cc0304a4aec814f41a45ce773147e9fe38230402338db7c816522a5718",
+  "tarballHash": "0x43ebfbf04de024ed1ed920c6166aa5f8a1c9b50a2991beb2d97ea3592f6e9780",
   "types": "./lib/index.d.ts",
-  "version": "5.0.10"
+  "version": "5.0.11"
 }

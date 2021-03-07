@@ -100,7 +100,11 @@
 
 	  var Buffer;
 	  try {
-	    Buffer = /*RicMoo:ethers:require(buffer)*/(null).Buffer;
+	    if (typeof window !== 'undefined' && typeof window.Buffer !== 'undefined') {
+	      Buffer = window.Buffer;
+	    } else {
+	      Buffer = /*RicMoo:ethers:require(buffer)*/(null).Buffer;
+	    }
 	  } catch (e) {
 	  }
 
@@ -141,23 +145,19 @@
 	    var start = 0;
 	    if (number[0] === '-') {
 	      start++;
-	    }
-
-	    if (base === 16) {
-	      this._parseHex(number, start);
-	    } else {
-	      this._parseBase(number, base, start);
-	    }
-
-	    if (number[0] === '-') {
 	      this.negative = 1;
 	    }
 
-	    this.strip();
-
-	    if (endian !== 'le') return;
-
-	    this._initArray(this.toArray(), base, endian);
+	    if (start < number.length) {
+	      if (base === 16) {
+	        this._parseHex(number, start, endian);
+	      } else {
+	        this._parseBase(number, base, start);
+	        if (endian === 'le') {
+	          this._initArray(this.toArray(), base, endian);
+	        }
+	      }
+	    }
 	  };
 
 	  BN.prototype._initNumber = function _initNumber (number, base, endian) {
@@ -233,31 +233,29 @@
 	    return this.strip();
 	  };
 
-	  function parseHex (str, start, end) {
-	    var r = 0;
-	    var len = Math.min(str.length, end);
-	    for (var i = start; i < len; i++) {
-	      var c = str.charCodeAt(i) - 48;
+	  function parseHex4Bits (string, index) {
+	    var c = string.charCodeAt(index);
+	    // 'A' - 'F'
+	    if (c >= 65 && c <= 70) {
+	      return c - 55;
+	    // 'a' - 'f'
+	    } else if (c >= 97 && c <= 102) {
+	      return c - 87;
+	    // '0' - '9'
+	    } else {
+	      return (c - 48) & 0xf;
+	    }
+	  }
 
-	      r <<= 4;
-
-	      // 'a' - 'f'
-	      if (c >= 49 && c <= 54) {
-	        r |= c - 49 + 0xa;
-
-	      // 'A' - 'F'
-	      } else if (c >= 17 && c <= 22) {
-	        r |= c - 17 + 0xa;
-
-	      // '0' - '9'
-	      } else {
-	        r |= c & 0xf;
-	      }
+	  function parseHexByte (string, lowerBound, index) {
+	    var r = parseHex4Bits(string, index);
+	    if (index - 1 >= lowerBound) {
+	      r |= parseHex4Bits(string, index - 1) << 4;
 	    }
 	    return r;
 	  }
 
-	  BN.prototype._parseHex = function _parseHex (number, start) {
+	  BN.prototype._parseHex = function _parseHex (number, start, endian) {
 	    // Create possibly bigger array to ensure that it fits the number
 	    this.length = Math.ceil((number.length - start) / 6);
 	    this.words = new Array(this.length);
@@ -265,25 +263,38 @@
 	      this.words[i] = 0;
 	    }
 
-	    var j, w;
-	    // Scan 24-bit chunks and add them to the number
+	    // 24-bits chunks
 	    var off = 0;
-	    for (i = number.length - 6, j = 0; i >= start; i -= 6) {
-	      w = parseHex(number, i, i + 6);
-	      this.words[j] |= (w << off) & 0x3ffffff;
-	      // NOTE: `0x3fffff` is intentional here, 26bits max shift + 24bit hex limb
-	      this.words[j + 1] |= w >>> (26 - off) & 0x3fffff;
-	      off += 24;
-	      if (off >= 26) {
-	        off -= 26;
-	        j++;
+	    var j = 0;
+
+	    var w;
+	    if (endian === 'be') {
+	      for (i = number.length - 1; i >= start; i -= 2) {
+	        w = parseHexByte(number, start, i) << off;
+	        this.words[j] |= w & 0x3ffffff;
+	        if (off >= 18) {
+	          off -= 18;
+	          j += 1;
+	          this.words[j] |= w >>> 26;
+	        } else {
+	          off += 8;
+	        }
+	      }
+	    } else {
+	      var parseLength = number.length - start;
+	      for (i = parseLength % 2 === 0 ? start + 1 : start; i < number.length; i += 2) {
+	        w = parseHexByte(number, start, i) << off;
+	        this.words[j] |= w & 0x3ffffff;
+	        if (off >= 18) {
+	          off -= 18;
+	          j += 1;
+	          this.words[j] |= w >>> 26;
+	        } else {
+	          off += 8;
+	        }
 	      }
 	    }
-	    if (i + 6 !== start) {
-	      w = parseHex(number, start, i + 6);
-	      this.words[j] |= (w << off) & 0x3ffffff;
-	      this.words[j + 1] |= w >>> (26 - off) & 0x3fffff;
-	    }
+
 	    this.strip();
 	  };
 
@@ -354,6 +365,8 @@
 	        this._iaddn(word);
 	      }
 	    }
+
+	    this.strip();
 	  };
 
 	  BN.prototype.copy = function copy (dest) {
@@ -3486,7 +3499,8 @@
 	var _version = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "logger/5.0.9";
+	exports.version = void 0;
+	exports.version = "logger/5.0.10";
 
 	});
 
@@ -3495,6 +3509,7 @@
 	var lib = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Logger = exports.ErrorCode = exports.LogLevel = void 0;
 	var _permanentCensorErrors = false;
 	var _censorErrors = false;
 	var LogLevels = { debug: 1, "default": 2, info: 2, warning: 3, error: 4, off: 5 };
@@ -3812,7 +3827,8 @@
 	var _version$2 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bytes/5.0.10";
+	exports.version = void 0;
+	exports.version = "bytes/5.0.11";
 
 	});
 
@@ -3821,6 +3837,7 @@
 	var lib$1 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.joinSignature = exports.splitSignature = exports.hexZeroPad = exports.hexStripZeros = exports.hexValue = exports.hexConcat = exports.hexDataSlice = exports.hexDataLength = exports.hexlify = exports.isHexString = exports.zeroPad = exports.stripZeros = exports.concat = exports.arrayify = exports.isBytes = exports.isBytesLike = void 0;
 
 
 	var logger = new lib.Logger(_version$2.version);
@@ -4223,7 +4240,8 @@
 	var _version$4 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "bignumber/5.0.14";
+	exports.version = void 0;
+	exports.version = "bignumber/5.0.15";
 
 	});
 
@@ -4235,6 +4253,7 @@
 	    return (mod && mod.__esModule) ? mod : { "default": mod };
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports._base16To36 = exports._base36To16 = exports.BigNumber = exports.isBigNumberish = void 0;
 	/**
 	 *  BigNumber
 	 *
@@ -4544,6 +4563,7 @@
 	var fixednumber = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.FixedNumber = exports.FixedFormat = exports.parseFixed = exports.formatFixed = void 0;
 
 
 
@@ -4896,17 +4916,18 @@
 	var lib$2 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports._base36To16 = exports._base16To36 = exports.parseFixed = exports.FixedNumber = exports.FixedFormat = exports.formatFixed = exports.BigNumber = void 0;
 
-	exports.BigNumber = bignumber.BigNumber;
+	Object.defineProperty(exports, "BigNumber", { enumerable: true, get: function () { return bignumber.BigNumber; } });
 
-	exports.formatFixed = fixednumber.formatFixed;
-	exports.FixedFormat = fixednumber.FixedFormat;
-	exports.FixedNumber = fixednumber.FixedNumber;
-	exports.parseFixed = fixednumber.parseFixed;
+	Object.defineProperty(exports, "formatFixed", { enumerable: true, get: function () { return fixednumber.formatFixed; } });
+	Object.defineProperty(exports, "FixedFormat", { enumerable: true, get: function () { return fixednumber.FixedFormat; } });
+	Object.defineProperty(exports, "FixedNumber", { enumerable: true, get: function () { return fixednumber.FixedNumber; } });
+	Object.defineProperty(exports, "parseFixed", { enumerable: true, get: function () { return fixednumber.parseFixed; } });
 	// Internal methods used by address
 	var bignumber_2 = bignumber;
-	exports._base16To36 = bignumber_2._base16To36;
-	exports._base36To16 = bignumber_2._base36To16;
+	Object.defineProperty(exports, "_base16To36", { enumerable: true, get: function () { return bignumber_2._base16To36; } });
+	Object.defineProperty(exports, "_base36To16", { enumerable: true, get: function () { return bignumber_2._base36To16; } });
 
 	});
 
@@ -4915,7 +4936,8 @@
 	var _version$6 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "properties/5.0.8";
+	exports.version = void 0;
+	exports.version = "properties/5.0.9";
 
 	});
 
@@ -4960,6 +4982,7 @@
 	    }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Description = exports.deepCopy = exports.shallowCopy = exports.checkProperties = exports.resolveProperties = exports.getStatic = exports.defineReadOnly = void 0;
 
 
 	var logger = new lib.Logger(_version$6.version);
@@ -5090,7 +5113,8 @@
 	var _version$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abi/5.0.12";
+	exports.version = void 0;
+	exports.version = "abi/5.0.13";
 
 	});
 
@@ -5102,16 +5126,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.FunctionFragment = exports.ConstructorFragment = exports.EventFragment = exports.Fragment = exports.ParamType = exports.FormatTypes = void 0;
 
 
 
@@ -5925,6 +5952,7 @@
 	var abstractCoder = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Reader = exports.Writer = exports.Coder = exports.checkResultErrors = void 0;
 
 
 
@@ -5978,12 +6006,12 @@
 	        get: function () {
 	            return lib$1.hexConcat(this._data);
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(Writer.prototype, "length", {
 	        get: function () { return this._dataLength; },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Writer.prototype._writeData = function (data) {
@@ -6042,12 +6070,12 @@
 	    }
 	    Object.defineProperty(Reader.prototype, "data", {
 	        get: function () { return lib$1.hexlify(this._data); },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(Reader.prototype, "consumed", {
 	        get: function () { return this._offset; },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    // The default Coerce function
@@ -6583,6 +6611,7 @@
 	    return (mod && mod.__esModule) ? mod : { "default": mod };
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.keccak256 = void 0;
 	var js_sha3_1 = __importDefault(sha3);
 
 	function keccak256(data) {
@@ -6597,7 +6626,8 @@
 	var _version$a = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "rlp/5.0.8";
+	exports.version = void 0;
+	exports.version = "rlp/5.0.9";
 
 	});
 
@@ -6606,6 +6636,7 @@
 	var lib$5 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.decode = exports.encode = void 0;
 	//See: https://github.com/ethereum/wiki/wiki/RLP
 
 
@@ -6734,7 +6765,8 @@
 	var _version$c = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "address/5.0.10";
+	exports.version = void 0;
+	exports.version = "address/5.0.11";
 
 	});
 
@@ -6743,6 +6775,7 @@
 	var lib$6 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.getCreate2Address = exports.getContractAddress = exports.getIcapAddress = exports.isAddress = exports.getAddress = void 0;
 
 
 
@@ -6891,16 +6924,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.AddressCoder = void 0;
 
 
 
@@ -6938,16 +6974,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.AnonymousCoder = void 0;
 
 	// Clones the functionality of an existing Coder, but without a localName
 	var AnonymousCoder = /** @class */ (function (_super) {
@@ -6980,16 +7019,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.ArrayCoder = exports.unpack = exports.pack = void 0;
 
 
 	var logger = new lib.Logger(_version$8.version);
@@ -7205,16 +7247,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.BooleanCoder = void 0;
 
 	var BooleanCoder = /** @class */ (function (_super) {
 	    __extends(BooleanCoder, _super);
@@ -7244,16 +7289,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.BytesCoder = exports.DynamicBytesCoder = void 0;
 
 
 	var DynamicBytesCoder = /** @class */ (function (_super) {
@@ -7298,16 +7346,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.FixedBytesCoder = void 0;
 
 
 	// @TODO: Merge this with bytes
@@ -7347,16 +7398,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.NullCoder = void 0;
 
 	var NullCoder = /** @class */ (function (_super) {
 	    __extends(NullCoder, _super);
@@ -7387,6 +7441,7 @@
 	var addresses = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.AddressZero = void 0;
 	exports.AddressZero = "0x0000000000000000000000000000000000000000";
 
 	});
@@ -7396,6 +7451,7 @@
 	var bignumbers = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.MaxUint256 = exports.WeiPerEther = exports.Two = exports.One = exports.Zero = exports.NegativeOne = void 0;
 
 	var NegativeOne = ( /*#__PURE__*/lib$2.BigNumber.from(-1));
 	exports.NegativeOne = NegativeOne;
@@ -7417,6 +7473,7 @@
 	var hashes = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.HashZero = void 0;
 	exports.HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 	});
@@ -7426,6 +7483,7 @@
 	var strings = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.EtherSymbol = void 0;
 	// NFKC (composed)             // (decomposed)
 	exports.EtherSymbol = "\u039e"; // "\uD835\uDF63";
 
@@ -7436,19 +7494,20 @@
 	var lib$7 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.EtherSymbol = exports.HashZero = exports.MaxUint256 = exports.WeiPerEther = exports.Two = exports.One = exports.Zero = exports.NegativeOne = exports.AddressZero = void 0;
 
-	exports.AddressZero = addresses.AddressZero;
+	Object.defineProperty(exports, "AddressZero", { enumerable: true, get: function () { return addresses.AddressZero; } });
 
-	exports.NegativeOne = bignumbers.NegativeOne;
-	exports.Zero = bignumbers.Zero;
-	exports.One = bignumbers.One;
-	exports.Two = bignumbers.Two;
-	exports.WeiPerEther = bignumbers.WeiPerEther;
-	exports.MaxUint256 = bignumbers.MaxUint256;
+	Object.defineProperty(exports, "NegativeOne", { enumerable: true, get: function () { return bignumbers.NegativeOne; } });
+	Object.defineProperty(exports, "Zero", { enumerable: true, get: function () { return bignumbers.Zero; } });
+	Object.defineProperty(exports, "One", { enumerable: true, get: function () { return bignumbers.One; } });
+	Object.defineProperty(exports, "Two", { enumerable: true, get: function () { return bignumbers.Two; } });
+	Object.defineProperty(exports, "WeiPerEther", { enumerable: true, get: function () { return bignumbers.WeiPerEther; } });
+	Object.defineProperty(exports, "MaxUint256", { enumerable: true, get: function () { return bignumbers.MaxUint256; } });
 
-	exports.HashZero = hashes.HashZero;
+	Object.defineProperty(exports, "HashZero", { enumerable: true, get: function () { return hashes.HashZero; } });
 
-	exports.EtherSymbol = strings.EtherSymbol;
+	Object.defineProperty(exports, "EtherSymbol", { enumerable: true, get: function () { return strings.EtherSymbol; } });
 
 	});
 
@@ -7460,16 +7519,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.NumberCoder = void 0;
 
 
 
@@ -7523,7 +7585,8 @@
 	var _version$e = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "strings/5.0.9";
+	exports.version = void 0;
+	exports.version = "strings/5.0.10";
 
 	});
 
@@ -7532,6 +7595,7 @@
 	var utf8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.toUtf8CodePoints = exports.toUtf8String = exports._toUtf8String = exports._toEscapedUtf8String = exports.toUtf8Bytes = exports.Utf8ErrorFuncs = exports.Utf8ErrorReason = exports.UnicodeNormalizationForm = void 0;
 
 
 
@@ -7793,6 +7857,7 @@
 	var bytes32 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.parseBytes32String = exports.formatBytes32String = void 0;
 
 
 
@@ -7833,6 +7898,7 @@
 	var idna = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.nameprep = exports._nameprepTableC = exports._nameprepTableB2 = exports._nameprepTableA1 = void 0;
 
 	function bytes2(data) {
 	    if ((data.length % 4) !== 0) {
@@ -8031,19 +8097,20 @@
 	var lib$8 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.nameprep = exports.parseBytes32String = exports.formatBytes32String = exports.UnicodeNormalizationForm = exports.Utf8ErrorReason = exports.Utf8ErrorFuncs = exports.toUtf8String = exports.toUtf8CodePoints = exports.toUtf8Bytes = exports._toEscapedUtf8String = void 0;
 
-	exports.formatBytes32String = bytes32.formatBytes32String;
-	exports.parseBytes32String = bytes32.parseBytes32String;
+	Object.defineProperty(exports, "formatBytes32String", { enumerable: true, get: function () { return bytes32.formatBytes32String; } });
+	Object.defineProperty(exports, "parseBytes32String", { enumerable: true, get: function () { return bytes32.parseBytes32String; } });
 
-	exports.nameprep = idna.nameprep;
+	Object.defineProperty(exports, "nameprep", { enumerable: true, get: function () { return idna.nameprep; } });
 
-	exports._toEscapedUtf8String = utf8._toEscapedUtf8String;
-	exports.toUtf8Bytes = utf8.toUtf8Bytes;
-	exports.toUtf8CodePoints = utf8.toUtf8CodePoints;
-	exports.toUtf8String = utf8.toUtf8String;
-	exports.UnicodeNormalizationForm = utf8.UnicodeNormalizationForm;
-	exports.Utf8ErrorFuncs = utf8.Utf8ErrorFuncs;
-	exports.Utf8ErrorReason = utf8.Utf8ErrorReason;
+	Object.defineProperty(exports, "_toEscapedUtf8String", { enumerable: true, get: function () { return utf8._toEscapedUtf8String; } });
+	Object.defineProperty(exports, "toUtf8Bytes", { enumerable: true, get: function () { return utf8.toUtf8Bytes; } });
+	Object.defineProperty(exports, "toUtf8CodePoints", { enumerable: true, get: function () { return utf8.toUtf8CodePoints; } });
+	Object.defineProperty(exports, "toUtf8String", { enumerable: true, get: function () { return utf8.toUtf8String; } });
+	Object.defineProperty(exports, "UnicodeNormalizationForm", { enumerable: true, get: function () { return utf8.UnicodeNormalizationForm; } });
+	Object.defineProperty(exports, "Utf8ErrorFuncs", { enumerable: true, get: function () { return utf8.Utf8ErrorFuncs; } });
+	Object.defineProperty(exports, "Utf8ErrorReason", { enumerable: true, get: function () { return utf8.Utf8ErrorReason; } });
 
 	});
 
@@ -8055,16 +8122,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.StringCoder = void 0;
 
 
 	var StringCoder = /** @class */ (function (_super) {
@@ -8095,16 +8165,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.TupleCoder = void 0;
 
 
 	var TupleCoder = /** @class */ (function (_super) {
@@ -8173,6 +8246,7 @@
 	var abiCoder = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.defaultAbiCoder = exports.AbiCoder = void 0;
 	// See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
 
@@ -8283,6 +8357,7 @@
 	var id_1 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.id = void 0;
 
 
 	function id(text) {
@@ -8297,7 +8372,8 @@
 	var _version$g = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hash/5.0.11";
+	exports.version = void 0;
+	exports.version = "hash/5.0.12";
 
 	});
 
@@ -8306,6 +8382,7 @@
 	var namehash_1 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.namehash = exports.isValidName = void 0;
 
 
 
@@ -8352,6 +8429,7 @@
 	var message = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.hashMessage = exports.messagePrefix = void 0;
 
 
 
@@ -8411,6 +8489,7 @@
 	    }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.TypedDataEncoder = void 0;
 
 
 
@@ -8852,13 +8931,7 @@
 	                }
 	                // uint or int
 	                if (type.match(/^u?int/)) {
-	                    var prefix = "";
-	                    var v = lib$2.BigNumber.from(value);
-	                    if (v.isNegative()) {
-	                        prefix = "-";
-	                        v = v.mul(-1);
-	                    }
-	                    return prefix + lib$1.hexValue(v.toHexString());
+	                    return lib$2.BigNumber.from(value).toString();
 	                }
 	                switch (type) {
 	                    case "address":
@@ -8886,16 +8959,17 @@
 	var lib$9 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports._TypedDataEncoder = exports.hashMessage = exports.messagePrefix = exports.isValidName = exports.namehash = exports.id = void 0;
 
-	exports.id = id_1.id;
+	Object.defineProperty(exports, "id", { enumerable: true, get: function () { return id_1.id; } });
 
-	exports.isValidName = namehash_1.isValidName;
-	exports.namehash = namehash_1.namehash;
+	Object.defineProperty(exports, "isValidName", { enumerable: true, get: function () { return namehash_1.isValidName; } });
+	Object.defineProperty(exports, "namehash", { enumerable: true, get: function () { return namehash_1.namehash; } });
 
-	exports.hashMessage = message.hashMessage;
-	exports.messagePrefix = message.messagePrefix;
+	Object.defineProperty(exports, "hashMessage", { enumerable: true, get: function () { return message.hashMessage; } });
+	Object.defineProperty(exports, "messagePrefix", { enumerable: true, get: function () { return message.messagePrefix; } });
 
-	exports._TypedDataEncoder = typedData.TypedDataEncoder;
+	Object.defineProperty(exports, "_TypedDataEncoder", { enumerable: true, get: function () { return typedData.TypedDataEncoder; } });
 
 	});
 
@@ -8907,16 +8981,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Interface = exports.Indexed = exports.TransactionDescription = exports.LogDescription = exports.checkResultErrors = void 0;
 
 
 
@@ -8925,7 +9002,7 @@
 
 
 
-	exports.checkResultErrors = abstractCoder.checkResultErrors;
+	Object.defineProperty(exports, "checkResultErrors", { enumerable: true, get: function () { return abstractCoder.checkResultErrors; } });
 
 
 
@@ -9445,22 +9522,23 @@
 	var lib$a = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.TransactionDescription = exports.LogDescription = exports.checkResultErrors = exports.Indexed = exports.Interface = exports.defaultAbiCoder = exports.AbiCoder = exports.FormatTypes = exports.ParamType = exports.FunctionFragment = exports.Fragment = exports.EventFragment = exports.ConstructorFragment = void 0;
 
-	exports.ConstructorFragment = fragments.ConstructorFragment;
-	exports.EventFragment = fragments.EventFragment;
-	exports.FormatTypes = fragments.FormatTypes;
-	exports.Fragment = fragments.Fragment;
-	exports.FunctionFragment = fragments.FunctionFragment;
-	exports.ParamType = fragments.ParamType;
+	Object.defineProperty(exports, "ConstructorFragment", { enumerable: true, get: function () { return fragments.ConstructorFragment; } });
+	Object.defineProperty(exports, "EventFragment", { enumerable: true, get: function () { return fragments.EventFragment; } });
+	Object.defineProperty(exports, "FormatTypes", { enumerable: true, get: function () { return fragments.FormatTypes; } });
+	Object.defineProperty(exports, "Fragment", { enumerable: true, get: function () { return fragments.Fragment; } });
+	Object.defineProperty(exports, "FunctionFragment", { enumerable: true, get: function () { return fragments.FunctionFragment; } });
+	Object.defineProperty(exports, "ParamType", { enumerable: true, get: function () { return fragments.ParamType; } });
 
-	exports.AbiCoder = abiCoder.AbiCoder;
-	exports.defaultAbiCoder = abiCoder.defaultAbiCoder;
+	Object.defineProperty(exports, "AbiCoder", { enumerable: true, get: function () { return abiCoder.AbiCoder; } });
+	Object.defineProperty(exports, "defaultAbiCoder", { enumerable: true, get: function () { return abiCoder.defaultAbiCoder; } });
 
-	exports.checkResultErrors = _interface.checkResultErrors;
-	exports.Indexed = _interface.Indexed;
-	exports.Interface = _interface.Interface;
-	exports.LogDescription = _interface.LogDescription;
-	exports.TransactionDescription = _interface.TransactionDescription;
+	Object.defineProperty(exports, "checkResultErrors", { enumerable: true, get: function () { return _interface.checkResultErrors; } });
+	Object.defineProperty(exports, "Indexed", { enumerable: true, get: function () { return _interface.Indexed; } });
+	Object.defineProperty(exports, "Interface", { enumerable: true, get: function () { return _interface.Interface; } });
+	Object.defineProperty(exports, "LogDescription", { enumerable: true, get: function () { return _interface.LogDescription; } });
+	Object.defineProperty(exports, "TransactionDescription", { enumerable: true, get: function () { return _interface.TransactionDescription; } });
 
 	});
 
@@ -9469,7 +9547,8 @@
 	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-provider/5.0.9";
+	exports.version = void 0;
+	exports.version = "abstract-provider/5.0.10";
 
 	});
 
@@ -9481,16 +9560,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Provider = exports.TransactionOrderForkEvent = exports.TransactionForkEvent = exports.BlockForkEvent = exports.ForkEvent = void 0;
 
 
 
@@ -9600,7 +9682,8 @@
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "abstract-signer/5.0.13";
+	exports.version = void 0;
+	exports.version = "abstract-signer/5.0.14";
 
 	});
 
@@ -9612,10 +9695,12 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -9658,6 +9743,7 @@
 	    }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.VoidSigner = exports.Signer = void 0;
 
 
 
@@ -9949,7 +10035,8 @@
 	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "contracts/5.0.11";
+	exports.version = void 0;
+	exports.version = "contracts/5.0.12";
 
 	});
 
@@ -9961,10 +10048,12 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -10006,14 +10095,13 @@
 	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
 	    }
 	};
-	var __spreadArrays = (commonjsGlobal && commonjsGlobal.__spreadArrays) || function () {
-	    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-	    for (var r = Array(s), k = 0, i = 0; i < il; i++)
-	        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-	            r[k] = a[j];
-	    return r;
+	var __spreadArray = (commonjsGlobal && commonjsGlobal.__spreadArray) || function (to, from) {
+	    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+	        to[j] = from[i];
+	    return to;
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.ContractFactory = exports.Contract = void 0;
 
 
 
@@ -10833,7 +10921,7 @@
 	                if (event.decodeError == null) {
 	                    try {
 	                        var args = runningEvent.getEmit(event);
-	                        _this.emit.apply(_this, __spreadArrays([runningEvent.filter], args));
+	                        _this.emit.apply(_this, __spreadArray([runningEvent.filter], args));
 	                    }
 	                    catch (error) {
 	                        event.decodeError = error.error;
@@ -11136,6 +11224,7 @@
 	 *
 	 */
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Base58 = exports.Base32 = exports.BaseX = void 0;
 
 
 	var BaseX = /** @class */ (function () {
@@ -12520,6 +12609,7 @@
 	var types = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.SupportedAlgorithm = void 0;
 	var SupportedAlgorithm;
 	(function (SupportedAlgorithm) {
 	    SupportedAlgorithm["sha256"] = "sha256";
@@ -12534,7 +12624,8 @@
 	var _version$o = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "sha2/5.0.8";
+	exports.version = void 0;
+	exports.version = "sha2/5.0.9";
 
 	});
 
@@ -12546,6 +12637,7 @@
 	    return (mod && mod.__esModule) ? mod : { "default": mod };
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.computeHmac = exports.sha512 = exports.sha256 = exports.ripemd160 = void 0;
 	var hash_js_1 = __importDefault(hash_1);
 	//const _ripemd160 = _hash.ripemd160;
 
@@ -12583,13 +12675,14 @@
 	var lib$f = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.SupportedAlgorithm = exports.sha512 = exports.sha256 = exports.ripemd160 = exports.computeHmac = void 0;
 
-	exports.computeHmac = browserSha2.computeHmac;
-	exports.ripemd160 = browserSha2.ripemd160;
-	exports.sha256 = browserSha2.sha256;
-	exports.sha512 = browserSha2.sha512;
+	Object.defineProperty(exports, "computeHmac", { enumerable: true, get: function () { return browserSha2.computeHmac; } });
+	Object.defineProperty(exports, "ripemd160", { enumerable: true, get: function () { return browserSha2.ripemd160; } });
+	Object.defineProperty(exports, "sha256", { enumerable: true, get: function () { return browserSha2.sha256; } });
+	Object.defineProperty(exports, "sha512", { enumerable: true, get: function () { return browserSha2.sha512; } });
 
-	exports.SupportedAlgorithm = types.SupportedAlgorithm;
+	Object.defineProperty(exports, "SupportedAlgorithm", { enumerable: true, get: function () { return types.SupportedAlgorithm; } });
 
 	});
 
@@ -12598,6 +12691,7 @@
 	var browserPbkdf2 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.pbkdf2 = void 0;
 
 
 	function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
@@ -12649,8 +12743,9 @@
 	var lib$g = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.pbkdf2 = void 0;
 
-	exports.pbkdf2 = browserPbkdf2.pbkdf2;
+	Object.defineProperty(exports, "pbkdf2", { enumerable: true, get: function () { return browserPbkdf2.pbkdf2; } });
 
 	});
 
@@ -15048,6 +15143,7 @@
 	    return (mod && mod.__esModule) ? mod : { "default": mod };
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.EC = void 0;
 	var elliptic_1$1 = __importDefault(elliptic_1);
 	var EC = elliptic_1$1.default.ec;
 	exports.EC = EC;
@@ -15059,7 +15155,8 @@
 	var _version$q = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "signing-key/5.0.10";
+	exports.version = void 0;
+	exports.version = "signing-key/5.0.11";
 
 	});
 
@@ -15068,6 +15165,7 @@
 	var lib$h = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.computePublicKey = exports.recoverPublicKey = exports.SigningKey = void 0;
 
 
 
@@ -15157,7 +15255,8 @@
 	var _version$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "transactions/5.0.10";
+	exports.version = void 0;
+	exports.version = "transactions/5.0.11";
 
 	});
 
@@ -15165,14 +15264,27 @@
 
 	var lib$i = createCommonjsModule(function (module, exports) {
 	"use strict";
+	var __createBinding = (commonjsGlobal && commonjsGlobal.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+	    if (k2 === undefined) k2 = k;
+	    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+	}) : (function(o, m, k, k2) {
+	    if (k2 === undefined) k2 = k;
+	    o[k2] = m[k];
+	}));
+	var __setModuleDefault = (commonjsGlobal && commonjsGlobal.__setModuleDefault) || (Object.create ? (function(o, v) {
+	    Object.defineProperty(o, "default", { enumerable: true, value: v });
+	}) : function(o, v) {
+	    o["default"] = v;
+	});
 	var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
 	    if (mod && mod.__esModule) return mod;
 	    var result = {};
-	    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-	    result["default"] = mod;
+	    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+	    __setModuleDefault(result, mod);
 	    return result;
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.parse = exports.serialize = exports.recoverAddress = exports.computeAddress = void 0;
 
 
 
@@ -15352,7 +15464,8 @@
 	var _version$u = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wordlists/5.0.9";
+	exports.version = void 0;
+	exports.version = "wordlists/5.0.10";
 
 	});
 
@@ -15361,6 +15474,7 @@
 	var wordlist = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Wordlist = exports.logger = void 0;
 	// This gets overridden by rollup
 	var exportWordlist = false;
 
@@ -15425,16 +15539,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.langCz = void 0;
 
 	var words = "AbdikaceAbecedaAdresaAgreseAkceAktovkaAlejAlkoholAmputaceAnanasAndulkaAnekdotaAnketaAntikaAnulovatArchaAroganceAsfaltAsistentAspiraceAstmaAstronomAtlasAtletikaAtolAutobusAzylBabkaBachorBacilBaculkaBadatelBagetaBagrBahnoBakterieBaladaBaletkaBalkonBalonekBalvanBalzaBambusBankomatBarbarBaretBarmanBarokoBarvaBaterkaBatohBavlnaBazalkaBazilikaBazukaBednaBeranBesedaBestieBetonBezinkaBezmocBeztakBicyklBidloBiftekBikinyBilanceBiografBiologBitvaBizonBlahobytBlatouchBlechaBleduleBleskBlikatBliznaBlokovatBlouditBludBobekBobrBodlinaBodnoutBohatostBojkotBojovatBokorysBolestBorecBoroviceBotaBoubelBouchatBoudaBouleBouratBoxerBradavkaBramboraBrankaBratrBreptaBriketaBrkoBrlohBronzBroskevBrunetkaBrusinkaBrzdaBrzyBublinaBubnovatBuchtaBuditelBudkaBudovaBufetBujarostBukviceBuldokBulvaBundaBunkrBurzaButikBuvolBuzolaBydletBylinaBytovkaBzukotCapartCarevnaCedrCeduleCejchCejnCelaCelerCelkemCelniceCeninaCennostCenovkaCentrumCenzorCestopisCetkaChalupaChapadloCharitaChataChechtatChemieChichotChirurgChladChlebaChlubitChmelChmuraChobotChocholChodbaCholeraChomoutChopitChorobaChovChrapotChrlitChrtChrupChtivostChudinaChutnatChvatChvilkaChvostChybaChystatChytitCibuleCigaretaCihelnaCihlaCinkotCirkusCisternaCitaceCitrusCizinecCizostClonaCokolivCouvatCtitelCtnostCudnostCuketaCukrCupotCvaknoutCvalCvikCvrkotCyklistaDalekoDarebaDatelDatumDceraDebataDechovkaDecibelDeficitDeflaceDeklDekretDemokratDepreseDerbyDeskaDetektivDikobrazDiktovatDiodaDiplomDiskDisplejDivadloDivochDlahaDlouhoDluhopisDnesDobroDobytekDocentDochutitDodnesDohledDohodaDohraDojemDojniceDokladDokolaDoktorDokumentDolarDolevaDolinaDomaDominantDomluvitDomovDonutitDopadDopisDoplnitDoposudDoprovodDopustitDorazitDorostDortDosahDoslovDostatekDosudDosytaDotazDotekDotknoutDoufatDoutnatDovozceDozaduDoznatDozorceDrahotaDrakDramatikDravecDrazeDrdolDrobnostDrogerieDrozdDrsnostDrtitDrzostDubenDuchovnoDudekDuhaDuhovkaDusitDusnoDutostDvojiceDvorecDynamitEkologEkonomieElektronElipsaEmailEmiseEmoceEmpatieEpizodaEpochaEpopejEposEsejEsenceEskortaEskymoEtiketaEuforieEvoluceExekuceExkurzeExpediceExplozeExportExtraktFackaFajfkaFakultaFanatikFantazieFarmacieFavoritFazoleFederaceFejetonFenkaFialkaFigurantFilozofFiltrFinanceFintaFixaceFjordFlanelFlirtFlotilaFondFosforFotbalFotkaFotonFrakceFreskaFrontaFukarFunkceFyzikaGalejeGarantGenetikaGeologGilotinaGlazuraGlejtGolemGolfistaGotikaGrafGramofonGranuleGrepGrilGrogGroteskaGumaHadiceHadrHalaHalenkaHanbaHanopisHarfaHarpunaHavranHebkostHejkalHejnoHejtmanHektarHelmaHematomHerecHernaHesloHezkyHistorikHladovkaHlasivkyHlavaHledatHlenHlodavecHlohHloupostHltatHlubinaHluchotaHmatHmotaHmyzHnisHnojivoHnoutHoblinaHobojHochHodinyHodlatHodnotaHodovatHojnostHokejHolinkaHolkaHolubHomoleHonitbaHonoraceHoralHordaHorizontHorkoHorlivecHormonHorninaHoroskopHorstvoHospodaHostinaHotovostHoubaHoufHoupatHouskaHovorHradbaHraniceHravostHrazdaHrbolekHrdinaHrdloHrdostHrnekHrobkaHromadaHrotHroudaHrozenHrstkaHrubostHryzatHubenostHubnoutHudbaHukotHumrHusitaHustotaHvozdHybnostHydrantHygienaHymnaHysterikIdylkaIhnedIkonaIluzeImunitaInfekceInflaceInkasoInovaceInspekceInternetInvalidaInvestorInzerceIronieJablkoJachtaJahodaJakmileJakostJalovecJantarJarmarkJaroJasanJasnoJatkaJavorJazykJedinecJedleJednatelJehlanJekotJelenJelitoJemnostJenomJepiceJeseterJevitJezdecJezeroJinakJindyJinochJiskraJistotaJitrniceJizvaJmenovatJogurtJurtaKabaretKabelKabinetKachnaKadetKadidloKahanKajakKajutaKakaoKaktusKalamitaKalhotyKalibrKalnostKameraKamkolivKamnaKanibalKanoeKantorKapalinaKapelaKapitolaKapkaKapleKapotaKaprKapustaKapybaraKaramelKarotkaKartonKasaKatalogKatedraKauceKauzaKavalecKazajkaKazetaKazivostKdekolivKdesiKedlubenKempKeramikaKinoKlacekKladivoKlamKlapotKlasikaKlaunKlecKlenbaKlepatKlesnoutKlidKlimaKlisnaKloboukKlokanKlopaKloubKlubovnaKlusatKluzkostKmenKmitatKmotrKnihaKnotKoaliceKoberecKobkaKoblihaKobylaKocourKohoutKojenecKokosKoktejlKolapsKoledaKolizeKoloKomandoKometaKomikKomnataKomoraKompasKomunitaKonatKonceptKondiceKonecKonfeseKongresKoninaKonkursKontaktKonzervaKopanecKopieKopnoutKoprovkaKorbelKorektorKormidloKoroptevKorpusKorunaKorytoKorzetKosatecKostkaKotelKotletaKotoulKoukatKoupelnaKousekKouzloKovbojKozaKozorohKrabiceKrachKrajinaKralovatKrasopisKravataKreditKrejcarKresbaKrevetaKriketKritikKrizeKrkavecKrmelecKrmivoKrocanKrokKronikaKropitKroupaKrovkaKrtekKruhadloKrupiceKrutostKrvinkaKrychleKryptaKrystalKrytKudlankaKufrKujnostKuklaKulajdaKulichKulkaKulometKulturaKunaKupodivuKurtKurzorKutilKvalitaKvasinkaKvestorKynologKyselinaKytaraKyticeKytkaKytovecKyvadloLabradorLachtanLadnostLaikLakomecLamelaLampaLanovkaLasiceLasoLasturaLatinkaLavinaLebkaLeckdyLedenLedniceLedovkaLedvinaLegendaLegieLegraceLehceLehkostLehnoutLektvarLenochodLentilkaLepenkaLepidloLetadloLetecLetmoLetokruhLevhartLevitaceLevobokLibraLichotkaLidojedLidskostLihovinaLijavecLilekLimetkaLinieLinkaLinoleumListopadLitinaLitovatLobistaLodivodLogikaLogopedLokalitaLoketLomcovatLopataLopuchLordLososLotrLoudalLouhLoukaLouskatLovecLstivostLucernaLuciferLumpLuskLustraceLviceLyraLyrikaLysinaMadamMadloMagistrMahagonMajetekMajitelMajoritaMakakMakoviceMakrelaMalbaMalinaMalovatMalviceMaminkaMandleMankoMarnostMasakrMaskotMasopustMaticeMatrikaMaturitaMazanecMazivoMazlitMazurkaMdlobaMechanikMeditaceMedovinaMelasaMelounMentolkaMetlaMetodaMetrMezeraMigraceMihnoutMihuleMikinaMikrofonMilenecMilimetrMilostMimikaMincovnaMinibarMinometMinulostMiskaMistrMixovatMladostMlhaMlhovinaMlokMlsatMluvitMnichMnohemMobilMocnostModelkaModlitbaMohylaMokroMolekulaMomentkaMonarchaMonoklMonstrumMontovatMonzunMosazMoskytMostMotivaceMotorkaMotykaMouchaMoudrostMozaikaMozekMozolMramorMravenecMrkevMrtvolaMrzetMrzutostMstitelMudrcMuflonMulatMumieMuniceMusetMutaceMuzeumMuzikantMyslivecMzdaNabouratNachytatNadaceNadbytekNadhozNadobroNadpisNahlasNahnatNahodileNahraditNaivitaNajednouNajistoNajmoutNaklonitNakonecNakrmitNalevoNamazatNamluvitNanometrNaokoNaopakNaostroNapadatNapevnoNaplnitNapnoutNaposledNaprostoNaroditNarubyNarychloNasaditNasekatNaslepoNastatNatolikNavenekNavrchNavzdoryNazvatNebeNechatNeckyNedalekoNedbatNeduhNegaceNehetNehodaNejenNejprveNeklidNelibostNemilostNemocNeochotaNeonkaNepokojNerostNervNesmyslNesouladNetvorNeuronNevinaNezvykleNicotaNijakNikamNikdyNiklNikterakNitroNoclehNohaviceNominaceNoraNorekNositelNosnostNouzeNovinyNovotaNozdraNudaNudleNugetNutitNutnostNutrieNymfaObalObarvitObavaObdivObecObehnatObejmoutObezitaObhajobaObilniceObjasnitObjektObklopitOblastOblekOblibaOblohaObludaObnosObohatitObojekOboutObrazecObrnaObrubaObrysObsahObsluhaObstaratObuvObvazObvinitObvodObvykleObyvatelObzorOcasOcelOcenitOchladitOchotaOchranaOcitnoutOdbojOdbytOdchodOdcizitOdebratOdeslatOdevzdatOdezvaOdhadceOdhoditOdjetOdjinudOdkazOdkoupitOdlivOdlukaOdmlkaOdolnostOdpadOdpisOdploutOdporOdpustitOdpykatOdrazkaOdsouditOdstupOdsunOdtokOdtudOdvahaOdvetaOdvolatOdvracetOdznakOfinaOfsajdOhlasOhniskoOhradaOhrozitOhryzekOkapOkeniceOklikaOknoOkouzlitOkovyOkrasaOkresOkrsekOkruhOkupantOkurkaOkusitOlejninaOlizovatOmakOmeletaOmezitOmladinaOmlouvatOmluvaOmylOnehdyOpakovatOpasekOperaceOpiceOpilostOpisovatOporaOpoziceOpravduOprotiOrbitalOrchestrOrgieOrliceOrlojOrtelOsadaOschnoutOsikaOsivoOslavaOslepitOslnitOslovitOsnovaOsobaOsolitOspalecOstenOstrahaOstudaOstychOsvojitOteplitOtiskOtopOtrhatOtrlostOtrokOtrubyOtvorOvanoutOvarOvesOvlivnitOvoceOxidOzdobaPachatelPacientPadouchPahorekPaktPalandaPalecPalivoPalubaPamfletPamlsekPanenkaPanikaPannaPanovatPanstvoPantoflePaprikaParketaParodiePartaParukaParybaPasekaPasivitaPastelkaPatentPatronaPavoukPaznehtPazourekPeckaPedagogPejsekPekloPelotonPenaltaPendrekPenzePeriskopPeroPestrostPetardaPeticePetrolejPevninaPexesoPianistaPihaPijavicePiklePiknikPilinaPilnostPilulkaPinzetaPipetaPisatelPistolePitevnaPivnicePivovarPlacentaPlakatPlamenPlanetaPlastikaPlatitPlavidloPlazPlechPlemenoPlentaPlesPletivoPlevelPlivatPlnitPlnoPlochaPlodinaPlombaPloutPlukPlynPobavitPobytPochodPocitPoctivecPodatPodcenitPodepsatPodhledPodivitPodkladPodmanitPodnikPodobaPodporaPodrazPodstataPodvodPodzimPoeziePohankaPohnutkaPohovorPohromaPohybPointaPojistkaPojmoutPokazitPoklesPokojPokrokPokutaPokynPolednePolibekPolknoutPolohaPolynomPomaluPominoutPomlkaPomocPomstaPomysletPonechatPonorkaPonurostPopadatPopelPopisekPoplachPoprositPopsatPopudPoradcePorcePorodPoruchaPoryvPosaditPosedPosilaPoskokPoslanecPosouditPospoluPostavaPosudekPosypPotahPotkanPotleskPotomekPotravaPotupaPotvoraPoukazPoutoPouzdroPovahaPovidlaPovlakPovozPovrchPovstatPovykPovzdechPozdravPozemekPoznatekPozorPozvatPracovatPrahoryPraktikaPralesPraotecPraporekPrasePravdaPrincipPrknoProbuditProcentoProdejProfeseProhraProjektProlomitPromilePronikatPropadProrokProsbaProtonProutekProvazPrskavkaPrstenPrudkostPrutPrvekPrvohoryPsanecPsovodPstruhPtactvoPubertaPuchPudlPukavecPuklinaPukrlePultPumpaPuncPupenPusaPusinkaPustinaPutovatPutykaPyramidaPyskPytelRacekRachotRadiaceRadniceRadonRaftRagbyRaketaRakovinaRamenoRampouchRandeRarachRaritaRasovnaRastrRatolestRazanceRazidloReagovatReakceReceptRedaktorReferentReflexRejnokReklamaRekordRekrutRektorReputaceRevizeRevmaRevolverRezervaRiskovatRizikoRobotikaRodokmenRohovkaRokleRokokoRomanetoRopovodRopuchaRorejsRosolRostlinaRotmistrRotopedRotundaRoubenkaRouchoRoupRouraRovinaRovniceRozborRozchodRozdatRozeznatRozhodceRozinkaRozjezdRozkazRozlohaRozmarRozpadRozruchRozsahRoztokRozumRozvodRubrikaRuchadloRukaviceRukopisRybaRybolovRychlostRydloRypadloRytinaRyzostSadistaSahatSakoSamecSamizdatSamotaSanitkaSardinkaSasankaSatelitSazbaSazeniceSborSchovatSebrankaSeceseSedadloSedimentSedloSehnatSejmoutSekeraSektaSekundaSekvojeSemenoSenoServisSesaditSeshoraSeskokSeslatSestraSesuvSesypatSetbaSetinaSetkatSetnoutSetrvatSeverSeznamShodaShrnoutSifonSilniceSirkaSirotekSirupSituaceSkafandrSkaliskoSkanzenSkautSkeptikSkicaSkladbaSkleniceSkloSkluzSkobaSkokanSkoroSkriptaSkrzSkupinaSkvostSkvrnaSlabikaSladidloSlaninaSlastSlavnostSledovatSlepecSlevaSlezinaSlibSlinaSlizniceSlonSloupekSlovoSluchSluhaSlunceSlupkaSlzaSmaragdSmetanaSmilstvoSmlouvaSmogSmradSmrkSmrtkaSmutekSmyslSnadSnahaSnobSobotaSochaSodovkaSokolSopkaSotvaSoubojSoucitSoudceSouhlasSouladSoumrakSoupravaSousedSoutokSouvisetSpalovnaSpasitelSpisSplavSpodekSpojenecSpoluSponzorSpornostSpoustaSprchaSpustitSrandaSrazSrdceSrnaSrnecSrovnatSrpenSrstSrubStaniceStarostaStatikaStavbaStehnoStezkaStodolaStolekStopaStornoStoupatStrachStresStrhnoutStromStrunaStudnaStupniceStvolStykSubjektSubtropySucharSudostSuknoSundatSunoutSurikataSurovinaSvahSvalstvoSvetrSvatbaSvazekSvisleSvitekSvobodaSvodidloSvorkaSvrabSykavkaSykotSynekSynovecSypatSypkostSyrovostSyselSytostTabletkaTabuleTahounTajemnoTajfunTajgaTajitTajnostTaktikaTamhleTamponTancovatTanecTankerTapetaTaveninaTazatelTechnikaTehdyTekutinaTelefonTemnotaTendenceTenistaTenorTeplotaTepnaTeprveTerapieTermoskaTextilTichoTiskopisTitulekTkadlecTkaninaTlapkaTleskatTlukotTlupaTmelToaletaTopinkaTopolTorzoTouhaToulecTradiceTraktorTrampTrasaTraverzaTrefitTrestTrezorTrhavinaTrhlinaTrochuTrojiceTroskaTroubaTrpceTrpitelTrpkostTrubecTruchlitTruhliceTrusTrvatTudyTuhnoutTuhostTundraTuristaTurnajTuzemskoTvarohTvorbaTvrdostTvrzTygrTykevUbohostUbozeUbratUbrousekUbrusUbytovnaUchoUctivostUdivitUhraditUjednatUjistitUjmoutUkazatelUklidnitUklonitUkotvitUkrojitUliceUlitaUlovitUmyvadloUnavitUniformaUniknoutUpadnoutUplatnitUplynoutUpoutatUpravitUranUrazitUsednoutUsilovatUsmrtitUsnadnitUsnoutUsouditUstlatUstrnoutUtahovatUtkatUtlumitUtonoutUtopenecUtrousitUvalitUvolnitUvozovkaUzdravitUzelUzeninaUzlinaUznatVagonValchaValounVanaVandalVanilkaVaranVarhanyVarovatVcelkuVchodVdovaVedroVegetaceVejceVelbloudVeletrhVelitelVelmocVelrybaVenkovVerandaVerzeVeselkaVeskrzeVesniceVespoduVestaVeterinaVeverkaVibraceVichrVideohraVidinaVidleVilaViniceVisetVitalitaVizeVizitkaVjezdVkladVkusVlajkaVlakVlasecVlevoVlhkostVlivVlnovkaVloupatVnucovatVnukVodaVodivostVodoznakVodstvoVojenskyVojnaVojskoVolantVolbaVolitVolnoVoskovkaVozidloVozovnaVpravoVrabecVracetVrahVrataVrbaVrcholekVrhatVrstvaVrtuleVsaditVstoupitVstupVtipVybavitVybratVychovatVydatVydraVyfotitVyhledatVyhnoutVyhoditVyhraditVyhubitVyjasnitVyjetVyjmoutVyklopitVykonatVylekatVymazatVymezitVymizetVymysletVynechatVynikatVynutitVypadatVyplatitVypravitVypustitVyrazitVyrovnatVyrvatVyslovitVysokoVystavitVysunoutVysypatVytasitVytesatVytratitVyvinoutVyvolatVyvrhelVyzdobitVyznatVzaduVzbuditVzchopitVzdorVzduchVzdychatVzestupVzhledemVzkazVzlykatVznikVzorekVzpouraVztahVztekXylofonZabratZabydletZachovatZadarmoZadusitZafoukatZahltitZahoditZahradaZahynoutZajatecZajetZajistitZaklepatZakoupitZalepitZamezitZamotatZamysletZanechatZanikatZaplatitZapojitZapsatZarazitZastavitZasunoutZatajitZatemnitZatknoutZaujmoutZavalitZaveletZavinitZavolatZavrtatZazvonitZbavitZbrusuZbudovatZbytekZdalekaZdarmaZdatnostZdivoZdobitZdrojZdvihZdymadloZeleninaZemanZeminaZeptatZezaduZezdolaZhatitZhltnoutZhlubokaZhotovitZhrubaZimaZimniceZjemnitZklamatZkoumatZkratkaZkumavkaZlatoZlehkaZlobaZlomZlostZlozvykZmapovatZmarZmatekZmijeZmizetZmocnitZmodratZmrzlinaZmutovatZnakZnalostZnamenatZnovuZobrazitZotavitZoubekZoufaleZploditZpomalitZpravaZprostitZprudkaZprvuZradaZranitZrcadloZrnitostZrnoZrovnaZrychlitZrzavostZtichaZtratitZubovinaZubrZvednoutZvenkuZveselaZvonZvratZvukovodZvyk";
 	var wordlist$1 = null;
@@ -15479,16 +15596,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.langEn = void 0;
 
 	var words = "AbandonAbilityAbleAboutAboveAbsentAbsorbAbstractAbsurdAbuseAccessAccidentAccountAccuseAchieveAcidAcousticAcquireAcrossActActionActorActressActualAdaptAddAddictAddressAdjustAdmitAdultAdvanceAdviceAerobicAffairAffordAfraidAgainAgeAgentAgreeAheadAimAirAirportAisleAlarmAlbumAlcoholAlertAlienAllAlleyAllowAlmostAloneAlphaAlreadyAlsoAlterAlwaysAmateurAmazingAmongAmountAmusedAnalystAnchorAncientAngerAngleAngryAnimalAnkleAnnounceAnnualAnotherAnswerAntennaAntiqueAnxietyAnyApartApologyAppearAppleApproveAprilArchArcticAreaArenaArgueArmArmedArmorArmyAroundArrangeArrestArriveArrowArtArtefactArtistArtworkAskAspectAssaultAssetAssistAssumeAsthmaAthleteAtomAttackAttendAttitudeAttractAuctionAuditAugustAuntAuthorAutoAutumnAverageAvocadoAvoidAwakeAwareAwayAwesomeAwfulAwkwardAxisBabyBachelorBaconBadgeBagBalanceBalconyBallBambooBananaBannerBarBarelyBargainBarrelBaseBasicBasketBattleBeachBeanBeautyBecauseBecomeBeefBeforeBeginBehaveBehindBelieveBelowBeltBenchBenefitBestBetrayBetterBetweenBeyondBicycleBidBikeBindBiologyBirdBirthBitterBlackBladeBlameBlanketBlastBleakBlessBlindBloodBlossomBlouseBlueBlurBlushBoardBoatBodyBoilBombBoneBonusBookBoostBorderBoringBorrowBossBottomBounceBoxBoyBracketBrainBrandBrassBraveBreadBreezeBrickBridgeBriefBrightBringBriskBroccoliBrokenBronzeBroomBrotherBrownBrushBubbleBuddyBudgetBuffaloBuildBulbBulkBulletBundleBunkerBurdenBurgerBurstBusBusinessBusyButterBuyerBuzzCabbageCabinCableCactusCageCakeCallCalmCameraCampCanCanalCancelCandyCannonCanoeCanvasCanyonCapableCapitalCaptainCarCarbonCardCargoCarpetCarryCartCaseCashCasinoCastleCasualCatCatalogCatchCategoryCattleCaughtCauseCautionCaveCeilingCeleryCementCensusCenturyCerealCertainChairChalkChampionChangeChaosChapterChargeChaseChatCheapCheckCheeseChefCherryChestChickenChiefChildChimneyChoiceChooseChronicChuckleChunkChurnCigarCinnamonCircleCitizenCityCivilClaimClapClarifyClawClayCleanClerkCleverClickClientCliffClimbClinicClipClockClogCloseClothCloudClownClubClumpClusterClutchCoachCoastCoconutCodeCoffeeCoilCoinCollectColorColumnCombineComeComfortComicCommonCompanyConcertConductConfirmCongressConnectConsiderControlConvinceCookCoolCopperCopyCoralCoreCornCorrectCostCottonCouchCountryCoupleCourseCousinCoverCoyoteCrackCradleCraftCramCraneCrashCraterCrawlCrazyCreamCreditCreekCrewCricketCrimeCrispCriticCropCrossCrouchCrowdCrucialCruelCruiseCrumbleCrunchCrushCryCrystalCubeCultureCupCupboardCuriousCurrentCurtainCurveCushionCustomCuteCycleDadDamageDampDanceDangerDaringDashDaughterDawnDayDealDebateDebrisDecadeDecemberDecideDeclineDecorateDecreaseDeerDefenseDefineDefyDegreeDelayDeliverDemandDemiseDenialDentistDenyDepartDependDepositDepthDeputyDeriveDescribeDesertDesignDeskDespairDestroyDetailDetectDevelopDeviceDevoteDiagramDialDiamondDiaryDiceDieselDietDifferDigitalDignityDilemmaDinnerDinosaurDirectDirtDisagreeDiscoverDiseaseDishDismissDisorderDisplayDistanceDivertDivideDivorceDizzyDoctorDocumentDogDollDolphinDomainDonateDonkeyDonorDoorDoseDoubleDoveDraftDragonDramaDrasticDrawDreamDressDriftDrillDrinkDripDriveDropDrumDryDuckDumbDuneDuringDustDutchDutyDwarfDynamicEagerEagleEarlyEarnEarthEasilyEastEasyEchoEcologyEconomyEdgeEditEducateEffortEggEightEitherElbowElderElectricElegantElementElephantElevatorEliteElseEmbarkEmbodyEmbraceEmergeEmotionEmployEmpowerEmptyEnableEnactEndEndlessEndorseEnemyEnergyEnforceEngageEngineEnhanceEnjoyEnlistEnoughEnrichEnrollEnsureEnterEntireEntryEnvelopeEpisodeEqualEquipEraEraseErodeErosionErrorEruptEscapeEssayEssenceEstateEternalEthicsEvidenceEvilEvokeEvolveExactExampleExcessExchangeExciteExcludeExcuseExecuteExerciseExhaustExhibitExileExistExitExoticExpandExpectExpireExplainExposeExpressExtendExtraEyeEyebrowFabricFaceFacultyFadeFaintFaithFallFalseFameFamilyFamousFanFancyFantasyFarmFashionFatFatalFatherFatigueFaultFavoriteFeatureFebruaryFederalFeeFeedFeelFemaleFenceFestivalFetchFeverFewFiberFictionFieldFigureFileFilmFilterFinalFindFineFingerFinishFireFirmFirstFiscalFishFitFitnessFixFlagFlameFlashFlatFlavorFleeFlightFlipFloatFlockFloorFlowerFluidFlushFlyFoamFocusFogFoilFoldFollowFoodFootForceForestForgetForkFortuneForumForwardFossilFosterFoundFoxFragileFrameFrequentFreshFriendFringeFrogFrontFrostFrownFrozenFruitFuelFunFunnyFurnaceFuryFutureGadgetGainGalaxyGalleryGameGapGarageGarbageGardenGarlicGarmentGasGaspGateGatherGaugeGazeGeneralGeniusGenreGentleGenuineGestureGhostGiantGiftGiggleGingerGiraffeGirlGiveGladGlanceGlareGlassGlideGlimpseGlobeGloomGloryGloveGlowGlueGoatGoddessGoldGoodGooseGorillaGospelGossipGovernGownGrabGraceGrainGrantGrapeGrassGravityGreatGreenGridGriefGritGroceryGroupGrowGruntGuardGuessGuideGuiltGuitarGunGymHabitHairHalfHammerHamsterHandHappyHarborHardHarshHarvestHatHaveHawkHazardHeadHealthHeartHeavyHedgehogHeightHelloHelmetHelpHenHeroHiddenHighHillHintHipHireHistoryHobbyHockeyHoldHoleHolidayHollowHomeHoneyHoodHopeHornHorrorHorseHospitalHostHotelHourHoverHubHugeHumanHumbleHumorHundredHungryHuntHurdleHurryHurtHusbandHybridIceIconIdeaIdentifyIdleIgnoreIllIllegalIllnessImageImitateImmenseImmuneImpactImposeImproveImpulseInchIncludeIncomeIncreaseIndexIndicateIndoorIndustryInfantInflictInformInhaleInheritInitialInjectInjuryInmateInnerInnocentInputInquiryInsaneInsectInsideInspireInstallIntactInterestIntoInvestInviteInvolveIronIslandIsolateIssueItemIvoryJacketJaguarJarJazzJealousJeansJellyJewelJobJoinJokeJourneyJoyJudgeJuiceJumpJungleJuniorJunkJustKangarooKeenKeepKetchupKeyKickKidKidneyKindKingdomKissKitKitchenKiteKittenKiwiKneeKnifeKnockKnowLabLabelLaborLadderLadyLakeLampLanguageLaptopLargeLaterLatinLaughLaundryLavaLawLawnLawsuitLayerLazyLeaderLeafLearnLeaveLectureLeftLegLegalLegendLeisureLemonLendLengthLensLeopardLessonLetterLevelLiarLibertyLibraryLicenseLifeLiftLightLikeLimbLimitLinkLionLiquidListLittleLiveLizardLoadLoanLobsterLocalLockLogicLonelyLongLoopLotteryLoudLoungeLoveLoyalLuckyLuggageLumberLunarLunchLuxuryLyricsMachineMadMagicMagnetMaidMailMainMajorMakeMammalManManageMandateMangoMansionManualMapleMarbleMarchMarginMarineMarketMarriageMaskMassMasterMatchMaterialMathMatrixMatterMaximumMazeMeadowMeanMeasureMeatMechanicMedalMediaMelodyMeltMemberMemoryMentionMenuMercyMergeMeritMerryMeshMessageMetalMethodMiddleMidnightMilkMillionMimicMindMinimumMinorMinuteMiracleMirrorMiseryMissMistakeMixMixedMixtureMobileModelModifyMomMomentMonitorMonkeyMonsterMonthMoonMoralMoreMorningMosquitoMotherMotionMotorMountainMouseMoveMovieMuchMuffinMuleMultiplyMuscleMuseumMushroomMusicMustMutualMyselfMysteryMythNaiveNameNapkinNarrowNastyNationNatureNearNeckNeedNegativeNeglectNeitherNephewNerveNestNetNetworkNeutralNeverNewsNextNiceNightNobleNoiseNomineeNoodleNormalNorthNoseNotableNoteNothingNoticeNovelNowNuclearNumberNurseNutOakObeyObjectObligeObscureObserveObtainObviousOccurOceanOctoberOdorOffOfferOfficeOftenOilOkayOldOliveOlympicOmitOnceOneOnionOnlineOnlyOpenOperaOpinionOpposeOptionOrangeOrbitOrchardOrderOrdinaryOrganOrientOriginalOrphanOstrichOtherOutdoorOuterOutputOutsideOvalOvenOverOwnOwnerOxygenOysterOzonePactPaddlePagePairPalacePalmPandaPanelPanicPantherPaperParadeParentParkParrotPartyPassPatchPathPatientPatrolPatternPausePavePaymentPeacePeanutPearPeasantPelicanPenPenaltyPencilPeoplePepperPerfectPermitPersonPetPhonePhotoPhrasePhysicalPianoPicnicPicturePiecePigPigeonPillPilotPinkPioneerPipePistolPitchPizzaPlacePlanetPlasticPlatePlayPleasePledgePluckPlugPlungePoemPoetPointPolarPolePolicePondPonyPoolPopularPortionPositionPossiblePostPotatoPotteryPovertyPowderPowerPracticePraisePredictPreferPreparePresentPrettyPreventPricePridePrimaryPrintPriorityPrisonPrivatePrizeProblemProcessProduceProfitProgramProjectPromoteProofPropertyProsperProtectProudProvidePublicPuddingPullPulpPulsePumpkinPunchPupilPuppyPurchasePurityPurposePursePushPutPuzzlePyramidQualityQuantumQuarterQuestionQuickQuitQuizQuoteRabbitRaccoonRaceRackRadarRadioRailRainRaiseRallyRampRanchRandomRangeRapidRareRateRatherRavenRawRazorReadyRealReasonRebelRebuildRecallReceiveRecipeRecordRecycleReduceReflectReformRefuseRegionRegretRegularRejectRelaxReleaseReliefRelyRemainRememberRemindRemoveRenderRenewRentReopenRepairRepeatReplaceReportRequireRescueResembleResistResourceResponseResultRetireRetreatReturnReunionRevealReviewRewardRhythmRibRibbonRiceRichRideRidgeRifleRightRigidRingRiotRippleRiskRitualRivalRiverRoadRoastRobotRobustRocketRomanceRoofRookieRoomRoseRotateRoughRoundRouteRoyalRubberRudeRugRuleRunRunwayRuralSadSaddleSadnessSafeSailSaladSalmonSalonSaltSaluteSameSampleSandSatisfySatoshiSauceSausageSaveSayScaleScanScareScatterSceneSchemeSchoolScienceScissorsScorpionScoutScrapScreenScriptScrubSeaSearchSeasonSeatSecondSecretSectionSecuritySeedSeekSegmentSelectSellSeminarSeniorSenseSentenceSeriesServiceSessionSettleSetupSevenShadowShaftShallowShareShedShellSheriffShieldShiftShineShipShiverShockShoeShootShopShortShoulderShoveShrimpShrugShuffleShySiblingSickSideSiegeSightSignSilentSilkSillySilverSimilarSimpleSinceSingSirenSisterSituateSixSizeSkateSketchSkiSkillSkinSkirtSkullSlabSlamSleepSlenderSliceSlideSlightSlimSloganSlotSlowSlushSmallSmartSmileSmokeSmoothSnackSnakeSnapSniffSnowSoapSoccerSocialSockSodaSoftSolarSoldierSolidSolutionSolveSomeoneSongSoonSorrySortSoulSoundSoupSourceSouthSpaceSpareSpatialSpawnSpeakSpecialSpeedSpellSpendSphereSpiceSpiderSpikeSpinSpiritSplitSpoilSponsorSpoonSportSpotSpraySpreadSpringSpySquareSqueezeSquirrelStableStadiumStaffStageStairsStampStandStartStateStaySteakSteelStemStepStereoStickStillStingStockStomachStoneStoolStoryStoveStrategyStreetStrikeStrongStruggleStudentStuffStumbleStyleSubjectSubmitSubwaySuccessSuchSuddenSufferSugarSuggestSuitSummerSunSunnySunsetSuperSupplySupremeSureSurfaceSurgeSurpriseSurroundSurveySuspectSustainSwallowSwampSwapSwarmSwearSweetSwiftSwimSwingSwitchSwordSymbolSymptomSyrupSystemTableTackleTagTailTalentTalkTankTapeTargetTaskTasteTattooTaxiTeachTeamTellTenTenantTennisTentTermTestTextThankThatThemeThenTheoryThereTheyThingThisThoughtThreeThriveThrowThumbThunderTicketTideTigerTiltTimberTimeTinyTipTiredTissueTitleToastTobaccoTodayToddlerToeTogetherToiletTokenTomatoTomorrowToneTongueTonightToolToothTopTopicToppleTorchTornadoTortoiseTossTotalTouristTowardTowerTownToyTrackTradeTrafficTragicTrainTransferTrapTrashTravelTrayTreatTreeTrendTrialTribeTrickTriggerTrimTripTrophyTroubleTruckTrueTrulyTrumpetTrustTruthTryTubeTuitionTumbleTunaTunnelTurkeyTurnTurtleTwelveTwentyTwiceTwinTwistTwoTypeTypicalUglyUmbrellaUnableUnawareUncleUncoverUnderUndoUnfairUnfoldUnhappyUniformUniqueUnitUniverseUnknownUnlockUntilUnusualUnveilUpdateUpgradeUpholdUponUpperUpsetUrbanUrgeUsageUseUsedUsefulUselessUsualUtilityVacantVacuumVagueValidValleyValveVanVanishVaporVariousVastVaultVehicleVelvetVendorVentureVenueVerbVerifyVersionVeryVesselVeteranViableVibrantViciousVictoryVideoViewVillageVintageViolinVirtualVirusVisaVisitVisualVitalVividVocalVoiceVoidVolcanoVolumeVoteVoyageWageWagonWaitWalkWallWalnutWantWarfareWarmWarriorWashWaspWasteWaterWaveWayWealthWeaponWearWeaselWeatherWebWeddingWeekendWeirdWelcomeWestWetWhaleWhatWheatWheelWhenWhereWhipWhisperWideWidthWifeWildWillWinWindowWineWingWinkWinnerWinterWireWisdomWiseWishWitnessWolfWomanWonderWoodWoolWordWorkWorldWorryWorthWrapWreckWrestleWristWriteWrongYardYearYellowYouYoungYouthZebraZeroZoneZoo";
 	var wordlist$1 = null;
@@ -15533,16 +15653,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.langEs = void 0;
 
 
 	var words = "A/bacoAbdomenAbejaAbiertoAbogadoAbonoAbortoAbrazoAbrirAbueloAbusoAcabarAcademiaAccesoAccio/nAceiteAcelgaAcentoAceptarA/cidoAclararAcne/AcogerAcosoActivoActoActrizActuarAcudirAcuerdoAcusarAdictoAdmitirAdoptarAdornoAduanaAdultoAe/reoAfectarAficio/nAfinarAfirmarA/gilAgitarAgoni/aAgostoAgotarAgregarAgrioAguaAgudoA/guilaAgujaAhogoAhorroAireAislarAjedrezAjenoAjusteAlacra/nAlambreAlarmaAlbaA/lbumAlcaldeAldeaAlegreAlejarAlertaAletaAlfilerAlgaAlgodo/nAliadoAlientoAlivioAlmaAlmejaAlmi/barAltarAltezaAltivoAltoAlturaAlumnoAlzarAmableAmanteAmapolaAmargoAmasarA/mbarA/mbitoAmenoAmigoAmistadAmorAmparoAmplioAnchoAncianoAnclaAndarAnde/nAnemiaA/nguloAnilloA/nimoAni/sAnotarAntenaAntiguoAntojoAnualAnularAnuncioA~adirA~ejoA~oApagarAparatoApetitoApioAplicarApodoAporteApoyoAprenderAprobarApuestaApuroAradoAra~aArarA/rbitroA/rbolArbustoArchivoArcoArderArdillaArduoA/reaA/ridoAriesArmoni/aArne/sAromaArpaArpo/nArregloArrozArrugaArteArtistaAsaAsadoAsaltoAscensoAsegurarAseoAsesorAsientoAsiloAsistirAsnoAsombroA/speroAstillaAstroAstutoAsumirAsuntoAtajoAtaqueAtarAtentoAteoA/ticoAtletaA/tomoAtraerAtrozAtu/nAudazAudioAugeAulaAumentoAusenteAutorAvalAvanceAvaroAveAvellanaAvenaAvestruzAvio/nAvisoAyerAyudaAyunoAzafra/nAzarAzoteAzu/carAzufreAzulBabaBaborBacheBahi/aBaileBajarBalanzaBalco/nBaldeBambu/BancoBandaBa~oBarbaBarcoBarnizBarroBa/sculaBasto/nBasuraBatallaBateri/aBatirBatutaBau/lBazarBebe/BebidaBelloBesarBesoBestiaBichoBienBingoBlancoBloqueBlusaBoaBobinaBoboBocaBocinaBodaBodegaBoinaBolaBoleroBolsaBombaBondadBonitoBonoBonsa/iBordeBorrarBosqueBoteBoti/nBo/vedaBozalBravoBrazoBrechaBreveBrilloBrincoBrisaBrocaBromaBronceBroteBrujaBruscoBrutoBuceoBucleBuenoBueyBufandaBufo/nBu/hoBuitreBultoBurbujaBurlaBurroBuscarButacaBuzo/nCaballoCabezaCabinaCabraCacaoCada/verCadenaCaerCafe/Cai/daCaima/nCajaCajo/nCalCalamarCalcioCaldoCalidadCalleCalmaCalorCalvoCamaCambioCamelloCaminoCampoCa/ncerCandilCanelaCanguroCanicaCantoCa~aCa~o/nCaobaCaosCapazCapita/nCapoteCaptarCapuchaCaraCarbo/nCa/rcelCaretaCargaCari~oCarneCarpetaCarroCartaCasaCascoCaseroCaspaCastorCatorceCatreCaudalCausaCazoCebollaCederCedroCeldaCe/lebreCelosoCe/lulaCementoCenizaCentroCercaCerdoCerezaCeroCerrarCertezaCe/spedCetroChacalChalecoChampu/ChanclaChapaCharlaChicoChisteChivoChoqueChozaChuletaChuparCiclo/nCiegoCieloCienCiertoCifraCigarroCimaCincoCineCintaCipre/sCircoCiruelaCisneCitaCiudadClamorClanClaroClaseClaveClienteClimaCli/nicaCobreCoccio/nCochinoCocinaCocoCo/digoCodoCofreCogerCoheteCoji/nCojoColaColchaColegioColgarColinaCollarColmoColumnaCombateComerComidaCo/modoCompraCondeConejoCongaConocerConsejoContarCopaCopiaCorazo/nCorbataCorchoCordo/nCoronaCorrerCoserCosmosCostaCra/neoCra/terCrearCrecerCrei/doCremaCri/aCrimenCriptaCrisisCromoCro/nicaCroquetaCrudoCruzCuadroCuartoCuatroCuboCubrirCucharaCuelloCuentoCuerdaCuestaCuevaCuidarCulebraCulpaCultoCumbreCumplirCunaCunetaCuotaCupo/nCu/pulaCurarCuriosoCursoCurvaCutisDamaDanzaDarDardoDa/tilDeberDe/bilDe/cadaDecirDedoDefensaDefinirDejarDelfi/nDelgadoDelitoDemoraDensoDentalDeporteDerechoDerrotaDesayunoDeseoDesfileDesnudoDestinoDesvi/oDetalleDetenerDeudaDi/aDiabloDiademaDiamanteDianaDiarioDibujoDictarDienteDietaDiezDifi/cilDignoDilemaDiluirDineroDirectoDirigirDiscoDise~oDisfrazDivaDivinoDobleDoceDolorDomingoDonDonarDoradoDormirDorsoDosDosisDrago/nDrogaDuchaDudaDueloDue~oDulceDu/oDuqueDurarDurezaDuroE/banoEbrioEcharEcoEcuadorEdadEdicio/nEdificioEditorEducarEfectoEficazEjeEjemploElefanteElegirElementoElevarElipseE/liteElixirElogioEludirEmbudoEmitirEmocio/nEmpateEmpe~oEmpleoEmpresaEnanoEncargoEnchufeEnci/aEnemigoEneroEnfadoEnfermoEnga~oEnigmaEnlaceEnormeEnredoEnsayoEnse~arEnteroEntrarEnvaseEnvi/oE/pocaEquipoErizoEscalaEscenaEscolarEscribirEscudoEsenciaEsferaEsfuerzoEspadaEspejoEspi/aEsposaEspumaEsqui/EstarEsteEstiloEstufaEtapaEternoE/ticaEtniaEvadirEvaluarEventoEvitarExactoExamenExcesoExcusaExentoExigirExilioExistirE/xitoExpertoExplicarExponerExtremoFa/bricaFa/bulaFachadaFa/cilFactorFaenaFajaFaldaFalloFalsoFaltarFamaFamiliaFamosoFarao/nFarmaciaFarolFarsaFaseFatigaFaunaFavorFaxFebreroFechaFelizFeoFeriaFerozFe/rtilFervorFesti/nFiableFianzaFiarFibraFiccio/nFichaFideoFiebreFielFieraFiestaFiguraFijarFijoFilaFileteFilialFiltroFinFincaFingirFinitoFirmaFlacoFlautaFlechaFlorFlotaFluirFlujoFlu/orFobiaFocaFogataFogo/nFolioFolletoFondoFormaForroFortunaForzarFosaFotoFracasoFra/gilFranjaFraseFraudeFrei/rFrenoFresaFri/oFritoFrutaFuegoFuenteFuerzaFugaFumarFuncio/nFundaFurgo/nFuriaFusilFu/tbolFuturoGacelaGafasGaitaGajoGalaGaleri/aGalloGambaGanarGanchoGangaGansoGarajeGarzaGasolinaGastarGatoGavila/nGemeloGemirGenGe/neroGenioGenteGeranioGerenteGermenGestoGiganteGimnasioGirarGiroGlaciarGloboGloriaGolGolfoGolosoGolpeGomaGordoGorilaGorraGotaGoteoGozarGradaGra/ficoGranoGrasaGratisGraveGrietaGrilloGripeGrisGritoGrosorGru/aGruesoGrumoGrupoGuanteGuapoGuardiaGuerraGui/aGui~oGuionGuisoGuitarraGusanoGustarHaberHa/bilHablarHacerHachaHadaHallarHamacaHarinaHazHaza~aHebillaHebraHechoHeladoHelioHembraHerirHermanoHe/roeHervirHieloHierroHi/gadoHigieneHijoHimnoHistoriaHocicoHogarHogueraHojaHombreHongoHonorHonraHoraHormigaHornoHostilHoyoHuecoHuelgaHuertaHuesoHuevoHuidaHuirHumanoHu/medoHumildeHumoHundirHuraca/nHurtoIconoIdealIdiomaI/doloIglesiaIglu/IgualIlegalIlusio/nImagenIma/nImitarImparImperioImponerImpulsoIncapazI/ndiceInerteInfielInformeIngenioInicioInmensoInmuneInnatoInsectoInstanteIntere/sI/ntimoIntuirInu/tilInviernoIraIrisIroni/aIslaIsloteJabali/Jabo/nJamo/nJarabeJardi/nJarraJaulaJazmi/nJefeJeringaJineteJornadaJorobaJovenJoyaJuergaJuevesJuezJugadorJugoJugueteJuicioJuncoJunglaJunioJuntarJu/piterJurarJustoJuvenilJuzgarKiloKoalaLabioLacioLacraLadoLadro/nLagartoLa/grimaLagunaLaicoLamerLa/minaLa/mparaLanaLanchaLangostaLanzaLa/pizLargoLarvaLa/stimaLataLa/texLatirLaurelLavarLazoLealLeccio/nLecheLectorLeerLegio/nLegumbreLejanoLenguaLentoLe~aLeo/nLeopardoLesio/nLetalLetraLeveLeyendaLibertadLibroLicorLi/derLidiarLienzoLigaLigeroLimaLi/miteLimo/nLimpioLinceLindoLi/neaLingoteLinoLinternaLi/quidoLisoListaLiteraLitioLitroLlagaLlamaLlantoLlaveLlegarLlenarLlevarLlorarLloverLluviaLoboLocio/nLocoLocuraLo/gicaLogroLombrizLomoLonjaLoteLuchaLucirLugarLujoLunaLunesLupaLustroLutoLuzMacetaMachoMaderaMadreMaduroMaestroMafiaMagiaMagoMai/zMaldadMaletaMallaMaloMama/MamboMamutMancoMandoManejarMangaManiqui/ManjarManoMansoMantaMa~anaMapaMa/quinaMarMarcoMareaMarfilMargenMaridoMa/rmolMarro/nMartesMarzoMasaMa/scaraMasivoMatarMateriaMatizMatrizMa/ximoMayorMazorcaMechaMedallaMedioMe/dulaMejillaMejorMelenaMelo/nMemoriaMenorMensajeMenteMenu/MercadoMerengueMe/ritoMesMeso/nMetaMeterMe/todoMetroMezclaMiedoMielMiembroMigaMilMilagroMilitarMillo/nMimoMinaMineroMi/nimoMinutoMiopeMirarMisaMiseriaMisilMismoMitadMitoMochilaMocio/nModaModeloMohoMojarMoldeMolerMolinoMomentoMomiaMonarcaMonedaMonjaMontoMo~oMoradaMorderMorenoMorirMorroMorsaMortalMoscaMostrarMotivoMoverMo/vilMozoMuchoMudarMuebleMuelaMuerteMuestraMugreMujerMulaMuletaMultaMundoMu~ecaMuralMuroMu/sculoMuseoMusgoMu/sicaMusloNa/carNacio/nNadarNaipeNaranjaNarizNarrarNasalNatalNativoNaturalNa/useaNavalNaveNavidadNecioNe/ctarNegarNegocioNegroNeo/nNervioNetoNeutroNevarNeveraNichoNidoNieblaNietoNi~ezNi~oNi/tidoNivelNoblezaNocheNo/minaNoriaNormaNorteNotaNoticiaNovatoNovelaNovioNubeNucaNu/cleoNudilloNudoNueraNueveNuezNuloNu/meroNutriaOasisObesoObispoObjetoObraObreroObservarObtenerObvioOcaOcasoOce/anoOchentaOchoOcioOcreOctavoOctubreOcultoOcuparOcurrirOdiarOdioOdiseaOesteOfensaOfertaOficioOfrecerOgroOi/doOi/rOjoOlaOleadaOlfatoOlivoOllaOlmoOlorOlvidoOmbligoOndaOnzaOpacoOpcio/nO/peraOpinarOponerOptarO/pticaOpuestoOracio/nOradorOralO/rbitaOrcaOrdenOrejaO/rganoOrgi/aOrgulloOrienteOrigenOrillaOroOrquestaOrugaOsadi/aOscuroOseznoOsoOstraOto~oOtroOvejaO/vuloO/xidoOxi/genoOyenteOzonoPactoPadrePaellaPa/ginaPagoPai/sPa/jaroPalabraPalcoPaletaPa/lidoPalmaPalomaPalparPanPanalPa/nicoPanteraPa~ueloPapa/PapelPapillaPaquetePararParcelaParedParirParoPa/rpadoParquePa/rrafoPartePasarPaseoPasio/nPasoPastaPataPatioPatriaPausaPautaPavoPayasoPeato/nPecadoPeceraPechoPedalPedirPegarPeinePelarPelda~oPeleaPeligroPellejoPeloPelucaPenaPensarPe~o/nPeo/nPeorPepinoPeque~oPeraPerchaPerderPerezaPerfilPericoPerlaPermisoPerroPersonaPesaPescaPe/simoPesta~aPe/taloPetro/leoPezPezu~aPicarPicho/nPiePiedraPiernaPiezaPijamaPilarPilotoPimientaPinoPintorPinzaPi~aPiojoPipaPirataPisarPiscinaPisoPistaPito/nPizcaPlacaPlanPlataPlayaPlazaPleitoPlenoPlomoPlumaPluralPobrePocoPoderPodioPoemaPoesi/aPoetaPolenPolici/aPolloPolvoPomadaPomeloPomoPompaPonerPorcio/nPortalPosadaPoseerPosiblePostePotenciaPotroPozoPradoPrecozPreguntaPremioPrensaPresoPrevioPrimoPri/ncipePrisio/nPrivarProaProbarProcesoProductoProezaProfesorProgramaProlePromesaProntoPropioPro/ximoPruebaPu/blicoPucheroPudorPuebloPuertaPuestoPulgaPulirPulmo/nPulpoPulsoPumaPuntoPu~alPu~oPupaPupilaPure/QuedarQuejaQuemarQuererQuesoQuietoQui/micaQuinceQuitarRa/banoRabiaRaboRacio/nRadicalRai/zRamaRampaRanchoRangoRapazRa/pidoRaptoRasgoRaspaRatoRayoRazaRazo/nReaccio/nRealidadReba~oReboteRecaerRecetaRechazoRecogerRecreoRectoRecursoRedRedondoReducirReflejoReformaRefra/nRefugioRegaloRegirReglaRegresoRehe/nReinoRei/rRejaRelatoRelevoRelieveRellenoRelojRemarRemedioRemoRencorRendirRentaRepartoRepetirReposoReptilResRescateResinaRespetoRestoResumenRetiroRetornoRetratoReunirReve/sRevistaReyRezarRicoRiegoRiendaRiesgoRifaRi/gidoRigorRinco/nRi~o/nRi/oRiquezaRisaRitmoRitoRizoRobleRoceRociarRodarRodeoRodillaRoerRojizoRojoRomeroRomperRonRoncoRondaRopaRoperoRosaRoscaRostroRotarRubi/RuborRudoRuedaRugirRuidoRuinaRuletaRuloRumboRumorRupturaRutaRutinaSa/badoSaberSabioSableSacarSagazSagradoSalaSaldoSaleroSalirSalmo/nSalo/nSalsaSaltoSaludSalvarSambaSancio/nSandi/aSanearSangreSanidadSanoSantoSapoSaqueSardinaSarte/nSastreSata/nSaunaSaxofo/nSeccio/nSecoSecretoSectaSedSeguirSeisSelloSelvaSemanaSemillaSendaSensorSe~alSe~orSepararSepiaSequi/aSerSerieSermo/nServirSesentaSesio/nSetaSetentaSeveroSexoSextoSidraSiestaSieteSigloSignoSi/labaSilbarSilencioSillaSi/mboloSimioSirenaSistemaSitioSituarSobreSocioSodioSolSolapaSoldadoSoledadSo/lidoSoltarSolucio/nSombraSondeoSonidoSonoroSonrisaSopaSoplarSoporteSordoSorpresaSorteoSoste/nSo/tanoSuaveSubirSucesoSudorSuegraSueloSue~oSuerteSufrirSujetoSulta/nSumarSuperarSuplirSuponerSupremoSurSurcoSure~oSurgirSustoSutilTabacoTabiqueTablaTabu/TacoTactoTajoTalarTalcoTalentoTallaTalo/nTama~oTamborTangoTanqueTapaTapeteTapiaTapo/nTaquillaTardeTareaTarifaTarjetaTarotTarroTartaTatuajeTauroTazaTazo/nTeatroTechoTeclaTe/cnicaTejadoTejerTejidoTelaTele/fonoTemaTemorTemploTenazTenderTenerTenisTensoTeori/aTerapiaTercoTe/rminoTernuraTerrorTesisTesoroTestigoTeteraTextoTezTibioTiburo/nTiempoTiendaTierraTiesoTigreTijeraTildeTimbreTi/midoTimoTintaTi/oTi/picoTipoTiraTiro/nTita/nTi/tereTi/tuloTizaToallaTobilloTocarTocinoTodoTogaToldoTomarTonoTontoToparTopeToqueTo/raxToreroTormentaTorneoToroTorpedoTorreTorsoTortugaTosToscoToserTo/xicoTrabajoTractorTraerTra/ficoTragoTrajeTramoTranceTratoTraumaTrazarTre/bolTreguaTreintaTrenTreparTresTribuTrigoTripaTristeTriunfoTrofeoTrompaTroncoTropaTroteTrozoTrucoTruenoTrufaTuberi/aTuboTuertoTumbaTumorTu/nelTu/nicaTurbinaTurismoTurnoTutorUbicarU/lceraUmbralUnidadUnirUniversoUnoUntarU~aUrbanoUrbeUrgenteUrnaUsarUsuarioU/tilUtopi/aUvaVacaVaci/oVacunaVagarVagoVainaVajillaValeVa/lidoValleValorVa/lvulaVampiroVaraVariarVaro/nVasoVecinoVectorVehi/culoVeinteVejezVelaVeleroVelozVenaVencerVendaVenenoVengarVenirVentaVenusVerVeranoVerboVerdeVeredaVerjaVersoVerterVi/aViajeVibrarVicioVi/ctimaVidaVi/deoVidrioViejoViernesVigorVilVillaVinagreVinoVi~edoVioli/nViralVirgoVirtudVisorVi/speraVistaVitaminaViudoVivazViveroVivirVivoVolca/nVolumenVolverVorazVotarVotoVozVueloVulgarYacerYateYeguaYemaYernoYesoYodoYogaYogurZafiroZanjaZapatoZarzaZonaZorroZumoZurdo";
@@ -15618,16 +15741,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.langFr = void 0;
 
 
 	var words = "AbaisserAbandonAbdiquerAbeilleAbolirAborderAboutirAboyerAbrasifAbreuverAbriterAbrogerAbruptAbsenceAbsoluAbsurdeAbusifAbyssalAcade/mieAcajouAcarienAccablerAccepterAcclamerAccoladeAccrocheAccuserAcerbeAchatAcheterAcidulerAcierAcompteAcque/rirAcronymeActeurActifActuelAdepteAde/quatAdhe/sifAdjectifAdjugerAdmettreAdmirerAdopterAdorerAdoucirAdresseAdroitAdulteAdverbeAe/rerAe/ronefAffaireAffecterAfficheAffreuxAffublerAgacerAgencerAgileAgiterAgraferAgre/ableAgrumeAiderAiguilleAilierAimableAisanceAjouterAjusterAlarmerAlchimieAlerteAlge-breAlgueAlie/nerAlimentAlle/gerAlliageAllouerAllumerAlourdirAlpagaAltesseAlve/oleAmateurAmbiguAmbreAme/nagerAmertumeAmidonAmiralAmorcerAmourAmovibleAmphibieAmpleurAmusantAnalyseAnaphoreAnarchieAnatomieAncienAne/antirAngleAngoisseAnguleuxAnimalAnnexerAnnonceAnnuelAnodinAnomalieAnonymeAnormalAntenneAntidoteAnxieuxApaiserApe/ritifAplanirApologieAppareilAppelerApporterAppuyerAquariumAqueducArbitreArbusteArdeurArdoiseArgentArlequinArmatureArmementArmoireArmureArpenterArracherArriverArroserArsenicArte/rielArticleAspectAsphalteAspirerAssautAsservirAssietteAssocierAssurerAsticotAstreAstuceAtelierAtomeAtriumAtroceAttaqueAttentifAttirerAttraperAubaineAubergeAudaceAudibleAugurerAuroreAutomneAutrucheAvalerAvancerAvariceAvenirAverseAveugleAviateurAvideAvionAviserAvoineAvouerAvrilAxialAxiomeBadgeBafouerBagageBaguetteBaignadeBalancerBalconBaleineBalisageBambinBancaireBandageBanlieueBannie-reBanquierBarbierBarilBaronBarqueBarrageBassinBastionBatailleBateauBatterieBaudrierBavarderBeletteBe/lierBeloteBe/ne/ficeBerceauBergerBerlineBermudaBesaceBesogneBe/tailBeurreBiberonBicycleBiduleBijouBilanBilingueBillardBinaireBiologieBiopsieBiotypeBiscuitBisonBistouriBitumeBizarreBlafardBlagueBlanchirBlessantBlinderBlondBloquerBlousonBobardBobineBoireBoiserBolideBonbonBondirBonheurBonifierBonusBordureBorneBotteBoucleBoueuxBougieBoulonBouquinBourseBoussoleBoutiqueBoxeurBrancheBrasierBraveBrebisBre-cheBreuvageBricolerBrigadeBrillantBriocheBriqueBrochureBroderBronzerBrousseBroyeurBrumeBrusqueBrutalBruyantBuffleBuissonBulletinBureauBurinBustierButinerButoirBuvableBuvetteCabanonCabineCachetteCadeauCadreCafe/ineCaillouCaissonCalculerCalepinCalibreCalmerCalomnieCalvaireCamaradeCame/raCamionCampagneCanalCanetonCanonCantineCanularCapableCaporalCapriceCapsuleCapterCapucheCarabineCarboneCaresserCaribouCarnageCarotteCarreauCartonCascadeCasierCasqueCassureCauserCautionCavalierCaverneCaviarCe/dilleCeintureCe/lesteCelluleCendrierCensurerCentralCercleCe/re/bralCeriseCernerCerveauCesserChagrinChaiseChaleurChambreChanceChapitreCharbonChasseurChatonChaussonChavirerChemiseChenilleChe/quierChercherChevalChienChiffreChignonChime-reChiotChlorureChocolatChoisirChoseChouetteChromeChuteCigareCigogneCimenterCine/maCintrerCirculerCirerCirqueCiterneCitoyenCitronCivilClaironClameurClaquerClasseClavierClientClignerClimatClivageClocheClonageCloporteCobaltCobraCocasseCocotierCoderCodifierCoffreCognerCohe/sionCoifferCoincerCole-reColibriCollineColmaterColonelCombatCome/dieCommandeCompactConcertConduireConfierCongelerConnoterConsonneContactConvexeCopainCopieCorailCorbeauCordageCornicheCorpusCorrectCorte-geCosmiqueCostumeCotonCoudeCoupureCourageCouteauCouvrirCoyoteCrabeCrainteCravateCrayonCre/atureCre/diterCre/meuxCreuserCrevetteCriblerCrierCristalCrite-reCroireCroquerCrotaleCrucialCruelCrypterCubiqueCueillirCuille-reCuisineCuivreCulminerCultiverCumulerCupideCuratifCurseurCyanureCycleCylindreCyniqueDaignerDamierDangerDanseurDauphinDe/battreDe/biterDe/borderDe/briderDe/butantDe/calerDe/cembreDe/chirerDe/ciderDe/clarerDe/corerDe/crireDe/cuplerDe/daleDe/ductifDe/esseDe/fensifDe/filerDe/frayerDe/gagerDe/givrerDe/glutirDe/graferDe/jeunerDe/liceDe/logerDemanderDemeurerDe/molirDe/nicherDe/nouerDentelleDe/nuderDe/partDe/penserDe/phaserDe/placerDe/poserDe/rangerDe/roberDe/sastreDescenteDe/sertDe/signerDe/sobe/irDessinerDestrierDe/tacherDe/testerDe/tourerDe/tresseDevancerDevenirDevinerDevoirDiableDialogueDiamantDicterDiffe/rerDige/rerDigitalDigneDiluerDimancheDiminuerDioxydeDirectifDirigerDiscuterDisposerDissiperDistanceDivertirDiviserDocileDocteurDogmeDoigtDomaineDomicileDompterDonateurDonjonDonnerDopamineDortoirDorureDosageDoseurDossierDotationDouanierDoubleDouceurDouterDoyenDragonDraperDresserDribblerDroitureDuperieDuplexeDurableDurcirDynastieE/blouirE/carterE/charpeE/chelleE/clairerE/clipseE/cloreE/cluseE/coleE/conomieE/corceE/couterE/craserE/cre/merE/crivainE/crouE/cumeE/cureuilE/difierE/duquerEffacerEffectifEffigieEffortEffrayerEffusionE/galiserE/garerE/jecterE/laborerE/largirE/lectronE/le/gantE/le/phantE/le-veE/ligibleE/litismeE/logeE/luciderE/luderEmballerEmbellirEmbryonE/meraudeE/missionEmmenerE/motionE/mouvoirEmpereurEmployerEmporterEmpriseE/mulsionEncadrerEnche-reEnclaveEncocheEndiguerEndosserEndroitEnduireE/nergieEnfanceEnfermerEnfouirEngagerEnginEngloberE/nigmeEnjamberEnjeuEnleverEnnemiEnnuyeuxEnrichirEnrobageEnseigneEntasserEntendreEntierEntourerEntraverE/nume/rerEnvahirEnviableEnvoyerEnzymeE/olienE/paissirE/pargneE/patantE/pauleE/picerieE/pide/mieE/pierE/pilogueE/pineE/pisodeE/pitapheE/poqueE/preuveE/prouverE/puisantE/querreE/quipeE/rigerE/rosionErreurE/ruptionEscalierEspadonEspe-ceEspie-gleEspoirEspritEsquiverEssayerEssenceEssieuEssorerEstimeEstomacEstradeE/tage-reE/talerE/tancheE/tatiqueE/teindreE/tendoirE/ternelE/thanolE/thiqueEthnieE/tirerE/tofferE/toileE/tonnantE/tourdirE/trangeE/troitE/tudeEuphorieE/valuerE/vasionE/ventailE/videnceE/viterE/volutifE/voquerExactExage/rerExaucerExcellerExcitantExclusifExcuseExe/cuterExempleExercerExhalerExhorterExigenceExilerExisterExotiqueExpe/dierExplorerExposerExprimerExquisExtensifExtraireExulterFableFabuleuxFacetteFacileFactureFaiblirFalaiseFameuxFamilleFarceurFarfeluFarineFaroucheFascinerFatalFatigueFauconFautifFaveurFavoriFe/brileFe/conderFe/de/rerFe/linFemmeFe/murFendoirFe/odalFermerFe/roceFerveurFestivalFeuilleFeutreFe/vrierFiascoFicelerFictifFide-leFigureFilatureFiletageFilie-reFilleulFilmerFilouFiltrerFinancerFinirFioleFirmeFissureFixerFlairerFlammeFlasqueFlatteurFle/auFle-cheFleurFlexionFloconFloreFluctuerFluideFluvialFolieFonderieFongibleFontaineForcerForgeronFormulerFortuneFossileFoudreFouge-reFouillerFoulureFourmiFragileFraiseFranchirFrapperFrayeurFre/gateFreinerFrelonFre/mirFre/ne/sieFre-reFriableFrictionFrissonFrivoleFroidFromageFrontalFrotterFruitFugitifFuiteFureurFurieuxFurtifFusionFuturGagnerGalaxieGalerieGambaderGarantirGardienGarnirGarrigueGazelleGazonGe/antGe/latineGe/luleGendarmeGe/ne/ralGe/nieGenouGentilGe/ologieGe/ome-treGe/raniumGermeGestuelGeyserGibierGiclerGirafeGivreGlaceGlaiveGlisserGlobeGloireGlorieuxGolfeurGommeGonflerGorgeGorilleGoudronGouffreGoulotGoupilleGourmandGoutteGraduelGraffitiGraineGrandGrappinGratuitGravirGrenatGriffureGrillerGrimperGrognerGronderGrotteGroupeGrugerGrutierGruye-reGue/pardGuerrierGuideGuimauveGuitareGustatifGymnasteGyrostatHabitudeHachoirHalteHameauHangarHannetonHaricotHarmonieHarponHasardHe/liumHe/matomeHerbeHe/rissonHermineHe/ronHe/siterHeureuxHibernerHibouHilarantHistoireHiverHomardHommageHomoge-neHonneurHonorerHonteuxHordeHorizonHorlogeHormoneHorribleHouleuxHousseHublotHuileuxHumainHumbleHumideHumourHurlerHydromelHygie-neHymneHypnoseIdylleIgnorerIguaneIlliciteIllusionImageImbiberImiterImmenseImmobileImmuableImpactImpe/rialImplorerImposerImprimerImputerIncarnerIncendieIncidentInclinerIncoloreIndexerIndiceInductifIne/ditIneptieInexactInfiniInfligerInformerInfusionInge/rerInhalerInhiberInjecterInjureInnocentInoculerInonderInscrireInsecteInsigneInsoliteInspirerInstinctInsulterIntactIntenseIntimeIntrigueIntuitifInutileInvasionInventerInviterInvoquerIroniqueIrradierIrre/elIrriterIsolerIvoireIvresseJaguarJaillirJambeJanvierJardinJaugerJauneJavelotJetableJetonJeudiJeunesseJoindreJoncherJonglerJoueurJouissifJournalJovialJoyauJoyeuxJubilerJugementJuniorJuponJuristeJusticeJuteuxJuve/nileKayakKimonoKiosqueLabelLabialLabourerLace/rerLactoseLaguneLaineLaisserLaitierLambeauLamelleLampeLanceurLangageLanterneLapinLargeurLarmeLaurierLavaboLavoirLectureLe/galLe/gerLe/gumeLessiveLettreLevierLexiqueLe/zardLiasseLibe/rerLibreLicenceLicorneLie-geLie-vreLigatureLigoterLigueLimerLimiteLimonadeLimpideLine/aireLingotLionceauLiquideLisie-reListerLithiumLitigeLittoralLivreurLogiqueLointainLoisirLombricLoterieLouerLourdLoutreLouveLoyalLubieLucideLucratifLueurLugubreLuisantLumie-reLunaireLundiLuronLutterLuxueuxMachineMagasinMagentaMagiqueMaigreMaillonMaintienMairieMaisonMajorerMalaxerMale/ficeMalheurMaliceMalletteMammouthMandaterManiableManquantManteauManuelMarathonMarbreMarchandMardiMaritimeMarqueurMarronMartelerMascotteMassifMate/rielMatie-reMatraqueMaudireMaussadeMauveMaximalMe/chantMe/connuMe/dailleMe/decinMe/diterMe/duseMeilleurMe/langeMe/lodieMembreMe/moireMenacerMenerMenhirMensongeMentorMercrediMe/riteMerleMessagerMesureMe/talMe/te/oreMe/thodeMe/tierMeubleMiaulerMicrobeMietteMignonMigrerMilieuMillionMimiqueMinceMine/ralMinimalMinorerMinuteMiracleMiroiterMissileMixteMobileModerneMoelleuxMondialMoniteurMonnaieMonotoneMonstreMontagneMonumentMoqueurMorceauMorsureMortierMoteurMotifMoucheMoufleMoulinMoussonMoutonMouvantMultipleMunitionMurailleMure-neMurmureMuscleMuse/umMusicienMutationMuterMutuelMyriadeMyrtilleMyste-reMythiqueNageurNappeNarquoisNarrerNatationNationNatureNaufrageNautiqueNavireNe/buleuxNectarNe/fasteNe/gationNe/gligerNe/gocierNeigeNerveuxNettoyerNeuroneNeutronNeveuNicheNickelNitrateNiveauNobleNocifNocturneNoirceurNoisetteNomadeNombreuxNommerNormatifNotableNotifierNotoireNourrirNouveauNovateurNovembreNoviceNuageNuancerNuireNuisibleNume/roNuptialNuqueNutritifObe/irObjectifObligerObscurObserverObstacleObtenirObturerOccasionOccuperOce/anOctobreOctroyerOctuplerOculaireOdeurOdorantOffenserOfficierOffrirOgiveOiseauOisillonOlfactifOlivierOmbrageOmettreOnctueuxOndulerOne/reuxOniriqueOpaleOpaqueOpe/rerOpinionOpportunOpprimerOpterOptiqueOrageuxOrangeOrbiteOrdonnerOreilleOrganeOrgueilOrificeOrnementOrqueOrtieOscillerOsmoseOssatureOtarieOuraganOursonOutilOutragerOuvrageOvationOxydeOxyge-neOzonePaisiblePalacePalmare-sPalourdePalperPanachePandaPangolinPaniquerPanneauPanoramaPantalonPapayePapierPapoterPapyrusParadoxeParcelleParesseParfumerParlerParoleParrainParsemerPartagerParureParvenirPassionPaste-quePaternelPatiencePatronPavillonPavoiserPayerPaysagePeignePeintrePelagePe/licanPellePelousePeluchePendulePe/ne/trerPe/niblePensifPe/nuriePe/pitePe/plumPerdrixPerforerPe/riodePermuterPerplexePersilPertePeserPe/talePetitPe/trirPeuplePharaonPhobiePhoquePhotonPhrasePhysiquePianoPicturalPie-cePierrePieuvrePilotePinceauPipettePiquerPiroguePiscinePistonPivoterPixelPizzaPlacardPlafondPlaisirPlanerPlaquePlastronPlateauPleurerPlexusPliagePlombPlongerPluiePlumagePochettePoe/siePoe-tePointePoirierPoissonPoivrePolairePolicierPollenPolygonePommadePompierPonctuelPonde/rerPoneyPortiquePositionPosse/derPosturePotagerPoteauPotionPoucePoulainPoumonPourprePoussinPouvoirPrairiePratiquePre/cieuxPre/direPre/fixePre/ludePre/nomPre/sencePre/textePre/voirPrimitifPrincePrisonPriverProble-meProce/derProdigeProfondProgre-sProieProjeterProloguePromenerPropreProspe-reProte/gerProuesseProverbePrudencePruneauPsychosePublicPuceronPuiserPulpePulsarPunaisePunitifPupitrePurifierPuzzlePyramideQuasarQuerelleQuestionQuie/tudeQuitterQuotientRacineRaconterRadieuxRagondinRaideurRaisinRalentirRallongeRamasserRapideRasageRatisserRavagerRavinRayonnerRe/actifRe/agirRe/aliserRe/animerRecevoirRe/citerRe/clamerRe/colterRecruterReculerRecyclerRe/digerRedouterRefaireRe/flexeRe/formerRefrainRefugeRe/galienRe/gionRe/glageRe/gulierRe/ite/rerRejeterRejouerRelatifReleverReliefRemarqueReme-deRemiseRemonterRemplirRemuerRenardRenfortReniflerRenoncerRentrerRenvoiReplierReporterRepriseReptileRequinRe/serveRe/sineuxRe/soudreRespectResterRe/sultatRe/tablirRetenirRe/ticuleRetomberRetracerRe/unionRe/ussirRevancheRevivreRe/volteRe/vulsifRichesseRideauRieurRigideRigolerRincerRiposterRisibleRisqueRituelRivalRivie-reRocheuxRomanceRompreRonceRondinRoseauRosierRotatifRotorRotuleRougeRouilleRouleauRoutineRoyaumeRubanRubisRucheRuelleRugueuxRuinerRuisseauRuserRustiqueRythmeSablerSaboterSabreSacocheSafariSagesseSaisirSaladeSaliveSalonSaluerSamediSanctionSanglierSarcasmeSardineSaturerSaugrenuSaumonSauterSauvageSavantSavonnerScalpelScandaleSce/le/ratSce/narioSceptreSche/maScienceScinderScoreScrutinSculpterSe/anceSe/cableSe/cherSecouerSe/cre/terSe/datifSe/duireSeigneurSe/jourSe/lectifSemaineSemblerSemenceSe/minalSe/nateurSensibleSentenceSe/parerSe/quenceSereinSergentSe/rieuxSerrureSe/rumServiceSe/sameSe/virSevrageSextupleSide/ralSie-cleSie/gerSifflerSigleSignalSilenceSiliciumSimpleSince-reSinistreSiphonSiropSismiqueSituerSkierSocialSocleSodiumSoigneuxSoldatSoleilSolitudeSolubleSombreSommeilSomnolerSondeSongeurSonnetteSonoreSorcierSortirSosieSottiseSoucieuxSoudureSouffleSouleverSoupapeSourceSoutirerSouvenirSpacieuxSpatialSpe/cialSphe-reSpiralStableStationSternumStimulusStipulerStrictStudieuxStupeurStylisteSublimeSubstratSubtilSubvenirSucce-sSucreSuffixeSugge/rerSuiveurSulfateSuperbeSupplierSurfaceSuricateSurmenerSurpriseSursautSurvieSuspectSyllabeSymboleSyme/trieSynapseSyntaxeSyste-meTabacTablierTactileTaillerTalentTalismanTalonnerTambourTamiserTangibleTapisTaquinerTarderTarifTartineTasseTatamiTatouageTaupeTaureauTaxerTe/moinTemporelTenailleTendreTeneurTenirTensionTerminerTerneTerribleTe/tineTexteThe-meThe/orieThe/rapieThoraxTibiaTie-deTimideTirelireTiroirTissuTitaneTitreTituberTobogganTole/rantTomateToniqueTonneauToponymeTorcheTordreTornadeTorpilleTorrentTorseTortueTotemToucherTournageTousserToxineTractionTraficTragiqueTrahirTrainTrancherTravailTre-fleTremperTre/sorTreuilTriageTribunalTricoterTrilogieTriompheTriplerTriturerTrivialTromboneTroncTropicalTroupeauTuileTulipeTumulteTunnelTurbineTuteurTutoyerTuyauTympanTyphonTypiqueTyranUbuesqueUltimeUltrasonUnanimeUnifierUnionUniqueUnitaireUniversUraniumUrbainUrticantUsageUsineUsuelUsureUtileUtopieVacarmeVaccinVagabondVagueVaillantVaincreVaisseauValableValiseVallonValveVampireVanilleVapeurVarierVaseuxVassalVasteVecteurVedetteVe/ge/talVe/hiculeVeinardVe/loceVendrediVe/ne/rerVengerVenimeuxVentouseVerdureVe/rinVernirVerrouVerserVertuVestonVe/te/ranVe/tusteVexantVexerViaducViandeVictoireVidangeVide/oVignetteVigueurVilainVillageVinaigreViolonVipe-reVirementVirtuoseVirusVisageViseurVisionVisqueuxVisuelVitalVitesseViticoleVitrineVivaceVivipareVocationVoguerVoileVoisinVoitureVolailleVolcanVoltigerVolumeVoraceVortexVoterVouloirVoyageVoyelleWagonXe/nonYachtZe-breZe/nithZesteZoologie";
@@ -15702,16 +15828,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.langJa = void 0;
 
 
 
@@ -15851,16 +15980,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.langKo = void 0;
 
 
 	var data = [
@@ -15936,16 +16068,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.langIt = void 0;
 
 	var words = "AbacoAbbaglioAbbinatoAbeteAbissoAbolireAbrasivoAbrogatoAccadereAccennoAccusatoAcetoneAchilleAcidoAcquaAcreAcrilicoAcrobataAcutoAdagioAddebitoAddomeAdeguatoAderireAdipeAdottareAdulareAffabileAffettoAffissoAffrantoAforismaAfosoAfricanoAgaveAgenteAgevoleAggancioAgireAgitareAgonismoAgricoloAgrumetoAguzzoAlabardaAlatoAlbatroAlberatoAlboAlbumeAlceAlcolicoAlettoneAlfaAlgebraAlianteAlibiAlimentoAllagatoAllegroAllievoAllodolaAllusivoAlmenoAlogenoAlpacaAlpestreAltalenaAlternoAlticcioAltroveAlunnoAlveoloAlzareAmalgamaAmanitaAmarenaAmbitoAmbratoAmebaAmericaAmetistaAmicoAmmassoAmmendaAmmirareAmmonitoAmoreAmpioAmpliareAmuletoAnacardoAnagrafeAnalistaAnarchiaAnatraAncaAncellaAncoraAndareAndreaAnelloAngeloAngolareAngustoAnimaAnnegareAnnidatoAnnoAnnuncioAnonimoAnticipoAnziApaticoAperturaApodeApparireAppetitoAppoggioApprodoAppuntoAprileArabicaArachideAragostaAraldicaArancioAraturaArazzoArbitroArchivioArditoArenileArgentoArgineArgutoAriaArmoniaArneseArredatoArringaArrostoArsenicoArsoArteficeArzilloAsciuttoAscoltoAsepsiAsetticoAsfaltoAsinoAsolaAspiratoAsproAssaggioAsseAssolutoAssurdoAstaAstenutoAsticeAstrattoAtavicoAteismoAtomicoAtonoAttesaAttivareAttornoAttritoAttualeAusilioAustriaAutistaAutonomoAutunnoAvanzatoAvereAvvenireAvvisoAvvolgereAzioneAzotoAzzimoAzzurroBabeleBaccanoBacinoBacoBadessaBadilataBagnatoBaitaBalconeBaldoBalenaBallataBalzanoBambinoBandireBaraondaBarbaroBarcaBaritonoBarlumeBaroccoBasilicoBassoBatostaBattutoBauleBavaBavosaBeccoBeffaBelgioBelvaBendaBenevoleBenignoBenzinaBereBerlinaBetaBibitaBiciBidoneBifidoBigaBilanciaBimboBinocoloBiologoBipedeBipolareBirbanteBirraBiscottoBisestoBisnonnoBisonteBisturiBizzarroBlandoBlattaBollitoBonificoBordoBoscoBotanicoBottinoBozzoloBraccioBradipoBramaBrancaBravuraBretellaBrevettoBrezzaBrigliaBrillanteBrindareBroccoloBrodoBronzinaBrulloBrunoBubboneBucaBudinoBuffoneBuioBulboBuonoBurloneBurrascaBussolaBustaCadettoCaducoCalamaroCalcoloCalesseCalibroCalmoCaloriaCambusaCamerataCamiciaCamminoCamolaCampaleCanapaCandelaCaneCaninoCanottoCantinaCapaceCapelloCapitoloCapogiroCapperoCapraCapsulaCarapaceCarcassaCardoCarismaCarovanaCarrettoCartolinaCasaccioCascataCasermaCasoCassoneCastelloCasualeCatastaCatenaCatrameCautoCavilloCedibileCedrataCefaloCelebreCellulareCenaCenoneCentesimoCeramicaCercareCertoCerumeCervelloCesoiaCespoCetoChelaChiaroChiccaChiedereChimeraChinaChirurgoChitarraCiaoCiclismoCifrareCignoCilindroCiottoloCircaCirrosiCitricoCittadinoCiuffoCivettaCivileClassicoClinicaCloroCoccoCodardoCodiceCoerenteCognomeCollareColmatoColoreColposoColtivatoColzaComaCometaCommandoComodoComputerComuneConcisoCondurreConfermaCongelareConiugeConnessoConoscereConsumoContinuoConvegnoCopertoCopioneCoppiaCopricapoCorazzaCordataCoricatoCorniceCorollaCorpoCorredoCorsiaCorteseCosmicoCostanteCotturaCovatoCratereCravattaCreatoCredereCremosoCrescitaCretaCricetoCrinaleCrisiCriticoCroceCronacaCrostataCrucialeCruscaCucireCuculoCuginoCullatoCupolaCuratoreCursoreCurvoCuscinoCustodeDadoDainoDalmataDamerinoDanielaDannosoDanzareDatatoDavantiDavveroDebuttoDecennioDecisoDeclinoDecolloDecretoDedicatoDefinitoDeformeDegnoDelegareDelfinoDelirioDeltaDemenzaDenotatoDentroDepositoDerapataDerivareDerogaDescrittoDesertoDesiderioDesumereDetersivoDevotoDiametroDicembreDiedroDifesoDiffusoDigerireDigitaleDiluvioDinamicoDinnanziDipintoDiplomaDipoloDiradareDireDirottoDirupoDisagioDiscretoDisfareDisgeloDispostoDistanzaDisumanoDitoDivanoDiveltoDividereDivoratoDobloneDocenteDoganaleDogmaDolceDomatoDomenicaDominareDondoloDonoDormireDoteDottoreDovutoDozzinaDragoDruidoDubbioDubitareDucaleDunaDuomoDupliceDuraturoEbanoEccessoEccoEclissiEconomiaEderaEdicolaEdileEditoriaEducareEgemoniaEgliEgoismoEgregioElaboratoElargireEleganteElencatoElettoElevareElficoElicaElmoElsaElusoEmanatoEmblemaEmessoEmiroEmotivoEmozioneEmpiricoEmuloEndemicoEnduroEnergiaEnfasiEnotecaEntrareEnzimaEpatiteEpilogoEpisodioEpocaleEppureEquatoreErarioErbaErbosoEredeEremitaErigereErmeticoEroeErosivoErranteEsagonoEsameEsanimeEsaudireEscaEsempioEsercitoEsibitoEsigenteEsistereEsitoEsofagoEsortatoEsosoEspansoEspressoEssenzaEssoEstesoEstimareEstoniaEstrosoEsultareEtilicoEtnicoEtruscoEttoEuclideoEuropaEvasoEvidenzaEvitatoEvolutoEvvivaFabbricaFaccendaFachiroFalcoFamigliaFanaleFanfaraFangoFantasmaFareFarfallaFarinosoFarmacoFasciaFastosoFasulloFaticareFatoFavolosoFebbreFecolaFedeFegatoFelpaFeltroFemminaFendereFenomenoFermentoFerroFertileFessuraFestivoFettaFeudoFiabaFiduciaFifaFiguratoFiloFinanzaFinestraFinireFioreFiscaleFisicoFiumeFlaconeFlamencoFleboFlemmaFloridoFluenteFluoroFobicoFocacciaFocosoFoderatoFoglioFolataFolcloreFolgoreFondenteFoneticoFoniaFontanaForbitoForchettaForestaFormicaFornaioForoFortezzaForzareFosfatoFossoFracassoFranaFrassinoFratelloFreccettaFrenataFrescoFrigoFrollinoFrondeFrugaleFruttaFucilataFucsiaFuggenteFulmineFulvoFumanteFumettoFumosoFuneFunzioneFuocoFurboFurgoneFuroreFusoFutileGabbianoGaffeGalateoGallinaGaloppoGamberoGammaGaranziaGarboGarofanoGarzoneGasdottoGasolioGastricoGattoGaudioGazeboGazzellaGecoGelatinaGelsoGemelloGemmatoGeneGenitoreGennaioGenotipoGergoGhepardoGhiaccioGhisaGialloGildaGineproGiocareGioielloGiornoGioveGiratoGironeGittataGiudizioGiuratoGiustoGlobuloGlutineGnomoGobbaGolfGomitoGommoneGonfioGonnaGovernoGracileGradoGraficoGrammoGrandeGrattareGravosoGraziaGrecaGreggeGrifoneGrigioGrinzaGrottaGruppoGuadagnoGuaioGuantoGuardareGufoGuidareIbernatoIconaIdenticoIdillioIdoloIdraIdricoIdrogenoIgieneIgnaroIgnoratoIlareIllesoIllogicoIlludereImballoImbevutoImboccoImbutoImmaneImmersoImmolatoImpaccoImpetoImpiegoImportoImprontaInalareInarcareInattivoIncantoIncendioInchinoIncisivoInclusoIncontroIncrocioIncuboIndagineIndiaIndoleIneditoInfattiInfilareInflittoIngaggioIngegnoIngleseIngordoIngrossoInnescoInodoreInoltrareInondatoInsanoInsettoInsiemeInsonniaInsulinaIntasatoInteroIntonacoIntuitoInumidireInvalidoInveceInvitoIperboleIpnoticoIpotesiIppicaIrideIrlandaIronicoIrrigatoIrrorareIsolatoIsotopoIstericoIstitutoIstriceItaliaIterareLabbroLabirintoLaccaLaceratoLacrimaLacunaLaddoveLagoLampoLancettaLanternaLardosoLargaLaringeLastraLatenzaLatinoLattugaLavagnaLavoroLegaleLeggeroLemboLentezzaLenzaLeoneLepreLesivoLessatoLestoLetteraleLevaLevigatoLiberoLidoLievitoLillaLimaturaLimitareLimpidoLineareLinguaLiquidoLiraLiricaLiscaLiteLitigioLivreaLocandaLodeLogicaLombareLondraLongevoLoquaceLorenzoLotoLotteriaLuceLucidatoLumacaLuminosoLungoLupoLuppoloLusingaLussoLuttoMacabroMacchinaMaceroMacinatoMadamaMagicoMagliaMagneteMagroMaiolicaMalafedeMalgradoMalintesoMalsanoMaltoMalumoreManaManciaMandorlaMangiareManifestoMannaroManovraMansardaMantideManubrioMappaMaratonaMarcireMarettaMarmoMarsupioMascheraMassaiaMastinoMaterassoMatricolaMattoneMaturoMazurcaMeandroMeccanicoMecenateMedesimoMeditareMegaMelassaMelisMelodiaMeningeMenoMensolaMercurioMerendaMerloMeschinoMeseMessereMestoloMetalloMetodoMettereMiagolareMicaMicelioMicheleMicroboMidolloMieleMiglioreMilanoMiliteMimosaMineraleMiniMinoreMirinoMirtilloMiscelaMissivaMistoMisurareMitezzaMitigareMitraMittenteMnemonicoModelloModificaModuloMoganoMogioMoleMolossoMonasteroMoncoMondinaMonetarioMonileMonotonoMonsoneMontatoMonvisoMoraMordereMorsicatoMostroMotivatoMotosegaMottoMovenzaMovimentoMozzoMuccaMucosaMuffaMughettoMugnaioMulattoMulinelloMultiploMummiaMuntoMuovereMuraleMusaMuscoloMusicaMutevoleMutoNababboNaftaNanometroNarcisoNariceNarratoNascereNastrareNaturaleNauticaNaviglioNebulosaNecrosiNegativoNegozioNemmenoNeofitaNerettoNervoNessunoNettunoNeutraleNeveNevroticoNicchiaNinfaNitidoNobileNocivoNodoNomeNominaNordicoNormaleNorvegeseNostranoNotareNotiziaNotturnoNovellaNucleoNullaNumeroNuovoNutrireNuvolaNuzialeOasiObbedireObbligoObeliscoOblioOboloObsoletoOccasioneOcchioOccidenteOccorrereOccultareOcraOculatoOdiernoOdorareOffertaOffrireOffuscatoOggettoOggiOgnunoOlandeseOlfattoOliatoOlivaOlogrammaOltreOmaggioOmbelicoOmbraOmegaOmissioneOndosoOnereOniceOnnivoroOnorevoleOntaOperatoOpinioneOppostoOracoloOrafoOrdineOrecchinoOreficeOrfanoOrganicoOrigineOrizzonteOrmaOrmeggioOrnativoOrologioOrrendoOrribileOrtensiaOrticaOrzataOrzoOsareOscurareOsmosiOspedaleOspiteOssaOssidareOstacoloOsteOtiteOtreOttagonoOttimoOttobreOvaleOvestOvinoOviparoOvocitoOvunqueOvviareOzioPacchettoPacePacificoPadellaPadronePaesePagaPaginaPalazzinaPalesarePallidoPaloPaludePandoroPannelloPaoloPaonazzoPapricaParabolaParcellaParerePargoloPariParlatoParolaPartireParvenzaParzialePassivoPasticcaPataccaPatologiaPattumePavonePeccatoPedalarePedonalePeggioPelosoPenarePendicePenisolaPennutoPenombraPensarePentolaPepePepitaPerbenePercorsoPerdonatoPerforarePergamenaPeriodoPermessoPernoPerplessoPersuasoPertugioPervasoPesatorePesistaPesoPestiferoPetaloPettinePetulantePezzoPiacerePiantaPiattinoPiccinoPicozzaPiegaPietraPifferoPigiamaPigolioPigroPilaPiliferoPillolaPilotaPimpantePinetaPinnaPinoloPioggiaPiomboPiramidePireticoPiritePirolisiPitonePizzicoPlaceboPlanarePlasmaPlatanoPlenarioPochezzaPoderosoPodismoPoesiaPoggiarePolentaPoligonoPollicePolmonitePolpettaPolsoPoltronaPolverePomicePomodoroPontePopolosoPorfidoPorosoPorporaPorrePortataPosaPositivoPossessoPostulatoPotassioPoterePranzoPrassiPraticaPreclusoPredicaPrefissoPregiatoPrelievoPremerePrenotarePreparatoPresenzaPretestoPrevalsoPrimaPrincipePrivatoProblemaProcuraProdurreProfumoProgettoProlungaPromessaPronomePropostaProrogaProtesoProvaPrudentePrugnaPruritoPsichePubblicoPudicaPugilatoPugnoPulcePulitoPulsantePuntarePupazzoPupillaPuroQuadroQualcosaQuasiQuerelaQuotaRaccoltoRaddoppioRadicaleRadunatoRafficaRagazzoRagioneRagnoRamarroRamingoRamoRandagioRantolareRapatoRapinaRappresoRasaturaRaschiatoRasenteRassegnaRastrelloRataRavvedutoRealeRecepireRecintoReclutaReconditoRecuperoRedditoRedimereRegalatoRegistroRegolaRegressoRelazioneRemareRemotoRennaReplicaReprimereReputareResaResidenteResponsoRestauroReteRetinaRetoricaRettificaRevocatoRiassuntoRibadireRibelleRibrezzoRicaricaRiccoRicevereRiciclatoRicordoRicredutoRidicoloRidurreRifasareRiflessoRiformaRifugioRigareRigettatoRighelloRilassatoRilevatoRimanereRimbalzoRimedioRimorchioRinascitaRincaroRinforzoRinnovoRinomatoRinsavitoRintoccoRinunciaRinvenireRiparatoRipetutoRipienoRiportareRipresaRipulireRisataRischioRiservaRisibileRisoRispettoRistoroRisultatoRisvoltoRitardoRitegnoRitmicoRitrovoRiunioneRivaRiversoRivincitaRivoltoRizomaRobaRoboticoRobustoRocciaRocoRodaggioRodereRoditoreRogitoRollioRomanticoRompereRonzioRosolareRospoRotanteRotondoRotulaRovescioRubizzoRubricaRugaRullinoRumineRumorosoRuoloRupeRussareRusticoSabatoSabbiareSabotatoSagomaSalassoSaldaturaSalgemmaSalivareSalmoneSaloneSaltareSalutoSalvoSapereSapidoSaporitoSaracenoSarcasmoSartoSassosoSatelliteSatiraSatolloSaturnoSavanaSavioSaziatoSbadiglioSbalzoSbancatoSbarraSbattereSbavareSbendareSbirciareSbloccatoSbocciatoSbrinareSbruffoneSbuffareScabrosoScadenzaScalaScambiareScandaloScapolaScarsoScatenareScavatoSceltoScenicoScettroSchedaSchienaSciarpaScienzaScindereScippoSciroppoScivoloSclerareScodellaScolpitoScompartoSconfortoScoprireScortaScossoneScozzeseScribaScrollareScrutinioScuderiaScultoreScuolaScuroScusareSdebitareSdoganareSeccaturaSecondoSedanoSeggiolaSegnalatoSegregatoSeguitoSelciatoSelettivoSellaSelvaggioSemaforoSembrareSemeSeminatoSempreSensoSentireSepoltoSequenzaSerataSerbatoSerenoSerioSerpenteSerraglioServireSestinaSetolaSettimanaSfaceloSfaldareSfamatoSfarzosoSfaticatoSferaSfidaSfilatoSfingeSfocatoSfoderareSfogoSfoltireSforzatoSfrattoSfruttatoSfuggitoSfumareSfusoSgabelloSgarbatoSgonfiareSgorbioSgrassatoSguardoSibiloSiccomeSierraSiglaSignoreSilenzioSillabaSimboloSimpaticoSimulatoSinfoniaSingoloSinistroSinoSintesiSinusoideSiparioSismaSistoleSituatoSlittaSlogaturaSlovenoSmarritoSmemoratoSmentitoSmeraldoSmilzoSmontareSmottatoSmussatoSnellireSnervatoSnodoSobbalzoSobrioSoccorsoSocialeSodaleSoffittoSognoSoldatoSolenneSolidoSollazzoSoloSolubileSolventeSomaticoSommaSondaSonettoSonniferoSopireSoppesoSopraSorgereSorpassoSorrisoSorsoSorteggioSorvolatoSospiroSostaSottileSpadaSpallaSpargereSpatolaSpaventoSpazzolaSpecieSpedireSpegnereSpelaturaSperanzaSpessoreSpettraleSpezzatoSpiaSpigolosoSpillatoSpinosoSpiraleSplendidoSportivoSposoSprangaSprecareSpronatoSpruzzoSpuntinoSquilloSradicareSrotolatoStabileStaccoStaffaStagnareStampatoStantioStarnutoStaseraStatutoSteloSteppaSterzoStilettoStimaStirpeStivaleStizzosoStonatoStoricoStrappoStregatoStriduloStrozzareStruttoStuccareStufoStupendoSubentroSuccosoSudoreSuggeritoSugoSultanoSuonareSuperboSupportoSurgelatoSurrogatoSussurroSuturaSvagareSvedeseSveglioSvelareSvenutoSveziaSviluppoSvistaSvizzeraSvoltaSvuotareTabaccoTabulatoTacciareTaciturnoTaleTalismanoTamponeTanninoTaraTardivoTargatoTariffaTarpareTartarugaTastoTatticoTavernaTavolataTazzaTecaTecnicoTelefonoTemerarioTempoTemutoTendoneTeneroTensioneTentacoloTeoremaTermeTerrazzoTerzettoTesiTesseratoTestatoTetroTettoiaTifareTigellaTimbroTintoTipicoTipografoTiraggioTiroTitanioTitoloTitubanteTizioTizzoneToccareTollerareToltoTombolaTomoTonfoTonsillaTopazioTopologiaToppaTorbaTornareTorroneTortoraToscanoTossireTostaturaTotanoTraboccoTracheaTrafilaTragediaTralcioTramontoTransitoTrapanoTrarreTraslocoTrattatoTraveTrecciaTremolioTrespoloTributoTrichecoTrifoglioTrilloTrinceaTrioTristezzaTrituratoTrivellaTrombaTronoTroppoTrottolaTrovareTruccatoTubaturaTuffatoTulipanoTumultoTunisiaTurbareTurchinoTutaTutelaUbicatoUccelloUccisoreUdireUditivoUffaUfficioUgualeUlisseUltimatoUmanoUmileUmorismoUncinettoUngereUnghereseUnicornoUnificatoUnisonoUnitarioUnteUovoUpupaUraganoUrgenzaUrloUsanzaUsatoUscitoUsignoloUsuraioUtensileUtilizzoUtopiaVacanteVaccinatoVagabondoVagliatoValangaValgoValicoVallettaValorosoValutareValvolaVampataVangareVanitosoVanoVantaggioVanveraVaporeVaranoVarcatoVarianteVascaVedettaVedovaVedutoVegetaleVeicoloVelcroVelinaVellutoVeloceVenatoVendemmiaVentoVeraceVerbaleVergognaVerificaVeroVerrucaVerticaleVescicaVessilloVestaleVeteranoVetrinaVetustoViandanteVibranteVicendaVichingoVicinanzaVidimareVigiliaVignetoVigoreVileVillanoViminiVincitoreViolaViperaVirgolaVirologoVirulentoViscosoVisioneVispoVissutoVisuraVitaVitelloVittimaVivandaVividoViziareVoceVogaVolatileVolereVolpeVoragineVulcanoZampognaZannaZappatoZatteraZavorraZefiroZelanteZeloZenzeroZerbinoZibettoZincoZirconeZittoZollaZoticoZuccheroZufoloZuluZuppa";
 	var wordlist$1 = null;
@@ -15990,16 +16125,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.langZhTw = exports.langZhCn = void 0;
 
 
 	var data = "}aE#4A=Yv&co#4N#6G=cJ&SM#66|/Z#4t&kn~46#4K~4q%b9=IR#7l,mB#7W_X2*dl}Uo~7s}Uf&Iw#9c&cw~6O&H6&wx&IG%v5=IQ~8a&Pv#47$PR&50%Ko&QM&3l#5f,D9#4L|/H&tQ;v0~6n]nN<di,AM=W5%QO&ka&ua,hM^tm=zV=JA=wR&+X]7P&NB#4J#5L|/b[dA}tJ<Do&6m&u2[U1&Kb.HM&mC=w0&MW<rY,Hq#6M}QG,13&wP}Jp]Ow%ue&Kg<HP<D9~4k~9T&I2_c6$9T#9/[C5~7O~4a=cs&O7=KK=An&l9$6U$8A&uD&QI|/Y&bg}Ux&F2#6b}E2&JN&kW&kp=U/&bb=Xl<Cj}k+~5J#6L&5z&9i}b4&Fo,ho(X0_g3~4O$Fz&QE<HN=Ww]6/%GF-Vw=tj&/D&PN#9g=YO}cL&Of&PI~5I&Ip=vU=IW#9G;0o-wU}ss&QR<BT&R9=tk$PY_dh&Pq-yh]7T,nj.Xu=EP&76=cI&Fs*Xg}z7$Gb&+I=DF,AF=cA}rL#7j=Dz&3y<Aa$52=PQ}b0(iY$Fa}oL&xV#6U=ec=WZ,xh%RY<dp#9N&Fl&44=WH*A7=sh&TB&8P=07;u+&PK}uh}J5#72)V/=xC,AB$k0&f6;1E|+5=1B,3v]6n&wR%b+&xx]7f=Ol}fl;+D^wG]7E;nB;uh^Ir&l5=JL,nS=cf=g5;u6|/Q$Gc=MH%Hg#5d%M6^86=U+$Gz,l/,ir^5y&Ba&/F-IY&FI&be%IZ#77&PW_Nu$kE(Yf&NX]7Z,Jy&FJ(Xo&Nz#/d=y7&MX<Ag}Z+;nE]Dt(iG#4D=13&Pj~4c%v8&Zo%OL&/X#4W<HR&ie~6J_1O(Y2=y5=Ad*cv_eB#6k&PX:BU#7A;uk&Ft&Fx_dD=U2;vB=U5=4F}+O&GN.HH:9s=b0%NV(jO&IH=JT}Z9=VZ<Af,Kx^4m&uJ%c6,6r;9m#+L}cf%Kh&F3~4H=vP}bu,Hz|++,1w]nv}k6;uu$jw*Kl*WX&uM[x7&Fr[m7$NO&QN]hu=JN}nR^8g#/h(ps|KC;vd}xz=V0}p6&FD$G1#7K<bG_4p~8g&cf;u4=tl}+k%5/}fz;uw<cA=u1}gU}VM=LJ=eX&+L&Pr#4U}p2:nC,2K]7H:jF&9x}uX#9O=MB<fz~8X~5m&4D&kN&u5%E/(h7(ZF&VG<de(qM|/e-Wt=3x(a+,/R]f/&ND$Ro&nU}0g=KA%kH&NK$Ke<dS}cB&IX~5g$TN]6m=Uv,Is&Py=Ef%Kz#+/%bi&+A<F4$OG&4C&FL#9V<Zk=2I_eE&6c]nw&kq$HG}y+&A8$P3}OH=XP]70%IS(AJ_gH%GZ&tY&AZ=vb~6y&/r=VI=Wv<Zi=fl=xf&eL}c8}OL=MJ=g8$F7=YT}9u=0+^xC}JH&nL^N0~4T]K2,Cy%OC#6s;vG(AC^xe^cG&MF}Br#9P;wD-7h$O/&xA}Fn^PC]6i]7G&8V$Qs;vl(TB~73~4l<mW&6V=2y&uY&+3)aP}XF;LP&kx$wU=t7;uy<FN&lz)7E=Oo*Y+;wI}9q}le;J6&Ri&4t&Qr#8B=cb&vG=J5|Ql(h5<Yy~4+}QD,Lx=wn%K/&RK=dO&Pw,Q9=co%4u;9u}g0@6a^4I%b0=zo|/c&tX=dQ=OS#+b=yz_AB&wB&Pm=W9$HP_gR=62=AO=ti=hI,oA&jr&dH=tm&b6$P2(x8=zi;nG~7F;05]0n[Ix&3m}rg=Xp=cd&uz]7t;97=cN;vV<jf&FF&F1=6Q&Ik*Kk&P4,2z=fQ]7D&3u,H0=d/}Uw<ZN<7R}Kv;0f$H7,MD]7n$F0#88~9Z%da=by;+T#/u=VF&fO&kr^kf<AB]sU,I5$Ng&Pz;0i&QD&vM=Yl:BM;nJ_xJ]U7&Kf&30,3f|Z9*dC)je_jA&Q4&Kp$NH(Yz#6S&Id%Ib=KX,AD=KV%dP}tW&Pk^+E_Ni=cq,3R}VZ(Si=b+}rv;0j}rZ]uA,/w(Sx&Jv$w9&4d&wE,NJ$Gy=J/]Ls#7k<ZQ<Y/&uj]Ov$PM;v3,2F&+u:up=On&3e,Jv;90=J+&Qm]6q}bK#+d~8Y(h2]hA;99&AS=I/}qB&dQ}yJ-VM}Vl&ui,iB&G3|Dc]7d=eQ%dX%JC_1L~4d^NP;vJ&/1)ZI#7N]9X[bQ&PL=0L(UZ,Lm&kc&IR}n7(iR<AQ<dg=33=vN}ft}au]7I,Ba=x9=dR~6R&Tq=Xi,3d$Nr&Bc}DI&ku&vf]Dn,/F&iD,Ll&Nw=0y&I7=Ls=/A&tU=Qe}Ua&uk&+F=g4=gh=Vj#+1&Qn}Uy*44#5F,Pc&Rz*Xn=oh=5W;0n_Nf(iE<Y7=vr=Zu]oz#5Z%mI=kN=Bv_Jp(T2;vt_Ml<FS&uI=L/&6P]64$M7}86<bo%QX(SI%IY&VK=Al&Ux;vv;ut*E/%uh<ZE|O3,M2(yc]yu=Wk&tp:Ex}hr,Cl&WE)+Z=8U}I2_4Q,hA_si=iw=OM=tM=yZ%Ia=U7;wT}b+;uo=Za}yS!5x}HD}fb#5O_dA;Nv%uB(yB;01(Sf}Fk;v7}Pt#8v<mZ#7L,/r&Pl~4w&f5=Ph$Fw_LF&8m,bL=yJ&BH}p/*Jn}tU~5Q;wB(h6]Df]8p^+B;E4&Wc=d+;Ea&bw$8C&FN,DM=Yf}mP~5w=fT#6V=mC=Fi=AV}jB&AN}lW}aH#/D)dZ;hl;vE}/7,CJ;31&w8,hj%u9_Js=jJ&4M~8k=TN&eC}nL&uc-wi&lX}dj=Mv=e2#6u=cr$uq$6G]8W}Jb:nm=Yg<b3(UA;vX&6n&xF=KT,jC,De&R8&oY=Zv&oB]7/=Z2&Oa}bf,hh(4h^tZ&72&Nx;D2&xL~5h~40)ZG)h+=OJ&RA]Bv$yB=Oq=df,AQ%Jn}OJ;11,3z&Tl&tj;v+^Hv,Dh(id=s+]7N&N3)9Q~8f,S4=uW=w4&uX,LX&3d]CJ&yp&8x<b2_do&lP=y/<cy_dG=Oi=7R(VH(lt_1T,Iq_AA;12^6T%k6#8K[B1{oO<AU[Bt;1b$9S&Ps<8T=St{bY,jB(Zp&63&Uv$9V,PM]6v&Af}zW[bW_oq}sm}nB&Kq&gC&ff_eq_2m&5F&TI}rf}Gf;Zr_z9;ER&jk}iz_sn<BN~+n&vo=Vi%97|ZR=Wc,WE&6t]6z%85(ly#84=KY)6m_5/=aX,N3}Tm&he&6K]tR_B2-I3;u/&hU&lH<AP=iB&IA=XL;/5&Nh=wv<BH#79=vS=zl<AA=0X_RG}Bw&9p$NW,AX&kP_Lp&/Z(Tc]Mu}hs#6I}5B&cI<bq&H9#6m=K9}vH(Y1(Y0#4B&w6,/9&gG<bE,/O=zb}I4_l8<B/;wL%Qo<HO[Mq=XX}0v&BP&F4(mG}0i}nm,EC=9u{I3,xG&/9=JY*DK&hR)BX=EI=cx=b/{6k}yX%A+&wa}Xb=la;wi^lL;0t}jo&Qb=xg=XB}iO<qo{bR=NV&8f=a0&Jy;0v=uK)HK;vN#6h&jB(h/%ud&NI%wY.X7=Pt}Cu-uL&Gs_hl%mH,tm]78=Lb^Q0#7Y=1u<Bt&+Q=Co_RH,w3;1e}ux<aU;ui}U3&Q5%bt]63&UQ|0l&uL}O7&3o,AV&dm|Nj(Xt*5+(Uu&Hh(p7(UF=VR=Bp^Jl&Hd[ix)9/=Iq]C8<67]66}mB%6f}bb}JI]8T$HA}db=YM&pa=2J}tS&Y0=PS&y4=cX$6E,hX,XP&nR;04,FQ&l0&Vm_Dv#5Y~8Z=Bi%MA]6x=JO:+p,Az&9q,Hj~6/}SD=K1:EJ}nA;Qo#/E]9R,Ie&6X%W3]61&v4=xX_MC=0q;06(Xq=fs}IG}Dv=0l}o7$iZ;9v&LH&DP-7a&OY,SZ,Kz,Cv&dh=fx|Nh,F/~7q=XF&w+;9n&Gw;0h}Z7<7O&JK(S7&LS<AD<ac=wo<Dt&zw%4B=4v#8P;9o~6p*vV=Tm,Or&I6=1q}nY=P0=gq&Bl&Uu,Ch%yb}UY=zh}dh}rl(T4_xk(YA#8R*xH,IN}Jn]7V}C4&Ty}j3]7p=cL=3h&wW%Qv<Z3=f0&RI&+S(ic_zq}oN&/Y=z1;Td=LW=0e=OI(Vc,+b^ju(UL;0r:Za%8v=Rp=zw&58&73&wK}qX]6y&8E)a2}WR=wP^ur&nQ<cH}Re=Aq&wk}Q0&+q=PP,Gc|/d^k5,Fw]8Y}Pg]p3=ju=ed}r5_yf&Cs]7z$/G<Cm&Jp&54_1G_gP_Ll}JZ;0u]k8_7k(Sg]65{9i=LN&Sx&WK,iW&fD&Lk{9a}Em-9c#8N&io=sy]8d&nT&IK(lx#7/$lW(Td<s8~49,3o<7Y=MW(T+_Jr&Wd,iL}Ct=xh&5V;v4&8n%Kx=iF&l2_0B{B+,If(J0,Lv;u8=Kx-vB=HC&vS=Z6&fU&vE^xK;3D=4h=MR#45:Jw;0d}iw=LU}I5=I0]gB*im,K9}GU,1k_4U&Tt=Vs(iX&lU(TF#7y,ZO}oA&m5#5P}PN}Uz=hM<B1&FB<aG,e6~7T<tP(UQ_ZT=wu&F8)aQ]iN,1r_Lo&/g:CD}84{J1_Ki&Na&3n$jz&FE=dc;uv;va}in}ll=fv(h1&3h}fp=Cy}BM(+E~8m}lo%v7=hC(T6$cj=BQ=Bw(DR,2j=Ks,NS|F+;00=fU=70}Mb(YU;+G&m7&hr=Sk%Co]t+(X5_Jw}0r}gC(AS-IP&QK<Z2#8Q$WC]WX}T2&pG_Ka,HC=R4&/N;Z+;ch(C7,D4$3p_Mk&B2$8D=n9%Ky#5z(CT&QJ#7B]DC]gW}nf~5M;Iw#80}Tc_1F#4Z-aC}Hl=ph=fz,/3=aW}JM}nn;DG;vm}wn,4P}T3;wx&RG$u+}zK=0b;+J_Ek{re<aZ=AS}yY#5D]7q,Cp}xN=VP*2C}GZ}aG~+m_Cs=OY#6r]6g<GS}LC(UB=3A=Bo}Jy<c4}Is;1P<AG}Op<Z1}ld}nS=1Z,yM&95&98=CJ(4t:2L$Hk=Zo}Vc;+I}np&N1}9y=iv}CO*7p=jL)px]tb^zh&GS&Vl%v/;vR=14=zJ&49|/f]hF}WG;03=8P}o/&Gg&rp;DB,Kv}Ji&Pb;aA^ll(4j%yt}+K$Ht#4y&hY]7Y<F1,eN}bG(Uh%6Z]t5%G7;+F_RE;it}tL=LS&Da=Xx(S+(4f=8G=yI}cJ}WP=37=jS}pX}hd)fp<A8=Jt~+o$HJ=M6}iX=g9}CS=dv=Cj(mP%Kd,xq|+9&LD(4/=Xm&QP=Lc}LX&fL;+K=Op(lu=Qs.qC:+e&L+=Jj#8w;SL]7S(b+#4I=c1&nG_Lf&uH;+R)ZV<bV%B/,TE&0H&Jq&Ah%OF&Ss(p2,Wv&I3=Wl}Vq;1L&lJ#9b_1H=8r=b8=JH(SZ=hD=J2#7U,/U#/X~6P,FU<eL=jx,mG=hG=CE&PU=Se(qX&LY=X6=y4&tk&QQ&tf=4g&xI}W+&mZ=Dc#7w}Lg;DA;wQ_Kb(cJ=hR%yX&Yb,hw{bX_4X;EP;1W_2M}Uc=b5(YF,CM&Tp^OJ{DD]6s=vF=Yo~8q}XH}Fu%P5(SJ=Qt;MO]s8<F3&B3&8T(Ul-BS*dw&dR<87}/8]62$PZ]Lx<Au}9Q]7c=ja=KR,Go,Us&v6(qk}pG&G2=ev^GM%w4&H4]7F&dv]J6}Ew:9w=sj-ZL}Ym$+h(Ut(Um~4n=Xs(U7%eE=Qc_JR<CA#6t<Fv|/I,IS,EG<F2(Xy$/n<Fa(h9}+9_2o&N4#7X<Zq|+f_Dp=dt&na,Ca=NJ)jY=8C=YG=s6&Q+<DO}D3=xB&R1(lw;Qn<bF(Cu|/B}HV=SS&n7,10&u0]Dm%A6^4Q=WR(TD=Xo<GH,Rj(l8)bP&n/=LM&CF,F5&ml=PJ;0k=LG=tq,Rh,D6@4i=1p&+9=YC%er_Mh;nI;0q=Fw]80=xq=FM$Gv;v6&nc;wK%H2&Kj;vs,AA=YP,66}bI(qR~5U=6q~4b$Ni=K5.X3$So&Iu(p+]8G=Cf=RY(TS_O3(iH&57=fE=Dg_Do#9z#7H;FK{qd_2k%JR}en&gh_z8;Rx}9p<cN_Ne,DO;LN_7o~/p=NF=5Y}gN<ce<C1,QE]Wv=3u<BC}GK]yq}DY&u/_hj=II(pz&rC,jV&+Z}ut=NQ;Cg-SR_ZS,+o=u/;Oy_RK_QF(Fx&xP}Wr&TA,Uh&g1=yr{ax[VF$Pg(YB;Ox=Vy;+W(Sp}XV%dd&33(l/]l4#4Y}OE=6c=bw(A7&9t%wd&N/&mo,JH&Qe)fm=Ao}fu=tH";
@@ -16077,6 +16215,7 @@
 	var wordlists = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.wordlists = void 0;
 
 
 
@@ -16105,13 +16244,14 @@
 	var lib$j = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.wordlists = exports.Wordlist = exports.logger = void 0;
 	// Wordlists
 	// See: https://github.com/bitcoin/bips/blob/master/bip-0039/bip-0039-wordlists.md
 
-	exports.logger = wordlist.logger;
-	exports.Wordlist = wordlist.Wordlist;
+	Object.defineProperty(exports, "logger", { enumerable: true, get: function () { return wordlist.logger; } });
+	Object.defineProperty(exports, "Wordlist", { enumerable: true, get: function () { return wordlist.Wordlist; } });
 
-	exports.wordlists = wordlists.wordlists;
+	Object.defineProperty(exports, "wordlists", { enumerable: true, get: function () { return wordlists.wordlists; } });
 
 	});
 
@@ -16120,7 +16260,8 @@
 	var _version$w = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "hdnode/5.0.9";
+	exports.version = void 0;
+	exports.version = "hdnode/5.0.10";
 
 	});
 
@@ -16129,6 +16270,7 @@
 	var lib$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.isValidMnemonic = exports.entropyToMnemonic = exports.mnemonicToEntropy = exports.mnemonicToSeed = exports.HDNode = exports.defaultPath = void 0;
 
 
 
@@ -16241,7 +16383,7 @@
 	                ((this.privateKey != null) ? lib$1.concat(["0x00", this.privateKey]) : this.publicKey),
 	            ]));
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    HDNode.prototype.neuter = function () {
@@ -16471,7 +16613,8 @@
 	var _version$y = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "random/5.0.8";
+	exports.version = void 0;
+	exports.version = "random/5.0.9";
 
 	});
 
@@ -16480,6 +16623,7 @@
 	var browserRandom = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.randomBytes = void 0;
 
 
 
@@ -16531,6 +16675,7 @@
 	var shuffle = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.shuffled = void 0;
 	function shuffled(array) {
 	    array = array.slice();
 	    for (var i = array.length - 1; i > 0; i--) {
@@ -16550,10 +16695,11 @@
 	var lib$l = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.shuffled = exports.randomBytes = void 0;
 
-	exports.randomBytes = browserRandom.randomBytes;
+	Object.defineProperty(exports, "randomBytes", { enumerable: true, get: function () { return browserRandom.randomBytes; } });
 
-	exports.shuffled = shuffle.shuffled;
+	Object.defineProperty(exports, "shuffled", { enumerable: true, get: function () { return shuffle.shuffled; } });
 
 	});
 
@@ -17363,7 +17509,8 @@
 	var _version$A = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "json-wallets/5.0.11";
+	exports.version = void 0;
+	exports.version = "json-wallets/5.0.12";
 
 	});
 
@@ -17372,6 +17519,7 @@
 	var utils$1 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.uuidV4 = exports.searchPath = exports.getPassword = exports.zpad = exports.looseArrayify = void 0;
 
 
 	function looseArrayify(hexString) {
@@ -17449,10 +17597,12 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -17462,6 +17612,7 @@
 	    return (mod && mod.__esModule) ? mod : { "default": mod };
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.decrypt = exports.CrowdsaleAccount = void 0;
 	var aes_js_1 = __importDefault(aesJs);
 
 
@@ -17523,6 +17674,7 @@
 	var inspect = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.getJsonWalletAddress = exports.isKeystoreWallet = exports.isCrowdsaleWallet = void 0;
 
 	function isCrowdsaleWallet(json) {
 	    var data = null;
@@ -18075,10 +18227,12 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -18124,6 +18278,7 @@
 	    return (mod && mod.__esModule) ? mod : { "default": mod };
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.encrypt = exports.decrypt = exports.decryptSync = exports.KeystoreAccount = void 0;
 	var aes_js_1 = __importDefault(aesJs);
 	var scrypt_js_1 = __importDefault(scrypt);
 
@@ -18454,16 +18609,17 @@
 	var lib$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.decryptJsonWalletSync = exports.decryptJsonWallet = exports.getJsonWalletAddress = exports.isKeystoreWallet = exports.isCrowdsaleWallet = exports.encryptKeystore = exports.decryptKeystoreSync = exports.decryptKeystore = exports.decryptCrowdsale = void 0;
 
-	exports.decryptCrowdsale = crowdsale.decrypt;
+	Object.defineProperty(exports, "decryptCrowdsale", { enumerable: true, get: function () { return crowdsale.decrypt; } });
 
-	exports.getJsonWalletAddress = inspect.getJsonWalletAddress;
-	exports.isCrowdsaleWallet = inspect.isCrowdsaleWallet;
-	exports.isKeystoreWallet = inspect.isKeystoreWallet;
+	Object.defineProperty(exports, "getJsonWalletAddress", { enumerable: true, get: function () { return inspect.getJsonWalletAddress; } });
+	Object.defineProperty(exports, "isCrowdsaleWallet", { enumerable: true, get: function () { return inspect.isCrowdsaleWallet; } });
+	Object.defineProperty(exports, "isKeystoreWallet", { enumerable: true, get: function () { return inspect.isKeystoreWallet; } });
 
-	exports.decryptKeystore = keystore.decrypt;
-	exports.decryptKeystoreSync = keystore.decryptSync;
-	exports.encryptKeystore = keystore.encrypt;
+	Object.defineProperty(exports, "decryptKeystore", { enumerable: true, get: function () { return keystore.decrypt; } });
+	Object.defineProperty(exports, "decryptKeystoreSync", { enumerable: true, get: function () { return keystore.decryptSync; } });
+	Object.defineProperty(exports, "encryptKeystore", { enumerable: true, get: function () { return keystore.encrypt; } });
 	function decryptJsonWallet(json, password, progressCallback) {
 	    if (inspect.isCrowdsaleWallet(json)) {
 	        if (progressCallback) {
@@ -18499,7 +18655,8 @@
 	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "wallet/5.0.11";
+	exports.version = void 0;
+	exports.version = "wallet/5.0.12";
 
 	});
 
@@ -18511,10 +18668,12 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -18557,6 +18716,7 @@
 	    }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.verifyTypedData = exports.verifyMessage = exports.Wallet = void 0;
 
 
 
@@ -18640,17 +18800,17 @@
 	    }
 	    Object.defineProperty(Wallet.prototype, "mnemonic", {
 	        get: function () { return this._mnemonic(); },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(Wallet.prototype, "privateKey", {
 	        get: function () { return this._signingKey().privateKey; },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(Wallet.prototype, "publicKey", {
 	        get: function () { return this._signingKey().publicKey; },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Wallet.prototype.getAddress = function () {
@@ -18761,7 +18921,8 @@
 	var _version$E = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "networks/5.0.8";
+	exports.version = void 0;
+	exports.version = "networks/5.0.9";
 
 	});
 
@@ -18770,6 +18931,7 @@
 	var lib$o = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.getNetwork = void 0;
 
 
 	var logger = new lib.Logger(_version$E.version);
@@ -18990,6 +19152,7 @@
 	var browserBase64 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.encode = exports.decode = void 0;
 
 	function decode(textData) {
 	    textData = atob(textData);
@@ -19017,9 +19180,10 @@
 	var lib$p = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.encode = exports.decode = void 0;
 
-	exports.decode = browserBase64.decode;
-	exports.encode = browserBase64.encode;
+	Object.defineProperty(exports, "decode", { enumerable: true, get: function () { return browserBase64.decode; } });
+	Object.defineProperty(exports, "encode", { enumerable: true, get: function () { return browserBase64.encode; } });
 
 	});
 
@@ -19028,7 +19192,8 @@
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "web/5.0.13";
+	exports.version = void 0;
+	exports.version = "web/5.0.14";
 
 	});
 
@@ -19073,6 +19238,7 @@
 	    }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.getUrl = void 0;
 
 	function getUrl(href, options) {
 	    return __awaiter(this, void 0, void 0, function () {
@@ -19091,7 +19257,7 @@
 	                        cache: "no-cache",
 	                        credentials: "same-origin",
 	                        redirect: "follow",
-	                        referrer: "client",
+	                        referrer: "client", // no-referrer, *client
 	                    };
 	                    return [4 /*yield*/, fetch(href, request)];
 	                case 1:
@@ -19165,6 +19331,7 @@
 	    }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.poll = exports.fetchJson = exports._fetchData = void 0;
 
 
 
@@ -19732,7 +19899,8 @@
 	var _version$I = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "providers/5.0.23";
+	exports.version = void 0;
+	exports.version = "providers/5.0.24";
 
 	});
 
@@ -19741,6 +19909,7 @@
 	var formatter = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.showThrottleMessage = exports.isCommunityResource = exports.isCommunityResourcable = exports.Formatter = void 0;
 
 
 
@@ -20193,10 +20362,12 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -20242,6 +20413,7 @@
 	    return (mod && mod.__esModule) ? mod : { "default": mod };
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.BaseProvider = exports.Resolver = exports.Event = void 0;
 
 
 
@@ -20369,14 +20541,14 @@
 	            }
 	            return this.tag;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(Event.prototype, "type", {
 	        get: function () {
 	            return this.tag.split(":")[0];
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(Event.prototype, "hash", {
@@ -20387,7 +20559,7 @@
 	            }
 	            return comps[1];
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(Event.prototype, "filter", {
@@ -20407,7 +20579,7 @@
 	            }
 	            return filter;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Event.prototype.pollable = function () {
@@ -20734,7 +20906,7 @@
 	                });
 	            });
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    // @TODO: Remove this and just create a singleton formatter
@@ -20955,7 +21127,7 @@
 	        get: function () {
 	            return this._network;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    // This method should query the network if the underlying network
@@ -21020,7 +21192,7 @@
 	            }, function (error) { });
 	            return (this._fastBlockNumber != null) ? this._fastBlockNumber : -1;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(BaseProvider.prototype, "polling", {
@@ -21053,7 +21225,7 @@
 	                this._poller = null;
 	            }
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(BaseProvider.prototype, "pollingInterval", {
@@ -21071,7 +21243,7 @@
 	                this._poller = setInterval(function () { _this.poll(); }, this._pollingInterval);
 	            }
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    BaseProvider.prototype._getFastBlockNumber = function () {
@@ -22041,10 +22213,12 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -22087,6 +22261,7 @@
 	    }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.JsonRpcProvider = exports.JsonRpcSigner = void 0;
 
 
 
@@ -22664,6 +22839,7 @@
 	var browserWs = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.WebSocket = void 0;
 
 
 	var WS = null;
@@ -22693,10 +22869,12 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -22739,6 +22917,7 @@
 	    }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.WebSocketProvider = void 0;
 
 
 
@@ -22858,7 +23037,7 @@
 	                operation: "setPollingInterval"
 	            });
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    WebSocketProvider.prototype.resetEventsBlock = function (blockNumber) {
@@ -22882,7 +23061,7 @@
 	                operation: "setPolling"
 	            });
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    WebSocketProvider.prototype.send = function (method, params) {
@@ -23062,10 +23241,12 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -23108,6 +23289,7 @@
 	    }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.UrlJsonRpcProvider = exports.StaticJsonRpcProvider = void 0;
 
 
 
@@ -23217,16 +23399,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.AlchemyProvider = exports.AlchemyWebSocketProvider = void 0;
 
 
 
@@ -23322,10 +23507,12 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -23368,6 +23555,7 @@
 	    }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.CloudflareProvider = void 0;
 
 
 
@@ -23424,10 +23612,12 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -23470,6 +23660,7 @@
 	    }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.EtherscanProvider = void 0;
 
 
 
@@ -23935,10 +24126,12 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -23981,6 +24174,7 @@
 	    }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.FallbackProvider = void 0;
 
 
 
@@ -24455,8 +24649,8 @@
 	                        first = true;
 	                        _loop_1 = function () {
 	                            var t0, inflightWeight, _loop_2, waiting, results, result, errors;
-	                            return __generator(this, function (_a) {
-	                                switch (_a.label) {
+	                            return __generator(this, function (_b) {
+	                                switch (_b.label) {
 	                                    case 0:
 	                                        t0 = now();
 	                                        inflightWeight = configs.filter(function (c) { return (c.runner && ((t0 - c.start) < c.stallTimeout)); })
@@ -24520,8 +24714,8 @@
 	                                        if (!waiting.length) return [3 /*break*/, 2];
 	                                        return [4 /*yield*/, Promise.race(waiting)];
 	                                    case 1:
-	                                        _a.sent();
-	                                        _a.label = 2;
+	                                        _b.sent();
+	                                        _b.label = 2;
 	                                    case 2:
 	                                        results = configs.filter(function (c) { return (c.done && c.error == null); });
 	                                        if (!(results.length >= this_1.quorum)) return [3 /*break*/, 5];
@@ -24539,11 +24733,11 @@
 	                                        if (!!first) return [3 /*break*/, 4];
 	                                        return [4 /*yield*/, stall(100).getPromise()];
 	                                    case 3:
-	                                        _a.sent();
-	                                        _a.label = 4;
+	                                        _b.sent();
+	                                        _b.label = 4;
 	                                    case 4:
 	                                        first = false;
-	                                        _a.label = 5;
+	                                        _b.label = 5;
 	                                    case 5:
 	                                        errors = configs.reduce(function (accum, c) {
 	                                            if (!c.done || c.error == null) {
@@ -24631,6 +24825,7 @@
 	var browserIpcProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.IpcProvider = void 0;
 	var IpcProvider = null;
 	exports.IpcProvider = IpcProvider;
 
@@ -24644,16 +24839,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.InfuraProvider = exports.InfuraWebSocketProvider = void 0;
 
 
 
@@ -24776,16 +24974,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.NodesmithProvider = void 0;
 
 
 
@@ -24841,16 +25042,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.PocketProvider = void 0;
 
 
 
@@ -24980,16 +25184,19 @@
 	    var extendStatics = function (d, b) {
 	        extendStatics = Object.setPrototypeOf ||
 	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
 	        return extendStatics(d, b);
 	    };
 	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
 	        extendStatics(d, b);
 	        function __() { this.constructor = d; }
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Web3Provider = void 0;
 
 
 
@@ -25100,46 +25307,47 @@
 	var lib$r = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
 
-	exports.Provider = lib$b.Provider;
+	Object.defineProperty(exports, "Provider", { enumerable: true, get: function () { return lib$b.Provider; } });
 
-	exports.getNetwork = lib$o.getNetwork;
+	Object.defineProperty(exports, "getNetwork", { enumerable: true, get: function () { return lib$o.getNetwork; } });
 
-	exports.BaseProvider = baseProvider.BaseProvider;
-	exports.Resolver = baseProvider.Resolver;
+	Object.defineProperty(exports, "BaseProvider", { enumerable: true, get: function () { return baseProvider.BaseProvider; } });
+	Object.defineProperty(exports, "Resolver", { enumerable: true, get: function () { return baseProvider.Resolver; } });
 
-	exports.AlchemyProvider = alchemyProvider.AlchemyProvider;
-	exports.AlchemyWebSocketProvider = alchemyProvider.AlchemyWebSocketProvider;
+	Object.defineProperty(exports, "AlchemyProvider", { enumerable: true, get: function () { return alchemyProvider.AlchemyProvider; } });
+	Object.defineProperty(exports, "AlchemyWebSocketProvider", { enumerable: true, get: function () { return alchemyProvider.AlchemyWebSocketProvider; } });
 
-	exports.CloudflareProvider = cloudflareProvider.CloudflareProvider;
+	Object.defineProperty(exports, "CloudflareProvider", { enumerable: true, get: function () { return cloudflareProvider.CloudflareProvider; } });
 
-	exports.EtherscanProvider = etherscanProvider.EtherscanProvider;
+	Object.defineProperty(exports, "EtherscanProvider", { enumerable: true, get: function () { return etherscanProvider.EtherscanProvider; } });
 
-	exports.FallbackProvider = fallbackProvider.FallbackProvider;
+	Object.defineProperty(exports, "FallbackProvider", { enumerable: true, get: function () { return fallbackProvider.FallbackProvider; } });
 
-	exports.IpcProvider = browserIpcProvider.IpcProvider;
+	Object.defineProperty(exports, "IpcProvider", { enumerable: true, get: function () { return browserIpcProvider.IpcProvider; } });
 
-	exports.InfuraProvider = infuraProvider.InfuraProvider;
-	exports.InfuraWebSocketProvider = infuraProvider.InfuraWebSocketProvider;
+	Object.defineProperty(exports, "InfuraProvider", { enumerable: true, get: function () { return infuraProvider.InfuraProvider; } });
+	Object.defineProperty(exports, "InfuraWebSocketProvider", { enumerable: true, get: function () { return infuraProvider.InfuraWebSocketProvider; } });
 
-	exports.JsonRpcProvider = jsonRpcProvider.JsonRpcProvider;
-	exports.JsonRpcSigner = jsonRpcProvider.JsonRpcSigner;
+	Object.defineProperty(exports, "JsonRpcProvider", { enumerable: true, get: function () { return jsonRpcProvider.JsonRpcProvider; } });
+	Object.defineProperty(exports, "JsonRpcSigner", { enumerable: true, get: function () { return jsonRpcProvider.JsonRpcSigner; } });
 
-	exports.NodesmithProvider = nodesmithProvider.NodesmithProvider;
+	Object.defineProperty(exports, "NodesmithProvider", { enumerable: true, get: function () { return nodesmithProvider.NodesmithProvider; } });
 
-	exports.PocketProvider = pocketProvider.PocketProvider;
+	Object.defineProperty(exports, "PocketProvider", { enumerable: true, get: function () { return pocketProvider.PocketProvider; } });
 
-	exports.StaticJsonRpcProvider = urlJsonRpcProvider.StaticJsonRpcProvider;
-	exports.UrlJsonRpcProvider = urlJsonRpcProvider.UrlJsonRpcProvider;
+	Object.defineProperty(exports, "StaticJsonRpcProvider", { enumerable: true, get: function () { return urlJsonRpcProvider.StaticJsonRpcProvider; } });
+	Object.defineProperty(exports, "UrlJsonRpcProvider", { enumerable: true, get: function () { return urlJsonRpcProvider.UrlJsonRpcProvider; } });
 
-	exports.Web3Provider = web3Provider.Web3Provider;
+	Object.defineProperty(exports, "Web3Provider", { enumerable: true, get: function () { return web3Provider.Web3Provider; } });
 
-	exports.WebSocketProvider = websocketProvider.WebSocketProvider;
+	Object.defineProperty(exports, "WebSocketProvider", { enumerable: true, get: function () { return websocketProvider.WebSocketProvider; } });
 
-	exports.Formatter = formatter.Formatter;
-	exports.isCommunityResourcable = formatter.isCommunityResourcable;
-	exports.isCommunityResource = formatter.isCommunityResource;
-	exports.showThrottleMessage = formatter.showThrottleMessage;
+	Object.defineProperty(exports, "Formatter", { enumerable: true, get: function () { return formatter.Formatter; } });
+	Object.defineProperty(exports, "isCommunityResourcable", { enumerable: true, get: function () { return formatter.isCommunityResourcable; } });
+	Object.defineProperty(exports, "isCommunityResource", { enumerable: true, get: function () { return formatter.isCommunityResource; } });
+	Object.defineProperty(exports, "showThrottleMessage", { enumerable: true, get: function () { return formatter.showThrottleMessage; } });
 
 
 	var logger = new lib.Logger(_version$I.version);
@@ -25194,6 +25402,7 @@
 	var lib$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.sha256 = exports.keccak256 = exports.pack = void 0;
 
 
 
@@ -25291,7 +25500,8 @@
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "units/5.0.10";
+	exports.version = void 0;
+	exports.version = "units/5.0.11";
 
 	});
 
@@ -25300,6 +25510,7 @@
 	var lib$t = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.parseEther = exports.formatEther = exports.parseUnits = exports.formatUnits = exports.commify = void 0;
 
 
 
@@ -25394,132 +25605,146 @@
 
 	var utils$3 = createCommonjsModule(function (module, exports) {
 	"use strict";
+	var __createBinding = (commonjsGlobal && commonjsGlobal.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+	    if (k2 === undefined) k2 = k;
+	    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+	}) : (function(o, m, k, k2) {
+	    if (k2 === undefined) k2 = k;
+	    o[k2] = m[k];
+	}));
+	var __setModuleDefault = (commonjsGlobal && commonjsGlobal.__setModuleDefault) || (Object.create ? (function(o, v) {
+	    Object.defineProperty(o, "default", { enumerable: true, value: v });
+	}) : function(o, v) {
+	    o["default"] = v;
+	});
 	var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
 	    if (mod && mod.__esModule) return mod;
 	    var result = {};
-	    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-	    result["default"] = mod;
+	    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+	    __setModuleDefault(result, mod);
 	    return result;
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.hashMessage = exports.parseBytes32String = exports.formatBytes32String = exports.Utf8ErrorFuncs = exports.toUtf8String = exports.toUtf8CodePoints = exports.toUtf8Bytes = exports._toEscapedUtf8String = exports.nameprep = exports.hexDataSlice = exports.hexDataLength = exports.hexZeroPad = exports.hexValue = exports.hexStripZeros = exports.hexConcat = exports.isHexString = exports.hexlify = exports.base64 = exports.base58 = exports.TransactionDescription = exports.LogDescription = exports.Interface = exports.SigningKey = exports.HDNode = exports.defaultPath = exports.isBytesLike = exports.isBytes = exports.zeroPad = exports.stripZeros = exports.concat = exports.arrayify = exports.shallowCopy = exports.resolveProperties = exports.getStatic = exports.defineReadOnly = exports.deepCopy = exports.checkProperties = exports.poll = exports.fetchJson = exports._fetchData = exports.RLP = exports.Logger = exports.checkResultErrors = exports.FormatTypes = exports.ParamType = exports.FunctionFragment = exports.EventFragment = exports.Fragment = exports.defaultAbiCoder = exports.AbiCoder = void 0;
+	exports.Indexed = exports.Utf8ErrorReason = exports.UnicodeNormalizationForm = exports.SupportedAlgorithm = exports.mnemonicToSeed = exports.isValidMnemonic = exports.entropyToMnemonic = exports.mnemonicToEntropy = exports.verifyTypedData = exports.verifyMessage = exports.recoverPublicKey = exports.computePublicKey = exports.recoverAddress = exports.computeAddress = exports.getJsonWalletAddress = exports.serializeTransaction = exports.parseTransaction = exports.joinSignature = exports.splitSignature = exports.soliditySha256 = exports.solidityKeccak256 = exports.solidityPack = exports.shuffled = exports.randomBytes = exports.sha512 = exports.sha256 = exports.ripemd160 = exports.keccak256 = exports.computeHmac = exports.commify = exports.parseUnits = exports.formatUnits = exports.parseEther = exports.formatEther = exports.isAddress = exports.getCreate2Address = exports.getContractAddress = exports.getIcapAddress = exports.getAddress = exports._TypedDataEncoder = exports.id = exports.isValidName = exports.namehash = void 0;
 
-	exports.AbiCoder = lib$a.AbiCoder;
-	exports.checkResultErrors = lib$a.checkResultErrors;
-	exports.defaultAbiCoder = lib$a.defaultAbiCoder;
-	exports.EventFragment = lib$a.EventFragment;
-	exports.FormatTypes = lib$a.FormatTypes;
-	exports.Fragment = lib$a.Fragment;
-	exports.FunctionFragment = lib$a.FunctionFragment;
-	exports.Indexed = lib$a.Indexed;
-	exports.Interface = lib$a.Interface;
-	exports.LogDescription = lib$a.LogDescription;
-	exports.ParamType = lib$a.ParamType;
-	exports.TransactionDescription = lib$a.TransactionDescription;
+	Object.defineProperty(exports, "AbiCoder", { enumerable: true, get: function () { return lib$a.AbiCoder; } });
+	Object.defineProperty(exports, "checkResultErrors", { enumerable: true, get: function () { return lib$a.checkResultErrors; } });
+	Object.defineProperty(exports, "defaultAbiCoder", { enumerable: true, get: function () { return lib$a.defaultAbiCoder; } });
+	Object.defineProperty(exports, "EventFragment", { enumerable: true, get: function () { return lib$a.EventFragment; } });
+	Object.defineProperty(exports, "FormatTypes", { enumerable: true, get: function () { return lib$a.FormatTypes; } });
+	Object.defineProperty(exports, "Fragment", { enumerable: true, get: function () { return lib$a.Fragment; } });
+	Object.defineProperty(exports, "FunctionFragment", { enumerable: true, get: function () { return lib$a.FunctionFragment; } });
+	Object.defineProperty(exports, "Indexed", { enumerable: true, get: function () { return lib$a.Indexed; } });
+	Object.defineProperty(exports, "Interface", { enumerable: true, get: function () { return lib$a.Interface; } });
+	Object.defineProperty(exports, "LogDescription", { enumerable: true, get: function () { return lib$a.LogDescription; } });
+	Object.defineProperty(exports, "ParamType", { enumerable: true, get: function () { return lib$a.ParamType; } });
+	Object.defineProperty(exports, "TransactionDescription", { enumerable: true, get: function () { return lib$a.TransactionDescription; } });
 
-	exports.getAddress = lib$6.getAddress;
-	exports.getCreate2Address = lib$6.getCreate2Address;
-	exports.getContractAddress = lib$6.getContractAddress;
-	exports.getIcapAddress = lib$6.getIcapAddress;
-	exports.isAddress = lib$6.isAddress;
+	Object.defineProperty(exports, "getAddress", { enumerable: true, get: function () { return lib$6.getAddress; } });
+	Object.defineProperty(exports, "getCreate2Address", { enumerable: true, get: function () { return lib$6.getCreate2Address; } });
+	Object.defineProperty(exports, "getContractAddress", { enumerable: true, get: function () { return lib$6.getContractAddress; } });
+	Object.defineProperty(exports, "getIcapAddress", { enumerable: true, get: function () { return lib$6.getIcapAddress; } });
+	Object.defineProperty(exports, "isAddress", { enumerable: true, get: function () { return lib$6.isAddress; } });
 	var base64 = __importStar(lib$p);
 	exports.base64 = base64;
 
-	exports.base58 = lib$e.Base58;
+	Object.defineProperty(exports, "base58", { enumerable: true, get: function () { return lib$e.Base58; } });
 
-	exports.arrayify = lib$1.arrayify;
-	exports.concat = lib$1.concat;
-	exports.hexConcat = lib$1.hexConcat;
-	exports.hexDataSlice = lib$1.hexDataSlice;
-	exports.hexDataLength = lib$1.hexDataLength;
-	exports.hexlify = lib$1.hexlify;
-	exports.hexStripZeros = lib$1.hexStripZeros;
-	exports.hexValue = lib$1.hexValue;
-	exports.hexZeroPad = lib$1.hexZeroPad;
-	exports.isBytes = lib$1.isBytes;
-	exports.isBytesLike = lib$1.isBytesLike;
-	exports.isHexString = lib$1.isHexString;
-	exports.joinSignature = lib$1.joinSignature;
-	exports.zeroPad = lib$1.zeroPad;
-	exports.splitSignature = lib$1.splitSignature;
-	exports.stripZeros = lib$1.stripZeros;
+	Object.defineProperty(exports, "arrayify", { enumerable: true, get: function () { return lib$1.arrayify; } });
+	Object.defineProperty(exports, "concat", { enumerable: true, get: function () { return lib$1.concat; } });
+	Object.defineProperty(exports, "hexConcat", { enumerable: true, get: function () { return lib$1.hexConcat; } });
+	Object.defineProperty(exports, "hexDataSlice", { enumerable: true, get: function () { return lib$1.hexDataSlice; } });
+	Object.defineProperty(exports, "hexDataLength", { enumerable: true, get: function () { return lib$1.hexDataLength; } });
+	Object.defineProperty(exports, "hexlify", { enumerable: true, get: function () { return lib$1.hexlify; } });
+	Object.defineProperty(exports, "hexStripZeros", { enumerable: true, get: function () { return lib$1.hexStripZeros; } });
+	Object.defineProperty(exports, "hexValue", { enumerable: true, get: function () { return lib$1.hexValue; } });
+	Object.defineProperty(exports, "hexZeroPad", { enumerable: true, get: function () { return lib$1.hexZeroPad; } });
+	Object.defineProperty(exports, "isBytes", { enumerable: true, get: function () { return lib$1.isBytes; } });
+	Object.defineProperty(exports, "isBytesLike", { enumerable: true, get: function () { return lib$1.isBytesLike; } });
+	Object.defineProperty(exports, "isHexString", { enumerable: true, get: function () { return lib$1.isHexString; } });
+	Object.defineProperty(exports, "joinSignature", { enumerable: true, get: function () { return lib$1.joinSignature; } });
+	Object.defineProperty(exports, "zeroPad", { enumerable: true, get: function () { return lib$1.zeroPad; } });
+	Object.defineProperty(exports, "splitSignature", { enumerable: true, get: function () { return lib$1.splitSignature; } });
+	Object.defineProperty(exports, "stripZeros", { enumerable: true, get: function () { return lib$1.stripZeros; } });
 
-	exports._TypedDataEncoder = lib$9._TypedDataEncoder;
-	exports.hashMessage = lib$9.hashMessage;
-	exports.id = lib$9.id;
-	exports.isValidName = lib$9.isValidName;
-	exports.namehash = lib$9.namehash;
+	Object.defineProperty(exports, "_TypedDataEncoder", { enumerable: true, get: function () { return lib$9._TypedDataEncoder; } });
+	Object.defineProperty(exports, "hashMessage", { enumerable: true, get: function () { return lib$9.hashMessage; } });
+	Object.defineProperty(exports, "id", { enumerable: true, get: function () { return lib$9.id; } });
+	Object.defineProperty(exports, "isValidName", { enumerable: true, get: function () { return lib$9.isValidName; } });
+	Object.defineProperty(exports, "namehash", { enumerable: true, get: function () { return lib$9.namehash; } });
 
-	exports.defaultPath = lib$k.defaultPath;
-	exports.entropyToMnemonic = lib$k.entropyToMnemonic;
-	exports.HDNode = lib$k.HDNode;
-	exports.isValidMnemonic = lib$k.isValidMnemonic;
-	exports.mnemonicToEntropy = lib$k.mnemonicToEntropy;
-	exports.mnemonicToSeed = lib$k.mnemonicToSeed;
+	Object.defineProperty(exports, "defaultPath", { enumerable: true, get: function () { return lib$k.defaultPath; } });
+	Object.defineProperty(exports, "entropyToMnemonic", { enumerable: true, get: function () { return lib$k.entropyToMnemonic; } });
+	Object.defineProperty(exports, "HDNode", { enumerable: true, get: function () { return lib$k.HDNode; } });
+	Object.defineProperty(exports, "isValidMnemonic", { enumerable: true, get: function () { return lib$k.isValidMnemonic; } });
+	Object.defineProperty(exports, "mnemonicToEntropy", { enumerable: true, get: function () { return lib$k.mnemonicToEntropy; } });
+	Object.defineProperty(exports, "mnemonicToSeed", { enumerable: true, get: function () { return lib$k.mnemonicToSeed; } });
 
-	exports.getJsonWalletAddress = lib$m.getJsonWalletAddress;
+	Object.defineProperty(exports, "getJsonWalletAddress", { enumerable: true, get: function () { return lib$m.getJsonWalletAddress; } });
 
-	exports.keccak256 = lib$4.keccak256;
+	Object.defineProperty(exports, "keccak256", { enumerable: true, get: function () { return lib$4.keccak256; } });
 
-	exports.Logger = lib.Logger;
+	Object.defineProperty(exports, "Logger", { enumerable: true, get: function () { return lib.Logger; } });
 
-	exports.computeHmac = lib$f.computeHmac;
-	exports.ripemd160 = lib$f.ripemd160;
-	exports.sha256 = lib$f.sha256;
-	exports.sha512 = lib$f.sha512;
+	Object.defineProperty(exports, "computeHmac", { enumerable: true, get: function () { return lib$f.computeHmac; } });
+	Object.defineProperty(exports, "ripemd160", { enumerable: true, get: function () { return lib$f.ripemd160; } });
+	Object.defineProperty(exports, "sha256", { enumerable: true, get: function () { return lib$f.sha256; } });
+	Object.defineProperty(exports, "sha512", { enumerable: true, get: function () { return lib$f.sha512; } });
 
-	exports.solidityKeccak256 = lib$s.keccak256;
-	exports.solidityPack = lib$s.pack;
-	exports.soliditySha256 = lib$s.sha256;
+	Object.defineProperty(exports, "solidityKeccak256", { enumerable: true, get: function () { return lib$s.keccak256; } });
+	Object.defineProperty(exports, "solidityPack", { enumerable: true, get: function () { return lib$s.pack; } });
+	Object.defineProperty(exports, "soliditySha256", { enumerable: true, get: function () { return lib$s.sha256; } });
 
-	exports.randomBytes = lib$l.randomBytes;
-	exports.shuffled = lib$l.shuffled;
+	Object.defineProperty(exports, "randomBytes", { enumerable: true, get: function () { return lib$l.randomBytes; } });
+	Object.defineProperty(exports, "shuffled", { enumerable: true, get: function () { return lib$l.shuffled; } });
 
-	exports.checkProperties = lib$3.checkProperties;
-	exports.deepCopy = lib$3.deepCopy;
-	exports.defineReadOnly = lib$3.defineReadOnly;
-	exports.getStatic = lib$3.getStatic;
-	exports.resolveProperties = lib$3.resolveProperties;
-	exports.shallowCopy = lib$3.shallowCopy;
+	Object.defineProperty(exports, "checkProperties", { enumerable: true, get: function () { return lib$3.checkProperties; } });
+	Object.defineProperty(exports, "deepCopy", { enumerable: true, get: function () { return lib$3.deepCopy; } });
+	Object.defineProperty(exports, "defineReadOnly", { enumerable: true, get: function () { return lib$3.defineReadOnly; } });
+	Object.defineProperty(exports, "getStatic", { enumerable: true, get: function () { return lib$3.getStatic; } });
+	Object.defineProperty(exports, "resolveProperties", { enumerable: true, get: function () { return lib$3.resolveProperties; } });
+	Object.defineProperty(exports, "shallowCopy", { enumerable: true, get: function () { return lib$3.shallowCopy; } });
 	var RLP = __importStar(lib$5);
 	exports.RLP = RLP;
 
-	exports.computePublicKey = lib$h.computePublicKey;
-	exports.recoverPublicKey = lib$h.recoverPublicKey;
-	exports.SigningKey = lib$h.SigningKey;
+	Object.defineProperty(exports, "computePublicKey", { enumerable: true, get: function () { return lib$h.computePublicKey; } });
+	Object.defineProperty(exports, "recoverPublicKey", { enumerable: true, get: function () { return lib$h.recoverPublicKey; } });
+	Object.defineProperty(exports, "SigningKey", { enumerable: true, get: function () { return lib$h.SigningKey; } });
 
-	exports.formatBytes32String = lib$8.formatBytes32String;
-	exports.nameprep = lib$8.nameprep;
-	exports.parseBytes32String = lib$8.parseBytes32String;
-	exports._toEscapedUtf8String = lib$8._toEscapedUtf8String;
-	exports.toUtf8Bytes = lib$8.toUtf8Bytes;
-	exports.toUtf8CodePoints = lib$8.toUtf8CodePoints;
-	exports.toUtf8String = lib$8.toUtf8String;
-	exports.Utf8ErrorFuncs = lib$8.Utf8ErrorFuncs;
+	Object.defineProperty(exports, "formatBytes32String", { enumerable: true, get: function () { return lib$8.formatBytes32String; } });
+	Object.defineProperty(exports, "nameprep", { enumerable: true, get: function () { return lib$8.nameprep; } });
+	Object.defineProperty(exports, "parseBytes32String", { enumerable: true, get: function () { return lib$8.parseBytes32String; } });
+	Object.defineProperty(exports, "_toEscapedUtf8String", { enumerable: true, get: function () { return lib$8._toEscapedUtf8String; } });
+	Object.defineProperty(exports, "toUtf8Bytes", { enumerable: true, get: function () { return lib$8.toUtf8Bytes; } });
+	Object.defineProperty(exports, "toUtf8CodePoints", { enumerable: true, get: function () { return lib$8.toUtf8CodePoints; } });
+	Object.defineProperty(exports, "toUtf8String", { enumerable: true, get: function () { return lib$8.toUtf8String; } });
+	Object.defineProperty(exports, "Utf8ErrorFuncs", { enumerable: true, get: function () { return lib$8.Utf8ErrorFuncs; } });
 
-	exports.computeAddress = lib$i.computeAddress;
-	exports.parseTransaction = lib$i.parse;
-	exports.recoverAddress = lib$i.recoverAddress;
-	exports.serializeTransaction = lib$i.serialize;
+	Object.defineProperty(exports, "computeAddress", { enumerable: true, get: function () { return lib$i.computeAddress; } });
+	Object.defineProperty(exports, "parseTransaction", { enumerable: true, get: function () { return lib$i.parse; } });
+	Object.defineProperty(exports, "recoverAddress", { enumerable: true, get: function () { return lib$i.recoverAddress; } });
+	Object.defineProperty(exports, "serializeTransaction", { enumerable: true, get: function () { return lib$i.serialize; } });
 
-	exports.commify = lib$t.commify;
-	exports.formatEther = lib$t.formatEther;
-	exports.parseEther = lib$t.parseEther;
-	exports.formatUnits = lib$t.formatUnits;
-	exports.parseUnits = lib$t.parseUnits;
+	Object.defineProperty(exports, "commify", { enumerable: true, get: function () { return lib$t.commify; } });
+	Object.defineProperty(exports, "formatEther", { enumerable: true, get: function () { return lib$t.formatEther; } });
+	Object.defineProperty(exports, "parseEther", { enumerable: true, get: function () { return lib$t.parseEther; } });
+	Object.defineProperty(exports, "formatUnits", { enumerable: true, get: function () { return lib$t.formatUnits; } });
+	Object.defineProperty(exports, "parseUnits", { enumerable: true, get: function () { return lib$t.parseUnits; } });
 
-	exports.verifyMessage = lib$n.verifyMessage;
-	exports.verifyTypedData = lib$n.verifyTypedData;
+	Object.defineProperty(exports, "verifyMessage", { enumerable: true, get: function () { return lib$n.verifyMessage; } });
+	Object.defineProperty(exports, "verifyTypedData", { enumerable: true, get: function () { return lib$n.verifyTypedData; } });
 
-	exports._fetchData = lib$q._fetchData;
-	exports.fetchJson = lib$q.fetchJson;
-	exports.poll = lib$q.poll;
+	Object.defineProperty(exports, "_fetchData", { enumerable: true, get: function () { return lib$q._fetchData; } });
+	Object.defineProperty(exports, "fetchJson", { enumerable: true, get: function () { return lib$q.fetchJson; } });
+	Object.defineProperty(exports, "poll", { enumerable: true, get: function () { return lib$q.poll; } });
 	////////////////////////
 	// Enums
 	var sha2_2 = lib$f;
-	exports.SupportedAlgorithm = sha2_2.SupportedAlgorithm;
+	Object.defineProperty(exports, "SupportedAlgorithm", { enumerable: true, get: function () { return sha2_2.SupportedAlgorithm; } });
 	var strings_2 = lib$8;
-	exports.UnicodeNormalizationForm = strings_2.UnicodeNormalizationForm;
-	exports.Utf8ErrorReason = strings_2.Utf8ErrorReason;
+	Object.defineProperty(exports, "UnicodeNormalizationForm", { enumerable: true, get: function () { return strings_2.UnicodeNormalizationForm; } });
+	Object.defineProperty(exports, "Utf8ErrorReason", { enumerable: true, get: function () { return strings_2.Utf8ErrorReason; } });
 
 	});
 
@@ -25528,7 +25753,8 @@
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = "ethers/5.0.31";
+	exports.version = void 0;
+	exports.version = "ethers/5.0.32";
 
 	});
 
@@ -25536,43 +25762,56 @@
 
 	var ethers = createCommonjsModule(function (module, exports) {
 	"use strict";
+	var __createBinding = (commonjsGlobal && commonjsGlobal.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+	    if (k2 === undefined) k2 = k;
+	    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+	}) : (function(o, m, k, k2) {
+	    if (k2 === undefined) k2 = k;
+	    o[k2] = m[k];
+	}));
+	var __setModuleDefault = (commonjsGlobal && commonjsGlobal.__setModuleDefault) || (Object.create ? (function(o, v) {
+	    Object.defineProperty(o, "default", { enumerable: true, value: v });
+	}) : function(o, v) {
+	    o["default"] = v;
+	});
 	var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
 	    if (mod && mod.__esModule) return mod;
 	    var result = {};
-	    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-	    result["default"] = mod;
+	    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+	    __setModuleDefault(result, mod);
 	    return result;
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Wordlist = exports.version = exports.wordlists = exports.utils = exports.logger = exports.errors = exports.constants = exports.FixedNumber = exports.BigNumber = exports.ContractFactory = exports.Contract = exports.providers = exports.getDefaultProvider = exports.VoidSigner = exports.Wallet = exports.Signer = void 0;
 
-	exports.Contract = lib$d.Contract;
-	exports.ContractFactory = lib$d.ContractFactory;
+	Object.defineProperty(exports, "Contract", { enumerable: true, get: function () { return lib$d.Contract; } });
+	Object.defineProperty(exports, "ContractFactory", { enumerable: true, get: function () { return lib$d.ContractFactory; } });
 
-	exports.BigNumber = lib$2.BigNumber;
-	exports.FixedNumber = lib$2.FixedNumber;
+	Object.defineProperty(exports, "BigNumber", { enumerable: true, get: function () { return lib$2.BigNumber; } });
+	Object.defineProperty(exports, "FixedNumber", { enumerable: true, get: function () { return lib$2.FixedNumber; } });
 
-	exports.Signer = lib$c.Signer;
-	exports.VoidSigner = lib$c.VoidSigner;
+	Object.defineProperty(exports, "Signer", { enumerable: true, get: function () { return lib$c.Signer; } });
+	Object.defineProperty(exports, "VoidSigner", { enumerable: true, get: function () { return lib$c.VoidSigner; } });
 
-	exports.Wallet = lib$n.Wallet;
+	Object.defineProperty(exports, "Wallet", { enumerable: true, get: function () { return lib$n.Wallet; } });
 	var constants = __importStar(lib$7);
 	exports.constants = constants;
 	var providers = __importStar(lib$r);
 	exports.providers = providers;
 	var providers_1 = lib$r;
-	exports.getDefaultProvider = providers_1.getDefaultProvider;
+	Object.defineProperty(exports, "getDefaultProvider", { enumerable: true, get: function () { return providers_1.getDefaultProvider; } });
 
-	exports.Wordlist = lib$j.Wordlist;
-	exports.wordlists = lib$j.wordlists;
+	Object.defineProperty(exports, "Wordlist", { enumerable: true, get: function () { return lib$j.Wordlist; } });
+	Object.defineProperty(exports, "wordlists", { enumerable: true, get: function () { return lib$j.wordlists; } });
 	var utils = __importStar(utils$3);
 	exports.utils = utils;
 
-	exports.errors = lib.ErrorCode;
+	Object.defineProperty(exports, "errors", { enumerable: true, get: function () { return lib.ErrorCode; } });
 	////////////////////////
 	// Compile-Time Constants
 	// This is generated by "npm run dist"
 
-	exports.version = _version$M.version;
+	Object.defineProperty(exports, "version", { enumerable: true, get: function () { return _version$M.version; } });
 	var logger = new lib.Logger(_version$M.version);
 	exports.logger = logger;
 
@@ -25582,14 +25821,27 @@
 
 	var lib$u = createCommonjsModule(function (module, exports) {
 	"use strict";
+	var __createBinding = (commonjsGlobal && commonjsGlobal.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+	    if (k2 === undefined) k2 = k;
+	    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+	}) : (function(o, m, k, k2) {
+	    if (k2 === undefined) k2 = k;
+	    o[k2] = m[k];
+	}));
+	var __setModuleDefault = (commonjsGlobal && commonjsGlobal.__setModuleDefault) || (Object.create ? (function(o, v) {
+	    Object.defineProperty(o, "default", { enumerable: true, value: v });
+	}) : function(o, v) {
+	    o["default"] = v;
+	});
 	var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
 	    if (mod && mod.__esModule) return mod;
 	    var result = {};
-	    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-	    result["default"] = mod;
+	    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+	    __setModuleDefault(result, mod);
 	    return result;
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Wordlist = exports.version = exports.wordlists = exports.utils = exports.logger = exports.errors = exports.constants = exports.FixedNumber = exports.BigNumber = exports.ContractFactory = exports.Contract = exports.providers = exports.getDefaultProvider = exports.VoidSigner = exports.Wallet = exports.Signer = exports.ethers = void 0;
 	// To modify this file, you must update ./misc/admin/lib/cmds/update-exports.js
 	var ethers$1 = __importStar(ethers);
 	exports.ethers = ethers$1;
@@ -25601,24 +25853,24 @@
 	}
 	catch (error) { }
 	var ethers_1 = ethers;
-	exports.Signer = ethers_1.Signer;
-	exports.Wallet = ethers_1.Wallet;
-	exports.VoidSigner = ethers_1.VoidSigner;
-	exports.getDefaultProvider = ethers_1.getDefaultProvider;
-	exports.providers = ethers_1.providers;
-	exports.Contract = ethers_1.Contract;
-	exports.ContractFactory = ethers_1.ContractFactory;
-	exports.BigNumber = ethers_1.BigNumber;
-	exports.FixedNumber = ethers_1.FixedNumber;
-	exports.constants = ethers_1.constants;
-	exports.errors = ethers_1.errors;
-	exports.logger = ethers_1.logger;
-	exports.utils = ethers_1.utils;
-	exports.wordlists = ethers_1.wordlists;
+	Object.defineProperty(exports, "Signer", { enumerable: true, get: function () { return ethers_1.Signer; } });
+	Object.defineProperty(exports, "Wallet", { enumerable: true, get: function () { return ethers_1.Wallet; } });
+	Object.defineProperty(exports, "VoidSigner", { enumerable: true, get: function () { return ethers_1.VoidSigner; } });
+	Object.defineProperty(exports, "getDefaultProvider", { enumerable: true, get: function () { return ethers_1.getDefaultProvider; } });
+	Object.defineProperty(exports, "providers", { enumerable: true, get: function () { return ethers_1.providers; } });
+	Object.defineProperty(exports, "Contract", { enumerable: true, get: function () { return ethers_1.Contract; } });
+	Object.defineProperty(exports, "ContractFactory", { enumerable: true, get: function () { return ethers_1.ContractFactory; } });
+	Object.defineProperty(exports, "BigNumber", { enumerable: true, get: function () { return ethers_1.BigNumber; } });
+	Object.defineProperty(exports, "FixedNumber", { enumerable: true, get: function () { return ethers_1.FixedNumber; } });
+	Object.defineProperty(exports, "constants", { enumerable: true, get: function () { return ethers_1.constants; } });
+	Object.defineProperty(exports, "errors", { enumerable: true, get: function () { return ethers_1.errors; } });
+	Object.defineProperty(exports, "logger", { enumerable: true, get: function () { return ethers_1.logger; } });
+	Object.defineProperty(exports, "utils", { enumerable: true, get: function () { return ethers_1.utils; } });
+	Object.defineProperty(exports, "wordlists", { enumerable: true, get: function () { return ethers_1.wordlists; } });
 	////////////////////////
 	// Compile-Time Constants
-	exports.version = ethers_1.version;
-	exports.Wordlist = ethers_1.Wordlist;
+	Object.defineProperty(exports, "version", { enumerable: true, get: function () { return ethers_1.version; } });
+	Object.defineProperty(exports, "Wordlist", { enumerable: true, get: function () { return ethers_1.Wordlist; } });
 
 	});
 

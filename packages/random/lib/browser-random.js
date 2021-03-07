@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.randomBytes = void 0;
 var bytes_1 = require("@ethersproject/bytes");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");

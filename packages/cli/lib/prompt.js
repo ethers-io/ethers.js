@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getChoice = exports.getMessage = exports.getPassword = exports.getProgressBar = void 0;
 function repeat(chr, count) {
     var result = "";
     while (result.length < count) {

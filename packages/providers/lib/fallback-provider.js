@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -49,6 +51,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FallbackProvider = void 0;
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
@@ -523,8 +526,8 @@ var FallbackProvider = /** @class */ (function (_super) {
                         first = true;
                         _loop_1 = function () {
                             var t0, inflightWeight, _loop_2, waiting, results, result, errors;
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
+                            return __generator(this, function (_b) {
+                                switch (_b.label) {
                                     case 0:
                                         t0 = now();
                                         inflightWeight = configs.filter(function (c) { return (c.runner && ((t0 - c.start) < c.stallTimeout)); })
@@ -588,8 +591,8 @@ var FallbackProvider = /** @class */ (function (_super) {
                                         if (!waiting.length) return [3 /*break*/, 2];
                                         return [4 /*yield*/, Promise.race(waiting)];
                                     case 1:
-                                        _a.sent();
-                                        _a.label = 2;
+                                        _b.sent();
+                                        _b.label = 2;
                                     case 2:
                                         results = configs.filter(function (c) { return (c.done && c.error == null); });
                                         if (!(results.length >= this_1.quorum)) return [3 /*break*/, 5];
@@ -607,11 +610,11 @@ var FallbackProvider = /** @class */ (function (_super) {
                                         if (!!first) return [3 /*break*/, 4];
                                         return [4 /*yield*/, stall(100).getPromise()];
                                     case 3:
-                                        _a.sent();
-                                        _a.label = 4;
+                                        _b.sent();
+                                        _b.label = 4;
                                     case 4:
                                         first = false;
-                                        _a.label = 5;
+                                        _b.label = 5;
                                     case 5:
                                         errors = configs.reduce(function (accum, c) {
                                             if (!c.done || c.error == null) {

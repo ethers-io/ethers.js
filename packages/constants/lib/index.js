@@ -1,16 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.EtherSymbol = exports.HashZero = exports.MaxUint256 = exports.WeiPerEther = exports.Two = exports.One = exports.Zero = exports.NegativeOne = exports.AddressZero = void 0;
 var addresses_1 = require("./addresses");
-exports.AddressZero = addresses_1.AddressZero;
+Object.defineProperty(exports, "AddressZero", { enumerable: true, get: function () { return addresses_1.AddressZero; } });
 var bignumbers_1 = require("./bignumbers");
-exports.NegativeOne = bignumbers_1.NegativeOne;
-exports.Zero = bignumbers_1.Zero;
-exports.One = bignumbers_1.One;
-exports.Two = bignumbers_1.Two;
-exports.WeiPerEther = bignumbers_1.WeiPerEther;
-exports.MaxUint256 = bignumbers_1.MaxUint256;
+Object.defineProperty(exports, "NegativeOne", { enumerable: true, get: function () { return bignumbers_1.NegativeOne; } });
+Object.defineProperty(exports, "Zero", { enumerable: true, get: function () { return bignumbers_1.Zero; } });
+Object.defineProperty(exports, "One", { enumerable: true, get: function () { return bignumbers_1.One; } });
+Object.defineProperty(exports, "Two", { enumerable: true, get: function () { return bignumbers_1.Two; } });
+Object.defineProperty(exports, "WeiPerEther", { enumerable: true, get: function () { return bignumbers_1.WeiPerEther; } });
+Object.defineProperty(exports, "MaxUint256", { enumerable: true, get: function () { return bignumbers_1.MaxUint256; } });
 var hashes_1 = require("./hashes");
-exports.HashZero = hashes_1.HashZero;
+Object.defineProperty(exports, "HashZero", { enumerable: true, get: function () { return hashes_1.HashZero; } });
 var strings_1 = require("./strings");
-exports.EtherSymbol = strings_1.EtherSymbol;
+Object.defineProperty(exports, "EtherSymbol", { enumerable: true, get: function () { return strings_1.EtherSymbol; } });
 //# sourceMappingURL=index.js.map

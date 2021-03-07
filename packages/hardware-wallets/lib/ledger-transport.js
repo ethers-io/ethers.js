@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.transports = void 0;
 var hidCache = null;
 var hidWrapper = Object.freeze({
     create: function () {

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.id = void 0;
 var keccak256_1 = require("@ethersproject/keccak256");
 var strings_1 = require("@ethersproject/strings");
 function id(text) {

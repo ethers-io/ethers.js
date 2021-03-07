@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.generate = exports.header = void 0;
 var ethers_1 = require("ethers");
 function getType(param, flexible) {
     if (param.type === "address" || param.type === "string") {

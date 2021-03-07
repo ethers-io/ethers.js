@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.nameprep = exports._nameprepTableC = exports._nameprepTableB2 = exports._nameprepTableA1 = void 0;
 var utf8_1 = require("./utf8");
 function bytes2(data) {
     if ((data.length % 4) !== 0) {

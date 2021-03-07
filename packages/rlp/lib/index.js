@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.decode = exports.encode = void 0;
 //See: https://github.com/ethereum/wiki/wiki/RLP
 var bytes_1 = require("@ethersproject/bytes");
 var logger_1 = require("@ethersproject/logger");

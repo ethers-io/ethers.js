@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Opcode = exports.OpcodeMemoryAccess = void 0;
 // Yellow Paper
 //   See: https://ethereum.github.io/yellowpaper/paper.pdf
 // SHL / SHR / SAR:

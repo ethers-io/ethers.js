@@ -3,16 +3,19 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.NonceManager = void 0;
 var ethers_1 = require("ethers");
 var _version_1 = require("./_version");
 var logger = new ethers_1.ethers.utils.Logger(_version_1.version);
@@ -27,15 +30,9 @@ var NonceManager = /** @class */ (function (_super) {
         _this = _super.call(this) || this;
         _this._deltaCount = 0;
         ethers_1.ethers.utils.defineReadOnly(_this, "signer", signer);
+        ethers_1.ethers.utils.defineReadOnly(_this, "provider", signer.provider || null);
         return _this;
     }
-    Object.defineProperty(NonceManager.prototype, "provider", {
-        get: function () {
-            return this.signer.provider;
-        },
-        enumerable: true,
-        configurable: true
-    });
     NonceManager.prototype.connect = function (provider) {
         return new NonceManager(this.signer.connect(provider));
     };

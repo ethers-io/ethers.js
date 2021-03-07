@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.isValidMnemonic = exports.entropyToMnemonic = exports.mnemonicToEntropy = exports.mnemonicToSeed = exports.HDNode = exports.defaultPath = void 0;
 var basex_1 = require("@ethersproject/basex");
 var bytes_1 = require("@ethersproject/bytes");
 var bignumber_1 = require("@ethersproject/bignumber");
@@ -112,7 +113,7 @@ var HDNode = /** @class */ (function () {
                 ((this.privateKey != null) ? bytes_1.concat(["0x00", this.privateKey]) : this.publicKey),
             ]));
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     HDNode.prototype.neuter = function () {

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { getAddress } from "@ethersproject/address";
 import { BigNumber } from "@ethersproject/bignumber";
-import { arrayify, hexConcat, hexlify, hexValue, hexZeroPad, isHexString } from "@ethersproject/bytes";
+import { arrayify, hexConcat, hexlify, hexZeroPad, isHexString } from "@ethersproject/bytes";
 import { keccak256 } from "@ethersproject/keccak256";
 import { deepCopy, defineReadOnly, shallowCopy } from "@ethersproject/properties";
 import { Logger } from "@ethersproject/logger";
@@ -420,13 +420,7 @@ export class TypedDataEncoder {
                 }
                 // uint or int
                 if (type.match(/^u?int/)) {
-                    let prefix = "";
-                    let v = BigNumber.from(value);
-                    if (v.isNegative()) {
-                        prefix = "-";
-                        v = v.mul(-1);
-                    }
-                    return prefix + hexValue(v.toHexString());
+                    return BigNumber.from(value).toString();
                 }
                 switch (type) {
                     case "address":

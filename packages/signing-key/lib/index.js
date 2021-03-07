@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.computePublicKey = exports.recoverPublicKey = exports.SigningKey = void 0;
 var elliptic_1 = require("./elliptic");
 var bytes_1 = require("@ethersproject/bytes");
 var properties_1 = require("@ethersproject/properties");

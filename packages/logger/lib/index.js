@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Logger = exports.ErrorCode = exports.LogLevel = void 0;
 var _permanentCensorErrors = false;
 var _censorErrors = false;
 var LogLevels = { debug: 1, "default": 2, info: 2, warning: 3, error: 4, off: 5 };

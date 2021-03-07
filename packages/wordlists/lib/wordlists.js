@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.wordlists = void 0;
 var lang_cz_1 = require("./lang-cz");
 var lang_en_1 = require("./lang-en");
 var lang_es_1 = require("./lang-es");

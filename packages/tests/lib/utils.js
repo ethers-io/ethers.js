@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.equals = exports.randomNumber = exports.randomHexString = exports.randomBytes = void 0;
 var ethers_1 = require("ethers");
 function randomBytes(seed, lower, upper) {
     if (!upper) {

@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -52,6 +54,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.BaseProvider = exports.Resolver = exports.Event = void 0;
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
 var basex_1 = require("@ethersproject/basex");
 var bignumber_1 = require("@ethersproject/bignumber");
@@ -179,14 +182,14 @@ var Event = /** @class */ (function () {
             }
             return this.tag;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Event.prototype, "type", {
         get: function () {
             return this.tag.split(":")[0];
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Event.prototype, "hash", {
@@ -197,7 +200,7 @@ var Event = /** @class */ (function () {
             }
             return comps[1];
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Event.prototype, "filter", {
@@ -217,7 +220,7 @@ var Event = /** @class */ (function () {
             }
             return filter;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Event.prototype.pollable = function () {
@@ -544,7 +547,7 @@ var BaseProvider = /** @class */ (function (_super) {
                 });
             });
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     // @TODO: Remove this and just create a singleton formatter
@@ -765,7 +768,7 @@ var BaseProvider = /** @class */ (function (_super) {
         get: function () {
             return this._network;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     // This method should query the network if the underlying network
@@ -830,7 +833,7 @@ var BaseProvider = /** @class */ (function (_super) {
             }, function (error) { });
             return (this._fastBlockNumber != null) ? this._fastBlockNumber : -1;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BaseProvider.prototype, "polling", {
@@ -863,7 +866,7 @@ var BaseProvider = /** @class */ (function (_super) {
                 this._poller = null;
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BaseProvider.prototype, "pollingInterval", {
@@ -881,7 +884,7 @@ var BaseProvider = /** @class */ (function (_super) {
                 this._poller = setInterval(function () { _this.poll(); }, this._pollingInterval);
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     BaseProvider.prototype._getFastBlockNumber = function () {

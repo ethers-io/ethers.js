@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ReporterKeepAlive = void 0;
 // Maximum time in seconds to suppress output
 var MAX_DELAY = 60;
 function getTime() {

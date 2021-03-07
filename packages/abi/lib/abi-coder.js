@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.defaultAbiCoder = exports.AbiCoder = void 0;
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 var bytes_1 = require("@ethersproject/bytes");
 var properties_1 = require("@ethersproject/properties");

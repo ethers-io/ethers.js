@@ -4,7 +4,6 @@ export declare class NonceManager extends ethers.Signer {
     _initialPromise: Promise<number>;
     _deltaCount: number;
     constructor(signer: ethers.Signer);
-    get provider(): ethers.providers.Provider;
     connect(provider: ethers.providers.Provider): NonceManager;
     getAddress(): Promise<string>;
     getTransactionCount(blockTag?: ethers.providers.BlockTag): Promise<number>;

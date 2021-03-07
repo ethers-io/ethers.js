@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SupportedAlgorithm = void 0;
 var SupportedAlgorithm;
 (function (SupportedAlgorithm) {
     SupportedAlgorithm["sha256"] = "sha256";

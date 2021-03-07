@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.NonceManager = exports.BrainWallet = void 0;
 var brain_wallet_1 = require("./brain-wallet");
-exports.BrainWallet = brain_wallet_1.BrainWallet;
+Object.defineProperty(exports, "BrainWallet", { enumerable: true, get: function () { return brain_wallet_1.BrainWallet; } });
 var nonce_manager_1 = require("./nonce-manager");
-exports.NonceManager = nonce_manager_1.NonceManager;
+Object.defineProperty(exports, "NonceManager", { enumerable: true, get: function () { return nonce_manager_1.NonceManager; } });
 //# sourceMappingURL=index.js.map

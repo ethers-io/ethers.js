@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TypedDataEncoder = void 0;
 var address_1 = require("@ethersproject/address");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
@@ -477,13 +478,7 @@ var TypedDataEncoder = /** @class */ (function () {
                 }
                 // uint or int
                 if (type.match(/^u?int/)) {
-                    var prefix = "";
-                    var v = bignumber_1.BigNumber.from(value);
-                    if (v.isNegative()) {
-                        prefix = "-";
-                        v = v.mul(-1);
-                    }
-                    return prefix + bytes_1.hexValue(v.toHexString());
+                    return bignumber_1.BigNumber.from(value).toString();
                 }
                 switch (type) {
                     case "address":

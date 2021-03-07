@@ -1211,6 +1211,7 @@ describe("Bad ENS resolution", function () {
                     case 2:
                         tx = _a.sent();
                         console.log("TX", tx);
+                        assert_1.default.ok(false, "failed to throw an exception");
                         return [3 /*break*/, 4];
                     case 3:
                         error_2 = _a.sent();

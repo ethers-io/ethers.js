@@ -691,27 +691,25 @@
 	        var fr = new FileReader();
 	        try {
 	            fr.readAsArrayBuffer(new Blob([ "hello" ], { type: "text/plain" }));
-	            return;
-	        } catch (error) { }
-
-	        shims.push("FileReader.prototype.readAsArrayBuffer");
-	        FileReader.prototype.readAsArrayBuffer = function (blob) {
-	            if (this.readyState === this.LOADING) throw new Error("InvalidStateError");
-	            this._setReadyState(this.LOADING);
-	            this._result = null;
-	            this._error = null;
-	            var fr = new FileReader();
-	            fr.onloadend = () => {
-	                var content = atob(fr.result.split(",").pop().trim());
-	                var buffer = new ArrayBuffer(content.length);
-	                var view = new Uint8Array(buffer);
-	                view.set(Array.from(content).map(c => c.charCodeAt(0)));
-	                this._result = buffer;
-	                this._setReadyState(this.DONE);
+	        } catch (error) {
+	            shims.push("FileReader.prototype.readAsArrayBuffer");
+	            FileReader.prototype.readAsArrayBuffer = function (blob) {
+	                if (this.readyState === this.LOADING) { throw new Error("InvalidStateError"); }
+	                this._setReadyState(this.LOADING);
+	                this._result = null;
+	                this._error = null;
+	                var fr = new FileReader();
+	                fr.onloadend = () => {
+	                    var content = atob(fr.result.split(",").pop().trim());
+	                    var buffer = new ArrayBuffer(content.length);
+	                    var view = new Uint8Array(buffer);
+	                    view.set(Array.from(content).map(c => c.charCodeAt(0)));
+	                    this._result = buffer;
+	                    this._setReadyState(this.DONE);
+	                };
+	                fr.readAsDataURL(blob);
 	            };
-	            fr.readAsDataURL(blob);
-	        };
-
+	        }
 	    } catch (error) {
 	        console.log("Missing FileReader; unsupported platform");
 	    }

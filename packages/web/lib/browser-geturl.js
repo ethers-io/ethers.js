@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getUrl = void 0;
 var bytes_1 = require("@ethersproject/bytes");
 function getUrl(href, options) {
     return __awaiter(this, void 0, void 0, function () {
@@ -54,7 +55,7 @@ function getUrl(href, options) {
                         cache: "no-cache",
                         credentials: "same-origin",
                         redirect: "follow",
-                        referrer: "client",
+                        referrer: "client", // no-referrer, *client
                     };
                     return [4 /*yield*/, fetch(href, request)];
                 case 1:

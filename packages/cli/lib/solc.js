@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.compile = exports.wrapSolc = exports.customRequire = void 0;
 var fs_1 = __importDefault(require("fs"));
 var module_1 = __importDefault(require("module"));
 var path_1 = require("path");
