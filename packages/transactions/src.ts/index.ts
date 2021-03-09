@@ -30,6 +30,7 @@ export type UnsignedTransaction = {
 
 export interface Transaction {
     hash?: string;
+    type?: number | null;
 
     to?: string;
     from?: string;
@@ -162,7 +163,7 @@ export function serialize(transaction: UnsignedTransaction, signature?: Signatur
     return RLP.encode(raw);
 }
 
-export function parse(rawTransaction: BytesLike): Transaction {
+function _parse(rawTransaction: Uint8Array): Transaction {
     const transaction = RLP.decode(rawTransaction);
 
     if (transaction.length !== 9 && transaction.length !== 6) {
@@ -225,6 +226,17 @@ export function parse(rawTransaction: BytesLike): Transaction {
         tx.hash = keccak256(rawTransaction);
     }
 
+    tx.type = null;
+
     return tx;
+}
+
+export function parse(rawTransaction: BytesLike): Transaction {
+    const payload = arrayify(rawTransaction);
+    if (payload[0] > 0x7f) { return _parse(payload); }
+    return logger.throwError(`unsupported transaction type: ${ payload[0] }`, Logger.errors.UNSUPPORTED_OPERATION, {
+        operation: "parseTransaction",
+        transactionType: payload[0]
+    });
 }
 
