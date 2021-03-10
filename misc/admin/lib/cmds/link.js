@@ -35,7 +35,7 @@ function link(existing, path) {
     // Link
     const dir = path_1.dirname(path);
     utils_1.mkdir(dir);
-    fs_1.default.symlinkSync(existing, path);
+    fs_1.default.symlinkSync(existing, path, "junction");
 }
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
