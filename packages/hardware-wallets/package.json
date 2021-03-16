@@ -7,9 +7,9 @@
     "./lib/ledger-transport.js": "./lib/browser-ledger-transport.js"
   },
   "dependencies": {
-    "@ledgerhq/hw-app-eth": "5.27.2",
-    "@ledgerhq/hw-transport": "5.26.0",
-    "@ledgerhq/hw-transport-u2f": "5.26.0",
+    "@ledgerhq/hw-app-eth": "5.47.1",
+    "@ledgerhq/hw-transport": "5.46.0",
+    "@ledgerhq/hw-transport-u2f": "5.36.0-deprecated",
     "ethers": "^5.0.25"
   },
   "description": "Hardware Wallet support for ethers.",
