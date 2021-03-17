@@ -796,14 +796,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         if (!(network.chainId !== currentNetwork.chainId)) return [3 /*break*/, 5];
                         if (!this.anyNetwork) return [3 /*break*/, 4];
                         this._network = currentNetwork;
-                        // Reset all internal block number guards and caches
-                        this._lastBlockNumber = -2;
-                        this._fastBlockNumber = null;
-                        this._fastBlockNumberPromise = null;
-                        this._fastQueryDate = 0;
-                        this._emitted.block = -2;
-                        this._maxInternalBlockNumber = -1024;
-                        this._internalBlockNumber = null;
+                        this._clearCache();
                         // The "network" event MUST happen before this method resolves
                         // so any events have a chance to unregister, so we stall an
                         // additional event loop before returning from /this/ call
@@ -1839,6 +1832,16 @@ var BaseProvider = /** @class */ (function (_super) {
         }
         stopped.forEach(function (event) { _this._stopEvent(event); });
         return this;
+    };
+    BaseProvider.prototype._clearCache = function () {
+        // Reset all internal block number guards and caches
+        this._lastBlockNumber = -2;
+        this._fastBlockNumber = null;
+        this._fastBlockNumberPromise = null;
+        this._fastQueryDate = 0;
+        this._emitted.block = -2;
+        this._maxInternalBlockNumber = -1024;
+        this._internalBlockNumber = null;
     };
     return BaseProvider;
 }(abstract_provider_1.Provider));

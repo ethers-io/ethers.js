@@ -806,14 +806,7 @@ export class BaseProvider extends Provider implements EnsProvider {
             if (this.anyNetwork) {
                 this._network = currentNetwork;
 
-                // Reset all internal block number guards and caches
-                this._lastBlockNumber = -2;
-                this._fastBlockNumber = null;
-                this._fastBlockNumberPromise = null;
-                this._fastQueryDate = 0;
-                this._emitted.block = -2;
-                this._maxInternalBlockNumber = -1024;
-                this._internalBlockNumber = null;
+                this._clearCache();
 
                 // The "network" event MUST happen before this method resolves
                 // so any events have a chance to unregister, so we stall an
@@ -1588,5 +1581,16 @@ export class BaseProvider extends Provider implements EnsProvider {
         stopped.forEach((event) => { this._stopEvent(event); });
 
         return this;
+    }
+
+    _clearCache() {
+        // Reset all internal block number guards and caches
+        this._lastBlockNumber = -2;
+        this._fastBlockNumber = null;
+        this._fastBlockNumberPromise = null;
+        this._fastQueryDate = 0;
+        this._emitted.block = -2;
+        this._maxInternalBlockNumber = -1024;
+        this._internalBlockNumber = null;
     }
 }
