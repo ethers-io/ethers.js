@@ -583,7 +583,7 @@ export type ContractInterface = string | Array<Fragment | JsonFragment | string>
 type InterfaceFunc = (contractInterface: ContractInterface) => Interface;
 
 
-export class Contract {
+export class BaseContract {
     readonly address: string;
     readonly interface: Interface;
 
@@ -597,9 +597,6 @@ export class Contract {
     readonly populateTransaction: { [ name: string ]: ContractFunction<PopulatedTransaction> };
 
     readonly filters: { [ name: string ]: (...args: Array<any>) => EventFilter };
-
-    // The meta-class properties
-    readonly [ key: string ]: ContractFunction | any;
 
     // This will always be an address. This will only differ from
     // address if an ENS name was used in the constructor
@@ -709,7 +706,7 @@ export class Contract {
                 uniqueNames[name].push(signature);
             }
 
-            if (this[signature] == null) {
+            if ((<Contract>this)[signature] == null) {
                 defineReadOnly<any, any>(this, signature, buildDefault(this, fragment, true));
             }
 
@@ -743,8 +740,8 @@ export class Contract {
 
             // If overwriting a member property that is null, swallow the error
             try {
-                if (this[name] == null) {
-                    defineReadOnly(this, name, this[signature]);
+                if ((<Contract>this)[name] == null) {
+                    defineReadOnly(<Contract>this, name, (<Contract>this)[signature]);
                 }
             } catch (e) { }
 
@@ -1091,6 +1088,11 @@ export class Contract {
         return this.off(eventName, listener);
     }
 
+}
+
+export class Contract extends BaseContract {
+    // The meta-class properties
+    readonly [ key: string ]: ContractFunction | any;
 }
 
 export class ContractFactory {
