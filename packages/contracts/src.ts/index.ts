@@ -741,9 +741,12 @@ export class Contract {
 
             const signature = signatures[0];
 
-            if (this[name] == null) {
-                defineReadOnly(this, name, this[signature]);
-            }
+            // If overwriting a member property that is null, swallow the error
+            try {
+                if (this[name] == null) {
+                    defineReadOnly(this, name, this[signature]);
+                }
+            } catch (e) { }
 
             if (this.functions[name] == null) {
                 defineReadOnly(this.functions, name, this.functions[signature]);
