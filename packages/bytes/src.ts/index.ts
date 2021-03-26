@@ -390,6 +390,8 @@ export function splitSignature(signature: SignatureLike): Signature {
         if (result.recoveryParam == null) {
             if (result.v == null) {
                 logger.throwArgumentError("signature missing v and recoveryParam", "signature", signature);
+            } else if (result.v === 0 || result.v === 1) {
+                result.recoveryParam = result.v;
             } else {
                 result.recoveryParam = 1 - (result.v % 2);
             }

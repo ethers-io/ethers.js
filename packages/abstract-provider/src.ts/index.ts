@@ -4,7 +4,7 @@ import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike, isHexString } from "@ethersproject/bytes";
 import { Network } from "@ethersproject/networks";
 import { Deferrable, Description, defineReadOnly } from "@ethersproject/properties";
-import { Transaction } from "@ethersproject/transactions";
+import { AccessListish, Transaction } from "@ethersproject/transactions";
 import { OnceBlockable } from "@ethersproject/web";
 
 import { Logger } from "@ethersproject/logger";
@@ -26,6 +26,9 @@ export type TransactionRequest = {
     data?: BytesLike,
     value?: BigNumberish,
     chainId?: number
+
+    type?: number;
+    accessList?: AccessListish;
 }
 
 export interface TransactionResponse extends Transaction {

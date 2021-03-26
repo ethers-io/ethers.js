@@ -10,6 +10,7 @@ import { _TypedDataEncoder } from "@ethersproject/hash";
 import { Network, Networkish } from "@ethersproject/networks";
 import { checkProperties, deepCopy, Deferrable, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { toUtf8Bytes } from "@ethersproject/strings";
+import { AccessList, accessListify } from "@ethersproject/transactions";
 import { ConnectionInfo, fetchJson, poll } from "@ethersproject/web";
 
 import { Logger } from "@ethersproject/logger";
@@ -264,7 +265,8 @@ class UncheckedJsonRpcSigner extends JsonRpcSigner {
 }
 
 const allowedTransactionKeys: { [ key: string ]: boolean } = {
-    chainId: true, data: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
+    chainId: true, data: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true,
+    type: true, accessList: true
 }
 
 export class JsonRpcProvider extends BaseProvider {
@@ -529,7 +531,7 @@ export class JsonRpcProvider extends BaseProvider {
     //       before this is called
     // @TODO: This will likely be removed in future versions and prepareRequest
     //        will be the preferred method for this.
-    static hexlifyTransaction(transaction: TransactionRequest, allowExtra?: { [key: string]: boolean }): { [key: string]: string } {
+    static hexlifyTransaction(transaction: TransactionRequest, allowExtra?: { [key: string]: boolean }): { [key: string]: string | AccessList } {
         // Check only allowed properties are given
         const allowed = shallowCopy(allowedTransactionKeys);
         if (allowExtra) {
@@ -537,12 +539,13 @@ export class JsonRpcProvider extends BaseProvider {
                 if (allowExtra[key]) { allowed[key] = true; }
             }
         }
+
         checkProperties(transaction, allowed);
 
-        const result: { [key: string]: string } = {};
+        const result: { [key: string]: string | AccessList } = {};
 
         // Some nodes (INFURA ropsten; INFURA mainnet is fine) do not like leading zeros.
-        ["gasLimit", "gasPrice", "nonce", "value"].forEach(function(key) {
+        ["gasLimit", "gasPrice", "type", "nonce", "value"].forEach(function(key) {
             if ((<any>transaction)[key] == null) { return; }
             const value = hexValue((<any>transaction)[key]);
             if (key === "gasLimit") { key = "gas"; }
@@ -553,6 +556,10 @@ export class JsonRpcProvider extends BaseProvider {
             if ((<any>transaction)[key] == null) { return; }
             result[key] = hexlify((<any>transaction)[key]);
         });
+
+        if ((<any>transaction).accessList) {
+            result["accessList"] = accessListify((<any>transaction).accessList);
+        }
 
         return result;
     }

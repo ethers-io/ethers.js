@@ -1122,6 +1122,15 @@ export class BaseProvider extends Provider implements EnsProvider {
             tx[key] = Promise.resolve(values[key]).then((v) => (v ? BigNumber.from(v): null));
         });
 
+        ["type"].forEach((key) => {
+            if (values[key] == null) { return; }
+            tx[key] = Promise.resolve(values[key]).then((v) => ((v != null) ? v: null));
+        });
+
+        if (values.accessList) {
+            tx.accessList = this.formatter.accessList(values.accessList);
+        }
+
         ["data"].forEach((key) => {
             if (values[key] == null) { return; }
             tx[key] = Promise.resolve(values[key]).then((v) => (v ? hexlify(v): null));
@@ -1175,6 +1184,7 @@ export class BaseProvider extends Provider implements EnsProvider {
         const params = await resolveProperties({
             transaction: this._getTransactionRequest(transaction)
         });
+
         const result = await this.perform("estimateGas", params);
         try {
             return BigNumber.from(result);

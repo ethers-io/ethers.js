@@ -9,7 +9,8 @@
     "@ethersproject/bytes": "^5.0.9",
     "@ethersproject/constants": "^5.0.8",
     "@ethersproject/logger": "^5.0.8",
-    "@ethersproject/properties": "^5.0.7"
+    "@ethersproject/properties": "^5.0.7",
+    "@ethersproject/transactions": "^5.0.11"
   },
   "description": "Contract abstraction meta-class for ethers.",
   "ethereum": "donations.ethers.eth",

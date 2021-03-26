@@ -7,7 +7,7 @@ import { getAddress, getContractAddress } from "@ethersproject/address";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { arrayify, BytesLike, concat, hexlify, isBytes, isHexString } from "@ethersproject/bytes";
 import { Deferrable, defineReadOnly, deepCopy, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
-// @TOOD remove dependences transactions
+import { AccessList, accessListify, AccessListish } from "@ethersproject/transactions";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -18,6 +18,8 @@ export interface Overrides {
     gasLimit?: BigNumberish | Promise<BigNumberish>;
     gasPrice?: BigNumberish | Promise<BigNumberish>;
     nonce?: BigNumberish | Promise<BigNumberish>;
+    type?: number;
+    accessList?: AccessListish;
 };
 
 export interface PayableOverrides extends Overrides {
@@ -45,6 +47,9 @@ export interface PopulatedTransaction {
     data?: string;
     value?: BigNumber;
     chainId?: number;
+
+    type?: number;
+    accessList?: AccessList;
 };
 
 export type EventFilter = {
@@ -94,7 +99,8 @@ export interface ContractTransaction extends TransactionResponse {
 ///////////////////////////////
 
 const allowedTransactionKeys: { [ key: string ]: boolean } = {
-    chainId: true, data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
+    chainId: true, data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true,
+    type: true, accessList: true,
 }
 
 async function resolveName(resolver: Signer | Provider, nameOrPromise: string | Promise<string>): Promise<string> {
@@ -212,6 +218,9 @@ async function populateTransaction(contract: Contract, fragment: FunctionFragmen
     if (ro.gasPrice != null) { tx.gasPrice = BigNumber.from(ro.gasPrice); }
     if (ro.from != null) { tx.from = ro.from; }
 
+    if (ro.type != null) { tx.type = ro.type; }
+    if (ro.accessList != null) { tx.accessList = accessListify(ro.accessList); }
+
     // If there was no "gasLimit" override, but the ABI specifies a default, use it
     if (tx.gasLimit == null && fragment.gas != null) {
         // Conmpute the intrinisic gas cost for this transaction
@@ -246,6 +255,9 @@ async function populateTransaction(contract: Contract, fragment: FunctionFragmen
     delete overrides.gasPrice;
     delete overrides.from;
     delete overrides.value;
+
+    delete overrides.type;
+    delete overrides.accessList;
 
     // Make sure there are no stray overrides, which may indicate a
     // typo or using an unsupported key.

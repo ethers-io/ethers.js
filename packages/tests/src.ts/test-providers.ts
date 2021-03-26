@@ -247,6 +247,58 @@ const blockchainData: { [ network: string ]: TestCases } = {
             },
         ],
         transactions: [
+            {
+                hash: "0x48bff7b0e603200118a672f7c622ab7d555a28f98938edb8318803eed7ea7395",
+                type: 1,
+                accessList: [
+                    {
+                        address: "0x0000000000000000000000000000000000000000",
+                        storageKeys: []
+                    }
+                ],
+                blockHash: "0x378e24bcd568bd24cf1f54d38f13f038ee28d89e82af4f2a0d79c1f88dcd8aac",
+                blockNumber: 9812343,
+                from: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
+                gasPrice: bnify("0x65cf89a0"),
+                gasLimit: bnify("0x5b68"),
+                to: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
+                value: bnify("0"),
+                nonce: 13,
+                data: "0x",
+                r: "0x9659cba42376dbea1433cd6afc9c8ffa38dbeff5408ffdca0ebde6207281a3ec",
+                s: "0x27efbab3e6ed30b088ce0a50533364778e101c9e52acf318daec131da64e7758",
+                v: 0,
+                creates: null,
+                chainId: 3
+            },
+            {
+                hash: "0x1675a417e728fd3562d628d06955ef35b913573d9e417eb4e6a209998499c9d3",
+                type: 1,
+                accessList: [
+                    {
+                        address: "0x0000000000000000000000000000000000000000",
+                        storageKeys: [
+                            "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+                            "0x0000000000111111111122222222223333333333444444444455555555556666",
+                            "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+                        ]
+                    }
+                ],
+                blockHash: "0x7565688256f5801768237993b47ca0608796b3ace0c4b8b6e623c6092bef14b8",
+                blockNumber: 9812365,
+                from: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
+                gasPrice: bnify("0x65cf89a0"),
+                gasLimit: bnify("0x71ac"),
+                to: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
+                value: bnify("0"),
+                nonce: 14,
+                data: "0x",
+                r: "0xb0646756f89817d70cdb40aa2ae8b5f43ef65d0926dcf71a7dca5280c93763df",
+                s: "0x4d32dbd9a44a2c5639b8434b823938202f75b0a8459f3fcd9f37b2495b7a66a6",
+                v: 0,
+                creates: null,
+                chainId: 3
+            }
         ],
         transactionReceipts: [
             {
@@ -630,6 +682,9 @@ Object.keys(blockchainData).forEach((network) => {
     tests.transactions.forEach((test) => {
         addObjectTest(`fetches transaction ${ test.hash }`, async (provider: ethers.providers.Provider) => {
             const tx = await provider.getTransaction(test.hash);
+//console.log("TX");
+//console.dir(test, { depth: null })
+//console.dir(tx, { depth: null })
 
             // This changes with every block
             assert.equal(typeof(tx.confirmations), "number", "confirmations is a number");
@@ -640,7 +695,12 @@ Object.keys(blockchainData).forEach((network) => {
 
             return tx;
         }, test, (provider: string, network: string, test: TestDescription) => {
-            return (provider === "EtherscanProvider");
+            if (network === "ropsten" && (provider === "AlchemyProvider" || provider === "PocketProvider")) {
+                console.log(`Skipping ${ provider }; incomplete Berlin support`);
+                return true;
+            }
+
+            return false; //(provider === "EtherscanProvider");
         });
     });
 
@@ -721,6 +781,9 @@ testFunctions.push({
     extras: [ "funding" ],         // We need funding to the funWallet
     timeout: 300,                  // 5 minutes
     networks: [ "ropsten" ],       // Only test on Ropsten
+    checkSkip: (provider: string, network: string, test: TestDescription) => {
+        return (provider === "PocketProvider");
+    },
     execute: async (provider: ethers.providers.Provider) => {
         const wallet = fundWallet.connect(provider);
 
@@ -730,6 +793,41 @@ testFunctions.push({
         assert.ok(b0.gt(ethers.constants.Zero), "balance is non-zero");
 
         const tx = await wallet.sendTransaction({
+            to: addr,
+            value: 123
+        });
+
+        await tx.wait();
+
+        const b1 = await provider.getBalance(wallet.address);
+        assert.ok(b0.gt(b1), "balance is decreased");
+    }
+});
+
+testFunctions.push({
+    name: "sends an EIP-2930 transaction",
+    extras: [ "funding" ],         // We need funding to the funWallet
+    timeout: 300,                  // 5 minutes
+    networks: [ "ropsten" ],       // Only test on Ropsten
+    checkSkip: (provider: string, network: string, test: TestDescription) => {
+        return (provider === "PocketProvider" || provider === "EtherscanProvider" || provider === "AlchemyProvider");
+    },
+    execute: async (provider: ethers.providers.Provider) => {
+        const wallet = fundWallet.connect(provider);
+
+        const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
+
+        const b0 = await provider.getBalance(wallet.address);
+        assert.ok(b0.gt(ethers.constants.Zero), "balance is non-zero");
+
+        const tx = await wallet.sendTransaction({
+            type: 1,
+            accessList: {
+                "0x8ba1f109551bD432803012645Ac136ddd64DBA72": [
+                    "0x0000000000000000000000000000000000000000000000000000000000000000",
+                    "0x0000000000000000000000000000000000000000000000000000000000000042",
+                ]
+            },
             to: addr,
             value: 123
         });
@@ -821,6 +919,9 @@ describe("Test Provider Methods", function() {
                         } catch (attemptError) {
                             console.log(`*** Failed attempt ${ attempt + 1 }: ${ attemptError.message }`);
                             error = attemptError;
+
+                            // On failure, wait 5s
+                            await waiter(5000);
                         }
                     }
                     throw error;
