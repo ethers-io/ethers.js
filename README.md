@@ -52,7 +52,7 @@ Installing
 
 ```
 <script type="module">
-    import { ethers } from "https://cdn.ethers.io/lib/ethers-5.0.umd.min.js";
+    import { ethers } from "https://cdn.ethers.io/lib/ethers-5.0.esm.min.js";
 </script>
 ```
 
