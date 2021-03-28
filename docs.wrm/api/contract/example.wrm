@@ -136,7 +136,7 @@ Returns the number of decimal places used by this ERC-20 token. This can be
 used with [parseUnits](utils-parseUnits) when taking input from the user or
 [formatUnits](utils-formatunits] when displaying the token amounts in the UI.
 
-_property: erc20.getBalance(owner [, overrides ]) => Promise<[[BigNumber]]>
+_property: erc20.balanceOf(owner [, overrides ]) => Promise<[[BigNumber]]>
 Returns the balance of //owner// for this ERC-20 token.
 
 _property: erc20.symbol([ overrides ]) => Promise<string>
