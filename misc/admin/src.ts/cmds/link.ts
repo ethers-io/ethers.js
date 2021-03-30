@@ -21,7 +21,7 @@ function link(existing: string, path: string): void {
     // Link
     const dir = dirname(path);
     mkdir(dir);
-    fs.symlinkSync(existing, path);
+    fs.symlinkSync(existing, path, "junction");
 }
 
 (async function() {
