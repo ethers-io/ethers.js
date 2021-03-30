@@ -578,7 +578,7 @@ class WildcardRunningEvent extends RunningEvent {
     }
 }
 
-export type ContractInterface = string | Array<Fragment | JsonFragment | string> | Interface;
+export type ContractInterface = string | ReadonlyArray<Fragment | JsonFragment | string> | Interface;
 
 type InterfaceFunc = (contractInterface: ContractInterface) => Interface;
 

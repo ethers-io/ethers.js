@@ -8,26 +8,26 @@ import { version } from "./_version";
 const logger = new Logger(version);
 
 export interface JsonFragmentType {
-    name?: string;
-    indexed?: boolean;
-    type?: string;
-    components?: Array<JsonFragmentType>;
+    readonly name?: string;
+    readonly indexed?: boolean;
+    readonly type?: string;
+    readonly components?: ReadonlyArray<JsonFragmentType>;
 }
 
 export interface JsonFragment {
-    name?: string;
-    type?: string;
+    readonly name?: string;
+    readonly type?: string;
 
-    anonymous?: boolean;
+    readonly anonymous?: boolean;
 
-    payable?: boolean;
-    constant?: boolean;
-    stateMutability?: string;
+    readonly payable?: boolean;
+    readonly constant?: boolean;
+    readonly stateMutability?: string;
 
-    inputs?: Array<JsonFragmentType>;
-    outputs?: Array<JsonFragmentType>;
+    readonly inputs?: ReadonlyArray<JsonFragmentType>;
+    readonly outputs?: ReadonlyArray<JsonFragmentType>;
 
-    gas?: string;
+    readonly gas?: string;
 };
 
 
@@ -399,7 +399,7 @@ type TypeCheck<T> = { -readonly [ K in keyof T ]: T[K] };
 interface _Fragment {
     readonly type: string;
     readonly name: string;
-    readonly inputs: Array<ParamType>;
+    readonly inputs: ReadonlyArray<ParamType>;
 }
 
 export abstract class Fragment {

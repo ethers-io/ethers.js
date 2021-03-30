@@ -72,7 +72,7 @@ function _pack(type: string, value: any, isArray?: boolean): Uint8Array {
 
 // @TODO: Array Enum
 
-export function pack(types: Array<string>, values: Array<any>) {
+export function pack(types: ReadonlyArray<string>, values: ReadonlyArray<any>) {
     if (types.length != values.length) { throw new Error("type/value count mismatch"); }
     const tight: Array<Uint8Array> = [];
     types.forEach(function(type, index) {
@@ -81,10 +81,10 @@ export function pack(types: Array<string>, values: Array<any>) {
     return hexlify(concat(tight));
 }
 
-export function keccak256(types: Array<string>, values: Array<any>) {
+export function keccak256(types: ReadonlyArray<string>, values: ReadonlyArray<any>) {
     return hashKeccak256(pack(types, values));
 }
 
-export function sha256(types: Array<string>, values: Array<any>) {
+export function sha256(types: ReadonlyArray<string>, values: ReadonlyArray<any>) {
     return hashSha256(pack(types, values));
 }

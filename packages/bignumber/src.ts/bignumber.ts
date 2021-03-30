@@ -190,6 +190,16 @@ export class BigNumber implements Hexable {
         return null;
     }
 
+    toBigInt(): BigInt {
+        try {
+            return BigInt(this.toString());
+        } catch (e) { }
+
+        return logger.throwError("this platform does not support BigInt", Logger.errors.UNSUPPORTED_OPERATION, {
+            value: this.toString()
+        });
+    }
+
     toString(): string {
         // Lots of people expect this, which we do not support, so check (See: #889)
         if (arguments.length > 0) {

@@ -63,7 +63,7 @@ function checkNames(fragment: Fragment, type: "input" | "output", params: Array<
 }
 */
 export class Interface {
-    readonly fragments: Array<Fragment>;
+    readonly fragments: ReadonlyArray<Fragment>;
 
     readonly errors: { [ name: string ]: any };
     readonly events: { [ name: string ]: EventFragment };
@@ -76,10 +76,10 @@ export class Interface {
 
     readonly _isInterface: boolean;
 
-    constructor(fragments: string | Array<Fragment | JsonFragment | string>) {
+    constructor(fragments: string | ReadonlyArray<Fragment | JsonFragment | string>) {
         logger.checkNew(new.target, Interface);
 
-        let abi: Array<Fragment | JsonFragment | string> = [ ];
+        let abi: ReadonlyArray<Fragment | JsonFragment | string> = [ ];
         if (typeof(fragments) === "string") {
             abi = JSON.parse(fragments);
         } else {
@@ -259,15 +259,15 @@ export class Interface {
     }
 
 
-    _decodeParams(params: Array<ParamType>, data: BytesLike): Result {
+    _decodeParams(params: ReadonlyArray<ParamType>, data: BytesLike): Result {
         return this._abiCoder.decode(params, data)
     }
 
-    _encodeParams(params: Array<ParamType>, values: Array<any>): string {
+    _encodeParams(params: ReadonlyArray<ParamType>, values: ReadonlyArray<any>): string {
         return this._abiCoder.encode(params, values)
     }
 
-    encodeDeploy(values?: Array<any>): string {
+    encodeDeploy(values?: ReadonlyArray<any>): string {
         return this._encodeParams(this.deploy.inputs, values || [ ]);
     }
 
@@ -287,7 +287,7 @@ export class Interface {
     }
 
     // Encode the data for a function call (e.g. tx.data)
-    encodeFunctionData(functionFragment: FunctionFragment | string, values?: Array<any>): string {
+    encodeFunctionData(functionFragment: FunctionFragment | string, values?: ReadonlyArray<any>): string {
         if (typeof(functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
         }
@@ -332,7 +332,7 @@ export class Interface {
     }
 
     // Encode the result for a function call (e.g. for eth_call)
-    encodeFunctionResult(functionFragment: FunctionFragment | string, values?: Array<any>): string {
+    encodeFunctionResult(functionFragment: FunctionFragment | string, values?: ReadonlyArray<any>): string {
         if (typeof(functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
         }
@@ -341,7 +341,7 @@ export class Interface {
     }
 
     // Create the filter for the event with search criteria (e.g. for eth_filterLog)
-    encodeFilterTopics(eventFragment: EventFragment, values: Array<any>): Array<string | Array<string>> {
+    encodeFilterTopics(eventFragment: EventFragment, values: ReadonlyArray<any>): Array<string | Array<string>> {
         if (typeof(eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
         }
@@ -398,7 +398,7 @@ export class Interface {
         return topics;
     }
 
-    encodeEventLog(eventFragment: EventFragment, values: Array<any>): { data: string, topics: Array<string> } {
+    encodeEventLog(eventFragment: EventFragment, values: ReadonlyArray<any>): { data: string, topics: Array<string> } {
         if (typeof(eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
         }
@@ -442,7 +442,7 @@ export class Interface {
     }
 
     // Decode a filter for the event and the search criteria
-    decodeEventLog(eventFragment: EventFragment | string, data: BytesLike, topics?: Array<string>): Result {
+    decodeEventLog(eventFragment: EventFragment | string, data: BytesLike, topics?: ReadonlyArray<string>): Result {
         if (typeof(eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
         }
