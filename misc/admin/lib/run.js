@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.run = void 0;
 const child_process_1 = require("child_process");
 function run(progname, args, currentWorkingDirectory) {
     if (args == null) {

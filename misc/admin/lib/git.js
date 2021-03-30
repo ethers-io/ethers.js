@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getGitTag = void 0;
 const run_1 = require("./run");
 // Returns the most recent git commit hash for a given filename
 function getGitTag(filename) {

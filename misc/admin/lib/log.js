@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getPassword = exports.getPrompt = exports.colorify = exports.getProgressBar = void 0;
 const utils_1 = require("./utils");
 // See: https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color
 let disableColor = !(process.stdout.isTTY);

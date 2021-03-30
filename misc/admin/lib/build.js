@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.setupBuild = void 0;
 const path_1 = require("./path");
 const utils_1 = require("./utils");
 function setupConfig(outDir, moduleType, targetType) {

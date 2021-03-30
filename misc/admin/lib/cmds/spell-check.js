@@ -31,7 +31,7 @@ expired failed fetches formatted formatting funding generated
 hardened has highly ignoring implemented implementer imported including instantiate
 joined keyword labelled larger lookup matches mined modified modifies multi
 named needed nested neutered numeric offline optimizer overriding owned packed
-padded parsed parsing passed placeholder processing properties prototyping reached
+padded parsed parsing passed payload placeholder processing properties prototyping reached
 recommended recovered redacted remaining replaced required reverted
 serializes shared signed signing skipped stored supported tagging targetted
 throttled transactions typed uninstall unstake unsubscribe using verifies verifying website
@@ -54,15 +54,15 @@ jumpdest mstore shr shl xor
 ABIEncoder testcase numberish Wordlist
 
 // Common Code Strings
-abi addr api app arg arrayify asm basex bigint bignumber bn byte
+abi addr api app arg arrayify asm backend basex bigint bignumber bn byte
 bytecode callback calldata charset checksum ciphertext cli codepoint
 commify config
-contenthash ctr ctrl debug dd dklen eexist encseed eof ethaddr
+contenthash ctr ctrl debug dd dklen eexist encseed eof eq ethaddr
 ethseed ethers eval exec filename func gz gzip hid http https hw iv
 info init ipc json kdf kdfparams labelhash lang lib mm multihash nfc
 nfkc nfd nfkd nodehash notok nowait nullish oob opcode pbkdf pc plugin
-pragma pre prf repl rpc sighash topichash solc stdin stdout subclasses
-subnode timeout todo txt ufixed utc utf util url urlencoded uuid vm
+pragma pre prf recid repl rpc sighash topichash solc stdin stdout subclasses
+subnode timeout todo txt typeof ufixed utc utf util url urlencoded uuid vm
 vs websocket wikipedia www wx xe xpriv xpub xx yyyy zlib
 
 // AbiV2

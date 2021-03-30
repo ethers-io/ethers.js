@@ -1,4 +1,23 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -11,14 +30,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.invalidate = exports.putObject = void 0;
 const { createHash } = require("crypto");
 const fs_1 = __importDefault(require("fs"));
 const aws_sdk_1 = __importDefault(require("aws-sdk"));
@@ -147,6 +160,8 @@ exports.invalidate = invalidate;
         }
         if (publishNames.indexOf("ethers") >= 0 || forcePublish) {
             const change = changelog_1.getLatestChange();
+            const patchVersion = change.version.substring(1);
+            const minorVersion = patchVersion.split(".").slice(0, 2).join(".");
             const awsAccessId = yield config_1.config.get("aws-upload-scripts-accesskey");
             const awsSecretKey = yield config_1.config.get("aws-upload-scripts-secretkey");
             // Publish tagged release on GitHub
@@ -163,7 +178,7 @@ exports.invalidate = invalidate;
                 content += '<script type="text/javascript"\n';
                 content += `        integrity="sha384-${hash}"\n`;
                 content += '        crossorigin="anonymous"\n';
-                content += `        src="https:/\/cdn-cors.ethers.io/lib/ethers-${change.version.substring(1)}.umd.min.js">\n`;
+                content += `        src="https:/\/cdn-cors.ethers.io/lib/ethers-${patchVersion}.umd.min.js">\n`;
                 content += '</script>\n';
                 content += '```';
                 // Publish the release
@@ -171,7 +186,7 @@ exports.invalidate = invalidate;
                 const link = yield github_1.createRelease(username, password, change.version, change.title, content, beta, gitCommit);
                 console.log(`${log_1.colorify.bold("Published release:")} ${link}`);
             }
-            // Upload libs to the CDN (as ethers-v5.0 and ethers-5.0.x)
+            // Upload libs to the CDN (as ethers-v5.1 and ethers-5.1.x)
             {
                 const bucketNameLib = yield config_1.config.get("aws-upload-scripts-bucket");
                 const originRootLib = yield config_1.config.get("aws-upload-scripts-root");
@@ -182,7 +197,7 @@ exports.invalidate = invalidate;
                     accessKeyId: awsAccessId,
                     secretAccessKey: awsSecretKey
                 });
-                // Upload the libs to ethers-v5.0 and ethers-5.0.x
+                // Upload the libs to ethers-v5.1 and ethers-5.1.x
                 const fileInfos = [
                     // The CORS-enabled versions on cdn-cors.ethers.io
                     {
@@ -190,39 +205,39 @@ exports.invalidate = invalidate;
                         originRoot: originRootCors,
                         suffix: "-cors",
                         filename: "packages/ethers/dist/ethers.esm.min.js",
-                        key: `ethers-${change.version.substring(1)}.esm.min.js`
+                        key: `ethers-${patchVersion}.esm.min.js`
                     },
                     {
                         bucketName: bucketNameCors,
                         originRoot: originRootCors,
                         suffix: "-cors",
                         filename: "packages/ethers/dist/ethers.umd.min.js",
-                        key: `ethers-${change.version.substring(1)}.umd.min.js`
+                        key: `ethers-${patchVersion}.umd.min.js`
                     },
                     // The non-CORS-enabled versions on cdn.ethers.io
                     {
                         bucketName: bucketNameLib,
                         originRoot: originRootLib,
                         filename: "packages/ethers/dist/ethers.esm.min.js",
-                        key: `ethers-${change.version.substring(1)}.esm.min.js`
+                        key: `ethers-${patchVersion}.esm.min.js`
                     },
                     {
                         bucketName: bucketNameLib,
                         originRoot: originRootLib,
                         filename: "packages/ethers/dist/ethers.umd.min.js",
-                        key: `ethers-${change.version.substring(1)}.umd.min.js`
+                        key: `ethers-${patchVersion}.umd.min.js`
                     },
                     {
                         bucketName: bucketNameLib,
                         originRoot: originRootLib,
                         filename: "packages/ethers/dist/ethers.esm.min.js",
-                        key: "ethers-5.0.esm.min.js"
+                        key: `ethers-${minorVersion}.esm.min.js`
                     },
                     {
                         bucketName: bucketNameLib,
                         originRoot: originRootLib,
                         filename: "packages/ethers/dist/ethers.umd.min.js",
-                        key: "ethers-5.0.umd.min.js"
+                        key: `ethers-${minorVersion}.umd.min.js`
                     },
                 ];
                 for (let i = 0; i < fileInfos.length; i++) {

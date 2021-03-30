@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.sort = exports.getOrdered = void 0;
 const path_1 = require("./path");
 const local_1 = require("./local");
 class OrderedSet {
