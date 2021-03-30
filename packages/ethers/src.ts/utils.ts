@@ -17,7 +17,7 @@ import { checkProperties, deepCopy, defineReadOnly, getStatic, resolveProperties
 import * as RLP from "@ethersproject/rlp";
 import { computePublicKey, recoverPublicKey, SigningKey } from "@ethersproject/signing-key";
 import { formatBytes32String, nameprep, parseBytes32String, _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String, Utf8ErrorFuncs } from "@ethersproject/strings";
-import { computeAddress, parse as parseTransaction, recoverAddress, serialize as serializeTransaction } from "@ethersproject/transactions";
+import { accessListify, computeAddress, parse as parseTransaction, recoverAddress, serialize as serializeTransaction } from "@ethersproject/transactions";
 import { commify, formatEther, parseEther, formatUnits, parseUnits } from "@ethersproject/units";
 import { verifyMessage, verifyTypedData } from "@ethersproject/wallet";
 import { _fetchData, fetchJson, poll } from "@ethersproject/web";
@@ -38,6 +38,7 @@ import { Mnemonic } from "@ethersproject/hdnode";
 import { EncryptOptions, ProgressCallback } from "@ethersproject/json-wallets";
 import { Deferrable } from "@ethersproject/properties";
 import { Utf8ErrorFunc } from "@ethersproject/strings";
+import { AccessList, AccessListish } from "@ethersproject/transactions";
 import { ConnectionInfo, FetchJsonResponse, OnceBlockable, OncePollable, PollOptions } from "@ethersproject/web";
 
 ////////////////////////
@@ -148,6 +149,7 @@ export {
     splitSignature,
     joinSignature,
 
+    accessListify,
     parseTransaction,
     serializeTransaction,
 
@@ -183,6 +185,8 @@ export {
     BytesLike,
     Hexable,
 
+    AccessList,
+    AccessListish,
     UnsignedTransaction,
 
     CoerceFunc,

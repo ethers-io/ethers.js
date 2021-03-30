@@ -14,6 +14,7 @@ import { hexlify, hexValue, isHexString } from "@ethersproject/bytes";
 import { _TypedDataEncoder } from "@ethersproject/hash";
 import { checkProperties, deepCopy, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { toUtf8Bytes } from "@ethersproject/strings";
+import { accessListify } from "@ethersproject/transactions";
 import { fetchJson, poll } from "@ethersproject/web";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -236,7 +237,8 @@ class UncheckedJsonRpcSigner extends JsonRpcSigner {
     }
 }
 const allowedTransactionKeys = {
-    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
+    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
+    type: true, accessList: true
 };
 export class JsonRpcProvider extends BaseProvider {
     constructor(url, network) {
@@ -478,7 +480,7 @@ export class JsonRpcProvider extends BaseProvider {
         checkProperties(transaction, allowed);
         const result = {};
         // Some nodes (INFURA ropsten; INFURA mainnet is fine) do not like leading zeros.
-        ["gasLimit", "gasPrice", "nonce", "value"].forEach(function (key) {
+        ["gasLimit", "gasPrice", "type", "nonce", "value"].forEach(function (key) {
             if (transaction[key] == null) {
                 return;
             }
@@ -494,6 +496,9 @@ export class JsonRpcProvider extends BaseProvider {
             }
             result[key] = hexlify(transaction[key]);
         });
+        if (transaction.accessList) {
+            result["accessList"] = accessListify(transaction.accessList);
+        }
         return result;
     }
 }

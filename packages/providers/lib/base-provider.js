@@ -1222,6 +1222,15 @@ var BaseProvider = /** @class */ (function (_super) {
                             }
                             tx[key] = Promise.resolve(values[key]).then(function (v) { return (v ? bignumber_1.BigNumber.from(v) : null); });
                         });
+                        ["type"].forEach(function (key) {
+                            if (values[key] == null) {
+                                return;
+                            }
+                            tx[key] = Promise.resolve(values[key]).then(function (v) { return ((v != null) ? v : null); });
+                        });
+                        if (values.accessList) {
+                            tx.accessList = this.formatter.accessList(values.accessList);
+                        }
                         ["data"].forEach(function (key) {
                             if (values[key] == null) {
                                 return;

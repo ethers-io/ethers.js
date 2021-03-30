@@ -1,6 +1,6 @@
 "use strict";
 
-import { Contract, ContractFactory } from "@ethersproject/contracts";
+import { BaseContract, Contract, ContractFactory } from "@ethersproject/contracts";
 
 import { BigNumber, FixedNumber } from "@ethersproject/bignumber";
 
@@ -67,6 +67,7 @@ export {
     getDefaultProvider,
     providers,
 
+    BaseContract,
     Contract,
     ContractFactory,
 

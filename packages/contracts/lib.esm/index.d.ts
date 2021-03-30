@@ -3,10 +3,13 @@ import { Block, BlockTag, Listener, Log, Provider, TransactionReceipt, Transacti
 import { Signer } from "@ethersproject/abstract-signer";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike } from "@ethersproject/bytes";
+import { AccessList, AccessListish } from "@ethersproject/transactions";
 export interface Overrides {
     gasLimit?: BigNumberish | Promise<BigNumberish>;
     gasPrice?: BigNumberish | Promise<BigNumberish>;
     nonce?: BigNumberish | Promise<BigNumberish>;
+    type?: number;
+    accessList?: AccessListish;
 }
 export interface PayableOverrides extends Overrides {
     value?: BigNumberish | Promise<BigNumberish>;
@@ -24,6 +27,8 @@ export interface PopulatedTransaction {
     data?: string;
     value?: BigNumber;
     chainId?: number;
+    type?: number;
+    accessList?: AccessList;
 }
 export declare type EventFilter = {
     address?: string;
@@ -61,8 +66,8 @@ declare class RunningEvent {
     prepareEvent(event: Event): void;
     getEmit(event: Event): Array<any>;
 }
-export declare type ContractInterface = string | Array<Fragment | JsonFragment | string> | Interface;
-export declare class Contract {
+export declare type ContractInterface = string | ReadonlyArray<Fragment | JsonFragment | string> | Interface;
+export declare class BaseContract {
     readonly address: string;
     readonly interface: Interface;
     readonly signer: Signer;
@@ -82,7 +87,6 @@ export declare class Contract {
     readonly filters: {
         [name: string]: (...args: Array<any>) => EventFilter;
     };
-    readonly [key: string]: ContractFunction | any;
     readonly resolvedAddress: Promise<string>;
     readonly deployTransaction: TransactionResponse;
     _deployedPromise: Promise<Contract>;
@@ -118,6 +122,9 @@ export declare class Contract {
     removeAllListeners(eventName?: EventFilter | string): this;
     off(eventName: EventFilter | string, listener: Listener): this;
     removeListener(eventName: EventFilter | string, listener: Listener): this;
+}
+export declare class Contract extends BaseContract {
+    readonly [key: string]: ContractFunction | any;
 }
 export declare class ContractFactory {
     readonly interface: Interface;

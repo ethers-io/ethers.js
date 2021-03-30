@@ -1,14 +1,14 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/abstract-signer": "^5.0.10",
-    "@ethersproject/address": "^5.0.9",
-    "@ethersproject/bignumber": "^5.0.13",
-    "@ethersproject/bytes": "^5.0.9",
-    "@ethersproject/keccak256": "^5.0.7",
-    "@ethersproject/logger": "^5.0.8",
-    "@ethersproject/properties": "^5.0.7",
-    "@ethersproject/strings": "^5.0.8"
+    "@ethersproject/abstract-signer": "^5.1.0",
+    "@ethersproject/address": "^5.1.0",
+    "@ethersproject/bignumber": "^5.1.0",
+    "@ethersproject/bytes": "^5.1.0",
+    "@ethersproject/keccak256": "^5.1.0",
+    "@ethersproject/logger": "^5.1.0",
+    "@ethersproject/properties": "^5.1.0",
+    "@ethersproject/strings": "^5.1.0"
   },
   "description": "Hash utility functions for Ethereum.",
   "ethereum": "donations.ethers.eth",
@@ -42,7 +42,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xfa879cfa5e74cb934b265f47f2a900f4eb969ec6e96a7519f0fda398819a4145",
+  "tarballHash": "0xdc340236a4297645bfbb6b982cece99d88c283c529465beb4a31d4f002dd69af",
   "types": "./lib/index.d.ts",
-  "version": "5.0.12"
+  "version": "5.1.0"
 }

@@ -29,6 +29,8 @@ var Formatter = /** @class */ (function () {
         var strictData = function (v) { return _this.data(v, true); };
         formats.transaction = {
             hash: hash,
+            type: Formatter.allowNull(number, null),
+            accessList: Formatter.allowNull(this.accessList.bind(this), null),
             blockHash: Formatter.allowNull(hash, null),
             blockNumber: Formatter.allowNull(number, null),
             transactionIndex: Formatter.allowNull(number, null),
@@ -54,6 +56,8 @@ var Formatter = /** @class */ (function () {
             to: Formatter.allowNull(address),
             value: Formatter.allowNull(bigNumber),
             data: Formatter.allowNull(strictData),
+            type: Formatter.allowNull(number),
+            accessList: Formatter.allowNull(this.accessList.bind(this), null),
         };
         formats.receiptLog = {
             transactionIndex: number,
@@ -116,6 +120,9 @@ var Formatter = /** @class */ (function () {
             logIndex: number,
         };
         return formats;
+    };
+    Formatter.prototype.accessList = function (accessList) {
+        return transactions_1.accessListify(accessList || []);
     };
     // Requires a BigNumberish that is within the IEEE754 safe integer range; returns a number
     // Strict! Used on input.
@@ -254,28 +261,9 @@ var Formatter = /** @class */ (function () {
         if (transaction.to == null && transaction.creates == null) {
             transaction.creates = this.contractAddress(transaction);
         }
-        // @TODO: use transaction.serialize? Have to add support for including v, r, and s...
-        /*
-        if (!transaction.raw) {
- 
-             // Very loose providers (e.g. TestRPC) do not provide a signature or raw
-             if (transaction.v && transaction.r && transaction.s) {
-                 let raw = [
-                     stripZeros(hexlify(transaction.nonce)),
-                     stripZeros(hexlify(transaction.gasPrice)),
-                     stripZeros(hexlify(transaction.gasLimit)),
-                     (transaction.to || "0x"),
-                     stripZeros(hexlify(transaction.value || "0x")),
-                     hexlify(transaction.data || "0x"),
-                     stripZeros(hexlify(transaction.v || "0x")),
-                     stripZeros(hexlify(transaction.r)),
-                     stripZeros(hexlify(transaction.s)),
-                 ];
- 
-                 transaction.raw = rlpEncode(raw);
-             }
-         }
-         */
+        if (transaction.type === 1 && transaction.accessList == null) {
+            transaction.accessList = [];
+        }
         var result = Formatter.check(this.formats.transaction, transaction);
         if (transaction.chainId != null) {
             var chainId = transaction.chainId;

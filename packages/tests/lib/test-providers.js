@@ -270,7 +270,60 @@ var blockchainData = {
                 transactions: []
             },
         ],
-        transactions: [],
+        transactions: [
+            {
+                hash: "0x48bff7b0e603200118a672f7c622ab7d555a28f98938edb8318803eed7ea7395",
+                type: 1,
+                accessList: [
+                    {
+                        address: "0x0000000000000000000000000000000000000000",
+                        storageKeys: []
+                    }
+                ],
+                blockHash: "0x378e24bcd568bd24cf1f54d38f13f038ee28d89e82af4f2a0d79c1f88dcd8aac",
+                blockNumber: 9812343,
+                from: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
+                gasPrice: bnify("0x65cf89a0"),
+                gasLimit: bnify("0x5b68"),
+                to: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
+                value: bnify("0"),
+                nonce: 13,
+                data: "0x",
+                r: "0x9659cba42376dbea1433cd6afc9c8ffa38dbeff5408ffdca0ebde6207281a3ec",
+                s: "0x27efbab3e6ed30b088ce0a50533364778e101c9e52acf318daec131da64e7758",
+                v: 0,
+                creates: null,
+                chainId: 3
+            },
+            {
+                hash: "0x1675a417e728fd3562d628d06955ef35b913573d9e417eb4e6a209998499c9d3",
+                type: 1,
+                accessList: [
+                    {
+                        address: "0x0000000000000000000000000000000000000000",
+                        storageKeys: [
+                            "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+                            "0x0000000000111111111122222222223333333333444444444455555555556666",
+                            "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+                        ]
+                    }
+                ],
+                blockHash: "0x7565688256f5801768237993b47ca0608796b3ace0c4b8b6e623c6092bef14b8",
+                blockNumber: 9812365,
+                from: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
+                gasPrice: bnify("0x65cf89a0"),
+                gasLimit: bnify("0x71ac"),
+                to: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
+                value: bnify("0"),
+                nonce: 14,
+                data: "0x",
+                r: "0xb0646756f89817d70cdb40aa2ae8b5f43ef65d0926dcf71a7dca5280c93763df",
+                s: "0x4d32dbd9a44a2c5639b8434b823938202f75b0a8459f3fcd9f37b2495b7a66a6",
+                v: 0,
+                creates: null,
+                chainId: 3
+            }
+        ],
         transactionReceipts: [
             {
                 blockHash: "0xc9235b8253fce455942147aa8b450d23081b867ffbb2a1e4dec934827cd80f8f",
@@ -636,6 +689,9 @@ Object.keys(blockchainData).forEach(function (network) {
                     case 0: return [4 /*yield*/, provider.getTransaction(test.hash)];
                     case 1:
                         tx = _a.sent();
+                        //console.log("TX");
+                        //console.dir(test, { depth: null })
+                        //console.dir(tx, { depth: null })
                         // This changes with every block
                         assert_1.default.equal(typeof (tx.confirmations), "number", "confirmations is a number");
                         delete tx.confirmations;
@@ -645,7 +701,11 @@ Object.keys(blockchainData).forEach(function (network) {
                 }
             });
         }); }, test, function (provider, network, test) {
-            return (provider === "EtherscanProvider");
+            if (network === "ropsten" && (provider === "AlchemyProvider" || provider === "PocketProvider")) {
+                console.log("Skipping " + provider + "; incomplete Berlin support");
+                return true;
+            }
+            return false; //(provider === "EtherscanProvider");
         });
     });
     tests.transactionReceipts.forEach(function (test) {
@@ -748,6 +808,9 @@ testFunctions.push({
     extras: ["funding"],
     timeout: 300,
     networks: ["ropsten"],
+    checkSkip: function (provider, network, test) {
+        return (provider === "PocketProvider");
+    },
     execute: function (provider) { return __awaiter(void 0, void 0, void 0, function () {
         var wallet, addr, b0, tx, b1;
         return __generator(this, function (_a) {
@@ -760,6 +823,50 @@ testFunctions.push({
                     b0 = _a.sent();
                     assert_1.default.ok(b0.gt(ethers_1.ethers.constants.Zero), "balance is non-zero");
                     return [4 /*yield*/, wallet.sendTransaction({
+                            to: addr,
+                            value: 123
+                        })];
+                case 2:
+                    tx = _a.sent();
+                    return [4 /*yield*/, tx.wait()];
+                case 3:
+                    _a.sent();
+                    return [4 /*yield*/, provider.getBalance(wallet.address)];
+                case 4:
+                    b1 = _a.sent();
+                    assert_1.default.ok(b0.gt(b1), "balance is decreased");
+                    return [2 /*return*/];
+            }
+        });
+    }); }
+});
+testFunctions.push({
+    name: "sends an EIP-2930 transaction",
+    extras: ["funding"],
+    timeout: 300,
+    networks: ["ropsten"],
+    checkSkip: function (provider, network, test) {
+        return (provider === "PocketProvider" || provider === "EtherscanProvider" || provider === "AlchemyProvider");
+    },
+    execute: function (provider) { return __awaiter(void 0, void 0, void 0, function () {
+        var wallet, addr, b0, tx, b1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    wallet = fundWallet.connect(provider);
+                    addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
+                    return [4 /*yield*/, provider.getBalance(wallet.address)];
+                case 1:
+                    b0 = _a.sent();
+                    assert_1.default.ok(b0.gt(ethers_1.ethers.constants.Zero), "balance is non-zero");
+                    return [4 /*yield*/, wallet.sendTransaction({
+                            type: 1,
+                            accessList: {
+                                "0x8ba1f109551bD432803012645Ac136ddd64DBA72": [
+                                    "0x0000000000000000000000000000000000000000000000000000000000000000",
+                                    "0x0000000000000000000000000000000000000000000000000000000000000042",
+                                ]
+                            },
                             to: addr,
                             value: 123
                         })];
@@ -878,10 +985,10 @@ describe("Test Provider Methods", function () {
                                     attempt = 0;
                                     _a.label = 5;
                                 case 5:
-                                    if (!(attempt < attempts)) return [3 /*break*/, 10];
+                                    if (!(attempt < attempts)) return [3 /*break*/, 11];
                                     _a.label = 6;
                                 case 6:
-                                    _a.trys.push([6, 8, , 9]);
+                                    _a.trys.push([6, 8, , 10]);
                                     return [4 /*yield*/, Promise.race([
                                             test.execute(provider),
                                             waiter(timeout * 1000).then(function (result) { throw new Error("timeout"); })
@@ -893,11 +1000,16 @@ describe("Test Provider Methods", function () {
                                     attemptError_1 = _a.sent();
                                     console.log("*** Failed attempt " + (attempt + 1) + ": " + attemptError_1.message);
                                     error = attemptError_1;
-                                    return [3 /*break*/, 9];
+                                    // On failure, wait 5s
+                                    return [4 /*yield*/, waiter(5000)];
                                 case 9:
+                                    // On failure, wait 5s
+                                    _a.sent();
+                                    return [3 /*break*/, 10];
+                                case 10:
                                     attempt++;
                                     return [3 /*break*/, 5];
-                                case 10: throw error;
+                                case 11: throw error;
                             }
                         });
                     });

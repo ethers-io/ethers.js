@@ -56,7 +56,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from) {
     return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ContractFactory = exports.Contract = void 0;
+exports.ContractFactory = exports.Contract = exports.BaseContract = void 0;
 var abi_1 = require("@ethersproject/abi");
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
 var abstract_signer_1 = require("@ethersproject/abstract-signer");
@@ -64,7 +64,7 @@ var address_1 = require("@ethersproject/address");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
 var properties_1 = require("@ethersproject/properties");
-// @TOOD remove dependences transactions
+var transactions_1 = require("@ethersproject/transactions");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
@@ -72,7 +72,8 @@ var logger = new logger_1.Logger(_version_1.version);
 ;
 ///////////////////////////////
 var allowedTransactionKeys = {
-    chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
+    chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
+    type: true, accessList: true,
 };
 function resolveName(resolver, nameOrPromise) {
     return __awaiter(this, void 0, void 0, function () {
@@ -203,6 +204,12 @@ function populateTransaction(contract, fragment, args) {
                     if (ro.from != null) {
                         tx.from = ro.from;
                     }
+                    if (ro.type != null) {
+                        tx.type = ro.type;
+                    }
+                    if (ro.accessList != null) {
+                        tx.accessList = transactions_1.accessListify(ro.accessList);
+                    }
                     // If there was no "gasLimit" override, but the ABI specifies a default, use it
                     if (tx.gasLimit == null && fragment.gas != null) {
                         intrinsic = 21000;
@@ -232,6 +239,8 @@ function populateTransaction(contract, fragment, args) {
                     delete overrides.gasPrice;
                     delete overrides.from;
                     delete overrides.value;
+                    delete overrides.type;
+                    delete overrides.accessList;
                     leftovers = Object.keys(overrides).filter(function (key) { return (overrides[key] != null); });
                     if (leftovers.length) {
                         logger.throwError("cannot override " + leftovers.map(function (l) { return JSON.stringify(l); }).join(","), logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
@@ -565,8 +574,8 @@ var WildcardRunningEvent = /** @class */ (function (_super) {
     };
     return WildcardRunningEvent;
 }(RunningEvent));
-var Contract = /** @class */ (function () {
-    function Contract(addressOrName, contractInterface, signerOrProvider) {
+var BaseContract = /** @class */ (function () {
+    function BaseContract(addressOrName, contractInterface, signerOrProvider) {
         var _newTarget = this.constructor;
         var _this = this;
         logger.checkNew(_newTarget, Contract);
@@ -688,9 +697,13 @@ var Contract = /** @class */ (function () {
                 return;
             }
             var signature = signatures[0];
-            if (_this[name] == null) {
-                properties_1.defineReadOnly(_this, name, _this[signature]);
+            // If overwriting a member property that is null, swallow the error
+            try {
+                if (_this[name] == null) {
+                    properties_1.defineReadOnly(_this, name, _this[signature]);
+                }
             }
+            catch (e) { }
             if (_this.functions[name] == null) {
                 properties_1.defineReadOnly(_this.functions, name, _this.functions[signature]);
             }
@@ -705,20 +718,20 @@ var Contract = /** @class */ (function () {
             }
         });
     }
-    Contract.getContractAddress = function (transaction) {
+    BaseContract.getContractAddress = function (transaction) {
         return address_1.getContractAddress(transaction);
     };
-    Contract.getInterface = function (contractInterface) {
+    BaseContract.getInterface = function (contractInterface) {
         if (abi_1.Interface.isInterface(contractInterface)) {
             return contractInterface;
         }
         return new abi_1.Interface(contractInterface);
     };
     // @TODO: Allow timeout?
-    Contract.prototype.deployed = function () {
+    BaseContract.prototype.deployed = function () {
         return this._deployed();
     };
-    Contract.prototype._deployed = function (blockTag) {
+    BaseContract.prototype._deployed = function (blockTag) {
         var _this = this;
         if (!this._deployedPromise) {
             // If we were just deployed, we know the transaction we should occur in
@@ -748,7 +761,7 @@ var Contract = /** @class */ (function () {
     // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>
     // @TODO:
     // estimateDeploy(bytecode: string, ...args): Promise<BigNumber>
-    Contract.prototype.fallback = function (overrides) {
+    BaseContract.prototype.fallback = function (overrides) {
         var _this = this;
         if (!this.signer) {
             logger.throwError("sending a transactions require a signer", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" });
@@ -766,7 +779,7 @@ var Contract = /** @class */ (function () {
         });
     };
     // Reconnect to a different signer or provider
-    Contract.prototype.connect = function (signerOrProvider) {
+    BaseContract.prototype.connect = function (signerOrProvider) {
         if (typeof (signerOrProvider) === "string") {
             signerOrProvider = new abstract_signer_1.VoidSigner(signerOrProvider, this.provider);
         }
@@ -777,20 +790,20 @@ var Contract = /** @class */ (function () {
         return contract;
     };
     // Re-attach to a different on-chain instance of this contract
-    Contract.prototype.attach = function (addressOrName) {
+    BaseContract.prototype.attach = function (addressOrName) {
         return new (this.constructor)(addressOrName, this.interface, this.signer || this.provider);
     };
-    Contract.isIndexed = function (value) {
+    BaseContract.isIndexed = function (value) {
         return abi_1.Indexed.isIndexed(value);
     };
-    Contract.prototype._normalizeRunningEvent = function (runningEvent) {
+    BaseContract.prototype._normalizeRunningEvent = function (runningEvent) {
         // Already have an instance of this event running; we can re-use it
         if (this._runningEvents[runningEvent.tag]) {
             return this._runningEvents[runningEvent.tag];
         }
         return runningEvent;
     };
-    Contract.prototype._getRunningEvent = function (eventName) {
+    BaseContract.prototype._getRunningEvent = function (eventName) {
         if (typeof (eventName) === "string") {
             // Listen for "error" events (if your contract has an error event, include
             // the full signature to bypass this special event keyword)
@@ -830,7 +843,7 @@ var Contract = /** @class */ (function () {
         }
         return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
     };
-    Contract.prototype._checkRunningEvents = function (runningEvent) {
+    BaseContract.prototype._checkRunningEvents = function (runningEvent) {
         if (runningEvent.listenerCount() === 0) {
             delete this._runningEvents[runningEvent.tag];
             // If we have a poller for this, remove it
@@ -843,7 +856,7 @@ var Contract = /** @class */ (function () {
     };
     // Subclasses can override this to gracefully recover
     // from parse errors if they wish
-    Contract.prototype._wrapEvent = function (runningEvent, log, listener) {
+    BaseContract.prototype._wrapEvent = function (runningEvent, log, listener) {
         var _this = this;
         var event = properties_1.deepCopy(log);
         event.removeListener = function () {
@@ -860,7 +873,7 @@ var Contract = /** @class */ (function () {
         runningEvent.prepareEvent(event);
         return event;
     };
-    Contract.prototype._addEventListener = function (runningEvent, listener, once) {
+    BaseContract.prototype._addEventListener = function (runningEvent, listener, once) {
         var _this = this;
         if (!this.provider) {
             logger.throwError("events require a provider or a signer with a provider", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "once" });
@@ -898,7 +911,7 @@ var Contract = /** @class */ (function () {
             }
         }
     };
-    Contract.prototype.queryFilter = function (event, fromBlockOrBlockhash, toBlock) {
+    BaseContract.prototype.queryFilter = function (event, fromBlockOrBlockhash, toBlock) {
         var _this = this;
         var runningEvent = this._getRunningEvent(event);
         var filter = properties_1.shallowCopy(runningEvent.filter);
@@ -916,15 +929,15 @@ var Contract = /** @class */ (function () {
             return logs.map(function (log) { return _this._wrapEvent(runningEvent, log, null); });
         });
     };
-    Contract.prototype.on = function (event, listener) {
+    BaseContract.prototype.on = function (event, listener) {
         this._addEventListener(this._getRunningEvent(event), listener, false);
         return this;
     };
-    Contract.prototype.once = function (event, listener) {
+    BaseContract.prototype.once = function (event, listener) {
         this._addEventListener(this._getRunningEvent(event), listener, true);
         return this;
     };
-    Contract.prototype.emit = function (eventName) {
+    BaseContract.prototype.emit = function (eventName) {
         var args = [];
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
@@ -938,7 +951,7 @@ var Contract = /** @class */ (function () {
         this._checkRunningEvents(runningEvent);
         return result;
     };
-    Contract.prototype.listenerCount = function (eventName) {
+    BaseContract.prototype.listenerCount = function (eventName) {
         var _this = this;
         if (!this.provider) {
             return 0;
@@ -950,7 +963,7 @@ var Contract = /** @class */ (function () {
         }
         return this._getRunningEvent(eventName).listenerCount();
     };
-    Contract.prototype.listeners = function (eventName) {
+    BaseContract.prototype.listeners = function (eventName) {
         if (!this.provider) {
             return [];
         }
@@ -965,7 +978,7 @@ var Contract = /** @class */ (function () {
         }
         return this._getRunningEvent(eventName).listeners();
     };
-    Contract.prototype.removeAllListeners = function (eventName) {
+    BaseContract.prototype.removeAllListeners = function (eventName) {
         if (!this.provider) {
             return this;
         }
@@ -983,7 +996,7 @@ var Contract = /** @class */ (function () {
         this._checkRunningEvents(runningEvent);
         return this;
     };
-    Contract.prototype.off = function (eventName, listener) {
+    BaseContract.prototype.off = function (eventName, listener) {
         if (!this.provider) {
             return this;
         }
@@ -992,11 +1005,19 @@ var Contract = /** @class */ (function () {
         this._checkRunningEvents(runningEvent);
         return this;
     };
-    Contract.prototype.removeListener = function (eventName, listener) {
+    BaseContract.prototype.removeListener = function (eventName, listener) {
         return this.off(eventName, listener);
     };
-    return Contract;
+    return BaseContract;
 }());
+exports.BaseContract = BaseContract;
+var Contract = /** @class */ (function (_super) {
+    __extends(Contract, _super);
+    function Contract() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return Contract;
+}(BaseContract));
 exports.Contract = Contract;
 var ContractFactory = /** @class */ (function () {
     function ContractFactory(contractInterface, bytecode, signer) {

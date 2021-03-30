@@ -4,9 +4,10 @@
   },
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bytes": "^5.0.9",
-    "@ethersproject/logger": "^5.0.8",
-    "@ethersproject/properties": "^5.0.7",
+    "@ethersproject/bytes": "^5.1.0",
+    "@ethersproject/logger": "^5.1.0",
+    "@ethersproject/properties": "^5.1.0",
+    "bn.js": "^4.4.0",
     "elliptic": "6.5.4"
   },
   "description": "Elliptic curve library functions for the secp256k1 curve.",
@@ -41,7 +42,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x633e8c245da41b9eb626d84228476e300b0445e528c90e88a24b7f7e19402586",
+  "tarballHash": "0xd1b4137edf00c1b6b115d39dd3f2a3182a51d49f2d32f667b0b9cf1948433207",
   "types": "./lib/index.d.ts",
-  "version": "5.0.11"
+  "version": "5.1.0"
 }

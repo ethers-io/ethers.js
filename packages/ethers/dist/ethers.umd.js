@@ -3500,7 +3500,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "logger/5.0.10";
+	exports.version = "logger/5.1.0";
 
 	});
 
@@ -3828,7 +3828,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "bytes/5.0.11";
+	exports.version = "bytes/5.1.0";
 
 	});
 
@@ -4174,6 +4174,9 @@
 	            if (result.v == null) {
 	                logger.throwArgumentError("signature missing v and recoveryParam", "signature", signature);
 	            }
+	            else if (result.v === 0 || result.v === 1) {
+	                result.recoveryParam = result.v;
+	            }
 	            else {
 	                result.recoveryParam = 1 - (result.v % 2);
 	            }
@@ -4241,7 +4244,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "bignumber/5.0.15";
+	exports.version = "bignumber/5.1.0";
 
 	});
 
@@ -4403,6 +4406,15 @@
 	            throwFault("overflow", "toNumber", this.toString());
 	        }
 	        return null;
+	    };
+	    BigNumber.prototype.toBigInt = function () {
+	        try {
+	            return BigInt(this.toString());
+	        }
+	        catch (e) { }
+	        return logger.throwError("this platform does not support BigInt", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	            value: this.toString()
+	        });
 	    };
 	    BigNumber.prototype.toString = function () {
 	        // Lots of people expect this, which we do not support, so check (See: #889)
@@ -4937,7 +4949,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "properties/5.0.9";
+	exports.version = "properties/5.1.0";
 
 	});
 
@@ -5114,7 +5126,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abi/5.0.13";
+	exports.version = "abi/5.1.0";
 
 	});
 
@@ -6627,7 +6639,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "rlp/5.0.9";
+	exports.version = "rlp/5.1.0";
 
 	});
 
@@ -6766,7 +6778,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "address/5.0.11";
+	exports.version = "address/5.1.0";
 
 	});
 
@@ -7586,7 +7598,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "strings/5.0.10";
+	exports.version = "strings/5.1.0";
 
 	});
 
@@ -8373,7 +8385,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "hash/5.0.12";
+	exports.version = "hash/5.1.0";
 
 	});
 
@@ -9548,7 +9560,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abstract-provider/5.0.10";
+	exports.version = "abstract-provider/5.1.0";
 
 	});
 
@@ -9683,7 +9695,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abstract-signer/5.0.14";
+	exports.version = "abstract-signer/5.1.0";
 
 	});
 
@@ -9749,7 +9761,7 @@
 
 	var logger = new lib.Logger(_version$k.version);
 	var allowedTransactionKeys = [
-	    "chainId", "data", "from", "gasLimit", "gasPrice", "nonce", "to", "value"
+	    "accessList", "chainId", "data", "from", "gasLimit", "gasPrice", "nonce", "to", "type", "value"
 	];
 	var forwardErrors = [
 	    lib.Logger.errors.INSUFFICIENT_FUNDS,
@@ -10032,1286 +10044,6 @@
 
 	var index$c = /*@__PURE__*/getDefaultExportFromCjs(lib$c);
 
-	var _version$m = createCommonjsModule(function (module, exports) {
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = void 0;
-	exports.version = "contracts/5.0.12";
-
-	});
-
-	var _version$n = /*@__PURE__*/getDefaultExportFromCjs(_version$m);
-
-	var lib$d = createCommonjsModule(function (module, exports) {
-	"use strict";
-	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
-	    var extendStatics = function (d, b) {
-	        extendStatics = Object.setPrototypeOf ||
-	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-	        return extendStatics(d, b);
-	    };
-	    return function (d, b) {
-	        if (typeof b !== "function" && b !== null)
-	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-	        extendStatics(d, b);
-	        function __() { this.constructor = d; }
-	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	    };
-	})();
-	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
-	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-	    return new (P || (P = Promise))(function (resolve, reject) {
-	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-	        step((generator = generator.apply(thisArg, _arguments || [])).next());
-	    });
-	};
-	var __generator = (commonjsGlobal && commonjsGlobal.__generator) || function (thisArg, body) {
-	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-	    function verb(n) { return function (v) { return step([n, v]); }; }
-	    function step(op) {
-	        if (f) throw new TypeError("Generator is already executing.");
-	        while (_) try {
-	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-	            if (y = 0, t) op = [op[0] & 2, t.value];
-	            switch (op[0]) {
-	                case 0: case 1: t = op; break;
-	                case 4: _.label++; return { value: op[1], done: false };
-	                case 5: _.label++; y = op[1]; op = [0]; continue;
-	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-	                default:
-	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-	                    if (t[2]) _.ops.pop();
-	                    _.trys.pop(); continue;
-	            }
-	            op = body.call(thisArg, _);
-	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-	    }
-	};
-	var __spreadArray = (commonjsGlobal && commonjsGlobal.__spreadArray) || function (to, from) {
-	    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-	        to[j] = from[i];
-	    return to;
-	};
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.ContractFactory = exports.Contract = void 0;
-
-
-
-
-
-
-
-	// @TOOD remove dependences transactions
-
-
-	var logger = new lib.Logger(_version$m.version);
-	;
-	;
-	///////////////////////////////
-	var allowedTransactionKeys = {
-	    chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
-	};
-	function resolveName(resolver, nameOrPromise) {
-	    return __awaiter(this, void 0, void 0, function () {
-	        var name, address;
-	        return __generator(this, function (_a) {
-	            switch (_a.label) {
-	                case 0: return [4 /*yield*/, nameOrPromise];
-	                case 1:
-	                    name = _a.sent();
-	                    // If it is already an address, just use it (after adding checksum)
-	                    try {
-	                        return [2 /*return*/, lib$6.getAddress(name)];
-	                    }
-	                    catch (error) { }
-	                    if (!resolver) {
-	                        logger.throwError("a provider or signer is needed to resolve ENS names", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                            operation: "resolveName"
-	                        });
-	                    }
-	                    return [4 /*yield*/, resolver.resolveName(name)];
-	                case 2:
-	                    address = _a.sent();
-	                    if (address == null) {
-	                        logger.throwArgumentError("resolver or addr is not configured for ENS name", "name", name);
-	                    }
-	                    return [2 /*return*/, address];
-	            }
-	        });
-	    });
-	}
-	// Recursively replaces ENS names with promises to resolve the name and resolves all properties
-	function resolveAddresses(resolver, value, paramType) {
-	    return __awaiter(this, void 0, void 0, function () {
-	        return __generator(this, function (_a) {
-	            switch (_a.label) {
-	                case 0:
-	                    if (!Array.isArray(paramType)) return [3 /*break*/, 2];
-	                    return [4 /*yield*/, Promise.all(paramType.map(function (paramType, index) {
-	                            return resolveAddresses(resolver, ((Array.isArray(value)) ? value[index] : value[paramType.name]), paramType);
-	                        }))];
-	                case 1: return [2 /*return*/, _a.sent()];
-	                case 2:
-	                    if (!(paramType.type === "address")) return [3 /*break*/, 4];
-	                    return [4 /*yield*/, resolveName(resolver, value)];
-	                case 3: return [2 /*return*/, _a.sent()];
-	                case 4:
-	                    if (!(paramType.type === "tuple")) return [3 /*break*/, 6];
-	                    return [4 /*yield*/, resolveAddresses(resolver, value, paramType.components)];
-	                case 5: return [2 /*return*/, _a.sent()];
-	                case 6:
-	                    if (!(paramType.baseType === "array")) return [3 /*break*/, 8];
-	                    if (!Array.isArray(value)) {
-	                        return [2 /*return*/, Promise.reject(new Error("invalid value for array"))];
-	                    }
-	                    return [4 /*yield*/, Promise.all(value.map(function (v) { return resolveAddresses(resolver, v, paramType.arrayChildren); }))];
-	                case 7: return [2 /*return*/, _a.sent()];
-	                case 8: return [2 /*return*/, value];
-	            }
-	        });
-	    });
-	}
-	function populateTransaction(contract, fragment, args) {
-	    return __awaiter(this, void 0, void 0, function () {
-	        var overrides, resolved, data, tx, ro, intrinsic, bytes, i, roValue, leftovers;
-	        var _this = this;
-	        return __generator(this, function (_a) {
-	            switch (_a.label) {
-	                case 0:
-	                    overrides = {};
-	                    if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
-	                        overrides = lib$3.shallowCopy(args.pop());
-	                    }
-	                    // Make sure the parameter count matches
-	                    logger.checkArgumentCount(args.length, fragment.inputs.length, "passed to contract");
-	                    // Populate "from" override (allow promises)
-	                    if (contract.signer) {
-	                        if (overrides.from) {
-	                            // Contracts with a Signer are from the Signer's frame-of-reference;
-	                            // but we allow overriding "from" if it matches the signer
-	                            overrides.from = lib$3.resolveProperties({
-	                                override: resolveName(contract.signer, overrides.from),
-	                                signer: contract.signer.getAddress()
-	                            }).then(function (check) { return __awaiter(_this, void 0, void 0, function () {
-	                                return __generator(this, function (_a) {
-	                                    if (lib$6.getAddress(check.signer) !== check.override) {
-	                                        logger.throwError("Contract with a Signer cannot override from", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                                            operation: "overrides.from"
-	                                        });
-	                                    }
-	                                    return [2 /*return*/, check.override];
-	                                });
-	                            }); });
-	                        }
-	                        else {
-	                            overrides.from = contract.signer.getAddress();
-	                        }
-	                    }
-	                    else if (overrides.from) {
-	                        overrides.from = resolveName(contract.provider, overrides.from);
-	                        //} else {
-	                        // Contracts without a signer can override "from", and if
-	                        // unspecified the zero address is used
-	                        //overrides.from = AddressZero;
-	                    }
-	                    return [4 /*yield*/, lib$3.resolveProperties({
-	                            args: resolveAddresses(contract.signer || contract.provider, args, fragment.inputs),
-	                            address: contract.resolvedAddress,
-	                            overrides: (lib$3.resolveProperties(overrides) || {})
-	                        })];
-	                case 1:
-	                    resolved = _a.sent();
-	                    data = contract.interface.encodeFunctionData(fragment, resolved.args);
-	                    tx = {
-	                        data: data,
-	                        to: resolved.address
-	                    };
-	                    ro = resolved.overrides;
-	                    // Populate simple overrides
-	                    if (ro.nonce != null) {
-	                        tx.nonce = lib$2.BigNumber.from(ro.nonce).toNumber();
-	                    }
-	                    if (ro.gasLimit != null) {
-	                        tx.gasLimit = lib$2.BigNumber.from(ro.gasLimit);
-	                    }
-	                    if (ro.gasPrice != null) {
-	                        tx.gasPrice = lib$2.BigNumber.from(ro.gasPrice);
-	                    }
-	                    if (ro.from != null) {
-	                        tx.from = ro.from;
-	                    }
-	                    // If there was no "gasLimit" override, but the ABI specifies a default, use it
-	                    if (tx.gasLimit == null && fragment.gas != null) {
-	                        intrinsic = 21000;
-	                        bytes = lib$1.arrayify(data);
-	                        for (i = 0; i < bytes.length; i++) {
-	                            intrinsic += 4;
-	                            if (bytes[i]) {
-	                                intrinsic += 64;
-	                            }
-	                        }
-	                        tx.gasLimit = lib$2.BigNumber.from(fragment.gas).add(intrinsic);
-	                    }
-	                    // Populate "value" override
-	                    if (ro.value) {
-	                        roValue = lib$2.BigNumber.from(ro.value);
-	                        if (!roValue.isZero() && !fragment.payable) {
-	                            logger.throwError("non-payable method cannot override value", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                                operation: "overrides.value",
-	                                value: overrides.value
-	                            });
-	                        }
-	                        tx.value = roValue;
-	                    }
-	                    // Remvoe the overrides
-	                    delete overrides.nonce;
-	                    delete overrides.gasLimit;
-	                    delete overrides.gasPrice;
-	                    delete overrides.from;
-	                    delete overrides.value;
-	                    leftovers = Object.keys(overrides).filter(function (key) { return (overrides[key] != null); });
-	                    if (leftovers.length) {
-	                        logger.throwError("cannot override " + leftovers.map(function (l) { return JSON.stringify(l); }).join(","), lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                            operation: "overrides",
-	                            overrides: leftovers
-	                        });
-	                    }
-	                    return [2 /*return*/, tx];
-	            }
-	        });
-	    });
-	}
-	function buildPopulate(contract, fragment) {
-	    return function () {
-	        var args = [];
-	        for (var _i = 0; _i < arguments.length; _i++) {
-	            args[_i] = arguments[_i];
-	        }
-	        return populateTransaction(contract, fragment, args);
-	    };
-	}
-	function buildEstimate(contract, fragment) {
-	    var signerOrProvider = (contract.signer || contract.provider);
-	    return function () {
-	        var args = [];
-	        for (var _i = 0; _i < arguments.length; _i++) {
-	            args[_i] = arguments[_i];
-	        }
-	        return __awaiter(this, void 0, void 0, function () {
-	            var tx;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0:
-	                        if (!signerOrProvider) {
-	                            logger.throwError("estimate require a provider or signer", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                                operation: "estimateGas"
-	                            });
-	                        }
-	                        return [4 /*yield*/, populateTransaction(contract, fragment, args)];
-	                    case 1:
-	                        tx = _a.sent();
-	                        return [4 /*yield*/, signerOrProvider.estimateGas(tx)];
-	                    case 2: return [2 /*return*/, _a.sent()];
-	                }
-	            });
-	        });
-	    };
-	}
-	function buildCall(contract, fragment, collapseSimple) {
-	    var signerOrProvider = (contract.signer || contract.provider);
-	    return function () {
-	        var args = [];
-	        for (var _i = 0; _i < arguments.length; _i++) {
-	            args[_i] = arguments[_i];
-	        }
-	        return __awaiter(this, void 0, void 0, function () {
-	            var blockTag, overrides, tx, result, value;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0:
-	                        blockTag = undefined;
-	                        if (!(args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object")) return [3 /*break*/, 3];
-	                        overrides = lib$3.shallowCopy(args.pop());
-	                        if (!(overrides.blockTag != null)) return [3 /*break*/, 2];
-	                        return [4 /*yield*/, overrides.blockTag];
-	                    case 1:
-	                        blockTag = _a.sent();
-	                        _a.label = 2;
-	                    case 2:
-	                        delete overrides.blockTag;
-	                        args.push(overrides);
-	                        _a.label = 3;
-	                    case 3:
-	                        if (!(contract.deployTransaction != null)) return [3 /*break*/, 5];
-	                        return [4 /*yield*/, contract._deployed(blockTag)];
-	                    case 4:
-	                        _a.sent();
-	                        _a.label = 5;
-	                    case 5: return [4 /*yield*/, populateTransaction(contract, fragment, args)];
-	                    case 6:
-	                        tx = _a.sent();
-	                        return [4 /*yield*/, signerOrProvider.call(tx, blockTag)];
-	                    case 7:
-	                        result = _a.sent();
-	                        try {
-	                            value = contract.interface.decodeFunctionResult(fragment, result);
-	                            if (collapseSimple && fragment.outputs.length === 1) {
-	                                value = value[0];
-	                            }
-	                            return [2 /*return*/, value];
-	                        }
-	                        catch (error) {
-	                            if (error.code === lib.Logger.errors.CALL_EXCEPTION) {
-	                                error.address = contract.address;
-	                                error.args = args;
-	                                error.transaction = tx;
-	                            }
-	                            throw error;
-	                        }
-	                        return [2 /*return*/];
-	                }
-	            });
-	        });
-	    };
-	}
-	function buildSend(contract, fragment) {
-	    return function () {
-	        var args = [];
-	        for (var _i = 0; _i < arguments.length; _i++) {
-	            args[_i] = arguments[_i];
-	        }
-	        return __awaiter(this, void 0, void 0, function () {
-	            var txRequest, tx, wait;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0:
-	                        if (!contract.signer) {
-	                            logger.throwError("sending a transaction requires a signer", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                                operation: "sendTransaction"
-	                            });
-	                        }
-	                        if (!(contract.deployTransaction != null)) return [3 /*break*/, 2];
-	                        return [4 /*yield*/, contract._deployed()];
-	                    case 1:
-	                        _a.sent();
-	                        _a.label = 2;
-	                    case 2: return [4 /*yield*/, populateTransaction(contract, fragment, args)];
-	                    case 3:
-	                        txRequest = _a.sent();
-	                        return [4 /*yield*/, contract.signer.sendTransaction(txRequest)];
-	                    case 4:
-	                        tx = _a.sent();
-	                        wait = tx.wait.bind(tx);
-	                        tx.wait = function (confirmations) {
-	                            return wait(confirmations).then(function (receipt) {
-	                                receipt.events = receipt.logs.map(function (log) {
-	                                    var event = lib$3.deepCopy(log);
-	                                    var parsed = null;
-	                                    try {
-	                                        parsed = contract.interface.parseLog(log);
-	                                    }
-	                                    catch (e) { }
-	                                    // Successfully parsed the event log; include it
-	                                    if (parsed) {
-	                                        event.args = parsed.args;
-	                                        event.decode = function (data, topics) {
-	                                            return contract.interface.decodeEventLog(parsed.eventFragment, data, topics);
-	                                        };
-	                                        event.event = parsed.name;
-	                                        event.eventSignature = parsed.signature;
-	                                    }
-	                                    // Useful operations
-	                                    event.removeListener = function () { return contract.provider; };
-	                                    event.getBlock = function () {
-	                                        return contract.provider.getBlock(receipt.blockHash);
-	                                    };
-	                                    event.getTransaction = function () {
-	                                        return contract.provider.getTransaction(receipt.transactionHash);
-	                                    };
-	                                    event.getTransactionReceipt = function () {
-	                                        return Promise.resolve(receipt);
-	                                    };
-	                                    return event;
-	                                });
-	                                return receipt;
-	                            });
-	                        };
-	                        return [2 /*return*/, tx];
-	                }
-	            });
-	        });
-	    };
-	}
-	function buildDefault(contract, fragment, collapseSimple) {
-	    if (fragment.constant) {
-	        return buildCall(contract, fragment, collapseSimple);
-	    }
-	    return buildSend(contract, fragment);
-	}
-	function getEventTag(filter) {
-	    if (filter.address && (filter.topics == null || filter.topics.length === 0)) {
-	        return "*";
-	    }
-	    return (filter.address || "*") + "@" + (filter.topics ? filter.topics.map(function (topic) {
-	        if (Array.isArray(topic)) {
-	            return topic.join("|");
-	        }
-	        return topic;
-	    }).join(":") : "");
-	}
-	var RunningEvent = /** @class */ (function () {
-	    function RunningEvent(tag, filter) {
-	        lib$3.defineReadOnly(this, "tag", tag);
-	        lib$3.defineReadOnly(this, "filter", filter);
-	        this._listeners = [];
-	    }
-	    RunningEvent.prototype.addListener = function (listener, once) {
-	        this._listeners.push({ listener: listener, once: once });
-	    };
-	    RunningEvent.prototype.removeListener = function (listener) {
-	        var done = false;
-	        this._listeners = this._listeners.filter(function (item) {
-	            if (done || item.listener !== listener) {
-	                return true;
-	            }
-	            done = true;
-	            return false;
-	        });
-	    };
-	    RunningEvent.prototype.removeAllListeners = function () {
-	        this._listeners = [];
-	    };
-	    RunningEvent.prototype.listeners = function () {
-	        return this._listeners.map(function (i) { return i.listener; });
-	    };
-	    RunningEvent.prototype.listenerCount = function () {
-	        return this._listeners.length;
-	    };
-	    RunningEvent.prototype.run = function (args) {
-	        var _this = this;
-	        var listenerCount = this.listenerCount();
-	        this._listeners = this._listeners.filter(function (item) {
-	            var argsCopy = args.slice();
-	            // Call the callback in the next event loop
-	            setTimeout(function () {
-	                item.listener.apply(_this, argsCopy);
-	            }, 0);
-	            // Reschedule it if it not "once"
-	            return !(item.once);
-	        });
-	        return listenerCount;
-	    };
-	    RunningEvent.prototype.prepareEvent = function (event) {
-	    };
-	    // Returns the array that will be applied to an emit
-	    RunningEvent.prototype.getEmit = function (event) {
-	        return [event];
-	    };
-	    return RunningEvent;
-	}());
-	var ErrorRunningEvent = /** @class */ (function (_super) {
-	    __extends(ErrorRunningEvent, _super);
-	    function ErrorRunningEvent() {
-	        return _super.call(this, "error", null) || this;
-	    }
-	    return ErrorRunningEvent;
-	}(RunningEvent));
-	// @TODO Fragment should inherit Wildcard? and just override getEmit?
-	//       or have a common abstract super class, with enough constructor
-	//       options to configure both.
-	// A Fragment Event will populate all the properties that Wildcard
-	// will, and additioanlly dereference the arguments when emitting
-	var FragmentRunningEvent = /** @class */ (function (_super) {
-	    __extends(FragmentRunningEvent, _super);
-	    function FragmentRunningEvent(address, contractInterface, fragment, topics) {
-	        var _this = this;
-	        var filter = {
-	            address: address
-	        };
-	        var topic = contractInterface.getEventTopic(fragment);
-	        if (topics) {
-	            if (topic !== topics[0]) {
-	                logger.throwArgumentError("topic mismatch", "topics", topics);
-	            }
-	            filter.topics = topics.slice();
-	        }
-	        else {
-	            filter.topics = [topic];
-	        }
-	        _this = _super.call(this, getEventTag(filter), filter) || this;
-	        lib$3.defineReadOnly(_this, "address", address);
-	        lib$3.defineReadOnly(_this, "interface", contractInterface);
-	        lib$3.defineReadOnly(_this, "fragment", fragment);
-	        return _this;
-	    }
-	    FragmentRunningEvent.prototype.prepareEvent = function (event) {
-	        var _this = this;
-	        _super.prototype.prepareEvent.call(this, event);
-	        event.event = this.fragment.name;
-	        event.eventSignature = this.fragment.format();
-	        event.decode = function (data, topics) {
-	            return _this.interface.decodeEventLog(_this.fragment, data, topics);
-	        };
-	        try {
-	            event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
-	        }
-	        catch (error) {
-	            event.args = null;
-	            event.decodeError = error;
-	        }
-	    };
-	    FragmentRunningEvent.prototype.getEmit = function (event) {
-	        var errors = lib$a.checkResultErrors(event.args);
-	        if (errors.length) {
-	            throw errors[0].error;
-	        }
-	        var args = (event.args || []).slice();
-	        args.push(event);
-	        return args;
-	    };
-	    return FragmentRunningEvent;
-	}(RunningEvent));
-	// A Wildard Event will attempt to populate:
-	//  - event            The name of the event name
-	//  - eventSignature   The full signature of the event
-	//  - decode           A function to decode data and topics
-	//  - args             The decoded data and topics
-	var WildcardRunningEvent = /** @class */ (function (_super) {
-	    __extends(WildcardRunningEvent, _super);
-	    function WildcardRunningEvent(address, contractInterface) {
-	        var _this = _super.call(this, "*", { address: address }) || this;
-	        lib$3.defineReadOnly(_this, "address", address);
-	        lib$3.defineReadOnly(_this, "interface", contractInterface);
-	        return _this;
-	    }
-	    WildcardRunningEvent.prototype.prepareEvent = function (event) {
-	        var _this = this;
-	        _super.prototype.prepareEvent.call(this, event);
-	        try {
-	            var parsed_1 = this.interface.parseLog(event);
-	            event.event = parsed_1.name;
-	            event.eventSignature = parsed_1.signature;
-	            event.decode = function (data, topics) {
-	                return _this.interface.decodeEventLog(parsed_1.eventFragment, data, topics);
-	            };
-	            event.args = parsed_1.args;
-	        }
-	        catch (error) {
-	            // No matching event
-	        }
-	    };
-	    return WildcardRunningEvent;
-	}(RunningEvent));
-	var Contract = /** @class */ (function () {
-	    function Contract(addressOrName, contractInterface, signerOrProvider) {
-	        var _newTarget = this.constructor;
-	        var _this = this;
-	        logger.checkNew(_newTarget, Contract);
-	        // @TODO: Maybe still check the addressOrName looks like a valid address or name?
-	        //address = getAddress(address);
-	        lib$3.defineReadOnly(this, "interface", lib$3.getStatic((_newTarget), "getInterface")(contractInterface));
-	        if (signerOrProvider == null) {
-	            lib$3.defineReadOnly(this, "provider", null);
-	            lib$3.defineReadOnly(this, "signer", null);
-	        }
-	        else if (lib$c.Signer.isSigner(signerOrProvider)) {
-	            lib$3.defineReadOnly(this, "provider", signerOrProvider.provider || null);
-	            lib$3.defineReadOnly(this, "signer", signerOrProvider);
-	        }
-	        else if (lib$b.Provider.isProvider(signerOrProvider)) {
-	            lib$3.defineReadOnly(this, "provider", signerOrProvider);
-	            lib$3.defineReadOnly(this, "signer", null);
-	        }
-	        else {
-	            logger.throwArgumentError("invalid signer or provider", "signerOrProvider", signerOrProvider);
-	        }
-	        lib$3.defineReadOnly(this, "callStatic", {});
-	        lib$3.defineReadOnly(this, "estimateGas", {});
-	        lib$3.defineReadOnly(this, "functions", {});
-	        lib$3.defineReadOnly(this, "populateTransaction", {});
-	        lib$3.defineReadOnly(this, "filters", {});
-	        {
-	            var uniqueFilters_1 = {};
-	            Object.keys(this.interface.events).forEach(function (eventSignature) {
-	                var event = _this.interface.events[eventSignature];
-	                lib$3.defineReadOnly(_this.filters, eventSignature, function () {
-	                    var args = [];
-	                    for (var _i = 0; _i < arguments.length; _i++) {
-	                        args[_i] = arguments[_i];
-	                    }
-	                    return {
-	                        address: _this.address,
-	                        topics: _this.interface.encodeFilterTopics(event, args)
-	                    };
-	                });
-	                if (!uniqueFilters_1[event.name]) {
-	                    uniqueFilters_1[event.name] = [];
-	                }
-	                uniqueFilters_1[event.name].push(eventSignature);
-	            });
-	            Object.keys(uniqueFilters_1).forEach(function (name) {
-	                var filters = uniqueFilters_1[name];
-	                if (filters.length === 1) {
-	                    lib$3.defineReadOnly(_this.filters, name, _this.filters[filters[0]]);
-	                }
-	                else {
-	                    logger.warn("Duplicate definition of " + name + " (" + filters.join(", ") + ")");
-	                }
-	            });
-	        }
-	        lib$3.defineReadOnly(this, "_runningEvents", {});
-	        lib$3.defineReadOnly(this, "_wrappedEmits", {});
-	        if (addressOrName == null) {
-	            logger.throwArgumentError("invalid contract address or ENS name", "addressOrName", addressOrName);
-	        }
-	        lib$3.defineReadOnly(this, "address", addressOrName);
-	        if (this.provider) {
-	            lib$3.defineReadOnly(this, "resolvedAddress", resolveName(this.provider, addressOrName));
-	        }
-	        else {
-	            try {
-	                lib$3.defineReadOnly(this, "resolvedAddress", Promise.resolve(lib$6.getAddress(addressOrName)));
-	            }
-	            catch (error) {
-	                // Without a provider, we cannot use ENS names
-	                logger.throwError("provider is required to use ENS name as contract address", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                    operation: "new Contract"
-	                });
-	            }
-	        }
-	        var uniqueNames = {};
-	        var uniqueSignatures = {};
-	        Object.keys(this.interface.functions).forEach(function (signature) {
-	            var fragment = _this.interface.functions[signature];
-	            // Check that the signature is unique; if not the ABI generation has
-	            // not been cleaned or may be incorrectly generated
-	            if (uniqueSignatures[signature]) {
-	                logger.warn("Duplicate ABI entry for " + JSON.stringify(name));
-	                return;
-	            }
-	            uniqueSignatures[signature] = true;
-	            // Track unique names; we only expose bare named functions if they
-	            // are ambiguous
-	            {
-	                var name_1 = fragment.name;
-	                if (!uniqueNames[name_1]) {
-	                    uniqueNames[name_1] = [];
-	                }
-	                uniqueNames[name_1].push(signature);
-	            }
-	            if (_this[signature] == null) {
-	                lib$3.defineReadOnly(_this, signature, buildDefault(_this, fragment, true));
-	            }
-	            // We do not collapse simple calls on this bucket, which allows
-	            // frameworks to safely use this without introspection as well as
-	            // allows decoding error recovery.
-	            if (_this.functions[signature] == null) {
-	                lib$3.defineReadOnly(_this.functions, signature, buildDefault(_this, fragment, false));
-	            }
-	            if (_this.callStatic[signature] == null) {
-	                lib$3.defineReadOnly(_this.callStatic, signature, buildCall(_this, fragment, true));
-	            }
-	            if (_this.populateTransaction[signature] == null) {
-	                lib$3.defineReadOnly(_this.populateTransaction, signature, buildPopulate(_this, fragment));
-	            }
-	            if (_this.estimateGas[signature] == null) {
-	                lib$3.defineReadOnly(_this.estimateGas, signature, buildEstimate(_this, fragment));
-	            }
-	        });
-	        Object.keys(uniqueNames).forEach(function (name) {
-	            // Ambiguous names to not get attached as bare names
-	            var signatures = uniqueNames[name];
-	            if (signatures.length > 1) {
-	                return;
-	            }
-	            var signature = signatures[0];
-	            if (_this[name] == null) {
-	                lib$3.defineReadOnly(_this, name, _this[signature]);
-	            }
-	            if (_this.functions[name] == null) {
-	                lib$3.defineReadOnly(_this.functions, name, _this.functions[signature]);
-	            }
-	            if (_this.callStatic[name] == null) {
-	                lib$3.defineReadOnly(_this.callStatic, name, _this.callStatic[signature]);
-	            }
-	            if (_this.populateTransaction[name] == null) {
-	                lib$3.defineReadOnly(_this.populateTransaction, name, _this.populateTransaction[signature]);
-	            }
-	            if (_this.estimateGas[name] == null) {
-	                lib$3.defineReadOnly(_this.estimateGas, name, _this.estimateGas[signature]);
-	            }
-	        });
-	    }
-	    Contract.getContractAddress = function (transaction) {
-	        return lib$6.getContractAddress(transaction);
-	    };
-	    Contract.getInterface = function (contractInterface) {
-	        if (lib$a.Interface.isInterface(contractInterface)) {
-	            return contractInterface;
-	        }
-	        return new lib$a.Interface(contractInterface);
-	    };
-	    // @TODO: Allow timeout?
-	    Contract.prototype.deployed = function () {
-	        return this._deployed();
-	    };
-	    Contract.prototype._deployed = function (blockTag) {
-	        var _this = this;
-	        if (!this._deployedPromise) {
-	            // If we were just deployed, we know the transaction we should occur in
-	            if (this.deployTransaction) {
-	                this._deployedPromise = this.deployTransaction.wait().then(function () {
-	                    return _this;
-	                });
-	            }
-	            else {
-	                // @TODO: Once we allow a timeout to be passed in, we will wait
-	                // up to that many blocks for getCode
-	                // Otherwise, poll for our code to be deployed
-	                this._deployedPromise = this.provider.getCode(this.address, blockTag).then(function (code) {
-	                    if (code === "0x") {
-	                        logger.throwError("contract not deployed", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                            contractAddress: _this.address,
-	                            operation: "getDeployed"
-	                        });
-	                    }
-	                    return _this;
-	                });
-	            }
-	        }
-	        return this._deployedPromise;
-	    };
-	    // @TODO:
-	    // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>
-	    // @TODO:
-	    // estimateDeploy(bytecode: string, ...args): Promise<BigNumber>
-	    Contract.prototype.fallback = function (overrides) {
-	        var _this = this;
-	        if (!this.signer) {
-	            logger.throwError("sending a transactions require a signer", lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" });
-	        }
-	        var tx = lib$3.shallowCopy(overrides || {});
-	        ["from", "to"].forEach(function (key) {
-	            if (tx[key] == null) {
-	                return;
-	            }
-	            logger.throwError("cannot override " + key, lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
-	        });
-	        tx.to = this.resolvedAddress;
-	        return this.deployed().then(function () {
-	            return _this.signer.sendTransaction(tx);
-	        });
-	    };
-	    // Reconnect to a different signer or provider
-	    Contract.prototype.connect = function (signerOrProvider) {
-	        if (typeof (signerOrProvider) === "string") {
-	            signerOrProvider = new lib$c.VoidSigner(signerOrProvider, this.provider);
-	        }
-	        var contract = new (this.constructor)(this.address, this.interface, signerOrProvider);
-	        if (this.deployTransaction) {
-	            lib$3.defineReadOnly(contract, "deployTransaction", this.deployTransaction);
-	        }
-	        return contract;
-	    };
-	    // Re-attach to a different on-chain instance of this contract
-	    Contract.prototype.attach = function (addressOrName) {
-	        return new (this.constructor)(addressOrName, this.interface, this.signer || this.provider);
-	    };
-	    Contract.isIndexed = function (value) {
-	        return lib$a.Indexed.isIndexed(value);
-	    };
-	    Contract.prototype._normalizeRunningEvent = function (runningEvent) {
-	        // Already have an instance of this event running; we can re-use it
-	        if (this._runningEvents[runningEvent.tag]) {
-	            return this._runningEvents[runningEvent.tag];
-	        }
-	        return runningEvent;
-	    };
-	    Contract.prototype._getRunningEvent = function (eventName) {
-	        if (typeof (eventName) === "string") {
-	            // Listen for "error" events (if your contract has an error event, include
-	            // the full signature to bypass this special event keyword)
-	            if (eventName === "error") {
-	                return this._normalizeRunningEvent(new ErrorRunningEvent());
-	            }
-	            // Listen for any event that is registered
-	            if (eventName === "event") {
-	                return this._normalizeRunningEvent(new RunningEvent("event", null));
-	            }
-	            // Listen for any event
-	            if (eventName === "*") {
-	                return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
-	            }
-	            // Get the event Fragment (throws if ambiguous/unknown event)
-	            var fragment = this.interface.getEvent(eventName);
-	            return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
-	        }
-	        // We have topics to filter by...
-	        if (eventName.topics && eventName.topics.length > 0) {
-	            // Is it a known topichash? (throws if no matching topichash)
-	            try {
-	                var topic = eventName.topics[0];
-	                if (typeof (topic) !== "string") {
-	                    throw new Error("invalid topic"); // @TODO: May happen for anonymous events
-	                }
-	                var fragment = this.interface.getEvent(topic);
-	                return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
-	            }
-	            catch (error) { }
-	            // Filter by the unknown topichash
-	            var filter = {
-	                address: this.address,
-	                topics: eventName.topics
-	            };
-	            return this._normalizeRunningEvent(new RunningEvent(getEventTag(filter), filter));
-	        }
-	        return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
-	    };
-	    Contract.prototype._checkRunningEvents = function (runningEvent) {
-	        if (runningEvent.listenerCount() === 0) {
-	            delete this._runningEvents[runningEvent.tag];
-	            // If we have a poller for this, remove it
-	            var emit = this._wrappedEmits[runningEvent.tag];
-	            if (emit) {
-	                this.provider.off(runningEvent.filter, emit);
-	                delete this._wrappedEmits[runningEvent.tag];
-	            }
-	        }
-	    };
-	    // Subclasses can override this to gracefully recover
-	    // from parse errors if they wish
-	    Contract.prototype._wrapEvent = function (runningEvent, log, listener) {
-	        var _this = this;
-	        var event = lib$3.deepCopy(log);
-	        event.removeListener = function () {
-	            if (!listener) {
-	                return;
-	            }
-	            runningEvent.removeListener(listener);
-	            _this._checkRunningEvents(runningEvent);
-	        };
-	        event.getBlock = function () { return _this.provider.getBlock(log.blockHash); };
-	        event.getTransaction = function () { return _this.provider.getTransaction(log.transactionHash); };
-	        event.getTransactionReceipt = function () { return _this.provider.getTransactionReceipt(log.transactionHash); };
-	        // This may throw if the topics and data mismatch the signature
-	        runningEvent.prepareEvent(event);
-	        return event;
-	    };
-	    Contract.prototype._addEventListener = function (runningEvent, listener, once) {
-	        var _this = this;
-	        if (!this.provider) {
-	            logger.throwError("events require a provider or a signer with a provider", lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: "once" });
-	        }
-	        runningEvent.addListener(listener, once);
-	        // Track this running event and its listeners (may already be there; but no hard in updating)
-	        this._runningEvents[runningEvent.tag] = runningEvent;
-	        // If we are not polling the provider, start polling
-	        if (!this._wrappedEmits[runningEvent.tag]) {
-	            var wrappedEmit = function (log) {
-	                var event = _this._wrapEvent(runningEvent, log, listener);
-	                // Try to emit the result for the parameterized event...
-	                if (event.decodeError == null) {
-	                    try {
-	                        var args = runningEvent.getEmit(event);
-	                        _this.emit.apply(_this, __spreadArray([runningEvent.filter], args));
-	                    }
-	                    catch (error) {
-	                        event.decodeError = error.error;
-	                    }
-	                }
-	                // Always emit "event" for fragment-base events
-	                if (runningEvent.filter != null) {
-	                    _this.emit("event", event);
-	                }
-	                // Emit "error" if there was an error
-	                if (event.decodeError != null) {
-	                    _this.emit("error", event.decodeError, event);
-	                }
-	            };
-	            this._wrappedEmits[runningEvent.tag] = wrappedEmit;
-	            // Special events, like "error" do not have a filter
-	            if (runningEvent.filter != null) {
-	                this.provider.on(runningEvent.filter, wrappedEmit);
-	            }
-	        }
-	    };
-	    Contract.prototype.queryFilter = function (event, fromBlockOrBlockhash, toBlock) {
-	        var _this = this;
-	        var runningEvent = this._getRunningEvent(event);
-	        var filter = lib$3.shallowCopy(runningEvent.filter);
-	        if (typeof (fromBlockOrBlockhash) === "string" && lib$1.isHexString(fromBlockOrBlockhash, 32)) {
-	            if (toBlock != null) {
-	                logger.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
-	            }
-	            filter.blockHash = fromBlockOrBlockhash;
-	        }
-	        else {
-	            filter.fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash : 0);
-	            filter.toBlock = ((toBlock != null) ? toBlock : "latest");
-	        }
-	        return this.provider.getLogs(filter).then(function (logs) {
-	            return logs.map(function (log) { return _this._wrapEvent(runningEvent, log, null); });
-	        });
-	    };
-	    Contract.prototype.on = function (event, listener) {
-	        this._addEventListener(this._getRunningEvent(event), listener, false);
-	        return this;
-	    };
-	    Contract.prototype.once = function (event, listener) {
-	        this._addEventListener(this._getRunningEvent(event), listener, true);
-	        return this;
-	    };
-	    Contract.prototype.emit = function (eventName) {
-	        var args = [];
-	        for (var _i = 1; _i < arguments.length; _i++) {
-	            args[_i - 1] = arguments[_i];
-	        }
-	        if (!this.provider) {
-	            return false;
-	        }
-	        var runningEvent = this._getRunningEvent(eventName);
-	        var result = (runningEvent.run(args) > 0);
-	        // May have drained all the "once" events; check for living events
-	        this._checkRunningEvents(runningEvent);
-	        return result;
-	    };
-	    Contract.prototype.listenerCount = function (eventName) {
-	        var _this = this;
-	        if (!this.provider) {
-	            return 0;
-	        }
-	        if (eventName == null) {
-	            return Object.keys(this._runningEvents).reduce(function (accum, key) {
-	                return accum + _this._runningEvents[key].listenerCount();
-	            }, 0);
-	        }
-	        return this._getRunningEvent(eventName).listenerCount();
-	    };
-	    Contract.prototype.listeners = function (eventName) {
-	        if (!this.provider) {
-	            return [];
-	        }
-	        if (eventName == null) {
-	            var result_1 = [];
-	            for (var tag in this._runningEvents) {
-	                this._runningEvents[tag].listeners().forEach(function (listener) {
-	                    result_1.push(listener);
-	                });
-	            }
-	            return result_1;
-	        }
-	        return this._getRunningEvent(eventName).listeners();
-	    };
-	    Contract.prototype.removeAllListeners = function (eventName) {
-	        if (!this.provider) {
-	            return this;
-	        }
-	        if (eventName == null) {
-	            for (var tag in this._runningEvents) {
-	                var runningEvent_1 = this._runningEvents[tag];
-	                runningEvent_1.removeAllListeners();
-	                this._checkRunningEvents(runningEvent_1);
-	            }
-	            return this;
-	        }
-	        // Delete any listeners
-	        var runningEvent = this._getRunningEvent(eventName);
-	        runningEvent.removeAllListeners();
-	        this._checkRunningEvents(runningEvent);
-	        return this;
-	    };
-	    Contract.prototype.off = function (eventName, listener) {
-	        if (!this.provider) {
-	            return this;
-	        }
-	        var runningEvent = this._getRunningEvent(eventName);
-	        runningEvent.removeListener(listener);
-	        this._checkRunningEvents(runningEvent);
-	        return this;
-	    };
-	    Contract.prototype.removeListener = function (eventName, listener) {
-	        return this.off(eventName, listener);
-	    };
-	    return Contract;
-	}());
-	exports.Contract = Contract;
-	var ContractFactory = /** @class */ (function () {
-	    function ContractFactory(contractInterface, bytecode, signer) {
-	        var _newTarget = this.constructor;
-	        var bytecodeHex = null;
-	        if (typeof (bytecode) === "string") {
-	            bytecodeHex = bytecode;
-	        }
-	        else if (lib$1.isBytes(bytecode)) {
-	            bytecodeHex = lib$1.hexlify(bytecode);
-	        }
-	        else if (bytecode && typeof (bytecode.object) === "string") {
-	            // Allow the bytecode object from the Solidity compiler
-	            bytecodeHex = bytecode.object;
-	        }
-	        else {
-	            // Crash in the next verification step
-	            bytecodeHex = "!";
-	        }
-	        // Make sure it is 0x prefixed
-	        if (bytecodeHex.substring(0, 2) !== "0x") {
-	            bytecodeHex = "0x" + bytecodeHex;
-	        }
-	        // Make sure the final result is valid bytecode
-	        if (!lib$1.isHexString(bytecodeHex) || (bytecodeHex.length % 2)) {
-	            logger.throwArgumentError("invalid bytecode", "bytecode", bytecode);
-	        }
-	        // If we have a signer, make sure it is valid
-	        if (signer && !lib$c.Signer.isSigner(signer)) {
-	            logger.throwArgumentError("invalid signer", "signer", signer);
-	        }
-	        lib$3.defineReadOnly(this, "bytecode", bytecodeHex);
-	        lib$3.defineReadOnly(this, "interface", lib$3.getStatic((_newTarget), "getInterface")(contractInterface));
-	        lib$3.defineReadOnly(this, "signer", signer || null);
-	    }
-	    // @TODO: Future; rename to populteTransaction?
-	    ContractFactory.prototype.getDeployTransaction = function () {
-	        var args = [];
-	        for (var _i = 0; _i < arguments.length; _i++) {
-	            args[_i] = arguments[_i];
-	        }
-	        var tx = {};
-	        // If we have 1 additional argument, we allow transaction overrides
-	        if (args.length === this.interface.deploy.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
-	            tx = lib$3.shallowCopy(args.pop());
-	            for (var key in tx) {
-	                if (!allowedTransactionKeys[key]) {
-	                    throw new Error("unknown transaction override " + key);
-	                }
-	            }
-	        }
-	        // Do not allow these to be overridden in a deployment transaction
-	        ["data", "from", "to"].forEach(function (key) {
-	            if (tx[key] == null) {
-	                return;
-	            }
-	            logger.throwError("cannot override " + key, lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
-	        });
-	        // Make sure the call matches the constructor signature
-	        logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
-	        // Set the data to the bytecode + the encoded constructor arguments
-	        tx.data = lib$1.hexlify(lib$1.concat([
-	            this.bytecode,
-	            this.interface.encodeDeploy(args)
-	        ]));
-	        return tx;
-	    };
-	    ContractFactory.prototype.deploy = function () {
-	        var args = [];
-	        for (var _i = 0; _i < arguments.length; _i++) {
-	            args[_i] = arguments[_i];
-	        }
-	        return __awaiter(this, void 0, void 0, function () {
-	            var overrides, params, unsignedTx, tx, address, contract;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0:
-	                        overrides = {};
-	                        // If 1 extra parameter was passed in, it contains overrides
-	                        if (args.length === this.interface.deploy.inputs.length + 1) {
-	                            overrides = args.pop();
-	                        }
-	                        // Make sure the call matches the constructor signature
-	                        logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
-	                        return [4 /*yield*/, resolveAddresses(this.signer, args, this.interface.deploy.inputs)];
-	                    case 1:
-	                        params = _a.sent();
-	                        params.push(overrides);
-	                        unsignedTx = this.getDeployTransaction.apply(this, params);
-	                        return [4 /*yield*/, this.signer.sendTransaction(unsignedTx)];
-	                    case 2:
-	                        tx = _a.sent();
-	                        address = lib$3.getStatic(this.constructor, "getContractAddress")(tx);
-	                        contract = lib$3.getStatic(this.constructor, "getContract")(address, this.interface, this.signer);
-	                        lib$3.defineReadOnly(contract, "deployTransaction", tx);
-	                        return [2 /*return*/, contract];
-	                }
-	            });
-	        });
-	    };
-	    ContractFactory.prototype.attach = function (address) {
-	        return (this.constructor).getContract(address, this.interface, this.signer);
-	    };
-	    ContractFactory.prototype.connect = function (signer) {
-	        return new (this.constructor)(this.interface, this.bytecode, signer);
-	    };
-	    ContractFactory.fromSolidity = function (compilerOutput, signer) {
-	        if (compilerOutput == null) {
-	            logger.throwError("missing compiler output", lib.Logger.errors.MISSING_ARGUMENT, { argument: "compilerOutput" });
-	        }
-	        if (typeof (compilerOutput) === "string") {
-	            compilerOutput = JSON.parse(compilerOutput);
-	        }
-	        var abi = compilerOutput.abi;
-	        var bytecode = null;
-	        if (compilerOutput.bytecode) {
-	            bytecode = compilerOutput.bytecode;
-	        }
-	        else if (compilerOutput.evm && compilerOutput.evm.bytecode) {
-	            bytecode = compilerOutput.evm.bytecode;
-	        }
-	        return new this(abi, bytecode, signer);
-	    };
-	    ContractFactory.getInterface = function (contractInterface) {
-	        return Contract.getInterface(contractInterface);
-	    };
-	    ContractFactory.getContractAddress = function (tx) {
-	        return lib$6.getContractAddress(tx);
-	    };
-	    ContractFactory.getContract = function (address, contractInterface, signer) {
-	        return new Contract(address, contractInterface, signer);
-	    };
-	    return ContractFactory;
-	}());
-	exports.ContractFactory = ContractFactory;
-
-	});
-
-	var index$d = /*@__PURE__*/getDefaultExportFromCjs(lib$d);
-
-	var lib$e = createCommonjsModule(function (module, exports) {
-	"use strict";
-	/**
-	 * var basex = require("base-x");
-	 *
-	 * This implementation is heavily based on base-x. The main reason to
-	 * deviate was to prevent the dependency of Buffer.
-	 *
-	 * Contributors:
-	 *
-	 * base-x encoding
-	 * Forked from https://github.com/cryptocoinjs/bs58
-	 * Originally written by Mike Hearn for BitcoinJ
-	 * Copyright (c) 2011 Google Inc
-	 * Ported to JavaScript by Stefan Thomas
-	 * Merged Buffer refactorings from base58-native by Stephen Pair
-	 * Copyright (c) 2013 BitPay Inc
-	 *
-	 * The MIT License (MIT)
-	 *
-	 * Copyright base-x contributors (c) 2016
-	 *
-	 * Permission is hereby granted, free of charge, to any person obtaining a
-	 * copy of this software and associated documentation files (the "Software"),
-	 * to deal in the Software without restriction, including without limitation
-	 * the rights to use, copy, modify, merge, publish, distribute, sublicense,
-	 * and/or sell copies of the Software, and to permit persons to whom the
-	 * Software is furnished to do so, subject to the following conditions:
-	 *
-	 * The above copyright notice and this permission notice shall be included in
-	 * all copies or substantial portions of the Software.
-
-	 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-	 * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-	 * IN THE SOFTWARE.
-	 *
-	 */
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.Base58 = exports.Base32 = exports.BaseX = void 0;
-
-
-	var BaseX = /** @class */ (function () {
-	    function BaseX(alphabet) {
-	        lib$3.defineReadOnly(this, "alphabet", alphabet);
-	        lib$3.defineReadOnly(this, "base", alphabet.length);
-	        lib$3.defineReadOnly(this, "_alphabetMap", {});
-	        lib$3.defineReadOnly(this, "_leader", alphabet.charAt(0));
-	        // pre-compute lookup table
-	        for (var i = 0; i < alphabet.length; i++) {
-	            this._alphabetMap[alphabet.charAt(i)] = i;
-	        }
-	    }
-	    BaseX.prototype.encode = function (value) {
-	        var source = lib$1.arrayify(value);
-	        if (source.length === 0) {
-	            return "";
-	        }
-	        var digits = [0];
-	        for (var i = 0; i < source.length; ++i) {
-	            var carry = source[i];
-	            for (var j = 0; j < digits.length; ++j) {
-	                carry += digits[j] << 8;
-	                digits[j] = carry % this.base;
-	                carry = (carry / this.base) | 0;
-	            }
-	            while (carry > 0) {
-	                digits.push(carry % this.base);
-	                carry = (carry / this.base) | 0;
-	            }
-	        }
-	        var string = "";
-	        // deal with leading zeros
-	        for (var k = 0; source[k] === 0 && k < source.length - 1; ++k) {
-	            string += this._leader;
-	        }
-	        // convert digits to a string
-	        for (var q = digits.length - 1; q >= 0; --q) {
-	            string += this.alphabet[digits[q]];
-	        }
-	        return string;
-	    };
-	    BaseX.prototype.decode = function (value) {
-	        if (typeof (value) !== "string") {
-	            throw new TypeError("Expected String");
-	        }
-	        var bytes = [];
-	        if (value.length === 0) {
-	            return new Uint8Array(bytes);
-	        }
-	        bytes.push(0);
-	        for (var i = 0; i < value.length; i++) {
-	            var byte = this._alphabetMap[value[i]];
-	            if (byte === undefined) {
-	                throw new Error("Non-base" + this.base + " character");
-	            }
-	            var carry = byte;
-	            for (var j = 0; j < bytes.length; ++j) {
-	                carry += bytes[j] * this.base;
-	                bytes[j] = carry & 0xff;
-	                carry >>= 8;
-	            }
-	            while (carry > 0) {
-	                bytes.push(carry & 0xff);
-	                carry >>= 8;
-	            }
-	        }
-	        // deal with leading zeros
-	        for (var k = 0; value[k] === this._leader && k < value.length - 1; ++k) {
-	            bytes.push(0);
-	        }
-	        return lib$1.arrayify(new Uint8Array(bytes.reverse()));
-	    };
-	    return BaseX;
-	}());
-	exports.BaseX = BaseX;
-	var Base32 = new BaseX("abcdefghijklmnopqrstuvwxyz234567");
-	exports.Base32 = Base32;
-	var Base58 = new BaseX("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz");
-	exports.Base58 = Base58;
-	//console.log(Base58.decode("Qmd2V777o5XvJbYMeMb8k2nU5f8d3ciUQ5YpYuWhzv8iDj"))
-	//console.log(Base58.encode(Base58.decode("Qmd2V777o5XvJbYMeMb8k2nU5f8d3ciUQ5YpYuWhzv8iDj")))
-
-	});
-
-	var index$e = /*@__PURE__*/getDefaultExportFromCjs(lib$e);
-
 	var minimalisticAssert = assert;
 
 	function assert(val, msg) {
@@ -11322,6 +10054,570 @@
 	assert.equal = function assertEqual(l, r, msg) {
 	  if (l != r)
 	    throw new Error(msg || ('Assertion failed: ' + l + ' != ' + r));
+	};
+
+	var utils_1 = createCommonjsModule(function (module, exports) {
+	'use strict';
+
+	var utils = exports;
+
+	function toArray(msg, enc) {
+	  if (Array.isArray(msg))
+	    return msg.slice();
+	  if (!msg)
+	    return [];
+	  var res = [];
+	  if (typeof msg !== 'string') {
+	    for (var i = 0; i < msg.length; i++)
+	      res[i] = msg[i] | 0;
+	    return res;
+	  }
+	  if (enc === 'hex') {
+	    msg = msg.replace(/[^a-z0-9]+/ig, '');
+	    if (msg.length % 2 !== 0)
+	      msg = '0' + msg;
+	    for (var i = 0; i < msg.length; i += 2)
+	      res.push(parseInt(msg[i] + msg[i + 1], 16));
+	  } else {
+	    for (var i = 0; i < msg.length; i++) {
+	      var c = msg.charCodeAt(i);
+	      var hi = c >> 8;
+	      var lo = c & 0xff;
+	      if (hi)
+	        res.push(hi, lo);
+	      else
+	        res.push(lo);
+	    }
+	  }
+	  return res;
+	}
+	utils.toArray = toArray;
+
+	function zero2(word) {
+	  if (word.length === 1)
+	    return '0' + word;
+	  else
+	    return word;
+	}
+	utils.zero2 = zero2;
+
+	function toHex(msg) {
+	  var res = '';
+	  for (var i = 0; i < msg.length; i++)
+	    res += zero2(msg[i].toString(16));
+	  return res;
+	}
+	utils.toHex = toHex;
+
+	utils.encode = function encode(arr, enc) {
+	  if (enc === 'hex')
+	    return toHex(arr);
+	  else
+	    return arr;
+	};
+	});
+
+	var utils_1$1 = createCommonjsModule(function (module, exports) {
+	'use strict';
+
+	var utils = exports;
+
+
+
+
+	utils.assert = minimalisticAssert;
+	utils.toArray = utils_1.toArray;
+	utils.zero2 = utils_1.zero2;
+	utils.toHex = utils_1.toHex;
+	utils.encode = utils_1.encode;
+
+	// Represent num in a w-NAF form
+	function getNAF(num, w, bits) {
+	  var naf = new Array(Math.max(num.bitLength(), bits) + 1);
+	  naf.fill(0);
+
+	  var ws = 1 << (w + 1);
+	  var k = num.clone();
+
+	  for (var i = 0; i < naf.length; i++) {
+	    var z;
+	    var mod = k.andln(ws - 1);
+	    if (k.isOdd()) {
+	      if (mod > (ws >> 1) - 1)
+	        z = (ws >> 1) - mod;
+	      else
+	        z = mod;
+	      k.isubn(z);
+	    } else {
+	      z = 0;
+	    }
+
+	    naf[i] = z;
+	    k.iushrn(1);
+	  }
+
+	  return naf;
+	}
+	utils.getNAF = getNAF;
+
+	// Represent k1, k2 in a Joint Sparse Form
+	function getJSF(k1, k2) {
+	  var jsf = [
+	    [],
+	    [],
+	  ];
+
+	  k1 = k1.clone();
+	  k2 = k2.clone();
+	  var d1 = 0;
+	  var d2 = 0;
+	  var m8;
+	  while (k1.cmpn(-d1) > 0 || k2.cmpn(-d2) > 0) {
+	    // First phase
+	    var m14 = (k1.andln(3) + d1) & 3;
+	    var m24 = (k2.andln(3) + d2) & 3;
+	    if (m14 === 3)
+	      m14 = -1;
+	    if (m24 === 3)
+	      m24 = -1;
+	    var u1;
+	    if ((m14 & 1) === 0) {
+	      u1 = 0;
+	    } else {
+	      m8 = (k1.andln(7) + d1) & 7;
+	      if ((m8 === 3 || m8 === 5) && m24 === 2)
+	        u1 = -m14;
+	      else
+	        u1 = m14;
+	    }
+	    jsf[0].push(u1);
+
+	    var u2;
+	    if ((m24 & 1) === 0) {
+	      u2 = 0;
+	    } else {
+	      m8 = (k2.andln(7) + d2) & 7;
+	      if ((m8 === 3 || m8 === 5) && m14 === 2)
+	        u2 = -m24;
+	      else
+	        u2 = m24;
+	    }
+	    jsf[1].push(u2);
+
+	    // Second phase
+	    if (2 * d1 === u1 + 1)
+	      d1 = 1 - d1;
+	    if (2 * d2 === u2 + 1)
+	      d2 = 1 - d2;
+	    k1.iushrn(1);
+	    k2.iushrn(1);
+	  }
+
+	  return jsf;
+	}
+	utils.getJSF = getJSF;
+
+	function cachedProperty(obj, name, computer) {
+	  var key = '_' + name;
+	  obj.prototype[name] = function cachedProperty() {
+	    return this[key] !== undefined ? this[key] :
+	      this[key] = computer.call(this);
+	  };
+	}
+	utils.cachedProperty = cachedProperty;
+
+	function parseBytes(bytes) {
+	  return typeof bytes === 'string' ? utils.toArray(bytes, 'hex') :
+	    bytes;
+	}
+	utils.parseBytes = parseBytes;
+
+	function intFromLE(bytes) {
+	  return new bn(bytes, 'hex', 'le');
+	}
+	utils.intFromLE = intFromLE;
+	});
+
+	'use strict';
+
+
+
+	var getNAF = utils_1$1.getNAF;
+	var getJSF = utils_1$1.getJSF;
+	var assert$1 = utils_1$1.assert;
+
+	function BaseCurve(type, conf) {
+	  this.type = type;
+	  this.p = new bn(conf.p, 16);
+
+	  // Use Montgomery, when there is no fast reduction for the prime
+	  this.red = conf.prime ? bn.red(conf.prime) : bn.mont(this.p);
+
+	  // Useful for many curves
+	  this.zero = new bn(0).toRed(this.red);
+	  this.one = new bn(1).toRed(this.red);
+	  this.two = new bn(2).toRed(this.red);
+
+	  // Curve configuration, optional
+	  this.n = conf.n && new bn(conf.n, 16);
+	  this.g = conf.g && this.pointFromJSON(conf.g, conf.gRed);
+
+	  // Temporary arrays
+	  this._wnafT1 = new Array(4);
+	  this._wnafT2 = new Array(4);
+	  this._wnafT3 = new Array(4);
+	  this._wnafT4 = new Array(4);
+
+	  this._bitLength = this.n ? this.n.bitLength() : 0;
+
+	  // Generalized Greg Maxwell's trick
+	  var adjustCount = this.n && this.p.div(this.n);
+	  if (!adjustCount || adjustCount.cmpn(100) > 0) {
+	    this.redN = null;
+	  } else {
+	    this._maxwellTrick = true;
+	    this.redN = this.n.toRed(this.red);
+	  }
+	}
+	var base = BaseCurve;
+
+	BaseCurve.prototype.point = function point() {
+	  throw new Error('Not implemented');
+	};
+
+	BaseCurve.prototype.validate = function validate() {
+	  throw new Error('Not implemented');
+	};
+
+	BaseCurve.prototype._fixedNafMul = function _fixedNafMul(p, k) {
+	  assert$1(p.precomputed);
+	  var doubles = p._getDoubles();
+
+	  var naf = getNAF(k, 1, this._bitLength);
+	  var I = (1 << (doubles.step + 1)) - (doubles.step % 2 === 0 ? 2 : 1);
+	  I /= 3;
+
+	  // Translate into more windowed form
+	  var repr = [];
+	  var j;
+	  var nafW;
+	  for (j = 0; j < naf.length; j += doubles.step) {
+	    nafW = 0;
+	    for (var l = j + doubles.step - 1; l >= j; l--)
+	      nafW = (nafW << 1) + naf[l];
+	    repr.push(nafW);
+	  }
+
+	  var a = this.jpoint(null, null, null);
+	  var b = this.jpoint(null, null, null);
+	  for (var i = I; i > 0; i--) {
+	    for (j = 0; j < repr.length; j++) {
+	      nafW = repr[j];
+	      if (nafW === i)
+	        b = b.mixedAdd(doubles.points[j]);
+	      else if (nafW === -i)
+	        b = b.mixedAdd(doubles.points[j].neg());
+	    }
+	    a = a.add(b);
+	  }
+	  return a.toP();
+	};
+
+	BaseCurve.prototype._wnafMul = function _wnafMul(p, k) {
+	  var w = 4;
+
+	  // Precompute window
+	  var nafPoints = p._getNAFPoints(w);
+	  w = nafPoints.wnd;
+	  var wnd = nafPoints.points;
+
+	  // Get NAF form
+	  var naf = getNAF(k, w, this._bitLength);
+
+	  // Add `this`*(N+1) for every w-NAF index
+	  var acc = this.jpoint(null, null, null);
+	  for (var i = naf.length - 1; i >= 0; i--) {
+	    // Count zeroes
+	    for (var l = 0; i >= 0 && naf[i] === 0; i--)
+	      l++;
+	    if (i >= 0)
+	      l++;
+	    acc = acc.dblp(l);
+
+	    if (i < 0)
+	      break;
+	    var z = naf[i];
+	    assert$1(z !== 0);
+	    if (p.type === 'affine') {
+	      // J +- P
+	      if (z > 0)
+	        acc = acc.mixedAdd(wnd[(z - 1) >> 1]);
+	      else
+	        acc = acc.mixedAdd(wnd[(-z - 1) >> 1].neg());
+	    } else {
+	      // J +- J
+	      if (z > 0)
+	        acc = acc.add(wnd[(z - 1) >> 1]);
+	      else
+	        acc = acc.add(wnd[(-z - 1) >> 1].neg());
+	    }
+	  }
+	  return p.type === 'affine' ? acc.toP() : acc;
+	};
+
+	BaseCurve.prototype._wnafMulAdd = function _wnafMulAdd(defW,
+	  points,
+	  coeffs,
+	  len,
+	  jacobianResult) {
+	  var wndWidth = this._wnafT1;
+	  var wnd = this._wnafT2;
+	  var naf = this._wnafT3;
+
+	  // Fill all arrays
+	  var max = 0;
+	  var i;
+	  var j;
+	  var p;
+	  for (i = 0; i < len; i++) {
+	    p = points[i];
+	    var nafPoints = p._getNAFPoints(defW);
+	    wndWidth[i] = nafPoints.wnd;
+	    wnd[i] = nafPoints.points;
+	  }
+
+	  // Comb small window NAFs
+	  for (i = len - 1; i >= 1; i -= 2) {
+	    var a = i - 1;
+	    var b = i;
+	    if (wndWidth[a] !== 1 || wndWidth[b] !== 1) {
+	      naf[a] = getNAF(coeffs[a], wndWidth[a], this._bitLength);
+	      naf[b] = getNAF(coeffs[b], wndWidth[b], this._bitLength);
+	      max = Math.max(naf[a].length, max);
+	      max = Math.max(naf[b].length, max);
+	      continue;
+	    }
+
+	    var comb = [
+	      points[a], /* 1 */
+	      null, /* 3 */
+	      null, /* 5 */
+	      points[b], /* 7 */
+	    ];
+
+	    // Try to avoid Projective points, if possible
+	    if (points[a].y.cmp(points[b].y) === 0) {
+	      comb[1] = points[a].add(points[b]);
+	      comb[2] = points[a].toJ().mixedAdd(points[b].neg());
+	    } else if (points[a].y.cmp(points[b].y.redNeg()) === 0) {
+	      comb[1] = points[a].toJ().mixedAdd(points[b]);
+	      comb[2] = points[a].add(points[b].neg());
+	    } else {
+	      comb[1] = points[a].toJ().mixedAdd(points[b]);
+	      comb[2] = points[a].toJ().mixedAdd(points[b].neg());
+	    }
+
+	    var index = [
+	      -3, /* -1 -1 */
+	      -1, /* -1 0 */
+	      -5, /* -1 1 */
+	      -7, /* 0 -1 */
+	      0, /* 0 0 */
+	      7, /* 0 1 */
+	      5, /* 1 -1 */
+	      1, /* 1 0 */
+	      3,  /* 1 1 */
+	    ];
+
+	    var jsf = getJSF(coeffs[a], coeffs[b]);
+	    max = Math.max(jsf[0].length, max);
+	    naf[a] = new Array(max);
+	    naf[b] = new Array(max);
+	    for (j = 0; j < max; j++) {
+	      var ja = jsf[0][j] | 0;
+	      var jb = jsf[1][j] | 0;
+
+	      naf[a][j] = index[(ja + 1) * 3 + (jb + 1)];
+	      naf[b][j] = 0;
+	      wnd[a] = comb;
+	    }
+	  }
+
+	  var acc = this.jpoint(null, null, null);
+	  var tmp = this._wnafT4;
+	  for (i = max; i >= 0; i--) {
+	    var k = 0;
+
+	    while (i >= 0) {
+	      var zero = true;
+	      for (j = 0; j < len; j++) {
+	        tmp[j] = naf[j][i] | 0;
+	        if (tmp[j] !== 0)
+	          zero = false;
+	      }
+	      if (!zero)
+	        break;
+	      k++;
+	      i--;
+	    }
+	    if (i >= 0)
+	      k++;
+	    acc = acc.dblp(k);
+	    if (i < 0)
+	      break;
+
+	    for (j = 0; j < len; j++) {
+	      var z = tmp[j];
+	      p;
+	      if (z === 0)
+	        continue;
+	      else if (z > 0)
+	        p = wnd[j][(z - 1) >> 1];
+	      else if (z < 0)
+	        p = wnd[j][(-z - 1) >> 1].neg();
+
+	      if (p.type === 'affine')
+	        acc = acc.mixedAdd(p);
+	      else
+	        acc = acc.add(p);
+	    }
+	  }
+	  // Zeroify references
+	  for (i = 0; i < len; i++)
+	    wnd[i] = null;
+
+	  if (jacobianResult)
+	    return acc;
+	  else
+	    return acc.toP();
+	};
+
+	function BasePoint(curve, type) {
+	  this.curve = curve;
+	  this.type = type;
+	  this.precomputed = null;
+	}
+	BaseCurve.BasePoint = BasePoint;
+
+	BasePoint.prototype.eq = function eq(/*other*/) {
+	  throw new Error('Not implemented');
+	};
+
+	BasePoint.prototype.validate = function validate() {
+	  return this.curve.validate(this);
+	};
+
+	BaseCurve.prototype.decodePoint = function decodePoint(bytes, enc) {
+	  bytes = utils_1$1.toArray(bytes, enc);
+
+	  var len = this.p.byteLength();
+
+	  // uncompressed, hybrid-odd, hybrid-even
+	  if ((bytes[0] === 0x04 || bytes[0] === 0x06 || bytes[0] === 0x07) &&
+	      bytes.length - 1 === 2 * len) {
+	    if (bytes[0] === 0x06)
+	      assert$1(bytes[bytes.length - 1] % 2 === 0);
+	    else if (bytes[0] === 0x07)
+	      assert$1(bytes[bytes.length - 1] % 2 === 1);
+
+	    var res =  this.point(bytes.slice(1, 1 + len),
+	      bytes.slice(1 + len, 1 + 2 * len));
+
+	    return res;
+	  } else if ((bytes[0] === 0x02 || bytes[0] === 0x03) &&
+	              bytes.length - 1 === len) {
+	    return this.pointFromX(bytes.slice(1, 1 + len), bytes[0] === 0x03);
+	  }
+	  throw new Error('Unknown point format');
+	};
+
+	BasePoint.prototype.encodeCompressed = function encodeCompressed(enc) {
+	  return this.encode(enc, true);
+	};
+
+	BasePoint.prototype._encode = function _encode(compact) {
+	  var len = this.curve.p.byteLength();
+	  var x = this.getX().toArray('be', len);
+
+	  if (compact)
+	    return [ this.getY().isEven() ? 0x02 : 0x03 ].concat(x);
+
+	  return [ 0x04 ].concat(x, this.getY().toArray('be', len));
+	};
+
+	BasePoint.prototype.encode = function encode(enc, compact) {
+	  return utils_1$1.encode(this._encode(compact), enc);
+	};
+
+	BasePoint.prototype.precompute = function precompute(power) {
+	  if (this.precomputed)
+	    return this;
+
+	  var precomputed = {
+	    doubles: null,
+	    naf: null,
+	    beta: null,
+	  };
+	  precomputed.naf = this._getNAFPoints(8);
+	  precomputed.doubles = this._getDoubles(4, power);
+	  precomputed.beta = this._getBeta();
+	  this.precomputed = precomputed;
+
+	  return this;
+	};
+
+	BasePoint.prototype._hasDoubles = function _hasDoubles(k) {
+	  if (!this.precomputed)
+	    return false;
+
+	  var doubles = this.precomputed.doubles;
+	  if (!doubles)
+	    return false;
+
+	  return doubles.points.length >= Math.ceil((k.bitLength() + 1) / doubles.step);
+	};
+
+	BasePoint.prototype._getDoubles = function _getDoubles(step, power) {
+	  if (this.precomputed && this.precomputed.doubles)
+	    return this.precomputed.doubles;
+
+	  var doubles = [ this ];
+	  var acc = this;
+	  for (var i = 0; i < power; i += step) {
+	    for (var j = 0; j < step; j++)
+	      acc = acc.dbl();
+	    doubles.push(acc);
+	  }
+	  return {
+	    step: step,
+	    points: doubles,
+	  };
+	};
+
+	BasePoint.prototype._getNAFPoints = function _getNAFPoints(wnd) {
+	  if (this.precomputed && this.precomputed.naf)
+	    return this.precomputed.naf;
+
+	  var res = [ this ];
+	  var max = (1 << wnd) - 1;
+	  var dbl = max === 1 ? null : this.dbl();
+	  for (var i = 1; i < max; i++)
+	    res[i] = res[i - 1].add(dbl);
+	  return {
+	    wnd: wnd,
+	    points: res,
+	  };
+	};
+
+	BasePoint.prototype._getBeta = function _getBeta() {
+	  return null;
+	};
+
+	BasePoint.prototype.dblp = function dblp(k) {
+	  var r = this;
+	  for (var i = 0; i < k; i++)
+	    r = r.dbl();
+	  return r;
 	};
 
 	var inherits_browser = createCommonjsModule(function (module) {
@@ -11352,6 +10648,956 @@
 	    }
 	  };
 	}
+	});
+
+	'use strict';
+
+
+
+
+
+
+	var assert$2 = utils_1$1.assert;
+
+	function ShortCurve(conf) {
+	  base.call(this, 'short', conf);
+
+	  this.a = new bn(conf.a, 16).toRed(this.red);
+	  this.b = new bn(conf.b, 16).toRed(this.red);
+	  this.tinv = this.two.redInvm();
+
+	  this.zeroA = this.a.fromRed().cmpn(0) === 0;
+	  this.threeA = this.a.fromRed().sub(this.p).cmpn(-3) === 0;
+
+	  // If the curve is endomorphic, precalculate beta and lambda
+	  this.endo = this._getEndomorphism(conf);
+	  this._endoWnafT1 = new Array(4);
+	  this._endoWnafT2 = new Array(4);
+	}
+	inherits_browser(ShortCurve, base);
+	var short_1 = ShortCurve;
+
+	ShortCurve.prototype._getEndomorphism = function _getEndomorphism(conf) {
+	  // No efficient endomorphism
+	  if (!this.zeroA || !this.g || !this.n || this.p.modn(3) !== 1)
+	    return;
+
+	  // Compute beta and lambda, that lambda * P = (beta * Px; Py)
+	  var beta;
+	  var lambda;
+	  if (conf.beta) {
+	    beta = new bn(conf.beta, 16).toRed(this.red);
+	  } else {
+	    var betas = this._getEndoRoots(this.p);
+	    // Choose the smallest beta
+	    beta = betas[0].cmp(betas[1]) < 0 ? betas[0] : betas[1];
+	    beta = beta.toRed(this.red);
+	  }
+	  if (conf.lambda) {
+	    lambda = new bn(conf.lambda, 16);
+	  } else {
+	    // Choose the lambda that is matching selected beta
+	    var lambdas = this._getEndoRoots(this.n);
+	    if (this.g.mul(lambdas[0]).x.cmp(this.g.x.redMul(beta)) === 0) {
+	      lambda = lambdas[0];
+	    } else {
+	      lambda = lambdas[1];
+	      assert$2(this.g.mul(lambda).x.cmp(this.g.x.redMul(beta)) === 0);
+	    }
+	  }
+
+	  // Get basis vectors, used for balanced length-two representation
+	  var basis;
+	  if (conf.basis) {
+	    basis = conf.basis.map(function(vec) {
+	      return {
+	        a: new bn(vec.a, 16),
+	        b: new bn(vec.b, 16),
+	      };
+	    });
+	  } else {
+	    basis = this._getEndoBasis(lambda);
+	  }
+
+	  return {
+	    beta: beta,
+	    lambda: lambda,
+	    basis: basis,
+	  };
+	};
+
+	ShortCurve.prototype._getEndoRoots = function _getEndoRoots(num) {
+	  // Find roots of for x^2 + x + 1 in F
+	  // Root = (-1 +- Sqrt(-3)) / 2
+	  //
+	  var red = num === this.p ? this.red : bn.mont(num);
+	  var tinv = new bn(2).toRed(red).redInvm();
+	  var ntinv = tinv.redNeg();
+
+	  var s = new bn(3).toRed(red).redNeg().redSqrt().redMul(tinv);
+
+	  var l1 = ntinv.redAdd(s).fromRed();
+	  var l2 = ntinv.redSub(s).fromRed();
+	  return [ l1, l2 ];
+	};
+
+	ShortCurve.prototype._getEndoBasis = function _getEndoBasis(lambda) {
+	  // aprxSqrt >= sqrt(this.n)
+	  var aprxSqrt = this.n.ushrn(Math.floor(this.n.bitLength() / 2));
+
+	  // 3.74
+	  // Run EGCD, until r(L + 1) < aprxSqrt
+	  var u = lambda;
+	  var v = this.n.clone();
+	  var x1 = new bn(1);
+	  var y1 = new bn(0);
+	  var x2 = new bn(0);
+	  var y2 = new bn(1);
+
+	  // NOTE: all vectors are roots of: a + b * lambda = 0 (mod n)
+	  var a0;
+	  var b0;
+	  // First vector
+	  var a1;
+	  var b1;
+	  // Second vector
+	  var a2;
+	  var b2;
+
+	  var prevR;
+	  var i = 0;
+	  var r;
+	  var x;
+	  while (u.cmpn(0) !== 0) {
+	    var q = v.div(u);
+	    r = v.sub(q.mul(u));
+	    x = x2.sub(q.mul(x1));
+	    var y = y2.sub(q.mul(y1));
+
+	    if (!a1 && r.cmp(aprxSqrt) < 0) {
+	      a0 = prevR.neg();
+	      b0 = x1;
+	      a1 = r.neg();
+	      b1 = x;
+	    } else if (a1 && ++i === 2) {
+	      break;
+	    }
+	    prevR = r;
+
+	    v = u;
+	    u = r;
+	    x2 = x1;
+	    x1 = x;
+	    y2 = y1;
+	    y1 = y;
+	  }
+	  a2 = r.neg();
+	  b2 = x;
+
+	  var len1 = a1.sqr().add(b1.sqr());
+	  var len2 = a2.sqr().add(b2.sqr());
+	  if (len2.cmp(len1) >= 0) {
+	    a2 = a0;
+	    b2 = b0;
+	  }
+
+	  // Normalize signs
+	  if (a1.negative) {
+	    a1 = a1.neg();
+	    b1 = b1.neg();
+	  }
+	  if (a2.negative) {
+	    a2 = a2.neg();
+	    b2 = b2.neg();
+	  }
+
+	  return [
+	    { a: a1, b: b1 },
+	    { a: a2, b: b2 },
+	  ];
+	};
+
+	ShortCurve.prototype._endoSplit = function _endoSplit(k) {
+	  var basis = this.endo.basis;
+	  var v1 = basis[0];
+	  var v2 = basis[1];
+
+	  var c1 = v2.b.mul(k).divRound(this.n);
+	  var c2 = v1.b.neg().mul(k).divRound(this.n);
+
+	  var p1 = c1.mul(v1.a);
+	  var p2 = c2.mul(v2.a);
+	  var q1 = c1.mul(v1.b);
+	  var q2 = c2.mul(v2.b);
+
+	  // Calculate answer
+	  var k1 = k.sub(p1).sub(p2);
+	  var k2 = q1.add(q2).neg();
+	  return { k1: k1, k2: k2 };
+	};
+
+	ShortCurve.prototype.pointFromX = function pointFromX(x, odd) {
+	  x = new bn(x, 16);
+	  if (!x.red)
+	    x = x.toRed(this.red);
+
+	  var y2 = x.redSqr().redMul(x).redIAdd(x.redMul(this.a)).redIAdd(this.b);
+	  var y = y2.redSqrt();
+	  if (y.redSqr().redSub(y2).cmp(this.zero) !== 0)
+	    throw new Error('invalid point');
+
+	  // XXX Is there any way to tell if the number is odd without converting it
+	  // to non-red form?
+	  var isOdd = y.fromRed().isOdd();
+	  if (odd && !isOdd || !odd && isOdd)
+	    y = y.redNeg();
+
+	  return this.point(x, y);
+	};
+
+	ShortCurve.prototype.validate = function validate(point) {
+	  if (point.inf)
+	    return true;
+
+	  var x = point.x;
+	  var y = point.y;
+
+	  var ax = this.a.redMul(x);
+	  var rhs = x.redSqr().redMul(x).redIAdd(ax).redIAdd(this.b);
+	  return y.redSqr().redISub(rhs).cmpn(0) === 0;
+	};
+
+	ShortCurve.prototype._endoWnafMulAdd =
+	    function _endoWnafMulAdd(points, coeffs, jacobianResult) {
+	      var npoints = this._endoWnafT1;
+	      var ncoeffs = this._endoWnafT2;
+	      for (var i = 0; i < points.length; i++) {
+	        var split = this._endoSplit(coeffs[i]);
+	        var p = points[i];
+	        var beta = p._getBeta();
+
+	        if (split.k1.negative) {
+	          split.k1.ineg();
+	          p = p.neg(true);
+	        }
+	        if (split.k2.negative) {
+	          split.k2.ineg();
+	          beta = beta.neg(true);
+	        }
+
+	        npoints[i * 2] = p;
+	        npoints[i * 2 + 1] = beta;
+	        ncoeffs[i * 2] = split.k1;
+	        ncoeffs[i * 2 + 1] = split.k2;
+	      }
+	      var res = this._wnafMulAdd(1, npoints, ncoeffs, i * 2, jacobianResult);
+
+	      // Clean-up references to points and coefficients
+	      for (var j = 0; j < i * 2; j++) {
+	        npoints[j] = null;
+	        ncoeffs[j] = null;
+	      }
+	      return res;
+	    };
+
+	function Point(curve, x, y, isRed) {
+	  base.BasePoint.call(this, curve, 'affine');
+	  if (x === null && y === null) {
+	    this.x = null;
+	    this.y = null;
+	    this.inf = true;
+	  } else {
+	    this.x = new bn(x, 16);
+	    this.y = new bn(y, 16);
+	    // Force redgomery representation when loading from JSON
+	    if (isRed) {
+	      this.x.forceRed(this.curve.red);
+	      this.y.forceRed(this.curve.red);
+	    }
+	    if (!this.x.red)
+	      this.x = this.x.toRed(this.curve.red);
+	    if (!this.y.red)
+	      this.y = this.y.toRed(this.curve.red);
+	    this.inf = false;
+	  }
+	}
+	inherits_browser(Point, base.BasePoint);
+
+	ShortCurve.prototype.point = function point(x, y, isRed) {
+	  return new Point(this, x, y, isRed);
+	};
+
+	ShortCurve.prototype.pointFromJSON = function pointFromJSON(obj, red) {
+	  return Point.fromJSON(this, obj, red);
+	};
+
+	Point.prototype._getBeta = function _getBeta() {
+	  if (!this.curve.endo)
+	    return;
+
+	  var pre = this.precomputed;
+	  if (pre && pre.beta)
+	    return pre.beta;
+
+	  var beta = this.curve.point(this.x.redMul(this.curve.endo.beta), this.y);
+	  if (pre) {
+	    var curve = this.curve;
+	    var endoMul = function(p) {
+	      return curve.point(p.x.redMul(curve.endo.beta), p.y);
+	    };
+	    pre.beta = beta;
+	    beta.precomputed = {
+	      beta: null,
+	      naf: pre.naf && {
+	        wnd: pre.naf.wnd,
+	        points: pre.naf.points.map(endoMul),
+	      },
+	      doubles: pre.doubles && {
+	        step: pre.doubles.step,
+	        points: pre.doubles.points.map(endoMul),
+	      },
+	    };
+	  }
+	  return beta;
+	};
+
+	Point.prototype.toJSON = function toJSON() {
+	  if (!this.precomputed)
+	    return [ this.x, this.y ];
+
+	  return [ this.x, this.y, this.precomputed && {
+	    doubles: this.precomputed.doubles && {
+	      step: this.precomputed.doubles.step,
+	      points: this.precomputed.doubles.points.slice(1),
+	    },
+	    naf: this.precomputed.naf && {
+	      wnd: this.precomputed.naf.wnd,
+	      points: this.precomputed.naf.points.slice(1),
+	    },
+	  } ];
+	};
+
+	Point.fromJSON = function fromJSON(curve, obj, red) {
+	  if (typeof obj === 'string')
+	    obj = JSON.parse(obj);
+	  var res = curve.point(obj[0], obj[1], red);
+	  if (!obj[2])
+	    return res;
+
+	  function obj2point(obj) {
+	    return curve.point(obj[0], obj[1], red);
+	  }
+
+	  var pre = obj[2];
+	  res.precomputed = {
+	    beta: null,
+	    doubles: pre.doubles && {
+	      step: pre.doubles.step,
+	      points: [ res ].concat(pre.doubles.points.map(obj2point)),
+	    },
+	    naf: pre.naf && {
+	      wnd: pre.naf.wnd,
+	      points: [ res ].concat(pre.naf.points.map(obj2point)),
+	    },
+	  };
+	  return res;
+	};
+
+	Point.prototype.inspect = function inspect() {
+	  if (this.isInfinity())
+	    return '<EC Point Infinity>';
+	  return '<EC Point x: ' + this.x.fromRed().toString(16, 2) +
+	      ' y: ' + this.y.fromRed().toString(16, 2) + '>';
+	};
+
+	Point.prototype.isInfinity = function isInfinity() {
+	  return this.inf;
+	};
+
+	Point.prototype.add = function add(p) {
+	  // O + P = P
+	  if (this.inf)
+	    return p;
+
+	  // P + O = P
+	  if (p.inf)
+	    return this;
+
+	  // P + P = 2P
+	  if (this.eq(p))
+	    return this.dbl();
+
+	  // P + (-P) = O
+	  if (this.neg().eq(p))
+	    return this.curve.point(null, null);
+
+	  // P + Q = O
+	  if (this.x.cmp(p.x) === 0)
+	    return this.curve.point(null, null);
+
+	  var c = this.y.redSub(p.y);
+	  if (c.cmpn(0) !== 0)
+	    c = c.redMul(this.x.redSub(p.x).redInvm());
+	  var nx = c.redSqr().redISub(this.x).redISub(p.x);
+	  var ny = c.redMul(this.x.redSub(nx)).redISub(this.y);
+	  return this.curve.point(nx, ny);
+	};
+
+	Point.prototype.dbl = function dbl() {
+	  if (this.inf)
+	    return this;
+
+	  // 2P = O
+	  var ys1 = this.y.redAdd(this.y);
+	  if (ys1.cmpn(0) === 0)
+	    return this.curve.point(null, null);
+
+	  var a = this.curve.a;
+
+	  var x2 = this.x.redSqr();
+	  var dyinv = ys1.redInvm();
+	  var c = x2.redAdd(x2).redIAdd(x2).redIAdd(a).redMul(dyinv);
+
+	  var nx = c.redSqr().redISub(this.x.redAdd(this.x));
+	  var ny = c.redMul(this.x.redSub(nx)).redISub(this.y);
+	  return this.curve.point(nx, ny);
+	};
+
+	Point.prototype.getX = function getX() {
+	  return this.x.fromRed();
+	};
+
+	Point.prototype.getY = function getY() {
+	  return this.y.fromRed();
+	};
+
+	Point.prototype.mul = function mul(k) {
+	  k = new bn(k, 16);
+	  if (this.isInfinity())
+	    return this;
+	  else if (this._hasDoubles(k))
+	    return this.curve._fixedNafMul(this, k);
+	  else if (this.curve.endo)
+	    return this.curve._endoWnafMulAdd([ this ], [ k ]);
+	  else
+	    return this.curve._wnafMul(this, k);
+	};
+
+	Point.prototype.mulAdd = function mulAdd(k1, p2, k2) {
+	  var points = [ this, p2 ];
+	  var coeffs = [ k1, k2 ];
+	  if (this.curve.endo)
+	    return this.curve._endoWnafMulAdd(points, coeffs);
+	  else
+	    return this.curve._wnafMulAdd(1, points, coeffs, 2);
+	};
+
+	Point.prototype.jmulAdd = function jmulAdd(k1, p2, k2) {
+	  var points = [ this, p2 ];
+	  var coeffs = [ k1, k2 ];
+	  if (this.curve.endo)
+	    return this.curve._endoWnafMulAdd(points, coeffs, true);
+	  else
+	    return this.curve._wnafMulAdd(1, points, coeffs, 2, true);
+	};
+
+	Point.prototype.eq = function eq(p) {
+	  return this === p ||
+	         this.inf === p.inf &&
+	             (this.inf || this.x.cmp(p.x) === 0 && this.y.cmp(p.y) === 0);
+	};
+
+	Point.prototype.neg = function neg(_precompute) {
+	  if (this.inf)
+	    return this;
+
+	  var res = this.curve.point(this.x, this.y.redNeg());
+	  if (_precompute && this.precomputed) {
+	    var pre = this.precomputed;
+	    var negate = function(p) {
+	      return p.neg();
+	    };
+	    res.precomputed = {
+	      naf: pre.naf && {
+	        wnd: pre.naf.wnd,
+	        points: pre.naf.points.map(negate),
+	      },
+	      doubles: pre.doubles && {
+	        step: pre.doubles.step,
+	        points: pre.doubles.points.map(negate),
+	      },
+	    };
+	  }
+	  return res;
+	};
+
+	Point.prototype.toJ = function toJ() {
+	  if (this.inf)
+	    return this.curve.jpoint(null, null, null);
+
+	  var res = this.curve.jpoint(this.x, this.y, this.curve.one);
+	  return res;
+	};
+
+	function JPoint(curve, x, y, z) {
+	  base.BasePoint.call(this, curve, 'jacobian');
+	  if (x === null && y === null && z === null) {
+	    this.x = this.curve.one;
+	    this.y = this.curve.one;
+	    this.z = new bn(0);
+	  } else {
+	    this.x = new bn(x, 16);
+	    this.y = new bn(y, 16);
+	    this.z = new bn(z, 16);
+	  }
+	  if (!this.x.red)
+	    this.x = this.x.toRed(this.curve.red);
+	  if (!this.y.red)
+	    this.y = this.y.toRed(this.curve.red);
+	  if (!this.z.red)
+	    this.z = this.z.toRed(this.curve.red);
+
+	  this.zOne = this.z === this.curve.one;
+	}
+	inherits_browser(JPoint, base.BasePoint);
+
+	ShortCurve.prototype.jpoint = function jpoint(x, y, z) {
+	  return new JPoint(this, x, y, z);
+	};
+
+	JPoint.prototype.toP = function toP() {
+	  if (this.isInfinity())
+	    return this.curve.point(null, null);
+
+	  var zinv = this.z.redInvm();
+	  var zinv2 = zinv.redSqr();
+	  var ax = this.x.redMul(zinv2);
+	  var ay = this.y.redMul(zinv2).redMul(zinv);
+
+	  return this.curve.point(ax, ay);
+	};
+
+	JPoint.prototype.neg = function neg() {
+	  return this.curve.jpoint(this.x, this.y.redNeg(), this.z);
+	};
+
+	JPoint.prototype.add = function add(p) {
+	  // O + P = P
+	  if (this.isInfinity())
+	    return p;
+
+	  // P + O = P
+	  if (p.isInfinity())
+	    return this;
+
+	  // 12M + 4S + 7A
+	  var pz2 = p.z.redSqr();
+	  var z2 = this.z.redSqr();
+	  var u1 = this.x.redMul(pz2);
+	  var u2 = p.x.redMul(z2);
+	  var s1 = this.y.redMul(pz2.redMul(p.z));
+	  var s2 = p.y.redMul(z2.redMul(this.z));
+
+	  var h = u1.redSub(u2);
+	  var r = s1.redSub(s2);
+	  if (h.cmpn(0) === 0) {
+	    if (r.cmpn(0) !== 0)
+	      return this.curve.jpoint(null, null, null);
+	    else
+	      return this.dbl();
+	  }
+
+	  var h2 = h.redSqr();
+	  var h3 = h2.redMul(h);
+	  var v = u1.redMul(h2);
+
+	  var nx = r.redSqr().redIAdd(h3).redISub(v).redISub(v);
+	  var ny = r.redMul(v.redISub(nx)).redISub(s1.redMul(h3));
+	  var nz = this.z.redMul(p.z).redMul(h);
+
+	  return this.curve.jpoint(nx, ny, nz);
+	};
+
+	JPoint.prototype.mixedAdd = function mixedAdd(p) {
+	  // O + P = P
+	  if (this.isInfinity())
+	    return p.toJ();
+
+	  // P + O = P
+	  if (p.isInfinity())
+	    return this;
+
+	  // 8M + 3S + 7A
+	  var z2 = this.z.redSqr();
+	  var u1 = this.x;
+	  var u2 = p.x.redMul(z2);
+	  var s1 = this.y;
+	  var s2 = p.y.redMul(z2).redMul(this.z);
+
+	  var h = u1.redSub(u2);
+	  var r = s1.redSub(s2);
+	  if (h.cmpn(0) === 0) {
+	    if (r.cmpn(0) !== 0)
+	      return this.curve.jpoint(null, null, null);
+	    else
+	      return this.dbl();
+	  }
+
+	  var h2 = h.redSqr();
+	  var h3 = h2.redMul(h);
+	  var v = u1.redMul(h2);
+
+	  var nx = r.redSqr().redIAdd(h3).redISub(v).redISub(v);
+	  var ny = r.redMul(v.redISub(nx)).redISub(s1.redMul(h3));
+	  var nz = this.z.redMul(h);
+
+	  return this.curve.jpoint(nx, ny, nz);
+	};
+
+	JPoint.prototype.dblp = function dblp(pow) {
+	  if (pow === 0)
+	    return this;
+	  if (this.isInfinity())
+	    return this;
+	  if (!pow)
+	    return this.dbl();
+
+	  var i;
+	  if (this.curve.zeroA || this.curve.threeA) {
+	    var r = this;
+	    for (i = 0; i < pow; i++)
+	      r = r.dbl();
+	    return r;
+	  }
+
+	  // 1M + 2S + 1A + N * (4S + 5M + 8A)
+	  // N = 1 => 6M + 6S + 9A
+	  var a = this.curve.a;
+	  var tinv = this.curve.tinv;
+
+	  var jx = this.x;
+	  var jy = this.y;
+	  var jz = this.z;
+	  var jz4 = jz.redSqr().redSqr();
+
+	  // Reuse results
+	  var jyd = jy.redAdd(jy);
+	  for (i = 0; i < pow; i++) {
+	    var jx2 = jx.redSqr();
+	    var jyd2 = jyd.redSqr();
+	    var jyd4 = jyd2.redSqr();
+	    var c = jx2.redAdd(jx2).redIAdd(jx2).redIAdd(a.redMul(jz4));
+
+	    var t1 = jx.redMul(jyd2);
+	    var nx = c.redSqr().redISub(t1.redAdd(t1));
+	    var t2 = t1.redISub(nx);
+	    var dny = c.redMul(t2);
+	    dny = dny.redIAdd(dny).redISub(jyd4);
+	    var nz = jyd.redMul(jz);
+	    if (i + 1 < pow)
+	      jz4 = jz4.redMul(jyd4);
+
+	    jx = nx;
+	    jz = nz;
+	    jyd = dny;
+	  }
+
+	  return this.curve.jpoint(jx, jyd.redMul(tinv), jz);
+	};
+
+	JPoint.prototype.dbl = function dbl() {
+	  if (this.isInfinity())
+	    return this;
+
+	  if (this.curve.zeroA)
+	    return this._zeroDbl();
+	  else if (this.curve.threeA)
+	    return this._threeDbl();
+	  else
+	    return this._dbl();
+	};
+
+	JPoint.prototype._zeroDbl = function _zeroDbl() {
+	  var nx;
+	  var ny;
+	  var nz;
+	  // Z = 1
+	  if (this.zOne) {
+	    // hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html
+	    //     #doubling-mdbl-2007-bl
+	    // 1M + 5S + 14A
+
+	    // XX = X1^2
+	    var xx = this.x.redSqr();
+	    // YY = Y1^2
+	    var yy = this.y.redSqr();
+	    // YYYY = YY^2
+	    var yyyy = yy.redSqr();
+	    // S = 2 * ((X1 + YY)^2 - XX - YYYY)
+	    var s = this.x.redAdd(yy).redSqr().redISub(xx).redISub(yyyy);
+	    s = s.redIAdd(s);
+	    // M = 3 * XX + a; a = 0
+	    var m = xx.redAdd(xx).redIAdd(xx);
+	    // T = M ^ 2 - 2*S
+	    var t = m.redSqr().redISub(s).redISub(s);
+
+	    // 8 * YYYY
+	    var yyyy8 = yyyy.redIAdd(yyyy);
+	    yyyy8 = yyyy8.redIAdd(yyyy8);
+	    yyyy8 = yyyy8.redIAdd(yyyy8);
+
+	    // X3 = T
+	    nx = t;
+	    // Y3 = M * (S - T) - 8 * YYYY
+	    ny = m.redMul(s.redISub(t)).redISub(yyyy8);
+	    // Z3 = 2*Y1
+	    nz = this.y.redAdd(this.y);
+	  } else {
+	    // hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html
+	    //     #doubling-dbl-2009-l
+	    // 2M + 5S + 13A
+
+	    // A = X1^2
+	    var a = this.x.redSqr();
+	    // B = Y1^2
+	    var b = this.y.redSqr();
+	    // C = B^2
+	    var c = b.redSqr();
+	    // D = 2 * ((X1 + B)^2 - A - C)
+	    var d = this.x.redAdd(b).redSqr().redISub(a).redISub(c);
+	    d = d.redIAdd(d);
+	    // E = 3 * A
+	    var e = a.redAdd(a).redIAdd(a);
+	    // F = E^2
+	    var f = e.redSqr();
+
+	    // 8 * C
+	    var c8 = c.redIAdd(c);
+	    c8 = c8.redIAdd(c8);
+	    c8 = c8.redIAdd(c8);
+
+	    // X3 = F - 2 * D
+	    nx = f.redISub(d).redISub(d);
+	    // Y3 = E * (D - X3) - 8 * C
+	    ny = e.redMul(d.redISub(nx)).redISub(c8);
+	    // Z3 = 2 * Y1 * Z1
+	    nz = this.y.redMul(this.z);
+	    nz = nz.redIAdd(nz);
+	  }
+
+	  return this.curve.jpoint(nx, ny, nz);
+	};
+
+	JPoint.prototype._threeDbl = function _threeDbl() {
+	  var nx;
+	  var ny;
+	  var nz;
+	  // Z = 1
+	  if (this.zOne) {
+	    // hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-3.html
+	    //     #doubling-mdbl-2007-bl
+	    // 1M + 5S + 15A
+
+	    // XX = X1^2
+	    var xx = this.x.redSqr();
+	    // YY = Y1^2
+	    var yy = this.y.redSqr();
+	    // YYYY = YY^2
+	    var yyyy = yy.redSqr();
+	    // S = 2 * ((X1 + YY)^2 - XX - YYYY)
+	    var s = this.x.redAdd(yy).redSqr().redISub(xx).redISub(yyyy);
+	    s = s.redIAdd(s);
+	    // M = 3 * XX + a
+	    var m = xx.redAdd(xx).redIAdd(xx).redIAdd(this.curve.a);
+	    // T = M^2 - 2 * S
+	    var t = m.redSqr().redISub(s).redISub(s);
+	    // X3 = T
+	    nx = t;
+	    // Y3 = M * (S - T) - 8 * YYYY
+	    var yyyy8 = yyyy.redIAdd(yyyy);
+	    yyyy8 = yyyy8.redIAdd(yyyy8);
+	    yyyy8 = yyyy8.redIAdd(yyyy8);
+	    ny = m.redMul(s.redISub(t)).redISub(yyyy8);
+	    // Z3 = 2 * Y1
+	    nz = this.y.redAdd(this.y);
+	  } else {
+	    // hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-3.html#doubling-dbl-2001-b
+	    // 3M + 5S
+
+	    // delta = Z1^2
+	    var delta = this.z.redSqr();
+	    // gamma = Y1^2
+	    var gamma = this.y.redSqr();
+	    // beta = X1 * gamma
+	    var beta = this.x.redMul(gamma);
+	    // alpha = 3 * (X1 - delta) * (X1 + delta)
+	    var alpha = this.x.redSub(delta).redMul(this.x.redAdd(delta));
+	    alpha = alpha.redAdd(alpha).redIAdd(alpha);
+	    // X3 = alpha^2 - 8 * beta
+	    var beta4 = beta.redIAdd(beta);
+	    beta4 = beta4.redIAdd(beta4);
+	    var beta8 = beta4.redAdd(beta4);
+	    nx = alpha.redSqr().redISub(beta8);
+	    // Z3 = (Y1 + Z1)^2 - gamma - delta
+	    nz = this.y.redAdd(this.z).redSqr().redISub(gamma).redISub(delta);
+	    // Y3 = alpha * (4 * beta - X3) - 8 * gamma^2
+	    var ggamma8 = gamma.redSqr();
+	    ggamma8 = ggamma8.redIAdd(ggamma8);
+	    ggamma8 = ggamma8.redIAdd(ggamma8);
+	    ggamma8 = ggamma8.redIAdd(ggamma8);
+	    ny = alpha.redMul(beta4.redISub(nx)).redISub(ggamma8);
+	  }
+
+	  return this.curve.jpoint(nx, ny, nz);
+	};
+
+	JPoint.prototype._dbl = function _dbl() {
+	  var a = this.curve.a;
+
+	  // 4M + 6S + 10A
+	  var jx = this.x;
+	  var jy = this.y;
+	  var jz = this.z;
+	  var jz4 = jz.redSqr().redSqr();
+
+	  var jx2 = jx.redSqr();
+	  var jy2 = jy.redSqr();
+
+	  var c = jx2.redAdd(jx2).redIAdd(jx2).redIAdd(a.redMul(jz4));
+
+	  var jxd4 = jx.redAdd(jx);
+	  jxd4 = jxd4.redIAdd(jxd4);
+	  var t1 = jxd4.redMul(jy2);
+	  var nx = c.redSqr().redISub(t1.redAdd(t1));
+	  var t2 = t1.redISub(nx);
+
+	  var jyd8 = jy2.redSqr();
+	  jyd8 = jyd8.redIAdd(jyd8);
+	  jyd8 = jyd8.redIAdd(jyd8);
+	  jyd8 = jyd8.redIAdd(jyd8);
+	  var ny = c.redMul(t2).redISub(jyd8);
+	  var nz = jy.redAdd(jy).redMul(jz);
+
+	  return this.curve.jpoint(nx, ny, nz);
+	};
+
+	JPoint.prototype.trpl = function trpl() {
+	  if (!this.curve.zeroA)
+	    return this.dbl().add(this);
+
+	  // hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#tripling-tpl-2007-bl
+	  // 5M + 10S + ...
+
+	  // XX = X1^2
+	  var xx = this.x.redSqr();
+	  // YY = Y1^2
+	  var yy = this.y.redSqr();
+	  // ZZ = Z1^2
+	  var zz = this.z.redSqr();
+	  // YYYY = YY^2
+	  var yyyy = yy.redSqr();
+	  // M = 3 * XX + a * ZZ2; a = 0
+	  var m = xx.redAdd(xx).redIAdd(xx);
+	  // MM = M^2
+	  var mm = m.redSqr();
+	  // E = 6 * ((X1 + YY)^2 - XX - YYYY) - MM
+	  var e = this.x.redAdd(yy).redSqr().redISub(xx).redISub(yyyy);
+	  e = e.redIAdd(e);
+	  e = e.redAdd(e).redIAdd(e);
+	  e = e.redISub(mm);
+	  // EE = E^2
+	  var ee = e.redSqr();
+	  // T = 16*YYYY
+	  var t = yyyy.redIAdd(yyyy);
+	  t = t.redIAdd(t);
+	  t = t.redIAdd(t);
+	  t = t.redIAdd(t);
+	  // U = (M + E)^2 - MM - EE - T
+	  var u = m.redIAdd(e).redSqr().redISub(mm).redISub(ee).redISub(t);
+	  // X3 = 4 * (X1 * EE - 4 * YY * U)
+	  var yyu4 = yy.redMul(u);
+	  yyu4 = yyu4.redIAdd(yyu4);
+	  yyu4 = yyu4.redIAdd(yyu4);
+	  var nx = this.x.redMul(ee).redISub(yyu4);
+	  nx = nx.redIAdd(nx);
+	  nx = nx.redIAdd(nx);
+	  // Y3 = 8 * Y1 * (U * (T - U) - E * EE)
+	  var ny = this.y.redMul(u.redMul(t.redISub(u)).redISub(e.redMul(ee)));
+	  ny = ny.redIAdd(ny);
+	  ny = ny.redIAdd(ny);
+	  ny = ny.redIAdd(ny);
+	  // Z3 = (Z1 + E)^2 - ZZ - EE
+	  var nz = this.z.redAdd(e).redSqr().redISub(zz).redISub(ee);
+
+	  return this.curve.jpoint(nx, ny, nz);
+	};
+
+	JPoint.prototype.mul = function mul(k, kbase) {
+	  k = new bn(k, kbase);
+
+	  return this.curve._wnafMul(this, k);
+	};
+
+	JPoint.prototype.eq = function eq(p) {
+	  if (p.type === 'affine')
+	    return this.eq(p.toJ());
+
+	  if (this === p)
+	    return true;
+
+	  // x1 * z2^2 == x2 * z1^2
+	  var z2 = this.z.redSqr();
+	  var pz2 = p.z.redSqr();
+	  if (this.x.redMul(pz2).redISub(p.x.redMul(z2)).cmpn(0) !== 0)
+	    return false;
+
+	  // y1 * z2^3 == y2 * z1^3
+	  var z3 = z2.redMul(this.z);
+	  var pz3 = pz2.redMul(p.z);
+	  return this.y.redMul(pz3).redISub(p.y.redMul(z3)).cmpn(0) === 0;
+	};
+
+	JPoint.prototype.eqXToP = function eqXToP(x) {
+	  var zs = this.z.redSqr();
+	  var rx = x.toRed(this.curve.red).redMul(zs);
+	  if (this.x.cmp(rx) === 0)
+	    return true;
+
+	  var xc = x.clone();
+	  var t = this.curve.redN.redMul(zs);
+	  for (;;) {
+	    xc.iadd(this.curve.n);
+	    if (xc.cmp(this.curve.p) >= 0)
+	      return false;
+
+	    rx.redIAdd(t);
+	    if (this.x.cmp(rx) === 0)
+	      return true;
+	  }
+	};
+
+	JPoint.prototype.inspect = function inspect() {
+	  if (this.isInfinity())
+	    return '<EC JPoint Infinity>';
+	  return '<EC JPoint x: ' + this.x.toString(16, 2) +
+	      ' y: ' + this.y.toString(16, 2) +
+	      ' z: ' + this.z.toString(16, 2) + '>';
+	};
+
+	JPoint.prototype.isInfinity = function isInfinity() {
+	  // XXX This code assumes that zero is always zero in red
+	  return this.z.cmpn(0) === 0;
+	};
+
+	var curve_1 = createCommonjsModule(function (module, exports) {
+	'use strict';
+
+	var curve = exports;
+
+	curve.base = base;
+	curve.short = short_1;
+	curve.mont = /*RicMoo:ethers:require(./mont)*/(null);
+	curve.edwards = /*RicMoo:ethers:require(./edwards)*/(null);
 	});
 
 	'use strict';
@@ -12606,1665 +12852,6 @@
 	hash.ripemd160 = hash.ripemd.ripemd160;
 	});
 
-	var types = createCommonjsModule(function (module, exports) {
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.SupportedAlgorithm = void 0;
-	var SupportedAlgorithm;
-	(function (SupportedAlgorithm) {
-	    SupportedAlgorithm["sha256"] = "sha256";
-	    SupportedAlgorithm["sha512"] = "sha512";
-	})(SupportedAlgorithm = exports.SupportedAlgorithm || (exports.SupportedAlgorithm = {}));
-	;
-
-	});
-
-	var types$1 = /*@__PURE__*/getDefaultExportFromCjs(types);
-
-	var _version$o = createCommonjsModule(function (module, exports) {
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.version = void 0;
-	exports.version = "sha2/5.0.9";
-
-	});
-
-	var _version$p = /*@__PURE__*/getDefaultExportFromCjs(_version$o);
-
-	var browserSha2 = createCommonjsModule(function (module, exports) {
-	"use strict";
-	var __importDefault = (commonjsGlobal && commonjsGlobal.__importDefault) || function (mod) {
-	    return (mod && mod.__esModule) ? mod : { "default": mod };
-	};
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.computeHmac = exports.sha512 = exports.sha256 = exports.ripemd160 = void 0;
-	var hash_js_1 = __importDefault(hash_1);
-	//const _ripemd160 = _hash.ripemd160;
-
-
-
-
-	var logger = new lib.Logger(_version$o.version);
-	function ripemd160(data) {
-	    return "0x" + (hash_js_1.default.ripemd160().update(lib$1.arrayify(data)).digest("hex"));
-	}
-	exports.ripemd160 = ripemd160;
-	function sha256(data) {
-	    return "0x" + (hash_js_1.default.sha256().update(lib$1.arrayify(data)).digest("hex"));
-	}
-	exports.sha256 = sha256;
-	function sha512(data) {
-	    return "0x" + (hash_js_1.default.sha512().update(lib$1.arrayify(data)).digest("hex"));
-	}
-	exports.sha512 = sha512;
-	function computeHmac(algorithm, key, data) {
-	    if (!types.SupportedAlgorithm[algorithm]) {
-	        logger.throwError("unsupported algorithm " + algorithm, lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	            operation: "hmac",
-	            algorithm: algorithm
-	        });
-	    }
-	    return "0x" + hash_js_1.default.hmac(hash_js_1.default[algorithm], lib$1.arrayify(key)).update(lib$1.arrayify(data)).digest("hex");
-	}
-	exports.computeHmac = computeHmac;
-
-	});
-
-	var browserSha2$1 = /*@__PURE__*/getDefaultExportFromCjs(browserSha2);
-
-	var lib$f = createCommonjsModule(function (module, exports) {
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.SupportedAlgorithm = exports.sha512 = exports.sha256 = exports.ripemd160 = exports.computeHmac = void 0;
-
-	Object.defineProperty(exports, "computeHmac", { enumerable: true, get: function () { return browserSha2.computeHmac; } });
-	Object.defineProperty(exports, "ripemd160", { enumerable: true, get: function () { return browserSha2.ripemd160; } });
-	Object.defineProperty(exports, "sha256", { enumerable: true, get: function () { return browserSha2.sha256; } });
-	Object.defineProperty(exports, "sha512", { enumerable: true, get: function () { return browserSha2.sha512; } });
-
-	Object.defineProperty(exports, "SupportedAlgorithm", { enumerable: true, get: function () { return types.SupportedAlgorithm; } });
-
-	});
-
-	var index$f = /*@__PURE__*/getDefaultExportFromCjs(lib$f);
-
-	var browserPbkdf2 = createCommonjsModule(function (module, exports) {
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.pbkdf2 = void 0;
-
-
-	function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
-	    password = lib$1.arrayify(password);
-	    salt = lib$1.arrayify(salt);
-	    var hLen;
-	    var l = 1;
-	    var DK = new Uint8Array(keylen);
-	    var block1 = new Uint8Array(salt.length + 4);
-	    block1.set(salt);
-	    //salt.copy(block1, 0, 0, salt.length)
-	    var r;
-	    var T;
-	    for (var i = 1; i <= l; i++) {
-	        //block1.writeUInt32BE(i, salt.length)
-	        block1[salt.length] = (i >> 24) & 0xff;
-	        block1[salt.length + 1] = (i >> 16) & 0xff;
-	        block1[salt.length + 2] = (i >> 8) & 0xff;
-	        block1[salt.length + 3] = i & 0xff;
-	        //let U = createHmac(password).update(block1).digest();
-	        var U = lib$1.arrayify(lib$f.computeHmac(hashAlgorithm, password, block1));
-	        if (!hLen) {
-	            hLen = U.length;
-	            T = new Uint8Array(hLen);
-	            l = Math.ceil(keylen / hLen);
-	            r = keylen - (l - 1) * hLen;
-	        }
-	        //U.copy(T, 0, 0, hLen)
-	        T.set(U);
-	        for (var j = 1; j < iterations; j++) {
-	            //U = createHmac(password).update(U).digest();
-	            U = lib$1.arrayify(lib$f.computeHmac(hashAlgorithm, password, U));
-	            for (var k = 0; k < hLen; k++)
-	                T[k] ^= U[k];
-	        }
-	        var destPos = (i - 1) * hLen;
-	        var len = (i === l ? r : hLen);
-	        //T.copy(DK, destPos, 0, len)
-	        DK.set(lib$1.arrayify(T).slice(0, len), destPos);
-	    }
-	    return lib$1.hexlify(DK);
-	}
-	exports.pbkdf2 = pbkdf2;
-
-	});
-
-	var browserPbkdf2$1 = /*@__PURE__*/getDefaultExportFromCjs(browserPbkdf2);
-
-	var lib$g = createCommonjsModule(function (module, exports) {
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.pbkdf2 = void 0;
-
-	Object.defineProperty(exports, "pbkdf2", { enumerable: true, get: function () { return browserPbkdf2.pbkdf2; } });
-
-	});
-
-	var index$g = /*@__PURE__*/getDefaultExportFromCjs(lib$g);
-
-	var utils_1 = createCommonjsModule(function (module, exports) {
-	'use strict';
-
-	var utils = exports;
-
-	function toArray(msg, enc) {
-	  if (Array.isArray(msg))
-	    return msg.slice();
-	  if (!msg)
-	    return [];
-	  var res = [];
-	  if (typeof msg !== 'string') {
-	    for (var i = 0; i < msg.length; i++)
-	      res[i] = msg[i] | 0;
-	    return res;
-	  }
-	  if (enc === 'hex') {
-	    msg = msg.replace(/[^a-z0-9]+/ig, '');
-	    if (msg.length % 2 !== 0)
-	      msg = '0' + msg;
-	    for (var i = 0; i < msg.length; i += 2)
-	      res.push(parseInt(msg[i] + msg[i + 1], 16));
-	  } else {
-	    for (var i = 0; i < msg.length; i++) {
-	      var c = msg.charCodeAt(i);
-	      var hi = c >> 8;
-	      var lo = c & 0xff;
-	      if (hi)
-	        res.push(hi, lo);
-	      else
-	        res.push(lo);
-	    }
-	  }
-	  return res;
-	}
-	utils.toArray = toArray;
-
-	function zero2(word) {
-	  if (word.length === 1)
-	    return '0' + word;
-	  else
-	    return word;
-	}
-	utils.zero2 = zero2;
-
-	function toHex(msg) {
-	  var res = '';
-	  for (var i = 0; i < msg.length; i++)
-	    res += zero2(msg[i].toString(16));
-	  return res;
-	}
-	utils.toHex = toHex;
-
-	utils.encode = function encode(arr, enc) {
-	  if (enc === 'hex')
-	    return toHex(arr);
-	  else
-	    return arr;
-	};
-	});
-
-	var utils_1$1 = createCommonjsModule(function (module, exports) {
-	'use strict';
-
-	var utils = exports;
-
-
-
-
-	utils.assert = minimalisticAssert;
-	utils.toArray = utils_1.toArray;
-	utils.zero2 = utils_1.zero2;
-	utils.toHex = utils_1.toHex;
-	utils.encode = utils_1.encode;
-
-	// Represent num in a w-NAF form
-	function getNAF(num, w, bits) {
-	  var naf = new Array(Math.max(num.bitLength(), bits) + 1);
-	  naf.fill(0);
-
-	  var ws = 1 << (w + 1);
-	  var k = num.clone();
-
-	  for (var i = 0; i < naf.length; i++) {
-	    var z;
-	    var mod = k.andln(ws - 1);
-	    if (k.isOdd()) {
-	      if (mod > (ws >> 1) - 1)
-	        z = (ws >> 1) - mod;
-	      else
-	        z = mod;
-	      k.isubn(z);
-	    } else {
-	      z = 0;
-	    }
-
-	    naf[i] = z;
-	    k.iushrn(1);
-	  }
-
-	  return naf;
-	}
-	utils.getNAF = getNAF;
-
-	// Represent k1, k2 in a Joint Sparse Form
-	function getJSF(k1, k2) {
-	  var jsf = [
-	    [],
-	    [],
-	  ];
-
-	  k1 = k1.clone();
-	  k2 = k2.clone();
-	  var d1 = 0;
-	  var d2 = 0;
-	  var m8;
-	  while (k1.cmpn(-d1) > 0 || k2.cmpn(-d2) > 0) {
-	    // First phase
-	    var m14 = (k1.andln(3) + d1) & 3;
-	    var m24 = (k2.andln(3) + d2) & 3;
-	    if (m14 === 3)
-	      m14 = -1;
-	    if (m24 === 3)
-	      m24 = -1;
-	    var u1;
-	    if ((m14 & 1) === 0) {
-	      u1 = 0;
-	    } else {
-	      m8 = (k1.andln(7) + d1) & 7;
-	      if ((m8 === 3 || m8 === 5) && m24 === 2)
-	        u1 = -m14;
-	      else
-	        u1 = m14;
-	    }
-	    jsf[0].push(u1);
-
-	    var u2;
-	    if ((m24 & 1) === 0) {
-	      u2 = 0;
-	    } else {
-	      m8 = (k2.andln(7) + d2) & 7;
-	      if ((m8 === 3 || m8 === 5) && m14 === 2)
-	        u2 = -m24;
-	      else
-	        u2 = m24;
-	    }
-	    jsf[1].push(u2);
-
-	    // Second phase
-	    if (2 * d1 === u1 + 1)
-	      d1 = 1 - d1;
-	    if (2 * d2 === u2 + 1)
-	      d2 = 1 - d2;
-	    k1.iushrn(1);
-	    k2.iushrn(1);
-	  }
-
-	  return jsf;
-	}
-	utils.getJSF = getJSF;
-
-	function cachedProperty(obj, name, computer) {
-	  var key = '_' + name;
-	  obj.prototype[name] = function cachedProperty() {
-	    return this[key] !== undefined ? this[key] :
-	      this[key] = computer.call(this);
-	  };
-	}
-	utils.cachedProperty = cachedProperty;
-
-	function parseBytes(bytes) {
-	  return typeof bytes === 'string' ? utils.toArray(bytes, 'hex') :
-	    bytes;
-	}
-	utils.parseBytes = parseBytes;
-
-	function intFromLE(bytes) {
-	  return new bn(bytes, 'hex', 'le');
-	}
-	utils.intFromLE = intFromLE;
-	});
-
-	'use strict';
-
-
-
-	var getNAF = utils_1$1.getNAF;
-	var getJSF = utils_1$1.getJSF;
-	var assert$1 = utils_1$1.assert;
-
-	function BaseCurve(type, conf) {
-	  this.type = type;
-	  this.p = new bn(conf.p, 16);
-
-	  // Use Montgomery, when there is no fast reduction for the prime
-	  this.red = conf.prime ? bn.red(conf.prime) : bn.mont(this.p);
-
-	  // Useful for many curves
-	  this.zero = new bn(0).toRed(this.red);
-	  this.one = new bn(1).toRed(this.red);
-	  this.two = new bn(2).toRed(this.red);
-
-	  // Curve configuration, optional
-	  this.n = conf.n && new bn(conf.n, 16);
-	  this.g = conf.g && this.pointFromJSON(conf.g, conf.gRed);
-
-	  // Temporary arrays
-	  this._wnafT1 = new Array(4);
-	  this._wnafT2 = new Array(4);
-	  this._wnafT3 = new Array(4);
-	  this._wnafT4 = new Array(4);
-
-	  this._bitLength = this.n ? this.n.bitLength() : 0;
-
-	  // Generalized Greg Maxwell's trick
-	  var adjustCount = this.n && this.p.div(this.n);
-	  if (!adjustCount || adjustCount.cmpn(100) > 0) {
-	    this.redN = null;
-	  } else {
-	    this._maxwellTrick = true;
-	    this.redN = this.n.toRed(this.red);
-	  }
-	}
-	var base = BaseCurve;
-
-	BaseCurve.prototype.point = function point() {
-	  throw new Error('Not implemented');
-	};
-
-	BaseCurve.prototype.validate = function validate() {
-	  throw new Error('Not implemented');
-	};
-
-	BaseCurve.prototype._fixedNafMul = function _fixedNafMul(p, k) {
-	  assert$1(p.precomputed);
-	  var doubles = p._getDoubles();
-
-	  var naf = getNAF(k, 1, this._bitLength);
-	  var I = (1 << (doubles.step + 1)) - (doubles.step % 2 === 0 ? 2 : 1);
-	  I /= 3;
-
-	  // Translate into more windowed form
-	  var repr = [];
-	  var j;
-	  var nafW;
-	  for (j = 0; j < naf.length; j += doubles.step) {
-	    nafW = 0;
-	    for (var l = j + doubles.step - 1; l >= j; l--)
-	      nafW = (nafW << 1) + naf[l];
-	    repr.push(nafW);
-	  }
-
-	  var a = this.jpoint(null, null, null);
-	  var b = this.jpoint(null, null, null);
-	  for (var i = I; i > 0; i--) {
-	    for (j = 0; j < repr.length; j++) {
-	      nafW = repr[j];
-	      if (nafW === i)
-	        b = b.mixedAdd(doubles.points[j]);
-	      else if (nafW === -i)
-	        b = b.mixedAdd(doubles.points[j].neg());
-	    }
-	    a = a.add(b);
-	  }
-	  return a.toP();
-	};
-
-	BaseCurve.prototype._wnafMul = function _wnafMul(p, k) {
-	  var w = 4;
-
-	  // Precompute window
-	  var nafPoints = p._getNAFPoints(w);
-	  w = nafPoints.wnd;
-	  var wnd = nafPoints.points;
-
-	  // Get NAF form
-	  var naf = getNAF(k, w, this._bitLength);
-
-	  // Add `this`*(N+1) for every w-NAF index
-	  var acc = this.jpoint(null, null, null);
-	  for (var i = naf.length - 1; i >= 0; i--) {
-	    // Count zeroes
-	    for (var l = 0; i >= 0 && naf[i] === 0; i--)
-	      l++;
-	    if (i >= 0)
-	      l++;
-	    acc = acc.dblp(l);
-
-	    if (i < 0)
-	      break;
-	    var z = naf[i];
-	    assert$1(z !== 0);
-	    if (p.type === 'affine') {
-	      // J +- P
-	      if (z > 0)
-	        acc = acc.mixedAdd(wnd[(z - 1) >> 1]);
-	      else
-	        acc = acc.mixedAdd(wnd[(-z - 1) >> 1].neg());
-	    } else {
-	      // J +- J
-	      if (z > 0)
-	        acc = acc.add(wnd[(z - 1) >> 1]);
-	      else
-	        acc = acc.add(wnd[(-z - 1) >> 1].neg());
-	    }
-	  }
-	  return p.type === 'affine' ? acc.toP() : acc;
-	};
-
-	BaseCurve.prototype._wnafMulAdd = function _wnafMulAdd(defW,
-	  points,
-	  coeffs,
-	  len,
-	  jacobianResult) {
-	  var wndWidth = this._wnafT1;
-	  var wnd = this._wnafT2;
-	  var naf = this._wnafT3;
-
-	  // Fill all arrays
-	  var max = 0;
-	  var i;
-	  var j;
-	  var p;
-	  for (i = 0; i < len; i++) {
-	    p = points[i];
-	    var nafPoints = p._getNAFPoints(defW);
-	    wndWidth[i] = nafPoints.wnd;
-	    wnd[i] = nafPoints.points;
-	  }
-
-	  // Comb small window NAFs
-	  for (i = len - 1; i >= 1; i -= 2) {
-	    var a = i - 1;
-	    var b = i;
-	    if (wndWidth[a] !== 1 || wndWidth[b] !== 1) {
-	      naf[a] = getNAF(coeffs[a], wndWidth[a], this._bitLength);
-	      naf[b] = getNAF(coeffs[b], wndWidth[b], this._bitLength);
-	      max = Math.max(naf[a].length, max);
-	      max = Math.max(naf[b].length, max);
-	      continue;
-	    }
-
-	    var comb = [
-	      points[a], /* 1 */
-	      null, /* 3 */
-	      null, /* 5 */
-	      points[b], /* 7 */
-	    ];
-
-	    // Try to avoid Projective points, if possible
-	    if (points[a].y.cmp(points[b].y) === 0) {
-	      comb[1] = points[a].add(points[b]);
-	      comb[2] = points[a].toJ().mixedAdd(points[b].neg());
-	    } else if (points[a].y.cmp(points[b].y.redNeg()) === 0) {
-	      comb[1] = points[a].toJ().mixedAdd(points[b]);
-	      comb[2] = points[a].add(points[b].neg());
-	    } else {
-	      comb[1] = points[a].toJ().mixedAdd(points[b]);
-	      comb[2] = points[a].toJ().mixedAdd(points[b].neg());
-	    }
-
-	    var index = [
-	      -3, /* -1 -1 */
-	      -1, /* -1 0 */
-	      -5, /* -1 1 */
-	      -7, /* 0 -1 */
-	      0, /* 0 0 */
-	      7, /* 0 1 */
-	      5, /* 1 -1 */
-	      1, /* 1 0 */
-	      3,  /* 1 1 */
-	    ];
-
-	    var jsf = getJSF(coeffs[a], coeffs[b]);
-	    max = Math.max(jsf[0].length, max);
-	    naf[a] = new Array(max);
-	    naf[b] = new Array(max);
-	    for (j = 0; j < max; j++) {
-	      var ja = jsf[0][j] | 0;
-	      var jb = jsf[1][j] | 0;
-
-	      naf[a][j] = index[(ja + 1) * 3 + (jb + 1)];
-	      naf[b][j] = 0;
-	      wnd[a] = comb;
-	    }
-	  }
-
-	  var acc = this.jpoint(null, null, null);
-	  var tmp = this._wnafT4;
-	  for (i = max; i >= 0; i--) {
-	    var k = 0;
-
-	    while (i >= 0) {
-	      var zero = true;
-	      for (j = 0; j < len; j++) {
-	        tmp[j] = naf[j][i] | 0;
-	        if (tmp[j] !== 0)
-	          zero = false;
-	      }
-	      if (!zero)
-	        break;
-	      k++;
-	      i--;
-	    }
-	    if (i >= 0)
-	      k++;
-	    acc = acc.dblp(k);
-	    if (i < 0)
-	      break;
-
-	    for (j = 0; j < len; j++) {
-	      var z = tmp[j];
-	      p;
-	      if (z === 0)
-	        continue;
-	      else if (z > 0)
-	        p = wnd[j][(z - 1) >> 1];
-	      else if (z < 0)
-	        p = wnd[j][(-z - 1) >> 1].neg();
-
-	      if (p.type === 'affine')
-	        acc = acc.mixedAdd(p);
-	      else
-	        acc = acc.add(p);
-	    }
-	  }
-	  // Zeroify references
-	  for (i = 0; i < len; i++)
-	    wnd[i] = null;
-
-	  if (jacobianResult)
-	    return acc;
-	  else
-	    return acc.toP();
-	};
-
-	function BasePoint(curve, type) {
-	  this.curve = curve;
-	  this.type = type;
-	  this.precomputed = null;
-	}
-	BaseCurve.BasePoint = BasePoint;
-
-	BasePoint.prototype.eq = function eq(/*other*/) {
-	  throw new Error('Not implemented');
-	};
-
-	BasePoint.prototype.validate = function validate() {
-	  return this.curve.validate(this);
-	};
-
-	BaseCurve.prototype.decodePoint = function decodePoint(bytes, enc) {
-	  bytes = utils_1$1.toArray(bytes, enc);
-
-	  var len = this.p.byteLength();
-
-	  // uncompressed, hybrid-odd, hybrid-even
-	  if ((bytes[0] === 0x04 || bytes[0] === 0x06 || bytes[0] === 0x07) &&
-	      bytes.length - 1 === 2 * len) {
-	    if (bytes[0] === 0x06)
-	      assert$1(bytes[bytes.length - 1] % 2 === 0);
-	    else if (bytes[0] === 0x07)
-	      assert$1(bytes[bytes.length - 1] % 2 === 1);
-
-	    var res =  this.point(bytes.slice(1, 1 + len),
-	      bytes.slice(1 + len, 1 + 2 * len));
-
-	    return res;
-	  } else if ((bytes[0] === 0x02 || bytes[0] === 0x03) &&
-	              bytes.length - 1 === len) {
-	    return this.pointFromX(bytes.slice(1, 1 + len), bytes[0] === 0x03);
-	  }
-	  throw new Error('Unknown point format');
-	};
-
-	BasePoint.prototype.encodeCompressed = function encodeCompressed(enc) {
-	  return this.encode(enc, true);
-	};
-
-	BasePoint.prototype._encode = function _encode(compact) {
-	  var len = this.curve.p.byteLength();
-	  var x = this.getX().toArray('be', len);
-
-	  if (compact)
-	    return [ this.getY().isEven() ? 0x02 : 0x03 ].concat(x);
-
-	  return [ 0x04 ].concat(x, this.getY().toArray('be', len));
-	};
-
-	BasePoint.prototype.encode = function encode(enc, compact) {
-	  return utils_1$1.encode(this._encode(compact), enc);
-	};
-
-	BasePoint.prototype.precompute = function precompute(power) {
-	  if (this.precomputed)
-	    return this;
-
-	  var precomputed = {
-	    doubles: null,
-	    naf: null,
-	    beta: null,
-	  };
-	  precomputed.naf = this._getNAFPoints(8);
-	  precomputed.doubles = this._getDoubles(4, power);
-	  precomputed.beta = this._getBeta();
-	  this.precomputed = precomputed;
-
-	  return this;
-	};
-
-	BasePoint.prototype._hasDoubles = function _hasDoubles(k) {
-	  if (!this.precomputed)
-	    return false;
-
-	  var doubles = this.precomputed.doubles;
-	  if (!doubles)
-	    return false;
-
-	  return doubles.points.length >= Math.ceil((k.bitLength() + 1) / doubles.step);
-	};
-
-	BasePoint.prototype._getDoubles = function _getDoubles(step, power) {
-	  if (this.precomputed && this.precomputed.doubles)
-	    return this.precomputed.doubles;
-
-	  var doubles = [ this ];
-	  var acc = this;
-	  for (var i = 0; i < power; i += step) {
-	    for (var j = 0; j < step; j++)
-	      acc = acc.dbl();
-	    doubles.push(acc);
-	  }
-	  return {
-	    step: step,
-	    points: doubles,
-	  };
-	};
-
-	BasePoint.prototype._getNAFPoints = function _getNAFPoints(wnd) {
-	  if (this.precomputed && this.precomputed.naf)
-	    return this.precomputed.naf;
-
-	  var res = [ this ];
-	  var max = (1 << wnd) - 1;
-	  var dbl = max === 1 ? null : this.dbl();
-	  for (var i = 1; i < max; i++)
-	    res[i] = res[i - 1].add(dbl);
-	  return {
-	    wnd: wnd,
-	    points: res,
-	  };
-	};
-
-	BasePoint.prototype._getBeta = function _getBeta() {
-	  return null;
-	};
-
-	BasePoint.prototype.dblp = function dblp(k) {
-	  var r = this;
-	  for (var i = 0; i < k; i++)
-	    r = r.dbl();
-	  return r;
-	};
-
-	'use strict';
-
-
-
-
-
-
-	var assert$2 = utils_1$1.assert;
-
-	function ShortCurve(conf) {
-	  base.call(this, 'short', conf);
-
-	  this.a = new bn(conf.a, 16).toRed(this.red);
-	  this.b = new bn(conf.b, 16).toRed(this.red);
-	  this.tinv = this.two.redInvm();
-
-	  this.zeroA = this.a.fromRed().cmpn(0) === 0;
-	  this.threeA = this.a.fromRed().sub(this.p).cmpn(-3) === 0;
-
-	  // If the curve is endomorphic, precalculate beta and lambda
-	  this.endo = this._getEndomorphism(conf);
-	  this._endoWnafT1 = new Array(4);
-	  this._endoWnafT2 = new Array(4);
-	}
-	inherits_browser(ShortCurve, base);
-	var short_1 = ShortCurve;
-
-	ShortCurve.prototype._getEndomorphism = function _getEndomorphism(conf) {
-	  // No efficient endomorphism
-	  if (!this.zeroA || !this.g || !this.n || this.p.modn(3) !== 1)
-	    return;
-
-	  // Compute beta and lambda, that lambda * P = (beta * Px; Py)
-	  var beta;
-	  var lambda;
-	  if (conf.beta) {
-	    beta = new bn(conf.beta, 16).toRed(this.red);
-	  } else {
-	    var betas = this._getEndoRoots(this.p);
-	    // Choose the smallest beta
-	    beta = betas[0].cmp(betas[1]) < 0 ? betas[0] : betas[1];
-	    beta = beta.toRed(this.red);
-	  }
-	  if (conf.lambda) {
-	    lambda = new bn(conf.lambda, 16);
-	  } else {
-	    // Choose the lambda that is matching selected beta
-	    var lambdas = this._getEndoRoots(this.n);
-	    if (this.g.mul(lambdas[0]).x.cmp(this.g.x.redMul(beta)) === 0) {
-	      lambda = lambdas[0];
-	    } else {
-	      lambda = lambdas[1];
-	      assert$2(this.g.mul(lambda).x.cmp(this.g.x.redMul(beta)) === 0);
-	    }
-	  }
-
-	  // Get basis vectors, used for balanced length-two representation
-	  var basis;
-	  if (conf.basis) {
-	    basis = conf.basis.map(function(vec) {
-	      return {
-	        a: new bn(vec.a, 16),
-	        b: new bn(vec.b, 16),
-	      };
-	    });
-	  } else {
-	    basis = this._getEndoBasis(lambda);
-	  }
-
-	  return {
-	    beta: beta,
-	    lambda: lambda,
-	    basis: basis,
-	  };
-	};
-
-	ShortCurve.prototype._getEndoRoots = function _getEndoRoots(num) {
-	  // Find roots of for x^2 + x + 1 in F
-	  // Root = (-1 +- Sqrt(-3)) / 2
-	  //
-	  var red = num === this.p ? this.red : bn.mont(num);
-	  var tinv = new bn(2).toRed(red).redInvm();
-	  var ntinv = tinv.redNeg();
-
-	  var s = new bn(3).toRed(red).redNeg().redSqrt().redMul(tinv);
-
-	  var l1 = ntinv.redAdd(s).fromRed();
-	  var l2 = ntinv.redSub(s).fromRed();
-	  return [ l1, l2 ];
-	};
-
-	ShortCurve.prototype._getEndoBasis = function _getEndoBasis(lambda) {
-	  // aprxSqrt >= sqrt(this.n)
-	  var aprxSqrt = this.n.ushrn(Math.floor(this.n.bitLength() / 2));
-
-	  // 3.74
-	  // Run EGCD, until r(L + 1) < aprxSqrt
-	  var u = lambda;
-	  var v = this.n.clone();
-	  var x1 = new bn(1);
-	  var y1 = new bn(0);
-	  var x2 = new bn(0);
-	  var y2 = new bn(1);
-
-	  // NOTE: all vectors are roots of: a + b * lambda = 0 (mod n)
-	  var a0;
-	  var b0;
-	  // First vector
-	  var a1;
-	  var b1;
-	  // Second vector
-	  var a2;
-	  var b2;
-
-	  var prevR;
-	  var i = 0;
-	  var r;
-	  var x;
-	  while (u.cmpn(0) !== 0) {
-	    var q = v.div(u);
-	    r = v.sub(q.mul(u));
-	    x = x2.sub(q.mul(x1));
-	    var y = y2.sub(q.mul(y1));
-
-	    if (!a1 && r.cmp(aprxSqrt) < 0) {
-	      a0 = prevR.neg();
-	      b0 = x1;
-	      a1 = r.neg();
-	      b1 = x;
-	    } else if (a1 && ++i === 2) {
-	      break;
-	    }
-	    prevR = r;
-
-	    v = u;
-	    u = r;
-	    x2 = x1;
-	    x1 = x;
-	    y2 = y1;
-	    y1 = y;
-	  }
-	  a2 = r.neg();
-	  b2 = x;
-
-	  var len1 = a1.sqr().add(b1.sqr());
-	  var len2 = a2.sqr().add(b2.sqr());
-	  if (len2.cmp(len1) >= 0) {
-	    a2 = a0;
-	    b2 = b0;
-	  }
-
-	  // Normalize signs
-	  if (a1.negative) {
-	    a1 = a1.neg();
-	    b1 = b1.neg();
-	  }
-	  if (a2.negative) {
-	    a2 = a2.neg();
-	    b2 = b2.neg();
-	  }
-
-	  return [
-	    { a: a1, b: b1 },
-	    { a: a2, b: b2 },
-	  ];
-	};
-
-	ShortCurve.prototype._endoSplit = function _endoSplit(k) {
-	  var basis = this.endo.basis;
-	  var v1 = basis[0];
-	  var v2 = basis[1];
-
-	  var c1 = v2.b.mul(k).divRound(this.n);
-	  var c2 = v1.b.neg().mul(k).divRound(this.n);
-
-	  var p1 = c1.mul(v1.a);
-	  var p2 = c2.mul(v2.a);
-	  var q1 = c1.mul(v1.b);
-	  var q2 = c2.mul(v2.b);
-
-	  // Calculate answer
-	  var k1 = k.sub(p1).sub(p2);
-	  var k2 = q1.add(q2).neg();
-	  return { k1: k1, k2: k2 };
-	};
-
-	ShortCurve.prototype.pointFromX = function pointFromX(x, odd) {
-	  x = new bn(x, 16);
-	  if (!x.red)
-	    x = x.toRed(this.red);
-
-	  var y2 = x.redSqr().redMul(x).redIAdd(x.redMul(this.a)).redIAdd(this.b);
-	  var y = y2.redSqrt();
-	  if (y.redSqr().redSub(y2).cmp(this.zero) !== 0)
-	    throw new Error('invalid point');
-
-	  // XXX Is there any way to tell if the number is odd without converting it
-	  // to non-red form?
-	  var isOdd = y.fromRed().isOdd();
-	  if (odd && !isOdd || !odd && isOdd)
-	    y = y.redNeg();
-
-	  return this.point(x, y);
-	};
-
-	ShortCurve.prototype.validate = function validate(point) {
-	  if (point.inf)
-	    return true;
-
-	  var x = point.x;
-	  var y = point.y;
-
-	  var ax = this.a.redMul(x);
-	  var rhs = x.redSqr().redMul(x).redIAdd(ax).redIAdd(this.b);
-	  return y.redSqr().redISub(rhs).cmpn(0) === 0;
-	};
-
-	ShortCurve.prototype._endoWnafMulAdd =
-	    function _endoWnafMulAdd(points, coeffs, jacobianResult) {
-	      var npoints = this._endoWnafT1;
-	      var ncoeffs = this._endoWnafT2;
-	      for (var i = 0; i < points.length; i++) {
-	        var split = this._endoSplit(coeffs[i]);
-	        var p = points[i];
-	        var beta = p._getBeta();
-
-	        if (split.k1.negative) {
-	          split.k1.ineg();
-	          p = p.neg(true);
-	        }
-	        if (split.k2.negative) {
-	          split.k2.ineg();
-	          beta = beta.neg(true);
-	        }
-
-	        npoints[i * 2] = p;
-	        npoints[i * 2 + 1] = beta;
-	        ncoeffs[i * 2] = split.k1;
-	        ncoeffs[i * 2 + 1] = split.k2;
-	      }
-	      var res = this._wnafMulAdd(1, npoints, ncoeffs, i * 2, jacobianResult);
-
-	      // Clean-up references to points and coefficients
-	      for (var j = 0; j < i * 2; j++) {
-	        npoints[j] = null;
-	        ncoeffs[j] = null;
-	      }
-	      return res;
-	    };
-
-	function Point(curve, x, y, isRed) {
-	  base.BasePoint.call(this, curve, 'affine');
-	  if (x === null && y === null) {
-	    this.x = null;
-	    this.y = null;
-	    this.inf = true;
-	  } else {
-	    this.x = new bn(x, 16);
-	    this.y = new bn(y, 16);
-	    // Force redgomery representation when loading from JSON
-	    if (isRed) {
-	      this.x.forceRed(this.curve.red);
-	      this.y.forceRed(this.curve.red);
-	    }
-	    if (!this.x.red)
-	      this.x = this.x.toRed(this.curve.red);
-	    if (!this.y.red)
-	      this.y = this.y.toRed(this.curve.red);
-	    this.inf = false;
-	  }
-	}
-	inherits_browser(Point, base.BasePoint);
-
-	ShortCurve.prototype.point = function point(x, y, isRed) {
-	  return new Point(this, x, y, isRed);
-	};
-
-	ShortCurve.prototype.pointFromJSON = function pointFromJSON(obj, red) {
-	  return Point.fromJSON(this, obj, red);
-	};
-
-	Point.prototype._getBeta = function _getBeta() {
-	  if (!this.curve.endo)
-	    return;
-
-	  var pre = this.precomputed;
-	  if (pre && pre.beta)
-	    return pre.beta;
-
-	  var beta = this.curve.point(this.x.redMul(this.curve.endo.beta), this.y);
-	  if (pre) {
-	    var curve = this.curve;
-	    var endoMul = function(p) {
-	      return curve.point(p.x.redMul(curve.endo.beta), p.y);
-	    };
-	    pre.beta = beta;
-	    beta.precomputed = {
-	      beta: null,
-	      naf: pre.naf && {
-	        wnd: pre.naf.wnd,
-	        points: pre.naf.points.map(endoMul),
-	      },
-	      doubles: pre.doubles && {
-	        step: pre.doubles.step,
-	        points: pre.doubles.points.map(endoMul),
-	      },
-	    };
-	  }
-	  return beta;
-	};
-
-	Point.prototype.toJSON = function toJSON() {
-	  if (!this.precomputed)
-	    return [ this.x, this.y ];
-
-	  return [ this.x, this.y, this.precomputed && {
-	    doubles: this.precomputed.doubles && {
-	      step: this.precomputed.doubles.step,
-	      points: this.precomputed.doubles.points.slice(1),
-	    },
-	    naf: this.precomputed.naf && {
-	      wnd: this.precomputed.naf.wnd,
-	      points: this.precomputed.naf.points.slice(1),
-	    },
-	  } ];
-	};
-
-	Point.fromJSON = function fromJSON(curve, obj, red) {
-	  if (typeof obj === 'string')
-	    obj = JSON.parse(obj);
-	  var res = curve.point(obj[0], obj[1], red);
-	  if (!obj[2])
-	    return res;
-
-	  function obj2point(obj) {
-	    return curve.point(obj[0], obj[1], red);
-	  }
-
-	  var pre = obj[2];
-	  res.precomputed = {
-	    beta: null,
-	    doubles: pre.doubles && {
-	      step: pre.doubles.step,
-	      points: [ res ].concat(pre.doubles.points.map(obj2point)),
-	    },
-	    naf: pre.naf && {
-	      wnd: pre.naf.wnd,
-	      points: [ res ].concat(pre.naf.points.map(obj2point)),
-	    },
-	  };
-	  return res;
-	};
-
-	Point.prototype.inspect = function inspect() {
-	  if (this.isInfinity())
-	    return '<EC Point Infinity>';
-	  return '<EC Point x: ' + this.x.fromRed().toString(16, 2) +
-	      ' y: ' + this.y.fromRed().toString(16, 2) + '>';
-	};
-
-	Point.prototype.isInfinity = function isInfinity() {
-	  return this.inf;
-	};
-
-	Point.prototype.add = function add(p) {
-	  // O + P = P
-	  if (this.inf)
-	    return p;
-
-	  // P + O = P
-	  if (p.inf)
-	    return this;
-
-	  // P + P = 2P
-	  if (this.eq(p))
-	    return this.dbl();
-
-	  // P + (-P) = O
-	  if (this.neg().eq(p))
-	    return this.curve.point(null, null);
-
-	  // P + Q = O
-	  if (this.x.cmp(p.x) === 0)
-	    return this.curve.point(null, null);
-
-	  var c = this.y.redSub(p.y);
-	  if (c.cmpn(0) !== 0)
-	    c = c.redMul(this.x.redSub(p.x).redInvm());
-	  var nx = c.redSqr().redISub(this.x).redISub(p.x);
-	  var ny = c.redMul(this.x.redSub(nx)).redISub(this.y);
-	  return this.curve.point(nx, ny);
-	};
-
-	Point.prototype.dbl = function dbl() {
-	  if (this.inf)
-	    return this;
-
-	  // 2P = O
-	  var ys1 = this.y.redAdd(this.y);
-	  if (ys1.cmpn(0) === 0)
-	    return this.curve.point(null, null);
-
-	  var a = this.curve.a;
-
-	  var x2 = this.x.redSqr();
-	  var dyinv = ys1.redInvm();
-	  var c = x2.redAdd(x2).redIAdd(x2).redIAdd(a).redMul(dyinv);
-
-	  var nx = c.redSqr().redISub(this.x.redAdd(this.x));
-	  var ny = c.redMul(this.x.redSub(nx)).redISub(this.y);
-	  return this.curve.point(nx, ny);
-	};
-
-	Point.prototype.getX = function getX() {
-	  return this.x.fromRed();
-	};
-
-	Point.prototype.getY = function getY() {
-	  return this.y.fromRed();
-	};
-
-	Point.prototype.mul = function mul(k) {
-	  k = new bn(k, 16);
-	  if (this.isInfinity())
-	    return this;
-	  else if (this._hasDoubles(k))
-	    return this.curve._fixedNafMul(this, k);
-	  else if (this.curve.endo)
-	    return this.curve._endoWnafMulAdd([ this ], [ k ]);
-	  else
-	    return this.curve._wnafMul(this, k);
-	};
-
-	Point.prototype.mulAdd = function mulAdd(k1, p2, k2) {
-	  var points = [ this, p2 ];
-	  var coeffs = [ k1, k2 ];
-	  if (this.curve.endo)
-	    return this.curve._endoWnafMulAdd(points, coeffs);
-	  else
-	    return this.curve._wnafMulAdd(1, points, coeffs, 2);
-	};
-
-	Point.prototype.jmulAdd = function jmulAdd(k1, p2, k2) {
-	  var points = [ this, p2 ];
-	  var coeffs = [ k1, k2 ];
-	  if (this.curve.endo)
-	    return this.curve._endoWnafMulAdd(points, coeffs, true);
-	  else
-	    return this.curve._wnafMulAdd(1, points, coeffs, 2, true);
-	};
-
-	Point.prototype.eq = function eq(p) {
-	  return this === p ||
-	         this.inf === p.inf &&
-	             (this.inf || this.x.cmp(p.x) === 0 && this.y.cmp(p.y) === 0);
-	};
-
-	Point.prototype.neg = function neg(_precompute) {
-	  if (this.inf)
-	    return this;
-
-	  var res = this.curve.point(this.x, this.y.redNeg());
-	  if (_precompute && this.precomputed) {
-	    var pre = this.precomputed;
-	    var negate = function(p) {
-	      return p.neg();
-	    };
-	    res.precomputed = {
-	      naf: pre.naf && {
-	        wnd: pre.naf.wnd,
-	        points: pre.naf.points.map(negate),
-	      },
-	      doubles: pre.doubles && {
-	        step: pre.doubles.step,
-	        points: pre.doubles.points.map(negate),
-	      },
-	    };
-	  }
-	  return res;
-	};
-
-	Point.prototype.toJ = function toJ() {
-	  if (this.inf)
-	    return this.curve.jpoint(null, null, null);
-
-	  var res = this.curve.jpoint(this.x, this.y, this.curve.one);
-	  return res;
-	};
-
-	function JPoint(curve, x, y, z) {
-	  base.BasePoint.call(this, curve, 'jacobian');
-	  if (x === null && y === null && z === null) {
-	    this.x = this.curve.one;
-	    this.y = this.curve.one;
-	    this.z = new bn(0);
-	  } else {
-	    this.x = new bn(x, 16);
-	    this.y = new bn(y, 16);
-	    this.z = new bn(z, 16);
-	  }
-	  if (!this.x.red)
-	    this.x = this.x.toRed(this.curve.red);
-	  if (!this.y.red)
-	    this.y = this.y.toRed(this.curve.red);
-	  if (!this.z.red)
-	    this.z = this.z.toRed(this.curve.red);
-
-	  this.zOne = this.z === this.curve.one;
-	}
-	inherits_browser(JPoint, base.BasePoint);
-
-	ShortCurve.prototype.jpoint = function jpoint(x, y, z) {
-	  return new JPoint(this, x, y, z);
-	};
-
-	JPoint.prototype.toP = function toP() {
-	  if (this.isInfinity())
-	    return this.curve.point(null, null);
-
-	  var zinv = this.z.redInvm();
-	  var zinv2 = zinv.redSqr();
-	  var ax = this.x.redMul(zinv2);
-	  var ay = this.y.redMul(zinv2).redMul(zinv);
-
-	  return this.curve.point(ax, ay);
-	};
-
-	JPoint.prototype.neg = function neg() {
-	  return this.curve.jpoint(this.x, this.y.redNeg(), this.z);
-	};
-
-	JPoint.prototype.add = function add(p) {
-	  // O + P = P
-	  if (this.isInfinity())
-	    return p;
-
-	  // P + O = P
-	  if (p.isInfinity())
-	    return this;
-
-	  // 12M + 4S + 7A
-	  var pz2 = p.z.redSqr();
-	  var z2 = this.z.redSqr();
-	  var u1 = this.x.redMul(pz2);
-	  var u2 = p.x.redMul(z2);
-	  var s1 = this.y.redMul(pz2.redMul(p.z));
-	  var s2 = p.y.redMul(z2.redMul(this.z));
-
-	  var h = u1.redSub(u2);
-	  var r = s1.redSub(s2);
-	  if (h.cmpn(0) === 0) {
-	    if (r.cmpn(0) !== 0)
-	      return this.curve.jpoint(null, null, null);
-	    else
-	      return this.dbl();
-	  }
-
-	  var h2 = h.redSqr();
-	  var h3 = h2.redMul(h);
-	  var v = u1.redMul(h2);
-
-	  var nx = r.redSqr().redIAdd(h3).redISub(v).redISub(v);
-	  var ny = r.redMul(v.redISub(nx)).redISub(s1.redMul(h3));
-	  var nz = this.z.redMul(p.z).redMul(h);
-
-	  return this.curve.jpoint(nx, ny, nz);
-	};
-
-	JPoint.prototype.mixedAdd = function mixedAdd(p) {
-	  // O + P = P
-	  if (this.isInfinity())
-	    return p.toJ();
-
-	  // P + O = P
-	  if (p.isInfinity())
-	    return this;
-
-	  // 8M + 3S + 7A
-	  var z2 = this.z.redSqr();
-	  var u1 = this.x;
-	  var u2 = p.x.redMul(z2);
-	  var s1 = this.y;
-	  var s2 = p.y.redMul(z2).redMul(this.z);
-
-	  var h = u1.redSub(u2);
-	  var r = s1.redSub(s2);
-	  if (h.cmpn(0) === 0) {
-	    if (r.cmpn(0) !== 0)
-	      return this.curve.jpoint(null, null, null);
-	    else
-	      return this.dbl();
-	  }
-
-	  var h2 = h.redSqr();
-	  var h3 = h2.redMul(h);
-	  var v = u1.redMul(h2);
-
-	  var nx = r.redSqr().redIAdd(h3).redISub(v).redISub(v);
-	  var ny = r.redMul(v.redISub(nx)).redISub(s1.redMul(h3));
-	  var nz = this.z.redMul(h);
-
-	  return this.curve.jpoint(nx, ny, nz);
-	};
-
-	JPoint.prototype.dblp = function dblp(pow) {
-	  if (pow === 0)
-	    return this;
-	  if (this.isInfinity())
-	    return this;
-	  if (!pow)
-	    return this.dbl();
-
-	  var i;
-	  if (this.curve.zeroA || this.curve.threeA) {
-	    var r = this;
-	    for (i = 0; i < pow; i++)
-	      r = r.dbl();
-	    return r;
-	  }
-
-	  // 1M + 2S + 1A + N * (4S + 5M + 8A)
-	  // N = 1 => 6M + 6S + 9A
-	  var a = this.curve.a;
-	  var tinv = this.curve.tinv;
-
-	  var jx = this.x;
-	  var jy = this.y;
-	  var jz = this.z;
-	  var jz4 = jz.redSqr().redSqr();
-
-	  // Reuse results
-	  var jyd = jy.redAdd(jy);
-	  for (i = 0; i < pow; i++) {
-	    var jx2 = jx.redSqr();
-	    var jyd2 = jyd.redSqr();
-	    var jyd4 = jyd2.redSqr();
-	    var c = jx2.redAdd(jx2).redIAdd(jx2).redIAdd(a.redMul(jz4));
-
-	    var t1 = jx.redMul(jyd2);
-	    var nx = c.redSqr().redISub(t1.redAdd(t1));
-	    var t2 = t1.redISub(nx);
-	    var dny = c.redMul(t2);
-	    dny = dny.redIAdd(dny).redISub(jyd4);
-	    var nz = jyd.redMul(jz);
-	    if (i + 1 < pow)
-	      jz4 = jz4.redMul(jyd4);
-
-	    jx = nx;
-	    jz = nz;
-	    jyd = dny;
-	  }
-
-	  return this.curve.jpoint(jx, jyd.redMul(tinv), jz);
-	};
-
-	JPoint.prototype.dbl = function dbl() {
-	  if (this.isInfinity())
-	    return this;
-
-	  if (this.curve.zeroA)
-	    return this._zeroDbl();
-	  else if (this.curve.threeA)
-	    return this._threeDbl();
-	  else
-	    return this._dbl();
-	};
-
-	JPoint.prototype._zeroDbl = function _zeroDbl() {
-	  var nx;
-	  var ny;
-	  var nz;
-	  // Z = 1
-	  if (this.zOne) {
-	    // hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html
-	    //     #doubling-mdbl-2007-bl
-	    // 1M + 5S + 14A
-
-	    // XX = X1^2
-	    var xx = this.x.redSqr();
-	    // YY = Y1^2
-	    var yy = this.y.redSqr();
-	    // YYYY = YY^2
-	    var yyyy = yy.redSqr();
-	    // S = 2 * ((X1 + YY)^2 - XX - YYYY)
-	    var s = this.x.redAdd(yy).redSqr().redISub(xx).redISub(yyyy);
-	    s = s.redIAdd(s);
-	    // M = 3 * XX + a; a = 0
-	    var m = xx.redAdd(xx).redIAdd(xx);
-	    // T = M ^ 2 - 2*S
-	    var t = m.redSqr().redISub(s).redISub(s);
-
-	    // 8 * YYYY
-	    var yyyy8 = yyyy.redIAdd(yyyy);
-	    yyyy8 = yyyy8.redIAdd(yyyy8);
-	    yyyy8 = yyyy8.redIAdd(yyyy8);
-
-	    // X3 = T
-	    nx = t;
-	    // Y3 = M * (S - T) - 8 * YYYY
-	    ny = m.redMul(s.redISub(t)).redISub(yyyy8);
-	    // Z3 = 2*Y1
-	    nz = this.y.redAdd(this.y);
-	  } else {
-	    // hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html
-	    //     #doubling-dbl-2009-l
-	    // 2M + 5S + 13A
-
-	    // A = X1^2
-	    var a = this.x.redSqr();
-	    // B = Y1^2
-	    var b = this.y.redSqr();
-	    // C = B^2
-	    var c = b.redSqr();
-	    // D = 2 * ((X1 + B)^2 - A - C)
-	    var d = this.x.redAdd(b).redSqr().redISub(a).redISub(c);
-	    d = d.redIAdd(d);
-	    // E = 3 * A
-	    var e = a.redAdd(a).redIAdd(a);
-	    // F = E^2
-	    var f = e.redSqr();
-
-	    // 8 * C
-	    var c8 = c.redIAdd(c);
-	    c8 = c8.redIAdd(c8);
-	    c8 = c8.redIAdd(c8);
-
-	    // X3 = F - 2 * D
-	    nx = f.redISub(d).redISub(d);
-	    // Y3 = E * (D - X3) - 8 * C
-	    ny = e.redMul(d.redISub(nx)).redISub(c8);
-	    // Z3 = 2 * Y1 * Z1
-	    nz = this.y.redMul(this.z);
-	    nz = nz.redIAdd(nz);
-	  }
-
-	  return this.curve.jpoint(nx, ny, nz);
-	};
-
-	JPoint.prototype._threeDbl = function _threeDbl() {
-	  var nx;
-	  var ny;
-	  var nz;
-	  // Z = 1
-	  if (this.zOne) {
-	    // hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-3.html
-	    //     #doubling-mdbl-2007-bl
-	    // 1M + 5S + 15A
-
-	    // XX = X1^2
-	    var xx = this.x.redSqr();
-	    // YY = Y1^2
-	    var yy = this.y.redSqr();
-	    // YYYY = YY^2
-	    var yyyy = yy.redSqr();
-	    // S = 2 * ((X1 + YY)^2 - XX - YYYY)
-	    var s = this.x.redAdd(yy).redSqr().redISub(xx).redISub(yyyy);
-	    s = s.redIAdd(s);
-	    // M = 3 * XX + a
-	    var m = xx.redAdd(xx).redIAdd(xx).redIAdd(this.curve.a);
-	    // T = M^2 - 2 * S
-	    var t = m.redSqr().redISub(s).redISub(s);
-	    // X3 = T
-	    nx = t;
-	    // Y3 = M * (S - T) - 8 * YYYY
-	    var yyyy8 = yyyy.redIAdd(yyyy);
-	    yyyy8 = yyyy8.redIAdd(yyyy8);
-	    yyyy8 = yyyy8.redIAdd(yyyy8);
-	    ny = m.redMul(s.redISub(t)).redISub(yyyy8);
-	    // Z3 = 2 * Y1
-	    nz = this.y.redAdd(this.y);
-	  } else {
-	    // hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-3.html#doubling-dbl-2001-b
-	    // 3M + 5S
-
-	    // delta = Z1^2
-	    var delta = this.z.redSqr();
-	    // gamma = Y1^2
-	    var gamma = this.y.redSqr();
-	    // beta = X1 * gamma
-	    var beta = this.x.redMul(gamma);
-	    // alpha = 3 * (X1 - delta) * (X1 + delta)
-	    var alpha = this.x.redSub(delta).redMul(this.x.redAdd(delta));
-	    alpha = alpha.redAdd(alpha).redIAdd(alpha);
-	    // X3 = alpha^2 - 8 * beta
-	    var beta4 = beta.redIAdd(beta);
-	    beta4 = beta4.redIAdd(beta4);
-	    var beta8 = beta4.redAdd(beta4);
-	    nx = alpha.redSqr().redISub(beta8);
-	    // Z3 = (Y1 + Z1)^2 - gamma - delta
-	    nz = this.y.redAdd(this.z).redSqr().redISub(gamma).redISub(delta);
-	    // Y3 = alpha * (4 * beta - X3) - 8 * gamma^2
-	    var ggamma8 = gamma.redSqr();
-	    ggamma8 = ggamma8.redIAdd(ggamma8);
-	    ggamma8 = ggamma8.redIAdd(ggamma8);
-	    ggamma8 = ggamma8.redIAdd(ggamma8);
-	    ny = alpha.redMul(beta4.redISub(nx)).redISub(ggamma8);
-	  }
-
-	  return this.curve.jpoint(nx, ny, nz);
-	};
-
-	JPoint.prototype._dbl = function _dbl() {
-	  var a = this.curve.a;
-
-	  // 4M + 6S + 10A
-	  var jx = this.x;
-	  var jy = this.y;
-	  var jz = this.z;
-	  var jz4 = jz.redSqr().redSqr();
-
-	  var jx2 = jx.redSqr();
-	  var jy2 = jy.redSqr();
-
-	  var c = jx2.redAdd(jx2).redIAdd(jx2).redIAdd(a.redMul(jz4));
-
-	  var jxd4 = jx.redAdd(jx);
-	  jxd4 = jxd4.redIAdd(jxd4);
-	  var t1 = jxd4.redMul(jy2);
-	  var nx = c.redSqr().redISub(t1.redAdd(t1));
-	  var t2 = t1.redISub(nx);
-
-	  var jyd8 = jy2.redSqr();
-	  jyd8 = jyd8.redIAdd(jyd8);
-	  jyd8 = jyd8.redIAdd(jyd8);
-	  jyd8 = jyd8.redIAdd(jyd8);
-	  var ny = c.redMul(t2).redISub(jyd8);
-	  var nz = jy.redAdd(jy).redMul(jz);
-
-	  return this.curve.jpoint(nx, ny, nz);
-	};
-
-	JPoint.prototype.trpl = function trpl() {
-	  if (!this.curve.zeroA)
-	    return this.dbl().add(this);
-
-	  // hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#tripling-tpl-2007-bl
-	  // 5M + 10S + ...
-
-	  // XX = X1^2
-	  var xx = this.x.redSqr();
-	  // YY = Y1^2
-	  var yy = this.y.redSqr();
-	  // ZZ = Z1^2
-	  var zz = this.z.redSqr();
-	  // YYYY = YY^2
-	  var yyyy = yy.redSqr();
-	  // M = 3 * XX + a * ZZ2; a = 0
-	  var m = xx.redAdd(xx).redIAdd(xx);
-	  // MM = M^2
-	  var mm = m.redSqr();
-	  // E = 6 * ((X1 + YY)^2 - XX - YYYY) - MM
-	  var e = this.x.redAdd(yy).redSqr().redISub(xx).redISub(yyyy);
-	  e = e.redIAdd(e);
-	  e = e.redAdd(e).redIAdd(e);
-	  e = e.redISub(mm);
-	  // EE = E^2
-	  var ee = e.redSqr();
-	  // T = 16*YYYY
-	  var t = yyyy.redIAdd(yyyy);
-	  t = t.redIAdd(t);
-	  t = t.redIAdd(t);
-	  t = t.redIAdd(t);
-	  // U = (M + E)^2 - MM - EE - T
-	  var u = m.redIAdd(e).redSqr().redISub(mm).redISub(ee).redISub(t);
-	  // X3 = 4 * (X1 * EE - 4 * YY * U)
-	  var yyu4 = yy.redMul(u);
-	  yyu4 = yyu4.redIAdd(yyu4);
-	  yyu4 = yyu4.redIAdd(yyu4);
-	  var nx = this.x.redMul(ee).redISub(yyu4);
-	  nx = nx.redIAdd(nx);
-	  nx = nx.redIAdd(nx);
-	  // Y3 = 8 * Y1 * (U * (T - U) - E * EE)
-	  var ny = this.y.redMul(u.redMul(t.redISub(u)).redISub(e.redMul(ee)));
-	  ny = ny.redIAdd(ny);
-	  ny = ny.redIAdd(ny);
-	  ny = ny.redIAdd(ny);
-	  // Z3 = (Z1 + E)^2 - ZZ - EE
-	  var nz = this.z.redAdd(e).redSqr().redISub(zz).redISub(ee);
-
-	  return this.curve.jpoint(nx, ny, nz);
-	};
-
-	JPoint.prototype.mul = function mul(k, kbase) {
-	  k = new bn(k, kbase);
-
-	  return this.curve._wnafMul(this, k);
-	};
-
-	JPoint.prototype.eq = function eq(p) {
-	  if (p.type === 'affine')
-	    return this.eq(p.toJ());
-
-	  if (this === p)
-	    return true;
-
-	  // x1 * z2^2 == x2 * z1^2
-	  var z2 = this.z.redSqr();
-	  var pz2 = p.z.redSqr();
-	  if (this.x.redMul(pz2).redISub(p.x.redMul(z2)).cmpn(0) !== 0)
-	    return false;
-
-	  // y1 * z2^3 == y2 * z1^3
-	  var z3 = z2.redMul(this.z);
-	  var pz3 = pz2.redMul(p.z);
-	  return this.y.redMul(pz3).redISub(p.y.redMul(z3)).cmpn(0) === 0;
-	};
-
-	JPoint.prototype.eqXToP = function eqXToP(x) {
-	  var zs = this.z.redSqr();
-	  var rx = x.toRed(this.curve.red).redMul(zs);
-	  if (this.x.cmp(rx) === 0)
-	    return true;
-
-	  var xc = x.clone();
-	  var t = this.curve.redN.redMul(zs);
-	  for (;;) {
-	    xc.iadd(this.curve.n);
-	    if (xc.cmp(this.curve.p) >= 0)
-	      return false;
-
-	    rx.redIAdd(t);
-	    if (this.x.cmp(rx) === 0)
-	      return true;
-	  }
-	};
-
-	JPoint.prototype.inspect = function inspect() {
-	  if (this.isInfinity())
-	    return '<EC JPoint Infinity>';
-	  return '<EC JPoint x: ' + this.x.toString(16, 2) +
-	      ' y: ' + this.y.toString(16, 2) +
-	      ' z: ' + this.z.toString(16, 2) + '>';
-	};
-
-	JPoint.prototype.isInfinity = function isInfinity() {
-	  // XXX This code assumes that zero is always zero in red
-	  return this.z.cmpn(0) === 0;
-	};
-
-	var curve_1 = createCommonjsModule(function (module, exports) {
-	'use strict';
-
-	var curve = exports;
-
-	curve.base = base;
-	curve.short = short_1;
-	curve.mont = /*RicMoo:ethers:require(./mont)*/(null);
-	curve.edwards = /*RicMoo:ethers:require(./edwards)*/(null);
-	});
-
 	var curves_1 = createCommonjsModule(function (module, exports) {
 	'use strict';
 
@@ -15152,17 +13739,17 @@
 
 	var elliptic$1 = /*@__PURE__*/getDefaultExportFromCjs(elliptic);
 
-	var _version$q = createCommonjsModule(function (module, exports) {
+	var _version$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "signing-key/5.0.11";
+	exports.version = "signing-key/5.1.0";
 
 	});
 
-	var _version$r = /*@__PURE__*/getDefaultExportFromCjs(_version$q);
+	var _version$n = /*@__PURE__*/getDefaultExportFromCjs(_version$m);
 
-	var lib$h = createCommonjsModule(function (module, exports) {
+	var lib$d = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.computePublicKey = exports.recoverPublicKey = exports.SigningKey = void 0;
@@ -15171,7 +13758,7 @@
 
 
 
-	var logger = new lib.Logger(_version$q.version);
+	var logger = new lib.Logger(_version$m.version);
 	var _curve = null;
 	function getCurve() {
 	    if (!_curve) {
@@ -15250,19 +13837,19 @@
 
 	});
 
-	var index$h = /*@__PURE__*/getDefaultExportFromCjs(lib$h);
+	var index$d = /*@__PURE__*/getDefaultExportFromCjs(lib$d);
 
-	var _version$s = createCommonjsModule(function (module, exports) {
+	var _version$o = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "transactions/5.0.11";
+	exports.version = "transactions/5.1.0";
 
 	});
 
-	var _version$t = /*@__PURE__*/getDefaultExportFromCjs(_version$s);
+	var _version$p = /*@__PURE__*/getDefaultExportFromCjs(_version$o);
 
-	var lib$i = createCommonjsModule(function (module, exports) {
+	var lib$e = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __createBinding = (commonjsGlobal && commonjsGlobal.__createBinding) || (Object.create ? (function(o, m, k, k2) {
 	    if (k2 === undefined) k2 = k;
@@ -15284,7 +13871,7 @@
 	    return result;
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.parse = exports.serialize = exports.recoverAddress = exports.computeAddress = void 0;
+	exports.parse = exports.serialize = exports.accessListify = exports.recoverAddress = exports.computeAddress = void 0;
 
 
 
@@ -15295,7 +13882,7 @@
 
 
 
-	var logger = new lib.Logger(_version$s.version);
+	var logger = new lib.Logger(_version$o.version);
 	///////////////////////////////
 	function handleAddress(value) {
 	    if (value === "0x") {
@@ -15309,6 +13896,7 @@
 	    }
 	    return lib$2.BigNumber.from(value);
 	}
+	// Legacy Transaction Fields
 	var transactionFields = [
 	    { name: "nonce", maxLength: 32, numeric: true },
 	    { name: "gasPrice", maxLength: 32, numeric: true },
@@ -15321,15 +13909,79 @@
 	    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
 	};
 	function computeAddress(key) {
-	    var publicKey = lib$h.computePublicKey(key);
+	    var publicKey = lib$d.computePublicKey(key);
 	    return lib$6.getAddress(lib$1.hexDataSlice(lib$4.keccak256(lib$1.hexDataSlice(publicKey, 1)), 12));
 	}
 	exports.computeAddress = computeAddress;
 	function recoverAddress(digest, signature) {
-	    return computeAddress(lib$h.recoverPublicKey(lib$1.arrayify(digest), signature));
+	    return computeAddress(lib$d.recoverPublicKey(lib$1.arrayify(digest), signature));
 	}
 	exports.recoverAddress = recoverAddress;
-	function serialize(transaction, signature) {
+	function formatNumber(value, name) {
+	    var result = lib$1.stripZeros(lib$2.BigNumber.from(value).toHexString());
+	    if (result.length > 32) {
+	        logger.throwArgumentError("invalid length for " + name, ("transaction:" + name), value);
+	    }
+	    return result;
+	}
+	function accessSetify(addr, storageKeys) {
+	    return {
+	        address: lib$6.getAddress(addr),
+	        storageKeys: (storageKeys || []).map(function (storageKey, index) {
+	            if (lib$1.hexDataLength(storageKey) !== 32) {
+	                logger.throwArgumentError("invalid access list storageKey", "accessList[" + addr + ":" + index + "]", storageKey);
+	            }
+	            return storageKey.toLowerCase();
+	        })
+	    };
+	}
+	function accessListify(value) {
+	    if (Array.isArray(value)) {
+	        return value.map(function (set, index) {
+	            if (Array.isArray(set)) {
+	                if (set.length > 2) {
+	                    logger.throwArgumentError("access list expected to be [ address, storageKeys[] ]", "value[" + index + "]", set);
+	                }
+	                return accessSetify(set[0], set[1]);
+	            }
+	            return accessSetify(set.address, set.storageKeys);
+	        });
+	    }
+	    var result = Object.keys(value).map(function (addr) {
+	        var storageKeys = value[addr].reduce(function (accum, storageKey) {
+	            accum[storageKey] = true;
+	            return accum;
+	        }, {});
+	        return accessSetify(addr, Object.keys(storageKeys).sort());
+	    });
+	    result.sort(function (a, b) { return (a.address.localeCompare(b.address)); });
+	    return result;
+	}
+	exports.accessListify = accessListify;
+	function formatAccessList(value) {
+	    return accessListify(value).map(function (set) { return [set.address, set.storageKeys]; });
+	}
+	function _serializeEip2930(transaction, signature) {
+	    var fields = [
+	        formatNumber(transaction.chainId || 0, "chainId"),
+	        formatNumber(transaction.nonce || 0, "nonce"),
+	        formatNumber(transaction.gasPrice || 0, "gasPrice"),
+	        formatNumber(transaction.gasLimit || 0, "gasLimit"),
+	        ((transaction.to != null) ? lib$6.getAddress(transaction.to) : "0x"),
+	        formatNumber(transaction.value || 0, "value"),
+	        (transaction.data || "0x"),
+	        (formatAccessList(transaction.accessList || []))
+	    ];
+	    if (signature) {
+	        var sig = lib$1.splitSignature(signature);
+	        fields.push(formatNumber(sig.recoveryParam, "recoveryParam"));
+	        fields.push(lib$1.stripZeros(sig.r));
+	        fields.push(lib$1.stripZeros(sig.s));
+	    }
+	    return lib$1.hexConcat(["0x01", RLP.encode(fields)]);
+	}
+	// Legacy Transactions and EIP-155
+	function _serialize(transaction, signature) {
 	    lib$3.checkProperties(transaction, allowedTransactionKeys);
 	    var raw = [];
 	    transactionFields.forEach(function (fieldInfo) {
@@ -15397,8 +14049,68 @@
 	    raw.push(lib$1.stripZeros(lib$1.arrayify(sig.s)));
 	    return RLP.encode(raw);
 	}
+	function serialize(transaction, signature) {
+	    // Legacy and EIP-155 Transactions
+	    if (transaction.type == null) {
+	        return _serialize(transaction, signature);
+	    }
+	    // Typed Transactions (EIP-2718)
+	    switch (transaction.type) {
+	        case 1:
+	            return _serializeEip2930(transaction, signature);
+	        default:
+	            break;
+	    }
+	    return logger.throwError("unsupported transaction type: " + transaction.type, lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	        operation: "serializeTransaction",
+	        transactionType: transaction.type
+	    });
+	}
 	exports.serialize = serialize;
-	function parse(rawTransaction) {
+	function _parseEip2930(payload) {
+	    var transaction = RLP.decode(payload.slice(1));
+	    if (transaction.length !== 8 && transaction.length !== 11) {
+	        logger.throwArgumentError("invalid component count for transaction type: 1", "payload", lib$1.hexlify(payload));
+	    }
+	    var tx = {
+	        type: 1,
+	        chainId: handleNumber(transaction[0]).toNumber(),
+	        nonce: handleNumber(transaction[1]).toNumber(),
+	        gasPrice: handleNumber(transaction[2]),
+	        gasLimit: handleNumber(transaction[3]),
+	        to: handleAddress(transaction[4]),
+	        value: handleNumber(transaction[5]),
+	        data: transaction[6],
+	        accessList: accessListify(transaction[7]),
+	    };
+	    // Unsigned EIP-2930 Transaction
+	    if (transaction.length === 8) {
+	        return tx;
+	    }
+	    try {
+	        var recid = handleNumber(transaction[8]).toNumber();
+	        if (recid !== 0 && recid !== 1) {
+	            throw new Error("bad recid");
+	        }
+	        tx.v = recid;
+	    }
+	    catch (error) {
+	        logger.throwArgumentError("invalid v for transaction type: 1", "v", transaction[8]);
+	    }
+	    tx.r = lib$1.hexZeroPad(transaction[9], 32);
+	    tx.s = lib$1.hexZeroPad(transaction[10], 32);
+	    try {
+	        var digest = lib$4.keccak256(_serializeEip2930(tx));
+	        tx.from = recoverAddress(digest, { r: tx.r, s: tx.s, recoveryParam: tx.v });
+	    }
+	    catch (error) {
+	        console.log(error);
+	    }
+	    tx.hash = lib$4.keccak256(payload);
+	    return tx;
+	}
+	// Legacy Transactions and EIP-155
+	function _parse(rawTransaction) {
 	    var transaction = RLP.decode(rawTransaction);
 	    if (transaction.length !== 9 && transaction.length !== 6) {
 	        logger.throwArgumentError("invalid raw transaction", "rawTransaction", rawTransaction);
@@ -15453,9 +14165,1474 @@
 	        }
 	        tx.hash = lib$4.keccak256(rawTransaction);
 	    }
+	    tx.type = null;
 	    return tx;
 	}
+	function parse(rawTransaction) {
+	    var payload = lib$1.arrayify(rawTransaction);
+	    // Legacy and EIP-155 Transactions
+	    if (payload[0] > 0x7f) {
+	        return _parse(payload);
+	    }
+	    // Typed Transaction (EIP-2718)
+	    switch (payload[0]) {
+	        case 1:
+	            return _parseEip2930(payload);
+	        default:
+	            break;
+	    }
+	    return logger.throwError("unsupported transaction type: " + payload[0], lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	        operation: "parseTransaction",
+	        transactionType: payload[0]
+	    });
+	}
 	exports.parse = parse;
+
+	});
+
+	var index$e = /*@__PURE__*/getDefaultExportFromCjs(lib$e);
+
+	var _version$q = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.version = void 0;
+	exports.version = "contracts/5.1.0";
+
+	});
+
+	var _version$r = /*@__PURE__*/getDefaultExportFromCjs(_version$q);
+
+	var lib$f = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
+	    var extendStatics = function (d, b) {
+	        extendStatics = Object.setPrototypeOf ||
+	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+	        return extendStatics(d, b);
+	    };
+	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments || [])).next());
+	    });
+	};
+	var __generator = (commonjsGlobal && commonjsGlobal.__generator) || function (thisArg, body) {
+	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+	    function verb(n) { return function (v) { return step([n, v]); }; }
+	    function step(op) {
+	        if (f) throw new TypeError("Generator is already executing.");
+	        while (_) try {
+	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+	            if (y = 0, t) op = [op[0] & 2, t.value];
+	            switch (op[0]) {
+	                case 0: case 1: t = op; break;
+	                case 4: _.label++; return { value: op[1], done: false };
+	                case 5: _.label++; y = op[1]; op = [0]; continue;
+	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+	                default:
+	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+	                    if (t[2]) _.ops.pop();
+	                    _.trys.pop(); continue;
+	            }
+	            op = body.call(thisArg, _);
+	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+	    }
+	};
+	var __spreadArray = (commonjsGlobal && commonjsGlobal.__spreadArray) || function (to, from) {
+	    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+	        to[j] = from[i];
+	    return to;
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.ContractFactory = exports.Contract = exports.BaseContract = void 0;
+
+
+
+
+
+
+
+
+
+
+	var logger = new lib.Logger(_version$q.version);
+	;
+	;
+	///////////////////////////////
+	var allowedTransactionKeys = {
+	    chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
+	    type: true, accessList: true,
+	};
+	function resolveName(resolver, nameOrPromise) {
+	    return __awaiter(this, void 0, void 0, function () {
+	        var name, address;
+	        return __generator(this, function (_a) {
+	            switch (_a.label) {
+	                case 0: return [4 /*yield*/, nameOrPromise];
+	                case 1:
+	                    name = _a.sent();
+	                    // If it is already an address, just use it (after adding checksum)
+	                    try {
+	                        return [2 /*return*/, lib$6.getAddress(name)];
+	                    }
+	                    catch (error) { }
+	                    if (!resolver) {
+	                        logger.throwError("a provider or signer is needed to resolve ENS names", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                            operation: "resolveName"
+	                        });
+	                    }
+	                    return [4 /*yield*/, resolver.resolveName(name)];
+	                case 2:
+	                    address = _a.sent();
+	                    if (address == null) {
+	                        logger.throwArgumentError("resolver or addr is not configured for ENS name", "name", name);
+	                    }
+	                    return [2 /*return*/, address];
+	            }
+	        });
+	    });
+	}
+	// Recursively replaces ENS names with promises to resolve the name and resolves all properties
+	function resolveAddresses(resolver, value, paramType) {
+	    return __awaiter(this, void 0, void 0, function () {
+	        return __generator(this, function (_a) {
+	            switch (_a.label) {
+	                case 0:
+	                    if (!Array.isArray(paramType)) return [3 /*break*/, 2];
+	                    return [4 /*yield*/, Promise.all(paramType.map(function (paramType, index) {
+	                            return resolveAddresses(resolver, ((Array.isArray(value)) ? value[index] : value[paramType.name]), paramType);
+	                        }))];
+	                case 1: return [2 /*return*/, _a.sent()];
+	                case 2:
+	                    if (!(paramType.type === "address")) return [3 /*break*/, 4];
+	                    return [4 /*yield*/, resolveName(resolver, value)];
+	                case 3: return [2 /*return*/, _a.sent()];
+	                case 4:
+	                    if (!(paramType.type === "tuple")) return [3 /*break*/, 6];
+	                    return [4 /*yield*/, resolveAddresses(resolver, value, paramType.components)];
+	                case 5: return [2 /*return*/, _a.sent()];
+	                case 6:
+	                    if (!(paramType.baseType === "array")) return [3 /*break*/, 8];
+	                    if (!Array.isArray(value)) {
+	                        return [2 /*return*/, Promise.reject(new Error("invalid value for array"))];
+	                    }
+	                    return [4 /*yield*/, Promise.all(value.map(function (v) { return resolveAddresses(resolver, v, paramType.arrayChildren); }))];
+	                case 7: return [2 /*return*/, _a.sent()];
+	                case 8: return [2 /*return*/, value];
+	            }
+	        });
+	    });
+	}
+	function populateTransaction(contract, fragment, args) {
+	    return __awaiter(this, void 0, void 0, function () {
+	        var overrides, resolved, data, tx, ro, intrinsic, bytes, i, roValue, leftovers;
+	        var _this = this;
+	        return __generator(this, function (_a) {
+	            switch (_a.label) {
+	                case 0:
+	                    overrides = {};
+	                    if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
+	                        overrides = lib$3.shallowCopy(args.pop());
+	                    }
+	                    // Make sure the parameter count matches
+	                    logger.checkArgumentCount(args.length, fragment.inputs.length, "passed to contract");
+	                    // Populate "from" override (allow promises)
+	                    if (contract.signer) {
+	                        if (overrides.from) {
+	                            // Contracts with a Signer are from the Signer's frame-of-reference;
+	                            // but we allow overriding "from" if it matches the signer
+	                            overrides.from = lib$3.resolveProperties({
+	                                override: resolveName(contract.signer, overrides.from),
+	                                signer: contract.signer.getAddress()
+	                            }).then(function (check) { return __awaiter(_this, void 0, void 0, function () {
+	                                return __generator(this, function (_a) {
+	                                    if (lib$6.getAddress(check.signer) !== check.override) {
+	                                        logger.throwError("Contract with a Signer cannot override from", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                                            operation: "overrides.from"
+	                                        });
+	                                    }
+	                                    return [2 /*return*/, check.override];
+	                                });
+	                            }); });
+	                        }
+	                        else {
+	                            overrides.from = contract.signer.getAddress();
+	                        }
+	                    }
+	                    else if (overrides.from) {
+	                        overrides.from = resolveName(contract.provider, overrides.from);
+	                        //} else {
+	                        // Contracts without a signer can override "from", and if
+	                        // unspecified the zero address is used
+	                        //overrides.from = AddressZero;
+	                    }
+	                    return [4 /*yield*/, lib$3.resolveProperties({
+	                            args: resolveAddresses(contract.signer || contract.provider, args, fragment.inputs),
+	                            address: contract.resolvedAddress,
+	                            overrides: (lib$3.resolveProperties(overrides) || {})
+	                        })];
+	                case 1:
+	                    resolved = _a.sent();
+	                    data = contract.interface.encodeFunctionData(fragment, resolved.args);
+	                    tx = {
+	                        data: data,
+	                        to: resolved.address
+	                    };
+	                    ro = resolved.overrides;
+	                    // Populate simple overrides
+	                    if (ro.nonce != null) {
+	                        tx.nonce = lib$2.BigNumber.from(ro.nonce).toNumber();
+	                    }
+	                    if (ro.gasLimit != null) {
+	                        tx.gasLimit = lib$2.BigNumber.from(ro.gasLimit);
+	                    }
+	                    if (ro.gasPrice != null) {
+	                        tx.gasPrice = lib$2.BigNumber.from(ro.gasPrice);
+	                    }
+	                    if (ro.from != null) {
+	                        tx.from = ro.from;
+	                    }
+	                    if (ro.type != null) {
+	                        tx.type = ro.type;
+	                    }
+	                    if (ro.accessList != null) {
+	                        tx.accessList = lib$e.accessListify(ro.accessList);
+	                    }
+	                    // If there was no "gasLimit" override, but the ABI specifies a default, use it
+	                    if (tx.gasLimit == null && fragment.gas != null) {
+	                        intrinsic = 21000;
+	                        bytes = lib$1.arrayify(data);
+	                        for (i = 0; i < bytes.length; i++) {
+	                            intrinsic += 4;
+	                            if (bytes[i]) {
+	                                intrinsic += 64;
+	                            }
+	                        }
+	                        tx.gasLimit = lib$2.BigNumber.from(fragment.gas).add(intrinsic);
+	                    }
+	                    // Populate "value" override
+	                    if (ro.value) {
+	                        roValue = lib$2.BigNumber.from(ro.value);
+	                        if (!roValue.isZero() && !fragment.payable) {
+	                            logger.throwError("non-payable method cannot override value", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                                operation: "overrides.value",
+	                                value: overrides.value
+	                            });
+	                        }
+	                        tx.value = roValue;
+	                    }
+	                    // Remvoe the overrides
+	                    delete overrides.nonce;
+	                    delete overrides.gasLimit;
+	                    delete overrides.gasPrice;
+	                    delete overrides.from;
+	                    delete overrides.value;
+	                    delete overrides.type;
+	                    delete overrides.accessList;
+	                    leftovers = Object.keys(overrides).filter(function (key) { return (overrides[key] != null); });
+	                    if (leftovers.length) {
+	                        logger.throwError("cannot override " + leftovers.map(function (l) { return JSON.stringify(l); }).join(","), lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                            operation: "overrides",
+	                            overrides: leftovers
+	                        });
+	                    }
+	                    return [2 /*return*/, tx];
+	            }
+	        });
+	    });
+	}
+	function buildPopulate(contract, fragment) {
+	    return function () {
+	        var args = [];
+	        for (var _i = 0; _i < arguments.length; _i++) {
+	            args[_i] = arguments[_i];
+	        }
+	        return populateTransaction(contract, fragment, args);
+	    };
+	}
+	function buildEstimate(contract, fragment) {
+	    var signerOrProvider = (contract.signer || contract.provider);
+	    return function () {
+	        var args = [];
+	        for (var _i = 0; _i < arguments.length; _i++) {
+	            args[_i] = arguments[_i];
+	        }
+	        return __awaiter(this, void 0, void 0, function () {
+	            var tx;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        if (!signerOrProvider) {
+	                            logger.throwError("estimate require a provider or signer", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                                operation: "estimateGas"
+	                            });
+	                        }
+	                        return [4 /*yield*/, populateTransaction(contract, fragment, args)];
+	                    case 1:
+	                        tx = _a.sent();
+	                        return [4 /*yield*/, signerOrProvider.estimateGas(tx)];
+	                    case 2: return [2 /*return*/, _a.sent()];
+	                }
+	            });
+	        });
+	    };
+	}
+	function buildCall(contract, fragment, collapseSimple) {
+	    var signerOrProvider = (contract.signer || contract.provider);
+	    return function () {
+	        var args = [];
+	        for (var _i = 0; _i < arguments.length; _i++) {
+	            args[_i] = arguments[_i];
+	        }
+	        return __awaiter(this, void 0, void 0, function () {
+	            var blockTag, overrides, tx, result, value;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        blockTag = undefined;
+	                        if (!(args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object")) return [3 /*break*/, 3];
+	                        overrides = lib$3.shallowCopy(args.pop());
+	                        if (!(overrides.blockTag != null)) return [3 /*break*/, 2];
+	                        return [4 /*yield*/, overrides.blockTag];
+	                    case 1:
+	                        blockTag = _a.sent();
+	                        _a.label = 2;
+	                    case 2:
+	                        delete overrides.blockTag;
+	                        args.push(overrides);
+	                        _a.label = 3;
+	                    case 3:
+	                        if (!(contract.deployTransaction != null)) return [3 /*break*/, 5];
+	                        return [4 /*yield*/, contract._deployed(blockTag)];
+	                    case 4:
+	                        _a.sent();
+	                        _a.label = 5;
+	                    case 5: return [4 /*yield*/, populateTransaction(contract, fragment, args)];
+	                    case 6:
+	                        tx = _a.sent();
+	                        return [4 /*yield*/, signerOrProvider.call(tx, blockTag)];
+	                    case 7:
+	                        result = _a.sent();
+	                        try {
+	                            value = contract.interface.decodeFunctionResult(fragment, result);
+	                            if (collapseSimple && fragment.outputs.length === 1) {
+	                                value = value[0];
+	                            }
+	                            return [2 /*return*/, value];
+	                        }
+	                        catch (error) {
+	                            if (error.code === lib.Logger.errors.CALL_EXCEPTION) {
+	                                error.address = contract.address;
+	                                error.args = args;
+	                                error.transaction = tx;
+	                            }
+	                            throw error;
+	                        }
+	                        return [2 /*return*/];
+	                }
+	            });
+	        });
+	    };
+	}
+	function buildSend(contract, fragment) {
+	    return function () {
+	        var args = [];
+	        for (var _i = 0; _i < arguments.length; _i++) {
+	            args[_i] = arguments[_i];
+	        }
+	        return __awaiter(this, void 0, void 0, function () {
+	            var txRequest, tx, wait;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        if (!contract.signer) {
+	                            logger.throwError("sending a transaction requires a signer", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                                operation: "sendTransaction"
+	                            });
+	                        }
+	                        if (!(contract.deployTransaction != null)) return [3 /*break*/, 2];
+	                        return [4 /*yield*/, contract._deployed()];
+	                    case 1:
+	                        _a.sent();
+	                        _a.label = 2;
+	                    case 2: return [4 /*yield*/, populateTransaction(contract, fragment, args)];
+	                    case 3:
+	                        txRequest = _a.sent();
+	                        return [4 /*yield*/, contract.signer.sendTransaction(txRequest)];
+	                    case 4:
+	                        tx = _a.sent();
+	                        wait = tx.wait.bind(tx);
+	                        tx.wait = function (confirmations) {
+	                            return wait(confirmations).then(function (receipt) {
+	                                receipt.events = receipt.logs.map(function (log) {
+	                                    var event = lib$3.deepCopy(log);
+	                                    var parsed = null;
+	                                    try {
+	                                        parsed = contract.interface.parseLog(log);
+	                                    }
+	                                    catch (e) { }
+	                                    // Successfully parsed the event log; include it
+	                                    if (parsed) {
+	                                        event.args = parsed.args;
+	                                        event.decode = function (data, topics) {
+	                                            return contract.interface.decodeEventLog(parsed.eventFragment, data, topics);
+	                                        };
+	                                        event.event = parsed.name;
+	                                        event.eventSignature = parsed.signature;
+	                                    }
+	                                    // Useful operations
+	                                    event.removeListener = function () { return contract.provider; };
+	                                    event.getBlock = function () {
+	                                        return contract.provider.getBlock(receipt.blockHash);
+	                                    };
+	                                    event.getTransaction = function () {
+	                                        return contract.provider.getTransaction(receipt.transactionHash);
+	                                    };
+	                                    event.getTransactionReceipt = function () {
+	                                        return Promise.resolve(receipt);
+	                                    };
+	                                    return event;
+	                                });
+	                                return receipt;
+	                            });
+	                        };
+	                        return [2 /*return*/, tx];
+	                }
+	            });
+	        });
+	    };
+	}
+	function buildDefault(contract, fragment, collapseSimple) {
+	    if (fragment.constant) {
+	        return buildCall(contract, fragment, collapseSimple);
+	    }
+	    return buildSend(contract, fragment);
+	}
+	function getEventTag(filter) {
+	    if (filter.address && (filter.topics == null || filter.topics.length === 0)) {
+	        return "*";
+	    }
+	    return (filter.address || "*") + "@" + (filter.topics ? filter.topics.map(function (topic) {
+	        if (Array.isArray(topic)) {
+	            return topic.join("|");
+	        }
+	        return topic;
+	    }).join(":") : "");
+	}
+	var RunningEvent = /** @class */ (function () {
+	    function RunningEvent(tag, filter) {
+	        lib$3.defineReadOnly(this, "tag", tag);
+	        lib$3.defineReadOnly(this, "filter", filter);
+	        this._listeners = [];
+	    }
+	    RunningEvent.prototype.addListener = function (listener, once) {
+	        this._listeners.push({ listener: listener, once: once });
+	    };
+	    RunningEvent.prototype.removeListener = function (listener) {
+	        var done = false;
+	        this._listeners = this._listeners.filter(function (item) {
+	            if (done || item.listener !== listener) {
+	                return true;
+	            }
+	            done = true;
+	            return false;
+	        });
+	    };
+	    RunningEvent.prototype.removeAllListeners = function () {
+	        this._listeners = [];
+	    };
+	    RunningEvent.prototype.listeners = function () {
+	        return this._listeners.map(function (i) { return i.listener; });
+	    };
+	    RunningEvent.prototype.listenerCount = function () {
+	        return this._listeners.length;
+	    };
+	    RunningEvent.prototype.run = function (args) {
+	        var _this = this;
+	        var listenerCount = this.listenerCount();
+	        this._listeners = this._listeners.filter(function (item) {
+	            var argsCopy = args.slice();
+	            // Call the callback in the next event loop
+	            setTimeout(function () {
+	                item.listener.apply(_this, argsCopy);
+	            }, 0);
+	            // Reschedule it if it not "once"
+	            return !(item.once);
+	        });
+	        return listenerCount;
+	    };
+	    RunningEvent.prototype.prepareEvent = function (event) {
+	    };
+	    // Returns the array that will be applied to an emit
+	    RunningEvent.prototype.getEmit = function (event) {
+	        return [event];
+	    };
+	    return RunningEvent;
+	}());
+	var ErrorRunningEvent = /** @class */ (function (_super) {
+	    __extends(ErrorRunningEvent, _super);
+	    function ErrorRunningEvent() {
+	        return _super.call(this, "error", null) || this;
+	    }
+	    return ErrorRunningEvent;
+	}(RunningEvent));
+	// @TODO Fragment should inherit Wildcard? and just override getEmit?
+	//       or have a common abstract super class, with enough constructor
+	//       options to configure both.
+	// A Fragment Event will populate all the properties that Wildcard
+	// will, and additioanlly dereference the arguments when emitting
+	var FragmentRunningEvent = /** @class */ (function (_super) {
+	    __extends(FragmentRunningEvent, _super);
+	    function FragmentRunningEvent(address, contractInterface, fragment, topics) {
+	        var _this = this;
+	        var filter = {
+	            address: address
+	        };
+	        var topic = contractInterface.getEventTopic(fragment);
+	        if (topics) {
+	            if (topic !== topics[0]) {
+	                logger.throwArgumentError("topic mismatch", "topics", topics);
+	            }
+	            filter.topics = topics.slice();
+	        }
+	        else {
+	            filter.topics = [topic];
+	        }
+	        _this = _super.call(this, getEventTag(filter), filter) || this;
+	        lib$3.defineReadOnly(_this, "address", address);
+	        lib$3.defineReadOnly(_this, "interface", contractInterface);
+	        lib$3.defineReadOnly(_this, "fragment", fragment);
+	        return _this;
+	    }
+	    FragmentRunningEvent.prototype.prepareEvent = function (event) {
+	        var _this = this;
+	        _super.prototype.prepareEvent.call(this, event);
+	        event.event = this.fragment.name;
+	        event.eventSignature = this.fragment.format();
+	        event.decode = function (data, topics) {
+	            return _this.interface.decodeEventLog(_this.fragment, data, topics);
+	        };
+	        try {
+	            event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
+	        }
+	        catch (error) {
+	            event.args = null;
+	            event.decodeError = error;
+	        }
+	    };
+	    FragmentRunningEvent.prototype.getEmit = function (event) {
+	        var errors = lib$a.checkResultErrors(event.args);
+	        if (errors.length) {
+	            throw errors[0].error;
+	        }
+	        var args = (event.args || []).slice();
+	        args.push(event);
+	        return args;
+	    };
+	    return FragmentRunningEvent;
+	}(RunningEvent));
+	// A Wildard Event will attempt to populate:
+	//  - event            The name of the event name
+	//  - eventSignature   The full signature of the event
+	//  - decode           A function to decode data and topics
+	//  - args             The decoded data and topics
+	var WildcardRunningEvent = /** @class */ (function (_super) {
+	    __extends(WildcardRunningEvent, _super);
+	    function WildcardRunningEvent(address, contractInterface) {
+	        var _this = _super.call(this, "*", { address: address }) || this;
+	        lib$3.defineReadOnly(_this, "address", address);
+	        lib$3.defineReadOnly(_this, "interface", contractInterface);
+	        return _this;
+	    }
+	    WildcardRunningEvent.prototype.prepareEvent = function (event) {
+	        var _this = this;
+	        _super.prototype.prepareEvent.call(this, event);
+	        try {
+	            var parsed_1 = this.interface.parseLog(event);
+	            event.event = parsed_1.name;
+	            event.eventSignature = parsed_1.signature;
+	            event.decode = function (data, topics) {
+	                return _this.interface.decodeEventLog(parsed_1.eventFragment, data, topics);
+	            };
+	            event.args = parsed_1.args;
+	        }
+	        catch (error) {
+	            // No matching event
+	        }
+	    };
+	    return WildcardRunningEvent;
+	}(RunningEvent));
+	var BaseContract = /** @class */ (function () {
+	    function BaseContract(addressOrName, contractInterface, signerOrProvider) {
+	        var _newTarget = this.constructor;
+	        var _this = this;
+	        logger.checkNew(_newTarget, Contract);
+	        // @TODO: Maybe still check the addressOrName looks like a valid address or name?
+	        //address = getAddress(address);
+	        lib$3.defineReadOnly(this, "interface", lib$3.getStatic((_newTarget), "getInterface")(contractInterface));
+	        if (signerOrProvider == null) {
+	            lib$3.defineReadOnly(this, "provider", null);
+	            lib$3.defineReadOnly(this, "signer", null);
+	        }
+	        else if (lib$c.Signer.isSigner(signerOrProvider)) {
+	            lib$3.defineReadOnly(this, "provider", signerOrProvider.provider || null);
+	            lib$3.defineReadOnly(this, "signer", signerOrProvider);
+	        }
+	        else if (lib$b.Provider.isProvider(signerOrProvider)) {
+	            lib$3.defineReadOnly(this, "provider", signerOrProvider);
+	            lib$3.defineReadOnly(this, "signer", null);
+	        }
+	        else {
+	            logger.throwArgumentError("invalid signer or provider", "signerOrProvider", signerOrProvider);
+	        }
+	        lib$3.defineReadOnly(this, "callStatic", {});
+	        lib$3.defineReadOnly(this, "estimateGas", {});
+	        lib$3.defineReadOnly(this, "functions", {});
+	        lib$3.defineReadOnly(this, "populateTransaction", {});
+	        lib$3.defineReadOnly(this, "filters", {});
+	        {
+	            var uniqueFilters_1 = {};
+	            Object.keys(this.interface.events).forEach(function (eventSignature) {
+	                var event = _this.interface.events[eventSignature];
+	                lib$3.defineReadOnly(_this.filters, eventSignature, function () {
+	                    var args = [];
+	                    for (var _i = 0; _i < arguments.length; _i++) {
+	                        args[_i] = arguments[_i];
+	                    }
+	                    return {
+	                        address: _this.address,
+	                        topics: _this.interface.encodeFilterTopics(event, args)
+	                    };
+	                });
+	                if (!uniqueFilters_1[event.name]) {
+	                    uniqueFilters_1[event.name] = [];
+	                }
+	                uniqueFilters_1[event.name].push(eventSignature);
+	            });
+	            Object.keys(uniqueFilters_1).forEach(function (name) {
+	                var filters = uniqueFilters_1[name];
+	                if (filters.length === 1) {
+	                    lib$3.defineReadOnly(_this.filters, name, _this.filters[filters[0]]);
+	                }
+	                else {
+	                    logger.warn("Duplicate definition of " + name + " (" + filters.join(", ") + ")");
+	                }
+	            });
+	        }
+	        lib$3.defineReadOnly(this, "_runningEvents", {});
+	        lib$3.defineReadOnly(this, "_wrappedEmits", {});
+	        if (addressOrName == null) {
+	            logger.throwArgumentError("invalid contract address or ENS name", "addressOrName", addressOrName);
+	        }
+	        lib$3.defineReadOnly(this, "address", addressOrName);
+	        if (this.provider) {
+	            lib$3.defineReadOnly(this, "resolvedAddress", resolveName(this.provider, addressOrName));
+	        }
+	        else {
+	            try {
+	                lib$3.defineReadOnly(this, "resolvedAddress", Promise.resolve(lib$6.getAddress(addressOrName)));
+	            }
+	            catch (error) {
+	                // Without a provider, we cannot use ENS names
+	                logger.throwError("provider is required to use ENS name as contract address", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                    operation: "new Contract"
+	                });
+	            }
+	        }
+	        var uniqueNames = {};
+	        var uniqueSignatures = {};
+	        Object.keys(this.interface.functions).forEach(function (signature) {
+	            var fragment = _this.interface.functions[signature];
+	            // Check that the signature is unique; if not the ABI generation has
+	            // not been cleaned or may be incorrectly generated
+	            if (uniqueSignatures[signature]) {
+	                logger.warn("Duplicate ABI entry for " + JSON.stringify(name));
+	                return;
+	            }
+	            uniqueSignatures[signature] = true;
+	            // Track unique names; we only expose bare named functions if they
+	            // are ambiguous
+	            {
+	                var name_1 = fragment.name;
+	                if (!uniqueNames[name_1]) {
+	                    uniqueNames[name_1] = [];
+	                }
+	                uniqueNames[name_1].push(signature);
+	            }
+	            if (_this[signature] == null) {
+	                lib$3.defineReadOnly(_this, signature, buildDefault(_this, fragment, true));
+	            }
+	            // We do not collapse simple calls on this bucket, which allows
+	            // frameworks to safely use this without introspection as well as
+	            // allows decoding error recovery.
+	            if (_this.functions[signature] == null) {
+	                lib$3.defineReadOnly(_this.functions, signature, buildDefault(_this, fragment, false));
+	            }
+	            if (_this.callStatic[signature] == null) {
+	                lib$3.defineReadOnly(_this.callStatic, signature, buildCall(_this, fragment, true));
+	            }
+	            if (_this.populateTransaction[signature] == null) {
+	                lib$3.defineReadOnly(_this.populateTransaction, signature, buildPopulate(_this, fragment));
+	            }
+	            if (_this.estimateGas[signature] == null) {
+	                lib$3.defineReadOnly(_this.estimateGas, signature, buildEstimate(_this, fragment));
+	            }
+	        });
+	        Object.keys(uniqueNames).forEach(function (name) {
+	            // Ambiguous names to not get attached as bare names
+	            var signatures = uniqueNames[name];
+	            if (signatures.length > 1) {
+	                return;
+	            }
+	            var signature = signatures[0];
+	            // If overwriting a member property that is null, swallow the error
+	            try {
+	                if (_this[name] == null) {
+	                    lib$3.defineReadOnly(_this, name, _this[signature]);
+	                }
+	            }
+	            catch (e) { }
+	            if (_this.functions[name] == null) {
+	                lib$3.defineReadOnly(_this.functions, name, _this.functions[signature]);
+	            }
+	            if (_this.callStatic[name] == null) {
+	                lib$3.defineReadOnly(_this.callStatic, name, _this.callStatic[signature]);
+	            }
+	            if (_this.populateTransaction[name] == null) {
+	                lib$3.defineReadOnly(_this.populateTransaction, name, _this.populateTransaction[signature]);
+	            }
+	            if (_this.estimateGas[name] == null) {
+	                lib$3.defineReadOnly(_this.estimateGas, name, _this.estimateGas[signature]);
+	            }
+	        });
+	    }
+	    BaseContract.getContractAddress = function (transaction) {
+	        return lib$6.getContractAddress(transaction);
+	    };
+	    BaseContract.getInterface = function (contractInterface) {
+	        if (lib$a.Interface.isInterface(contractInterface)) {
+	            return contractInterface;
+	        }
+	        return new lib$a.Interface(contractInterface);
+	    };
+	    // @TODO: Allow timeout?
+	    BaseContract.prototype.deployed = function () {
+	        return this._deployed();
+	    };
+	    BaseContract.prototype._deployed = function (blockTag) {
+	        var _this = this;
+	        if (!this._deployedPromise) {
+	            // If we were just deployed, we know the transaction we should occur in
+	            if (this.deployTransaction) {
+	                this._deployedPromise = this.deployTransaction.wait().then(function () {
+	                    return _this;
+	                });
+	            }
+	            else {
+	                // @TODO: Once we allow a timeout to be passed in, we will wait
+	                // up to that many blocks for getCode
+	                // Otherwise, poll for our code to be deployed
+	                this._deployedPromise = this.provider.getCode(this.address, blockTag).then(function (code) {
+	                    if (code === "0x") {
+	                        logger.throwError("contract not deployed", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                            contractAddress: _this.address,
+	                            operation: "getDeployed"
+	                        });
+	                    }
+	                    return _this;
+	                });
+	            }
+	        }
+	        return this._deployedPromise;
+	    };
+	    // @TODO:
+	    // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>
+	    // @TODO:
+	    // estimateDeploy(bytecode: string, ...args): Promise<BigNumber>
+	    BaseContract.prototype.fallback = function (overrides) {
+	        var _this = this;
+	        if (!this.signer) {
+	            logger.throwError("sending a transactions require a signer", lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" });
+	        }
+	        var tx = lib$3.shallowCopy(overrides || {});
+	        ["from", "to"].forEach(function (key) {
+	            if (tx[key] == null) {
+	                return;
+	            }
+	            logger.throwError("cannot override " + key, lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
+	        });
+	        tx.to = this.resolvedAddress;
+	        return this.deployed().then(function () {
+	            return _this.signer.sendTransaction(tx);
+	        });
+	    };
+	    // Reconnect to a different signer or provider
+	    BaseContract.prototype.connect = function (signerOrProvider) {
+	        if (typeof (signerOrProvider) === "string") {
+	            signerOrProvider = new lib$c.VoidSigner(signerOrProvider, this.provider);
+	        }
+	        var contract = new (this.constructor)(this.address, this.interface, signerOrProvider);
+	        if (this.deployTransaction) {
+	            lib$3.defineReadOnly(contract, "deployTransaction", this.deployTransaction);
+	        }
+	        return contract;
+	    };
+	    // Re-attach to a different on-chain instance of this contract
+	    BaseContract.prototype.attach = function (addressOrName) {
+	        return new (this.constructor)(addressOrName, this.interface, this.signer || this.provider);
+	    };
+	    BaseContract.isIndexed = function (value) {
+	        return lib$a.Indexed.isIndexed(value);
+	    };
+	    BaseContract.prototype._normalizeRunningEvent = function (runningEvent) {
+	        // Already have an instance of this event running; we can re-use it
+	        if (this._runningEvents[runningEvent.tag]) {
+	            return this._runningEvents[runningEvent.tag];
+	        }
+	        return runningEvent;
+	    };
+	    BaseContract.prototype._getRunningEvent = function (eventName) {
+	        if (typeof (eventName) === "string") {
+	            // Listen for "error" events (if your contract has an error event, include
+	            // the full signature to bypass this special event keyword)
+	            if (eventName === "error") {
+	                return this._normalizeRunningEvent(new ErrorRunningEvent());
+	            }
+	            // Listen for any event that is registered
+	            if (eventName === "event") {
+	                return this._normalizeRunningEvent(new RunningEvent("event", null));
+	            }
+	            // Listen for any event
+	            if (eventName === "*") {
+	                return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
+	            }
+	            // Get the event Fragment (throws if ambiguous/unknown event)
+	            var fragment = this.interface.getEvent(eventName);
+	            return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
+	        }
+	        // We have topics to filter by...
+	        if (eventName.topics && eventName.topics.length > 0) {
+	            // Is it a known topichash? (throws if no matching topichash)
+	            try {
+	                var topic = eventName.topics[0];
+	                if (typeof (topic) !== "string") {
+	                    throw new Error("invalid topic"); // @TODO: May happen for anonymous events
+	                }
+	                var fragment = this.interface.getEvent(topic);
+	                return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
+	            }
+	            catch (error) { }
+	            // Filter by the unknown topichash
+	            var filter = {
+	                address: this.address,
+	                topics: eventName.topics
+	            };
+	            return this._normalizeRunningEvent(new RunningEvent(getEventTag(filter), filter));
+	        }
+	        return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
+	    };
+	    BaseContract.prototype._checkRunningEvents = function (runningEvent) {
+	        if (runningEvent.listenerCount() === 0) {
+	            delete this._runningEvents[runningEvent.tag];
+	            // If we have a poller for this, remove it
+	            var emit = this._wrappedEmits[runningEvent.tag];
+	            if (emit) {
+	                this.provider.off(runningEvent.filter, emit);
+	                delete this._wrappedEmits[runningEvent.tag];
+	            }
+	        }
+	    };
+	    // Subclasses can override this to gracefully recover
+	    // from parse errors if they wish
+	    BaseContract.prototype._wrapEvent = function (runningEvent, log, listener) {
+	        var _this = this;
+	        var event = lib$3.deepCopy(log);
+	        event.removeListener = function () {
+	            if (!listener) {
+	                return;
+	            }
+	            runningEvent.removeListener(listener);
+	            _this._checkRunningEvents(runningEvent);
+	        };
+	        event.getBlock = function () { return _this.provider.getBlock(log.blockHash); };
+	        event.getTransaction = function () { return _this.provider.getTransaction(log.transactionHash); };
+	        event.getTransactionReceipt = function () { return _this.provider.getTransactionReceipt(log.transactionHash); };
+	        // This may throw if the topics and data mismatch the signature
+	        runningEvent.prepareEvent(event);
+	        return event;
+	    };
+	    BaseContract.prototype._addEventListener = function (runningEvent, listener, once) {
+	        var _this = this;
+	        if (!this.provider) {
+	            logger.throwError("events require a provider or a signer with a provider", lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: "once" });
+	        }
+	        runningEvent.addListener(listener, once);
+	        // Track this running event and its listeners (may already be there; but no hard in updating)
+	        this._runningEvents[runningEvent.tag] = runningEvent;
+	        // If we are not polling the provider, start polling
+	        if (!this._wrappedEmits[runningEvent.tag]) {
+	            var wrappedEmit = function (log) {
+	                var event = _this._wrapEvent(runningEvent, log, listener);
+	                // Try to emit the result for the parameterized event...
+	                if (event.decodeError == null) {
+	                    try {
+	                        var args = runningEvent.getEmit(event);
+	                        _this.emit.apply(_this, __spreadArray([runningEvent.filter], args));
+	                    }
+	                    catch (error) {
+	                        event.decodeError = error.error;
+	                    }
+	                }
+	                // Always emit "event" for fragment-base events
+	                if (runningEvent.filter != null) {
+	                    _this.emit("event", event);
+	                }
+	                // Emit "error" if there was an error
+	                if (event.decodeError != null) {
+	                    _this.emit("error", event.decodeError, event);
+	                }
+	            };
+	            this._wrappedEmits[runningEvent.tag] = wrappedEmit;
+	            // Special events, like "error" do not have a filter
+	            if (runningEvent.filter != null) {
+	                this.provider.on(runningEvent.filter, wrappedEmit);
+	            }
+	        }
+	    };
+	    BaseContract.prototype.queryFilter = function (event, fromBlockOrBlockhash, toBlock) {
+	        var _this = this;
+	        var runningEvent = this._getRunningEvent(event);
+	        var filter = lib$3.shallowCopy(runningEvent.filter);
+	        if (typeof (fromBlockOrBlockhash) === "string" && lib$1.isHexString(fromBlockOrBlockhash, 32)) {
+	            if (toBlock != null) {
+	                logger.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
+	            }
+	            filter.blockHash = fromBlockOrBlockhash;
+	        }
+	        else {
+	            filter.fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash : 0);
+	            filter.toBlock = ((toBlock != null) ? toBlock : "latest");
+	        }
+	        return this.provider.getLogs(filter).then(function (logs) {
+	            return logs.map(function (log) { return _this._wrapEvent(runningEvent, log, null); });
+	        });
+	    };
+	    BaseContract.prototype.on = function (event, listener) {
+	        this._addEventListener(this._getRunningEvent(event), listener, false);
+	        return this;
+	    };
+	    BaseContract.prototype.once = function (event, listener) {
+	        this._addEventListener(this._getRunningEvent(event), listener, true);
+	        return this;
+	    };
+	    BaseContract.prototype.emit = function (eventName) {
+	        var args = [];
+	        for (var _i = 1; _i < arguments.length; _i++) {
+	            args[_i - 1] = arguments[_i];
+	        }
+	        if (!this.provider) {
+	            return false;
+	        }
+	        var runningEvent = this._getRunningEvent(eventName);
+	        var result = (runningEvent.run(args) > 0);
+	        // May have drained all the "once" events; check for living events
+	        this._checkRunningEvents(runningEvent);
+	        return result;
+	    };
+	    BaseContract.prototype.listenerCount = function (eventName) {
+	        var _this = this;
+	        if (!this.provider) {
+	            return 0;
+	        }
+	        if (eventName == null) {
+	            return Object.keys(this._runningEvents).reduce(function (accum, key) {
+	                return accum + _this._runningEvents[key].listenerCount();
+	            }, 0);
+	        }
+	        return this._getRunningEvent(eventName).listenerCount();
+	    };
+	    BaseContract.prototype.listeners = function (eventName) {
+	        if (!this.provider) {
+	            return [];
+	        }
+	        if (eventName == null) {
+	            var result_1 = [];
+	            for (var tag in this._runningEvents) {
+	                this._runningEvents[tag].listeners().forEach(function (listener) {
+	                    result_1.push(listener);
+	                });
+	            }
+	            return result_1;
+	        }
+	        return this._getRunningEvent(eventName).listeners();
+	    };
+	    BaseContract.prototype.removeAllListeners = function (eventName) {
+	        if (!this.provider) {
+	            return this;
+	        }
+	        if (eventName == null) {
+	            for (var tag in this._runningEvents) {
+	                var runningEvent_1 = this._runningEvents[tag];
+	                runningEvent_1.removeAllListeners();
+	                this._checkRunningEvents(runningEvent_1);
+	            }
+	            return this;
+	        }
+	        // Delete any listeners
+	        var runningEvent = this._getRunningEvent(eventName);
+	        runningEvent.removeAllListeners();
+	        this._checkRunningEvents(runningEvent);
+	        return this;
+	    };
+	    BaseContract.prototype.off = function (eventName, listener) {
+	        if (!this.provider) {
+	            return this;
+	        }
+	        var runningEvent = this._getRunningEvent(eventName);
+	        runningEvent.removeListener(listener);
+	        this._checkRunningEvents(runningEvent);
+	        return this;
+	    };
+	    BaseContract.prototype.removeListener = function (eventName, listener) {
+	        return this.off(eventName, listener);
+	    };
+	    return BaseContract;
+	}());
+	exports.BaseContract = BaseContract;
+	var Contract = /** @class */ (function (_super) {
+	    __extends(Contract, _super);
+	    function Contract() {
+	        return _super !== null && _super.apply(this, arguments) || this;
+	    }
+	    return Contract;
+	}(BaseContract));
+	exports.Contract = Contract;
+	var ContractFactory = /** @class */ (function () {
+	    function ContractFactory(contractInterface, bytecode, signer) {
+	        var _newTarget = this.constructor;
+	        var bytecodeHex = null;
+	        if (typeof (bytecode) === "string") {
+	            bytecodeHex = bytecode;
+	        }
+	        else if (lib$1.isBytes(bytecode)) {
+	            bytecodeHex = lib$1.hexlify(bytecode);
+	        }
+	        else if (bytecode && typeof (bytecode.object) === "string") {
+	            // Allow the bytecode object from the Solidity compiler
+	            bytecodeHex = bytecode.object;
+	        }
+	        else {
+	            // Crash in the next verification step
+	            bytecodeHex = "!";
+	        }
+	        // Make sure it is 0x prefixed
+	        if (bytecodeHex.substring(0, 2) !== "0x") {
+	            bytecodeHex = "0x" + bytecodeHex;
+	        }
+	        // Make sure the final result is valid bytecode
+	        if (!lib$1.isHexString(bytecodeHex) || (bytecodeHex.length % 2)) {
+	            logger.throwArgumentError("invalid bytecode", "bytecode", bytecode);
+	        }
+	        // If we have a signer, make sure it is valid
+	        if (signer && !lib$c.Signer.isSigner(signer)) {
+	            logger.throwArgumentError("invalid signer", "signer", signer);
+	        }
+	        lib$3.defineReadOnly(this, "bytecode", bytecodeHex);
+	        lib$3.defineReadOnly(this, "interface", lib$3.getStatic((_newTarget), "getInterface")(contractInterface));
+	        lib$3.defineReadOnly(this, "signer", signer || null);
+	    }
+	    // @TODO: Future; rename to populteTransaction?
+	    ContractFactory.prototype.getDeployTransaction = function () {
+	        var args = [];
+	        for (var _i = 0; _i < arguments.length; _i++) {
+	            args[_i] = arguments[_i];
+	        }
+	        var tx = {};
+	        // If we have 1 additional argument, we allow transaction overrides
+	        if (args.length === this.interface.deploy.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
+	            tx = lib$3.shallowCopy(args.pop());
+	            for (var key in tx) {
+	                if (!allowedTransactionKeys[key]) {
+	                    throw new Error("unknown transaction override " + key);
+	                }
+	            }
+	        }
+	        // Do not allow these to be overridden in a deployment transaction
+	        ["data", "from", "to"].forEach(function (key) {
+	            if (tx[key] == null) {
+	                return;
+	            }
+	            logger.throwError("cannot override " + key, lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
+	        });
+	        // Make sure the call matches the constructor signature
+	        logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
+	        // Set the data to the bytecode + the encoded constructor arguments
+	        tx.data = lib$1.hexlify(lib$1.concat([
+	            this.bytecode,
+	            this.interface.encodeDeploy(args)
+	        ]));
+	        return tx;
+	    };
+	    ContractFactory.prototype.deploy = function () {
+	        var args = [];
+	        for (var _i = 0; _i < arguments.length; _i++) {
+	            args[_i] = arguments[_i];
+	        }
+	        return __awaiter(this, void 0, void 0, function () {
+	            var overrides, params, unsignedTx, tx, address, contract;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        overrides = {};
+	                        // If 1 extra parameter was passed in, it contains overrides
+	                        if (args.length === this.interface.deploy.inputs.length + 1) {
+	                            overrides = args.pop();
+	                        }
+	                        // Make sure the call matches the constructor signature
+	                        logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
+	                        return [4 /*yield*/, resolveAddresses(this.signer, args, this.interface.deploy.inputs)];
+	                    case 1:
+	                        params = _a.sent();
+	                        params.push(overrides);
+	                        unsignedTx = this.getDeployTransaction.apply(this, params);
+	                        return [4 /*yield*/, this.signer.sendTransaction(unsignedTx)];
+	                    case 2:
+	                        tx = _a.sent();
+	                        address = lib$3.getStatic(this.constructor, "getContractAddress")(tx);
+	                        contract = lib$3.getStatic(this.constructor, "getContract")(address, this.interface, this.signer);
+	                        lib$3.defineReadOnly(contract, "deployTransaction", tx);
+	                        return [2 /*return*/, contract];
+	                }
+	            });
+	        });
+	    };
+	    ContractFactory.prototype.attach = function (address) {
+	        return (this.constructor).getContract(address, this.interface, this.signer);
+	    };
+	    ContractFactory.prototype.connect = function (signer) {
+	        return new (this.constructor)(this.interface, this.bytecode, signer);
+	    };
+	    ContractFactory.fromSolidity = function (compilerOutput, signer) {
+	        if (compilerOutput == null) {
+	            logger.throwError("missing compiler output", lib.Logger.errors.MISSING_ARGUMENT, { argument: "compilerOutput" });
+	        }
+	        if (typeof (compilerOutput) === "string") {
+	            compilerOutput = JSON.parse(compilerOutput);
+	        }
+	        var abi = compilerOutput.abi;
+	        var bytecode = null;
+	        if (compilerOutput.bytecode) {
+	            bytecode = compilerOutput.bytecode;
+	        }
+	        else if (compilerOutput.evm && compilerOutput.evm.bytecode) {
+	            bytecode = compilerOutput.evm.bytecode;
+	        }
+	        return new this(abi, bytecode, signer);
+	    };
+	    ContractFactory.getInterface = function (contractInterface) {
+	        return Contract.getInterface(contractInterface);
+	    };
+	    ContractFactory.getContractAddress = function (tx) {
+	        return lib$6.getContractAddress(tx);
+	    };
+	    ContractFactory.getContract = function (address, contractInterface, signer) {
+	        return new Contract(address, contractInterface, signer);
+	    };
+	    return ContractFactory;
+	}());
+	exports.ContractFactory = ContractFactory;
+
+	});
+
+	var index$f = /*@__PURE__*/getDefaultExportFromCjs(lib$f);
+
+	var lib$g = createCommonjsModule(function (module, exports) {
+	"use strict";
+	/**
+	 * var basex = require("base-x");
+	 *
+	 * This implementation is heavily based on base-x. The main reason to
+	 * deviate was to prevent the dependency of Buffer.
+	 *
+	 * Contributors:
+	 *
+	 * base-x encoding
+	 * Forked from https://github.com/cryptocoinjs/bs58
+	 * Originally written by Mike Hearn for BitcoinJ
+	 * Copyright (c) 2011 Google Inc
+	 * Ported to JavaScript by Stefan Thomas
+	 * Merged Buffer refactorings from base58-native by Stephen Pair
+	 * Copyright (c) 2013 BitPay Inc
+	 *
+	 * The MIT License (MIT)
+	 *
+	 * Copyright base-x contributors (c) 2016
+	 *
+	 * Permission is hereby granted, free of charge, to any person obtaining a
+	 * copy of this software and associated documentation files (the "Software"),
+	 * to deal in the Software without restriction, including without limitation
+	 * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+	 * and/or sell copies of the Software, and to permit persons to whom the
+	 * Software is furnished to do so, subject to the following conditions:
+	 *
+	 * The above copyright notice and this permission notice shall be included in
+	 * all copies or substantial portions of the Software.
+
+	 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+	 * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+	 * IN THE SOFTWARE.
+	 *
+	 */
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Base58 = exports.Base32 = exports.BaseX = void 0;
+
+
+	var BaseX = /** @class */ (function () {
+	    function BaseX(alphabet) {
+	        lib$3.defineReadOnly(this, "alphabet", alphabet);
+	        lib$3.defineReadOnly(this, "base", alphabet.length);
+	        lib$3.defineReadOnly(this, "_alphabetMap", {});
+	        lib$3.defineReadOnly(this, "_leader", alphabet.charAt(0));
+	        // pre-compute lookup table
+	        for (var i = 0; i < alphabet.length; i++) {
+	            this._alphabetMap[alphabet.charAt(i)] = i;
+	        }
+	    }
+	    BaseX.prototype.encode = function (value) {
+	        var source = lib$1.arrayify(value);
+	        if (source.length === 0) {
+	            return "";
+	        }
+	        var digits = [0];
+	        for (var i = 0; i < source.length; ++i) {
+	            var carry = source[i];
+	            for (var j = 0; j < digits.length; ++j) {
+	                carry += digits[j] << 8;
+	                digits[j] = carry % this.base;
+	                carry = (carry / this.base) | 0;
+	            }
+	            while (carry > 0) {
+	                digits.push(carry % this.base);
+	                carry = (carry / this.base) | 0;
+	            }
+	        }
+	        var string = "";
+	        // deal with leading zeros
+	        for (var k = 0; source[k] === 0 && k < source.length - 1; ++k) {
+	            string += this._leader;
+	        }
+	        // convert digits to a string
+	        for (var q = digits.length - 1; q >= 0; --q) {
+	            string += this.alphabet[digits[q]];
+	        }
+	        return string;
+	    };
+	    BaseX.prototype.decode = function (value) {
+	        if (typeof (value) !== "string") {
+	            throw new TypeError("Expected String");
+	        }
+	        var bytes = [];
+	        if (value.length === 0) {
+	            return new Uint8Array(bytes);
+	        }
+	        bytes.push(0);
+	        for (var i = 0; i < value.length; i++) {
+	            var byte = this._alphabetMap[value[i]];
+	            if (byte === undefined) {
+	                throw new Error("Non-base" + this.base + " character");
+	            }
+	            var carry = byte;
+	            for (var j = 0; j < bytes.length; ++j) {
+	                carry += bytes[j] * this.base;
+	                bytes[j] = carry & 0xff;
+	                carry >>= 8;
+	            }
+	            while (carry > 0) {
+	                bytes.push(carry & 0xff);
+	                carry >>= 8;
+	            }
+	        }
+	        // deal with leading zeros
+	        for (var k = 0; value[k] === this._leader && k < value.length - 1; ++k) {
+	            bytes.push(0);
+	        }
+	        return lib$1.arrayify(new Uint8Array(bytes.reverse()));
+	    };
+	    return BaseX;
+	}());
+	exports.BaseX = BaseX;
+	var Base32 = new BaseX("abcdefghijklmnopqrstuvwxyz234567");
+	exports.Base32 = Base32;
+	var Base58 = new BaseX("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz");
+	exports.Base58 = Base58;
+	//console.log(Base58.decode("Qmd2V777o5XvJbYMeMb8k2nU5f8d3ciUQ5YpYuWhzv8iDj"))
+	//console.log(Base58.encode(Base58.decode("Qmd2V777o5XvJbYMeMb8k2nU5f8d3ciUQ5YpYuWhzv8iDj")))
+
+	});
+
+	var index$g = /*@__PURE__*/getDefaultExportFromCjs(lib$g);
+
+	var types = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.SupportedAlgorithm = void 0;
+	var SupportedAlgorithm;
+	(function (SupportedAlgorithm) {
+	    SupportedAlgorithm["sha256"] = "sha256";
+	    SupportedAlgorithm["sha512"] = "sha512";
+	})(SupportedAlgorithm = exports.SupportedAlgorithm || (exports.SupportedAlgorithm = {}));
+	;
+
+	});
+
+	var types$1 = /*@__PURE__*/getDefaultExportFromCjs(types);
+
+	var _version$s = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.version = void 0;
+	exports.version = "sha2/5.1.0";
+
+	});
+
+	var _version$t = /*@__PURE__*/getDefaultExportFromCjs(_version$s);
+
+	var browserSha2 = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __importDefault = (commonjsGlobal && commonjsGlobal.__importDefault) || function (mod) {
+	    return (mod && mod.__esModule) ? mod : { "default": mod };
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.computeHmac = exports.sha512 = exports.sha256 = exports.ripemd160 = void 0;
+	var hash_js_1 = __importDefault(hash_1);
+	//const _ripemd160 = _hash.ripemd160;
+
+
+
+
+	var logger = new lib.Logger(_version$s.version);
+	function ripemd160(data) {
+	    return "0x" + (hash_js_1.default.ripemd160().update(lib$1.arrayify(data)).digest("hex"));
+	}
+	exports.ripemd160 = ripemd160;
+	function sha256(data) {
+	    return "0x" + (hash_js_1.default.sha256().update(lib$1.arrayify(data)).digest("hex"));
+	}
+	exports.sha256 = sha256;
+	function sha512(data) {
+	    return "0x" + (hash_js_1.default.sha512().update(lib$1.arrayify(data)).digest("hex"));
+	}
+	exports.sha512 = sha512;
+	function computeHmac(algorithm, key, data) {
+	    if (!types.SupportedAlgorithm[algorithm]) {
+	        logger.throwError("unsupported algorithm " + algorithm, lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	            operation: "hmac",
+	            algorithm: algorithm
+	        });
+	    }
+	    return "0x" + hash_js_1.default.hmac(hash_js_1.default[algorithm], lib$1.arrayify(key)).update(lib$1.arrayify(data)).digest("hex");
+	}
+	exports.computeHmac = computeHmac;
+
+	});
+
+	var browserSha2$1 = /*@__PURE__*/getDefaultExportFromCjs(browserSha2);
+
+	var lib$h = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.SupportedAlgorithm = exports.sha512 = exports.sha256 = exports.ripemd160 = exports.computeHmac = void 0;
+
+	Object.defineProperty(exports, "computeHmac", { enumerable: true, get: function () { return browserSha2.computeHmac; } });
+	Object.defineProperty(exports, "ripemd160", { enumerable: true, get: function () { return browserSha2.ripemd160; } });
+	Object.defineProperty(exports, "sha256", { enumerable: true, get: function () { return browserSha2.sha256; } });
+	Object.defineProperty(exports, "sha512", { enumerable: true, get: function () { return browserSha2.sha512; } });
+
+	Object.defineProperty(exports, "SupportedAlgorithm", { enumerable: true, get: function () { return types.SupportedAlgorithm; } });
+
+	});
+
+	var index$h = /*@__PURE__*/getDefaultExportFromCjs(lib$h);
+
+	var browserPbkdf2 = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.pbkdf2 = void 0;
+
+
+	function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
+	    password = lib$1.arrayify(password);
+	    salt = lib$1.arrayify(salt);
+	    var hLen;
+	    var l = 1;
+	    var DK = new Uint8Array(keylen);
+	    var block1 = new Uint8Array(salt.length + 4);
+	    block1.set(salt);
+	    //salt.copy(block1, 0, 0, salt.length)
+	    var r;
+	    var T;
+	    for (var i = 1; i <= l; i++) {
+	        //block1.writeUInt32BE(i, salt.length)
+	        block1[salt.length] = (i >> 24) & 0xff;
+	        block1[salt.length + 1] = (i >> 16) & 0xff;
+	        block1[salt.length + 2] = (i >> 8) & 0xff;
+	        block1[salt.length + 3] = i & 0xff;
+	        //let U = createHmac(password).update(block1).digest();
+	        var U = lib$1.arrayify(lib$h.computeHmac(hashAlgorithm, password, block1));
+	        if (!hLen) {
+	            hLen = U.length;
+	            T = new Uint8Array(hLen);
+	            l = Math.ceil(keylen / hLen);
+	            r = keylen - (l - 1) * hLen;
+	        }
+	        //U.copy(T, 0, 0, hLen)
+	        T.set(U);
+	        for (var j = 1; j < iterations; j++) {
+	            //U = createHmac(password).update(U).digest();
+	            U = lib$1.arrayify(lib$h.computeHmac(hashAlgorithm, password, U));
+	            for (var k = 0; k < hLen; k++)
+	                T[k] ^= U[k];
+	        }
+	        var destPos = (i - 1) * hLen;
+	        var len = (i === l ? r : hLen);
+	        //T.copy(DK, destPos, 0, len)
+	        DK.set(lib$1.arrayify(T).slice(0, len), destPos);
+	    }
+	    return lib$1.hexlify(DK);
+	}
+	exports.pbkdf2 = pbkdf2;
+
+	});
+
+	var browserPbkdf2$1 = /*@__PURE__*/getDefaultExportFromCjs(browserPbkdf2);
+
+	var lib$i = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.pbkdf2 = void 0;
+
+	Object.defineProperty(exports, "pbkdf2", { enumerable: true, get: function () { return browserPbkdf2.pbkdf2; } });
 
 	});
 
@@ -15465,7 +15642,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "wordlists/5.0.10";
+	exports.version = "wordlists/5.1.0";
 
 	});
 
@@ -16261,7 +16438,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "hdnode/5.0.10";
+	exports.version = "hdnode/5.1.0";
 
 	});
 
@@ -16300,7 +16477,7 @@
 	    return lib$1.hexZeroPad(lib$1.hexlify(value), 32);
 	}
 	function base58check(data) {
-	    return lib$e.Base58.encode(lib$1.concat([data, lib$1.hexDataSlice(lib$f.sha256(lib$f.sha256(data)), 0, 4)]));
+	    return lib$g.Base58.encode(lib$1.concat([data, lib$1.hexDataSlice(lib$h.sha256(lib$h.sha256(data)), 0, 4)]));
 	}
 	function getWordlist(wordlist) {
 	    if (wordlist == null) {
@@ -16334,7 +16511,7 @@
 	            throw new Error("HDNode constructor cannot be called directly");
 	        }
 	        if (privateKey) {
-	            var signingKey = new lib$h.SigningKey(privateKey);
+	            var signingKey = new lib$d.SigningKey(privateKey);
 	            lib$3.defineReadOnly(this, "privateKey", signingKey.privateKey);
 	            lib$3.defineReadOnly(this, "publicKey", signingKey.compressedPublicKey);
 	        }
@@ -16343,8 +16520,8 @@
 	            lib$3.defineReadOnly(this, "publicKey", lib$1.hexlify(publicKey));
 	        }
 	        lib$3.defineReadOnly(this, "parentFingerprint", parentFingerprint);
-	        lib$3.defineReadOnly(this, "fingerprint", lib$1.hexDataSlice(lib$f.ripemd160(lib$f.sha256(this.publicKey)), 0, 4));
-	        lib$3.defineReadOnly(this, "address", lib$i.computeAddress(this.publicKey));
+	        lib$3.defineReadOnly(this, "fingerprint", lib$1.hexDataSlice(lib$h.ripemd160(lib$h.sha256(this.publicKey)), 0, 4));
+	        lib$3.defineReadOnly(this, "address", lib$e.computeAddress(this.publicKey));
 	        lib$3.defineReadOnly(this, "chainCode", chainCode);
 	        lib$3.defineReadOnly(this, "index", index);
 	        lib$3.defineReadOnly(this, "depth", depth);
@@ -16418,7 +16595,7 @@
 	        for (var i = 24; i >= 0; i -= 8) {
 	            data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff);
 	        }
-	        var I = lib$1.arrayify(lib$f.computeHmac(lib$f.SupportedAlgorithm.sha512, this.chainCode, data));
+	        var I = lib$1.arrayify(lib$h.computeHmac(lib$h.SupportedAlgorithm.sha512, this.chainCode, data));
 	        var IL = I.slice(0, 32);
 	        var IR = I.slice(32);
 	        // The private key
@@ -16429,7 +16606,7 @@
 	            ki = bytes32(lib$2.BigNumber.from(IL).add(this.privateKey).mod(N));
 	        }
 	        else {
-	            var ek = new lib$h.SigningKey(lib$1.hexlify(IL));
+	            var ek = new lib$d.SigningKey(lib$1.hexlify(IL));
 	            Ki = ek._addPoint(this.publicKey);
 	        }
 	        var mnemonicOrPath = path;
@@ -16479,7 +16656,7 @@
 	        if (seedArray.length < 16 || seedArray.length > 64) {
 	            throw new Error("invalid seed");
 	        }
-	        var I = lib$1.arrayify(lib$f.computeHmac(lib$f.SupportedAlgorithm.sha512, MasterSecret, seedArray));
+	        var I = lib$1.arrayify(lib$h.computeHmac(lib$h.SupportedAlgorithm.sha512, MasterSecret, seedArray));
 	        return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic);
 	    };
 	    HDNode.fromMnemonic = function (mnemonic, password, wordlist) {
@@ -16497,7 +16674,7 @@
 	        return HDNode._fromSeed(seed, null);
 	    };
 	    HDNode.fromExtendedKey = function (extendedKey) {
-	        var bytes = lib$e.Base58.decode(extendedKey);
+	        var bytes = lib$g.Base58.decode(extendedKey);
 	        if (bytes.length !== 82 || base58check(bytes.slice(0, 78)) !== extendedKey) {
 	            logger.throwArgumentError("invalid extended key", "extendedKey", "[REDACTED]");
 	        }
@@ -16529,7 +16706,7 @@
 	        password = "";
 	    }
 	    var salt = lib$8.toUtf8Bytes("mnemonic" + password, lib$8.UnicodeNormalizationForm.NFKD);
-	    return lib$g.pbkdf2(lib$8.toUtf8Bytes(mnemonic, lib$8.UnicodeNormalizationForm.NFKD), salt, 2048, 64, "sha512");
+	    return lib$i.pbkdf2(lib$8.toUtf8Bytes(mnemonic, lib$8.UnicodeNormalizationForm.NFKD), salt, 2048, 64, "sha512");
 	}
 	exports.mnemonicToSeed = mnemonicToSeed;
 	function mnemonicToEntropy(mnemonic, wordlist) {
@@ -16556,7 +16733,7 @@
 	    var entropyBits = 32 * words.length / 3;
 	    var checksumBits = words.length / 3;
 	    var checksumMask = getUpperMask(checksumBits);
-	    var checksum = lib$1.arrayify(lib$f.sha256(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
+	    var checksum = lib$1.arrayify(lib$h.sha256(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
 	    if (checksum !== (entropy[entropy.length - 1] & checksumMask)) {
 	        throw new Error("invalid checksum");
 	    }
@@ -16589,7 +16766,7 @@
 	    }
 	    // Compute the checksum bits
 	    var checksumBits = entropy.length / 4;
-	    var checksum = lib$1.arrayify(lib$f.sha256(entropy))[0] & getUpperMask(checksumBits);
+	    var checksum = lib$1.arrayify(lib$h.sha256(entropy))[0] & getUpperMask(checksumBits);
 	    // Shift the checksum into the word indices
 	    indices[indices.length - 1] <<= checksumBits;
 	    indices[indices.length - 1] |= (checksum >> (8 - checksumBits));
@@ -16614,7 +16791,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "random/5.0.9";
+	exports.version = "random/5.1.0";
 
 	});
 
@@ -17510,7 +17687,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "json-wallets/5.0.12";
+	exports.version = "json-wallets/5.1.0";
 
 	});
 
@@ -17646,7 +17823,7 @@
 	    if (!encseed || (encseed.length % 16) !== 0) {
 	        logger.throwArgumentError("invalid encseed", "json", json);
 	    }
-	    var key = lib$1.arrayify(lib$g.pbkdf2(password, password, 2000, 32, "sha256")).slice(0, 16);
+	    var key = lib$1.arrayify(lib$i.pbkdf2(password, password, 2000, 32, "sha256")).slice(0, 16);
 	    var iv = encseed.slice(0, 16);
 	    var encryptedSeed = encseed.slice(16);
 	    // Decrypt the seed
@@ -18331,7 +18508,7 @@
 	        });
 	    }
 	    var mnemonicKey = key.slice(32, 64);
-	    var address = lib$i.computeAddress(privateKey);
+	    var address = lib$e.computeAddress(privateKey);
 	    if (data.address) {
 	        var check = data.address.toLowerCase();
 	        if (check.substring(0, 2) !== "0x") {
@@ -18375,7 +18552,7 @@
 	    return new KeystoreAccount(account);
 	}
 	function pbkdf2Sync(passwordBytes, salt, count, dkLen, prfFunc) {
-	    return lib$1.arrayify(lib$g.pbkdf2(passwordBytes, salt, count, dkLen, prfFunc));
+	    return lib$1.arrayify(lib$i.pbkdf2(passwordBytes, salt, count, dkLen, prfFunc));
 	}
 	function pbkdf2(passwordBytes, salt, count, dkLen, prfFunc) {
 	    return Promise.resolve(pbkdf2Sync(passwordBytes, salt, count, dkLen, prfFunc));
@@ -18454,7 +18631,7 @@
 	function encrypt(account, password, options, progressCallback) {
 	    try {
 	        // Check the address matches the private key
-	        if (lib$6.getAddress(account.address) !== lib$i.computeAddress(account.privateKey)) {
+	        if (lib$6.getAddress(account.address) !== lib$e.computeAddress(account.privateKey)) {
 	            throw new Error("address/privateKey mismatch");
 	        }
 	        // Check the mnemonic (if any) matches the private key
@@ -18656,7 +18833,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "wallet/5.0.12";
+	exports.version = "wallet/5.1.0";
 
 	});
 
@@ -18747,9 +18924,9 @@
 	        logger.checkNew(_newTarget, Wallet);
 	        _this = _super.call(this) || this;
 	        if (isAccount(privateKey)) {
-	            var signingKey_1 = new lib$h.SigningKey(privateKey.privateKey);
+	            var signingKey_1 = new lib$d.SigningKey(privateKey.privateKey);
 	            lib$3.defineReadOnly(_this, "_signingKey", function () { return signingKey_1; });
-	            lib$3.defineReadOnly(_this, "address", lib$i.computeAddress(_this.publicKey));
+	            lib$3.defineReadOnly(_this, "address", lib$e.computeAddress(_this.publicKey));
 	            if (_this.address !== lib$6.getAddress(privateKey.address)) {
 	                logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDACTED]");
 	            }
@@ -18762,7 +18939,7 @@
 	                }); });
 	                var mnemonic = _this.mnemonic;
 	                var node = lib$k.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
-	                if (lib$i.computeAddress(node.privateKey) !== _this.address) {
+	                if (lib$e.computeAddress(node.privateKey) !== _this.address) {
 	                    logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDACTED]");
 	                }
 	            }
@@ -18771,7 +18948,7 @@
 	            }
 	        }
 	        else {
-	            if (lib$h.SigningKey.isSigningKey(privateKey)) {
+	            if (lib$d.SigningKey.isSigningKey(privateKey)) {
 	                /* istanbul ignore if */
 	                if (privateKey.curve !== "secp256k1") {
 	                    logger.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
@@ -18785,11 +18962,11 @@
 	                        privateKey = "0x" + privateKey;
 	                    }
 	                }
-	                var signingKey_2 = new lib$h.SigningKey(privateKey);
+	                var signingKey_2 = new lib$d.SigningKey(privateKey);
 	                lib$3.defineReadOnly(_this, "_signingKey", function () { return signingKey_2; });
 	            }
 	            lib$3.defineReadOnly(_this, "_mnemonic", function () { return null; });
-	            lib$3.defineReadOnly(_this, "address", lib$i.computeAddress(_this.publicKey));
+	            lib$3.defineReadOnly(_this, "address", lib$e.computeAddress(_this.publicKey));
 	        }
 	        /* istanbul ignore if */
 	        if (provider && !lib$b.Provider.isProvider(provider)) {
@@ -18828,8 +19005,8 @@
 	                }
 	                delete tx.from;
 	            }
-	            var signature = _this._signingKey().signDigest(lib$4.keccak256(lib$i.serialize(tx)));
-	            return lib$i.serialize(tx, signature);
+	            var signature = _this._signingKey().signDigest(lib$4.keccak256(lib$e.serialize(tx)));
+	            return lib$e.serialize(tx, signature);
 	        });
 	    };
 	    Wallet.prototype.signMessage = function (message) {
@@ -18906,11 +19083,11 @@
 	}(lib$c.Signer));
 	exports.Wallet = Wallet;
 	function verifyMessage(message, signature) {
-	    return lib$i.recoverAddress(lib$9.hashMessage(message), signature);
+	    return lib$e.recoverAddress(lib$9.hashMessage(message), signature);
 	}
 	exports.verifyMessage = verifyMessage;
 	function verifyTypedData(domain, types, value, signature) {
-	    return lib$i.recoverAddress(lib$9._TypedDataEncoder.hash(domain, types, value), signature);
+	    return lib$e.recoverAddress(lib$9._TypedDataEncoder.hash(domain, types, value), signature);
 	}
 	exports.verifyTypedData = verifyTypedData;
 
@@ -18922,7 +19099,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "networks/5.0.9";
+	exports.version = "networks/5.1.0";
 
 	});
 
@@ -18958,14 +19135,30 @@
 	            catch (error) { }
 	        }
 	        if (providers.AlchemyProvider) {
+	            // These networks are currently faulty on Alchemy as their
+	            // network does not handle the Berlin hardfork, which is
+	            // live on these ones.
+	            // @TODO: This goes away once AlchemyAPI has upgraded their nodes
+	            var skip = ["goerli", "ropsten", "rinkeby"];
 	            try {
-	                providerList.push(new providers.AlchemyProvider(network, options.alchemy));
+	                var provider = new providers.AlchemyProvider(network, options.alchemy);
+	                if (provider.network && skip.indexOf(provider.network.name) === -1) {
+	                    providerList.push(provider);
+	                }
 	            }
 	            catch (error) { }
 	        }
 	        if (providers.PocketProvider) {
+	            // These networks are currently faulty on Alchemy as their
+	            // network does not handle the Berlin hardfork, which is
+	            // live on these ones.
+	            // @TODO: This goes away once Pocket has upgraded their nodes
+	            var skip = ["goerli", "ropsten", "rinkeby"];
 	            try {
-	                providerList.push(new providers.PocketProvider(network));
+	                var provider = new providers.PocketProvider(network);
+	                if (provider.network && skip.indexOf(provider.network.name) === -1) {
+	                    providerList.push(provider);
+	                }
 	            }
 	            catch (error) { }
 	        }
@@ -19193,7 +19386,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "web/5.0.14";
+	exports.version = "web/5.1.0";
 
 	});
 
@@ -19900,7 +20093,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.0.24";
+	exports.version = "providers/5.1.0";
 
 	});
 
@@ -19938,6 +20131,8 @@
 	        var strictData = function (v) { return _this.data(v, true); };
 	        formats.transaction = {
 	            hash: hash,
+	            type: Formatter.allowNull(number, null),
+	            accessList: Formatter.allowNull(this.accessList.bind(this), null),
 	            blockHash: Formatter.allowNull(hash, null),
 	            blockNumber: Formatter.allowNull(number, null),
 	            transactionIndex: Formatter.allowNull(number, null),
@@ -19963,6 +20158,8 @@
 	            to: Formatter.allowNull(address),
 	            value: Formatter.allowNull(bigNumber),
 	            data: Formatter.allowNull(strictData),
+	            type: Formatter.allowNull(number),
+	            accessList: Formatter.allowNull(this.accessList.bind(this), null),
 	        };
 	        formats.receiptLog = {
 	            transactionIndex: number,
@@ -20025,6 +20222,9 @@
 	            logIndex: number,
 	        };
 	        return formats;
+	    };
+	    Formatter.prototype.accessList = function (accessList) {
+	        return lib$e.accessListify(accessList || []);
 	    };
 	    // Requires a BigNumberish that is within the IEEE754 safe integer range; returns a number
 	    // Strict! Used on input.
@@ -20163,28 +20363,9 @@
 	        if (transaction.to == null && transaction.creates == null) {
 	            transaction.creates = this.contractAddress(transaction);
 	        }
-	        // @TODO: use transaction.serialize? Have to add support for including v, r, and s...
-	        /*
-	        if (!transaction.raw) {
-	 
-	             // Very loose providers (e.g. TestRPC) do not provide a signature or raw
-	             if (transaction.v && transaction.r && transaction.s) {
-	                 let raw = [
-	                     stripZeros(hexlify(transaction.nonce)),
-	                     stripZeros(hexlify(transaction.gasPrice)),
-	                     stripZeros(hexlify(transaction.gasLimit)),
-	                     (transaction.to || "0x"),
-	                     stripZeros(hexlify(transaction.value || "0x")),
-	                     hexlify(transaction.data || "0x"),
-	                     stripZeros(hexlify(transaction.v || "0x")),
-	                     stripZeros(hexlify(transaction.r)),
-	                     stripZeros(hexlify(transaction.s)),
-	                 ];
-	 
-	                 transaction.raw = rlpEncode(raw);
-	             }
-	         }
-	         */
+	        if (transaction.type === 1 && transaction.accessList == null) {
+	            transaction.accessList = [];
+	        }
 	        var result = Formatter.check(this.formats.transaction, transaction);
 	        if (transaction.chainId != null) {
 	            var chainId = transaction.chainId;
@@ -20221,7 +20402,7 @@
 	        return result;
 	    };
 	    Formatter.prototype.transaction = function (value) {
-	        return lib$i.parse(value);
+	        return lib$e.parse(value);
 	    };
 	    Formatter.prototype.receiptLog = function (value) {
 	        return Formatter.check(this.formats.receiptLog, value);
@@ -20603,7 +20784,7 @@
 	}
 	// Compute the Base58Check encoded data (checksum is first 4 bytes of sha256d)
 	function base58Encode(data) {
-	    return lib$e.Base58.encode(lib$1.concat([data, lib$1.hexDataSlice(lib$f.sha256(lib$f.sha256(data)), 0, 4)]));
+	    return lib$g.Base58.encode(lib$1.concat([data, lib$1.hexDataSlice(lib$h.sha256(lib$h.sha256(data)), 0, 4)]));
 	}
 	var Resolver = /** @class */ (function () {
 	    function Resolver(provider, address, name) {
@@ -20744,7 +20925,7 @@
 	                        if (ipfs) {
 	                            length_4 = parseInt(ipfs[3], 16);
 	                            if (ipfs[4].length === length_4 * 2) {
-	                                return [2 /*return*/, "ipfs:/\/" + lib$e.Base58.encode("0x" + ipfs[1])];
+	                                return [2 /*return*/, "ipfs:/\/" + lib$g.Base58.encode("0x" + ipfs[1])];
 	                            }
 	                        }
 	                        swarm = hexBytes.match(/^0xe40101fa011b20([0-9a-f]*)$/);
@@ -21581,6 +21762,15 @@
 	                            }
 	                            tx[key] = Promise.resolve(values[key]).then(function (v) { return (v ? lib$2.BigNumber.from(v) : null); });
 	                        });
+	                        ["type"].forEach(function (key) {
+	                            if (values[key] == null) {
+	                                return;
+	                            }
+	                            tx[key] = Promise.resolve(values[key]).then(function (v) { return ((v != null) ? v : null); });
+	                        });
+	                        if (values.accessList) {
+	                            tx.accessList = this.formatter.accessList(values.accessList);
+	                        }
 	                        ["data"].forEach(function (key) {
 	                            if (values[key] == null) {
 	                                return;
@@ -22271,6 +22461,7 @@
 
 
 
+
 	var logger = new lib.Logger(_version$I.version);
 
 	var errorGas = ["call", "estimateGas"];
@@ -22534,7 +22725,8 @@
 	    return UncheckedJsonRpcSigner;
 	}(JsonRpcSigner));
 	var allowedTransactionKeys = {
-	    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
+	    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
+	    type: true, accessList: true
 	};
 	var JsonRpcProvider = /** @class */ (function (_super) {
 	    __extends(JsonRpcProvider, _super);
@@ -22810,7 +23002,7 @@
 	        lib$3.checkProperties(transaction, allowed);
 	        var result = {};
 	        // Some nodes (INFURA ropsten; INFURA mainnet is fine) do not like leading zeros.
-	        ["gasLimit", "gasPrice", "nonce", "value"].forEach(function (key) {
+	        ["gasLimit", "gasPrice", "type", "nonce", "value"].forEach(function (key) {
 	            if (transaction[key] == null) {
 	                return;
 	            }
@@ -22826,6 +23018,9 @@
 	            }
 	            result[key] = lib$1.hexlify(transaction[key]);
 	        });
+	        if (transaction.accessList) {
+	            result["accessList"] = lib$e.accessListify(transaction.accessList);
+	        }
 	        return result;
 	    };
 	    return JsonRpcProvider;
@@ -23676,10 +23871,16 @@
 	        if (transaction[key] == null) {
 	            continue;
 	        }
-	        var value = lib$1.hexlify(transaction[key]);
+	        var value = transaction[key];
 	        // Quantity-types require no leading zero, unless 0
-	        if ({ gasLimit: true, gasPrice: true, nonce: true, value: true }[key]) {
-	            value = lib$1.hexValue(value);
+	        if ({ type: true, gasLimit: true, gasPrice: true, nonce: true, value: true }[key]) {
+	            value = lib$1.hexValue(lib$1.hexlify(value));
+	        }
+	        else if (key === "accessList") {
+	            value = value;
+	        }
+	        else {
+	            value = lib$1.hexlify(value);
 	        }
 	        result[key] = value;
 	    }
@@ -23953,6 +24154,12 @@
 	                        url += apiKey;
 	                        return [2 /*return*/, get(url, null)];
 	                    case 11:
+	                        if (params.transaction.type != null) {
+	                            logger.throwError("Etherscan does not currently support Berlin", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                                operation: "call",
+	                                transaction: params.transaction
+	                            });
+	                        }
 	                        if (params.blockTag !== "latest") {
 	                            throw new Error("EtherscanProvider does not support blockTag for call");
 	                        }
@@ -23969,6 +24176,12 @@
 	                        error_1 = _c.sent();
 	                        return [2 /*return*/, checkError("call", error_1, params.transaction)];
 	                    case 15:
+	                        if (params.transaction.type != null) {
+	                            logger.throwError("Etherscan does not currently support Berlin", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                                operation: "estimateGas",
+	                                transaction: params.transaction
+	                            });
+	                        }
 	                        postData = getTransactionPostData(params.transaction);
 	                        postData.module = "proxy";
 	                        postData.action = "eth_estimateGas";
@@ -25489,7 +25702,7 @@
 	}
 	exports.keccak256 = keccak256;
 	function sha256(types, values) {
-	    return lib$f.sha256(pack(types, values));
+	    return lib$h.sha256(pack(types, values));
 	}
 	exports.sha256 = sha256;
 
@@ -25501,7 +25714,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "units/5.0.11";
+	exports.version = "units/5.1.0";
 
 	});
 
@@ -25626,7 +25839,7 @@
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.hashMessage = exports.parseBytes32String = exports.formatBytes32String = exports.Utf8ErrorFuncs = exports.toUtf8String = exports.toUtf8CodePoints = exports.toUtf8Bytes = exports._toEscapedUtf8String = exports.nameprep = exports.hexDataSlice = exports.hexDataLength = exports.hexZeroPad = exports.hexValue = exports.hexStripZeros = exports.hexConcat = exports.isHexString = exports.hexlify = exports.base64 = exports.base58 = exports.TransactionDescription = exports.LogDescription = exports.Interface = exports.SigningKey = exports.HDNode = exports.defaultPath = exports.isBytesLike = exports.isBytes = exports.zeroPad = exports.stripZeros = exports.concat = exports.arrayify = exports.shallowCopy = exports.resolveProperties = exports.getStatic = exports.defineReadOnly = exports.deepCopy = exports.checkProperties = exports.poll = exports.fetchJson = exports._fetchData = exports.RLP = exports.Logger = exports.checkResultErrors = exports.FormatTypes = exports.ParamType = exports.FunctionFragment = exports.EventFragment = exports.Fragment = exports.defaultAbiCoder = exports.AbiCoder = void 0;
-	exports.Indexed = exports.Utf8ErrorReason = exports.UnicodeNormalizationForm = exports.SupportedAlgorithm = exports.mnemonicToSeed = exports.isValidMnemonic = exports.entropyToMnemonic = exports.mnemonicToEntropy = exports.verifyTypedData = exports.verifyMessage = exports.recoverPublicKey = exports.computePublicKey = exports.recoverAddress = exports.computeAddress = exports.getJsonWalletAddress = exports.serializeTransaction = exports.parseTransaction = exports.joinSignature = exports.splitSignature = exports.soliditySha256 = exports.solidityKeccak256 = exports.solidityPack = exports.shuffled = exports.randomBytes = exports.sha512 = exports.sha256 = exports.ripemd160 = exports.keccak256 = exports.computeHmac = exports.commify = exports.parseUnits = exports.formatUnits = exports.parseEther = exports.formatEther = exports.isAddress = exports.getCreate2Address = exports.getContractAddress = exports.getIcapAddress = exports.getAddress = exports._TypedDataEncoder = exports.id = exports.isValidName = exports.namehash = void 0;
+	exports.Indexed = exports.Utf8ErrorReason = exports.UnicodeNormalizationForm = exports.SupportedAlgorithm = exports.mnemonicToSeed = exports.isValidMnemonic = exports.entropyToMnemonic = exports.mnemonicToEntropy = exports.verifyTypedData = exports.verifyMessage = exports.recoverPublicKey = exports.computePublicKey = exports.recoverAddress = exports.computeAddress = exports.getJsonWalletAddress = exports.serializeTransaction = exports.parseTransaction = exports.accessListify = exports.joinSignature = exports.splitSignature = exports.soliditySha256 = exports.solidityKeccak256 = exports.solidityPack = exports.shuffled = exports.randomBytes = exports.sha512 = exports.sha256 = exports.ripemd160 = exports.keccak256 = exports.computeHmac = exports.commify = exports.parseUnits = exports.formatUnits = exports.parseEther = exports.formatEther = exports.isAddress = exports.getCreate2Address = exports.getContractAddress = exports.getIcapAddress = exports.getAddress = exports._TypedDataEncoder = exports.id = exports.isValidName = exports.namehash = void 0;
 
 	Object.defineProperty(exports, "AbiCoder", { enumerable: true, get: function () { return lib$a.AbiCoder; } });
 	Object.defineProperty(exports, "checkResultErrors", { enumerable: true, get: function () { return lib$a.checkResultErrors; } });
@@ -25649,7 +25862,7 @@
 	var base64 = __importStar(lib$p);
 	exports.base64 = base64;
 
-	Object.defineProperty(exports, "base58", { enumerable: true, get: function () { return lib$e.Base58; } });
+	Object.defineProperty(exports, "base58", { enumerable: true, get: function () { return lib$g.Base58; } });
 
 	Object.defineProperty(exports, "arrayify", { enumerable: true, get: function () { return lib$1.arrayify; } });
 	Object.defineProperty(exports, "concat", { enumerable: true, get: function () { return lib$1.concat; } });
@@ -25687,10 +25900,10 @@
 
 	Object.defineProperty(exports, "Logger", { enumerable: true, get: function () { return lib.Logger; } });
 
-	Object.defineProperty(exports, "computeHmac", { enumerable: true, get: function () { return lib$f.computeHmac; } });
-	Object.defineProperty(exports, "ripemd160", { enumerable: true, get: function () { return lib$f.ripemd160; } });
-	Object.defineProperty(exports, "sha256", { enumerable: true, get: function () { return lib$f.sha256; } });
-	Object.defineProperty(exports, "sha512", { enumerable: true, get: function () { return lib$f.sha512; } });
+	Object.defineProperty(exports, "computeHmac", { enumerable: true, get: function () { return lib$h.computeHmac; } });
+	Object.defineProperty(exports, "ripemd160", { enumerable: true, get: function () { return lib$h.ripemd160; } });
+	Object.defineProperty(exports, "sha256", { enumerable: true, get: function () { return lib$h.sha256; } });
+	Object.defineProperty(exports, "sha512", { enumerable: true, get: function () { return lib$h.sha512; } });
 
 	Object.defineProperty(exports, "solidityKeccak256", { enumerable: true, get: function () { return lib$s.keccak256; } });
 	Object.defineProperty(exports, "solidityPack", { enumerable: true, get: function () { return lib$s.pack; } });
@@ -25708,9 +25921,9 @@
 	var RLP = __importStar(lib$5);
 	exports.RLP = RLP;
 
-	Object.defineProperty(exports, "computePublicKey", { enumerable: true, get: function () { return lib$h.computePublicKey; } });
-	Object.defineProperty(exports, "recoverPublicKey", { enumerable: true, get: function () { return lib$h.recoverPublicKey; } });
-	Object.defineProperty(exports, "SigningKey", { enumerable: true, get: function () { return lib$h.SigningKey; } });
+	Object.defineProperty(exports, "computePublicKey", { enumerable: true, get: function () { return lib$d.computePublicKey; } });
+	Object.defineProperty(exports, "recoverPublicKey", { enumerable: true, get: function () { return lib$d.recoverPublicKey; } });
+	Object.defineProperty(exports, "SigningKey", { enumerable: true, get: function () { return lib$d.SigningKey; } });
 
 	Object.defineProperty(exports, "formatBytes32String", { enumerable: true, get: function () { return lib$8.formatBytes32String; } });
 	Object.defineProperty(exports, "nameprep", { enumerable: true, get: function () { return lib$8.nameprep; } });
@@ -25721,10 +25934,11 @@
 	Object.defineProperty(exports, "toUtf8String", { enumerable: true, get: function () { return lib$8.toUtf8String; } });
 	Object.defineProperty(exports, "Utf8ErrorFuncs", { enumerable: true, get: function () { return lib$8.Utf8ErrorFuncs; } });
 
-	Object.defineProperty(exports, "computeAddress", { enumerable: true, get: function () { return lib$i.computeAddress; } });
-	Object.defineProperty(exports, "parseTransaction", { enumerable: true, get: function () { return lib$i.parse; } });
-	Object.defineProperty(exports, "recoverAddress", { enumerable: true, get: function () { return lib$i.recoverAddress; } });
-	Object.defineProperty(exports, "serializeTransaction", { enumerable: true, get: function () { return lib$i.serialize; } });
+	Object.defineProperty(exports, "accessListify", { enumerable: true, get: function () { return lib$e.accessListify; } });
+	Object.defineProperty(exports, "computeAddress", { enumerable: true, get: function () { return lib$e.computeAddress; } });
+	Object.defineProperty(exports, "parseTransaction", { enumerable: true, get: function () { return lib$e.parse; } });
+	Object.defineProperty(exports, "recoverAddress", { enumerable: true, get: function () { return lib$e.recoverAddress; } });
+	Object.defineProperty(exports, "serializeTransaction", { enumerable: true, get: function () { return lib$e.serialize; } });
 
 	Object.defineProperty(exports, "commify", { enumerable: true, get: function () { return lib$t.commify; } });
 	Object.defineProperty(exports, "formatEther", { enumerable: true, get: function () { return lib$t.formatEther; } });
@@ -25740,7 +25954,7 @@
 	Object.defineProperty(exports, "poll", { enumerable: true, get: function () { return lib$q.poll; } });
 	////////////////////////
 	// Enums
-	var sha2_2 = lib$f;
+	var sha2_2 = lib$h;
 	Object.defineProperty(exports, "SupportedAlgorithm", { enumerable: true, get: function () { return sha2_2.SupportedAlgorithm; } });
 	var strings_2 = lib$8;
 	Object.defineProperty(exports, "UnicodeNormalizationForm", { enumerable: true, get: function () { return strings_2.UnicodeNormalizationForm; } });
@@ -25754,7 +25968,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.0.32";
+	exports.version = "ethers/5.1.0";
 
 	});
 
@@ -25782,10 +25996,11 @@
 	    return result;
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.Wordlist = exports.version = exports.wordlists = exports.utils = exports.logger = exports.errors = exports.constants = exports.FixedNumber = exports.BigNumber = exports.ContractFactory = exports.Contract = exports.providers = exports.getDefaultProvider = exports.VoidSigner = exports.Wallet = exports.Signer = void 0;
+	exports.Wordlist = exports.version = exports.wordlists = exports.utils = exports.logger = exports.errors = exports.constants = exports.FixedNumber = exports.BigNumber = exports.ContractFactory = exports.Contract = exports.BaseContract = exports.providers = exports.getDefaultProvider = exports.VoidSigner = exports.Wallet = exports.Signer = void 0;
 
-	Object.defineProperty(exports, "Contract", { enumerable: true, get: function () { return lib$d.Contract; } });
-	Object.defineProperty(exports, "ContractFactory", { enumerable: true, get: function () { return lib$d.ContractFactory; } });
+	Object.defineProperty(exports, "BaseContract", { enumerable: true, get: function () { return lib$f.BaseContract; } });
+	Object.defineProperty(exports, "Contract", { enumerable: true, get: function () { return lib$f.Contract; } });
+	Object.defineProperty(exports, "ContractFactory", { enumerable: true, get: function () { return lib$f.ContractFactory; } });
 
 	Object.defineProperty(exports, "BigNumber", { enumerable: true, get: function () { return lib$2.BigNumber; } });
 	Object.defineProperty(exports, "FixedNumber", { enumerable: true, get: function () { return lib$2.FixedNumber; } });
@@ -25841,7 +26056,7 @@
 	    return result;
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.Wordlist = exports.version = exports.wordlists = exports.utils = exports.logger = exports.errors = exports.constants = exports.FixedNumber = exports.BigNumber = exports.ContractFactory = exports.Contract = exports.providers = exports.getDefaultProvider = exports.VoidSigner = exports.Wallet = exports.Signer = exports.ethers = void 0;
+	exports.Wordlist = exports.version = exports.wordlists = exports.utils = exports.logger = exports.errors = exports.constants = exports.FixedNumber = exports.BigNumber = exports.ContractFactory = exports.Contract = exports.BaseContract = exports.providers = exports.getDefaultProvider = exports.VoidSigner = exports.Wallet = exports.Signer = exports.ethers = void 0;
 	// To modify this file, you must update ./misc/admin/lib/cmds/update-exports.js
 	var ethers$1 = __importStar(ethers);
 	exports.ethers = ethers$1;
@@ -25858,6 +26073,7 @@
 	Object.defineProperty(exports, "VoidSigner", { enumerable: true, get: function () { return ethers_1.VoidSigner; } });
 	Object.defineProperty(exports, "getDefaultProvider", { enumerable: true, get: function () { return ethers_1.getDefaultProvider; } });
 	Object.defineProperty(exports, "providers", { enumerable: true, get: function () { return ethers_1.providers; } });
+	Object.defineProperty(exports, "BaseContract", { enumerable: true, get: function () { return ethers_1.BaseContract; } });
 	Object.defineProperty(exports, "Contract", { enumerable: true, get: function () { return ethers_1.Contract; } });
 	Object.defineProperty(exports, "ContractFactory", { enumerable: true, get: function () { return ethers_1.ContractFactory; } });
 	Object.defineProperty(exports, "BigNumber", { enumerable: true, get: function () { return ethers_1.BigNumber; } });

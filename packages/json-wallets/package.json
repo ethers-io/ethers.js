@@ -1,17 +1,17 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/abstract-signer": "^5.0.10",
-    "@ethersproject/address": "^5.0.9",
-    "@ethersproject/bytes": "^5.0.9",
-    "@ethersproject/hdnode": "^5.0.8",
-    "@ethersproject/keccak256": "^5.0.7",
-    "@ethersproject/logger": "^5.0.8",
-    "@ethersproject/pbkdf2": "^5.0.7",
-    "@ethersproject/properties": "^5.0.7",
-    "@ethersproject/random": "^5.0.7",
-    "@ethersproject/strings": "^5.0.8",
-    "@ethersproject/transactions": "^5.0.9",
+    "@ethersproject/abstract-signer": "^5.1.0",
+    "@ethersproject/address": "^5.1.0",
+    "@ethersproject/bytes": "^5.1.0",
+    "@ethersproject/hdnode": "^5.1.0",
+    "@ethersproject/keccak256": "^5.1.0",
+    "@ethersproject/logger": "^5.1.0",
+    "@ethersproject/pbkdf2": "^5.1.0",
+    "@ethersproject/properties": "^5.1.0",
+    "@ethersproject/random": "^5.1.0",
+    "@ethersproject/strings": "^5.1.0",
+    "@ethersproject/transactions": "^5.1.0",
     "aes-js": "3.0.0",
     "scrypt-js": "3.0.1"
   },
@@ -47,7 +47,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xf6cf8ec033a25f26a01c9fc9c1b625b32615a2e1924cb0b245ab97304c589685",
+  "tarballHash": "0x197a16f274e72467bd71ae3f59c7ab6eddd7e3bc34fe69fff6198b22463933ef",
   "types": "./lib/index.d.ts",
-  "version": "5.0.12"
+  "version": "5.1.0"
 }

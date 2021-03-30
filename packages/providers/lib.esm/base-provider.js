@@ -962,6 +962,15 @@ export class BaseProvider extends Provider {
                 }
                 tx[key] = Promise.resolve(values[key]).then((v) => (v ? BigNumber.from(v) : null));
             });
+            ["type"].forEach((key) => {
+                if (values[key] == null) {
+                    return;
+                }
+                tx[key] = Promise.resolve(values[key]).then((v) => ((v != null) ? v : null));
+            });
+            if (values.accessList) {
+                tx.accessList = this.formatter.accessList(values.accessList);
+            }
             ["data"].forEach((key) => {
                 if (values[key] == null) {
                     return;

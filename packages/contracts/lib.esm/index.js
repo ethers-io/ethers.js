@@ -15,7 +15,7 @@ import { getAddress, getContractAddress } from "@ethersproject/address";
 import { BigNumber } from "@ethersproject/bignumber";
 import { arrayify, concat, hexlify, isBytes, isHexString } from "@ethersproject/bytes";
 import { defineReadOnly, deepCopy, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
-// @TOOD remove dependences transactions
+import { accessListify } from "@ethersproject/transactions";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
@@ -23,7 +23,8 @@ const logger = new Logger(version);
 ;
 ///////////////////////////////
 const allowedTransactionKeys = {
-    chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
+    chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
+    type: true, accessList: true,
 };
 function resolveName(resolver, nameOrPromise) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -132,6 +133,12 @@ function populateTransaction(contract, fragment, args) {
         if (ro.from != null) {
             tx.from = ro.from;
         }
+        if (ro.type != null) {
+            tx.type = ro.type;
+        }
+        if (ro.accessList != null) {
+            tx.accessList = accessListify(ro.accessList);
+        }
         // If there was no "gasLimit" override, but the ABI specifies a default, use it
         if (tx.gasLimit == null && fragment.gas != null) {
             // Conmpute the intrinisic gas cost for this transaction
@@ -166,6 +173,8 @@ function populateTransaction(contract, fragment, args) {
         delete overrides.gasPrice;
         delete overrides.from;
         delete overrides.value;
+        delete overrides.type;
+        delete overrides.accessList;
         // Make sure there are no stray overrides, which may indicate a
         // typo or using an unsupported key.
         const leftovers = Object.keys(overrides).filter((key) => (overrides[key] != null));
@@ -437,7 +446,7 @@ class WildcardRunningEvent extends RunningEvent {
         }
     }
 }
-export class Contract {
+export class BaseContract {
     constructor(addressOrName, contractInterface, signerOrProvider) {
         logger.checkNew(new.target, Contract);
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
@@ -554,9 +563,13 @@ export class Contract {
                 return;
             }
             const signature = signatures[0];
-            if (this[name] == null) {
-                defineReadOnly(this, name, this[signature]);
+            // If overwriting a member property that is null, swallow the error
+            try {
+                if (this[name] == null) {
+                    defineReadOnly(this, name, this[signature]);
+                }
             }
+            catch (e) { }
             if (this.functions[name] == null) {
                 defineReadOnly(this.functions, name, this.functions[signature]);
             }
@@ -851,6 +864,8 @@ export class Contract {
     removeListener(eventName, listener) {
         return this.off(eventName, listener);
     }
+}
+export class Contract extends BaseContract {
 }
 export class ContractFactory {
     constructor(contractInterface, bytecode, signer) {

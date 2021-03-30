@@ -147,6 +147,15 @@ export class BigNumber {
         }
         return null;
     }
+    toBigInt() {
+        try {
+            return BigInt(this.toString());
+        }
+        catch (e) { }
+        return logger.throwError("this platform does not support BigInt", Logger.errors.UNSUPPORTED_OPERATION, {
+            value: this.toString()
+        });
+    }
     toString() {
         // Lots of people expect this, which we do not support, so check (See: #889)
         if (arguments.length > 0) {

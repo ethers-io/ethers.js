@@ -9,7 +9,7 @@ try {
 }
 catch (error) { }
 export { ethers };
-export { Signer, Wallet, VoidSigner, getDefaultProvider, providers, Contract, ContractFactory, BigNumber, FixedNumber, constants, errors, logger, utils, wordlists, 
+export { Signer, Wallet, VoidSigner, getDefaultProvider, providers, BaseContract, Contract, ContractFactory, BigNumber, FixedNumber, constants, errors, logger, utils, wordlists, 
 ////////////////////////
 // Compile-Time Constants
 version, Wordlist } from "./ethers";

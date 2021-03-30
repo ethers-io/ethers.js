@@ -2,6 +2,7 @@
   "_ethers_nobuild": true,
   "author": "Richard Moore <me@ricmoo.com>",
   "browser": "./dist/index.min.js",
+  "dependencies": {},
   "description": "Shims required for ethers in constrained environments.",
   "ethereum": "donations.ethers.eth",
   "funding": [
@@ -32,7 +33,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0x3a0ffcff03da2a955e81177cb4edd1677cb42156c95ef5961a83a7da93814ac6",
+  "tarballHash": "0x9a5737ccb124af95c5890361f9912ea8ea0ccc3dadac92d8388a774a1ef95a14",
   "types": "./lib/index.d.ts",
-  "version": "5.0.11"
+  "version": "5.1.0"
 }

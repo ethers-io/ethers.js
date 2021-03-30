@@ -3490,7 +3490,7 @@ var bn = createCommonjsModule(function (module) {
 })('object' === 'undefined' || module, commonjsGlobal);
 });
 
-const version = "logger/5.0.10";
+const version = "logger/5.1.0";
 
 "use strict";
 let _permanentCensorErrors = false;
@@ -3788,7 +3788,7 @@ class Logger {
 Logger.errors = ErrorCode;
 Logger.levels = LogLevel;
 
-const version$1 = "bytes/5.0.11";
+const version$1 = "bytes/5.1.0";
 
 "use strict";
 const logger = new Logger(version$1);
@@ -4111,6 +4111,9 @@ function splitSignature(signature) {
             if (result.v == null) {
                 logger.throwArgumentError("signature missing v and recoveryParam", "signature", signature);
             }
+            else if (result.v === 0 || result.v === 1) {
+                result.recoveryParam = result.v;
+            }
             else {
                 result.recoveryParam = 1 - (result.v % 2);
             }
@@ -4168,7 +4171,7 @@ function joinSignature(signature) {
     ]));
 }
 
-const version$2 = "bignumber/5.0.15";
+const version$2 = "bignumber/5.1.0";
 
 "use strict";
 var BN = bn.BN;
@@ -4307,6 +4310,15 @@ class BigNumber {
             throwFault("overflow", "toNumber", this.toString());
         }
         return null;
+    }
+    toBigInt() {
+        try {
+            return BigInt(this.toString());
+        }
+        catch (e) { }
+        return logger$1.throwError("this platform does not support BigInt", Logger.errors.UNSUPPORTED_OPERATION, {
+            value: this.toString()
+        });
     }
     toString() {
         // Lots of people expect this, which we do not support, so check (See: #889)
@@ -4791,7 +4803,7 @@ class FixedNumber {
 const ONE = FixedNumber.from(1);
 const BUMP = FixedNumber.from("0.5");
 
-const version$3 = "properties/5.0.9";
+const version$3 = "properties/5.1.0";
 
 "use strict";
 var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -4908,7 +4920,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.0.13";
+const version$4 = "abi/5.1.0";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -6316,7 +6328,7 @@ function keccak256(data) {
     return '0x' + sha3.keccak_256(arrayify(data));
 }
 
-const version$5 = "rlp/5.0.9";
+const version$5 = "rlp/5.1.0";
 
 "use strict";
 const logger$6 = new Logger(version$5);
@@ -6440,7 +6452,7 @@ var index = /*#__PURE__*/Object.freeze({
 	decode: decode
 });
 
-const version$6 = "address/5.0.11";
+const version$6 = "address/5.1.0";
 
 "use strict";
 const logger$7 = new Logger(version$6);
@@ -6956,7 +6968,7 @@ class NumberCoder extends Coder {
     }
 }
 
-const version$7 = "strings/5.0.10";
+const version$7 = "strings/5.1.0";
 
 "use strict";
 const logger$9 = new Logger(version$7);
@@ -7577,7 +7589,7 @@ function id(text) {
     return keccak256(toUtf8Bytes(text));
 }
 
-const version$8 = "hash/5.0.12";
+const version$8 = "hash/5.1.0";
 
 const logger$b = new Logger(version$8);
 const Zeros = new Uint8Array(32);
@@ -8543,7 +8555,7 @@ class Interface {
 
 "use strict";
 
-const version$9 = "abstract-provider/5.0.10";
+const version$9 = "abstract-provider/5.1.0";
 
 "use strict";
 const logger$e = new Logger(version$9);
@@ -8620,7 +8632,7 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.0.14";
+const version$a = "abstract-signer/5.1.0";
 
 "use strict";
 var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8634,7 +8646,7 @@ var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments,
 };
 const logger$f = new Logger(version$a);
 const allowedTransactionKeys = [
-    "chainId", "data", "from", "gasLimit", "gasPrice", "nonce", "to", "value"
+    "accessList", "chainId", "data", "from", "gasLimit", "gasPrice", "nonce", "to", "type", "value"
 ];
 const forwardErrors = [
     Logger.errors.INSUFFICIENT_FUNDS,
@@ -8835,1085 +8847,6 @@ class VoidSigner extends Signer {
         return new VoidSigner(this.address, provider);
     }
 }
-
-const version$b = "contracts/5.0.12";
-
-"use strict";
-var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const logger$g = new Logger(version$b);
-;
-;
-///////////////////////////////
-const allowedTransactionKeys$1 = {
-    chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
-};
-function resolveName(resolver, nameOrPromise) {
-    return __awaiter$3(this, void 0, void 0, function* () {
-        const name = yield nameOrPromise;
-        // If it is already an address, just use it (after adding checksum)
-        try {
-            return getAddress(name);
-        }
-        catch (error) { }
-        if (!resolver) {
-            logger$g.throwError("a provider or signer is needed to resolve ENS names", Logger.errors.UNSUPPORTED_OPERATION, {
-                operation: "resolveName"
-            });
-        }
-        const address = yield resolver.resolveName(name);
-        if (address == null) {
-            logger$g.throwArgumentError("resolver or addr is not configured for ENS name", "name", name);
-        }
-        return address;
-    });
-}
-// Recursively replaces ENS names with promises to resolve the name and resolves all properties
-function resolveAddresses(resolver, value, paramType) {
-    return __awaiter$3(this, void 0, void 0, function* () {
-        if (Array.isArray(paramType)) {
-            return yield Promise.all(paramType.map((paramType, index) => {
-                return resolveAddresses(resolver, ((Array.isArray(value)) ? value[index] : value[paramType.name]), paramType);
-            }));
-        }
-        if (paramType.type === "address") {
-            return yield resolveName(resolver, value);
-        }
-        if (paramType.type === "tuple") {
-            return yield resolveAddresses(resolver, value, paramType.components);
-        }
-        if (paramType.baseType === "array") {
-            if (!Array.isArray(value)) {
-                return Promise.reject(new Error("invalid value for array"));
-            }
-            return yield Promise.all(value.map((v) => resolveAddresses(resolver, v, paramType.arrayChildren)));
-        }
-        return value;
-    });
-}
-function populateTransaction(contract, fragment, args) {
-    return __awaiter$3(this, void 0, void 0, function* () {
-        // If an extra argument is given, it is overrides
-        let overrides = {};
-        if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
-            overrides = shallowCopy(args.pop());
-        }
-        // Make sure the parameter count matches
-        logger$g.checkArgumentCount(args.length, fragment.inputs.length, "passed to contract");
-        // Populate "from" override (allow promises)
-        if (contract.signer) {
-            if (overrides.from) {
-                // Contracts with a Signer are from the Signer's frame-of-reference;
-                // but we allow overriding "from" if it matches the signer
-                overrides.from = resolveProperties({
-                    override: resolveName(contract.signer, overrides.from),
-                    signer: contract.signer.getAddress()
-                }).then((check) => __awaiter$3(this, void 0, void 0, function* () {
-                    if (getAddress(check.signer) !== check.override) {
-                        logger$g.throwError("Contract with a Signer cannot override from", Logger.errors.UNSUPPORTED_OPERATION, {
-                            operation: "overrides.from"
-                        });
-                    }
-                    return check.override;
-                }));
-            }
-            else {
-                overrides.from = contract.signer.getAddress();
-            }
-        }
-        else if (overrides.from) {
-            overrides.from = resolveName(contract.provider, overrides.from);
-            //} else {
-            // Contracts without a signer can override "from", and if
-            // unspecified the zero address is used
-            //overrides.from = AddressZero;
-        }
-        // Wait for all dependencies to be resolved (prefer the signer over the provider)
-        const resolved = yield resolveProperties({
-            args: resolveAddresses(contract.signer || contract.provider, args, fragment.inputs),
-            address: contract.resolvedAddress,
-            overrides: (resolveProperties(overrides) || {})
-        });
-        // The ABI coded transaction
-        const data = contract.interface.encodeFunctionData(fragment, resolved.args);
-        const tx = {
-            data: data,
-            to: resolved.address
-        };
-        // Resolved Overrides
-        const ro = resolved.overrides;
-        // Populate simple overrides
-        if (ro.nonce != null) {
-            tx.nonce = BigNumber.from(ro.nonce).toNumber();
-        }
-        if (ro.gasLimit != null) {
-            tx.gasLimit = BigNumber.from(ro.gasLimit);
-        }
-        if (ro.gasPrice != null) {
-            tx.gasPrice = BigNumber.from(ro.gasPrice);
-        }
-        if (ro.from != null) {
-            tx.from = ro.from;
-        }
-        // If there was no "gasLimit" override, but the ABI specifies a default, use it
-        if (tx.gasLimit == null && fragment.gas != null) {
-            // Conmpute the intrinisic gas cost for this transaction
-            // @TODO: This is based on the yellow paper as of Petersburg; this is something
-            // we may wish to parameterize in v6 as part of the Network object. Since this
-            // is always a non-nil to address, we can ignore G_create, but may wish to add
-            // similar logic to the ContractFactory.
-            let intrinsic = 21000;
-            const bytes = arrayify(data);
-            for (let i = 0; i < bytes.length; i++) {
-                intrinsic += 4;
-                if (bytes[i]) {
-                    intrinsic += 64;
-                }
-            }
-            tx.gasLimit = BigNumber.from(fragment.gas).add(intrinsic);
-        }
-        // Populate "value" override
-        if (ro.value) {
-            const roValue = BigNumber.from(ro.value);
-            if (!roValue.isZero() && !fragment.payable) {
-                logger$g.throwError("non-payable method cannot override value", Logger.errors.UNSUPPORTED_OPERATION, {
-                    operation: "overrides.value",
-                    value: overrides.value
-                });
-            }
-            tx.value = roValue;
-        }
-        // Remvoe the overrides
-        delete overrides.nonce;
-        delete overrides.gasLimit;
-        delete overrides.gasPrice;
-        delete overrides.from;
-        delete overrides.value;
-        // Make sure there are no stray overrides, which may indicate a
-        // typo or using an unsupported key.
-        const leftovers = Object.keys(overrides).filter((key) => (overrides[key] != null));
-        if (leftovers.length) {
-            logger$g.throwError(`cannot override ${leftovers.map((l) => JSON.stringify(l)).join(",")}`, Logger.errors.UNSUPPORTED_OPERATION, {
-                operation: "overrides",
-                overrides: leftovers
-            });
-        }
-        return tx;
-    });
-}
-function buildPopulate(contract, fragment) {
-    return function (...args) {
-        return populateTransaction(contract, fragment, args);
-    };
-}
-function buildEstimate(contract, fragment) {
-    const signerOrProvider = (contract.signer || contract.provider);
-    return function (...args) {
-        return __awaiter$3(this, void 0, void 0, function* () {
-            if (!signerOrProvider) {
-                logger$g.throwError("estimate require a provider or signer", Logger.errors.UNSUPPORTED_OPERATION, {
-                    operation: "estimateGas"
-                });
-            }
-            const tx = yield populateTransaction(contract, fragment, args);
-            return yield signerOrProvider.estimateGas(tx);
-        });
-    };
-}
-function buildCall(contract, fragment, collapseSimple) {
-    const signerOrProvider = (contract.signer || contract.provider);
-    return function (...args) {
-        return __awaiter$3(this, void 0, void 0, function* () {
-            // Extract the "blockTag" override if present
-            let blockTag = undefined;
-            if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
-                const overrides = shallowCopy(args.pop());
-                if (overrides.blockTag != null) {
-                    blockTag = yield overrides.blockTag;
-                }
-                delete overrides.blockTag;
-                args.push(overrides);
-            }
-            // If the contract was just deployed, wait until it is mined
-            if (contract.deployTransaction != null) {
-                yield contract._deployed(blockTag);
-            }
-            // Call a node and get the result
-            const tx = yield populateTransaction(contract, fragment, args);
-            const result = yield signerOrProvider.call(tx, blockTag);
-            try {
-                let value = contract.interface.decodeFunctionResult(fragment, result);
-                if (collapseSimple && fragment.outputs.length === 1) {
-                    value = value[0];
-                }
-                return value;
-            }
-            catch (error) {
-                if (error.code === Logger.errors.CALL_EXCEPTION) {
-                    error.address = contract.address;
-                    error.args = args;
-                    error.transaction = tx;
-                }
-                throw error;
-            }
-        });
-    };
-}
-function buildSend(contract, fragment) {
-    return function (...args) {
-        return __awaiter$3(this, void 0, void 0, function* () {
-            if (!contract.signer) {
-                logger$g.throwError("sending a transaction requires a signer", Logger.errors.UNSUPPORTED_OPERATION, {
-                    operation: "sendTransaction"
-                });
-            }
-            // If the contract was just deployed, wait until it is minded
-            if (contract.deployTransaction != null) {
-                yield contract._deployed();
-            }
-            const txRequest = yield populateTransaction(contract, fragment, args);
-            const tx = yield contract.signer.sendTransaction(txRequest);
-            // Tweak the tw.wait so the receipt has extra properties
-            const wait = tx.wait.bind(tx);
-            tx.wait = (confirmations) => {
-                return wait(confirmations).then((receipt) => {
-                    receipt.events = receipt.logs.map((log) => {
-                        let event = deepCopy(log);
-                        let parsed = null;
-                        try {
-                            parsed = contract.interface.parseLog(log);
-                        }
-                        catch (e) { }
-                        // Successfully parsed the event log; include it
-                        if (parsed) {
-                            event.args = parsed.args;
-                            event.decode = (data, topics) => {
-                                return contract.interface.decodeEventLog(parsed.eventFragment, data, topics);
-                            };
-                            event.event = parsed.name;
-                            event.eventSignature = parsed.signature;
-                        }
-                        // Useful operations
-                        event.removeListener = () => { return contract.provider; };
-                        event.getBlock = () => {
-                            return contract.provider.getBlock(receipt.blockHash);
-                        };
-                        event.getTransaction = () => {
-                            return contract.provider.getTransaction(receipt.transactionHash);
-                        };
-                        event.getTransactionReceipt = () => {
-                            return Promise.resolve(receipt);
-                        };
-                        return event;
-                    });
-                    return receipt;
-                });
-            };
-            return tx;
-        });
-    };
-}
-function buildDefault(contract, fragment, collapseSimple) {
-    if (fragment.constant) {
-        return buildCall(contract, fragment, collapseSimple);
-    }
-    return buildSend(contract, fragment);
-}
-function getEventTag(filter) {
-    if (filter.address && (filter.topics == null || filter.topics.length === 0)) {
-        return "*";
-    }
-    return (filter.address || "*") + "@" + (filter.topics ? filter.topics.map((topic) => {
-        if (Array.isArray(topic)) {
-            return topic.join("|");
-        }
-        return topic;
-    }).join(":") : "");
-}
-class RunningEvent {
-    constructor(tag, filter) {
-        defineReadOnly(this, "tag", tag);
-        defineReadOnly(this, "filter", filter);
-        this._listeners = [];
-    }
-    addListener(listener, once) {
-        this._listeners.push({ listener: listener, once: once });
-    }
-    removeListener(listener) {
-        let done = false;
-        this._listeners = this._listeners.filter((item) => {
-            if (done || item.listener !== listener) {
-                return true;
-            }
-            done = true;
-            return false;
-        });
-    }
-    removeAllListeners() {
-        this._listeners = [];
-    }
-    listeners() {
-        return this._listeners.map((i) => i.listener);
-    }
-    listenerCount() {
-        return this._listeners.length;
-    }
-    run(args) {
-        const listenerCount = this.listenerCount();
-        this._listeners = this._listeners.filter((item) => {
-            const argsCopy = args.slice();
-            // Call the callback in the next event loop
-            setTimeout(() => {
-                item.listener.apply(this, argsCopy);
-            }, 0);
-            // Reschedule it if it not "once"
-            return !(item.once);
-        });
-        return listenerCount;
-    }
-    prepareEvent(event) {
-    }
-    // Returns the array that will be applied to an emit
-    getEmit(event) {
-        return [event];
-    }
-}
-class ErrorRunningEvent extends RunningEvent {
-    constructor() {
-        super("error", null);
-    }
-}
-// @TODO Fragment should inherit Wildcard? and just override getEmit?
-//       or have a common abstract super class, with enough constructor
-//       options to configure both.
-// A Fragment Event will populate all the properties that Wildcard
-// will, and additioanlly dereference the arguments when emitting
-class FragmentRunningEvent extends RunningEvent {
-    constructor(address, contractInterface, fragment, topics) {
-        const filter = {
-            address: address
-        };
-        let topic = contractInterface.getEventTopic(fragment);
-        if (topics) {
-            if (topic !== topics[0]) {
-                logger$g.throwArgumentError("topic mismatch", "topics", topics);
-            }
-            filter.topics = topics.slice();
-        }
-        else {
-            filter.topics = [topic];
-        }
-        super(getEventTag(filter), filter);
-        defineReadOnly(this, "address", address);
-        defineReadOnly(this, "interface", contractInterface);
-        defineReadOnly(this, "fragment", fragment);
-    }
-    prepareEvent(event) {
-        super.prepareEvent(event);
-        event.event = this.fragment.name;
-        event.eventSignature = this.fragment.format();
-        event.decode = (data, topics) => {
-            return this.interface.decodeEventLog(this.fragment, data, topics);
-        };
-        try {
-            event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
-        }
-        catch (error) {
-            event.args = null;
-            event.decodeError = error;
-        }
-    }
-    getEmit(event) {
-        const errors = checkResultErrors(event.args);
-        if (errors.length) {
-            throw errors[0].error;
-        }
-        const args = (event.args || []).slice();
-        args.push(event);
-        return args;
-    }
-}
-// A Wildard Event will attempt to populate:
-//  - event            The name of the event name
-//  - eventSignature   The full signature of the event
-//  - decode           A function to decode data and topics
-//  - args             The decoded data and topics
-class WildcardRunningEvent extends RunningEvent {
-    constructor(address, contractInterface) {
-        super("*", { address: address });
-        defineReadOnly(this, "address", address);
-        defineReadOnly(this, "interface", contractInterface);
-    }
-    prepareEvent(event) {
-        super.prepareEvent(event);
-        try {
-            const parsed = this.interface.parseLog(event);
-            event.event = parsed.name;
-            event.eventSignature = parsed.signature;
-            event.decode = (data, topics) => {
-                return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
-            };
-            event.args = parsed.args;
-        }
-        catch (error) {
-            // No matching event
-        }
-    }
-}
-class Contract {
-    constructor(addressOrName, contractInterface, signerOrProvider) {
-        logger$g.checkNew(new.target, Contract);
-        // @TODO: Maybe still check the addressOrName looks like a valid address or name?
-        //address = getAddress(address);
-        defineReadOnly(this, "interface", getStatic((new.target), "getInterface")(contractInterface));
-        if (signerOrProvider == null) {
-            defineReadOnly(this, "provider", null);
-            defineReadOnly(this, "signer", null);
-        }
-        else if (Signer.isSigner(signerOrProvider)) {
-            defineReadOnly(this, "provider", signerOrProvider.provider || null);
-            defineReadOnly(this, "signer", signerOrProvider);
-        }
-        else if (Provider.isProvider(signerOrProvider)) {
-            defineReadOnly(this, "provider", signerOrProvider);
-            defineReadOnly(this, "signer", null);
-        }
-        else {
-            logger$g.throwArgumentError("invalid signer or provider", "signerOrProvider", signerOrProvider);
-        }
-        defineReadOnly(this, "callStatic", {});
-        defineReadOnly(this, "estimateGas", {});
-        defineReadOnly(this, "functions", {});
-        defineReadOnly(this, "populateTransaction", {});
-        defineReadOnly(this, "filters", {});
-        {
-            const uniqueFilters = {};
-            Object.keys(this.interface.events).forEach((eventSignature) => {
-                const event = this.interface.events[eventSignature];
-                defineReadOnly(this.filters, eventSignature, (...args) => {
-                    return {
-                        address: this.address,
-                        topics: this.interface.encodeFilterTopics(event, args)
-                    };
-                });
-                if (!uniqueFilters[event.name]) {
-                    uniqueFilters[event.name] = [];
-                }
-                uniqueFilters[event.name].push(eventSignature);
-            });
-            Object.keys(uniqueFilters).forEach((name) => {
-                const filters = uniqueFilters[name];
-                if (filters.length === 1) {
-                    defineReadOnly(this.filters, name, this.filters[filters[0]]);
-                }
-                else {
-                    logger$g.warn(`Duplicate definition of ${name} (${filters.join(", ")})`);
-                }
-            });
-        }
-        defineReadOnly(this, "_runningEvents", {});
-        defineReadOnly(this, "_wrappedEmits", {});
-        if (addressOrName == null) {
-            logger$g.throwArgumentError("invalid contract address or ENS name", "addressOrName", addressOrName);
-        }
-        defineReadOnly(this, "address", addressOrName);
-        if (this.provider) {
-            defineReadOnly(this, "resolvedAddress", resolveName(this.provider, addressOrName));
-        }
-        else {
-            try {
-                defineReadOnly(this, "resolvedAddress", Promise.resolve(getAddress(addressOrName)));
-            }
-            catch (error) {
-                // Without a provider, we cannot use ENS names
-                logger$g.throwError("provider is required to use ENS name as contract address", Logger.errors.UNSUPPORTED_OPERATION, {
-                    operation: "new Contract"
-                });
-            }
-        }
-        const uniqueNames = {};
-        const uniqueSignatures = {};
-        Object.keys(this.interface.functions).forEach((signature) => {
-            const fragment = this.interface.functions[signature];
-            // Check that the signature is unique; if not the ABI generation has
-            // not been cleaned or may be incorrectly generated
-            if (uniqueSignatures[signature]) {
-                logger$g.warn(`Duplicate ABI entry for ${JSON.stringify(name)}`);
-                return;
-            }
-            uniqueSignatures[signature] = true;
-            // Track unique names; we only expose bare named functions if they
-            // are ambiguous
-            {
-                const name = fragment.name;
-                if (!uniqueNames[name]) {
-                    uniqueNames[name] = [];
-                }
-                uniqueNames[name].push(signature);
-            }
-            if (this[signature] == null) {
-                defineReadOnly(this, signature, buildDefault(this, fragment, true));
-            }
-            // We do not collapse simple calls on this bucket, which allows
-            // frameworks to safely use this without introspection as well as
-            // allows decoding error recovery.
-            if (this.functions[signature] == null) {
-                defineReadOnly(this.functions, signature, buildDefault(this, fragment, false));
-            }
-            if (this.callStatic[signature] == null) {
-                defineReadOnly(this.callStatic, signature, buildCall(this, fragment, true));
-            }
-            if (this.populateTransaction[signature] == null) {
-                defineReadOnly(this.populateTransaction, signature, buildPopulate(this, fragment));
-            }
-            if (this.estimateGas[signature] == null) {
-                defineReadOnly(this.estimateGas, signature, buildEstimate(this, fragment));
-            }
-        });
-        Object.keys(uniqueNames).forEach((name) => {
-            // Ambiguous names to not get attached as bare names
-            const signatures = uniqueNames[name];
-            if (signatures.length > 1) {
-                return;
-            }
-            const signature = signatures[0];
-            if (this[name] == null) {
-                defineReadOnly(this, name, this[signature]);
-            }
-            if (this.functions[name] == null) {
-                defineReadOnly(this.functions, name, this.functions[signature]);
-            }
-            if (this.callStatic[name] == null) {
-                defineReadOnly(this.callStatic, name, this.callStatic[signature]);
-            }
-            if (this.populateTransaction[name] == null) {
-                defineReadOnly(this.populateTransaction, name, this.populateTransaction[signature]);
-            }
-            if (this.estimateGas[name] == null) {
-                defineReadOnly(this.estimateGas, name, this.estimateGas[signature]);
-            }
-        });
-    }
-    static getContractAddress(transaction) {
-        return getContractAddress(transaction);
-    }
-    static getInterface(contractInterface) {
-        if (Interface.isInterface(contractInterface)) {
-            return contractInterface;
-        }
-        return new Interface(contractInterface);
-    }
-    // @TODO: Allow timeout?
-    deployed() {
-        return this._deployed();
-    }
-    _deployed(blockTag) {
-        if (!this._deployedPromise) {
-            // If we were just deployed, we know the transaction we should occur in
-            if (this.deployTransaction) {
-                this._deployedPromise = this.deployTransaction.wait().then(() => {
-                    return this;
-                });
-            }
-            else {
-                // @TODO: Once we allow a timeout to be passed in, we will wait
-                // up to that many blocks for getCode
-                // Otherwise, poll for our code to be deployed
-                this._deployedPromise = this.provider.getCode(this.address, blockTag).then((code) => {
-                    if (code === "0x") {
-                        logger$g.throwError("contract not deployed", Logger.errors.UNSUPPORTED_OPERATION, {
-                            contractAddress: this.address,
-                            operation: "getDeployed"
-                        });
-                    }
-                    return this;
-                });
-            }
-        }
-        return this._deployedPromise;
-    }
-    // @TODO:
-    // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>
-    // @TODO:
-    // estimateDeploy(bytecode: string, ...args): Promise<BigNumber>
-    fallback(overrides) {
-        if (!this.signer) {
-            logger$g.throwError("sending a transactions require a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" });
-        }
-        const tx = shallowCopy(overrides || {});
-        ["from", "to"].forEach(function (key) {
-            if (tx[key] == null) {
-                return;
-            }
-            logger$g.throwError("cannot override " + key, Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
-        });
-        tx.to = this.resolvedAddress;
-        return this.deployed().then(() => {
-            return this.signer.sendTransaction(tx);
-        });
-    }
-    // Reconnect to a different signer or provider
-    connect(signerOrProvider) {
-        if (typeof (signerOrProvider) === "string") {
-            signerOrProvider = new VoidSigner(signerOrProvider, this.provider);
-        }
-        const contract = new (this.constructor)(this.address, this.interface, signerOrProvider);
-        if (this.deployTransaction) {
-            defineReadOnly(contract, "deployTransaction", this.deployTransaction);
-        }
-        return contract;
-    }
-    // Re-attach to a different on-chain instance of this contract
-    attach(addressOrName) {
-        return new (this.constructor)(addressOrName, this.interface, this.signer || this.provider);
-    }
-    static isIndexed(value) {
-        return Indexed.isIndexed(value);
-    }
-    _normalizeRunningEvent(runningEvent) {
-        // Already have an instance of this event running; we can re-use it
-        if (this._runningEvents[runningEvent.tag]) {
-            return this._runningEvents[runningEvent.tag];
-        }
-        return runningEvent;
-    }
-    _getRunningEvent(eventName) {
-        if (typeof (eventName) === "string") {
-            // Listen for "error" events (if your contract has an error event, include
-            // the full signature to bypass this special event keyword)
-            if (eventName === "error") {
-                return this._normalizeRunningEvent(new ErrorRunningEvent());
-            }
-            // Listen for any event that is registered
-            if (eventName === "event") {
-                return this._normalizeRunningEvent(new RunningEvent("event", null));
-            }
-            // Listen for any event
-            if (eventName === "*") {
-                return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
-            }
-            // Get the event Fragment (throws if ambiguous/unknown event)
-            const fragment = this.interface.getEvent(eventName);
-            return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
-        }
-        // We have topics to filter by...
-        if (eventName.topics && eventName.topics.length > 0) {
-            // Is it a known topichash? (throws if no matching topichash)
-            try {
-                const topic = eventName.topics[0];
-                if (typeof (topic) !== "string") {
-                    throw new Error("invalid topic"); // @TODO: May happen for anonymous events
-                }
-                const fragment = this.interface.getEvent(topic);
-                return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
-            }
-            catch (error) { }
-            // Filter by the unknown topichash
-            const filter = {
-                address: this.address,
-                topics: eventName.topics
-            };
-            return this._normalizeRunningEvent(new RunningEvent(getEventTag(filter), filter));
-        }
-        return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
-    }
-    _checkRunningEvents(runningEvent) {
-        if (runningEvent.listenerCount() === 0) {
-            delete this._runningEvents[runningEvent.tag];
-            // If we have a poller for this, remove it
-            const emit = this._wrappedEmits[runningEvent.tag];
-            if (emit) {
-                this.provider.off(runningEvent.filter, emit);
-                delete this._wrappedEmits[runningEvent.tag];
-            }
-        }
-    }
-    // Subclasses can override this to gracefully recover
-    // from parse errors if they wish
-    _wrapEvent(runningEvent, log, listener) {
-        const event = deepCopy(log);
-        event.removeListener = () => {
-            if (!listener) {
-                return;
-            }
-            runningEvent.removeListener(listener);
-            this._checkRunningEvents(runningEvent);
-        };
-        event.getBlock = () => { return this.provider.getBlock(log.blockHash); };
-        event.getTransaction = () => { return this.provider.getTransaction(log.transactionHash); };
-        event.getTransactionReceipt = () => { return this.provider.getTransactionReceipt(log.transactionHash); };
-        // This may throw if the topics and data mismatch the signature
-        runningEvent.prepareEvent(event);
-        return event;
-    }
-    _addEventListener(runningEvent, listener, once) {
-        if (!this.provider) {
-            logger$g.throwError("events require a provider or a signer with a provider", Logger.errors.UNSUPPORTED_OPERATION, { operation: "once" });
-        }
-        runningEvent.addListener(listener, once);
-        // Track this running event and its listeners (may already be there; but no hard in updating)
-        this._runningEvents[runningEvent.tag] = runningEvent;
-        // If we are not polling the provider, start polling
-        if (!this._wrappedEmits[runningEvent.tag]) {
-            const wrappedEmit = (log) => {
-                let event = this._wrapEvent(runningEvent, log, listener);
-                // Try to emit the result for the parameterized event...
-                if (event.decodeError == null) {
-                    try {
-                        const args = runningEvent.getEmit(event);
-                        this.emit(runningEvent.filter, ...args);
-                    }
-                    catch (error) {
-                        event.decodeError = error.error;
-                    }
-                }
-                // Always emit "event" for fragment-base events
-                if (runningEvent.filter != null) {
-                    this.emit("event", event);
-                }
-                // Emit "error" if there was an error
-                if (event.decodeError != null) {
-                    this.emit("error", event.decodeError, event);
-                }
-            };
-            this._wrappedEmits[runningEvent.tag] = wrappedEmit;
-            // Special events, like "error" do not have a filter
-            if (runningEvent.filter != null) {
-                this.provider.on(runningEvent.filter, wrappedEmit);
-            }
-        }
-    }
-    queryFilter(event, fromBlockOrBlockhash, toBlock) {
-        const runningEvent = this._getRunningEvent(event);
-        const filter = shallowCopy(runningEvent.filter);
-        if (typeof (fromBlockOrBlockhash) === "string" && isHexString(fromBlockOrBlockhash, 32)) {
-            if (toBlock != null) {
-                logger$g.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
-            }
-            filter.blockHash = fromBlockOrBlockhash;
-        }
-        else {
-            filter.fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash : 0);
-            filter.toBlock = ((toBlock != null) ? toBlock : "latest");
-        }
-        return this.provider.getLogs(filter).then((logs) => {
-            return logs.map((log) => this._wrapEvent(runningEvent, log, null));
-        });
-    }
-    on(event, listener) {
-        this._addEventListener(this._getRunningEvent(event), listener, false);
-        return this;
-    }
-    once(event, listener) {
-        this._addEventListener(this._getRunningEvent(event), listener, true);
-        return this;
-    }
-    emit(eventName, ...args) {
-        if (!this.provider) {
-            return false;
-        }
-        const runningEvent = this._getRunningEvent(eventName);
-        const result = (runningEvent.run(args) > 0);
-        // May have drained all the "once" events; check for living events
-        this._checkRunningEvents(runningEvent);
-        return result;
-    }
-    listenerCount(eventName) {
-        if (!this.provider) {
-            return 0;
-        }
-        if (eventName == null) {
-            return Object.keys(this._runningEvents).reduce((accum, key) => {
-                return accum + this._runningEvents[key].listenerCount();
-            }, 0);
-        }
-        return this._getRunningEvent(eventName).listenerCount();
-    }
-    listeners(eventName) {
-        if (!this.provider) {
-            return [];
-        }
-        if (eventName == null) {
-            const result = [];
-            for (let tag in this._runningEvents) {
-                this._runningEvents[tag].listeners().forEach((listener) => {
-                    result.push(listener);
-                });
-            }
-            return result;
-        }
-        return this._getRunningEvent(eventName).listeners();
-    }
-    removeAllListeners(eventName) {
-        if (!this.provider) {
-            return this;
-        }
-        if (eventName == null) {
-            for (const tag in this._runningEvents) {
-                const runningEvent = this._runningEvents[tag];
-                runningEvent.removeAllListeners();
-                this._checkRunningEvents(runningEvent);
-            }
-            return this;
-        }
-        // Delete any listeners
-        const runningEvent = this._getRunningEvent(eventName);
-        runningEvent.removeAllListeners();
-        this._checkRunningEvents(runningEvent);
-        return this;
-    }
-    off(eventName, listener) {
-        if (!this.provider) {
-            return this;
-        }
-        const runningEvent = this._getRunningEvent(eventName);
-        runningEvent.removeListener(listener);
-        this._checkRunningEvents(runningEvent);
-        return this;
-    }
-    removeListener(eventName, listener) {
-        return this.off(eventName, listener);
-    }
-}
-class ContractFactory {
-    constructor(contractInterface, bytecode, signer) {
-        let bytecodeHex = null;
-        if (typeof (bytecode) === "string") {
-            bytecodeHex = bytecode;
-        }
-        else if (isBytes(bytecode)) {
-            bytecodeHex = hexlify(bytecode);
-        }
-        else if (bytecode && typeof (bytecode.object) === "string") {
-            // Allow the bytecode object from the Solidity compiler
-            bytecodeHex = bytecode.object;
-        }
-        else {
-            // Crash in the next verification step
-            bytecodeHex = "!";
-        }
-        // Make sure it is 0x prefixed
-        if (bytecodeHex.substring(0, 2) !== "0x") {
-            bytecodeHex = "0x" + bytecodeHex;
-        }
-        // Make sure the final result is valid bytecode
-        if (!isHexString(bytecodeHex) || (bytecodeHex.length % 2)) {
-            logger$g.throwArgumentError("invalid bytecode", "bytecode", bytecode);
-        }
-        // If we have a signer, make sure it is valid
-        if (signer && !Signer.isSigner(signer)) {
-            logger$g.throwArgumentError("invalid signer", "signer", signer);
-        }
-        defineReadOnly(this, "bytecode", bytecodeHex);
-        defineReadOnly(this, "interface", getStatic((new.target), "getInterface")(contractInterface));
-        defineReadOnly(this, "signer", signer || null);
-    }
-    // @TODO: Future; rename to populteTransaction?
-    getDeployTransaction(...args) {
-        let tx = {};
-        // If we have 1 additional argument, we allow transaction overrides
-        if (args.length === this.interface.deploy.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
-            tx = shallowCopy(args.pop());
-            for (const key in tx) {
-                if (!allowedTransactionKeys$1[key]) {
-                    throw new Error("unknown transaction override " + key);
-                }
-            }
-        }
-        // Do not allow these to be overridden in a deployment transaction
-        ["data", "from", "to"].forEach((key) => {
-            if (tx[key] == null) {
-                return;
-            }
-            logger$g.throwError("cannot override " + key, Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
-        });
-        // Make sure the call matches the constructor signature
-        logger$g.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
-        // Set the data to the bytecode + the encoded constructor arguments
-        tx.data = hexlify(concat([
-            this.bytecode,
-            this.interface.encodeDeploy(args)
-        ]));
-        return tx;
-    }
-    deploy(...args) {
-        return __awaiter$3(this, void 0, void 0, function* () {
-            let overrides = {};
-            // If 1 extra parameter was passed in, it contains overrides
-            if (args.length === this.interface.deploy.inputs.length + 1) {
-                overrides = args.pop();
-            }
-            // Make sure the call matches the constructor signature
-            logger$g.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
-            // Resolve ENS names and promises in the arguments
-            const params = yield resolveAddresses(this.signer, args, this.interface.deploy.inputs);
-            params.push(overrides);
-            // Get the deployment transaction (with optional overrides)
-            const unsignedTx = this.getDeployTransaction(...params);
-            // Send the deployment transaction
-            const tx = yield this.signer.sendTransaction(unsignedTx);
-            const address = getStatic(this.constructor, "getContractAddress")(tx);
-            const contract = getStatic(this.constructor, "getContract")(address, this.interface, this.signer);
-            defineReadOnly(contract, "deployTransaction", tx);
-            return contract;
-        });
-    }
-    attach(address) {
-        return (this.constructor).getContract(address, this.interface, this.signer);
-    }
-    connect(signer) {
-        return new (this.constructor)(this.interface, this.bytecode, signer);
-    }
-    static fromSolidity(compilerOutput, signer) {
-        if (compilerOutput == null) {
-            logger$g.throwError("missing compiler output", Logger.errors.MISSING_ARGUMENT, { argument: "compilerOutput" });
-        }
-        if (typeof (compilerOutput) === "string") {
-            compilerOutput = JSON.parse(compilerOutput);
-        }
-        const abi = compilerOutput.abi;
-        let bytecode = null;
-        if (compilerOutput.bytecode) {
-            bytecode = compilerOutput.bytecode;
-        }
-        else if (compilerOutput.evm && compilerOutput.evm.bytecode) {
-            bytecode = compilerOutput.evm.bytecode;
-        }
-        return new this(abi, bytecode, signer);
-    }
-    static getInterface(contractInterface) {
-        return Contract.getInterface(contractInterface);
-    }
-    static getContractAddress(tx) {
-        return getContractAddress(tx);
-    }
-    static getContract(address, contractInterface, signer) {
-        return new Contract(address, contractInterface, signer);
-    }
-}
-
-/**
- * var basex = require("base-x");
- *
- * This implementation is heavily based on base-x. The main reason to
- * deviate was to prevent the dependency of Buffer.
- *
- * Contributors:
- *
- * base-x encoding
- * Forked from https://github.com/cryptocoinjs/bs58
- * Originally written by Mike Hearn for BitcoinJ
- * Copyright (c) 2011 Google Inc
- * Ported to JavaScript by Stefan Thomas
- * Merged Buffer refactorings from base58-native by Stephen Pair
- * Copyright (c) 2013 BitPay Inc
- *
- * The MIT License (MIT)
- *
- * Copyright base-x contributors (c) 2016
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
-
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
- * IN THE SOFTWARE.
- *
- */
-class BaseX {
-    constructor(alphabet) {
-        defineReadOnly(this, "alphabet", alphabet);
-        defineReadOnly(this, "base", alphabet.length);
-        defineReadOnly(this, "_alphabetMap", {});
-        defineReadOnly(this, "_leader", alphabet.charAt(0));
-        // pre-compute lookup table
-        for (let i = 0; i < alphabet.length; i++) {
-            this._alphabetMap[alphabet.charAt(i)] = i;
-        }
-    }
-    encode(value) {
-        let source = arrayify(value);
-        if (source.length === 0) {
-            return "";
-        }
-        let digits = [0];
-        for (let i = 0; i < source.length; ++i) {
-            let carry = source[i];
-            for (let j = 0; j < digits.length; ++j) {
-                carry += digits[j] << 8;
-                digits[j] = carry % this.base;
-                carry = (carry / this.base) | 0;
-            }
-            while (carry > 0) {
-                digits.push(carry % this.base);
-                carry = (carry / this.base) | 0;
-            }
-        }
-        let string = "";
-        // deal with leading zeros
-        for (let k = 0; source[k] === 0 && k < source.length - 1; ++k) {
-            string += this._leader;
-        }
-        // convert digits to a string
-        for (let q = digits.length - 1; q >= 0; --q) {
-            string += this.alphabet[digits[q]];
-        }
-        return string;
-    }
-    decode(value) {
-        if (typeof (value) !== "string") {
-            throw new TypeError("Expected String");
-        }
-        let bytes = [];
-        if (value.length === 0) {
-            return new Uint8Array(bytes);
-        }
-        bytes.push(0);
-        for (let i = 0; i < value.length; i++) {
-            let byte = this._alphabetMap[value[i]];
-            if (byte === undefined) {
-                throw new Error("Non-base" + this.base + " character");
-            }
-            let carry = byte;
-            for (let j = 0; j < bytes.length; ++j) {
-                carry += bytes[j] * this.base;
-                bytes[j] = carry & 0xff;
-                carry >>= 8;
-            }
-            while (carry > 0) {
-                bytes.push(carry & 0xff);
-                carry >>= 8;
-            }
-        }
-        // deal with leading zeros
-        for (let k = 0; value[k] === this._leader && k < value.length - 1; ++k) {
-            bytes.push(0);
-        }
-        return arrayify(new Uint8Array(bytes.reverse()));
-    }
-}
-const Base32 = new BaseX("abcdefghijklmnopqrstuvwxyz234567");
-const Base58 = new BaseX("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz");
-//console.log(Base58.decode("Qmd2V777o5XvJbYMeMb8k2nU5f8d3ciUQ5YpYuWhzv8iDj"))
-//console.log(Base58.encode(Base58.decode("Qmd2V777o5XvJbYMeMb8k2nU5f8d3ciUQ5YpYuWhzv8iDj")))
 
 var minimalisticAssert = assert;
 
@@ -11220,78 +10153,6 @@ hash.sha384 = hash.sha.sha384;
 hash.sha512 = hash.sha.sha512;
 hash.ripemd160 = hash.ripemd.ripemd160;
 });
-
-var SupportedAlgorithm;
-(function (SupportedAlgorithm) {
-    SupportedAlgorithm["sha256"] = "sha256";
-    SupportedAlgorithm["sha512"] = "sha512";
-})(SupportedAlgorithm || (SupportedAlgorithm = {}));
-;
-
-const version$c = "sha2/5.0.9";
-
-"use strict";
-const logger$h = new Logger(version$c);
-function ripemd160$1(data) {
-    return "0x" + (hash_1.ripemd160().update(arrayify(data)).digest("hex"));
-}
-function sha256$1(data) {
-    return "0x" + (hash_1.sha256().update(arrayify(data)).digest("hex"));
-}
-function sha512$1(data) {
-    return "0x" + (hash_1.sha512().update(arrayify(data)).digest("hex"));
-}
-function computeHmac(algorithm, key, data) {
-    if (!SupportedAlgorithm[algorithm]) {
-        logger$h.throwError("unsupported algorithm " + algorithm, Logger.errors.UNSUPPORTED_OPERATION, {
-            operation: "hmac",
-            algorithm: algorithm
-        });
-    }
-    return "0x" + hash_1.hmac(hash_1[algorithm], arrayify(key)).update(arrayify(data)).digest("hex");
-}
-
-"use strict";
-function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
-    password = arrayify(password);
-    salt = arrayify(salt);
-    let hLen;
-    let l = 1;
-    const DK = new Uint8Array(keylen);
-    const block1 = new Uint8Array(salt.length + 4);
-    block1.set(salt);
-    //salt.copy(block1, 0, 0, salt.length)
-    let r;
-    let T;
-    for (let i = 1; i <= l; i++) {
-        //block1.writeUInt32BE(i, salt.length)
-        block1[salt.length] = (i >> 24) & 0xff;
-        block1[salt.length + 1] = (i >> 16) & 0xff;
-        block1[salt.length + 2] = (i >> 8) & 0xff;
-        block1[salt.length + 3] = i & 0xff;
-        //let U = createHmac(password).update(block1).digest();
-        let U = arrayify(computeHmac(hashAlgorithm, password, block1));
-        if (!hLen) {
-            hLen = U.length;
-            T = new Uint8Array(hLen);
-            l = Math.ceil(keylen / hLen);
-            r = keylen - (l - 1) * hLen;
-        }
-        //U.copy(T, 0, 0, hLen)
-        T.set(U);
-        for (let j = 1; j < iterations; j++) {
-            //U = createHmac(password).update(U).digest();
-            U = arrayify(computeHmac(hashAlgorithm, password, U));
-            for (let k = 0; k < hLen; k++)
-                T[k] ^= U[k];
-        }
-        const destPos = (i - 1) * hLen;
-        const len = (i === l ? r : hLen);
-        //T.copy(DK, destPos, 0, len)
-        DK.set(arrayify(T).slice(0, len), destPos);
-    }
-    return hexlify(DK);
-}
 
 var commonjsGlobal$1 = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -13766,10 +12627,10 @@ elliptic.eddsa = /*RicMoo:ethers:require(./elliptic/eddsa)*/(null);
 
 var EC$1 = elliptic_1.ec;
 
-const version$d = "signing-key/5.0.11";
+const version$b = "signing-key/5.1.0";
 
 "use strict";
-const logger$i = new Logger(version$d);
+const logger$g = new Logger(version$b);
 let _curve = null;
 function getCurve() {
     if (!_curve) {
@@ -13795,7 +12656,7 @@ class SigningKey {
         const keyPair = getCurve().keyFromPrivate(arrayify(this.privateKey));
         const digestBytes = arrayify(digest);
         if (digestBytes.length !== 32) {
-            logger$i.throwArgumentError("bad digest length", "digest", digest);
+            logger$g.throwArgumentError("bad digest length", "digest", digest);
         }
         const signature = keyPair.sign(digestBytes, { canonical: true });
         return splitSignature({
@@ -13839,13 +12700,13 @@ function computePublicKey(key, compressed) {
         }
         return "0x" + getCurve().keyFromPublic(bytes).getPublic(true, "hex");
     }
-    return logger$i.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
+    return logger$g.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$e = "transactions/5.0.11";
+const version$c = "transactions/5.1.0";
 
 "use strict";
-const logger$j = new Logger(version$e);
+const logger$h = new Logger(version$c);
 ///////////////////////////////
 function handleAddress(value) {
     if (value === "0x") {
@@ -13859,6 +12720,7 @@ function handleNumber(value) {
     }
     return BigNumber.from(value);
 }
+// Legacy Transaction Fields
 const transactionFields = [
     { name: "nonce", maxLength: 32, numeric: true },
     { name: "gasPrice", maxLength: 32, numeric: true },
@@ -13867,7 +12729,7 @@ const transactionFields = [
     { name: "value", maxLength: 32, numeric: true },
     { name: "data" },
 ];
-const allowedTransactionKeys$2 = {
+const allowedTransactionKeys$1 = {
     chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
 };
 function computeAddress(key) {
@@ -13877,8 +12739,71 @@ function computeAddress(key) {
 function recoverAddress(digest, signature) {
     return computeAddress(recoverPublicKey(arrayify(digest), signature));
 }
-function serialize(transaction, signature) {
-    checkProperties(transaction, allowedTransactionKeys$2);
+function formatNumber(value, name) {
+    const result = stripZeros(BigNumber.from(value).toHexString());
+    if (result.length > 32) {
+        logger$h.throwArgumentError("invalid length for " + name, ("transaction:" + name), value);
+    }
+    return result;
+}
+function accessSetify(addr, storageKeys) {
+    return {
+        address: getAddress(addr),
+        storageKeys: (storageKeys || []).map((storageKey, index) => {
+            if (hexDataLength(storageKey) !== 32) {
+                logger$h.throwArgumentError("invalid access list storageKey", `accessList[${addr}:${index}]`, storageKey);
+            }
+            return storageKey.toLowerCase();
+        })
+    };
+}
+function accessListify(value) {
+    if (Array.isArray(value)) {
+        return value.map((set, index) => {
+            if (Array.isArray(set)) {
+                if (set.length > 2) {
+                    logger$h.throwArgumentError("access list expected to be [ address, storageKeys[] ]", `value[${index}]`, set);
+                }
+                return accessSetify(set[0], set[1]);
+            }
+            return accessSetify(set.address, set.storageKeys);
+        });
+    }
+    const result = Object.keys(value).map((addr) => {
+        const storageKeys = value[addr].reduce((accum, storageKey) => {
+            accum[storageKey] = true;
+            return accum;
+        }, {});
+        return accessSetify(addr, Object.keys(storageKeys).sort());
+    });
+    result.sort((a, b) => (a.address.localeCompare(b.address)));
+    return result;
+}
+function formatAccessList(value) {
+    return accessListify(value).map((set) => [set.address, set.storageKeys]);
+}
+function _serializeEip2930(transaction, signature) {
+    const fields = [
+        formatNumber(transaction.chainId || 0, "chainId"),
+        formatNumber(transaction.nonce || 0, "nonce"),
+        formatNumber(transaction.gasPrice || 0, "gasPrice"),
+        formatNumber(transaction.gasLimit || 0, "gasLimit"),
+        ((transaction.to != null) ? getAddress(transaction.to) : "0x"),
+        formatNumber(transaction.value || 0, "value"),
+        (transaction.data || "0x"),
+        (formatAccessList(transaction.accessList || []))
+    ];
+    if (signature) {
+        const sig = splitSignature(signature);
+        fields.push(formatNumber(sig.recoveryParam, "recoveryParam"));
+        fields.push(stripZeros(sig.r));
+        fields.push(stripZeros(sig.s));
+    }
+    return hexConcat(["0x01", encode(fields)]);
+}
+// Legacy Transactions and EIP-155
+function _serialize(transaction, signature) {
+    checkProperties(transaction, allowedTransactionKeys$1);
     const raw = [];
     transactionFields.forEach(function (fieldInfo) {
         let value = transaction[fieldInfo.name] || ([]);
@@ -13889,13 +12814,13 @@ function serialize(transaction, signature) {
         value = arrayify(hexlify(value, options));
         // Fixed-width field
         if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
-            logger$j.throwArgumentError("invalid length for " + fieldInfo.name, ("transaction:" + fieldInfo.name), value);
+            logger$h.throwArgumentError("invalid length for " + fieldInfo.name, ("transaction:" + fieldInfo.name), value);
         }
         // Variable-width (with a maximum)
         if (fieldInfo.maxLength) {
             value = stripZeros(value);
             if (value.length > fieldInfo.maxLength) {
-                logger$j.throwArgumentError("invalid length for " + fieldInfo.name, ("transaction:" + fieldInfo.name), value);
+                logger$h.throwArgumentError("invalid length for " + fieldInfo.name, ("transaction:" + fieldInfo.name), value);
             }
         }
         raw.push(hexlify(value));
@@ -13905,7 +12830,7 @@ function serialize(transaction, signature) {
         // A chainId was provided; if non-zero we'll use EIP-155
         chainId = transaction.chainId;
         if (typeof (chainId) !== "number") {
-            logger$j.throwArgumentError("invalid transaction.chainId", "transaction", transaction);
+            logger$h.throwArgumentError("invalid transaction.chainId", "transaction", transaction);
         }
     }
     else if (signature && !isBytesLike(signature) && signature.v > 28) {
@@ -13934,21 +12859,81 @@ function serialize(transaction, signature) {
         v += chainId * 2 + 8;
         // If an EIP-155 v (directly or indirectly; maybe _vs) was provided, check it!
         if (sig.v > 28 && sig.v !== v) {
-            logger$j.throwArgumentError("transaction.chainId/signature.v mismatch", "signature", signature);
+            logger$h.throwArgumentError("transaction.chainId/signature.v mismatch", "signature", signature);
         }
     }
     else if (sig.v !== v) {
-        logger$j.throwArgumentError("transaction.chainId/signature.v mismatch", "signature", signature);
+        logger$h.throwArgumentError("transaction.chainId/signature.v mismatch", "signature", signature);
     }
     raw.push(hexlify(v));
     raw.push(stripZeros(arrayify(sig.r)));
     raw.push(stripZeros(arrayify(sig.s)));
     return encode(raw);
 }
-function parse(rawTransaction) {
+function serialize(transaction, signature) {
+    // Legacy and EIP-155 Transactions
+    if (transaction.type == null) {
+        return _serialize(transaction, signature);
+    }
+    // Typed Transactions (EIP-2718)
+    switch (transaction.type) {
+        case 1:
+            return _serializeEip2930(transaction, signature);
+        default:
+            break;
+    }
+    return logger$h.throwError(`unsupported transaction type: ${transaction.type}`, Logger.errors.UNSUPPORTED_OPERATION, {
+        operation: "serializeTransaction",
+        transactionType: transaction.type
+    });
+}
+function _parseEip2930(payload) {
+    const transaction = decode(payload.slice(1));
+    if (transaction.length !== 8 && transaction.length !== 11) {
+        logger$h.throwArgumentError("invalid component count for transaction type: 1", "payload", hexlify(payload));
+    }
+    const tx = {
+        type: 1,
+        chainId: handleNumber(transaction[0]).toNumber(),
+        nonce: handleNumber(transaction[1]).toNumber(),
+        gasPrice: handleNumber(transaction[2]),
+        gasLimit: handleNumber(transaction[3]),
+        to: handleAddress(transaction[4]),
+        value: handleNumber(transaction[5]),
+        data: transaction[6],
+        accessList: accessListify(transaction[7]),
+    };
+    // Unsigned EIP-2930 Transaction
+    if (transaction.length === 8) {
+        return tx;
+    }
+    try {
+        const recid = handleNumber(transaction[8]).toNumber();
+        if (recid !== 0 && recid !== 1) {
+            throw new Error("bad recid");
+        }
+        tx.v = recid;
+    }
+    catch (error) {
+        logger$h.throwArgumentError("invalid v for transaction type: 1", "v", transaction[8]);
+    }
+    tx.r = hexZeroPad(transaction[9], 32);
+    tx.s = hexZeroPad(transaction[10], 32);
+    try {
+        const digest = keccak256(_serializeEip2930(tx));
+        tx.from = recoverAddress(digest, { r: tx.r, s: tx.s, recoveryParam: tx.v });
+    }
+    catch (error) {
+        console.log(error);
+    }
+    tx.hash = keccak256(payload);
+    return tx;
+}
+// Legacy Transactions and EIP-155
+function _parse(rawTransaction) {
     const transaction = decode(rawTransaction);
     if (transaction.length !== 9 && transaction.length !== 6) {
-        logger$j.throwArgumentError("invalid raw transaction", "rawTransaction", rawTransaction);
+        logger$h.throwArgumentError("invalid raw transaction", "rawTransaction", rawTransaction);
     }
     const tx = {
         nonce: handleNumber(transaction[0]).toNumber(),
@@ -14000,10 +12985,1195 @@ function parse(rawTransaction) {
         }
         tx.hash = keccak256(rawTransaction);
     }
+    tx.type = null;
     return tx;
 }
+function parse(rawTransaction) {
+    const payload = arrayify(rawTransaction);
+    // Legacy and EIP-155 Transactions
+    if (payload[0] > 0x7f) {
+        return _parse(payload);
+    }
+    // Typed Transaction (EIP-2718)
+    switch (payload[0]) {
+        case 1:
+            return _parseEip2930(payload);
+        default:
+            break;
+    }
+    return logger$h.throwError(`unsupported transaction type: ${payload[0]}`, Logger.errors.UNSUPPORTED_OPERATION, {
+        operation: "parseTransaction",
+        transactionType: payload[0]
+    });
+}
 
-const version$f = "wordlists/5.0.10";
+const version$d = "contracts/5.1.0";
+
+"use strict";
+var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const logger$i = new Logger(version$d);
+;
+;
+///////////////////////////////
+const allowedTransactionKeys$2 = {
+    chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
+    type: true, accessList: true,
+};
+function resolveName(resolver, nameOrPromise) {
+    return __awaiter$3(this, void 0, void 0, function* () {
+        const name = yield nameOrPromise;
+        // If it is already an address, just use it (after adding checksum)
+        try {
+            return getAddress(name);
+        }
+        catch (error) { }
+        if (!resolver) {
+            logger$i.throwError("a provider or signer is needed to resolve ENS names", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "resolveName"
+            });
+        }
+        const address = yield resolver.resolveName(name);
+        if (address == null) {
+            logger$i.throwArgumentError("resolver or addr is not configured for ENS name", "name", name);
+        }
+        return address;
+    });
+}
+// Recursively replaces ENS names with promises to resolve the name and resolves all properties
+function resolveAddresses(resolver, value, paramType) {
+    return __awaiter$3(this, void 0, void 0, function* () {
+        if (Array.isArray(paramType)) {
+            return yield Promise.all(paramType.map((paramType, index) => {
+                return resolveAddresses(resolver, ((Array.isArray(value)) ? value[index] : value[paramType.name]), paramType);
+            }));
+        }
+        if (paramType.type === "address") {
+            return yield resolveName(resolver, value);
+        }
+        if (paramType.type === "tuple") {
+            return yield resolveAddresses(resolver, value, paramType.components);
+        }
+        if (paramType.baseType === "array") {
+            if (!Array.isArray(value)) {
+                return Promise.reject(new Error("invalid value for array"));
+            }
+            return yield Promise.all(value.map((v) => resolveAddresses(resolver, v, paramType.arrayChildren)));
+        }
+        return value;
+    });
+}
+function populateTransaction(contract, fragment, args) {
+    return __awaiter$3(this, void 0, void 0, function* () {
+        // If an extra argument is given, it is overrides
+        let overrides = {};
+        if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
+            overrides = shallowCopy(args.pop());
+        }
+        // Make sure the parameter count matches
+        logger$i.checkArgumentCount(args.length, fragment.inputs.length, "passed to contract");
+        // Populate "from" override (allow promises)
+        if (contract.signer) {
+            if (overrides.from) {
+                // Contracts with a Signer are from the Signer's frame-of-reference;
+                // but we allow overriding "from" if it matches the signer
+                overrides.from = resolveProperties({
+                    override: resolveName(contract.signer, overrides.from),
+                    signer: contract.signer.getAddress()
+                }).then((check) => __awaiter$3(this, void 0, void 0, function* () {
+                    if (getAddress(check.signer) !== check.override) {
+                        logger$i.throwError("Contract with a Signer cannot override from", Logger.errors.UNSUPPORTED_OPERATION, {
+                            operation: "overrides.from"
+                        });
+                    }
+                    return check.override;
+                }));
+            }
+            else {
+                overrides.from = contract.signer.getAddress();
+            }
+        }
+        else if (overrides.from) {
+            overrides.from = resolveName(contract.provider, overrides.from);
+            //} else {
+            // Contracts without a signer can override "from", and if
+            // unspecified the zero address is used
+            //overrides.from = AddressZero;
+        }
+        // Wait for all dependencies to be resolved (prefer the signer over the provider)
+        const resolved = yield resolveProperties({
+            args: resolveAddresses(contract.signer || contract.provider, args, fragment.inputs),
+            address: contract.resolvedAddress,
+            overrides: (resolveProperties(overrides) || {})
+        });
+        // The ABI coded transaction
+        const data = contract.interface.encodeFunctionData(fragment, resolved.args);
+        const tx = {
+            data: data,
+            to: resolved.address
+        };
+        // Resolved Overrides
+        const ro = resolved.overrides;
+        // Populate simple overrides
+        if (ro.nonce != null) {
+            tx.nonce = BigNumber.from(ro.nonce).toNumber();
+        }
+        if (ro.gasLimit != null) {
+            tx.gasLimit = BigNumber.from(ro.gasLimit);
+        }
+        if (ro.gasPrice != null) {
+            tx.gasPrice = BigNumber.from(ro.gasPrice);
+        }
+        if (ro.from != null) {
+            tx.from = ro.from;
+        }
+        if (ro.type != null) {
+            tx.type = ro.type;
+        }
+        if (ro.accessList != null) {
+            tx.accessList = accessListify(ro.accessList);
+        }
+        // If there was no "gasLimit" override, but the ABI specifies a default, use it
+        if (tx.gasLimit == null && fragment.gas != null) {
+            // Conmpute the intrinisic gas cost for this transaction
+            // @TODO: This is based on the yellow paper as of Petersburg; this is something
+            // we may wish to parameterize in v6 as part of the Network object. Since this
+            // is always a non-nil to address, we can ignore G_create, but may wish to add
+            // similar logic to the ContractFactory.
+            let intrinsic = 21000;
+            const bytes = arrayify(data);
+            for (let i = 0; i < bytes.length; i++) {
+                intrinsic += 4;
+                if (bytes[i]) {
+                    intrinsic += 64;
+                }
+            }
+            tx.gasLimit = BigNumber.from(fragment.gas).add(intrinsic);
+        }
+        // Populate "value" override
+        if (ro.value) {
+            const roValue = BigNumber.from(ro.value);
+            if (!roValue.isZero() && !fragment.payable) {
+                logger$i.throwError("non-payable method cannot override value", Logger.errors.UNSUPPORTED_OPERATION, {
+                    operation: "overrides.value",
+                    value: overrides.value
+                });
+            }
+            tx.value = roValue;
+        }
+        // Remvoe the overrides
+        delete overrides.nonce;
+        delete overrides.gasLimit;
+        delete overrides.gasPrice;
+        delete overrides.from;
+        delete overrides.value;
+        delete overrides.type;
+        delete overrides.accessList;
+        // Make sure there are no stray overrides, which may indicate a
+        // typo or using an unsupported key.
+        const leftovers = Object.keys(overrides).filter((key) => (overrides[key] != null));
+        if (leftovers.length) {
+            logger$i.throwError(`cannot override ${leftovers.map((l) => JSON.stringify(l)).join(",")}`, Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: "overrides",
+                overrides: leftovers
+            });
+        }
+        return tx;
+    });
+}
+function buildPopulate(contract, fragment) {
+    return function (...args) {
+        return populateTransaction(contract, fragment, args);
+    };
+}
+function buildEstimate(contract, fragment) {
+    const signerOrProvider = (contract.signer || contract.provider);
+    return function (...args) {
+        return __awaiter$3(this, void 0, void 0, function* () {
+            if (!signerOrProvider) {
+                logger$i.throwError("estimate require a provider or signer", Logger.errors.UNSUPPORTED_OPERATION, {
+                    operation: "estimateGas"
+                });
+            }
+            const tx = yield populateTransaction(contract, fragment, args);
+            return yield signerOrProvider.estimateGas(tx);
+        });
+    };
+}
+function buildCall(contract, fragment, collapseSimple) {
+    const signerOrProvider = (contract.signer || contract.provider);
+    return function (...args) {
+        return __awaiter$3(this, void 0, void 0, function* () {
+            // Extract the "blockTag" override if present
+            let blockTag = undefined;
+            if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
+                const overrides = shallowCopy(args.pop());
+                if (overrides.blockTag != null) {
+                    blockTag = yield overrides.blockTag;
+                }
+                delete overrides.blockTag;
+                args.push(overrides);
+            }
+            // If the contract was just deployed, wait until it is mined
+            if (contract.deployTransaction != null) {
+                yield contract._deployed(blockTag);
+            }
+            // Call a node and get the result
+            const tx = yield populateTransaction(contract, fragment, args);
+            const result = yield signerOrProvider.call(tx, blockTag);
+            try {
+                let value = contract.interface.decodeFunctionResult(fragment, result);
+                if (collapseSimple && fragment.outputs.length === 1) {
+                    value = value[0];
+                }
+                return value;
+            }
+            catch (error) {
+                if (error.code === Logger.errors.CALL_EXCEPTION) {
+                    error.address = contract.address;
+                    error.args = args;
+                    error.transaction = tx;
+                }
+                throw error;
+            }
+        });
+    };
+}
+function buildSend(contract, fragment) {
+    return function (...args) {
+        return __awaiter$3(this, void 0, void 0, function* () {
+            if (!contract.signer) {
+                logger$i.throwError("sending a transaction requires a signer", Logger.errors.UNSUPPORTED_OPERATION, {
+                    operation: "sendTransaction"
+                });
+            }
+            // If the contract was just deployed, wait until it is minded
+            if (contract.deployTransaction != null) {
+                yield contract._deployed();
+            }
+            const txRequest = yield populateTransaction(contract, fragment, args);
+            const tx = yield contract.signer.sendTransaction(txRequest);
+            // Tweak the tw.wait so the receipt has extra properties
+            const wait = tx.wait.bind(tx);
+            tx.wait = (confirmations) => {
+                return wait(confirmations).then((receipt) => {
+                    receipt.events = receipt.logs.map((log) => {
+                        let event = deepCopy(log);
+                        let parsed = null;
+                        try {
+                            parsed = contract.interface.parseLog(log);
+                        }
+                        catch (e) { }
+                        // Successfully parsed the event log; include it
+                        if (parsed) {
+                            event.args = parsed.args;
+                            event.decode = (data, topics) => {
+                                return contract.interface.decodeEventLog(parsed.eventFragment, data, topics);
+                            };
+                            event.event = parsed.name;
+                            event.eventSignature = parsed.signature;
+                        }
+                        // Useful operations
+                        event.removeListener = () => { return contract.provider; };
+                        event.getBlock = () => {
+                            return contract.provider.getBlock(receipt.blockHash);
+                        };
+                        event.getTransaction = () => {
+                            return contract.provider.getTransaction(receipt.transactionHash);
+                        };
+                        event.getTransactionReceipt = () => {
+                            return Promise.resolve(receipt);
+                        };
+                        return event;
+                    });
+                    return receipt;
+                });
+            };
+            return tx;
+        });
+    };
+}
+function buildDefault(contract, fragment, collapseSimple) {
+    if (fragment.constant) {
+        return buildCall(contract, fragment, collapseSimple);
+    }
+    return buildSend(contract, fragment);
+}
+function getEventTag(filter) {
+    if (filter.address && (filter.topics == null || filter.topics.length === 0)) {
+        return "*";
+    }
+    return (filter.address || "*") + "@" + (filter.topics ? filter.topics.map((topic) => {
+        if (Array.isArray(topic)) {
+            return topic.join("|");
+        }
+        return topic;
+    }).join(":") : "");
+}
+class RunningEvent {
+    constructor(tag, filter) {
+        defineReadOnly(this, "tag", tag);
+        defineReadOnly(this, "filter", filter);
+        this._listeners = [];
+    }
+    addListener(listener, once) {
+        this._listeners.push({ listener: listener, once: once });
+    }
+    removeListener(listener) {
+        let done = false;
+        this._listeners = this._listeners.filter((item) => {
+            if (done || item.listener !== listener) {
+                return true;
+            }
+            done = true;
+            return false;
+        });
+    }
+    removeAllListeners() {
+        this._listeners = [];
+    }
+    listeners() {
+        return this._listeners.map((i) => i.listener);
+    }
+    listenerCount() {
+        return this._listeners.length;
+    }
+    run(args) {
+        const listenerCount = this.listenerCount();
+        this._listeners = this._listeners.filter((item) => {
+            const argsCopy = args.slice();
+            // Call the callback in the next event loop
+            setTimeout(() => {
+                item.listener.apply(this, argsCopy);
+            }, 0);
+            // Reschedule it if it not "once"
+            return !(item.once);
+        });
+        return listenerCount;
+    }
+    prepareEvent(event) {
+    }
+    // Returns the array that will be applied to an emit
+    getEmit(event) {
+        return [event];
+    }
+}
+class ErrorRunningEvent extends RunningEvent {
+    constructor() {
+        super("error", null);
+    }
+}
+// @TODO Fragment should inherit Wildcard? and just override getEmit?
+//       or have a common abstract super class, with enough constructor
+//       options to configure both.
+// A Fragment Event will populate all the properties that Wildcard
+// will, and additioanlly dereference the arguments when emitting
+class FragmentRunningEvent extends RunningEvent {
+    constructor(address, contractInterface, fragment, topics) {
+        const filter = {
+            address: address
+        };
+        let topic = contractInterface.getEventTopic(fragment);
+        if (topics) {
+            if (topic !== topics[0]) {
+                logger$i.throwArgumentError("topic mismatch", "topics", topics);
+            }
+            filter.topics = topics.slice();
+        }
+        else {
+            filter.topics = [topic];
+        }
+        super(getEventTag(filter), filter);
+        defineReadOnly(this, "address", address);
+        defineReadOnly(this, "interface", contractInterface);
+        defineReadOnly(this, "fragment", fragment);
+    }
+    prepareEvent(event) {
+        super.prepareEvent(event);
+        event.event = this.fragment.name;
+        event.eventSignature = this.fragment.format();
+        event.decode = (data, topics) => {
+            return this.interface.decodeEventLog(this.fragment, data, topics);
+        };
+        try {
+            event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
+        }
+        catch (error) {
+            event.args = null;
+            event.decodeError = error;
+        }
+    }
+    getEmit(event) {
+        const errors = checkResultErrors(event.args);
+        if (errors.length) {
+            throw errors[0].error;
+        }
+        const args = (event.args || []).slice();
+        args.push(event);
+        return args;
+    }
+}
+// A Wildard Event will attempt to populate:
+//  - event            The name of the event name
+//  - eventSignature   The full signature of the event
+//  - decode           A function to decode data and topics
+//  - args             The decoded data and topics
+class WildcardRunningEvent extends RunningEvent {
+    constructor(address, contractInterface) {
+        super("*", { address: address });
+        defineReadOnly(this, "address", address);
+        defineReadOnly(this, "interface", contractInterface);
+    }
+    prepareEvent(event) {
+        super.prepareEvent(event);
+        try {
+            const parsed = this.interface.parseLog(event);
+            event.event = parsed.name;
+            event.eventSignature = parsed.signature;
+            event.decode = (data, topics) => {
+                return this.interface.decodeEventLog(parsed.eventFragment, data, topics);
+            };
+            event.args = parsed.args;
+        }
+        catch (error) {
+            // No matching event
+        }
+    }
+}
+class BaseContract {
+    constructor(addressOrName, contractInterface, signerOrProvider) {
+        logger$i.checkNew(new.target, Contract);
+        // @TODO: Maybe still check the addressOrName looks like a valid address or name?
+        //address = getAddress(address);
+        defineReadOnly(this, "interface", getStatic((new.target), "getInterface")(contractInterface));
+        if (signerOrProvider == null) {
+            defineReadOnly(this, "provider", null);
+            defineReadOnly(this, "signer", null);
+        }
+        else if (Signer.isSigner(signerOrProvider)) {
+            defineReadOnly(this, "provider", signerOrProvider.provider || null);
+            defineReadOnly(this, "signer", signerOrProvider);
+        }
+        else if (Provider.isProvider(signerOrProvider)) {
+            defineReadOnly(this, "provider", signerOrProvider);
+            defineReadOnly(this, "signer", null);
+        }
+        else {
+            logger$i.throwArgumentError("invalid signer or provider", "signerOrProvider", signerOrProvider);
+        }
+        defineReadOnly(this, "callStatic", {});
+        defineReadOnly(this, "estimateGas", {});
+        defineReadOnly(this, "functions", {});
+        defineReadOnly(this, "populateTransaction", {});
+        defineReadOnly(this, "filters", {});
+        {
+            const uniqueFilters = {};
+            Object.keys(this.interface.events).forEach((eventSignature) => {
+                const event = this.interface.events[eventSignature];
+                defineReadOnly(this.filters, eventSignature, (...args) => {
+                    return {
+                        address: this.address,
+                        topics: this.interface.encodeFilterTopics(event, args)
+                    };
+                });
+                if (!uniqueFilters[event.name]) {
+                    uniqueFilters[event.name] = [];
+                }
+                uniqueFilters[event.name].push(eventSignature);
+            });
+            Object.keys(uniqueFilters).forEach((name) => {
+                const filters = uniqueFilters[name];
+                if (filters.length === 1) {
+                    defineReadOnly(this.filters, name, this.filters[filters[0]]);
+                }
+                else {
+                    logger$i.warn(`Duplicate definition of ${name} (${filters.join(", ")})`);
+                }
+            });
+        }
+        defineReadOnly(this, "_runningEvents", {});
+        defineReadOnly(this, "_wrappedEmits", {});
+        if (addressOrName == null) {
+            logger$i.throwArgumentError("invalid contract address or ENS name", "addressOrName", addressOrName);
+        }
+        defineReadOnly(this, "address", addressOrName);
+        if (this.provider) {
+            defineReadOnly(this, "resolvedAddress", resolveName(this.provider, addressOrName));
+        }
+        else {
+            try {
+                defineReadOnly(this, "resolvedAddress", Promise.resolve(getAddress(addressOrName)));
+            }
+            catch (error) {
+                // Without a provider, we cannot use ENS names
+                logger$i.throwError("provider is required to use ENS name as contract address", Logger.errors.UNSUPPORTED_OPERATION, {
+                    operation: "new Contract"
+                });
+            }
+        }
+        const uniqueNames = {};
+        const uniqueSignatures = {};
+        Object.keys(this.interface.functions).forEach((signature) => {
+            const fragment = this.interface.functions[signature];
+            // Check that the signature is unique; if not the ABI generation has
+            // not been cleaned or may be incorrectly generated
+            if (uniqueSignatures[signature]) {
+                logger$i.warn(`Duplicate ABI entry for ${JSON.stringify(name)}`);
+                return;
+            }
+            uniqueSignatures[signature] = true;
+            // Track unique names; we only expose bare named functions if they
+            // are ambiguous
+            {
+                const name = fragment.name;
+                if (!uniqueNames[name]) {
+                    uniqueNames[name] = [];
+                }
+                uniqueNames[name].push(signature);
+            }
+            if (this[signature] == null) {
+                defineReadOnly(this, signature, buildDefault(this, fragment, true));
+            }
+            // We do not collapse simple calls on this bucket, which allows
+            // frameworks to safely use this without introspection as well as
+            // allows decoding error recovery.
+            if (this.functions[signature] == null) {
+                defineReadOnly(this.functions, signature, buildDefault(this, fragment, false));
+            }
+            if (this.callStatic[signature] == null) {
+                defineReadOnly(this.callStatic, signature, buildCall(this, fragment, true));
+            }
+            if (this.populateTransaction[signature] == null) {
+                defineReadOnly(this.populateTransaction, signature, buildPopulate(this, fragment));
+            }
+            if (this.estimateGas[signature] == null) {
+                defineReadOnly(this.estimateGas, signature, buildEstimate(this, fragment));
+            }
+        });
+        Object.keys(uniqueNames).forEach((name) => {
+            // Ambiguous names to not get attached as bare names
+            const signatures = uniqueNames[name];
+            if (signatures.length > 1) {
+                return;
+            }
+            const signature = signatures[0];
+            // If overwriting a member property that is null, swallow the error
+            try {
+                if (this[name] == null) {
+                    defineReadOnly(this, name, this[signature]);
+                }
+            }
+            catch (e) { }
+            if (this.functions[name] == null) {
+                defineReadOnly(this.functions, name, this.functions[signature]);
+            }
+            if (this.callStatic[name] == null) {
+                defineReadOnly(this.callStatic, name, this.callStatic[signature]);
+            }
+            if (this.populateTransaction[name] == null) {
+                defineReadOnly(this.populateTransaction, name, this.populateTransaction[signature]);
+            }
+            if (this.estimateGas[name] == null) {
+                defineReadOnly(this.estimateGas, name, this.estimateGas[signature]);
+            }
+        });
+    }
+    static getContractAddress(transaction) {
+        return getContractAddress(transaction);
+    }
+    static getInterface(contractInterface) {
+        if (Interface.isInterface(contractInterface)) {
+            return contractInterface;
+        }
+        return new Interface(contractInterface);
+    }
+    // @TODO: Allow timeout?
+    deployed() {
+        return this._deployed();
+    }
+    _deployed(blockTag) {
+        if (!this._deployedPromise) {
+            // If we were just deployed, we know the transaction we should occur in
+            if (this.deployTransaction) {
+                this._deployedPromise = this.deployTransaction.wait().then(() => {
+                    return this;
+                });
+            }
+            else {
+                // @TODO: Once we allow a timeout to be passed in, we will wait
+                // up to that many blocks for getCode
+                // Otherwise, poll for our code to be deployed
+                this._deployedPromise = this.provider.getCode(this.address, blockTag).then((code) => {
+                    if (code === "0x") {
+                        logger$i.throwError("contract not deployed", Logger.errors.UNSUPPORTED_OPERATION, {
+                            contractAddress: this.address,
+                            operation: "getDeployed"
+                        });
+                    }
+                    return this;
+                });
+            }
+        }
+        return this._deployedPromise;
+    }
+    // @TODO:
+    // estimateFallback(overrides?: TransactionRequest): Promise<BigNumber>
+    // @TODO:
+    // estimateDeploy(bytecode: string, ...args): Promise<BigNumber>
+    fallback(overrides) {
+        if (!this.signer) {
+            logger$i.throwError("sending a transactions require a signer", Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" });
+        }
+        const tx = shallowCopy(overrides || {});
+        ["from", "to"].forEach(function (key) {
+            if (tx[key] == null) {
+                return;
+            }
+            logger$i.throwError("cannot override " + key, Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
+        });
+        tx.to = this.resolvedAddress;
+        return this.deployed().then(() => {
+            return this.signer.sendTransaction(tx);
+        });
+    }
+    // Reconnect to a different signer or provider
+    connect(signerOrProvider) {
+        if (typeof (signerOrProvider) === "string") {
+            signerOrProvider = new VoidSigner(signerOrProvider, this.provider);
+        }
+        const contract = new (this.constructor)(this.address, this.interface, signerOrProvider);
+        if (this.deployTransaction) {
+            defineReadOnly(contract, "deployTransaction", this.deployTransaction);
+        }
+        return contract;
+    }
+    // Re-attach to a different on-chain instance of this contract
+    attach(addressOrName) {
+        return new (this.constructor)(addressOrName, this.interface, this.signer || this.provider);
+    }
+    static isIndexed(value) {
+        return Indexed.isIndexed(value);
+    }
+    _normalizeRunningEvent(runningEvent) {
+        // Already have an instance of this event running; we can re-use it
+        if (this._runningEvents[runningEvent.tag]) {
+            return this._runningEvents[runningEvent.tag];
+        }
+        return runningEvent;
+    }
+    _getRunningEvent(eventName) {
+        if (typeof (eventName) === "string") {
+            // Listen for "error" events (if your contract has an error event, include
+            // the full signature to bypass this special event keyword)
+            if (eventName === "error") {
+                return this._normalizeRunningEvent(new ErrorRunningEvent());
+            }
+            // Listen for any event that is registered
+            if (eventName === "event") {
+                return this._normalizeRunningEvent(new RunningEvent("event", null));
+            }
+            // Listen for any event
+            if (eventName === "*") {
+                return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
+            }
+            // Get the event Fragment (throws if ambiguous/unknown event)
+            const fragment = this.interface.getEvent(eventName);
+            return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment));
+        }
+        // We have topics to filter by...
+        if (eventName.topics && eventName.topics.length > 0) {
+            // Is it a known topichash? (throws if no matching topichash)
+            try {
+                const topic = eventName.topics[0];
+                if (typeof (topic) !== "string") {
+                    throw new Error("invalid topic"); // @TODO: May happen for anonymous events
+                }
+                const fragment = this.interface.getEvent(topic);
+                return this._normalizeRunningEvent(new FragmentRunningEvent(this.address, this.interface, fragment, eventName.topics));
+            }
+            catch (error) { }
+            // Filter by the unknown topichash
+            const filter = {
+                address: this.address,
+                topics: eventName.topics
+            };
+            return this._normalizeRunningEvent(new RunningEvent(getEventTag(filter), filter));
+        }
+        return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
+    }
+    _checkRunningEvents(runningEvent) {
+        if (runningEvent.listenerCount() === 0) {
+            delete this._runningEvents[runningEvent.tag];
+            // If we have a poller for this, remove it
+            const emit = this._wrappedEmits[runningEvent.tag];
+            if (emit) {
+                this.provider.off(runningEvent.filter, emit);
+                delete this._wrappedEmits[runningEvent.tag];
+            }
+        }
+    }
+    // Subclasses can override this to gracefully recover
+    // from parse errors if they wish
+    _wrapEvent(runningEvent, log, listener) {
+        const event = deepCopy(log);
+        event.removeListener = () => {
+            if (!listener) {
+                return;
+            }
+            runningEvent.removeListener(listener);
+            this._checkRunningEvents(runningEvent);
+        };
+        event.getBlock = () => { return this.provider.getBlock(log.blockHash); };
+        event.getTransaction = () => { return this.provider.getTransaction(log.transactionHash); };
+        event.getTransactionReceipt = () => { return this.provider.getTransactionReceipt(log.transactionHash); };
+        // This may throw if the topics and data mismatch the signature
+        runningEvent.prepareEvent(event);
+        return event;
+    }
+    _addEventListener(runningEvent, listener, once) {
+        if (!this.provider) {
+            logger$i.throwError("events require a provider or a signer with a provider", Logger.errors.UNSUPPORTED_OPERATION, { operation: "once" });
+        }
+        runningEvent.addListener(listener, once);
+        // Track this running event and its listeners (may already be there; but no hard in updating)
+        this._runningEvents[runningEvent.tag] = runningEvent;
+        // If we are not polling the provider, start polling
+        if (!this._wrappedEmits[runningEvent.tag]) {
+            const wrappedEmit = (log) => {
+                let event = this._wrapEvent(runningEvent, log, listener);
+                // Try to emit the result for the parameterized event...
+                if (event.decodeError == null) {
+                    try {
+                        const args = runningEvent.getEmit(event);
+                        this.emit(runningEvent.filter, ...args);
+                    }
+                    catch (error) {
+                        event.decodeError = error.error;
+                    }
+                }
+                // Always emit "event" for fragment-base events
+                if (runningEvent.filter != null) {
+                    this.emit("event", event);
+                }
+                // Emit "error" if there was an error
+                if (event.decodeError != null) {
+                    this.emit("error", event.decodeError, event);
+                }
+            };
+            this._wrappedEmits[runningEvent.tag] = wrappedEmit;
+            // Special events, like "error" do not have a filter
+            if (runningEvent.filter != null) {
+                this.provider.on(runningEvent.filter, wrappedEmit);
+            }
+        }
+    }
+    queryFilter(event, fromBlockOrBlockhash, toBlock) {
+        const runningEvent = this._getRunningEvent(event);
+        const filter = shallowCopy(runningEvent.filter);
+        if (typeof (fromBlockOrBlockhash) === "string" && isHexString(fromBlockOrBlockhash, 32)) {
+            if (toBlock != null) {
+                logger$i.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
+            }
+            filter.blockHash = fromBlockOrBlockhash;
+        }
+        else {
+            filter.fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash : 0);
+            filter.toBlock = ((toBlock != null) ? toBlock : "latest");
+        }
+        return this.provider.getLogs(filter).then((logs) => {
+            return logs.map((log) => this._wrapEvent(runningEvent, log, null));
+        });
+    }
+    on(event, listener) {
+        this._addEventListener(this._getRunningEvent(event), listener, false);
+        return this;
+    }
+    once(event, listener) {
+        this._addEventListener(this._getRunningEvent(event), listener, true);
+        return this;
+    }
+    emit(eventName, ...args) {
+        if (!this.provider) {
+            return false;
+        }
+        const runningEvent = this._getRunningEvent(eventName);
+        const result = (runningEvent.run(args) > 0);
+        // May have drained all the "once" events; check for living events
+        this._checkRunningEvents(runningEvent);
+        return result;
+    }
+    listenerCount(eventName) {
+        if (!this.provider) {
+            return 0;
+        }
+        if (eventName == null) {
+            return Object.keys(this._runningEvents).reduce((accum, key) => {
+                return accum + this._runningEvents[key].listenerCount();
+            }, 0);
+        }
+        return this._getRunningEvent(eventName).listenerCount();
+    }
+    listeners(eventName) {
+        if (!this.provider) {
+            return [];
+        }
+        if (eventName == null) {
+            const result = [];
+            for (let tag in this._runningEvents) {
+                this._runningEvents[tag].listeners().forEach((listener) => {
+                    result.push(listener);
+                });
+            }
+            return result;
+        }
+        return this._getRunningEvent(eventName).listeners();
+    }
+    removeAllListeners(eventName) {
+        if (!this.provider) {
+            return this;
+        }
+        if (eventName == null) {
+            for (const tag in this._runningEvents) {
+                const runningEvent = this._runningEvents[tag];
+                runningEvent.removeAllListeners();
+                this._checkRunningEvents(runningEvent);
+            }
+            return this;
+        }
+        // Delete any listeners
+        const runningEvent = this._getRunningEvent(eventName);
+        runningEvent.removeAllListeners();
+        this._checkRunningEvents(runningEvent);
+        return this;
+    }
+    off(eventName, listener) {
+        if (!this.provider) {
+            return this;
+        }
+        const runningEvent = this._getRunningEvent(eventName);
+        runningEvent.removeListener(listener);
+        this._checkRunningEvents(runningEvent);
+        return this;
+    }
+    removeListener(eventName, listener) {
+        return this.off(eventName, listener);
+    }
+}
+class Contract extends BaseContract {
+}
+class ContractFactory {
+    constructor(contractInterface, bytecode, signer) {
+        let bytecodeHex = null;
+        if (typeof (bytecode) === "string") {
+            bytecodeHex = bytecode;
+        }
+        else if (isBytes(bytecode)) {
+            bytecodeHex = hexlify(bytecode);
+        }
+        else if (bytecode && typeof (bytecode.object) === "string") {
+            // Allow the bytecode object from the Solidity compiler
+            bytecodeHex = bytecode.object;
+        }
+        else {
+            // Crash in the next verification step
+            bytecodeHex = "!";
+        }
+        // Make sure it is 0x prefixed
+        if (bytecodeHex.substring(0, 2) !== "0x") {
+            bytecodeHex = "0x" + bytecodeHex;
+        }
+        // Make sure the final result is valid bytecode
+        if (!isHexString(bytecodeHex) || (bytecodeHex.length % 2)) {
+            logger$i.throwArgumentError("invalid bytecode", "bytecode", bytecode);
+        }
+        // If we have a signer, make sure it is valid
+        if (signer && !Signer.isSigner(signer)) {
+            logger$i.throwArgumentError("invalid signer", "signer", signer);
+        }
+        defineReadOnly(this, "bytecode", bytecodeHex);
+        defineReadOnly(this, "interface", getStatic((new.target), "getInterface")(contractInterface));
+        defineReadOnly(this, "signer", signer || null);
+    }
+    // @TODO: Future; rename to populteTransaction?
+    getDeployTransaction(...args) {
+        let tx = {};
+        // If we have 1 additional argument, we allow transaction overrides
+        if (args.length === this.interface.deploy.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
+            tx = shallowCopy(args.pop());
+            for (const key in tx) {
+                if (!allowedTransactionKeys$2[key]) {
+                    throw new Error("unknown transaction override " + key);
+                }
+            }
+        }
+        // Do not allow these to be overridden in a deployment transaction
+        ["data", "from", "to"].forEach((key) => {
+            if (tx[key] == null) {
+                return;
+            }
+            logger$i.throwError("cannot override " + key, Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
+        });
+        // Make sure the call matches the constructor signature
+        logger$i.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
+        // Set the data to the bytecode + the encoded constructor arguments
+        tx.data = hexlify(concat([
+            this.bytecode,
+            this.interface.encodeDeploy(args)
+        ]));
+        return tx;
+    }
+    deploy(...args) {
+        return __awaiter$3(this, void 0, void 0, function* () {
+            let overrides = {};
+            // If 1 extra parameter was passed in, it contains overrides
+            if (args.length === this.interface.deploy.inputs.length + 1) {
+                overrides = args.pop();
+            }
+            // Make sure the call matches the constructor signature
+            logger$i.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
+            // Resolve ENS names and promises in the arguments
+            const params = yield resolveAddresses(this.signer, args, this.interface.deploy.inputs);
+            params.push(overrides);
+            // Get the deployment transaction (with optional overrides)
+            const unsignedTx = this.getDeployTransaction(...params);
+            // Send the deployment transaction
+            const tx = yield this.signer.sendTransaction(unsignedTx);
+            const address = getStatic(this.constructor, "getContractAddress")(tx);
+            const contract = getStatic(this.constructor, "getContract")(address, this.interface, this.signer);
+            defineReadOnly(contract, "deployTransaction", tx);
+            return contract;
+        });
+    }
+    attach(address) {
+        return (this.constructor).getContract(address, this.interface, this.signer);
+    }
+    connect(signer) {
+        return new (this.constructor)(this.interface, this.bytecode, signer);
+    }
+    static fromSolidity(compilerOutput, signer) {
+        if (compilerOutput == null) {
+            logger$i.throwError("missing compiler output", Logger.errors.MISSING_ARGUMENT, { argument: "compilerOutput" });
+        }
+        if (typeof (compilerOutput) === "string") {
+            compilerOutput = JSON.parse(compilerOutput);
+        }
+        const abi = compilerOutput.abi;
+        let bytecode = null;
+        if (compilerOutput.bytecode) {
+            bytecode = compilerOutput.bytecode;
+        }
+        else if (compilerOutput.evm && compilerOutput.evm.bytecode) {
+            bytecode = compilerOutput.evm.bytecode;
+        }
+        return new this(abi, bytecode, signer);
+    }
+    static getInterface(contractInterface) {
+        return Contract.getInterface(contractInterface);
+    }
+    static getContractAddress(tx) {
+        return getContractAddress(tx);
+    }
+    static getContract(address, contractInterface, signer) {
+        return new Contract(address, contractInterface, signer);
+    }
+}
+
+/**
+ * var basex = require("base-x");
+ *
+ * This implementation is heavily based on base-x. The main reason to
+ * deviate was to prevent the dependency of Buffer.
+ *
+ * Contributors:
+ *
+ * base-x encoding
+ * Forked from https://github.com/cryptocoinjs/bs58
+ * Originally written by Mike Hearn for BitcoinJ
+ * Copyright (c) 2011 Google Inc
+ * Ported to JavaScript by Stefan Thomas
+ * Merged Buffer refactorings from base58-native by Stephen Pair
+ * Copyright (c) 2013 BitPay Inc
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright base-x contributors (c) 2016
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ *
+ */
+class BaseX {
+    constructor(alphabet) {
+        defineReadOnly(this, "alphabet", alphabet);
+        defineReadOnly(this, "base", alphabet.length);
+        defineReadOnly(this, "_alphabetMap", {});
+        defineReadOnly(this, "_leader", alphabet.charAt(0));
+        // pre-compute lookup table
+        for (let i = 0; i < alphabet.length; i++) {
+            this._alphabetMap[alphabet.charAt(i)] = i;
+        }
+    }
+    encode(value) {
+        let source = arrayify(value);
+        if (source.length === 0) {
+            return "";
+        }
+        let digits = [0];
+        for (let i = 0; i < source.length; ++i) {
+            let carry = source[i];
+            for (let j = 0; j < digits.length; ++j) {
+                carry += digits[j] << 8;
+                digits[j] = carry % this.base;
+                carry = (carry / this.base) | 0;
+            }
+            while (carry > 0) {
+                digits.push(carry % this.base);
+                carry = (carry / this.base) | 0;
+            }
+        }
+        let string = "";
+        // deal with leading zeros
+        for (let k = 0; source[k] === 0 && k < source.length - 1; ++k) {
+            string += this._leader;
+        }
+        // convert digits to a string
+        for (let q = digits.length - 1; q >= 0; --q) {
+            string += this.alphabet[digits[q]];
+        }
+        return string;
+    }
+    decode(value) {
+        if (typeof (value) !== "string") {
+            throw new TypeError("Expected String");
+        }
+        let bytes = [];
+        if (value.length === 0) {
+            return new Uint8Array(bytes);
+        }
+        bytes.push(0);
+        for (let i = 0; i < value.length; i++) {
+            let byte = this._alphabetMap[value[i]];
+            if (byte === undefined) {
+                throw new Error("Non-base" + this.base + " character");
+            }
+            let carry = byte;
+            for (let j = 0; j < bytes.length; ++j) {
+                carry += bytes[j] * this.base;
+                bytes[j] = carry & 0xff;
+                carry >>= 8;
+            }
+            while (carry > 0) {
+                bytes.push(carry & 0xff);
+                carry >>= 8;
+            }
+        }
+        // deal with leading zeros
+        for (let k = 0; value[k] === this._leader && k < value.length - 1; ++k) {
+            bytes.push(0);
+        }
+        return arrayify(new Uint8Array(bytes.reverse()));
+    }
+}
+const Base32 = new BaseX("abcdefghijklmnopqrstuvwxyz234567");
+const Base58 = new BaseX("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz");
+//console.log(Base58.decode("Qmd2V777o5XvJbYMeMb8k2nU5f8d3ciUQ5YpYuWhzv8iDj"))
+//console.log(Base58.encode(Base58.decode("Qmd2V777o5XvJbYMeMb8k2nU5f8d3ciUQ5YpYuWhzv8iDj")))
+
+var SupportedAlgorithm;
+(function (SupportedAlgorithm) {
+    SupportedAlgorithm["sha256"] = "sha256";
+    SupportedAlgorithm["sha512"] = "sha512";
+})(SupportedAlgorithm || (SupportedAlgorithm = {}));
+;
+
+const version$e = "sha2/5.1.0";
+
+"use strict";
+const logger$j = new Logger(version$e);
+function ripemd160$1(data) {
+    return "0x" + (hash_1.ripemd160().update(arrayify(data)).digest("hex"));
+}
+function sha256$1(data) {
+    return "0x" + (hash_1.sha256().update(arrayify(data)).digest("hex"));
+}
+function sha512$1(data) {
+    return "0x" + (hash_1.sha512().update(arrayify(data)).digest("hex"));
+}
+function computeHmac(algorithm, key, data) {
+    if (!SupportedAlgorithm[algorithm]) {
+        logger$j.throwError("unsupported algorithm " + algorithm, Logger.errors.UNSUPPORTED_OPERATION, {
+            operation: "hmac",
+            algorithm: algorithm
+        });
+    }
+    return "0x" + hash_1.hmac(hash_1[algorithm], arrayify(key)).update(arrayify(data)).digest("hex");
+}
+
+"use strict";
+function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
+    password = arrayify(password);
+    salt = arrayify(salt);
+    let hLen;
+    let l = 1;
+    const DK = new Uint8Array(keylen);
+    const block1 = new Uint8Array(salt.length + 4);
+    block1.set(salt);
+    //salt.copy(block1, 0, 0, salt.length)
+    let r;
+    let T;
+    for (let i = 1; i <= l; i++) {
+        //block1.writeUInt32BE(i, salt.length)
+        block1[salt.length] = (i >> 24) & 0xff;
+        block1[salt.length + 1] = (i >> 16) & 0xff;
+        block1[salt.length + 2] = (i >> 8) & 0xff;
+        block1[salt.length + 3] = i & 0xff;
+        //let U = createHmac(password).update(block1).digest();
+        let U = arrayify(computeHmac(hashAlgorithm, password, block1));
+        if (!hLen) {
+            hLen = U.length;
+            T = new Uint8Array(hLen);
+            l = Math.ceil(keylen / hLen);
+            r = keylen - (l - 1) * hLen;
+        }
+        //U.copy(T, 0, 0, hLen)
+        T.set(U);
+        for (let j = 1; j < iterations; j++) {
+            //U = createHmac(password).update(U).digest();
+            U = arrayify(computeHmac(hashAlgorithm, password, U));
+            for (let k = 0; k < hLen; k++)
+                T[k] ^= U[k];
+        }
+        const destPos = (i - 1) * hLen;
+        const len = (i === l ? r : hLen);
+        //T.copy(DK, destPos, 0, len)
+        DK.set(arrayify(T).slice(0, len), destPos);
+    }
+    return hexlify(DK);
+}
+
+const version$f = "wordlists/5.1.0";
 
 "use strict";
 // This gets overridden by rollup
@@ -14532,7 +14702,7 @@ const wordlists = {
 
 "use strict";
 
-const version$g = "hdnode/5.0.10";
+const version$g = "hdnode/5.1.0";
 
 "use strict";
 const logger$l = new Logger(version$g);
@@ -14847,7 +15017,7 @@ function isValidMnemonic(mnemonic, wordlist) {
     return false;
 }
 
-const version$h = "random/5.0.9";
+const version$h = "random/5.1.0";
 
 "use strict";
 const logger$m = new Logger(version$h);
@@ -15705,7 +15875,7 @@ var aesJs = createCommonjsModule(function (module, exports) {
 })(commonjsGlobal);
 });
 
-const version$i = "json-wallets/5.0.12";
+const version$i = "json-wallets/5.1.0";
 
 "use strict";
 function looseArrayify(hexString) {
@@ -16675,7 +16845,7 @@ function decryptJsonWalletSync(json, password) {
     throw new Error("invalid JSON wallet");
 }
 
-const version$j = "wallet/5.0.12";
+const version$j = "wallet/5.1.0";
 
 "use strict";
 var __awaiter$5 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -16840,7 +17010,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.0.9";
+const version$k = "networks/5.1.0";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -16867,14 +17037,30 @@ function ethDefaultProvider(network) {
             catch (error) { }
         }
         if (providers.AlchemyProvider) {
+            // These networks are currently faulty on Alchemy as their
+            // network does not handle the Berlin hardfork, which is
+            // live on these ones.
+            // @TODO: This goes away once AlchemyAPI has upgraded their nodes
+            const skip = ["goerli", "ropsten", "rinkeby"];
             try {
-                providerList.push(new providers.AlchemyProvider(network, options.alchemy));
+                const provider = new providers.AlchemyProvider(network, options.alchemy);
+                if (provider.network && skip.indexOf(provider.network.name) === -1) {
+                    providerList.push(provider);
+                }
             }
             catch (error) { }
         }
         if (providers.PocketProvider) {
+            // These networks are currently faulty on Alchemy as their
+            // network does not handle the Berlin hardfork, which is
+            // live on these ones.
+            // @TODO: This goes away once Pocket has upgraded their nodes
+            const skip = ["goerli", "ropsten", "rinkeby"];
             try {
-                providerList.push(new providers.PocketProvider(network));
+                const provider = new providers.PocketProvider(network);
+                if (provider.network && skip.indexOf(provider.network.name) === -1) {
+                    providerList.push(provider);
+                }
             }
             catch (error) { }
         }
@@ -17079,7 +17265,7 @@ var index$2 = /*#__PURE__*/Object.freeze({
 	encode: encode$1
 });
 
-const version$l = "web/5.0.14";
+const version$l = "web/5.1.0";
 
 "use strict";
 var __awaiter$6 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -17660,7 +17846,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.0.24";
+const version$m = "providers/5.1.0";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -17681,6 +17867,8 @@ class Formatter {
         const strictData = (v) => { return this.data(v, true); };
         formats.transaction = {
             hash: hash,
+            type: Formatter.allowNull(number, null),
+            accessList: Formatter.allowNull(this.accessList.bind(this), null),
             blockHash: Formatter.allowNull(hash, null),
             blockNumber: Formatter.allowNull(number, null),
             transactionIndex: Formatter.allowNull(number, null),
@@ -17706,6 +17894,8 @@ class Formatter {
             to: Formatter.allowNull(address),
             value: Formatter.allowNull(bigNumber),
             data: Formatter.allowNull(strictData),
+            type: Formatter.allowNull(number),
+            accessList: Formatter.allowNull(this.accessList.bind(this), null),
         };
         formats.receiptLog = {
             transactionIndex: number,
@@ -17768,6 +17958,9 @@ class Formatter {
             logIndex: number,
         };
         return formats;
+    }
+    accessList(accessList) {
+        return accessListify(accessList || []);
     }
     // Requires a BigNumberish that is within the IEEE754 safe integer range; returns a number
     // Strict! Used on input.
@@ -17906,28 +18099,9 @@ class Formatter {
         if (transaction.to == null && transaction.creates == null) {
             transaction.creates = this.contractAddress(transaction);
         }
-        // @TODO: use transaction.serialize? Have to add support for including v, r, and s...
-        /*
-        if (!transaction.raw) {
- 
-             // Very loose providers (e.g. TestRPC) do not provide a signature or raw
-             if (transaction.v && transaction.r && transaction.s) {
-                 let raw = [
-                     stripZeros(hexlify(transaction.nonce)),
-                     stripZeros(hexlify(transaction.gasPrice)),
-                     stripZeros(hexlify(transaction.gasLimit)),
-                     (transaction.to || "0x"),
-                     stripZeros(hexlify(transaction.value || "0x")),
-                     hexlify(transaction.data || "0x"),
-                     stripZeros(hexlify(transaction.v || "0x")),
-                     stripZeros(hexlify(transaction.r)),
-                     stripZeros(hexlify(transaction.s)),
-                 ];
- 
-                 transaction.raw = rlpEncode(raw);
-             }
-         }
-         */
+        if (transaction.type === 1 && transaction.accessList == null) {
+            transaction.accessList = [];
+        }
         const result = Formatter.check(this.formats.transaction, transaction);
         if (transaction.chainId != null) {
             let chainId = transaction.chainId;
@@ -19038,6 +19212,15 @@ class BaseProvider extends Provider {
                 }
                 tx[key] = Promise.resolve(values[key]).then((v) => (v ? BigNumber.from(v) : null));
             });
+            ["type"].forEach((key) => {
+                if (values[key] == null) {
+                    return;
+                }
+                tx[key] = Promise.resolve(values[key]).then((v) => ((v != null) ? v : null));
+            });
+            if (values.accessList) {
+                tx.accessList = this.formatter.accessList(values.accessList);
+            }
             ["data"].forEach((key) => {
                 if (values[key] == null) {
                     return;
@@ -19711,7 +19894,8 @@ class UncheckedJsonRpcSigner extends JsonRpcSigner {
     }
 }
 const allowedTransactionKeys$3 = {
-    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
+    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
+    type: true, accessList: true
 };
 class JsonRpcProvider extends BaseProvider {
     constructor(url, network) {
@@ -19953,7 +20137,7 @@ class JsonRpcProvider extends BaseProvider {
         checkProperties(transaction, allowed);
         const result = {};
         // Some nodes (INFURA ropsten; INFURA mainnet is fine) do not like leading zeros.
-        ["gasLimit", "gasPrice", "nonce", "value"].forEach(function (key) {
+        ["gasLimit", "gasPrice", "type", "nonce", "value"].forEach(function (key) {
             if (transaction[key] == null) {
                 return;
             }
@@ -19969,6 +20153,9 @@ class JsonRpcProvider extends BaseProvider {
             }
             result[key] = hexlify(transaction[key]);
         });
+        if (transaction.accessList) {
+            result["accessList"] = accessListify(transaction.accessList);
+        }
         return result;
     }
 }
@@ -20490,10 +20677,16 @@ function getTransactionPostData(transaction) {
         if (transaction[key] == null) {
             continue;
         }
-        let value = hexlify(transaction[key]);
+        let value = transaction[key];
         // Quantity-types require no leading zero, unless 0
-        if ({ gasLimit: true, gasPrice: true, nonce: true, value: true }[key]) {
-            value = hexValue(value);
+        if ({ type: true, gasLimit: true, gasPrice: true, nonce: true, value: true }[key]) {
+            value = hexValue(hexlify(value));
+        }
+        else if (key === "accessList") {
+            value = value;
+        }
+        else {
+            value = hexlify(value);
         }
         result[key] = value;
     }
@@ -20734,6 +20927,12 @@ class EtherscanProvider extends BaseProvider {
                     url += apiKey;
                     return get(url, null);
                 case "call": {
+                    if (params.transaction.type != null) {
+                        logger$z.throwError("Etherscan does not currently support Berlin", Logger.errors.UNSUPPORTED_OPERATION, {
+                            operation: "call",
+                            transaction: params.transaction
+                        });
+                    }
                     if (params.blockTag !== "latest") {
                         throw new Error("EtherscanProvider does not support blockTag for call");
                     }
@@ -20749,6 +20948,12 @@ class EtherscanProvider extends BaseProvider {
                     }
                 }
                 case "estimateGas": {
+                    if (params.transaction.type != null) {
+                        logger$z.throwError("Etherscan does not currently support Berlin", Logger.errors.UNSUPPORTED_OPERATION, {
+                            operation: "estimateGas",
+                            transaction: params.transaction
+                        });
+                    }
                     const postData = getTransactionPostData(params.transaction);
                     postData.module = "proxy";
                     postData.action = "eth_estimateGas";
@@ -21951,7 +22156,7 @@ function sha256$2(types, values) {
     return sha256$1(pack$1(types, values));
 }
 
-const version$n = "units/5.0.11";
+const version$n = "units/5.1.0";
 
 "use strict";
 const logger$G = new Logger(version$n);
@@ -22114,6 +22319,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	soliditySha256: sha256$2,
 	splitSignature: splitSignature,
 	joinSignature: joinSignature,
+	accessListify: accessListify,
 	parseTransaction: parse,
 	serializeTransaction: serialize,
 	getJsonWalletAddress: getJsonWalletAddress,
@@ -22133,7 +22339,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.0.32";
+const version$o = "ethers/5.1.0";
 
 "use strict";
 const logger$H = new Logger(version$o);
@@ -22145,6 +22351,7 @@ var ethers = /*#__PURE__*/Object.freeze({
 	VoidSigner: VoidSigner,
 	getDefaultProvider: getDefaultProvider,
 	providers: index$3,
+	BaseContract: BaseContract,
 	Contract: Contract,
 	ContractFactory: ContractFactory,
 	BigNumber: BigNumber,
@@ -22167,5 +22374,5 @@ try {
 }
 catch (error) { }
 
-export { BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, Wordlist, index$1 as constants, ErrorCode as errors, ethers, getDefaultProvider, logger$H as logger, index$3 as providers, utils$1 as utils, version$o as version, wordlists };
+export { BaseContract, BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, Wordlist, index$1 as constants, ErrorCode as errors, ethers, getDefaultProvider, logger$H as logger, index$3 as providers, utils$1 as utils, version$o as version, wordlists };
 //# sourceMappingURL=ethers.esm.js.map

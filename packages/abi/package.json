@@ -1,15 +1,15 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/address": "^5.0.9",
-    "@ethersproject/bignumber": "^5.0.13",
-    "@ethersproject/bytes": "^5.0.9",
-    "@ethersproject/constants": "^5.0.8",
-    "@ethersproject/hash": "^5.0.10",
-    "@ethersproject/keccak256": "^5.0.7",
-    "@ethersproject/logger": "^5.0.8",
-    "@ethersproject/properties": "^5.0.7",
-    "@ethersproject/strings": "^5.0.8"
+    "@ethersproject/address": "^5.1.0",
+    "@ethersproject/bignumber": "^5.1.0",
+    "@ethersproject/bytes": "^5.1.0",
+    "@ethersproject/constants": "^5.1.0",
+    "@ethersproject/hash": "^5.1.0",
+    "@ethersproject/keccak256": "^5.1.0",
+    "@ethersproject/logger": "^5.1.0",
+    "@ethersproject/properties": "^5.1.0",
+    "@ethersproject/strings": "^5.1.0"
   },
   "description": "Utilities and Classes for parsing, formatting and managing Ethereum ABIs.",
   "ethereum": "donations.ethers.eth",
@@ -43,7 +43,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x0a2b5732cd76a8b36c3278c4ec654bfb04e5c697153740f3a88aa54ae5e3720e",
+  "tarballHash": "0x1268f244b9c48541e6ac01c961ac81782d8dc8212aa3a00f570f8e4a5ebb541b",
   "types": "./lib/index.d.ts",
-  "version": "5.0.13"
+  "version": "5.1.0"
 }

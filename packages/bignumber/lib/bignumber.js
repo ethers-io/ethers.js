@@ -154,6 +154,15 @@ var BigNumber = /** @class */ (function () {
         }
         return null;
     };
+    BigNumber.prototype.toBigInt = function () {
+        try {
+            return BigInt(this.toString());
+        }
+        catch (e) { }
+        return logger.throwError("this platform does not support BigInt", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
+            value: this.toString()
+        });
+    };
     BigNumber.prototype.toString = function () {
         // Lots of people expect this, which we do not support, so check (See: #889)
         if (arguments.length > 0) {

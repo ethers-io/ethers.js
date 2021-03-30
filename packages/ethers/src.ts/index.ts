@@ -23,6 +23,7 @@ export {
     getDefaultProvider,
     providers,
 
+    BaseContract,
     Contract,
     ContractFactory,
 

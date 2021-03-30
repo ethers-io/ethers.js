@@ -654,4 +654,130 @@ describe("EIP-712", function () {
         });
     });
 });
+/*
+type EIP2930Test = {
+    hash: string,
+    data:
+};
+*/
+function _deepEquals(a, b, path) {
+    if (Array.isArray(a)) {
+        if (!Array.isArray(b)) {
+            return `{ path }:!isArray(b)`;
+        }
+        if (a.length !== b.length) {
+            return `{ path }:a.length[${a.length}]!=b.length[${b.length}]`;
+        }
+        for (let i = 0; i < a.length; i++) {
+            const reason = _deepEquals(a[i], b[i], `${path}:${i}`);
+            if (reason != null) {
+                return reason;
+            }
+        }
+        return null;
+    }
+    if (a.eq) {
+        if (!b.eq) {
+            return `${path}:typeof(b)!=BigNumber`;
+        }
+        return a.eq(b) ? null : `${path}:!a.eq(b)`;
+    }
+    if (a != null && typeof (a) === "object") {
+        if (b != null && typeof (b) !== "object") {
+            return `${path}:typeof(b)!=object`;
+        }
+        const keys = Object.keys(a), otherKeys = Object.keys(b);
+        keys.sort();
+        otherKeys.sort();
+        if (keys.length !== otherKeys.length) {
+            return `${path}:keys(a)[${keys.join(",")}]!=keys(b)[${otherKeys.join(",")}]`;
+        }
+        for (const key in a) {
+            const reason = _deepEquals(a[key], b[key], `${path}:${key}`);
+            if (reason != null) {
+                return reason;
+            }
+        }
+        return null;
+    }
+    if (a !== b) {
+        return `${path}[${a} != ${b}]`;
+    }
+    return null;
+}
+function deepEquals(a, b) {
+    return _deepEquals(a, b, "");
+}
+describe("EIP-2930", function () {
+    const Tests = [
+        {
+            hash: "0x48bff7b0e603200118a672f7c622ab7d555a28f98938edb8318803eed7ea7395",
+            data: "0x01f87c030d8465cf89a0825b689432162f3581e88a5f62e8a61892b42c46e2c18f7b8080d7d6940000000000000000000000000000000000000000c080a09659cba42376dbea1433cd6afc9c8ffa38dbeff5408ffdca0ebde6207281a3eca027efbab3e6ed30b088ce0a50533364778e101c9e52acf318daec131da64e7758",
+            preimage: "0x01f839030d8465cf89a0825b689432162f3581e88a5f62e8a61892b42c46e2c18f7b8080d7d6940000000000000000000000000000000000000000c0",
+            tx: {
+                hash: "0x48bff7b0e603200118a672f7c622ab7d555a28f98938edb8318803eed7ea7395",
+                type: 1,
+                chainId: 3,
+                nonce: 13,
+                gasPrice: ethers.BigNumber.from("0x65cf89a0"),
+                gasLimit: ethers.BigNumber.from("0x5b68"),
+                to: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
+                value: ethers.BigNumber.from("0"),
+                data: "0x",
+                accessList: [
+                    {
+                        address: "0x0000000000000000000000000000000000000000",
+                        storageKeys: []
+                    }
+                ],
+                v: 0,
+                r: "0x9659cba42376dbea1433cd6afc9c8ffa38dbeff5408ffdca0ebde6207281a3ec",
+                s: "0x27efbab3e6ed30b088ce0a50533364778e101c9e52acf318daec131da64e7758",
+                from: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
+            }
+        },
+        {
+            hash: "0x1675a417e728fd3562d628d06955ef35b913573d9e417eb4e6a209998499c9d3",
+            data: "0x01f8e2030e8465cf89a08271ac9432162f3581e88a5f62e8a61892b42c46e2c18f7b8080f87cf87a940000000000000000000000000000000000000000f863a0deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefa00000000000111111111122222222223333333333444444444455555555556666a0deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef80a0b0646756f89817d70cdb40aa2ae8b5f43ef65d0926dcf71a7dca5280c93763dfa04d32dbd9a44a2c5639b8434b823938202f75b0a8459f3fcd9f37b2495b7a66a6",
+            preimage: "0x01f89f030e8465cf89a08271ac9432162f3581e88a5f62e8a61892b42c46e2c18f7b8080f87cf87a940000000000000000000000000000000000000000f863a0deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefa00000000000111111111122222222223333333333444444444455555555556666a0deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+            tx: {
+                hash: "0x1675a417e728fd3562d628d06955ef35b913573d9e417eb4e6a209998499c9d3",
+                type: 1,
+                chainId: 3,
+                nonce: 14,
+                gasPrice: ethers.BigNumber.from("0x65cf89a0"),
+                gasLimit: ethers.BigNumber.from("0x71ac"),
+                to: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
+                value: ethers.BigNumber.from("0"),
+                data: "0x",
+                accessList: [
+                    {
+                        address: "0x0000000000000000000000000000000000000000",
+                        storageKeys: [
+                            "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+                            "0x0000000000111111111122222222223333333333444444444455555555556666",
+                            "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+                        ]
+                    }
+                ],
+                v: 0,
+                r: "0xb0646756f89817d70cdb40aa2ae8b5f43ef65d0926dcf71a7dca5280c93763df",
+                s: "0x4d32dbd9a44a2c5639b8434b823938202f75b0a8459f3fcd9f37b2495b7a66a6",
+                from: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
+            }
+        },
+    ];
+    Tests.forEach((test) => {
+        it(`tx:${test.hash}`, function () {
+            const tx = ethers.utils.parseTransaction(test.data);
+            assert.equal(tx.hash, test.hash);
+            const reason = deepEquals(tx, test.tx);
+            assert.ok(reason == null, reason);
+            const preimageData = ethers.utils.serializeTransaction((test.tx));
+            assert.equal(preimageData, test.preimage);
+            const data = ethers.utils.serializeTransaction((test.tx), test.tx);
+            assert.equal(data, test.data);
+        });
+    });
+});
 //# sourceMappingURL=test-utils.js.map

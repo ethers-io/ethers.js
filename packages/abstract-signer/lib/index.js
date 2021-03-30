@@ -57,7 +57,7 @@ var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var allowedTransactionKeys = [
-    "chainId", "data", "from", "gasLimit", "gasPrice", "nonce", "to", "value"
+    "accessList", "chainId", "data", "from", "gasLimit", "gasPrice", "nonce", "to", "type", "value"
 ];
 var forwardErrors = [
     logger_1.Logger.errors.INSUFFICIENT_FUNDS,

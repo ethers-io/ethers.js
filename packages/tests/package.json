@@ -1,10 +1,10 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/cli": "^5.0.8",
-    "@ethersproject/testcases": "^5.0.10",
+    "@ethersproject/cli": "^5.1.0",
+    "@ethersproject/testcases": "^5.1.0",
     "@types/mocha": "^5.2.0",
-    "ethers": "^5.0.25"
+    "ethers": "^5.1.0"
   },
   "description": "Testing package for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -37,7 +37,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0x4948274a38e0063a3dc48f038a40f116e49ae94144ad4921fd501a04a2223b5d",
+  "tarballHash": "0xe1e841ad215ba962bb3ec410d588dd78bae3f578b52ec3834f92800490fc4fdb",
   "types": "./lib/index.d.ts",
-  "version": "5.0.20"
+  "version": "5.1.0"
 }

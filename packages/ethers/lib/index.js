@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Wordlist = exports.version = exports.wordlists = exports.utils = exports.logger = exports.errors = exports.constants = exports.FixedNumber = exports.BigNumber = exports.ContractFactory = exports.Contract = exports.providers = exports.getDefaultProvider = exports.VoidSigner = exports.Wallet = exports.Signer = exports.ethers = void 0;
+exports.Wordlist = exports.version = exports.wordlists = exports.utils = exports.logger = exports.errors = exports.constants = exports.FixedNumber = exports.BigNumber = exports.ContractFactory = exports.Contract = exports.BaseContract = exports.providers = exports.getDefaultProvider = exports.VoidSigner = exports.Wallet = exports.Signer = exports.ethers = void 0;
 // To modify this file, you must update ./misc/admin/lib/cmds/update-exports.js
 var ethers = __importStar(require("./ethers"));
 exports.ethers = ethers;
@@ -36,6 +36,7 @@ Object.defineProperty(exports, "Wallet", { enumerable: true, get: function () { 
 Object.defineProperty(exports, "VoidSigner", { enumerable: true, get: function () { return ethers_1.VoidSigner; } });
 Object.defineProperty(exports, "getDefaultProvider", { enumerable: true, get: function () { return ethers_1.getDefaultProvider; } });
 Object.defineProperty(exports, "providers", { enumerable: true, get: function () { return ethers_1.providers; } });
+Object.defineProperty(exports, "BaseContract", { enumerable: true, get: function () { return ethers_1.BaseContract; } });
 Object.defineProperty(exports, "Contract", { enumerable: true, get: function () { return ethers_1.Contract; } });
 Object.defineProperty(exports, "ContractFactory", { enumerable: true, get: function () { return ethers_1.ContractFactory; } });
 Object.defineProperty(exports, "BigNumber", { enumerable: true, get: function () { return ethers_1.BigNumber; } });

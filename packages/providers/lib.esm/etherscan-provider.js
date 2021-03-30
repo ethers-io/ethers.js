@@ -23,10 +23,16 @@ function getTransactionPostData(transaction) {
         if (transaction[key] == null) {
             continue;
         }
-        let value = hexlify(transaction[key]);
+        let value = transaction[key];
         // Quantity-types require no leading zero, unless 0
-        if ({ gasLimit: true, gasPrice: true, nonce: true, value: true }[key]) {
-            value = hexValue(value);
+        if ({ type: true, gasLimit: true, gasPrice: true, nonce: true, value: true }[key]) {
+            value = hexValue(hexlify(value));
+        }
+        else if (key === "accessList") {
+            value = value;
+        }
+        else {
+            value = hexlify(value);
         }
         result[key] = value;
     }
@@ -267,6 +273,12 @@ export class EtherscanProvider extends BaseProvider {
                     url += apiKey;
                     return get(url, null);
                 case "call": {
+                    if (params.transaction.type != null) {
+                        logger.throwError("Etherscan does not currently support Berlin", Logger.errors.UNSUPPORTED_OPERATION, {
+                            operation: "call",
+                            transaction: params.transaction
+                        });
+                    }
                     if (params.blockTag !== "latest") {
                         throw new Error("EtherscanProvider does not support blockTag for call");
                     }
@@ -282,6 +294,12 @@ export class EtherscanProvider extends BaseProvider {
                     }
                 }
                 case "estimateGas": {
+                    if (params.transaction.type != null) {
+                        logger.throwError("Etherscan does not currently support Berlin", Logger.errors.UNSUPPORTED_OPERATION, {
+                            operation: "estimateGas",
+                            transaction: params.transaction
+                        });
+                    }
                     const postData = getTransactionPostData(params.transaction);
                     postData.module = "proxy";
                     postData.action = "eth_estimateGas";

@@ -58,6 +58,7 @@ var bytes_1 = require("@ethersproject/bytes");
 var hash_1 = require("@ethersproject/hash");
 var properties_1 = require("@ethersproject/properties");
 var strings_1 = require("@ethersproject/strings");
+var transactions_1 = require("@ethersproject/transactions");
 var web_1 = require("@ethersproject/web");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
@@ -324,7 +325,8 @@ var UncheckedJsonRpcSigner = /** @class */ (function (_super) {
     return UncheckedJsonRpcSigner;
 }(JsonRpcSigner));
 var allowedTransactionKeys = {
-    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
+    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
+    type: true, accessList: true
 };
 var JsonRpcProvider = /** @class */ (function (_super) {
     __extends(JsonRpcProvider, _super);
@@ -600,7 +602,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         properties_1.checkProperties(transaction, allowed);
         var result = {};
         // Some nodes (INFURA ropsten; INFURA mainnet is fine) do not like leading zeros.
-        ["gasLimit", "gasPrice", "nonce", "value"].forEach(function (key) {
+        ["gasLimit", "gasPrice", "type", "nonce", "value"].forEach(function (key) {
             if (transaction[key] == null) {
                 return;
             }
@@ -616,6 +618,9 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             }
             result[key] = bytes_1.hexlify(transaction[key]);
         });
+        if (transaction.accessList) {
+            result["accessList"] = transactions_1.accessListify(transaction.accessList);
+        }
         return result;
     };
     return JsonRpcProvider;

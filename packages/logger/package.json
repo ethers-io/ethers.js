@@ -1,5 +1,6 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
+  "dependencies": {},
   "description": "Logger utility functions for ethers.",
   "ethereum": "donations.ethers.eth",
   "funding": [
@@ -32,7 +33,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xc23dc2e024869f85b3d765dc55fe6814be3fedc316e1fc5be0fa883d532c413e",
+  "tarballHash": "0x773014d6567c4d86243cc06bbd1760af3eb4b2b6cb395a914c5b61a3ec89205d",
   "types": "./lib/index.d.ts",
-  "version": "5.0.10"
+  "version": "5.1.0"
 }

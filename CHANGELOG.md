@@ -3,6 +3,15 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.1.0 (2021-03-30 14:44)
+--------------------------------
+
+  - Added BigNumber.toBigInt method. ([#1415](https://github.com/ethers-io/ethers.js/issues/1415); [81fd628](https://github.com/ethers-io/ethers.js/commit/81fd628292b7dde90fe5115074fa68476a872dbf))
+  - Abstracted Contract with BaseContract without meta-class properties for easier extensions. ([#1384](https://github.com/ethers-io/ethers.js/issues/1384); [87ceaed](https://github.com/ethers-io/ethers.js/commit/87ceaed4be21283619da74678cf371c228c918b7))
+  - Fixed Contract properties that collide with null member properties. ([#1393](https://github.com/ethers-io/ethers.js/issues/1393); [0e1721b](https://github.com/ethers-io/ethers.js/commit/0e1721b13084dacf63089e47116f7d5331be4f36))
+  - Added EIP-2930 support. ([#1364](https://github.com/ethers-io/ethers.js/issues/1364); [c47d2eb](https://github.com/ethers-io/ethers.js/commit/c47d2eba4dc741eb5cb754c3ef5064b8ea7ac7cc))
+  - Added abstraction for EIP-2718 support. ([1db4ce1](https://github.com/ethers-io/ethers.js/commit/1db4ce12d49e235a7155de24ee153f409e7e7370))
+
 ethers/v5.0.32 (2021-03-07 18:17)
 ---------------------------------
 

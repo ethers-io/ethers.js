@@ -1,2 +1,2 @@
-export const version = "networks/5.0.9";
+export const version = "networks/5.1.0";
 //# sourceMappingURL=_version.js.map

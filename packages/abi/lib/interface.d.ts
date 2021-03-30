@@ -26,7 +26,7 @@ export declare class Indexed extends Description<Indexed> {
     static isIndexed(value: any): value is Indexed;
 }
 export declare class Interface {
-    readonly fragments: Array<Fragment>;
+    readonly fragments: ReadonlyArray<Fragment>;
     readonly errors: {
         [name: string]: any;
     };
@@ -42,7 +42,7 @@ export declare class Interface {
     readonly deploy: ConstructorFragment;
     readonly _abiCoder: AbiCoder;
     readonly _isInterface: boolean;
-    constructor(fragments: string | Array<Fragment | JsonFragment | string>);
+    constructor(fragments: string | ReadonlyArray<Fragment | JsonFragment | string>);
     format(format?: string): string | Array<string>;
     static getAbiCoder(): AbiCoder;
     static getAddress(address: string): string;
@@ -52,19 +52,19 @@ export declare class Interface {
     getEvent(nameOrSignatureOrTopic: string): EventFragment;
     getSighash(functionFragment: FunctionFragment | string): string;
     getEventTopic(eventFragment: EventFragment | string): string;
-    _decodeParams(params: Array<ParamType>, data: BytesLike): Result;
-    _encodeParams(params: Array<ParamType>, values: Array<any>): string;
-    encodeDeploy(values?: Array<any>): string;
+    _decodeParams(params: ReadonlyArray<ParamType>, data: BytesLike): Result;
+    _encodeParams(params: ReadonlyArray<ParamType>, values: ReadonlyArray<any>): string;
+    encodeDeploy(values?: ReadonlyArray<any>): string;
     decodeFunctionData(functionFragment: FunctionFragment | string, data: BytesLike): Result;
-    encodeFunctionData(functionFragment: FunctionFragment | string, values?: Array<any>): string;
+    encodeFunctionData(functionFragment: FunctionFragment | string, values?: ReadonlyArray<any>): string;
     decodeFunctionResult(functionFragment: FunctionFragment | string, data: BytesLike): Result;
-    encodeFunctionResult(functionFragment: FunctionFragment | string, values?: Array<any>): string;
-    encodeFilterTopics(eventFragment: EventFragment, values: Array<any>): Array<string | Array<string>>;
-    encodeEventLog(eventFragment: EventFragment, values: Array<any>): {
+    encodeFunctionResult(functionFragment: FunctionFragment | string, values?: ReadonlyArray<any>): string;
+    encodeFilterTopics(eventFragment: EventFragment, values: ReadonlyArray<any>): Array<string | Array<string>>;
+    encodeEventLog(eventFragment: EventFragment, values: ReadonlyArray<any>): {
         data: string;
         topics: Array<string>;
     };
-    decodeEventLog(eventFragment: EventFragment | string, data: BytesLike, topics?: Array<string>): Result;
+    decodeEventLog(eventFragment: EventFragment | string, data: BytesLike, topics?: ReadonlyArray<string>): Result;
     parseTransaction(tx: {
         data: string;
         value?: BigNumberish;

@@ -1,5 +1,6 @@
 import { Block, TransactionReceipt, TransactionResponse } from "@ethersproject/abstract-provider";
 import { BigNumber } from "@ethersproject/bignumber";
+import { AccessList } from "@ethersproject/transactions";
 export declare type FormatFunc = (value: any) => any;
 export declare type FormatFuncs = {
     [key: string]: FormatFunc;
@@ -18,6 +19,7 @@ export declare class Formatter {
     readonly formats: Formats;
     constructor();
     getDefaultFormats(): Formats;
+    accessList(accessList: Array<any>): AccessList;
     number(number: any): number;
     bigNumber(value: any): BigNumber;
     boolean(value: any): boolean;
