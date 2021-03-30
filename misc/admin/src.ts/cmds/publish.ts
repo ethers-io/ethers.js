@@ -150,6 +150,9 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
     if (publishNames.indexOf("ethers") >= 0 || forcePublish) {
         const change = getLatestChange();
 
+        const patchVersion = change.version.substring(1);
+        const minorVersion = patchVersion.split(".").slice(0, 2).join(".")
+
         const awsAccessId = await config.get("aws-upload-scripts-accesskey");
         const awsSecretKey = await config.get("aws-upload-scripts-secretkey");
 
@@ -170,7 +173,7 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
             content += '<script type="text/javascript"\n';
             content += `        integrity="sha384-${ hash }"\n`;
             content += '        crossorigin="anonymous"\n';
-            content += `        src="https:/\/cdn-cors.ethers.io/lib/ethers-${ change.version.substring(1) }.umd.min.js">\n`;
+            content += `        src="https:/\/cdn-cors.ethers.io/lib/ethers-${ patchVersion }.umd.min.js">\n`;
             content += '</script>\n';
             content += '```';
 
@@ -180,7 +183,7 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
             console.log(`${ colorify.bold("Published release:") } ${ link }`);
         }
 
-        // Upload libs to the CDN (as ethers-v5.0 and ethers-5.0.x)
+        // Upload libs to the CDN (as ethers-v5.1 and ethers-5.1.x)
         {
             const bucketNameLib = await config.get("aws-upload-scripts-bucket");
             const originRootLib = await config.get("aws-upload-scripts-root");
@@ -194,7 +197,7 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
                 secretAccessKey: awsSecretKey
             });
 
-            // Upload the libs to ethers-v5.0 and ethers-5.0.x
+            // Upload the libs to ethers-v5.1 and ethers-5.1.x
             const fileInfos: Array<{ bucketName: string, originRoot: string, filename: string, key: string, suffix?: string }> = [
                 // The CORS-enabled versions on cdn-cors.ethers.io
                 {
@@ -202,14 +205,14 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
                     originRoot: originRootCors,
                     suffix: "-cors",
                     filename: "packages/ethers/dist/ethers.esm.min.js",
-                    key: `ethers-${ change.version.substring(1) }.esm.min.js`
+                    key: `ethers-${ patchVersion }.esm.min.js`
                 },
                 {
                     bucketName: bucketNameCors,
                     originRoot: originRootCors,
                     suffix: "-cors",
                     filename: "packages/ethers/dist/ethers.umd.min.js",
-                    key: `ethers-${ change.version.substring(1) }.umd.min.js`
+                    key: `ethers-${ patchVersion }.umd.min.js`
                 },
 
                 // The non-CORS-enabled versions on cdn.ethers.io
@@ -217,25 +220,25 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
                     bucketName: bucketNameLib,
                     originRoot: originRootLib,
                     filename: "packages/ethers/dist/ethers.esm.min.js",
-                    key: `ethers-${ change.version.substring(1) }.esm.min.js`
+                    key: `ethers-${ patchVersion }.esm.min.js`
                 },
                 {
                     bucketName: bucketNameLib,
                     originRoot: originRootLib,
                     filename: "packages/ethers/dist/ethers.umd.min.js",
-                    key: `ethers-${ change.version.substring(1) }.umd.min.js`
+                    key: `ethers-${ patchVersion }.umd.min.js`
                 },
                 {
                     bucketName: bucketNameLib,
                     originRoot: originRootLib,
                     filename: "packages/ethers/dist/ethers.esm.min.js",
-                    key: "ethers-5.0.esm.min.js"
+                    key: `ethers-${ minorVersion }.esm.min.js`
                 },
                 {
                     bucketName: bucketNameLib,
                     originRoot: originRootLib,
                     filename: "packages/ethers/dist/ethers.umd.min.js",
-                    key: "ethers-5.0.umd.min.js"
+                    key: `ethers-${ minorVersion }.umd.min.js`
                 },
             ];
 

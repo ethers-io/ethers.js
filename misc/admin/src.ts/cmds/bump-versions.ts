@@ -36,7 +36,13 @@ import { loadJson, repeat, saveJson } from "../utils";
         let version = pNpm.version;
 
         if (tarballHash !== pNpm.tarballHash) {
-            version = semver.inc(version, "patch");
+            if (semver.gt(pLocal.version, version)) {
+                // Already have a more recent version locally
+                version = pLocal.version;
+            } else {
+                // Bump the patch version from NPM
+                version = semver.inc(version, "patch");
+            }
 
             output.push([
                 "  ",
