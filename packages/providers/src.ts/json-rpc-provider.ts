@@ -275,6 +275,11 @@ export class JsonRpcProvider extends BaseProvider {
     _pendingFilter: Promise<number>;
     _nextId: number;
 
+    // During any given event loop, the results for a given call will
+    // all be the same, so we can dedup the calls to save requests and
+    // bandwidth. @TODO: Try out generalizing this against send?
+    _eventLoopCache: Record<string, Promise<any>>;
+
     constructor(url?: ConnectionInfo | string, network?: Networkish) {
         logger.checkNew(new.target, JsonRpcProvider);
 
@@ -295,6 +300,8 @@ export class JsonRpcProvider extends BaseProvider {
 
         super(networkOrReady);
 
+        this._eventLoopCache = { };
+
         // Default URL
         if (!url) { url = getStatic<() => string>(this.constructor, "defaultUrl")(); }
 
@@ -313,7 +320,19 @@ export class JsonRpcProvider extends BaseProvider {
         return "http:/\/localhost:8545";
     }
 
-    async detectNetwork(): Promise<Network> {
+    detectNetwork(): Promise<Network> {
+        if (!this._eventLoopCache["detectNetwork"]) {
+            this._eventLoopCache["detectNetwork"] = this._uncachedDetectNetwork();
+
+            // Clear this cache at the beginning of the next event loop
+            setTimeout(() => {
+                this._eventLoopCache["detectNetwork"] = null;
+            }, 0);
+        }
+        return this._eventLoopCache["detectNetwork"];
+    }
+
+    async _uncachedDetectNetwork(): Promise<Network> {
         await timer(0);
 
         let chainId = null;
@@ -371,7 +390,14 @@ export class JsonRpcProvider extends BaseProvider {
             provider: this
         });
 
-        return fetchJson(this.connection, JSON.stringify(request), getResult).then((result) => {
+        // We can expand this in the future to any call, but for now these
+        // are the biggest wins and do not require any serializing parameters.
+        const cache = ([ "eth_chainId", "eth_blockNumber" ].indexOf(method) >= 0);
+        if (cache && this._eventLoopCache[method]) {
+            return this._eventLoopCache[method];
+        }
+
+        const result = fetchJson(this.connection, JSON.stringify(request), getResult).then((result) => {
             this.emit("debug", {
                 action: "response",
                 request: request,
@@ -391,6 +417,16 @@ export class JsonRpcProvider extends BaseProvider {
 
             throw error;
         });
+
+        // Cache the fetch, but clear it on the next event loop
+        if (cache) {
+            this._eventLoopCache[method] = result;
+            setTimeout(() => {
+                this._eventLoopCache[method] = null;
+            }, 0);
+        }
+
+        return result;
     }
 
     prepareRequest(method: string, params: any): [ string, Array<any> ] {
