@@ -101,7 +101,7 @@ with Ethereum and is available in all major Ethereum node implementations
 third-party web services (e.g. [[link-infura]]). It typically provides:
 
 - A connection to the Ethereum network (a [[Provider]])
-- Holds your private key and can sign thing (a [[Signer]])
+- Holds your private key and can sign things (a [[Signer]])
 
 _code: Connecting to an RPC client @lang<script>
 
