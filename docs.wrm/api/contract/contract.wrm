@@ -120,6 +120,13 @@ number is used. Otherwise a [[BigNumber]] is returned.
 
 For bytes (both fixed length and dynamic), a [[DataHexString]] is returned.
 
+If the call reverts (or runs out of gas), a [CALL_EXCEPTION](errors--call-exception)
+will be thrown which will include:
+
+- ``error.address`` - the contract address
+- ``error.args`` - the arguments passed into the method
+- ``error.transaction`` - the transaction
+
 The //overrides// object for a read-only method may include any of:
 
 - ``overrides.from`` - the ``msg.sender`` (or ``CALLER``) to use during the
