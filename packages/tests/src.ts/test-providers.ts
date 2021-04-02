@@ -682,9 +682,6 @@ Object.keys(blockchainData).forEach((network) => {
     tests.transactions.forEach((test) => {
         addObjectTest(`fetches transaction ${ test.hash }`, async (provider: ethers.providers.Provider) => {
             const tx = await provider.getTransaction(test.hash);
-//console.log("TX");
-//console.dir(test, { depth: null })
-//console.dir(tx, { depth: null })
 
             // This changes with every block
             assert.equal(typeof(tx.confirmations), "number", "confirmations is a number");
@@ -695,12 +692,13 @@ Object.keys(blockchainData).forEach((network) => {
 
             return tx;
         }, test, (provider: string, network: string, test: TestDescription) => {
-            if (network === "ropsten" && (provider === "AlchemyProvider" || provider === "PocketProvider")) {
+            // Temporary
+            if (network === "ropsten" && provider === "PocketProvider") {
                 console.log(`Skipping ${ provider }; incomplete Berlin support`);
                 return true;
             }
 
-            return false; //(provider === "EtherscanProvider");
+            return false;
         });
     });
 
@@ -810,7 +808,8 @@ testFunctions.push({
     timeout: 300,                  // 5 minutes
     networks: [ "ropsten" ],       // Only test on Ropsten
     checkSkip: (provider: string, network: string, test: TestDescription) => {
-        return (provider === "PocketProvider" || provider === "EtherscanProvider" || provider === "AlchemyProvider");
+        // Temporary
+        return (provider === "PocketProvider" || provider === "EtherscanProvider");
     },
     execute: async (provider: ethers.providers.Provider) => {
         const wallet = fundWallet.connect(provider);
