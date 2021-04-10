@@ -164,7 +164,7 @@ _subsection: Solidity Topics @<events-solidity>
 This is a quick (and non-comprehensive) overview of how events are computed
 in Solidity.
 
-This is likely out of the scope for most developers, but may be intersting
+This is likely out of the scope for most developers, but may be interesting
 to those who want to learn a bit more about the underlying technology.
 
 Solidity provides two types of events, anonymous and non-anonymous. The
