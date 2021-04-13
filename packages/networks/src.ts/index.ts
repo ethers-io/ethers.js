@@ -5,10 +5,34 @@ import { version } from "./_version";
 const logger = new Logger(version);
 
 import { Network, Networkish } from "./types";
+import {  
+    HOMESTEAD_NETWORK,
+    ROPSTEN_NETWORK,
+    CLASSIC_MORDOR_NETWORK,
+    UNSPECIFIED_NETWORK,
+    MORDEN_NETWORK,
+    RINKEBY_NETWORK,
+    KOVAN_NETWORK,
+    GOERLI_NETWORK,
+    CLASSIC_NETWORK,
+    CLASSIC_MORDEN_NETWORK,
+    CLASSIC_KOTTI_NETWORK
+} from "./constants";
 
 export {
     Network,
-    Networkish
+    Networkish,
+    HOMESTEAD_NETWORK,
+    ROPSTEN_NETWORK,
+    CLASSIC_MORDOR_NETWORK,
+    UNSPECIFIED_NETWORK,
+    MORDEN_NETWORK,
+    RINKEBY_NETWORK,
+    KOVAN_NETWORK,
+    GOERLI_NETWORK,
+    CLASSIC_NETWORK,
+    CLASSIC_MORDEN_NETWORK,
+    CLASSIC_KOTTI_NETWORK
 };
 
 type DefaultProviderFunc = (providers: any, options?: any) => any;
@@ -43,7 +67,7 @@ function ethDefaultProvider(network: string | Network): Renetworkable {
             // network does not handle the Berlin hardfork, which is
             // live on these ones.
             // @TODO: This goes away once AlchemyAPI has upgraded their nodes
-            const skip = [ "goerli", "ropsten", "rinkeby" ];
+            const skip = [ GOERLI_NETWORK.name, ROPSTEN_NETWORK.name, RINKEBY_NETWORK.name ];
             try {
                 const provider = new providers.AlchemyProvider(network, options.alchemy);
                 if (provider.network && skip.indexOf(provider.network.name) === -1) {
@@ -57,7 +81,7 @@ function ethDefaultProvider(network: string | Network): Renetworkable {
             // network does not handle the Berlin hardfork, which is
             // live on these ones.
             // @TODO: This goes away once Pocket has upgraded their nodes
-            const skip = [ "goerli", "ropsten", "rinkeby" ];
+            const skip = [ GOERLI_NETWORK.name, ROPSTEN_NETWORK.name, RINKEBY_NETWORK.name ];
             try {
                 const provider = new providers.PocketProvider(network);
                 if (provider.network && skip.indexOf(provider.network.name) === -1) {
@@ -78,7 +102,7 @@ function ethDefaultProvider(network: string | Network): Renetworkable {
             let quorum = 1;
             if (options.quorum != null) {
                 quorum = options.quorum;
-            } else if (network === "homestead") {
+            } else if (network === HOMESTEAD_NETWORK.name) {
                 quorum = 2;
             }
             return new providers.FallbackProvider(providerList, quorum);
@@ -111,82 +135,61 @@ function etcDefaultProvider(url: string, network: string | Network): Renetworkab
 }
 
 const homestead: Network = {
-    chainId: 1,
-    ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
-    name: "homestead",
-    _defaultProvider: ethDefaultProvider("homestead")
+    ...HOMESTEAD_NETWORK,
+    _defaultProvider: ethDefaultProvider(HOMESTEAD_NETWORK.name)
 };
 
 const ropsten: Network = {
-    chainId: 3,
-    ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
-    name: "ropsten",
-    _defaultProvider: ethDefaultProvider("ropsten")
+    ...ROPSTEN_NETWORK,
+    _defaultProvider: ethDefaultProvider(ROPSTEN_NETWORK.name)
 };
 
 const classicMordor: Network = {
-    chainId: 63,
-    name: "classicMordor",
-    _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/mordor", "classicMordor")
+    ...CLASSIC_MORDOR_NETWORK,
+    _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/mordor", CLASSIC_MORDOR_NETWORK.name)
 };
 
 const networks: { [name: string]: Network } = {
-    unspecified: {
-        chainId: 0,
-        name: "unspecified"
-    },
+    unspecified: UNSPECIFIED_NETWORK,
 
     homestead: homestead,
     mainnet: homestead,
 
-    morden: {
-        chainId: 2,
-        name: "morden"
-    },
+    morden: MORDEN_NETWORK,
 
     ropsten: ropsten,
     testnet: ropsten,
 
     rinkeby: {
-        chainId: 4,
-        ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
-        name: "rinkeby",
-        _defaultProvider: ethDefaultProvider("rinkeby")
+        ...RINKEBY_NETWORK,
+        _defaultProvider: ethDefaultProvider(RINKEBY_NETWORK.name)
     },
 
     kovan: {
-        chainId: 42,
-        name: "kovan",
-        _defaultProvider: ethDefaultProvider("kovan")
+        ...KOVAN_NETWORK,
+        _defaultProvider: ethDefaultProvider(KOVAN_NETWORK.name)
     },
 
     goerli: {
-        chainId: 5,
-        ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
-        name: "goerli",
-        _defaultProvider: ethDefaultProvider("goerli")
+        ...GOERLI_NETWORK,
+        _defaultProvider: ethDefaultProvider(GOERLI_NETWORK.name)
      },
 
 
     // ETC (See: #351)
     classic: {
-        chainId: 61,
-        name: "classic",
-        _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/etc", "classic")
+        ...CLASSIC_NETWORK,
+        _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/etc", CLASSIC_NETWORK.name)
     },
 
-    classicMorden: {
-        chainId: 62,
-        name: "classicMorden",
-    },
+    classicMorden: CLASSIC_MORDEN_NETWORK,
 
     classicMordor: classicMordor,
     classicTestnet: classicMordor,
 
     classicKotti: {
-        chainId: 6,
-        name: "classicKotti",
-        _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/kotti", "classicKotti")
+        ...CLASSIC_KOTTI_NETWORK,
+        _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/kotti", CLASSIC_KOTTI_NETWORK.name)
     },
 }
 
