@@ -775,11 +775,11 @@ export class BaseContract {
     }
 
     // @TODO: Allow timeout?
-    deployed(): Promise<Contract> {
+    deployed<C extends Contract>(): Promise<C> {
         return this._deployed();
     }
 
-    _deployed(blockTag?: BlockTag): Promise<Contract> {
+    _deployed<C extends Contract>(blockTag?: BlockTag): Promise<C> {
         if (!this._deployedPromise) {
 
             // If we were just deployed, we know the transaction we should occur in
@@ -805,7 +805,7 @@ export class BaseContract {
             }
         }
 
-        return this._deployedPromise;
+        return this._deployedPromise as Promise<C>;
     }
 
     // @TODO:
@@ -833,7 +833,7 @@ export class BaseContract {
     }
 
     // Reconnect to a different signer or provider
-    connect(signerOrProvider: Signer | Provider | string): Contract {
+    connect<C extends Contract>(signerOrProvider: Signer | Provider | string): C {
         if (typeof(signerOrProvider) === "string") {
             signerOrProvider = new VoidSigner(signerOrProvider, this.provider);
         }
@@ -842,12 +842,12 @@ export class BaseContract {
         if (this.deployTransaction) {
             defineReadOnly(contract, "deployTransaction", this.deployTransaction);
         }
-        return contract;
+        return contract as C;
     }
 
     // Re-attach to a different on-chain instance of this contract
-    attach(addressOrName: string): Contract {
-        return new (<{ new(...args: any[]): Contract }>(this.constructor))(addressOrName, this.interface, this.signer || this.provider);
+    attach<C extends Contract>(addressOrName: string): C {
+        return new (<{ new(...args: any[]): Contract }>(this.constructor))(addressOrName, this.interface, this.signer || this.provider) as C;
     }
 
     static isIndexed(value: any): value is Indexed {
@@ -1167,7 +1167,7 @@ export class ContractFactory {
         return tx
     }
 
-    async deploy(...args: Array<any>): Promise<Contract> {
+    async deploy<C extends Contract>(...args: Array<any>): Promise<C> {
 
         let overrides: any = { };
 
@@ -1192,10 +1192,10 @@ export class ContractFactory {
         const address = getStatic<(tx: TransactionResponse) => string>(this.constructor, "getContractAddress")(tx);
         const contract = getStatic<(address: string, contractInterface: ContractInterface, signer?: Signer) => Contract>(this.constructor, "getContract")(address, this.interface, this.signer);
         defineReadOnly(contract, "deployTransaction", tx);
-        return contract;
+        return contract as C;
     }
 
-    attach(address: string): Contract {
+    attach<C extends Contract>(address: string): C {
         return (<any>(this.constructor)).getContract(address, this.interface, this.signer);
     }
 
@@ -1232,7 +1232,7 @@ export class ContractFactory {
         return getContractAddress(tx);
     }
 
-    static getContract(address: string, contractInterface: ContractInterface, signer?: Signer): Contract {
-        return new Contract(address, contractInterface, signer);
+    static getContract<C extends Contract>(address: string, contractInterface: ContractInterface, signer?: Signer): C {
+        return new Contract(address, contractInterface, signer) as C;
     }
 }
