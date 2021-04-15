@@ -73,6 +73,7 @@ export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
     }
 
     if (multiplier.length - 1 === 0) {
+        value = value.replace(/\.0$/,'')
         return BigNumber.from(value);
     }
 

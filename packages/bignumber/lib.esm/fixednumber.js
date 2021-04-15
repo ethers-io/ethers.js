@@ -65,6 +65,7 @@ export function parseFixed(value, decimals) {
         logger.throwArgumentError("invalid decimal value", "value", value);
     }
     if (multiplier.length - 1 === 0) {
+        value = value.replace(/\.0$/, '');
         return BigNumber.from(value);
     }
     // Is it negative?
