@@ -65,6 +65,13 @@ function checkError(method: string, error: any, params: any): any {
         });
     }
 
+    // "replacement transaction underpriced"
+    if (message.match(/only replay-protected/)) {
+        logger.throwError("legacy pre-eip-155 transactions not supported", Logger.errors.UNSUPPORTED_OPERATION, {
+            error, method, transaction
+        });
+    }
+
     if (errorGas.indexOf(method) >= 0 && message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
         logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
             error, method, transaction
