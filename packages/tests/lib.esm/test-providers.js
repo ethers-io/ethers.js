@@ -734,16 +734,17 @@ testFunctions.push({
     networks: ["ropsten"],
     checkSkip: (provider, network, test) => {
         return false;
-        //return (provider === "PocketProvider");
     },
     execute: (provider) => __awaiter(void 0, void 0, void 0, function* () {
+        const gasPrice = (yield provider.getGasPrice()).mul(10);
         const wallet = fundWallet.connect(provider);
         const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
         const b0 = yield provider.getBalance(wallet.address);
         assert.ok(b0.gt(ethers.constants.Zero), "balance is non-zero");
         const tx = yield wallet.sendTransaction({
             to: addr,
-            value: 123
+            value: 123,
+            gasPrice: gasPrice
         });
         yield tx.wait();
         const b1 = yield provider.getBalance(wallet.address);
@@ -759,6 +760,7 @@ testFunctions.push({
         return false;
     },
     execute: (provider) => __awaiter(void 0, void 0, void 0, function* () {
+        const gasPrice = (yield provider.getGasPrice()).mul(10);
         const wallet = fundWallet.connect(provider);
         const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
         const b0 = yield provider.getBalance(wallet.address);
@@ -772,7 +774,8 @@ testFunctions.push({
                 ]
             },
             to: addr,
-            value: 123
+            value: 123,
+            gasPrice: gasPrice
         });
         yield tx.wait();
         const b1 = yield provider.getBalance(wallet.address);

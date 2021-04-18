@@ -13010,7 +13010,7 @@ function parse(rawTransaction) {
     });
 }
 
-const version$d = "contracts/5.1.0";
+const version$d = "contracts/5.1.1";
 
 "use strict";
 var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -13716,7 +13716,7 @@ class BaseContract {
             delete this._runningEvents[runningEvent.tag];
             // If we have a poller for this, remove it
             const emit = this._wrappedEmits[runningEvent.tag];
-            if (emit) {
+            if (emit && runningEvent.filter) {
                 this.provider.off(runningEvent.filter, emit);
                 delete this._wrappedEmits[runningEvent.tag];
             }
@@ -22436,7 +22436,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.1.1";
+const version$o = "ethers/5.1.2";
 
 "use strict";
 const logger$H = new Logger(version$o);

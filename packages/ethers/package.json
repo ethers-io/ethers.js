@@ -11,7 +11,7 @@
     "@ethersproject/bignumber": "5.1.0",
     "@ethersproject/bytes": "5.1.0",
     "@ethersproject/constants": "5.1.0",
-    "@ethersproject/contracts": "5.1.0",
+    "@ethersproject/contracts": "5.1.1",
     "@ethersproject/hash": "5.1.0",
     "@ethersproject/hdnode": "5.1.0",
     "@ethersproject/json-wallets": "5.1.0",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xce8d29a26dd72fd6ca2474e5c5419e612aed4113b68575acedeac474b2095cb9",
+  "tarballHash": "0xc8fa6f3d08d19014510f7f6cdab1fda529993f8d017c09220062823935738719",
   "types": "./lib/index.d.ts",
-  "version": "5.1.1"
+  "version": "5.1.2"
 }

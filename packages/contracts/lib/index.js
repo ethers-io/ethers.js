@@ -848,7 +848,7 @@ var BaseContract = /** @class */ (function () {
             delete this._runningEvents[runningEvent.tag];
             // If we have a poller for this, remove it
             var emit = this._wrappedEmits[runningEvent.tag];
-            if (emit) {
+            if (emit && runningEvent.filter) {
                 this.provider.off(runningEvent.filter, emit);
                 delete this._wrappedEmits[runningEvent.tag];
             }

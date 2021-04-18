@@ -824,30 +824,32 @@ testFunctions.push({
     networks: ["ropsten"],
     checkSkip: function (provider, network, test) {
         return false;
-        //return (provider === "PocketProvider");
     },
     execute: function (provider) { return __awaiter(void 0, void 0, void 0, function () {
-        var wallet, addr, b0, tx, b1;
+        var gasPrice, wallet, addr, b0, tx, b1;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
+                case 0: return [4 /*yield*/, provider.getGasPrice()];
+                case 1:
+                    gasPrice = (_a.sent()).mul(10);
                     wallet = fundWallet.connect(provider);
                     addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
                     return [4 /*yield*/, provider.getBalance(wallet.address)];
-                case 1:
+                case 2:
                     b0 = _a.sent();
                     assert_1.default.ok(b0.gt(ethers_1.ethers.constants.Zero), "balance is non-zero");
                     return [4 /*yield*/, wallet.sendTransaction({
                             to: addr,
-                            value: 123
+                            value: 123,
+                            gasPrice: gasPrice
                         })];
-                case 2:
+                case 3:
                     tx = _a.sent();
                     return [4 /*yield*/, tx.wait()];
-                case 3:
+                case 4:
                     _a.sent();
                     return [4 /*yield*/, provider.getBalance(wallet.address)];
-                case 4:
+                case 5:
                     b1 = _a.sent();
                     assert_1.default.ok(b0.gt(b1), "balance is decreased");
                     return [2 /*return*/];
@@ -864,14 +866,16 @@ testFunctions.push({
         return false;
     },
     execute: function (provider) { return __awaiter(void 0, void 0, void 0, function () {
-        var wallet, addr, b0, tx, b1;
+        var gasPrice, wallet, addr, b0, tx, b1;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
+                case 0: return [4 /*yield*/, provider.getGasPrice()];
+                case 1:
+                    gasPrice = (_a.sent()).mul(10);
                     wallet = fundWallet.connect(provider);
                     addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
                     return [4 /*yield*/, provider.getBalance(wallet.address)];
-                case 1:
+                case 2:
                     b0 = _a.sent();
                     assert_1.default.ok(b0.gt(ethers_1.ethers.constants.Zero), "balance is non-zero");
                     return [4 /*yield*/, wallet.sendTransaction({
@@ -883,15 +887,16 @@ testFunctions.push({
                                 ]
                             },
                             to: addr,
-                            value: 123
+                            value: 123,
+                            gasPrice: gasPrice
                         })];
-                case 2:
+                case 3:
                     tx = _a.sent();
                     return [4 /*yield*/, tx.wait()];
-                case 3:
+                case 4:
                     _a.sent();
                     return [4 /*yield*/, provider.getBalance(wallet.address)];
-                case 4:
+                case 5:
                     b1 = _a.sent();
                     assert_1.default.ok(b0.gt(b1), "balance is decreased");
                     return [2 /*return*/];

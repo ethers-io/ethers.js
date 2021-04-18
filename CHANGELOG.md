@@ -3,6 +3,12 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.1.2 (2021-04-18 19:31)
+--------------------------------
+
+  - Increase provider tests gas price for sending a transaction. ([8eaeba3](https://github.com/ethers-io/ethers.js/commit/8eaeba35f550c3d9aa1ae62eb8d8e0c912818f7f))
+  - Fixed run-checking non-filter Contract events. ([#1458](https://github.com/ethers-io/ethers.js/issues/1458); [4a44865](https://github.com/ethers-io/ethers.js/commit/4a44865a8c22adb9c55d5c37a81ee46ebc68228c))
+
 ethers/v5.1.1 (2021-04-18 02:47)
 --------------------------------
 

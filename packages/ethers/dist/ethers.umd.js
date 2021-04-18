@@ -14199,7 +14199,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "contracts/5.1.0";
+	exports.version = "contracts/5.1.1";
 
 	});
 
@@ -15056,7 +15056,7 @@
 	            delete this._runningEvents[runningEvent.tag];
 	            // If we have a poller for this, remove it
 	            var emit = this._wrappedEmits[runningEvent.tag];
-	            if (emit) {
+	            if (emit && runningEvent.filter) {
 	                this.provider.off(runningEvent.filter, emit);
 	                delete this._wrappedEmits[runningEvent.tag];
 	            }
@@ -26101,7 +26101,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.1.1";
+	exports.version = "ethers/5.1.2";
 
 	});
 
