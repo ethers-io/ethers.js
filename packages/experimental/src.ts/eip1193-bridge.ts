@@ -17,7 +17,7 @@ function getBlockTag(tag) {
 }
 */
 
-export class _Eip1193Bridge extends EventEmitter {
+export class Eip1193Bridge extends EventEmitter {
      readonly signer: ethers.Signer;
      readonly provider: ethers.providers.Provider;
 
