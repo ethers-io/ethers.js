@@ -13843,7 +13843,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "transactions/5.1.0";
+	exports.version = "transactions/5.1.1";
 
 	});
 
@@ -14052,6 +14052,9 @@
 	function serialize(transaction, signature) {
 	    // Legacy and EIP-155 Transactions
 	    if (transaction.type == null) {
+	        if (transaction.accessList != null) {
+	            logger.throwArgumentError("untyped transactions do not support accessList; include type: 1", "transaction", transaction);
+	        }
 	        return _serialize(transaction, signature);
 	    }
 	    // Typed Transactions (EIP-2718)
@@ -20093,7 +20096,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.1.0";
+	exports.version = "providers/5.1.1";
 
 	});
 
@@ -22504,6 +22507,12 @@
 	            error: error, method: method, transaction: transaction
 	        });
 	    }
+	    // "replacement transaction underpriced"
+	    if (message.match(/only replay-protected/)) {
+	        logger.throwError("legacy pre-eip-155 transactions not supported", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	            error: error, method: method, transaction: transaction
+	        });
+	    }
 	    if (errorGas.indexOf(method) >= 0 && message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
 	        logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", lib.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
 	            error: error, method: method, transaction: transaction
@@ -22748,6 +22757,7 @@
 	            });
 	        }
 	        _this = _super.call(this, networkOrReady) || this;
+	        _this._eventLoopCache = {};
 	        // Default URL
 	        if (!url) {
 	            url = lib$3.getStatic(_this.constructor, "defaultUrl")();
@@ -22767,6 +22777,17 @@
 	        return "http:/\/localhost:8545";
 	    };
 	    JsonRpcProvider.prototype.detectNetwork = function () {
+	        var _this = this;
+	        if (!this._eventLoopCache["detectNetwork"]) {
+	            this._eventLoopCache["detectNetwork"] = this._uncachedDetectNetwork();
+	            // Clear this cache at the beginning of the next event loop
+	            setTimeout(function () {
+	                _this._eventLoopCache["detectNetwork"] = null;
+	            }, 0);
+	        }
+	        return this._eventLoopCache["detectNetwork"];
+	    };
+	    JsonRpcProvider.prototype._uncachedDetectNetwork = function () {
 	        return __awaiter(this, void 0, void 0, function () {
 	            var chainId, error_1, error_2, getNetwork;
 	            return __generator(this, function (_a) {
@@ -22841,7 +22862,13 @@
 	            request: lib$3.deepCopy(request),
 	            provider: this
 	        });
-	        return lib$q.fetchJson(this.connection, JSON.stringify(request), getResult).then(function (result) {
+	        // We can expand this in the future to any call, but for now these
+	        // are the biggest wins and do not require any serializing parameters.
+	        var cache = (["eth_chainId", "eth_blockNumber"].indexOf(method) >= 0);
+	        if (cache && this._eventLoopCache[method]) {
+	            return this._eventLoopCache[method];
+	        }
+	        var result = lib$q.fetchJson(this.connection, JSON.stringify(request), getResult).then(function (result) {
 	            _this.emit("debug", {
 	                action: "response",
 	                request: request,
@@ -22858,6 +22885,14 @@
 	            });
 	            throw error;
 	        });
+	        // Cache the fetch, but clear it on the next event loop
+	        if (cache) {
+	            this._eventLoopCache[method] = result;
+	            setTimeout(function () {
+	                _this._eventLoopCache[method] = null;
+	            }, 0);
+	        }
+	        return result;
 	    };
 	    JsonRpcProvider.prototype.prepareRequest = function (method, params) {
 	        switch (method) {
@@ -23862,6 +23897,7 @@
 
 
 
+
 	var logger = new lib.Logger(_version$I.version);
 
 	// The transaction has already been sanitized by the calls in Provider
@@ -23877,7 +23913,10 @@
 	            value = lib$1.hexValue(lib$1.hexlify(value));
 	        }
 	        else if (key === "accessList") {
-	            value = value;
+	            var sets = lib$e.accessListify(value);
+	            value = '[' + sets.map(function (set) {
+	                return "{address:\"" + set.address + "\",storageKeys:[\"" + set.storageKeys.join('","') + "\"]}";
+	            }).join(",") + "]";
 	        }
 	        else {
 	            value = lib$1.hexlify(value);
@@ -24154,12 +24193,6 @@
 	                        url += apiKey;
 	                        return [2 /*return*/, get(url, null)];
 	                    case 11:
-	                        if (params.transaction.type != null) {
-	                            logger.throwError("Etherscan does not currently support Berlin", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                                operation: "call",
-	                                transaction: params.transaction
-	                            });
-	                        }
 	                        if (params.blockTag !== "latest") {
 	                            throw new Error("EtherscanProvider does not support blockTag for call");
 	                        }
@@ -24176,12 +24209,6 @@
 	                        error_1 = _c.sent();
 	                        return [2 /*return*/, checkError("call", error_1, params.transaction)];
 	                    case 15:
-	                        if (params.transaction.type != null) {
-	                            logger.throwError("Etherscan does not currently support Berlin", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                                operation: "estimateGas",
-	                                transaction: params.transaction
-	                            });
-	                        }
 	                        postData = getTransactionPostData(params.transaction);
 	                        postData.module = "proxy";
 	                        postData.action = "eth_estimateGas";
@@ -25180,6 +25207,110 @@
 
 	var infuraProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(infuraProvider);
 
+	var jsonRpcBatchProvider = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
+	    var extendStatics = function (d, b) {
+	        extendStatics = Object.setPrototypeOf ||
+	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+	        return extendStatics(d, b);
+	    };
+	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.JsonRpcBatchProvider = void 0;
+
+
+
+	// Experimental
+	var JsonRpcBatchProvider = /** @class */ (function (_super) {
+	    __extends(JsonRpcBatchProvider, _super);
+	    function JsonRpcBatchProvider() {
+	        return _super !== null && _super.apply(this, arguments) || this;
+	    }
+	    JsonRpcBatchProvider.prototype.send = function (method, params) {
+	        var _this = this;
+	        var request = {
+	            method: method,
+	            params: params,
+	            id: (this._nextId++),
+	            jsonrpc: "2.0"
+	        };
+	        if (this._pendingBatch == null) {
+	            this._pendingBatch = [];
+	        }
+	        var inflightRequest = { request: request, resolve: null, reject: null };
+	        var promise = new Promise(function (resolve, reject) {
+	            inflightRequest.resolve = resolve;
+	            inflightRequest.reject = reject;
+	        });
+	        this._pendingBatch.push(inflightRequest);
+	        if (!this._pendingBatchAggregator) {
+	            // Schedule batch for next event loop + short duration
+	            this._pendingBatchAggregator = setTimeout(function () {
+	                // Get teh current batch and clear it, so new requests
+	                // go into the next batch
+	                var batch = _this._pendingBatch;
+	                _this._pendingBatch = null;
+	                _this._pendingBatchAggregator = null;
+	                // Get the request as an array of requests
+	                var request = batch.map(function (inflight) { return inflight.request; });
+	                _this.emit("debug", {
+	                    action: "requestBatch",
+	                    request: lib$3.deepCopy(request),
+	                    provider: _this
+	                });
+	                return lib$q.fetchJson(_this.connection, JSON.stringify(request)).then(function (result) {
+	                    _this.emit("debug", {
+	                        action: "response",
+	                        request: request,
+	                        response: result,
+	                        provider: _this
+	                    });
+	                    // For each result, feed it to the correct Promise, depending
+	                    // on whether it was a success or error
+	                    batch.forEach(function (inflightRequest, index) {
+	                        var payload = result[index];
+	                        if (payload.error) {
+	                            var error = new Error(payload.error.message);
+	                            error.code = payload.error.code;
+	                            error.data = payload.error.data;
+	                            inflightRequest.reject(error);
+	                        }
+	                        else {
+	                            inflightRequest.resolve(payload.result);
+	                        }
+	                    });
+	                }, function (error) {
+	                    _this.emit("debug", {
+	                        action: "response",
+	                        error: error,
+	                        request: request,
+	                        provider: _this
+	                    });
+	                    batch.forEach(function (inflightRequest) {
+	                        inflightRequest.reject(error);
+	                    });
+	                });
+	            }, 10);
+	        }
+	        return promise;
+	    };
+	    return JsonRpcBatchProvider;
+	}(jsonRpcProvider.JsonRpcProvider));
+	exports.JsonRpcBatchProvider = JsonRpcBatchProvider;
+
+	});
+
+	var jsonRpcBatchProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(jsonRpcBatchProvider);
+
 	var nodesmithProvider = createCommonjsModule(function (module, exports) {
 	/* istanbul ignore file */
 	"use strict";
@@ -25520,7 +25651,7 @@
 	var lib$r = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
+	exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcBatchProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
 
 	Object.defineProperty(exports, "Provider", { enumerable: true, get: function () { return lib$b.Provider; } });
 
@@ -25545,6 +25676,8 @@
 
 	Object.defineProperty(exports, "JsonRpcProvider", { enumerable: true, get: function () { return jsonRpcProvider.JsonRpcProvider; } });
 	Object.defineProperty(exports, "JsonRpcSigner", { enumerable: true, get: function () { return jsonRpcProvider.JsonRpcSigner; } });
+
+	Object.defineProperty(exports, "JsonRpcBatchProvider", { enumerable: true, get: function () { return jsonRpcBatchProvider.JsonRpcBatchProvider; } });
 
 	Object.defineProperty(exports, "NodesmithProvider", { enumerable: true, get: function () { return nodesmithProvider.NodesmithProvider; } });
 
@@ -25968,7 +26101,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.1.0";
+	exports.version = "ethers/5.1.1";
 
 	});
 

@@ -54,6 +54,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EtherscanProvider = void 0;
 var bytes_1 = require("@ethersproject/bytes");
 var properties_1 = require("@ethersproject/properties");
+var transactions_1 = require("@ethersproject/transactions");
 var web_1 = require("@ethersproject/web");
 var formatter_1 = require("./formatter");
 var logger_1 = require("@ethersproject/logger");
@@ -73,7 +74,10 @@ function getTransactionPostData(transaction) {
             value = bytes_1.hexValue(bytes_1.hexlify(value));
         }
         else if (key === "accessList") {
-            value = value;
+            var sets = transactions_1.accessListify(value);
+            value = '[' + sets.map(function (set) {
+                return "{address:\"" + set.address + "\",storageKeys:[\"" + set.storageKeys.join('","') + "\"]}";
+            }).join(",") + "]";
         }
         else {
             value = bytes_1.hexlify(value);
@@ -350,12 +354,6 @@ var EtherscanProvider = /** @class */ (function (_super) {
                         url += apiKey;
                         return [2 /*return*/, get(url, null)];
                     case 11:
-                        if (params.transaction.type != null) {
-                            logger.throwError("Etherscan does not currently support Berlin", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
-                                operation: "call",
-                                transaction: params.transaction
-                            });
-                        }
                         if (params.blockTag !== "latest") {
                             throw new Error("EtherscanProvider does not support blockTag for call");
                         }
@@ -372,12 +370,6 @@ var EtherscanProvider = /** @class */ (function (_super) {
                         error_1 = _c.sent();
                         return [2 /*return*/, checkError("call", error_1, params.transaction)];
                     case 15:
-                        if (params.transaction.type != null) {
-                            logger.throwError("Etherscan does not currently support Berlin", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
-                                operation: "estimateGas",
-                                transaction: params.transaction
-                            });
-                        }
                         postData = getTransactionPostData(params.transaction);
                         postData.module = "proxy";
                         postData.action = "eth_estimateGas";

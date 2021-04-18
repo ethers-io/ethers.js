@@ -618,8 +618,18 @@
 	        var forms = ["NFD", "NFC", "NFKD", "NFKC"];
 	        for (var i = 0; i < forms.length; i++) {
 	            try {
+	                // Simple test that catches invalid normalization
 	                if ("test".normalize(forms[i]) !== "test") {
 	                    throw new Error("failed to normalize");
+	                }
+
+	                // Some platforms seem to only fail when normalizing
+	                // specific code planes, so add those here as they
+	                // come up.
+	                //               "hangul"
+	                const checks = [ "\ud55c\uae00" ];
+	                for (var j = 0; j < checks.length; j++) {
+	                    checks[j].normalize(forms[i]);
 	                }
 	            } catch(error) {
 	                missing.push(forms[i]);

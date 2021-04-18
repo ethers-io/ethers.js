@@ -12703,7 +12703,7 @@ function computePublicKey(key, compressed) {
     return logger$g.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$c = "transactions/5.1.0";
+const version$c = "transactions/5.1.1";
 
 "use strict";
 const logger$h = new Logger(version$c);
@@ -12873,6 +12873,9 @@ function _serialize(transaction, signature) {
 function serialize(transaction, signature) {
     // Legacy and EIP-155 Transactions
     if (transaction.type == null) {
+        if (transaction.accessList != null) {
+            logger$h.throwArgumentError("untyped transactions do not support accessList; include type: 1", "transaction", transaction);
+        }
         return _serialize(transaction, signature);
     }
     // Typed Transactions (EIP-2718)
@@ -17846,7 +17849,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.1.0";
+const version$m = "providers/5.1.1";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -19717,6 +19720,12 @@ function checkError(method, error, params) {
             error, method, transaction
         });
     }
+    // "replacement transaction underpriced"
+    if (message.match(/only replay-protected/)) {
+        logger$u.throwError("legacy pre-eip-155 transactions not supported", Logger.errors.UNSUPPORTED_OPERATION, {
+            error, method, transaction
+        });
+    }
     if (errorGas.indexOf(method) >= 0 && message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
         logger$u.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
             error, method, transaction
@@ -19914,6 +19923,7 @@ class JsonRpcProvider extends BaseProvider {
             });
         }
         super(networkOrReady);
+        this._eventLoopCache = {};
         // Default URL
         if (!url) {
             url = getStatic(this.constructor, "defaultUrl")();
@@ -19932,6 +19942,16 @@ class JsonRpcProvider extends BaseProvider {
         return "http:/\/localhost:8545";
     }
     detectNetwork() {
+        if (!this._eventLoopCache["detectNetwork"]) {
+            this._eventLoopCache["detectNetwork"] = this._uncachedDetectNetwork();
+            // Clear this cache at the beginning of the next event loop
+            setTimeout(() => {
+                this._eventLoopCache["detectNetwork"] = null;
+            }, 0);
+        }
+        return this._eventLoopCache["detectNetwork"];
+    }
+    _uncachedDetectNetwork() {
         return __awaiter$9(this, void 0, void 0, function* () {
             yield timer(0);
             let chainId = null;
@@ -19985,7 +20005,13 @@ class JsonRpcProvider extends BaseProvider {
             request: deepCopy(request),
             provider: this
         });
-        return fetchJson(this.connection, JSON.stringify(request), getResult).then((result) => {
+        // We can expand this in the future to any call, but for now these
+        // are the biggest wins and do not require any serializing parameters.
+        const cache = (["eth_chainId", "eth_blockNumber"].indexOf(method) >= 0);
+        if (cache && this._eventLoopCache[method]) {
+            return this._eventLoopCache[method];
+        }
+        const result = fetchJson(this.connection, JSON.stringify(request), getResult).then((result) => {
             this.emit("debug", {
                 action: "response",
                 request: request,
@@ -20002,6 +20028,14 @@ class JsonRpcProvider extends BaseProvider {
             });
             throw error;
         });
+        // Cache the fetch, but clear it on the next event loop
+        if (cache) {
+            this._eventLoopCache[method] = result;
+            setTimeout(() => {
+                this._eventLoopCache[method] = null;
+            }, 0);
+        }
+        return result;
     }
     prepareRequest(method, params) {
         switch (method) {
@@ -20683,7 +20717,10 @@ function getTransactionPostData(transaction) {
             value = hexValue(hexlify(value));
         }
         else if (key === "accessList") {
-            value = value;
+            const sets = accessListify(value);
+            value = '[' + sets.map((set) => {
+                return `{address:"${set.address}",storageKeys:["${set.storageKeys.join('","')}"]}`;
+            }).join(",") + "]";
         }
         else {
             value = hexlify(value);
@@ -20927,12 +20964,6 @@ class EtherscanProvider extends BaseProvider {
                     url += apiKey;
                     return get(url, null);
                 case "call": {
-                    if (params.transaction.type != null) {
-                        logger$z.throwError("Etherscan does not currently support Berlin", Logger.errors.UNSUPPORTED_OPERATION, {
-                            operation: "call",
-                            transaction: params.transaction
-                        });
-                    }
                     if (params.blockTag !== "latest") {
                         throw new Error("EtherscanProvider does not support blockTag for call");
                     }
@@ -20948,12 +20979,6 @@ class EtherscanProvider extends BaseProvider {
                     }
                 }
                 case "estimateGas": {
-                    if (params.transaction.type != null) {
-                        logger$z.throwError("Etherscan does not currently support Berlin", Logger.errors.UNSUPPORTED_OPERATION, {
-                            operation: "estimateGas",
-                            transaction: params.transaction
-                        });
-                    }
                     const postData = getTransactionPostData(params.transaction);
                     postData.module = "proxy";
                     postData.action = "eth_estimateGas";
@@ -21757,6 +21782,77 @@ class InfuraProvider extends UrlJsonRpcProvider {
     }
 }
 
+// Experimental
+class JsonRpcBatchProvider extends JsonRpcProvider {
+    send(method, params) {
+        const request = {
+            method: method,
+            params: params,
+            id: (this._nextId++),
+            jsonrpc: "2.0"
+        };
+        if (this._pendingBatch == null) {
+            this._pendingBatch = [];
+        }
+        const inflightRequest = { request, resolve: null, reject: null };
+        const promise = new Promise((resolve, reject) => {
+            inflightRequest.resolve = resolve;
+            inflightRequest.reject = reject;
+        });
+        this._pendingBatch.push(inflightRequest);
+        if (!this._pendingBatchAggregator) {
+            // Schedule batch for next event loop + short duration
+            this._pendingBatchAggregator = setTimeout(() => {
+                // Get teh current batch and clear it, so new requests
+                // go into the next batch
+                const batch = this._pendingBatch;
+                this._pendingBatch = null;
+                this._pendingBatchAggregator = null;
+                // Get the request as an array of requests
+                const request = batch.map((inflight) => inflight.request);
+                this.emit("debug", {
+                    action: "requestBatch",
+                    request: deepCopy(request),
+                    provider: this
+                });
+                return fetchJson(this.connection, JSON.stringify(request)).then((result) => {
+                    this.emit("debug", {
+                        action: "response",
+                        request: request,
+                        response: result,
+                        provider: this
+                    });
+                    // For each result, feed it to the correct Promise, depending
+                    // on whether it was a success or error
+                    batch.forEach((inflightRequest, index) => {
+                        const payload = result[index];
+                        if (payload.error) {
+                            const error = new Error(payload.error.message);
+                            error.code = payload.error.code;
+                            error.data = payload.error.data;
+                            inflightRequest.reject(error);
+                        }
+                        else {
+                            inflightRequest.resolve(payload.result);
+                        }
+                    });
+                }, (error) => {
+                    this.emit("debug", {
+                        action: "response",
+                        error: error,
+                        request: request,
+                        provider: this
+                    });
+                    batch.forEach((inflightRequest) => {
+                        inflightRequest.reject(error);
+                    });
+                });
+            }, 10);
+        }
+        return promise;
+    }
+}
+
 /* istanbul ignore file */
 "use strict";
 const logger$C = new Logger(version$m);
@@ -22058,6 +22154,7 @@ var index$3 = /*#__PURE__*/Object.freeze({
 	InfuraProvider: InfuraProvider,
 	InfuraWebSocketProvider: InfuraWebSocketProvider,
 	JsonRpcProvider: JsonRpcProvider,
+	JsonRpcBatchProvider: JsonRpcBatchProvider,
 	NodesmithProvider: NodesmithProvider,
 	PocketProvider: PocketProvider,
 	StaticJsonRpcProvider: StaticJsonRpcProvider,
@@ -22339,7 +22436,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.1.0";
+const version$o = "ethers/5.1.1";
 
 "use strict";
 const logger$H = new Logger(version$o);

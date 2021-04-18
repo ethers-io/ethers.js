@@ -60,6 +60,12 @@ function checkError(method, error, params) {
             error, method, transaction
         });
     }
+    // "replacement transaction underpriced"
+    if (message.match(/only replay-protected/)) {
+        logger.throwError("legacy pre-eip-155 transactions not supported", Logger.errors.UNSUPPORTED_OPERATION, {
+            error, method, transaction
+        });
+    }
     if (errorGas.indexOf(method) >= 0 && message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
         logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
             error, method, transaction
@@ -257,6 +263,7 @@ export class JsonRpcProvider extends BaseProvider {
             });
         }
         super(networkOrReady);
+        this._eventLoopCache = {};
         // Default URL
         if (!url) {
             url = getStatic(this.constructor, "defaultUrl")();
@@ -275,6 +282,16 @@ export class JsonRpcProvider extends BaseProvider {
         return "http:/\/localhost:8545";
     }
     detectNetwork() {
+        if (!this._eventLoopCache["detectNetwork"]) {
+            this._eventLoopCache["detectNetwork"] = this._uncachedDetectNetwork();
+            // Clear this cache at the beginning of the next event loop
+            setTimeout(() => {
+                this._eventLoopCache["detectNetwork"] = null;
+            }, 0);
+        }
+        return this._eventLoopCache["detectNetwork"];
+    }
+    _uncachedDetectNetwork() {
         return __awaiter(this, void 0, void 0, function* () {
             yield timer(0);
             let chainId = null;
@@ -328,7 +345,13 @@ export class JsonRpcProvider extends BaseProvider {
             request: deepCopy(request),
             provider: this
         });
-        return fetchJson(this.connection, JSON.stringify(request), getResult).then((result) => {
+        // We can expand this in the future to any call, but for now these
+        // are the biggest wins and do not require any serializing parameters.
+        const cache = (["eth_chainId", "eth_blockNumber"].indexOf(method) >= 0);
+        if (cache && this._eventLoopCache[method]) {
+            return this._eventLoopCache[method];
+        }
+        const result = fetchJson(this.connection, JSON.stringify(request), getResult).then((result) => {
             this.emit("debug", {
                 action: "response",
                 request: request,
@@ -345,6 +368,14 @@ export class JsonRpcProvider extends BaseProvider {
             });
             throw error;
         });
+        // Cache the fetch, but clear it on the next event loop
+        if (cache) {
+            this._eventLoopCache[method] = result;
+            setTimeout(() => {
+                this._eventLoopCache[method] = null;
+            }, 0);
+        }
+        return result;
     }
     prepareRequest(method, params) {
         switch (method) {

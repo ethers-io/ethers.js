@@ -3,6 +3,19 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.1.1 (2021-04-17 22:40)
+--------------------------------
+
+  - Prevent non-typed transactions from unsafely ignoring specified access lists. ([#1364](https://github.com/ethers-io/ethers.js/issues/1364); [4577444](https://github.com/ethers-io/ethers.js/commit/4577444c448f41114263077c5b54fbe6af749fd4))
+  - Update tests for current EIP-2930 support across backends. ([#1364](https://github.com/ethers-io/ethers.js/issues/1364); [1cb3199](https://github.com/ethers-io/ethers.js/commit/1cb3199e5cb01f5a55eb00ab6c7904606d7ea1dd))
+  - Removed underscore from the JsonRpcBatchProvider name. ([#62](https://github.com/ethers-io/ethers.js/issues/62), [#656](https://github.com/ethers-io/ethers.js/issues/656), [#892](https://github.com/ethers-io/ethers.js/issues/892); [ae0d5eb](https://github.com/ethers-io/ethers.js/commit/ae0d5eb7c2e37a003d893671db59c2d5719aea0f))
+  - Added better error detection when pre-EIP-155 transactions are disabled. ([b8df000](https://github.com/ethers-io/ethers.js/commit/b8df000c8f0ccd252b6049ac5a32a986d5a8e08d))
+  - Fix Android React Native environment shims which crash on normalizing Korean test. ([#1298](https://github.com/ethers-io/ethers.js/issues/1298); [eb1ec2f](https://github.com/ethers-io/ethers.js/commit/eb1ec2f2318e2851073ea1634e5003cdb53f1c1b))
+  - Fixed EIP-2930 transactions for EtherscanProvider. ([#1364](https://github.com/ethers-io/ethers.js/issues/1364); [b655089](https://github.com/ethers-io/ethers.js/commit/b65508995ce7d02f109a970ebeb625819beb915a))
+  - Re-enable AlchemyProvider Berlin tests. ([bec066b](https://github.com/ethers-io/ethers.js/commit/bec066bcb5ab8b95a7e7ce4848d7b76d7f248ccc))
+  - Added experimental _JsonRpcBatchProvider. ([#62](https://github.com/ethers-io/ethers.js/issues/62), [#656](https://github.com/ethers-io/ethers.js/issues/656), [#892](https://github.com/ethers-io/ethers.js/issues/892); [d55ab6d](https://github.com/ethers-io/ethers.js/commit/d55ab6d4e6025c484cc7e64486d927bd54a0772b))
+  - Cache JsonRpcProvider requests for certain methods per event loop. ([#1371](https://github.com/ethers-io/ethers.js/issues/1371); [1a7c4e8](https://github.com/ethers-io/ethers.js/commit/1a7c4e89efecc2b8afc8bea4c1f8f75fdaac08c5))
+
 ethers/v5.1.0 (2021-03-30 14:44)
 --------------------------------
 

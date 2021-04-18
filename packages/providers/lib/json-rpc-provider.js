@@ -104,6 +104,12 @@ function checkError(method, error, params) {
             error: error, method: method, transaction: transaction
         });
     }
+    // "replacement transaction underpriced"
+    if (message.match(/only replay-protected/)) {
+        logger.throwError("legacy pre-eip-155 transactions not supported", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
+            error: error, method: method, transaction: transaction
+        });
+    }
     if (errorGas.indexOf(method) >= 0 && message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
         logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
             error: error, method: method, transaction: transaction
@@ -348,6 +354,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             });
         }
         _this = _super.call(this, networkOrReady) || this;
+        _this._eventLoopCache = {};
         // Default URL
         if (!url) {
             url = properties_1.getStatic(_this.constructor, "defaultUrl")();
@@ -367,6 +374,17 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         return "http:/\/localhost:8545";
     };
     JsonRpcProvider.prototype.detectNetwork = function () {
+        var _this = this;
+        if (!this._eventLoopCache["detectNetwork"]) {
+            this._eventLoopCache["detectNetwork"] = this._uncachedDetectNetwork();
+            // Clear this cache at the beginning of the next event loop
+            setTimeout(function () {
+                _this._eventLoopCache["detectNetwork"] = null;
+            }, 0);
+        }
+        return this._eventLoopCache["detectNetwork"];
+    };
+    JsonRpcProvider.prototype._uncachedDetectNetwork = function () {
         return __awaiter(this, void 0, void 0, function () {
             var chainId, error_1, error_2, getNetwork;
             return __generator(this, function (_a) {
@@ -441,7 +459,13 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             request: properties_1.deepCopy(request),
             provider: this
         });
-        return web_1.fetchJson(this.connection, JSON.stringify(request), getResult).then(function (result) {
+        // We can expand this in the future to any call, but for now these
+        // are the biggest wins and do not require any serializing parameters.
+        var cache = (["eth_chainId", "eth_blockNumber"].indexOf(method) >= 0);
+        if (cache && this._eventLoopCache[method]) {
+            return this._eventLoopCache[method];
+        }
+        var result = web_1.fetchJson(this.connection, JSON.stringify(request), getResult).then(function (result) {
             _this.emit("debug", {
                 action: "response",
                 request: request,
@@ -458,6 +482,14 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             });
             throw error;
         });
+        // Cache the fetch, but clear it on the next event loop
+        if (cache) {
+            this._eventLoopCache[method] = result;
+            setTimeout(function () {
+                _this._eventLoopCache[method] = null;
+            }, 0);
+        }
+        return result;
     };
     JsonRpcProvider.prototype.prepareRequest = function (method, params) {
         switch (method) {

@@ -200,6 +200,9 @@ function _serialize(transaction, signature) {
 function serialize(transaction, signature) {
     // Legacy and EIP-155 Transactions
     if (transaction.type == null) {
+        if (transaction.accessList != null) {
+            logger.throwArgumentError("untyped transactions do not support accessList; include type: 1", "transaction", transaction);
+        }
         return _serialize(transaction, signature);
     }
     // Typed Transactions (EIP-2718)

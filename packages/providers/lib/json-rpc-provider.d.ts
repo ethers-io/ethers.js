@@ -28,9 +28,11 @@ export declare class JsonRpcProvider extends BaseProvider {
     readonly connection: ConnectionInfo;
     _pendingFilter: Promise<number>;
     _nextId: number;
+    _eventLoopCache: Record<string, Promise<any>>;
     constructor(url?: ConnectionInfo | string, network?: Networkish);
     static defaultUrl(): string;
     detectNetwork(): Promise<Network>;
+    _uncachedDetectNetwork(): Promise<Network>;
     getSigner(addressOrIndex?: string | number): JsonRpcSigner;
     getUncheckedSigner(addressOrIndex?: string | number): UncheckedJsonRpcSigner;
     listAccounts(): Promise<Array<string>>;

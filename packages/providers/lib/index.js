@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
+exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcBatchProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
 Object.defineProperty(exports, "Provider", { enumerable: true, get: function () { return abstract_provider_1.Provider; } });
 var networks_1 = require("@ethersproject/networks");
@@ -25,6 +25,8 @@ Object.defineProperty(exports, "InfuraWebSocketProvider", { enumerable: true, ge
 var json_rpc_provider_1 = require("./json-rpc-provider");
 Object.defineProperty(exports, "JsonRpcProvider", { enumerable: true, get: function () { return json_rpc_provider_1.JsonRpcProvider; } });
 Object.defineProperty(exports, "JsonRpcSigner", { enumerable: true, get: function () { return json_rpc_provider_1.JsonRpcSigner; } });
+var json_rpc_batch_provider_1 = require("./json-rpc-batch-provider");
+Object.defineProperty(exports, "JsonRpcBatchProvider", { enumerable: true, get: function () { return json_rpc_batch_provider_1.JsonRpcBatchProvider; } });
 var nodesmith_provider_1 = require("./nodesmith-provider");
 Object.defineProperty(exports, "NodesmithProvider", { enumerable: true, get: function () { return nodesmith_provider_1.NodesmithProvider; } });
 var pocket_provider_1 = require("./pocket-provider");

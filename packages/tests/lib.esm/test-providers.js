@@ -240,6 +240,7 @@ const blockchainData = {
             },
         ],
         transactions: [
+            // Berlin tests
             {
                 hash: "0x48bff7b0e603200118a672f7c622ab7d555a28f98938edb8318803eed7ea7395",
                 type: 1,
@@ -635,9 +636,6 @@ Object.keys(blockchainData).forEach((network) => {
     tests.transactions.forEach((test) => {
         addObjectTest(`fetches transaction ${test.hash}`, (provider) => __awaiter(void 0, void 0, void 0, function* () {
             const tx = yield provider.getTransaction(test.hash);
-            //console.log("TX");
-            //console.dir(test, { depth: null })
-            //console.dir(tx, { depth: null })
             // This changes with every block
             assert.equal(typeof (tx.confirmations), "number", "confirmations is a number");
             delete tx.confirmations;
@@ -645,11 +643,11 @@ Object.keys(blockchainData).forEach((network) => {
             delete tx.wait;
             return tx;
         }), test, (provider, network, test) => {
-            if (network === "ropsten" && (provider === "AlchemyProvider" || provider === "PocketProvider")) {
-                console.log(`Skipping ${provider}; incomplete Berlin support`);
+            // Temporary; Pocket is having issues with old transactions on some testnets
+            if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
                 return true;
             }
-            return false; //(provider === "EtherscanProvider");
+            return false;
         });
     });
     tests.transactionReceipts.forEach((test) => {
@@ -663,7 +661,13 @@ Object.keys(blockchainData).forEach((network) => {
             assert.equal(typeof (receipt.confirmations), "number", "confirmations is a number");
             delete receipt.confirmations;
             return receipt;
-        }), test);
+        }), test, (provider, network, test) => {
+            // Temporary; Pocket is having issues with old transactions on some testnets
+            if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
+                return true;
+            }
+            return false;
+        });
     });
 });
 (function () {
@@ -683,14 +687,22 @@ Object.keys(blockchainData).forEach((network) => {
             })
         });
     }
-    addErrorTest(ethers.utils.Logger.errors.NONCE_EXPIRED, (provider) => __awaiter(this, void 0, void 0, function* () {
+    /*
+    @TODO: Use this for testing pre-EIP-155 transactions on specific networks
+    addErrorTest(ethers.utils.Logger.errors.NONCE_EXPIRED, async (provider: ethers.providers.Provider) => {
         return provider.sendTransaction("0xf86480850218711a0082520894000000000000000000000000000000000000000002801ba038aaddcaaae7d3fa066dfd6f196c8348e1bb210f2c121d36cb2c24ef20cea1fba008ae378075d3cd75aae99ab75a70da82161dffb2c8263dabc5d8adecfa9447fa");
+    });
+    */
+    // Wallet(id("foobar1234"))
+    addErrorTest(ethers.utils.Logger.errors.NONCE_EXPIRED, (provider) => __awaiter(this, void 0, void 0, function* () {
+        return provider.sendTransaction("0xf86480850218711a00825208940000000000000000000000000000000000000000038029a04320fd28c8e6c95da9229d960d14ffa3de81f83abe3ad9c189642c83d7d951f3a009aac89e04a8bafdcf618e21fed5e7b1144ca1083a301fd5fde28b0419eb63ce");
     }));
     addErrorTest(ethers.utils.Logger.errors.INSUFFICIENT_FUNDS, (provider) => __awaiter(this, void 0, void 0, function* () {
         const txProps = {
             to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
             gasPrice: 9000000000,
             gasLimit: 21000,
+            chainId: 3,
             value: 1
         };
         const wallet = ethers.Wallet.createRandom();
@@ -741,7 +753,8 @@ testFunctions.push({
     timeout: 300,
     networks: ["ropsten"],
     checkSkip: (provider, network, test) => {
-        return (provider === "PocketProvider" || provider === "EtherscanProvider" || provider === "AlchemyProvider");
+        // Temporary
+        return false;
     },
     execute: (provider) => __awaiter(void 0, void 0, void 0, function* () {
         const wallet = fundWallet.connect(provider);
