@@ -799,19 +799,22 @@ testFunctions.push({
     networks: [ "ropsten" ],       // Only test on Ropsten
     checkSkip: (provider: string, network: string, test: TestDescription) => {
         return false;
-        //return (provider === "PocketProvider");
     },
     execute: async (provider: ethers.providers.Provider) => {
+        const gasPrice = (await provider.getGasPrice()).mul(10);
+
         const wallet = fundWallet.connect(provider);
 
         const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
+
 
         const b0 = await provider.getBalance(wallet.address);
         assert.ok(b0.gt(ethers.constants.Zero), "balance is non-zero");
 
         const tx = await wallet.sendTransaction({
             to: addr,
-            value: 123
+            value: 123,
+            gasPrice: gasPrice
         });
 
         await tx.wait();
@@ -830,6 +833,8 @@ testFunctions.push({
         return false;
     },
     execute: async (provider: ethers.providers.Provider) => {
+        const gasPrice = (await provider.getGasPrice()).mul(10);
+
         const wallet = fundWallet.connect(provider);
 
         const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
@@ -846,7 +851,8 @@ testFunctions.push({
                 ]
             },
             to: addr,
-            value: 123
+            value: 123,
+            gasPrice: gasPrice
         });
 
         await tx.wait();
