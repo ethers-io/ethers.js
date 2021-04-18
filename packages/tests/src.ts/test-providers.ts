@@ -694,7 +694,8 @@ Object.keys(blockchainData).forEach((network) => {
             return tx;
         }, test, (provider: string, network: string, test: TestDescription) => {
             // Temporary; Pocket is having issues with old transactions on some testnets
-            if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
+            //if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
+            if (provider === "PocketProvider") {
                 return true;
             }
 
@@ -718,7 +719,8 @@ Object.keys(blockchainData).forEach((network) => {
             return receipt;
         }, test, (provider: string, network: string, test: TestDescription) => {
             // Temporary; Pocket is having issues with old transactions on some testnets
-            if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
+            //if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
+            if (provider === "PocketProvider") {
                 return true;
             }
 
@@ -792,11 +794,12 @@ Object.keys(blockchainData).forEach((network) => {
 
 testFunctions.push({
     name: "sends a transaction",
-    extras: [ "funding" ],         // We need funding to the funWallet
-    timeout: 300,                  // 5 minutes
+    extras: [ "funding" ],         // We need funding to the fundWallet
+    timeout: 900,                  // 15 minutes
     networks: [ "ropsten" ],       // Only test on Ropsten
     checkSkip: (provider: string, network: string, test: TestDescription) => {
-        return (provider === "PocketProvider");
+        return false;
+        //return (provider === "PocketProvider");
     },
     execute: async (provider: ethers.providers.Provider) => {
         const wallet = fundWallet.connect(provider);
@@ -821,10 +824,9 @@ testFunctions.push({
 testFunctions.push({
     name: "sends an EIP-2930 transaction",
     extras: [ "funding" ],         // We need funding to the funWallet
-    timeout: 300,                  // 5 minutes
+    timeout: 900,                  // 15 minutes
     networks: [ "ropsten" ],       // Only test on Ropsten
     checkSkip: (provider: string, network: string, test: TestDescription) => {
-        // Temporary
         return false;
     },
     execute: async (provider: ethers.providers.Provider) => {
