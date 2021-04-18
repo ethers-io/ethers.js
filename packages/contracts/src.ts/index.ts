@@ -917,7 +917,7 @@ export class BaseContract {
 
             // If we have a poller for this, remove it
             const emit = this._wrappedEmits[runningEvent.tag];
-            if (emit) {
+            if (emit && runningEvent.filter) {
                 this.provider.off(runningEvent.filter, emit);
                 delete this._wrappedEmits[runningEvent.tag];
             }
