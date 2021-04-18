@@ -202,7 +202,18 @@ The chain ID this transaction is authorized on, as specified by
 If the chain ID is 0 will disable EIP-155 and the transaction will be valid
 on any network. This can be **dangerous** and care should be taken, since it
 allows transactions to be replayed on networks that were possibly not
-intended.
+intended. Intentionally-replayable transactions are also disabled by default
+on recent versions of Geth and require configuration to enable.
+
+_property: transactionRequest.type => null | number
+
+The [[link-eip-2718]] type of this transaction envelope, or ``null``
+for legacy transactions that do not have an envelope.
+
+_property: transactionRequest.accessList => [[providers-AccessListish]]
+
+The [[providers-AccessList]] to include in an [[link-eip-2930]] transaction, which will
+include a ``type`` of ``1``.
 
 _heading: TransactionResponse @<providers-TransactionResponse> @INHERIT<[[Transaction]]>
 
@@ -240,6 +251,16 @@ the following properties:
 - ``error.transaction`` - the original transaction
 - ``error.transactionHash`` - the hash of the transaction
 - ``error.receipt`` - the actual receipt, with the status of ``0``
+
+_property: transactionRequest.type => null | number
+
+The [[link-eip-2718]] type of this transaction envelope, or ``null``
+for legacy transactions that do not have an envelope.
+
+_property: transactionRequest.accessList => [[providers-AccessList]]
+
+The [[providers-AccessList]] included in an [[link-eip-2930]] transaction, which will
+also have its ``type`` equal to ``1``.
 
 _heading: TransactionReceipt @<providers-TransactionReceipt>
 
@@ -314,3 +335,110 @@ _property: receipt.status => boolean
 The status of a transaction is 1 is successful or 0 if it was
 reverted. Only transactions included in blocks [post-Byzantium Hard Fork](link-eip-609)
 have this property.
+
+_subsection: Access Lists
+
+An Access List is optional an includes a list of addresses and storage
+slots for that address which should be //warmed// or pre-fetched for
+use within the execution of this transaction. A //warmed// value has an
+additional upfront cost to access, but is discounted throughout the code
+execution for reading and writing.
+
+_heading: AccessListish @<providers-AccessListish>
+
+A looser description of an [[providers-AccessList]], which will be
+converted internally using [accessListify](utils-accessListify).
+
+
+It may be any of:
+
+- any [[providers-AccessList]]
+- an Array of 2-element Arrays, where the first element is the address
+  and second array is an array of storage keys
+- an object, whose keys represent the addresses and each value is an
+  array of storage keys
+
+When using the object form (the last option), the addresses and storage
+slots will be sorted. If an explicit order for the access list is
+required, one of the other forms must be used. Most developers
+**do not** require explicit order.
+
+_code: equivalent to the AccessList example below @lang<javascript>
+
+// Option 1:
+// AccessList
+// see below
+
+// Option 2:
+// Array< [ Address, Array<Bytes32> ] >
+[
+  [
+    "0x0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+    [
+      "0x0000000000000000000000000000000000000000000000000000000000000004",
+      "0x0bcad17ecf260d6506c6b97768bdc2acfb6694445d27ffd3f9c1cfbee4a9bd6d"
+    ]
+  ],
+  [
+    "0x5FfC014343cd971B7eb70732021E26C35B744cc4",
+    [
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+    ]
+  ]
+]
+// <hide>
+;
+// </hide>
+
+// Option 3:
+// Record<Address, Array<Bytes32>>
+// <hide>
+(
+// </hide>
+{
+  "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e": [
+    "0x0000000000000000000000000000000000000000000000000000000000000004",
+    "0x0bcad17ecf260d6506c6b97768bdc2acfb6694445d27ffd3f9c1cfbee4a9bd6d"
+  ],
+  "0x5FfC014343cd971B7eb70732021E26C35B744cc4": [
+    "0x0000000000000000000000000000000000000000000000000000000000000001"
+  ]
+}
+// <hide>
+)
+// </hide>
+
+
+_heading: AccessList @<providers-AccessList>
+
+An [[link-eip-2930]] transaction allows an optional **AccessList**
+which causes a transaction to //warm// (i.e. pre-cache) another
+addresses state and the specified storage keys.
+
+This incurs an increased intrinsic cost for the transaction, but provides
+discounts for storage and state access throughout the execution of the
+transaction.
+
+_code: example access list
+
+// Array of objects with the form:
+// {
+//   address: Address,
+//   storageKey: Array< DataHexString< 32 > >
+// }
+
+[
+  {
+    address: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+    storageKeys: [
+        "0x0000000000000000000000000000000000000000000000000000000000000004",
+        "0x0bcad17ecf260d6506c6b97768bdc2acfb6694445d27ffd3f9c1cfbee4a9bd6d"
+    ]
+  },
+  {
+    address: "0x5FfC014343cd971B7eb70732021E26C35B744cc4",
+    storageKeys: [
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+    ]
+  }
+]

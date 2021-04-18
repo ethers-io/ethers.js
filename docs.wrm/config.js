@@ -260,6 +260,8 @@ module.exports = {
       "link-eip-1577": { name: "EIP-1577", url: "https:/\/eips.ethereum.org/EIPS/eip-1577" },
       "link-eip-2098": { name: "EIP-2098", url: "https:/\/eips.ethereum.org/EIPS/eip-2098" },
       "link-eip-2304": { name: "EIP-2304", url: "https:/\/eips.ethereum.org/EIPS/eip-2304" },
+      "link-eip-2718": { name: "EIP-2718", url: "https:/\/eips.ethereum.org/EIPS/eip-2718" },
+      "link-eip-2930": { name: "EIP-2930", url: "https:/\/eips.ethereum.org/EIPS/eip-2930" },
       "link-bip-39": { name: "BIP-39", url: "https:/\/en.bitcoin.it/wiki/BIP_0039" },
       "link-bip-32": { name: "BIP-32", url: "https:/\/github.com/bitcoin/bips/blob/master/bip-0032.mediawiki" },
       "link-bip-44": { name: "BIP-44", url: "https:/\/en.bitcoin.it/wiki/BIP_0044" },

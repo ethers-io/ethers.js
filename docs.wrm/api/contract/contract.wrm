@@ -8,15 +8,15 @@ to be run with the input of the transaction data.
 
 _subsection: Creating Instances @<Contract--creating>
 
-_property: new ethers.Contract(address, abi, signerOrProvider) @src<contracts:constructor.Contract>
+_property: new ethers.Contract(address, abi, signerOrProvider) @src<contracts:class.Contract>
 
-_property: contract.attach(addressOrName) => [[Contract]]  @<Contract-attach> @SRC<contracts:Contract.attach>
+_property: contract.attach(addressOrName) => [[Contract]]  @<Contract-attach> @SRC<contracts:BaseContract.attach>
 Returns a new instance of the **Contract** attached to a new
 address. This is useful if there are multiple similar or identical
 copies of a Contract on the network and you wish to interact with
 each of them.
 
-_property: contract.connect(providerOrSigner) => [[Contract]]  @<Contract-connect> @SRC<contracts:Contract.connect>
+_property: contract.connect(providerOrSigner) => [[Contract]]  @<Contract-connect> @SRC<contracts:BaseContract.connect>
 Returns a new instance of the Contract, but connected to
 //providerOrSigner//.
 
@@ -65,11 +65,11 @@ _subsection: Events @<Contract--events>
 _property: contract.queryFilter(event [ , fromBlockOrBlockHash [ , toBlock ]) => Promise<Array<Event>> @<Contract-queryFilter> @SRC<contracts>
 Return Events that match the //event//.
 
-_property: contract.listenerCount([ event ]) => number  @<Contract-listenerCount> @SRC<contracts:Contract.listenerCount>
+_property: contract.listenerCount([ event ]) => number  @<Contract-listenerCount> @SRC<contracts:BaseContract.listenerCount>
 Return the number of listeners that are subscribed to //event//. If
 no event is provided, returns the total count of all events.
 
-_property: contract.listeners(event) => Array<Listener>  @<Contract-listeners> @SRC<contracts:Contract.listeners>
+_property: contract.listeners(event) => Array<Listener>  @<Contract-listeners> @SRC<contracts:BaseContract.listeners>
 Return a list of listeners that are subscribed to //event//.
 
 _property: contract.off(event, listener) => this  @<Contract-off> @SRC<contracts>
@@ -82,7 +82,7 @@ _property: contract.once(event, listener) => this  @<Contract-once> @SRC<contrac
 Subscribe once to //event// calling //listener// when the event
 occurs.
 
-_property: contract.removeAllListeners([ event ]) => this  @<Contract-removeAllListeners> @SRC<contracts:Contract.removeAllListeners>
+_property: contract.removeAllListeners([ event ]) => this  @<Contract-removeAllListeners> @SRC<contracts:BaseContract.removeAllListeners>
 Unsubscribe all listeners for //event//. If no event is provided,
 all events are unsubscribed.
 

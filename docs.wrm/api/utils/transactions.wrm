@@ -97,6 +97,15 @@ used to encode the chain ID into the serialized transaction.
 
 _subsection: Functions  @<transactions--functions>
 
+_property: ethers.utils.accessListify(anAcceslistish) => [[providers-AccessList]]  @<utils-accessListify> @SRC<transactions:accessListify>
+Normalizes the [[providers-AccessListish]] //anAccessListish// into
+an [[providers-AccessList]].
+
+This is useful for other utility functions which wish to remain
+flexible as to the input parameter for access lists, such as
+when creating a [[Signer]] which needs to manipulate a possibly
+typed transaction envelope.
+
 _property: ethers.utils.parseTransaction(aBytesLike) => [[Transaction]]  @<utils-parseTransaction> @SRC<transactions:parse>
 Parses the transaction properties from a serialized transaction.
 
