@@ -54,7 +54,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._Eip1193Bridge = void 0;
+exports.Eip1193Bridge = void 0;
 var events_1 = __importDefault(require("events"));
 var ethers_1 = require("ethers");
 var _version_1 = require("./_version");
@@ -68,15 +68,15 @@ function getBlockTag(tag) {
     return ethers.utils.hexValue(tag)
 }
 */
-var _Eip1193Bridge = /** @class */ (function (_super) {
-    __extends(_Eip1193Bridge, _super);
-    function _Eip1193Bridge(signer, provider) {
+var Eip1193Bridge = /** @class */ (function (_super) {
+    __extends(Eip1193Bridge, _super);
+    function Eip1193Bridge(signer, provider) {
         var _this = _super.call(this) || this;
         ethers_1.ethers.utils.defineReadOnly(_this, "signer", signer);
         ethers_1.ethers.utils.defineReadOnly(_this, "provider", provider || null);
         return _this;
     }
-    _Eip1193Bridge.prototype.send = function (method, params) {
+    Eip1193Bridge.prototype.send = function (method, params) {
         return __awaiter(this, void 0, void 0, function () {
             function throwUnsupported(message) {
                 return logger.throwError("eth_sign requires a signer", ethers_1.ethers.utils.Logger.errors.UNSUPPORTED_OPERATION, {
@@ -228,7 +228,7 @@ var _Eip1193Bridge = /** @class */ (function (_super) {
             });
         });
     };
-    return _Eip1193Bridge;
+    return Eip1193Bridge;
 }(events_1.default));
-exports._Eip1193Bridge = _Eip1193Bridge;
+exports.Eip1193Bridge = Eip1193Bridge;
 //# sourceMappingURL=eip1193-bridge.js.map

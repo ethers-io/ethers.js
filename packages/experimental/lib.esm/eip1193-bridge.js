@@ -21,7 +21,7 @@ function getBlockTag(tag) {
     return ethers.utils.hexValue(tag)
 }
 */
-export class _Eip1193Bridge extends EventEmitter {
+export class Eip1193Bridge extends EventEmitter {
     constructor(signer, provider) {
         super();
         ethers.utils.defineReadOnly(this, "signer", signer);

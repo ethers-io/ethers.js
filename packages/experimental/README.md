@@ -8,7 +8,7 @@ an issue on GitHub to discuss it.
 
 Also, if you have any system that requires an object from this package, make sure
 you specify the **exact npm version** in your package.json, as backwards compatibility
-is **NOT** guaranteed for this pacakge; APIs may change and classes may disappear.
+is **NOT** guaranteed for this package; APIs may change and classes may disappear.
 
 
 Items
@@ -16,14 +16,14 @@ Items
 
 **BrainWallet**
 
-In general, a Brain Wallet is not recommended, but it is a fature we offered in v3
+In general, a Brain Wallet is not recommended, but it is a feature we offered in v3
 and below. It allows a wallet to be described and recovered using a username and a
 password. However, anyone who can guess a username and password can steal the funds,
 and the password cannot be changed. But for backwards compatibility and for simple
 testing, we provide it here.
 
 ```javascript
-import { BrainWallet } from "@ethersproject/experimenatl/brain-wallet";
+import { BrainWallet } from "@ethersproject/experimental/brain-wallet";
 
 // This is optional, but since a Brain Wallet can take 5-10s to generate,
 // helps keep your users informed
@@ -49,7 +49,7 @@ BrainWallet.generate(username, password, showProgess).then((wallet) => {
 **NonceManager**
 
 ```javascript
-import { NonceManager } from "@ethersproject/experimenatl/nonce-manager";
+import { NonceManager } from "@ethersproject/experimental/nonce-manager";
 
 let signer = "... any way you get a signer ...";
 
@@ -58,21 +58,19 @@ let signer = "... any way you get a signer ...";
 // like. Transactions which have not been mined within XXX timeout and
 // will be rebroadcast; keep in mind that unmined transactions remain
 // in memory.
-let managedSigner = new NonceManager(signer);
+const managedSigner = new NonceManager(signer);
 ```
 
-**RetryProvider**
+**Eip1193Bridge**
 
 ```javascript
-import { RetryProvider } from "@ethersproject/experimenatl/retry-provider";
+import { Eip1193Bridge } from "@ethersproject/experimental/retry-provider";
 
-let provider = "... any way you get a signer...";
+const signer = "... any way you get an ethers Signer...";
+const provider = "... any way you get an ethers Provider...";
 
-// All options are optional
-let options = {
-}
+const eip1193Provider = new Eip1193Provider(signer, provider);
 
-let retryProivder = new RetryProvider(provider, options);
 ```
 
 

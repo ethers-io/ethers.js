@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import EventEmitter from "events";
 import { ethers } from "ethers";
-export declare class _Eip1193Bridge extends EventEmitter {
+export declare class Eip1193Bridge extends EventEmitter {
     readonly signer: ethers.Signer;
     readonly provider: ethers.providers.Provider;
     constructor(signer: ethers.Signer, provider?: ethers.providers.Provider);

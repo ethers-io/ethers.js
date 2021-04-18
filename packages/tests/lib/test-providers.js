@@ -700,7 +700,8 @@ Object.keys(blockchainData).forEach(function (network) {
             });
         }); }, test, function (provider, network, test) {
             // Temporary; Pocket is having issues with old transactions on some testnets
-            if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
+            //if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
+            if (provider === "PocketProvider") {
                 return true;
             }
             return false;
@@ -726,7 +727,8 @@ Object.keys(blockchainData).forEach(function (network) {
             });
         }); }, test, function (provider, network, test) {
             // Temporary; Pocket is having issues with old transactions on some testnets
-            if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
+            //if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
+            if (provider === "PocketProvider") {
                 return true;
             }
             return false;
@@ -818,10 +820,11 @@ Object.keys(blockchainData).forEach(function (network) {
 testFunctions.push({
     name: "sends a transaction",
     extras: ["funding"],
-    timeout: 300,
+    timeout: 900,
     networks: ["ropsten"],
     checkSkip: function (provider, network, test) {
-        return (provider === "PocketProvider");
+        return false;
+        //return (provider === "PocketProvider");
     },
     execute: function (provider) { return __awaiter(void 0, void 0, void 0, function () {
         var wallet, addr, b0, tx, b1;
@@ -855,10 +858,9 @@ testFunctions.push({
 testFunctions.push({
     name: "sends an EIP-2930 transaction",
     extras: ["funding"],
-    timeout: 300,
+    timeout: 900,
     networks: ["ropsten"],
     checkSkip: function (provider, network, test) {
-        // Temporary
         return false;
     },
     execute: function (provider) { return __awaiter(void 0, void 0, void 0, function () {

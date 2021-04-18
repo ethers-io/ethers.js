@@ -644,7 +644,8 @@ Object.keys(blockchainData).forEach((network) => {
             return tx;
         }), test, (provider, network, test) => {
             // Temporary; Pocket is having issues with old transactions on some testnets
-            if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
+            //if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
+            if (provider === "PocketProvider") {
                 return true;
             }
             return false;
@@ -663,7 +664,8 @@ Object.keys(blockchainData).forEach((network) => {
             return receipt;
         }), test, (provider, network, test) => {
             // Temporary; Pocket is having issues with old transactions on some testnets
-            if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
+            //if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
+            if (provider === "PocketProvider") {
                 return true;
             }
             return false;
@@ -728,10 +730,11 @@ Object.keys(blockchainData).forEach((network) => {
 testFunctions.push({
     name: "sends a transaction",
     extras: ["funding"],
-    timeout: 300,
+    timeout: 900,
     networks: ["ropsten"],
     checkSkip: (provider, network, test) => {
-        return (provider === "PocketProvider");
+        return false;
+        //return (provider === "PocketProvider");
     },
     execute: (provider) => __awaiter(void 0, void 0, void 0, function* () {
         const wallet = fundWallet.connect(provider);
@@ -750,10 +753,9 @@ testFunctions.push({
 testFunctions.push({
     name: "sends an EIP-2930 transaction",
     extras: ["funding"],
-    timeout: 300,
+    timeout: 900,
     networks: ["ropsten"],
     checkSkip: (provider, network, test) => {
-        // Temporary
         return false;
     },
     execute: (provider) => __awaiter(void 0, void 0, void 0, function* () {

@@ -3,9 +3,11 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
-ethers/v5.1.1 (2021-04-17 22:40)
+ethers/v5.1.1 (2021-04-18 02:47)
 --------------------------------
 
+  - Increased sendTransaction timeout to 15 minutes and pull Pocket from tx tests. ([08adc18](https://github.com/ethers-io/ethers.js/commit/08adc18a68bdc730633bdaaf2329014a84c12b2b))
+  - Export Eip1193Bridge in experimental package. ([1fcf4b6](https://github.com/ethers-io/ethers.js/commit/1fcf4b6ce6922d2bcb245375c967da3072f113ed))
   - Prevent non-typed transactions from unsafely ignoring specified access lists. ([#1364](https://github.com/ethers-io/ethers.js/issues/1364); [4577444](https://github.com/ethers-io/ethers.js/commit/4577444c448f41114263077c5b54fbe6af749fd4))
   - Update tests for current EIP-2930 support across backends. ([#1364](https://github.com/ethers-io/ethers.js/issues/1364); [1cb3199](https://github.com/ethers-io/ethers.js/commit/1cb3199e5cb01f5a55eb00ab6c7904606d7ea1dd))
   - Removed underscore from the JsonRpcBatchProvider name. ([#62](https://github.com/ethers-io/ethers.js/issues/62), [#656](https://github.com/ethers-io/ethers.js/issues/656), [#892](https://github.com/ethers-io/ethers.js/issues/892); [ae0d5eb](https://github.com/ethers-io/ethers.js/commit/ae0d5eb7c2e37a003d893671db59c2d5719aea0f))
