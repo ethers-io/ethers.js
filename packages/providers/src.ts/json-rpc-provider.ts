@@ -286,6 +286,12 @@ export class JsonRpcProvider extends BaseProvider {
     // all be the same, so we can dedup the calls to save requests and
     // bandwidth. @TODO: Try out generalizing this against send?
     _eventLoopCache: Record<string, Promise<any>>;
+    get _cache(): Record<string, Promise<any>> {
+        if (this._eventLoopCache == null) {
+            this._eventLoopCache = { };
+        }
+        return this._eventLoopCache;
+    }
 
     constructor(url?: ConnectionInfo | string, network?: Networkish) {
         logger.checkNew(new.target, JsonRpcProvider);
@@ -307,8 +313,6 @@ export class JsonRpcProvider extends BaseProvider {
 
         super(networkOrReady);
 
-        this._eventLoopCache = { };
-
         // Default URL
         if (!url) { url = getStatic<() => string>(this.constructor, "defaultUrl")(); }
 
@@ -328,15 +332,15 @@ export class JsonRpcProvider extends BaseProvider {
     }
 
     detectNetwork(): Promise<Network> {
-        if (!this._eventLoopCache["detectNetwork"]) {
-            this._eventLoopCache["detectNetwork"] = this._uncachedDetectNetwork();
+        if (!this._cache["detectNetwork"]) {
+            this._cache["detectNetwork"] = this._uncachedDetectNetwork();
 
             // Clear this cache at the beginning of the next event loop
             setTimeout(() => {
-                this._eventLoopCache["detectNetwork"] = null;
+                this._cache["detectNetwork"] = null;
             }, 0);
         }
-        return this._eventLoopCache["detectNetwork"];
+        return this._cache["detectNetwork"];
     }
 
     async _uncachedDetectNetwork(): Promise<Network> {
@@ -400,8 +404,8 @@ export class JsonRpcProvider extends BaseProvider {
         // We can expand this in the future to any call, but for now these
         // are the biggest wins and do not require any serializing parameters.
         const cache = ([ "eth_chainId", "eth_blockNumber" ].indexOf(method) >= 0);
-        if (cache && this._eventLoopCache[method]) {
-            return this._eventLoopCache[method];
+        if (cache && this._cache[method]) {
+            return this._cache[method];
         }
 
         const result = fetchJson(this.connection, JSON.stringify(request), getResult).then((result) => {
@@ -427,9 +431,9 @@ export class JsonRpcProvider extends BaseProvider {
 
         // Cache the fetch, but clear it on the next event loop
         if (cache) {
-            this._eventLoopCache[method] = result;
+            this._cache[method] = result;
             setTimeout(() => {
-                this._eventLoopCache[method] = null;
+                this._cache[method] = null;
             }, 0);
         }
 
