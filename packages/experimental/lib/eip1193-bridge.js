@@ -76,10 +76,13 @@ var Eip1193Bridge = /** @class */ (function (_super) {
         ethers_1.ethers.utils.defineReadOnly(_this, "provider", provider || null);
         return _this;
     }
+    Eip1193Bridge.prototype.request = function (request) {
+        return this.send(request.method, request.params || []);
+    };
     Eip1193Bridge.prototype.send = function (method, params) {
         return __awaiter(this, void 0, void 0, function () {
             function throwUnsupported(message) {
-                return logger.throwError("eth_sign requires a signer", ethers_1.ethers.utils.Logger.errors.UNSUPPORTED_OPERATION, {
+                return logger.throwError(message, ethers_1.ethers.utils.Logger.errors.UNSUPPORTED_OPERATION, {
                     method: method,
                     params: params
                 });
@@ -203,7 +206,7 @@ var Eip1193Bridge = /** @class */ (function (_super) {
                         return [2 /*return*/, this.signer.signMessage(ethers_1.ethers.utils.arrayify(params[1]))];
                     case 35:
                         if (!this.signer) {
-                            return [2 /*return*/, throwUnsupported("eth_sign requires an account")];
+                            return [2 /*return*/, throwUnsupported("eth_sendTransaction requires an account")];
                         }
                         req = ethers_1.ethers.providers.JsonRpcProvider.hexlifyTransaction(params[0]);
                         return [4 /*yield*/, this.signer.sendTransaction(req)];

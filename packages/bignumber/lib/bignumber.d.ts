@@ -28,7 +28,7 @@ export declare class BigNumber implements Hexable {
     isNegative(): boolean;
     isZero(): boolean;
     toNumber(): number;
-    toBigInt(): BigInt;
+    toBigInt(): bigint;
     toString(): string;
     toHexString(): string;
     toJSON(key?: string): any;

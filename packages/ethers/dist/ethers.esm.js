@@ -4171,7 +4171,7 @@ function joinSignature(signature) {
     ]));
 }
 
-const version$2 = "bignumber/5.1.0";
+const version$2 = "bignumber/5.1.1";
 
 "use strict";
 var BN = bn.BN;
@@ -4920,7 +4920,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.1.0";
+const version$4 = "abi/5.1.1";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -6805,6 +6805,17 @@ class ArrayCoder extends Coder {
         let count = this.length;
         if (count === -1) {
             count = reader.readValue().toNumber();
+            // Check that there is *roughly* enough data to ensure
+            // stray random data is not being read as a length. Each
+            // slot requires at least 32 bytes for their value (or 32
+            // bytes as a link to the data). This could use a much
+            // tighter bound, but we are erroring on the side of safety.
+            if (count * 32 > reader._data.length) {
+                logger$8.throwError("insufficient data length", Logger.errors.BUFFER_OVERRUN, {
+                    length: reader._data.length,
+                    count: count
+                });
+            }
         }
         let coders = [];
         for (let i = 0; i < count; i++) {
@@ -17849,7 +17860,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.1.1";
+const version$m = "providers/5.1.2";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -19923,7 +19934,6 @@ class JsonRpcProvider extends BaseProvider {
             });
         }
         super(networkOrReady);
-        this._eventLoopCache = {};
         // Default URL
         if (!url) {
             url = getStatic(this.constructor, "defaultUrl")();
@@ -19938,18 +19948,24 @@ class JsonRpcProvider extends BaseProvider {
         }
         this._nextId = 42;
     }
+    get _cache() {
+        if (this._eventLoopCache == null) {
+            this._eventLoopCache = {};
+        }
+        return this._eventLoopCache;
+    }
     static defaultUrl() {
         return "http:/\/localhost:8545";
     }
     detectNetwork() {
-        if (!this._eventLoopCache["detectNetwork"]) {
-            this._eventLoopCache["detectNetwork"] = this._uncachedDetectNetwork();
+        if (!this._cache["detectNetwork"]) {
+            this._cache["detectNetwork"] = this._uncachedDetectNetwork();
             // Clear this cache at the beginning of the next event loop
             setTimeout(() => {
-                this._eventLoopCache["detectNetwork"] = null;
+                this._cache["detectNetwork"] = null;
             }, 0);
         }
-        return this._eventLoopCache["detectNetwork"];
+        return this._cache["detectNetwork"];
     }
     _uncachedDetectNetwork() {
         return __awaiter$9(this, void 0, void 0, function* () {
@@ -20008,8 +20024,8 @@ class JsonRpcProvider extends BaseProvider {
         // We can expand this in the future to any call, but for now these
         // are the biggest wins and do not require any serializing parameters.
         const cache = (["eth_chainId", "eth_blockNumber"].indexOf(method) >= 0);
-        if (cache && this._eventLoopCache[method]) {
-            return this._eventLoopCache[method];
+        if (cache && this._cache[method]) {
+            return this._cache[method];
         }
         const result = fetchJson(this.connection, JSON.stringify(request), getResult).then((result) => {
             this.emit("debug", {
@@ -20030,9 +20046,9 @@ class JsonRpcProvider extends BaseProvider {
         });
         // Cache the fetch, but clear it on the next event loop
         if (cache) {
-            this._eventLoopCache[method] = result;
+            this._cache[method] = result;
             setTimeout(() => {
-                this._eventLoopCache[method] = null;
+                this._cache[method] = null;
             }, 0);
         }
         return result;
@@ -22436,7 +22452,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.1.2";
+const version$o = "ethers/5.1.3";
 
 "use strict";
 const logger$H = new Logger(version$o);

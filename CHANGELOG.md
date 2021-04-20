@@ -3,6 +3,14 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.1.3 (2021-04-19 21:01)
+--------------------------------
+
+  - Fixed JsonRpcProvider event-loop caching when using any network. ([#1484](https://github.com/ethers-io/ethers.js/issues/1484); [58488e7](https://github.com/ethers-io/ethers.js/commit/58488e78f9ef79715693e19b42663335aad88c03))
+  - Updated experimental Eip1193Bridge to support final EIP-1193 API. ([2911659](https://github.com/ethers-io/ethers.js/commit/29116593ba6c9c0fa491b13787cca8b233d4218c))
+  - Fail early for ABI decoding that will obviously run out of data. ([#1486](https://github.com/ethers-io/ethers.js/issues/1486); [51f0e1a](https://github.com/ethers-io/ethers.js/commit/51f0e1a52fb885e6f146f7b3b70ed487fd1c8f5a))
+  - Fixed BigNumber toBigInt return type. ([#1485](https://github.com/ethers-io/ethers.js/issues/1485); [c086962](https://github.com/ethers-io/ethers.js/commit/c0869623024bbf3671938dad03b131ff2ac54345))
+
 ethers/v5.1.2 (2021-04-18 19:31)
 --------------------------------
 

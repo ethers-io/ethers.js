@@ -27,10 +27,13 @@ export class Eip1193Bridge extends EventEmitter {
         ethers.utils.defineReadOnly(this, "signer", signer);
         ethers.utils.defineReadOnly(this, "provider", provider || null);
     }
+    request(request) {
+        return this.send(request.method, request.params || []);
+    }
     send(method, params) {
         return __awaiter(this, void 0, void 0, function* () {
             function throwUnsupported(message) {
-                return logger.throwError("eth_sign requires a signer", ethers.utils.Logger.errors.UNSUPPORTED_OPERATION, {
+                return logger.throwError(message, ethers.utils.Logger.errors.UNSUPPORTED_OPERATION, {
                     method: method,
                     params: params
                 });
@@ -119,7 +122,7 @@ export class Eip1193Bridge extends EventEmitter {
                 }
                 case "eth_sendTransaction": {
                     if (!this.signer) {
-                        return throwUnsupported("eth_sign requires an account");
+                        return throwUnsupported("eth_sendTransaction requires an account");
                     }
                     const req = ethers.providers.JsonRpcProvider.hexlifyTransaction(params[0]);
                     const tx = yield this.signer.sendTransaction(req);

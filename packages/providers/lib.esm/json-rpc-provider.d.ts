@@ -29,6 +29,7 @@ export declare class JsonRpcProvider extends BaseProvider {
     _pendingFilter: Promise<number>;
     _nextId: number;
     _eventLoopCache: Record<string, Promise<any>>;
+    get _cache(): Record<string, Promise<any>>;
     constructor(url?: ConnectionInfo | string, network?: Networkish);
     static defaultUrl(): string;
     detectNetwork(): Promise<Network>;

@@ -4244,7 +4244,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "bignumber/5.1.0";
+	exports.version = "bignumber/5.1.1";
 
 	});
 
@@ -5126,7 +5126,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abi/5.1.0";
+	exports.version = "abi/5.1.1";
 
 	});
 
@@ -7238,6 +7238,17 @@
 	        var count = this.length;
 	        if (count === -1) {
 	            count = reader.readValue().toNumber();
+	            // Check that there is *roughly* enough data to ensure
+	            // stray random data is not being read as a length. Each
+	            // slot requires at least 32 bytes for their value (or 32
+	            // bytes as a link to the data). This could use a much
+	            // tighter bound, but we are erroring on the side of safety.
+	            if (count * 32 > reader._data.length) {
+	                logger.throwError("insufficient data length", lib.Logger.errors.BUFFER_OVERRUN, {
+	                    length: reader._data.length,
+	                    count: count
+	                });
+	            }
 	        }
 	        var coders = [];
 	        for (var i = 0; i < count; i++) {
@@ -20096,7 +20107,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.1.1";
+	exports.version = "providers/5.1.2";
 
 	});
 
@@ -22757,7 +22768,6 @@
 	            });
 	        }
 	        _this = _super.call(this, networkOrReady) || this;
-	        _this._eventLoopCache = {};
 	        // Default URL
 	        if (!url) {
 	            url = lib$3.getStatic(_this.constructor, "defaultUrl")();
@@ -22773,19 +22783,29 @@
 	        _this._nextId = 42;
 	        return _this;
 	    }
+	    Object.defineProperty(JsonRpcProvider.prototype, "_cache", {
+	        get: function () {
+	            if (this._eventLoopCache == null) {
+	                this._eventLoopCache = {};
+	            }
+	            return this._eventLoopCache;
+	        },
+	        enumerable: false,
+	        configurable: true
+	    });
 	    JsonRpcProvider.defaultUrl = function () {
 	        return "http:/\/localhost:8545";
 	    };
 	    JsonRpcProvider.prototype.detectNetwork = function () {
 	        var _this = this;
-	        if (!this._eventLoopCache["detectNetwork"]) {
-	            this._eventLoopCache["detectNetwork"] = this._uncachedDetectNetwork();
+	        if (!this._cache["detectNetwork"]) {
+	            this._cache["detectNetwork"] = this._uncachedDetectNetwork();
 	            // Clear this cache at the beginning of the next event loop
 	            setTimeout(function () {
-	                _this._eventLoopCache["detectNetwork"] = null;
+	                _this._cache["detectNetwork"] = null;
 	            }, 0);
 	        }
-	        return this._eventLoopCache["detectNetwork"];
+	        return this._cache["detectNetwork"];
 	    };
 	    JsonRpcProvider.prototype._uncachedDetectNetwork = function () {
 	        return __awaiter(this, void 0, void 0, function () {
@@ -22865,8 +22885,8 @@
 	        // We can expand this in the future to any call, but for now these
 	        // are the biggest wins and do not require any serializing parameters.
 	        var cache = (["eth_chainId", "eth_blockNumber"].indexOf(method) >= 0);
-	        if (cache && this._eventLoopCache[method]) {
-	            return this._eventLoopCache[method];
+	        if (cache && this._cache[method]) {
+	            return this._cache[method];
 	        }
 	        var result = lib$q.fetchJson(this.connection, JSON.stringify(request), getResult).then(function (result) {
 	            _this.emit("debug", {
@@ -22887,9 +22907,9 @@
 	        });
 	        // Cache the fetch, but clear it on the next event loop
 	        if (cache) {
-	            this._eventLoopCache[method] = result;
+	            this._cache[method] = result;
 	            setTimeout(function () {
-	                _this._eventLoopCache[method] = null;
+	                _this._cache[method] = null;
 	            }, 0);
 	        }
 	        return result;
@@ -26101,7 +26121,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.1.2";
+	exports.version = "ethers/5.1.3";
 
 	});
 

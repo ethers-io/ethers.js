@@ -263,7 +263,6 @@ export class JsonRpcProvider extends BaseProvider {
             });
         }
         super(networkOrReady);
-        this._eventLoopCache = {};
         // Default URL
         if (!url) {
             url = getStatic(this.constructor, "defaultUrl")();
@@ -278,18 +277,24 @@ export class JsonRpcProvider extends BaseProvider {
         }
         this._nextId = 42;
     }
+    get _cache() {
+        if (this._eventLoopCache == null) {
+            this._eventLoopCache = {};
+        }
+        return this._eventLoopCache;
+    }
     static defaultUrl() {
         return "http:/\/localhost:8545";
     }
     detectNetwork() {
-        if (!this._eventLoopCache["detectNetwork"]) {
-            this._eventLoopCache["detectNetwork"] = this._uncachedDetectNetwork();
+        if (!this._cache["detectNetwork"]) {
+            this._cache["detectNetwork"] = this._uncachedDetectNetwork();
             // Clear this cache at the beginning of the next event loop
             setTimeout(() => {
-                this._eventLoopCache["detectNetwork"] = null;
+                this._cache["detectNetwork"] = null;
             }, 0);
         }
-        return this._eventLoopCache["detectNetwork"];
+        return this._cache["detectNetwork"];
     }
     _uncachedDetectNetwork() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -348,8 +353,8 @@ export class JsonRpcProvider extends BaseProvider {
         // We can expand this in the future to any call, but for now these
         // are the biggest wins and do not require any serializing parameters.
         const cache = (["eth_chainId", "eth_blockNumber"].indexOf(method) >= 0);
-        if (cache && this._eventLoopCache[method]) {
-            return this._eventLoopCache[method];
+        if (cache && this._cache[method]) {
+            return this._cache[method];
         }
         const result = fetchJson(this.connection, JSON.stringify(request), getResult).then((result) => {
             this.emit("debug", {
@@ -370,9 +375,9 @@ export class JsonRpcProvider extends BaseProvider {
         });
         // Cache the fetch, but clear it on the next event loop
         if (cache) {
-            this._eventLoopCache[method] = result;
+            this._cache[method] = result;
             setTimeout(() => {
-                this._eventLoopCache[method] = null;
+                this._cache[method] = null;
             }, 0);
         }
         return result;
