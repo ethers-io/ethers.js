@@ -190,7 +190,7 @@ export class BigNumber implements Hexable {
         return null;
     }
 
-    toBigInt(): BigInt {
+    toBigInt(): bigint {
         try {
             return BigInt(this.toString());
         } catch (e) { }
