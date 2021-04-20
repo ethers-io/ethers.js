@@ -212,8 +212,19 @@ export class ArrayCoder extends Coder {
         let count = this.length;
         if (count === -1) {
             count = reader.readValue().toNumber();
-        }
 
+            // Check that there is *roughly* enough data to ensure
+            // stray random data is not being read as a length. Each
+            // slot requires at least 32 bytes for their value (or 32
+            // bytes as a link to the data). This could use a much
+            // tighter bound, but we are erroring on the side of safety.
+            if (count * 32 > reader._data.length) {
+                logger.throwError("insufficient data length", Logger.errors.BUFFER_OVERRUN, {
+                    length: reader._data.length,
+                    count: count
+                });
+            }
+        }
         let coders = [];
         for (let i = 0; i < count; i++) { coders.push(new AnonymousCoder(this.coder)); }
 
