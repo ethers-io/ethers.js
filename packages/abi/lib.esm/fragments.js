@@ -354,6 +354,7 @@ export class Fragment {
                 return EventFragment.fromObject(value);
             case "constructor":
                 return ConstructorFragment.fromObject(value);
+            case "error":
             case "fallback":
             case "receive":
                 // @TODO: Something? Maybe return a FunctionFragment? A custom DefaultFunctionFragment?

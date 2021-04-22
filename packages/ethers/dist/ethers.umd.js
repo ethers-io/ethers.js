@@ -5126,7 +5126,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abi/5.1.1";
+	exports.version = "abi/5.1.2";
 
 	});
 
@@ -5508,6 +5508,7 @@
 	                return EventFragment.fromObject(value);
 	            case "constructor":
 	                return ConstructorFragment.fromObject(value);
+	            case "error":
 	            case "fallback":
 	            case "receive":
 	                // @TODO: Something? Maybe return a FunctionFragment? A custom DefaultFunctionFragment?
@@ -26121,7 +26122,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.1.3";
+	exports.version = "ethers/5.1.4";
 
 	});
 

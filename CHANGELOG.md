@@ -3,6 +3,11 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.1.4 (2021-04-22 06:33)
+--------------------------------
+
+  - Do not throw on ABI "error" type. ([#1493](https://github.com/ethers-io/ethers.js/issues/1493), [#1497](https://github.com/ethers-io/ethers.js/issues/1497); [bd05aed](https://github.com/ethers-io/ethers.js/commit/bd05aed070ac9e1421a3e2bff2ceea150bedf9b7))
+
 ethers/v5.1.3 (2021-04-19 21:01)
 --------------------------------
 

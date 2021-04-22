@@ -4920,7 +4920,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.1.1";
+const version$4 = "abi/5.1.2";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -5274,6 +5274,7 @@ class Fragment {
                 return EventFragment.fromObject(value);
             case "constructor":
                 return ConstructorFragment.fromObject(value);
+            case "error":
             case "fallback":
             case "receive":
                 // @TODO: Something? Maybe return a FunctionFragment? A custom DefaultFunctionFragment?
@@ -22452,7 +22453,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.1.3";
+const version$o = "ethers/5.1.4";
 
 "use strict";
 const logger$H = new Logger(version$o);
