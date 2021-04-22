@@ -44,7 +44,7 @@ Installing
 **browser (UMD)**
 
 ```
-<script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js" type="text/javascript">
+<script src="https://cdn.ethers.io/lib/ethers-5.1.umd.min.js" type="text/javascript">
 </script>
 ```
 
@@ -52,7 +52,7 @@ Installing
 
 ```
 <script type="module">
-    import { ethers } from "https://cdn.ethers.io/lib/ethers-5.0.esm.min.js";
+    import { ethers } from "https://cdn.ethers.io/lib/ethers-5.1.esm.min.js";
 </script>
 ```
 
