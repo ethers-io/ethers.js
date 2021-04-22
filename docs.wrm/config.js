@@ -161,7 +161,7 @@ function codeContextify(context) {
 
 module.exports = {
   title: "ethers",
-  subtitle: "v5.0",
+  subtitle: "v5.1",
   description: "Documentation for ethers, a complete, tiny and simple Ethereum library.",
   logo: "logo.svg",
 
@@ -246,7 +246,7 @@ module.exports = {
 
       "link-ethersio": "https:/\/ethers.io/",
       "link-ethers-docs": "https:/\/docs.ethers.io/",
-      "link-ethers-js": "https:/\/cdn.ethers.io/lib/ethers-5.0.esm.min.js",
+      "link-ethers-js": "https:/\/cdn.ethers.io/lib/ethers-5.1.esm.min.js",
       "link-ethers-npm": "https:/\/www.npmjs.com/search?q=%40ethersproject%2F",
       "link-ethers-asm-grammar": "https:/\/github.com/ethers-io/ethers.js/blob/master/packages/asm/grammar.jison",
 
