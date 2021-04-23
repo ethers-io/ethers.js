@@ -76,6 +76,7 @@ function ibanChecksum(address: string): string {
 
 export function getAddress(address: string): string {
     let result = null;
+    let tmpAddress;
 
     if (typeof(address) !== "string") {
         logger.throwArgumentError("invalid address", "address", address);
@@ -84,9 +85,10 @@ export function getAddress(address: string): string {
     if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
 
         // Missing the 0x prefix
-        if (address.substring(0, 2) !== "0x") { address = "0x" + address; }
+        
+        if (address.substring(0, 2) !== "0x") { tmpAddress = "0x" + address; }
 
-        result = getChecksumAddress(address);
+        result = getChecksumAddress(tmpAddress);
 
         // It is a checksummed address with a bad checksum
         if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
