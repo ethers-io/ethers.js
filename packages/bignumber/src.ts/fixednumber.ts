@@ -56,8 +56,11 @@ export function formatFixed(value: BigNumberish, decimals?: string | BigNumberis
     fraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/)[1];
 
     const whole = value.div(multiplier).toString();
-
-    value = whole + "." + fraction;
+    if (multiplier.length === 1) {
+        value = whole;
+    } else {
+        value = whole + "." + fraction;
+    }
 
     if (negative) { value = "-" + value; }
 
@@ -70,10 +73,6 @@ export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
 
     if (typeof(value) !== "string" || !value.match(/^-?[0-9.,]+$/)) {
         logger.throwArgumentError("invalid decimal value", "value", value);
-    }
-
-    if (multiplier.length - 1 === 0) {
-        return BigNumber.from(value);
     }
 
     // Is it negative?
@@ -94,9 +93,12 @@ export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
     if (!whole) { whole = "0"; }
     if (!fraction) { fraction = "0"; }
 
-    // Prevent underflow
-    if (fraction.length > multiplier.length - 1) {
-        throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
+    // Get significant digits to check truncation for underflow
+    {
+    const sigFraction = fraction.replace(/^([0-9]*?)(0*)$/, (all, sig, zeros) => (sig));
+        if (sigFraction.length > multiplier.length - 1) {
+            throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
+        }
     }
 
     // Fully pad the string with zeros to get to wei
@@ -140,6 +142,10 @@ export class FixedFormat {
     static from(value: any): FixedFormat {
         if (value instanceof FixedFormat) { return value; }
 
+        if (typeof(value) === "number") {
+            value = `fixed128x${value}`
+        }
+
         let signed = true;
         let width = 128;
         let decimals = 18;
@@ -149,7 +155,7 @@ export class FixedFormat {
                 // defaults...
             } else if (value === "ufixed") {
                 signed = false;
-            } else if (value != null) {
+            } else {
                 const match = value.match(/^(u?)fixed([0-9]+)x([0-9]+)$/);
                 if (!match) { logger.throwArgumentError("invalid fixed format", "format", value); }
                 signed = (match[1] !== "u");
@@ -241,7 +247,8 @@ export class FixedNumber {
     }
 
     floor(): FixedNumber {
-        let comps = this.toString().split(".");
+        const comps = this.toString().split(".");
+        if (comps.length === 1) { comps.push("0"); }
 
         let result = FixedNumber.from(comps[0], this.format);
 
@@ -254,7 +261,8 @@ export class FixedNumber {
     }
 
     ceiling(): FixedNumber {
-        let comps = this.toString().split(".");
+        const comps = this.toString().split(".");
+        if (comps.length === 1) { comps.push("0"); }
 
         let result = FixedNumber.from(comps[0], this.format);
 
@@ -271,7 +279,8 @@ export class FixedNumber {
         if (decimals == null) { decimals = 0; }
 
         // If we are already in range, we're done
-        let comps = this.toString().split(".");
+        const comps = this.toString().split(".");
+        if (comps.length === 1) { comps.push("0"); }
 
         if (decimals < 0 || decimals > 80 || (decimals % 1)) {
             logger.throwArgumentError("invalid decimal count", "decimals", decimals);
@@ -284,7 +293,7 @@ export class FixedNumber {
     }
 
     isZero(): boolean {
-        return (this._value === "0.0");
+        return (this._value === "0.0" || this._value === "0");
     }
 
     isNegative(): boolean {
@@ -307,7 +316,7 @@ export class FixedNumber {
     }
 
 
-    static fromValue(value: BigNumber, decimals?: BigNumberish, format?: FixedFormat | string): FixedNumber {
+    static fromValue(value: BigNumber, decimals?: BigNumberish, format?: FixedFormat | string | number): FixedNumber {
         // If decimals looks more like a format, and there is no format, shift the parameters
         if (format == null && decimals != null && !isBigNumberish(decimals)) {
             format = decimals;
@@ -321,7 +330,7 @@ export class FixedNumber {
     }
 
 
-    static fromString(value: string, format?: FixedFormat | string): FixedNumber {
+    static fromString(value: string, format?: FixedFormat | string | number): FixedNumber {
         if (format == null) { format = "fixed"; }
 
         const fixedFormat = FixedFormat.from(format);
@@ -345,7 +354,7 @@ export class FixedNumber {
         return new FixedNumber(_constructorGuard, hex, decimal, fixedFormat);
     }
 
-    static fromBytes(value: BytesLike, format?: FixedFormat | string): FixedNumber {
+    static fromBytes(value: BytesLike, format?: FixedFormat | string | number): FixedNumber {
         if (format == null) { format = "fixed"; }
 
         const fixedFormat = FixedFormat.from(format);
@@ -363,7 +372,7 @@ export class FixedNumber {
         return new FixedNumber(_constructorGuard, hex, decimal, fixedFormat);
     }
 
-    static from(value: any, format?: FixedFormat | string) {
+    static from(value: any, format?: FixedFormat | string | number) {
         if (typeof(value) === "string") {
             return FixedNumber.fromString(value, format);
         }
