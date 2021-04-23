@@ -87,8 +87,8 @@ export function getAddress(address: string): string {
         // Missing the 0x prefix
         
         if (address.substring(0, 2) !== "0x") { tmpAddress = "0x" + address; }
-
-        result = getChecksumAddress(tmpAddress);
+        
+        result = getChecksumAddress(tmpAddress || address);
 
         // It is a checksummed address with a bad checksum
         if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
