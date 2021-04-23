@@ -632,3 +632,29 @@ describe("Test ParamType Parser", function() {
         });
     });
 });
+
+describe('Test EIP-838 Error Codes', function() {
+    const addr = "0xbd0B4B009a76CA97766360F04f75e05A3E449f1E";
+    it("testError1", async function () {
+        const provider = new ethers.providers.InfuraProvider("ropsten", "49a0efa3aaee4fd99797bfa94d8ce2f1");
+        const contract = new ethers.Contract(addr, [
+            "function testError1(bool pass, address addr, uint256 value) pure returns (bool)",
+            "function testError2(bool pass, bytes data) pure returns (bool)",
+            "error TestError1(address addr, uint256 value)",
+            "error TestError2(bytes data)",
+        ], provider);
+
+        try {
+            const result = await contract.testError1(false, addr, 42);
+            console.log(result);
+            assert.ok(false, "did not throw ");
+        } catch (error) {
+            assert.equal(error.code, ethers.utils.Logger.errors.CALL_EXCEPTION, "error.code");
+            assert.equal(error.errorSignature, "TestError1(address,uint256)", "error.errorSignature");
+            assert.equal(error.errorArgs[0], addr, "error.errorArgs[0]");
+            assert.equal(error.errorArgs.addr, addr, "error.errorArgs.addr");
+            assert.equal(error.errorArgs[1], 42, "error.errorArgs[1]");
+            assert.equal(error.errorArgs.value, 42, "error.errorArgs.value");
+        }
+    });
+});

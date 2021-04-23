@@ -9,7 +9,7 @@ import { defineReadOnly, Description, getStatic } from "@ethersproject/propertie
 
 import { AbiCoder, defaultAbiCoder } from "./abi-coder";
 import { checkResultErrors, Result } from "./coders/abstract-coder";
-import { ConstructorFragment, EventFragment, FormatTypes, Fragment, FunctionFragment, JsonFragment, ParamType } from "./fragments";
+import { ConstructorFragment, ErrorFragment, EventFragment, FormatTypes, Fragment, FunctionFragment, JsonFragment, ParamType } from "./fragments";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -43,6 +43,11 @@ export class Indexed extends Description<Indexed> {
     }
 }
 
+const BuiltinErrors: Record<string, { signature: string, inputs: Array<string>, reason?: boolean }> = {
+    "0x08c379a0": { signature: "Error(string)", inputs: [ "string" ], reason: true },
+    "0x4e487b71": { signature: "Panic(uint256)", inputs: [ "uint256" ] }
+}
+
 function wrapAccessError(property: string, error: Error): Error {
     const wrap = new Error(`deferred error during ABI decoding triggered accessing ${ property }`);
     (<any>wrap).error = error;
@@ -65,7 +70,7 @@ function checkNames(fragment: Fragment, type: "input" | "output", params: Array<
 export class Interface {
     readonly fragments: ReadonlyArray<Fragment>;
 
-    readonly errors: { [ name: string ]: any };
+    readonly errors: { [ name: string ]: ErrorFragment };
     readonly events: { [ name: string ]: EventFragment };
     readonly functions: { [ name: string ]: FunctionFragment };
     readonly structs: { [ name: string ]: any };
@@ -118,6 +123,9 @@ export class Interface {
                     //checkNames(fragment, "input", fragment.inputs);
                     bucket = this.events;
                     break;
+                case "error":
+                    bucket = this.errors;
+                    break;
                 default:
                     return;
             }
@@ -167,8 +175,8 @@ export class Interface {
         return getAddress(address);
     }
 
-    static getSighash(functionFragment: FunctionFragment): string {
-        return hexDataSlice(id(functionFragment.format()), 0, 4);
+    static getSighash(fragment: ErrorFragment | FunctionFragment): string {
+        return hexDataSlice(id(fragment.format()), 0, 4);
     }
 
     static getEventTopic(eventFragment: EventFragment): string {
@@ -240,6 +248,40 @@ export class Interface {
         return result;
     }
 
+    // Find a function definition by any means necessary (unless it is ambiguous)
+    getError(nameOrSignatureOrSighash: string): ErrorFragment {
+        if (isHexString(nameOrSignatureOrSighash)) {
+            const getSighash = getStatic<(f: ErrorFragment | FunctionFragment) => string>(this.constructor, "getSighash");
+            for (const name in this.errors) {
+                const error = this.errors[name];
+                if (nameOrSignatureOrSighash === getSighash(error)) {
+                    return this.errors[name];
+                }
+            }
+            logger.throwArgumentError("no matching error", "sighash", nameOrSignatureOrSighash);
+        }
+
+        // It is a bare name, look up the function (will return null if ambiguous)
+        if (nameOrSignatureOrSighash.indexOf("(") === -1) {
+            const name = nameOrSignatureOrSighash.trim();
+            const matching = Object.keys(this.errors).filter((f) => (f.split("("/* fix:) */)[0] === name));
+            if (matching.length === 0) {
+                logger.throwArgumentError("no matching error", "name", name);
+            } else if (matching.length > 1) {
+                logger.throwArgumentError("multiple matching errors", "name", name);
+            }
+
+            return this.errors[matching[0]];
+        }
+
+        // Normlize the signature and lookup the function
+        const result = this.errors[FunctionFragment.fromString(nameOrSignatureOrSighash).format()];
+        if (!result) {
+            logger.throwArgumentError("no matching error", "signature", nameOrSignatureOrSighash);
+        }
+        return result;
+    }
+
     // Get the sighash (the bytes4 selector) used by Solidity to identify a function
     getSighash(functionFragment: FunctionFragment | string): string {
         if (typeof(functionFragment) === "string") {
@@ -304,9 +346,10 @@ export class Interface {
             functionFragment = this.getFunction(functionFragment);
         }
 
-        let bytes  = arrayify(data);
+        let bytes = arrayify(data);
 
         let reason: string = null;
+        let errorArgs: Result = null;
         let errorSignature: string = null;
         switch (bytes.length % this._abiCoder._getWordSize()) {
             case 0:
@@ -315,19 +358,29 @@ export class Interface {
                 } catch (error) { }
                 break;
 
-            case 4:
-                if (hexlify(bytes.slice(0, 4)) === "0x08c379a0") {
-                    errorSignature = "Error(string)";
-                    reason = this._abiCoder.decode([ "string" ], bytes.slice(4))[0];
+            case 4: {
+                const selector = hexlify(bytes.slice(0, 4));
+                const builtin = BuiltinErrors[selector];
+                if (builtin) {
+                    errorSignature = builtin.signature;
+                    errorArgs = this._abiCoder.decode(builtin.inputs, bytes.slice(4));
+                    if (builtin.reason) { reason = errorArgs[0]; }
+                } else {
+                    try {
+                        const error = this.getError(selector);
+                        errorSignature = error.format();
+                        errorArgs = this._abiCoder.decode(error.inputs, bytes.slice(4));
+                    } catch (error) {
+                        console.log(error);
+                    }
                 }
                 break;
+            }
         }
 
         return logger.throwError("call revert exception", Logger.errors.CALL_EXCEPTION, {
             method: functionFragment.format(),
-            errorSignature: errorSignature,
-            errorArgs: [ reason ],
-            reason: reason
+            errorSignature, errorArgs, reason
         });
     }
 
@@ -546,6 +599,9 @@ export class Interface {
             value: BigNumber.from(tx.value || "0"),
         });
     }
+
+    // @TODO
+    //parseCallResult(data: BytesLike): ??
 
     // Given an event log, find the matching event fragment (if any) and
     // determine all its properties and values
