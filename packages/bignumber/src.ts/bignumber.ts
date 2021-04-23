@@ -22,7 +22,7 @@ const _constructorGuard = { };
 const MAX_SAFE = 0x1fffffffffffff;
 
 
-export type BigNumberish = BigNumber | Bytes | string | number;
+export type BigNumberish = BigNumber | Bytes | bigint | string | number;
 
 export function isBigNumberish(value: any): value is BigNumberish {
     return (value != null) && (
