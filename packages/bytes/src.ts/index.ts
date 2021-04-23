@@ -190,7 +190,7 @@ export function isHexString(value: any, length?: number): boolean {
 
 const HexCharacters: string = "0123456789abcdef";
 
-export function hexlify(value: BytesLike | Hexable | number, options?: DataOptions): string {
+export function hexlify(value: BytesLike | Hexable | number | bigint, options?: DataOptions): string {
     if (!options) { options = { }; }
 
     if (typeof(value) === "number") {
@@ -198,7 +198,7 @@ export function hexlify(value: BytesLike | Hexable | number, options?: DataOptio
 
         let hex = "";
         while (value) {
-            hex = HexCharacters[value & 0x0f] + hex;
+            hex = HexCharacters[value & 0xf] + hex;
             value = Math.floor(value / 16);
         }
 
@@ -208,6 +208,12 @@ export function hexlify(value: BytesLike | Hexable | number, options?: DataOptio
         }
 
         return "0x00";
+    }
+
+    if (typeof(value) === "bigint") {
+        value = value.toString(16);
+        if (value.length % 2) { return ("0x0" + value); }
+        return "0x" + value;
     }
 
     if (options.allowMissingPrefix && typeof(value) === "string" && value.substring(0, 2) !== "0x") {
@@ -283,7 +289,7 @@ export function hexConcat(items: ReadonlyArray<BytesLike>): string {
     return result;
 }
 
-export function hexValue(value: BytesLike | Hexable | number): string {
+export function hexValue(value: BytesLike | Hexable | number | bigint): string {
     const trimmed = hexStripZeros(hexlify(value, { hexPad: "left" }));
     if (trimmed === "0x") { return "0x0"; }
     return trimmed;
