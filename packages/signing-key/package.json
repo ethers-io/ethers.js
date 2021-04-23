@@ -4,9 +4,9 @@
   },
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bytes": "^5.1.0",
-    "@ethersproject/logger": "^5.1.0",
-    "@ethersproject/properties": "^5.1.0",
+    "@ethersproject/bytes": "^5.2.0",
+    "@ethersproject/logger": "^5.2.0",
+    "@ethersproject/properties": "^5.2.0",
     "bn.js": "^4.4.0",
     "elliptic": "6.5.4"
   },
@@ -44,5 +44,5 @@
   "sideEffects": false,
   "tarballHash": "0xd1b4137edf00c1b6b115d39dd3f2a3182a51d49f2d32f667b0b9cf1948433207",
   "types": "./lib/index.d.ts",
-  "version": "5.1.0"
+  "version": "5.2.0"
 }

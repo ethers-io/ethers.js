@@ -1,8 +1,8 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bytes": "^5.1.0",
-    "@ethersproject/logger": "^5.1.0"
+    "@ethersproject/bytes": "^5.2.0",
+    "@ethersproject/logger": "^5.2.0"
   },
   "description": "Recursive-Length Prefix (RLP) coder.",
   "ethereum": "donations.ethers.eth",
@@ -39,5 +39,5 @@
   "sideEffects": false,
   "tarballHash": "0xf8c54a00b972cee29630254f9a274e07715401ee324cc124fcf693a5e1bb90ed",
   "types": "./lib/index.d.ts",
-  "version": "5.1.0"
+  "version": "5.2.0"
 }

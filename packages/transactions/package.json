@@ -1,15 +1,15 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/address": "^5.1.0",
-    "@ethersproject/bignumber": "^5.1.0",
-    "@ethersproject/bytes": "^5.1.0",
-    "@ethersproject/constants": "^5.1.0",
-    "@ethersproject/keccak256": "^5.1.0",
-    "@ethersproject/logger": "^5.1.0",
-    "@ethersproject/properties": "^5.1.0",
-    "@ethersproject/rlp": "^5.1.0",
-    "@ethersproject/signing-key": "^5.1.0"
+    "@ethersproject/address": "^5.2.0",
+    "@ethersproject/bignumber": "^5.2.0",
+    "@ethersproject/bytes": "^5.2.0",
+    "@ethersproject/constants": "^5.2.0",
+    "@ethersproject/keccak256": "^5.2.0",
+    "@ethersproject/logger": "^5.2.0",
+    "@ethersproject/properties": "^5.2.0",
+    "@ethersproject/rlp": "^5.2.0",
+    "@ethersproject/signing-key": "^5.2.0"
   },
   "description": "Utilities for decoding and encoding Ethereum transaction for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -45,5 +45,5 @@
   "sideEffects": false,
   "tarballHash": "0x534ec8856279734fbd887b095e750e59f71feb9a6d587fc6fd1992b8ee65a4a3",
   "types": "./lib/index.d.ts",
-  "version": "5.1.1"
+  "version": "5.2.0"
 }

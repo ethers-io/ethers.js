@@ -7,7 +7,7 @@
     "./lib/base64": "./lib/browser-base64.js"
   },
   "dependencies": {
-    "@ethersproject/bytes": "^5.1.0"
+    "@ethersproject/bytes": "^5.2.0"
   },
   "description": "Base64 coder.",
   "ethereum": "donations.ethers.eth",
@@ -43,5 +43,5 @@
   "sideEffects": false,
   "tarballHash": "0x2f08f73bfb5244fcf334f2e461e7645a74e2b2fa08b034bb9258025827a3ec31",
   "types": "./lib/index.d.ts",
-  "version": "5.1.0"
+  "version": "5.2.0"
 }

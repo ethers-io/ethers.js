@@ -1,13 +1,13 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bignumber": "^5.1.0",
-    "@ethersproject/bytes": "^5.1.0",
-    "@ethersproject/logger": "^5.1.0",
-    "@ethersproject/networks": "^5.1.0",
-    "@ethersproject/properties": "^5.1.0",
-    "@ethersproject/transactions": "^5.1.0",
-    "@ethersproject/web": "^5.1.0"
+    "@ethersproject/bignumber": "^5.2.0",
+    "@ethersproject/bytes": "^5.2.0",
+    "@ethersproject/logger": "^5.2.0",
+    "@ethersproject/networks": "^5.2.0",
+    "@ethersproject/properties": "^5.2.0",
+    "@ethersproject/transactions": "^5.2.0",
+    "@ethersproject/web": "^5.2.0"
   },
   "description": "An Abstract Class for describing an Ethereum Provider for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -43,5 +43,5 @@
   "sideEffects": false,
   "tarballHash": "0x9a2ee9005c813b52689b7d87a01f6ce29010ef3f899c5fc500e6ae3ea0f03ea2",
   "types": "./lib/index.d.ts",
-  "version": "5.1.0"
+  "version": "5.2.0"
 }

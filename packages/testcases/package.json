@@ -16,11 +16,11 @@
     "./lib/disk-utils": "./lib/browser-disk-utils.js"
   },
   "dependencies": {
-    "@ethersproject/bignumber": "^5.1.0",
-    "@ethersproject/bytes": "^5.1.0",
-    "@ethersproject/keccak256": "^5.1.0",
-    "@ethersproject/strings": "^5.1.0",
-    "ethers": "^5.1.0",
+    "@ethersproject/bignumber": "^5.2.0",
+    "@ethersproject/bytes": "^5.2.0",
+    "@ethersproject/keccak256": "^5.2.0",
+    "@ethersproject/strings": "^5.2.0",
+    "ethers": "^5.2.0",
     "tiny-inflate": "1.0.3"
   },
   "description": "Testcases for Ethereum and scripts to generate testcases.",
@@ -56,5 +56,5 @@
   },
   "tarballHash": "0x044d08b473d96de6190b984afedeb34efb1aa50ae7f772f018162a77251ae99c",
   "types": "./lib/index.d.ts",
-  "version": "5.1.0"
+  "version": "5.2.0"
 }

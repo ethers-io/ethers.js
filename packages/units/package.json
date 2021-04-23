@@ -1,9 +1,9 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bignumber": "^5.1.0",
-    "@ethersproject/constants": "^5.1.0",
-    "@ethersproject/logger": "^5.1.0"
+    "@ethersproject/bignumber": "^5.2.0",
+    "@ethersproject/constants": "^5.2.0",
+    "@ethersproject/logger": "^5.2.0"
   },
   "description": "Unit conversion functions for Ethereum.",
   "ethereum": "donations.ethers.eth",
@@ -41,5 +41,5 @@
   "sideEffects": false,
   "tarballHash": "0x050021e7a90b7917478749f033cbe7590f38157e51c46b6d14987f92b664f99f",
   "types": "./lib/index.d.ts",
-  "version": "5.1.0"
+  "version": "5.2.0"
 }
