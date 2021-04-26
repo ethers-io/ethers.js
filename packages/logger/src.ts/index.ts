@@ -138,6 +138,13 @@ export enum ErrorCode {
     // The gas limit could not be estimated
     //   - transaction: the transaction passed to estimateGas
     UNPREDICTABLE_GAS_LIMIT = "UNPREDICTABLE_GAS_LIMIT",
+
+    // The transaction was replaced by one with a higher gas price
+    //   - reason: "cancelled", "replaced" or "repriced"
+    //   - cancelled: true if reason == "cancelled" or reason == "replaced")
+    //   - hash: original transaction hash
+    //   - replacement: the full TransactionsResponse for the replacement
+    TRANSACTION_REPLACED = "TRANSACTION_REPLACED",
 };
 
 export class Logger {
