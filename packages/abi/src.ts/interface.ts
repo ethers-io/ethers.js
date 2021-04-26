@@ -43,9 +43,9 @@ export class Indexed extends Description<Indexed> {
     }
 }
 
-const BuiltinErrors: Record<string, { signature: string, inputs: Array<string>, reason?: boolean }> = {
-    "0x08c379a0": { signature: "Error(string)", inputs: [ "string" ], reason: true },
-    "0x4e487b71": { signature: "Panic(uint256)", inputs: [ "uint256" ] }
+const BuiltinErrors: Record<string, { signature: string, inputs: Array<string>, name: string, reason?: boolean }> = {
+    "0x08c379a0": { signature: "Error(string)", name: "Error", inputs: [ "string" ], reason: true },
+    "0x4e487b71": { signature: "Panic(uint256)", name: "Panic", inputs: [ "uint256" ] }
 }
 
 function wrapAccessError(property: string, error: Error): Error {
@@ -350,6 +350,7 @@ export class Interface {
 
         let reason: string = null;
         let errorArgs: Result = null;
+        let errorName: string = null;
         let errorSignature: string = null;
         switch (bytes.length % this._abiCoder._getWordSize()) {
             case 0:
@@ -362,14 +363,16 @@ export class Interface {
                 const selector = hexlify(bytes.slice(0, 4));
                 const builtin = BuiltinErrors[selector];
                 if (builtin) {
-                    errorSignature = builtin.signature;
                     errorArgs = this._abiCoder.decode(builtin.inputs, bytes.slice(4));
+                    errorName = builtin.name;
+                    errorSignature = builtin.signature;
                     if (builtin.reason) { reason = errorArgs[0]; }
                 } else {
                     try {
                         const error = this.getError(selector);
-                        errorSignature = error.format();
                         errorArgs = this._abiCoder.decode(error.inputs, bytes.slice(4));
+                        errorName = error.name;
+                        errorSignature = error.format();
                     } catch (error) {
                         console.log(error);
                     }
@@ -380,7 +383,7 @@ export class Interface {
 
         return logger.throwError("call revert exception", Logger.errors.CALL_EXCEPTION, {
             method: functionFragment.format(),
-            errorSignature, errorArgs, reason
+            errorArgs, errorName, errorSignature, reason
         });
     }
 

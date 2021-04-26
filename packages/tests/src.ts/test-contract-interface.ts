@@ -651,6 +651,7 @@ describe('Test EIP-838 Error Codes', function() {
         } catch (error) {
             assert.equal(error.code, ethers.utils.Logger.errors.CALL_EXCEPTION, "error.code");
             assert.equal(error.errorSignature, "TestError1(address,uint256)", "error.errorSignature");
+            assert.equal(error.errorName, "TestError1", "error.errorName");
             assert.equal(error.errorArgs[0], addr, "error.errorArgs[0]");
             assert.equal(error.errorArgs.addr, addr, "error.errorArgs.addr");
             assert.equal(error.errorArgs[1], 42, "error.errorArgs[1]");
