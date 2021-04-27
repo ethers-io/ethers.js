@@ -1,13 +1,13 @@
 ---
 name: Documentation
-about: Documentation Request or Suggest
+about: Documentation request or suggestion
 title: ''
 labels: documentation
 assignees: ''
 
 ---
 
-Please include anything about the documentation you would like to see improved.
+Please include anything about the [documentation](https://docs.ethers.io) you would like to see improved.
 
 - Missing information or details?
 - Wrong Information?
