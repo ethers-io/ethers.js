@@ -35,6 +35,12 @@ Allows sending raw messages to the provider.
 This can be used for backend-specific calls, such as for debugging or
 specific account management.
 
+_subsection: StaticJsonRpcProvider  @<StaticJsonRpcProvider> @INHERIT<[[JsonRpcProvider]]> @SRC<providers:class.StaticJsonRpcProvider>
+EthersJS v5 added the ability (to match EIP-1193) to support
+a changing backend which requires verifying each call that the backend hasn't 
+changed using ``eth_chainId`` checks. If it's known that network won't change, 
+this **StaticJsonRpcProvider** can be used instead to prevent overhead of 
+``eth_chainId`` calls. The API is exactly same as that of [[JsonRpcProvider]].
 
 _subsection: JsonRpcSigner  @<JsonRpcSigner> @INHERIT<[[Signer]]> @SRC<providers:class.JsonRpcSigner>
 A **JsonRpcSigner** is a simple Signer which is backed by a connected
