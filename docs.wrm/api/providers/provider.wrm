@@ -333,8 +333,9 @@ _code: Events Example @lang<javascript>
 
 // <hide>
 const txHash = utils.id("dummy-data");
-const myAddress = ethers.constants.HashZero;
-const myOtherAddress = ethers.constants.HashZero;
+const myAddress = ethers.constants.AddressZero;
+const myOtherAddress = ethers.constants.AddressZero;
+const hexZeroPad = ethers.utils.hexZeroPad;
 // </hide>
 
 provider.on("block", (blockNumber) => {
@@ -367,8 +368,8 @@ topicSets = [
     utils.id("Transfer(address,address,uint256)"),
     null,
     [
-        myAddress,
-        myOtherAddress
+        hexZeroPad(myAddress, 32),
+        hexZeroPad(myOtherAddress, 32)
     ]
 ]
 provider.on(topicSets, (log, event) => {
