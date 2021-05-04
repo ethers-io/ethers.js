@@ -13,6 +13,7 @@ import { JsonRpcProvider } from "./json-rpc-provider";
 export type ExternalProvider = {
     isMetaMask?: boolean;
     isStatus?: boolean;
+    isTrust?: boolean;
     host?: string;
     path?: string;
     sendAsync?: (request: { method: string, params?: Array<any> }, callback: (error: any, response: any) => void) => void
@@ -30,7 +31,7 @@ function buildWeb3LegacyFetcher(provider: ExternalProvider, sendFunc: Web3Legacy
     return function(method: string, params: Array<any>): Promise<any> {
 
         // Metamask complains about eth_sign (and on some versions hangs)
-        if (method == "eth_sign" && (provider.isMetaMask || provider.isStatus)) {
+        if (method == "eth_sign" && (provider.isMetaMask || provider.isStatus || provider.isTrust)) {
             // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
             method = "personal_sign";
             params = [ params[1], params[0] ];
@@ -65,7 +66,7 @@ function buildEip1193Fetcher(provider: ExternalProvider): JsonRpcFetchFunc {
         if (params == null) { params = [ ]; }
 
         // Metamask complains about eth_sign (and on some versions hangs)
-        if (method == "eth_sign" && (provider.isMetaMask || provider.isStatus)) {
+        if (method == "eth_sign" && (provider.isMetaMask || provider.isStatus || provider.isTrust)) {
             // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
             method = "personal_sign";
             params = [ params[1], params[0] ];
