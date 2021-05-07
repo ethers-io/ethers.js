@@ -26,8 +26,7 @@ function getTransactionPostData(transaction: TransactionRequest): Record<string,
         if ((<any>{ type: true, gasLimit: true, gasPrice: true, nonce: true, value: true })[key]) {
             value = hexValue(hexlify(value));
         } else if (key === "accessList") {
-            const sets = accessListify(value);
-            value = '[' + sets.map((set) => {
+            value = "[" + accessListify(value).map((set) => {
                 return `{address:"${ set.address }",storageKeys:["${ set.storageKeys.join('","') }"]}`;
             }).join(",") + "]";
         } else {
@@ -156,32 +155,90 @@ export class EtherscanProvider extends BaseProvider{
 
         super(network);
 
-        let name = "invalid";
-        if (this.network) { name = this.network.name; }
+        defineReadOnly(this, "baseUrl", this.getBaseUrl());
+        defineReadOnly(this, "apiKey", apiKey || defaultApiKey);
+    }
 
-        let baseUrl = null;
-        switch(name) {
+    getBaseUrl(): string {
+        switch(this.network ? this.network.name: "invalid") {
             case "homestead":
-                baseUrl = "https://api.etherscan.io";
-                break;
+                return "https:/\/api.etherscan.io";
             case "ropsten":
-                baseUrl = "https://api-ropsten.etherscan.io";
-                break;
+                return "https:/\/api-ropsten.etherscan.io";
             case "rinkeby":
-                baseUrl = "https://api-rinkeby.etherscan.io";
-                break;
+                return "https:/\/api-rinkeby.etherscan.io";
             case "kovan":
-                baseUrl = "https://api-kovan.etherscan.io";
-                break;
+                return "https:/\/api-kovan.etherscan.io";
             case "goerli":
-                baseUrl = "https://api-goerli.etherscan.io";
-                break;
+                return "https:/\/api-goerli.etherscan.io";
             default:
-                throw new Error("unsupported network");
         }
 
-        defineReadOnly(this, "baseUrl", baseUrl);
-        defineReadOnly(this, "apiKey", apiKey || defaultApiKey);
+        return logger.throwArgumentError("unsupported network", "network", name);
+    }
+
+    getUrl(module: string, params: Record<string, string>): string {
+        const query = Object.keys(params).reduce((accum, key) => {
+            const value = params[key];
+            if (value != null) {
+                accum += `&${ key }=${ value }`
+            }
+            return accum
+        }, "");
+        const apiKey = ((this.apiKey) ? `&apikey=${ this.apiKey }`: "");
+        return `${ this.baseUrl }/api?module=${ module }${ query }${ apiKey }`;
+    }
+
+    getPostUrl(): string {
+        return `${ this.baseUrl }/api`;
+    }
+
+    getPostData(module: string, params: Record<string, any>): Record<string, any> {
+        params.module = module;
+        params.apikey = this.apiKey;
+        return params;
+    }
+
+    async fetch(module: string, params: Record<string, any>, post?: boolean): Promise<any> {
+        const url = (post ? this.getPostUrl(): this.getUrl(module, params));
+        const payload = (post ? this.getPostData(module, params): null);
+        const procFunc = (module === "proxy") ? getJsonResult: getResult;
+
+        this.emit("debug", {
+            action: "request",
+            request: url,
+            provider: this
+        });
+
+        const connection: ConnectionInfo = {
+            url: url,
+            throttleSlotInterval: 1000,
+            throttleCallback: (attempt: number, url: string) => {
+                if (this.isCommunityResource()) {
+                    showThrottleMessage();
+                }
+                return Promise.resolve(true);
+            }
+        };
+
+        let payloadStr: string = null;
+        if (payload) {
+            connection.headers = { "content-type": "application/x-www-form-urlencoded; charset=UTF-8" };
+            payloadStr = Object.keys(payload).map((key) => {
+                return `${ key }=${ payload[key] }`
+            }).join("&");
+        }
+
+        const result = await fetchJson(connection, payloadStr, procFunc || getJsonResult);
+
+        this.emit("debug", {
+            action: "response",
+            request: url,
+            response: deepCopy(result),
+            provider: this
+        });
+
+        return result;
     }
 
     async detectNetwork(): Promise<Network> {
@@ -189,116 +246,73 @@ export class EtherscanProvider extends BaseProvider{
     }
 
     async perform(method: string, params: any): Promise<any> {
-        let url = this.baseUrl + "/api";
-
-        let apiKey = "";
-        if (this.apiKey) { apiKey += "&apikey=" + this.apiKey; }
-
-        const get = async (url: string, payload: Record<string, string>, procFunc?: (value: any) => any): Promise<any> => {
-            this.emit("debug", {
-                action: "request",
-                request: url,
-                provider: this
-            });
-
-
-            const connection: ConnectionInfo = {
-                url: url,
-                throttleSlotInterval: 1000,
-                throttleCallback: (attempt: number, url: string) => {
-                    if (this.isCommunityResource()) {
-                        showThrottleMessage();
-                    }
-                    return Promise.resolve(true);
-                }
-            };
-
-            let payloadStr: string = null;
-            if (payload) {
-                connection.headers = { "content-type": "application/x-www-form-urlencoded; charset=UTF-8" };
-                payloadStr = Object.keys(payload).map((key) => {
-                    return `${ key }=${ payload[key] }`
-                }).join("&");
-            }
-
-            const result = await fetchJson(connection, payloadStr, procFunc || getJsonResult);
-
-            this.emit("debug", {
-                action: "response",
-                request: url,
-                response: deepCopy(result),
-                provider: this
-            });
-
-            return result;
-        };
 
         switch (method) {
             case "getBlockNumber":
-                url += "?module=proxy&action=eth_blockNumber" + apiKey;
-                return get(url, null);
+                return this.fetch("proxy", { action: "eth_blockNumber" });
 
             case "getGasPrice":
-                url += "?module=proxy&action=eth_gasPrice" + apiKey;
-                return get(url, null);
+                return this.fetch("proxy", { action: "eth_gasPrice" });
 
             case "getBalance":
                 // Returns base-10 result
-                url += "?module=account&action=balance&address=" + params.address;
-                url += "&tag=" + params.blockTag + apiKey;
-                return get(url, null, getResult);
+                return this.fetch("account", {
+                    action: "balance",
+                    address: params.address,
+                    tag: params.blockTag
+                });
 
             case "getTransactionCount":
-                url += "?module=proxy&action=eth_getTransactionCount&address=" + params.address;
-                url += "&tag=" + params.blockTag + apiKey;
-                return get(url, null);
-
+                return this.fetch("proxy", {
+                    action: "eth_getTransactionCount",
+                    address: params.address,
+                    tag: params.blockTag
+                });
 
             case "getCode":
-                url += "?module=proxy&action=eth_getCode&address=" + params.address;
-                url += "&tag=" + params.blockTag + apiKey;
-                return get(url, null);
+                return this.fetch("proxy", {
+                    action: "eth_getCode",
+                    address: params.address,
+                    tag: params.blockTag
+                });
 
             case "getStorageAt":
-                url += "?module=proxy&action=eth_getStorageAt&address=" + params.address;
-                url += "&position=" + params.position;
-                url += "&tag=" + params.blockTag + apiKey;
-                return get(url, null);
-
+                return this.fetch("proxy", {
+                    action: "eth_getStorageAt",
+                    address: params.address,
+                    position: params.position,
+                    tag: params.blockTag
+                });
 
             case "sendTransaction":
-                return get(url, {
-                    module: "proxy",
+                return this.fetch("proxy", {
                     action: "eth_sendRawTransaction",
-                    hex: params.signedTransaction,
-                    apikey: this.apiKey
-                }).catch((error) => {
+                    hex: params.signedTransaction
+                }, true).catch((error) => {
                     return checkError("sendTransaction", error, params.signedTransaction);
                 });
 
             case "getBlock":
                 if (params.blockTag) {
-                    url += "?module=proxy&action=eth_getBlockByNumber&tag=" + params.blockTag;
-                    if (params.includeTransactions) {
-                        url += "&boolean=true";
-                    } else {
-                        url += "&boolean=false";
-                    }
-                    url += apiKey;
-                    return get(url, null);
+                    return this.fetch("proxy", {
+                        action: "eth_getBlockByNumber",
+                        tag: params.blockTag,
+                        boolean: (params.includeTransactions ? "true": "false")
+                    });
                 }
                 throw new Error("getBlock by blockHash not implemented");
 
             case "getTransaction":
-                url += "?module=proxy&action=eth_getTransactionByHash&txhash=" + params.transactionHash;
-                url += apiKey;
-                return get(url, null);
+                return this.fetch("proxy", {
+                    action: "eth_getTransactionByHash",
+                    txhash: params.transactionHash
+                });
 
             case "getTransactionReceipt":
-                url += "?module=proxy&action=eth_getTransactionReceipt&txhash=" + params.transactionHash;
-                url += apiKey;
-                return get(url, null);
-
+                return this.fetch("proxy", {
+                    action: "eth_getTransactionReceipt",
+                    txhash: params.transactionHash
+                });
 
             case "call": {
                 if (params.blockTag !== "latest") {
@@ -308,10 +322,9 @@ export class EtherscanProvider extends BaseProvider{
                 const postData = getTransactionPostData(params.transaction);
                 postData.module = "proxy";
                 postData.action = "eth_call";
-                postData.apikey = this.apiKey;
 
                 try {
-                    return await get(url, postData);
+                    return await this.fetch("proxy", postData, true);
                 } catch (error) {
                     return checkError("call", error, params.transaction);
                 }
@@ -321,28 +334,27 @@ export class EtherscanProvider extends BaseProvider{
                 const postData = getTransactionPostData(params.transaction);
                 postData.module = "proxy";
                 postData.action = "eth_estimateGas";
-                postData.apikey = this.apiKey;
 
                 try {
-                    return await get(url, postData);
+                    return await this.fetch("proxy", postData, true);
                 } catch (error) {
                     return checkError("estimateGas", error, params.transaction);
                 }
             }
 
             case "getLogs": {
-                url += "?module=logs&action=getLogs";
+                const args: Record<string, any> = { action: "getLogs" }
 
                 if (params.filter.fromBlock) {
-                    url += "&fromBlock=" + checkLogTag(params.filter.fromBlock);
+                    args.fromBlock = checkLogTag(params.filter.fromBlock);
                 }
 
                 if (params.filter.toBlock) {
-                    url += "&toBlock=" + checkLogTag(params.filter.toBlock);
+                    args.toBlock = checkLogTag(params.filter.toBlock);
                 }
 
                 if (params.filter.address) {
-                    url += "&address=" + params.filter.address;
+                    args.address = params.filter.address;
                 }
 
                 // @TODO: We can handle slightly more complicated logs using the logs API
@@ -356,13 +368,11 @@ export class EtherscanProvider extends BaseProvider{
                         if (typeof(topic0) !== "string" || topic0.length !== 66) {
                             logger.throwError("unsupported topic format", Logger.errors.UNSUPPORTED_OPERATION, { topic0: topic0 });
                         }
-                        url += "&topic0=" + topic0;
+                        args.topic0 = topic0;
                     }
                 }
 
-                url += apiKey;
-
-                const logs: Array<any> = await get(url, null, getResult);
+                const logs: Array<any> = await this.fetch("logs", args);
 
                 // Cache txHash => blockHash
                 let blocks: { [tag: string]: string } = {};
@@ -385,9 +395,7 @@ export class EtherscanProvider extends BaseProvider{
 
             case "getEtherPrice":
                 if (this.network.name !== "homestead") { return 0.0; }
-                url += "?module=stats&action=ethprice";
-                url += apiKey;
-                return parseFloat((await get(url, null, getResult)).ethusd);
+                return parseFloat((await this.fetch("stats", { action: "ethprice" })).ethusd);
 
             default:
                 break;
@@ -396,62 +404,31 @@ export class EtherscanProvider extends BaseProvider{
         return super.perform(method, params);
     }
 
-    // @TODO: Allow startBlock and endBlock to be Promises
-    getHistory(addressOrName: string | Promise<string>, startBlock?: BlockTag, endBlock?: BlockTag): Promise<Array<TransactionResponse>> {
+    // Note: The `page` page parameter only allows pagination within the
+    //       10,000 window abailable without a page and offset parameter
+    //       Error: Result window is too large, PageNo x Offset size must
+    //              be less than or equal to 10000
+    async getHistory(addressOrName: string | Promise<string>, startBlock?: BlockTag, endBlock?: BlockTag): Promise<Array<TransactionResponse>> {
+        const params = {
+            action: "txlist",
+            address: (await this.resolveName(addressOrName)),
+            startblock: ((startBlock == null) ? 0: startBlock),
+            endblock: ((endBlock == null) ? 99999999: endBlock),
+            sort: "asc"
+        };
 
-        let url = this.baseUrl;
+        const result = await this.fetch("account", params);
 
-        let apiKey = "";
-        if (this.apiKey) { apiKey += "&apikey=" + this.apiKey; }
-
-        if (startBlock == null) { startBlock = 0; }
-        if (endBlock == null) { endBlock = 99999999; }
-
-        return this.resolveName(addressOrName).then((address) => {
-            url += "/api?module=account&action=txlist&address=" + address;
-            url += "&startblock=" + startBlock;
-            url += "&endblock=" + endBlock;
-            url += "&sort=asc" + apiKey;
-
-            this.emit("debug", {
-                action: "request",
-                request: url,
-                provider: this
+        return result.map((tx: any) => {
+            ["contractAddress", "to"].forEach(function(key) {
+                if (tx[key] == "") { delete tx[key]; }
             });
-
-            const connection = {
-                url: url,
-                throttleSlotInterval: 1000,
-                throttleCallback: (attempt: number, url: string) => {
-                    if (this.apiKey === defaultApiKey) {
-                        showThrottleMessage();
-                    }
-                    return Promise.resolve(true);
-                }
+            if (tx.creates == null && tx.contractAddress != null) {
+                tx.creates = tx.contractAddress;
             }
-
-            return fetchJson(connection, null, getResult).then((result: Array<any>) => {
-                this.emit("debug", {
-                    action: "response",
-                    request: url,
-                    response: deepCopy(result),
-                    provider: this
-                });
-
-                let output: Array<TransactionResponse> = [];
-                result.forEach((tx) => {
-                    ["contractAddress", "to"].forEach(function(key) {
-                        if (tx[key] == "") { delete tx[key]; }
-                    });
-                    if (tx.creates == null && tx.contractAddress != null) {
-                        tx.creates = tx.contractAddress;
-                    }
-                    let item = this.formatter.transactionResponse(tx);
-                    if (tx.timeStamp) { item.timestamp = parseInt(tx.timeStamp); }
-                    output.push(item);
-                });
-                return output;
-            });
+            const item = this.formatter.transactionResponse(tx);
+            if (tx.timeStamp) { item.timestamp = parseInt(tx.timeStamp); }
+            return item;
         });
     }
 
