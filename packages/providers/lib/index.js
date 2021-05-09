@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcBatchProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
+exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcBatchProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FastIpcProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
 Object.defineProperty(exports, "Provider", { enumerable: true, get: function () { return abstract_provider_1.Provider; } });
 var networks_1 = require("@ethersproject/networks");
@@ -17,6 +17,8 @@ var etherscan_provider_1 = require("./etherscan-provider");
 Object.defineProperty(exports, "EtherscanProvider", { enumerable: true, get: function () { return etherscan_provider_1.EtherscanProvider; } });
 var fallback_provider_1 = require("./fallback-provider");
 Object.defineProperty(exports, "FallbackProvider", { enumerable: true, get: function () { return fallback_provider_1.FallbackProvider; } });
+var fast_ipc_provider_1 = require("./fast-ipc-provider");
+Object.defineProperty(exports, "FastIpcProvider", { enumerable: true, get: function () { return fast_ipc_provider_1.FastIpcProvider; } });
 var ipc_provider_1 = require("./ipc-provider");
 Object.defineProperty(exports, "IpcProvider", { enumerable: true, get: function () { return ipc_provider_1.IpcProvider; } });
 var infura_provider_1 = require("./infura-provider");

@@ -55,7 +55,6 @@ export class FastIpcProvider extends JsonRpcProvider {
   private readonly _subs: { [name: string]: Subscription } = {};
   // The IPC socket
   private readonly _socket: Socket;
-  private _socketReady = false;
   private _lastChunk = "";
 
   public constructor(path: string, network?: Networkish) {
@@ -65,14 +64,18 @@ export class FastIpcProvider extends JsonRpcProvider {
 
     // Stall sending requests until the socket is open...
     this._socket.on("connect", () => {
-      this._socketReady = true;
       Object.keys(this._requests).forEach((id) => {
         this._socket.write(this._requests[id].payload);
       });
     });
 
-    // Reject all pending requests
+    // Reject all pending requests on "error" or "close"
     this._socket.on("error", (err) => this.rejectAllAndDestroy(err));
+    this._socket.on("close", (hadErr) => {
+      if (!hadErr) {
+        this.rejectAllAndDestroy(new Error("IPC socket was closed"));
+      }
+    });
 
     // Parse incoming messages and handle them by type
     this._socket.on("data", (buf) => {
@@ -155,7 +158,7 @@ export class FastIpcProvider extends JsonRpcProvider {
 
       // requests are buffered and sent later if the socket is not yet ready
       this._requests[String(id)] = { resolve, reject, payload };
-      if (this._socketReady) {
+      if (!this._socket.connecting) {
         this._socket.write(payload);
       }
     });
