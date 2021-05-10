@@ -217,6 +217,72 @@ const blockchainData: { [ network: string ]: TestCases } = {
                 extraData: "0xd783010600846765746887676f312e372e33856c696e757800000000000000004e10f96536e45ceca7e34cc1bdda71db3f3bb029eb69afd28b57eb0202c0ec0859d383a99f63503c4df9ab6c1dc63bf6b9db77be952f47d86d2d7b208e77397301",
                 transactions: []
             },
+            {
+                hash: '0x0281610a62b7bc11190c76e2774375feb7205baba91a3a4ff8a6a65139208cab',
+                parentHash: '0x71bf3fa739d941b1188ea0cc87dc8da2ab4f99cfe947a399cae17a6dc834938c',
+                number: 8560354,
+                timestamp: 1620640369,
+                nonce: '0x0000000000000000',
+                difficulty: 2,
+                gasLimit: bnify('0x989680'),
+                gasUsed: bnify('0x283699'),
+                miner: '0x0000000000000000000000000000000000000000',
+                extraData: '0xd883010a03846765746888676f312e31362e33856c696e7578000000000000003d648e9a581bae7ab7922035e7092f6b6f17382c8f26500e28fcb571179dc6ee5bd74062488f4d2c1ca4a2cf5dcfac9e58d2c63b3eb9963facd3f3407c4c827801',
+                transactions: [
+                    '0xe97aeb31358d6bc7a12a1c4d7ac46a98f71d211f5b872c70fdc83646956bab17',
+                    '0x9192cbed1df956d73fc1ea3b0f46e5cec34479770693e81bb16d87705c77f6fe',
+                    '0x2d9b306d904ed971e1938c46e31445a11af422d8296d4df3eeaa882b38685750',
+                    '0x6a94b388a6b9712e1757782be0863ac65cf4b5aae1405caf7757f3439d3a3861',
+                    '0x0234c2b3414594d3996dc6bcab530e1eaa6ec7c25126ad1a6bbe10d32db03b0f',
+                    '0x595a17efa5680dba375dfaca5c15d3211f938bc80cbca24e25dc6d2e38a1a235',
+                    '0xc390ab73e336643c0a349ea70ad5e88821ed0911c20a01e6143d28506f4ffbdc',
+                    '0x14782633356ecf073b6b852daed991eb88463e78c27493b8bd9a720985f73d5d',
+                    '0x49228033e6f06dd0eac792e5c41d2ad13b9629fc9c206f30b27fbee234b62e67',
+                    '0x877f69bb83ca3e0ad4528116f51e398848fbbba859f6603acfb3dcb92218d4ff',
+                    '0xccd4eb6f01c28bcaa37708ea438ecde53b825ee8385137d64e4d83c932c1c2e6',
+                    '0x73d0a669f1f6cfd1059e22a997472f2e95ceddfaf31ee2af94ee5ca14aed730f',
+                    '0x590b1523e659c8f6c684685fd905e3850ef371e74b2b8a1d23b429b7588e78e0',
+                    '0xb17af700ba5c8614c738c209ca761a2159984f90a985d1e41eea614b6d00eab1',
+                    '0x7806c7d55395e003f068892855305d795e536640fe12b55d5ca7c581d0de3248',
+                    '0xe5919d6b0afb064671ddfca231de104c80b915d821f5fb494e00d7d657aee45e',
+                    '0xe981d2629d525affcda9fa3e52c75c0dca3cbe4573e93b01d9d3dde4ce85a817',
+                    '0xac6ea1e45fa6ae499862d1952f31a56bc473eb8e9d209c81fd91191ecafcc2ef',
+                    '0x6badf48c0e02c9184e94634f3e6719196abb55d70888ed72d5d1bd311e1dedff',
+                    '0x0bcd11208f3275b6484a51d40dd87b17501ac95a6981c9fe7cab3b99bddfdb54',
+                    '0x3c142e9f8352b52190d9d011994f2f3265a23a6a12ee4b4700ccf86f500afa29',
+                    '0x1c273a6dee0b34036d2a64cc089c87c7d1edbf096a98907fa2c576a6625028a6',
+                    '0x7c4f96b06e350102dcb2c4b476d4b0a0c6523fec7addcbbae6aa1452113cedda',
+                    '0x000f063b9510dc42a4af13588a2ced2f954cb99993a5bb30dff1dc387eae60ec',
+                    '0x54df3c89de35603400cfe94116a27b9dab001e2fb40f5346cba8fa778bf05173',
+                    '0x7973f5aabfbda1be8000ab65576e597b3c66a2b31444dd36d4d7247185fda863',
+                    '0xbbf4387b337ab2c1e047263d3fb9ee69f5a5927b62722cdf6b6a8ee7d7a5d066',
+                    '0x259eaa68c928a6a01bdb5b2b02e73dc4a4710f37e2a553ccc07096e9f3ff22c9',
+                    '0x9c86a5629a3679966f55e69908f44fa093a295087772e69bba41849c18b86a56',
+                    '0xf52441740a16838330df40922e561bd3a56b577182b76addd6a10d52be2ac372',
+                    '0x7b345aa156a87c36d0becf8d20ef7c52c883935df327d6796371ec6400a5f1ff',
+                    '0x331299bae1f1dfd1784761c80807e70e3f44bac6684e1c7fbeea4ad0e99e0ad9',
+                    '0xa52f848b0ea0f444a26e668372e3953dc5689f55b646ac80d48d9872d55b70ee',
+                    '0xbf8d34ab933fbe272b68b5302604eca7e05c58d6ba92e215172d7c455dbd24c6',
+                    '0x39f2eb22ad6cc803800eba03fc42e490181baa956d993a51ebb7e0e10684a7d5',
+                    '0xc8ec71bff6ac9914b50887f78b755b8c0cb75e8d7bdcf06e89787c0ba43b2158',
+                    '0xef9a21108c197b96e5ff717418d7a414186793f3a08f74ea4a084a88ffea4c69',
+                    '0x14b0e636621c3659a83ce50dadb0dd786b2055ad23e26cc81c1f530908830c72',
+                    '0x77cfdc5d2f0c1767f49131b94e3d89dc66a71ef67ab17377a37f14ba9c610d80',
+                    '0x7dee94efea4ddda1f171562463c1b52c32fc06aef917ddbcee1f9177bcac38d0',
+                    '0xab8b698c0d05cc685159ebea6c84ea9de31f7478ff2eab85e55241c01b22f5b6',
+                    '0x0ae85b8351618f0c13bb559443ab4356a94fa6aff58d95e6da15ab0b80cba46e',
+                    '0x6c49a07155ffb973b2056ba56c9368fe2c97629c01861307f4c0f50f9b6980fd',
+                    '0xc12850f42edf1f6abbce57ddb869477f0effa41404945ac706d4f582e50723e4',
+                    '0x622e5ecd141d06987dbd242524c6750650e7be86d70583da3f5f5fbd6e4a8308',
+                    '0x50998fe2ee2dadeef0088fdf20974d7851ab8801ef4eb2dcf0328c01f0f24497',
+                    '0x3313dc7a46fbecf06e042d1643aaca52410ae7c11f0f9c02ce9d0a16fbd0c5c1',
+                    '0x47091e2fb1eb8dcc14e2551bc749a7b8f0413df95b60e0de81631420607b1061',
+                    '0xea7077f56f0684d071d4177f5d07e43665a46c8d2d0e1e2d2945b87d27954a2c',
+                    '0x8fbd660f11a6f03f323e364420bf3af4fcf9e4273f2efbef9f02439c37ead5c5',
+                    '0xbb7bde239f3aed53658476a590904be8a0eace0ac338b2c9a79ce0feb92dd214',
+                    '0x998bab81d8c876e027ce063d7c43cc7475c33dd2f0de4bf6c16deb478d962b6f'
+                ]
+            }
         ],
         transactions: [
         ],
@@ -1269,3 +1335,15 @@ describe("Bad ENS resolution", function() {
     });
 
 });
+
+describe("Zero prefixed block tag", function() {
+    const provider = providerFunctions[0].create("rinkeby");
+
+    it("eth_getBalance with blockTag", async function() {
+        await provider.getBalance(
+            '0x02680640DEbf91dFF2cF51131545FCBbbEbCA0b5',
+            '0x0281610a62b7bc11190c76e2774375feb7205baba91a3a4ff8a6a65139208cab'
+        );
+    });
+});
+

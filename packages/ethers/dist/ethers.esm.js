@@ -18046,10 +18046,10 @@ class Formatter {
         if (blockTag === "earliest") {
             return "0x0";
         }
-        if (blockTag === "latest" || blockTag === "pending") {
+        if (blockTag === "latest" || blockTag === "pending" || isHexString(blockTag)) {
             return blockTag;
         }
-        if (typeof (blockTag) === "number" || isHexString(blockTag)) {
+        if (typeof (blockTag) === "number") {
             return hexValue(blockTag);
         }
         throw new Error("invalid blockTag");

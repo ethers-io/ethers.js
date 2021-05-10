@@ -20310,10 +20310,10 @@
 	        if (blockTag === "earliest") {
 	            return "0x0";
 	        }
-	        if (blockTag === "latest" || blockTag === "pending") {
+	        if (blockTag === "latest" || blockTag === "pending" || lib$1.isHexString(blockTag)) {
 	            return blockTag;
 	        }
-	        if (typeof (blockTag) === "number" || lib$1.isHexString(blockTag)) {
+	        if (typeof (blockTag) === "number") {
 	            return lib$1.hexValue(blockTag);
 	        }
 	        throw new Error("invalid blockTag");
