@@ -403,3 +403,10 @@ export function isValidMnemonic(mnemonic: string, wordlist?: Wordlist): boolean 
     } catch (error) { }
     return false;
 }
+
+export function getAccountPath(index: number): string {
+    if (typeof(index) !== "number" || index < 0 || index >= HardenedBit || index % 1) {
+        logger.throwArgumentError("invalid account index", "index", index);
+    }
+    return `m/44'/60'/${ index }'/0/0`;
+}
