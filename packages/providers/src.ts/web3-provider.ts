@@ -1,7 +1,7 @@
 "use strict";
 
 import { Networkish } from "@ethersproject/networks";
-import { defineReadOnly } from "@ethersproject/properties";
+import { deepCopy, defineReadOnly } from "@ethersproject/properties";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -27,6 +27,8 @@ export type JsonRpcFetchFunc = (method: string, params?: Array<any>) => Promise<
 type Web3LegacySend = (request: any, callback: (error: Error, response: any) => void) => void;
 
 function buildWeb3LegacyFetcher(provider: ExternalProvider, sendFunc: Web3LegacySend) : JsonRpcFetchFunc {
+    const fetcher = "Web3LegacyFetcher";
+
     return function(method: string, params: Array<any>): Promise<any> {
 
         // Metamask complains about eth_sign (and on some versions hangs)
@@ -44,17 +46,43 @@ function buildWeb3LegacyFetcher(provider: ExternalProvider, sendFunc: Web3Legacy
         };
 
         return new Promise((resolve, reject) => {
-            sendFunc(request, function(error, result) {
-                if (error) { return reject(error); }
+            this.emit("debug", {
+                action: "request",
+                fetcher,
+                request: deepCopy(request),
+                provider: this
+            });
 
-                if (result.error) {
-                    const error = new Error(result.error.message);
-                    (<any>error).code = result.error.code;
-                    (<any>error).data = result.error.data;
+            sendFunc(request, (error, response) => {
+
+                if (error) {
+                    this.emit("debug", {
+                        action: "response",
+                        fetcher,
+                        error,
+                        request,
+                        provider: this
+                    });
+
                     return reject(error);
                 }
 
-                resolve(result.result);
+                this.emit("debug", {
+                    action: "response",
+                    fetcher,
+                    request,
+                    response,
+                    provider: this
+                });
+
+                if (response.error) {
+                    const error = new Error(response.error.message);
+                    (<any>error).code = response.error.code;
+                    (<any>error).data = response.error.data;
+                    return reject(error);
+                }
+
+                resolve(response.result);
             });
         });
     }
@@ -71,7 +99,37 @@ function buildEip1193Fetcher(provider: ExternalProvider): JsonRpcFetchFunc {
             params = [ params[1], params[0] ];
         }
 
-        return provider.request({ method, params });
+        const request = { method, params };
+
+        this.emit("debug", {
+            action: "request",
+            fetcher: "Eip1193Fetcher",
+            request: deepCopy(request),
+            provider: this
+        });
+
+        return provider.request(request).then((response) => {
+            this.emit("debug", {
+                action: "response",
+                fetcher: "Eip1193Fetcher",
+                request,
+                response,
+                provider: this
+            });
+
+            return response;
+
+        }, (error) => {
+            this.emit("debug", {
+                action: "response",
+                fetcher: "Eip1193Fetcher",
+                request,
+                error,
+                provider: this
+            });
+
+            throw error;
+        });
     }
 }
 
