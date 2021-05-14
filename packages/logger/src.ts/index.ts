@@ -144,6 +144,7 @@ export enum ErrorCode {
     //   - cancelled: true if reason == "cancelled" or reason == "replaced")
     //   - hash: original transaction hash
     //   - replacement: the full TransactionsResponse for the replacement
+    //   - receipt: the receipt of the replacement
     TRANSACTION_REPLACED = "TRANSACTION_REPLACED",
 };
 
