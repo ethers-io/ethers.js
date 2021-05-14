@@ -161,7 +161,7 @@ function codeContextify(context) {
 
 module.exports = {
   title: "ethers",
-  subtitle: "v5.1",
+  subtitle: "v5.2",
   description: "Documentation for ethers, a complete, tiny and simple Ethereum library.",
   logo: "logo.svg",
 
@@ -204,7 +204,8 @@ module.exports = {
       "link-rtd": "https:/\/github.com/readthedocs/sphinx_rtd_theme",
       "link-semver": { name: "semver", url: "https:/\/semver.org" },
       "link-solidity": { name: "Solidity" , url: "https:/\/solidity.readthedocs.io/" },
-      "link-solidity-events": "https:/\/docs.soliditylang.org/en/v0.8.1/abi-spec.html#events",
+      "link-solidity-errors": "https:/\/docs.soliditylang.org/en/v0.8.4/abi-spec.html#errors",
+      "link-solidity-events": "https:/\/docs.soliditylang.org/en/v0.8.4/abi-spec.html#events",
       "link-sphinx": { name: "Sphinx", url: "https:/\/www.sphinx-doc.org/" },
 
       "link-alchemy-signup": "https:/\/dashboard.alchemyapi.io/signup?referral=55a35117-028e-4b7c-9e47-e275ad0acc6d",
