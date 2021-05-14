@@ -214,7 +214,7 @@ export class JsonRpcSigner extends Signer implements TypedDataSigner {
                     if (tx === null) { return undefined; }
                     return this.provider._wrapTransaction(tx, hash);
                 });
-            }, { onceBlock: this.provider }).catch((error: Error) => {
+            }, { oncePoll: this.provider }).catch((error: Error) => {
                 (<any>error).transactionHash = hash;
                 throw error;
             });
