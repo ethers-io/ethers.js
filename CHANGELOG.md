@@ -3,6 +3,25 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.2.0 (2021-05-13 23:44)
+--------------------------------
+
+  - More aggresively check for mempool transactions sent from JsonRpcSigner. ([3316468](https://github.com/ethers-io/ethers.js/commit/3316468e3e0a5925cbecad85d894cc7d622394e7))
+  - Added initial support for detecting replacement transactions. ([#1477](https://github.com/ethers-io/ethers.js/issues/1477); [5144acf](https://github.com/ethers-io/ethers.js/commit/5144acf456b51c95bbe3950bd37609abecc7ebc7))
+  - Added convenience method for HD path derivation. ([aadc5cd](https://github.com/ethers-io/ethers.js/commit/aadc5cd3d65421e13ebd4e4d7c293ac3ece5e178))
+  - Added mnemonicPath option to cli. ([6e08809](https://github.com/ethers-io/ethers.js/commit/6e088099adabd7c5d2e6710062ebc62b316ba0f1))
+  - Added some popular Ethereum-compatible chains to networks. ([b6370f1](https://github.com/ethers-io/ethers.js/commit/b6370f13600a0c444342cbf16a83f010a929976b))
+  - Added debug event to Web3Provider. ([26464c5](https://github.com/ethers-io/ethers.js/commit/26464c54258f98c321638475d6cf11595186e76d))
+  - Abstracted EtherscanProivder to more easily fascilitate other Etherscan-supported chains. ([#1204](https://github.com/ethers-io/ethers.js/issues/1204), [#1473](https://github.com/ethers-io/ethers.js/issues/1473); [37a9c77](https://github.com/ethers-io/ethers.js/commit/37a9c77ab2acb7f75e1fc4cc918810d2fe59dd76))
+  - Added EIP-838 error name as well as error signature. ([#1498](https://github.com/ethers-io/ethers.js/issues/1498); [483d67f](https://github.com/ethers-io/ethers.js/commit/483d67f55c15a76bcd853e889a0e35815d9850f7))
+  - Added new error for replaced transactions. ([#1477](https://github.com/ethers-io/ethers.js/issues/1477); [987bec8](https://github.com/ethers-io/ethers.js/commit/987bec87afaa365f291290a0136cedbc2b1992f2))
+  - More flexible FixedNumber input and output for strings with no decimals. ([#1019](https://github.com/ethers-io/ethers.js/issues/1019), [#1291](https://github.com/ethers-io/ethers.js/issues/1291), [#1463](https://github.com/ethers-io/ethers.js/issues/1463); [a9cdbe1](https://github.com/ethers-io/ethers.js/commit/a9cdbe1238c149a7167c6bb1a78f314805b52755))
+  - Added hex support for bigint. ([#1472](https://github.com/ethers-io/ethers.js/issues/1472); [4e9abfd](https://github.com/ethers-io/ethers.js/commit/4e9abfdee478a8423da4d55feea8c1aae78a8eb4))
+  - Added support for null entries in EventFilter. ([#1499](https://github.com/ethers-io/ethers.js/issues/1499); [3bb5fbf](https://github.com/ethers-io/ethers.js/commit/3bb5fbf533107e880377ecc14f30f314a5028e56))
+  - Add bigint to allowed BigNumberish types. ([#1472](https://github.com/ethers-io/ethers.js/issues/1472); [cadccc3](https://github.com/ethers-io/ethers.js/commit/cadccc3060b88ab2ca64aeb302717d2d1c95a897))
+  - Support for EIP-838 custom contract errors. ([#1498](https://github.com/ethers-io/ethers.js/issues/1498); [6519609](https://github.com/ethers-io/ethers.js/commit/65196097f6626401638d85cf19e3d628a6223d5d))
+  - Minor version bump. ([8e22e02](https://github.com/ethers-io/ethers.js/commit/8e22e0260eb70713c943c9e99ee8d66d71ebe56d))
+
 ethers/v5.1.4 (2021-04-22 06:33)
 --------------------------------
 
