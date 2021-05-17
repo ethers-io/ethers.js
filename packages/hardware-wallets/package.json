@@ -48,7 +48,7 @@
     "test": "exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x89e7bd4a4684245dab029dad747e3bc6a0bf1ad5aaf8769d40d646375dc043b9",
+  "tarballHash": "0xcd7e9340eb28525dfb7a77bad28976567544d796635c901370de8d7681026e44",
   "types": "./lib/index.d.ts",
   "version": "5.2.0"
 }

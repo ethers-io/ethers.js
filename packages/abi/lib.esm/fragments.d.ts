@@ -74,4 +74,11 @@ export declare class FunctionFragment extends ConstructorFragment {
     static fromString(value: string): FunctionFragment;
     static isFunctionFragment(value: any): value is FunctionFragment;
 }
+export declare class ErrorFragment extends Fragment {
+    format(format?: string): string;
+    static from(value: ErrorFragment | JsonFragment | string): ErrorFragment;
+    static fromObject(value: ErrorFragment | JsonFragment): ErrorFragment;
+    static fromString(value: string): ErrorFragment;
+    static isErrorFragment(value: any): value is ErrorFragment;
+}
 //# sourceMappingURL=fragments.d.ts.map

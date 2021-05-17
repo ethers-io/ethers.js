@@ -52,7 +52,12 @@ function formatFixed(value, decimals) {
     // Strip training 0
     fraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/)[1];
     var whole = value.div(multiplier).toString();
-    value = whole + "." + fraction;
+    if (multiplier.length === 1) {
+        value = whole;
+    }
+    else {
+        value = whole + "." + fraction;
+    }
     if (negative) {
         value = "-" + value;
     }
@@ -66,9 +71,6 @@ function parseFixed(value, decimals) {
     var multiplier = getMultiplier(decimals);
     if (typeof (value) !== "string" || !value.match(/^-?[0-9.,]+$/)) {
         logger.throwArgumentError("invalid decimal value", "value", value);
-    }
-    if (multiplier.length - 1 === 0) {
-        return bignumber_1.BigNumber.from(value);
     }
     // Is it negative?
     var negative = (value.substring(0, 1) === "-");
@@ -90,9 +92,12 @@ function parseFixed(value, decimals) {
     if (!fraction) {
         fraction = "0";
     }
-    // Prevent underflow
-    if (fraction.length > multiplier.length - 1) {
-        throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
+    // Get significant digits to check truncation for underflow
+    {
+        var sigFraction = fraction.replace(/^([0-9]*?)(0*)$/, function (all, sig, zeros) { return (sig); });
+        if (sigFraction.length > multiplier.length - 1) {
+            throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
+        }
     }
     // Fully pad the string with zeros to get to wei
     while (fraction.length < multiplier.length - 1) {
@@ -125,6 +130,9 @@ var FixedFormat = /** @class */ (function () {
         if (value instanceof FixedFormat) {
             return value;
         }
+        if (typeof (value) === "number") {
+            value = "fixed128x" + value;
+        }
         var signed = true;
         var width = 128;
         var decimals = 18;
@@ -135,7 +143,7 @@ var FixedFormat = /** @class */ (function () {
             else if (value === "ufixed") {
                 signed = false;
             }
-            else if (value != null) {
+            else {
                 var match = value.match(/^(u?)fixed([0-9]+)x([0-9]+)$/);
                 if (!match) {
                     logger.throwArgumentError("invalid fixed format", "format", value);
@@ -216,6 +224,9 @@ var FixedNumber = /** @class */ (function () {
     };
     FixedNumber.prototype.floor = function () {
         var comps = this.toString().split(".");
+        if (comps.length === 1) {
+            comps.push("0");
+        }
         var result = FixedNumber.from(comps[0], this.format);
         var hasFraction = !comps[1].match(/^(0*)$/);
         if (this.isNegative() && hasFraction) {
@@ -225,6 +236,9 @@ var FixedNumber = /** @class */ (function () {
     };
     FixedNumber.prototype.ceiling = function () {
         var comps = this.toString().split(".");
+        if (comps.length === 1) {
+            comps.push("0");
+        }
         var result = FixedNumber.from(comps[0], this.format);
         var hasFraction = !comps[1].match(/^(0*)$/);
         if (!this.isNegative() && hasFraction) {
@@ -239,6 +253,9 @@ var FixedNumber = /** @class */ (function () {
         }
         // If we are already in range, we're done
         var comps = this.toString().split(".");
+        if (comps.length === 1) {
+            comps.push("0");
+        }
         if (decimals < 0 || decimals > 80 || (decimals % 1)) {
             logger.throwArgumentError("invalid decimal count", "decimals", decimals);
         }
@@ -249,7 +266,7 @@ var FixedNumber = /** @class */ (function () {
         return this.mulUnsafe(factor).addUnsafe(BUMP).floor().divUnsafe(factor);
     };
     FixedNumber.prototype.isZero = function () {
-        return (this._value === "0.0");
+        return (this._value === "0.0" || this._value === "0");
     };
     FixedNumber.prototype.isNegative = function () {
         return (this._value[0] === "-");

@@ -355,6 +355,7 @@ export class Fragment {
             case "constructor":
                 return ConstructorFragment.fromObject(value);
             case "error":
+                return ErrorFragment.fromObject(value);
             case "fallback":
             case "receive":
                 // @TODO: Something? Maybe return a FunctionFragment? A custom DefaultFunctionFragment?
@@ -375,6 +376,9 @@ export class Fragment {
         }
         else if (value.split("(")[0].trim() === "constructor") {
             return ConstructorFragment.fromString(value.trim());
+        }
+        else if (value.split(" ")[0] === "error") {
+            return ErrorFragment.fromString(value.substring(5).trim());
         }
         return logger.throwArgumentError("unsupported fragment", "value", value);
     }
@@ -731,10 +735,74 @@ export class FunctionFragment extends ConstructorFragment {
         return (value && value._isFragment && value.type === "function");
     }
 }
-//export class ErrorFragment extends Fragment {
-//}
 //export class StructFragment extends Fragment {
 //}
+function checkForbidden(fragment) {
+    const sig = fragment.format();
+    if (sig === "Error(string)" || sig === "Panic(uint256)") {
+        logger.throwArgumentError(`cannot specify user defined ${sig} error`, "fragment", fragment);
+    }
+    return fragment;
+}
+export class ErrorFragment extends Fragment {
+    format(format) {
+        if (!format) {
+            format = FormatTypes.sighash;
+        }
+        if (!FormatTypes[format]) {
+            logger.throwArgumentError("invalid format type", "format", format);
+        }
+        if (format === FormatTypes.json) {
+            return JSON.stringify({
+                type: "error",
+                name: this.name,
+                inputs: this.inputs.map((input) => JSON.parse(input.format(format))),
+            });
+        }
+        let result = "";
+        if (format !== FormatTypes.sighash) {
+            result += "error ";
+        }
+        result += this.name + "(" + this.inputs.map((input) => input.format(format)).join((format === FormatTypes.full) ? ", " : ",") + ") ";
+        return result.trim();
+    }
+    static from(value) {
+        if (typeof (value) === "string") {
+            return ErrorFragment.fromString(value);
+        }
+        return ErrorFragment.fromObject(value);
+    }
+    static fromObject(value) {
+        if (ErrorFragment.isErrorFragment(value)) {
+            return value;
+        }
+        if (value.type !== "error") {
+            logger.throwArgumentError("invalid error object", "value", value);
+        }
+        const params = {
+            type: value.type,
+            name: verifyIdentifier(value.name),
+            inputs: (value.inputs ? value.inputs.map(ParamType.fromObject) : [])
+        };
+        return checkForbidden(new ErrorFragment(_constructorGuard, params));
+    }
+    static fromString(value) {
+        let params = { type: "error" };
+        let parens = value.match(regexParen);
+        if (!parens) {
+            logger.throwArgumentError("invalid error signature", "value", value);
+        }
+        params.name = parens[1].trim();
+        if (params.name) {
+            verifyIdentifier(params.name);
+        }
+        params.inputs = parseParams(parens[2], false);
+        return checkForbidden(ErrorFragment.fromObject(params));
+    }
+    static isErrorFragment(value) {
+        return (value && value._isFragment && value.type === "error");
+    }
+}
 function verifyType(type) {
     // These need to be transformed to their full description
     if (type.match(/^uint($|[^1-9])/)) {

@@ -189,7 +189,7 @@ export class JsonRpcSigner extends Signer {
                     }
                     return this.provider._wrapTransaction(tx, hash);
                 });
-            }, { onceBlock: this.provider }).catch((error) => {
+            }, { oncePoll: this.provider }).catch((error) => {
                 error.transactionHash = hash;
                 throw error;
             });

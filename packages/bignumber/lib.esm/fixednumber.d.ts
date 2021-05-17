@@ -31,10 +31,10 @@ export declare class FixedNumber {
     toHexString(width?: number): string;
     toUnsafeFloat(): number;
     toFormat(format: FixedFormat | string): FixedNumber;
-    static fromValue(value: BigNumber, decimals?: BigNumberish, format?: FixedFormat | string): FixedNumber;
-    static fromString(value: string, format?: FixedFormat | string): FixedNumber;
-    static fromBytes(value: BytesLike, format?: FixedFormat | string): FixedNumber;
-    static from(value: any, format?: FixedFormat | string): FixedNumber;
+    static fromValue(value: BigNumber, decimals?: BigNumberish, format?: FixedFormat | string | number): FixedNumber;
+    static fromString(value: string, format?: FixedFormat | string | number): FixedNumber;
+    static fromBytes(value: BytesLike, format?: FixedFormat | string | number): FixedNumber;
+    static from(value: any, format?: FixedFormat | string | number): FixedNumber;
     static isFixedNumber(value: any): value is FixedNumber;
 }
 //# sourceMappingURL=fixednumber.d.ts.map

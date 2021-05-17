@@ -50,7 +50,12 @@ export function formatFixed(value, decimals) {
     // Strip training 0
     fraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/)[1];
     const whole = value.div(multiplier).toString();
-    value = whole + "." + fraction;
+    if (multiplier.length === 1) {
+        value = whole;
+    }
+    else {
+        value = whole + "." + fraction;
+    }
     if (negative) {
         value = "-" + value;
     }
@@ -63,9 +68,6 @@ export function parseFixed(value, decimals) {
     const multiplier = getMultiplier(decimals);
     if (typeof (value) !== "string" || !value.match(/^-?[0-9.,]+$/)) {
         logger.throwArgumentError("invalid decimal value", "value", value);
-    }
-    if (multiplier.length - 1 === 0) {
-        return BigNumber.from(value);
     }
     // Is it negative?
     const negative = (value.substring(0, 1) === "-");
@@ -87,9 +89,12 @@ export function parseFixed(value, decimals) {
     if (!fraction) {
         fraction = "0";
     }
-    // Prevent underflow
-    if (fraction.length > multiplier.length - 1) {
-        throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
+    // Get significant digits to check truncation for underflow
+    {
+        const sigFraction = fraction.replace(/^([0-9]*?)(0*)$/, (all, sig, zeros) => (sig));
+        if (sigFraction.length > multiplier.length - 1) {
+            throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
+        }
     }
     // Fully pad the string with zeros to get to wei
     while (fraction.length < multiplier.length - 1) {
@@ -121,6 +126,9 @@ export class FixedFormat {
         if (value instanceof FixedFormat) {
             return value;
         }
+        if (typeof (value) === "number") {
+            value = `fixed128x${value}`;
+        }
         let signed = true;
         let width = 128;
         let decimals = 18;
@@ -131,7 +139,7 @@ export class FixedFormat {
             else if (value === "ufixed") {
                 signed = false;
             }
-            else if (value != null) {
+            else {
                 const match = value.match(/^(u?)fixed([0-9]+)x([0-9]+)$/);
                 if (!match) {
                     logger.throwArgumentError("invalid fixed format", "format", value);
@@ -208,7 +216,10 @@ export class FixedNumber {
         return FixedNumber.fromValue(a.mul(this.format._multiplier).div(b), this.format.decimals, this.format);
     }
     floor() {
-        let comps = this.toString().split(".");
+        const comps = this.toString().split(".");
+        if (comps.length === 1) {
+            comps.push("0");
+        }
         let result = FixedNumber.from(comps[0], this.format);
         const hasFraction = !comps[1].match(/^(0*)$/);
         if (this.isNegative() && hasFraction) {
@@ -217,7 +228,10 @@ export class FixedNumber {
         return result;
     }
     ceiling() {
-        let comps = this.toString().split(".");
+        const comps = this.toString().split(".");
+        if (comps.length === 1) {
+            comps.push("0");
+        }
         let result = FixedNumber.from(comps[0], this.format);
         const hasFraction = !comps[1].match(/^(0*)$/);
         if (!this.isNegative() && hasFraction) {
@@ -231,7 +245,10 @@ export class FixedNumber {
             decimals = 0;
         }
         // If we are already in range, we're done
-        let comps = this.toString().split(".");
+        const comps = this.toString().split(".");
+        if (comps.length === 1) {
+            comps.push("0");
+        }
         if (decimals < 0 || decimals > 80 || (decimals % 1)) {
             logger.throwArgumentError("invalid decimal count", "decimals", decimals);
         }
@@ -242,7 +259,7 @@ export class FixedNumber {
         return this.mulUnsafe(factor).addUnsafe(BUMP).floor().divUnsafe(factor);
     }
     isZero() {
-        return (this._value === "0.0");
+        return (this._value === "0.0" || this._value === "0");
     }
     isNegative() {
         return (this._value[0] === "-");

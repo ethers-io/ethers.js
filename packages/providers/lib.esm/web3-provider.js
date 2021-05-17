@@ -1,11 +1,12 @@
 "use strict";
-import { defineReadOnly } from "@ethersproject/properties";
+import { deepCopy, defineReadOnly } from "@ethersproject/properties";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 import { JsonRpcProvider } from "./json-rpc-provider";
 let _nextId = 1;
 function buildWeb3LegacyFetcher(provider, sendFunc) {
+    const fetcher = "Web3LegacyFetcher";
     return function (method, params) {
         // Metamask complains about eth_sign (and on some versions hangs)
         if (method == "eth_sign" && (provider.isMetaMask || provider.isStatus)) {
@@ -20,17 +21,37 @@ function buildWeb3LegacyFetcher(provider, sendFunc) {
             jsonrpc: "2.0"
         };
         return new Promise((resolve, reject) => {
-            sendFunc(request, function (error, result) {
+            this.emit("debug", {
+                action: "request",
+                fetcher,
+                request: deepCopy(request),
+                provider: this
+            });
+            sendFunc(request, (error, response) => {
                 if (error) {
+                    this.emit("debug", {
+                        action: "response",
+                        fetcher,
+                        error,
+                        request,
+                        provider: this
+                    });
                     return reject(error);
                 }
-                if (result.error) {
-                    const error = new Error(result.error.message);
-                    error.code = result.error.code;
-                    error.data = result.error.data;
+                this.emit("debug", {
+                    action: "response",
+                    fetcher,
+                    request,
+                    response,
+                    provider: this
+                });
+                if (response.error) {
+                    const error = new Error(response.error.message);
+                    error.code = response.error.code;
+                    error.data = response.error.data;
                     return reject(error);
                 }
-                resolve(result.result);
+                resolve(response.result);
             });
         });
     };
@@ -46,7 +67,32 @@ function buildEip1193Fetcher(provider) {
             method = "personal_sign";
             params = [params[1], params[0]];
         }
-        return provider.request({ method, params });
+        const request = { method, params };
+        this.emit("debug", {
+            action: "request",
+            fetcher: "Eip1193Fetcher",
+            request: deepCopy(request),
+            provider: this
+        });
+        return provider.request(request).then((response) => {
+            this.emit("debug", {
+                action: "response",
+                fetcher: "Eip1193Fetcher",
+                request,
+                response,
+                provider: this
+            });
+            return response;
+        }, (error) => {
+            this.emit("debug", {
+                action: "response",
+                fetcher: "Eip1193Fetcher",
+                request,
+                error,
+                provider: this
+            });
+            throw error;
+        });
     };
 }
 export class Web3Provider extends JsonRpcProvider {

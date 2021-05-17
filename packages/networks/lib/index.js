@@ -110,16 +110,10 @@ var classicMordor = {
     _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/mordor", "classicMordor")
 };
 var networks = {
-    unspecified: {
-        chainId: 0,
-        name: "unspecified"
-    },
+    unspecified: { chainId: 0, name: "unspecified" },
     homestead: homestead,
     mainnet: homestead,
-    morden: {
-        chainId: 2,
-        name: "morden"
-    },
+    morden: { chainId: 2, name: "morden" },
     ropsten: ropsten,
     testnet: ropsten,
     rinkeby: {
@@ -143,19 +137,20 @@ var networks = {
     classic: {
         chainId: 61,
         name: "classic",
-        _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/etc", "classic")
+        _defaultProvider: etcDefaultProvider("https:/\/www.ethercluster.com/etc", "classic")
     },
-    classicMorden: {
-        chainId: 62,
-        name: "classicMorden",
-    },
+    classicMorden: { chainId: 62, name: "classicMorden" },
     classicMordor: classicMordor,
     classicTestnet: classicMordor,
     classicKotti: {
         chainId: 6,
         name: "classicKotti",
-        _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/kotti", "classicKotti")
+        _defaultProvider: etcDefaultProvider("https:/\/www.ethercluster.com/kotti", "classicKotti")
     },
+    xdai: { chainId: 100, name: "xdai" },
+    matic: { chainId: 137, name: "matic" },
+    bnb: { chainId: 56, name: "bnb" },
+    bnbt: { chainId: 97, name: "bnbt" },
 };
 /**
  *  getNetwork

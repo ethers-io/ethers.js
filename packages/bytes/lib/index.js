@@ -148,7 +148,7 @@ function hexlify(value, options) {
         logger.checkSafeUint53(value, "invalid hexlify value");
         var hex = "";
         while (value) {
-            hex = HexCharacters[value & 0x0f] + hex;
+            hex = HexCharacters[value & 0xf] + hex;
             value = Math.floor(value / 16);
         }
         if (hex.length) {
@@ -158,6 +158,13 @@ function hexlify(value, options) {
             return "0x" + hex;
         }
         return "0x00";
+    }
+    if (typeof (value) === "bigint") {
+        value = value.toString(16);
+        if (value.length % 2) {
+            return ("0x0" + value);
+        }
+        return "0x" + value;
     }
     if (options.allowMissingPrefix && typeof (value) === "string" && value.substring(0, 2) !== "0x") {
         value = "0x" + value;

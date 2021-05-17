@@ -1,1 +1,1 @@
-export const version = "keccak256/5.1.0";
+export const version = "keccak256/5.2.0";

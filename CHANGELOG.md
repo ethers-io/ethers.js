@@ -3,7 +3,7 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
-ethers/v5.2.0 (2021-05-13 23:44)
+ethers/v5.2.0 (2021-05-17 16:18)
 --------------------------------
 
   - More aggresively check for mempool transactions sent from JsonRpcSigner. ([3316468](https://github.com/ethers-io/ethers.js/commit/3316468e3e0a5925cbecad85d894cc7d622394e7))

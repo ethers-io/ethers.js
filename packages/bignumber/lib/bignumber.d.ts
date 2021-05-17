@@ -1,5 +1,5 @@
 import { Bytes, Hexable } from "@ethersproject/bytes";
-export declare type BigNumberish = BigNumber | Bytes | string | number;
+export declare type BigNumberish = BigNumber | Bytes | bigint | string | number;
 export declare function isBigNumberish(value: any): value is BigNumberish;
 export declare class BigNumber implements Hexable {
     readonly _hex: string;

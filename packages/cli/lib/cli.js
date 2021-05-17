@@ -542,7 +542,7 @@ function loadAccount(arg, plugin, preventFile) {
             switch (_a.label) {
                 case 0:
                     if (!(arg === "-")) return [3 /*break*/, 2];
-                    return [4 /*yield*/, prompt_1.getPassword("Private Key / Mnemonic:")];
+                    return [4 /*yield*/, prompt_1.getPassword("Private Key / Mnemonic: ")];
                 case 1:
                     content = _a.sent();
                     return [2 /*return*/, loadAccount(content, plugin, true)];
@@ -558,7 +558,7 @@ function loadAccount(arg, plugin, preventFile) {
                         signerPromise_1 = null;
                         if (plugin.mnemonicPassword) {
                             signerPromise_1 = prompt_1.getPassword("Password (mnemonic): ").then(function (password) {
-                                var node = ethers_1.ethers.utils.HDNode.fromMnemonic(mnemonic_1, password).derivePath(ethers_1.ethers.utils.defaultPath);
+                                var node = ethers_1.ethers.utils.HDNode.fromMnemonic(mnemonic_1, password).derivePath(plugin.mnemonicPath);
                                 return new ethers_1.ethers.Wallet(node.privateKey, plugin.provider);
                             });
                         }
@@ -569,7 +569,7 @@ function loadAccount(arg, plugin, preventFile) {
                                 var progressBar = prompt_1.getProgressBar("Decrypting");
                                 return scrypt.scrypt(passwordBytes, saltBytes, (1 << 20), 8, 1, 32, progressBar).then(function (key) {
                                     var derivedPassword = ethers_1.ethers.utils.hexlify(key).substring(2);
-                                    var node = ethers_1.ethers.utils.HDNode.fromMnemonic(mnemonic_1, derivedPassword).derivePath(ethers_1.ethers.utils.defaultPath);
+                                    var node = ethers_1.ethers.utils.HDNode.fromMnemonic(mnemonic_1, derivedPassword).derivePath(plugin.mnemonicPath);
                                     return new ethers_1.ethers.Wallet(node.privateKey, plugin.provider);
                                 });
                             });
@@ -670,6 +670,16 @@ var Plugin = /** @class */ (function () {
                         /////////////////////
                         // Accounts
                         ethers_1.ethers.utils.defineReadOnly(this, "mnemonicPassword", argParser.consumeFlag("mnemonic-password"));
+                        ethers_1.ethers.utils.defineReadOnly(this, "mnemonicPath", (function () {
+                            var mnemonicPath = argParser.consumeOption("mnemonic-path");
+                            if (mnemonicPath) {
+                                if (mnemonicPath.match(/^[0-9]+$/)) {
+                                    return "m/44'/60'/" + mnemonicPath + "'/0/0";
+                                }
+                                return mnemonicPath;
+                            }
+                            return ethers_1.ethers.utils.defaultPath;
+                        })());
                         ethers_1.ethers.utils.defineReadOnly(this, "_xxxMnemonicPasswordHard", argParser.consumeFlag("xxx-mnemonic-password"));
                         accounts = [];
                         accountOptions = argParser.consumeMultiOptions(["account", "account-rpc", "account-void"]);
@@ -969,6 +979,7 @@ var CLI = /** @class */ (function () {
             console.log("  --account-rpc ADDRESS       Add the address from a JSON-RPC provider");
             console.log("  --account-rpc INDEX         Add the index from a JSON-RPC provider");
             console.log("  --mnemonic-password         Prompt for a password for mnemonics");
+            console.log("  --mnemonic-path             BIP-43 mnemonic path");
             console.log("  --xxx-mnemonic-password     Prompt for a (experimental) hard password");
             console.log("");
         }

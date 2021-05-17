@@ -3,7 +3,7 @@ import { BytesLike } from "@ethersproject/bytes";
 import { Description } from "@ethersproject/properties";
 import { AbiCoder } from "./abi-coder";
 import { checkResultErrors, Result } from "./coders/abstract-coder";
-import { ConstructorFragment, EventFragment, Fragment, FunctionFragment, JsonFragment, ParamType } from "./fragments";
+import { ConstructorFragment, ErrorFragment, EventFragment, Fragment, FunctionFragment, JsonFragment, ParamType } from "./fragments";
 export { checkResultErrors, Result };
 export declare class LogDescription extends Description<LogDescription> {
     readonly eventFragment: EventFragment;
@@ -28,7 +28,7 @@ export declare class Indexed extends Description<Indexed> {
 export declare class Interface {
     readonly fragments: ReadonlyArray<Fragment>;
     readonly errors: {
-        [name: string]: any;
+        [name: string]: ErrorFragment;
     };
     readonly events: {
         [name: string]: EventFragment;
@@ -46,10 +46,11 @@ export declare class Interface {
     format(format?: string): string | Array<string>;
     static getAbiCoder(): AbiCoder;
     static getAddress(address: string): string;
-    static getSighash(functionFragment: FunctionFragment): string;
+    static getSighash(fragment: ErrorFragment | FunctionFragment): string;
     static getEventTopic(eventFragment: EventFragment): string;
     getFunction(nameOrSignatureOrSighash: string): FunctionFragment;
     getEvent(nameOrSignatureOrTopic: string): EventFragment;
+    getError(nameOrSignatureOrSighash: string): ErrorFragment;
     getSighash(functionFragment: FunctionFragment | string): string;
     getEventTopic(eventFragment: EventFragment | string): string;
     _decodeParams(params: ReadonlyArray<ParamType>, data: BytesLike): Result;

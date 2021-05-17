@@ -754,9 +754,11 @@ export class BaseProvider extends Provider {
     }
     waitForTransaction(transactionHash, confirmations, timeout) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (confirmations == null) {
-                confirmations = 1;
-            }
+            return this._waitForTransaction(transactionHash, (confirmations == null) ? 1 : confirmations, timeout || 0, null);
+        });
+    }
+    _waitForTransaction(transactionHash, confirmations, timeout, replaceable) {
+        return __awaiter(this, void 0, void 0, function* () {
             const receipt = yield this.getTransactionReceipt(transactionHash);
             // Receipt is already good
             if ((receipt ? receipt.confirmations : 0) >= confirmations) {
@@ -764,36 +766,137 @@ export class BaseProvider extends Provider {
             }
             // Poll until the receipt is good...
             return new Promise((resolve, reject) => {
-                let timer = null;
+                const cancelFuncs = [];
                 let done = false;
-                const handler = (receipt) => {
+                const alreadyDone = function () {
+                    if (done) {
+                        return true;
+                    }
+                    done = true;
+                    cancelFuncs.forEach((func) => { func(); });
+                    return false;
+                };
+                const minedHandler = (receipt) => {
                     if (receipt.confirmations < confirmations) {
                         return;
                     }
-                    if (timer) {
-                        clearTimeout(timer);
-                    }
-                    if (done) {
+                    if (alreadyDone()) {
                         return;
                     }
-                    done = true;
-                    this.removeListener(transactionHash, handler);
                     resolve(receipt);
                 };
-                this.on(transactionHash, handler);
-                if (typeof (timeout) === "number" && timeout > 0) {
-                    timer = setTimeout(() => {
+                this.on(transactionHash, minedHandler);
+                cancelFuncs.push(() => { this.removeListener(transactionHash, minedHandler); });
+                if (replaceable) {
+                    let lastBlockNumber = replaceable.startBlock;
+                    let scannedBlock = null;
+                    const replaceHandler = (blockNumber) => __awaiter(this, void 0, void 0, function* () {
                         if (done) {
                             return;
                         }
-                        timer = null;
-                        done = true;
-                        this.removeListener(transactionHash, handler);
+                        // Wait 1 second; this is only used in the case of a fault, so
+                        // we will trade off a little bit of latency for more consistent
+                        // results and fewer JSON-RPC calls
+                        yield stall(1000);
+                        this.getTransactionCount(replaceable.from).then((nonce) => __awaiter(this, void 0, void 0, function* () {
+                            if (done) {
+                                return;
+                            }
+                            if (nonce <= replaceable.nonce) {
+                                lastBlockNumber = blockNumber;
+                            }
+                            else {
+                                // First check if the transaction was mined
+                                {
+                                    const mined = yield this.getTransaction(transactionHash);
+                                    if (mined && mined.blockNumber != null) {
+                                        return;
+                                    }
+                                }
+                                // First time scanning. We start a little earlier for some
+                                // wiggle room here to handle the eventually consistent nature
+                                // of blockchain (e.g. the getTransactionCount was for a
+                                // different block)
+                                if (scannedBlock == null) {
+                                    scannedBlock = lastBlockNumber - 3;
+                                    if (scannedBlock < replaceable.startBlock) {
+                                        scannedBlock = replaceable.startBlock;
+                                    }
+                                }
+                                while (scannedBlock <= blockNumber) {
+                                    if (done) {
+                                        return;
+                                    }
+                                    const block = yield this.getBlockWithTransactions(scannedBlock);
+                                    for (let ti = 0; ti < block.transactions.length; ti++) {
+                                        const tx = block.transactions[ti];
+                                        // Successfully mined!
+                                        if (tx.hash === transactionHash) {
+                                            return;
+                                        }
+                                        // Matches our transaction from and nonce; its a replacement
+                                        if (tx.from === replaceable.from && tx.nonce === replaceable.nonce) {
+                                            if (done) {
+                                                return;
+                                            }
+                                            // Get the receipt of the replacement
+                                            const receipt = yield this.waitForTransaction(tx.hash, confirmations);
+                                            // Already resolved or rejected (prolly a timeout)
+                                            if (alreadyDone()) {
+                                                return;
+                                            }
+                                            // The reason we were replaced
+                                            let reason = "replaced";
+                                            if (tx.data === replaceable.data && tx.to === replaceable.to && tx.value.eq(replaceable.value)) {
+                                                reason = "repriced";
+                                            }
+                                            else if (tx.data === "0x" && tx.from === tx.to && tx.value.isZero()) {
+                                                reason = "cancelled";
+                                            }
+                                            // Explain why we were replaced
+                                            reject(logger.makeError("transaction was replaced", Logger.errors.TRANSACTION_REPLACED, {
+                                                cancelled: (reason === "replaced" || reason === "cancelled"),
+                                                reason,
+                                                replacement: this._wrapTransaction(tx),
+                                                hash: transactionHash,
+                                                receipt
+                                            }));
+                                            return;
+                                        }
+                                    }
+                                    scannedBlock++;
+                                }
+                            }
+                            if (done) {
+                                return;
+                            }
+                            this.once("block", replaceHandler);
+                        }), (error) => {
+                            if (done) {
+                                return;
+                            }
+                            this.once("block", replaceHandler);
+                        });
+                    });
+                    if (done) {
+                        return;
+                    }
+                    this.once("block", replaceHandler);
+                    cancelFuncs.push(() => {
+                        this.removeListener("block", replaceHandler);
+                    });
+                }
+                if (typeof (timeout) === "number" && timeout > 0) {
+                    const timer = setTimeout(() => {
+                        if (alreadyDone()) {
+                            return;
+                        }
                         reject(logger.makeError("timeout exceeded", Logger.errors.TIMEOUT, { timeout: timeout }));
                     }, timeout);
                     if (timer.unref) {
                         timer.unref();
                     }
+                    cancelFuncs.push(() => { clearTimeout(timer); });
                 }
             });
         });
@@ -896,7 +999,7 @@ export class BaseProvider extends Provider {
         });
     }
     // This should be called by any subclass wrapping a TransactionResponse
-    _wrapTransaction(tx, hash) {
+    _wrapTransaction(tx, hash, startBlock) {
         if (hash != null && hexDataLength(hash) !== 32) {
             throw new Error("invalid response - sendTransaction");
         }
@@ -905,16 +1008,27 @@ export class BaseProvider extends Provider {
         if (hash != null && tx.hash !== hash) {
             logger.throwError("Transaction hash mismatch from Provider.sendTransaction.", Logger.errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
-        // @TODO: (confirmations? number, timeout? number)
-        result.wait = (confirmations) => __awaiter(this, void 0, void 0, function* () {
-            // We know this transaction *must* exist (whether it gets mined is
-            // another story), so setting an emitted value forces us to
-            // wait even if the node returns null for the receipt
-            if (confirmations !== 0) {
-                this._emitted["t:" + tx.hash] = "pending";
+        result.wait = (confirms, timeout) => __awaiter(this, void 0, void 0, function* () {
+            if (confirms == null) {
+                confirms = 1;
             }
-            const receipt = yield this.waitForTransaction(tx.hash, confirmations);
-            if (receipt == null && confirmations === 0) {
+            if (timeout == null) {
+                timeout = 0;
+            }
+            // Get the details to detect replacement
+            let replacement = undefined;
+            if (confirms !== 0 && startBlock != null) {
+                replacement = {
+                    data: tx.data,
+                    from: tx.from,
+                    nonce: tx.nonce,
+                    to: tx.to,
+                    value: tx.value,
+                    startBlock
+                };
+            }
+            const receipt = yield this._waitForTransaction(tx.hash, confirms, timeout, replacement);
+            if (receipt == null && confirms === 0) {
                 return null;
             }
             // No longer pending, allow the polling loop to garbage collect this
@@ -935,9 +1049,10 @@ export class BaseProvider extends Provider {
             yield this.getNetwork();
             const hexTx = yield Promise.resolve(signedTransaction).then(t => hexlify(t));
             const tx = this.formatter.transaction(signedTransaction);
+            const blockNumber = yield this._getInternalBlockNumber(100 + 2 * this.pollingInterval);
             try {
                 const hash = yield this.perform("sendTransaction", { signedTransaction: hexTx });
-                return this._wrapTransaction(tx, hash);
+                return this._wrapTransaction(tx, hash, blockNumber);
             }
             catch (error) {
                 error.transaction = tx;

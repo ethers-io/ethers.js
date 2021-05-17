@@ -374,7 +374,7 @@ function loadAccount(arg, plugin, preventFile) {
     return __awaiter(this, void 0, void 0, function* () {
         // Secure entry; use prompt with mask
         if (arg === "-") {
-            const content = yield getPassword("Private Key / Mnemonic:");
+            const content = yield getPassword("Private Key / Mnemonic: ");
             return loadAccount(content, plugin, true);
         }
         // Raw private key
@@ -388,7 +388,7 @@ function loadAccount(arg, plugin, preventFile) {
             let signerPromise = null;
             if (plugin.mnemonicPassword) {
                 signerPromise = getPassword("Password (mnemonic): ").then((password) => {
-                    let node = ethers.utils.HDNode.fromMnemonic(mnemonic, password).derivePath(ethers.utils.defaultPath);
+                    let node = ethers.utils.HDNode.fromMnemonic(mnemonic, password).derivePath(plugin.mnemonicPath);
                     return new ethers.Wallet(node.privateKey, plugin.provider);
                 });
             }
@@ -399,7 +399,7 @@ function loadAccount(arg, plugin, preventFile) {
                     let progressBar = getProgressBar("Decrypting");
                     return scrypt.scrypt(passwordBytes, saltBytes, (1 << 20), 8, 1, 32, progressBar).then((key) => {
                         const derivedPassword = ethers.utils.hexlify(key).substring(2);
-                        const node = ethers.utils.HDNode.fromMnemonic(mnemonic, derivedPassword).derivePath(ethers.utils.defaultPath);
+                        const node = ethers.utils.HDNode.fromMnemonic(mnemonic, derivedPassword).derivePath(plugin.mnemonicPath);
                         return new ethers.Wallet(node.privateKey, plugin.provider);
                     });
                 });
@@ -489,6 +489,16 @@ export class Plugin {
             /////////////////////
             // Accounts
             ethers.utils.defineReadOnly(this, "mnemonicPassword", argParser.consumeFlag("mnemonic-password"));
+            ethers.utils.defineReadOnly(this, "mnemonicPath", (function () {
+                let mnemonicPath = argParser.consumeOption("mnemonic-path");
+                if (mnemonicPath) {
+                    if (mnemonicPath.match(/^[0-9]+$/)) {
+                        return `m/44'/60'/${mnemonicPath}'/0/0`;
+                    }
+                    return mnemonicPath;
+                }
+                return ethers.utils.defaultPath;
+            })());
             ethers.utils.defineReadOnly(this, "_xxxMnemonicPasswordHard", argParser.consumeFlag("xxx-mnemonic-password"));
             let accounts = [];
             let accountOptions = argParser.consumeMultiOptions(["account", "account-rpc", "account-void"]);
@@ -744,6 +754,7 @@ export class CLI {
             console.log("  --account-rpc ADDRESS       Add the address from a JSON-RPC provider");
             console.log("  --account-rpc INDEX         Add the index from a JSON-RPC provider");
             console.log("  --mnemonic-password         Prompt for a password for mnemonics");
+            console.log("  --mnemonic-path             BIP-43 mnemonic path");
             console.log("  --xxx-mnemonic-password     Prompt for a (experimental) hard password");
             console.log("");
         }

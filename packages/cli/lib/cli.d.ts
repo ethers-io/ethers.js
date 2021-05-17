@@ -41,6 +41,7 @@ export declare abstract class Plugin {
     provider: ethers.providers.Provider;
     accounts: ReadonlyArray<WrappedSigner>;
     mnemonicPassword: boolean;
+    mnemonicPath: string;
     _xxxMnemonicPasswordHard: boolean;
     gasLimit: ethers.BigNumber;
     gasPrice: ethers.BigNumber;

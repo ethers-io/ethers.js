@@ -917,15 +917,18 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype.waitForTransaction = function (transactionHash, confirmations, timeout) {
         return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, this._waitForTransaction(transactionHash, (confirmations == null) ? 1 : confirmations, timeout || 0, null)];
+            });
+        });
+    };
+    BaseProvider.prototype._waitForTransaction = function (transactionHash, confirmations, timeout, replaceable) {
+        return __awaiter(this, void 0, void 0, function () {
             var receipt;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        if (confirmations == null) {
-                            confirmations = 1;
-                        }
-                        return [4 /*yield*/, this.getTransactionReceipt(transactionHash)];
+                    case 0: return [4 /*yield*/, this.getTransactionReceipt(transactionHash)];
                     case 1:
                         receipt = _a.sent();
                         // Receipt is already good
@@ -934,36 +937,162 @@ var BaseProvider = /** @class */ (function (_super) {
                         }
                         // Poll until the receipt is good...
                         return [2 /*return*/, new Promise(function (resolve, reject) {
-                                var timer = null;
+                                var cancelFuncs = [];
                                 var done = false;
-                                var handler = function (receipt) {
+                                var alreadyDone = function () {
+                                    if (done) {
+                                        return true;
+                                    }
+                                    done = true;
+                                    cancelFuncs.forEach(function (func) { func(); });
+                                    return false;
+                                };
+                                var minedHandler = function (receipt) {
                                     if (receipt.confirmations < confirmations) {
                                         return;
                                     }
-                                    if (timer) {
-                                        clearTimeout(timer);
+                                    if (alreadyDone()) {
+                                        return;
                                     }
+                                    resolve(receipt);
+                                };
+                                _this.on(transactionHash, minedHandler);
+                                cancelFuncs.push(function () { _this.removeListener(transactionHash, minedHandler); });
+                                if (replaceable) {
+                                    var lastBlockNumber_1 = replaceable.startBlock;
+                                    var scannedBlock_1 = null;
+                                    var replaceHandler_1 = function (blockNumber) { return __awaiter(_this, void 0, void 0, function () {
+                                        var _this = this;
+                                        return __generator(this, function (_a) {
+                                            switch (_a.label) {
+                                                case 0:
+                                                    if (done) {
+                                                        return [2 /*return*/];
+                                                    }
+                                                    // Wait 1 second; this is only used in the case of a fault, so
+                                                    // we will trade off a little bit of latency for more consistent
+                                                    // results and fewer JSON-RPC calls
+                                                    return [4 /*yield*/, stall(1000)];
+                                                case 1:
+                                                    // Wait 1 second; this is only used in the case of a fault, so
+                                                    // we will trade off a little bit of latency for more consistent
+                                                    // results and fewer JSON-RPC calls
+                                                    _a.sent();
+                                                    this.getTransactionCount(replaceable.from).then(function (nonce) { return __awaiter(_this, void 0, void 0, function () {
+                                                        var mined, block, ti, tx, receipt_1, reason;
+                                                        return __generator(this, function (_a) {
+                                                            switch (_a.label) {
+                                                                case 0:
+                                                                    if (done) {
+                                                                        return [2 /*return*/];
+                                                                    }
+                                                                    if (!(nonce <= replaceable.nonce)) return [3 /*break*/, 1];
+                                                                    lastBlockNumber_1 = blockNumber;
+                                                                    return [3 /*break*/, 9];
+                                                                case 1: return [4 /*yield*/, this.getTransaction(transactionHash)];
+                                                                case 2:
+                                                                    mined = _a.sent();
+                                                                    if (mined && mined.blockNumber != null) {
+                                                                        return [2 /*return*/];
+                                                                    }
+                                                                    // First time scanning. We start a little earlier for some
+                                                                    // wiggle room here to handle the eventually consistent nature
+                                                                    // of blockchain (e.g. the getTransactionCount was for a
+                                                                    // different block)
+                                                                    if (scannedBlock_1 == null) {
+                                                                        scannedBlock_1 = lastBlockNumber_1 - 3;
+                                                                        if (scannedBlock_1 < replaceable.startBlock) {
+                                                                            scannedBlock_1 = replaceable.startBlock;
+                                                                        }
+                                                                    }
+                                                                    _a.label = 3;
+                                                                case 3:
+                                                                    if (!(scannedBlock_1 <= blockNumber)) return [3 /*break*/, 9];
+                                                                    if (done) {
+                                                                        return [2 /*return*/];
+                                                                    }
+                                                                    return [4 /*yield*/, this.getBlockWithTransactions(scannedBlock_1)];
+                                                                case 4:
+                                                                    block = _a.sent();
+                                                                    ti = 0;
+                                                                    _a.label = 5;
+                                                                case 5:
+                                                                    if (!(ti < block.transactions.length)) return [3 /*break*/, 8];
+                                                                    tx = block.transactions[ti];
+                                                                    // Successfully mined!
+                                                                    if (tx.hash === transactionHash) {
+                                                                        return [2 /*return*/];
+                                                                    }
+                                                                    if (!(tx.from === replaceable.from && tx.nonce === replaceable.nonce)) return [3 /*break*/, 7];
+                                                                    if (done) {
+                                                                        return [2 /*return*/];
+                                                                    }
+                                                                    return [4 /*yield*/, this.waitForTransaction(tx.hash, confirmations)];
+                                                                case 6:
+                                                                    receipt_1 = _a.sent();
+                                                                    // Already resolved or rejected (prolly a timeout)
+                                                                    if (alreadyDone()) {
+                                                                        return [2 /*return*/];
+                                                                    }
+                                                                    reason = "replaced";
+                                                                    if (tx.data === replaceable.data && tx.to === replaceable.to && tx.value.eq(replaceable.value)) {
+                                                                        reason = "repriced";
+                                                                    }
+                                                                    else if (tx.data === "0x" && tx.from === tx.to && tx.value.isZero()) {
+                                                                        reason = "cancelled";
+                                                                    }
+                                                                    // Explain why we were replaced
+                                                                    reject(logger.makeError("transaction was replaced", logger_1.Logger.errors.TRANSACTION_REPLACED, {
+                                                                        cancelled: (reason === "replaced" || reason === "cancelled"),
+                                                                        reason: reason,
+                                                                        replacement: this._wrapTransaction(tx),
+                                                                        hash: transactionHash,
+                                                                        receipt: receipt_1
+                                                                    }));
+                                                                    return [2 /*return*/];
+                                                                case 7:
+                                                                    ti++;
+                                                                    return [3 /*break*/, 5];
+                                                                case 8:
+                                                                    scannedBlock_1++;
+                                                                    return [3 /*break*/, 3];
+                                                                case 9:
+                                                                    if (done) {
+                                                                        return [2 /*return*/];
+                                                                    }
+                                                                    this.once("block", replaceHandler_1);
+                                                                    return [2 /*return*/];
+                                                            }
+                                                        });
+                                                    }); }, function (error) {
+                                                        if (done) {
+                                                            return;
+                                                        }
+                                                        _this.once("block", replaceHandler_1);
+                                                    });
+                                                    return [2 /*return*/];
+                                            }
+                                        });
+                                    }); };
                                     if (done) {
                                         return;
                                     }
-                                    done = true;
-                                    _this.removeListener(transactionHash, handler);
-                                    resolve(receipt);
-                                };
-                                _this.on(transactionHash, handler);
+                                    _this.once("block", replaceHandler_1);
+                                    cancelFuncs.push(function () {
+                                        _this.removeListener("block", replaceHandler_1);
+                                    });
+                                }
                                 if (typeof (timeout) === "number" && timeout > 0) {
-                                    timer = setTimeout(function () {
-                                        if (done) {
+                                    var timer_1 = setTimeout(function () {
+                                        if (alreadyDone()) {
                                             return;
                                         }
-                                        timer = null;
-                                        done = true;
-                                        _this.removeListener(transactionHash, handler);
                                         reject(logger.makeError("timeout exceeded", logger_1.Logger.errors.TIMEOUT, { timeout: timeout }));
                                     }, timeout);
-                                    if (timer.unref) {
-                                        timer.unref();
+                                    if (timer_1.unref) {
+                                        timer_1.unref();
                                     }
+                                    cancelFuncs.push(function () { clearTimeout(timer_1); });
                                 }
                             })];
                 }
@@ -1128,7 +1257,7 @@ var BaseProvider = /** @class */ (function (_super) {
         });
     };
     // This should be called by any subclass wrapping a TransactionResponse
-    BaseProvider.prototype._wrapTransaction = function (tx, hash) {
+    BaseProvider.prototype._wrapTransaction = function (tx, hash, startBlock) {
         var _this = this;
         if (hash != null && bytes_1.hexDataLength(hash) !== 32) {
             throw new Error("invalid response - sendTransaction");
@@ -1138,22 +1267,32 @@ var BaseProvider = /** @class */ (function (_super) {
         if (hash != null && tx.hash !== hash) {
             logger.throwError("Transaction hash mismatch from Provider.sendTransaction.", logger_1.Logger.errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
-        // @TODO: (confirmations? number, timeout? number)
-        result.wait = function (confirmations) { return __awaiter(_this, void 0, void 0, function () {
-            var receipt;
+        result.wait = function (confirms, timeout) { return __awaiter(_this, void 0, void 0, function () {
+            var replacement, receipt;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        // We know this transaction *must* exist (whether it gets mined is
-                        // another story), so setting an emitted value forces us to
-                        // wait even if the node returns null for the receipt
-                        if (confirmations !== 0) {
-                            this._emitted["t:" + tx.hash] = "pending";
+                        if (confirms == null) {
+                            confirms = 1;
                         }
-                        return [4 /*yield*/, this.waitForTransaction(tx.hash, confirmations)];
+                        if (timeout == null) {
+                            timeout = 0;
+                        }
+                        replacement = undefined;
+                        if (confirms !== 0 && startBlock != null) {
+                            replacement = {
+                                data: tx.data,
+                                from: tx.from,
+                                nonce: tx.nonce,
+                                to: tx.to,
+                                value: tx.value,
+                                startBlock: startBlock
+                            };
+                        }
+                        return [4 /*yield*/, this._waitForTransaction(tx.hash, confirms, timeout, replacement)];
                     case 1:
                         receipt = _a.sent();
-                        if (receipt == null && confirmations === 0) {
+                        if (receipt == null && confirms === 0) {
                             return [2 /*return*/, null];
                         }
                         // No longer pending, allow the polling loop to garbage collect this
@@ -1173,7 +1312,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype.sendTransaction = function (signedTransaction) {
         return __awaiter(this, void 0, void 0, function () {
-            var hexTx, tx, hash, error_4;
+            var hexTx, tx, blockNumber, hash, error_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.getNetwork()];
@@ -1183,19 +1322,22 @@ var BaseProvider = /** @class */ (function (_super) {
                     case 2:
                         hexTx = _a.sent();
                         tx = this.formatter.transaction(signedTransaction);
-                        _a.label = 3;
+                        return [4 /*yield*/, this._getInternalBlockNumber(100 + 2 * this.pollingInterval)];
                     case 3:
-                        _a.trys.push([3, 5, , 6]);
-                        return [4 /*yield*/, this.perform("sendTransaction", { signedTransaction: hexTx })];
+                        blockNumber = _a.sent();
+                        _a.label = 4;
                     case 4:
-                        hash = _a.sent();
-                        return [2 /*return*/, this._wrapTransaction(tx, hash)];
+                        _a.trys.push([4, 6, , 7]);
+                        return [4 /*yield*/, this.perform("sendTransaction", { signedTransaction: hexTx })];
                     case 5:
+                        hash = _a.sent();
+                        return [2 /*return*/, this._wrapTransaction(tx, hash, blockNumber)];
+                    case 6:
                         error_4 = _a.sent();
                         error_4.transaction = tx;
                         error_4.transactionHash = tx.hash;
                         throw error_4;
-                    case 6: return [2 /*return*/];
+                    case 7: return [2 /*return*/];
                 }
             });
         });

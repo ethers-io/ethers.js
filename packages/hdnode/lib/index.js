@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidMnemonic = exports.entropyToMnemonic = exports.mnemonicToEntropy = exports.mnemonicToSeed = exports.HDNode = exports.defaultPath = void 0;
+exports.getAccountPath = exports.isValidMnemonic = exports.entropyToMnemonic = exports.mnemonicToEntropy = exports.mnemonicToSeed = exports.HDNode = exports.defaultPath = void 0;
 var basex_1 = require("@ethersproject/basex");
 var bytes_1 = require("@ethersproject/bytes");
 var bignumber_1 = require("@ethersproject/bignumber");
@@ -335,4 +335,11 @@ function isValidMnemonic(mnemonic, wordlist) {
     return false;
 }
 exports.isValidMnemonic = isValidMnemonic;
+function getAccountPath(index) {
+    if (typeof (index) !== "number" || index < 0 || index >= HardenedBit || index % 1) {
+        logger.throwArgumentError("invalid account index", "index", index);
+    }
+    return "m/44'/60'/" + index + "'/0/0";
+}
+exports.getAccountPath = getAccountPath;
 //# sourceMappingURL=index.js.map

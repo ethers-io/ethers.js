@@ -74,8 +74,7 @@ function getTransactionPostData(transaction) {
             value = bytes_1.hexValue(bytes_1.hexlify(value));
         }
         else if (key === "accessList") {
-            var sets = transactions_1.accessListify(value);
-            value = '[' + sets.map(function (set) {
+            value = "[" + transactions_1.accessListify(value).map(function (set) {
                 return "{address:\"" + set.address + "\",storageKeys:[\"" + set.storageKeys.join('","') + "\"]}";
             }).join(",") + "]";
         }
@@ -194,34 +193,91 @@ var EtherscanProvider = /** @class */ (function (_super) {
         var _this = this;
         logger.checkNew(_newTarget, EtherscanProvider);
         _this = _super.call(this, network) || this;
-        var name = "invalid";
-        if (_this.network) {
-            name = _this.network.name;
-        }
-        var baseUrl = null;
-        switch (name) {
-            case "homestead":
-                baseUrl = "https://api.etherscan.io";
-                break;
-            case "ropsten":
-                baseUrl = "https://api-ropsten.etherscan.io";
-                break;
-            case "rinkeby":
-                baseUrl = "https://api-rinkeby.etherscan.io";
-                break;
-            case "kovan":
-                baseUrl = "https://api-kovan.etherscan.io";
-                break;
-            case "goerli":
-                baseUrl = "https://api-goerli.etherscan.io";
-                break;
-            default:
-                throw new Error("unsupported network");
-        }
-        properties_1.defineReadOnly(_this, "baseUrl", baseUrl);
+        properties_1.defineReadOnly(_this, "baseUrl", _this.getBaseUrl());
         properties_1.defineReadOnly(_this, "apiKey", apiKey || defaultApiKey);
         return _this;
     }
+    EtherscanProvider.prototype.getBaseUrl = function () {
+        switch (this.network ? this.network.name : "invalid") {
+            case "homestead":
+                return "https:/\/api.etherscan.io";
+            case "ropsten":
+                return "https:/\/api-ropsten.etherscan.io";
+            case "rinkeby":
+                return "https:/\/api-rinkeby.etherscan.io";
+            case "kovan":
+                return "https:/\/api-kovan.etherscan.io";
+            case "goerli":
+                return "https:/\/api-goerli.etherscan.io";
+            default:
+        }
+        return logger.throwArgumentError("unsupported network", "network", name);
+    };
+    EtherscanProvider.prototype.getUrl = function (module, params) {
+        var query = Object.keys(params).reduce(function (accum, key) {
+            var value = params[key];
+            if (value != null) {
+                accum += "&" + key + "=" + value;
+            }
+            return accum;
+        }, "");
+        var apiKey = ((this.apiKey) ? "&apikey=" + this.apiKey : "");
+        return this.baseUrl + "/api?module=" + module + query + apiKey;
+    };
+    EtherscanProvider.prototype.getPostUrl = function () {
+        return this.baseUrl + "/api";
+    };
+    EtherscanProvider.prototype.getPostData = function (module, params) {
+        params.module = module;
+        params.apikey = this.apiKey;
+        return params;
+    };
+    EtherscanProvider.prototype.fetch = function (module, params, post) {
+        return __awaiter(this, void 0, void 0, function () {
+            var url, payload, procFunc, connection, payloadStr, result;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        url = (post ? this.getPostUrl() : this.getUrl(module, params));
+                        payload = (post ? this.getPostData(module, params) : null);
+                        procFunc = (module === "proxy") ? getJsonResult : getResult;
+                        this.emit("debug", {
+                            action: "request",
+                            request: url,
+                            provider: this
+                        });
+                        connection = {
+                            url: url,
+                            throttleSlotInterval: 1000,
+                            throttleCallback: function (attempt, url) {
+                                if (_this.isCommunityResource()) {
+                                    formatter_1.showThrottleMessage();
+                                }
+                                return Promise.resolve(true);
+                            }
+                        };
+                        payloadStr = null;
+                        if (payload) {
+                            connection.headers = { "content-type": "application/x-www-form-urlencoded; charset=UTF-8" };
+                            payloadStr = Object.keys(payload).map(function (key) {
+                                return key + "=" + payload[key];
+                            }).join("&");
+                        }
+                        return [4 /*yield*/, web_1.fetchJson(connection, payloadStr, procFunc || getJsonResult)];
+                    case 1:
+                        result = _a.sent();
+                        this.emit("debug", {
+                            action: "response",
+                            request: url,
+                            response: properties_1.deepCopy(result),
+                            provider: this
+                        });
+                        return [2 /*return*/, result];
+                }
+            });
+        });
+    };
     EtherscanProvider.prototype.detectNetwork = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -231,57 +287,10 @@ var EtherscanProvider = /** @class */ (function (_super) {
     };
     EtherscanProvider.prototype.perform = function (method, params) {
         return __awaiter(this, void 0, void 0, function () {
-            var url, apiKey, get, _a, postData, error_1, postData, error_2, topic0, logs, blocks, i, log, block, _b;
-            var _this = this;
+            var _a, postData, error_1, postData, error_2, args, topic0, logs, blocks, i, log, block, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        url = this.baseUrl + "/api";
-                        apiKey = "";
-                        if (this.apiKey) {
-                            apiKey += "&apikey=" + this.apiKey;
-                        }
-                        get = function (url, payload, procFunc) { return __awaiter(_this, void 0, void 0, function () {
-                            var connection, payloadStr, result;
-                            var _this = this;
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0:
-                                        this.emit("debug", {
-                                            action: "request",
-                                            request: url,
-                                            provider: this
-                                        });
-                                        connection = {
-                                            url: url,
-                                            throttleSlotInterval: 1000,
-                                            throttleCallback: function (attempt, url) {
-                                                if (_this.isCommunityResource()) {
-                                                    formatter_1.showThrottleMessage();
-                                                }
-                                                return Promise.resolve(true);
-                                            }
-                                        };
-                                        payloadStr = null;
-                                        if (payload) {
-                                            connection.headers = { "content-type": "application/x-www-form-urlencoded; charset=UTF-8" };
-                                            payloadStr = Object.keys(payload).map(function (key) {
-                                                return key + "=" + payload[key];
-                                            }).join("&");
-                                        }
-                                        return [4 /*yield*/, web_1.fetchJson(connection, payloadStr, procFunc || getJsonResult)];
-                                    case 1:
-                                        result = _a.sent();
-                                        this.emit("debug", {
-                                            action: "response",
-                                            request: url,
-                                            response: properties_1.deepCopy(result),
-                                            provider: this
-                                        });
-                                        return [2 /*return*/, result];
-                                }
-                            });
-                        }); };
                         _a = method;
                         switch (_a) {
                             case "getBlockNumber": return [3 /*break*/, 1];
@@ -300,59 +309,54 @@ var EtherscanProvider = /** @class */ (function (_super) {
                             case "getEtherPrice": return [3 /*break*/, 26];
                         }
                         return [3 /*break*/, 28];
-                    case 1:
-                        url += "?module=proxy&action=eth_blockNumber" + apiKey;
-                        return [2 /*return*/, get(url, null)];
-                    case 2:
-                        url += "?module=proxy&action=eth_gasPrice" + apiKey;
-                        return [2 /*return*/, get(url, null)];
-                    case 3:
-                        // Returns base-10 result
-                        url += "?module=account&action=balance&address=" + params.address;
-                        url += "&tag=" + params.blockTag + apiKey;
-                        return [2 /*return*/, get(url, null, getResult)];
-                    case 4:
-                        url += "?module=proxy&action=eth_getTransactionCount&address=" + params.address;
-                        url += "&tag=" + params.blockTag + apiKey;
-                        return [2 /*return*/, get(url, null)];
-                    case 5:
-                        url += "?module=proxy&action=eth_getCode&address=" + params.address;
-                        url += "&tag=" + params.blockTag + apiKey;
-                        return [2 /*return*/, get(url, null)];
-                    case 6:
-                        url += "?module=proxy&action=eth_getStorageAt&address=" + params.address;
-                        url += "&position=" + params.position;
-                        url += "&tag=" + params.blockTag + apiKey;
-                        return [2 /*return*/, get(url, null)];
-                    case 7: return [2 /*return*/, get(url, {
-                            module: "proxy",
+                    case 1: return [2 /*return*/, this.fetch("proxy", { action: "eth_blockNumber" })];
+                    case 2: return [2 /*return*/, this.fetch("proxy", { action: "eth_gasPrice" })];
+                    case 3: 
+                    // Returns base-10 result
+                    return [2 /*return*/, this.fetch("account", {
+                            action: "balance",
+                            address: params.address,
+                            tag: params.blockTag
+                        })];
+                    case 4: return [2 /*return*/, this.fetch("proxy", {
+                            action: "eth_getTransactionCount",
+                            address: params.address,
+                            tag: params.blockTag
+                        })];
+                    case 5: return [2 /*return*/, this.fetch("proxy", {
+                            action: "eth_getCode",
+                            address: params.address,
+                            tag: params.blockTag
+                        })];
+                    case 6: return [2 /*return*/, this.fetch("proxy", {
+                            action: "eth_getStorageAt",
+                            address: params.address,
+                            position: params.position,
+                            tag: params.blockTag
+                        })];
+                    case 7: return [2 /*return*/, this.fetch("proxy", {
                             action: "eth_sendRawTransaction",
-                            hex: params.signedTransaction,
-                            apikey: this.apiKey
-                        }).catch(function (error) {
+                            hex: params.signedTransaction
+                        }, true).catch(function (error) {
                             return checkError("sendTransaction", error, params.signedTransaction);
                         })];
                     case 8:
                         if (params.blockTag) {
-                            url += "?module=proxy&action=eth_getBlockByNumber&tag=" + params.blockTag;
-                            if (params.includeTransactions) {
-                                url += "&boolean=true";
-                            }
-                            else {
-                                url += "&boolean=false";
-                            }
-                            url += apiKey;
-                            return [2 /*return*/, get(url, null)];
+                            return [2 /*return*/, this.fetch("proxy", {
+                                    action: "eth_getBlockByNumber",
+                                    tag: params.blockTag,
+                                    boolean: (params.includeTransactions ? "true" : "false")
+                                })];
                         }
                         throw new Error("getBlock by blockHash not implemented");
-                    case 9:
-                        url += "?module=proxy&action=eth_getTransactionByHash&txhash=" + params.transactionHash;
-                        url += apiKey;
-                        return [2 /*return*/, get(url, null)];
-                    case 10:
-                        url += "?module=proxy&action=eth_getTransactionReceipt&txhash=" + params.transactionHash;
-                        url += apiKey;
-                        return [2 /*return*/, get(url, null)];
+                    case 9: return [2 /*return*/, this.fetch("proxy", {
+                            action: "eth_getTransactionByHash",
+                            txhash: params.transactionHash
+                        })];
+                    case 10: return [2 /*return*/, this.fetch("proxy", {
+                            action: "eth_getTransactionReceipt",
+                            txhash: params.transactionHash
+                        })];
                     case 11:
                         if (params.blockTag !== "latest") {
                             throw new Error("EtherscanProvider does not support blockTag for call");
@@ -360,11 +364,10 @@ var EtherscanProvider = /** @class */ (function (_super) {
                         postData = getTransactionPostData(params.transaction);
                         postData.module = "proxy";
                         postData.action = "eth_call";
-                        postData.apikey = this.apiKey;
                         _c.label = 12;
                     case 12:
                         _c.trys.push([12, 14, , 15]);
-                        return [4 /*yield*/, get(url, postData)];
+                        return [4 /*yield*/, this.fetch("proxy", postData, true)];
                     case 13: return [2 /*return*/, _c.sent()];
                     case 14:
                         error_1 = _c.sent();
@@ -373,25 +376,24 @@ var EtherscanProvider = /** @class */ (function (_super) {
                         postData = getTransactionPostData(params.transaction);
                         postData.module = "proxy";
                         postData.action = "eth_estimateGas";
-                        postData.apikey = this.apiKey;
                         _c.label = 16;
                     case 16:
                         _c.trys.push([16, 18, , 19]);
-                        return [4 /*yield*/, get(url, postData)];
+                        return [4 /*yield*/, this.fetch("proxy", postData, true)];
                     case 17: return [2 /*return*/, _c.sent()];
                     case 18:
                         error_2 = _c.sent();
                         return [2 /*return*/, checkError("estimateGas", error_2, params.transaction)];
                     case 19:
-                        url += "?module=logs&action=getLogs";
+                        args = { action: "getLogs" };
                         if (params.filter.fromBlock) {
-                            url += "&fromBlock=" + checkLogTag(params.filter.fromBlock);
+                            args.fromBlock = checkLogTag(params.filter.fromBlock);
                         }
                         if (params.filter.toBlock) {
-                            url += "&toBlock=" + checkLogTag(params.filter.toBlock);
+                            args.toBlock = checkLogTag(params.filter.toBlock);
                         }
                         if (params.filter.address) {
-                            url += "&address=" + params.filter.address;
+                            args.address = params.filter.address;
                         }
                         // @TODO: We can handle slightly more complicated logs using the logs API
                         if (params.filter.topics && params.filter.topics.length > 0) {
@@ -403,11 +405,10 @@ var EtherscanProvider = /** @class */ (function (_super) {
                                 if (typeof (topic0) !== "string" || topic0.length !== 66) {
                                     logger.throwError("unsupported topic format", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { topic0: topic0 });
                                 }
-                                url += "&topic0=" + topic0;
+                                args.topic0 = topic0;
                             }
                         }
-                        url += apiKey;
-                        return [4 /*yield*/, get(url, null, getResult)];
+                        return [4 /*yield*/, this.fetch("logs", args)];
                     case 20:
                         logs = _c.sent();
                         blocks = {};
@@ -438,10 +439,8 @@ var EtherscanProvider = /** @class */ (function (_super) {
                         if (this.network.name !== "homestead") {
                             return [2 /*return*/, 0.0];
                         }
-                        url += "?module=stats&action=ethprice";
-                        url += apiKey;
                         _b = parseFloat;
-                        return [4 /*yield*/, get(url, null, getResult)];
+                        return [4 /*yield*/, this.fetch("stats", { action: "ethprice" })];
                     case 27: return [2 /*return*/, _b.apply(void 0, [(_c.sent()).ethusd])];
                     case 28: return [3 /*break*/, 29];
                     case 29: return [2 /*return*/, _super.prototype.perform.call(this, method, params)];
@@ -449,64 +448,47 @@ var EtherscanProvider = /** @class */ (function (_super) {
             });
         });
     };
-    // @TODO: Allow startBlock and endBlock to be Promises
+    // Note: The `page` page parameter only allows pagination within the
+    //       10,000 window abailable without a page and offset parameter
+    //       Error: Result window is too large, PageNo x Offset size must
+    //              be less than or equal to 10000
     EtherscanProvider.prototype.getHistory = function (addressOrName, startBlock, endBlock) {
-        var _this = this;
-        var url = this.baseUrl;
-        var apiKey = "";
-        if (this.apiKey) {
-            apiKey += "&apikey=" + this.apiKey;
-        }
-        if (startBlock == null) {
-            startBlock = 0;
-        }
-        if (endBlock == null) {
-            endBlock = 99999999;
-        }
-        return this.resolveName(addressOrName).then(function (address) {
-            url += "/api?module=account&action=txlist&address=" + address;
-            url += "&startblock=" + startBlock;
-            url += "&endblock=" + endBlock;
-            url += "&sort=asc" + apiKey;
-            _this.emit("debug", {
-                action: "request",
-                request: url,
-                provider: _this
-            });
-            var connection = {
-                url: url,
-                throttleSlotInterval: 1000,
-                throttleCallback: function (attempt, url) {
-                    if (_this.apiKey === defaultApiKey) {
-                        formatter_1.showThrottleMessage();
-                    }
-                    return Promise.resolve(true);
+        return __awaiter(this, void 0, void 0, function () {
+            var params, result;
+            var _a;
+            var _this = this;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = {
+                            action: "txlist"
+                        };
+                        return [4 /*yield*/, this.resolveName(addressOrName)];
+                    case 1:
+                        params = (_a.address = (_b.sent()),
+                            _a.startblock = ((startBlock == null) ? 0 : startBlock),
+                            _a.endblock = ((endBlock == null) ? 99999999 : endBlock),
+                            _a.sort = "asc",
+                            _a);
+                        return [4 /*yield*/, this.fetch("account", params)];
+                    case 2:
+                        result = _b.sent();
+                        return [2 /*return*/, result.map(function (tx) {
+                                ["contractAddress", "to"].forEach(function (key) {
+                                    if (tx[key] == "") {
+                                        delete tx[key];
+                                    }
+                                });
+                                if (tx.creates == null && tx.contractAddress != null) {
+                                    tx.creates = tx.contractAddress;
+                                }
+                                var item = _this.formatter.transactionResponse(tx);
+                                if (tx.timeStamp) {
+                                    item.timestamp = parseInt(tx.timeStamp);
+                                }
+                                return item;
+                            })];
                 }
-            };
-            return web_1.fetchJson(connection, null, getResult).then(function (result) {
-                _this.emit("debug", {
-                    action: "response",
-                    request: url,
-                    response: properties_1.deepCopy(result),
-                    provider: _this
-                });
-                var output = [];
-                result.forEach(function (tx) {
-                    ["contractAddress", "to"].forEach(function (key) {
-                        if (tx[key] == "") {
-                            delete tx[key];
-                        }
-                    });
-                    if (tx.creates == null && tx.contractAddress != null) {
-                        tx.creates = tx.contractAddress;
-                    }
-                    var item = _this.formatter.transactionResponse(tx);
-                    if (tx.timeStamp) {
-                        item.timestamp = parseInt(tx.timeStamp);
-                    }
-                    output.push(item);
-                });
-                return output;
             });
         });
     };

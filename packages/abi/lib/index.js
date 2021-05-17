@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TransactionDescription = exports.LogDescription = exports.checkResultErrors = exports.Indexed = exports.Interface = exports.defaultAbiCoder = exports.AbiCoder = exports.FormatTypes = exports.ParamType = exports.FunctionFragment = exports.Fragment = exports.EventFragment = exports.ConstructorFragment = void 0;
+exports.TransactionDescription = exports.LogDescription = exports.checkResultErrors = exports.Indexed = exports.Interface = exports.defaultAbiCoder = exports.AbiCoder = exports.FormatTypes = exports.ParamType = exports.FunctionFragment = exports.Fragment = exports.EventFragment = exports.ErrorFragment = exports.ConstructorFragment = void 0;
 var fragments_1 = require("./fragments");
 Object.defineProperty(exports, "ConstructorFragment", { enumerable: true, get: function () { return fragments_1.ConstructorFragment; } });
+Object.defineProperty(exports, "ErrorFragment", { enumerable: true, get: function () { return fragments_1.ErrorFragment; } });
 Object.defineProperty(exports, "EventFragment", { enumerable: true, get: function () { return fragments_1.EventFragment; } });
 Object.defineProperty(exports, "FormatTypes", { enumerable: true, get: function () { return fragments_1.FormatTypes; } });
 Object.defineProperty(exports, "Fragment", { enumerable: true, get: function () { return fragments_1.Fragment; } });

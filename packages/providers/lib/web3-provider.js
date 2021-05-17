@@ -23,7 +23,9 @@ var logger = new logger_1.Logger(_version_1.version);
 var json_rpc_provider_1 = require("./json-rpc-provider");
 var _nextId = 1;
 function buildWeb3LegacyFetcher(provider, sendFunc) {
+    var fetcher = "Web3LegacyFetcher";
     return function (method, params) {
+        var _this = this;
         // Metamask complains about eth_sign (and on some versions hangs)
         if (method == "eth_sign" && (provider.isMetaMask || provider.isStatus)) {
             // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
@@ -37,23 +39,44 @@ function buildWeb3LegacyFetcher(provider, sendFunc) {
             jsonrpc: "2.0"
         };
         return new Promise(function (resolve, reject) {
-            sendFunc(request, function (error, result) {
+            _this.emit("debug", {
+                action: "request",
+                fetcher: fetcher,
+                request: properties_1.deepCopy(request),
+                provider: _this
+            });
+            sendFunc(request, function (error, response) {
                 if (error) {
+                    _this.emit("debug", {
+                        action: "response",
+                        fetcher: fetcher,
+                        error: error,
+                        request: request,
+                        provider: _this
+                    });
                     return reject(error);
                 }
-                if (result.error) {
-                    var error_1 = new Error(result.error.message);
-                    error_1.code = result.error.code;
-                    error_1.data = result.error.data;
+                _this.emit("debug", {
+                    action: "response",
+                    fetcher: fetcher,
+                    request: request,
+                    response: response,
+                    provider: _this
+                });
+                if (response.error) {
+                    var error_1 = new Error(response.error.message);
+                    error_1.code = response.error.code;
+                    error_1.data = response.error.data;
                     return reject(error_1);
                 }
-                resolve(result.result);
+                resolve(response.result);
             });
         });
     };
 }
 function buildEip1193Fetcher(provider) {
     return function (method, params) {
+        var _this = this;
         if (params == null) {
             params = [];
         }
@@ -63,7 +86,32 @@ function buildEip1193Fetcher(provider) {
             method = "personal_sign";
             params = [params[1], params[0]];
         }
-        return provider.request({ method: method, params: params });
+        var request = { method: method, params: params };
+        this.emit("debug", {
+            action: "request",
+            fetcher: "Eip1193Fetcher",
+            request: properties_1.deepCopy(request),
+            provider: this
+        });
+        return provider.request(request).then(function (response) {
+            _this.emit("debug", {
+                action: "response",
+                fetcher: "Eip1193Fetcher",
+                request: request,
+                response: response,
+                provider: _this
+            });
+            return response;
+        }, function (error) {
+            _this.emit("debug", {
+                action: "response",
+                fetcher: "Eip1193Fetcher",
+                request: request,
+                error: error,
+                provider: _this
+            });
+            throw error;
+        });
     };
 }
 var Web3Provider = /** @class */ (function (_super) {

@@ -1,4 +1,13 @@
 'use strict';
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import assert from "assert";
 import { ethers } from "ethers";
 import { loadTests } from "@ethersproject/testcases";
@@ -503,6 +512,34 @@ describe("Test ParamType Parser", function () {
             const paramType = ethers.utils.ParamType.from(test.type);
             //console.log(test, paramType.format("full"));
             assert.equal(paramType.format("full"), test.format);
+        });
+    });
+});
+describe('Test EIP-838 Error Codes', function () {
+    const addr = "0xbd0B4B009a76CA97766360F04f75e05A3E449f1E";
+    it("testError1", function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            const provider = new ethers.providers.InfuraProvider("ropsten", "49a0efa3aaee4fd99797bfa94d8ce2f1");
+            const contract = new ethers.Contract(addr, [
+                "function testError1(bool pass, address addr, uint256 value) pure returns (bool)",
+                "function testError2(bool pass, bytes data) pure returns (bool)",
+                "error TestError1(address addr, uint256 value)",
+                "error TestError2(bytes data)",
+            ], provider);
+            try {
+                const result = yield contract.testError1(false, addr, 42);
+                console.log(result);
+                assert.ok(false, "did not throw ");
+            }
+            catch (error) {
+                assert.equal(error.code, ethers.utils.Logger.errors.CALL_EXCEPTION, "error.code");
+                assert.equal(error.errorSignature, "TestError1(address,uint256)", "error.errorSignature");
+                assert.equal(error.errorName, "TestError1", "error.errorName");
+                assert.equal(error.errorArgs[0], addr, "error.errorArgs[0]");
+                assert.equal(error.errorArgs.addr, addr, "error.errorArgs.addr");
+                assert.equal(error.errorArgs[1], 42, "error.errorArgs[1]");
+                assert.equal(error.errorArgs.value, 42, "error.errorArgs.value");
+            }
         });
     });
 });

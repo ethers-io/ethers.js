@@ -15,7 +15,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FunctionFragment = exports.ConstructorFragment = exports.EventFragment = exports.Fragment = exports.ParamType = exports.FormatTypes = void 0;
+exports.ErrorFragment = exports.FunctionFragment = exports.ConstructorFragment = exports.EventFragment = exports.Fragment = exports.ParamType = exports.FormatTypes = void 0;
 var bignumber_1 = require("@ethersproject/bignumber");
 var properties_1 = require("@ethersproject/properties");
 var logger_1 = require("@ethersproject/logger");
@@ -374,6 +374,7 @@ var Fragment = /** @class */ (function () {
             case "constructor":
                 return ConstructorFragment.fromObject(value);
             case "error":
+                return ErrorFragment.fromObject(value);
             case "fallback":
             case "receive":
                 // @TODO: Something? Maybe return a FunctionFragment? A custom DefaultFunctionFragment?
@@ -394,6 +395,9 @@ var Fragment = /** @class */ (function () {
         }
         else if (value.split("(")[0].trim() === "constructor") {
             return ConstructorFragment.fromString(value.trim());
+        }
+        else if (value.split(" ")[0] === "error") {
+            return ErrorFragment.fromString(value.substring(5).trim());
         }
         return logger.throwArgumentError("unsupported fragment", "value", value);
     };
@@ -770,10 +774,80 @@ var FunctionFragment = /** @class */ (function (_super) {
     return FunctionFragment;
 }(ConstructorFragment));
 exports.FunctionFragment = FunctionFragment;
-//export class ErrorFragment extends Fragment {
-//}
 //export class StructFragment extends Fragment {
 //}
+function checkForbidden(fragment) {
+    var sig = fragment.format();
+    if (sig === "Error(string)" || sig === "Panic(uint256)") {
+        logger.throwArgumentError("cannot specify user defined " + sig + " error", "fragment", fragment);
+    }
+    return fragment;
+}
+var ErrorFragment = /** @class */ (function (_super) {
+    __extends(ErrorFragment, _super);
+    function ErrorFragment() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    ErrorFragment.prototype.format = function (format) {
+        if (!format) {
+            format = exports.FormatTypes.sighash;
+        }
+        if (!exports.FormatTypes[format]) {
+            logger.throwArgumentError("invalid format type", "format", format);
+        }
+        if (format === exports.FormatTypes.json) {
+            return JSON.stringify({
+                type: "error",
+                name: this.name,
+                inputs: this.inputs.map(function (input) { return JSON.parse(input.format(format)); }),
+            });
+        }
+        var result = "";
+        if (format !== exports.FormatTypes.sighash) {
+            result += "error ";
+        }
+        result += this.name + "(" + this.inputs.map(function (input) { return input.format(format); }).join((format === exports.FormatTypes.full) ? ", " : ",") + ") ";
+        return result.trim();
+    };
+    ErrorFragment.from = function (value) {
+        if (typeof (value) === "string") {
+            return ErrorFragment.fromString(value);
+        }
+        return ErrorFragment.fromObject(value);
+    };
+    ErrorFragment.fromObject = function (value) {
+        if (ErrorFragment.isErrorFragment(value)) {
+            return value;
+        }
+        if (value.type !== "error") {
+            logger.throwArgumentError("invalid error object", "value", value);
+        }
+        var params = {
+            type: value.type,
+            name: verifyIdentifier(value.name),
+            inputs: (value.inputs ? value.inputs.map(ParamType.fromObject) : [])
+        };
+        return checkForbidden(new ErrorFragment(_constructorGuard, params));
+    };
+    ErrorFragment.fromString = function (value) {
+        var params = { type: "error" };
+        var parens = value.match(regexParen);
+        if (!parens) {
+            logger.throwArgumentError("invalid error signature", "value", value);
+        }
+        params.name = parens[1].trim();
+        if (params.name) {
+            verifyIdentifier(params.name);
+        }
+        params.inputs = parseParams(parens[2], false);
+        return checkForbidden(ErrorFragment.fromObject(params));
+    };
+    ErrorFragment.isErrorFragment = function (value) {
+        return (value && value._isFragment && value.type === "error");
+    };
+    return ErrorFragment;
+}(Fragment));
+exports.ErrorFragment = ErrorFragment;
 function verifyType(type) {
     // These need to be transformed to their full description
     if (type.match(/^uint($|[^1-9])/)) {

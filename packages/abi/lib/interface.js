@@ -56,6 +56,10 @@ var Indexed = /** @class */ (function (_super) {
     return Indexed;
 }(properties_1.Description));
 exports.Indexed = Indexed;
+var BuiltinErrors = {
+    "0x08c379a0": { signature: "Error(string)", name: "Error", inputs: ["string"], reason: true },
+    "0x4e487b71": { signature: "Panic(uint256)", name: "Panic", inputs: ["uint256"] }
+};
 function wrapAccessError(property, error) {
     var wrap = new Error("deferred error during ABI decoding triggered accessing " + property);
     wrap.error = error;
@@ -115,6 +119,9 @@ var Interface = /** @class */ (function () {
                     //checkNames(fragment, "input", fragment.inputs);
                     bucket = _this.events;
                     break;
+                case "error":
+                    bucket = _this.errors;
+                    break;
                 default:
                     return;
             }
@@ -155,8 +162,8 @@ var Interface = /** @class */ (function () {
     Interface.getAddress = function (address) {
         return address_1.getAddress(address);
     };
-    Interface.getSighash = function (functionFragment) {
-        return bytes_1.hexDataSlice(hash_1.id(functionFragment.format()), 0, 4);
+    Interface.getSighash = function (fragment) {
+        return bytes_1.hexDataSlice(hash_1.id(fragment.format()), 0, 4);
     };
     Interface.getEventTopic = function (eventFragment) {
         return hash_1.id(eventFragment.format());
@@ -220,6 +227,37 @@ var Interface = /** @class */ (function () {
         }
         return result;
     };
+    // Find a function definition by any means necessary (unless it is ambiguous)
+    Interface.prototype.getError = function (nameOrSignatureOrSighash) {
+        if (bytes_1.isHexString(nameOrSignatureOrSighash)) {
+            var getSighash = properties_1.getStatic(this.constructor, "getSighash");
+            for (var name_5 in this.errors) {
+                var error = this.errors[name_5];
+                if (nameOrSignatureOrSighash === getSighash(error)) {
+                    return this.errors[name_5];
+                }
+            }
+            logger.throwArgumentError("no matching error", "sighash", nameOrSignatureOrSighash);
+        }
+        // It is a bare name, look up the function (will return null if ambiguous)
+        if (nameOrSignatureOrSighash.indexOf("(") === -1) {
+            var name_6 = nameOrSignatureOrSighash.trim();
+            var matching = Object.keys(this.errors).filter(function (f) { return (f.split("(" /* fix:) */)[0] === name_6); });
+            if (matching.length === 0) {
+                logger.throwArgumentError("no matching error", "name", name_6);
+            }
+            else if (matching.length > 1) {
+                logger.throwArgumentError("multiple matching errors", "name", name_6);
+            }
+            return this.errors[matching[0]];
+        }
+        // Normlize the signature and lookup the function
+        var result = this.errors[fragments_1.FunctionFragment.fromString(nameOrSignatureOrSighash).format()];
+        if (!result) {
+            logger.throwArgumentError("no matching error", "signature", nameOrSignatureOrSighash);
+        }
+        return result;
+    };
     // Get the sighash (the bytes4 selector) used by Solidity to identify a function
     Interface.prototype.getSighash = function (functionFragment) {
         if (typeof (functionFragment) === "string") {
@@ -271,6 +309,8 @@ var Interface = /** @class */ (function () {
         }
         var bytes = bytes_1.arrayify(data);
         var reason = null;
+        var errorArgs = null;
+        var errorName = null;
         var errorSignature = null;
         switch (bytes.length % this._abiCoder._getWordSize()) {
             case 0:
@@ -279,18 +319,34 @@ var Interface = /** @class */ (function () {
                 }
                 catch (error) { }
                 break;
-            case 4:
-                if (bytes_1.hexlify(bytes.slice(0, 4)) === "0x08c379a0") {
-                    errorSignature = "Error(string)";
-                    reason = this._abiCoder.decode(["string"], bytes.slice(4))[0];
+            case 4: {
+                var selector = bytes_1.hexlify(bytes.slice(0, 4));
+                var builtin = BuiltinErrors[selector];
+                if (builtin) {
+                    errorArgs = this._abiCoder.decode(builtin.inputs, bytes.slice(4));
+                    errorName = builtin.name;
+                    errorSignature = builtin.signature;
+                    if (builtin.reason) {
+                        reason = errorArgs[0];
+                    }
+                }
+                else {
+                    try {
+                        var error = this.getError(selector);
+                        errorArgs = this._abiCoder.decode(error.inputs, bytes.slice(4));
+                        errorName = error.name;
+                        errorSignature = error.format();
+                    }
+                    catch (error) {
+                        console.log(error);
+                    }
                 }
                 break;
+            }
         }
         return logger.throwError("call revert exception", logger_1.Logger.errors.CALL_EXCEPTION, {
             method: functionFragment.format(),
-            errorSignature: errorSignature,
-            errorArgs: [reason],
-            reason: reason
+            errorArgs: errorArgs, errorName: errorName, errorSignature: errorSignature, reason: reason
         });
     };
     // Encode the result for a function call (e.g. for eth_call)
@@ -501,6 +557,8 @@ var Interface = /** @class */ (function () {
             value: bignumber_1.BigNumber.from(tx.value || "0"),
         });
     };
+    // @TODO
+    //parseCallResult(data: BytesLike): ??
     // Given an event log, find the matching event fragment (if any) and
     // determine all its properties and values
     Interface.prototype.parseLog = function (log) {
