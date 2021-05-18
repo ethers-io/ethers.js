@@ -807,6 +807,7 @@ testFunctions.push({
 
         const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
 
+        await waiter(3000);
 
         const b0 = await provider.getBalance(wallet.address);
         assert.ok(b0.gt(ethers.constants.Zero), "balance is non-zero");
@@ -818,6 +819,8 @@ testFunctions.push({
         });
 
         await tx.wait();
+
+        await waiter(3000);
 
         const b1 = await provider.getBalance(wallet.address);
         assert.ok(b0.gt(b1), "balance is decreased");
@@ -839,6 +842,8 @@ testFunctions.push({
 
         const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
 
+        await waiter(3000);
+
         const b0 = await provider.getBalance(wallet.address);
         assert.ok(b0.gt(ethers.constants.Zero), "balance is non-zero");
 
@@ -856,6 +861,8 @@ testFunctions.push({
         });
 
         await tx.wait();
+
+        await waiter(3000);
 
         const b1 = await provider.getBalance(wallet.address);
         assert.ok(b0.gt(b1), "balance is decreased");
