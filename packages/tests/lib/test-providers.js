@@ -834,8 +834,11 @@ testFunctions.push({
                     gasPrice = (_a.sent()).mul(10);
                     wallet = fundWallet.connect(provider);
                     addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
-                    return [4 /*yield*/, provider.getBalance(wallet.address)];
+                    return [4 /*yield*/, waiter(3000)];
                 case 2:
+                    _a.sent();
+                    return [4 /*yield*/, provider.getBalance(wallet.address)];
+                case 3:
                     b0 = _a.sent();
                     assert_1.default.ok(b0.gt(ethers_1.ethers.constants.Zero), "balance is non-zero");
                     return [4 /*yield*/, wallet.sendTransaction({
@@ -843,13 +846,16 @@ testFunctions.push({
                             value: 123,
                             gasPrice: gasPrice
                         })];
-                case 3:
+                case 4:
                     tx = _a.sent();
                     return [4 /*yield*/, tx.wait()];
-                case 4:
+                case 5:
+                    _a.sent();
+                    return [4 /*yield*/, waiter(3000)];
+                case 6:
                     _a.sent();
                     return [4 /*yield*/, provider.getBalance(wallet.address)];
-                case 5:
+                case 7:
                     b1 = _a.sent();
                     assert_1.default.ok(b0.gt(b1), "balance is decreased");
                     return [2 /*return*/];
@@ -874,8 +880,11 @@ testFunctions.push({
                     gasPrice = (_a.sent()).mul(10);
                     wallet = fundWallet.connect(provider);
                     addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
-                    return [4 /*yield*/, provider.getBalance(wallet.address)];
+                    return [4 /*yield*/, waiter(3000)];
                 case 2:
+                    _a.sent();
+                    return [4 /*yield*/, provider.getBalance(wallet.address)];
+                case 3:
                     b0 = _a.sent();
                     assert_1.default.ok(b0.gt(ethers_1.ethers.constants.Zero), "balance is non-zero");
                     return [4 /*yield*/, wallet.sendTransaction({
@@ -890,13 +899,16 @@ testFunctions.push({
                             value: 123,
                             gasPrice: gasPrice
                         })];
-                case 3:
+                case 4:
                     tx = _a.sent();
                     return [4 /*yield*/, tx.wait()];
-                case 4:
+                case 5:
+                    _a.sent();
+                    return [4 /*yield*/, waiter(3000)];
+                case 6:
                     _a.sent();
                     return [4 /*yield*/, provider.getBalance(wallet.address)];
-                case 5:
+                case 7:
                     b1 = _a.sent();
                     assert_1.default.ok(b0.gt(b1), "balance is decreased");
                     return [2 /*return*/];

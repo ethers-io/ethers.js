@@ -739,6 +739,7 @@ testFunctions.push({
         const gasPrice = (yield provider.getGasPrice()).mul(10);
         const wallet = fundWallet.connect(provider);
         const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
+        yield waiter(3000);
         const b0 = yield provider.getBalance(wallet.address);
         assert.ok(b0.gt(ethers.constants.Zero), "balance is non-zero");
         const tx = yield wallet.sendTransaction({
@@ -747,6 +748,7 @@ testFunctions.push({
             gasPrice: gasPrice
         });
         yield tx.wait();
+        yield waiter(3000);
         const b1 = yield provider.getBalance(wallet.address);
         assert.ok(b0.gt(b1), "balance is decreased");
     })
@@ -763,6 +765,7 @@ testFunctions.push({
         const gasPrice = (yield provider.getGasPrice()).mul(10);
         const wallet = fundWallet.connect(provider);
         const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
+        yield waiter(3000);
         const b0 = yield provider.getBalance(wallet.address);
         assert.ok(b0.gt(ethers.constants.Zero), "balance is non-zero");
         const tx = yield wallet.sendTransaction({
@@ -778,6 +781,7 @@ testFunctions.push({
             gasPrice: gasPrice
         });
         yield tx.wait();
+        yield waiter(3000);
         const b1 = yield provider.getBalance(wallet.address);
         assert.ok(b0.gt(b1), "balance is decreased");
     })

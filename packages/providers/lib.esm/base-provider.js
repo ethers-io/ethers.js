@@ -537,7 +537,7 @@ export class BaseProvider extends Provider {
                 this._emitted.block = blockNumber - 1;
             }
             if (Math.abs((this._emitted.block) - blockNumber) > 1000) {
-                logger.warn("network block skew detected; skipping block events");
+                logger.warn(`network block skew detected; skipping block events (emitted=${this._emitted.block} blockNumber${blockNumber})`);
                 this.emit("error", logger.makeError("network block skew detected", Logger.errors.NETWORK_ERROR, {
                     blockNumber: blockNumber,
                     event: "blockSkew",
