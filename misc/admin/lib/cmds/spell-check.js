@@ -32,8 +32,8 @@ hardened has highly ignoring implemented implementer imported including instanti
 joined keyword labelled larger lookup matches mined modified modifies multi
 named needed nested neutered numeric offline optimizer overriding owned packed
 padded parsed parsing passed payload placeholder processing properties prototyping reached
-recommended recovered redacted remaining replaced required reverted
-serializes shared signed signing skipped stored supported tagging targetted
+recommended recovered redacted remaining replaced repriced required reverted
+serializes shared signed signing skipped stats stored supported tagging targetted
 throttled transactions typed uninstall unstake unsubscribe untyped
 using verifies verifying website
 
@@ -41,7 +41,7 @@ using verifies verifying website
 bech BIP BIP39 BIP44 btc bzz crypto eip etc hashes hmac icap
 keccak ltc namehash ripemd RLP scrypt secp sha xdai
 
-blockhash
+blockhash bnb bnbt ethprice matic txlist
 
 bitcoin ethereum finney gwei kwei mwei satoshi szabo wei weth
 
