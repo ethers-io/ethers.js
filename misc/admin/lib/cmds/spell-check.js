@@ -25,7 +25,7 @@ const Words = fs_1.default.readFileSync("/usr/share/dict/words").toString().spli
 accessing addresses aligned autofill called cancelled changed censored
 clamping compiled computed configured consumed creating decoded decoding
 decreased decrypt decrypted decrypting deployed deploying deprecated detected
-discontinued earliest email enabled encoded encoder encoding encrypt
+discontinued earliest email emitted enabled encoded encoder encoding encrypt
 encrypted encrypting entries euro exceeded existing expected
 expired failed fetches formatted formatting funding generated
 hardened has highly ignoring implemented implementer imported including instantiate
