@@ -17215,33 +17215,26 @@ function ethDefaultProvider(network) {
             catch (error) { }
         }
         if (providers.AlchemyProvider) {
-            // These networks are currently faulty on Alchemy as their
-            // network does not handle the Berlin hardfork, which is
-            // live on these ones.
-            // @TODO: This goes away once AlchemyAPI has upgraded their nodes
-            const skip = ["goerli", "ropsten", "rinkeby"];
             try {
-                const provider = new providers.AlchemyProvider(network, options.alchemy);
-                if (provider.network && skip.indexOf(provider.network.name) === -1) {
-                    providerList.push(provider);
-                }
+                providerList.push(new providers.AlchemyProvider(network, options.alchemy));
             }
             catch (error) { }
         }
+        /*
         if (providers.PocketProvider) {
-            // These networks are currently faulty on Alchemy as their
+            // These networks are currently faulty on Pocket as their
             // network does not handle the Berlin hardfork, which is
             // live on these ones.
             // @TODO: This goes away once Pocket has upgraded their nodes
-            const skip = ["goerli", "ropsten", "rinkeby"];
+            const skip = [ "goerli", "ropsten", "rinkeby" ];
             try {
                 const provider = new providers.PocketProvider(network);
                 if (provider.network && skip.indexOf(provider.network.name) === -1) {
                     providerList.push(provider);
                 }
-            }
-            catch (error) { }
+            } catch(error) { }
         }
+        */
         if (providers.CloudflareProvider) {
             try {
                 providerList.push(new providers.CloudflareProvider(network));
