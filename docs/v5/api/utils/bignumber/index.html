@@ -25,7 +25,7 @@
     <div class="content">
       <div class="breadcrumbs"><a href="/v5/">Documentation</a>&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<a href="/v5/api/">API</a>&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<a href="/v5/api/utils/">Utilities</a>&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<span class="current">BigNumber</span></div>
 
-<a name="BigNumber"></a><a name="BigNumber"></a><h1 class="show-anchors"><div>BigNumber<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber"></a></div></div></h1><p>Many operations in Ethereum operation on numbers which are <a href="/v5/api/utils/bignumber/#BigNumber--notes-safenumbers">outside the range of safe values</a> to use in JavaScript.</p>
+<a name="BigNumber"></a><a name="BigNumber"></a><h1 class="show-anchors"><div>BigNumber<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber"></a></div></div></h1><p>Many operations in Ethereum operate on numbers which are <a href="/v5/api/utils/bignumber/#BigNumber--notes-safenumbers">outside the range of safe values</a> to use in JavaScript.</p>
 
 <p>A <b>BigNumber</b> is an object which safely allows mathematical operations on numbers of any magnitude.</p>
 
@@ -165,7 +165,7 @@ a.mul(b);
 
 <p>Second, the Ethers <a href="/v5/api/utils/bignumber/">BigNumber</a> provides all the functionality required internally and should generally be sufficient for most developers while not exposing some of the more advanced and rare functionality. So it will be easier to swap out the underlying library without impacting consumers.</p>
 
-<p>For example, if <a href="https://www.npmjs.com/package/bn.js">BN.js</a> was exposed, someone may use the greatest-common-denominator functions, which would then be functionality the replacing library should also provide to ensure anyone depending on that functionality is not broken.</p>
+<p>For example, if <a href="https://www.npmjs.com/package/bn.js">BN.js</a> was exposed, someone may use the greatest-common-denominator functions, which would then be functionality that the replacing library should also provide to ensure anyone depending on that functionality is not broken.</p>
 
 <a name="BigNumber--BigNumber--notes--why-bn-js"></a><h3 class="show-anchors"><div>Why BN.js??<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber--BigNumber--notes--why-bn-js"></a></div></div></h3><p>The reason why <a href="https://www.npmjs.com/package/bn.js">BN.js</a> is used internally as the big number is because that is the library used by <a href="https://www.npmjs.com/package/elliptic">elliptic</a>.</p>
 
