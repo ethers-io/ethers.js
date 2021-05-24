@@ -108,6 +108,28 @@ export class BigNumber implements Hexable {
         return toBigNumber(toBN(this).pow(value));
     }
 
+    neg(): BigNumber {
+        return toBigNumber(toBN(this).neg());
+    }
+
+    sqr(): BigNumber {
+        if (this._hex[0] === "-") {
+            throwFault("cannot 'sqr' negative values", "sqr");
+        }
+        return toBigNumber(toBN(this).sqr());
+    }
+
+    divMod(value: Number): BigNumber {
+        if (value == 0) {
+            throwFault("cannot 'divMod' value 0", "divMod");
+        }
+        return toBigNumber(toBN(this).divmod(value));
+    }
+
+    divRound(value: Number): BigNumber {
+        return toBigNumber(toBN(this).divRound(value));
+    }
+
     and(other: BigNumberish): BigNumber {
         const value = toBN(other);
         if (this.isNegative() || value.isNeg()) {

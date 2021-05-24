@@ -8,6 +8,11 @@ declare module "bn.js" {
         mod(other: BN): BN;
         mul(other: BN): BN;
 
+        neg(): BN;
+        sqr(): BN;
+        divmod(other: Number): BN;
+        divRound(other: Number): BN;
+
         pow(other: BN): BN;
         umod(other: BN): BN;
 
