@@ -26,6 +26,7 @@ import { IpcProvider } from "./ipc-provider";
 import { InfuraProvider, InfuraWebSocketProvider } from "./infura-provider";
 import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
 import { JsonRpcBatchProvider } from "./json-rpc-batch-provider";
+import { MulticallProvider } from "./multicall-provider";
 import { NodesmithProvider } from "./nodesmith-provider";
 import { PocketProvider } from "./pocket-provider";
 import { StaticJsonRpcProvider, UrlJsonRpcProvider } from "./url-json-rpc-provider";
@@ -113,6 +114,7 @@ export {
     InfuraWebSocketProvider,
     JsonRpcProvider,
     JsonRpcBatchProvider,
+    MulticallProvider,
     NodesmithProvider,
     PocketProvider,
     StaticJsonRpcProvider,
