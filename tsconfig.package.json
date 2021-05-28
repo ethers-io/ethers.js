@@ -10,7 +10,7 @@
       "es5",
       "dom"
     ],
-    "module": "commonjs",
+    "module": "ES2015",
     "moduleResolution": "node",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,

@@ -36,7 +36,7 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rollup -c ../../scripts/rollup.config.js"
   },
   "sideEffects": false,
   "tarballHash": "0x6a009bacd601b395a4cf53b290b3f3eb6e624fdaabf4b24940ecb1cf0836d096",

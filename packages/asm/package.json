@@ -34,7 +34,7 @@
   },
   "scripts": {
     "generate": "node ./generate.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rollup -c ../../scripts/rollup.config.js"
   },
   "tarballHash": "0xf903345c132095391c2259543c97dcac983d1ba94f75c60adb9e0026ce031086",
   "types": "./lib/index.d.ts",
