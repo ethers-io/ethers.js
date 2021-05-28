@@ -3,11 +3,11 @@
 import { BigNumber } from "@ethersproject/bignumber";
 import { Network, Networkish } from "@ethersproject/networks";
 import { defineReadOnly } from "@ethersproject/properties";
+import type { ConnectionInfo } from "@ethersproject/web";
 
 import { Event } from "./base-provider";
 import { JsonRpcProvider } from "./json-rpc-provider";
 import { WebSocket } from "./ws";
-
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
@@ -56,7 +56,7 @@ export class WebSocketProvider extends JsonRpcProvider {
 
     _wsReady: boolean;
 
-    constructor(url: string, network?: Networkish) {
+    constructor(url: ConnectionInfo | string, network?: Networkish) {
         // This will be added in the future; please open an issue to expedite
         if (network === "any") {
             logger.throwError("WebSocketProvider does not support 'any' network yet", Logger.errors.UNSUPPORTED_OPERATION, {

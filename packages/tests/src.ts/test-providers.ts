@@ -1217,6 +1217,10 @@ describe("Test WebSocketProvider", function() {
         const provider = ethers.providers.InfuraProvider.getWebSocketProvider();
         await testWebSocketProvider(provider);
     });
+
+    it('Can create Provider with connection-info', function() {
+        new ethers.providers.WebSocketProvider({ url: 'test' });
+    })
 });
 
 describe("Test Events", function() {
