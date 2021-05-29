@@ -1,4 +1,5 @@
 import { Network, Networkish } from "@ethersproject/networks";
+import type { ConnectionInfo } from "@ethersproject/web";
 import { Event } from "./base-provider";
 import { JsonRpcProvider } from "./json-rpc-provider";
 export declare type InflightRequest = {
@@ -22,7 +23,7 @@ export declare class WebSocketProvider extends JsonRpcProvider {
         [name: string]: Subscription;
     };
     _wsReady: boolean;
-    constructor(url: string, network?: Networkish);
+    constructor(url: ConnectionInfo | string, network?: Networkish);
     detectNetwork(): Promise<Network>;
     get pollingInterval(): number;
     resetEventsBlock(blockNumber: number): void;

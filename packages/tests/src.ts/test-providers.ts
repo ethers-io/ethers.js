@@ -1218,8 +1218,9 @@ describe("Test WebSocketProvider", function() {
         await testWebSocketProvider(provider);
     });
 
-    it('Can create Provider with connection-info', function() {
-        new ethers.providers.WebSocketProvider({ url: 'test' });
+    it('Can create Provider with connection-info', async function() {
+        const provider = new ethers.providers.WebSocketProvider({ url: 'http://test.com' });
+        await testWebSocketProvider(provider);
     })
 });
 

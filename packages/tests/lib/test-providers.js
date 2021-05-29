@@ -1298,6 +1298,9 @@ describe("Test WebSocketProvider", function () {
             });
         });
     });
+    it('Can create Provider with connection-info', function () {
+        new ethers_1.ethers.providers.WebSocketProvider({ url: 'http://test.com' });
+    });
 });
 describe("Test Events", function () {
     this.retries(3);
