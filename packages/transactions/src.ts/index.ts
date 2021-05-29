@@ -256,7 +256,8 @@ export function serialize(transaction: UnsignedTransaction, signature?: Signatur
         if (transaction.accessList != null) {
             logger.throwArgumentError("untyped transactions do not support accessList; include type: 1", "transaction", transaction);
         }
-        return _serialize(transaction, signature);
+        const { type, ...nonTypedTransaction } = transaction;
+        return _serialize(nonTypedTransaction, signature);
     }
 
     // Typed Transactions (EIP-2718)
