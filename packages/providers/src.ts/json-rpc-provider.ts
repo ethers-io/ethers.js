@@ -592,7 +592,7 @@ export class JsonRpcProvider extends BaseProvider {
         const result: { [key: string]: string | AccessList } = {};
 
         // Some nodes (INFURA ropsten; INFURA mainnet is fine) do not like leading zeros.
-        ["gasLimit", "gasPrice", "type", "nonce", "value"].forEach(function(key) {
+        ["gasLimit", "gasPrice", "type", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "value"].forEach(function(key) {
             if ((<any>transaction)[key] == null) { return; }
             const value = hexValue((<any>transaction)[key]);
             if (key === "gasLimit") { key = "gas"; }

@@ -29,6 +29,9 @@ export type TransactionRequest = {
 
     type?: number;
     accessList?: AccessListish;
+
+    maxPriorityFeePerGas?: BigNumberish;
+    maxFeePerGas?: BigNumberish;
 }
 
 export interface TransactionResponse extends Transaction {
@@ -67,6 +70,8 @@ interface _Block {
 
     miner: string;
     extraData: string;
+
+    baseFee?: null | BigNumber;
 }
 
 export interface Block extends _Block {

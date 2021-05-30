@@ -62,7 +62,12 @@ export class Formatter {
 
             from: address,
 
-            gasPrice: bigNumber,
+            // either (gasPrice) or (maxPriorityFeePerGas + maxFeePerGas)
+            // must be set
+            gasPrice: Formatter.allowNull(bigNumber),
+            maxPriorityFeePerGas: Formatter.allowNull(bigNumber),
+            maxFeePerGas: Formatter.allowNull(bigNumber),
+
             gasLimit: bigNumber,
             to: Formatter.allowNull(address, null),
             value: bigNumber,
@@ -83,6 +88,8 @@ export class Formatter {
             nonce: Formatter.allowNull(number),
             gasLimit: Formatter.allowNull(bigNumber),
             gasPrice: Formatter.allowNull(bigNumber),
+            maxPriorityFeePerGas: Formatter.allowNull(bigNumber),
+            maxFeePerGas: Formatter.allowNull(bigNumber),
             to: Formatter.allowNull(address),
             value: Formatter.allowNull(bigNumber),
             data: Formatter.allowNull(strictData),
@@ -135,6 +142,8 @@ export class Formatter {
             extraData: data,
 
             transactions: Formatter.allowNull(Formatter.arrayOf(hash)),
+
+            baseFee: Formatter.allowNull(bigNumber)
         };
 
         formats.blockWithTransactions = shallowCopy(formats.block);
@@ -322,6 +331,12 @@ export class Formatter {
         }
 
         const result: TransactionResponse = Formatter.check(this.formats.transaction, transaction);
+
+        if (result.type === 2) {
+            if (result.gasPrice == null) {
+                result.gasPrice = result.maxFeePerGas;
+            }
+        }
 
         if (transaction.chainId != null) {
             let chainId = transaction.chainId;
