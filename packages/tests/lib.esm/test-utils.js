@@ -193,10 +193,40 @@ describe('Test Namehash', function () {
             assert.equal(ethers.utils.namehash(test.name), test.expected, 'computes namehash(' + test.name + ')');
         });
     });
-    it("isValidName", function () {
-        assert.ok(ethers.utils.isValidName("ricmoo.eth"));
+    const goodNames = [
+        "ricmoo.eth",
+        "foo",
+        "foo.bar",
+    ];
+    const badNames = [
+        ".",
+        "..",
+        "ricmoo..eth",
+        "ricmoo...eth",
+        ".foo",
+        "foo.",
+    ];
+    // The empty string is not a valid name, but has the zero hash
+    // as its namehash, which may be used for recursive purposes
+    it("empty ENS name", function () {
         assert.ok(!ethers.utils.isValidName(""));
-        assert.ok(!ethers.utils.isValidName("ricmoo..eth"));
+    });
+    goodNames.forEach((name) => {
+        it(`ENS namehash ok - ${name}`, function () {
+            assert.ok(ethers.utils.isValidName(name));
+            ethers.utils.namehash(name);
+        });
+    });
+    badNames.forEach((name) => {
+        it(`ENS namehash fails - ${name}`, function () {
+            assert.ok(!ethers.utils.isValidName(name));
+            assert.throws(() => {
+                const namehash = ethers.utils.namehash(name);
+                console.log(name, namehash);
+            }, (error) => {
+                return !!error.message.match(/invalid ENS address/);
+            });
+        });
     });
 });
 describe('Test ID Hash Functions', function () {

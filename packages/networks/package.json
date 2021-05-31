@@ -1,7 +1,7 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/logger": "^5.2.0"
+    "@ethersproject/logger": "^5.3.0"
   },
   "description": "Network definitions for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -35,7 +35,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x264bc19f4b1a8ae89ec2cd60f4807460629b7d57f362b8e9479ce9fabc74c441",
+  "tarballHash": "0x763c8963e85c6710887500bd808dd6a34db20dd01f6533b8594b09b63e62b6c5",
   "types": "./lib/index.d.ts",
-  "version": "5.2.0"
+  "version": "5.3.0"
 }

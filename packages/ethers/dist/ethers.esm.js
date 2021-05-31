@@ -3490,7 +3490,7 @@ var bn = createCommonjsModule(function (module) {
 })('object' === 'undefined' || module, commonjsGlobal);
 });
 
-const version = "logger/5.2.0";
+const version = "logger/5.3.0";
 
 "use strict";
 let _permanentCensorErrors = false;
@@ -3795,7 +3795,7 @@ class Logger {
 Logger.errors = ErrorCode;
 Logger.levels = LogLevel;
 
-const version$1 = "bytes/5.2.0";
+const version$1 = "bytes/5.3.0";
 
 "use strict";
 const logger = new Logger(version$1);
@@ -4185,7 +4185,7 @@ function joinSignature(signature) {
     ]));
 }
 
-const version$2 = "bignumber/5.2.0";
+const version$2 = "bignumber/5.3.0";
 
 "use strict";
 var BN = bn.BN;
@@ -4735,8 +4735,9 @@ class FixedNumber {
         if (comps[1].length <= decimals) {
             return this;
         }
-        const factor = FixedNumber.from("1" + zeros.substring(0, decimals));
-        return this.mulUnsafe(factor).addUnsafe(BUMP).floor().divUnsafe(factor);
+        const factor = FixedNumber.from("1" + zeros.substring(0, decimals), this.format);
+        const bump = BUMP.toFormat(this.format);
+        return this.mulUnsafe(factor).addUnsafe(bump).floor().divUnsafe(factor);
     }
     isZero() {
         return (this._value === "0.0" || this._value === "0");
@@ -4834,7 +4835,7 @@ class FixedNumber {
 const ONE = FixedNumber.from(1);
 const BUMP = FixedNumber.from("0.5");
 
-const version$3 = "properties/5.2.0";
+const version$3 = "properties/5.3.0";
 
 "use strict";
 var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -4951,7 +4952,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.2.0";
+const version$4 = "abi/5.3.0";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -6428,7 +6429,7 @@ function keccak256(data) {
     return '0x' + sha3.keccak_256(arrayify(data));
 }
 
-const version$5 = "rlp/5.2.0";
+const version$5 = "rlp/5.3.0";
 
 "use strict";
 const logger$6 = new Logger(version$5);
@@ -6552,7 +6553,7 @@ var index = /*#__PURE__*/Object.freeze({
 	decode: decode
 });
 
-const version$6 = "address/5.2.0";
+const version$6 = "address/5.3.0";
 
 "use strict";
 const logger$7 = new Logger(version$6);
@@ -7019,6 +7020,8 @@ const One = ( /*#__PURE__*/BigNumber.from(1));
 const Two = ( /*#__PURE__*/BigNumber.from(2));
 const WeiPerEther = ( /*#__PURE__*/BigNumber.from("1000000000000000000"));
 const MaxUint256 = ( /*#__PURE__*/BigNumber.from("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+const MinInt256 = ( /*#__PURE__*/BigNumber.from("-0x8000000000000000000000000000000000000000000000000000000000000000"));
+const MaxInt256 = ( /*#__PURE__*/BigNumber.from("0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
 
 const HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
@@ -7036,6 +7039,8 @@ var index$1 = /*#__PURE__*/Object.freeze({
 	Two: Two,
 	WeiPerEther: WeiPerEther,
 	MaxUint256: MaxUint256,
+	MinInt256: MinInt256,
+	MaxInt256: MaxInt256,
 	HashZero: HashZero,
 	EtherSymbol: EtherSymbol
 });
@@ -7079,7 +7084,7 @@ class NumberCoder extends Coder {
     }
 }
 
-const version$7 = "strings/5.2.0";
+const version$7 = "strings/5.3.0";
 
 "use strict";
 const logger$9 = new Logger(version$7);
@@ -7700,7 +7705,7 @@ function id(text) {
     return keccak256(toUtf8Bytes(text));
 }
 
-const version$8 = "hash/5.2.0";
+const version$8 = "hash/5.3.0";
 
 const logger$b = new Logger(version$8);
 const Zeros = new Uint8Array(32);
@@ -7722,14 +7727,18 @@ function isValidName(name) {
 function namehash(name) {
     /* istanbul ignore if */
     if (typeof (name) !== "string") {
-        logger$b.throwArgumentError("invalid address - " + String(name), "name", name);
+        logger$b.throwArgumentError("invalid ENS name; not a string", "name", name);
     }
+    let current = name;
     let result = Zeros;
-    while (name.length) {
-        const partition = name.match(Partition);
+    while (current.length) {
+        const partition = current.match(Partition);
+        if (partition == null || partition[2] === "") {
+            logger$b.throwArgumentError("invalid ENS address; missing component", "name", name);
+        }
         const label = toUtf8Bytes(nameprep(partition[3]));
         result = keccak256(concat([result, keccak256(label)]));
-        name = partition[2] || "";
+        current = partition[2] || "";
     }
     return hexlify(result);
 }
@@ -8724,7 +8733,7 @@ class Interface {
 
 "use strict";
 
-const version$9 = "abstract-provider/5.2.0";
+const version$9 = "abstract-provider/5.3.0";
 
 "use strict";
 const logger$e = new Logger(version$9);
@@ -8801,7 +8810,7 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.2.0";
+const version$a = "abstract-signer/5.3.0";
 
 "use strict";
 var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -9078,6 +9087,16 @@ try {
 
 var inherits_1 = inherits;
 
+function isSurrogatePair(msg, i) {
+  if ((msg.charCodeAt(i) & 0xFC00) !== 0xD800) {
+    return false;
+  }
+  if (i < 0 || i + 1 >= msg.length) {
+    return false;
+  }
+  return (msg.charCodeAt(i + 1) & 0xFC00) === 0xDC00;
+}
+
 function toArray(msg, enc) {
   if (Array.isArray(msg))
     return msg.slice();
@@ -9086,14 +9105,29 @@ function toArray(msg, enc) {
   var res = [];
   if (typeof msg === 'string') {
     if (!enc) {
+      // Inspired by stringToUtf8ByteArray() in closure-library by Google
+      // https://github.com/google/closure-library/blob/8598d87242af59aac233270742c8984e2b2bdbe0/closure/goog/crypt/crypt.js#L117-L143
+      // Apache License 2.0
+      // https://github.com/google/closure-library/blob/master/LICENSE
+      var p = 0;
       for (var i = 0; i < msg.length; i++) {
         var c = msg.charCodeAt(i);
-        var hi = c >> 8;
-        var lo = c & 0xff;
-        if (hi)
-          res.push(hi, lo);
-        else
-          res.push(lo);
+        if (c < 128) {
+          res[p++] = c;
+        } else if (c < 2048) {
+          res[p++] = (c >> 6) | 192;
+          res[p++] = (c & 63) | 128;
+        } else if (isSurrogatePair(msg, i)) {
+          c = 0x10000 + ((c & 0x03FF) << 10) + (msg.charCodeAt(++i) & 0x03FF);
+          res[p++] = (c >> 18) | 240;
+          res[p++] = ((c >> 12) & 63) | 128;
+          res[p++] = ((c >> 6) & 63) | 128;
+          res[p++] = (c & 63) | 128;
+        } else {
+          res[p++] = (c >> 12) | 224;
+          res[p++] = ((c >> 6) & 63) | 128;
+          res[p++] = (c & 63) | 128;
+        }
       }
     } else if (enc === 'hex') {
       msg = msg.replace(/[^a-z0-9]+/ig, '');
@@ -12796,7 +12830,7 @@ elliptic.eddsa = /*RicMoo:ethers:require(./elliptic/eddsa)*/(null);
 
 var EC$1 = elliptic_1.ec;
 
-const version$b = "signing-key/5.2.0";
+const version$b = "signing-key/5.3.0";
 
 "use strict";
 const logger$g = new Logger(version$b);
@@ -12872,7 +12906,7 @@ function computePublicKey(key, compressed) {
     return logger$g.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$c = "transactions/5.2.0";
+const version$c = "transactions/5.3.0";
 
 "use strict";
 const logger$h = new Logger(version$c);
@@ -13179,7 +13213,7 @@ function parse(rawTransaction) {
     });
 }
 
-const version$d = "contracts/5.2.0";
+const version$d = "contracts/5.3.0";
 
 "use strict";
 var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -13697,7 +13731,7 @@ class BaseContract {
             // Check that the signature is unique; if not the ABI generation has
             // not been cleaned or may be incorrectly generated
             if (uniqueSignatures[signature]) {
-                logger$i.warn(`Duplicate ABI entry for ${JSON.stringify(name)}`);
+                logger$i.warn(`Duplicate ABI entry for ${JSON.stringify(signature)}`);
                 return;
             }
             uniqueSignatures[signature] = true;
@@ -14280,7 +14314,7 @@ var SupportedAlgorithm;
 })(SupportedAlgorithm || (SupportedAlgorithm = {}));
 ;
 
-const version$e = "sha2/5.2.0";
+const version$e = "sha2/5.3.0";
 
 "use strict";
 const logger$j = new Logger(version$e);
@@ -14345,7 +14379,7 @@ function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
     return hexlify(DK);
 }
 
-const version$f = "wordlists/5.2.0";
+const version$f = "wordlists/5.3.0";
 
 "use strict";
 // This gets overridden by rollup
@@ -14874,7 +14908,7 @@ const wordlists = {
 
 "use strict";
 
-const version$g = "hdnode/5.2.0";
+const version$g = "hdnode/5.3.0";
 
 "use strict";
 const logger$l = new Logger(version$g);
@@ -15195,7 +15229,7 @@ function getAccountPath(index) {
     return `m/44'/60'/${index}'/0/0`;
 }
 
-const version$h = "random/5.2.0";
+const version$h = "random/5.3.0";
 
 "use strict";
 const logger$m = new Logger(version$h);
@@ -16053,7 +16087,7 @@ var aesJs = createCommonjsModule(function (module, exports) {
 })(commonjsGlobal);
 });
 
-const version$i = "json-wallets/5.2.0";
+const version$i = "json-wallets/5.3.0";
 
 "use strict";
 function looseArrayify(hexString) {
@@ -17023,7 +17057,7 @@ function decryptJsonWalletSync(json, password) {
     throw new Error("invalid JSON wallet");
 }
 
-const version$j = "wallet/5.2.0";
+const version$j = "wallet/5.3.0";
 
 "use strict";
 var __awaiter$5 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -17188,7 +17222,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.2.0";
+const version$k = "networks/5.3.0";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -17431,7 +17465,7 @@ var index$2 = /*#__PURE__*/Object.freeze({
 	encode: encode$1
 });
 
-const version$l = "web/5.2.0";
+const version$l = "web/5.3.0";
 
 "use strict";
 var __awaiter$6 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -18012,7 +18046,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.2.0";
+const version$m = "providers/5.3.0";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -22560,7 +22594,7 @@ function sha256$2(types, values) {
     return sha256$1(pack$1(types, values));
 }
 
-const version$n = "units/5.2.0";
+const version$n = "units/5.3.0";
 
 "use strict";
 const logger$G = new Logger(version$n);
@@ -22745,7 +22779,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.2.0";
+const version$o = "ethers/5.3.0";
 
 "use strict";
 const logger$H = new Logger(version$o);

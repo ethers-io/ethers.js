@@ -262,8 +262,9 @@ var FixedNumber = /** @class */ (function () {
         if (comps[1].length <= decimals) {
             return this;
         }
-        var factor = FixedNumber.from("1" + zeros.substring(0, decimals));
-        return this.mulUnsafe(factor).addUnsafe(BUMP).floor().divUnsafe(factor);
+        var factor = FixedNumber.from("1" + zeros.substring(0, decimals), this.format);
+        var bump = BUMP.toFormat(this.format);
+        return this.mulUnsafe(factor).addUnsafe(bump).floor().divUnsafe(factor);
     };
     FixedNumber.prototype.isZero = function () {
         return (this._value === "0.0" || this._value === "0");

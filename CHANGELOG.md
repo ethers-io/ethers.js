@@ -3,6 +3,17 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.3.0 (2021-05-31 18:41)
+--------------------------------
+
+  - Added MinInt256 and MaxInt256 constants. ([#1576](https://github.com/ethers-io/ethers.js/issues/1576); [bfcd05f](https://github.com/ethers-io/ethers.js/commit/bfcd05fcbb132d456d6f22f70c8ac9cf5b1826f7))
+  - Version bumps for bn.js and hash.js to match elliptic and fix some build tools. ([#1478](https://github.com/ethers-io/ethers.js/issues/1478); [819b1ac](https://github.com/ethers-io/ethers.js/commit/819b1ace5c9b16e29dc354ad80e0e5b71ac63c52))
+  - Removed Hangul checks in shims which crashes Android. ([#1519](https://github.com/ethers-io/ethers.js/issues/1519); [4b33114](https://github.com/ethers-io/ethers.js/commit/4b331148d980e3056ceaabdcd6e50a2aa1beb40d))
+  - Fixed ENS namehash with leading and trailing dots. ([#1605](https://github.com/ethers-io/ethers.js/issues/1605); [7adcf3b](https://github.com/ethers-io/ethers.js/commit/7adcf3b154669d9d1a0a66d5e15dabfbf6618180))
+  - Fixed broken variable in template string. ([#1624](https://github.com/ethers-io/ethers.js/issues/1624), [#1626](https://github.com/ethers-io/ethers.js/issues/1626); [630656e](https://github.com/ethers-io/ethers.js/commit/630656e949a8ffd940e4b66ec93ec07cd6ec2634))
+  - Fixed FixedNumber rounding for non-default formats. ([#1629](https://github.com/ethers-io/ethers.js/issues/1629); [8681cd5](https://github.com/ethers-io/ethers.js/commit/8681cd59698d02d040871aa889fc6ccc8550df98))
+  - Update ws dependency version to fix security. ([#1633](https://github.com/ethers-io/ethers.js/issues/1633), [#1634](https://github.com/ethers-io/ethers.js/issues/1634); [470551e](https://github.com/ethers-io/ethers.js/commit/470551e4ee3f1e343a26fc0775f9d9f7489129f8))
+
 ethers/v5.2.0 (2021-05-17 16:18)
 --------------------------------
 

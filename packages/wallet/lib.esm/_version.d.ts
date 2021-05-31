@@ -1,2 +1,2 @@
-export declare const version = "wallet/5.2.0";
+export declare const version = "wallet/5.3.0";
 //# sourceMappingURL=_version.d.ts.map
