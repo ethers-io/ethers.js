@@ -3,7 +3,7 @@
   "dependencies": {
     "@ethersproject/bytes": "^5.2.0",
     "@ethersproject/logger": "^5.2.0",
-    "bn.js": "^4.4.0"
+    "bn.js": "^4.11.9"
   },
   "description": "BigNumber library used in ethers.js.",
   "ethereum": "donations.ethers.eth",

@@ -7,7 +7,8 @@
     "@ethersproject/bytes": "^5.2.0",
     "@ethersproject/logger": "^5.2.0",
     "@ethersproject/properties": "^5.2.0",
-    "bn.js": "^4.4.0",
+    "bn.js": "^4.11.9",
+    "hash.js": "1.1.7",
     "elliptic": "6.5.4"
   },
   "description": "Elliptic curve library functions for the secp256k1 curve.",

@@ -9,7 +9,7 @@
   "dependencies": {
     "@ethersproject/bytes": "^5.2.0",
     "@ethersproject/logger": "^5.2.0",
-    "hash.js": "1.1.3"
+    "hash.js": "1.1.7"
   },
   "description": "The SHA2 family hash functions and HMAC functions for ethers.",
   "ethereum": "donations.ethers.eth",
