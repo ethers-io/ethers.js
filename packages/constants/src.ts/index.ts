@@ -7,7 +7,9 @@ export {
     One,
     Two,
     WeiPerEther,
-    MaxUint256
+    MaxUint256,
+    MinInt256,
+    MaxInt256
 } from "./bignumbers";
 export { HashZero } from "./hashes";
 export { EtherSymbol } from "./strings";
