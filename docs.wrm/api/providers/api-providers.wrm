@@ -47,10 +47,8 @@ _definition: **Supported Networks**
 
 _code: Etherscan Examples @lang<javascript>
 
-// <hide>
-const EtherscanProvider = ethers.providers.EtherscanProvider;
-const apiKey = "...";
-// </hide>
+//_hide: const EtherscanProvider = ethers.providers.EtherscanProvider;
+//_hide: const apiKey = "...";
 
 // Connect to mainnet (homestead)
 provider = new EtherscanProvider();
@@ -59,12 +57,9 @@ provider = new EtherscanProvider();
 provider = new EtherscanProvider("rinkeby");
 provider = new EtherscanProvider(4);
 
-const network = ethers.providers.getNetwork("rinkeby");
-// <hide>
-delete network._defaultProvider;
-network
-// </hide>
-//!
+network = ethers.providers.getNetwork("rinkeby");
+//_hide: delete network._defaultProvider;
+//_log: network
 
 provider = new EtherscanProvider(network);
 
@@ -119,11 +114,9 @@ _definition: **Supported Networks**
 
 _code: INFURA Examples @lang<javascript>
 
-// <hide>
-const InfuraProvider = ethers.providers.InfuraProvider;
-const projectId = "...";
-const projectSecret = "...";
-// </hide>
+//_hide: const InfuraProvider = ethers.providers.InfuraProvider;
+//_hide: const projectId = "...";
+//_hide: const projectSecret = "...";
 
 // Connect to mainnet (homestead)
 provider = new InfuraProvider();
@@ -144,9 +137,7 @@ provider = new InfuraProvider("homestead", {
 
 // Connect to the INFURA WebSocket endpoints with a WebSocketProvider
 provider = InfuraProvider.getWebSocketProvider()
-// <hide>
-provider.destroy();
-// </hide>
+//_hide: await provider.destroy();
 
 
 _subsection: AlchemyProvider @<AlchemyProvider> @inherit<[[UrlJsonRpcProvider]]> @src<providers:class.AlchemyProvider>
@@ -178,10 +169,8 @@ _definition: **Supported Networks**
 
 _code: Alchemy Examples @lang<javascript>
 
-// <hide>
-const AlchemyProvider = ethers.providers.AlchemyProvider;
-const apiKey = "...";
-// </hide>
+//_hide: const AlchemyProvider = ethers.providers.AlchemyProvider;
+//_hide: const apiKey = "...";
 
 // Connect to mainnet (homestead)
 provider = new AlchemyProvider();
@@ -196,9 +185,7 @@ provider = new AlchemyProvider("homestead", apiKey);
 
 // Connect to the Alchemy WebSocket endpoints with a WebSocketProvider
 provider = AlchemyProvider.getWebSocketProvider()
-// <hide>
-provider.destroy();
-// </hide>
+//_hide: provider.destroy();
 
 
 _subsection: CloudflareProvider @<CloudflareProvider> @inherit<[[UrlJsonRpcProvider]]> @src<providers:class.CloudflareProvider>
@@ -214,9 +201,7 @@ _definition: **Supported Networks**
 
 _code: Cloudflare Examples @lang<javascript>
 
-// <hide>
-const CloudflareProvider = ethers.providers.CloudflareProvider;
-// </hide>
+//_hide: const CloudflareProvider = ethers.providers.CloudflareProvider;
 
 // Connect to mainnet (homestead)
 provider = new CloudflareProvider();

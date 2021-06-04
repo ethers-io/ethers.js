@@ -1,11 +1,192 @@
 _section: ABI Formats @<abi-formats>
 
-@TODO: Expand this section
+There are several formats available to specify an ABI for
+a Smart Contract, which specifies to the under-lying library
+what methods, events and errors exist so that encoding and
+decoding the data from and to the network can be handled by
+the library.
 
 _subsection: Human-Readable ABI @<abi-formats--human-readable-abi>
 
-See [Human-Readable Abi](link-ricmoo-humanreadableabi).
+The **Human-Readable ABI** was [introduced early by ethers](link-ricmoo-humanreadableabi),
+which allows for a Solidity signatures to be used to describe each
+method, event and error.
+
+It is important to note that a Solidity signature **fully describes**
+all the properties the ABI requires:
+
+- name
+- type (constructor, event, function)
+- inputs (types, nested structures and optionally names)
+- outputs (types nested structures and optionally names)
+- state mutability (for constructors and methods)
+- payability (for constructors and methods)
+- whether inputs are indexed (for events)
+
+This allows for a simple format which is both machine-readalbe (since
+the parser is a machine) and human-readable (at least **developer-readable**),
+as well as simple for humans to type and inline into code, which improves
+code readability. The Human-Readable ABI is also considerably smaller, which
+helps reduce code size.
+
+A Huamn-Readable ABI is simple an array of strings, where each string is
+the Solidity signature.
+
+Signatures may be minimally specified (i.e. names of inputs and outputs
+may be omitted) or fully specified (i.e. with all property names) and
+whitespace is ignored.
+
+Several modifiers available in Solidity are dropped internally, as they
+are not required for the ABI and used old by Solidity's semantic checking
+system, such as input parameter data location like ``"calldata"``
+and ``"memory"``. As such, they can be safely dropped in the ABI as well.
+
+_code: A simple Human-Readable ABI @lang<javascript>
+
+const humanReadableAbi = [
+  "constructor(string symbol, string name)",
+  "function transferFrom(address from, address to, uint value)",
+  "function balanceOf(address owner) view returns (uint balance)",
+  "event Transfer(address indexed from, address indexed to, address value)",
+  "error InsufficientBalance(account owner, uint balance)"
+];
+
+//_hide: _page.humanReadableAbi = humanReadableAbi;
+
 
 _subsection: Solidity JSON ABI @<abi-formats--solidity>
 
-See [Solidity compiler](link-solc-output).
+The **Solidity JSON ABI** is a standard format that many tools export,
+including the Solidity compiler. For the full specification, see
+the [Solidity compiler documentation](link-solc-output).
+
+Various versions include slightly different keys and values. For example,
+early compilers included only a boolean ``"constant"`` to indicate mutability,
+while newer versions include a string ``"mutabilityState"``, which encompasses
+several older properties.
+
+When creating an instance of a [Fragment](Fragment) using a JSON ABI, it will
+automatically infer all legacy properties for new-age ABIs and for legacy
+ABIs will infer the new-age properties. All properties will be populated, so
+it will match the equivalent created using a Human-Readable ABI fragment.
+
+_code: The same ABI as JSON ABI @lang<javascript>
+
+const jsonAbi = `[
+  {
+    "type": "constructor",
+    "payable": false,
+    "inputs": [
+      { "type": "string", "name": "symbol" },
+      { "type": "string", "name": "name" }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "transferFrom",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      { "type": "address", "name": "from" },
+      { "type": "address", "name": "to" },
+      { "type": "uint256", "name": "value" }
+    ],
+    "outputs": [ ]
+  },
+  {
+    "type": "function",
+    "name": "balanceOf",
+    "constant":true,
+    "stateMutability": "view",
+    "payable":false, "inputs": [
+      { "type": "address", "name": "owner"}
+    ],
+    "outputs": [
+      { "type": "uint256"}
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "Transfer",
+    "inputs": [
+      { "type": "address", "name": "from", "indexed":true},
+      { "type": "address", "name": "to", "indexed":true},
+      { "type": "address", "name": "value"}
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InsufficientBalance",
+    "inputs": [
+      { "type": "account", "name": "owner"},
+      { "type": "uint256", "name": "balance"}
+    ]
+  }
+]`;
+
+//_hide: _page.jsonAbi = jsonAbi;
+
+_subsection: Solidity Object ABI @<abi-formats--object>
+
+The output from parsing (using JSON.parse) a Solidity JSON ABI
+is also fully compatible with the [[Interface]] class and each
+method, event and error from that object are compatible with
+the [[Fragment]] class.
+
+Some developers may prefer this as it allows access to the ABI
+properties as normal JavaScript objects, and closely matches the
+JSON ABI that those familiar with the Solidity ABI will recognize.
+
+_subsection: Converting Between Formats
+
+The [[Fragment]] object makes it simple to reformat a single
+method, event or error, however most developers will be interested
+in converting an entire ABI.
+
+For production code it is recommended to inline the Human-Readable
+ABI as it makes it easy to see at a glance which methods, events
+and errors are available. It is also highly recommend to strip out
+unused parts of the ABI (such as admin methods) to further reduce
+code size.
+
+_code: Converting to Human-Readable ABI @lang<javascript>
+
+//_hide: const Interface = ethers.utils.Interface;
+//_hide: const FormatTypes = ethers.utils.FormatTypes;
+//_hide: jsonAbi = _page.jsonAbi;
+
+// Using the "full" format will ensure the Result objects
+// have named properties, which improves code readability
+const iface = new Interface(jsonAbi);
+//_result:
+iface.format(FormatTypes.full);
+//_log:
+
+// Using the "minimal" format will save a small amount of
+// space, but is generally not worth it as named properties
+// on Results will not be available
+//_result:
+iface.format(FormatTypes.minimal);
+//_log:
+
+_code: Converting to JSON ABI @lang<javascript>
+
+//_hide: const Interface = ethers.utils.Interface;
+//_hide: const FormatTypes = ethers.utils.FormatTypes;
+//_hide: humanReadableAbi = _page.humanReadableAbi;
+
+// Sometimes you may need to export a Human-Readable ABI to
+// JSON for tools that do not have Human-Readable support
+
+// For compactness, the JSON is kept with minimal white-space
+const iface = new Interface(humanReadableAbi);
+//_result:
+jsonAbi = iface.format(FormatTypes.json);
+//_log:
+
+// However it is easy to use JSON.parse and JSON.stringify
+// with formatting parameters to assist with readability
+//_result:
+JSON.stringify(JSON.parse(jsonAbi), null, 2);
+//_log:

@@ -142,10 +142,33 @@ function codeContextify(context) {
         return `{ BigNumber: ${JSON.stringify(this.toString()) } }`;
     }
 
+    context.createClass = function(name) {
+        let C = class{ }
+        Object.defineProperty(C, "name", { value: name })
+        return C;
+    }
+
 
     context._inspect = function(value, depth) {
+        if (toString.call(value) === '[object Error]') {
+            // Not an error from ethers...
+            if (ethers.utils.Logger.errors[value.code] == null) {
+                return `Error: ${ value.message }`;
+            }
+
+            // Trim the ethers errors down on their verbosity for the docs...
+            if (value.message) {
+                value.message = value.message.split(" (")[0];
+            }
+            value.stack = undefined;
+        }
+
         if (value && value.constructor && value.constructor.name === "Uint8Array") {
             return `Uint8Array [ ${ Array.prototype.join.call(value, ", ") } ]`;
+        }
+
+        if (typeof(value) === "string" && value.indexOf("\n") >= 0) {
+           return "`" + value + "`";
         }
 
         //return JSON.stringify(value);
@@ -292,12 +315,14 @@ module.exports = {
       "link-wiki-bloomfilter": { name: "Bloom Filter", url: "https:/\/en.wikipedia.org/wiki/Bloom_filter" },
       "link-wiki-bruteforce": "https:/\/en.wikipedia.org/wiki/Brute-force_attack",
       "link-wiki-cryptographichash": "https:/\/en.wikipedia.org/wiki/Cryptographic_hash_function",
+      "link-wiki-csrf": "https:/\/en.wikipedia.org/wiki/Cross-site_request_forgery",
       "link-wiki-ecrecover": { name: "ECDSA Public Key Recovery", url: "https:/\/en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm#Public_key_recovery" },
       "link-wiki-homoglyph": "https:/\/en.wikipedia.org/wiki/IDN_homograph_attack",
       "link-wiki-hmac": "https:/\/en.wikipedia.org/wiki/HMAC",
       "link-wiki-iban": "https:/\/en.wikipedia.org/wiki/International_Bank_Account_Number",
       "link-wiki-ieee754": "https:/\/en.wikipedia.org/wiki/Double-precision_floating-point_format",
       "link-wiki-observer-pattern": { name: "Obeserver Pattern", url: "https:/\/en.wikipedia.org/wiki/Observer_pattern" },
+      "link-wiki-phishing": "https:/\/en.wikipedia.org/wiki/Phishing",
       "link-wiki-ripemd": "https:/\/en.m.wikipedia.org/wiki/RIPEMD",
       "link-wiki-sha2": "https:/\/en.wikipedia.org/wiki/SHA-2",
       "link-wiki-twoscomplement": "https:/\/en.wikipedia.org/wiki/Two%27s_complement",
@@ -305,9 +330,11 @@ module.exports = {
       "link-wiki-utf8-overlong": "https:/\/en.wikipedia.org/wiki/UTF-8#Overlong_encodings",
       "link-wiki-utf8-replacement": "https:/\/en.wikipedia.org/wiki/Specials_%28Unicode_block%29#Replacement_character",
       "link-wiki-scrypt": "https:/\/en.wikipedia.org/wiki/Scrypt",
+      "link-wiki-side-channel-attack": "https:/\/en.wikipedia.org/wiki/Side-channel_attack",
       "link-wiki-sha3": "https:/\/en.wikipedia.org/wiki/SHA-3",
       "link-wiki-shuffle": { name: "Fisher-Yates Shuffle", url: "https:/\/en.wikipedia.org/wiki/Fisher-Yates_shuffle" },
       "link-wiki-overflow": { name: "overflow", url: "https:/\/en.wikipedia.org/wiki/Integer_overflow" },
       "link-wiki-underflow": { name: "arithmetic underflow", url: "https:/\/en.wikipedia.org/wiki/Arithmetic_underflow" },
+      "link-wiki-xss": "https:/\/en.wikipedia.org/wiki/Cross-site_scripting",
   },
 };

@@ -36,20 +36,24 @@ sent to the network.
 _code: Account Examples @lang<javascript>
 
 // Get the balance for an account...
-provider.getBalance("ricmoo.firefly.eth");
-//!
+//_result:
+await provider.getBalance("ricmoo.firefly.eth");
+//_log:
 
 // Get the code for a contract...
-provider.getCode("registrar.firefly.eth");
-//!
+//_result:
+await provider.getCode("registrar.firefly.eth");
+//_log:
 
 // Get the storage value at position 0...
-provider.getStorageAt("registrar.firefly.eth", 0)
-//!
+//_result:
+await provider.getStorageAt("registrar.firefly.eth", 0)
+//_log:
 
 // Get transaction count of an account...
-provider.getTransactionCount("ricmoo.firefly.eth");
-//!
+//_result:
+await provider.getTransactionCount("ricmoo.firefly.eth");
+//_log:
 
 
 _subsection: Blocks Methods  @<Provider--block-methods>
@@ -64,11 +68,13 @@ an Array of [[providers-TransactionResponse]] objects.
 
 _code: Block Examples @lang<javascript>
 
-provider.getBlock(100004)
-//!
+//_result:
+await provider.getBlock(100004)
+//_log:
 
-provider.getBlockWithTransactions(100004)
-//!
+//_result:
+await provider.getBlockWithTransactions(100004)
+//_log:
 
 _subsection: Ethereum Naming Service (ENS) Methods @<Provider--ens-methods>
 
@@ -103,12 +109,14 @@ not have an address configured, ``null`` is returned.
 _code: ENS Examples @lang<javascript>
 
 // Reverse lookup of an ENS by address...
-provider.lookupAddress("0x6fC21092DA55B392b045eD78F4732bff3C580e2c");
-//!
+//_result:
+await provider.lookupAddress("0x6fC21092DA55B392b045eD78F4732bff3C580e2c");
+//_log:
 
 // Lookup an address of an ENS name...
-provider.resolveName("ricmoo.firefly.eth");
-//!
+//_result:
+await provider.resolveName("ricmoo.firefly.eth");
+//_log:
 
 
 _subsection: EnsResolver @<EnsResolver> 
@@ -161,27 +169,25 @@ up and running smoothly.
 _code: Network Status Examples @lang<javascript>
 
 // The network information
-provider.getNetwork()
-// <hide>
-//!
-network = utils.shallowCopy(_)
-delete network._defaultProvider
-network
-// </hide>
-//!
+network = await provider.getNetwork()
+//_hide: network = utils.shallowCopy(network);
+//_hide: delete network._defaultProvider;
+//_log: network
 
 // The current block number
-provider.getBlockNumber()
-//!
+//_result:
+await provider.getBlockNumber()
+//_log:
 
 // Get the current suggested gas price (in wei)...
 gasPrice = await provider.getGasPrice()
-//! async gasPrice
+//_log: gasPrice
 
 // ...often this gas price is easier to understand or
 // display to the user in gwei (giga-wei, or 1e9 wei)
+//_result:
 utils.formatUnits(gasPrice, "gwei")
-//!
+//_log:
 
 
 _subsection: Transactions Methods  @<Provider--transaction-methods>
@@ -331,11 +337,9 @@ $Debug:    each Provider may use this to emit useful debugging information
 
 _code: Events Example @lang<javascript>
 
-// <hide>
-const txHash = utils.id("dummy-data");
-const myAddress = ethers.constants.HashZero;
-const myOtherAddress = ethers.constants.HashZero;
-// </hide>
+//_hide: const txHash = utils.id("dummy-data");
+//_hide: const myAddress = ethers.constants.HashZero;
+//_hide: const myOtherAddress = ethers.constants.HashZero;
 
 provider.on("block", (blockNumber) => {
     // Emitted on every block change
@@ -385,10 +389,7 @@ provider.on("error", (tx) => {
     // Emitted when any error occurs
 });
 
-// <hide>
-// Make sure our documentation builds without waiting forever
-provider.removeAllListeners()
-// </hide>
+//_hide: provider.removeAllListeners() /* Make sure the docs build without waiting forever */
 
 _subsection: Inspection Methods  @<Provider--inspection-methods>
 

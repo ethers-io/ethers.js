@@ -1,5 +1,82 @@
 _section: Security @<security>
 
+While security should be a concern for all developers, in the
+blockchain space developers must be additionally conscious of
+many areas which can be exploited.
+
+Once a problem has an economic incentives to exploit it, there
+is a much larger risk and with blockchain apps it can become
+quite valuable to attack.
+
+In addition to many of the other security issues app developers
+may have to worry about, there are a few additional vectors
+that JavaScript developers should be aware of.
+
+_subsection: Side-Channel Attacks
+
+A [Side-Channel Attack](link-wiki-side-channel-attack) occurs
+when something orthogonal to the implementation of the algorithm
+used can be exploited to learn more about secure or private
+information.
+
+_heading: Released Data (Strings, Uint8Arrays, Buffers)
+
+In JavaScript, memory may not be securely allocated, or more
+importantly securely released.
+
+[Historically](https://github.com/nodejs/node/issues/4660),
+``new Buffer(16)`` would re-use old memory that had been
+released. This would mean that code runnint later, may have
+access to data that was discarded.
+
+As an example of the dangers, imagine if you had used a Buffer
+to store a private key, signed data and then returned from the
+function, allowing the Buffer to be de-allocated. A future
+function may be able to request a new Buffer, which would still
+have that left-over private key, which it could then use to
+steal the funds from that account.
+
+There are also many debugging tools and systems designed to
+assist develoeprs inspect the memory contents of JavaScript
+programs. In these cases, any //private key// or //mnemonic//
+siiting in memory may be visible to other users on the system,
+or malicious scripts.
+
+_heading: Timing Attack
+
+Timing attacks allow a malicious user or script to determine
+private data through analysing how long an operation requires
+to execute.
+
+In JavaScript, //Garbage Collection// occurs periodically when the
+system determines it is required. Each JavaScript implementation
+is different, with a variety of strategies and and abilities.
+
+Most Garbage Collection requires "stopping the world", or pausing
+all code being executed while it runs. This adds a large delay
+to any code that was currently running.
+
+This can be exploited by attackers to "condition cause a delay".
+They will set up a scenario where the system is on the edge of
+needing to garbage collect, and call your code with two paths,
+a simple path and complex path. The simple path won't stir things
+up enough to cause a garbage collection, while the complex one
+will. By timing how long the code took to execute, they now know
+whether garbage collection occured and therefore whether the simple
+or complex path was taken.
+
+Advancced timing attacks are very difficult to mitigate in any
+garbage-collection-based language. Most libraries where this
+matters will hopefully mitigated this for you as much as possible,
+but it is still good to be aware of.
+
+_heading: General Concerns
+
+- [Cross-Site Scripting](link-wiki-xss)
+- [Cross-Site Request Forgery](link-wiki-csrf)
+- [Phishing](link-wiki-phishing)
+
+
 _subsection: Key Derivation Functions @<security--pbkdf>
 
 This is not specific to Ethereum, but is a useful technique

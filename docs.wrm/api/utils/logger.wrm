@@ -216,6 +216,22 @@ it deals with unmined transactions, and can be configured by each node, however
 to ensure a transaction is propagated to a miner it is best practice to follow
 the defaults most nodes have enabled.
 
+_property: Logger.errors.TRANSACTION_REPLACED @<errors--transaction-replaced>
+When a transaction has been replaced by the user, by broadcasting a new transaction
+with the same nonce as an existing in-flight (unmined) transaction in the mempool,
+this error will occur while waiting if the transaction being waited for has become
+invalidated by that other transaction.
+
+This can happen for several reasons, but most commonly because the user has increased
+the gas price (which changes the transaction hash) to "speed up" a transaction or if
+a user has "cancelled" the transaction in their client. In either case this is
+usually accomplished by bribing the miners with a higher gas priced transaction.
+
+This error will have the additional properties, ``cancelled``, ``hash``, ``reason``,
+``receipt`` and ``replacement``.
+
+See the [[providers-TransactionResponse]] for the ``wait`` method for more details.
+
 _property: Logger.errors.UNPREDICTABLE_GAS_LIMIT @<errors--unpredicatable-gas-limit>
 When estimating the required amount of gas for a transaction, a node is queried for
 its best guess.

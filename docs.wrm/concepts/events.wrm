@@ -57,13 +57,11 @@ $TopicABaCD: **[** (topic[0] = A) **OR** (topic[0] = B) **]** **AND**
 
 _code: ERC-20 Transfer Filter Examples @lang<javascript>
 
-// <hide>
-const tokenAddress = ethers.constants.AddressZero;
-const myAddress = ethers.constants.AddressZero;
-const myOtherAddress = ethers.constants.AddressZero;
-const id = ethers.utils.id;
-const hexZeroPad = ethers.utils.hexZeroPad;
-// </hide>
+//_hide: const tokenAddress = ethers.constants.AddressZero;
+//_hide: const myAddress = ethers.constants.AddressZero;
+//_hide: const myOtherAddress = ethers.constants.AddressZero;
+//_hide: const id = ethers.utils.id;
+//_hide: const hexZeroPad = ethers.utils.hexZeroPad;
 
 // Short example of manually creating filters for an ERC-20
 // Transfer event.
@@ -96,7 +94,7 @@ filter = {
         id("Transfer(address,address,uint256)"),
         hexZeroPad(myAddress, 32)
     ]
-}
+};
 
 // List all token transfers  *to*  myAddress:
 filter = {
@@ -106,7 +104,7 @@ filter = {
         null,
         hexZeroPad(myAddress, 32)
     ]
-}
+};
 
 // List all token transfers  *to*  myAddress or myOtherAddress:
 filter = {
@@ -119,7 +117,7 @@ filter = {
             hexZeroPad(myOtherAddress, 32),
         ]
     ]
-}
+};
 
 _null:
 
@@ -128,35 +126,37 @@ To simplify life, ..., explain here, the contract API
 
 _code: ERC-20 Contract Filter Examples @lang<javascript>
 
-// <hide>
-const tokenAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"; // DAI
-const myAddress = "0x8ba1f109551bD432803012645Ac136ddd64DBA72";
-const otherAddress = "0xEA517D5a070e6705Cc5467858681Ed953d285Eb9";
-const provider = ethers.getDefaultProvider();
-const Contract = ethers.Contract;
-// </hide>
+//_hide: const tokenAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"; /* DAI */
+//_hide: const myAddress = "0x8ba1f109551bD432803012645Ac136ddd64DBA72";
+//_hide: const otherAddress = "0xEA517D5a070e6705Cc5467858681Ed953d285Eb9";
+//_hide: const provider = ethers.getDefaultProvider();
+//_hide: const Contract = ethers.Contract;
 
-const abi = [
+abi = [
   "event Transfer(address indexed src, address indexed dst, uint val)"
 ];
 
-const contract = new Contract(tokenAddress, abi, provider);
+contract = new Contract(tokenAddress, abi, provider);
 
 // List all token transfers *from* myAddress
+//_result:
 contract.filters.Transfer(myAddress)
-//!
+//_log:
 
 // List all token transfers *to* myAddress:
+//_result:
 contract.filters.Transfer(null, myAddress)
-//!
+//_log:
 
 // List all token transfers *from* myAddress *to* otherAddress:
+//_result:
 contract.filters.Transfer(myAddress, otherAddress)
-//!
+//_log:
 
 // List all token transfers *to* myAddress OR otherAddress:
+//_result:
 contract.filters.Transfer(null, [ myAddress, otherAddress ])
-//!
+//_log:
 
 
 _subsection: Solidity Topics @<events-solidity>

@@ -245,12 +245,27 @@ has been included in the chain for //confirms// blocks. If //confirms//
 is 0, and the transaction has not been mined, ``null`` is returned.
 
 If the transaction execution failed (i.e. the receipt status is ``0``),
-a [CALL_EXCEPTION](errors--call-exception) Error will be rejected with
+a [CALL_EXCEPTION](errors--call-exception) error will be rejected with
 the following properties:
 
 - ``error.transaction`` - the original transaction
 - ``error.transactionHash`` - the hash of the transaction
 - ``error.receipt`` - the actual receipt, with the status of ``0``
+
+If the transaction is replaced by another transaction, a
+[TRANSACTION_REPLACED](errors--transaction-replaced) error will be rejected
+with the following properties:
+
+- ``error.hash`` - the hash of the original transaction which was replaced
+- ``error.reason`` - a string reason; one of ``"repriced"``, ``"cancelled"`` or ``"replaced"``
+- ``error.cancelled`` - a boolean; a ``"repriced"`` transaction is not considered cancelled, but ``"cancelled"`` and ``"replaced"`` are
+- ``error.replacement`` - the replacement transaction (a [[providers-TransactionResponse]])
+- ``error.receipt`` - the receipt of the replacement transaction (a [[providers-TransactionReceipt]])
+
+Transactions are replaced when the user uses an option in their client to
+send a new transaction from the same account with the original ``nonce``.
+This is usually to speed up a transaction or to cancel one, by bribing
+miners with additional fees to prefer the new transaction over the original one.
 
 _property: transactionRequest.type => null | number
 
@@ -371,7 +386,8 @@ _code: equivalent to the AccessList example below @lang<javascript>
 
 // Option 2:
 // Array< [ Address, Array<Bytes32> ] >
-[
+//_hide: ;
+accessList = [
   [
     "0x0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
     [
@@ -385,17 +401,11 @@ _code: equivalent to the AccessList example below @lang<javascript>
         "0x0000000000000000000000000000000000000000000000000000000000000001"
     ]
   ]
-]
-// <hide>
-;
-// </hide>
+];
 
 // Option 3:
 // Record<Address, Array<Bytes32>>
-// <hide>
-(
-// </hide>
-{
+accessList = {
   "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e": [
     "0x0000000000000000000000000000000000000000000000000000000000000004",
     "0x0bcad17ecf260d6506c6b97768bdc2acfb6694445d27ffd3f9c1cfbee4a9bd6d"
@@ -403,10 +413,7 @@ _code: equivalent to the AccessList example below @lang<javascript>
   "0x5FfC014343cd971B7eb70732021E26C35B744cc4": [
     "0x0000000000000000000000000000000000000000000000000000000000000001"
   ]
-}
-// <hide>
-)
-// </hide>
+};
 
 
 _heading: AccessList @<providers-AccessList>
@@ -427,7 +434,7 @@ _code: example access list
 //   storageKey: Array< DataHexString< 32 > >
 // }
 
-[
+accessList = [
   {
     address: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
     storageKeys: [
@@ -441,4 +448,4 @@ _code: example access list
         "0x0000000000000000000000000000000000000000000000000000000000000001"
     ]
   }
-]
+];
