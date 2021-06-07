@@ -207,18 +207,20 @@ export class JsonRpcSigner extends Signer implements TypedDataSigner {
         });
     }
 
-    sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse> {
-        return this.sendUncheckedTransaction(transaction).then((hash) => {
-            return poll(() => {
-                return this.provider.getTransaction(hash).then((tx: TransactionResponse) => {
-                    if (tx === null) { return undefined; }
-                    return this.provider._wrapTransaction(tx, hash);
-                });
-            }, { oncePoll: this.provider }).catch((error: Error) => {
-                (<any>error).transactionHash = hash;
-                throw error;
-            });
-        });
+    async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse> {
+        const hash = await this.sendUncheckedTransaction(transaction)
+
+        try {
+            return poll(async () => {
+                const tx : TransactionResponse = await this.provider.getTransaction(hash)
+                if (tx === null) { return undefined; }
+
+                return this.provider._wrapTransaction(tx, hash);
+            }, { oncePoll: this.provider })
+        } catch(error) {
+            (<any>error).transactionHash = hash;
+            throw error;
+        }
     }
 
     async signMessage(message: Bytes | string): Promise<string> {
