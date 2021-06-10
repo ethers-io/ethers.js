@@ -1,6 +1,6 @@
 _section: BigNumber @<BigNumber>
 
-Many operations in Ethereum operation on numbers which are
+Many operations in Ethereum operate on numbers which are
 [outside the range of safe values](BigNumber--notes-safenumbers) to use
 in JavaScript.
 
