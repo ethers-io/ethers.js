@@ -6,6 +6,12 @@ what methods, events and errors exist so that encoding and
 decoding the data from and to the network can be handled by
 the library.
 
+The supports ABI types are:
+
+- [Human-Readable ABI](abi-formats--human-readable-abi)
+- [Solidity JSON ABI](abi-formats--solidity)
+- [Solidity Object ABI](abi-formats--object)
+
 _subsection: Human-Readable ABI @<abi-formats--human-readable-abi>
 
 The **Human-Readable ABI** was [introduced early by ethers](link-ricmoo-humanreadableabi),

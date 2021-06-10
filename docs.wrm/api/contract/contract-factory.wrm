@@ -94,7 +94,6 @@ factory = new ContractFactory(abi, bytecode, signer)
 
 // Deploy an instance of the contract
 contract = await factory.deploy("ricmoo.eth", 42);
-//_log: contract
 
 // The address is available immediately, but the contract
 // is NOT deployed yet

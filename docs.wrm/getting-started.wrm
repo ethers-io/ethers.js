@@ -124,7 +124,7 @@ _code: Basic Queries @lang<javascript>
 
 // Look up the current block number
 //_result:
-provider.getBlockNumber()
+await provider.getBlockNumber()
 //_log:
 
 // Get the balance of an account (by address or ENS name, if supported by network)

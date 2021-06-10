@@ -285,7 +285,7 @@ walletMnemonic.address === walletPrivateKey.address
 
 // The address as a Promise per the Signer API
 //_result:
-walletMnemonic.getAddress()
+await walletMnemonic.getAddress()
 //_log:
 
 // A Wallet address is also available synchronously
