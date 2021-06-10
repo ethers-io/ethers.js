@@ -207,18 +207,26 @@ export class JsonRpcSigner extends Signer implements TypedDataSigner {
         });
     }
 
-    sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse> {
-        return this.sendUncheckedTransaction(transaction).then((hash) => {
-            return poll(() => {
-                return this.provider.getTransaction(hash).then((tx: TransactionResponse) => {
-                    if (tx === null) { return undefined; }
-                    return this.provider._wrapTransaction(tx, hash);
-                });
-            }, { oncePoll: this.provider }).catch((error: Error) => {
-                (<any>error).transactionHash = hash;
-                throw error;
-            });
-        });
+    async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse> {
+        // This cannot be mined any earlier than any recent block
+        const blockNumber = await this.provider._getInternalBlockNumber(100 + 2 * this.provider.pollingInterval);
+
+        // Send the transaction
+        const hash = await this.sendUncheckedTransaction(transaction);
+
+        try {
+            // Unfortunately, JSON-RPC only provides and opaque transaction hash
+            // for a response, and we need the actual transaction, so we poll
+            // for it; it should show up very quickly
+            return await poll(async () => {
+                const tx = await this.provider.getTransaction(hash);
+                if (tx === null) { return undefined; }
+                return this.provider._wrapTransaction(tx, hash, blockNumber);
+            }, { oncePoll: this.provider });
+        } catch (error) {
+            (<any>error).transactionHash = hash;
+            throw error;
+        }
     }
 
     async signMessage(message: Bytes | string): Promise<string> {
