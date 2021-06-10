@@ -177,6 +177,7 @@ const networks: { [name: string]: Network } = {
     xdai: { chainId: 100, name: "xdai" },
 
     matic: { chainId: 137, name: "matic" },
+    maticmum: { chainId: 80001, name: "maticmum" },
 
     bnb: { chainId: 56, name: "bnb" },
     bnbt: { chainId: 97, name: "bnbt" },
