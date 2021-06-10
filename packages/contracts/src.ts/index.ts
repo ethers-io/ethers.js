@@ -17,6 +17,8 @@ const logger = new Logger(version);
 export interface Overrides {
     gasLimit?: BigNumberish | Promise<BigNumberish>;
     gasPrice?: BigNumberish | Promise<BigNumberish>;
+    maxFeePerGas?: BigNumberish | Promise<BigNumberish>;
+    maxPriorityFeePerGas?: BigNumberish | Promise<BigNumberish>;
     nonce?: BigNumberish | Promise<BigNumberish>;
     type?: number;
     accessList?: AccessListish;
@@ -50,6 +52,9 @@ export interface PopulatedTransaction {
 
     type?: number;
     accessList?: AccessList;
+
+    maxFeePerGas?: BigNumber;
+    maxPriorityFeePerGas?: BigNumber;
 };
 
 export type EventFilter = {
@@ -101,6 +106,7 @@ export interface ContractTransaction extends TransactionResponse {
 const allowedTransactionKeys: { [ key: string ]: boolean } = {
     chainId: true, data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true,
     type: true, accessList: true,
+    maxFeePerGas: true, maxPriorityFeePerGas: true
 }
 
 async function resolveName(resolver: Signer | Provider, nameOrPromise: string | Promise<string>): Promise<string> {
@@ -216,6 +222,8 @@ async function populateTransaction(contract: Contract, fragment: FunctionFragmen
     if (ro.nonce != null) { tx.nonce = BigNumber.from(ro.nonce).toNumber(); }
     if (ro.gasLimit != null) { tx.gasLimit = BigNumber.from(ro.gasLimit); }
     if (ro.gasPrice != null) { tx.gasPrice = BigNumber.from(ro.gasPrice); }
+    if (ro.maxFeePerGas != null) { tx.maxFeePerGas = BigNumber.from(ro.maxFeePerGas); }
+    if (ro.maxPriorityFeePerGas != null) { tx.maxPriorityFeePerGas = BigNumber.from(ro.maxPriorityFeePerGas); }
     if (ro.from != null) { tx.from = ro.from; }
 
     if (ro.type != null) { tx.type = ro.type; }
@@ -258,6 +266,9 @@ async function populateTransaction(contract: Contract, fragment: FunctionFragmen
 
     delete overrides.type;
     delete overrides.accessList;
+
+    delete overrides.maxFeePerGas;
+    delete overrides.maxPriorityFeePerGas;
 
     // Make sure there are no stray overrides, which may indicate a
     // typo or using an unsupported key.
@@ -693,7 +704,7 @@ export class BaseContract {
             // Check that the signature is unique; if not the ABI generation has
             // not been cleaned or may be incorrectly generated
             if (uniqueSignatures[signature]) {
-                logger.warn(`Duplicate ABI entry for ${ JSON.stringify(name) }`);
+                logger.warn(`Duplicate ABI entry for ${ JSON.stringify(signature) }`);
                 return;
             }
             uniqueSignatures[signature] = true;
