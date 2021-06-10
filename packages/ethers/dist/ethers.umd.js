@@ -5158,7 +5158,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abi/5.3.0";
+	exports.version = "abi/5.3.1";
 
 	});
 
@@ -6026,7 +6026,8 @@
 	    // @TODO: more verification
 	    return type;
 	}
-	var regexIdentifier = new RegExp("^[A-Za-z_][A-Za-z0-9_]*$");
+	// See: https://github.com/ethereum/solidity/blob/1f8f1a3db93a548d0555e3e14cfc55a10e25b60e/docs/grammar/SolidityLexer.g4#L234
+	var regexIdentifier = new RegExp("^[a-zA-Z$_][a-zA-Z0-9$_]*$");
 	function verifyIdentifier(value) {
 	    if (!value || !value.match(regexIdentifier)) {
 	        logger.throwArgumentError("invalid identifier \"" + value + "\"", "value", value);
@@ -19321,7 +19322,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "networks/5.3.0";
+	exports.version = "networks/5.3.1";
 
 	});
 
@@ -19472,6 +19473,7 @@
 	    },
 	    xdai: { chainId: 100, name: "xdai" },
 	    matic: { chainId: 137, name: "matic" },
+	    maticmum: { chainId: 80001, name: "maticmum" },
 	    bnb: { chainId: 56, name: "bnb" },
 	    bnbt: { chainId: 97, name: "bnbt" },
 	};
@@ -20303,7 +20305,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.3.0";
+	exports.version = "providers/5.3.1";
 
 	});
 
@@ -22984,18 +22986,45 @@
 	        });
 	    };
 	    JsonRpcSigner.prototype.sendTransaction = function (transaction) {
-	        var _this = this;
-	        return this.sendUncheckedTransaction(transaction).then(function (hash) {
-	            return lib$q.poll(function () {
-	                return _this.provider.getTransaction(hash).then(function (tx) {
-	                    if (tx === null) {
-	                        return undefined;
-	                    }
-	                    return _this.provider._wrapTransaction(tx, hash);
-	                });
-	            }, { oncePoll: _this.provider }).catch(function (error) {
-	                error.transactionHash = hash;
-	                throw error;
+	        return __awaiter(this, void 0, void 0, function () {
+	            var blockNumber, hash, error_1;
+	            var _this = this;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0: return [4 /*yield*/, this.provider._getInternalBlockNumber(100 + 2 * this.provider.pollingInterval)];
+	                    case 1:
+	                        blockNumber = _a.sent();
+	                        return [4 /*yield*/, this.sendUncheckedTransaction(transaction)];
+	                    case 2:
+	                        hash = _a.sent();
+	                        _a.label = 3;
+	                    case 3:
+	                        _a.trys.push([3, 5, , 6]);
+	                        return [4 /*yield*/, lib$q.poll(function () { return __awaiter(_this, void 0, void 0, function () {
+	                                var tx;
+	                                return __generator(this, function (_a) {
+	                                    switch (_a.label) {
+	                                        case 0: return [4 /*yield*/, this.provider.getTransaction(hash)];
+	                                        case 1:
+	                                            tx = _a.sent();
+	                                            if (tx === null) {
+	                                                return [2 /*return*/, undefined];
+	                                            }
+	                                            return [2 /*return*/, this.provider._wrapTransaction(tx, hash, blockNumber)];
+	                                    }
+	                                });
+	                            }); }, { oncePoll: this.provider })];
+	                    case 4: 
+	                    // Unfortunately, JSON-RPC only provides and opaque transaction hash
+	                    // for a response, and we need the actual transaction, so we poll
+	                    // for it; it should show up very quickly
+	                    return [2 /*return*/, _a.sent()];
+	                    case 5:
+	                        error_1 = _a.sent();
+	                        error_1.transactionHash = hash;
+	                        throw error_1;
+	                    case 6: return [2 /*return*/];
+	                }
 	            });
 	        });
 	    };
@@ -23147,7 +23176,7 @@
 	    };
 	    JsonRpcProvider.prototype._uncachedDetectNetwork = function () {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var chainId, error_1, error_2, getNetwork;
+	            var chainId, error_2, error_3, getNetwork;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0: return [4 /*yield*/, timer(0)];
@@ -23162,7 +23191,7 @@
 	                        chainId = _a.sent();
 	                        return [3 /*break*/, 9];
 	                    case 4:
-	                        error_1 = _a.sent();
+	                        error_2 = _a.sent();
 	                        _a.label = 5;
 	                    case 5:
 	                        _a.trys.push([5, 7, , 8]);
@@ -23171,7 +23200,7 @@
 	                        chainId = _a.sent();
 	                        return [3 /*break*/, 8];
 	                    case 7:
-	                        error_2 = _a.sent();
+	                        error_3 = _a.sent();
 	                        return [3 /*break*/, 8];
 	                    case 8: return [3 /*break*/, 9];
 	                    case 9:
@@ -23300,7 +23329,7 @@
 	    };
 	    JsonRpcProvider.prototype.perform = function (method, params) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var args, error_3;
+	            var args, error_4;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
@@ -23314,8 +23343,8 @@
 	                        return [4 /*yield*/, this.send(args[0], args[1])];
 	                    case 2: return [2 /*return*/, _a.sent()];
 	                    case 3:
-	                        error_3 = _a.sent();
-	                        return [2 /*return*/, checkError(method, error_3, params)];
+	                        error_4 = _a.sent();
+	                        return [2 /*return*/, checkError(method, error_4, params)];
 	                    case 4: return [2 /*return*/];
 	                }
 	            });
@@ -26491,7 +26520,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.3.0";
+	exports.version = "ethers/5.3.1";
 
 	});
 

@@ -859,7 +859,8 @@ function verifyType(type) {
     // @TODO: more verification
     return type;
 }
-var regexIdentifier = new RegExp("^[A-Za-z_][A-Za-z0-9_]*$");
+// See: https://github.com/ethereum/solidity/blob/1f8f1a3db93a548d0555e3e14cfc55a10e25b60e/docs/grammar/SolidityLexer.g4#L234
+var regexIdentifier = new RegExp("^[a-zA-Z$_][a-zA-Z0-9$_]*$");
 function verifyIdentifier(value) {
     if (!value || !value.match(regexIdentifier)) {
         logger.throwArgumentError("invalid identifier \"" + value + "\"", "value", value);

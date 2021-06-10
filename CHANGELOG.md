@@ -3,6 +3,13 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.3.1 (2021-06-10 18:28)
+--------------------------------
+
+  - Fixed replacement transaction detection for JsonRpcSigner. ([#1658](https://github.com/ethers-io/ethers.js/issues/1658); [ee82e86](https://github.com/ethers-io/ethers.js/commit/ee82e86ccc439825259d20825a00050217890ad3))
+  - Added Matic testnet info to networks. ([#1546](https://github.com/ethers-io/ethers.js/issues/1546); [376cf3c](https://github.com/ethers-io/ethers.js/commit/376cf3cdbf6d2281331d36c5742414a425927318))
+  - Match Solidity identifier regex. ([#1657](https://github.com/ethers-io/ethers.js/issues/1657); [a6e128f](https://github.com/ethers-io/ethers.js/commit/a6e128f5cc566d291b722cca1734ba41aae6c548))
+
 ethers/v5.3.0 (2021-05-31 18:41)
 --------------------------------
 

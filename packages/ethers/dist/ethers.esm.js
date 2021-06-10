@@ -4952,7 +4952,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.3.0";
+const version$4 = "abi/5.3.1";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -5766,7 +5766,8 @@ function verifyType(type) {
     // @TODO: more verification
     return type;
 }
-const regexIdentifier = new RegExp("^[A-Za-z_][A-Za-z0-9_]*$");
+// See: https://github.com/ethereum/solidity/blob/1f8f1a3db93a548d0555e3e14cfc55a10e25b60e/docs/grammar/SolidityLexer.g4#L234
+const regexIdentifier = new RegExp("^[a-zA-Z$_][a-zA-Z0-9$_]*$");
 function verifyIdentifier(value) {
     if (!value || !value.match(regexIdentifier)) {
         logger$4.throwArgumentError(`invalid identifier "${value}"`, "value", value);
@@ -17222,7 +17223,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.3.0";
+const version$k = "networks/5.3.1";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -17364,6 +17365,7 @@ const networks = {
     },
     xdai: { chainId: 100, name: "xdai" },
     matic: { chainId: 137, name: "matic" },
+    maticmum: { chainId: 80001, name: "maticmum" },
     bnb: { chainId: 56, name: "bnb" },
     bnbt: { chainId: 97, name: "bnbt" },
 };
@@ -18046,7 +18048,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.3.0";
+const version$m = "providers/5.3.1";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -20153,18 +20155,27 @@ class JsonRpcSigner extends Signer {
         });
     }
     sendTransaction(transaction) {
-        return this.sendUncheckedTransaction(transaction).then((hash) => {
-            return poll(() => {
-                return this.provider.getTransaction(hash).then((tx) => {
+        return __awaiter$9(this, void 0, void 0, function* () {
+            // This cannot be mined any earlier than any recent block
+            const blockNumber = yield this.provider._getInternalBlockNumber(100 + 2 * this.provider.pollingInterval);
+            // Send the transaction
+            const hash = yield this.sendUncheckedTransaction(transaction);
+            try {
+                // Unfortunately, JSON-RPC only provides and opaque transaction hash
+                // for a response, and we need the actual transaction, so we poll
+                // for it; it should show up very quickly
+                return yield poll(() => __awaiter$9(this, void 0, void 0, function* () {
+                    const tx = yield this.provider.getTransaction(hash);
                     if (tx === null) {
                         return undefined;
                     }
-                    return this.provider._wrapTransaction(tx, hash);
-                });
-            }, { oncePoll: this.provider }).catch((error) => {
+                    return this.provider._wrapTransaction(tx, hash, blockNumber);
+                }), { oncePoll: this.provider });
+            }
+            catch (error) {
                 error.transactionHash = hash;
                 throw error;
-            });
+            }
         });
     }
     signMessage(message) {
@@ -22779,7 +22790,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.3.0";
+const version$o = "ethers/5.3.1";
 
 "use strict";
 const logger$H = new Logger(version$o);
