@@ -47,14 +47,29 @@ are not required for the ABI and used old by Solidity's semantic checking
 system, such as input parameter data location like ``"calldata"``
 and ``"memory"``. As such, they can be safely dropped in the ABI as well.
 
-_code: A simple Human-Readable ABI @lang<javascript>
+_code: Human-Readable ABI Example @lang<javascript>
 
 const humanReadableAbi = [
+
+  // Simple types
   "constructor(string symbol, string name)",
   "function transferFrom(address from, address to, uint value)",
   "function balanceOf(address owner) view returns (uint balance)",
   "event Transfer(address indexed from, address indexed to, address value)",
-  "error InsufficientBalance(account owner, uint balance)"
+  "error InsufficientBalance(account owner, uint balance)",
+
+  // Some examples with the struct type, we use the tuple keyword:
+  // (note: the tuple keyword is optional, simply using additional
+  //        parentheses accomplishes the same thing)
+  // struct Person {
+  //   string name;
+  //   uint16 age;
+  // }
+  "function addPerson(tuple(string name, uint16 age) person)",
+  "function addPeople(tuple(string name, uint16 age)[] person)",
+  "function getPerson(uint id) view returns (tuple(string name, uint16 age))",
+
+  "event PersonAdded(uint indexed id, tuple(string name, uint16 age) person)"
 ];
 
 //_hide: _page.humanReadableAbi = humanReadableAbi;
@@ -128,6 +143,75 @@ const jsonAbi = `[
       { "type": "account", "name": "owner"},
       { "type": "uint256", "name": "balance"}
     ]
+  },
+  {
+    "type": "function",
+    "name": "addPerson",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "tuple",
+        "name": "person",
+        "components": [
+          { "type": "string", "name": "name" },
+          { "type": "uint16", "name": "age" }
+        ]
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "addPeople",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "tuple[]",
+        "name": "person",
+        "components": [
+          { "type": "string", "name": "name" },
+          { "type": "uint16", "name": "age" }
+        ]
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "getPerson",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      { "type": "uint256", "name": "id" }
+    ],
+    "outputs": [
+      {
+        "type": "tuple",
+        "components": [
+          { "type": "string", "name": "name" },
+          { "type": "uint16", "name": "age" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "PersonAdded",
+    "inputs": [
+      { "type": "uint256", "name": "id", "indexed": true },
+      {
+        "type": "tuple",
+        "name": "person",
+        "components": [
+          { "type": "string", "name": "name", "indexed": false },
+          { "type": "uint16", "name": "age", "indexed": false }
+        ]
+      }
+    ]
   }
 ]`;
 
@@ -156,7 +240,7 @@ and errors are available. It is also highly recommend to strip out
 unused parts of the ABI (such as admin methods) to further reduce
 code size.
 
-_code: Converting to Human-Readable ABI @lang<javascript>
+_code: Converting to Full Human-Readable ABI @lang<javascript>
 
 //_hide: const Interface = ethers.utils.Interface;
 //_hide: const FormatTypes = ethers.utils.FormatTypes;
@@ -169,9 +253,16 @@ const iface = new Interface(jsonAbi);
 iface.format(FormatTypes.full);
 //_log:
 
+_code: Converting to Minimal Human-Readable ABI @lang<javascript>
+
+//_hide: const Interface = ethers.utils.Interface;
+//_hide: const FormatTypes = ethers.utils.FormatTypes;
+//_hide: jsonAbi = _page.jsonAbi;
+
 // Using the "minimal" format will save a small amount of
 // space, but is generally not worth it as named properties
 // on Results will not be available
+const iface = new Interface(jsonAbi);
 //_result:
 iface.format(FormatTypes.minimal);
 //_log:
