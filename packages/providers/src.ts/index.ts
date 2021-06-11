@@ -22,6 +22,7 @@ import { AlchemyProvider, AlchemyWebSocketProvider } from "./alchemy-provider";
 import { CloudflareProvider } from "./cloudflare-provider";
 import { EtherscanProvider } from "./etherscan-provider";
 import { FallbackProvider } from "./fallback-provider";
+import { FastIpcProvider } from "./fast-ipc-provider";
 import { IpcProvider } from "./ipc-provider";
 import { InfuraProvider, InfuraWebSocketProvider } from "./infura-provider";
 import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
@@ -101,10 +102,11 @@ export {
     UrlJsonRpcProvider,
 
     ///////////////////////
-    // Concreate Providers
+    // Concrete Providers
 
     FallbackProvider,
 
+    FastIpcProvider,
     AlchemyProvider,
     AlchemyWebSocketProvider,
     CloudflareProvider,
