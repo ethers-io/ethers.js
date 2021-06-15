@@ -227,17 +227,22 @@ export abstract class Provider implements OnceBlockable {
     abstract getGasPrice(): Promise<BigNumber>;
     async getFeeData(): Promise<FeeData> {
         const { block, gasPrice } = await resolveProperties({
-            block: this.getBlock(-1),
-            gasPrice: this.getGasPrice()
+            block: this.getBlock("latest"),
+            gasPrice: this.getGasPrice().catch((error) => {
+                // @TODO: Why is this now failing on Calaveras?
+                //console.log(error);
+                return null;
+            })
         });
 
         let maxFeePerGas = null, maxPriorityFeePerGas = null;
 
         if (block && block.baseFee) {
-            maxFeePerGas = block.baseFee.mul(2);
-            //maxPriorityFeePerGas = BigNumber.from("1000000000");
-            // @TODO: This needs to come from somewhere.
-            maxPriorityFeePerGas = BigNumber.from("1");
+            // We may want to compute this more accurately in the future,
+            // using the formula "check if the base fee is correct".
+            // See: https://eips.ethereum.org/EIPS/eip-1559
+            maxPriorityFeePerGas = BigNumber.from("1000000000");
+            maxFeePerGas = block.baseFee.mul(2).add(maxPriorityFeePerGas);
         }
 
         return { maxFeePerGas, maxPriorityFeePerGas, gasPrice };
