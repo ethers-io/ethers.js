@@ -1,6 +1,6 @@
 "use strict";
 
-import { BlockTag, Provider, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
+import { BlockTag, FeeData, Provider, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { Bytes, BytesLike } from "@ethersproject/bytes";
 import { Deferrable, defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
@@ -18,12 +18,6 @@ const forwardErrors = [
     Logger.errors.NONCE_EXPIRED,
     Logger.errors.REPLACEMENT_UNDERPRICED,
 ];
-
-export interface FeeData {
-    maxFeePerGas: null | BigNumber;
-    maxPriorityFeePerGas: null | BigNumber;
-    gasPrice: null | BigNumber;
-}
 
 // EIP-712 Typed Data
 // See: https://eips.ethereum.org/EIPS/eip-712
@@ -146,21 +140,8 @@ export abstract class Signer {
     }
 
     async getFeeData(): Promise<FeeData> {
-        this._checkProvider("getFeeStats");
-
-        const { block, gasPrice } = await resolveProperties({
-            block: this.provider.getBlock(-1),
-            gasPrice: this.provider.getGasPrice()
-        });
-
-        let maxFeePerGas = null, maxPriorityFeePerGas = null;
-
-        if (block && block.baseFee) {
-            maxFeePerGas = block.baseFee.mul(2);
-            maxPriorityFeePerGas = BigNumber.from("1000000000");
-        }
-
-        return { maxFeePerGas, maxPriorityFeePerGas, gasPrice };
+        this._checkProvider("getFeeData");
+        return await this.provider.getFeeData();
     }
 
 
@@ -230,26 +211,23 @@ export abstract class Signer {
             });
         }
 
+        // Do not allow mixing pre-eip-1559 and eip-1559 proerties
+        const hasEip1559 = (tx.maxFeePerGas != null || tx.maxPriorityFeePerGas != null);
+        if (tx.gasPrice != null && (tx.type === 2 || hasEip1559)) {
+            logger.throwArgumentError("eip-1559 transaction do not support gasPrice", "transaction", transaction);
+        } else if ((tx.type === -1 || tx.type === 1) && hasEip1559) {
+            logger.throwArgumentError("pre-eip-1559 transaction do not support maxFeePerGas/maxPriorityFeePerGas", "transaction", transaction);
+        }
+
         if ((tx.type === 2 || tx.type == null) && (tx.maxFeePerGas != null && tx.maxPriorityFeePerGas != null)) {
-            // Fully-formed EIP-1559 transaction
-
-            // Check the gasPrice == maxFeePerGas
-            if (tx.gasPrice != null && !BigNumber.from(tx.gasPrice).eq(<BigNumberish>(tx.maxFeePerGas))) {
-                logger.throwArgumentError("gasPrice/maxFeePerGas mismatch", "transaction", transaction);
-            }
-
+            // Fully-formed EIP-1559 transaction (skip getFeeData)
             tx.type = 2;
 
         } else if (tx.type === -1 || tx.type === 1) {
-            // Explicit EIP-2930 or Legacy transaction
+            // Explicit Legacy or EIP-2930 transaction
 
-            // Do not allow EIP-1559 properties
-            if (tx.maxFeePerGas != null || tx.maxPriorityFeePerGas != null) {
-                logger.throwArgumentError(`transaction type ${ tx.type } does not support eip-1559 keys`, "transaction", transaction);
-            }
-
+            // Populate missing gasPrice
             if (tx.gasPrice == null) { tx.gasPrice = this.getGasPrice(); }
-            tx.type = (tx.accessList ? 1: -1);
 
         } else {
 
@@ -262,23 +240,19 @@ export abstract class Signer {
                 if (feeData.maxFeePerGas != null && feeData.maxPriorityFeePerGas != null) {
                     // The network supports EIP-1559!
 
-                    if (tx.gasPrice != null && tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
-                        // Legacy or EIP-2930 transaction, but without its type set
-                        tx.type = (tx.accessList ? 1: -1);
+                    // Upgrade transaction from null to eip-1559
+                    tx.type = 2;
+
+                    if (tx.gasPrice != null) {
+                        // Using legacy gasPrice property on an eip-1559 network,
+                        // so use gasPrice as both fee properties
+                        const gasPrice = tx.gasPrice;
+                        delete tx.gasPrice;
+                        tx.maxFeePerGas = gasPrice;
+                        tx.maxPriorityFeePerGas = gasPrice;
 
                     } else {
-                        // Use EIP-1559; no gas price or one EIP-1559 property was specified
-
-                        // Check that gasPrice == maxFeePerGas
-                        if (tx.gasPrice != null) {
-                            // The first condition fails only if gasPrice and maxPriorityFeePerGas
-                            // were specified, which is a weird thing to do
-                            if (tx.maxFeePerGas == null || !BigNumber.from(tx.gasPrice).eq(<BigNumberish>(tx.maxFeePerGas))) {
-                                logger.throwArgumentError("gasPrice/maxFeePerGas mismatch", "transaction", transaction);
-                            }
-                        }
-
-                        tx.type = 2;
+                        // Populate missing fee data
                         if (tx.maxFeePerGas == null) { tx.maxFeePerGas = feeData.maxFeePerGas; }
                         if (tx.maxPriorityFeePerGas == null) { tx.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas; }
                     }
@@ -287,14 +261,17 @@ export abstract class Signer {
                     // Network doesn't support EIP-1559...
 
                     // ...but they are trying to use EIP-1559 properties
-                    if (tx.maxFeePerGas != null || tx.maxPriorityFeePerGas != null) {
+                    if (hasEip1559) {
                         logger.throwError("network does not support EIP-1559", Logger.errors.UNSUPPORTED_OPERATION, {
                             operation: "populateTransaction"
                         });
                     }
 
-                    tx.gasPrice = feeData.gasPrice;
-                    tx.type = (tx.accessList ? 1: -1);
+                    // Populate missing fee data
+                    if (tx.gasPrice == null) { tx.gasPrice = feeData.gasPrice; }
+
+                    // Explicitly set untyped transaction to legacy
+                    tx.type = -1;
 
                 } else {
                     // getFeeData has failed us.
@@ -306,11 +283,7 @@ export abstract class Signer {
             } else if (tx.type === 2) {
                 // Explicitly using EIP-1559
 
-                // Check gasPrice == maxFeePerGas
-                if (tx.gasPrice != null && !BigNumber.from(tx.gasPrice).eq(<BigNumberish>(tx.maxFeePerGas))) {
-                    logger.throwArgumentError("gasPrice/maxFeePerGas mismatch", "transaction", transaction);
-                }
-
+                // Populate missing fee data
                 if (tx.maxFeePerGas == null) { tx.maxFeePerGas = feeData.maxFeePerGas; }
                 if (tx.maxPriorityFeePerGas == null) { tx.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas; }
             }

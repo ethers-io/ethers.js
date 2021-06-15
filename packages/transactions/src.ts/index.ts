@@ -103,7 +103,7 @@ const transactionFields = [
 ];
 
 const allowedTransactionKeys: { [ key: string ]: boolean } = {
-    chainId: true, data: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
+    chainId: true, data: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true, type: true
 }
 
 export function computeAddress(key: BytesLike | string): string {
@@ -368,15 +368,16 @@ function _parseEip1559(payload: Uint8Array): Transaction {
         value:                 handleNumber(transaction[6]),
         data:                  transaction[7],
         accessList:            accessListify(transaction[8]),
-        hash:                  keccak256(payload)
     };
 
     // Unsigned EIP-1559 Transaction
     if (transaction.length === 9) { return tx; }
 
+    tx.hash = keccak256(payload);
+
     _parseEipSignature(tx, transaction.slice(9), _serializeEip2930);
 
-    return null;
+    return tx;
 }
 
 function _parseEip2930(payload: Uint8Array): Transaction {
@@ -395,12 +396,13 @@ function _parseEip2930(payload: Uint8Array): Transaction {
         to:         handleAddress(transaction[4]),
         value:      handleNumber(transaction[5]),
         data:       transaction[6],
-        accessList: accessListify(transaction[7]),
-        hash:                  keccak256(payload)
+        accessList: accessListify(transaction[7])
     };
 
     // Unsigned EIP-2930 Transaction
     if (transaction.length === 8) { return tx; }
+
+    tx.hash = keccak256(payload);
 
     _parseEipSignature(tx, transaction.slice(8), _serializeEip2930);
 

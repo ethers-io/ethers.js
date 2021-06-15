@@ -3,7 +3,7 @@
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike, isHexString } from "@ethersproject/bytes";
 import { Network } from "@ethersproject/networks";
-import { Deferrable, Description, defineReadOnly } from "@ethersproject/properties";
+import { Deferrable, Description, defineReadOnly, resolveProperties } from "@ethersproject/properties";
 import { AccessListish, Transaction } from "@ethersproject/transactions";
 import { OnceBlockable } from "@ethersproject/web";
 
@@ -117,6 +117,12 @@ export interface TransactionReceipt {
     status?: number
 };
 
+export interface FeeData {
+    maxFeePerGas: null | BigNumber;
+    maxPriorityFeePerGas: null | BigNumber;
+    gasPrice: null | BigNumber;
+}
+
 export interface EventFilter {
     address?: string;
     topics?: Array<string | Array<string> | null>;
@@ -211,7 +217,6 @@ export type Listener = (...args: Array<any>) => void;
 
 ///////////////////////////////
 // Exported Abstracts
-
 export abstract class Provider implements OnceBlockable {
 
     // Network
@@ -220,6 +225,23 @@ export abstract class Provider implements OnceBlockable {
     // Latest State
     abstract getBlockNumber(): Promise<number>;
     abstract getGasPrice(): Promise<BigNumber>;
+    async getFeeData(): Promise<FeeData> {
+        const { block, gasPrice } = await resolveProperties({
+            block: this.getBlock(-1),
+            gasPrice: this.getGasPrice()
+        });
+
+        let maxFeePerGas = null, maxPriorityFeePerGas = null;
+
+        if (block && block.baseFee) {
+            maxFeePerGas = block.baseFee.mul(2);
+            //maxPriorityFeePerGas = BigNumber.from("1000000000");
+            // @TODO: This needs to come from somewhere.
+            maxPriorityFeePerGas = BigNumber.from("1");
+        }
+
+        return { maxFeePerGas, maxPriorityFeePerGas, gasPrice };
+    }
 
     // Account
     abstract getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber>;
