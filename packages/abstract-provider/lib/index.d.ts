@@ -72,6 +72,7 @@ export interface TransactionReceipt {
     cumulativeGasUsed: BigNumber;
     byzantium: boolean;
     status?: number;
+    type?: number;
 }
 export interface EventFilter {
     address?: string;

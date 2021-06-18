@@ -109,7 +109,8 @@ export interface TransactionReceipt {
     confirmations: number,
     cumulativeGasUsed: BigNumber,
     byzantium: boolean,
-    status?: number
+    status?: number,
+    type?: number
 };
 
 export interface EventFilter {
