@@ -84,7 +84,8 @@ var Formatter = /** @class */ (function () {
             blockNumber: number,
             confirmations: Formatter.allowNull(number, null),
             cumulativeGasUsed: bigNumber,
-            status: Formatter.allowNull(number)
+            status: Formatter.allowNull(number),
+            type: Formatter.allowNull(number)
         };
         formats.block = {
             hash: hash,
