@@ -171,10 +171,10 @@ If the `wait()` method on the returned [TransactionResponse](/v5/api/providers/t
 - `receipt.events[n].decode` - a method that can be used to parse the log topics and data (this was used to compute `args`) 
 - `receipt.events[n].event` - the name of the event 
 - `receipt.events[n].eventSignature` - the full signature of the event 
-- `receipt.events.removeListener()` - a method to remove the listener that trigger this event 
-- `receipt.events.getBlock()` - a method to return the [Block](/v5/api/providers/types/#providers-Block) this event occurred in 
-- `receipt.events.getTransaction()` - a method to return the [Transaction](/v5/api/providers/types/#providers-TransactionResponse) this event occurred in 
-- `receipt.events.getTransactionReceipt()` - a method to return the [Transaction Receipt](/v5/api/providers/types/#providers-TransactionReceipt) this event occurred in 
+- `receipt.removeListener()` - a method to remove the listener that trigger this event 
+- `receipt.getBlock()` - a method to return the [Block](/v5/api/providers/types/#providers-Block) this event occurred in 
+- `receipt.getTransaction()` - a method to return the [Transaction](/v5/api/providers/types/#providers-TransactionResponse) this event occurred in 
+- `receipt.getTransactionReceipt()` - a method to return the [Transaction Receipt](/v5/api/providers/types/#providers-TransactionReceipt) this event occurred in 
 
 
 
