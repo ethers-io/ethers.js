@@ -373,20 +373,20 @@ function buildSend(contract: Contract, fragment: FunctionFragment): ContractFunc
                         event.eventSignature = parsed.signature;
                     }
 
-                    // Useful operations
-                    event.removeListener = () => { return contract.provider; }
-                    event.getBlock = () => {
-                        return contract.provider.getBlock(receipt.blockHash);
-                    }
-                    event.getTransaction = () => {
-                        return contract.provider.getTransaction(receipt.transactionHash);
-                    }
-                    event.getTransactionReceipt = () => {
-                        return Promise.resolve(receipt);
-                    }
-
                     return event;
                 });
+                
+                // Useful operations
+                receipt.removeListener = () => { return contract.provider; }
+                receipt.getBlock = () => {
+                    return contract.provider.getBlock(receipt.blockHash);
+                }
+                receipt.getTransaction = () => {
+                    return contract.provider.getTransaction(receipt.transactionHash);
+                }
+                receipt.getTransactionReceipt = () => {
+                    return Promise.resolve(receipt);
+                }
 
                 return receipt;
             });
