@@ -134,7 +134,7 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
 
         options.allowGzip = !!connection.allowGzip;
 
-        if (connection.user != null && connection.password != null) {
+        if (connection.user && connection.password) {
             if (url.substring(0, 6) !== "https:" && connection.allowInsecureAuthentication !== true) {
                 logger.throwError(
                     "basic authentication requires a secure https url",
