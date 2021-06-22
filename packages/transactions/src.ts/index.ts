@@ -87,7 +87,7 @@ const transactionFields = [
 ];
 
 const allowedTransactionKeys: { [ key: string ]: boolean } = {
-    chainId: true, data: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true
+    chainId: true, data: true, gasLimit: true, gasPrice:true, nonce: true, to: true, type: true, value: true
 }
 
 export function computeAddress(key: BytesLike | string): string {
