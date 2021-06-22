@@ -30,6 +30,10 @@ function checkError(method: string, error: any, params: any): any {
         if (e && e.message.match("reverted") && isHexString(e.data)) {
             return e.data;
         }
+
+        logger.throwError("missing revert data in call exception", Logger.errors.CALL_EXCEPTION, {
+            error, data: "0x"
+        });
     }
 
     let message = error.message;
