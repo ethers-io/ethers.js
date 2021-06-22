@@ -11,6 +11,7 @@ export interface JsonFragmentType {
     readonly name?: string;
     readonly indexed?: boolean;
     readonly type?: string;
+    readonly internalType?: any; // @TODO: in v6 reduce type
     readonly components?: ReadonlyArray<JsonFragmentType>;
 }
 
@@ -29,7 +30,6 @@ export interface JsonFragment {
 
     readonly gas?: string;
 };
-
 
 const _constructorGuard = { };
 
