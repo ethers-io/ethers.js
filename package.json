@@ -67,7 +67,7 @@
     "aes-js": "3.0.0",
     "aws-sdk": "2.137.0",
     "diff": "4.0.1",
-    "flatworm": "0.0.2-beta.5",
+    "flatworm": "0.0.2-beta.6",
     "jison": "0.4.18",
     "karma": "6.3.2",
     "karma-chrome-launcher": "3.1.0",
