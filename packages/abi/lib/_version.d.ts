@@ -1,2 +1,2 @@
-export declare const version = "abi/5.2.0";
+export declare const version = "abi/5.3.1";
 //# sourceMappingURL=_version.d.ts.map

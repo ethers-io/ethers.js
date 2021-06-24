@@ -1,2 +1,2 @@
-export const version = "abi/5.2.0";
+export const version = "abi/5.3.1";
 //# sourceMappingURL=_version.js.map

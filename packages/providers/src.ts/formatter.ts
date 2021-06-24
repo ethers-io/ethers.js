@@ -45,13 +45,14 @@ export class Formatter {
         const hash = this.hash.bind(this);
         const hex = this.hex.bind(this);
         const number = this.number.bind(this);
+        const type = this.type.bind(this);
 
         const strictData = (v: any) => { return this.data(v, true); };
 
         formats.transaction = {
             hash: hash,
 
-            type: Formatter.allowNull(number, null),
+            type: type,
             accessList: Formatter.allowNull(this.accessList.bind(this), null),
 
             blockHash: Formatter.allowNull(hash, null),
@@ -123,7 +124,8 @@ export class Formatter {
             blockNumber: number,
             confirmations: Formatter.allowNull(number, null),
             cumulativeGasUsed: bigNumber,
-            status: Formatter.allowNull(number)
+            status: Formatter.allowNull(number),
+            type: type
         };
 
         formats.block = {
@@ -184,6 +186,11 @@ export class Formatter {
     // Strict! Used on input.
     number(number: any): number {
         if (number === "0x") { return 0; }
+        return BigNumber.from(number).toNumber();
+    }
+
+    type(number: any): number {
+        if (number === "0x" || number == null) { return 0; }
         return BigNumber.from(number).toNumber();
     }
 

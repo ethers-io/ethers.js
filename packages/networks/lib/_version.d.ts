@@ -1,2 +1,2 @@
-export declare const version = "networks/5.2.0";
+export declare const version = "networks/5.3.1";
 //# sourceMappingURL=_version.d.ts.map

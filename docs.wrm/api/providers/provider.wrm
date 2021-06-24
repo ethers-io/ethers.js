@@ -21,35 +21,41 @@ _subsection: Accounts Methods  @<Provider--account-methods>
 _property: provider.getBalance(address [ , blockTag = latest ]) => Promise<[[BigNumber]]>  @<Provider-getBalance> @SRC<providers/base-provider>
 Returns the balance of //address// as of the //blockTag// block height.
 
+_code: @lang<javascript>
+
+//_result:
+await provider.getBalance("ricmoo.eth");
+//_log:
+
 _property: provider.getCode(address [ , blockTag = latest ]) => Promise<string<[[DataHexString]]>>  @<Provider-getCode> @SRC<providers/base-provider>
 Returns the contract code of //address// as of the //blockTag// block height. If there is
 no contract currently deployed, the result is ``0x``.
 
+_code: @lang<javascript>
+
+//_result:
+await provider.getCode("registrar.firefly.eth");
+//_log:
+
 _property: provider.getStorageAt(addr, pos [ , blockTag = latest ]) => Promise<string<[[DataHexString]]>>  @<Provider-getStorageAt> @SRC<providers/base-provider>
 Returns the ``Bytes32`` value of the position //pos// at address //addr//, as of the //blockTag//.
+
+_code: @lang<javascript>
+
+//_result:
+await provider.getStorageAt("registrar.firefly.eth", 0)
+//_log:
 
 _property: provider.getTransactionCount(address [ , blockTag = latest ]) => Promise<number>  @<Provider-getTransactionCount> @SRC<providers/base-provider>
 Returns the number of transactions //address// has ever **sent**, as of //blockTag//.
 This value is required to be the nonce for the next transaction from //address//
 sent to the network.
 
-_code: Account Examples @lang<javascript>
+_code: @lang<javascript>
 
-// Get the balance for an account...
-provider.getBalance("ricmoo.firefly.eth");
-//!
-
-// Get the code for a contract...
-provider.getCode("registrar.firefly.eth");
-//!
-
-// Get the storage value at position 0...
-provider.getStorageAt("registrar.firefly.eth", 0)
-//!
-
-// Get transaction count of an account...
-provider.getTransactionCount("ricmoo.firefly.eth");
-//!
+//_result:
+await provider.getTransactionCount("ricmoo.eth");
+//_log:
 
 
 _subsection: Blocks Methods  @<Provider--block-methods>
@@ -58,17 +64,21 @@ _property: provider.getBlock(block) => Promise<[[providers-Block]]>  @<Provider-
 Get the //block// from the network, where the ``result.transactions`` is a list
 of transaction hashes.
 
+_code: @lang<javascript>
+
+//_result:
+await provider.getBlock(100004)
+//_log:
+
 _property: provider.getBlockWithTransactions(block) => Promise<[[providers-BlockWithTransactions]]>  @<Provider-getBlockWithTransactions> @SRC<providers/base-provider>
 Get the //block// from the network, where the ``result.transactions`` is
 an Array of [[providers-TransactionResponse]] objects.
 
-_code: Block Examples @lang<javascript>
+_code: @lang<javascript>
 
-provider.getBlock(100004)
-//!
-
-provider.getBlockWithTransactions(100004)
-//!
+//_result:
+await provider.getBlockWithTransactions(100004)
+//_log:
 
 _subsection: Ethereum Naming Service (ENS) Methods @<Provider--ens-methods>
 
@@ -90,25 +100,39 @@ _property: provider.getResolver(name) => Promise<[[EnsResolver]]>
 Returns an EnsResolver instance which can be used to further inquire
 about specific entries for an ENS name.
 
+_code: @lang<javascript>
+
+//_hide: provider = ethers.getDefaultProvider();
+
+// See below (Resolver) for examples of using this object
+const resolver = await provider.getResolver("ricmoo.eth");
+
+//_hide: _page.resolver = resolver;
+
 _property: provider.lookupAddress(address) => Promise<string>  @<Provider-lookupAddress> @SRC<providers/base-provider>
 Performs a reverse lookup of the //address// in ENS using the
 //Reverse Registrar//.  If the name does not exist, or the
 forward lookup does not match, ``null`` is returned.
+
+An ENS name requries additional configuration to setup a reverse
+record, they are not automatically set up.
+
+_code: @lang<javascript>
+
+//_result:
+await provider.lookupAddress("0x5555763613a12D8F3e73be831DFf8598089d3dCa");
+//_log:
 
 _property: provider.resolveName(name) => Promise<string<[Address](address)>>  @<Provider-ResolveName> @SRC<providers/base-provider>
 Looks up the address of //name//. If the name is not owned, or
 does not have a //Resolver// configured, or the //Resolver// does
 not have an address configured, ``null`` is returned.
 
-_code: ENS Examples @lang<javascript>
+_code: @lang<javascript>
 
-// Reverse lookup of an ENS by address...
-provider.lookupAddress("0x6fC21092DA55B392b045eD78F4732bff3C580e2c");
-//!
-
-// Lookup an address of an ENS name...
-provider.resolveName("ricmoo.firefly.eth");
-//!
+//_result:
+await provider.resolveName("ricmoo.eth");
+//_log:
 
 
 _subsection: EnsResolver @<EnsResolver> 
@@ -124,11 +148,50 @@ Returns a Promise which resolves to the [[link-eip-2304]] multicoin address
 stored for the //coinType//. By default an Ethereum [[address]]
 (``coinType = 60``) will be returned.
 
+_code: @lang<javascript>
+
+//_hide: const resolver = _page.resolver;
+
+// By default, looks up the Ethereum address
+// (this will match provider.resolveName)
+//_result:
+await resolver.getAddress();
+//_log:
+
+// Specify the coinType for other coin addresses (0 = Bitcoin)
+//_result:
+await resolver.getAddress(0);
+//_log:
+
 _property: resolver.getContentHash() => Promise<string>
 Returns a Promise which resolves to any stored [[link-eip-1577]] content hash.
 
+_code: @lang<javascript>
+
+//_hide: const resolver = _page.resolver;
+
+//_result:
+await resolver.getContentHash();
+//_log:
+
 _property: resolver.getText(key) => Promise<string>
 Returns a Promise which resolves to any stored [[link-eip-634]] text entry for //key//.
+
+_code: @lang<javascript>
+
+//_hide: const resolver = _page.resolver;
+
+//_result:
+await resolver.getText("email");
+//_log:
+
+//_result:
+await resolver.getText("url");
+//_log:
+
+//_result:
+await resolver.getText("com.twitter");
+//_log:
 
 _subsection: Logs Methods  @<Provider--log-methods>
 
@@ -145,11 +208,37 @@ _subsection: Network Status Methods  @<Provider--network-methods>
 _property: provider.getNetwork() => Promise<[[providers-Network]]>  @<Provider-getNetwork> @SRC<providers/base-provider:method.BaseProvider.getNetwork>
 Returns the [[providers-Network]] this Provider is connected to.
 
+_code: @lang<javascript>
+
+//_result:
+await provider.getNetwork()
+//_hide: _ = utils.shallowCopy(_);
+//_hide: delete _._defaultProvider;
+//_log:
+
 _property: provider.getBlockNumber() => Promise<number>  @<Provider-getBlockNumber> @SRC<providers/base-provider>
 Returns the block number (or height) of the most recently mined block.
 
+_code: @lang<javascript>
+
+//_result:
+await provider.getBlockNumber()
+//_log:
+
 _property: provider.getGasPrice() => Promise<[[BigNumber]]>  @<Provider-getGasPrice> @SRC<providers/base-provider>
 Returns a //best guess// of the [[gas-price]] to use in a transaction.
+
+_code: @lang<javascript>
+
+// The gas price (in wei)...
+gasPrice = await provider.getGasPrice()
+//_log: gasPrice
+
+// ...often this gas price is easier to understand or
+// display to the user in gwei
+//_result:
+utils.formatUnits(gasPrice, "gwei")
+//_log:
 
 _property: provider.ready => Promise<[[providers-Network]]> @<Provider-ready> @src<providers/base-provider>
 Returns a Promise which will stall until the network has heen established,
@@ -157,31 +246,6 @@ ignoring errors due to the target node not being active yet.
 
 This can be used for testing or attaching scripts to wait until the node is
 up and running smoothly.
-
-_code: Network Status Examples @lang<javascript>
-
-// The network information
-provider.getNetwork()
-// <hide>
-//!
-network = utils.shallowCopy(_)
-delete network._defaultProvider
-network
-// </hide>
-//!
-
-// The current block number
-provider.getBlockNumber()
-//!
-
-// Get the current suggested gas price (in wei)...
-gasPrice = await provider.getGasPrice()
-//! async gasPrice
-
-// ...often this gas price is easier to understand or
-// display to the user in gwei (giga-wei, or 1e9 wei)
-utils.formatUnits(gasPrice, "gwei")
-//!
 
 
 _subsection: Transactions Methods  @<Provider--transaction-methods>
@@ -191,6 +255,18 @@ Returns the result of executing the //transaction//, using //call//. A call
 does not require any ether, but cannot change any state. This is useful
 for calling getters on Contracts.
 
+_code: @lang<javascript>
+
+//_result:
+await provider.call({
+  // ENS public resovler address
+  to: "0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41",
+
+  // `function addr(namehash("ricmoo.eth")) view returns (address)`
+  data: "0x3b3b57debf074faa138b72c65adbdcfb329847e4f2c04bde7f7dd7fcad5a52d2f395a558"
+});
+//_log:
+
 _property: provider.estimateGas(transaction) => Promise<[[BigNumber]]>  @<Provider-estimateGas> @SRC<providers/base-provider>
 Returns an estimate of the amount of gas that would be required to submit //transaction//
 to the network.
@@ -198,6 +274,23 @@ to the network.
 An estimate may not be accurate since there could be another transaction
 on the network that was not accounted for, but after being mined affected
 relevant state.
+
+_code: @lang<javascript>
+
+//_hide: const parseEther = ethers.utils.parseEther;
+
+//_result:
+await provider.estimateGas({
+  // Wrapped ETH address
+  to: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+
+  // `function deposit() payable`
+  data: "0xd0e30db0",
+
+  // 1 ether
+  value: parseEther("1.0")
+});
+//_log:
 
 _property: provider.getTransaction(hash) => Promise<[[providers-TransactionResponse]]> @<Provider-getTransaction> @src<providers/base-provider>
 Returns the transaction with //hash// or null if the transaction is unknown.
@@ -207,6 +300,12 @@ pool. Various backends may have more restrictive transaction pool access (e.g.
 if the gas price is too low or the transaction was only recently sent and not
 yet indexed) in which case this method may also return null.
 
+_code: @lang<javascript>
+
+//_result:
+await provider.getTransaction("0x5b73e239c55d790e3c9c3bbb84092652db01bb8dbf49ccc9e4a318470419d9a0");
+//_log:
+
 _property: provider.getTransactionReceipt(hash) => Promise<[[providers-TransactionReceipt]]> @<Provider-getTransactionReceipt> @src<providers/base-provider>
 Returns the transaction receipt for //hash// or null if the transaction
 has not been mined.
@@ -214,10 +313,30 @@ has not been mined.
 To stall until the transaction has been mined, consider the ``waitForTransaction``
 method below.
 
+_code: @lang<javascript>
+
+//_result:
+await provider.getTransactionReceipt("0x5b73e239c55d790e3c9c3bbb84092652db01bb8dbf49ccc9e4a318470419d9a0");
+//_log:
+
 _property: provider.sendTransaction(transaction) => Promise<[[providers-TransactionResponse]]>  @<Provider-sendTransaction> @SRC<providers/base-provider>
 Submits //transaction// to the network to be mined. The //transaction// **must** be signed,
 and be valid (i.e. the nonce is correct and the account has sufficient balance to pay
 for the transaction).
+
+_code: @lang<javascript>
+
+//_hide: const provider = localProvider;
+//_hide: const wallet = new ethers.Wallet(ethers.utils.id("HelloWorld"), provider);
+//_hide: const fundTx = await localSigner.sendTransaction({
+//_hide:   to: wallet.address,
+//_hide:   value: ethers.utils.parseEther("2.0")
+//_hide: });
+//_hide: await fundTx.wait();
+
+//_result:
+await provider.sendTransaction("0xf86e808502540be400825208948ba1f109551bd432803012645ac136ddd64dba72880de0b6b3a764000080820a96a0f0c5bcb11e5a16ab116c60a0e5837ae98ec36e7f217740076572e8183002edd2a01ed1b4411c2840b9793e8be5415a554507f1ea320069be6dcecabd7b9097dbd4");
+//_log:
 
 _property: provider.waitForTransaction(hash [ , confirms = 1 [ , timeout ] ]) => Promise<[TxReceipt](providers-TransactionReceipt)>  @<Provider-waitForTransaction> @SRC<providers/base-provider>
 Returns a Promise which will not resolve until //transactionHash// is mined.
@@ -331,11 +450,9 @@ $Debug:    each Provider may use this to emit useful debugging information
 
 _code: Events Example @lang<javascript>
 
-// <hide>
-const txHash = utils.id("dummy-data");
-const myAddress = ethers.constants.HashZero;
-const myOtherAddress = ethers.constants.HashZero;
-// </hide>
+//_hide: const txHash = utils.id("dummy-data");
+//_hide: const myAddress = ethers.constants.HashZero;
+//_hide: const myOtherAddress = ethers.constants.HashZero;
 
 provider.on("block", (blockNumber) => {
     // Emitted on every block change
@@ -385,10 +502,7 @@ provider.on("error", (tx) => {
     // Emitted when any error occurs
 });
 
-// <hide>
-// Make sure our documentation builds without waiting forever
-provider.removeAllListeners()
-// </hide>
+//_hide: provider.removeAllListeners() /* Make sure the docs build without waiting forever */
 
 _subsection: Inspection Methods  @<Provider--inspection-methods>
 

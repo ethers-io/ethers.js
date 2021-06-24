@@ -255,8 +255,9 @@ export class FixedNumber {
         if (comps[1].length <= decimals) {
             return this;
         }
-        const factor = FixedNumber.from("1" + zeros.substring(0, decimals));
-        return this.mulUnsafe(factor).addUnsafe(BUMP).floor().divUnsafe(factor);
+        const factor = FixedNumber.from("1" + zeros.substring(0, decimals), this.format);
+        const bump = BUMP.toFormat(this.format);
+        return this.mulUnsafe(factor).addUnsafe(bump).floor().divUnsafe(factor);
     }
     isZero() {
         return (this._value === "0.0" || this._value === "0");

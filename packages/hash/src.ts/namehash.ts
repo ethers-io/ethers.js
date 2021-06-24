@@ -27,16 +27,20 @@ export function isValidName(name: string): boolean {
 export function namehash(name: string): string {
     /* istanbul ignore if */
     if (typeof(name) !== "string") {
-        logger.throwArgumentError("invalid address - " + String(name), "name", name);
+        logger.throwArgumentError("invalid ENS name; not a string", "name", name);
     }
 
+    let current = name;
     let result: string | Uint8Array = Zeros;
-    while (name.length) {
-        const partition = name.match(Partition);
+    while (current.length) {
+        const partition = current.match(Partition);
+        if (partition == null || partition[2] === "") {
+            logger.throwArgumentError("invalid ENS address; missing component", "name", name);
+        }
         const label = toUtf8Bytes(nameprep(partition[3]));
         result = keccak256(concat([result, keccak256(label)]));
 
-        name = partition[2] || "";
+        current = partition[2] || "";
     }
 
     return hexlify(result);

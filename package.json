@@ -67,7 +67,7 @@
     "aes-js": "3.0.0",
     "aws-sdk": "2.137.0",
     "diff": "4.0.1",
-    "flatworm": "0.0.2-beta.5",
+    "flatworm": "0.0.2-beta.6",
     "jison": "0.4.18",
     "karma": "6.3.2",
     "karma-chrome-launcher": "3.1.0",
@@ -92,13 +92,13 @@
     "@types/mocha": "^5.2.0",
     "aes-js": "3.0.0",
     "bech32": "1.1.4",
-    "bn.js": "^4.4.0",
+    "bn.js": "^4.11.9",
     "elliptic": "6.5.4",
-    "hash.js": "1.1.3",
+    "hash.js": "1.1.7",
     "js-sha3": "0.5.7",
     "scrypt-js": "3.0.1",
     "solc": "0.7.1",
     "tiny-inflate": "1.0.3",
-    "ws": "7.2.3"
+    "ws": "7.4.6"
   }
 }

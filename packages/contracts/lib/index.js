@@ -658,7 +658,7 @@ var BaseContract = /** @class */ (function () {
             // Check that the signature is unique; if not the ABI generation has
             // not been cleaned or may be incorrectly generated
             if (uniqueSignatures[signature]) {
-                logger.warn("Duplicate ABI entry for " + JSON.stringify(name));
+                logger.warn("Duplicate ABI entry for " + JSON.stringify(signature));
                 return;
             }
             uniqueSignatures[signature] = true;

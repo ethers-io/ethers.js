@@ -78,12 +78,9 @@ override the endowment ``value``, transaction ``nonce``, ``gasLimit`` or
 
 _code: Deploying a Contract @lang<javascript>
 
-// <hide>
-const signer = localSigner;
-const ContractFactory = ethers.ContractFactory;
-const bytecode = "608060405234801561001057600080fd5b5060405161012e38038061012e8339818101604052604081101561003357600080fd5b81019080805190602001909291908051906020019092919050505081600160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055508060008190555050506088806100a66000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80633fa4f24514602d575b600080fd5b60336049565b6040518082815260200191505060405180910390f35b6000805490509056fea2646970667358221220926465385af0e8706644e1ff3db7161af699dc063beaadd55405f2ccd6478d7564736f6c63430007040033";
-// </hide>
-
+//_hide: const signer = localSigner;
+//_hide: const ContractFactory = ethers.ContractFactory;
+//_hide: const bytecode = "608060405234801561001057600080fd5b5060405161012e38038061012e8339818101604052604081101561003357600080fd5b81019080805190602001909291908051906020019092919050505081600160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055508060008190555050506088806100a66000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80633fa4f24514602d575b600080fd5b60336049565b6040518082815260200191505060405180910390f35b6000805490509056fea2646970667358221220926465385af0e8706644e1ff3db7161af699dc063beaadd55405f2ccd6478d7564736f6c63430007040033";
 
 // If your contract constructor requires parameters, the ABI
 // must include the constructor
@@ -97,25 +94,26 @@ factory = new ContractFactory(abi, bytecode, signer)
 
 // Deploy an instance of the contract
 contract = await factory.deploy("ricmoo.eth", 42);
-//<hide>
-//! async contract
-//</hide>
 
 // The address is available immediately, but the contract
 // is NOT deployed yet
+//_result:
 contract.address
-//!
+//_log:
 
 // The transaction that the signer sent to deploy
+//_result:
 contract.deployTransaction
-//!
+//_log:
 
 // Wait until the transaction is mined (i.e. contract is deployed)
 //  - returns the receipt
 //  - throws on failure (the reciept is on the error)
-contract.deployTransaction.wait()
-//!
+//_result:
+await contract.deployTransaction.wait()
+//_log:
 
 // Now the contract is safe to interact with
-contract.value()
-//!
+//_result:
+await contract.value()
+//_log:

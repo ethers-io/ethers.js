@@ -215,7 +215,7 @@ export abstract class Signer {
         const hasEip1559 = (tx.maxFeePerGas != null || tx.maxPriorityFeePerGas != null);
         if (tx.gasPrice != null && (tx.type === 2 || hasEip1559)) {
             logger.throwArgumentError("eip-1559 transaction do not support gasPrice", "transaction", transaction);
-        } else if ((tx.type === -1 || tx.type === 1) && hasEip1559) {
+        } else if ((tx.type === 0 || tx.type === 1) && hasEip1559) {
             logger.throwArgumentError("pre-eip-1559 transaction do not support maxFeePerGas/maxPriorityFeePerGas", "transaction", transaction);
         }
 
@@ -223,7 +223,7 @@ export abstract class Signer {
             // Fully-formed EIP-1559 transaction (skip getFeeData)
             tx.type = 2;
 
-        } else if (tx.type === -1 || tx.type === 1) {
+        } else if (tx.type === 0 || tx.type === 1) {
             // Explicit Legacy or EIP-2930 transaction
 
             // Populate missing gasPrice
@@ -271,7 +271,7 @@ export abstract class Signer {
                     if (tx.gasPrice == null) { tx.gasPrice = feeData.gasPrice; }
 
                     // Explicitly set untyped transaction to legacy
-                    tx.type = -1;
+                    tx.type = 0;
 
                 } else {
                     // getFeeData has failed us.

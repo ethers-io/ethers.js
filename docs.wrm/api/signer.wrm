@@ -74,6 +74,12 @@ _property: signer.signMessage(message) => Promise<string<[RawSignature](signatur
 This returns a Promise which resolves to the [[signature-raw]]
 of //message//.
 
+A signed message is prefixd with ``"\\x19Ethereum signed message:\\n"`` and
+the length of the message, using the [hashMessage](utils-hashMessage)
+method, so that it is [EIP-191](link-eip-191) compliant. If recovering
+the address in Solidity, this prefix will be required to create a matching
+hash.
+
 Sub-classes **must** implement this, however they may throw if signing a
 message is not supported, such as in a Contract-based Wallet or
 Meta-Transaction-based Wallet.
@@ -126,9 +132,7 @@ it has been used in the field a bit.
 
 _code: Typed Data Example @lang<javascript>
 
-// <hide>
-signer = new Wallet("0x1234567890123456789012345678901234567890123456789012345678901234");
-// </hide>
+//_hide: signer = new Wallet("0x1234567890123456789012345678901234567890123456789012345678901234");
 
 // All properties on a domain are optional
 const domain = {
@@ -164,9 +168,9 @@ const value = {
     contents: 'Hello, Bob!'
 };
 
-
-const signature = await signer._signTypedData(domain, types, value);
-//! async signature
+//_result:
+signature = await signer._signTypedData(domain, types, value);
+//_log:
 
 
 _heading: Sub-Classes @<Signer--subclassing>
@@ -281,35 +285,43 @@ walletMnemonic = Wallet.fromMnemonic(mnemonic)
 // ...or from a private key
 walletPrivateKey = new Wallet(walletMnemonic.privateKey)
 
+//_result:
 walletMnemonic.address === walletPrivateKey.address
-//!
+//_log:
 
 // The address as a Promise per the Signer API
-walletMnemonic.getAddress()
-//!
+//_result:
+await walletMnemonic.getAddress()
+//_log:
 
 // A Wallet address is also available synchronously
+//_result:
 walletMnemonic.address
-//!
+//_log:
 
 // The internal cryptographic components
+//_result:
 walletMnemonic.privateKey
-//!
+//_log:
+//_result:
 walletMnemonic.publicKey
-//!
+//_log:
 
 // The wallet mnemonic
+//_result:
 walletMnemonic.mnemonic
-//!
+//_log:
 
 // Note: A wallet created with a private key does not
 //       have a mnemonic (the derivation prevents it)
+//_result:
 walletPrivateKey.mnemonic
-//!
+//_log:
 
 // Signing a message
-walletMnemonic.signMessage("Hello World")
-//!
+//_result:
+await walletMnemonic.signMessage("Hello World")
+//_log:
 
 tx = {
   to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
@@ -317,24 +329,29 @@ tx = {
 }
 
 // Signing a transaction
-walletMnemonic.signTransaction(tx)
-//!
+//_result:
+await walletMnemonic.signTransaction(tx)
+//_log:
 
 // The connect method returns a new instance of the
 // Wallet connected to a provider
+//_result:
 wallet = walletMnemonic.connect(provider)
+//_null:
 
 // Querying the network
-wallet.getBalance();
-//!
-wallet.getTransactionCount();
-//!
+//_result:
+await wallet.getBalance();
+//_log:
+//_result:
+await wallet.getTransactionCount();
+//_log:
 
 // Sending ether
-wallet.sendTransaction(tx)
-// <hide>
-//! error
-// </hide>
+//_hide: wallet = localSigner; /* prevent insufficient funds error from blowing up the docs */
+//_result:
+await wallet.sendTransaction(tx)
+//_log:
 
 
 
@@ -367,12 +384,10 @@ abi = [
 ]
 contract = new ethers.Contract("dai.tokens.ethers.eth", abi, signer)
 
-// <hide>
-//!
-// </hide>
 // Get the number of tokens for this account
+//_result:
 tokens = await contract.balanceOf(signer.getAddress())
-//! async tokens
+//_log:
 
 //
 // Pre-flight (check for revert) on DAI from the signer
@@ -384,12 +399,14 @@ tokens = await contract.balanceOf(signer.getAddress())
 //
 
 // This will pass since the token balance is available
-contract.callStatic.transfer("donations.ethers.eth", tokens)
-//!
+//_result:
+await contract.callStatic.transfer("donations.ethers.eth", tokens)
+//_log:
 
 // This will fail since it is greater than the token balance
-contract.callStatic.transfer("donations.ethers.eth", tokens.add(1))
-//! error
+//_throws:
+await contract.callStatic.transfer("donations.ethers.eth", tokens.add(1))
+//_log:
 
 
 _subsection: ExternallyOwnedAccount  @<ExternallyOwnedAccount>

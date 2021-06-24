@@ -77,9 +77,33 @@ _subsection: Networks
 There are several official common Ethereum networks as well as custom
 networks and other compatible projects.
 
-Any API that accept a [[providers-Networkish]] can be passed a common name (such as
-``"mainnet"`` or ``"ropsten"``) to use that network definition or may specify
-custom parameters.
+Any API that accept a [[providers-Networkish]] can be passed a common
+name (such as ``"mainnet"`` or ``"ropsten"``) or chain ID to use that
+network definition or may specify custom parameters.
+
+_property: ethers.providers.getNetwork(aNetworkish) => [[providers-Network]]
+
+Returns the full [[providers-Network]] for the given standard
+//aNetworkish// [[providers-Networkish]].
+
+This is useful for functions and classes which wish to accept [[providers-Networkish]]
+as an input parameter.
+
+_code: @lang<javascript>
+
+//_hide: const getNetwork = ethers.providers.getNetwork;
+
+// By Chain Name
+//_result:
+getNetwork("homestead");
+//_hide: delete _._defaultProvider;
+//_log:
+
+// By Chain ID
+//_result:
+getNetwork(1);
+//_hide: delete _._defaultProvider;
+//_log:
 
 _heading: Custom ENS Contract
 
@@ -95,6 +119,7 @@ const network = {
     chianId: 1337,
     ensAddress: customEnsAddress
 };
+
 
 _subsection: Provider Documentation
 

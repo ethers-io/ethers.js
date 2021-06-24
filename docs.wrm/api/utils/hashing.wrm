@@ -27,14 +27,17 @@ Returns the [SHA2-512](link-wiki-sha2) digest of //aBytesLike//.
 
 _code: KECCAK256 @lang<javascript>
 
+//_result:
 utils.keccak256([ 0x12, 0x34 ])
-//!
+//_log:
 
+//_result:
 utils.keccak256("0x")
-//!
+//_log:
 
+//_result:
 utils.keccak256("0x1234")
-//!
+//_log:
 
 // The value MUST be data, such as:
 //  - an Array of numbers
@@ -42,16 +45,19 @@ utils.keccak256("0x1234")
 //  - a Uint8Array
 
 // Do NOT use UTF-8 strings that are not a DataHexstring
+//_throws:
 utils.keccak256("hello world")
-//! error
+//_log:
 
 // If needed, convert strings to bytes first:
+//_result:
 utils.keccak256(utils.toUtf8Bytes("hello world"))
-//!
+//_log:
 
 // Or equivalently use the identity function:
+//_result:
 utils.id("hello world")
-//!
+//_log:
 
 // Keep in mind that the string "0x1234" represents TWO
 // bytes (i.e. [ 0x12, 0x34 ]. If you wish to compute the
@@ -61,48 +67,56 @@ utils.id("hello world")
 // Consider the following examples:
 
 // Hash of TWO (2) bytes:
+//_result:
 utils.keccak256("0x1234")
-//!
+//_log:
 
 // Hash of TWO (2) bytes: (same result)
+//_result:
 utils.keccak256([ 0x12, 0x34 ])
-//!
+//_log:
 
-const bytes = utils.toUtf8Bytes("0x1234")
-// <hide>
-bytes
-// </hide>
-//!
+//_result:
+bytes = utils.toUtf8Bytes("0x1234")
+//_log:
 
 // Hash of SIX (6) characters (different than above)
+//_result:
 utils.keccak256(bytes)
-//!
+//_log:
 
 // Hash of SIX (6) characters (same result)
+//_result:
 utils.id("0x1234")
-//!
+//_log:
 
 _code: RIPEMD160  @lang<javascript>
 
+//_result:
 utils.ripemd160("0x")
-//!
+//_log:
 
+//_result:
 utils.ripemd160("0x1234")
-//!
+//_log:
 
 _code: SHA-2  @lang<javascript>
 
+//_result:
 utils.sha256("0x")
-//!
+//_log:
 
+//_result:
 utils.sha256("0x1234")
-//!
+//_log:
 
+//_result:
 utils.sha512("0x")
-//!
+//_log:
 
+//_result:
 utils.sha512("0x1234")
-//!
+//_log:
 
 
 _subsection: HMAC @<utils--hmac>
@@ -123,8 +137,9 @@ _code: HMAC  @lang<javascript>
 
 const key = "0x0102"
 const data = "0x1234"
+//_result:
 utils.computeHmac("sha256", key, data)
-//!
+//_log:
 
 
 _subsection: Hashing Helpers @<utils--hashing-helpers>
@@ -137,12 +152,14 @@ and the length of //message//.
 _code: Hashing Messages  @lang<javascript>
 
 // Hashing a string message
+//_result:
 utils.hashMessage("Hello World")
-//!
+//_log:
 
 // Hashing binary data (also "Hello World", but as bytes)
+//_result:
 utils.hashMessage( [ 72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100 ])
-//!
+//_log:
 
 // NOTE: It is important to understand how strings and binary
 //       data is handled differently. A string is ALWAYS processed
@@ -151,18 +168,21 @@ utils.hashMessage( [ 72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100 ])
 
 // Hashing a hex string is the same as hashing a STRING
 // Note: this is the hash of the 4 characters [ '0', 'x', '4', '2' ]
+//_result:
 utils.hashMessage("0x42")
-//!
+//_log:
 
 // Hashing the binary data
 // Note: this is the hash of the 1 byte [ 0x42 ]
+//_result:
 utils.hashMessage([ 0x42 ])
-//!
+//_log:
 
 // Hashing the binary data
 // Note: similarly, this is the hash of the 1 byte [ 0x42 ]
+//_result:
 utils.hashMessage(utils.arrayify("0x42"))
-//!
+//_log:
 
 
 _property: ethers.utils.namehash(name) => string<[[DataHexString]]<32>>  @<utils-namehash> @SRC<hash>
@@ -170,17 +190,21 @@ Returns the [ENS Namehash](link-namehash) of //name//.
 
 _code: Namehash  @lang<javascript>
 
+//_result:
 utils.namehash("")
-//!
+//_log:
 
+//_result:
 utils.namehash("eth")
-//!
+//_log:
 
+//_result:
 utils.namehash("ricmoo.firefly.eth")
-//!
+//_log:
 
+//_result:
 utils.namehash("ricmoo.xyz")
-//!
+//_log:
 
 _heading: Typed Data Encoder @<TypedDataEncoder> @SRC<hash:class.TypedDataEncoder>
 
@@ -244,19 +268,17 @@ been recursively replacedwith the value of calling //resolveName// with that val
 
 _code: Typed Data Example @lang<javascript>
 
-// <hide>
-TypedDataEncoder = ethers.utils._TypedDataEncoder
-// </hide>
+//_hide: TypedDataEncoder = ethers.utils._TypedDataEncoder
 
-const domain = {
+domain = {
     name: 'Ether Mail',
     version: '1',
     chainId: 1,
     verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC'
-}
+};
 
 // The named list of all type definitions
-const types = {
+types = {
     Person: [
         { name: 'name', type: 'string' },
         { name: 'wallet', type: 'address' }
@@ -266,10 +288,10 @@ const types = {
         { name: 'to', type: 'Person' },
         { name: 'contents', type: 'string' }
     ]
-}
+};
 
 // The data to sign
-const value = {
+value = {
     from: {
         name: 'Cow',
         wallet: '0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826'
@@ -279,23 +301,27 @@ const value = {
         wallet: '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB'
     },
     contents: 'Hello, Bob!'
-}
+};
 
-
+//_result:
 TypedDataEncoder.encode(domain, types, value)
-//!
+//_log:
 
+//_result:
 TypedDataEncoder.getPayload(domain, types, value)
-//!
+//_log:
 
+//_result:
 TypedDataEncoder.getPrimaryType(types)
-//!
+//_log:
 
+//_result:
 TypedDataEncoder.hash(domain, types, value)
-//!
+//_log:
 
+//_result:
 TypedDataEncoder.hashDomain(domain)
-//!
+//_log:
 
 
 _subsection: Solidity Hashing Algorithms @<utils--solidity-hashing>
@@ -318,17 +344,21 @@ according to their respective type in //types//.
 
 _code: Solidity Hashing  @lang<javascript>
 
+//_result:
 utils.solidityPack([ "int16", "uint48" ], [ -1, 12 ])
-//!
+//_log:
 
+//_result:
 utils.solidityPack([ "string", "uint8" ], [ "Hello", 3 ])
-//!
+//_log:
 
+//_result:
 utils.solidityKeccak256([ "int16", "uint48" ], [ -1, 12 ])
-//!
+//_log:
 
+//_result:
 utils.soliditySha256([ "int16", "uint48" ], [ -1, 12 ])
-//!
+//_log:
 
 // As a short example of the non-distinguished nature of
 // Solidity tight-packing (which is why it is inappropriate
@@ -336,14 +366,18 @@ utils.soliditySha256([ "int16", "uint48" ], [ -1, 12 ])
 // the following examples are all equal, despite representing
 // very different values and layouts.
 
+//_result:
 utils.solidityPack([ "string", "string" ], [ "hello", "world01" ])
-//!
+//_log:
 
+//_result:
 utils.solidityPack([ "string", "string" ], [ "helloworld", "01" ])
-//!
+//_log:
 
+//_result:
 utils.solidityPack([ "string", "string", "uint16" ], [ "hell", "oworld", 0x3031 ])
-//!
+//_log:
 
+//_result:
 utils.solidityPack([ "uint96" ], [ "32309054545061485574011236401" ])
-//!
+//_log:

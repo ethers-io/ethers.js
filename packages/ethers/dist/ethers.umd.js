@@ -3500,7 +3500,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "logger/5.2.0";
+	exports.version = "logger/5.3.0";
 
 	});
 
@@ -3835,7 +3835,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "bytes/5.2.0";
+	exports.version = "bytes/5.3.0";
 
 	});
 
@@ -4258,7 +4258,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "bignumber/5.2.0";
+	exports.version = "bignumber/5.3.0";
 
 	});
 
@@ -4851,8 +4851,9 @@
 	        if (comps[1].length <= decimals) {
 	            return this;
 	        }
-	        var factor = FixedNumber.from("1" + zeros.substring(0, decimals));
-	        return this.mulUnsafe(factor).addUnsafe(BUMP).floor().divUnsafe(factor);
+	        var factor = FixedNumber.from("1" + zeros.substring(0, decimals), this.format);
+	        var bump = BUMP.toFormat(this.format);
+	        return this.mulUnsafe(factor).addUnsafe(bump).floor().divUnsafe(factor);
 	    };
 	    FixedNumber.prototype.isZero = function () {
 	        return (this._value === "0.0" || this._value === "0");
@@ -4980,7 +4981,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "properties/5.2.0";
+	exports.version = "properties/5.3.0";
 
 	});
 
@@ -5157,7 +5158,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abi/5.2.0";
+	exports.version = "abi/5.3.1";
 
 	});
 
@@ -6025,7 +6026,8 @@
 	    // @TODO: more verification
 	    return type;
 	}
-	var regexIdentifier = new RegExp("^[A-Za-z_][A-Za-z0-9_]*$");
+	// See: https://github.com/ethereum/solidity/blob/1f8f1a3db93a548d0555e3e14cfc55a10e25b60e/docs/grammar/SolidityLexer.g4#L234
+	var regexIdentifier = new RegExp("^[a-zA-Z$_][a-zA-Z0-9$_]*$");
 	function verifyIdentifier(value) {
 	    if (!value || !value.match(regexIdentifier)) {
 	        logger.throwArgumentError("invalid identifier \"" + value + "\"", "value", value);
@@ -6745,7 +6747,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "rlp/5.2.0";
+	exports.version = "rlp/5.3.0";
 
 	});
 
@@ -6884,7 +6886,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "address/5.2.0";
+	exports.version = "address/5.3.0";
 
 	});
 
@@ -7580,7 +7582,7 @@
 	var bignumbers = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.MaxUint256 = exports.WeiPerEther = exports.Two = exports.One = exports.Zero = exports.NegativeOne = void 0;
+	exports.MaxInt256 = exports.MinInt256 = exports.MaxUint256 = exports.WeiPerEther = exports.Two = exports.One = exports.Zero = exports.NegativeOne = void 0;
 
 	var NegativeOne = ( /*#__PURE__*/lib$2.BigNumber.from(-1));
 	exports.NegativeOne = NegativeOne;
@@ -7594,6 +7596,10 @@
 	exports.WeiPerEther = WeiPerEther;
 	var MaxUint256 = ( /*#__PURE__*/lib$2.BigNumber.from("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
 	exports.MaxUint256 = MaxUint256;
+	var MinInt256 = ( /*#__PURE__*/lib$2.BigNumber.from("-0x8000000000000000000000000000000000000000000000000000000000000000"));
+	exports.MinInt256 = MinInt256;
+	var MaxInt256 = ( /*#__PURE__*/lib$2.BigNumber.from("0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+	exports.MaxInt256 = MaxInt256;
 
 	});
 
@@ -7623,7 +7629,7 @@
 	var lib$7 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.EtherSymbol = exports.HashZero = exports.MaxUint256 = exports.WeiPerEther = exports.Two = exports.One = exports.Zero = exports.NegativeOne = exports.AddressZero = void 0;
+	exports.EtherSymbol = exports.HashZero = exports.MaxInt256 = exports.MinInt256 = exports.MaxUint256 = exports.WeiPerEther = exports.Two = exports.One = exports.Zero = exports.NegativeOne = exports.AddressZero = void 0;
 
 	Object.defineProperty(exports, "AddressZero", { enumerable: true, get: function () { return addresses.AddressZero; } });
 
@@ -7633,6 +7639,8 @@
 	Object.defineProperty(exports, "Two", { enumerable: true, get: function () { return bignumbers.Two; } });
 	Object.defineProperty(exports, "WeiPerEther", { enumerable: true, get: function () { return bignumbers.WeiPerEther; } });
 	Object.defineProperty(exports, "MaxUint256", { enumerable: true, get: function () { return bignumbers.MaxUint256; } });
+	Object.defineProperty(exports, "MinInt256", { enumerable: true, get: function () { return bignumbers.MinInt256; } });
+	Object.defineProperty(exports, "MaxInt256", { enumerable: true, get: function () { return bignumbers.MaxInt256; } });
 
 	Object.defineProperty(exports, "HashZero", { enumerable: true, get: function () { return hashes.HashZero; } });
 
@@ -7715,7 +7723,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "strings/5.2.0";
+	exports.version = "strings/5.3.0";
 
 	});
 
@@ -8502,7 +8510,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "hash/5.2.0";
+	exports.version = "hash/5.3.0";
 
 	});
 
@@ -8538,14 +8546,18 @@
 	function namehash(name) {
 	    /* istanbul ignore if */
 	    if (typeof (name) !== "string") {
-	        logger.throwArgumentError("invalid address - " + String(name), "name", name);
+	        logger.throwArgumentError("invalid ENS name; not a string", "name", name);
 	    }
+	    var current = name;
 	    var result = Zeros;
-	    while (name.length) {
-	        var partition = name.match(Partition);
+	    while (current.length) {
+	        var partition = current.match(Partition);
+	        if (partition == null || partition[2] === "") {
+	            logger.throwArgumentError("invalid ENS address; missing component", "name", name);
+	        }
 	        var label = lib$8.toUtf8Bytes(lib$8.nameprep(partition[3]));
 	        result = lib$4.keccak256(lib$1.concat([result, lib$4.keccak256(label)]));
-	        name = partition[2] || "";
+	        current = partition[2] || "";
 	    }
 	    return lib$1.hexlify(result);
 	}
@@ -9736,7 +9748,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abstract-provider/5.2.0";
+	exports.version = "abstract-provider/5.3.0";
 
 	});
 
@@ -9871,7 +9883,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abstract-signer/5.2.0";
+	exports.version = "abstract-signer/5.3.0";
 
 	});
 
@@ -11783,6 +11795,16 @@
 
 	var inherits_1 = inherits_browser;
 
+	function isSurrogatePair(msg, i) {
+	  if ((msg.charCodeAt(i) & 0xFC00) !== 0xD800) {
+	    return false;
+	  }
+	  if (i < 0 || i + 1 >= msg.length) {
+	    return false;
+	  }
+	  return (msg.charCodeAt(i + 1) & 0xFC00) === 0xDC00;
+	}
+
 	function toArray(msg, enc) {
 	  if (Array.isArray(msg))
 	    return msg.slice();
@@ -11791,14 +11813,29 @@
 	  var res = [];
 	  if (typeof msg === 'string') {
 	    if (!enc) {
+	      // Inspired by stringToUtf8ByteArray() in closure-library by Google
+	      // https://github.com/google/closure-library/blob/8598d87242af59aac233270742c8984e2b2bdbe0/closure/goog/crypt/crypt.js#L117-L143
+	      // Apache License 2.0
+	      // https://github.com/google/closure-library/blob/master/LICENSE
+	      var p = 0;
 	      for (var i = 0; i < msg.length; i++) {
 	        var c = msg.charCodeAt(i);
-	        var hi = c >> 8;
-	        var lo = c & 0xff;
-	        if (hi)
-	          res.push(hi, lo);
-	        else
-	          res.push(lo);
+	        if (c < 128) {
+	          res[p++] = c;
+	        } else if (c < 2048) {
+	          res[p++] = (c >> 6) | 192;
+	          res[p++] = (c & 63) | 128;
+	        } else if (isSurrogatePair(msg, i)) {
+	          c = 0x10000 + ((c & 0x03FF) << 10) + (msg.charCodeAt(++i) & 0x03FF);
+	          res[p++] = (c >> 18) | 240;
+	          res[p++] = ((c >> 12) & 63) | 128;
+	          res[p++] = ((c >> 6) & 63) | 128;
+	          res[p++] = (c & 63) | 128;
+	        } else {
+	          res[p++] = (c >> 12) | 224;
+	          res[p++] = ((c >> 6) & 63) | 128;
+	          res[p++] = (c & 63) | 128;
+	        }
 	      }
 	    } else if (enc === 'hex') {
 	      msg = msg.replace(/[^a-z0-9]+/ig, '');
@@ -13919,7 +13956,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "signing-key/5.2.0";
+	exports.version = "signing-key/5.3.0";
 
 	});
 
@@ -14019,7 +14056,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "transactions/5.2.0";
+	exports.version = "transactions/5.3.0";
 
 	});
 
@@ -14375,7 +14412,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "contracts/5.2.0";
+	exports.version = "contracts/5.3.0";
 
 	});
 
@@ -15042,7 +15079,7 @@
 	            // Check that the signature is unique; if not the ABI generation has
 	            // not been cleaned or may be incorrectly generated
 	            if (uniqueSignatures[signature]) {
-	                logger.warn("Duplicate ABI entry for " + JSON.stringify(name));
+	                logger.warn("Duplicate ABI entry for " + JSON.stringify(signature));
 	                return;
 	            }
 	            uniqueSignatures[signature] = true;
@@ -15691,7 +15728,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "sha2/5.2.0";
+	exports.version = "sha2/5.3.0";
 
 	});
 
@@ -15821,7 +15858,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "wordlists/5.2.0";
+	exports.version = "wordlists/5.3.0";
 
 	});
 
@@ -16617,7 +16654,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "hdnode/5.2.0";
+	exports.version = "hdnode/5.3.0";
 
 	});
 
@@ -16977,7 +17014,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "random/5.2.0";
+	exports.version = "random/5.3.0";
 
 	});
 
@@ -17873,7 +17910,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "json-wallets/5.2.0";
+	exports.version = "json-wallets/5.3.0";
 
 	});
 
@@ -19019,7 +19056,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "wallet/5.2.0";
+	exports.version = "wallet/5.3.0";
 
 	});
 
@@ -19285,7 +19322,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "networks/5.2.0";
+	exports.version = "networks/5.3.1";
 
 	});
 
@@ -19436,6 +19473,7 @@
 	    },
 	    xdai: { chainId: 100, name: "xdai" },
 	    matic: { chainId: 137, name: "matic" },
+	    maticmum: { chainId: 80001, name: "maticmum" },
 	    bnb: { chainId: 56, name: "bnb" },
 	    bnbt: { chainId: 97, name: "bnbt" },
 	};
@@ -19560,7 +19598,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "web/5.2.0";
+	exports.version = "web/5.3.0";
 
 	});
 
@@ -20267,7 +20305,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.2.0";
+	exports.version = "providers/5.3.1";
 
 	});
 
@@ -22948,18 +22986,45 @@
 	        });
 	    };
 	    JsonRpcSigner.prototype.sendTransaction = function (transaction) {
-	        var _this = this;
-	        return this.sendUncheckedTransaction(transaction).then(function (hash) {
-	            return lib$q.poll(function () {
-	                return _this.provider.getTransaction(hash).then(function (tx) {
-	                    if (tx === null) {
-	                        return undefined;
-	                    }
-	                    return _this.provider._wrapTransaction(tx, hash);
-	                });
-	            }, { oncePoll: _this.provider }).catch(function (error) {
-	                error.transactionHash = hash;
-	                throw error;
+	        return __awaiter(this, void 0, void 0, function () {
+	            var blockNumber, hash, error_1;
+	            var _this = this;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0: return [4 /*yield*/, this.provider._getInternalBlockNumber(100 + 2 * this.provider.pollingInterval)];
+	                    case 1:
+	                        blockNumber = _a.sent();
+	                        return [4 /*yield*/, this.sendUncheckedTransaction(transaction)];
+	                    case 2:
+	                        hash = _a.sent();
+	                        _a.label = 3;
+	                    case 3:
+	                        _a.trys.push([3, 5, , 6]);
+	                        return [4 /*yield*/, lib$q.poll(function () { return __awaiter(_this, void 0, void 0, function () {
+	                                var tx;
+	                                return __generator(this, function (_a) {
+	                                    switch (_a.label) {
+	                                        case 0: return [4 /*yield*/, this.provider.getTransaction(hash)];
+	                                        case 1:
+	                                            tx = _a.sent();
+	                                            if (tx === null) {
+	                                                return [2 /*return*/, undefined];
+	                                            }
+	                                            return [2 /*return*/, this.provider._wrapTransaction(tx, hash, blockNumber)];
+	                                    }
+	                                });
+	                            }); }, { oncePoll: this.provider })];
+	                    case 4: 
+	                    // Unfortunately, JSON-RPC only provides and opaque transaction hash
+	                    // for a response, and we need the actual transaction, so we poll
+	                    // for it; it should show up very quickly
+	                    return [2 /*return*/, _a.sent()];
+	                    case 5:
+	                        error_1 = _a.sent();
+	                        error_1.transactionHash = hash;
+	                        throw error_1;
+	                    case 6: return [2 /*return*/];
+	                }
 	            });
 	        });
 	    };
@@ -23111,7 +23176,7 @@
 	    };
 	    JsonRpcProvider.prototype._uncachedDetectNetwork = function () {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var chainId, error_1, error_2, getNetwork;
+	            var chainId, error_2, error_3, getNetwork;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0: return [4 /*yield*/, timer(0)];
@@ -23126,7 +23191,7 @@
 	                        chainId = _a.sent();
 	                        return [3 /*break*/, 9];
 	                    case 4:
-	                        error_1 = _a.sent();
+	                        error_2 = _a.sent();
 	                        _a.label = 5;
 	                    case 5:
 	                        _a.trys.push([5, 7, , 8]);
@@ -23135,7 +23200,7 @@
 	                        chainId = _a.sent();
 	                        return [3 /*break*/, 8];
 	                    case 7:
-	                        error_2 = _a.sent();
+	                        error_3 = _a.sent();
 	                        return [3 /*break*/, 8];
 	                    case 8: return [3 /*break*/, 9];
 	                    case 9:
@@ -23264,7 +23329,7 @@
 	    };
 	    JsonRpcProvider.prototype.perform = function (method, params) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var args, error_3;
+	            var args, error_4;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
@@ -23278,8 +23343,8 @@
 	                        return [4 /*yield*/, this.send(args[0], args[1])];
 	                    case 2: return [2 /*return*/, _a.sent()];
 	                    case 3:
-	                        error_3 = _a.sent();
-	                        return [2 /*return*/, checkError(method, error_3, params)];
+	                        error_4 = _a.sent();
+	                        return [2 /*return*/, checkError(method, error_4, params)];
 	                    case 4: return [2 /*return*/];
 	                }
 	            });
@@ -26199,7 +26264,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "units/5.2.0";
+	exports.version = "units/5.3.0";
 
 	});
 
@@ -26455,7 +26520,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.2.0";
+	exports.version = "ethers/5.3.1";
 
 	});
 

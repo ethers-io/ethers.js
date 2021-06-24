@@ -5,6 +5,10 @@ to be included in the base library. The API should not be considered
 stable and does not follow [[link-semver]] versioning, so applications
 requiring it should specify the //exact version// needed.
 
+These features are not available in the core ethers package, so to use them
+you must install the ``@ethersproject/experimental`` package and import them
+from that.
+
 _subsection: BrainWallet @<experimental-brainwallet> @INHERIT<[[Wallet]]>
 
 Ethers removed support for BrainWallets in v4, since they are unsafe and
@@ -19,12 +23,28 @@ the generated wallet has a mnemonic.
 _property: BrainWallet.generateLegacy(username, password [ , progressCallback ]) => [[experimental-brainwallet]]
 Generate a brain wallet which is compatible with the ethers v3 and earlier.
 
+_code: Importing @lang<script>
+
+// Node
+const { BrainWallet } = require("@ethersproject/experimental");
+
+// ESM/TypeScript
+import { BrainWallet } from "@ethersproject/experimental";
+
 
 _subsection: EIP1193Bridge @<experimental-eip1193bridge> @INHERIT<[[link-npm-events]]>
 
 The **EIP1193Bridge** allows a normal Ethers [[Signer]] and [[Provider]] to be
 exposed in as a standard [EIP-1193 Provider](link-eip-1193), which may be useful
 when interacting with other libraries.
+
+_code: Importing @lang<script>
+
+// Node
+const { Eip1193Bridge } = require("@ethersproject/experimental");
+
+// ESM/TypeScript
+import { Eip1193Bridge } from "@ethersproject/experimental";
 
 
 _subsection: NonceManager @<experimental-noncemanager> @INHERIT<[[Signer]]>
@@ -63,3 +83,11 @@ Bump the current transaction count (nonce) by //count//.
 
 This may be useful in interacting with the signer outside of using
 this class.
+
+_code: Importing @lang<script>
+
+// Node
+const { NonceManager } = require("@ethersproject/experimental");
+
+// ESM/TypeScript
+import { NonceManager } from "@ethersproject/experimental";

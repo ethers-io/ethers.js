@@ -73,7 +73,7 @@ function _getUrl(href, options) {
             options = {};
         }
         // @TODO: Once we drop support for node 8, we can pass the href
-        //        firectly into request and skip adding the components
+        //        directly into request and skip adding the components
         //        to this request object
         const url = url_1.parse(href);
         const request = {

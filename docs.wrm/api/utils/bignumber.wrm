@@ -1,6 +1,6 @@
 _section: BigNumber @<BigNumber>
 
-Many operations in Ethereum operation on numbers which are
+Many operations in Ethereum operate on numbers which are
 [outside the range of safe values](BigNumber--notes-safenumbers) to use
 in JavaScript.
 
@@ -49,43 +49,52 @@ _heading: Examples:  @<>
 _code: @lang<javascript>
 
 // From a decimal string...
+//_result:
 BigNumber.from("42")
-//!
+//_log:
 
 // From a HexString...
+//_result:
 BigNumber.from("0x2a")
-//!
+//_log:
 
 // From a negative HexString...
+//_result:
 BigNumber.from("-0x2a")
-//!
+//_log:
 
 // From an Array (or Uint8Array)...
+//_result:
 BigNumber.from([ 42 ])
-//!
+//_log:
 
 // From an existing BigNumber...
 let one1 = constants.One;
 let one2 = BigNumber.from(one1)
 
+//_result:
 one2
-//!
+//_log:
 
 // ...which returns the same instance
+//_result:
 one1 === one2
-//!
+//_log:
 
 // From a (safe) number...
+//_result:
 BigNumber.from(42)
-//!
+//_log:
 
 // From a ES2015 BigInt... (only on platforms with BigInt support)
+//_result:
 BigNumber.from(42n)
-//!
+//_log:
 
 // Numbers outside the safe range fail:
+//_throws:
 BigNumber.from(Number.MAX_SAFE_INTEGER);
-//! error
+//_log:
 
 
 _subsection: Methods @<BigNumber--methods>
@@ -186,8 +195,9 @@ _code: @lang<javascript>
 let a = BigNumber.from(42);
 let b = BigNumber.from("91");
 
+//_result:
 a.mul(b);
-//!
+//_log:
 
 
 _subsection: Notes @<BigNumber--notes>
@@ -214,8 +224,9 @@ To demonstrate how this may be an issue in your code, consider:
 
 _code: @lang<javascript>
 
+//_result:
 (Number.MAX_SAFE_INTEGER + 2 - 2) == (Number.MAX_SAFE_INTEGER)
-//!
+//_log:
 
 _null:
 

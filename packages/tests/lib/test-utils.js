@@ -243,10 +243,40 @@ describe('Test Namehash', function () {
             assert_1.default.equal(ethers_1.ethers.utils.namehash(test.name), test.expected, 'computes namehash(' + test.name + ')');
         });
     });
-    it("isValidName", function () {
-        assert_1.default.ok(ethers_1.ethers.utils.isValidName("ricmoo.eth"));
+    var goodNames = [
+        "ricmoo.eth",
+        "foo",
+        "foo.bar",
+    ];
+    var badNames = [
+        ".",
+        "..",
+        "ricmoo..eth",
+        "ricmoo...eth",
+        ".foo",
+        "foo.",
+    ];
+    // The empty string is not a valid name, but has the zero hash
+    // as its namehash, which may be used for recursive purposes
+    it("empty ENS name", function () {
         assert_1.default.ok(!ethers_1.ethers.utils.isValidName(""));
-        assert_1.default.ok(!ethers_1.ethers.utils.isValidName("ricmoo..eth"));
+    });
+    goodNames.forEach(function (name) {
+        it("ENS namehash ok - " + name, function () {
+            assert_1.default.ok(ethers_1.ethers.utils.isValidName(name));
+            ethers_1.ethers.utils.namehash(name);
+        });
+    });
+    badNames.forEach(function (name) {
+        it("ENS namehash fails - " + name, function () {
+            assert_1.default.ok(!ethers_1.ethers.utils.isValidName(name));
+            assert_1.default.throws(function () {
+                var namehash = ethers_1.ethers.utils.namehash(name);
+                console.log(name, namehash);
+            }, function (error) {
+                return !!error.message.match(/invalid ENS address/);
+            });
+        });
     });
 });
 describe('Test ID Hash Functions', function () {

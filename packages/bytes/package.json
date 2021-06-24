@@ -1,7 +1,7 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/logger": "^5.2.0"
+    "@ethersproject/logger": "^5.3.0"
   },
   "description": "Bytes utility functions for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -37,7 +37,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xf5c9822d7ad93e85a836d07774c105a2c8a70c1e6e111b1dcaf49d6e00bd375d",
+  "tarballHash": "0xa7b4b67ea3e558b3a66e704cc9663f2cdf51f9c74c0cfd1e8db78482cc4ecf3b",
   "types": "./lib/index.d.ts",
-  "version": "5.2.0"
+  "version": "5.3.0"
 }

@@ -114,6 +114,7 @@ export interface TransactionReceipt {
     confirmations: number,
     cumulativeGasUsed: BigNumber,
     byzantium: boolean,
+    type: number;
     status?: number
 };
 

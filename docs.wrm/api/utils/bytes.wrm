@@ -86,28 +86,34 @@ zeros.
 _code: Examples @lang<javascript>
 
 // Convert a hexstring to a Uint8Array
+//_result:
 arrayify("0x1234")
-//!
+//_log:
 
 // Convert an Array to a hexstring
+//_result:
 hexlify([1, 2, 3, 4])
-//!
+//_log:
 
 // Convert an Object to a hexstring
+//_result:
 hexlify({ length: 2, "0": 1, "1": 2 })
-//!
+//_log:
 
 // Convert an Array to a hexstring
+//_result:
 hexlify([ 1 ])
-//!
+//_log:
 
 // Convert a number to a stripped hex value
+//_result:
 hexValue(1)
-//!
+//_log:
 
 // Convert an Array to a stripped hex value
+//_result:
 hexValue([ 1, 2 ])
-//!
+//_log:
 
 
 _subsection: Array Manipulation
@@ -170,15 +176,18 @@ Return a copy of //array// shuffled using [[link-wiki-shuffle]].
 
 _code: Examples @lang<javascript>
 
+//_result:
 utils.randomBytes(8)
-//!
+//_log:
 
 const data = [ 1, 2, 3, 4, 5, 6, 7 ];
 
 // Returns a new Array
+//_result:
 utils.shuffled(data);
-//!
+//_log:
 
 // The Original is unscathed...
+//_result:
 data
-//!
+//_log:

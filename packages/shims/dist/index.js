@@ -623,14 +623,21 @@
 	                    throw new Error("failed to normalize");
 	                }
 
+	                // @TODO: Must find a better way to detect completely
+	                // broken normalize implementations. On some versions
+	                // of Android, the following causes the entire app
+	                // to abort. Might want to add "check if normalizing
+	                // is necessary" to Wordlist; if the entire string is
+	                // from CJK planes, no need to call normalize?
+	                //
 	                // Some platforms seem to only fail when normalizing
 	                // specific code planes, so add those here as they
 	                // come up.
 	                //               "hangul"
-	                const checks = [ "\ud55c\uae00" ];
-	                for (var j = 0; j < checks.length; j++) {
-	                    checks[j].normalize(forms[i]);
-	                }
+	                //const checks = [ "\ud55c\uae00" ];
+	                //for (var j = 0; j < checks.length; j++) {
+	                //    checks[j].normalize(forms[i]);
+	                //}
 	            } catch(error) {
 	                missing.push(forms[i]);
 	            }

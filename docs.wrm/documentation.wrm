@@ -219,58 +219,64 @@ for displaying code samples.
 
 _heading: JavaScript Evaluation @<flatworm--code-eval>
 
-For JavaScript files, the file is executed with some simple substitution.
+For JavaScript files, the file is transpiled and executed in a VM,
+allowiung output (or exceptions) of blocks to be included in the
+fragment output.
 
-A bare ``\/\/!`` on a line is replaced with the result of the last
-statement. Building will fail if an error is thrown.
+The entire **code fragment** source is included in an async IIFE,
+whick means ``await`` is allowed, and several special comment
+directives are allowed.
 
-A bare ``\/\/!error`` is replaced with the throw error. Building will
-fail if an error is not thrown.
+A ``/\/_hide:`` will include any following code directly into the
+output, but will not include it in the generated output for the fragment.
 
-Also any code included between the lines **``\/\/ <hide>``** and
-**``\/\/ </hide>``** will be omitted from the output, which can be used
-to setup variables.
+A ``/\/_log:`` will include the value of any following expression in the
+output, prefixed with a ``/\/ ``. Renderers will mark output in different
+style if possible.
+
+A ``/\/_result:`` will begin a block, assigning the contents to ``_``. The
+block can be ended with a ``/\/_log:`` or ``/\/_null:``, if no value is given
+to log, then ``_`` is assumed. If an error occurs, generation fails.
+
+A ``/\/_throws:`` will begin a block, which is expected to throw assigning
+the error to ``_``. The block can be ended with a ``/\/_log:`` or ``/\/_null:``,
+if no value is given to log, then ``_`` is assumed. If an error do not occur,
+generation fails.
 
 _code: Code Evaluation Example @lang<text>
 
 \_code: Result of Code Example  @lang<javascript>
 
-// <hide>
-const url = require("url");
-// </hide>
+//_hide: const url = require("url");
 
+//_result:
 url.parse("https://www.ricmoo.com/").protocol
-//!
+//_log:
 
+//_throws:
 url.parse(45)
-//! error
+//_log:
 
 // You want to assign (doesn't emit eval) AND display the value
 const foo = 4 + 5;
-// <hide>
-foo
-// </hide>
-//!
+//_log: foo
 
 
 _code: Result of Code Example  @lang<javascript>
 
-// <hide>
-const url = require("url");
-// </hide>
+//_hide: const url = require("url");
 
+//_result:
 url.parse("https://www.ricmoo.com/").protocol
-//!
+//_log:
 
+//_throws:
 url.parse(45)
-//! error
+//_log:
 
 // You want to assign (doesn't emit eval) AND display the value
 const foo = 4 + 5;
-// <hide>
-foo
-// </hide>
-//!
+//_log: foo
 
 
 _heading: Languages

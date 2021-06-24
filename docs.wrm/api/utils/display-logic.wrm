@@ -53,6 +53,13 @@ _heading: Formatting @<display-logic--formatting>
 _property: ethers.utils.commify(value) => string  @<utils-commify> @SRC<units>
 Returns a string with value grouped by 3 digits, separated by ``,``.
 
+_code: @lang<javascript>
+
+//_hide: const commify = ethers.utils.commify;
+
+//_result:
+commify("-1000.3000");
+//_log:
 
 _heading: Conversion @<unit-conversion>
 
@@ -60,13 +67,88 @@ _property: ethers.utils.formatUnits(value [ , unit = "ether" ] ) => string  @<ut
 Returns a string representation of //value// formatted with //unit//
 digits (if it is a number) or to the unit specified (if a string).
 
+_code: @lang<javascript>
+
+//_hide: const formatUnits = ethers.utils.formatUnits;
+//_hide: const BigNumber = ethers.BigNumber;
+
+const oneGwei = BigNumber.from("1000000000");
+const oneEther = BigNumber.from("1000000000000000000");
+
+//_result:
+formatUnits(oneGwei, 0);
+//_log:
+
+//_result:
+formatUnits(oneGwei, "gwei");
+//_log:
+
+//_result:
+formatUnits(oneGwei, 9);
+//_log:
+
+//_result:
+formatUnits(oneEther);
+//_log:
+
+//_result:
+formatUnits(oneEther, 18);
+//_log:
+
 _property: ethers.utils.formatEther(value) => string  @<utils-formatEther> @SRC<units>
 The equivalent to calling ``formatUnits(value, "ether")``.
+
+_code: @lang<javascript>
+
+//_hide: const formatEther = ethers.utils.formatEther;
+//_hide: const BigNumber = ethers.BigNumber;
+
+const value = BigNumber.from("1000000000000000000");
+
+//_result:
+formatEther(value);
+//_log:
 
 _property: ethers.utils.parseUnits(value [ , unit = "ether" ] ) => [BigNumber](BigNumber)  @<utils-parseUnits> @SRC<units>
 Returns a [BigNumber](BigNumber) representation of //value//, parsed with
 //unit// digits (if it is a number) or from the unit specified (if
 a string).
 
+_code: @lang<javascript>
+
+//_hide: const parseUnits = ethers.utils.parseUnits;
+
+//_result:
+parseUnits("1.0");
+//_log:
+
+//_result:
+parseUnits("1.0", "ether");
+//_log:
+
+//_result:
+parseUnits("1.0", 18);
+//_log:
+
+//_result:
+parseUnits("121.0", "gwei");
+//_log:
+
+//_result:
+parseUnits("121.0", 9);
+//_log:
+
 _property: ethers.utils.parseEther(value) => [BigNumber](BigNumber)  @<utils-parseEther> @SRC<units>
 The equivalent to calling ``parseUnits(value, "ether")``.
+
+_code: @lang<javascript>
+
+//_hide: const parseEther = ethers.utils.parseEther;
+
+//_result:
+parseEther("1.0");
+//_log:
+
+//_result:
+parseEther("-0.5");
+//_log:

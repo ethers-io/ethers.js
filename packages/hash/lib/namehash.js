@@ -27,14 +27,18 @@ exports.isValidName = isValidName;
 function namehash(name) {
     /* istanbul ignore if */
     if (typeof (name) !== "string") {
-        logger.throwArgumentError("invalid address - " + String(name), "name", name);
+        logger.throwArgumentError("invalid ENS name; not a string", "name", name);
     }
+    var current = name;
     var result = Zeros;
-    while (name.length) {
-        var partition = name.match(Partition);
+    while (current.length) {
+        var partition = current.match(Partition);
+        if (partition == null || partition[2] === "") {
+            logger.throwArgumentError("invalid ENS address; missing component", "name", name);
+        }
         var label = strings_1.toUtf8Bytes(strings_1.nameprep(partition[3]));
         result = keccak256_1.keccak256(bytes_1.concat([result, keccak256_1.keccak256(label)]));
-        name = partition[2] || "";
+        current = partition[2] || "";
     }
     return bytes_1.hexlify(result);
 }

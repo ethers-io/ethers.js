@@ -23,11 +23,11 @@ export type AccessListish = AccessList |
                             Array<[ string, Array<string> ]> |
                             Record<string, Array<string>>;
 
-export const TransactionTypes: Record<string, number> = Object.freeze({
-    legacy: -1,
-    eip2930: 1,
-    eip1559: 2,
-});
+export enum TransactionTypes {
+    legacy = 0,
+    eip2930 = 1,
+    eip1559 = 2,
+};
 
 export type UnsignedTransaction = {
     to?: string;
@@ -103,7 +103,7 @@ const transactionFields = [
 ];
 
 const allowedTransactionKeys: { [ key: string ]: boolean } = {
-    chainId: true, data: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true, type: true
+    chainId: true, data: true, gasLimit: true, gasPrice:true, nonce: true, to: true, type: true, value: true
 }
 
 export function computeAddress(key: BytesLike | string): string {
@@ -304,7 +304,7 @@ function _serialize(transaction: UnsignedTransaction, signature?: SignatureLike)
 
 export function serialize(transaction: UnsignedTransaction, signature?: SignatureLike): string {
     // Legacy and EIP-155 Transactions
-    if (transaction.type == null || transaction.type === -1) {
+    if (transaction.type == null || transaction.type === 0) {
         if (transaction.accessList != null) {
             logger.throwArgumentError("untyped transactions do not support accessList; include type: 1", "transaction", transaction);
         }
