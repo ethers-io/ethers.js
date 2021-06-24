@@ -362,7 +362,7 @@ function _parseEip1559(payload: Uint8Array): Transaction {
         nonce:                 handleNumber(transaction[1]).toNumber(),
         maxPriorityFeePerGas:  maxPriorityFeePerGas,
         maxFeePerGas:          maxFeePerGas,
-        gasPrice:              maxPriorityFeePerGas.add(maxFeePerGas),
+        gasPrice:              maxFeePerGas,
         gasLimit:              handleNumber(transaction[4]),
         to:                    handleAddress(transaction[5]),
         value:                 handleNumber(transaction[6]),
@@ -375,7 +375,7 @@ function _parseEip1559(payload: Uint8Array): Transaction {
 
     tx.hash = keccak256(payload);
 
-    _parseEipSignature(tx, transaction.slice(9), _serializeEip2930);
+    _parseEipSignature(tx, transaction.slice(9), _serializeEip1559);
 
     return tx;
 }

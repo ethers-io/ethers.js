@@ -71,7 +71,7 @@ interface _Block {
     miner: string;
     extraData: string;
 
-    baseFee?: null | BigNumber;
+    baseFeePerGas?: null | BigNumber;
 }
 
 export interface Block extends _Block {
@@ -238,12 +238,12 @@ export abstract class Provider implements OnceBlockable {
 
         let maxFeePerGas = null, maxPriorityFeePerGas = null;
 
-        if (block && block.baseFee) {
+        if (block && block.baseFeePerGas) {
             // We may want to compute this more accurately in the future,
             // using the formula "check if the base fee is correct".
             // See: https://eips.ethereum.org/EIPS/eip-1559
             maxPriorityFeePerGas = BigNumber.from("1000000000");
-            maxFeePerGas = block.baseFee.mul(2).add(maxPriorityFeePerGas);
+            maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
         }
 
         return { maxFeePerGas, maxPriorityFeePerGas, gasPrice };

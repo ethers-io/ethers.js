@@ -145,7 +145,7 @@ export class Formatter {
 
             transactions: Formatter.allowNull(Formatter.arrayOf(hash)),
 
-            baseFee: Formatter.allowNull(bigNumber)
+            baseFeePerGas: Formatter.allowNull(bigNumber)
         };
 
         formats.blockWithTransactions = shallowCopy(formats.block);
