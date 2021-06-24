@@ -98,7 +98,7 @@ export interface FallbackProviderConfig {
     // The Provider
     provider: Provider;
 
-    // The priority to favour this Provider; higher values are used first
+    // The priority to favour this Provider; lower values are used first (higher priority)
     priority?: number;
 
     // Timeout before also triggering the next provider; this does not stop
