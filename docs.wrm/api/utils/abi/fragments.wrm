@@ -52,27 +52,30 @@ _heading: Output Formats @<fragments--output-formats> @SRC<abi/fragments:FormatT
 Each [[Fragment]] and [[ParamType]] may be output using its ``format``
 method.
 
-_property: ethers.utils.FragmentTypes.full => string
+_property: ethers.utils.FormatTypes.full => string
 This is a full human-readable string, including all parameter names, any
 optional modifiers (e.g. ``indexed``, ``public``, etc) and white-space
 to aid in human readability.
 
-_property: ethers.utils.FragmentTypes.minimal => string
+_property: ethers.utils.FormatTypes.minimal => string
 This is similar to ``full``, except with no unnecessary whitespace or parameter
 names. This is useful for storing a minimal string which can still fully
 reconstruct the original Fragment using [Fragment&thinsp;.&thinsp;from](Fragment-from).
 
-_property: ethers.utils.FragmentTypes.json => string
+_property: ethers.utils.FormatTypes.json => string
 This returns a JavaScript Object which is safe to call ``JSON.stringify``
 on to create a JSON string.
 
-_property: ethers.utils.FragmentTypes.sighash => string
+_property: ethers.utils.FormatTypes.sighash => string
 This is a minimal output format, which is used by Solidity when computing a
 signature hash or an event topic hash.
 
 _warning: Note
 The ``sighash`` format is **insufficient** to re-create the original [[Fragment]],
 since it discards modifiers such as indexed, anonymous, stateMutability, etc.
+
+It is only useful for computing the selector for a Fragment, and cannot
+be used to format an Interface.
 
 
 _subsection: Fragment @<Fragment> @SRC<abi/fragments:class.Fragment>

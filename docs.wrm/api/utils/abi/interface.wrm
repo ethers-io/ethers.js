@@ -33,12 +33,28 @@ _code: Creating an Interface instance @lang<javascript>
 // This interface is used for the below examples
 
 const iface = new Interface([
+  // Constructor
   "constructor(string symbol, string name)",
+
+  // State mutating method
   "function transferFrom(address from, address to, uint amount)",
-  "function balanceOf(address owner) view returns (uint)",
+
+  // State mutating method, which is payable
   "function mint(uint amount) payable",
+
+  // Constant method (i.e. "view" or "pure")
+  "function balanceOf(address owner) view returns (uint)",
+
+  // An Event
   "event Transfer(address indexed from, address indexed to, uint256 amount)",
-  "error AccountLocked(address owner, uint256 balance)"
+
+  // A Custom Solidity Error
+  "error AccountLocked(address owner, uint256 balance)",
+
+  // Examples with structured types
+  "function addUser(tuple(string name, address addr) user) returns (uint id)",
+  "function addUsers(tuple(string name, address addr)[] user) returns (uint[] id)",
+  "function getUser(uint id) view returns (tuple(string name, address addr) user)"
 ]);
 
 //_hide: _page.iface = iface;
@@ -263,6 +279,25 @@ iface.encodeFunctionData("transferFrom", [
 ])
 //_log:
 
+// Encoding structured data (using positional Array)
+user = [
+   "Richard Moore",
+   "0x8ba1f109551bD432803012645Ac136ddd64DBA72"
+];
+//_result:
+iface.encodeFunctionData("addUser", [ user ]);
+//_log:
+
+// Encoding structured data, using objects. Only available
+// if paramters are named.
+user = {
+   name: "Richard Moore",
+   addr: "0x8ba1f109551bD432803012645Ac136ddd64DBA72"
+};
+//_result:
+iface.encodeFunctionData("addUser", [ user ]);
+//_log:
+
 _property: interface.encodeFunctionResult(fragment [ , values ]) => string<[[DataHexString]]> @SRC<abi/interface>
 Returns the encoded result, which would normally be the response from a call for
 //fragment// (see [[Interface--specifying-fragments]]) for the given //values//.
@@ -342,18 +377,37 @@ _code: @lang<javascript>
 //_hide: const iface = _page.iface;
 
 // Decoding result data (e.g. from an eth_call)
-const resultData = "0x0000000000000000000000000000000000000000000000000de0b6b3a7640000";
+resultData = "0x0000000000000000000000000000000000000000000000000de0b6b3a7640000";
 //_result:
 iface.decodeFunctionResult("balanceOf", resultData)
 //_log:
 
 // Decoding result data which was caused by a revert
 // Throws a CALL_EXCEPTION, with extra details
-const errorData = "0xf7c3865a0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba720000000000000000000000000000000000000000000000000de0b6b3a7640000";
+errorData = "0xf7c3865a0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba720000000000000000000000000000000000000000000000000de0b6b3a7640000";
 //_throws:
 iface.decodeFunctionResult("balanceOf", errorData)
 //_log:
 
+// Decoding structured data returns a Result object, which
+// will include all values positionally and if the ABI
+// included names, values will additionally be available
+// by their name.
+resultData = "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000400000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72000000000000000000000000000000000000000000000000000000000000000d52696368617264204d6f6f726500000000000000000000000000000000000000";
+//_result:
+result = iface.decodeFunctionResult("getUser", resultData);
+//_log:
+
+// Access positionally:
+// The 0th output parameter, the 0th proerty of the structure
+//_result:
+result[0][0];
+//_log:
+
+// Access by name: (only avilable because parameters were named)
+//_result:
+result.user.name
+//_log:
 
 _subsection: Parsing @<Interface--parsing>
 

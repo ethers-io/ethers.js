@@ -179,12 +179,20 @@ function codeContextify(context) {
             sorted: true,
         });
     }
+
+    context._startup = function() {
+        console.log("Startup");
+    }
+
+    context._shutdown = function() {
+        console.log("Shutdown");
+    }
 }
 
 
 module.exports = {
   title: "ethers",
-  subtitle: "v5.2",
+  subtitle: "v5.3",
   description: "Documentation for ethers, a complete, tiny and simple Ethereum library.",
   logo: "logo.svg",
 
