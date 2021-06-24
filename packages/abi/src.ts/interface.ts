@@ -329,7 +329,7 @@ export class Interface {
         return this._encodeParams(this.deploy.inputs, values || [ ]);
     }
 
-    decodeErrorData(fragment: ErrorFragment | string, data: BytesLike): Result {
+    decodeErrorResult(fragment: ErrorFragment | string, data: BytesLike): Result {
         if (typeof(fragment) === "string") {
             fragment = this.getError(fragment);
         }
@@ -343,7 +343,7 @@ export class Interface {
         return this._decodeParams(fragment.inputs, bytes.slice(4));
     }
 
-    encodeErrorData(fragment: ErrorFragment | string, values?: ReadonlyArray<any>): string {
+    encodeErrorResult(fragment: ErrorFragment | string, values?: ReadonlyArray<any>): string {
         if (typeof(fragment) === "string") {
             fragment = this.getError(fragment);
         }
