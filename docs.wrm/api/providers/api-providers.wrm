@@ -111,6 +111,8 @@ _definition: **Supported Networks**
 - Rinkeby (proof-of-authority testnet)
 - G&ouml;rli (clique testnet)
 - Kovan (proof-of-authority testnet)
+- Matic (Polygon/Matic proof-of-stake mainnet, anchored to ethereum mainnet)
+- Maticmum (Polygon/Matic proof-of-stake testnet, achored to ethereum goerli)
 
 _code: INFURA Examples @lang<javascript>
 
