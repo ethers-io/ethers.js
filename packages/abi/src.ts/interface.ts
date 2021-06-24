@@ -34,6 +34,14 @@ export class TransactionDescription extends Description<TransactionDescription> 
     readonly value: BigNumber;
 }
 
+export class ErrorDescription extends Description<ErrorDescription> {
+    readonly errorFragment: ErrorFragment;
+    readonly name: string;
+    readonly args: Result;
+    readonly signature: string;
+    readonly sighash: string;
+}
+
 export class Indexed extends Description<Indexed> {
     readonly hash: string;
     readonly _isIndexed: boolean;
@@ -283,12 +291,20 @@ export class Interface {
     }
 
     // Get the sighash (the bytes4 selector) used by Solidity to identify a function
-    getSighash(functionFragment: FunctionFragment | string): string {
-        if (typeof(functionFragment) === "string") {
-            functionFragment = this.getFunction(functionFragment);
+    getSighash(fragment: ErrorFragment | FunctionFragment | string): string {
+        if (typeof(fragment) === "string") {
+            try {
+                fragment = this.getFunction(fragment);
+            } catch (error) {
+                try {
+                    fragment = this.getError(<string>fragment);
+                } catch (_) {
+                    throw error;
+                }
+            }
         }
 
-        return getStatic<(f: FunctionFragment) => string>(this.constructor, "getSighash")(functionFragment);
+        return getStatic<(f: ErrorFragment | FunctionFragment) => string>(this.constructor, "getSighash")(fragment);
     }
 
     // Get the topic (the bytes32 hash) used by Solidity to identify an event
@@ -311,6 +327,31 @@ export class Interface {
 
     encodeDeploy(values?: ReadonlyArray<any>): string {
         return this._encodeParams(this.deploy.inputs, values || [ ]);
+    }
+
+    decodeErrorData(fragment: ErrorFragment | string, data: BytesLike): Result {
+        if (typeof(fragment) === "string") {
+            fragment = this.getError(fragment);
+        }
+
+        const bytes = arrayify(data);
+
+        if (hexlify(bytes.slice(0, 4)) !== this.getSighash(fragment)) {
+            logger.throwArgumentError(`data signature does not match error ${ fragment.name }.`, "data", hexlify(bytes));
+        }
+
+        return this._decodeParams(fragment.inputs, bytes.slice(4));
+    }
+
+    encodeErrorData(fragment: ErrorFragment | string, values?: ReadonlyArray<any>): string {
+        if (typeof(fragment) === "string") {
+            fragment = this.getError(fragment);
+        }
+
+        return hexlify(concat([
+            this.getSighash(fragment),
+            this._encodeParams(fragment.inputs, values || [ ])
+        ]));
     }
 
     // Decode the data for a function call (e.g. tx.data)
@@ -624,6 +665,21 @@ export class Interface {
             signature: fragment.format(),
             topic: this.getEventTopic(fragment),
             args: this.decodeEventLog(fragment, log.data, log.topics)
+        });
+    }
+
+    parseError(data: BytesLike): ErrorDescription {
+        const hexData = hexlify(data);
+        let fragment = this.getError(hexData.substring(0, 10).toLowerCase())
+
+        if (!fragment) { return null; }
+
+        return new ErrorDescription({
+            args: this._abiCoder.decode(fragment.inputs, "0x" + hexData.substring(10)),
+            errorFragment: fragment,
+            name: fragment.name,
+            signature: fragment.format(),
+            sighash: this.getSighash(fragment),
         });
     }
 
