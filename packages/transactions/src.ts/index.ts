@@ -252,7 +252,7 @@ function _serialize(transaction: UnsignedTransaction, signature?: SignatureLike)
 
 export function serialize(transaction: UnsignedTransaction, signature?: SignatureLike): string {
     // Legacy and EIP-155 Transactions
-    if (transaction.type == null) {
+    if (transaction.type == null || transaction.type === 0) {
         if (transaction.accessList != null) {
             logger.throwArgumentError("untyped transactions do not support accessList; include type: 1", "transaction", transaction);
         }
