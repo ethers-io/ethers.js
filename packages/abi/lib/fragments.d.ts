@@ -3,6 +3,7 @@ export interface JsonFragmentType {
     readonly name?: string;
     readonly indexed?: boolean;
     readonly type?: string;
+    readonly internalType?: any;
     readonly components?: ReadonlyArray<JsonFragmentType>;
 }
 export interface JsonFragment {

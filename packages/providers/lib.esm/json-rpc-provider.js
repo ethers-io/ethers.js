@@ -29,6 +29,9 @@ function checkError(method, error, params) {
         if (e && e.message.match("reverted") && isHexString(e.data)) {
             return e.data;
         }
+        logger.throwError("missing revert data in call exception", Logger.errors.CALL_EXCEPTION, {
+            error, data: "0x"
+        });
     }
     let message = error.message;
     if (error.code === Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
@@ -525,7 +528,7 @@ export class JsonRpcProvider extends BaseProvider {
         checkProperties(transaction, allowed);
         const result = {};
         // Some nodes (INFURA ropsten; INFURA mainnet is fine) do not like leading zeros.
-        ["gasLimit", "gasPrice", "type", "nonce", "value"].forEach(function (key) {
+        ["gasLimit", "gasPrice", "type", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "value"].forEach(function (key) {
             if (transaction[key] == null) {
                 return;
             }

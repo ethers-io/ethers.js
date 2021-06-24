@@ -10,6 +10,13 @@ import { computePublicKey, recoverPublicKey } from "@ethersproject/signing-key";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
+export var TransactionTypes;
+(function (TransactionTypes) {
+    TransactionTypes[TransactionTypes["legacy"] = 0] = "legacy";
+    TransactionTypes[TransactionTypes["eip2930"] = 1] = "eip2930";
+    TransactionTypes[TransactionTypes["eip1559"] = 2] = "eip1559";
+})(TransactionTypes || (TransactionTypes = {}));
+;
 ///////////////////////////////
 function handleAddress(value) {
     if (value === "0x") {
@@ -33,7 +40,7 @@ const transactionFields = [
     { name: "data" },
 ];
 const allowedTransactionKeys = {
-    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
+    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, type: true, value: true
 };
 export function computeAddress(key) {
     const publicKey = computePublicKey(key);
@@ -84,6 +91,38 @@ export function accessListify(value) {
 }
 function formatAccessList(value) {
     return accessListify(value).map((set) => [set.address, set.storageKeys]);
+}
+function _serializeEip1559(transaction, signature) {
+    // If there is an explicit gasPrice, make sure it matches the
+    // EIP-1559 fees; otherwise they may not understand what they
+    // think they are setting in terms of fee.
+    if (transaction.gasPrice != null) {
+        const gasPrice = BigNumber.from(transaction.gasPrice);
+        const maxFeePerGas = BigNumber.from(transaction.maxFeePerGas || 0);
+        if (!gasPrice.eq(maxFeePerGas)) {
+            logger.throwArgumentError("mismatch EIP-1559 gasPrice != maxFeePerGas", "tx", {
+                gasPrice, maxFeePerGas
+            });
+        }
+    }
+    const fields = [
+        formatNumber(transaction.chainId || 0, "chainId"),
+        formatNumber(transaction.nonce || 0, "nonce"),
+        formatNumber(transaction.maxPriorityFeePerGas || 0, "maxPriorityFeePerGas"),
+        formatNumber(transaction.maxFeePerGas || 0, "maxFeePerGas"),
+        formatNumber(transaction.gasLimit || 0, "gasLimit"),
+        ((transaction.to != null) ? getAddress(transaction.to) : "0x"),
+        formatNumber(transaction.value || 0, "value"),
+        (transaction.data || "0x"),
+        (formatAccessList(transaction.accessList || []))
+    ];
+    if (signature) {
+        const sig = splitSignature(signature);
+        fields.push(formatNumber(sig.recoveryParam, "recoveryParam"));
+        fields.push(stripZeros(sig.r));
+        fields.push(stripZeros(sig.s));
+    }
+    return hexConcat(["0x02", RLP.encode(fields)]);
 }
 function _serializeEip2930(transaction, signature) {
     const fields = [
@@ -175,7 +214,7 @@ function _serialize(transaction, signature) {
 }
 export function serialize(transaction, signature) {
     // Legacy and EIP-155 Transactions
-    if (transaction.type == null) {
+    if (transaction.type == null || transaction.type === 0) {
         if (transaction.accessList != null) {
             logger.throwArgumentError("untyped transactions do not support accessList; include type: 1", "transaction", transaction);
         }
@@ -185,6 +224,8 @@ export function serialize(transaction, signature) {
     switch (transaction.type) {
         case 1:
             return _serializeEip2930(transaction, signature);
+        case 2:
+            return _serializeEip1559(transaction, signature);
         default:
             break;
     }
@@ -192,6 +233,55 @@ export function serialize(transaction, signature) {
         operation: "serializeTransaction",
         transactionType: transaction.type
     });
+}
+function _parseEipSignature(tx, fields, serialize) {
+    try {
+        const recid = handleNumber(fields[0]).toNumber();
+        if (recid !== 0 && recid !== 1) {
+            throw new Error("bad recid");
+        }
+        tx.v = recid;
+    }
+    catch (error) {
+        logger.throwArgumentError("invalid v for transaction type: 1", "v", fields[0]);
+    }
+    tx.r = hexZeroPad(fields[1], 32);
+    tx.s = hexZeroPad(fields[2], 32);
+    try {
+        const digest = keccak256(serialize(tx));
+        tx.from = recoverAddress(digest, { r: tx.r, s: tx.s, recoveryParam: tx.v });
+    }
+    catch (error) {
+        console.log(error);
+    }
+}
+function _parseEip1559(payload) {
+    const transaction = RLP.decode(payload.slice(1));
+    if (transaction.length !== 9 && transaction.length !== 12) {
+        logger.throwArgumentError("invalid component count for transaction type: 2", "payload", hexlify(payload));
+    }
+    const maxPriorityFeePerGas = handleNumber(transaction[2]);
+    const maxFeePerGas = handleNumber(transaction[3]);
+    const tx = {
+        type: 2,
+        chainId: handleNumber(transaction[0]).toNumber(),
+        nonce: handleNumber(transaction[1]).toNumber(),
+        maxPriorityFeePerGas: maxPriorityFeePerGas,
+        maxFeePerGas: maxFeePerGas,
+        gasPrice: maxFeePerGas,
+        gasLimit: handleNumber(transaction[4]),
+        to: handleAddress(transaction[5]),
+        value: handleNumber(transaction[6]),
+        data: transaction[7],
+        accessList: accessListify(transaction[8]),
+    };
+    // Unsigned EIP-1559 Transaction
+    if (transaction.length === 9) {
+        return tx;
+    }
+    tx.hash = keccak256(payload);
+    _parseEipSignature(tx, transaction.slice(9), _serializeEip1559);
+    return tx;
 }
 function _parseEip2930(payload) {
     const transaction = RLP.decode(payload.slice(1));
@@ -207,32 +297,14 @@ function _parseEip2930(payload) {
         to: handleAddress(transaction[4]),
         value: handleNumber(transaction[5]),
         data: transaction[6],
-        accessList: accessListify(transaction[7]),
+        accessList: accessListify(transaction[7])
     };
     // Unsigned EIP-2930 Transaction
     if (transaction.length === 8) {
         return tx;
     }
-    try {
-        const recid = handleNumber(transaction[8]).toNumber();
-        if (recid !== 0 && recid !== 1) {
-            throw new Error("bad recid");
-        }
-        tx.v = recid;
-    }
-    catch (error) {
-        logger.throwArgumentError("invalid v for transaction type: 1", "v", transaction[8]);
-    }
-    tx.r = hexZeroPad(transaction[9], 32);
-    tx.s = hexZeroPad(transaction[10], 32);
-    try {
-        const digest = keccak256(_serializeEip2930(tx));
-        tx.from = recoverAddress(digest, { r: tx.r, s: tx.s, recoveryParam: tx.v });
-    }
-    catch (error) {
-        console.log(error);
-    }
     tx.hash = keccak256(payload);
+    _parseEipSignature(tx, transaction.slice(8), _serializeEip2930);
     return tx;
 }
 // Legacy Transactions and EIP-155
@@ -304,6 +376,8 @@ export function parse(rawTransaction) {
     switch (payload[0]) {
         case 1:
             return _parseEip2930(payload);
+        case 2:
+            return _parseEip1559(payload);
         default:
             break;
     }

@@ -7,6 +7,8 @@ import { AccessList, AccessListish } from "@ethersproject/transactions";
 export interface Overrides {
     gasLimit?: BigNumberish | Promise<BigNumberish>;
     gasPrice?: BigNumberish | Promise<BigNumberish>;
+    maxFeePerGas?: BigNumberish | Promise<BigNumberish>;
+    maxPriorityFeePerGas?: BigNumberish | Promise<BigNumberish>;
     nonce?: BigNumberish | Promise<BigNumberish>;
     type?: number;
     accessList?: AccessListish;
@@ -29,6 +31,8 @@ export interface PopulatedTransaction {
     chainId?: number;
     type?: number;
     accessList?: AccessList;
+    maxFeePerGas?: BigNumber;
+    maxPriorityFeePerGas?: BigNumber;
 }
 export declare type EventFilter = {
     address?: string;

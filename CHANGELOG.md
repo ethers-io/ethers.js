@@ -3,6 +3,18 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.4.0 (2021-06-24 01:34)
+--------------------------------
+
+  - Added EIP-1559 support. ([#1610](https://github.com/ethers-io/ethers.js/issues/1610); [319987e](https://github.com/ethers-io/ethers.js/commit/319987ec3e1d0e8787f98f525e5fc07875bf5570), [91fff14](https://github.com/ethers-io/ethers.js/commit/91fff1449df5e337fd3b4681b5a04b151d92f5a1), [c5bca77](https://github.com/ethers-io/ethers.js/commit/c5bca7767e3f3d43e3d0bd3c9e9420321ee9907a), [5456c35](https://github.com/ethers-io/ethers.js/commit/5456c359245d9eef5d2abdc05ccedb5269576c94), [7a12216](https://github.com/ethers-io/ethers.js/commit/7a12216cfbd3f86b917451924957471b8be21a8b))
+  - Added ConstructorFragment to exports. ([7efc36d](https://github.com/ethers-io/ethers.js/commit/7efc36df294ddd333e37793cad712cbd587bc686))
+  - Added error utilities to Interface. ([720bde7](https://github.com/ethers-io/ethers.js/commit/720bde7719d9a2fbc7e859f8952b7918e7164b87))
+  - merged master including transaction type 0 legacy constant. ([#1610](https://github.com/ethers-io/ethers.js/issues/1610); [2a7ce0e](https://github.com/ethers-io/ethers.js/commit/2a7ce0e72a1e0c9469e10392b0329e75e341cf18))
+  - Added type to TransactionResponse and TrnsactionReceipt. ([#1687](https://github.com/ethers-io/ethers.js/issues/1687); [d001901](https://github.com/ethers-io/ethers.js/commit/d001901c8c0541c823eb9638b9b309a316b00757))
+  - Trap CALL_EXCEPTION errors when resolving ENS entries. ([#1690](https://github.com/ethers-io/ethers.js/issues/1690); [91951dc](https://github.com/ethers-io/ethers.js/commit/91951dc825af42d4440d2d3b43cfa7a601b20342))
+  - Fixed transaction serialization with explicit null type. ([#1628](https://github.com/ethers-io/ethers.js/issues/1628); [8277f5a](https://github.com/ethers-io/ethers.js/commit/8277f5a62a6739a05ae6682da6956fb490b81e4a))
+  - Fix issue with loading JSON ABI with internalType property. ([#728](https://github.com/ethers-io/ethers.js/issues/728); [e8a0144](https://github.com/ethers-io/ethers.js/commit/e8a0144b7aa95add967578d9629d70bf01fc55cf))
+
 ethers/v5.3.1 (2021-06-10 18:28)
 --------------------------------
 

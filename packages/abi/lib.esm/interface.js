@@ -16,6 +16,8 @@ export class LogDescription extends Description {
 }
 export class TransactionDescription extends Description {
 }
+export class ErrorDescription extends Description {
+}
 export class Indexed extends Description {
     static isIndexed(value) {
         return !!(value && value._isIndexed);
@@ -222,11 +224,21 @@ export class Interface {
         return result;
     }
     // Get the sighash (the bytes4 selector) used by Solidity to identify a function
-    getSighash(functionFragment) {
-        if (typeof (functionFragment) === "string") {
-            functionFragment = this.getFunction(functionFragment);
+    getSighash(fragment) {
+        if (typeof (fragment) === "string") {
+            try {
+                fragment = this.getFunction(fragment);
+            }
+            catch (error) {
+                try {
+                    fragment = this.getError(fragment);
+                }
+                catch (_) {
+                    throw error;
+                }
+            }
         }
-        return getStatic(this.constructor, "getSighash")(functionFragment);
+        return getStatic(this.constructor, "getSighash")(fragment);
     }
     // Get the topic (the bytes32 hash) used by Solidity to identify an event
     getEventTopic(eventFragment) {
@@ -243,6 +255,25 @@ export class Interface {
     }
     encodeDeploy(values) {
         return this._encodeParams(this.deploy.inputs, values || []);
+    }
+    decodeErrorData(fragment, data) {
+        if (typeof (fragment) === "string") {
+            fragment = this.getError(fragment);
+        }
+        const bytes = arrayify(data);
+        if (hexlify(bytes.slice(0, 4)) !== this.getSighash(fragment)) {
+            logger.throwArgumentError(`data signature does not match error ${fragment.name}.`, "data", hexlify(bytes));
+        }
+        return this._decodeParams(fragment.inputs, bytes.slice(4));
+    }
+    encodeErrorData(fragment, values) {
+        if (typeof (fragment) === "string") {
+            fragment = this.getError(fragment);
+        }
+        return hexlify(concat([
+            this.getSighash(fragment),
+            this._encodeParams(fragment.inputs, values || [])
+        ]));
     }
     // Decode the data for a function call (e.g. tx.data)
     decodeFunctionData(functionFragment, data) {
@@ -533,6 +564,20 @@ export class Interface {
             signature: fragment.format(),
             topic: this.getEventTopic(fragment),
             args: this.decodeEventLog(fragment, log.data, log.topics)
+        });
+    }
+    parseError(data) {
+        const hexData = hexlify(data);
+        let fragment = this.getError(hexData.substring(0, 10).toLowerCase());
+        if (!fragment) {
+            return null;
+        }
+        return new ErrorDescription({
+            args: this._abiCoder.decode(fragment.inputs, "0x" + hexData.substring(10)),
+            errorFragment: fragment,
+            name: fragment.name,
+            signature: fragment.format(),
+            sighash: this.getSighash(fragment),
         });
     }
     /*

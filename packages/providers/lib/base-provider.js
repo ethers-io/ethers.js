@@ -254,7 +254,7 @@ var Resolver = /** @class */ (function () {
     }
     Resolver.prototype._fetchBytes = function (selector, parameters) {
         return __awaiter(this, void 0, void 0, function () {
-            var transaction, result, offset, length;
+            var transaction, result, offset, length_1, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -262,15 +262,25 @@ var Resolver = /** @class */ (function () {
                             to: this.address,
                             data: bytes_1.hexConcat([selector, hash_1.namehash(this.name), (parameters || "0x")])
                         };
-                        return [4 /*yield*/, this.provider.call(transaction)];
+                        _a.label = 1;
                     case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.provider.call(transaction)];
+                    case 2:
                         result = _a.sent();
                         if (result === "0x") {
                             return [2 /*return*/, null];
                         }
                         offset = bignumber_1.BigNumber.from(bytes_1.hexDataSlice(result, 0, 32)).toNumber();
-                        length = bignumber_1.BigNumber.from(bytes_1.hexDataSlice(result, offset, offset + 32)).toNumber();
-                        return [2 /*return*/, bytes_1.hexDataSlice(result, offset + 32, offset + 32 + length)];
+                        length_1 = bignumber_1.BigNumber.from(bytes_1.hexDataSlice(result, offset, offset + 32)).toNumber();
+                        return [2 /*return*/, bytes_1.hexDataSlice(result, offset + 32, offset + 32 + length_1)];
+                    case 3:
+                        error_1 = _a.sent();
+                        if (error_1.code === logger_1.Logger.errors.CALL_EXCEPTION) {
+                            return [2 /*return*/, null];
+                        }
+                        return [2 /*return*/, null];
+                    case 4: return [2 /*return*/];
                 }
             });
         });
@@ -290,8 +300,8 @@ var Resolver = /** @class */ (function () {
         if (coinInfo.p2pkh != null) {
             var p2pkh = hexBytes.match(/^0x76a9([0-9a-f][0-9a-f])([0-9a-f]*)88ac$/);
             if (p2pkh) {
-                var length_1 = parseInt(p2pkh[1], 16);
-                if (p2pkh[2].length === length_1 * 2 && length_1 >= 1 && length_1 <= 75) {
+                var length_2 = parseInt(p2pkh[1], 16);
+                if (p2pkh[2].length === length_2 * 2 && length_2 >= 1 && length_2 <= 75) {
                     return base58Encode(bytes_1.concat([[coinInfo.p2pkh], ("0x" + p2pkh[2])]));
                 }
             }
@@ -300,26 +310,26 @@ var Resolver = /** @class */ (function () {
         if (coinInfo.p2sh != null) {
             var p2sh = hexBytes.match(/^0xa9([0-9a-f][0-9a-f])([0-9a-f]*)87$/);
             if (p2sh) {
-                var length_2 = parseInt(p2sh[1], 16);
-                if (p2sh[2].length === length_2 * 2 && length_2 >= 1 && length_2 <= 75) {
+                var length_3 = parseInt(p2sh[1], 16);
+                if (p2sh[2].length === length_3 * 2 && length_3 >= 1 && length_3 <= 75) {
                     return base58Encode(bytes_1.concat([[coinInfo.p2sh], ("0x" + p2sh[2])]));
                 }
             }
         }
         // Bech32
         if (coinInfo.prefix != null) {
-            var length_3 = bytes[1];
+            var length_4 = bytes[1];
             // https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#witness-program
             var version_1 = bytes[0];
             if (version_1 === 0x00) {
-                if (length_3 !== 20 && length_3 !== 32) {
+                if (length_4 !== 20 && length_4 !== 32) {
                     version_1 = -1;
                 }
             }
             else {
                 version_1 = -1;
             }
-            if (version_1 >= 0 && bytes.length === 2 + length_3 && length_3 >= 1 && length_3 <= 75) {
+            if (version_1 >= 0 && bytes.length === 2 + length_4 && length_4 >= 1 && length_4 <= 75) {
                 var words = bech32_1.default.toWords(bytes.slice(2));
                 words.unshift(version_1);
                 return bech32_1.default.encode(coinInfo.prefix, words);
@@ -329,28 +339,37 @@ var Resolver = /** @class */ (function () {
     };
     Resolver.prototype.getAddress = function (coinType) {
         return __awaiter(this, void 0, void 0, function () {
-            var transaction, hexBytes_1, hexBytes, address;
+            var transaction, hexBytes_1, error_2, hexBytes, address;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (coinType == null) {
                             coinType = 60;
                         }
-                        if (!(coinType === 60)) return [3 /*break*/, 2];
+                        if (!(coinType === 60)) return [3 /*break*/, 4];
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
                         transaction = {
                             to: this.address,
                             data: ("0x3b3b57de" + hash_1.namehash(this.name).substring(2))
                         };
                         return [4 /*yield*/, this.provider.call(transaction)];
-                    case 1:
+                    case 2:
                         hexBytes_1 = _a.sent();
                         // No address
                         if (hexBytes_1 === "0x" || hexBytes_1 === constants_1.HashZero) {
                             return [2 /*return*/, null];
                         }
                         return [2 /*return*/, this.provider.formatter.callAddress(hexBytes_1)];
-                    case 2: return [4 /*yield*/, this._fetchBytes("0xf1cb7e06", bytes32ify(coinType))];
                     case 3:
+                        error_2 = _a.sent();
+                        if (error_2.code === logger_1.Logger.errors.CALL_EXCEPTION) {
+                            return [2 /*return*/, null];
+                        }
+                        throw error_2;
+                    case 4: return [4 /*yield*/, this._fetchBytes("0xf1cb7e06", bytes32ify(coinType))];
+                    case 5:
                         hexBytes = _a.sent();
                         // No address
                         if (hexBytes == null || hexBytes === "0x") {
@@ -371,7 +390,7 @@ var Resolver = /** @class */ (function () {
     };
     Resolver.prototype.getContentHash = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var hexBytes, ipfs, length_4, swarm;
+            var hexBytes, ipfs, length_5, swarm;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this._fetchBytes("0xbc1c58d1")];
@@ -383,8 +402,8 @@ var Resolver = /** @class */ (function () {
                         }
                         ipfs = hexBytes.match(/^0xe3010170(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
                         if (ipfs) {
-                            length_4 = parseInt(ipfs[3], 16);
-                            if (ipfs[4].length === length_4 * 2) {
+                            length_5 = parseInt(ipfs[3], 16);
+                            if (ipfs[4].length === length_5 * 2) {
                                 return [2 /*return*/, "ipfs:/\/" + basex_1.Base58.encode("0x" + ipfs[1])];
                             }
                         }
@@ -484,7 +503,7 @@ var BaseProvider = /** @class */ (function (_super) {
     }
     BaseProvider.prototype._ready = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var network, error_1;
+            var network, error_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -499,7 +518,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         network = _a.sent();
                         return [3 /*break*/, 4];
                     case 3:
-                        error_1 = _a.sent();
+                        error_3 = _a.sent();
                         return [3 /*break*/, 4];
                     case 4:
                         if (!(network == null)) return [3 /*break*/, 6];
@@ -565,7 +584,7 @@ var BaseProvider = /** @class */ (function (_super) {
     // than maxAge old or has been requested since the last request
     BaseProvider.prototype._getInternalBlockNumber = function (maxAge) {
         return __awaiter(this, void 0, void 0, function () {
-            var internalBlockNumber, result, error_2, reqTime, checkInternalBlockNumber;
+            var internalBlockNumber, result, error_4, reqTime, checkInternalBlockNumber;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -589,7 +608,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         // Too old; fetch a new value
                         return [3 /*break*/, 7];
                     case 5:
-                        error_2 = _a.sent();
+                        error_4 = _a.sent();
                         // The fetch rejected; if we are the first to get the
                         // rejection, drop through so we replace it with a new
                         // fetch; all others blocked will then get that fetch
@@ -638,7 +657,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype.poll = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var pollId, runners, blockNumber, error_3, i;
+            var pollId, runners, blockNumber, error_5, i;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -654,8 +673,8 @@ var BaseProvider = /** @class */ (function (_super) {
                         blockNumber = _a.sent();
                         return [3 /*break*/, 4];
                     case 3:
-                        error_3 = _a.sent();
-                        this.emit("error", error_3);
+                        error_5 = _a.sent();
+                        this.emit("error", error_5);
                         return [2 /*return*/];
                     case 4:
                         this._setFastBlockNumber(blockNumber);
@@ -1312,7 +1331,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype.sendTransaction = function (signedTransaction) {
         return __awaiter(this, void 0, void 0, function () {
-            var hexTx, tx, blockNumber, hash, error_4;
+            var hexTx, tx, blockNumber, hash, error_6;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.getNetwork()];
@@ -1333,10 +1352,10 @@ var BaseProvider = /** @class */ (function (_super) {
                         hash = _a.sent();
                         return [2 /*return*/, this._wrapTransaction(tx, hash, blockNumber)];
                     case 6:
-                        error_4 = _a.sent();
-                        error_4.transaction = tx;
-                        error_4.transactionHash = tx.hash;
-                        throw error_4;
+                        error_6 = _a.sent();
+                        error_6.transaction = tx;
+                        error_6.transactionHash = tx.hash;
+                        throw error_6;
                     case 7: return [2 /*return*/];
                 }
             });
@@ -1499,7 +1518,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype._getBlock = function (blockHashOrBlockTag, includeTransactions) {
         return __awaiter(this, void 0, void 0, function () {
-            var blockNumber, params, _a, _b, _c, error_5;
+            var blockNumber, params, _a, _b, _c, error_7;
             var _this = this;
             return __generator(this, function (_d) {
                 switch (_d.label) {
@@ -1528,7 +1547,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         }
                         return [3 /*break*/, 6];
                     case 5:
-                        error_5 = _d.sent();
+                        error_7 = _d.sent();
                         logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
                         return [3 /*break*/, 6];
                     case 6: return [2 /*return*/, web_1.poll(function () { return __awaiter(_this, void 0, void 0, function () {
@@ -1764,23 +1783,32 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype.getResolver = function (name) {
         return __awaiter(this, void 0, void 0, function () {
-            var address;
+            var address, error_8;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this._getResolver(name)];
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, this._getResolver(name)];
                     case 1:
                         address = _a.sent();
                         if (address == null) {
                             return [2 /*return*/, null];
                         }
                         return [2 /*return*/, new Resolver(this, address, name)];
+                    case 2:
+                        error_8 = _a.sent();
+                        if (error_8.code === logger_1.Logger.errors.CALL_EXCEPTION) {
+                            return [2 /*return*/, null];
+                        }
+                        return [2 /*return*/, null];
+                    case 3: return [2 /*return*/];
                 }
             });
         });
     };
     BaseProvider.prototype._getResolver = function (name) {
         return __awaiter(this, void 0, void 0, function () {
-            var network, transaction, _a, _b;
+            var network, transaction, _a, _b, error_9;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0: return [4 /*yield*/, this.getNetwork()];
@@ -1794,9 +1822,19 @@ var BaseProvider = /** @class */ (function (_super) {
                             to: network.ensAddress,
                             data: ("0x0178b8bf" + hash_1.namehash(name).substring(2))
                         };
+                        _c.label = 2;
+                    case 2:
+                        _c.trys.push([2, 4, , 5]);
                         _b = (_a = this.formatter).callAddress;
                         return [4 /*yield*/, this.call(transaction)];
-                    case 2: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+                    case 3: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+                    case 4:
+                        error_9 = _c.sent();
+                        if (error_9.code === logger_1.Logger.errors.CALL_EXCEPTION) {
+                            return [2 /*return*/, null];
+                        }
+                        throw error_9;
+                    case 5: return [2 /*return*/];
                 }
             });
         });

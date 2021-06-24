@@ -3490,7 +3490,7 @@ var bn = createCommonjsModule(function (module) {
 })('object' === 'undefined' || module, commonjsGlobal);
 });
 
-const version = "logger/5.3.0";
+const version = "logger/5.4.0";
 
 "use strict";
 let _permanentCensorErrors = false;
@@ -3795,7 +3795,7 @@ class Logger {
 Logger.errors = ErrorCode;
 Logger.levels = LogLevel;
 
-const version$1 = "bytes/5.3.0";
+const version$1 = "bytes/5.4.0";
 
 "use strict";
 const logger = new Logger(version$1);
@@ -4185,7 +4185,7 @@ function joinSignature(signature) {
     ]));
 }
 
-const version$2 = "bignumber/5.3.0";
+const version$2 = "bignumber/5.4.0";
 
 "use strict";
 var BN = bn.BN;
@@ -4835,7 +4835,7 @@ class FixedNumber {
 const ONE = FixedNumber.from(1);
 const BUMP = FixedNumber.from("0.5");
 
-const version$3 = "properties/5.3.0";
+const version$3 = "properties/5.4.0";
 
 "use strict";
 var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -4952,7 +4952,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.3.1";
+const version$4 = "abi/5.4.0";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -6430,7 +6430,7 @@ function keccak256(data) {
     return '0x' + sha3.keccak_256(arrayify(data));
 }
 
-const version$5 = "rlp/5.3.0";
+const version$5 = "rlp/5.4.0";
 
 "use strict";
 const logger$6 = new Logger(version$5);
@@ -6554,7 +6554,7 @@ var index = /*#__PURE__*/Object.freeze({
 	decode: decode
 });
 
-const version$6 = "address/5.3.0";
+const version$6 = "address/5.4.0";
 
 "use strict";
 const logger$7 = new Logger(version$6);
@@ -7085,7 +7085,7 @@ class NumberCoder extends Coder {
     }
 }
 
-const version$7 = "strings/5.3.0";
+const version$7 = "strings/5.4.0";
 
 "use strict";
 const logger$9 = new Logger(version$7);
@@ -7706,7 +7706,7 @@ function id(text) {
     return keccak256(toUtf8Bytes(text));
 }
 
-const version$8 = "hash/5.3.0";
+const version$8 = "hash/5.4.0";
 
 const logger$b = new Logger(version$8);
 const Zeros = new Uint8Array(32);
@@ -8197,6 +8197,8 @@ class LogDescription extends Description {
 }
 class TransactionDescription extends Description {
 }
+class ErrorDescription extends Description {
+}
 class Indexed extends Description {
     static isIndexed(value) {
         return !!(value && value._isIndexed);
@@ -8403,11 +8405,21 @@ class Interface {
         return result;
     }
     // Get the sighash (the bytes4 selector) used by Solidity to identify a function
-    getSighash(functionFragment) {
-        if (typeof (functionFragment) === "string") {
-            functionFragment = this.getFunction(functionFragment);
+    getSighash(fragment) {
+        if (typeof (fragment) === "string") {
+            try {
+                fragment = this.getFunction(fragment);
+            }
+            catch (error) {
+                try {
+                    fragment = this.getError(fragment);
+                }
+                catch (_) {
+                    throw error;
+                }
+            }
         }
-        return getStatic(this.constructor, "getSighash")(functionFragment);
+        return getStatic(this.constructor, "getSighash")(fragment);
     }
     // Get the topic (the bytes32 hash) used by Solidity to identify an event
     getEventTopic(eventFragment) {
@@ -8424,6 +8436,25 @@ class Interface {
     }
     encodeDeploy(values) {
         return this._encodeParams(this.deploy.inputs, values || []);
+    }
+    decodeErrorData(fragment, data) {
+        if (typeof (fragment) === "string") {
+            fragment = this.getError(fragment);
+        }
+        const bytes = arrayify(data);
+        if (hexlify(bytes.slice(0, 4)) !== this.getSighash(fragment)) {
+            logger$d.throwArgumentError(`data signature does not match error ${fragment.name}.`, "data", hexlify(bytes));
+        }
+        return this._decodeParams(fragment.inputs, bytes.slice(4));
+    }
+    encodeErrorData(fragment, values) {
+        if (typeof (fragment) === "string") {
+            fragment = this.getError(fragment);
+        }
+        return hexlify(concat([
+            this.getSighash(fragment),
+            this._encodeParams(fragment.inputs, values || [])
+        ]));
     }
     // Decode the data for a function call (e.g. tx.data)
     decodeFunctionData(functionFragment, data) {
@@ -8716,6 +8747,20 @@ class Interface {
             args: this.decodeEventLog(fragment, log.data, log.topics)
         });
     }
+    parseError(data) {
+        const hexData = hexlify(data);
+        let fragment = this.getError(hexData.substring(0, 10).toLowerCase());
+        if (!fragment) {
+            return null;
+        }
+        return new ErrorDescription({
+            args: this._abiCoder.decode(fragment.inputs, "0x" + hexData.substring(10)),
+            errorFragment: fragment,
+            name: fragment.name,
+            signature: fragment.format(),
+            sighash: this.getSighash(fragment),
+        });
+    }
     /*
     static from(value: Array<Fragment | string | JsonAbi> | string | Interface) {
         if (Interface.isInterface(value)) {
@@ -8734,9 +8779,18 @@ class Interface {
 
 "use strict";
 
-const version$9 = "abstract-provider/5.3.0";
+const version$9 = "abstract-provider/5.4.0";
 
 "use strict";
+var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 const logger$e = new Logger(version$9);
 ;
 ;
@@ -8798,6 +8852,27 @@ class Provider {
         logger$e.checkAbstract(new.target, Provider);
         defineReadOnly(this, "_isProvider", true);
     }
+    getFeeData() {
+        return __awaiter$2(this, void 0, void 0, function* () {
+            const { block, gasPrice } = yield resolveProperties({
+                block: this.getBlock("latest"),
+                gasPrice: this.getGasPrice().catch((error) => {
+                    // @TODO: Why is this now failing on Calaveras?
+                    //console.log(error);
+                    return null;
+                })
+            });
+            let maxFeePerGas = null, maxPriorityFeePerGas = null;
+            if (block && block.baseFeePerGas) {
+                // We may want to compute this more accurately in the future,
+                // using the formula "check if the base fee is correct".
+                // See: https://eips.ethereum.org/EIPS/eip-1559
+                maxPriorityFeePerGas = BigNumber.from("1000000000");
+                maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
+            }
+            return { maxFeePerGas, maxPriorityFeePerGas, gasPrice };
+        });
+    }
     // Alias for "on"
     addListener(eventName, listener) {
         return this.on(eventName, listener);
@@ -8811,10 +8886,10 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.3.0";
+const version$a = "abstract-signer/5.4.0";
 
 "use strict";
-var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8825,7 +8900,7 @@ var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments,
 };
 const logger$f = new Logger(version$a);
 const allowedTransactionKeys = [
-    "accessList", "chainId", "data", "from", "gasLimit", "gasPrice", "nonce", "to", "type", "value"
+    "accessList", "chainId", "data", "from", "gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "to", "type", "value"
 ];
 const forwardErrors = [
     Logger.errors.INSUFFICIENT_FUNDS,
@@ -8844,20 +8919,20 @@ class Signer {
     ///////////////////
     // Sub-classes MAY override these
     getBalance(blockTag) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             this._checkProvider("getBalance");
             return yield this.provider.getBalance(this.getAddress(), blockTag);
         });
     }
     getTransactionCount(blockTag) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             this._checkProvider("getTransactionCount");
             return yield this.provider.getTransactionCount(this.getAddress(), blockTag);
         });
     }
     // Populates "from" if unspecified, and estimates the gas for the transation
     estimateGas(transaction) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             this._checkProvider("estimateGas");
             const tx = yield resolveProperties(this.checkTransaction(transaction));
             return yield this.provider.estimateGas(tx);
@@ -8865,7 +8940,7 @@ class Signer {
     }
     // Populates "from" if unspecified, and calls with the transation
     call(transaction, blockTag) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             this._checkProvider("call");
             const tx = yield resolveProperties(this.checkTransaction(transaction));
             return yield this.provider.call(tx, blockTag);
@@ -8881,20 +8956,26 @@ class Signer {
         });
     }
     getChainId() {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             this._checkProvider("getChainId");
             const network = yield this.provider.getNetwork();
             return network.chainId;
         });
     }
     getGasPrice() {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             this._checkProvider("getGasPrice");
             return yield this.provider.getGasPrice();
         });
     }
+    getFeeData() {
+        return __awaiter$3(this, void 0, void 0, function* () {
+            this._checkProvider("getFeeData");
+            return yield this.provider.getFeeData();
+        });
+    }
     resolveName(name) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             this._checkProvider("resolveName");
             return yield this.provider.resolveName(name);
         });
@@ -8936,11 +9017,14 @@ class Signer {
     // this Signer. Should be used by sendTransaction but NOT by signTransaction.
     // By default called from: (overriding these prevents it)
     //   - sendTransaction
+    //
+    // Notes:
+    //  - We allow gasPrice for EIP-1559 as long as it matches maxFeePerGas
     populateTransaction(transaction) {
-        return __awaiter$2(this, void 0, void 0, function* () {
+        return __awaiter$3(this, void 0, void 0, function* () {
             const tx = yield resolveProperties(this.checkTransaction(transaction));
             if (tx.to != null) {
-                tx.to = Promise.resolve(tx.to).then((to) => __awaiter$2(this, void 0, void 0, function* () {
+                tx.to = Promise.resolve(tx.to).then((to) => __awaiter$3(this, void 0, void 0, function* () {
                     if (to == null) {
                         return null;
                     }
@@ -8951,8 +9035,84 @@ class Signer {
                     return address;
                 }));
             }
-            if (tx.gasPrice == null) {
-                tx.gasPrice = this.getGasPrice();
+            // Do not allow mixing pre-eip-1559 and eip-1559 proerties
+            const hasEip1559 = (tx.maxFeePerGas != null || tx.maxPriorityFeePerGas != null);
+            if (tx.gasPrice != null && (tx.type === 2 || hasEip1559)) {
+                logger$f.throwArgumentError("eip-1559 transaction do not support gasPrice", "transaction", transaction);
+            }
+            else if ((tx.type === 0 || tx.type === 1) && hasEip1559) {
+                logger$f.throwArgumentError("pre-eip-1559 transaction do not support maxFeePerGas/maxPriorityFeePerGas", "transaction", transaction);
+            }
+            if ((tx.type === 2 || tx.type == null) && (tx.maxFeePerGas != null && tx.maxPriorityFeePerGas != null)) {
+                // Fully-formed EIP-1559 transaction (skip getFeeData)
+                tx.type = 2;
+            }
+            else if (tx.type === 0 || tx.type === 1) {
+                // Explicit Legacy or EIP-2930 transaction
+                // Populate missing gasPrice
+                if (tx.gasPrice == null) {
+                    tx.gasPrice = this.getGasPrice();
+                }
+            }
+            else {
+                // We need to get fee data to determine things
+                const feeData = yield this.getFeeData();
+                if (tx.type == null) {
+                    // We need to auto-detect the intended type of this transaction...
+                    if (feeData.maxFeePerGas != null && feeData.maxPriorityFeePerGas != null) {
+                        // The network supports EIP-1559!
+                        // Upgrade transaction from null to eip-1559
+                        tx.type = 2;
+                        if (tx.gasPrice != null) {
+                            // Using legacy gasPrice property on an eip-1559 network,
+                            // so use gasPrice as both fee properties
+                            const gasPrice = tx.gasPrice;
+                            delete tx.gasPrice;
+                            tx.maxFeePerGas = gasPrice;
+                            tx.maxPriorityFeePerGas = gasPrice;
+                        }
+                        else {
+                            // Populate missing fee data
+                            if (tx.maxFeePerGas == null) {
+                                tx.maxFeePerGas = feeData.maxFeePerGas;
+                            }
+                            if (tx.maxPriorityFeePerGas == null) {
+                                tx.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
+                            }
+                        }
+                    }
+                    else if (feeData.gasPrice != null) {
+                        // Network doesn't support EIP-1559...
+                        // ...but they are trying to use EIP-1559 properties
+                        if (hasEip1559) {
+                            logger$f.throwError("network does not support EIP-1559", Logger.errors.UNSUPPORTED_OPERATION, {
+                                operation: "populateTransaction"
+                            });
+                        }
+                        // Populate missing fee data
+                        if (tx.gasPrice == null) {
+                            tx.gasPrice = feeData.gasPrice;
+                        }
+                        // Explicitly set untyped transaction to legacy
+                        tx.type = 0;
+                    }
+                    else {
+                        // getFeeData has failed us.
+                        logger$f.throwError("failed to get consistent fee data", Logger.errors.UNSUPPORTED_OPERATION, {
+                            operation: "signer.getFeeData"
+                        });
+                    }
+                }
+                else if (tx.type === 2) {
+                    // Explicitly using EIP-1559
+                    // Populate missing fee data
+                    if (tx.maxFeePerGas == null) {
+                        tx.maxFeePerGas = feeData.maxFeePerGas;
+                    }
+                    if (tx.maxPriorityFeePerGas == null) {
+                        tx.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
+                    }
+                }
             }
             if (tx.nonce == null) {
                 tx.nonce = this.getTransactionCount("pending");
@@ -12831,7 +12991,7 @@ elliptic.eddsa = /*RicMoo:ethers:require(./elliptic/eddsa)*/(null);
 
 var EC$1 = elliptic_1.ec;
 
-const version$b = "signing-key/5.3.0";
+const version$b = "signing-key/5.4.0";
 
 "use strict";
 const logger$g = new Logger(version$b);
@@ -12907,10 +13067,17 @@ function computePublicKey(key, compressed) {
     return logger$g.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$c = "transactions/5.3.0";
+const version$c = "transactions/5.4.0";
 
 "use strict";
 const logger$h = new Logger(version$c);
+var TransactionTypes;
+(function (TransactionTypes) {
+    TransactionTypes[TransactionTypes["legacy"] = 0] = "legacy";
+    TransactionTypes[TransactionTypes["eip2930"] = 1] = "eip2930";
+    TransactionTypes[TransactionTypes["eip1559"] = 2] = "eip1559";
+})(TransactionTypes || (TransactionTypes = {}));
+;
 ///////////////////////////////
 function handleAddress(value) {
     if (value === "0x") {
@@ -12934,7 +13101,7 @@ const transactionFields = [
     { name: "data" },
 ];
 const allowedTransactionKeys$1 = {
-    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true
+    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, type: true, value: true
 };
 function computeAddress(key) {
     const publicKey = computePublicKey(key);
@@ -12985,6 +13152,38 @@ function accessListify(value) {
 }
 function formatAccessList(value) {
     return accessListify(value).map((set) => [set.address, set.storageKeys]);
+}
+function _serializeEip1559(transaction, signature) {
+    // If there is an explicit gasPrice, make sure it matches the
+    // EIP-1559 fees; otherwise they may not understand what they
+    // think they are setting in terms of fee.
+    if (transaction.gasPrice != null) {
+        const gasPrice = BigNumber.from(transaction.gasPrice);
+        const maxFeePerGas = BigNumber.from(transaction.maxFeePerGas || 0);
+        if (!gasPrice.eq(maxFeePerGas)) {
+            logger$h.throwArgumentError("mismatch EIP-1559 gasPrice != maxFeePerGas", "tx", {
+                gasPrice, maxFeePerGas
+            });
+        }
+    }
+    const fields = [
+        formatNumber(transaction.chainId || 0, "chainId"),
+        formatNumber(transaction.nonce || 0, "nonce"),
+        formatNumber(transaction.maxPriorityFeePerGas || 0, "maxPriorityFeePerGas"),
+        formatNumber(transaction.maxFeePerGas || 0, "maxFeePerGas"),
+        formatNumber(transaction.gasLimit || 0, "gasLimit"),
+        ((transaction.to != null) ? getAddress(transaction.to) : "0x"),
+        formatNumber(transaction.value || 0, "value"),
+        (transaction.data || "0x"),
+        (formatAccessList(transaction.accessList || []))
+    ];
+    if (signature) {
+        const sig = splitSignature(signature);
+        fields.push(formatNumber(sig.recoveryParam, "recoveryParam"));
+        fields.push(stripZeros(sig.r));
+        fields.push(stripZeros(sig.s));
+    }
+    return hexConcat(["0x02", encode(fields)]);
 }
 function _serializeEip2930(transaction, signature) {
     const fields = [
@@ -13076,7 +13275,7 @@ function _serialize(transaction, signature) {
 }
 function serialize(transaction, signature) {
     // Legacy and EIP-155 Transactions
-    if (transaction.type == null) {
+    if (transaction.type == null || transaction.type === 0) {
         if (transaction.accessList != null) {
             logger$h.throwArgumentError("untyped transactions do not support accessList; include type: 1", "transaction", transaction);
         }
@@ -13086,6 +13285,8 @@ function serialize(transaction, signature) {
     switch (transaction.type) {
         case 1:
             return _serializeEip2930(transaction, signature);
+        case 2:
+            return _serializeEip1559(transaction, signature);
         default:
             break;
     }
@@ -13093,6 +13294,55 @@ function serialize(transaction, signature) {
         operation: "serializeTransaction",
         transactionType: transaction.type
     });
+}
+function _parseEipSignature(tx, fields, serialize) {
+    try {
+        const recid = handleNumber(fields[0]).toNumber();
+        if (recid !== 0 && recid !== 1) {
+            throw new Error("bad recid");
+        }
+        tx.v = recid;
+    }
+    catch (error) {
+        logger$h.throwArgumentError("invalid v for transaction type: 1", "v", fields[0]);
+    }
+    tx.r = hexZeroPad(fields[1], 32);
+    tx.s = hexZeroPad(fields[2], 32);
+    try {
+        const digest = keccak256(serialize(tx));
+        tx.from = recoverAddress(digest, { r: tx.r, s: tx.s, recoveryParam: tx.v });
+    }
+    catch (error) {
+        console.log(error);
+    }
+}
+function _parseEip1559(payload) {
+    const transaction = decode(payload.slice(1));
+    if (transaction.length !== 9 && transaction.length !== 12) {
+        logger$h.throwArgumentError("invalid component count for transaction type: 2", "payload", hexlify(payload));
+    }
+    const maxPriorityFeePerGas = handleNumber(transaction[2]);
+    const maxFeePerGas = handleNumber(transaction[3]);
+    const tx = {
+        type: 2,
+        chainId: handleNumber(transaction[0]).toNumber(),
+        nonce: handleNumber(transaction[1]).toNumber(),
+        maxPriorityFeePerGas: maxPriorityFeePerGas,
+        maxFeePerGas: maxFeePerGas,
+        gasPrice: maxFeePerGas,
+        gasLimit: handleNumber(transaction[4]),
+        to: handleAddress(transaction[5]),
+        value: handleNumber(transaction[6]),
+        data: transaction[7],
+        accessList: accessListify(transaction[8]),
+    };
+    // Unsigned EIP-1559 Transaction
+    if (transaction.length === 9) {
+        return tx;
+    }
+    tx.hash = keccak256(payload);
+    _parseEipSignature(tx, transaction.slice(9), _serializeEip1559);
+    return tx;
 }
 function _parseEip2930(payload) {
     const transaction = decode(payload.slice(1));
@@ -13108,32 +13358,14 @@ function _parseEip2930(payload) {
         to: handleAddress(transaction[4]),
         value: handleNumber(transaction[5]),
         data: transaction[6],
-        accessList: accessListify(transaction[7]),
+        accessList: accessListify(transaction[7])
     };
     // Unsigned EIP-2930 Transaction
     if (transaction.length === 8) {
         return tx;
     }
-    try {
-        const recid = handleNumber(transaction[8]).toNumber();
-        if (recid !== 0 && recid !== 1) {
-            throw new Error("bad recid");
-        }
-        tx.v = recid;
-    }
-    catch (error) {
-        logger$h.throwArgumentError("invalid v for transaction type: 1", "v", transaction[8]);
-    }
-    tx.r = hexZeroPad(transaction[9], 32);
-    tx.s = hexZeroPad(transaction[10], 32);
-    try {
-        const digest = keccak256(_serializeEip2930(tx));
-        tx.from = recoverAddress(digest, { r: tx.r, s: tx.s, recoveryParam: tx.v });
-    }
-    catch (error) {
-        console.log(error);
-    }
     tx.hash = keccak256(payload);
+    _parseEipSignature(tx, transaction.slice(8), _serializeEip2930);
     return tx;
 }
 // Legacy Transactions and EIP-155
@@ -13205,6 +13437,8 @@ function parse(rawTransaction) {
     switch (payload[0]) {
         case 1:
             return _parseEip2930(payload);
+        case 2:
+            return _parseEip1559(payload);
         default:
             break;
     }
@@ -13214,10 +13448,10 @@ function parse(rawTransaction) {
     });
 }
 
-const version$d = "contracts/5.3.0";
+const version$d = "contracts/5.4.0";
 
 "use strict";
-var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -13233,9 +13467,10 @@ const logger$i = new Logger(version$d);
 const allowedTransactionKeys$2 = {
     chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
     type: true, accessList: true,
+    maxFeePerGas: true, maxPriorityFeePerGas: true
 };
 function resolveName(resolver, nameOrPromise) {
-    return __awaiter$3(this, void 0, void 0, function* () {
+    return __awaiter$4(this, void 0, void 0, function* () {
         const name = yield nameOrPromise;
         // If it is already an address, just use it (after adding checksum)
         try {
@@ -13256,7 +13491,7 @@ function resolveName(resolver, nameOrPromise) {
 }
 // Recursively replaces ENS names with promises to resolve the name and resolves all properties
 function resolveAddresses(resolver, value, paramType) {
-    return __awaiter$3(this, void 0, void 0, function* () {
+    return __awaiter$4(this, void 0, void 0, function* () {
         if (Array.isArray(paramType)) {
             return yield Promise.all(paramType.map((paramType, index) => {
                 return resolveAddresses(resolver, ((Array.isArray(value)) ? value[index] : value[paramType.name]), paramType);
@@ -13278,7 +13513,7 @@ function resolveAddresses(resolver, value, paramType) {
     });
 }
 function populateTransaction(contract, fragment, args) {
-    return __awaiter$3(this, void 0, void 0, function* () {
+    return __awaiter$4(this, void 0, void 0, function* () {
         // If an extra argument is given, it is overrides
         let overrides = {};
         if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
@@ -13294,7 +13529,7 @@ function populateTransaction(contract, fragment, args) {
                 overrides.from = resolveProperties({
                     override: resolveName(contract.signer, overrides.from),
                     signer: contract.signer.getAddress()
-                }).then((check) => __awaiter$3(this, void 0, void 0, function* () {
+                }).then((check) => __awaiter$4(this, void 0, void 0, function* () {
                     if (getAddress(check.signer) !== check.override) {
                         logger$i.throwError("Contract with a Signer cannot override from", Logger.errors.UNSUPPORTED_OPERATION, {
                             operation: "overrides.from"
@@ -13337,6 +13572,12 @@ function populateTransaction(contract, fragment, args) {
         }
         if (ro.gasPrice != null) {
             tx.gasPrice = BigNumber.from(ro.gasPrice);
+        }
+        if (ro.maxFeePerGas != null) {
+            tx.maxFeePerGas = BigNumber.from(ro.maxFeePerGas);
+        }
+        if (ro.maxPriorityFeePerGas != null) {
+            tx.maxPriorityFeePerGas = BigNumber.from(ro.maxPriorityFeePerGas);
         }
         if (ro.from != null) {
             tx.from = ro.from;
@@ -13383,6 +13624,8 @@ function populateTransaction(contract, fragment, args) {
         delete overrides.value;
         delete overrides.type;
         delete overrides.accessList;
+        delete overrides.maxFeePerGas;
+        delete overrides.maxPriorityFeePerGas;
         // Make sure there are no stray overrides, which may indicate a
         // typo or using an unsupported key.
         const leftovers = Object.keys(overrides).filter((key) => (overrides[key] != null));
@@ -13403,7 +13646,7 @@ function buildPopulate(contract, fragment) {
 function buildEstimate(contract, fragment) {
     const signerOrProvider = (contract.signer || contract.provider);
     return function (...args) {
-        return __awaiter$3(this, void 0, void 0, function* () {
+        return __awaiter$4(this, void 0, void 0, function* () {
             if (!signerOrProvider) {
                 logger$i.throwError("estimate require a provider or signer", Logger.errors.UNSUPPORTED_OPERATION, {
                     operation: "estimateGas"
@@ -13417,7 +13660,7 @@ function buildEstimate(contract, fragment) {
 function buildCall(contract, fragment, collapseSimple) {
     const signerOrProvider = (contract.signer || contract.provider);
     return function (...args) {
-        return __awaiter$3(this, void 0, void 0, function* () {
+        return __awaiter$4(this, void 0, void 0, function* () {
             // Extract the "blockTag" override if present
             let blockTag = undefined;
             if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
@@ -13455,7 +13698,7 @@ function buildCall(contract, fragment, collapseSimple) {
 }
 function buildSend(contract, fragment) {
     return function (...args) {
-        return __awaiter$3(this, void 0, void 0, function* () {
+        return __awaiter$4(this, void 0, void 0, function* () {
             if (!contract.signer) {
                 logger$i.throwError("sending a transaction requires a signer", Logger.errors.UNSUPPORTED_OPERATION, {
                     operation: "sendTransaction"
@@ -14137,7 +14380,7 @@ class ContractFactory {
         return tx;
     }
     deploy(...args) {
-        return __awaiter$3(this, void 0, void 0, function* () {
+        return __awaiter$4(this, void 0, void 0, function* () {
             let overrides = {};
             // If 1 extra parameter was passed in, it contains overrides
             if (args.length === this.interface.deploy.inputs.length + 1) {
@@ -14315,7 +14558,7 @@ var SupportedAlgorithm;
 })(SupportedAlgorithm || (SupportedAlgorithm = {}));
 ;
 
-const version$e = "sha2/5.3.0";
+const version$e = "sha2/5.4.0";
 
 "use strict";
 const logger$j = new Logger(version$e);
@@ -14380,7 +14623,7 @@ function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
     return hexlify(DK);
 }
 
-const version$f = "wordlists/5.3.0";
+const version$f = "wordlists/5.4.0";
 
 "use strict";
 // This gets overridden by rollup
@@ -14909,7 +15152,7 @@ const wordlists = {
 
 "use strict";
 
-const version$g = "hdnode/5.3.0";
+const version$g = "hdnode/5.4.0";
 
 "use strict";
 const logger$l = new Logger(version$g);
@@ -15230,7 +15473,7 @@ function getAccountPath(index) {
     return `m/44'/60'/${index}'/0/0`;
 }
 
-const version$h = "random/5.3.0";
+const version$h = "random/5.4.0";
 
 "use strict";
 const logger$m = new Logger(version$h);
@@ -16088,7 +16331,7 @@ var aesJs = createCommonjsModule(function (module, exports) {
 })(commonjsGlobal);
 });
 
-const version$i = "json-wallets/5.3.0";
+const version$i = "json-wallets/5.4.0";
 
 "use strict";
 function looseArrayify(hexString) {
@@ -16729,7 +16972,7 @@ var scrypt = createCommonjsModule(function (module, exports) {
 });
 
 "use strict";
-var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$5 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -16875,7 +17118,7 @@ function decryptSync(json, password) {
     return _getAccount(data, key);
 }
 function decrypt$1(json, password, progressCallback) {
-    return __awaiter$4(this, void 0, void 0, function* () {
+    return __awaiter$5(this, void 0, void 0, function* () {
         const data = JSON.parse(json);
         const key = yield _computeKdfKey(data, password, pbkdf2$1, scrypt.scrypt, progressCallback);
         return _getAccount(data, key);
@@ -17058,10 +17301,10 @@ function decryptJsonWalletSync(json, password) {
     throw new Error("invalid JSON wallet");
 }
 
-const version$j = "wallet/5.3.0";
+const version$j = "wallet/5.4.0";
 
 "use strict";
-var __awaiter$5 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$6 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17155,12 +17398,12 @@ class Wallet extends Signer {
         });
     }
     signMessage(message) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             return joinSignature(this._signingKey().signDigest(hashMessage(message)));
         });
     }
     _signTypedData(domain, types, value) {
-        return __awaiter$5(this, void 0, void 0, function* () {
+        return __awaiter$6(this, void 0, void 0, function* () {
             // Populate any ENS names
             const populated = yield TypedDataEncoder.resolveNames(domain, types, value, (name) => {
                 if (this.provider == null) {
@@ -17223,7 +17466,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.3.1";
+const version$k = "networks/5.4.0";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -17467,10 +17710,10 @@ var index$2 = /*#__PURE__*/Object.freeze({
 	encode: encode$1
 });
 
-const version$l = "web/5.3.0";
+const version$l = "web/5.4.0";
 
 "use strict";
-var __awaiter$6 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$7 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17480,7 +17723,7 @@ var __awaiter$6 = (window && window.__awaiter) || function (thisArg, _arguments,
     });
 };
 function getUrl(href, options) {
-    return __awaiter$6(this, void 0, void 0, function* () {
+    return __awaiter$7(this, void 0, void 0, function* () {
         if (options == null) {
             options = {};
         }
@@ -17517,7 +17760,7 @@ function getUrl(href, options) {
 }
 
 "use strict";
-var __awaiter$7 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$8 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17647,7 +17890,7 @@ function _fetchData(connection, body, processFunc) {
         return { promise, cancel };
     })();
     const runningFetch = (function () {
-        return __awaiter$7(this, void 0, void 0, function* () {
+        return __awaiter$8(this, void 0, void 0, function* () {
             for (let attempt = 0; attempt < attemptLimit; attempt++) {
                 let response = null;
                 try {
@@ -18048,7 +18291,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.3.1";
+const version$m = "providers/5.4.0";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -18066,17 +18309,22 @@ class Formatter {
         const hash = this.hash.bind(this);
         const hex = this.hex.bind(this);
         const number = this.number.bind(this);
+        const type = this.type.bind(this);
         const strictData = (v) => { return this.data(v, true); };
         formats.transaction = {
             hash: hash,
-            type: Formatter.allowNull(number, null),
+            type: type,
             accessList: Formatter.allowNull(this.accessList.bind(this), null),
             blockHash: Formatter.allowNull(hash, null),
             blockNumber: Formatter.allowNull(number, null),
             transactionIndex: Formatter.allowNull(number, null),
             confirmations: Formatter.allowNull(number, null),
             from: address,
-            gasPrice: bigNumber,
+            // either (gasPrice) or (maxPriorityFeePerGas + maxFeePerGas)
+            // must be set
+            gasPrice: Formatter.allowNull(bigNumber),
+            maxPriorityFeePerGas: Formatter.allowNull(bigNumber),
+            maxFeePerGas: Formatter.allowNull(bigNumber),
             gasLimit: bigNumber,
             to: Formatter.allowNull(address, null),
             value: bigNumber,
@@ -18093,6 +18341,8 @@ class Formatter {
             nonce: Formatter.allowNull(number),
             gasLimit: Formatter.allowNull(bigNumber),
             gasPrice: Formatter.allowNull(bigNumber),
+            maxPriorityFeePerGas: Formatter.allowNull(bigNumber),
+            maxFeePerGas: Formatter.allowNull(bigNumber),
             to: Formatter.allowNull(address),
             value: Formatter.allowNull(bigNumber),
             data: Formatter.allowNull(strictData),
@@ -18124,7 +18374,8 @@ class Formatter {
             blockNumber: number,
             confirmations: Formatter.allowNull(number, null),
             cumulativeGasUsed: bigNumber,
-            status: Formatter.allowNull(number)
+            status: Formatter.allowNull(number),
+            type: type
         };
         formats.block = {
             hash: hash,
@@ -18138,6 +18389,7 @@ class Formatter {
             miner: address,
             extraData: data,
             transactions: Formatter.allowNull(Formatter.arrayOf(hash)),
+            baseFeePerGas: Formatter.allowNull(bigNumber)
         };
         formats.blockWithTransactions = shallowCopy(formats.block);
         formats.blockWithTransactions.transactions = Formatter.allowNull(Formatter.arrayOf(this.transactionResponse.bind(this)));
@@ -18168,6 +18420,12 @@ class Formatter {
     // Strict! Used on input.
     number(number) {
         if (number === "0x") {
+            return 0;
+        }
+        return BigNumber.from(number).toNumber();
+    }
+    type(number) {
+        if (number === "0x" || number == null) {
             return 0;
         }
         return BigNumber.from(number).toNumber();
@@ -18305,6 +18563,11 @@ class Formatter {
             transaction.accessList = [];
         }
         const result = Formatter.check(this.formats.transaction, transaction);
+        if (result.type === 2) {
+            if (result.gasPrice == null) {
+                result.gasPrice = result.maxFeePerGas;
+            }
+        }
         if (transaction.chainId != null) {
             let chainId = transaction.chainId;
             if (isHexString(chainId)) {
@@ -18466,7 +18729,7 @@ function showThrottleMessage() {
 }
 
 "use strict";
-var __awaiter$8 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$9 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -18640,19 +18903,27 @@ class Resolver {
         defineReadOnly(this, "address", provider.formatter.address(address));
     }
     _fetchBytes(selector, parameters) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             // keccak256("addr(bytes32,uint256)")
             const transaction = {
                 to: this.address,
                 data: hexConcat([selector, namehash(this.name), (parameters || "0x")])
             };
-            const result = yield this.provider.call(transaction);
-            if (result === "0x") {
+            try {
+                const result = yield this.provider.call(transaction);
+                if (result === "0x") {
+                    return null;
+                }
+                const offset = BigNumber.from(hexDataSlice(result, 0, 32)).toNumber();
+                const length = BigNumber.from(hexDataSlice(result, offset, offset + 32)).toNumber();
+                return hexDataSlice(result, offset + 32, offset + 32 + length);
+            }
+            catch (error) {
+                if (error.code === Logger.errors.CALL_EXCEPTION) {
+                    return null;
+                }
                 return null;
             }
-            const offset = BigNumber.from(hexDataSlice(result, 0, 32)).toNumber();
-            const length = BigNumber.from(hexDataSlice(result, offset, offset + 32)).toNumber();
-            return hexDataSlice(result, offset + 32, offset + 32 + length);
         });
     }
     _getAddress(coinType, hexBytes) {
@@ -18708,23 +18979,31 @@ class Resolver {
         return null;
     }
     getAddress(coinType) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             if (coinType == null) {
                 coinType = 60;
             }
             // If Ethereum, use the standard `addr(bytes32)`
             if (coinType === 60) {
-                // keccak256("addr(bytes32)")
-                const transaction = {
-                    to: this.address,
-                    data: ("0x3b3b57de" + namehash(this.name).substring(2))
-                };
-                const hexBytes = yield this.provider.call(transaction);
-                // No address
-                if (hexBytes === "0x" || hexBytes === HashZero) {
-                    return null;
+                try {
+                    // keccak256("addr(bytes32)")
+                    const transaction = {
+                        to: this.address,
+                        data: ("0x3b3b57de" + namehash(this.name).substring(2))
+                    };
+                    const hexBytes = yield this.provider.call(transaction);
+                    // No address
+                    if (hexBytes === "0x" || hexBytes === HashZero) {
+                        return null;
+                    }
+                    return this.provider.formatter.callAddress(hexBytes);
                 }
-                return this.provider.formatter.callAddress(hexBytes);
+                catch (error) {
+                    if (error.code === Logger.errors.CALL_EXCEPTION) {
+                        return null;
+                    }
+                    throw error;
+                }
             }
             // keccak256("addr(bytes32,uint256")
             const hexBytes = yield this._fetchBytes("0xf1cb7e06", bytes32ify(coinType));
@@ -18745,7 +19024,7 @@ class Resolver {
         });
     }
     getContentHash() {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             // keccak256("contenthash()")
             const hexBytes = yield this._fetchBytes("0xbc1c58d1");
             // No contenthash
@@ -18774,7 +19053,7 @@ class Resolver {
         });
     }
     getText(key) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             // The key encoded as parameter to fetchBytes
             let keyBytes = toUtf8Bytes(key);
             // The nodehash consumes the first slot, so the string pointer targets
@@ -18841,7 +19120,7 @@ class BaseProvider extends Provider {
         this._fastQueryDate = 0;
     }
     _ready() {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             if (this._network == null) {
                 let network = null;
                 if (this._networkPromise) {
@@ -18903,7 +19182,7 @@ class BaseProvider extends Provider {
     // Fetches the blockNumber, but will reuse any result that is less
     // than maxAge old or has been requested since the last request
     _getInternalBlockNumber(maxAge) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             yield this._ready();
             // Allowing stale data up to maxAge old
             if (maxAge > 0) {
@@ -18964,7 +19243,7 @@ class BaseProvider extends Provider {
         });
     }
     poll() {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             const pollId = nextPollId++;
             // Track all running promises, so we can trigger a post-poll once they are complete
             const runners = [];
@@ -19086,14 +19365,14 @@ class BaseProvider extends Provider {
     // This method should query the network if the underlying network
     // can change, such as when connected to a JSON-RPC backend
     detectNetwork() {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             return logger$t.throwError("provider does not support network detection", Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "provider.detectNetwork"
             });
         });
     }
     getNetwork() {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             const network = yield this._ready();
             // Make sure we are still connected to the same network; this is
             // only an external call for backends which can have the underlying
@@ -19205,12 +19484,12 @@ class BaseProvider extends Provider {
         }
     }
     waitForTransaction(transactionHash, confirmations, timeout) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             return this._waitForTransaction(transactionHash, (confirmations == null) ? 1 : confirmations, timeout || 0, null);
         });
     }
     _waitForTransaction(transactionHash, confirmations, timeout, replaceable) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             const receipt = yield this.getTransactionReceipt(transactionHash);
             // Receipt is already good
             if ((receipt ? receipt.confirmations : 0) >= confirmations) {
@@ -19242,7 +19521,7 @@ class BaseProvider extends Provider {
                 if (replaceable) {
                     let lastBlockNumber = replaceable.startBlock;
                     let scannedBlock = null;
-                    const replaceHandler = (blockNumber) => __awaiter$8(this, void 0, void 0, function* () {
+                    const replaceHandler = (blockNumber) => __awaiter$9(this, void 0, void 0, function* () {
                         if (done) {
                             return;
                         }
@@ -19250,7 +19529,7 @@ class BaseProvider extends Provider {
                         // we will trade off a little bit of latency for more consistent
                         // results and fewer JSON-RPC calls
                         yield stall(1000);
-                        this.getTransactionCount(replaceable.from).then((nonce) => __awaiter$8(this, void 0, void 0, function* () {
+                        this.getTransactionCount(replaceable.from).then((nonce) => __awaiter$9(this, void 0, void 0, function* () {
                             if (done) {
                                 return;
                             }
@@ -19354,12 +19633,12 @@ class BaseProvider extends Provider {
         });
     }
     getBlockNumber() {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             return this._getInternalBlockNumber(0);
         });
     }
     getGasPrice() {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             yield this.getNetwork();
             const result = yield this.perform("getGasPrice", {});
             try {
@@ -19374,7 +19653,7 @@ class BaseProvider extends Provider {
         });
     }
     getBalance(addressOrName, blockTag) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             yield this.getNetwork();
             const params = yield resolveProperties({
                 address: this._getAddress(addressOrName),
@@ -19393,7 +19672,7 @@ class BaseProvider extends Provider {
         });
     }
     getTransactionCount(addressOrName, blockTag) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             yield this.getNetwork();
             const params = yield resolveProperties({
                 address: this._getAddress(addressOrName),
@@ -19412,7 +19691,7 @@ class BaseProvider extends Provider {
         });
     }
     getCode(addressOrName, blockTag) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             yield this.getNetwork();
             const params = yield resolveProperties({
                 address: this._getAddress(addressOrName),
@@ -19431,7 +19710,7 @@ class BaseProvider extends Provider {
         });
     }
     getStorageAt(addressOrName, position, blockTag) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             yield this.getNetwork();
             const params = yield resolveProperties({
                 address: this._getAddress(addressOrName),
@@ -19460,7 +19739,7 @@ class BaseProvider extends Provider {
         if (hash != null && tx.hash !== hash) {
             logger$t.throwError("Transaction hash mismatch from Provider.sendTransaction.", Logger.errors.UNKNOWN_ERROR, { expectedHash: tx.hash, returnedHash: hash });
         }
-        result.wait = (confirms, timeout) => __awaiter$8(this, void 0, void 0, function* () {
+        result.wait = (confirms, timeout) => __awaiter$9(this, void 0, void 0, function* () {
             if (confirms == null) {
                 confirms = 1;
             }
@@ -19497,7 +19776,7 @@ class BaseProvider extends Provider {
         return result;
     }
     sendTransaction(signedTransaction) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             yield this.getNetwork();
             const hexTx = yield Promise.resolve(signedTransaction).then(t => hexlify(t));
             const tx = this.formatter.transaction(signedTransaction);
@@ -19514,7 +19793,7 @@ class BaseProvider extends Provider {
         });
     }
     _getTransactionRequest(transaction) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             const values = yield transaction;
             const tx = {};
             ["from", "to"].forEach((key) => {
@@ -19548,7 +19827,7 @@ class BaseProvider extends Provider {
         });
     }
     _getFilter(filter) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             filter = yield filter;
             const result = {};
             if (filter.address != null) {
@@ -19570,7 +19849,7 @@ class BaseProvider extends Provider {
         });
     }
     call(transaction, blockTag) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             yield this.getNetwork();
             const params = yield resolveProperties({
                 transaction: this._getTransactionRequest(transaction),
@@ -19589,7 +19868,7 @@ class BaseProvider extends Provider {
         });
     }
     estimateGas(transaction) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             yield this.getNetwork();
             const params = yield resolveProperties({
                 transaction: this._getTransactionRequest(transaction)
@@ -19607,7 +19886,7 @@ class BaseProvider extends Provider {
         });
     }
     _getAddress(addressOrName) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             const address = yield this.resolveName(addressOrName);
             if (address == null) {
                 logger$t.throwError("ENS name not configured", Logger.errors.UNSUPPORTED_OPERATION, {
@@ -19618,7 +19897,7 @@ class BaseProvider extends Provider {
         });
     }
     _getBlock(blockHashOrBlockTag, includeTransactions) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             yield this.getNetwork();
             blockHashOrBlockTag = yield blockHashOrBlockTag;
             // If blockTag is a number (not "latest", etc), this is the block number
@@ -19640,7 +19919,7 @@ class BaseProvider extends Provider {
                     logger$t.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
                 }
             }
-            return poll(() => __awaiter$8(this, void 0, void 0, function* () {
+            return poll(() => __awaiter$9(this, void 0, void 0, function* () {
                 const block = yield this.perform("getBlock", params);
                 // Block was not found
                 if (block == null) {
@@ -19694,11 +19973,11 @@ class BaseProvider extends Provider {
         return (this._getBlock(blockHashOrBlockTag, true));
     }
     getTransaction(transactionHash) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             yield this.getNetwork();
             transactionHash = yield transactionHash;
             const params = { transactionHash: this.formatter.hash(transactionHash, true) };
-            return poll(() => __awaiter$8(this, void 0, void 0, function* () {
+            return poll(() => __awaiter$9(this, void 0, void 0, function* () {
                 const result = yield this.perform("getTransaction", params);
                 if (result == null) {
                     if (this._emitted["t:" + transactionHash] == null) {
@@ -19724,11 +20003,11 @@ class BaseProvider extends Provider {
         });
     }
     getTransactionReceipt(transactionHash) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             yield this.getNetwork();
             transactionHash = yield transactionHash;
             const params = { transactionHash: this.formatter.hash(transactionHash, true) };
-            return poll(() => __awaiter$8(this, void 0, void 0, function* () {
+            return poll(() => __awaiter$9(this, void 0, void 0, function* () {
                 const result = yield this.perform("getTransactionReceipt", params);
                 if (result == null) {
                     if (this._emitted["t:" + transactionHash] == null) {
@@ -19758,7 +20037,7 @@ class BaseProvider extends Provider {
         });
     }
     getLogs(filter) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             yield this.getNetwork();
             const params = yield resolveProperties({ filter: this._getFilter(filter) });
             const logs = yield this.perform("getLogs", params);
@@ -19771,13 +20050,13 @@ class BaseProvider extends Provider {
         });
     }
     getEtherPrice() {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             yield this.getNetwork();
             return this.perform("getEtherPrice", {});
         });
     }
     _getBlockTag(blockTag) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             blockTag = yield blockTag;
             if (typeof (blockTag) === "number" && blockTag < 0) {
                 if (blockTag % 1) {
@@ -19794,16 +20073,24 @@ class BaseProvider extends Provider {
         });
     }
     getResolver(name) {
-        return __awaiter$8(this, void 0, void 0, function* () {
-            const address = yield this._getResolver(name);
-            if (address == null) {
+        return __awaiter$9(this, void 0, void 0, function* () {
+            try {
+                const address = yield this._getResolver(name);
+                if (address == null) {
+                    return null;
+                }
+                return new Resolver(this, address, name);
+            }
+            catch (error) {
+                if (error.code === Logger.errors.CALL_EXCEPTION) {
+                    return null;
+                }
                 return null;
             }
-            return new Resolver(this, address, name);
         });
     }
     _getResolver(name) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             // Get the resolver from the blockchain
             const network = yield this.getNetwork();
             // No ENS...
@@ -19815,11 +20102,19 @@ class BaseProvider extends Provider {
                 to: network.ensAddress,
                 data: ("0x0178b8bf" + namehash(name).substring(2))
             };
-            return this.formatter.callAddress(yield this.call(transaction));
+            try {
+                return this.formatter.callAddress(yield this.call(transaction));
+            }
+            catch (error) {
+                if (error.code === Logger.errors.CALL_EXCEPTION) {
+                    return null;
+                }
+                throw error;
+            }
         });
     }
     resolveName(name) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             name = yield name;
             // If it is already an address, nothing to resolve
             try {
@@ -19843,7 +20138,7 @@ class BaseProvider extends Provider {
         });
     }
     lookupAddress(address) {
-        return __awaiter$8(this, void 0, void 0, function* () {
+        return __awaiter$9(this, void 0, void 0, function* () {
             address = yield address;
             address = this.formatter.address(address);
             const reverseName = address.substring(2).toLowerCase() + ".addr.reverse";
@@ -19984,7 +20279,7 @@ class BaseProvider extends Provider {
 }
 
 "use strict";
-var __awaiter$9 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$a = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -20003,6 +20298,9 @@ function checkError(method, error, params) {
         if (e && e.message.match("reverted") && isHexString(e.data)) {
             return e.data;
         }
+        logger$u.throwError("missing revert data in call exception", Logger.errors.CALL_EXCEPTION, {
+            error, data: "0x"
+        });
     }
     let message = error.message;
     if (error.code === Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
@@ -20155,7 +20453,7 @@ class JsonRpcSigner extends Signer {
         });
     }
     sendTransaction(transaction) {
-        return __awaiter$9(this, void 0, void 0, function* () {
+        return __awaiter$a(this, void 0, void 0, function* () {
             // This cannot be mined any earlier than any recent block
             const blockNumber = yield this.provider._getInternalBlockNumber(100 + 2 * this.provider.pollingInterval);
             // Send the transaction
@@ -20164,7 +20462,7 @@ class JsonRpcSigner extends Signer {
                 // Unfortunately, JSON-RPC only provides and opaque transaction hash
                 // for a response, and we need the actual transaction, so we poll
                 // for it; it should show up very quickly
-                return yield poll(() => __awaiter$9(this, void 0, void 0, function* () {
+                return yield poll(() => __awaiter$a(this, void 0, void 0, function* () {
                     const tx = yield this.provider.getTransaction(hash);
                     if (tx === null) {
                         return undefined;
@@ -20179,7 +20477,7 @@ class JsonRpcSigner extends Signer {
         });
     }
     signMessage(message) {
-        return __awaiter$9(this, void 0, void 0, function* () {
+        return __awaiter$a(this, void 0, void 0, function* () {
             const data = ((typeof (message) === "string") ? toUtf8Bytes(message) : message);
             const address = yield this.getAddress();
             // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
@@ -20187,7 +20485,7 @@ class JsonRpcSigner extends Signer {
         });
     }
     _signTypedData(domain, types, value) {
-        return __awaiter$9(this, void 0, void 0, function* () {
+        return __awaiter$a(this, void 0, void 0, function* () {
             // Populate any ENS names (in-place)
             const populated = yield TypedDataEncoder.resolveNames(domain, types, value, (name) => {
                 return this.provider.resolveName(name);
@@ -20200,7 +20498,7 @@ class JsonRpcSigner extends Signer {
         });
     }
     unlock(password) {
-        return __awaiter$9(this, void 0, void 0, function* () {
+        return __awaiter$a(this, void 0, void 0, function* () {
             const provider = this.provider;
             const address = yield this.getAddress();
             return provider.send("personal_unlockAccount", [address.toLowerCase(), password, null]);
@@ -20280,7 +20578,7 @@ class JsonRpcProvider extends BaseProvider {
         return this._cache["detectNetwork"];
     }
     _uncachedDetectNetwork() {
-        return __awaiter$9(this, void 0, void 0, function* () {
+        return __awaiter$a(this, void 0, void 0, function* () {
             yield timer(0);
             let chainId = null;
             try {
@@ -20412,7 +20710,7 @@ class JsonRpcProvider extends BaseProvider {
         return null;
     }
     perform(method, params) {
-        return __awaiter$9(this, void 0, void 0, function* () {
+        return __awaiter$a(this, void 0, void 0, function* () {
             const args = this.prepareRequest(method, params);
             if (args == null) {
                 logger$u.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });
@@ -20499,7 +20797,7 @@ class JsonRpcProvider extends BaseProvider {
         checkProperties(transaction, allowed);
         const result = {};
         // Some nodes (INFURA ropsten; INFURA mainnet is fine) do not like leading zeros.
-        ["gasLimit", "gasPrice", "type", "nonce", "value"].forEach(function (key) {
+        ["gasLimit", "gasPrice", "type", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "value"].forEach(function (key) {
             if (transaction[key] == null) {
                 return;
             }
@@ -20540,7 +20838,7 @@ catch (error) {
 }
 
 "use strict";
-var __awaiter$a = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$b = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -20664,7 +20962,7 @@ class WebSocketProvider extends JsonRpcProvider {
         });
     }
     poll() {
-        return __awaiter$a(this, void 0, void 0, function* () {
+        return __awaiter$b(this, void 0, void 0, function* () {
             return null;
         });
     }
@@ -20706,7 +21004,7 @@ class WebSocketProvider extends JsonRpcProvider {
         return "ws:/\/localhost:8546";
     }
     _subscribe(tag, param, processFunc) {
-        return __awaiter$a(this, void 0, void 0, function* () {
+        return __awaiter$b(this, void 0, void 0, function* () {
             let subIdPromise = this._subIds[tag];
             if (subIdPromise == null) {
                 subIdPromise = Promise.all(param).then((param) => {
@@ -20800,7 +21098,7 @@ class WebSocketProvider extends JsonRpcProvider {
         });
     }
     destroy() {
-        return __awaiter$a(this, void 0, void 0, function* () {
+        return __awaiter$b(this, void 0, void 0, function* () {
             // Wait until we have connected before trying to disconnect
             if (this._websocket.readyState === WS.CONNECTING) {
                 yield (new Promise((resolve) => {
@@ -20820,7 +21118,7 @@ class WebSocketProvider extends JsonRpcProvider {
 }
 
 "use strict";
-var __awaiter$b = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$c = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -20846,7 +21144,7 @@ class StaticJsonRpcProvider extends JsonRpcProvider {
         const _super = Object.create(null, {
             detectNetwork: { get: () => super.detectNetwork }
         });
-        return __awaiter$b(this, void 0, void 0, function* () {
+        return __awaiter$c(this, void 0, void 0, function* () {
             let network = this.network;
             if (network == null) {
                 network = yield _super.detectNetwork.call(this);
@@ -20977,7 +21275,7 @@ class AlchemyProvider extends UrlJsonRpcProvider {
 }
 
 "use strict";
-var __awaiter$c = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$d = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -21009,7 +21307,7 @@ class CloudflareProvider extends UrlJsonRpcProvider {
         const _super = Object.create(null, {
             perform: { get: () => super.perform }
         });
-        return __awaiter$c(this, void 0, void 0, function* () {
+        return __awaiter$d(this, void 0, void 0, function* () {
             // The Cloudflare provider does not support eth_blockNumber,
             // so we get the latest block and pull it from that
             if (method === "getBlockNumber") {
@@ -21022,7 +21320,7 @@ class CloudflareProvider extends UrlJsonRpcProvider {
 }
 
 "use strict";
-var __awaiter$d = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$e = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -21114,8 +21412,19 @@ function checkError$1(method, error, transaction) {
     // incompatibility; maybe for v6 consider forwarding reverts as errors
     if (method === "call" && error.code === Logger.errors.SERVER_ERROR) {
         const e = error.error;
-        if (e && e.message.match("reverted") && isHexString(e.data)) {
-            return e.data;
+        // Etherscan keeps changing their string
+        if (e && (e.message.match(/reverted/i) || e.message.match(/VM execution error/i))) {
+            // Etherscan prefixes the data like "Reverted 0x1234"
+            let data = e.data;
+            if (data) {
+                data = "0x" + data.replace(/^.*0x/i, "");
+            }
+            if (isHexString(data)) {
+                return data;
+            }
+            logger$z.throwError("missing revert data in call exception", Logger.errors.CALL_EXCEPTION, {
+                error, data: "0x"
+            });
         }
     }
     // Get the message from any nested error structure
@@ -21200,7 +21509,7 @@ class EtherscanProvider extends BaseProvider {
         return params;
     }
     fetch(module, params, post) {
-        return __awaiter$d(this, void 0, void 0, function* () {
+        return __awaiter$e(this, void 0, void 0, function* () {
             const url = (post ? this.getPostUrl() : this.getUrl(module, params));
             const payload = (post ? this.getPostData(module, params) : null);
             const procFunc = (module === "proxy") ? getJsonResult : getResult$1;
@@ -21237,7 +21546,7 @@ class EtherscanProvider extends BaseProvider {
         });
     }
     detectNetwork() {
-        return __awaiter$d(this, void 0, void 0, function* () {
+        return __awaiter$e(this, void 0, void 0, function* () {
             return this.network;
         });
     }
@@ -21245,7 +21554,7 @@ class EtherscanProvider extends BaseProvider {
         const _super = Object.create(null, {
             perform: { get: () => super.perform }
         });
-        return __awaiter$d(this, void 0, void 0, function* () {
+        return __awaiter$e(this, void 0, void 0, function* () {
             switch (method) {
                 case "getBlockNumber":
                     return this.fetch("proxy", { action: "eth_blockNumber" });
@@ -21387,7 +21696,7 @@ class EtherscanProvider extends BaseProvider {
     //       Error: Result window is too large, PageNo x Offset size must
     //              be less than or equal to 10000
     getHistory(addressOrName, startBlock, endBlock) {
-        return __awaiter$d(this, void 0, void 0, function* () {
+        return __awaiter$e(this, void 0, void 0, function* () {
             const params = {
                 action: "txlist",
                 address: (yield this.resolveName(addressOrName)),
@@ -21419,7 +21728,7 @@ class EtherscanProvider extends BaseProvider {
 }
 
 "use strict";
-var __awaiter$e = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$f = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -21682,7 +21991,7 @@ function getProcessFunc(provider, method, params) {
 // If we are doing a blockTag query, we need to make sure the backend is
 // caught up to the FallbackProvider, before sending a request to it.
 function waitForSync(config, blockNumber) {
-    return __awaiter$e(this, void 0, void 0, function* () {
+    return __awaiter$f(this, void 0, void 0, function* () {
         const provider = (config.provider);
         if ((provider.blockNumber != null && provider.blockNumber >= blockNumber) || blockNumber === -1) {
             return provider;
@@ -21706,7 +22015,7 @@ function waitForSync(config, blockNumber) {
     });
 }
 function getRunner(config, currentBlockNumber, method, params) {
-    return __awaiter$e(this, void 0, void 0, function* () {
+    return __awaiter$f(this, void 0, void 0, function* () {
         let provider = config.provider;
         switch (method) {
             case "getBlockNumber":
@@ -21809,13 +22118,13 @@ class FallbackProvider extends BaseProvider {
         this._highestBlockNumber = -1;
     }
     detectNetwork() {
-        return __awaiter$e(this, void 0, void 0, function* () {
+        return __awaiter$f(this, void 0, void 0, function* () {
             const networks = yield Promise.all(this.providerConfigs.map((c) => c.provider.getNetwork()));
             return checkNetworks(networks);
         });
     }
     perform(method, params) {
-        return __awaiter$e(this, void 0, void 0, function* () {
+        return __awaiter$f(this, void 0, void 0, function* () {
             // Sending transactions is special; always broadcast it to all backends
             if (method === "sendTransaction") {
                 const results = yield Promise.all(this.providerConfigs.map((c) => {
@@ -22605,7 +22914,7 @@ function sha256$2(types, values) {
     return sha256$1(pack$1(types, values));
 }
 
-const version$n = "units/5.3.0";
+const version$n = "units/5.4.0";
 
 "use strict";
 const logger$G = new Logger(version$n);
@@ -22695,6 +23004,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	AbiCoder: AbiCoder,
 	defaultAbiCoder: defaultAbiCoder,
 	Fragment: Fragment,
+	ConstructorFragment: ConstructorFragment,
 	ErrorFragment: ErrorFragment,
 	EventFragment: EventFragment,
 	FunctionFragment: FunctionFragment,
@@ -22772,6 +23082,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	accessListify: accessListify,
 	parseTransaction: parse,
 	serializeTransaction: serialize,
+	get TransactionTypes () { return TransactionTypes; },
 	getJsonWalletAddress: getJsonWalletAddress,
 	computeAddress: computeAddress,
 	recoverAddress: recoverAddress,
@@ -22790,7 +23101,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.3.1";
+const version$o = "ethers/5.4.0";
 
 "use strict";
 const logger$H = new Logger(version$o);

@@ -26,17 +26,22 @@ var Formatter = /** @class */ (function () {
         var hash = this.hash.bind(this);
         var hex = this.hex.bind(this);
         var number = this.number.bind(this);
+        var type = this.type.bind(this);
         var strictData = function (v) { return _this.data(v, true); };
         formats.transaction = {
             hash: hash,
-            type: Formatter.allowNull(number, null),
+            type: type,
             accessList: Formatter.allowNull(this.accessList.bind(this), null),
             blockHash: Formatter.allowNull(hash, null),
             blockNumber: Formatter.allowNull(number, null),
             transactionIndex: Formatter.allowNull(number, null),
             confirmations: Formatter.allowNull(number, null),
             from: address,
-            gasPrice: bigNumber,
+            // either (gasPrice) or (maxPriorityFeePerGas + maxFeePerGas)
+            // must be set
+            gasPrice: Formatter.allowNull(bigNumber),
+            maxPriorityFeePerGas: Formatter.allowNull(bigNumber),
+            maxFeePerGas: Formatter.allowNull(bigNumber),
             gasLimit: bigNumber,
             to: Formatter.allowNull(address, null),
             value: bigNumber,
@@ -53,6 +58,8 @@ var Formatter = /** @class */ (function () {
             nonce: Formatter.allowNull(number),
             gasLimit: Formatter.allowNull(bigNumber),
             gasPrice: Formatter.allowNull(bigNumber),
+            maxPriorityFeePerGas: Formatter.allowNull(bigNumber),
+            maxFeePerGas: Formatter.allowNull(bigNumber),
             to: Formatter.allowNull(address),
             value: Formatter.allowNull(bigNumber),
             data: Formatter.allowNull(strictData),
@@ -84,7 +91,8 @@ var Formatter = /** @class */ (function () {
             blockNumber: number,
             confirmations: Formatter.allowNull(number, null),
             cumulativeGasUsed: bigNumber,
-            status: Formatter.allowNull(number)
+            status: Formatter.allowNull(number),
+            type: type
         };
         formats.block = {
             hash: hash,
@@ -98,6 +106,7 @@ var Formatter = /** @class */ (function () {
             miner: address,
             extraData: data,
             transactions: Formatter.allowNull(Formatter.arrayOf(hash)),
+            baseFeePerGas: Formatter.allowNull(bigNumber)
         };
         formats.blockWithTransactions = properties_1.shallowCopy(formats.block);
         formats.blockWithTransactions.transactions = Formatter.allowNull(Formatter.arrayOf(this.transactionResponse.bind(this)));
@@ -128,6 +137,12 @@ var Formatter = /** @class */ (function () {
     // Strict! Used on input.
     Formatter.prototype.number = function (number) {
         if (number === "0x") {
+            return 0;
+        }
+        return bignumber_1.BigNumber.from(number).toNumber();
+    };
+    Formatter.prototype.type = function (number) {
+        if (number === "0x" || number == null) {
             return 0;
         }
         return bignumber_1.BigNumber.from(number).toNumber();
@@ -265,6 +280,11 @@ var Formatter = /** @class */ (function () {
             transaction.accessList = [];
         }
         var result = Formatter.check(this.formats.transaction, transaction);
+        if (result.type === 2) {
+            if (result.gasPrice == null) {
+                result.gasPrice = result.maxFeePerGas;
+            }
+        }
         if (transaction.chainId != null) {
             var chainId = transaction.chainId;
             if (bytes_1.isHexString(chainId)) {

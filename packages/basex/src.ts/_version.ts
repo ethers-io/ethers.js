@@ -1,1 +1,1 @@
-export const version = "basex/5.3.0";
+export const version = "basex/5.4.0";

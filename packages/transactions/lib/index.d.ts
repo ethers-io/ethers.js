@@ -5,6 +5,11 @@ export declare type AccessList = Array<{
     storageKeys: Array<string>;
 }>;
 export declare type AccessListish = AccessList | Array<[string, Array<string>]> | Record<string, Array<string>>;
+export declare enum TransactionTypes {
+    legacy = 0,
+    eip2930 = 1,
+    eip1559 = 2
+}
 export declare type UnsignedTransaction = {
     to?: string;
     nonce?: number;
@@ -15,6 +20,8 @@ export declare type UnsignedTransaction = {
     chainId?: number;
     type?: number | null;
     accessList?: AccessListish;
+    maxPriorityFeePerGas?: BigNumberish;
+    maxFeePerGas?: BigNumberish;
 };
 export interface Transaction {
     hash?: string;
@@ -31,6 +38,8 @@ export interface Transaction {
     v?: number;
     type?: number | null;
     accessList?: AccessList;
+    maxPriorityFeePerGas?: BigNumber;
+    maxFeePerGas?: BigNumber;
 }
 export declare function computeAddress(key: BytesLike | string): string;
 export declare function recoverAddress(digest: BytesLike, signature: SignatureLike): string;

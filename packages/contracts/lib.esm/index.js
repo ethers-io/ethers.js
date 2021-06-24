@@ -25,6 +25,7 @@ const logger = new Logger(version);
 const allowedTransactionKeys = {
     chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
     type: true, accessList: true,
+    maxFeePerGas: true, maxPriorityFeePerGas: true
 };
 function resolveName(resolver, nameOrPromise) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -130,6 +131,12 @@ function populateTransaction(contract, fragment, args) {
         if (ro.gasPrice != null) {
             tx.gasPrice = BigNumber.from(ro.gasPrice);
         }
+        if (ro.maxFeePerGas != null) {
+            tx.maxFeePerGas = BigNumber.from(ro.maxFeePerGas);
+        }
+        if (ro.maxPriorityFeePerGas != null) {
+            tx.maxPriorityFeePerGas = BigNumber.from(ro.maxPriorityFeePerGas);
+        }
         if (ro.from != null) {
             tx.from = ro.from;
         }
@@ -175,6 +182,8 @@ function populateTransaction(contract, fragment, args) {
         delete overrides.value;
         delete overrides.type;
         delete overrides.accessList;
+        delete overrides.maxFeePerGas;
+        delete overrides.maxPriorityFeePerGas;
         // Make sure there are no stray overrides, which may indicate a
         // typo or using an unsupported key.
         const leftovers = Object.keys(overrides).filter((key) => (overrides[key] != null));

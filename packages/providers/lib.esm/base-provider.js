@@ -194,13 +194,21 @@ export class Resolver {
                 to: this.address,
                 data: hexConcat([selector, namehash(this.name), (parameters || "0x")])
             };
-            const result = yield this.provider.call(transaction);
-            if (result === "0x") {
+            try {
+                const result = yield this.provider.call(transaction);
+                if (result === "0x") {
+                    return null;
+                }
+                const offset = BigNumber.from(hexDataSlice(result, 0, 32)).toNumber();
+                const length = BigNumber.from(hexDataSlice(result, offset, offset + 32)).toNumber();
+                return hexDataSlice(result, offset + 32, offset + 32 + length);
+            }
+            catch (error) {
+                if (error.code === Logger.errors.CALL_EXCEPTION) {
+                    return null;
+                }
                 return null;
             }
-            const offset = BigNumber.from(hexDataSlice(result, 0, 32)).toNumber();
-            const length = BigNumber.from(hexDataSlice(result, offset, offset + 32)).toNumber();
-            return hexDataSlice(result, offset + 32, offset + 32 + length);
         });
     }
     _getAddress(coinType, hexBytes) {
@@ -262,17 +270,25 @@ export class Resolver {
             }
             // If Ethereum, use the standard `addr(bytes32)`
             if (coinType === 60) {
-                // keccak256("addr(bytes32)")
-                const transaction = {
-                    to: this.address,
-                    data: ("0x3b3b57de" + namehash(this.name).substring(2))
-                };
-                const hexBytes = yield this.provider.call(transaction);
-                // No address
-                if (hexBytes === "0x" || hexBytes === HashZero) {
-                    return null;
+                try {
+                    // keccak256("addr(bytes32)")
+                    const transaction = {
+                        to: this.address,
+                        data: ("0x3b3b57de" + namehash(this.name).substring(2))
+                    };
+                    const hexBytes = yield this.provider.call(transaction);
+                    // No address
+                    if (hexBytes === "0x" || hexBytes === HashZero) {
+                        return null;
+                    }
+                    return this.provider.formatter.callAddress(hexBytes);
                 }
-                return this.provider.formatter.callAddress(hexBytes);
+                catch (error) {
+                    if (error.code === Logger.errors.CALL_EXCEPTION) {
+                        return null;
+                    }
+                    throw error;
+                }
             }
             // keccak256("addr(bytes32,uint256")
             const hexBytes = yield this._fetchBytes("0xf1cb7e06", bytes32ify(coinType));
@@ -1343,11 +1359,19 @@ export class BaseProvider extends Provider {
     }
     getResolver(name) {
         return __awaiter(this, void 0, void 0, function* () {
-            const address = yield this._getResolver(name);
-            if (address == null) {
+            try {
+                const address = yield this._getResolver(name);
+                if (address == null) {
+                    return null;
+                }
+                return new Resolver(this, address, name);
+            }
+            catch (error) {
+                if (error.code === Logger.errors.CALL_EXCEPTION) {
+                    return null;
+                }
                 return null;
             }
-            return new Resolver(this, address, name);
         });
     }
     _getResolver(name) {
@@ -1363,7 +1387,15 @@ export class BaseProvider extends Provider {
                 to: network.ensAddress,
                 data: ("0x0178b8bf" + namehash(name).substring(2))
             };
-            return this.formatter.callAddress(yield this.call(transaction));
+            try {
+                return this.formatter.callAddress(yield this.call(transaction));
+            }
+            catch (error) {
+                if (error.code === Logger.errors.CALL_EXCEPTION) {
+                    return null;
+                }
+                throw error;
+            }
         });
     }
     resolveName(name) {

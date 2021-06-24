@@ -99,8 +99,19 @@ function checkError(method, error, transaction) {
     // incompatibility; maybe for v6 consider forwarding reverts as errors
     if (method === "call" && error.code === Logger.errors.SERVER_ERROR) {
         const e = error.error;
-        if (e && e.message.match("reverted") && isHexString(e.data)) {
-            return e.data;
+        // Etherscan keeps changing their string
+        if (e && (e.message.match(/reverted/i) || e.message.match(/VM execution error/i))) {
+            // Etherscan prefixes the data like "Reverted 0x1234"
+            let data = e.data;
+            if (data) {
+                data = "0x" + data.replace(/^.*0x/i, "");
+            }
+            if (isHexString(data)) {
+                return data;
+            }
+            logger.throwError("missing revert data in call exception", Logger.errors.CALL_EXCEPTION, {
+                error, data: "0x"
+            });
         }
     }
     // Get the message from any nested error structure

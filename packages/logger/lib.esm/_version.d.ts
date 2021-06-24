@@ -1,2 +1,2 @@
-export declare const version = "logger/5.3.0";
+export declare const version = "logger/5.4.0";
 //# sourceMappingURL=_version.d.ts.map

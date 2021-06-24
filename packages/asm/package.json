@@ -1,7 +1,7 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "ethers": "^5.3.0"
+    "ethers": "^5.4.0"
   },
   "description": "ASM libraries and tools for the Ethereum EVM.",
   "ethereum": "donations.ethers.eth",
@@ -36,7 +36,7 @@
     "generate": "node ./generate.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "tarballHash": "0xc19d11fdfbed4b581cab4b18a2f9c6e1b14e961fc6b80862b6b2eb48565ea394",
+  "tarballHash": "0xc74c9dbccf069a9dc15198a6422d792f252651cf607a29c5affc9e0e8e9fb408",
   "types": "./lib/index.d.ts",
-  "version": "5.3.0"
+  "version": "5.4.0"
 }

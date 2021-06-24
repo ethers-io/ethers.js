@@ -74,6 +74,7 @@ var logger = new logger_1.Logger(_version_1.version);
 var allowedTransactionKeys = {
     chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
     type: true, accessList: true,
+    maxFeePerGas: true, maxPriorityFeePerGas: true
 };
 function resolveName(resolver, nameOrPromise) {
     return __awaiter(this, void 0, void 0, function () {
@@ -201,6 +202,12 @@ function populateTransaction(contract, fragment, args) {
                     if (ro.gasPrice != null) {
                         tx.gasPrice = bignumber_1.BigNumber.from(ro.gasPrice);
                     }
+                    if (ro.maxFeePerGas != null) {
+                        tx.maxFeePerGas = bignumber_1.BigNumber.from(ro.maxFeePerGas);
+                    }
+                    if (ro.maxPriorityFeePerGas != null) {
+                        tx.maxPriorityFeePerGas = bignumber_1.BigNumber.from(ro.maxPriorityFeePerGas);
+                    }
                     if (ro.from != null) {
                         tx.from = ro.from;
                     }
@@ -241,6 +248,8 @@ function populateTransaction(contract, fragment, args) {
                     delete overrides.value;
                     delete overrides.type;
                     delete overrides.accessList;
+                    delete overrides.maxFeePerGas;
+                    delete overrides.maxPriorityFeePerGas;
                     leftovers = Object.keys(overrides).filter(function (key) { return (overrides[key] != null); });
                     if (leftovers.length) {
                         logger.throwError("cannot override " + leftovers.map(function (l) { return JSON.stringify(l); }).join(","), logger_1.Logger.errors.UNSUPPORTED_OPERATION, {

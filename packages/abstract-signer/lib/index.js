@@ -57,7 +57,7 @@ var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var allowedTransactionKeys = [
-    "accessList", "chainId", "data", "from", "gasLimit", "gasPrice", "nonce", "to", "type", "value"
+    "accessList", "chainId", "data", "from", "gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "to", "type", "value"
 ];
 var forwardErrors = [
     logger_1.Logger.errors.INSUFFICIENT_FUNDS,
@@ -171,6 +171,18 @@ var Signer = /** @class */ (function () {
             });
         });
     };
+    Signer.prototype.getFeeData = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this._checkProvider("getFeeData");
+                        return [4 /*yield*/, this.provider.getFeeData()];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
     Signer.prototype.resolveName = function (name) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -220,9 +232,12 @@ var Signer = /** @class */ (function () {
     // this Signer. Should be used by sendTransaction but NOT by signTransaction.
     // By default called from: (overriding these prevents it)
     //   - sendTransaction
+    //
+    // Notes:
+    //  - We allow gasPrice for EIP-1559 as long as it matches maxFeePerGas
     Signer.prototype.populateTransaction = function (transaction) {
         return __awaiter(this, void 0, void 0, function () {
-            var tx;
+            var tx, hasEip1559, feeData, gasPrice;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -249,9 +264,84 @@ var Signer = /** @class */ (function () {
                                 });
                             }); });
                         }
+                        hasEip1559 = (tx.maxFeePerGas != null || tx.maxPriorityFeePerGas != null);
+                        if (tx.gasPrice != null && (tx.type === 2 || hasEip1559)) {
+                            logger.throwArgumentError("eip-1559 transaction do not support gasPrice", "transaction", transaction);
+                        }
+                        else if ((tx.type === 0 || tx.type === 1) && hasEip1559) {
+                            logger.throwArgumentError("pre-eip-1559 transaction do not support maxFeePerGas/maxPriorityFeePerGas", "transaction", transaction);
+                        }
+                        if (!((tx.type === 2 || tx.type == null) && (tx.maxFeePerGas != null && tx.maxPriorityFeePerGas != null))) return [3 /*break*/, 2];
+                        // Fully-formed EIP-1559 transaction (skip getFeeData)
+                        tx.type = 2;
+                        return [3 /*break*/, 5];
+                    case 2:
+                        if (!(tx.type === 0 || tx.type === 1)) return [3 /*break*/, 3];
+                        // Explicit Legacy or EIP-2930 transaction
+                        // Populate missing gasPrice
                         if (tx.gasPrice == null) {
                             tx.gasPrice = this.getGasPrice();
                         }
+                        return [3 /*break*/, 5];
+                    case 3: return [4 /*yield*/, this.getFeeData()];
+                    case 4:
+                        feeData = _a.sent();
+                        if (tx.type == null) {
+                            // We need to auto-detect the intended type of this transaction...
+                            if (feeData.maxFeePerGas != null && feeData.maxPriorityFeePerGas != null) {
+                                // The network supports EIP-1559!
+                                // Upgrade transaction from null to eip-1559
+                                tx.type = 2;
+                                if (tx.gasPrice != null) {
+                                    gasPrice = tx.gasPrice;
+                                    delete tx.gasPrice;
+                                    tx.maxFeePerGas = gasPrice;
+                                    tx.maxPriorityFeePerGas = gasPrice;
+                                }
+                                else {
+                                    // Populate missing fee data
+                                    if (tx.maxFeePerGas == null) {
+                                        tx.maxFeePerGas = feeData.maxFeePerGas;
+                                    }
+                                    if (tx.maxPriorityFeePerGas == null) {
+                                        tx.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
+                                    }
+                                }
+                            }
+                            else if (feeData.gasPrice != null) {
+                                // Network doesn't support EIP-1559...
+                                // ...but they are trying to use EIP-1559 properties
+                                if (hasEip1559) {
+                                    logger.throwError("network does not support EIP-1559", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
+                                        operation: "populateTransaction"
+                                    });
+                                }
+                                // Populate missing fee data
+                                if (tx.gasPrice == null) {
+                                    tx.gasPrice = feeData.gasPrice;
+                                }
+                                // Explicitly set untyped transaction to legacy
+                                tx.type = 0;
+                            }
+                            else {
+                                // getFeeData has failed us.
+                                logger.throwError("failed to get consistent fee data", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
+                                    operation: "signer.getFeeData"
+                                });
+                            }
+                        }
+                        else if (tx.type === 2) {
+                            // Explicitly using EIP-1559
+                            // Populate missing fee data
+                            if (tx.maxFeePerGas == null) {
+                                tx.maxFeePerGas = feeData.maxFeePerGas;
+                            }
+                            if (tx.maxPriorityFeePerGas == null) {
+                                tx.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
+                            }
+                        }
+                        _a.label = 5;
+                    case 5:
                         if (tx.nonce == null) {
                             tx.nonce = this.getTransactionCount("pending");
                         }
@@ -281,7 +371,7 @@ var Signer = /** @class */ (function () {
                             });
                         }
                         return [4 /*yield*/, properties_1.resolveProperties(tx)];
-                    case 2: return [2 /*return*/, _a.sent()];
+                    case 6: return [2 /*return*/, _a.sent()];
                 }
             });
         });

@@ -22,17 +22,22 @@ export class Formatter {
         const hash = this.hash.bind(this);
         const hex = this.hex.bind(this);
         const number = this.number.bind(this);
+        const type = this.type.bind(this);
         const strictData = (v) => { return this.data(v, true); };
         formats.transaction = {
             hash: hash,
-            type: Formatter.allowNull(number, null),
+            type: type,
             accessList: Formatter.allowNull(this.accessList.bind(this), null),
             blockHash: Formatter.allowNull(hash, null),
             blockNumber: Formatter.allowNull(number, null),
             transactionIndex: Formatter.allowNull(number, null),
             confirmations: Formatter.allowNull(number, null),
             from: address,
-            gasPrice: bigNumber,
+            // either (gasPrice) or (maxPriorityFeePerGas + maxFeePerGas)
+            // must be set
+            gasPrice: Formatter.allowNull(bigNumber),
+            maxPriorityFeePerGas: Formatter.allowNull(bigNumber),
+            maxFeePerGas: Formatter.allowNull(bigNumber),
             gasLimit: bigNumber,
             to: Formatter.allowNull(address, null),
             value: bigNumber,
@@ -49,6 +54,8 @@ export class Formatter {
             nonce: Formatter.allowNull(number),
             gasLimit: Formatter.allowNull(bigNumber),
             gasPrice: Formatter.allowNull(bigNumber),
+            maxPriorityFeePerGas: Formatter.allowNull(bigNumber),
+            maxFeePerGas: Formatter.allowNull(bigNumber),
             to: Formatter.allowNull(address),
             value: Formatter.allowNull(bigNumber),
             data: Formatter.allowNull(strictData),
@@ -80,7 +87,8 @@ export class Formatter {
             blockNumber: number,
             confirmations: Formatter.allowNull(number, null),
             cumulativeGasUsed: bigNumber,
-            status: Formatter.allowNull(number)
+            status: Formatter.allowNull(number),
+            type: type
         };
         formats.block = {
             hash: hash,
@@ -94,6 +102,7 @@ export class Formatter {
             miner: address,
             extraData: data,
             transactions: Formatter.allowNull(Formatter.arrayOf(hash)),
+            baseFeePerGas: Formatter.allowNull(bigNumber)
         };
         formats.blockWithTransactions = shallowCopy(formats.block);
         formats.blockWithTransactions.transactions = Formatter.allowNull(Formatter.arrayOf(this.transactionResponse.bind(this)));
@@ -124,6 +133,12 @@ export class Formatter {
     // Strict! Used on input.
     number(number) {
         if (number === "0x") {
+            return 0;
+        }
+        return BigNumber.from(number).toNumber();
+    }
+    type(number) {
+        if (number === "0x" || number == null) {
             return 0;
         }
         return BigNumber.from(number).toNumber();
@@ -261,6 +276,11 @@ export class Formatter {
             transaction.accessList = [];
         }
         const result = Formatter.check(this.formats.transaction, transaction);
+        if (result.type === 2) {
+            if (result.gasPrice == null) {
+                result.gasPrice = result.maxFeePerGas;
+            }
+        }
         if (transaction.chainId != null) {
             let chainId = transaction.chainId;
             if (isHexString(chainId)) {

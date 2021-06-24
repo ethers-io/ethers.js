@@ -73,6 +73,10 @@ function checkError(method, error, params) {
         if (e && e.message.match("reverted") && bytes_1.isHexString(e.data)) {
             return e.data;
         }
+        logger.throwError("missing revert data in call exception", logger_1.Logger.errors.CALL_EXCEPTION, {
+            error: error,
+            data: "0x"
+        });
     }
     var message = error.message;
     if (error.code === logger_1.Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
@@ -670,7 +674,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         properties_1.checkProperties(transaction, allowed);
         var result = {};
         // Some nodes (INFURA ropsten; INFURA mainnet is fine) do not like leading zeros.
-        ["gasLimit", "gasPrice", "type", "nonce", "value"].forEach(function (key) {
+        ["gasLimit", "gasPrice", "type", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "value"].forEach(function (key) {
             if (transaction[key] == null) {
                 return;
             }

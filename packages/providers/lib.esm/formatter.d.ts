@@ -21,6 +21,7 @@ export declare class Formatter {
     getDefaultFormats(): Formats;
     accessList(accessList: Array<any>): AccessList;
     number(number: any): number;
+    type(number: any): number;
     bigNumber(value: any): BigNumber;
     boolean(value: any): boolean;
     hex(value: any, strict?: boolean): string;

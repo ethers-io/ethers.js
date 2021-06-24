@@ -20,6 +20,13 @@ export declare class TransactionDescription extends Description<TransactionDescr
     readonly sighash: string;
     readonly value: BigNumber;
 }
+export declare class ErrorDescription extends Description<ErrorDescription> {
+    readonly errorFragment: ErrorFragment;
+    readonly name: string;
+    readonly args: Result;
+    readonly signature: string;
+    readonly sighash: string;
+}
 export declare class Indexed extends Description<Indexed> {
     readonly hash: string;
     readonly _isIndexed: boolean;
@@ -51,11 +58,13 @@ export declare class Interface {
     getFunction(nameOrSignatureOrSighash: string): FunctionFragment;
     getEvent(nameOrSignatureOrTopic: string): EventFragment;
     getError(nameOrSignatureOrSighash: string): ErrorFragment;
-    getSighash(functionFragment: FunctionFragment | string): string;
+    getSighash(fragment: ErrorFragment | FunctionFragment | string): string;
     getEventTopic(eventFragment: EventFragment | string): string;
     _decodeParams(params: ReadonlyArray<ParamType>, data: BytesLike): Result;
     _encodeParams(params: ReadonlyArray<ParamType>, values: ReadonlyArray<any>): string;
     encodeDeploy(values?: ReadonlyArray<any>): string;
+    decodeErrorData(fragment: ErrorFragment | string, data: BytesLike): Result;
+    encodeErrorData(fragment: ErrorFragment | string, values?: ReadonlyArray<any>): string;
     decodeFunctionData(functionFragment: FunctionFragment | string, data: BytesLike): Result;
     encodeFunctionData(functionFragment: FunctionFragment | string, values?: ReadonlyArray<any>): string;
     decodeFunctionResult(functionFragment: FunctionFragment | string, data: BytesLike): Result;
@@ -74,6 +83,7 @@ export declare class Interface {
         topics: Array<string>;
         data: string;
     }): LogDescription;
+    parseError(data: BytesLike): ErrorDescription;
     static isInterface(value: any): value is Interface;
 }
 //# sourceMappingURL=interface.d.ts.map

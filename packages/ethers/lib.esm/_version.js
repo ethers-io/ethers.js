@@ -1,2 +1,2 @@
-export const version = "ethers/5.3.1";
+export const version = "ethers/5.4.0";
 //# sourceMappingURL=_version.js.map

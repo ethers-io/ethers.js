@@ -1,1 +1,1 @@
-export const version = "sha2/5.3.0";
+export const version = "sha2/5.4.0";

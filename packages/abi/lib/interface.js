@@ -15,7 +15,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Interface = exports.Indexed = exports.TransactionDescription = exports.LogDescription = exports.checkResultErrors = void 0;
+exports.Interface = exports.Indexed = exports.ErrorDescription = exports.TransactionDescription = exports.LogDescription = exports.checkResultErrors = void 0;
 var address_1 = require("@ethersproject/address");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
@@ -45,6 +45,14 @@ var TransactionDescription = /** @class */ (function (_super) {
     return TransactionDescription;
 }(properties_1.Description));
 exports.TransactionDescription = TransactionDescription;
+var ErrorDescription = /** @class */ (function (_super) {
+    __extends(ErrorDescription, _super);
+    function ErrorDescription() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return ErrorDescription;
+}(properties_1.Description));
+exports.ErrorDescription = ErrorDescription;
 var Indexed = /** @class */ (function (_super) {
     __extends(Indexed, _super);
     function Indexed() {
@@ -259,11 +267,21 @@ var Interface = /** @class */ (function () {
         return result;
     };
     // Get the sighash (the bytes4 selector) used by Solidity to identify a function
-    Interface.prototype.getSighash = function (functionFragment) {
-        if (typeof (functionFragment) === "string") {
-            functionFragment = this.getFunction(functionFragment);
+    Interface.prototype.getSighash = function (fragment) {
+        if (typeof (fragment) === "string") {
+            try {
+                fragment = this.getFunction(fragment);
+            }
+            catch (error) {
+                try {
+                    fragment = this.getError(fragment);
+                }
+                catch (_) {
+                    throw error;
+                }
+            }
         }
-        return properties_1.getStatic(this.constructor, "getSighash")(functionFragment);
+        return properties_1.getStatic(this.constructor, "getSighash")(fragment);
     };
     // Get the topic (the bytes32 hash) used by Solidity to identify an event
     Interface.prototype.getEventTopic = function (eventFragment) {
@@ -280,6 +298,25 @@ var Interface = /** @class */ (function () {
     };
     Interface.prototype.encodeDeploy = function (values) {
         return this._encodeParams(this.deploy.inputs, values || []);
+    };
+    Interface.prototype.decodeErrorData = function (fragment, data) {
+        if (typeof (fragment) === "string") {
+            fragment = this.getError(fragment);
+        }
+        var bytes = bytes_1.arrayify(data);
+        if (bytes_1.hexlify(bytes.slice(0, 4)) !== this.getSighash(fragment)) {
+            logger.throwArgumentError("data signature does not match error " + fragment.name + ".", "data", bytes_1.hexlify(bytes));
+        }
+        return this._decodeParams(fragment.inputs, bytes.slice(4));
+    };
+    Interface.prototype.encodeErrorData = function (fragment, values) {
+        if (typeof (fragment) === "string") {
+            fragment = this.getError(fragment);
+        }
+        return bytes_1.hexlify(bytes_1.concat([
+            this.getSighash(fragment),
+            this._encodeParams(fragment.inputs, values || [])
+        ]));
     };
     // Decode the data for a function call (e.g. tx.data)
     Interface.prototype.decodeFunctionData = function (functionFragment, data) {
@@ -575,6 +612,20 @@ var Interface = /** @class */ (function () {
             signature: fragment.format(),
             topic: this.getEventTopic(fragment),
             args: this.decodeEventLog(fragment, log.data, log.topics)
+        });
+    };
+    Interface.prototype.parseError = function (data) {
+        var hexData = bytes_1.hexlify(data);
+        var fragment = this.getError(hexData.substring(0, 10).toLowerCase());
+        if (!fragment) {
+            return null;
+        }
+        return new ErrorDescription({
+            args: this._abiCoder.decode(fragment.inputs, "0x" + hexData.substring(10)),
+            errorFragment: fragment,
+            name: fragment.name,
+            signature: fragment.format(),
+            sighash: this.getSighash(fragment),
         });
     };
     /*
