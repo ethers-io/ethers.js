@@ -16,7 +16,7 @@ import { sha256 } from "@ethersproject/sha2";
 import { toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
 import { poll } from "@ethersproject/web";
 
-import bech32 from "bech32";
+import * as bech32 from "bech32";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
