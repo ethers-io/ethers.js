@@ -183,10 +183,22 @@ export class JsonRpcSigner extends Signer implements TypedDataSigner {
             transaction.gasLimit = this.provider.estimateGas(estimate);
         }
 
+        if (transaction.to != null) {
+            transaction.to = Promise.resolve(transaction.to).then(async (to) => {
+                if (to == null) { return null; }
+                const address = await this.provider.resolveName(to);
+                if (address == null) {
+                    logger.throwArgumentError("provided ENS name resolves to null", "tx.to", to);
+                }
+                return address;
+            });
+        }
+
         return resolveProperties({
             tx: resolveProperties(transaction),
             sender: fromAddress
         }).then(({ tx, sender }) => {
+
             if (tx.from != null) {
                 if (tx.from.toLowerCase() !== sender) {
                     logger.throwArgumentError("from address mismatch", "transaction", transaction);
