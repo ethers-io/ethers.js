@@ -612,6 +612,104 @@ describe("Test Signature Manipulation", function() {
     });
 });
 
+describe("Test Typed Transactions", function() {
+    const tests: Array<TestCase.TypedTransaction> = loadTests("typed-transactions");
+
+    function equalsData(name: string, a: any, b: any, ifNull?: any): boolean {
+        assert.equal(ethers.utils.hexlify(a), ethers.utils.hexlify((b == null) ? ifNull: b), name);
+        return true;
+    }
+
+    function equalsNumber(name: string, a: any, b: any, ifNull?: any): boolean {
+        assert.ok(ethers.BigNumber.from(a).eq((b == null) ? ifNull: b), name);
+        return true;
+    }
+
+    function equalsArray(name: string, a: any, b: any, equals: (name: string, a: any, b: any) => boolean): boolean {
+        assert.equal(a.length, b.length, `${ name }.length`);
+        for (let i = 0; i < a.length; i++) {
+            if (!equals(`${ name }[${ i }]`, a[i], b[i])) { return false; }
+        }
+        return true;
+    }
+
+    function makeEqualsArray(equals: (name: string, a: any, b: any) => boolean): (name: string, a: any, b: any) => boolean {
+        return function(name: string, a: any, b: any) {
+            return equalsArray(name, a, b, equals);
+        };
+    }
+
+    function equalsAccessList(name: string, a: Array<any>, b: Array<any>): boolean {
+        return equalsArray(`${ name }-address`, a.map((f) => f.address), b.map((f) => f.address), equalsData) &&
+               equalsArray(`${ name }-storageKeys`, a.map((f) => f.storageKeys), b.map((f) => f.storageKeys), makeEqualsArray(equalsData))
+    }
+
+    function allowNull(name: string, a: any, b: any, equals: (name: string, a: any, b: any) => boolean): boolean {
+        if (a == null) {
+            assert.ok(b == null, `${ name }:!NULL`);
+            return true;
+        } else if (b == null) {
+            assert.fail(`${ name }:!!NULL`);
+        }
+        return equals(name, a, b);
+    }
+
+    function equalsCommonTransaction(name: string, a: any, b: any): boolean {
+        return equalsNumber(`${ name }-type`, a.type, b.type, 0) &&
+               equalsData(`${ name }-data`, a.data, b.data, "0x") &&
+               equalsNumber(`${ name }-gasLimit`, a.gasLimit, b.gasLimit, 0) &&
+               equalsNumber(`${ name }-nonce`, a.nonce, b.nonce, 0) &&
+               allowNull(`${ name }-to`, a.to, b.to, equalsData) &&
+               equalsNumber(`${ name }-value`, a.value, b.value, 0) &&
+               equalsNumber(`${ name }-chainId`, a.chainId, b.chainId, 0) &&
+               equalsAccessList(`${ name }-accessList`, a.accessList, b.accessList || [ ]);
+    }
+
+    function equalsEip1559Transaction(name: string, a: any, b: any): boolean {
+        return equalsNumber(`${ name }-maxPriorityFeePerGas`, a.maxPriorityFeePerGas, b.maxPriorityFeePerGas, 0) &&
+               equalsNumber(`${ name }-maxFeePerGas`, a.maxFeePerGas, b.maxFeePerGas, 0) &&
+               equalsCommonTransaction(name, a, b);
+    }
+
+    function equalsEip2930Transaction(name: string, a: any, b: any): boolean {
+        return equalsNumber(`${ name }-gasPrice`, a.gasPrice, b.gasPrice, 0) &&
+               equalsCommonTransaction(name, a, b);
+    }
+
+    function equalsTransaction(name: string, a: any, b: any): boolean {
+        switch (a.type) {
+            case 1:
+                return equalsEip2930Transaction(name, a, b);
+            case 2:
+                return equalsEip1559Transaction(name, a, b);
+        }
+        assert.fail(`unknown transaction type ${ a.type }`);
+    }
+
+    tests.forEach((test, index) => {
+        it(test.name, async function() {
+            {
+                const wallet = new ethers.Wallet(test.key);
+                const signed = await wallet.signTransaction(test.tx);
+                assert.equal(signed, test.signed, "signed transactions match");
+            }
+
+            assert.equal(ethers.utils.serializeTransaction(test.tx), test.unsigned, "unsigned transactions match");
+
+            {
+                const tx = ethers.utils.parseTransaction(test.unsigned);
+                assert.ok(equalsTransaction("transaction", tx, test.tx), "all unsigned keys match");
+            }
+
+            {
+                const tx = ethers.utils.parseTransaction(test.signed);
+                assert.ok(equalsTransaction("transaction", tx, test.tx), "all signed keys match");
+                assert.equal(tx.from.toLowerCase(), test.address, "sender matches");
+            }
+        });
+    });
+});
+
 describe("BigNumber", function() {
     const tests: Array<TestCase.BigNumber> = loadTests("bignumber");
     tests.forEach((test) => {

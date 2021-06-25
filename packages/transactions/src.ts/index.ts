@@ -362,7 +362,7 @@ function _parseEip1559(payload: Uint8Array): Transaction {
         nonce:                 handleNumber(transaction[1]).toNumber(),
         maxPriorityFeePerGas:  maxPriorityFeePerGas,
         maxFeePerGas:          maxFeePerGas,
-        gasPrice:              maxFeePerGas,
+        gasPrice:              null,
         gasLimit:              handleNumber(transaction[4]),
         to:                    handleAddress(transaction[5]),
         value:                 handleNumber(transaction[6]),

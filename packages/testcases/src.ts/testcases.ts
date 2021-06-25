@@ -103,6 +103,32 @@ export interface SignedTransaction {
     data: string;
 };
 
+export interface TypedTransaction {
+    name: string;
+
+    key: string;
+    address: string;
+
+    tx: {
+        type?: number;
+        data?: string;
+        gasLimit?: string;
+        maxPriorityFeePerGas: string;
+        maxFeePerGas: string;
+        nonce: number;
+        to: string;
+        value: string;
+        chainId: number;
+        accessList: Array<{
+            address: string,
+            storageKeys: Array<string>
+        }>;
+    };
+
+    signed: string;
+    unsigned: string;
+}
+
 export interface Eip712 {
     name: string;
 
