@@ -57,6 +57,7 @@ const blockchainData: { [ network: string ]: TestCases } = {
                 blockHash: "0x9653f180a5720f3634816eb945a6d722adee52cc47526f6357ac10adaf368135",
                 blockNumber: 4097745,
                 transactionIndex: 18,
+                type: 0,
                 from: "0x32DEF047DeFd076DB21A2D759aff2A591c972248",
                 gasPrice: bnify("0x4a817c800"),
                 gasLimit: bnify("0x3d090"),
@@ -76,6 +77,7 @@ const blockchainData: { [ network: string ]: TestCases } = {
             {
                 blockHash: "0x36b4af7f0538559e581c8588f16477df0f676439ea67fe8d7a2ae4abb20e2566",
                 blockNumber: 0x3c92b5,
+                type: 0,
                 contractAddress: null,
                 cumulativeGasUsed: 0x1cca2e,
                 from: "0x18C6045651826824FEBBD39d8560584078d1b247",
@@ -122,6 +124,7 @@ const blockchainData: { [ network: string ]: TestCases } = {
                 byzantium: true,
                 blockHash: "0x34e5a6cfbdbb84f7625df1de69d218ade4da72f4a2558064a156674e72e976c9",
                 blockNumber: 0x444f76,
+                type: 0,
                 contractAddress: null,
                 cumulativeGasUsed: 0x15bfe7,
                 from: "0x18C6045651826824FEBBD39d8560584078d1b247",
@@ -247,7 +250,7 @@ const blockchainData: { [ network: string ]: TestCases } = {
             },
         ],
         transactions: [
-            // Berlin tests
+            // Berlin tests (EIP-2930)
             {
                 hash: "0x48bff7b0e603200118a672f7c622ab7d555a28f98938edb8318803eed7ea7395",
                 type: 1,
@@ -299,12 +302,36 @@ const blockchainData: { [ network: string ]: TestCases } = {
                 v: 0,
                 creates: null,
                 chainId: 3
-            }
+            },
+            // London Tests (EIP-1559)
+            {
+                hash: '0xb8c7871d9d8597ee8a50395d8b39dafa280c90337dc501d0db1321806c6ea98c',
+                blockHash: '0xfd824501af65b1d0f21ea9eb7ec83f45108fcd6fd1bca5d6414ba5923ad87b49',
+                blockNumber: 10512507,
+                transactionIndex: 5,
+                type: 2,
+                creates: null,
+                from: '0xad252DD6C011E613610A36368f04aC84D5185b7c',
+                gasPrice: bnify("0x0268ab0ed6"),
+                maxPriorityFeePerGas: bnify("0x0268ab0ed6"),
+                maxFeePerGas: bnify("0x0268ab0ed6"),
+                gasLimit: bnify("0x5208"),
+                to: '0x8210357f377E901f18E45294e86a2A32215Cc3C9',
+                value: bnify("0x7b"),
+                nonce: 0,
+                data: '0x',
+                r: '0x7426c348119eed4e9e0525b52aa77edbbf1107610702b4642fa9d2688dce6fa7',
+                s: '0x03f606ad1f12af5876280a34601a4eb3919b797cf3878161e2d24b61d2609846',
+                v: 1,
+                accessList: [],
+                chainId: 3,
+          },
         ],
         transactionReceipts: [
             {
                 blockHash: "0xc9235b8253fce455942147aa8b450d23081b867ffbb2a1e4dec934827cd80f8f",
                 blockNumber: 0x1564d8,
+                type: 0,
                 contractAddress: null,
                 cumulativeGasUsed: bnify("0x80b9"),
                 from: "0xb346D5019EeafC028CfC01A5f789399C2314ae8D",
@@ -356,6 +383,24 @@ const blockchainData: { [ network: string ]: TestCases } = {
                 transactionHash: "0xf724f1d6813f13fb523c5f6af6261d06d41138dd094fff723e09fb0f893f03e6",
                 transactionIndex: 0x2
             },
+            // London Tests (EIP-1559)
+            {
+                blockNumber: 10512507,
+                blockHash: '0xfd824501af65b1d0f21ea9eb7ec83f45108fcd6fd1bca5d6414ba5923ad87b49',
+                transactionHash: '0xb8c7871d9d8597ee8a50395d8b39dafa280c90337dc501d0db1321806c6ea98c',
+                transactionIndex: 5,
+                byzantium: true,
+                type: 2,
+                to: '0x8210357f377E901f18E45294e86a2A32215Cc3C9',
+                from: '0xad252DD6C011E613610A36368f04aC84D5185b7c',
+                contractAddress: null,
+                gasUsed: bnify("0x5208"),
+                logsBloom: '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+                logs: [],
+                cumulativeGasUsed: bnify("0x038f3e"),
+                effectiveGasPrice: bnify("0x268ab0ed6"),
+                status: 1,
+            }
         ],
     },
     goerli: {
@@ -406,6 +451,7 @@ const blockchainData: { [ network: string ]: TestCases } = {
                 blockHash: "0x2384e8e8bdcf6eb87ec7c138fa503ac34adb32cac817e4b35f14d4339eaa1993",
                 blockNumber: 47464,
                 byzantium: true,
+                type: 0,
                 contractAddress: null,
                 cumulativeGasUsed: bnify(21000),
                 from: "0x8c1e1e5b47980D214965f3bd8ea34C413E120ae4",
@@ -684,8 +730,9 @@ Object.keys(blockchainData).forEach((network) => {
     });
 
     tests.transactions.forEach((test) => {
-        addObjectTest(`fetches transaction ${ test.hash }`, async (provider: ethers.providers.Provider) => {
-            const tx = await provider.getTransaction(test.hash);
+        const hash = test.hash;
+        addObjectTest(`fetches transaction ${ hash }`, async (provider: ethers.providers.Provider) => {
+            const tx = await provider.getTransaction(hash);
 
             // This changes with every block
             assert.equal(typeof(tx.confirmations), "number", "confirmations is a number");
@@ -702,13 +749,19 @@ Object.keys(blockchainData).forEach((network) => {
                 return true;
             }
 
+            // @TODO: Remove once Etherscan supports EIP-1559
+            if (hash === "0xb8c7871d9d8597ee8a50395d8b39dafa280c90337dc501d0db1321806c6ea98c" && provider === "EtherscanProvider") {
+                return true;
+            }
+
             return false;
         });
     });
 
     tests.transactionReceipts.forEach((test) => {
-        addObjectTest(`fetches transaction receipt ${ test.transactionHash }`, async (provider: ethers.providers.Provider) => {
-            const receipt = await provider.getTransactionReceipt(test.transactionHash);
+        const hash = test.transactionHash;
+        addObjectTest(`fetches transaction receipt ${ hash }`, async (provider: ethers.providers.Provider) => {
+            const receipt = await provider.getTransactionReceipt(hash);
 
             if (test.status === null) {
                 assert.ok(receipt.status === undefined, "no status");
@@ -727,6 +780,11 @@ Object.keys(blockchainData).forEach((network) => {
                 return true;
             }
 
+            // @TODO: Remove once Etherscan supports EIP-1559
+            if (hash === "0xb8c7871d9d8597ee8a50395d8b39dafa280c90337dc501d0db1321806c6ea98c" && provider === "EtherscanProvider") {
+                return true;
+            }
+
             return false;
         });
     });
@@ -737,6 +795,11 @@ Object.keys(blockchainData).forEach((network) => {
         testFunctions.push({
             name: `throws correct ${ code } error`,
             networks: [ "ropsten" ],
+            checkSkip: (provider: string, network: string, test: TestDescription) => {
+                // @TODO: Remove once Etherscan supports EIP-1559
+                return (code === ethers.utils.Logger.errors.UNPREDICTABLE_GAS_LIMIT && provider === "EtherscanProvider");
+                //return false;
+            },
             execute: async (provider: ethers.providers.Provider) => {
                 try {
                     const value = await func(provider);
@@ -768,7 +831,7 @@ Object.keys(blockchainData).forEach((network) => {
             gasPrice: 9000000000,
             gasLimit: 21000,
             chainId: 3,
-            value: 1
+            value: 1,
         };
 
         const wallet = ethers.Wallet.createRandom();
@@ -781,7 +844,10 @@ Object.keys(blockchainData).forEach((network) => {
             to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
             gasPrice: 9000000000,
             gasLimit: 21000,
-            value: 1
+            value: 1,
+
+            // @TODO: Remove this once all providers are eip-1559 savvy
+            type: 0,
         };
 
         const wallet = ethers.Wallet.createRandom().connect(provider);
@@ -796,7 +862,7 @@ Object.keys(blockchainData).forEach((network) => {
 })();
 
 testFunctions.push({
-    name: "sends a transaction",
+    name: "sends a legacy transaction",
     extras: [ "funding" ],         // We need funding to the fundWallet
     timeout: 900,                  // 15 minutes
     networks: [ "ropsten" ],       // Only test on Ropsten
@@ -816,6 +882,7 @@ testFunctions.push({
         assert.ok(b0.gt(ethers.constants.Zero), "balance is non-zero");
 
         const tx = await wallet.sendTransaction({
+            type: 0,
             to: addr,
             value: 123,
             gasPrice: gasPrice
@@ -861,6 +928,46 @@ testFunctions.push({
             to: addr,
             value: 123,
             gasPrice: gasPrice
+        });
+
+        await tx.wait();
+
+        await waiter(3000);
+
+        const b1 = await provider.getBalance(wallet.address);
+        assert.ok(b0.gt(b1), "balance is decreased");
+    }
+});
+
+testFunctions.push({
+    name: "sends an EIP-1559 transaction",
+    extras: [ "funding" ],         // We need funding to the funWallet
+    timeout: 900,                  // 15 minutes
+    networks: [ "ropsten" ],       // Only test on Ropsten
+    checkSkip: (provider: string, network: string, test: TestDescription) => {
+        // These don't support EIP-1559 yet for sending
+        return (provider === "AlchemyProvider" || provider === "EtherscanProvider");
+    },
+    execute: async (provider: ethers.providers.Provider) => {
+        const wallet = fundWallet.connect(provider);
+
+        const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
+
+        await waiter(3000);
+
+        const b0 = await provider.getBalance(wallet.address);
+        assert.ok(b0.gt(ethers.constants.Zero), "balance is non-zero");
+
+        const tx = await wallet.sendTransaction({
+            type: 2,
+            accessList: {
+                "0x8ba1f109551bD432803012645Ac136ddd64DBA72": [
+                    "0x0000000000000000000000000000000000000000000000000000000000000000",
+                    "0x0000000000000000000000000000000000000000000000000000000000000042",
+                ]
+            },
+            to: addr,
+            value: 123,
         });
 
         await tx.wait();
