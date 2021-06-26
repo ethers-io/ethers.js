@@ -124,6 +124,7 @@ export class Formatter {
             blockNumber: number,
             confirmations: Formatter.allowNull(number, null),
             cumulativeGasUsed: bigNumber,
+            effectiveGasPrice: Formatter.allowNull(bigNumber),
             status: Formatter.allowNull(number),
             type: type
         };
@@ -338,12 +339,6 @@ export class Formatter {
         }
 
         const result: TransactionResponse = Formatter.check(this.formats.transaction, transaction);
-
-        if (result.type === 2) {
-            if (result.gasPrice == null) {
-                result.gasPrice = result.maxFeePerGas;
-            }
-        }
 
         if (transaction.chainId != null) {
             let chainId = transaction.chainId;

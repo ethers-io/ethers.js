@@ -113,6 +113,7 @@ export interface TransactionReceipt {
     blockNumber: number,
     confirmations: number,
     cumulativeGasUsed: BigNumber,
+    effectiveGasPrice: BigNumber,
     byzantium: boolean,
     type: number;
     status?: number
