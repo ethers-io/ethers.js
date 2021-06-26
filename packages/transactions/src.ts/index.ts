@@ -59,7 +59,7 @@ export interface Transaction {
     nonce: number;
 
     gasLimit: BigNumber;
-    gasPrice: BigNumber;
+    gasPrice?: BigNumber;
 
     data: string;
     value: BigNumber;
