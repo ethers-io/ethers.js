@@ -22,8 +22,10 @@ function getTransactionPostData(transaction: TransactionRequest): Record<string,
     for (let key in transaction) {
         if ((<any>transaction)[key] == null) { continue; }
         let value = (<any>transaction)[key];
+        if (key === "type" && value === 0) { continue; }
+
         // Quantity-types require no leading zero, unless 0
-        if ((<any>{ type: true, gasLimit: true, gasPrice: true, nonce: true, value: true })[key]) {
+        if ((<any>{ type: true, gasLimit: true, gasPrice: true, maxFeePerGs: true, maxPriorityFeePerGas: true, nonce: true, value: true })[key]) {
             value = hexValue(hexlify(value));
         } else if (key === "accessList") {
             value = "[" + accessListify(value).map((set) => {

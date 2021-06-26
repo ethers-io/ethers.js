@@ -86,6 +86,17 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
         };
     }
 
+    async perform(method: string, params: any): Promise<any> {
+        if ((method === "estimateGas" && params.transaction.type === 2) || (method === "sendTransaction" && params.signedTransaction.substring(0, 4) === "0x02")) {
+            logger.throwError("AlchemyProvider does not currently support EIP-1559", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: method,
+                transaction: params.transaction
+            });
+        }
+
+        return super.perform(method, params);
+    }
+
     isCommunityResource(): boolean {
         return (this.apiKey === defaultApiKey);
     }
