@@ -29,7 +29,7 @@ export interface Transaction {
     from?: string;
     nonce: number;
     gasLimit: BigNumber;
-    gasPrice: BigNumber;
+    gasPrice?: BigNumber;
     data: string;
     value: BigNumber;
     chainId: number;

@@ -8437,7 +8437,7 @@ class Interface {
     encodeDeploy(values) {
         return this._encodeParams(this.deploy.inputs, values || []);
     }
-    decodeErrorData(fragment, data) {
+    decodeErrorResult(fragment, data) {
         if (typeof (fragment) === "string") {
             fragment = this.getError(fragment);
         }
@@ -8447,7 +8447,7 @@ class Interface {
         }
         return this._decodeParams(fragment.inputs, bytes.slice(4));
     }
-    encodeErrorData(fragment, values) {
+    encodeErrorResult(fragment, values) {
         if (typeof (fragment) === "string") {
             fragment = this.getError(fragment);
         }
@@ -13329,7 +13329,7 @@ function _parseEip1559(payload) {
         nonce: handleNumber(transaction[1]).toNumber(),
         maxPriorityFeePerGas: maxPriorityFeePerGas,
         maxFeePerGas: maxFeePerGas,
-        gasPrice: maxFeePerGas,
+        gasPrice: null,
         gasLimit: handleNumber(transaction[4]),
         to: handleAddress(transaction[5]),
         value: handleNumber(transaction[6]),
@@ -18374,6 +18374,7 @@ class Formatter {
             blockNumber: number,
             confirmations: Formatter.allowNull(number, null),
             cumulativeGasUsed: bigNumber,
+            effectiveGasPrice: Formatter.allowNull(bigNumber),
             status: Formatter.allowNull(number),
             type: type
         };
@@ -18563,11 +18564,6 @@ class Formatter {
             transaction.accessList = [];
         }
         const result = Formatter.check(this.formats.transaction, transaction);
-        if (result.type === 2) {
-            if (result.gasPrice == null) {
-                result.gasPrice = result.maxFeePerGas;
-            }
-        }
         if (transaction.chainId != null) {
             let chainId = transaction.chainId;
             if (isHexString(chainId)) {
@@ -20427,6 +20423,18 @@ class JsonRpcSigner extends Signer {
             estimate.from = fromAddress;
             transaction.gasLimit = this.provider.estimateGas(estimate);
         }
+        if (transaction.to != null) {
+            transaction.to = Promise.resolve(transaction.to).then((to) => __awaiter$a(this, void 0, void 0, function* () {
+                if (to == null) {
+                    return null;
+                }
+                const address = yield this.provider.resolveName(to);
+                if (address == null) {
+                    logger$u.throwArgumentError("provided ENS name resolves to null", "tx.to", to);
+                }
+                return address;
+            }));
+        }
         return resolveProperties({
             tx: resolveProperties(transaction),
             sender: fromAddress
@@ -21206,6 +21214,15 @@ class UrlJsonRpcProvider extends StaticJsonRpcProvider {
 }
 
 "use strict";
+var __awaiter$d = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 const logger$x = new Logger(version$m);
 // This key was provided to ethers.js by Alchemy to be used by the
 // default provider, but it is recommended that for your own
@@ -21269,13 +21286,27 @@ class AlchemyProvider extends UrlJsonRpcProvider {
             }
         };
     }
+    perform(method, params) {
+        const _super = Object.create(null, {
+            perform: { get: () => super.perform }
+        });
+        return __awaiter$d(this, void 0, void 0, function* () {
+            if ((method === "estimateGas" && params.transaction.type === 2) || (method === "sendTransaction" && params.signedTransaction.substring(0, 4) === "0x02")) {
+                logger$x.throwError("AlchemyProvider does not currently support EIP-1559", Logger.errors.UNSUPPORTED_OPERATION, {
+                    operation: method,
+                    transaction: params.transaction
+                });
+            }
+            return _super.perform.call(this, method, params);
+        });
+    }
     isCommunityResource() {
         return (this.apiKey === defaultApiKey);
     }
 }
 
 "use strict";
-var __awaiter$d = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$e = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -21307,7 +21338,7 @@ class CloudflareProvider extends UrlJsonRpcProvider {
         const _super = Object.create(null, {
             perform: { get: () => super.perform }
         });
-        return __awaiter$d(this, void 0, void 0, function* () {
+        return __awaiter$e(this, void 0, void 0, function* () {
             // The Cloudflare provider does not support eth_blockNumber,
             // so we get the latest block and pull it from that
             if (method === "getBlockNumber") {
@@ -21320,7 +21351,7 @@ class CloudflareProvider extends UrlJsonRpcProvider {
 }
 
 "use strict";
-var __awaiter$e = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$f = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -21338,8 +21369,11 @@ function getTransactionPostData(transaction) {
             continue;
         }
         let value = transaction[key];
+        if (key === "type" && value === 0) {
+            continue;
+        }
         // Quantity-types require no leading zero, unless 0
-        if ({ type: true, gasLimit: true, gasPrice: true, nonce: true, value: true }[key]) {
+        if ({ type: true, gasLimit: true, gasPrice: true, maxFeePerGs: true, maxPriorityFeePerGas: true, nonce: true, value: true }[key]) {
             value = hexValue(hexlify(value));
         }
         else if (key === "accessList") {
@@ -21509,7 +21543,7 @@ class EtherscanProvider extends BaseProvider {
         return params;
     }
     fetch(module, params, post) {
-        return __awaiter$e(this, void 0, void 0, function* () {
+        return __awaiter$f(this, void 0, void 0, function* () {
             const url = (post ? this.getPostUrl() : this.getUrl(module, params));
             const payload = (post ? this.getPostData(module, params) : null);
             const procFunc = (module === "proxy") ? getJsonResult : getResult$1;
@@ -21546,7 +21580,7 @@ class EtherscanProvider extends BaseProvider {
         });
     }
     detectNetwork() {
-        return __awaiter$e(this, void 0, void 0, function* () {
+        return __awaiter$f(this, void 0, void 0, function* () {
             return this.network;
         });
     }
@@ -21554,7 +21588,7 @@ class EtherscanProvider extends BaseProvider {
         const _super = Object.create(null, {
             perform: { get: () => super.perform }
         });
-        return __awaiter$e(this, void 0, void 0, function* () {
+        return __awaiter$f(this, void 0, void 0, function* () {
             switch (method) {
                 case "getBlockNumber":
                     return this.fetch("proxy", { action: "eth_blockNumber" });
@@ -21696,7 +21730,7 @@ class EtherscanProvider extends BaseProvider {
     //       Error: Result window is too large, PageNo x Offset size must
     //              be less than or equal to 10000
     getHistory(addressOrName, startBlock, endBlock) {
-        return __awaiter$e(this, void 0, void 0, function* () {
+        return __awaiter$f(this, void 0, void 0, function* () {
             const params = {
                 action: "txlist",
                 address: (yield this.resolveName(addressOrName)),
@@ -21728,7 +21762,7 @@ class EtherscanProvider extends BaseProvider {
 }
 
 "use strict";
-var __awaiter$f = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$g = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -21991,7 +22025,7 @@ function getProcessFunc(provider, method, params) {
 // If we are doing a blockTag query, we need to make sure the backend is
 // caught up to the FallbackProvider, before sending a request to it.
 function waitForSync(config, blockNumber) {
-    return __awaiter$f(this, void 0, void 0, function* () {
+    return __awaiter$g(this, void 0, void 0, function* () {
         const provider = (config.provider);
         if ((provider.blockNumber != null && provider.blockNumber >= blockNumber) || blockNumber === -1) {
             return provider;
@@ -22015,7 +22049,7 @@ function waitForSync(config, blockNumber) {
     });
 }
 function getRunner(config, currentBlockNumber, method, params) {
-    return __awaiter$f(this, void 0, void 0, function* () {
+    return __awaiter$g(this, void 0, void 0, function* () {
         let provider = config.provider;
         switch (method) {
             case "getBlockNumber":
@@ -22118,13 +22152,13 @@ class FallbackProvider extends BaseProvider {
         this._highestBlockNumber = -1;
     }
     detectNetwork() {
-        return __awaiter$f(this, void 0, void 0, function* () {
+        return __awaiter$g(this, void 0, void 0, function* () {
             const networks = yield Promise.all(this.providerConfigs.map((c) => c.provider.getNetwork()));
             return checkNetworks(networks);
         });
     }
     perform(method, params) {
-        return __awaiter$f(this, void 0, void 0, function* () {
+        return __awaiter$g(this, void 0, void 0, function* () {
             // Sending transactions is special; always broadcast it to all backends
             if (method === "sendTransaction") {
                 const results = yield Promise.all(this.providerConfigs.map((c) => {

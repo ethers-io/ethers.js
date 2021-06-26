@@ -299,7 +299,7 @@ var Interface = /** @class */ (function () {
     Interface.prototype.encodeDeploy = function (values) {
         return this._encodeParams(this.deploy.inputs, values || []);
     };
-    Interface.prototype.decodeErrorData = function (fragment, data) {
+    Interface.prototype.decodeErrorResult = function (fragment, data) {
         if (typeof (fragment) === "string") {
             fragment = this.getError(fragment);
         }
@@ -309,7 +309,7 @@ var Interface = /** @class */ (function () {
         }
         return this._decodeParams(fragment.inputs, bytes.slice(4));
     };
-    Interface.prototype.encodeErrorData = function (fragment, values) {
+    Interface.prototype.encodeErrorResult = function (fragment, values) {
         if (typeof (fragment) === "string") {
             fragment = this.getError(fragment);
         }

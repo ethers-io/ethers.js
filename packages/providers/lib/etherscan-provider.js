@@ -69,8 +69,11 @@ function getTransactionPostData(transaction) {
             continue;
         }
         var value = transaction[key];
+        if (key === "type" && value === 0) {
+            continue;
+        }
         // Quantity-types require no leading zero, unless 0
-        if ({ type: true, gasLimit: true, gasPrice: true, nonce: true, value: true }[key]) {
+        if ({ type: true, gasLimit: true, gasPrice: true, maxFeePerGs: true, maxPriorityFeePerGas: true, nonce: true, value: true }[key]) {
             value = bytes_1.hexValue(bytes_1.hexlify(value));
         }
         else if (key === "accessList") {

@@ -209,6 +209,26 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             estimate.from = fromAddress;
             transaction.gasLimit = this.provider.estimateGas(estimate);
         }
+        if (transaction.to != null) {
+            transaction.to = Promise.resolve(transaction.to).then(function (to) { return __awaiter(_this, void 0, void 0, function () {
+                var address;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (to == null) {
+                                return [2 /*return*/, null];
+                            }
+                            return [4 /*yield*/, this.provider.resolveName(to)];
+                        case 1:
+                            address = _a.sent();
+                            if (address == null) {
+                                logger.throwArgumentError("provided ENS name resolves to null", "tx.to", to);
+                            }
+                            return [2 /*return*/, address];
+                    }
+                });
+            }); });
+        }
         return properties_1.resolveProperties({
             tx: properties_1.resolveProperties(transaction),
             sender: fromAddress

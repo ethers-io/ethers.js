@@ -63,8 +63,8 @@ export declare class Interface {
     _decodeParams(params: ReadonlyArray<ParamType>, data: BytesLike): Result;
     _encodeParams(params: ReadonlyArray<ParamType>, values: ReadonlyArray<any>): string;
     encodeDeploy(values?: ReadonlyArray<any>): string;
-    decodeErrorData(fragment: ErrorFragment | string, data: BytesLike): Result;
-    encodeErrorData(fragment: ErrorFragment | string, values?: ReadonlyArray<any>): string;
+    decodeErrorResult(fragment: ErrorFragment | string, data: BytesLike): Result;
+    encodeErrorResult(fragment: ErrorFragment | string, values?: ReadonlyArray<any>): string;
     decodeFunctionData(functionFragment: FunctionFragment | string, data: BytesLike): Result;
     encodeFunctionData(functionFragment: FunctionFragment | string, values?: ReadonlyArray<any>): string;
     decodeFunctionResult(functionFragment: FunctionFragment | string, data: BytesLike): Result;

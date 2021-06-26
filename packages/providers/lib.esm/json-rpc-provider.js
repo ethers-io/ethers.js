@@ -158,6 +158,18 @@ export class JsonRpcSigner extends Signer {
             estimate.from = fromAddress;
             transaction.gasLimit = this.provider.estimateGas(estimate);
         }
+        if (transaction.to != null) {
+            transaction.to = Promise.resolve(transaction.to).then((to) => __awaiter(this, void 0, void 0, function* () {
+                if (to == null) {
+                    return null;
+                }
+                const address = yield this.provider.resolveName(to);
+                if (address == null) {
+                    logger.throwArgumentError("provided ENS name resolves to null", "tx.to", to);
+                }
+                return address;
+            }));
+        }
         return resolveProperties({
             tx: resolveProperties(transaction),
             sender: fromAddress

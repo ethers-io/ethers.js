@@ -551,6 +551,101 @@ describe("Test Signature Manipulation", function () {
         });
     });
 });
+describe("Test Typed Transactions", function () {
+    var tests = testcases_1.loadTests("typed-transactions");
+    function equalsData(name, a, b, ifNull) {
+        assert_1.default.equal(ethers_1.ethers.utils.hexlify(a), ethers_1.ethers.utils.hexlify((b == null) ? ifNull : b), name);
+        return true;
+    }
+    function equalsNumber(name, a, b, ifNull) {
+        assert_1.default.ok(ethers_1.ethers.BigNumber.from(a).eq((b == null) ? ifNull : b), name);
+        return true;
+    }
+    function equalsArray(name, a, b, equals) {
+        assert_1.default.equal(a.length, b.length, name + ".length");
+        for (var i = 0; i < a.length; i++) {
+            if (!equals(name + "[" + i + "]", a[i], b[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    function makeEqualsArray(equals) {
+        return function (name, a, b) {
+            return equalsArray(name, a, b, equals);
+        };
+    }
+    function equalsAccessList(name, a, b) {
+        return equalsArray(name + "-address", a.map(function (f) { return f.address; }), b.map(function (f) { return f.address; }), equalsData) &&
+            equalsArray(name + "-storageKeys", a.map(function (f) { return f.storageKeys; }), b.map(function (f) { return f.storageKeys; }), makeEqualsArray(equalsData));
+    }
+    function allowNull(name, a, b, equals) {
+        if (a == null) {
+            assert_1.default.ok(b == null, name + ":!NULL");
+            return true;
+        }
+        else if (b == null) {
+            assert_1.default.fail(name + ":!!NULL");
+        }
+        return equals(name, a, b);
+    }
+    function equalsCommonTransaction(name, a, b) {
+        return equalsNumber(name + "-type", a.type, b.type, 0) &&
+            equalsData(name + "-data", a.data, b.data, "0x") &&
+            equalsNumber(name + "-gasLimit", a.gasLimit, b.gasLimit, 0) &&
+            equalsNumber(name + "-nonce", a.nonce, b.nonce, 0) &&
+            allowNull(name + "-to", a.to, b.to, equalsData) &&
+            equalsNumber(name + "-value", a.value, b.value, 0) &&
+            equalsNumber(name + "-chainId", a.chainId, b.chainId, 0) &&
+            equalsAccessList(name + "-accessList", a.accessList, b.accessList || []);
+    }
+    function equalsEip1559Transaction(name, a, b) {
+        return equalsNumber(name + "-maxPriorityFeePerGas", a.maxPriorityFeePerGas, b.maxPriorityFeePerGas, 0) &&
+            equalsNumber(name + "-maxFeePerGas", a.maxFeePerGas, b.maxFeePerGas, 0) &&
+            equalsCommonTransaction(name, a, b);
+    }
+    function equalsEip2930Transaction(name, a, b) {
+        return equalsNumber(name + "-gasPrice", a.gasPrice, b.gasPrice, 0) &&
+            equalsCommonTransaction(name, a, b);
+    }
+    function equalsTransaction(name, a, b) {
+        switch (a.type) {
+            case 1:
+                return equalsEip2930Transaction(name, a, b);
+            case 2:
+                return equalsEip1559Transaction(name, a, b);
+        }
+        assert_1.default.fail("unknown transaction type " + a.type);
+    }
+    tests.forEach(function (test, index) {
+        it(test.name, function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var wallet, signed, tx, tx;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            wallet = new ethers_1.ethers.Wallet(test.key);
+                            return [4 /*yield*/, wallet.signTransaction(test.tx)];
+                        case 1:
+                            signed = _a.sent();
+                            assert_1.default.equal(signed, test.signed, "signed transactions match");
+                            assert_1.default.equal(ethers_1.ethers.utils.serializeTransaction(test.tx), test.unsigned, "unsigned transactions match");
+                            {
+                                tx = ethers_1.ethers.utils.parseTransaction(test.unsigned);
+                                assert_1.default.ok(equalsTransaction("transaction", tx, test.tx), "all unsigned keys match");
+                            }
+                            {
+                                tx = ethers_1.ethers.utils.parseTransaction(test.signed);
+                                assert_1.default.ok(equalsTransaction("transaction", tx, test.tx), "all signed keys match");
+                                assert_1.default.equal(tx.from.toLowerCase(), test.address, "sender matches");
+                            }
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        });
+    });
+});
 describe("BigNumber", function () {
     var tests = testcases_1.loadTests("bignumber");
     tests.forEach(function (test) {

@@ -91,6 +91,7 @@ var Formatter = /** @class */ (function () {
             blockNumber: number,
             confirmations: Formatter.allowNull(number, null),
             cumulativeGasUsed: bigNumber,
+            effectiveGasPrice: Formatter.allowNull(bigNumber),
             status: Formatter.allowNull(number),
             type: type
         };
@@ -280,11 +281,6 @@ var Formatter = /** @class */ (function () {
             transaction.accessList = [];
         }
         var result = Formatter.check(this.formats.transaction, transaction);
-        if (result.type === 2) {
-            if (result.gasPrice == null) {
-                result.gasPrice = result.maxFeePerGas;
-            }
-        }
         if (transaction.chainId != null) {
             var chainId = transaction.chainId;
             if (bytes_1.isHexString(chainId)) {

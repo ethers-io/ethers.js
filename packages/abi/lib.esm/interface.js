@@ -256,7 +256,7 @@ export class Interface {
     encodeDeploy(values) {
         return this._encodeParams(this.deploy.inputs, values || []);
     }
-    decodeErrorData(fragment, data) {
+    decodeErrorResult(fragment, data) {
         if (typeof (fragment) === "string") {
             fragment = this.getError(fragment);
         }
@@ -266,7 +266,7 @@ export class Interface {
         }
         return this._decodeParams(fragment.inputs, bytes.slice(4));
     }
-    encodeErrorData(fragment, values) {
+    encodeErrorResult(fragment, values) {
         if (typeof (fragment) === "string") {
             fragment = this.getError(fragment);
         }
