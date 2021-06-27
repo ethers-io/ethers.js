@@ -52,7 +52,10 @@
 
 <span class="comment">// The Metamask plugin also allows signing transactions to
 </span><span class="comment">// send ether and pay to change state within the blockchain.
-</span><span class="comment">// For this, you need the account signer...
+</span><span class="comment">// First, enable Metamask in the window
+</span>window.ethereum.enable()
+
+<span class="comment">// Then you need the account signer...
 </span>const signer = provider.getSigner()
 </div><a name="getting-started--connecting-rpc"></a><a name="getting-started--getting-started--connecting-rpc"></a><h2 class="show-anchors"><div>Connecting to Ethereum: RPC<div class="anchors"><a class="self" href="/v5/getting-started/#getting-started--connecting-rpc"></a></div></div></h2><p>The <a href="https://github.com/ethereum/wiki/wiki/JSON-RPC">JSON-RPC API</a> is another popular method for interacting with Ethereum and is available in all major Ethereum node implementations (e.g. <a href="https://geth.ethereum.org">Geth</a> and <a href="https://www.parity.io">Parity</a>) as well as many third-party web services (e.g. <a href="https://infura.io">INFURA</a>). It typically provides:</p>
 
