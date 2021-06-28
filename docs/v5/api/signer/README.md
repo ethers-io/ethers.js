@@ -26,7 +26,7 @@ Sub-classes **must** implement this.
 
 #### *Signer* . **isSigner**( object ) => *boolean*
 
-Returns true if an only if *object* is a **Signer**.
+Returns true if and only if *object* is a **Signer**.
 
 
 ### Blockchain Methods
