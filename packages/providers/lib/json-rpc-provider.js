@@ -383,7 +383,8 @@ var UncheckedJsonRpcSigner = /** @class */ (function (_super) {
 }(JsonRpcSigner));
 var allowedTransactionKeys = {
     chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
-    type: true, accessList: true
+    type: true, accessList: true,
+    maxFeePerGas: true, maxPriorityFeePerGas: true
 };
 var JsonRpcProvider = /** @class */ (function (_super) {
     __extends(JsonRpcProvider, _super);

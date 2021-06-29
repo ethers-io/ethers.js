@@ -3,6 +3,11 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.4.1 (2021-06-29 12:24)
+--------------------------------
+
+  - Fixed explicit EIP-1559 keys for JsonRpcSigner. ([72feee8](https://github.com/ethers-io/ethers.js/commit/72feee8f5841febdab0d15f09baa69539d95e199))
+
 ethers/v5.4.0 (2021-06-26 01:50)
 --------------------------------
 

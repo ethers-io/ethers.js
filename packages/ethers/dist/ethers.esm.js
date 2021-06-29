@@ -18291,7 +18291,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.4.0";
+const version$m = "providers/5.4.1";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -20533,7 +20533,8 @@ class UncheckedJsonRpcSigner extends JsonRpcSigner {
 }
 const allowedTransactionKeys$3 = {
     chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
-    type: true, accessList: true
+    type: true, accessList: true,
+    maxFeePerGas: true, maxPriorityFeePerGas: true
 };
 class JsonRpcProvider extends BaseProvider {
     constructor(url, network) {
@@ -23135,7 +23136,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.4.0";
+const version$o = "ethers/5.4.1";
 
 "use strict";
 const logger$H = new Logger(version$o);

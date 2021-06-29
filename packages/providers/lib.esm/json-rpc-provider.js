@@ -268,7 +268,8 @@ class UncheckedJsonRpcSigner extends JsonRpcSigner {
 }
 const allowedTransactionKeys = {
     chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
-    type: true, accessList: true
+    type: true, accessList: true,
+    maxFeePerGas: true, maxPriorityFeePerGas: true
 };
 export class JsonRpcProvider extends BaseProvider {
     constructor(url, network) {
