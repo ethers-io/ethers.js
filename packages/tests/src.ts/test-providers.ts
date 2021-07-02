@@ -625,7 +625,7 @@ const providerFunctions: Array<ProviderDescription> = [
         // @TODO: Pocket is being incredibly unreliable right now; removing it so
         // we can pass the CI
         //networks: [ "default", "homestead", "ropsten", "rinkeby", "goerli" ],
-        networks: [ ],
+        networks: [ "default", "homestead" ],
         create: (network: string) => {
             if (network == "default") {
                 return new ethers.providers.PocketProvider(null, {
@@ -743,17 +743,6 @@ Object.keys(blockchainData).forEach((network) => {
 
             return tx;
         }, test, (provider: string, network: string, test: TestDescription) => {
-            // Temporary; Pocket is having issues with old transactions on some testnets
-            //if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
-            if (provider === "PocketProvider") {
-                return true;
-            }
-
-            // @TODO: Remove once Etherscan supports EIP-1559
-            if (hash === "0xb8c7871d9d8597ee8a50395d8b39dafa280c90337dc501d0db1321806c6ea98c" && provider === "EtherscanProvider") {
-                return true;
-            }
-
             return false;
         });
     });
@@ -774,15 +763,16 @@ Object.keys(blockchainData).forEach((network) => {
 
             return receipt;
         }, test, (provider: string, network: string, test: TestDescription) => {
-            // Temporary; Pocket is having issues with old transactions on some testnets
-            //if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
-            if (provider === "PocketProvider") {
-                return true;
-            }
 
-            // @TODO: Remove once Etherscan supports EIP-1559
-            if (hash === "0xb8c7871d9d8597ee8a50395d8b39dafa280c90337dc501d0db1321806c6ea98c" && provider === "EtherscanProvider") {
-                return true;
+            // @TODO: Remove once Etherscan fixes whatever makes this unhappy
+            if (provider === "EtherscanProvider") {
+                if (hash === "0x55c477790b105e69e98afadf0505cbda606414b0187356137132bf24945016ce") {
+                    return true;
+                }
+
+                if (hash === "0xf724f1d6813f13fb523c5f6af6261d06d41138dd094fff723e09fb0f893f03e6") {
+                    return true;
+                }
             }
 
             return false;
@@ -946,7 +936,7 @@ testFunctions.push({
     networks: [ "ropsten" ],       // Only test on Ropsten
     checkSkip: (provider: string, network: string, test: TestDescription) => {
         // These don't support EIP-1559 yet for sending
-        return (provider === "AlchemyProvider" || provider === "EtherscanProvider");
+        return (provider === "AlchemyProvider");
     },
     execute: async (provider: ethers.providers.Provider) => {
         const wallet = fundWallet.connect(provider);
