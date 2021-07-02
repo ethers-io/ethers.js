@@ -39,7 +39,7 @@ asynchronous source, such as  hardware wallets.
 Sub-classes **must** implement this.
 
 _property: Signer.isSigner(object) => boolean  @<Signer-isSigner> @SRC<abstract-signer>
-Returns true if an only if //object// is a **Signer**.
+Returns true if and only if //object// is a **Signer**.
 
 _heading: Blockchain Methods @<Signer--blockchain-methods>
 
