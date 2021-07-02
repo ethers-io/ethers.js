@@ -132,7 +132,7 @@ The //overrides// object for a read-only method may include any of:
 - ``overrides.from`` - the ``msg.sender`` (or ``CALLER``) to use during the
   execution of the code
 - ``overrides.value`` - the ``msg.value`` (or ``CALLVALUE``) to use during the
-  exectuiont of the code
+  execution of the code
 - ``overrides.gasPrice`` - the price to pay per gas (theoretically); since there
   is no transaction, there is not going to be any fee charged, but the EVM still
   requires a value to report to ``tx.gasprice`` (or ``GASPRICE``);
