@@ -99,7 +99,7 @@ application to ethers by wrapping an existing Web3-compatible (such as a
 [Web3WsProvider](link-web3-ws)) and exposing it as an ethers.js [[Provider]]
 which can then be used with the rest of the library.
 
-This may also be used to wrap a standard [EIP-1193 Provider](link-eip-1193].
+This may also be used to wrap a standard [EIP-1193 Provider](link-eip-1193).
 
 _property: new ethers.providers.Web3Provider(externalProvider [, network ])
 Create a new **Web3Provider**, which wraps an [EIP-1193 Provider](link-eip-1193) or
