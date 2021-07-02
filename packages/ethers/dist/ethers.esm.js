@@ -17466,7 +17466,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.4.0";
+const version$k = "networks/5.4.1";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -17487,8 +17487,17 @@ function ethDefaultProvider(network) {
             catch (error) { }
         }
         if (providers.EtherscanProvider) {
+            //try {
+            //    providerList.push(new providers.EtherscanProvider(network, options.etherscan));
+            //} catch(error) { }
+            // These networks are currently faulty on this provider
+            // @TODO: This goes away once they have fixed their nodes
+            const skip = ["ropsten"];
             try {
-                providerList.push(new providers.EtherscanProvider(network, options.etherscan));
+                const provider = new providers.EtherscanProvider(network);
+                if (provider.network && skip.indexOf(provider.network.name) === -1) {
+                    providerList.push(provider);
+                }
             }
             catch (error) { }
         }
@@ -17498,21 +17507,20 @@ function ethDefaultProvider(network) {
             }
             catch (error) { }
         }
-        /*
         if (providers.PocketProvider) {
             // These networks are currently faulty on Pocket as their
             // network does not handle the Berlin hardfork, which is
             // live on these ones.
             // @TODO: This goes away once Pocket has upgraded their nodes
-            const skip = [ "goerli", "ropsten", "rinkeby" ];
+            const skip = ["goerli", "ropsten", "rinkeby"];
             try {
                 const provider = new providers.PocketProvider(network);
                 if (provider.network && skip.indexOf(provider.network.name) === -1) {
                     providerList.push(provider);
                 }
-            } catch(error) { }
+            }
+            catch (error) { }
         }
-        */
         if (providers.CloudflareProvider) {
             try {
                 providerList.push(new providers.CloudflareProvider(network));
@@ -21483,7 +21491,7 @@ function checkError$1(method, error, transaction) {
         });
     }
     // "Transaction with the same hash was already imported."
-    if (message.match(/same hash was already imported|transaction nonce is too low/)) {
+    if (message.match(/same hash was already imported|transaction nonce is too low|nonce too low/)) {
         logger$z.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {
             error, method, transaction
         });

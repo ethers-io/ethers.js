@@ -3,9 +3,11 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
-ethers/v5.4.1 (2021-06-29 12:24)
+ethers/v5.4.1 (2021-07-02 01:47)
 --------------------------------
 
+  - Added Pocket back into Homestead defaultProvider and skip certain EtherscanProvider tests affected by outage. ([6e8a39e](https://github.com/ethers-io/ethers.js/commit/6e8a39ec35123e681e47807f54ef9b9122635ea0))
+  - Fixed EtherscanProvider NONCE_EXPIRED matching string update. ([ecae793](https://github.com/ethers-io/ethers.js/commit/ecae793edff172a885e5ee014a8ad0b28b68c1e5))
   - Fixed explicit EIP-1559 keys for JsonRpcSigner. ([72feee8](https://github.com/ethers-io/ethers.js/commit/72feee8f5841febdab0d15f09baa69539d95e199))
 
 ethers/v5.4.0 (2021-06-26 01:50)

@@ -183,7 +183,7 @@ function checkError(method, error, transaction) {
         });
     }
     // "Transaction with the same hash was already imported."
-    if (message.match(/same hash was already imported|transaction nonce is too low/)) {
+    if (message.match(/same hash was already imported|transaction nonce is too low|nonce too low/)) {
         logger.throwError("nonce has already been used", logger_1.Logger.errors.NONCE_EXPIRED, {
             error: error, method: method, transaction: transaction
         });

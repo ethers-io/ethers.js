@@ -19611,7 +19611,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "networks/5.4.0";
+	exports.version = "networks/5.4.1";
 
 	});
 
@@ -19641,8 +19641,17 @@
 	            catch (error) { }
 	        }
 	        if (providers.EtherscanProvider) {
+	            //try {
+	            //    providerList.push(new providers.EtherscanProvider(network, options.etherscan));
+	            //} catch(error) { }
+	            // These networks are currently faulty on this provider
+	            // @TODO: This goes away once they have fixed their nodes
+	            var skip = ["ropsten"];
 	            try {
-	                providerList.push(new providers.EtherscanProvider(network, options.etherscan));
+	                var provider = new providers.EtherscanProvider(network);
+	                if (provider.network && skip.indexOf(provider.network.name) === -1) {
+	                    providerList.push(provider);
+	                }
 	            }
 	            catch (error) { }
 	        }
@@ -19652,21 +19661,20 @@
 	            }
 	            catch (error) { }
 	        }
-	        /*
 	        if (providers.PocketProvider) {
 	            // These networks are currently faulty on Pocket as their
 	            // network does not handle the Berlin hardfork, which is
 	            // live on these ones.
 	            // @TODO: This goes away once Pocket has upgraded their nodes
-	            const skip = [ "goerli", "ropsten", "rinkeby" ];
+	            var skip = ["goerli", "ropsten", "rinkeby"];
 	            try {
-	                const provider = new providers.PocketProvider(network);
+	                var provider = new providers.PocketProvider(network);
 	                if (provider.network && skip.indexOf(provider.network.name) === -1) {
 	                    providerList.push(provider);
 	                }
-	            } catch(error) { }
+	            }
+	            catch (error) { }
 	        }
-	        */
 	        if (providers.CloudflareProvider) {
 	            try {
 	                providerList.push(new providers.CloudflareProvider(network));
@@ -24826,7 +24834,7 @@
 	        });
 	    }
 	    // "Transaction with the same hash was already imported."
-	    if (message.match(/same hash was already imported|transaction nonce is too low/)) {
+	    if (message.match(/same hash was already imported|transaction nonce is too low|nonce too low/)) {
 	        logger.throwError("nonce has already been used", lib.Logger.errors.NONCE_EXPIRED, {
 	            error: error, method: method, transaction: transaction
 	        });

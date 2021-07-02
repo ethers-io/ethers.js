@@ -17,7 +17,7 @@
     "@ethersproject/json-wallets": "5.4.0",
     "@ethersproject/keccak256": "5.4.0",
     "@ethersproject/logger": "5.4.0",
-    "@ethersproject/networks": "5.4.0",
+    "@ethersproject/networks": "5.4.1",
     "@ethersproject/pbkdf2": "5.4.0",
     "@ethersproject/properties": "5.4.0",
     "@ethersproject/providers": "5.4.1",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x9149c5d01492e437728953314c004e05ef20153c45c44718b8086f6f5a458e28",
+  "tarballHash": "0xcc06f3c3949bc5b1ccf0349ceac2bab1928ee2f5d2b15b149d98604ae0532a47",
   "types": "./lib/index.d.ts",
   "version": "5.4.1"
 }
