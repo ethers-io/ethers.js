@@ -1211,6 +1211,7 @@ export class BaseProvider extends Provider implements EnsProvider {
         await this.getNetwork();
         const hexTx = await Promise.resolve(signedTransaction).then(t => hexlify(t));
         const tx = this.formatter.transaction(signedTransaction);
+        if (tx.confirmations == null) { tx.confirmations = 0; }
         const blockNumber = await this._getInternalBlockNumber(100 + 2 * this.pollingInterval);
         try {
             const hash = await this.perform("sendTransaction", { signedTransaction: hexTx });
