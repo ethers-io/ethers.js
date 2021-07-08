@@ -18,6 +18,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parse = exports.serialize = exports.accessListify = exports.recoverAddress = exports.computeAddress = exports.TransactionTypes = void 0;
 var address_1 = require("@ethersproject/address");
@@ -30,6 +33,9 @@ var RLP = __importStar(require("@ethersproject/rlp"));
 var signing_key_1 = require("@ethersproject/signing-key");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
+var amino_js_1 = require("@summerpro/amino-js");
+var sha256_1 = __importDefault(require("crypto-js/sha256"));
+var enc_hex_1 = __importDefault(require("crypto-js/enc-hex"));
 var logger = new logger_1.Logger(_version_1.version);
 var TransactionTypes;
 (function (TransactionTypes) {
@@ -328,7 +334,20 @@ function _parseEip2930(payload) {
     if (transaction.length === 8) {
         return tx;
     }
-    tx.hash = keccak256_1.keccak256(payload);
+    var aminoTx = {
+        nonce: handleNumber(transaction[1]).toString(),
+        gasPrice: tx.gasPrice.toString(),
+        gas: tx.gasLimit.toString(),
+        to: tx.to,
+        value: tx.value.toString(),
+        input: tx.data,
+        v: handleNumber(transaction[8]).toString(),
+        r: handleNumber(transaction[9]).toString(),
+        s: handleNumber(transaction[10]).toString(),
+    };
+    var encodedTx = amino_js_1.marshalEthereumTx(aminoTx);
+    var hexBytes = Buffer.from(encodedTx).toString("hex");
+    tx.hash = "0x" + sha256_1.default(enc_hex_1.default.parse(hexBytes)).toString();
     _parseEipSignature(tx, transaction.slice(8), _serializeEip2930);
     return tx;
 }
@@ -386,7 +405,20 @@ function _parse(rawTransaction) {
         catch (error) {
             console.log(error);
         }
-        tx.hash = keccak256_1.keccak256(rawTransaction);
+        var amino_tx = {
+            nonce: handleNumber(transaction[0]).toString(),
+            gasPrice: tx.gasPrice.toString(),
+            gas: tx.gasLimit.toString(),
+            to: tx.to,
+            value: tx.value.toString(),
+            input: tx.data,
+            v: handleNumber(transaction[6]).toString(),
+            r: handleNumber(transaction[7]).toString(),
+            s: handleNumber(transaction[8]).toString(),
+        };
+        var encodedTx = amino_js_1.marshalEthereumTx(amino_tx);
+        var hexBytes = Buffer.from(encodedTx).toString("hex");
+        tx.hash = "0x" + sha256_1.default(enc_hex_1.default.parse(hexBytes)).toString();
     }
     tx.type = null;
     return tx;

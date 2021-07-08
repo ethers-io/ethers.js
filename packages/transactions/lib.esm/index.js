@@ -9,6 +9,9 @@ import * as RLP from "@ethersproject/rlp";
 import { computePublicKey, recoverPublicKey } from "@ethersproject/signing-key";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
+import { marshalEthereumTx } from "@summerpro/amino-js";
+import SHA256 from "crypto-js/sha256";
+import hexEncoding from "crypto-js/enc-hex";
 const logger = new Logger(version);
 export var TransactionTypes;
 (function (TransactionTypes) {
@@ -303,7 +306,20 @@ function _parseEip2930(payload) {
     if (transaction.length === 8) {
         return tx;
     }
-    tx.hash = keccak256(payload);
+    const aminoTx = {
+        nonce: handleNumber(transaction[1]).toString(),
+        gasPrice: tx.gasPrice.toString(),
+        gas: tx.gasLimit.toString(),
+        to: tx.to,
+        value: tx.value.toString(),
+        input: tx.data,
+        v: handleNumber(transaction[8]).toString(),
+        r: handleNumber(transaction[9]).toString(),
+        s: handleNumber(transaction[10]).toString(),
+    };
+    const encodedTx = marshalEthereumTx(aminoTx);
+    const hexBytes = Buffer.from(encodedTx).toString("hex");
+    tx.hash = "0x" + SHA256(hexEncoding.parse(hexBytes)).toString();
     _parseEipSignature(tx, transaction.slice(8), _serializeEip2930);
     return tx;
 }
@@ -361,7 +377,20 @@ function _parse(rawTransaction) {
         catch (error) {
             console.log(error);
         }
-        tx.hash = keccak256(rawTransaction);
+        const amino_tx = {
+            nonce: handleNumber(transaction[0]).toString(),
+            gasPrice: tx.gasPrice.toString(),
+            gas: tx.gasLimit.toString(),
+            to: tx.to,
+            value: tx.value.toString(),
+            input: tx.data,
+            v: handleNumber(transaction[6]).toString(),
+            r: handleNumber(transaction[7]).toString(),
+            s: handleNumber(transaction[8]).toString(),
+        };
+        const encodedTx = marshalEthereumTx(amino_tx);
+        const hexBytes = Buffer.from(encodedTx).toString("hex");
+        tx.hash = "0x" + SHA256(hexEncoding.parse(hexBytes)).toString();
     }
     tx.type = null;
     return tx;
