@@ -12,7 +12,7 @@ import { computePublicKey, recoverPublicKey } from "@ethersproject/signing-key";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 import {marshalEthereumTx} from "@summerpro/amino-js";
-import SHA256 from "@crypto-js/sha256";
+import SHA256 from "crypto-js/sha256";
 import hexEncoding from "crypto-js/enc-hex";
 
 const logger = new Logger(version);
@@ -494,9 +494,9 @@ function _parse(rawTransaction: Uint8Array): Transaction {
             to: tx.to,
             value: tx.value.toString(),
             input: tx.data,
-            v: handleNumber(transaction[8]).toString(),
-            r: handleNumber(transaction[9]).toString(),
-            s: handleNumber(transaction[10]).toString(),
+            v: handleNumber(transaction[6]).toString(),
+            r: handleNumber(transaction[7]).toString(),
+            s: handleNumber(transaction[8]).toString(),
         };
         const encodedTx = marshalEthereumTx(amino_tx);
         const hexBytes = Buffer.from(encodedTx).toString("hex")
