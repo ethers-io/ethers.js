@@ -11,7 +11,7 @@ import { computePublicKey, recoverPublicKey } from "@ethersproject/signing-key";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
-import {marshalEthereumTx} from "@summerpro/amino-js";
+import { marshalEthereumTx } from "@summerpro/amino-js";
 import SHA256 from "crypto-js/sha256";
 import hexEncoding from "crypto-js/enc-hex";
 
