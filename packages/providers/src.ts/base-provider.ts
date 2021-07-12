@@ -559,7 +559,7 @@ export class BaseProvider extends Provider implements EnsProvider {
 
     // This will always return the most recently established network.
     // For "any", this can change (a "network" event is emitted before
-    // any change is refelcted); otherwise this cannot change
+    // any change is reflected); otherwise this cannot change
     get ready(): Promise<Network> {
         return poll(() => {
             return this._ready().then((network) => {
@@ -1337,7 +1337,7 @@ export class BaseProvider extends Provider implements EnsProvider {
             params.blockHash = blockHashOrBlockTag;
         } else {
             try {
-                params.blockTag = this.formatter.blockTag(await this._getBlockTag(blockHashOrBlockTag));
+                params.blockTag = await this._getBlockTag(blockHashOrBlockTag);
                 if (isHexString(params.blockTag)) {
                     blockNumber = parseInt(params.blockTag.substring(2), 16);
                 }

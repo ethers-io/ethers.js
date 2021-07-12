@@ -105,7 +105,7 @@ export interface FallbackProviderConfig {
     // this provider and if its result comes back before a quorum is reached
     // it will be incorporated into the vote
     // - lower values will cause more network traffic but may result in a
-    //   faster retult.
+    //   faster result.
     stallTimeout?: number;
 
     // How much this provider contributes to the quorum; sometimes a specific

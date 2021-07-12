@@ -231,7 +231,7 @@ async function populateTransaction(contract: Contract, fragment: FunctionFragmen
 
     // If there was no "gasLimit" override, but the ABI specifies a default, use it
     if (tx.gasLimit == null && fragment.gas != null) {
-        // Conmpute the intrinisic gas cost for this transaction
+        // Compute the intrinsic gas cost for this transaction
         // @TODO: This is based on the yellow paper as of Petersburg; this is something
         // we may wish to parameterize in v6 as part of the Network object. Since this
         // is always a non-nil to address, we can ignore G_create, but may wish to add
@@ -257,7 +257,7 @@ async function populateTransaction(contract: Contract, fragment: FunctionFragmen
         tx.value = roValue;
     }
 
-    // Remvoe the overrides
+    // Remove the overrides
     delete overrides.nonce;
     delete overrides.gasLimit;
     delete overrides.gasPrice;
@@ -354,7 +354,7 @@ function buildSend(contract: Contract, fragment: FunctionFragment): ContractFunc
             })
         }
 
-        // If the contract was just deployed, wait until it is minded
+        // If the contract was just deployed, wait until it is mined
         if (contract.deployTransaction != null) {
             await contract._deployed();
         }
@@ -363,7 +363,7 @@ function buildSend(contract: Contract, fragment: FunctionFragment): ContractFunc
 
         const tx = await contract.signer.sendTransaction(txRequest);
 
-        // Tweak the tw.wait so the receipt has extra properties
+        // Tweak the tx.wait so the receipt has extra properties
         const wait = tx.wait.bind(tx);
         tx.wait = (confirmations?: number) => {
             return wait(confirmations).then((receipt: ContractReceipt) => {
@@ -501,7 +501,7 @@ class ErrorRunningEvent extends RunningEvent {
 //       options to configure both.
 
 // A Fragment Event will populate all the properties that Wildcard
-// will, and additioanlly dereference the arguments when emitting
+// will, and additionally dereference the arguments when emitting
 class FragmentRunningEvent extends RunningEvent {
     readonly address: string;
     readonly interface: Interface;
@@ -555,7 +555,7 @@ class FragmentRunningEvent extends RunningEvent {
     }
 }
 
-// A Wildard Event will attempt to populate:
+// A Wildcard Event will attempt to populate:
 //  - event            The name of the event name
 //  - eventSignature   The full signature of the event
 //  - decode           A function to decode data and topics
@@ -618,7 +618,7 @@ export class BaseContract {
 
     _deployedPromise: Promise<Contract>;
 
-    // A list of RunningEvents to track listsners for each event tag
+    // A list of RunningEvents to track listeners for each event tag
     _runningEvents: { [ eventTag: string ]: RunningEvent };
 
     // Wrapped functions to call emit and allow deregistration from the provider
@@ -1146,7 +1146,7 @@ export class ContractFactory {
         defineReadOnly(this, "signer", signer || null);
     }
 
-    // @TODO: Future; rename to populteTransaction?
+    // @TODO: Future; rename to populateTransaction?
     getDeployTransaction(...args: Array<any>): TransactionRequest {
         let tx: TransactionRequest = { };
 

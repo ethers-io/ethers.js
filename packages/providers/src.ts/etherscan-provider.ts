@@ -417,7 +417,7 @@ export class EtherscanProvider extends BaseProvider{
     }
 
     // Note: The `page` page parameter only allows pagination within the
-    //       10,000 window abailable without a page and offset parameter
+    //       10,000 window available without a page and offset parameter
     //       Error: Result window is too large, PageNo x Offset size must
     //              be less than or equal to 10000
     async getHistory(addressOrName: string | Promise<string>, startBlock?: BlockTag, endBlock?: BlockTag): Promise<Array<TransactionResponse>> {

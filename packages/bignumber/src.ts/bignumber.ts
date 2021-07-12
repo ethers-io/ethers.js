@@ -264,7 +264,7 @@ export class BigNumber implements Hexable {
 
         if (anyValue) {
 
-            // Hexable interface (takes piority)
+            // Hexable interface (takes priority)
             if (anyValue.toHexString) {
                 const hex = anyValue.toHexString();
                 if (typeof(hex) === "string") {
@@ -309,7 +309,7 @@ function toHex(value: string | BN): string {
         // Strip off the negative sign
         value = value.substring(1);
 
-        // Cannot have mulitple negative signs (e.g. "--0x04")
+        // Cannot have multiple negative signs (e.g. "--0x04")
         if (value[0] === "-") { logger.throwArgumentError("invalid hex", "value", value); }
 
         // Call toHex on the positive component

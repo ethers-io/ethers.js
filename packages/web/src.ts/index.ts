@@ -293,7 +293,7 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
 
             runningTimeout.cancel();
 
-            // If we had a processFunc, it eitehr returned a T or threw above.
+            // If we had a processFunc, it either returned a T or threw above.
             // The "body" is now a Uint8Array.
             return <T>(<unknown>body);
         }
