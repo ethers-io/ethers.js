@@ -10,7 +10,7 @@
     "@ethersproject/properties": "^5.4.0",
     "@ethersproject/rlp": "^5.4.0",
     "@ethersproject/signing-key": "^5.4.0",
-    "@summerpro/amino-js": "^0.1.2",
+    "@okexchain/amino-js": "^0.1.1",
     "crypto-js": "^4.0.0"
   },
   "description": "Utilities for decoding and encoding Ethereum transaction for ethers.",
