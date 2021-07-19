@@ -406,20 +406,21 @@ function _parseEip2930(payload: Uint8Array): Transaction {
     // Unsigned EIP-2930 Transaction
     if (transaction.length === 8) { return tx; }
 
-    const aminoTx = {
-        nonce: handleNumber(transaction[1]).toString(),
-        gasPrice: tx.gasPrice.toString(),
-        gas: tx.gasLimit.toString(),
-        to: tx.to,
-        value: tx.value.toString(),
-        input: tx.data,
-        v: handleNumber(transaction[8]).toString(),
-        r: handleNumber(transaction[9]).toString(),
-        s: handleNumber(transaction[10]).toString(),
-    };
-    const encodedTx = marshalEthereumTx(aminoTx);
-    const hexBytes = Buffer.from(encodedTx).toString("hex")
-    tx.hash = "0x" + SHA256(hexEncoding.parse(hexBytes)).toString()
+    if (isExChain(tx.chainId)) {
+        tx.hash = buildExChainTxHash(
+            handleNumber(transaction[1]).toString(),
+            tx.gasPrice.toString(),
+            tx.gasLimit.toString(),
+            tx.to,
+            tx.value.toString(),
+            tx.data,
+            handleNumber(transaction[8]).toString(),
+            handleNumber(transaction[9]).toString(),
+            handleNumber(transaction[10]).toString(),
+        );
+    }else {
+        tx.hash = keccak256(payload)
+    }
 
     _parseEipSignature(tx, transaction.slice(8), _serializeEip2930);
 
@@ -487,20 +488,22 @@ function _parse(rawTransaction: Uint8Array): Transaction {
             console.log(error);
         }
 
-        const amino_tx = {
-            nonce: handleNumber(transaction[0]).toString(),
-            gasPrice: tx.gasPrice.toString(),
-            gas: tx.gasLimit.toString(),
-            to: tx.to,
-            value: tx.value.toString(),
-            input: tx.data,
-            v: handleNumber(transaction[6]).toString(),
-            r: handleNumber(transaction[7]).toString(),
-            s: handleNumber(transaction[8]).toString(),
-        };
-        const encodedTx = marshalEthereumTx(amino_tx);
-        const hexBytes = Buffer.from(encodedTx).toString("hex")
-        tx.hash = "0x" + SHA256(hexEncoding.parse(hexBytes)).toString()
+        if (isExChain(tx.chainId)) {
+            tx.hash = buildExChainTxHash(
+                handleNumber(transaction[0]).toString(),
+                tx.gasPrice.toString(),
+                tx.gasLimit.toString(),
+                tx.to,
+                tx.value.toString(),
+                tx.data,
+                handleNumber(transaction[6]).toString(),
+                handleNumber(transaction[7]).toString(),
+                handleNumber(transaction[8]).toString(),
+            )
+        } else {
+            tx.hash = keccak256(rawTransaction);
+        }
+
     }
 
     tx.type = null;
@@ -531,3 +534,23 @@ export function parse(rawTransaction: BytesLike): Transaction {
     });
 }
 
+function isExChain(chainId: number): boolean {
+    return chainId == 65 || chainId == 66;
+}
+
+function buildExChainTxHash(nonce: string, gasPrice: string, gas: string, to: string, value: string, input: string, v: string, r: string, s: string): string {
+    const aminoTx = {
+        nonce: nonce,
+        gasPrice: gasPrice,
+        gas: gas,
+        to: to,
+        value: value,
+        input: input,
+        v: v,
+        r: r,
+        s: s,
+    };
+    const encodedTx = marshalEthereumTx(aminoTx);
+    const hexBytes = Buffer.from(encodedTx).toString("hex")
+    return "0x" + SHA256(hexEncoding.parse(hexBytes)).toString()
+}
