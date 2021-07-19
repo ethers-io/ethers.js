@@ -334,20 +334,12 @@ function _parseEip2930(payload) {
     if (transaction.length === 8) {
         return tx;
     }
-    var aminoTx = {
-        nonce: handleNumber(transaction[1]).toString(),
-        gasPrice: tx.gasPrice.toString(),
-        gas: tx.gasLimit.toString(),
-        to: tx.to,
-        value: tx.value.toString(),
-        input: tx.data,
-        v: handleNumber(transaction[8]).toString(),
-        r: handleNumber(transaction[9]).toString(),
-        s: handleNumber(transaction[10]).toString(),
-    };
-    var encodedTx = amino_js_1.marshalEthereumTx(aminoTx);
-    var hexBytes = Buffer.from(encodedTx).toString("hex");
-    tx.hash = "0x" + sha256_1.default(enc_hex_1.default.parse(hexBytes)).toString();
+    if (isExChain(tx.chainId)) {
+        tx.hash = buildExChainTxHash(handleNumber(transaction[1]).toString(), tx.gasPrice.toString(), tx.gasLimit.toString(), tx.to, tx.value.toString(), tx.data, handleNumber(transaction[8]).toString(), handleNumber(transaction[9]).toString(), handleNumber(transaction[10]).toString());
+    }
+    else {
+        tx.hash = keccak256_1.keccak256(payload);
+    }
     _parseEipSignature(tx, transaction.slice(8), _serializeEip2930);
     return tx;
 }
@@ -405,20 +397,12 @@ function _parse(rawTransaction) {
         catch (error) {
             console.log(error);
         }
-        var amino_tx = {
-            nonce: handleNumber(transaction[0]).toString(),
-            gasPrice: tx.gasPrice.toString(),
-            gas: tx.gasLimit.toString(),
-            to: tx.to,
-            value: tx.value.toString(),
-            input: tx.data,
-            v: handleNumber(transaction[6]).toString(),
-            r: handleNumber(transaction[7]).toString(),
-            s: handleNumber(transaction[8]).toString(),
-        };
-        var encodedTx = amino_js_1.marshalEthereumTx(amino_tx);
-        var hexBytes = Buffer.from(encodedTx).toString("hex");
-        tx.hash = "0x" + sha256_1.default(enc_hex_1.default.parse(hexBytes)).toString();
+        if (isExChain(tx.chainId)) {
+            tx.hash = buildExChainTxHash(handleNumber(transaction[0]).toString(), tx.gasPrice.toString(), tx.gasLimit.toString(), tx.to, tx.value.toString(), tx.data, handleNumber(transaction[6]).toString(), handleNumber(transaction[7]).toString(), handleNumber(transaction[8]).toString());
+        }
+        else {
+            tx.hash = keccak256_1.keccak256(rawTransaction);
+        }
     }
     tx.type = null;
     return tx;
@@ -444,4 +428,23 @@ function parse(rawTransaction) {
     });
 }
 exports.parse = parse;
+function isExChain(chainId) {
+    return chainId == 65 || chainId == 66;
+}
+function buildExChainTxHash(nonce, gasPrice, gas, to, value, input, v, r, s) {
+    var aminoTx = {
+        nonce: nonce,
+        gasPrice: gasPrice,
+        gas: gas,
+        to: to,
+        value: value,
+        input: input,
+        v: v,
+        r: r,
+        s: s,
+    };
+    var encodedTx = amino_js_1.marshalEthereumTx(aminoTx);
+    var hexBytes = Buffer.from(encodedTx).toString("hex");
+    return "0x" + sha256_1.default(enc_hex_1.default.parse(hexBytes)).toString();
+}
 //# sourceMappingURL=index.js.map
