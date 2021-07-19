@@ -1,11 +1,17 @@
 "use strict";
 import * as secp256k1 from "noble-secp256k1";
+import { computeHmac, SupportedAlgorithm } from "@ethersproject/sha2";
 import { arrayify, BytesLike, hexlify, hexZeroPad, Signature, SignatureLike, splitSignature } from "@ethersproject/bytes";
 import { defineReadOnly } from "@ethersproject/properties";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
+
+// @ts-ignore
+secp256k1.utils.hmacSha256 = function(key: Uint8Array, ...messages: Uint8Array[]): Uint8Array {
+    return arrayify(computeHmac(SupportedAlgorithm.sha256, key, Buffer.concat(messages)));
+}
 
 export class SigningKey {
     readonly curve: string;

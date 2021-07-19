@@ -7,6 +7,7 @@
     "@ethersproject/bytes": "^5.4.0",
     "@ethersproject/logger": "^5.4.0",
     "@ethersproject/properties": "^5.4.0",
+    "@ethersproject/sha2": "^5.4.0",
     "bn.js": "^4.11.9",
     "elliptic": "6.5.4",
     "hash.js": "1.1.7",
