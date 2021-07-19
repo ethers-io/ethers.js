@@ -1160,6 +1160,17 @@ export class ContractFactory {
             }
         }
 
+        // Populate "value" override
+        if (tx.value) {
+            const txValue = BigNumber.from(tx.value);
+            if (!txValue.isZero() && !this.interface.deploy.payable) {
+                logger.throwError("non-payable constructor cannot override value", Logger.errors.UNSUPPORTED_OPERATION, {
+                    operation: "overrides.value",
+                    value: tx.value
+                });
+            }
+        }
+
         // Do not allow these to be overridden in a deployment transaction
         ["data", "from", "to"].forEach((key) => {
             if ((<any>tx)[key] == null) { return; }
