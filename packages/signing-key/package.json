@@ -9,7 +9,8 @@
     "@ethersproject/properties": "^5.4.0",
     "bn.js": "^4.11.9",
     "elliptic": "6.5.4",
-    "hash.js": "1.1.7"
+    "hash.js": "1.1.7",
+    "noble-secp256k1": "^1.2.8"
   },
   "description": "Elliptic curve library functions for the secp256k1 curve.",
   "ethereum": "donations.ethers.eth",
