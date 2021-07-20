@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+ethers/v4.0.49 (2021-07-19 23:23)
+---------------------------------
+
+  - Updated elliptic library. ([#1439](https://github.com/ethers-io/ethers.js/issues/1439), [#1782](https://github.com/ethers-io/ethers.js/issues/1782); [9e94c03](https://github.com/ethers-io/ethers.js/commit/9e94c03d01ba51ef9b7b0cec060cb5077dd1b2e7))
+    
 ethers/v4.0.48 (2020-08-24 15:44)
 ---------------------------------
 
