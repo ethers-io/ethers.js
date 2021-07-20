@@ -1,6 +1,6 @@
 {
   "name": "ethers",
-  "version": "4.0.48",
+  "version": "4.0.49",
   "publishConfig": {
     "access": "public",
     "tag": "legacy"
@@ -24,8 +24,8 @@
   },
   "dependencies": {
     "aes-js": "3.0.0",
-    "bn.js": "^4.4.0",
-    "elliptic": "6.5.3",
+    "bn.js": "^4.11.9",
+    "elliptic": "6.5.4",
     "hash.js": "1.1.3",
     "js-sha3": "0.5.7",
     "scrypt-js": "2.0.4",
@@ -34,7 +34,7 @@
     "xmlhttprequest": "1.8.0"
   },
   "devDependencies": {
-    "@types/node": "^10.3.2",
+    "@types/node": "10.17.28",
     "browserify": "^16.2.3",
     "browserify-zlib": "^0.2.0",
     "dts-bundle": "^0.7.3",
