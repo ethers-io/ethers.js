@@ -312,7 +312,7 @@ const blockchainData: { [ network: string ]: TestCases } = {
                 type: 2,
                 creates: null,
                 from: '0xad252DD6C011E613610A36368f04aC84D5185b7c',
-                gasPrice: bnify("0x0268ab0ed6"),
+                //gasPrice: bnify("0x0268ab0ed6"),
                 maxPriorityFeePerGas: bnify("0x0268ab0ed6"),
                 maxFeePerGas: bnify("0x0268ab0ed6"),
                 gasLimit: bnify("0x5208"),
