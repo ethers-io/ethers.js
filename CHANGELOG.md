@@ -3,9 +3,10 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
-ethers/v5.4.2 (2021-07-23 02:19)
+ethers/v5.4.2 (2021-07-23 17:22)
 --------------------------------
 
+  - Fix test case for new transactions responses. ([0aafca7](https://github.com/ethers-io/ethers.js/commit/0aafca71dbc019beb398e1b5a0f24936a4fd215a))
   - Added matic support to INFURA and Alchemy. ([#1546](https://github.com/ethers-io/ethers.js/issues/1546); [576e9b5](https://github.com/ethers-io/ethers.js/commit/576e9b54abc3ff048113f93f765aa3177bf3b819))
   - Added string change to coalesce errors on some clients. ([bc5cc2e](https://github.com/ethers-io/ethers.js/commit/bc5cc2e7e34f6cc69c43c1665be9c18854fb26b8))
   - Added wait to transactions returned by getBlockWithTransactions. ([#971](https://github.com/ethers-io/ethers.js/issues/971); [660e69d](https://github.com/ethers-io/ethers.js/commit/660e69db71d42084b1fe791d864d13f0111f84fb))
