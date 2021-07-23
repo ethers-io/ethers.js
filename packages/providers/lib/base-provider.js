@@ -1341,6 +1341,9 @@ var BaseProvider = /** @class */ (function (_super) {
                     case 2:
                         hexTx = _a.sent();
                         tx = this.formatter.transaction(signedTransaction);
+                        if (tx.confirmations == null) {
+                            tx.confirmations = 0;
+                        }
                         return [4 /*yield*/, this._getInternalBlockNumber(100 + 2 * this.pollingInterval)];
                     case 3:
                         blockNumber = _a.sent();
@@ -1551,7 +1554,8 @@ var BaseProvider = /** @class */ (function (_super) {
                         logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
                         return [3 /*break*/, 6];
                     case 6: return [2 /*return*/, web_1.poll(function () { return __awaiter(_this, void 0, void 0, function () {
-                            var block, blockNumber_1, i, tx, confirmations;
+                            var block, blockNumber_1, i, tx, confirmations, blockWithTxs;
+                            var _this = this;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0: return [4 /*yield*/, this.perform("getBlock", params)];
@@ -1603,7 +1607,10 @@ var BaseProvider = /** @class */ (function (_super) {
                                     case 6:
                                         i++;
                                         return [3 /*break*/, 2];
-                                    case 7: return [2 /*return*/, this.formatter.blockWithTransactions(block)];
+                                    case 7:
+                                        blockWithTxs = this.formatter.blockWithTransactions(block);
+                                        blockWithTxs.transactions = block.transactions.map(function (tx) { return _this._wrapTransaction(tx); });
+                                        return [2 /*return*/, blockWithTxs];
                                     case 8: return [2 /*return*/, this.formatter.block(block)];
                                 }
                             });

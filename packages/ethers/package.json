@@ -8,7 +8,7 @@
     "@ethersproject/address": "5.4.0",
     "@ethersproject/base64": "5.4.0",
     "@ethersproject/basex": "5.4.0",
-    "@ethersproject/bignumber": "5.4.0",
+    "@ethersproject/bignumber": "5.4.1",
     "@ethersproject/bytes": "5.4.0",
     "@ethersproject/constants": "5.4.0",
     "@ethersproject/contracts": "5.4.0",
@@ -20,7 +20,7 @@
     "@ethersproject/networks": "5.4.1",
     "@ethersproject/pbkdf2": "5.4.0",
     "@ethersproject/properties": "5.4.0",
-    "@ethersproject/providers": "5.4.1",
+    "@ethersproject/providers": "5.4.2",
     "@ethersproject/random": "5.4.0",
     "@ethersproject/rlp": "5.4.0",
     "@ethersproject/sha2": "5.4.0",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xcc06f3c3949bc5b1ccf0349ceac2bab1928ee2f5d2b15b149d98604ae0532a47",
+  "tarballHash": "0x101342a457ebe4f40aab8c65646df04b75c020779097a1ae6795469ebafdb0bb",
   "types": "./lib/index.d.ts",
-  "version": "5.4.1"
+  "version": "5.4.2"
 }

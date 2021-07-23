@@ -4185,7 +4185,7 @@ function joinSignature(signature) {
     ]));
 }
 
-const version$2 = "bignumber/5.4.0";
+const version$2 = "bignumber/5.4.1";
 
 "use strict";
 var BN = bn.BN;
@@ -4703,7 +4703,7 @@ class FixedNumber {
         let result = FixedNumber.from(comps[0], this.format);
         const hasFraction = !comps[1].match(/^(0*)$/);
         if (this.isNegative() && hasFraction) {
-            result = result.subUnsafe(ONE);
+            result = result.subUnsafe(ONE.toFormat(result.format));
         }
         return result;
     }
@@ -4715,7 +4715,7 @@ class FixedNumber {
         let result = FixedNumber.from(comps[0], this.format);
         const hasFraction = !comps[1].match(/^(0*)$/);
         if (!this.isNegative() && hasFraction) {
-            result = result.addUnsafe(ONE);
+            result = result.addUnsafe(ONE.toFormat(result.format));
         }
         return result;
     }
@@ -18299,7 +18299,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.4.1";
+const version$m = "providers/5.4.2";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -19784,6 +19784,9 @@ class BaseProvider extends Provider {
             yield this.getNetwork();
             const hexTx = yield Promise.resolve(signedTransaction).then(t => hexlify(t));
             const tx = this.formatter.transaction(signedTransaction);
+            if (tx.confirmations == null) {
+                tx.confirmations = 0;
+            }
             const blockNumber = yield this._getInternalBlockNumber(100 + 2 * this.pollingInterval);
             try {
                 const hash = yield this.perform("sendTransaction", { signedTransaction: hexTx });
@@ -19964,7 +19967,9 @@ class BaseProvider extends Provider {
                             tx.confirmations = confirmations;
                         }
                     }
-                    return this.formatter.blockWithTransactions(block);
+                    const blockWithTxs = this.formatter.blockWithTransactions(block);
+                    blockWithTxs.transactions = block.transactions.map((tx) => this._wrapTransaction(tx));
+                    return blockWithTxs;
                 }
                 return this.formatter.block(block);
             }), { oncePoll: this });
@@ -20319,7 +20324,7 @@ function checkError(method, error, params) {
     message = (message || "").toLowerCase();
     const transaction = params.transaction || params.signedTransaction;
     // "insufficient funds for gas * price + value + cost(data)"
-    if (message.match(/insufficient funds/)) {
+    if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
         logger$u.throwError("insufficient funds for intrinsic transaction cost", Logger.errors.INSUFFICIENT_FUNDS, {
             error, method, transaction
         });
@@ -21281,6 +21286,12 @@ class AlchemyProvider extends UrlJsonRpcProvider {
             case "kovan":
                 host = "eth-kovan.alchemyapi.io/v2/";
                 break;
+            case "matic":
+                host = "polygon-mainnet.g.alchemy.com/v2/";
+                break;
+            case "maticmum":
+                host = "polygon-mumbai.g.alchemy.com/v2/";
+                break;
             default:
                 logger$x.throwArgumentError("unsupported network", "network", arguments[0]);
         }
@@ -21502,7 +21513,7 @@ function checkError$1(method, error, transaction) {
             error, method, transaction
         });
     }
-    if (message.match(/execution failed due to an exception/)) {
+    if (message.match(/execution failed due to an exception|execution reverted/)) {
         logger$z.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
             error, method, transaction
         });
@@ -22413,6 +22424,12 @@ class InfuraProvider extends UrlJsonRpcProvider {
             case "goerli":
                 host = "goerli.infura.io";
                 break;
+            case "matic":
+                host = "polygon-mainnet.infura.io";
+                break;
+            case "maticmum":
+                host = "polygon-mumbai.infura.io";
+                break;
             default:
                 logger$B.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
                     argument: "network",
@@ -23144,7 +23161,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.4.1";
+const version$o = "ethers/5.4.2";
 
 "use strict";
 const logger$H = new Logger(version$o);

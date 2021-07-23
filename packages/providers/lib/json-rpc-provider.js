@@ -91,7 +91,7 @@ function checkError(method, error, params) {
     message = (message || "").toLowerCase();
     var transaction = params.transaction || params.signedTransaction;
     // "insufficient funds for gas * price + value + cost(data)"
-    if (message.match(/insufficient funds/)) {
+    if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
         logger.throwError("insufficient funds for intrinsic transaction cost", logger_1.Logger.errors.INSUFFICIENT_FUNDS, {
             error: error, method: method, transaction: transaction
         });

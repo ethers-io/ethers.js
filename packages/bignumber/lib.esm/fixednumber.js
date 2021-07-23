@@ -223,7 +223,7 @@ export class FixedNumber {
         let result = FixedNumber.from(comps[0], this.format);
         const hasFraction = !comps[1].match(/^(0*)$/);
         if (this.isNegative() && hasFraction) {
-            result = result.subUnsafe(ONE);
+            result = result.subUnsafe(ONE.toFormat(result.format));
         }
         return result;
     }
@@ -235,7 +235,7 @@ export class FixedNumber {
         let result = FixedNumber.from(comps[0], this.format);
         const hasFraction = !comps[1].match(/^(0*)$/);
         if (!this.isNegative() && hasFraction) {
-            result = result.addUnsafe(ONE);
+            result = result.addUnsafe(ONE.toFormat(result.format));
         }
         return result;
     }

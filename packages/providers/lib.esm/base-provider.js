@@ -1065,6 +1065,9 @@ export class BaseProvider extends Provider {
             yield this.getNetwork();
             const hexTx = yield Promise.resolve(signedTransaction).then(t => hexlify(t));
             const tx = this.formatter.transaction(signedTransaction);
+            if (tx.confirmations == null) {
+                tx.confirmations = 0;
+            }
             const blockNumber = yield this._getInternalBlockNumber(100 + 2 * this.pollingInterval);
             try {
                 const hash = yield this.perform("sendTransaction", { signedTransaction: hexTx });
@@ -1245,7 +1248,9 @@ export class BaseProvider extends Provider {
                             tx.confirmations = confirmations;
                         }
                     }
-                    return this.formatter.blockWithTransactions(block);
+                    const blockWithTxs = this.formatter.blockWithTransactions(block);
+                    blockWithTxs.transactions = block.transactions.map((tx) => this._wrapTransaction(tx));
+                    return blockWithTxs;
                 }
                 return this.formatter.block(block);
             }), { oncePoll: this });

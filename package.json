@@ -100,5 +100,17 @@
     "solc": "0.7.1",
     "tiny-inflate": "1.0.3",
     "ws": "7.4.6"
+  },
+  "autoupdate": {
+    "source": "npm",
+    "target": "ethers",
+    "fileMap": [
+      {
+        "basePath": "dist",
+        "files": [
+          "*.js"
+        ]
+      }
+    ]
   }
 }

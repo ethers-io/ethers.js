@@ -3,6 +3,16 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.4.2 (2021-07-23 02:19)
+--------------------------------
+
+  - Added matic support to INFURA and Alchemy. ([#1546](https://github.com/ethers-io/ethers.js/issues/1546); [576e9b5](https://github.com/ethers-io/ethers.js/commit/576e9b54abc3ff048113f93f765aa3177bf3b819))
+  - Added string change to coalesce errors on some clients. ([bc5cc2e](https://github.com/ethers-io/ethers.js/commit/bc5cc2e7e34f6cc69c43c1665be9c18854fb26b8))
+  - Added wait to transactions returned by getBlockWithTransactions. ([#971](https://github.com/ethers-io/ethers.js/issues/971); [660e69d](https://github.com/ethers-io/ethers.js/commit/660e69db71d42084b1fe791d864d13f0111f84fb))
+  - Fixed floor, ceiling and round for FixedNumber for non-default Formats. ([#1749](https://github.com/ethers-io/ethers.js/issues/1749); [551cfa0](https://github.com/ethers-io/ethers.js/commit/551cfa0062ec1645c9310335e0e6cbd250bb3788))
+  - Fixed null confirmations in Wallet transaction. ([#1706](https://github.com/ethers-io/ethers.js/issues/1706); [0f0d0c0](https://github.com/ethers-io/ethers.js/commit/0f0d0c00d3fc14e5454169d42a9286b1d8b0abef))
+  - Fixed Etherscan string change and enabled all tests. ([a1f8d18](https://github.com/ethers-io/ethers.js/commit/a1f8d188a7bc0b0d11426b7ef0d018cc1b7b399d))
+
 ethers/v5.4.1 (2021-07-02 01:47)
 --------------------------------
 
