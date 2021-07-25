@@ -195,6 +195,12 @@ Returns the value of *BigNumber* as a base-10 string.
 
 Returns the value of *BigNumber* as a base-16, `0x`-prefixed [DataHexString](/v5/api/utils/bytes/#DataHexString).
 
+#### *BigNumber* . **toBigInt**( ) => *BigInt*
+
+Returns the value of *BigNumber* as a A JavaScript ES2015 [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) object, on environments that support BigInt.
+
+This will **throw an error** if the platform does not support ES2015 BigInt.
+
 
 ### Inspection
 
