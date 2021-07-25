@@ -181,6 +181,11 @@ Returns the value of //BigNumber// as a base-10 string.
 _property: BigNumber.toHexString() => string<[[DataHexString]]>  @SRC<bignumber:BigNumber.toHexString>
 Returns the value of //BigNumber// as a base-16, ``0x``-prefixed [[DataHexString]].
 
+_property: BigNumber.toBigInt() => BigInt @SRC<bignumber:BigNumber.toBigInt>
+Returns the value of //BigNumber// as a JavaScript [BigInt](link-js-bigint) object, on environments that support BigInt. 
+
+This will **throw an error**
+if the platform does not support ES2015 BigInt.
 
 _heading: Inspection
 
