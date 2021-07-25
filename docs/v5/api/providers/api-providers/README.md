@@ -38,6 +38,9 @@ It is highly recommended for production, you register with [Etherscan](https://e
 
 
 ```javascript
+//_hide: const EtherscanProvider = ethers.providers.EtherscanProvider;
+//_hide: const apiKey = "...";
+
 // Connect to mainnet (homestead)
 provider = new EtherscanProvider();
 
@@ -45,12 +48,9 @@ provider = new EtherscanProvider();
 provider = new EtherscanProvider("rinkeby");
 provider = new EtherscanProvider(4);
 
-const network = ethers.providers.getNetwork("rinkeby");
-// {
-//   chainId: 4,
-//   ensAddress: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
-//   name: 'rinkeby'
-// }
+network = ethers.providers.getNetwork("rinkeby");
+//_hide: delete network._defaultProvider;
+//_log: network
 
 provider = new EtherscanProvider(network);
 
@@ -102,6 +102,10 @@ It is highly recommended for production, you register with [INFURA](https://infu
 
 
 ```javascript
+//_hide: const InfuraProvider = ethers.providers.InfuraProvider;
+//_hide: const projectId = "...";
+//_hide: const projectSecret = "...";
+
 // Connect to mainnet (homestead)
 provider = new InfuraProvider();
 
@@ -121,6 +125,7 @@ provider = new InfuraProvider("homestead", {
 
 // Connect to the INFURA WebSocket endpoints with a WebSocketProvider
 provider = InfuraProvider.getWebSocketProvider()
+//_hide: await provider.destroy();
 ```
 
 AlchemyProvider
@@ -152,6 +157,9 @@ It is highly recommended for production, you register with [Alchemy](https://alc
 
 
 ```javascript
+//_hide: const AlchemyProvider = ethers.providers.AlchemyProvider;
+//_hide: const apiKey = "...";
+
 // Connect to mainnet (homestead)
 provider = new AlchemyProvider();
 
@@ -165,6 +173,7 @@ provider = new AlchemyProvider("homestead", apiKey);
 
 // Connect to the Alchemy WebSocket endpoints with a WebSocketProvider
 provider = AlchemyProvider.getWebSocketProvider()
+//_hide: provider.destroy();
 ```
 
 CloudflareProvider
@@ -183,6 +192,8 @@ Create a new **CloudflareProvider** connected to mainnet (i.e. "homestead").
 
 
 ```javascript
+//_hide: const CloudflareProvider = ethers.providers.CloudflareProvider;
+
 // Connect to mainnet (homestead)
 provider = new CloudflareProvider();
 ```

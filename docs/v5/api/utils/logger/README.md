@@ -218,6 +218,17 @@ When replacing a transaction, by using a nonce which has already been sent to th
 This error occurs when the gas price is insufficient to *bribe* the transaction pool to prefer the new transaction over the old one. Generally, the new gas price should be about 50% + 1 wei more, so if a gas price of 10 gwei was used, the replacement should be 15.000000001 gwei. This is not enforced by the protocol, as it deals with unmined transactions, and can be configured by each node, however to ensure a transaction is propagated to a miner it is best practice to follow the defaults most nodes have enabled.
 
 
+#### *Logger* . *errors* . **TRANSACTION_REPLACED**
+
+When a transaction has been replaced by the user, by broadcasting a new transaction with the same nonce as an existing in-flight (unmined) transaction in the mempool, this error will occur while waiting if the transaction being waited for has become invalidated by that other transaction.
+
+This can happen for several reasons, but most commonly because the user has increased the gas price (which changes the transaction hash) to "speed up" a transaction or if a user has "cancelled" the transaction in their client. In either case this is usually accomplished by bribing the miners with a higher gas priced transaction.
+
+This error will have the additional properties, `cancelled`, `hash`, `reason`, `receipt` and `replacement`.
+
+See the [TransactionResponse](/v5/api/providers/types/#providers-TransactionResponse) for the `wait` method for more details.
+
+
 #### *Logger* . *errors* . **UNPREDICTABLE_GAS_LIMIT**
 
 When estimating the required amount of gas for a transaction, a node is queried for its best guess.

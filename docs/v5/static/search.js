@@ -2,6 +2,23 @@
 
 (async function() {
   const stopWords = "a an and as at for from in of on the with".split(/ /g);
+
+  function expandCompoundWords(words) {
+    // Exapnd compound words; e.g. "gasprice" => "gasprice gas price"
+    words.split(/\s+/g).forEach((word) => {
+        word = word.toLowerCase();
+        const compound = data.compound.filter((w) => (w.toLowerCase() === word));
+        if (compound.length) {
+            compound.forEach((word) => {
+                word.replace(/((^|[A-Z])[a-z]+)/g, (word) => {
+                    words += " " + word.toLowerCase();
+                });
+            });
+        }
+    });
+    return words;
+  }
+
   function search(words) {
     const blocks = [ ];
     const tally = { };
@@ -144,7 +161,7 @@
 
   const words = decodeURIComponent((location.search.split("search=")[1] || "").replace(/\+/g, " "));
   document.getElementById("search").value = words;
-  const { results, searchWords } = search(words);
+  const { results, searchWords } = search(expandCompoundWords(words));
   if (results.length === 0) {
      appendBlock("No Results.")
   } else {

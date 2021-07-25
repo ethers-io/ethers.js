@@ -12,7 +12,7 @@
   <body>
     <div class="sidebar">
       <div class="header">
-        <div class="logo"><a href="/v5/"><div class="image"></div><div class="name">ethers</div><div class="version">v5.0</div></a></div>
+        <div class="logo"><a href="/v5/"><div class="image"></div><div class="name">ethers</div><div class="version">v5.3</div></a></div>
         <div class="search"><form action="/v5/search/" method="GET"><input name="search" id="search" /></form><span class="search-icon">&#9906;</span></div>
       </div>
       <div class="toc"><div>
@@ -81,35 +81,34 @@
 
 <p>It is <b>highly recommended</b> that you provide an API for each service, to maximize your applications performance.</p>
 
-<div class="code-title"><div>Passing API Keys into getDefaultProvider</div></div><div class="code"><span class="comment">// Use the mainnet
-</span>const network = "homestead";
+<div class="code-title"><div>Passing API Keys into getDefaultProvider</div></div><div class="code">// Use the mainnet
+const network = "homestead";
 
-<span class="comment">// Specify your own API keys
-</span><span class="comment">// Each is optional, and if you omit it the default
-</span><span class="comment">// API key for that service will be used.
-</span>const provider = ethers.getDefaultProvider(network, {
+// Specify your own API keys
+// Each is optional, and if you omit it the default
+// API key for that service will be used.
+const provider = ethers.getDefaultProvider(network, {
     etherscan: YOUR_ETHERSCAN_API_KEY,
     infura: YOUR_INFURA_PROJECT_ID,
-<span class="comment">    // Or if using a project secret:
-</span><span class="comment">    // infura: {
-</span><span class="comment">    //   projectId: YOUR_INFURA_PROJECT_ID,
-</span><span class="comment">    //   projectSecret: YOUR_INFURA_PROJECT_SECRET,
-</span><span class="comment">    // },
-</span>    alchemy: YOUR_ALCHEMY_API_KEY,
+    // Or if using a project secret:
+    // infura: {
+    //   projectId: YOUR_INFURA_PROJECT_ID,
+    //   projectSecret: YOUR_INFURA_PROJECT_SECRET,
+    // },
+    alchemy: YOUR_ALCHEMY_API_KEY,
     pocket: YOUR_POCKET_APPLICATION_KEY
-<span class="comment">    // Or if using an application secret key:
-</span><span class="comment">    // pocket: {
-</span><span class="comment">    //   applicationId: ,
-</span><span class="comment">    //   applicationSecretKey:
-</span><span class="comment">    // }
-</span>});
-</div>
+    // Or if using an application secret key:
+    // pocket: {
+    //   applicationId: ,
+    //   applicationSecretKey:
+    // }
+});</div>
 
       <div class="footer">
         <div class="nav previous"><a href="/v5/concepts/best-practices/"><span class="arrow">&larr;</span>Best Practices</a></div>
         <div class="nav next"><a href="/v5/api/">Application Programming Interface<span class="arrow">&rarr;</span></a></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on February 8, 2021, 3:25pm.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on July 25, 2021, 2:52pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
     <!--EXTRASCRIPT-->

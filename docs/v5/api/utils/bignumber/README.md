@@ -49,43 +49,52 @@ Returns an instance of a **BigNumber** for *aBigNumberish*.
 
 ```javascript
 // From a decimal string...
+//_result:
 BigNumber.from("42")
-// { BigNumber: "42" }
+//_log:
 
 // From a HexString...
+//_result:
 BigNumber.from("0x2a")
-// { BigNumber: "42" }
+//_log:
 
 // From a negative HexString...
+//_result:
 BigNumber.from("-0x2a")
-// { BigNumber: "-42" }
+//_log:
 
 // From an Array (or Uint8Array)...
+//_result:
 BigNumber.from([ 42 ])
-// { BigNumber: "42" }
+//_log:
 
 // From an existing BigNumber...
 let one1 = constants.One;
 let one2 = BigNumber.from(one1)
 
+//_result:
 one2
-// { BigNumber: "1" }
+//_log:
 
 // ...which returns the same instance
+//_result:
 one1 === one2
-// true
+//_log:
 
 // From a (safe) number...
+//_result:
 BigNumber.from(42)
-// { BigNumber: "42" }
+//_log:
 
 // From a ES2015 BigInt... (only on platforms with BigInt support)
+//_result:
 BigNumber.from(42n)
-// { BigNumber: "42" }
+//_log:
 
 // Numbers outside the safe range fail:
+//_throws:
 BigNumber.from(Number.MAX_SAFE_INTEGER);
-// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740991, code=NUMERIC_FAULT, version=bignumber/5.0.14)
+//_log:
 ```
 
 Methods
@@ -195,9 +204,10 @@ Returns the value of *BigNumber* as a base-10 string.
 
 Returns the value of *BigNumber* as a base-16, `0x`-prefixed [DataHexString](/v5/api/utils/bytes/#DataHexString).
 
+
 #### *BigNumber* . **toBigInt**( ) => *BigInt*
 
-Returns the value of *BigNumber* as a A JavaScript ES2015 [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) object, on environments that support BigInt.
+Returns the value of *BigNumber* as a JavaScript [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) object, on environments that support BigInt.
 
 This will **throw an error** if the platform does not support ES2015 BigInt.
 
@@ -215,8 +225,9 @@ Returns true if and only if the *object* is a BigNumber object.
 let a = BigNumber.from(42);
 let b = BigNumber.from("91");
 
+//_result:
 a.mul(b);
-// { BigNumber: "3822" }
+//_log:
 ```
 
 Notes
@@ -225,8 +236,9 @@ Notes
 ### Why can't I just use numbers?
 
 ```javascript
+//_result:
 (Number.MAX_SAFE_INTEGER + 2 - 2) == (Number.MAX_SAFE_INTEGER)
-// false
+//_log:
 ```
 
 

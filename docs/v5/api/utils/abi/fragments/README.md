@@ -14,24 +14,44 @@ Formats
 
 ### Humanb-Readable ABI
 
+```
+const ABI = [
+  // Constructor
+  "constructor(address ens)",
+
+  // Constant functions (pure or view)
+  "function balanceOf(address owner) view returns (uint)",
+
+  // State-mutating functions (payable or non-payable)
+  "function mint(uint amount) payable",
+  "function transfer(address to, uint amount) returns (bool)",
+
+  // Events
+  "event Transfer(address indexed from, address indexed to, uint amount)",
+
+  // Errors
+  "error InsufficientFunds(address from, uint balance)",
+]
+```
+
 ### Output Formats
 
-#### *ethers* . *utils* . *FragmentTypes* . **full** => *string*
+#### *ethers* . *utils* . *FormatTypes* . **full** => *string*
 
 This is a full human-readable string, including all parameter names, any optional modifiers (e.g. `indexed`, `public`, etc) and white-space to aid in human readability.
 
 
-#### *ethers* . *utils* . *FragmentTypes* . **minimal** => *string*
+#### *ethers* . *utils* . *FormatTypes* . **minimal** => *string*
 
 This is similar to `full`, except with no unnecessary whitespace or parameter names. This is useful for storing a minimal string which can still fully reconstruct the original Fragment using [Fragment&thinsp;.&thinsp;from](/v5/api/utils/abi/fragments/#Fragment-from).
 
 
-#### *ethers* . *utils* . *FragmentTypes* . **json** => *string*
+#### *ethers* . *utils* . *FormatTypes* . **json** => *string*
 
 This returns a JavaScript Object which is safe to call `JSON.stringify` on to create a JSON string.
 
 
-#### *ethers* . *utils* . *FragmentTypes* . **sighash** => *string*
+#### *ethers* . *utils* . *FormatTypes* . **sighash** => *string*
 
 This is a minimal output format, which is used by Solidity when computing a signature hash or an event topic hash.
 
@@ -39,6 +59,8 @@ This is a minimal output format, which is used by Solidity when computing a sign
 #### Note
 
 The `sighash` format is **insufficient** to re-create the original [Fragment](/v5/api/utils/abi/fragments/#Fragment), since it discards modifiers such as indexed, anonymous, stateMutability, etc.
+
+It is only useful for computing the selector for a Fragment, and cannot be used to format an Interface.
 
 
 Fragment
@@ -69,14 +91,19 @@ This is an array of each [ParamType](/v5/api/utils/abi/fragments/#ParamType) for
 
 ### Methods
 
+#### *fragment* . **format**( [ format = sighash ] ) => *string*
+
+Creates a string representation of the Fragment using the available [output formats](/v5/api/utils/abi/fragments/#fragments--output-formats).
+
+
 #### *ethers* . *utils* . *Fragment* . **from**( objectOrString ) => *[Fragment](/v5/api/utils/abi/fragments/#Fragment)*
 
-Returns a
+Creates a new **Fragment** sub-class from any compatible *objectOrString*.
 
 
 #### *ethers* . *utils* . *Fragment* . **isFragment**( object ) => *boolean*
 
-Tra lal al
+Returns true if *object* is a **Fragment**.
 
 
 ConstructorFragment
@@ -108,12 +135,27 @@ This is the state mutability of the constructor. It can be any of:
 
 #### *ethers* . *utils* . *ConstructorFragment* . **from**( objectOrString ) => *[ConstructorFragment](/v5/api/utils/abi/fragments/#ConstructorFragment)*
 
-Tra la la...
+Creates a new **ConstructorFragment** from any compatible *objectOrString*.
 
 
 #### *ethers* . *utils* . *ConstructorFragment* . **isConstructorFragment**( object ) => *boolean*
 
-Tra lal al
+Returns true if *object* is a **ConstructorFragment**.
+
+
+ErrorFragment
+-------------
+
+### Methods
+
+#### *ethers* . *utils* . *ErrorFragment* . **from**( objectOrString ) => *[ErrorFragment](/v5/api/utils/abi/fragments/#ErrorFragment)*
+
+Creates a new **ErrorFragment** from any compatible *objectOrString*.
+
+
+#### *ethers* . *utils* . *ErrorFragment* . **isErrorFragment**( object ) => *boolean*
+
+Returns true if *object* is an **ErrorFragment**.
 
 
 EventFragment
@@ -130,12 +172,12 @@ This is whether the event is anonymous. An anonymous Event does not inject its t
 
 #### *ethers* . *utils* . *EventFragment* . **from**( objectOrString ) => *[EventFragment](/v5/api/utils/abi/fragments/#EventFragment)*
 
-Tra la la...
+Creates a new **EventFragment** from any compatible *objectOrString*.
 
 
 #### *ethers* . *utils* . *EventFragment* . **isEventFragment**( object ) => *boolean*
 
-Tra lal al
+Returns true if *object* is an **EventFragment**.
 
 
 FunctionFragment
@@ -165,16 +207,16 @@ This is the state mutability of the constructor. It can be any of:
 A list of the Function output parameters.
 
 
-### Method
+### Methods
 
 #### *ethers* . *utils* . *FunctionFragment* . **from**( objectOrString ) => *[FunctionFragment](/v5/api/utils/abi/fragments/#FunctionFragment)*
 
-Tra la la...
+Creates a new **FunctionFragment** from any compatible *objectOrString*.
 
 
 #### *ethers* . *utils* . *FunctionFragment* . **isFunctionFragment**( object ) => *boolean*
 
-Tra lal al
+Returns true if *object* is a **FunctionFragment**.
 
 
 ParamType
@@ -221,16 +263,16 @@ The components of a tuple. This is null for non-tuple parameters.
 
 #### *paramType* . **format**( [ outputType = sighash ] )
 
-Tra la la...
+Creates a string representation of the Fragment using the available [output formats](/v5/api/utils/abi/fragments/#fragments--output-formats).
 
 
 #### *ethers* . *utils* . *ParamType* . **from**( objectOrString ) => *[ParamType](/v5/api/utils/abi/fragments/#ParamType)*
 
-Tra la la...
+Creates a new **ParamType** from any compatible *objectOrString*.
 
 
 #### *ethers* . *utils* . *ParamType* . **isParamType**( object ) => *boolean*
 
-Tra la la...
+Returns true if *object* is a **ParamType**.
 
 

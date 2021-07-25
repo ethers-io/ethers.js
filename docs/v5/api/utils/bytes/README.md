@@ -62,28 +62,34 @@ Converts *aBigNumberish* to a [HexString](/v5/api/utils/bytes/#HexString), with 
 
 ```javascript
 // Convert a hexstring to a Uint8Array
+//_result:
 arrayify("0x1234")
-// Uint8Array [ 18, 52 ]
+//_log:
 
 // Convert an Array to a hexstring
+//_result:
 hexlify([1, 2, 3, 4])
-// '0x01020304'
+//_log:
 
 // Convert an Object to a hexstring
+//_result:
 hexlify({ length: 2, "0": 1, "1": 2 })
-// '0x0102'
+//_log:
 
 // Convert an Array to a hexstring
+//_result:
 hexlify([ 1 ])
-// '0x01'
+//_log:
 
 // Convert a number to a stripped hex value
+//_result:
 hexValue(1)
-// '0x1'
+//_log:
 
 // Convert an Array to a stripped hex value
+//_result:
 hexValue([ 1, 2 ])
-// '0x102'
+//_log:
 ```
 
 Array Manipulation
@@ -163,33 +169,20 @@ Return a copy of *array* shuffled using [Fisher-Yates Shuffle](https://en.wikipe
 
 
 ```javascript
+//_result:
 utils.randomBytes(8)
-// Uint8Array [ 97, 223, 223, 186, 224, 0, 90, 28 ]
+//_log:
 
 const data = [ 1, 2, 3, 4, 5, 6, 7 ];
 
 // Returns a new Array
+//_result:
 utils.shuffled(data);
-// [
-//   5,
-//   3,
-//   1,
-//   4,
-//   6,
-//   7,
-//   2
-// ]
+//_log:
 
 // The Original is unscathed...
+//_result:
 data
-// [
-//   1,
-//   2,
-//   3,
-//   4,
-//   5,
-//   6,
-//   7
-// ]
+//_log:
 ```
 

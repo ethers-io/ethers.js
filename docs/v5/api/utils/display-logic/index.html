@@ -12,7 +12,7 @@
   <body>
     <div class="sidebar">
       <div class="header">
-        <div class="logo"><a href="/v5/"><div class="image"></div><div class="name">ethers</div><div class="version">v5.0</div></a></div>
+        <div class="logo"><a href="/v5/"><div class="image"></div><div class="name">ethers</div><div class="version">v5.3</div></a></div>
         <div class="search"><form action="/v5/search/" method="GET"><input name="search" id="search" /></form><span class="search-icon">&#9906;</span></div>
       </div>
       <div class="toc"><div>
@@ -46,22 +46,85 @@
 <a name="display-logic--formatting"></a><a name="display-logic--display-logic--functions--display-logic--formatting"></a><h3 class="show-anchors"><div>Formatting<div class="anchors"><a class="self" href="/v5/api/utils/display-logic/#display-logic--formatting"></a></div></div></h3>
 <a name="utils-commify"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">commify</span><span class="symbol">(</span> <span class="param">value</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">string</span><div class="anchors"><a class="self" href="/v5/api/utils/display-logic/#utils-commify"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/units/src.ts/index.ts#L23">source</a></div></div><div class="body"><p>Returns a string with value grouped by 3 digits, separated by <code class="inline">,</code>.</p>
 
-</div></div><a name="unit-conversion"></a><a name="display-logic--display-logic--functions--unit-conversion"></a><h3 class="show-anchors"><div>Conversion<div class="anchors"><a class="self" href="/v5/api/utils/display-logic/#unit-conversion"></a></div></div></h3>
+</div></div><div class="code">//_hide: const commify = ethers.utils.commify;
+
+//_result:
+commify("-1000.3000");
+//_log:</div><a name="unit-conversion"></a><a name="display-logic--display-logic--functions--unit-conversion"></a><h3 class="show-anchors"><div>Conversion<div class="anchors"><a class="self" href="/v5/api/utils/display-logic/#unit-conversion"></a></div></div></h3>
 <a name="utils-formatUnits"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">formatUnits</span><span class="symbol">(</span> <span class="param">value</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">unit</span> = "<span class="param">ether</span>" <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">string</span><div class="anchors"><a class="self" href="/v5/api/utils/display-logic/#utils-formatUnits"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/units/src.ts/index.ts#L64">source</a></div></div><div class="body"><p>Returns a string representation of <i>value</i> formatted with <i>unit</i> digits (if it is a number) or to the unit specified (if a string).</p>
 
-</div></div><a name="utils-formatEther"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">formatEther</span><span class="symbol">(</span> <span class="param">value</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">string</span><div class="anchors"><a class="self" href="/v5/api/utils/display-logic/#utils-formatEther"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/units/src.ts/index.ts#L83">source</a></div></div><div class="body"><p>The equivalent to calling <code class="inline">formatUnits(value, "ether")</code>.</p>
+</div></div><div class="code">//_hide: const formatUnits = ethers.utils.formatUnits;
+//_hide: const BigNumber = ethers.BigNumber;
 
-</div></div><a name="utils-parseUnits"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">parseUnits</span><span class="symbol">(</span> <span class="param">value</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">unit</span> = "<span class="param">ether</span>" <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/utils/bignumber/">BigNumber</a></span><div class="anchors"><a class="self" href="/v5/api/utils/display-logic/#utils-parseUnits"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/units/src.ts/index.ts#L72">source</a></div></div><div class="body"><p>Returns a <a href="/v5/api/utils/bignumber/">BigNumber</a> representation of <i>value</i>, parsed with <i>unit</i> digits (if it is a number) or from the unit specified (if a string).</p>
+const oneGwei = BigNumber.from("1000000000");
+const oneEther = BigNumber.from("1000000000000000000");
 
-</div></div><a name="utils-parseEther"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">parseEther</span><span class="symbol">(</span> <span class="param">value</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/utils/bignumber/">BigNumber</a></span><div class="anchors"><a class="self" href="/v5/api/utils/display-logic/#utils-parseEther"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/units/src.ts/index.ts#L87">source</a></div></div><div class="body"><p>The equivalent to calling <code class="inline">parseUnits(value, "ether")</code>.</p>
+//_result:
+formatUnits(oneGwei, 0);
+//_log:
 
-</div></div>
+//_result:
+formatUnits(oneGwei, "gwei");
+//_log:
+
+//_result:
+formatUnits(oneGwei, 9);
+//_log:
+
+//_result:
+formatUnits(oneEther);
+//_log:
+
+//_result:
+formatUnits(oneEther, 18);
+//_log:</div><a name="utils-formatEther"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">formatEther</span><span class="symbol">(</span> <span class="param">value</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">string</span><div class="anchors"><a class="self" href="/v5/api/utils/display-logic/#utils-formatEther"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/units/src.ts/index.ts#L83">source</a></div></div><div class="body"><p>The equivalent to calling <code class="inline">formatUnits(value, "ether")</code>.</p>
+
+</div></div><div class="code">//_hide: const formatEther = ethers.utils.formatEther;
+//_hide: const BigNumber = ethers.BigNumber;
+
+const value = BigNumber.from("1000000000000000000");
+
+//_result:
+formatEther(value);
+//_log:</div><a name="utils-parseUnits"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">parseUnits</span><span class="symbol">(</span> <span class="param">value</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">unit</span> = "<span class="param">ether</span>" <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/utils/bignumber/">BigNumber</a></span><div class="anchors"><a class="self" href="/v5/api/utils/display-logic/#utils-parseUnits"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/units/src.ts/index.ts#L72">source</a></div></div><div class="body"><p>Returns a <a href="/v5/api/utils/bignumber/">BigNumber</a> representation of <i>value</i>, parsed with <i>unit</i> digits (if it is a number) or from the unit specified (if a string).</p>
+
+</div></div><div class="code">//_hide: const parseUnits = ethers.utils.parseUnits;
+
+//_result:
+parseUnits("1.0");
+//_log:
+
+//_result:
+parseUnits("1.0", "ether");
+//_log:
+
+//_result:
+parseUnits("1.0", 18);
+//_log:
+
+//_result:
+parseUnits("121.0", "gwei");
+//_log:
+
+//_result:
+parseUnits("121.0", 9);
+//_log:</div><a name="utils-parseEther"></a><div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">utils</span><span class="symbol">.</span><span class="method">parseEther</span><span class="symbol">(</span> <span class="param">value</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/utils/bignumber/">BigNumber</a></span><div class="anchors"><a class="self" href="/v5/api/utils/display-logic/#utils-parseEther"></a><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/units/src.ts/index.ts#L87">source</a></div></div><div class="body"><p>The equivalent to calling <code class="inline">parseUnits(value, "ether")</code>.</p>
+
+</div></div><div class="code">//_hide: const parseEther = ethers.utils.parseEther;
+
+//_result:
+parseEther("1.0");
+//_log:
+
+//_result:
+parseEther("-0.5");
+//_log:</div>
 
       <div class="footer">
         <div class="nav previous"><a href="/v5/api/utils/constants/"><span class="arrow">&larr;</span>Constants</a></div>
         <div class="nav next"><a href="/v5/api/utils/encoding/">Encoding Utilities<span class="arrow">&rarr;</span></a></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on February 8, 2021, 3:25pm.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on July 25, 2021, 2:52pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
     <!--EXTRASCRIPT-->

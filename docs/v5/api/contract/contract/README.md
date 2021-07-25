@@ -125,10 +125,18 @@ For numbers, if the **type** is in the JavaScript safe range (i.e. less than 53 
 
 For bytes (both fixed length and dynamic), a [DataHexString](/v5/api/utils/bytes/#DataHexString) is returned.
 
+If the call reverts (or runs out of gas), a [CALL_EXCEPTION](/v5/api/utils/logger/#errors--call-exception) will be thrown which will include:
+
+- `error.address` - the contract address 
+- `error.args` - the arguments passed into the method 
+- `error.transaction` - the transaction 
+
+
+
 The *overrides* object for a read-only method may include any of:
 
 - `overrides.from` - the `msg.sender` (or `CALLER`) to use during the execution of the code 
-- `overrides.value` - the `msg.value` (or `CALLVALUE`) to use during the exectuiont of the code 
+- `overrides.value` - the `msg.value` (or `CALLVALUE`) to use during the execution of the code 
 - `overrides.gasPrice` - the price to pay per gas (theoretically); since there is no transaction, there is not going to be any fee charged, but the EVM still requires a value to report to `tx.gasprice` (or `GASPRICE`); *most developers will not require this* 
 - `overrides.gasLimit` - the amount of gas (theoretically) to allow a node to use during the execution of the code; since there is no transaction, there is not going to be any fee charged, but the EVM still processes gas metering so calls like `gasleft` (or `GAS`) report meaningful values 
 - `overrides.blockTag` - a block tag to simulate the execution at, which can be used for hypothetical historic analysis; note that many backends do not support this, or may require paid plans to access as the node database storage and processing requirements are much higher 

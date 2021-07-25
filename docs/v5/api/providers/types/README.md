@@ -240,7 +240,17 @@ The amount (in wei) this transaction is sending.
 
 The chain ID this transaction is authorized on, as specified by [EIP-155](https://eips.ethereum.org/EIPS/eip-155).
 
-If the chain ID is 0 will disable EIP-155 and the transaction will be valid on any network. This can be **dangerous** and care should be taken, since it allows transactions to be replayed on networks that were possibly not intended.
+If the chain ID is 0 will disable EIP-155 and the transaction will be valid on any network. This can be **dangerous** and care should be taken, since it allows transactions to be replayed on networks that were possibly not intended. Intentionally-replayable transactions are also disabled by default on recent versions of Geth and require configuration to enable.
+
+
+#### *transactionRequest* . **type** => *null | number*
+
+The [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) type of this transaction envelope, or `null` for legacy transactions that do not have an envelope.
+
+
+#### *transactionRequest* . **accessList** => *[AccessListish](/v5/api/providers/types/#providers-AccessListish)*
+
+The [AccessList](/v5/api/providers/types/#providers-AccessList) to include in an [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) transaction, which will include a `type` of `1`.
 
 
 ### TransactionResponse
@@ -274,13 +284,35 @@ The serialized transaction.
 
 Resolves to the [TransactionReceipt](/v5/api/providers/types/#providers-TransactionReceipt) once the transaction has been included in the chain for *confirms* blocks. If *confirms* is 0, and the transaction has not been mined, `null` is returned.
 
-If the transaction execution failed (i.e. the receipt status is `0`), a [CALL_EXCEPTION](/v5/api/utils/logger/#errors--call-exception) Error will be rejected with the following properties:
+If the transaction execution failed (i.e. the receipt status is `0`), a [CALL_EXCEPTION](/v5/api/utils/logger/#errors--call-exception) error will be rejected with the following properties:
 
 - `error.transaction` - the original transaction 
 - `error.transactionHash` - the hash of the transaction 
 - `error.receipt` - the actual receipt, with the status of `0` 
 
 
+
+If the transaction is replaced by another transaction, a [TRANSACTION_REPLACED](/v5/api/utils/logger/#errors--transaction-replaced) error will be rejected with the following properties:
+
+- `error.hash` - the hash of the original transaction which was replaced 
+- `error.reason` - a string reason; one of `"repriced"`, `"cancelled"` or `"replaced"` 
+- `error.cancelled` - a boolean; a `"repriced"` transaction is not considered cancelled, but `"cancelled"` and `"replaced"` are 
+- `error.replacement` - the replacement transaction (a [TransactionResponse](/v5/api/providers/types/#providers-TransactionResponse)) 
+- `error.receipt` - the receipt of the replacement transaction (a [TransactionReceipt](/v5/api/providers/types/#providers-TransactionReceipt)) 
+
+
+
+Transactions are replaced when the user uses an option in their client to send a new transaction from the same account with the original `nonce`. This is usually to speed up a transaction or to cancel one, by bribing miners with additional fees to prefer the new transaction over the original one.
+
+
+#### *transactionRequest* . **type** => *null | number*
+
+The [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) type of this transaction envelope, or `null` for legacy transactions that do not have an envelope.
+
+
+#### *transactionRequest* . **accessList** => *[AccessList](/v5/api/providers/types/#providers-AccessList)*
+
+The [AccessList](/v5/api/providers/types/#providers-AccessList) included in an [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) transaction, which will also have its `type` equal to `1`.
 
 
 ### TransactionReceipt
@@ -367,4 +399,72 @@ This is true if the block is in a [post-Byzantium Hard Fork](https://eips.ethere
 
 The status of a transaction is 1 is successful or 0 if it was reverted. Only transactions included in blocks [post-Byzantium Hard Fork](https://eips.ethereum.org/EIPS/eip-609) have this property.
 
+
+Access Lists
+------------
+
+### AccessListish
+
+```javascript
+// Option 1:
+// AccessList
+// see below
+
+// Option 2:
+// Array< [ Address, Array<Bytes32> ] >
+//_hide: ;
+accessList = [
+  [
+    "0x0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+    [
+      "0x0000000000000000000000000000000000000000000000000000000000000004",
+      "0x0bcad17ecf260d6506c6b97768bdc2acfb6694445d27ffd3f9c1cfbee4a9bd6d"
+    ]
+  ],
+  [
+    "0x5FfC014343cd971B7eb70732021E26C35B744cc4",
+    [
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+    ]
+  ]
+];
+
+// Option 3:
+// Record<Address, Array<Bytes32>>
+accessList = {
+  "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e": [
+    "0x0000000000000000000000000000000000000000000000000000000000000004",
+    "0x0bcad17ecf260d6506c6b97768bdc2acfb6694445d27ffd3f9c1cfbee4a9bd6d"
+  ],
+  "0x5FfC014343cd971B7eb70732021E26C35B744cc4": [
+    "0x0000000000000000000000000000000000000000000000000000000000000001"
+  ]
+};
+```
+
+### AccessList
+
+```
+// Array of objects with the form:
+// {
+//   address: Address,
+//   storageKey: Array< DataHexString< 32 > >
+// }
+
+accessList = [
+  {
+    address: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+    storageKeys: [
+        "0x0000000000000000000000000000000000000000000000000000000000000004",
+        "0x0bcad17ecf260d6506c6b97768bdc2acfb6694445d27ffd3f9c1cfbee4a9bd6d"
+    ]
+  },
+  {
+    address: "0x5FfC014343cd971B7eb70732021E26C35B744cc4",
+    storageKeys: [
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+    ]
+  }
+];
+```
 

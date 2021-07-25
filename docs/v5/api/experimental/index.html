@@ -12,7 +12,7 @@
   <body>
     <div class="sidebar">
       <div class="header">
-        <div class="logo"><a href="/v5/"><div class="image"></div><div class="name">ethers</div><div class="version">v5.0</div></a></div>
+        <div class="logo"><a href="/v5/"><div class="image"></div><div class="name">ethers</div><div class="version">v5.3</div></a></div>
         <div class="search"><form action="/v5/search/" method="GET"><input name="search" id="search" /></form><span class="search-icon">&#9906;</span></div>
       </div>
       <div class="toc"><div>
@@ -27,15 +27,25 @@
 
 <a name="experimental"></a><h1 class="show-anchors"><div>Experimental<div class="anchors"><a class="self" href="/v5/api/experimental/#experimental"></a></div></div></h1><p>The <b>Experimental</b> package is used for features that are not ready to be included in the base library. The API should not be considered stable and does not follow <a href="https://semver.org">semver</a> versioning, so applications requiring it should specify the <i>exact version</i> needed.</p>
 
+<p>These features are not available in the core ethers package, so to use them you must install the <code class="inline">@ethersproject/experimental</code> package and import them from that.</p>
+
 <a name="experimental-brainwallet"></a><a name="experimental--experimental-brainwallet"></a><h2 class="show-anchors"><div>BrainWallet<span class="inherits"> inherits <a href="/v5/api/signer/#Wallet">Wallet</a></span><div class="anchors"><a class="self" href="/v5/api/experimental/#experimental-brainwallet"></a></div></div></h2><p>Ethers removed support for BrainWallets in v4, since they are unsafe and many can be easily guessed, allowing attackers to steal the funds. This class is offered to ensure older systems which used brain wallets can still recover their funds and assets.</p>
 
 <div class="property show-anchors"><div class="signature"><span class="path">BrainWallet</span><span class="symbol">.</span><span class="method">generate</span><span class="symbol">(</span> <span class="param">username</span> <span class="symbol">,</span> <span class="param">password</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">progressCallback</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/experimental/#experimental-brainwallet">BrainWallet</a></span><div class="anchors"></div></div><div class="body"><p>Generates a brain wallet, with a slightly improved experience, in which the generated wallet has a mnemonic.</p>
 
 </div></div><div class="property show-anchors"><div class="signature"><span class="path">BrainWallet</span><span class="symbol">.</span><span class="method">generateLegacy</span><span class="symbol">(</span> <span class="param">username</span> <span class="symbol">,</span> <span class="param">password</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">progressCallback</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/experimental/#experimental-brainwallet">BrainWallet</a></span><div class="anchors"></div></div><div class="body"><p>Generate a brain wallet which is compatible with the ethers v3 and earlier.</p>
 
-</div></div><a name="experimental-eip1193bridge"></a><a name="experimental--experimental-eip1193bridge"></a><h2 class="show-anchors"><div>EIP1193Bridge<span class="inherits"> inherits <a href="https://nodejs.org/dist/latest-v13.x/docs/api/events.html#events_class_eventemitter">EventEmitter</a></span><div class="anchors"><a class="self" href="/v5/api/experimental/#experimental-eip1193bridge"></a></div></div></h2><p>The <b>EIP1193Bridge</b> allows a normal Ethers <a href="/v5/api/signer/#Signer">Signer</a> and <a href="/v5/api/providers/provider/">Provider</a> to be exposed in as a standard <a href="https://eips.ethereum.org/EIPS/eip-1193">EIP-1193 Provider</a>, which may be useful when interacting with other libraries.</p>
+</div></div><div class="code-title"><div>Importing</div></div><div class="code">// Node
+const { BrainWallet } = require("@ethersproject/experimental");
 
-<a name="experimental-noncemanager"></a><a name="experimental--experimental-noncemanager"></a><h2 class="show-anchors"><div>NonceManager<span class="inherits"> inherits <a href="/v5/api/signer/#Signer">Signer</a></span><div class="anchors"><a class="self" href="/v5/api/experimental/#experimental-noncemanager"></a></div></div></h2><p>The <b>NonceManager</b> is designed to manage the nonce for a Signer, automatically increasing it as it sends transactions.</p>
+// ESM/TypeScript
+import { BrainWallet } from "@ethersproject/experimental";</div><a name="experimental-eip1193bridge"></a><a name="experimental--experimental-eip1193bridge"></a><h2 class="show-anchors"><div>EIP1193Bridge<span class="inherits"> inherits <a href="https://nodejs.org/dist/latest-v13.x/docs/api/events.html#events_class_eventemitter">EventEmitter</a></span><div class="anchors"><a class="self" href="/v5/api/experimental/#experimental-eip1193bridge"></a></div></div></h2><p>The <b>EIP1193Bridge</b> allows a normal Ethers <a href="/v5/api/signer/#Signer">Signer</a> and <a href="/v5/api/providers/provider/">Provider</a> to be exposed in as a standard <a href="https://eips.ethereum.org/EIPS/eip-1193">EIP-1193 Provider</a>, which may be useful when interacting with other libraries.</p>
+
+<div class="code-title"><div>Importing</div></div><div class="code">// Node
+const { Eip1193Bridge } = require("@ethersproject/experimental");
+
+// ESM/TypeScript
+import { Eip1193Bridge } from "@ethersproject/experimental";</div><a name="experimental-noncemanager"></a><a name="experimental--experimental-noncemanager"></a><h2 class="show-anchors"><div>NonceManager<span class="inherits"> inherits <a href="/v5/api/signer/#Signer">Signer</a></span><div class="anchors"><a class="self" href="/v5/api/experimental/#experimental-noncemanager"></a></div></div></h2><p>The <b>NonceManager</b> is designed to manage the nonce for a Signer, automatically increasing it as it sends transactions.</p>
 
 <p>Currently the NonceManager does not handle re-broadcast. If you attempt to send a lot of transactions to the network on a node that does not control that account, the transaction pool may drop your transactions.</p>
 
@@ -57,13 +67,17 @@
 
 <p>This may be useful in interacting with the signer outside of using this class.</p>
 
-</div></div>
+</div></div><div class="code-title"><div>Importing</div></div><div class="code">// Node
+const { NonceManager } = require("@ethersproject/experimental");
+
+// ESM/TypeScript
+import { NonceManager } from "@ethersproject/experimental";</div>
 
       <div class="footer">
         <div class="nav previous"><a href="/v5/api/other/hardware/"><span class="arrow">&larr;</span>Hardware Wallets</a></div>
         <div class="nav next"><a href="/v5/cli/">Command Line Interfaces<span class="arrow">&rarr;</span></a></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on February 8, 2021, 3:25pm.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on July 25, 2021, 2:52pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
     <!--EXTRASCRIPT-->

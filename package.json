@@ -39,6 +39,7 @@
     "test-react": "npm run _test-dist && pushd misc/ReactNativeTestApp && ./run-tests.sh && popd",
     "test": "npm run build-all && npm run test-node",
     "build-docs": "flatworm docs.wrm docs",
+    "build-docs-skip": "flatworm --skip-eval docs.wrm docs",
     "serve-docs": "node ./misc/admin/lib/cmds/serve-docs.js",
     "upload-docs": " node ./misc/admin/lib/cmds/upload-docs.js",
     "spell-check": "node ./misc/admin/lib/cmds/spell-check.js",
@@ -56,6 +57,11 @@
     "TODO-sync-github": "node ./admin/cmds/cache-github"
   },
   "devDependencies": {
+    "@ethersproject/contracts": "^5.4.0",
+    "@ethersproject/providers": "^5.4.2",
+    "@ethersproject/solidity": "^5.4.0",
+    "@ethersproject/units": "^5.4.0",
+    "@ethersproject/wallet": "^5.4.0",
     "@rollup/plugin-commonjs": "15.1.0",
     "@rollup/plugin-json": "4.1.0",
     "@rollup/plugin-node-resolve": "9.0.0",
@@ -67,7 +73,7 @@
     "aes-js": "3.0.0",
     "aws-sdk": "2.137.0",
     "diff": "4.0.1",
-    "flatworm": "^0.0.2-beta.6",
+    "flatworm": "file:../flatworm",
     "jison": "0.4.18",
     "karma": "6.3.2",
     "karma-chrome-launcher": "3.1.0",

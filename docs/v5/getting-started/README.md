@@ -31,13 +31,13 @@ import { ethers } from "ethers";
 
 ```
 <script type="module">
-    import { ethers } from "https://cdn.ethers.io/lib/ethers-5.0.esm.min.js";
+    import { ethers } from "https://cdn.ethers.io/lib/ethers-5.2.esm.min.js";
     // Your code here...
 </script>
 ```
 
 ```
-<script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js"
+<script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
         type="application/javascript"></script>
 ```
 
@@ -80,22 +80,26 @@ const signer = provider.getSigner()
 
 ```javascript
 // Look up the current block number
-provider.getBlockNumber()
-// { Promise: 11817915 }
+//_result:
+await provider.getBlockNumber()
+//_log:
 
 // Get the balance of an account (by address or ENS name, if supported by network)
+//_result:
 balance = await provider.getBalance("ethers.eth")
-// { BigNumber: "2337132817842795605" }
+//_log:
 
 // Often you need to format the output to something more user-friendly,
 // such as in ether (instead of wei)
+//_result:
 ethers.utils.formatEther(balance)
-// '2.337132817842795605'
+//_log:
 
 // If a user enters a string in an input field, you may need
 // to convert it from ether (as a string) to wei (as a BigNumber)
+//_result:
 ethers.utils.parseEther("1.0")
-// { BigNumber: "1000000000000000000" }
+//_log:
 ```
 
 ### Writing to the Blockchain
@@ -134,26 +138,34 @@ const daiAbi = [
 
 // The Contract object
 const daiContract = new ethers.Contract(daiAddress, daiAbi, provider);
+
+//_hide: _page.daiAbi = daiAbi;
+//_hide: _page.daiContract = daiContract;
 ```
 
 ### Read-Only Methods
 
 ```javascript
+//_hide: const daiContract = _page.daiContract;
+
 // Get the ERC-20 token name
-daiContract.name()
-// { Promise: 'Dai Stablecoin' }
+//_result:
+await daiContract.name()
+//_log:
 
 // Get the ERC-20 token symbol (for tickers and UIs)
-daiContract.symbol()
-// { Promise: 'DAI' }
+//_result:
+await daiContract.symbol()
+//_log:
 
 // Get the balance of an address
 balance = await daiContract.balanceOf("ricmoo.firefly.eth")
-// { BigNumber: "198172622063578627973" }
+//_log: balance
 
 // Format the DAI for displaying to the user
+//_result:
 ethers.utils.formatUnits(balance, 18)
-// '198.172622063578627973'
+//_log:
 ```
 
 ### State Changing Methods
@@ -174,6 +186,9 @@ tx = daiWithSigner.transfer("ricmoo.firefly.eth", dai);
 ### Listening to Events
 
 ```javascript
+//_hide: const daiContract = _page.daiContract;
+//_hide: const formatEther = ethers.utils.formatEther;
+
 // Receive an event when ANY transfer occurs
 daiContract.on("Transfer", (from, to, amount, event) => {
     console.log(`${ from } sent ${ formatEther(amount) } to ${ to}`);
@@ -185,108 +200,39 @@ daiContract.on("Transfer", (from, to, amount, event) => {
 // A filter for when a specific address receives tokens
 myAddress = "0x8ba1f109551bD432803012645Ac136ddd64DBA72";
 filter = daiContract.filters.Transfer(null, myAddress)
-// {
-//   address: 'dai.tokens.ethers.eth',
-//   topics: [
-//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-//     null,
-//     '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72'
-//   ]
-// }
+//_log: filter
 
 // Receive an event when that filter occurs
 daiContract.on(filter, (from, to, amount, event) => {
     // The to will always be "address"
     console.log(`I got ${ formatEther(amount) } from ${ from }.`);
 });
+
+//_hide: daiContract.removeAllListeners(); /* Don't want to block the docs from compiling... */
 ```
 
 ### Query Historic Events
 
 ```javascript
+//_hide: const signer = new ethers.VoidSigner("0x8ba1f109551bD432803012645Ac136ddd64DBA72");
+//_hide: const daiContract = _page.daiContract;
+
 // Get the address of the Signer
 myAddress = await signer.getAddress()
-// '0x8ba1f109551bD432803012645Ac136ddd64DBA72'
+//_log: myAddress
 
 // Filter for all token transfers from me
 filterFrom = daiContract.filters.Transfer(myAddress, null);
-// {
-//   address: 'dai.tokens.ethers.eth',
-//   topics: [
-//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-//     '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72'
-//   ]
-// }
+//_log: filterFrom
 
 // Filter for all token transfers to me
 filterTo = daiContract.filters.Transfer(null, myAddress);
-// {
-//   address: 'dai.tokens.ethers.eth',
-//   topics: [
-//     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-//     null,
-//     '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72'
-//   ]
-// }
+//_log: filterTo
 
 // List all transfers sent from me a specific block range
-daiContract.queryFilter(filterFrom, 9843470, 9843480)
-// { Promise: [
-//   {
-//     address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
-//     args: [
-//       '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
-//       '0x8B3765eDA5207fB21690874B722ae276B96260E0',
-//       { BigNumber: "4750000000000000000" }
-//     ],
-//     blockHash: '0x8462eb2fbcef5aa4861266f59ad5f47b9aa6525d767d713920fdbdfb6b0c0b78',
-//     blockNumber: 9843476,
-//     data: '0x00000000000000000000000000000000000000000000000041eb63d55b1b0000',
-//     decode: [Function],
-//     event: 'Transfer',
-//     eventSignature: 'Transfer(address,address,uint256)',
-//     getBlock: [Function],
-//     getTransaction: [Function],
-//     getTransactionReceipt: [Function],
-//     logIndex: 69,
-//     removeListener: [Function],
-//     removed: false,
-//     topics: [
-//       '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-//       '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72',
-//       '0x0000000000000000000000008b3765eda5207fb21690874b722ae276b96260e0'
-//     ],
-//     transactionHash: '0x1be23554545030e1ce47391a41098a46ff426382ed740db62d63d7676ff6fcf1',
-//     transactionIndex: 81
-//   },
-//   {
-//     address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
-//     args: [
-//       '0x8ba1f109551bD432803012645Ac136ddd64DBA72',
-//       '0x00De4B13153673BCAE2616b67bf822500d325Fc3',
-//       { BigNumber: "250000000000000000" }
-//     ],
-//     blockHash: '0x8462eb2fbcef5aa4861266f59ad5f47b9aa6525d767d713920fdbdfb6b0c0b78',
-//     blockNumber: 9843476,
-//     data: '0x00000000000000000000000000000000000000000000000003782dace9d90000',
-//     decode: [Function],
-//     event: 'Transfer',
-//     eventSignature: 'Transfer(address,address,uint256)',
-//     getBlock: [Function],
-//     getTransaction: [Function],
-//     getTransactionReceipt: [Function],
-//     logIndex: 70,
-//     removeListener: [Function],
-//     removed: false,
-//     topics: [
-//       '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-//       '0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72',
-//       '0x00000000000000000000000000de4b13153673bcae2616b67bf822500d325fc3'
-//     ],
-//     transactionHash: '0x1be23554545030e1ce47391a41098a46ff426382ed740db62d63d7676ff6fcf1',
-//     transactionIndex: 81
-//   }
-// ] }
+//_result:
+await daiContract.queryFilter(filterFrom, 9843470, 9843480)
+//_log:
 
 //
 // The following have had the results omitted due to the
@@ -294,21 +240,23 @@ daiContract.queryFilter(filterFrom, 9843470, 9843480)
 //
 
 // List all transfers sent in the last 10,000 blocks
-daiContract.queryFilter(filterFrom, -10000)
+await daiContract.queryFilter(filterFrom, -10000)
 
 // List all transfers ever sent to me
-daiContract.queryFilter(filterTo)
+await daiContract.queryFilter(filterTo)
 ```
 
 Signing Messages
 ----------------
 
 ```javascript
+//_hide: const signer = ethers.Wallet.createRandom();
+
 // To sign a simple string, which are used for
 // logging into a service, such as CryptoKitties,
 // pass the string in.
 signature = await signer.signMessage("Hello World");
-// '0x800d1d157d472b0cb567ec0d9e2825203aaa7e84db5a9b19169c0c85575f6e0761e99bd670ed82f71a346020cdec8326644132cdeffd8e327d888f94f21825e01b'
+//_log: signature
 
 //
 // A common case is also signing a hash, which is 32
@@ -321,10 +269,10 @@ message = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 
 // This array representation is 32 bytes long
 messageBytes = ethers.utils.arrayify(message);
-// Uint8Array [ 221, 242, 82, 173, 27, 226, 200, 155, 105, 194, 176, 104, 252, 55, 141, 170, 149, 43, 167, 241, 99, 196, 161, 22, 40, 245, 90, 77, 245, 35, 179, 239 ]
+//_log: messageBytes
 
 // To sign a hash, you most often want to sign the bytes
 signature = await signer.signMessage(messageBytes)
-// '0x3ec3dca35ae2712e7f9bb1e2819f9b40c818c567b1a01586d3b0d0a73bad1c303b7f39d4471ac0c9eb900438bc6b6a4bf5b2c120a5cb31edc2cfab11ede409381b'
+//_log: signature
 ```
 

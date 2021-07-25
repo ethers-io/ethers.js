@@ -211,34 +211,35 @@ Code
 ```
 _code: Result of Code Example  @lang<javascript>
 
-// <hide>
-const url = require("url");
-// </hide>
+//_hide: const url = require("url");
 
+//_result:
 url.parse("https://www.ricmoo.com/").protocol
-//!
+//_log:
 
+//_throws:
 url.parse(45)
-//! error
+//_log:
 
 // You want to assign (doesn't emit eval) AND display the value
 const foo = 4 + 5;
-// <hide>
-foo
-// </hide>
-//!
+//_log: foo
 ```
 
 ```javascript
-url.parse("https://www.ricmoo.com/").protocol
-// 'https:'
+//_hide: const url = require("url");
 
+//_result:
+url.parse("https://www.ricmoo.com/").protocol
+//_log:
+
+//_throws:
 url.parse(45)
-// Error: The "url" argument must be of type string. Received type number (45)
+//_log:
 
 // You want to assign (doesn't emit eval) AND display the value
 const foo = 4 + 5;
-// 9
+//_log: foo
 ```
 
 ### Languages

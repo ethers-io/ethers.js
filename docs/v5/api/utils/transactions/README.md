@@ -116,6 +116,13 @@ The v portion of the elliptic curve signatures for *transaction*. This is used t
 Functions
 ---------
 
+#### *ethers* . *utils* . **accessListify**( anAcceslistish ) => *[AccessList](/v5/api/providers/types/#providers-AccessList)*
+
+Normalizes the [AccessListish](/v5/api/providers/types/#providers-AccessListish) *anAccessListish* into an [AccessList](/v5/api/providers/types/#providers-AccessList).
+
+This is useful for other utility functions which wish to remain flexible as to the input parameter for access lists, such as when creating a [Signer](/v5/api/signer/#Signer) which needs to manipulate a possibly typed transaction envelope.
+
+
 #### *ethers* . *utils* . **parseTransaction**( aBytesLike ) => *[Transaction](/v5/api/utils/transactions/#Transaction)*
 
 Parses the transaction properties from a serialized transaction.

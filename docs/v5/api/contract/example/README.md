@@ -159,7 +159,7 @@ Meta-Class Methods
 Returns the number of decimal places used by this ERC-20 token. This can be used with [parseUnits](/v5/api/utils/display-logic/#utils-parseUnits) when taking input from the user or [formatUnits](utils-formatunits] when displaying the token amounts in the UI.
 
 
-#### *erc20* . **getBalance**( owner [ , overrides ] ) => *Promise< [BigNumber](/v5/api/utils/bignumber/) >*
+#### *erc20* . **balanceOf**( owner [ , overrides ] ) => *Promise< [BigNumber](/v5/api/utils/bignumber/) >*
 
 Returns the balance of *owner* for this ERC-20 token.
 

@@ -12,7 +12,7 @@
   <body>
     <div class="sidebar">
       <div class="header">
-        <div class="logo"><a href="/v5/"><div class="image"></div><div class="name">ethers</div><div class="version">v5.0</div></a></div>
+        <div class="logo"><a href="/v5/"><div class="image"></div><div class="name">ethers</div><div class="version">v5.3</div></a></div>
         <div class="search"><form action="/v5/search/" method="GET"><input name="search" id="search" /></form><span class="search-icon">&#9906;</span></div>
       </div>
       <div class="toc"><div>
@@ -37,30 +37,28 @@
 
 <p>After installing packages, you may need to restart your packager and company.</p>
 
-<div class="code-title"><div>Installing</div></div><div class="code">/home/ricmoo/my-react-project&gt; npm install @ethersproject/shims --save</div><div class="code-title"><div>Importing</div></div><div class="code"><span class="comment">// Pull in the shims (BEFORE importing ethers)
-</span>import "@ethersproject/shims"
+<div class="code-title"><div>Installing</div></div><div class="code">/home/ricmoo/my-react-project&gt; npm install @ethersproject/shims --save</div><div class="code-title"><div>Importing</div></div><div class="code">// Pull in the shims (BEFORE importing ethers)
+import "@ethersproject/shims"
 
-<span class="comment">// Import the ethers library
-</span>import { ethers } from "ethers";
-</div><a name="cookbook-reactnative-security"></a><a name="cookbook-reactnative--cookbook-reactnative-security"></a><h2 class="show-anchors"><div>Security<div class="anchors"><a class="self" href="/v5/cookbook/react-native/#cookbook-reactnative-security"></a></div></div></h2><p>The React Native environment does not contain a secure random source, which is used when computing random private keys. This could result in private keys that others could possibly guess, allowing funds to be stolen and assets manipulated.</p>
+// Import the ethers library
+import { ethers } from "ethers";</div><a name="cookbook-reactnative-security"></a><a name="cookbook-reactnative--cookbook-reactnative-security"></a><h2 class="show-anchors"><div>Security<div class="anchors"><a class="self" href="/v5/cookbook/react-native/#cookbook-reactnative-security"></a></div></div></h2><p>The React Native environment does not contain a secure random source, which is used when computing random private keys. This could result in private keys that others could possibly guess, allowing funds to be stolen and assets manipulated.</p>
 
 <p>For this reason, it is <b>HIGHLY RECOMMENDED</b> to also install the <a href="https://www.npmjs.com/package/react-native-get-random-values">React Native get-random-values</a>, which <b>must</b> be included before the shims. If it worked correctly you should not receive any warning in the console regarding missing secure random sources.</p>
 
-<div class="code-title"><div>Importing with Secure Random Sources</div></div><div class="code"><span class="comment">// Import the crypto getRandomValues shim (**BEFORE** the shims)
-</span>import "react-native-get-random-values"
+<div class="code-title"><div>Importing with Secure Random Sources</div></div><div class="code">// Import the crypto getRandomValues shim (**BEFORE** the shims)
+import "react-native-get-random-values"
 
-<span class="comment">// Import the the ethers shims (**BEFORE** ethers)
-</span>import "@ethersproject/shims"
+// Import the the ethers shims (**BEFORE** ethers)
+import "@ethersproject/shims"
 
-<span class="comment">// Import the ethers library
-</span>import { ethers } from "ethers";
-</div>
+// Import the ethers library
+import { ethers } from "ethers";</div>
 
       <div class="footer">
         <div class="nav previous"><a href="/v5/cookbook/"><span class="arrow">&larr;</span>Cookbook</a></div>
         <div class="nav next"><a href="/v5/migration/">Migration Guide<span class="arrow">&rarr;</span></a></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on February 8, 2021, 3:25pm.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on July 25, 2021, 2:52pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
     <!--EXTRASCRIPT-->

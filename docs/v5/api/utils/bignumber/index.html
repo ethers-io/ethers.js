@@ -12,7 +12,7 @@
   <body>
     <div class="sidebar">
       <div class="header">
-        <div class="logo"><a href="/v5/"><div class="image"></div><div class="name">ethers</div><div class="version">v5.0</div></a></div>
+        <div class="logo"><a href="/v5/"><div class="image"></div><div class="name">ethers</div><div class="version">v5.3</div></a></div>
         <div class="search"><form action="/v5/search/" method="GET"><input name="search" id="search" /></form><span class="search-icon">&#9906;</span></div>
       </div>
       <div class="toc"><div>
@@ -25,7 +25,7 @@
     <div class="content">
       <div class="breadcrumbs"><a href="/v5/">Documentation</a>&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<a href="/v5/api/">API</a>&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<a href="/v5/api/utils/">Utilities</a>&nbsp;&nbsp;&raquo;&nbsp;&nbsp;<span class="current">BigNumber</span></div>
 
-<a name="BigNumber"></a><a name="BigNumber"></a><h1 class="show-anchors"><div>BigNumber<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber"></a></div></div></h1><p>Many operations in Ethereum operation on numbers which are <a href="/v5/api/utils/bignumber/#BigNumber--notes-safenumbers">outside the range of safe values</a> to use in JavaScript.</p>
+<a name="BigNumber"></a><a name="BigNumber"></a><h1 class="show-anchors"><div>BigNumber<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber"></a></div></div></h1><p>Many operations in Ethereum operate on numbers which are <a href="/v5/api/utils/bignumber/#BigNumber--notes-safenumbers">outside the range of safe values</a> to use in JavaScript.</p>
 
 <p>A <b>BigNumber</b> is an object which safely allows mathematical operations on numbers of any magnitude.</p>
 
@@ -49,45 +49,53 @@
 <div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">BigNumber</span><span class="symbol">.</span><span class="method">from</span><span class="symbol">(</span> <span class="param">aBigNumberish</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/utils/bignumber/">BigNumber</a></span><div class="anchors"></div></div><div class="body"><p>Returns an instance of a <b>BigNumber</b> for <i>aBigNumberish</i>.</p>
 
 </div></div><a name="BigNumber--BigNumber--creating--examples"></a><h3 class="show-anchors"><div>Examples:<div class="anchors"></div></div></h3>
-<div class="code"><span class="comment">// From a decimal string...
-</span>BigNumber.from("42")
-<span class="result ok">// { BigNumber: "42" }
-</span>
-<span class="comment">// From a HexString...
-</span>BigNumber.from("0x2a")
-<span class="result ok">// { BigNumber: "42" }
-</span>
-<span class="comment">// From a negative HexString...
-</span>BigNumber.from("-0x2a")
-<span class="result ok">// { BigNumber: "-42" }
-</span>
-<span class="comment">// From an Array (or Uint8Array)...
-</span>BigNumber.from([ 42 ])
-<span class="result ok">// { BigNumber: "42" }
-</span>
-<span class="comment">// From an existing BigNumber...
-</span>let one1 = constants.One;
+<div class="code">// From a decimal string...
+//_result:
+BigNumber.from("42")
+//_log:
+
+// From a HexString...
+//_result:
+BigNumber.from("0x2a")
+//_log:
+
+// From a negative HexString...
+//_result:
+BigNumber.from("-0x2a")
+//_log:
+
+// From an Array (or Uint8Array)...
+//_result:
+BigNumber.from([ 42 ])
+//_log:
+
+// From an existing BigNumber...
+let one1 = constants.One;
 let one2 = BigNumber.from(one1)
 
+//_result:
 one2
-<span class="result ok">// { BigNumber: "1" }
-</span>
-<span class="comment">// ...which returns the same instance
-</span>one1 === one2
-<span class="result ok">// true
-</span>
-<span class="comment">// From a (safe) number...
-</span>BigNumber.from(42)
-<span class="result ok">// { BigNumber: "42" }
-</span>
-<span class="comment">// From a ES2015 BigInt... (only on platforms with BigInt support)
-</span>BigNumber.from(42n)
-<span class="result ok">// { BigNumber: "42" }
-</span>
-<span class="comment">// Numbers outside the safe range fail:
-</span>BigNumber.from(Number.MAX_SAFE_INTEGER);
-<span class="result error">// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740991, code=NUMERIC_FAULT, version=bignumber/5.0.14)
-</span></div><a name="BigNumber--methods"></a><a name="BigNumber--BigNumber--methods"></a><h2 class="show-anchors"><div>Methods<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber--methods"></a></div></div></h2><p>The BigNumber class is immutable, so no operations can change the value it represents.</p>
+//_log:
+
+// ...which returns the same instance
+//_result:
+one1 === one2
+//_log:
+
+// From a (safe) number...
+//_result:
+BigNumber.from(42)
+//_log:
+
+// From a ES2015 BigInt... (only on platforms with BigInt support)
+//_result:
+BigNumber.from(42n)
+//_log:
+
+// Numbers outside the safe range fail:
+//_throws:
+BigNumber.from(Number.MAX_SAFE_INTEGER);
+//_log:</div><a name="BigNumber--methods"></a><a name="BigNumber--BigNumber--methods"></a><h2 class="show-anchors"><div>Methods<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber--methods"></a></div></div></h2><p>The BigNumber class is immutable, so no operations can change the value it represents.</p>
 
 <a name="BigNumber--BigNumber--methods--math-operations"></a><h3 class="show-anchors"><div>Math Operations<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber--BigNumber--methods--math-operations"></a></div></div></h3>
 <div class="property show-anchors"><div class="signature"><span class="path">BigNumber</span><span class="symbol">.</span><span class="method">add</span><span class="symbol">(</span> <span class="param">otherValue</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns"><a href="/v5/api/utils/bignumber/">BigNumber</a></span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/bignumber/src.ts/bignumber.ts#L75">source</a></div></div><div class="body"><p>Returns a BigNumber with the value of <i>BigNumber</i> <b>+</b> <i>otherValue</i>.</p>
@@ -130,20 +138,24 @@ one2
 
 <p>This will <b>throw an error</b> if the value is greater than or equal to <i>Number.MAX_SAFE_INTEGER</i> or less than or equal to <i>Number.MIN_SAFE_INTEGER</i>.</p>
 
-</div></div><div class="property show-anchors"><div class="signature"><span class="path">BigNumber</span><span class="symbol">.</span><span class="method">toString</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">string</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/bignumber/src.ts/bignumber.ts#L193">source</a></div></div><div class="body"><p>Returns the value of <i>BigNumber</i> as a base-10 string.</p>
+</div></div><div class="property show-anchors"><div class="signature"><span class="path">BigNumber</span><span class="symbol">.</span><span class="method">toString</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">string</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/bignumber/src.ts/bignumber.ts#L203">source</a></div></div><div class="body"><p>Returns the value of <i>BigNumber</i> as a base-10 string.</p>
 
-</div></div><div class="property show-anchors"><div class="signature"><span class="path">BigNumber</span><span class="symbol">.</span><span class="method">toHexString</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="/v5/api/utils/bytes/#DataHexString">DataHexString</a> &gt;</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/bignumber/src.ts/bignumber.ts#L210">source</a></div></div><div class="body"><p>Returns the value of <i>BigNumber</i> as a base-16, <code class="inline">0x</code>-prefixed <a href="/v5/api/utils/bytes/#DataHexString">DataHexString</a>.</p>
+</div></div><div class="property show-anchors"><div class="signature"><span class="path">BigNumber</span><span class="symbol">.</span><span class="method">toHexString</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">string&lt; <a href="/v5/api/utils/bytes/#DataHexString">DataHexString</a> &gt;</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/bignumber/src.ts/bignumber.ts#L220">source</a></div></div><div class="body"><p>Returns the value of <i>BigNumber</i> as a base-16, <code class="inline">0x</code>-prefixed <a href="/v5/api/utils/bytes/#DataHexString">DataHexString</a>.</p>
+
+</div></div><div class="property show-anchors"><div class="signature"><span class="path">BigNumber</span><span class="symbol">.</span><span class="method">toBigInt</span><span class="symbol">(</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">BigInt</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/bignumber/src.ts/bignumber.ts#L193">source</a></div></div><div class="body"><p>Returns the value of <i>BigNumber</i> as a JavaScript <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt">BigInt</a> object, on environments that support BigInt.</p>
+
+<p>This will <b>throw an error</b> if the platform does not support ES2015 BigInt.</p>
 
 </div></div><a name="BigNumber--BigNumber--methods--inspection"></a><h3 class="show-anchors"><div>Inspection<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber--BigNumber--methods--inspection"></a></div></div></h3>
-<div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">BigNumber</span><span class="symbol">.</span><span class="method">isBigNumber</span><span class="symbol">(</span> <span class="param">object</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">boolean</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/bignumber/src.ts/bignumber.ts#L284">source</a></div></div><div class="body"><p>Returns true if and only if the <i>object</i> is a BigNumber object.</p>
+<div class="property show-anchors"><div class="signature"><span class="path">ethers</span><span class="symbol">.</span><span class="path">BigNumber</span><span class="symbol">.</span><span class="method">isBigNumber</span><span class="symbol">(</span> <span class="param">object</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">boolean</span><div class="anchors"><a class="source" href="https://github.com/ethers-io/ethers.js/blob/master/packages/bignumber/src.ts/bignumber.ts#L294">source</a></div></div><div class="body"><p>Returns true if and only if the <i>object</i> is a BigNumber object.</p>
 
 </div></div><a name="BigNumber--BigNumber--methods--examples"></a><h3 class="show-anchors"><div>Examples<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber--BigNumber--methods--examples"></a></div></div></h3>
 <div class="code">let a = BigNumber.from(42);
 let b = BigNumber.from("91");
 
+//_result:
 a.mul(b);
-<span class="result ok">// { BigNumber: "3822" }
-</span></div><a name="BigNumber--notes"></a><a name="BigNumber--BigNumber--notes"></a><h2 class="show-anchors"><div>Notes<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber--notes"></a></div></div></h2><p>This section is a for a couple of questions that come up frequently.</p>
+//_log:</div><a name="BigNumber--notes"></a><a name="BigNumber--BigNumber--notes"></a><h2 class="show-anchors"><div>Notes<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber--notes"></a></div></div></h2><p>This section is a for a couple of questions that come up frequently.</p>
 
 <a name="BigNumber--notes-safenumbers"></a><a name="BigNumber--BigNumber--notes--BigNumber--notes-safenumbers"></a><h3 class="show-anchors"><div>Why can't I just use numbers?<div class="anchors"><a class="self" href="/v5/api/utils/bignumber/#BigNumber--notes-safenumbers"></a></div></div></h3><p>The first problem many encounter when dealing with Ethereum is the concept of numbers. Most common currencies are broken down with very little granularity. For example, there are only 100 cents in a single dollar. However, there are 10<sup>18</sup> <b>wei</b> in a single <b>ether</b>.</p>
 
@@ -151,9 +163,9 @@ a.mul(b);
 
 <p>To demonstrate how this may be an issue in your code, consider:</p>
 
-<div class="code">(Number.MAX_SAFE_INTEGER + 2 - 2) == (Number.MAX_SAFE_INTEGER)
-<span class="result ok">// false
-</span></div><p>To remedy this, all numbers (which can be large) are stored and manipulated as <a href="/v5/api/utils/bignumber/">Big Numbers</a>.</p>
+<div class="code">//_result:
+(Number.MAX_SAFE_INTEGER + 2 - 2) == (Number.MAX_SAFE_INTEGER)
+//_log:</div><p>To remedy this, all numbers (which can be large) are stored and manipulated as <a href="/v5/api/utils/bignumber/">Big Numbers</a>.</p>
 
 <p>The functions <a href="/v5/api/utils/display-logic/#utils-parseEther">parseEther( etherString )</a> and <a href="/v5/api/utils/display-logic/#utils-formatEther">formatEther( wei )</a> can be used to convert between string representations, which are displayed to or entered by the user and Big Number representations which can have mathematical operations handled safely.</p>
 
@@ -187,7 +199,7 @@ a.mul(b);
         <div class="nav previous"><a href="/v5/api/utils/address/"><span class="arrow">&larr;</span>Addresses</a></div>
         <div class="nav next"><a href="/v5/api/utils/bytes/">Byte Manipulation<span class="arrow">&rarr;</span></a></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on February 8, 2021, 3:25pm.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on July 25, 2021, 2:52pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
     <!--EXTRASCRIPT-->

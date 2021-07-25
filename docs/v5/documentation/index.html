@@ -12,7 +12,7 @@
   <body>
     <div class="sidebar">
       <div class="header">
-        <div class="logo"><a href="/v5/"><div class="image"></div><div class="name">ethers</div><div class="version">v5.0</div></a></div>
+        <div class="logo"><a href="/v5/"><div class="image"></div><div class="name">ethers</div><div class="version">v5.3</div></a></div>
         <div class="search"><form action="/v5/search/" method="GET"><input name="search" id="search" /></form><span class="search-icon">&#9906;</span></div>
       </div>
       <div class="toc"><div>
@@ -184,41 +184,45 @@ is an [Internal Link](some-link).
 This is a self-titled link [[https://ethereumorg]] and this
 [[some-link]] will use the title from its directives value.</div><a name="flatworm--code"></a><a name="flatworm--flatworm--code"></a><h2 class="show-anchors"><div>Code<div class="anchors"><a class="self" href="/v5/documentation/#flatworm--code"></a></div></div></h2><p>The code directive creates a monospace, contained block useful for displaying code samples.</p>
 
-<a name="flatworm--code-eval"></a><a name="flatworm--flatworm--code--flatworm--code-eval"></a><h3 class="show-anchors"><div>JavaScript Evaluation<div class="anchors"><a class="self" href="/v5/documentation/#flatworm--code-eval"></a></div></div></h3><p>For JavaScript files, the file is executed with some simple substitution.</p>
+<a name="flatworm--code-eval"></a><a name="flatworm--flatworm--code--flatworm--code-eval"></a><h3 class="show-anchors"><div>JavaScript Evaluation<div class="anchors"><a class="self" href="/v5/documentation/#flatworm--code-eval"></a></div></div></h3><p>For JavaScript files, the file is transpiled and executed in a VM, allowiung output (or exceptions) of blocks to be included in the fragment output.</p>
 
-<p>A bare <code class="inline">//!</code> on a line is replaced with the result of the last statement. Building will fail if an error is thrown.</p>
+<p>The entire <b>code fragment</b> source is included in an async IIFE, whick means <code class="inline">await</code> is allowed, and several special comment directives are allowed.</p>
 
-<p>A bare <code class="inline">//!error</code> is replaced with the throw error. Building will fail if an error is not thrown.</p>
+<p>A <code class="inline">//_hide:</code> will include any following code directly into the output, but will not include it in the generated output for the fragment.</p>
 
-<p>Also any code included between the lines <b><code class="inline">// &lt;hide&gt;</code></b> and <b><code class="inline">// &lt;/hide&gt;</code></b> will be omitted from the output, which can be used to setup variables.</p>
+<p>A <code class="inline">//_log:</code> will include the value of any following expression in the output, prefixed with a <code class="inline">// </code>. Renderers will mark output in different style if possible.</p>
+
+<p>A <code class="inline">//_result:</code> will begin a block, assigning the contents to <code class="inline">_</code>. The block can be ended with a <code class="inline">//_log:</code> or <code class="inline">//_null:</code>, if no value is given to log, then <code class="inline">_</code> is assumed. If an error occurs, generation fails.</p>
+
+<p>A <code class="inline">//_throws:</code> will begin a block, which is expected to throw assigning the error to <code class="inline">_</code>. The block can be ended with a <code class="inline">//_log:</code> or <code class="inline">//_null:</code>, if no value is given to log, then <code class="inline">_</code> is assumed. If an error do not occur, generation fails.</p>
 
 <div class="code-title"><div>Code Evaluation Example</div></div><div class="code">_code: Result of Code Example  @lang&lt;javascript&gt;
 
-// &lt;hide&gt;
-const url = require("url");
-// &lt;/hide&gt;
+//_hide: const url = require("url");
 
+//_result:
 url.parse("https://www.ricmoo.com/").protocol
-//!
+//_log:
 
+//_throws:
 url.parse(45)
-//! error
+//_log:
 
 // You want to assign (doesn't emit eval) AND display the value
 const foo = 4 + 5;
-// &lt;hide&gt;
-foo
-// &lt;/hide&gt;
-//!</div><div class="code-title"><div>Result of Code Example</div></div><div class="code">url.parse("https://www.ricmoo.com/").protocol
-<span class="result ok">// 'https:'
-</span>
+//_log: foo</div><div class="code-title"><div>Result of Code Example</div></div><div class="code">//_hide: const url = require("url");
+
+//_result:
+url.parse("https://www.ricmoo.com/").protocol
+//_log:
+
+//_throws:
 url.parse(45)
-<span class="result error">// Error: The "url" argument must be of type string. Received type number (45)
-</span>
-<span class="comment">// You want to assign (doesn't emit eval) AND display the value
-</span>const foo = 4 + 5;
-<span class="result ok">// 9
-</span></div><a name="flatworm--flatworm--code--languages"></a><h3 class="show-anchors"><div>Languages<div class="anchors"><a class="self" href="/v5/documentation/#flatworm--flatworm--code--languages"></a></div></div></h3><p>The language can be specified using the <a href="/v5/documentation/#flatworm--ext-lang">@lang extension</a>.</p>
+//_log:
+
+// You want to assign (doesn't emit eval) AND display the value
+const foo = 4 + 5;
+//_log: foo</div><a name="flatworm--flatworm--code--languages"></a><h3 class="show-anchors"><div>Languages<div class="anchors"><a class="self" href="/v5/documentation/#flatworm--flatworm--code--languages"></a></div></div></h3><p>The language can be specified using the <a href="/v5/documentation/#flatworm--ext-lang">@lang extension</a>.</p>
 
 <table class="table minimal"><tr><td align="center"><b>Language</b></td><td align="center"><b>Notes</b></td><td class="fix">&nbsp;</td></tr><tr><td align="center">javascript</td><td align="left">Syntax highlights and <a href="/v5/documentation/#flatworm--code-eval">evaluates</a> the JavaScript</td><td class="fix">&nbsp;</td></tr><tr><td align="center">script</td><td align="left">Same as <code class="inline">javascript</code>, but does not evaluate the results</td><td class="fix">&nbsp;</td></tr><tr><td align="center">shell</td><td align="left">Shell scripts or command-line</td><td class="fix">&nbsp;</td></tr><tr><td align="center">text</td><td align="left">Plain text with no syntax highlighting</td><td class="fix">&nbsp;</td></tr></table><a name="flatworm--table"></a><a name="flatworm--flatworm--table"></a><h2 class="show-anchors"><div>Tables<div class="anchors"><a class="self" href="/v5/documentation/#flatworm--table"></a></div></div></h2><p>The table directive consumes the entire body up until the next directive. To terminate a table early to begin a text block, use a <b>_null:</b> directive.</p>
 
@@ -291,7 +295,7 @@ $bottom: This just represents an example of
         <div class="nav previous"><a href="/v5/other-resources/"><span class="arrow">&larr;</span>Other Resources</a></div>
         <div class="nav next"><a href="/v5/license/">License and Copyright<span class="arrow">&rarr;</span></a></div>
       </div>
-      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on February 8, 2021, 3:25pm.</div>
+      <div class="copyright">The content of this site is licensed under the <a href="https://choosealicense.com/licenses/cc-by-4.0/">Creative Commons License</a>. Generated on July 25, 2021, 2:52pm.</div>
     </div>
     <script src="/v5/static/script.js" type="text/javascript"></script>
     <!--EXTRASCRIPT-->

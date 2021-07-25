@@ -20,8 +20,24 @@ Generates a brain wallet, with a slightly improved experience, in which the gene
 Generate a brain wallet which is compatible with the ethers v3 and earlier.
 
 
+```
+// Node
+const { BrainWallet } = require("@ethersproject/experimental");
+
+// ESM/TypeScript
+import { BrainWallet } from "@ethersproject/experimental";
+```
+
 EIP1193Bridge
 -------------
+
+```
+// Node
+const { Eip1193Bridge } = require("@ethersproject/experimental");
+
+// ESM/TypeScript
+import { Eip1193Bridge } from "@ethersproject/experimental";
+```
 
 NonceManager
 ------------
@@ -54,4 +70,12 @@ Bump the current transaction count (nonce) by *count*.
 
 This may be useful in interacting with the signer outside of using this class.
 
+
+```
+// Node
+const { NonceManager } = require("@ethersproject/experimental");
+
+// ESM/TypeScript
+import { NonceManager } from "@ethersproject/experimental";
+```
 

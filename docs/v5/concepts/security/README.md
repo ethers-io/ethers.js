@@ -7,6 +7,15 @@ Documentation: [html](https://docs.ethers.io/)
 Security
 ========
 
+Side-Channel Attacks
+--------------------
+
+### Released Data (Strings, Uint8Arrays, Buffers)
+
+### Timing Attack
+
+### General Concerns
+
 Key Derivation Functions
 ------------------------
 

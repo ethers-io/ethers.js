@@ -37,6 +37,29 @@ Some services also provide additional paid features, which are only available wh
 Networks
 --------
 
+#### *ethers* . *providers* . **getNetwork**( aNetworkish ) => *[Network](/v5/api/providers/types/#providers-Network)*
+
+Returns the full [Network](/v5/api/providers/types/#providers-Network) for the given standard *aNetworkish* [Networkish](/v5/api/providers/types/#providers-Networkish).
+
+This is useful for functions and classes which wish to accept [Networkish](/v5/api/providers/types/#providers-Networkish) as an input parameter.
+
+
+```javascript
+//_hide: const getNetwork = ethers.providers.getNetwork;
+
+// By Chain Name
+//_result:
+getNetwork("homestead");
+//_hide: delete _._defaultProvider;
+//_log:
+
+// By Chain ID
+//_result:
+getNetwork(1);
+//_hide: delete _._defaultProvider;
+//_log:
+```
+
 ### Custom ENS Contract
 
 ```
@@ -82,4 +105,5 @@ Provider Documentation
   * [Block](types)
   * [Events and Logs](types)
   * [Transactions](types)
+  * [Access Lists](types)
 
