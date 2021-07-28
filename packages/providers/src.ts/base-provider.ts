@@ -735,6 +735,25 @@ export class BaseProvider extends Provider implements EnsProvider {
             this._lastBlockNumber = blockNumber - 1;
         }
 
+        this.updateTransactionEvents(runners, blockNumber)
+
+        this._lastBlockNumber = blockNumber;
+
+        // Once all events for this loop have been processed, emit "didPoll"
+        Promise.all(runners).then(() => {
+            this.emit("didPoll", pollId);
+        }).catch((error) => { this.emit("error", error); });
+
+        return;
+    }
+
+    // Break out this method as an overrideable method.
+    // By making this overridable, the InfuraProvider can override the 'filter' case of getLogs
+    // to use a Filter ID instead.
+    //
+    // There is likely another place we will need to update in order to use the FilterByFilterId class
+    // and setup the filters with Infura.
+    updateTransactionEvents(runners: Array<Promise<void>>, blockNumber?: number) {
         // Find all transaction hashes we are waiting on
         this._events.forEach((event) => {
             switch (event.type) {
@@ -771,15 +790,6 @@ export class BaseProvider extends Provider implements EnsProvider {
                 }
             }
         });
-
-        this._lastBlockNumber = blockNumber;
-
-        // Once all events for this loop have been processed, emit "didPoll"
-        Promise.all(runners).then(() => {
-            this.emit("didPoll", pollId);
-        }).catch((error) => { this.emit("error", error); });
-
-        return;
     }
 
     // Deprecated; do not use this
@@ -1492,6 +1502,32 @@ export class BaseProvider extends Provider implements EnsProvider {
     async getEtherPrice(): Promise<number> {
         await this.getNetwork();
         return this.perform("getEtherPrice", { });
+    }
+
+    async newFilter(filter: Filter): Promise<string> {
+        await this.getNetwork();
+        const params = await resolveProperties({ filter: this._getFilter(filter) });
+        return this.perform("newFilter", params)
+    }
+
+    /**
+     * Assumes that Filter Changes are Logs only. At the current time, ethers does not support newBlockFilter or pendingTransactionFilter.
+     * Both of those filters will cause the output to only output the respective hashes instead of an array of Log objects
+     *
+     * @param filterId - the filter ID returned by newFilter
+     * @returns Promise<Array<Log>>
+     */
+    async getFilterChanges(filterId: string): Promise<Array<Log>> {
+        await this.getNetwork();
+        if (!filterId) {
+            logger.throwArgumentError("Invalid filterId", "filterId", filterId);
+        }
+        const logs: Array<Log> = await this.perform("getFilterChange", [ filterId ])
+
+        logs.forEach((log) => {
+            if (log.removed == null) { log.removed = false; }
+        });
+        return Formatter.arrayOf(this.formatter.filterLog.bind(this.formatter))(logs);
     }
 
     async _getBlockTag(blockTag: BlockTag | Promise<BlockTag>): Promise<BlockTag> {

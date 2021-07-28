@@ -139,6 +139,10 @@ export interface FilterByBlockHash extends EventFilter {
     blockHash?: string;
 }
 
+export interface FilterByFilterId extends EventFilter {
+    filterId?: String
+}
+
 //export type CallTransactionable = {
 //    call(transaction: TransactionRequest): Promise<TransactionResponse>;
 //};

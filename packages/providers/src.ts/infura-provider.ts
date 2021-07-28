@@ -3,15 +3,19 @@
 import { Network, Networkish } from "@ethersproject/networks";
 import { defineReadOnly } from "@ethersproject/properties";
 import { ConnectionInfo } from "@ethersproject/web";
+import { FilterByFilterId, Log } from '@ethersproject/abstract-provider'
 
+import { Event } from './base-provider';
 import { WebSocketProvider } from "./websocket-provider";
 import { CommunityResourcable, showThrottleMessage } from "./formatter";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
+
 const logger = new Logger(version);
 
 import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
+import { logicalExpression } from "@babel/types";
 
 
 const defaultProjectId = "84842078b09946638c03157f83405213"
@@ -46,6 +50,12 @@ export class InfuraWebSocketProvider extends WebSocketProvider implements Commun
 export class InfuraProvider extends UrlJsonRpcProvider {
     readonly projectId: string;
     readonly projectSecret: string;
+    readonly installedFilters: { [key: string]: FilterByFilterId };
+
+    constructor(network?: Networkish, apiKey?: any) {
+        super(network, apiKey);
+        defineReadOnly(this, "installedFilters", {});
+    }
 
     static getWebSocketProvider(network?: Networkish, apiKey?: any): InfuraWebSocketProvider {
         return new InfuraWebSocketProvider(network, apiKey);
@@ -133,5 +143,61 @@ export class InfuraProvider extends UrlJsonRpcProvider {
 
     isCommunityResource(): boolean {
         return (this.projectId === defaultProjectId);
+    }
+
+    // Override this method to work on filters
+    updateTransactionEvents(runners: Array<Promise<void>>, blockNumber?: number) {
+        // Find all transaction hashes we are waiting on
+        this._events.forEach((event) => {
+            switch (event.type) {
+                case "tx": {
+                    const hash = event.hash;
+                    let runner = this.getTransactionReceipt(hash).then((receipt) => {
+                        if (!receipt || receipt.blockNumber == null) { return null; }
+                        this._emitted["t:" + hash] = receipt.blockNumber;
+                        this.emit(hash, receipt);
+                        return null;
+                    }).catch((error: Error) => { this.emit("error", error); });
+
+                    runners.push(runner);
+
+                    break;
+                }
+
+                case "filter": {
+                    const filter: FilterByFilterId = this.checkInstalledFilters(event);
+
+                    const runner = this.getFilterChanges(filter.filterId).then((logs) => {
+                        if (logs.length === 0) { return; }
+
+                        logs.forEach((log: Log) => {
+                            this._emitted["b:" + log.blockHash] = log
+                            this._emitted["b:" + log.blockHash] = log.blockNumber;
+                            this._emitted["t:" + log.transactionHash] = log.blockNumber;
+                            this.emit(event.filter, log);
+                        });
+                    }).catch((error: Error) => { this.emit("error", error); });
+
+                    runners.push(runner);
+                    break;
+                }
+            }
+        });
+    }
+
+    private async checkInstalledFilters(event: Event): Promise<FilterByFilterId> {
+        const filter = this.installedFilters[event.tag];
+
+        // Create the filter if it doesn't already exist
+        if (!filter) {
+            const filterResult =  await this.newFilter(event.filter.topics)
+            this.installedFilters[event.tag] = {
+                topics: event.filter.topics,
+                address: event.filter.address,
+                filterId: filterResult
+            };
+        }
+
+        return this.installedFilters[event.tag]
     }
 }
