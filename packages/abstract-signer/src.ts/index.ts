@@ -119,13 +119,11 @@ export abstract class Signer {
     }
 
     // Populates all fields in a transaction, signs it and sends it to the network
-    sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse> {
+    async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse> {
         this._checkProvider("sendTransaction");
-        return this.populateTransaction(transaction).then((tx) => {
-            return this.signTransaction(tx).then((signedTx) => {
-                return this.provider.sendTransaction(signedTx);
-            });
-        });
+        const tx = await this.populateTransaction(transaction);
+        const signedTx = await this.signTransaction(tx);
+        return await this.provider.sendTransaction(signedTx);
     }
 
     async getChainId(): Promise<number> {
@@ -209,6 +207,9 @@ export abstract class Signer {
                 }
                 return address;
             });
+
+            // Prevent this error from causing an UnhandledPromiseException
+            tx.to.catch((error) => {  });
         }
 
         // Do not allow mixing pre-eip-1559 and eip-1559 proerties
