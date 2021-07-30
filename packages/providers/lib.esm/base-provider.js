@@ -1090,7 +1090,7 @@ export class BaseProvider extends Provider {
                 }
                 tx[key] = Promise.resolve(values[key]).then((v) => (v ? this._getAddress(v) : null));
             });
-            ["gasLimit", "gasPrice", "value"].forEach((key) => {
+            ["gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "value"].forEach((key) => {
                 if (values[key] == null) {
                     return;
                 }

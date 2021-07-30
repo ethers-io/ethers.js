@@ -3,6 +3,14 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.4.3 (2021-07-29 23:26)
+--------------------------------
+
+  - Fixed JsonRpcProvider for pre-EIP-2930 chains. ([#1766](https://github.com/ethers-io/ethers.js/issues/1766); [7274cd0](https://github.com/ethers-io/ethers.js/commit/7274cd06cf3f6f31c6df3fd6636706d8536b7ee2))
+  - Forward some missing EIP-1559 fields to call and estimateGas. ([#1766](https://github.com/ethers-io/ethers.js/issues/1766); [be3854e](https://github.com/ethers-io/ethers.js/commit/be3854e648fdef0478db8a64c26be6d9e90cf453))
+  - Fixed possible UnhandledPromiseException for bad ENS names. ([63f8b28](https://github.com/ethers-io/ethers.js/commit/63f8b2822318d1e0fcc41f4662feb6e5ae338f3d))
+  - Prevent overriding value for non-payble constructors. ([#1785](https://github.com/ethers-io/ethers.js/issues/1785); [593b488](https://github.com/ethers-io/ethers.js/commit/593b4886ff607d00d656b8131b843933eb48838e))
+
 ethers/v5.4.2 (2021-07-23 17:22)
 --------------------------------
 

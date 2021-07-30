@@ -9999,7 +9999,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abstract-signer/5.4.0";
+	exports.version = "abstract-signer/5.4.1";
 
 	});
 
@@ -10144,11 +10144,21 @@
 	    };
 	    // Populates all fields in a transaction, signs it and sends it to the network
 	    Signer.prototype.sendTransaction = function (transaction) {
-	        var _this = this;
-	        this._checkProvider("sendTransaction");
-	        return this.populateTransaction(transaction).then(function (tx) {
-	            return _this.signTransaction(tx).then(function (signedTx) {
-	                return _this.provider.sendTransaction(signedTx);
+	        return __awaiter(this, void 0, void 0, function () {
+	            var tx, signedTx;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        this._checkProvider("sendTransaction");
+	                        return [4 /*yield*/, this.populateTransaction(transaction)];
+	                    case 1:
+	                        tx = _a.sent();
+	                        return [4 /*yield*/, this.signTransaction(tx)];
+	                    case 2:
+	                        signedTx = _a.sent();
+	                        return [4 /*yield*/, this.provider.sendTransaction(signedTx)];
+	                    case 3: return [2 /*return*/, _a.sent()];
+	                }
 	            });
 	        });
 	    };
@@ -10271,6 +10281,8 @@
 	                                    }
 	                                });
 	                            }); });
+	                            // Prevent this error from causing an UnhandledPromiseException
+	                            tx.to.catch(function (error) { });
 	                        }
 	                        hasEip1559 = (tx.maxFeePerGas != null || tx.maxPriorityFeePerGas != null);
 	                        if (tx.gasPrice != null && (tx.type === 2 || hasEip1559)) {
@@ -14692,7 +14704,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "contracts/5.4.0";
+	exports.version = "contracts/5.4.1";
 
 	});
 
@@ -15786,6 +15798,15 @@
 	            }
 	            logger.throwError("cannot override " + key, lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
 	        });
+	        if (tx.value) {
+	            var value = lib$2.BigNumber.from(tx.value);
+	            if (!value.isZero() && !this.interface.deploy.payable) {
+	                logger.throwError("non-payable constructor cannot override value", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                    operation: "overrides.value",
+	                    value: tx.value
+	                });
+	            }
+	        }
 	        // Make sure the call matches the constructor signature
 	        logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
 	        // Set the data to the bytecode + the encoded constructor arguments
@@ -20602,7 +20623,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.4.2";
+	exports.version = "providers/5.4.3";
 
 	});
 
@@ -22445,7 +22466,7 @@
 	                            }
 	                            tx[key] = Promise.resolve(values[key]).then(function (v) { return (v ? _this._getAddress(v) : null); });
 	                        });
-	                        ["gasLimit", "gasPrice", "value"].forEach(function (key) {
+	                        ["gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "value"].forEach(function (key) {
 	                            if (values[key] == null) {
 	                                return;
 	                            }
@@ -23712,23 +23733,38 @@
 	    };
 	    JsonRpcProvider.prototype.perform = function (method, params) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var args, error_4;
+	            var tx, feeData, args, error_4;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
+	                        if (!(method === "call" || method === "estimateGas")) return [3 /*break*/, 2];
+	                        tx = params.transaction;
+	                        if (!(tx && tx.type != null && lib$2.BigNumber.from(tx.type).isZero())) return [3 /*break*/, 2];
+	                        if (!(tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null)) return [3 /*break*/, 2];
+	                        return [4 /*yield*/, this.getFeeData()];
+	                    case 1:
+	                        feeData = _a.sent();
+	                        if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
+	                            // Network doesn't know about EIP-1559 (and hence type)
+	                            params = lib$3.shallowCopy(params);
+	                            params.transaction = lib$3.shallowCopy(tx);
+	                            delete params.transaction.type;
+	                        }
+	                        _a.label = 2;
+	                    case 2:
 	                        args = this.prepareRequest(method, params);
 	                        if (args == null) {
 	                            logger.throwError(method + " not implemented", lib.Logger.errors.NOT_IMPLEMENTED, { operation: method });
 	                        }
-	                        _a.label = 1;
-	                    case 1:
-	                        _a.trys.push([1, 3, , 4]);
-	                        return [4 /*yield*/, this.send(args[0], args[1])];
-	                    case 2: return [2 /*return*/, _a.sent()];
+	                        _a.label = 3;
 	                    case 3:
+	                        _a.trys.push([3, 5, , 6]);
+	                        return [4 /*yield*/, this.send(args[0], args[1])];
+	                    case 4: return [2 /*return*/, _a.sent()];
+	                    case 5:
 	                        error_4 = _a.sent();
 	                        return [2 /*return*/, checkError(method, error_4, params)];
-	                    case 4: return [2 /*return*/];
+	                    case 6: return [2 /*return*/];
 	                }
 	            });
 	        });
@@ -26981,7 +27017,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.4.2";
+	exports.version = "ethers/5.4.3";
 
 	});
 

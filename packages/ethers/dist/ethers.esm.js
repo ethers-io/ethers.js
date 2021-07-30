@@ -8886,7 +8886,7 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.4.0";
+const version$a = "abstract-signer/5.4.1";
 
 "use strict";
 var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8948,11 +8948,11 @@ class Signer {
     }
     // Populates all fields in a transaction, signs it and sends it to the network
     sendTransaction(transaction) {
-        this._checkProvider("sendTransaction");
-        return this.populateTransaction(transaction).then((tx) => {
-            return this.signTransaction(tx).then((signedTx) => {
-                return this.provider.sendTransaction(signedTx);
-            });
+        return __awaiter$3(this, void 0, void 0, function* () {
+            this._checkProvider("sendTransaction");
+            const tx = yield this.populateTransaction(transaction);
+            const signedTx = yield this.signTransaction(tx);
+            return yield this.provider.sendTransaction(signedTx);
         });
     }
     getChainId() {
@@ -9034,6 +9034,8 @@ class Signer {
                     }
                     return address;
                 }));
+                // Prevent this error from causing an UnhandledPromiseException
+                tx.to.catch((error) => { });
             }
             // Do not allow mixing pre-eip-1559 and eip-1559 proerties
             const hasEip1559 = (tx.maxFeePerGas != null || tx.maxPriorityFeePerGas != null);
@@ -13448,7 +13450,7 @@ function parse(rawTransaction) {
     });
 }
 
-const version$d = "contracts/5.4.0";
+const version$d = "contracts/5.4.1";
 
 "use strict";
 var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -14370,6 +14372,15 @@ class ContractFactory {
             }
             logger$i.throwError("cannot override " + key, Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
         });
+        if (tx.value) {
+            const value = BigNumber.from(tx.value);
+            if (!value.isZero() && !this.interface.deploy.payable) {
+                logger$i.throwError("non-payable constructor cannot override value", Logger.errors.UNSUPPORTED_OPERATION, {
+                    operation: "overrides.value",
+                    value: tx.value
+                });
+            }
+        }
         // Make sure the call matches the constructor signature
         logger$i.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
         // Set the data to the bytecode + the encoded constructor arguments
@@ -18299,7 +18310,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.4.2";
+const version$m = "providers/5.4.3";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -19809,7 +19820,7 @@ class BaseProvider extends Provider {
                 }
                 tx[key] = Promise.resolve(values[key]).then((v) => (v ? this._getAddress(v) : null));
             });
-            ["gasLimit", "gasPrice", "value"].forEach((key) => {
+            ["gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "value"].forEach((key) => {
                 if (values[key] == null) {
                     return;
                 }
@@ -20733,6 +20744,23 @@ class JsonRpcProvider extends BaseProvider {
     }
     perform(method, params) {
         return __awaiter$a(this, void 0, void 0, function* () {
+            // Legacy networks do not like the type field being passed along (which
+            // is fair), so we delete type if it is 0 and a non-EIP-1559 network
+            if (method === "call" || method === "estimateGas") {
+                const tx = params.transaction;
+                if (tx && tx.type != null && BigNumber.from(tx.type).isZero()) {
+                    // If there are no EIP-1559 properties, it might be non-EIP-a559
+                    if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
+                        const feeData = yield this.getFeeData();
+                        if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
+                            // Network doesn't know about EIP-1559 (and hence type)
+                            params = shallowCopy(params);
+                            params.transaction = shallowCopy(tx);
+                            delete params.transaction.type;
+                        }
+                    }
+                }
+            }
             const args = this.prepareRequest(method, params);
             if (args == null) {
                 logger$u.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });
@@ -23161,7 +23189,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.4.2";
+const version$o = "ethers/5.4.3";
 
 "use strict";
 const logger$H = new Logger(version$o);

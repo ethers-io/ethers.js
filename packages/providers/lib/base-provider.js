@@ -1380,7 +1380,7 @@ var BaseProvider = /** @class */ (function (_super) {
                             }
                             tx[key] = Promise.resolve(values[key]).then(function (v) { return (v ? _this._getAddress(v) : null); });
                         });
-                        ["gasLimit", "gasPrice", "value"].forEach(function (key) {
+                        ["gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "value"].forEach(function (key) {
                             if (values[key] == null) {
                                 return;
                             }

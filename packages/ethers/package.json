@@ -4,14 +4,14 @@
   "dependencies": {
     "@ethersproject/abi": "5.4.0",
     "@ethersproject/abstract-provider": "5.4.0",
-    "@ethersproject/abstract-signer": "5.4.0",
+    "@ethersproject/abstract-signer": "5.4.1",
     "@ethersproject/address": "5.4.0",
     "@ethersproject/base64": "5.4.0",
     "@ethersproject/basex": "5.4.0",
     "@ethersproject/bignumber": "5.4.1",
     "@ethersproject/bytes": "5.4.0",
     "@ethersproject/constants": "5.4.0",
-    "@ethersproject/contracts": "5.4.0",
+    "@ethersproject/contracts": "5.4.1",
     "@ethersproject/hash": "5.4.0",
     "@ethersproject/hdnode": "5.4.0",
     "@ethersproject/json-wallets": "5.4.0",
@@ -20,7 +20,7 @@
     "@ethersproject/networks": "5.4.1",
     "@ethersproject/pbkdf2": "5.4.0",
     "@ethersproject/properties": "5.4.0",
-    "@ethersproject/providers": "5.4.2",
+    "@ethersproject/providers": "5.4.3",
     "@ethersproject/random": "5.4.0",
     "@ethersproject/rlp": "5.4.0",
     "@ethersproject/sha2": "5.4.0",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x101342a457ebe4f40aab8c65646df04b75c020779097a1ae6795469ebafdb0bb",
+  "tarballHash": "0x10c045b45834f583f885a0d05f6b28d82f5131608483856585b80961a9171c32",
   "types": "./lib/index.d.ts",
-  "version": "5.4.2"
+  "version": "5.4.3"
 }
