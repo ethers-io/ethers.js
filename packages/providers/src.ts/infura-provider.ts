@@ -15,7 +15,6 @@ import { version } from "./_version";
 const logger = new Logger(version);
 
 import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
-import { logicalExpression } from "@babel/types";
 
 
 const defaultProjectId = "84842078b09946638c03157f83405213"
@@ -165,20 +164,20 @@ export class InfuraProvider extends UrlJsonRpcProvider {
                 }
 
                 case "filter": {
-                    const filter: FilterByFilterId = this.checkInstalledFilters(event);
+                    this.checkInstalledFilters(event).then((filter: FilterByFilterId) => {
+                        const runner = this.getFilterChanges(filter.filterId).then((logs) => {
+                            if (logs.length === 0) { return; }
 
-                    const runner = this.getFilterChanges(filter.filterId).then((logs) => {
-                        if (logs.length === 0) { return; }
+                            logs.forEach((log: Log) => {
+                                this._emitted["b:" + log.blockHash] = log.blockNumber;
+                                this._emitted["t:" + log.transactionHash] = log.blockNumber;
+                                this.emit(event.filter, log);
+                            });
+                        }).catch((error: Error) => { this.emit("error", error); });
 
-                        logs.forEach((log: Log) => {
-                            this._emitted["b:" + log.blockHash] = log
-                            this._emitted["b:" + log.blockHash] = log.blockNumber;
-                            this._emitted["t:" + log.transactionHash] = log.blockNumber;
-                            this.emit(event.filter, log);
-                        });
-                    }).catch((error: Error) => { this.emit("error", error); });
+                        runners.push(runner);
+                    });
 
-                    runners.push(runner);
                     break;
                 }
             }
@@ -190,7 +189,7 @@ export class InfuraProvider extends UrlJsonRpcProvider {
 
         // Create the filter if it doesn't already exist
         if (!filter) {
-            const filterResult =  await this.newFilter(event.filter.topics)
+            const filterResult =  await this.newFilter(event.filter)
             this.installedFilters[event.tag] = {
                 topics: event.filter.topics,
                 address: event.filter.address,

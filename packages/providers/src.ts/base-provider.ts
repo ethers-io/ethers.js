@@ -1522,7 +1522,7 @@ export class BaseProvider extends Provider implements EnsProvider {
         if (!filterId) {
             logger.throwArgumentError("Invalid filterId", "filterId", filterId);
         }
-        const logs: Array<Log> = await this.perform("getFilterChange", [ filterId ])
+        const logs: Array<Log> = await this.perform("getFilterChanges", [ filterId ])
 
         logs.forEach((log) => {
             if (log.removed == null) { log.removed = false; }

@@ -524,7 +524,7 @@ export class JsonRpcProvider extends BaseProvider {
                 }
                 return [ "eth_newFilter", [ params.filter ] ];
 
-            case "getFilterLogs":
+            case "getFilterChanges":
                 return [ "eth_getFilterChanges", [ params.filterId ] ];
 
             default:
