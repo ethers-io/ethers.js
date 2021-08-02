@@ -747,12 +747,9 @@ export class BaseProvider extends Provider implements EnsProvider {
         return;
     }
 
-    // Break out this method as an overrideable method.
-    // By making this overridable, the InfuraProvider can override the 'filter' case of getLogs
-    // to use a Filter ID instead.
-    //
-    // There is likely another place we will need to update in order to use the FilterByFilterId class
-    // and setup the filters with Infura.
+     // Break out this method as an overrideable method.
+     // By making this overridable, an implementing provider can override implementation
+     // details of how the api calls are made against the upstream nodes.
     updateTransactionEvents(runners: Array<Promise<void>>, blockNumber?: number) {
         // Find all transaction hashes we are waiting on
         this._events.forEach((event) => {
