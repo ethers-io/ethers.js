@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { defineReadOnly } from "@ethersproject/properties";
 import { WebSocketProvider } from "./websocket-provider";
 import { showThrottleMessage } from "./formatter";
@@ -27,6 +36,10 @@ export class InfuraWebSocketProvider extends WebSocketProvider {
     }
 }
 export class InfuraProvider extends UrlJsonRpcProvider {
+    constructor(network, apiKey) {
+        super(network, apiKey);
+        defineReadOnly(this, "installedFilters", {});
+    }
     static getWebSocketProvider(network, apiKey) {
         return new InfuraWebSocketProvider(network, apiKey);
     }
@@ -102,6 +115,58 @@ export class InfuraProvider extends UrlJsonRpcProvider {
     }
     isCommunityResource() {
         return (this.projectId === defaultProjectId);
+    }
+    // Override this method to work on filters
+    updateTransactionEvents(runners, blockNumber) {
+        // Find all transaction hashes we are waiting on
+        this._events.forEach((event) => {
+            switch (event.type) {
+                case "tx": {
+                    const hash = event.hash;
+                    let runner = this.getTransactionReceipt(hash).then((receipt) => {
+                        if (!receipt || receipt.blockNumber == null) {
+                            return null;
+                        }
+                        this._emitted["t:" + hash] = receipt.blockNumber;
+                        this.emit(hash, receipt);
+                        return null;
+                    }).catch((error) => { this.emit("error", error); });
+                    runners.push(runner);
+                    break;
+                }
+                case "filter": {
+                    this.checkInstalledFilters(event).then((filter) => {
+                        const runner = this.getFilterChanges(filter.filterId).then((logs) => {
+                            if (logs.length === 0) {
+                                return;
+                            }
+                            logs.forEach((log) => {
+                                this._emitted["b:" + log.blockHash] = log.blockNumber;
+                                this._emitted["t:" + log.transactionHash] = log.blockNumber;
+                                this.emit(event.filter, log);
+                            });
+                        }).catch((error) => { this.emit("error", error); });
+                        runners.push(runner);
+                    });
+                    break;
+                }
+            }
+        });
+    }
+    checkInstalledFilters(event) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const filter = this.installedFilters[event.tag];
+            // Create the filter if it doesn't already exist
+            if (!filter) {
+                const filterResult = yield this.newFilter(event.filter);
+                this.installedFilters[event.tag] = {
+                    topics: event.filter.topics,
+                    address: event.filter.address,
+                    filterId: filterResult
+                };
+            }
+            return this.installedFilters[event.tag];
+        });
     }
 }
 //# sourceMappingURL=infura-provider.js.map

@@ -594,47 +594,56 @@ export class BaseProvider extends Provider {
             if (this._lastBlockNumber === -2) {
                 this._lastBlockNumber = blockNumber - 1;
             }
-            // Find all transaction hashes we are waiting on
-            this._events.forEach((event) => {
-                switch (event.type) {
-                    case "tx": {
-                        const hash = event.hash;
-                        let runner = this.getTransactionReceipt(hash).then((receipt) => {
-                            if (!receipt || receipt.blockNumber == null) {
-                                return null;
-                            }
-                            this._emitted["t:" + hash] = receipt.blockNumber;
-                            this.emit(hash, receipt);
-                            return null;
-                        }).catch((error) => { this.emit("error", error); });
-                        runners.push(runner);
-                        break;
-                    }
-                    case "filter": {
-                        const filter = event.filter;
-                        filter.fromBlock = this._lastBlockNumber + 1;
-                        filter.toBlock = blockNumber;
-                        const runner = this.getLogs(filter).then((logs) => {
-                            if (logs.length === 0) {
-                                return;
-                            }
-                            logs.forEach((log) => {
-                                this._emitted["b:" + log.blockHash] = log.blockNumber;
-                                this._emitted["t:" + log.transactionHash] = log.blockNumber;
-                                this.emit(filter, log);
-                            });
-                        }).catch((error) => { this.emit("error", error); });
-                        runners.push(runner);
-                        break;
-                    }
-                }
-            });
+            this.updateTransactionEvents(runners, blockNumber);
             this._lastBlockNumber = blockNumber;
             // Once all events for this loop have been processed, emit "didPoll"
             Promise.all(runners).then(() => {
                 this.emit("didPoll", pollId);
             }).catch((error) => { this.emit("error", error); });
             return;
+        });
+    }
+    // Break out this method as an overrideable method.
+    // By making this overridable, the InfuraProvider can override the 'filter' case of getLogs
+    // to use a Filter ID instead.
+    //
+    // There is likely another place we will need to update in order to use the FilterByFilterId class
+    // and setup the filters with Infura.
+    updateTransactionEvents(runners, blockNumber) {
+        // Find all transaction hashes we are waiting on
+        this._events.forEach((event) => {
+            switch (event.type) {
+                case "tx": {
+                    const hash = event.hash;
+                    let runner = this.getTransactionReceipt(hash).then((receipt) => {
+                        if (!receipt || receipt.blockNumber == null) {
+                            return null;
+                        }
+                        this._emitted["t:" + hash] = receipt.blockNumber;
+                        this.emit(hash, receipt);
+                        return null;
+                    }).catch((error) => { this.emit("error", error); });
+                    runners.push(runner);
+                    break;
+                }
+                case "filter": {
+                    const filter = event.filter;
+                    filter.fromBlock = this._lastBlockNumber + 1;
+                    filter.toBlock = blockNumber;
+                    const runner = this.getLogs(filter).then((logs) => {
+                        if (logs.length === 0) {
+                            return;
+                        }
+                        logs.forEach((log) => {
+                            this._emitted["b:" + log.blockHash] = log.blockNumber;
+                            this._emitted["t:" + log.transactionHash] = log.blockNumber;
+                            this.emit(filter, log);
+                        });
+                    }).catch((error) => { this.emit("error", error); });
+                    runners.push(runner);
+                    break;
+                }
+            }
         });
     }
     // Deprecated; do not use this
@@ -1343,6 +1352,35 @@ export class BaseProvider extends Provider {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.getNetwork();
             return this.perform("getEtherPrice", {});
+        });
+    }
+    newFilter(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.getNetwork();
+            const params = yield resolveProperties({ filter: this._getFilter(filter) });
+            return this.perform("newFilter", params);
+        });
+    }
+    /**
+     * Assumes that Filter Changes are Logs only. At the current time, ethers does not support newBlockFilter or pendingTransactionFilter.
+     * Both of those filters will cause the output to only output the respective hashes instead of an array of Log objects
+     *
+     * @param filterId - the filter ID returned by newFilter
+     * @returns Promise<Array<Log>>
+     */
+    getFilterChanges(filterId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.getNetwork();
+            if (!filterId) {
+                logger.throwArgumentError("Invalid filterId", "filterId", filterId);
+            }
+            const logs = yield this.perform("getFilterChanges", { filterId });
+            logs.forEach((log) => {
+                if (log.removed == null) {
+                    log.removed = false;
+                }
+            });
+            return Formatter.arrayOf(this.formatter.filterLog.bind(this.formatter))(logs);
         });
     }
     _getBlockTag(blockTag) {

@@ -94,6 +94,9 @@ export interface Filter extends EventFilter {
 export interface FilterByBlockHash extends EventFilter {
     blockHash?: string;
 }
+export interface FilterByFilterId extends EventFilter {
+    filterId?: string;
+}
 export declare abstract class ForkEvent extends Description {
     readonly expiry: number;
     readonly _isForkEvent?: boolean;

@@ -1511,8 +1511,10 @@ export class BaseProvider extends Provider implements EnsProvider {
     }
 
     /**
-     * Assumes that Filter Changes are Logs only. At the current time, ethers does not support newBlockFilter or pendingTransactionFilter.
-     * Both of those filters will cause the output to only output the respective hashes instead of an array of Log objects
+     * Assumes that Filter Changes are Logs only. At the current time, this method does not
+     * support newBlockFilter or pendingTransactionFilter. Enabling either of these filters
+     * will cause the output to only contain the respective hashes instead of an array of
+     * Log objects
      *
      * @param filterId - the filter ID returned by newFilter
      * @returns Promise<Array<Log>>
@@ -1522,7 +1524,7 @@ export class BaseProvider extends Provider implements EnsProvider {
         if (!filterId) {
             logger.throwArgumentError("Invalid filterId", "filterId", filterId);
         }
-        const logs: Array<Log> = await this.perform("getFilterChanges", [ filterId ])
+        const logs: Array<Log> = await this.perform("getFilterChanges", { filterId })
 
         logs.forEach((log) => {
             if (log.removed == null) { log.removed = false; }

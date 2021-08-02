@@ -77,6 +77,7 @@ export declare class BaseProvider extends Provider implements EnsProvider {
     static getNetwork(network: Networkish): Network;
     _getInternalBlockNumber(maxAge: number): Promise<number>;
     poll(): Promise<void>;
+    updateTransactionEvents(runners: Array<Promise<void>>, blockNumber?: number): void;
     resetEventsBlock(blockNumber: number): void;
     get network(): Network;
     detectNetwork(): Promise<Network>;
@@ -117,6 +118,15 @@ export declare class BaseProvider extends Provider implements EnsProvider {
     getTransactionReceipt(transactionHash: string | Promise<string>): Promise<TransactionReceipt>;
     getLogs(filter: Filter | FilterByBlockHash | Promise<Filter | FilterByBlockHash>): Promise<Array<Log>>;
     getEtherPrice(): Promise<number>;
+    newFilter(filter: Filter): Promise<string>;
+    /**
+     * Assumes that Filter Changes are Logs only. At the current time, ethers does not support newBlockFilter or pendingTransactionFilter.
+     * Both of those filters will cause the output to only output the respective hashes instead of an array of Log objects
+     *
+     * @param filterId - the filter ID returned by newFilter
+     * @returns Promise<Array<Log>>
+     */
+    getFilterChanges(filterId: string): Promise<Array<Log>>;
     _getBlockTag(blockTag: BlockTag | Promise<BlockTag>): Promise<BlockTag>;
     getResolver(name: string): Promise<Resolver>;
     _getResolver(name: string): Promise<string>;

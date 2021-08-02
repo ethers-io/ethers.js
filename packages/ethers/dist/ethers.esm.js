@@ -19313,47 +19313,56 @@ class BaseProvider extends Provider {
             if (this._lastBlockNumber === -2) {
                 this._lastBlockNumber = blockNumber - 1;
             }
-            // Find all transaction hashes we are waiting on
-            this._events.forEach((event) => {
-                switch (event.type) {
-                    case "tx": {
-                        const hash = event.hash;
-                        let runner = this.getTransactionReceipt(hash).then((receipt) => {
-                            if (!receipt || receipt.blockNumber == null) {
-                                return null;
-                            }
-                            this._emitted["t:" + hash] = receipt.blockNumber;
-                            this.emit(hash, receipt);
-                            return null;
-                        }).catch((error) => { this.emit("error", error); });
-                        runners.push(runner);
-                        break;
-                    }
-                    case "filter": {
-                        const filter = event.filter;
-                        filter.fromBlock = this._lastBlockNumber + 1;
-                        filter.toBlock = blockNumber;
-                        const runner = this.getLogs(filter).then((logs) => {
-                            if (logs.length === 0) {
-                                return;
-                            }
-                            logs.forEach((log) => {
-                                this._emitted["b:" + log.blockHash] = log.blockNumber;
-                                this._emitted["t:" + log.transactionHash] = log.blockNumber;
-                                this.emit(filter, log);
-                            });
-                        }).catch((error) => { this.emit("error", error); });
-                        runners.push(runner);
-                        break;
-                    }
-                }
-            });
+            this.updateTransactionEvents(runners, blockNumber);
             this._lastBlockNumber = blockNumber;
             // Once all events for this loop have been processed, emit "didPoll"
             Promise.all(runners).then(() => {
                 this.emit("didPoll", pollId);
             }).catch((error) => { this.emit("error", error); });
             return;
+        });
+    }
+    // Break out this method as an overrideable method.
+    // By making this overridable, the InfuraProvider can override the 'filter' case of getLogs
+    // to use a Filter ID instead.
+    //
+    // There is likely another place we will need to update in order to use the FilterByFilterId class
+    // and setup the filters with Infura.
+    updateTransactionEvents(runners, blockNumber) {
+        // Find all transaction hashes we are waiting on
+        this._events.forEach((event) => {
+            switch (event.type) {
+                case "tx": {
+                    const hash = event.hash;
+                    let runner = this.getTransactionReceipt(hash).then((receipt) => {
+                        if (!receipt || receipt.blockNumber == null) {
+                            return null;
+                        }
+                        this._emitted["t:" + hash] = receipt.blockNumber;
+                        this.emit(hash, receipt);
+                        return null;
+                    }).catch((error) => { this.emit("error", error); });
+                    runners.push(runner);
+                    break;
+                }
+                case "filter": {
+                    const filter = event.filter;
+                    filter.fromBlock = this._lastBlockNumber + 1;
+                    filter.toBlock = blockNumber;
+                    const runner = this.getLogs(filter).then((logs) => {
+                        if (logs.length === 0) {
+                            return;
+                        }
+                        logs.forEach((log) => {
+                            this._emitted["b:" + log.blockHash] = log.blockNumber;
+                            this._emitted["t:" + log.transactionHash] = log.blockNumber;
+                            this.emit(filter, log);
+                        });
+                    }).catch((error) => { this.emit("error", error); });
+                    runners.push(runner);
+                    break;
+                }
+            }
         });
     }
     // Deprecated; do not use this
@@ -20064,6 +20073,35 @@ class BaseProvider extends Provider {
             return this.perform("getEtherPrice", {});
         });
     }
+    newFilter(filter) {
+        return __awaiter$9(this, void 0, void 0, function* () {
+            yield this.getNetwork();
+            const params = yield resolveProperties({ filter: this._getFilter(filter) });
+            return this.perform("newFilter", params);
+        });
+    }
+    /**
+     * Assumes that Filter Changes are Logs only. At the current time, ethers does not support newBlockFilter or pendingTransactionFilter.
+     * Both of those filters will cause the output to only output the respective hashes instead of an array of Log objects
+     *
+     * @param filterId - the filter ID returned by newFilter
+     * @returns Promise<Array<Log>>
+     */
+    getFilterChanges(filterId) {
+        return __awaiter$9(this, void 0, void 0, function* () {
+            yield this.getNetwork();
+            if (!filterId) {
+                logger$t.throwArgumentError("Invalid filterId", "filterId", filterId);
+            }
+            const logs = yield this.perform("getFilterChanges", { filterId });
+            logs.forEach((log) => {
+                if (log.removed == null) {
+                    log.removed = false;
+                }
+            });
+            return Formatter.arrayOf(this.formatter.filterLog.bind(this.formatter))(logs);
+        });
+    }
     _getBlockTag(blockTag) {
         return __awaiter$9(this, void 0, void 0, function* () {
             blockTag = yield blockTag;
@@ -20726,6 +20764,13 @@ class JsonRpcProvider extends BaseProvider {
                     params.filter.address = getLowerCase(params.filter.address);
                 }
                 return ["eth_getLogs", [params.filter]];
+            case "newFilter":
+                if (params.filter && params.filter.address != null) {
+                    params.filter.address = getLowerCase(params.filter.address);
+                }
+                return ["eth_newFilter", [params.filter]];
+            case "getFilterChanges":
+                return ["eth_getFilterChanges", [params.filterId]];
             default:
                 break;
         }
@@ -22357,6 +22402,15 @@ class FallbackProvider extends BaseProvider {
 const IpcProvider = null;
 
 "use strict";
+var __awaiter$h = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 const logger$B = new Logger(version$m);
 const defaultProjectId = "84842078b09946638c03157f83405213";
 class InfuraWebSocketProvider extends WebSocketProvider {
@@ -22379,6 +22433,10 @@ class InfuraWebSocketProvider extends WebSocketProvider {
     }
 }
 class InfuraProvider extends UrlJsonRpcProvider {
+    constructor(network, apiKey) {
+        super(network, apiKey);
+        defineReadOnly(this, "installedFilters", {});
+    }
     static getWebSocketProvider(network, apiKey) {
         return new InfuraWebSocketProvider(network, apiKey);
     }
@@ -22454,6 +22512,58 @@ class InfuraProvider extends UrlJsonRpcProvider {
     }
     isCommunityResource() {
         return (this.projectId === defaultProjectId);
+    }
+    // Override this method to work on filters
+    updateTransactionEvents(runners, blockNumber) {
+        // Find all transaction hashes we are waiting on
+        this._events.forEach((event) => {
+            switch (event.type) {
+                case "tx": {
+                    const hash = event.hash;
+                    let runner = this.getTransactionReceipt(hash).then((receipt) => {
+                        if (!receipt || receipt.blockNumber == null) {
+                            return null;
+                        }
+                        this._emitted["t:" + hash] = receipt.blockNumber;
+                        this.emit(hash, receipt);
+                        return null;
+                    }).catch((error) => { this.emit("error", error); });
+                    runners.push(runner);
+                    break;
+                }
+                case "filter": {
+                    this.checkInstalledFilters(event).then((filter) => {
+                        const runner = this.getFilterChanges(filter.filterId).then((logs) => {
+                            if (logs.length === 0) {
+                                return;
+                            }
+                            logs.forEach((log) => {
+                                this._emitted["b:" + log.blockHash] = log.blockNumber;
+                                this._emitted["t:" + log.transactionHash] = log.blockNumber;
+                                this.emit(event.filter, log);
+                            });
+                        }).catch((error) => { this.emit("error", error); });
+                        runners.push(runner);
+                    });
+                    break;
+                }
+            }
+        });
+    }
+    checkInstalledFilters(event) {
+        return __awaiter$h(this, void 0, void 0, function* () {
+            const filter = this.installedFilters[event.tag];
+            // Create the filter if it doesn't already exist
+            if (!filter) {
+                const filterResult = yield this.newFilter(event.filter);
+                this.installedFilters[event.tag] = {
+                    topics: event.filter.topics,
+                    address: event.filter.address,
+                    filterId: filterResult
+                };
+            }
+            return this.installedFilters[event.tag];
+        });
     }
 }
 

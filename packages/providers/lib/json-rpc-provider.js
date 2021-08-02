@@ -593,6 +593,13 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                     params.filter.address = getLowerCase(params.filter.address);
                 }
                 return ["eth_getLogs", [params.filter]];
+            case "newFilter":
+                if (params.filter && params.filter.address != null) {
+                    params.filter.address = getLowerCase(params.filter.address);
+                }
+                return ["eth_newFilter", [params.filter]];
+            case "getFilterChanges":
+                return ["eth_getFilterChanges", [params.filterId]];
             default:
                 break;
         }

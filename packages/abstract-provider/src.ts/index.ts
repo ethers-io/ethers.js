@@ -140,7 +140,7 @@ export interface FilterByBlockHash extends EventFilter {
 }
 
 export interface FilterByFilterId extends EventFilter {
-    filterId?: String
+    filterId?: string
 }
 
 //export type CallTransactionable = {
@@ -273,6 +273,8 @@ export abstract class Provider implements OnceBlockable {
 
     // Bloom-filter Queries
     abstract getLogs(filter: Filter): Promise<Array<Log>>;
+    abstract getFilterChanges(filterId: string): Promise<Array<Log>>;
+    abstract newFilter(filter: Filter): Promise<string>;
 
     // ENS
     abstract resolveName(name: string | Promise<string>): Promise<string>;
