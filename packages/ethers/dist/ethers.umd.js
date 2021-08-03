@@ -9799,7 +9799,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abstract-provider/5.4.0";
+	exports.version = "abstract-provider/5.4.1";
 
 	});
 
@@ -9968,7 +9968,7 @@
 	                            // We may want to compute this more accurately in the future,
 	                            // using the formula "check if the base fee is correct".
 	                            // See: https://eips.ethereum.org/EIPS/eip-1559
-	                            maxPriorityFeePerGas = lib$2.BigNumber.from("1000000000");
+	                            maxPriorityFeePerGas = lib$2.BigNumber.from("2500000000");
 	                            maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
 	                        }
 	                        return [2 /*return*/, { maxFeePerGas: maxFeePerGas, maxPriorityFeePerGas: maxPriorityFeePerGas, gasPrice: gasPrice }];
@@ -27017,7 +27017,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.4.3";
+	exports.version = "ethers/5.4.4";
 
 	});
 

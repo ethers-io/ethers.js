@@ -8779,7 +8779,7 @@ class Interface {
 
 "use strict";
 
-const version$9 = "abstract-provider/5.4.0";
+const version$9 = "abstract-provider/5.4.1";
 
 "use strict";
 var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8867,7 +8867,7 @@ class Provider {
                 // We may want to compute this more accurately in the future,
                 // using the formula "check if the base fee is correct".
                 // See: https://eips.ethereum.org/EIPS/eip-1559
-                maxPriorityFeePerGas = BigNumber.from("1000000000");
+                maxPriorityFeePerGas = BigNumber.from("2500000000");
                 maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
             }
             return { maxFeePerGas, maxPriorityFeePerGas, gasPrice };
@@ -23189,7 +23189,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.4.3";
+const version$o = "ethers/5.4.4";
 
 "use strict";
 const logger$H = new Logger(version$o);

@@ -3,6 +3,11 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.4.4 (2021-08-02 22:57)
+--------------------------------
+
+  - Adjust default masPriorityFeePerGas to account for MEV-heavy blocks. ([#1817](https://github.com/ethers-io/ethers.js/issues/1817); [7175e2e](https://github.com/ethers-io/ethers.js/commit/7175e2e99c2747e8d2314feb407bf0a0f9371ece))
+
 ethers/v5.4.3 (2021-07-29 23:26)
 --------------------------------
 

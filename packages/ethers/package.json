@@ -3,7 +3,7 @@
   "browser-old": "./dist/ethers.umd.js",
   "dependencies": {
     "@ethersproject/abi": "5.4.0",
-    "@ethersproject/abstract-provider": "5.4.0",
+    "@ethersproject/abstract-provider": "5.4.1",
     "@ethersproject/abstract-signer": "5.4.1",
     "@ethersproject/address": "5.4.0",
     "@ethersproject/base64": "5.4.0",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x10c045b45834f583f885a0d05f6b28d82f5131608483856585b80961a9171c32",
+  "tarballHash": "0x73feb1a6775d137b7b53fda1d95b62b054e1dd8029db3026e0e4f4cb320be86a",
   "types": "./lib/index.d.ts",
-  "version": "5.4.3"
+  "version": "5.4.4"
 }
