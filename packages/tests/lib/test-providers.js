@@ -749,7 +749,9 @@ Object.keys(blockchainData).forEach(function (network) {
                 }
             });
         }); }, test, function (provider, network, test) {
-            return false;
+            // Temporary; pocket is being broken again for old transactions
+            return provider === "PocketProvider";
+            //return false;
         });
     });
     tests.transactionReceipts.forEach(function (test) {
@@ -772,7 +774,9 @@ Object.keys(blockchainData).forEach(function (network) {
                 }
             });
         }); }, test, function (provider, network, test) {
-            return false;
+            // Temporary; pocket is being broken again for old transactions
+            return provider === "PocketProvider";
+            //return false;
         });
     });
 });

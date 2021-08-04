@@ -693,7 +693,9 @@ Object.keys(blockchainData).forEach((network) => {
             delete tx.wait;
             return tx;
         }), test, (provider, network, test) => {
-            return false;
+            // Temporary; pocket is being broken again for old transactions
+            return provider === "PocketProvider";
+            //return false;
         });
     });
     tests.transactionReceipts.forEach((test) => {
@@ -709,7 +711,9 @@ Object.keys(blockchainData).forEach((network) => {
             delete receipt.confirmations;
             return receipt;
         }), test, (provider, network, test) => {
-            return false;
+            // Temporary; pocket is being broken again for old transactions
+            return provider === "PocketProvider";
+            //return false;
         });
     });
 });
