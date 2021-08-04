@@ -33,18 +33,8 @@ function ethDefaultProvider(network: string | Network): Renetworkable {
         }
 
         if (providers.EtherscanProvider) {
-            //try {
-            //    providerList.push(new providers.EtherscanProvider(network, options.etherscan));
-            //} catch(error) { }
-
-            // These networks are currently faulty on this provider
-            // @TODO: This goes away once they have fixed their nodes
-            const skip = [ "ropsten" ];
             try {
-                const provider = new providers.EtherscanProvider(network);
-                if (provider.network && skip.indexOf(provider.network.name) === -1) {
-                    providerList.push(provider);
-                }
+                providerList.push(new providers.EtherscanProvider(network, options.etherscan));
             } catch(error) { }
         }
 
