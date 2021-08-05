@@ -99,6 +99,12 @@ export class InfuraProvider extends UrlJsonRpcProvider {
             case "goerli":
                 host = "goerli.infura.io";
                 break;
+            case "matic":
+                host = "polygon-mainnet.infura.io";
+                break;
+            case "maticmum":
+                host = "polygon-mumbai.infura.io";
+                break;
             default:
                 logger.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
                     argument: "network",

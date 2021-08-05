@@ -194,7 +194,7 @@ function checkError(method, error, transaction) {
             error: error, method: method, transaction: transaction
         });
     }
-    if (message.match(/execution failed due to an exception/)) {
+    if (message.match(/execution failed due to an exception|execution reverted/)) {
         logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
             error: error, method: method, transaction: transaction
         });

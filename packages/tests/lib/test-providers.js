@@ -336,7 +336,7 @@ var blockchainData = {
                 type: 2,
                 creates: null,
                 from: '0xad252DD6C011E613610A36368f04aC84D5185b7c',
-                gasPrice: bnify("0x0268ab0ed6"),
+                //gasPrice: bnify("0x0268ab0ed6"),
                 maxPriorityFeePerGas: bnify("0x0268ab0ed6"),
                 maxFeePerGas: bnify("0x0268ab0ed6"),
                 gasLimit: bnify("0x5208"),
@@ -749,7 +749,9 @@ Object.keys(blockchainData).forEach(function (network) {
                 }
             });
         }); }, test, function (provider, network, test) {
-            return false;
+            // Temporary; pocket is being broken again for old transactions
+            return provider === "PocketProvider";
+            //return false;
         });
     });
     tests.transactionReceipts.forEach(function (test) {
@@ -772,16 +774,9 @@ Object.keys(blockchainData).forEach(function (network) {
                 }
             });
         }); }, test, function (provider, network, test) {
-            // @TODO: Remove once Etherscan fixes whatever makes this unhappy
-            if (provider === "EtherscanProvider") {
-                if (hash === "0x55c477790b105e69e98afadf0505cbda606414b0187356137132bf24945016ce") {
-                    return true;
-                }
-                if (hash === "0xf724f1d6813f13fb523c5f6af6261d06d41138dd094fff723e09fb0f893f03e6") {
-                    return true;
-                }
-            }
-            return false;
+            // Temporary; pocket is being broken again for old transactions
+            return provider === "PocketProvider";
+            //return false;
         });
     });
 });
@@ -793,9 +788,7 @@ Object.keys(blockchainData).forEach(function (network) {
             name: "throws correct " + code + " error",
             networks: ["ropsten"],
             checkSkip: function (provider, network, test) {
-                // @TODO: Remove once Etherscan supports EIP-1559
-                return (code === ethers_1.ethers.utils.Logger.errors.UNPREDICTABLE_GAS_LIMIT && provider === "EtherscanProvider");
-                //return false;
+                return false;
             },
             execute: function (provider) { return __awaiter(_this, void 0, void 0, function () {
                 var value, error_1;

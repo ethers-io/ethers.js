@@ -230,7 +230,7 @@ var FixedNumber = /** @class */ (function () {
         var result = FixedNumber.from(comps[0], this.format);
         var hasFraction = !comps[1].match(/^(0*)$/);
         if (this.isNegative() && hasFraction) {
-            result = result.subUnsafe(ONE);
+            result = result.subUnsafe(ONE.toFormat(result.format));
         }
         return result;
     };
@@ -242,7 +242,7 @@ var FixedNumber = /** @class */ (function () {
         var result = FixedNumber.from(comps[0], this.format);
         var hasFraction = !comps[1].match(/^(0*)$/);
         if (!this.isNegative() && hasFraction) {
-            result = result.addUnsafe(ONE);
+            result = result.addUnsafe(ONE.toFormat(result.format));
         }
         return result;
     };

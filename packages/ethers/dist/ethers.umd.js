@@ -4258,7 +4258,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "bignumber/5.4.0";
+	exports.version = "bignumber/5.4.1";
 
 	});
 
@@ -4819,7 +4819,7 @@
 	        var result = FixedNumber.from(comps[0], this.format);
 	        var hasFraction = !comps[1].match(/^(0*)$/);
 	        if (this.isNegative() && hasFraction) {
-	            result = result.subUnsafe(ONE);
+	            result = result.subUnsafe(ONE.toFormat(result.format));
 	        }
 	        return result;
 	    };
@@ -4831,7 +4831,7 @@
 	        var result = FixedNumber.from(comps[0], this.format);
 	        var hasFraction = !comps[1].match(/^(0*)$/);
 	        if (!this.isNegative() && hasFraction) {
-	            result = result.addUnsafe(ONE);
+	            result = result.addUnsafe(ONE.toFormat(result.format));
 	        }
 	        return result;
 	    };
@@ -9799,7 +9799,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abstract-provider/5.4.0";
+	exports.version = "abstract-provider/5.4.1";
 
 	});
 
@@ -9968,7 +9968,7 @@
 	                            // We may want to compute this more accurately in the future,
 	                            // using the formula "check if the base fee is correct".
 	                            // See: https://eips.ethereum.org/EIPS/eip-1559
-	                            maxPriorityFeePerGas = lib$2.BigNumber.from("1000000000");
+	                            maxPriorityFeePerGas = lib$2.BigNumber.from("2500000000");
 	                            maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
 	                        }
 	                        return [2 /*return*/, { maxFeePerGas: maxFeePerGas, maxPriorityFeePerGas: maxPriorityFeePerGas, gasPrice: gasPrice }];
@@ -9999,7 +9999,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abstract-signer/5.4.0";
+	exports.version = "abstract-signer/5.4.1";
 
 	});
 
@@ -10144,11 +10144,21 @@
 	    };
 	    // Populates all fields in a transaction, signs it and sends it to the network
 	    Signer.prototype.sendTransaction = function (transaction) {
-	        var _this = this;
-	        this._checkProvider("sendTransaction");
-	        return this.populateTransaction(transaction).then(function (tx) {
-	            return _this.signTransaction(tx).then(function (signedTx) {
-	                return _this.provider.sendTransaction(signedTx);
+	        return __awaiter(this, void 0, void 0, function () {
+	            var tx, signedTx;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        this._checkProvider("sendTransaction");
+	                        return [4 /*yield*/, this.populateTransaction(transaction)];
+	                    case 1:
+	                        tx = _a.sent();
+	                        return [4 /*yield*/, this.signTransaction(tx)];
+	                    case 2:
+	                        signedTx = _a.sent();
+	                        return [4 /*yield*/, this.provider.sendTransaction(signedTx)];
+	                    case 3: return [2 /*return*/, _a.sent()];
+	                }
 	            });
 	        });
 	    };
@@ -10271,6 +10281,8 @@
 	                                    }
 	                                });
 	                            }); });
+	                            // Prevent this error from causing an UnhandledPromiseException
+	                            tx.to.catch(function (error) { });
 	                        }
 	                        hasEip1559 = (tx.maxFeePerGas != null || tx.maxPriorityFeePerGas != null);
 	                        if (tx.gasPrice != null && (tx.type === 2 || hasEip1559)) {
@@ -14692,7 +14704,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "contracts/5.4.0";
+	exports.version = "contracts/5.4.1";
 
 	});
 
@@ -15786,6 +15798,15 @@
 	            }
 	            logger.throwError("cannot override " + key, lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
 	        });
+	        if (tx.value) {
+	            var value = lib$2.BigNumber.from(tx.value);
+	            if (!value.isZero() && !this.interface.deploy.payable) {
+	                logger.throwError("non-payable constructor cannot override value", lib.Logger.errors.UNSUPPORTED_OPERATION, {
+	                    operation: "overrides.value",
+	                    value: tx.value
+	                });
+	            }
+	        }
 	        // Make sure the call matches the constructor signature
 	        logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
 	        // Set the data to the bytecode + the encoded constructor arguments
@@ -19611,7 +19632,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "networks/5.4.1";
+	exports.version = "networks/5.4.2";
 
 	});
 
@@ -19641,17 +19662,8 @@
 	            catch (error) { }
 	        }
 	        if (providers.EtherscanProvider) {
-	            //try {
-	            //    providerList.push(new providers.EtherscanProvider(network, options.etherscan));
-	            //} catch(error) { }
-	            // These networks are currently faulty on this provider
-	            // @TODO: This goes away once they have fixed their nodes
-	            var skip = ["ropsten"];
 	            try {
-	                var provider = new providers.EtherscanProvider(network);
-	                if (provider.network && skip.indexOf(provider.network.name) === -1) {
-	                    providerList.push(provider);
-	                }
+	                providerList.push(new providers.EtherscanProvider(network, options.etherscan));
 	            }
 	            catch (error) { }
 	        }
@@ -20602,7 +20614,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.4.1";
+	exports.version = "providers/5.4.3";
 
 	});
 
@@ -22406,6 +22418,9 @@
 	                    case 2:
 	                        hexTx = _a.sent();
 	                        tx = this.formatter.transaction(signedTransaction);
+	                        if (tx.confirmations == null) {
+	                            tx.confirmations = 0;
+	                        }
 	                        return [4 /*yield*/, this._getInternalBlockNumber(100 + 2 * this.pollingInterval)];
 	                    case 3:
 	                        blockNumber = _a.sent();
@@ -22442,7 +22457,7 @@
 	                            }
 	                            tx[key] = Promise.resolve(values[key]).then(function (v) { return (v ? _this._getAddress(v) : null); });
 	                        });
-	                        ["gasLimit", "gasPrice", "value"].forEach(function (key) {
+	                        ["gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "value"].forEach(function (key) {
 	                            if (values[key] == null) {
 	                                return;
 	                            }
@@ -22616,7 +22631,8 @@
 	                        logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
 	                        return [3 /*break*/, 6];
 	                    case 6: return [2 /*return*/, lib$q.poll(function () { return __awaiter(_this, void 0, void 0, function () {
-	                            var block, blockNumber_1, i, tx, confirmations;
+	                            var block, blockNumber_1, i, tx, confirmations, blockWithTxs;
+	                            var _this = this;
 	                            return __generator(this, function (_a) {
 	                                switch (_a.label) {
 	                                    case 0: return [4 /*yield*/, this.perform("getBlock", params)];
@@ -22668,7 +22684,10 @@
 	                                    case 6:
 	                                        i++;
 	                                        return [3 /*break*/, 2];
-	                                    case 7: return [2 /*return*/, this.formatter.blockWithTransactions(block)];
+	                                    case 7:
+	                                        blockWithTxs = this.formatter.blockWithTransactions(block);
+	                                        blockWithTxs.transactions = block.transactions.map(function (tx) { return _this._wrapTransaction(tx); });
+	                                        return [2 /*return*/, blockWithTxs];
 	                                    case 8: return [2 /*return*/, this.formatter.block(block)];
 	                                }
 	                            });
@@ -23196,7 +23215,7 @@
 	    message = (message || "").toLowerCase();
 	    var transaction = params.transaction || params.signedTransaction;
 	    // "insufficient funds for gas * price + value + cost(data)"
-	    if (message.match(/insufficient funds/)) {
+	    if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
 	        logger.throwError("insufficient funds for intrinsic transaction cost", lib.Logger.errors.INSUFFICIENT_FUNDS, {
 	            error: error, method: method, transaction: transaction
 	        });
@@ -23705,23 +23724,38 @@
 	    };
 	    JsonRpcProvider.prototype.perform = function (method, params) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var args, error_4;
+	            var tx, feeData, args, error_4;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
+	                        if (!(method === "call" || method === "estimateGas")) return [3 /*break*/, 2];
+	                        tx = params.transaction;
+	                        if (!(tx && tx.type != null && lib$2.BigNumber.from(tx.type).isZero())) return [3 /*break*/, 2];
+	                        if (!(tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null)) return [3 /*break*/, 2];
+	                        return [4 /*yield*/, this.getFeeData()];
+	                    case 1:
+	                        feeData = _a.sent();
+	                        if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
+	                            // Network doesn't know about EIP-1559 (and hence type)
+	                            params = lib$3.shallowCopy(params);
+	                            params.transaction = lib$3.shallowCopy(tx);
+	                            delete params.transaction.type;
+	                        }
+	                        _a.label = 2;
+	                    case 2:
 	                        args = this.prepareRequest(method, params);
 	                        if (args == null) {
 	                            logger.throwError(method + " not implemented", lib.Logger.errors.NOT_IMPLEMENTED, { operation: method });
 	                        }
-	                        _a.label = 1;
-	                    case 1:
-	                        _a.trys.push([1, 3, , 4]);
-	                        return [4 /*yield*/, this.send(args[0], args[1])];
-	                    case 2: return [2 /*return*/, _a.sent()];
+	                        _a.label = 3;
 	                    case 3:
+	                        _a.trys.push([3, 5, , 6]);
+	                        return [4 /*yield*/, this.send(args[0], args[1])];
+	                    case 4: return [2 /*return*/, _a.sent()];
+	                    case 5:
 	                        error_4 = _a.sent();
 	                        return [2 /*return*/, checkError(method, error_4, params)];
-	                    case 4: return [2 /*return*/];
+	                    case 6: return [2 /*return*/];
 	                }
 	            });
 	        });
@@ -24505,6 +24539,12 @@
 	            case "kovan":
 	                host = "eth-kovan.alchemyapi.io/v2/";
 	                break;
+	            case "matic":
+	                host = "polygon-mainnet.g.alchemy.com/v2/";
+	                break;
+	            case "maticmum":
+	                host = "polygon-mumbai.g.alchemy.com/v2/";
+	                break;
 	            default:
 	                logger.throwArgumentError("unsupported network", "network", arguments[0]);
 	        }
@@ -24845,7 +24885,7 @@
 	            error: error, method: method, transaction: transaction
 	        });
 	    }
-	    if (message.match(/execution failed due to an exception/)) {
+	    if (message.match(/execution failed due to an exception|execution reverted/)) {
 	        logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", lib.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
 	            error: error, method: method, transaction: transaction
 	        });
@@ -25983,6 +26023,12 @@
 	            case "goerli":
 	                host = "goerli.infura.io";
 	                break;
+	            case "matic":
+	                host = "polygon-mainnet.infura.io";
+	                break;
+	            case "maticmum":
+	                host = "polygon-mumbai.infura.io";
+	                break;
 	            default:
 	                logger.throwError("unsupported network", lib.Logger.errors.INVALID_ARGUMENT, {
 	                    argument: "network",
@@ -26962,7 +27008,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.4.1";
+	exports.version = "ethers/5.4.4";
 
 	});
 

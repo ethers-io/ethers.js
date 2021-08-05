@@ -46,7 +46,7 @@ function checkError(method, error, params) {
     message = (message || "").toLowerCase();
     const transaction = params.transaction || params.signedTransaction;
     // "insufficient funds for gas * price + value + cost(data)"
-    if (message.match(/insufficient funds/)) {
+    if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
         logger.throwError("insufficient funds for intrinsic transaction cost", Logger.errors.INSUFFICIENT_FUNDS, {
             error, method, transaction
         });
@@ -455,6 +455,23 @@ export class JsonRpcProvider extends BaseProvider {
     }
     perform(method, params) {
         return __awaiter(this, void 0, void 0, function* () {
+            // Legacy networks do not like the type field being passed along (which
+            // is fair), so we delete type if it is 0 and a non-EIP-1559 network
+            if (method === "call" || method === "estimateGas") {
+                const tx = params.transaction;
+                if (tx && tx.type != null && BigNumber.from(tx.type).isZero()) {
+                    // If there are no EIP-1559 properties, it might be non-EIP-a559
+                    if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
+                        const feeData = yield this.getFeeData();
+                        if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
+                            // Network doesn't know about EIP-1559 (and hence type)
+                            params = shallowCopy(params);
+                            params.transaction = shallowCopy(tx);
+                            delete params.transaction.type;
+                        }
+                    }
+                }
+            }
             const args = this.prepareRequest(method, params);
             if (args == null) {
                 logger.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });

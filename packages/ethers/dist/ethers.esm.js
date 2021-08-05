@@ -4185,7 +4185,7 @@ function joinSignature(signature) {
     ]));
 }
 
-const version$2 = "bignumber/5.4.0";
+const version$2 = "bignumber/5.4.1";
 
 "use strict";
 var BN = bn.BN;
@@ -4703,7 +4703,7 @@ class FixedNumber {
         let result = FixedNumber.from(comps[0], this.format);
         const hasFraction = !comps[1].match(/^(0*)$/);
         if (this.isNegative() && hasFraction) {
-            result = result.subUnsafe(ONE);
+            result = result.subUnsafe(ONE.toFormat(result.format));
         }
         return result;
     }
@@ -4715,7 +4715,7 @@ class FixedNumber {
         let result = FixedNumber.from(comps[0], this.format);
         const hasFraction = !comps[1].match(/^(0*)$/);
         if (!this.isNegative() && hasFraction) {
-            result = result.addUnsafe(ONE);
+            result = result.addUnsafe(ONE.toFormat(result.format));
         }
         return result;
     }
@@ -8779,7 +8779,7 @@ class Interface {
 
 "use strict";
 
-const version$9 = "abstract-provider/5.4.0";
+const version$9 = "abstract-provider/5.4.1";
 
 "use strict";
 var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8867,7 +8867,7 @@ class Provider {
                 // We may want to compute this more accurately in the future,
                 // using the formula "check if the base fee is correct".
                 // See: https://eips.ethereum.org/EIPS/eip-1559
-                maxPriorityFeePerGas = BigNumber.from("1000000000");
+                maxPriorityFeePerGas = BigNumber.from("2500000000");
                 maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
             }
             return { maxFeePerGas, maxPriorityFeePerGas, gasPrice };
@@ -8886,7 +8886,7 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.4.0";
+const version$a = "abstract-signer/5.4.1";
 
 "use strict";
 var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -8948,11 +8948,11 @@ class Signer {
     }
     // Populates all fields in a transaction, signs it and sends it to the network
     sendTransaction(transaction) {
-        this._checkProvider("sendTransaction");
-        return this.populateTransaction(transaction).then((tx) => {
-            return this.signTransaction(tx).then((signedTx) => {
-                return this.provider.sendTransaction(signedTx);
-            });
+        return __awaiter$3(this, void 0, void 0, function* () {
+            this._checkProvider("sendTransaction");
+            const tx = yield this.populateTransaction(transaction);
+            const signedTx = yield this.signTransaction(tx);
+            return yield this.provider.sendTransaction(signedTx);
         });
     }
     getChainId() {
@@ -9034,6 +9034,8 @@ class Signer {
                     }
                     return address;
                 }));
+                // Prevent this error from causing an UnhandledPromiseException
+                tx.to.catch((error) => { });
             }
             // Do not allow mixing pre-eip-1559 and eip-1559 proerties
             const hasEip1559 = (tx.maxFeePerGas != null || tx.maxPriorityFeePerGas != null);
@@ -13448,7 +13450,7 @@ function parse(rawTransaction) {
     });
 }
 
-const version$d = "contracts/5.4.0";
+const version$d = "contracts/5.4.1";
 
 "use strict";
 var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -14370,6 +14372,15 @@ class ContractFactory {
             }
             logger$i.throwError("cannot override " + key, Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
         });
+        if (tx.value) {
+            const value = BigNumber.from(tx.value);
+            if (!value.isZero() && !this.interface.deploy.payable) {
+                logger$i.throwError("non-payable constructor cannot override value", Logger.errors.UNSUPPORTED_OPERATION, {
+                    operation: "overrides.value",
+                    value: tx.value
+                });
+            }
+        }
         // Make sure the call matches the constructor signature
         logger$i.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
         // Set the data to the bytecode + the encoded constructor arguments
@@ -17466,7 +17477,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.4.1";
+const version$k = "networks/5.4.2";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -17487,17 +17498,8 @@ function ethDefaultProvider(network) {
             catch (error) { }
         }
         if (providers.EtherscanProvider) {
-            //try {
-            //    providerList.push(new providers.EtherscanProvider(network, options.etherscan));
-            //} catch(error) { }
-            // These networks are currently faulty on this provider
-            // @TODO: This goes away once they have fixed their nodes
-            const skip = ["ropsten"];
             try {
-                const provider = new providers.EtherscanProvider(network);
-                if (provider.network && skip.indexOf(provider.network.name) === -1) {
-                    providerList.push(provider);
-                }
+                providerList.push(new providers.EtherscanProvider(network, options.etherscan));
             }
             catch (error) { }
         }
@@ -18299,7 +18301,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.4.1";
+const version$m = "providers/5.4.3";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -19784,6 +19786,9 @@ class BaseProvider extends Provider {
             yield this.getNetwork();
             const hexTx = yield Promise.resolve(signedTransaction).then(t => hexlify(t));
             const tx = this.formatter.transaction(signedTransaction);
+            if (tx.confirmations == null) {
+                tx.confirmations = 0;
+            }
             const blockNumber = yield this._getInternalBlockNumber(100 + 2 * this.pollingInterval);
             try {
                 const hash = yield this.perform("sendTransaction", { signedTransaction: hexTx });
@@ -19806,7 +19811,7 @@ class BaseProvider extends Provider {
                 }
                 tx[key] = Promise.resolve(values[key]).then((v) => (v ? this._getAddress(v) : null));
             });
-            ["gasLimit", "gasPrice", "value"].forEach((key) => {
+            ["gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "value"].forEach((key) => {
                 if (values[key] == null) {
                     return;
                 }
@@ -19964,7 +19969,9 @@ class BaseProvider extends Provider {
                             tx.confirmations = confirmations;
                         }
                     }
-                    return this.formatter.blockWithTransactions(block);
+                    const blockWithTxs = this.formatter.blockWithTransactions(block);
+                    blockWithTxs.transactions = block.transactions.map((tx) => this._wrapTransaction(tx));
+                    return blockWithTxs;
                 }
                 return this.formatter.block(block);
             }), { oncePoll: this });
@@ -20319,7 +20326,7 @@ function checkError(method, error, params) {
     message = (message || "").toLowerCase();
     const transaction = params.transaction || params.signedTransaction;
     // "insufficient funds for gas * price + value + cost(data)"
-    if (message.match(/insufficient funds/)) {
+    if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
         logger$u.throwError("insufficient funds for intrinsic transaction cost", Logger.errors.INSUFFICIENT_FUNDS, {
             error, method, transaction
         });
@@ -20728,6 +20735,23 @@ class JsonRpcProvider extends BaseProvider {
     }
     perform(method, params) {
         return __awaiter$a(this, void 0, void 0, function* () {
+            // Legacy networks do not like the type field being passed along (which
+            // is fair), so we delete type if it is 0 and a non-EIP-1559 network
+            if (method === "call" || method === "estimateGas") {
+                const tx = params.transaction;
+                if (tx && tx.type != null && BigNumber.from(tx.type).isZero()) {
+                    // If there are no EIP-1559 properties, it might be non-EIP-a559
+                    if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
+                        const feeData = yield this.getFeeData();
+                        if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
+                            // Network doesn't know about EIP-1559 (and hence type)
+                            params = shallowCopy(params);
+                            params.transaction = shallowCopy(tx);
+                            delete params.transaction.type;
+                        }
+                    }
+                }
+            }
             const args = this.prepareRequest(method, params);
             if (args == null) {
                 logger$u.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });
@@ -21281,6 +21305,12 @@ class AlchemyProvider extends UrlJsonRpcProvider {
             case "kovan":
                 host = "eth-kovan.alchemyapi.io/v2/";
                 break;
+            case "matic":
+                host = "polygon-mainnet.g.alchemy.com/v2/";
+                break;
+            case "maticmum":
+                host = "polygon-mumbai.g.alchemy.com/v2/";
+                break;
             default:
                 logger$x.throwArgumentError("unsupported network", "network", arguments[0]);
         }
@@ -21502,7 +21532,7 @@ function checkError$1(method, error, transaction) {
             error, method, transaction
         });
     }
-    if (message.match(/execution failed due to an exception/)) {
+    if (message.match(/execution failed due to an exception|execution reverted/)) {
         logger$z.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
             error, method, transaction
         });
@@ -22413,6 +22443,12 @@ class InfuraProvider extends UrlJsonRpcProvider {
             case "goerli":
                 host = "goerli.infura.io";
                 break;
+            case "matic":
+                host = "polygon-mainnet.infura.io";
+                break;
+            case "maticmum":
+                host = "polygon-mumbai.infura.io";
+                break;
             default:
                 logger$B.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
                     argument: "network",
@@ -23144,7 +23180,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.4.1";
+const version$o = "ethers/5.4.4";
 
 "use strict";
 const logger$H = new Logger(version$o);

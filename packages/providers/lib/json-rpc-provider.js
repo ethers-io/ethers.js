@@ -91,7 +91,7 @@ function checkError(method, error, params) {
     message = (message || "").toLowerCase();
     var transaction = params.transaction || params.signedTransaction;
     // "insufficient funds for gas * price + value + cost(data)"
-    if (message.match(/insufficient funds/)) {
+    if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
         logger.throwError("insufficient funds for intrinsic transaction cost", logger_1.Logger.errors.INSUFFICIENT_FUNDS, {
             error: error, method: method, transaction: transaction
         });
@@ -600,23 +600,38 @@ var JsonRpcProvider = /** @class */ (function (_super) {
     };
     JsonRpcProvider.prototype.perform = function (method, params) {
         return __awaiter(this, void 0, void 0, function () {
-            var args, error_4;
+            var tx, feeData, args, error_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        if (!(method === "call" || method === "estimateGas")) return [3 /*break*/, 2];
+                        tx = params.transaction;
+                        if (!(tx && tx.type != null && bignumber_1.BigNumber.from(tx.type).isZero())) return [3 /*break*/, 2];
+                        if (!(tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.getFeeData()];
+                    case 1:
+                        feeData = _a.sent();
+                        if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
+                            // Network doesn't know about EIP-1559 (and hence type)
+                            params = properties_1.shallowCopy(params);
+                            params.transaction = properties_1.shallowCopy(tx);
+                            delete params.transaction.type;
+                        }
+                        _a.label = 2;
+                    case 2:
                         args = this.prepareRequest(method, params);
                         if (args == null) {
                             logger.throwError(method + " not implemented", logger_1.Logger.errors.NOT_IMPLEMENTED, { operation: method });
                         }
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, this.send(args[0], args[1])];
-                    case 2: return [2 /*return*/, _a.sent()];
+                        _a.label = 3;
                     case 3:
+                        _a.trys.push([3, 5, , 6]);
+                        return [4 /*yield*/, this.send(args[0], args[1])];
+                    case 4: return [2 /*return*/, _a.sent()];
+                    case 5:
                         error_4 = _a.sent();
                         return [2 /*return*/, checkError(method, error_4, params)];
-                    case 4: return [2 /*return*/];
+                    case 6: return [2 /*return*/];
                 }
             });
         });

@@ -1166,6 +1166,16 @@ export class ContractFactory {
             logger.throwError("cannot override " + key, Logger.errors.UNSUPPORTED_OPERATION, { operation: key })
         });
 
+        if (tx.value) {
+            const value = BigNumber.from(tx.value);
+            if (!value.isZero() && !this.interface.deploy.payable) {
+                logger.throwError("non-payable constructor cannot override value", Logger.errors.UNSUPPORTED_OPERATION, {
+                    operation: "overrides.value",
+                    value: tx.value
+                });
+            }
+        }
+
         // Make sure the call matches the constructor signature
         logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
 

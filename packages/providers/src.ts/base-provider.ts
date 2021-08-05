@@ -1211,6 +1211,7 @@ export class BaseProvider extends Provider implements EnsProvider {
         await this.getNetwork();
         const hexTx = await Promise.resolve(signedTransaction).then(t => hexlify(t));
         const tx = this.formatter.transaction(signedTransaction);
+        if (tx.confirmations == null) { tx.confirmations = 0; }
         const blockNumber = await this._getInternalBlockNumber(100 + 2 * this.pollingInterval);
         try {
             const hash = await this.perform("sendTransaction", { signedTransaction: hexTx });
@@ -1232,7 +1233,7 @@ export class BaseProvider extends Provider implements EnsProvider {
             tx[key] = Promise.resolve(values[key]).then((v) => (v ? this._getAddress(v): null))
         });
 
-        ["gasLimit", "gasPrice", "value"].forEach((key) => {
+        ["gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "value"].forEach((key) => {
             if (values[key] == null) { return; }
             tx[key] = Promise.resolve(values[key]).then((v) => (v ? BigNumber.from(v): null));
         });
@@ -1387,10 +1388,14 @@ export class BaseProvider extends Provider implements EnsProvider {
                         tx.confirmations = confirmations;
                     }
                 }
-                return this.formatter.blockWithTransactions(block);
+
+                const blockWithTxs = this.formatter.blockWithTransactions(block);
+                blockWithTxs.transactions = block.transactions.map((tx: TransactionResponse) => this._wrapTransaction(tx));
+                return blockWithTxs;
             }
 
             return this.formatter.block(block);
+
         }, { oncePoll: this });
     }
 

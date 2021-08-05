@@ -116,6 +116,12 @@ var AlchemyProvider = /** @class */ (function (_super) {
             case "kovan":
                 host = "eth-kovan.alchemyapi.io/v2/";
                 break;
+            case "matic":
+                host = "polygon-mainnet.g.alchemy.com/v2/";
+                break;
+            case "maticmum":
+                host = "polygon-mumbai.g.alchemy.com/v2/";
+                break;
             default:
                 logger.throwArgumentError("unsupported network", "network", arguments[0]);
         }

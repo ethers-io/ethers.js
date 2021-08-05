@@ -136,11 +136,21 @@ var Signer = /** @class */ (function () {
     };
     // Populates all fields in a transaction, signs it and sends it to the network
     Signer.prototype.sendTransaction = function (transaction) {
-        var _this = this;
-        this._checkProvider("sendTransaction");
-        return this.populateTransaction(transaction).then(function (tx) {
-            return _this.signTransaction(tx).then(function (signedTx) {
-                return _this.provider.sendTransaction(signedTx);
+        return __awaiter(this, void 0, void 0, function () {
+            var tx, signedTx;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this._checkProvider("sendTransaction");
+                        return [4 /*yield*/, this.populateTransaction(transaction)];
+                    case 1:
+                        tx = _a.sent();
+                        return [4 /*yield*/, this.signTransaction(tx)];
+                    case 2:
+                        signedTx = _a.sent();
+                        return [4 /*yield*/, this.provider.sendTransaction(signedTx)];
+                    case 3: return [2 /*return*/, _a.sent()];
+                }
             });
         });
     };
@@ -263,6 +273,8 @@ var Signer = /** @class */ (function () {
                                     }
                                 });
                             }); });
+                            // Prevent this error from causing an UnhandledPromiseException
+                            tx.to.catch(function (error) { });
                         }
                         hasEip1559 = (tx.maxFeePerGas != null || tx.maxPriorityFeePerGas != null);
                         if (tx.gasPrice != null && (tx.type === 2 || hasEip1559)) {

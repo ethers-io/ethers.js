@@ -254,7 +254,7 @@ export class FixedNumber {
 
         const hasFraction = !comps[1].match(/^(0*)$/);
         if (this.isNegative() && hasFraction) {
-            result = result.subUnsafe(ONE);
+            result = result.subUnsafe(ONE.toFormat(result.format));
         }
 
         return result;
@@ -268,7 +268,7 @@ export class FixedNumber {
 
         const hasFraction = !comps[1].match(/^(0*)$/);
         if (!this.isNegative() && hasFraction) {
-            result = result.addUnsafe(ONE);
+            result = result.addUnsafe(ONE.toFormat(result.format));
         }
 
         return result;

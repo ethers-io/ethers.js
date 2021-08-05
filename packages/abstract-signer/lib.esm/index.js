@@ -61,11 +61,11 @@ export class Signer {
     }
     // Populates all fields in a transaction, signs it and sends it to the network
     sendTransaction(transaction) {
-        this._checkProvider("sendTransaction");
-        return this.populateTransaction(transaction).then((tx) => {
-            return this.signTransaction(tx).then((signedTx) => {
-                return this.provider.sendTransaction(signedTx);
-            });
+        return __awaiter(this, void 0, void 0, function* () {
+            this._checkProvider("sendTransaction");
+            const tx = yield this.populateTransaction(transaction);
+            const signedTx = yield this.signTransaction(tx);
+            return yield this.provider.sendTransaction(signedTx);
         });
     }
     getChainId() {
@@ -147,6 +147,8 @@ export class Signer {
                     }
                     return address;
                 }));
+                // Prevent this error from causing an UnhandledPromiseException
+                tx.to.catch((error) => { });
             }
             // Do not allow mixing pre-eip-1559 and eip-1559 proerties
             const hasEip1559 = (tx.maxFeePerGas != null || tx.maxPriorityFeePerGas != null);
