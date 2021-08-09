@@ -42,7 +42,78 @@ _property: abiCoder.encode(types, values) => string<[[DataHexString]]> @<AbiCode
 Encode the array //values// according to the array of //types//, each of which may be a
 string or a [[ParamType]].
 
+_code: @lang<javascript>
+
+//_hide: const abiCoder = utils.defaultAbiCoder;
+
+// Encoding simple types
+//_result:
+abiCoder.encode([ "uint", "string" ], [ 1234, "Hello World" ]);
+//_log:
+//_hide: _page.example1 = _;
+
+// Encoding with arrays types
+//_result:
+abiCoder.encode([ "uint[]", "string" ], [ [ 1234, 5678 ] , "Hello World" ]);
+//_log:
+//_hide: _page.example2 = _;
+
+// Encoding complex structs (using positional properties)
+//_result:
+abiCoder.encode(
+  [ "uint", "tuple(uint256, string)" ],
+  [
+    1234,
+    [ 5678, "Hello World" ]
+  ]
+);
+//_log:
+//_hide: _page.example3 = _;
+
+// Encoding complex structs (using keyword properties)
+//_result:
+abiCoder.encode(
+  [ "uint a", "tuple(uint256 b, string c) d" ],
+  [
+    1234,
+    { b: 5678, c: "Hello World" }
+  ]
+);
+//_log:
+
 _property: abiCoder.decode(types, data) => [[Result]] @<AbiCoder-decode> @SRC<abi/abi-coder>
 
 Decode the //data// according to the array of //types//, each of which may be a
 string or [[ParamType]].
+
+_code: @lang<javascript>
+
+//_hide: const abiCoder = utils.defaultAbiCoder;
+
+// Decoding simple types
+//_hide: data = _page.example1;
+//_verbatim: `data = ${ JSON.stringify(data) };`
+//_result:
+abiCoder.decode([ "uint", "string" ], data);
+//_log:
+
+// Decoding with arrays types
+//_hide: data = _page.example2;
+//_verbatim: `data = ${ JSON.stringify(data) };`
+//_result:
+abiCoder.decode([ "uint[]", "string" ], data);
+//_log:
+
+// Decoding complex structs; unnamed parameters allows ONLY
+// positional access to values
+//_hide: data = _page.example3;
+//_verbatim: `data = ${ JSON.stringify(data) };`
+//_result:
+abiCoder.decode([ "uint", "tuple(uint256, string)" ], data);
+//_log:
+
+// Decoding complex structs; named parameters allows positional
+// or keyword access to values
+//_result:
+abiCoder.decode([ "uint a", "tuple(uint256 b, string c) d" ], data);
+//_log:
