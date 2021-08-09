@@ -230,6 +230,27 @@ _code: @lang<javascript>
 iface.encodeDeploy([ "SYM", "Some Name" ])
 //_log:
 
+_property: interface.encodeErrorResult(fragment [ , values ]) => string<[[DataHexString]]> @SRC<abi/interface>
+Returns the encoded error result, which would normally be the response from
+a reverted call for //fragment// (see [[Interface--specifying-fragments]]) for
+the given //values//.
+
+Most developers will not need this method, but may be useful for authors of
+a mock blockchain.
+
+_code: @lang<javascript>
+
+//_hide: const iface = _page.iface;
+//_hide: const parseEther = ethers.utils.parseEther;
+
+// Encoding result data (like is returned by eth_call during a revert)
+//_result:
+iface.encodeErrorResult("AccountLocked", [
+  "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+  parseEther("1.0")
+]);
+//_log:
+
 _property: interface.encodeFilterTopics(fragment, values) => Array<topic | Array<topic>> @SRC<abi/interface>
 Returns the encoded topic filter, which can be passed to getLogs for //fragment//
 (see [[Interface--specifying-fragments]]) for the given //values//.
@@ -318,6 +339,24 @@ iface.encodeFunctionResult("balanceOf", [
 
 
 _subsection: Decoding Data @<Interface--decoding>
+
+_property: interface.decodeErrorResult(fragment, data) => [[Result]] @SRC<abi/interface>
+Returns the decoded values from the result of a call during a revert for
+//fragment// (see [[Interface--specifying-fragments]]) for the given //data//.
+
+Most developers won't need this, as the ``decodeFunctionResult`` will automatically
+decode errors if the //data// represents a revert.
+
+_code: @lang<javascript>
+
+//_hide: const iface = _page.iface;
+
+// Decoding result data (e.g. from an eth_call)
+errorData = "0xf7c3865a0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba720000000000000000000000000000000000000000000000000de0b6b3a7640000";
+
+//_result:
+iface.decodeErrorResult("AccountLocked", errorData)
+//_log:
 
 _property: interface.decodeEventLog(fragment, data [ , topics ]) => [[Result]] @SRC<abi/interface>
 Returns the decoded event values from an event log for
@@ -415,6 +454,21 @@ The functions are generally the most useful for most developers. They will
 automatically search the ABI for a matching Event or Function and decode
 the components as a fully specified description.
 
+_property: interface.parseError(data) => [[ErrorDescription]] @SRC<abi/interface>
+Search for the error that matches the error selector in //data// and parse out
+the details.
+
+_code: @lang<javascript>
+
+//_hide: const iface = _page.iface;
+
+const data = "0xf7c3865a0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba720000000000000000000000000000000000000000000000000de0b6b3a7640000";
+
+//_result:
+iface.parseError(data);
+//_hide: _.errorFragment = createClass("ErrorFragment");
+//_log:
+
 _property: interface.parseLog(log) => [[LogDescription]] @SRC<abi/interface>
 Search the event that matches the //log// topic hash and parse the values
 the log represents.
@@ -465,6 +519,24 @@ value can be accessed by its name.
 The name ``length`` is however reserved as it is part of the Array, so
 any named value for this key is renamed to ``_length``. If there is a
 name collision, only the first is available by its key.
+
+
+_heading: ErrorDescription @<ErrorDescription>
+
+_property: errorDescription.args => [[Result]]
+The values of the input parameters of the error.
+
+_property: errorDescription.errorFragment => [[ErrorFragment]]
+The [[ErrorFragment]] which matches the selector in the data.
+
+_property: errorDescription.name => string
+The error name. (e.g. ``AccountLocked``)
+
+_property: errorDescription.signature => string
+The error signature. (e.g. ``AccountLocked(address,uint256)``)
+
+_property: errorDescription.sighash => string
+The selector of the error.
 
 
 _heading: LogDescription @<LogDescription>
