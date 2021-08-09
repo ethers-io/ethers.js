@@ -75,6 +75,25 @@ object, with most of the properties set to null, but allows access to the
 transaction hash quickly, if that is all that is required.
 
 
+_subsection: StaticJsonRpcProvider @<StaticJsonRpcProvider> @INHERIT<[[JsonRpcProvider]]> @SRC<providers:class.StaticJsonRpcProvider>
+
+An ethers Provider will execute frequent ``getNetwork`` calls to ensure
+the network calls and network being communicated with are consistent.
+
+In the case of a client like MetaMask, this is desired as the network
+may be changed by the user at any time, in such cases the cost of
+checking the chainId is local and therefore cheap.
+
+However, there are also many times where it is known the network cannot
+change, such as when connecting to an INFURA endpoint, in which case,
+the **StaticJsonRpcProvider** can be used which will indefinitely cache
+the chain ID, which can reduce network traffic and reduce round-trip
+queries for the chain ID.
+
+This [[Provider]] should **only** be used when it is known the network
+cannot change.
+
+
 _subsection: Node-Specific Methods @<JsonRpcProvider--other>
 
 Many methods are less common or specific to certain Ethereum Node implementations
