@@ -192,7 +192,7 @@ function codeContextify(context) {
 
 module.exports = {
   title: "ethers",
-  subtitle: "v5.3",
+  subtitle: "v5.4",
   description: "Documentation for ethers, a complete, tiny and simple Ethereum library.",
   logo: "logo.svg",
 
@@ -289,6 +289,7 @@ module.exports = {
       "link-eip-712": { name: "EIP-712", url: "https:/\/eips.ethereum.org/EIPS/eip-712" },
       "link-eip-1014": { name: "EIP-1014", url: "https:/\/eips.ethereum.org/EIPS/eip-1014" },
       "link-eip-1193": { name: "EIP-1193", url: "https:/\/eips.ethereum.org/EIPS/eip-1193" },
+      "link-eip-1559": { name: "EIP-1559", url: "https:/\/eips.ethereum.org/EIPS/eip-1559" },
       "link-eip-1577": { name: "EIP-1577", url: "https:/\/eips.ethereum.org/EIPS/eip-1577" },
       "link-eip-2098": { name: "EIP-2098", url: "https:/\/eips.ethereum.org/EIPS/eip-2098" },
       "link-eip-2304": { name: "EIP-2304", url: "https:/\/eips.ethereum.org/EIPS/eip-2304" },

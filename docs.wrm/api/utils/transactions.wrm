@@ -18,6 +18,12 @@ The gas limit for this transaction.
 _property: unsignedTransaction.gasPrice => [[BigNumberish]]
 The gas price for this transaction.
 
+_property: unsignedTransaction.maxFeePerGas => [[BigNumberish]]
+The maximum fee per unit of gas for this transaction.
+
+_property: unsignedTransaction.maxPriorityFeePerGas => [[BigNumberish]]
+The maximum priority fee per unit of gas for this transaction.
+
 _property: unsignedTransaction.data => [[BytesLike]]
 The data for this transaction.
 
@@ -38,7 +44,7 @@ The transaction hash, which can be used as an identifier for
 //transaction//. This is the keccak256 of the serialized RLP encoded
 representation of //transaction//.
 
-_property: unsignedTransaction.to => string<[Address](address)>
+_property: transaction.to => string<[Address](address)>
 The address //transaction// is to.
 
 _property: transaction.from => string<[Address](address)>
@@ -57,8 +63,20 @@ refunded at the end of the transaction, and if there is insufficient gas
 to complete execution, the effects of the transaction are reverted, but
 the gas is **fully consumed** and an out-of-gas error occurs.
 
-_property: transaction.gasPrice => [[BigNumber]]
+_property: transaction.gasPrice => null | [[BigNumber]]
 The price (in wei) per unit of gas for //transaction//.
+
+For [[link-eip-1559]] transactions, this will be null.
+
+_property: transaction.maxFeePerGas => [[BigNumber]]
+The maximum price (in wei) per unit of gas for //transaction//.
+
+For transactions that are not [[link-eip-1559]] transactions, this will be null.
+
+_property: transaction.maxPriorityFeePerGas => [[BigNumber]]
+The priority fee price (in wei) per unit of gas for //transaction//.
+
+For transactions that are not [[link-eip-1559]] transactions, this will be null.
 
 _property: transaction.data => [[BytesLike]]
 The data for //transaction//. In a contract this is the call data.
