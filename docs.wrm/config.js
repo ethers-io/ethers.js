@@ -117,9 +117,13 @@ const getSourceUrl = (function(path, include, exclude) {
     }
 })("../packages/", new RegExp("packages/.*/src.ts/.*\.ts$"), new RegExp("/node_modules/|src.ts/.*browser.*"));
 
+let localSigner = null;
+
 function codeContextify(context) {
     const { inspect } = require("util");
     const ethers = context.require("./packages/ethers");
+
+    if (localSigner == null) { localSigner = ethers.Wallet.createRandom(); }
 
     context.ethers = ethers;
     context.BigNumber = ethers.BigNumber;
@@ -133,9 +137,9 @@ function codeContextify(context) {
 
     // We use a local dev node for some signing examples, but want to
     // resolve ENS names against mainnet; super hacky but makes the
-    // docs nicer
+    // docs nicer (funded in _startup)
     context.localProvider = new ethers.providers.JsonRpcProvider();
-    context.localSigner = context.localProvider.getSigner();
+    context.localSigner = localSigner.connect(context.localProvider);
     context.localProvider.resolveName = context.provider.resolveName.bind(context.provider);
 
     context.BigNumber.prototype[inspect.custom] = function(depth, options) {
@@ -180,8 +184,14 @@ function codeContextify(context) {
         });
     }
 
-    context._startup = function() {
+    context._startup = async function() {
         console.log("Startup");
+        const signer = context.localProvider.getSigner();
+        const tx = await signer.sendTransaction({
+            to: localSigner.address,
+            value: ethers.utils.parseEther("10.0")
+        });
+        await tx.wait();
     }
 
     context._shutdown = function() {
