@@ -183,17 +183,45 @@ _property: transactionRequest.nonce => number | Promise<number>
 The nonce for this transaction. This should be set to the number of
 transactions ever sent **from** this address.
 
-_property: transactionRequest.gasLimit => [[BigNumber]] | Promise<[[BigNumber]]>
-The maximum amount of gas this transaction is permitted to use.
-
-_property: transactionRequest.gasPrice => [[BigNumber]] | Promise<[[BigNumber]]>
-The price (in wei) per unit of gas this transaction will pay.
-
 _property: transactionRequest.data => [[DataHexString]] | Promise<[[DataHexString]]>
 The transaction data.
 
 _property: transactionRequest.value => [[BigNumber]] | Promise<[[BigNumber]]>
 The amount (in wei) this transaction is sending.
+
+_property: transactionRequest.gasLimit => [[BigNumber]] | Promise<[[BigNumber]]>
+The maximum amount of gas this transaction is permitted to use.
+
+If left unspecified, ethers will use ``estimateGas`` to determine the value
+to use. For transactions with unpredicatable gas estiamtes, this may be required
+to specify explicitly.
+
+_property: transactionRequest.gasPrice => [[BigNumber]] | Promise<[[BigNumber]]>
+The price (in wei) per unit of gas this transaction will pay.
+
+This may not be specified for transactions with ``type`` set to ``1`` or ``2``, or
+if ``maxFeePerGas`` or ``maxPriorityFeePerGas`` is given.
+
+_property: transactionRequest.maxFeePerGas => [[BigNumber]] | Promise<[[BigNumber]]>
+The maximum price (in wei) per unit of gas this transaction will pay for the
+[[link-eip-1559]] base fee.
+
+Most developers should leave this unspecified and use the default value that
+ethers determines from the network.
+
+This may not be specified for transactions with ``type`` set to ``0`` or if ``gasPrice``
+is specified..
+
+_property: transactionRequest.maxPriorityFeePerGas => [[BigNumber]] | Promise<[[BigNumber]]>
+The price (in wei) per unit of gas this transaction will pay for the
+[[link-eip-1559]] priority fee. This is **included in** the ``maxFeePerGass``,
+so this will **not affect** the total maximum cost set with ``maxFeePerGas``.
+
+Most developers should leave this unspecified and use the default value that
+ethers determines from the network.
+
+This may not be specified for transactions with ``type`` set to ``0`` or if ``gasPrice``
+is specified.
 
 _property: transactionRequest.chainId => number | Promise<number>
 The chain ID this transaction is authorized on, as specified by
@@ -208,12 +236,13 @@ on recent versions of Geth and require configuration to enable.
 _property: transactionRequest.type => null | number
 
 The [[link-eip-2718]] type of this transaction envelope, or ``null``
-for legacy transactions that do not have an envelope.
+for to use the network default. To force using a lagacy transaction
+without an envelope, use type ``0``.
 
 _property: transactionRequest.accessList => [[providers-AccessListish]]
 
-The [[providers-AccessList]] to include in an [[link-eip-2930]] transaction, which will
-include a ``type`` of ``1``.
+The [[providers-AccessList]] to include; only available for [[link-eip-2930]]
+and [[link-eip-1559]] transactions.
 
 _heading: TransactionResponse @<providers-TransactionResponse> @INHERIT<[[Transaction]]>
 
@@ -267,15 +296,13 @@ send a new transaction from the same account with the original ``nonce``.
 This is usually to speed up a transaction or to cancel one, by bribing
 miners with additional fees to prefer the new transaction over the original one.
 
-_property: transactionRequest.type => null | number
-
-The [[link-eip-2718]] type of this transaction envelope, or ``null``
-for legacy transactions that do not have an envelope.
+_property: transactionRequest.type => number
+The [[link-eip-2718]] type of this transaction. If the transaction
+is a legacy transaction without an envelope, it will have the type ``0``.
 
 _property: transactionRequest.accessList => [[providers-AccessList]]
-
-The [[providers-AccessList]] included in an [[link-eip-2930]] transaction, which will
-also have its ``type`` equal to ``1``.
+The [[providers-AccessList]] included, or null for transaction types which
+do not support access lists.
 
 _heading: TransactionReceipt @<providers-TransactionReceipt>
 
@@ -298,6 +325,10 @@ object, which requires the transaction nonce and the address of the sender.
 _property: receipt.transactionIndex => number
 The index of this transaction in the list of transactions included in
 the block this transaction was mined in.
+
+_property: receipt.type => number
+The [[link-eip-2718]] type of this transaction. If the transaction
+is a legacy transaction without an envelope, it will have the type ``0``.
 
 _property: receipt.root => string
 The intermediate state root of a receipt.
