@@ -333,9 +333,12 @@ _code: @lang<javascript>
 //_hide:   value: ethers.utils.parseEther("2.0")
 //_hide: });
 //_hide: await fundTx.wait();
+//_hide: const tx = await localSigner.populateTransaction({ to: "ricmoo.eth", value: ethers.utils.parseEther("3.14159") });
+//_hide: const signedTx = await localSigner.signTransaction(tx);
 
+//_verbatim: `const signedTx = ${ JSON.stringify(signedTx) };`
 //_result:
-await provider.sendTransaction("0xf86e808502540be400825208948ba1f109551bd432803012645ac136ddd64dba72880de0b6b3a764000080820a96a0f0c5bcb11e5a16ab116c60a0e5837ae98ec36e7f217740076572e8183002edd2a01ed1b4411c2840b9793e8be5415a554507f1ea320069be6dcecabd7b9097dbd4");
+await provider.sendTransaction(signedTx);
 //_log:
 
 _property: provider.waitForTransaction(hash [ , confirms = 1 [ , timeout ] ]) => Promise<[TxReceipt](providers-TransactionReceipt)>  @<Provider-waitForTransaction> @SRC<providers/base-provider>
