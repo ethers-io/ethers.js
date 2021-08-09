@@ -26,7 +26,7 @@ account (account #0) is used.
 
 _property: jsonRpcProvider.getUncheckedSigner([ addressOrIndex ]) => [[UncheckedJsonRpcSigner]]  @<JsonRpcProvider-getUncheckedSigner> @SRC<providers/json-rpc-provider>
 
-_property: jsonRpcProvider.listAccounts() => Array<string>  @<JsonRpcProvider-listAccounts> @SRC<providers/json-rpc-provider>
+_property: jsonRpcProvider.listAccounts() => Promise<Array<string>>  @<JsonRpcProvider-listAccounts> @SRC<providers/json-rpc-provider>
 Returns a list of all account addresses managed by this provider.
 
 _property: jsonRpcProvider.send(method, params) => Promise<any>  @<JsonRpcProvider-send> @SRC<providers/json-rpc-provider>
