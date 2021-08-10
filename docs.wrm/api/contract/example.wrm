@@ -1,10 +1,75 @@
 _section: Example: ERC-20 Contract
 
+The concept of Meta-Classes is somewhat confusing, so we will go
+over a short example.
+
+A meta-class is a class which is defined at run-time. A Contract
+is specified by an //Application Binary Interface// (ABI), which describes
+the methods and events it has. This description is passed the the
+[[Contract]] object at run-time, and it creates a new Class, adding
+all the methods defined in the ABI at run-time.
+
+_subsection: Deploying a Contract
+
+Most often, any contract you will need to interact with will already
+be deployed to the blockchain, but for this example will will first
+deploy the contract.
+
+_property: new ethers.ContractFactory(abi, bytecode, signer)
+Create a new [[ContractFactory]] which can deploy a contract to the
+blockchain.
+
+_code: @lang<javascript>
+
+//_hide: const signer = localSigner;
+//_hide: const parseUnits = utils.parseUnits;
+
+const bytecode = "0x608060405234801561001057600080fd5b506040516103bc3803806103bc83398101604081905261002f9161007c565b60405181815233906000907fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef9060200160405180910390a333600090815260208190526040902055610094565b60006020828403121561008d578081fd5b5051919050565b610319806100a36000396000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c8063313ce5671461005157806370a082311461006557806395d89b411461009c578063a9059cbb146100c5575b600080fd5b604051601281526020015b60405180910390f35b61008e610073366004610201565b6001600160a01b031660009081526020819052604090205490565b60405190815260200161005c565b604080518082018252600781526626bcaa37b5b2b760c91b6020820152905161005c919061024b565b6100d86100d3366004610222565b6100e8565b604051901515815260200161005c565b3360009081526020819052604081205482111561014b5760405162461bcd60e51b815260206004820152601a60248201527f696e73756666696369656e7420746f6b656e2062616c616e6365000000000000604482015260640160405180910390fd5b336000908152602081905260408120805484929061016a9084906102b6565b90915550506001600160a01b0383166000908152602081905260408120805484929061019790849061029e565b90915550506040518281526001600160a01b0384169033907fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef9060200160405180910390a350600192915050565b80356001600160a01b03811681146101fc57600080fd5b919050565b600060208284031215610212578081fd5b61021b826101e5565b9392505050565b60008060408385031215610234578081fd5b61023d836101e5565b946020939093013593505050565b6000602080835283518082850152825b818110156102775785810183015185820160400152820161025b565b818111156102885783604083870101525b50601f01601f1916929092016040019392505050565b600082198211156102b1576102b16102cd565b500190565b6000828210156102c8576102c86102cd565b500390565b634e487b7160e01b600052601160045260246000fdfea2646970667358221220d80384ce584e101c5b92e4ee9b7871262285070dbcd2d71f99601f0f4fcecd2364736f6c63430008040033";
+
+// A Human-Readable ABI; we only need to specify relevant fragments,
+// in the case of deployment this means the constructor
+const abi = [
+    "constructor(uint totalSupply)"
+];
+
+const factory = new ethers.ContractFactory(abi, bytecode, signer)
+
+// Deploy, setting total supply to 100 tokens (assigned to the deployer)
+const contract = await factory.deploy(parseUnits("100"));
+
+// The contract is not currentl live on the network yet, however
+// its address is ready for us
+//_result:
+contract.address
+//_log:
+//_hide: _page.address = contract.address;
+
+// Wait until the contract has been deployed before interacting
+// with it; returns the receipt for the deployemnt transaction
+//_result:
+await contract.deployTransaction.wait();
+//_log:
+
+
 _subsection: Connecting to a Contract
 
-_code: A simple ERC-20 contract @lang<javascript>
+_heading: ERC20Contract @INHERIT<[[Contract]]>
 
-// A Human-Readable ABI; any supported ABI format could be used
+_property: new ethers.Contract(address, abi, providerOrSigner)
+Creating a new instance of a Contract connects to an existing
+contract by specifying its //address// on the blockchain,
+its //abi// (used to populate the class' methods) a //providerOrSigner//.
+
+If a [[Provider]] is given, the contract has only read-only access, while
+a [[Signer]] offers access to state manipulating methods.
+
+_code: @lang<javascript>
+
+//_hide: const provider = localProvider;
+//_hide: const signer = localSigner;
+
+// A Human-Readable ABI; for interacting with the contract, we
+// must include any fragment we wish to use
 const abi = [
     // Read-Only Functions
     "function balanceOf(address owner) view returns (uint256)",
@@ -12,20 +77,15 @@ const abi = [
     "function symbol() view returns (string)",
 
     // Authenticated Functions
-    "function transfer(address to, uint amount) returns (boolean)",
+    "function transfer(address to, uint amount) returns (bool)",
 
     // Events
     "event Transfer(address indexed from, address indexed to, uint amount)"
 ];
 
 // This can be an address or an ENS name
-const address = "dai.tokens.ethers.eth";
-
-// An example Provider
-const provider = ethers.getDefaultProvider();
-
-// An example Signer
-const signer = ethers.Wallet.createRandom().connect(provider);
+//_hide: const address = _page.address;
+//_verbatim: `const address = ${ JSON.stringify(address) };`
 
 // Read-Only; By connecting to a Provider, allows:
 // - Any constant function
@@ -34,20 +94,13 @@ const signer = ethers.Wallet.createRandom().connect(provider);
 // - Estimating Gas for non-constant (as an anonymous sender)
 // - Static Calling non-constant methods (as anonymous sender)
 const erc20 = new ethers.Contract(address, abi, provider);
+//_hide: _page.erc20 = erc20;
 
 // Read-Write; By connecting to a Signer, allows:
 // - Everything from Read-Only (except as Signer, not anonymous)
 // - Sending transactions for non-constant functions
-const erc20_rw = new ethers.Contract(address, abi, signer)
-
-
-_heading: ERC20Contract @INHERIT<[[Contract]]>
-
-_property: new ethers.Contract(address, abi, providerOrSigner)
-See the above code example for creating an Instance which will
-(in addition to the Contact methods and properties) automatically
-add the additional properties defined in //abi// to a **Contract**
-connected to //address// using the //providerOrSigner//.
+const erc20_rw = new ethers.Contract(address, abi, signer);
+//_hide: _page.erc20_rw = erc20_rw;
 
 
 _subsection: Properties @NOTE<(inheritted from [[Contract]])>
@@ -101,6 +154,8 @@ _property: Contract.isIndexed(value) => boolean
 
 _subsection: Events @NOTE<(inheritted from [[Contract]])> @<erc20-events>
 
+See [Meta-Class Filters](erc20-meta-events) for examples using events.
+
 _property: erc20.queryFilter(event [ , fromBlockOrBlockHash [ , toBlock ]) => Promise<Array<Event>> @<erc20-queryfilter>
 Return Events that match the //event//.
 
@@ -126,7 +181,7 @@ Unsubscribe all listeners for //event//. If no event is provided,
 all events are unsubscribed.
 
 
-_subsection: Meta-Class Methods @NOTE<(added at Runtime)>
+_subsection: Meta-Class Methods @NOTE<(added at Runtime)> @<erc20-meta-methods>
 
 Since the Contract is a Meta-Class, the methods available here depend
 on the ABI which was passed into the **Contract**.
@@ -136,11 +191,34 @@ Returns the number of decimal places used by this ERC-20 token. This can be
 used with [parseUnits](utils-parseUnits) when taking input from the user or
 [formatUnits](utils-formatunits] when displaying the token amounts in the UI.
 
+_code: @lang<javascript>
+
+//_hide: const erc20 = _page.erc20;
+//_result:
+await erc20.decimals();
+//_log:
+
 _property: erc20.balanceOf(owner [, overrides ]) => Promise<[[BigNumber]]>
 Returns the balance of //owner// for this ERC-20 token.
 
+_code: @lang<javascript>
+
+//_hide: const signer = localSigner;
+//_hide: const erc20 = _page.erc20;
+
+//_result:
+await erc20.balanceOf(signer.getAddress())
+//_log:
+
 _property: erc20.symbol([ overrides ]) => Promise<string>
 Returns the symbol of the token.
+
+_code: @lang<javascript>
+
+//_hide: const erc20 = _page.erc20;
+//_result:
+await erc20.symbol();
+//_log:
 
 _property: erc20_rw.transfer(target, amount [, overrides ]) => Promise<[[providers-TransactionResponse]]>
 Transfers //amount// tokens to //target// from the current signer.
@@ -149,20 +227,86 @@ using a transaction. Other techniques (such as events) are required
 if this value is required. On-chain contracts calling the ``transfer``
 function have access to this result, which is why it is possible.
 
+_code: @lang<javascript>
+
+//_hide: const signer = localSigner;
+//_hide: const erc20_rw = _page.erc20_rw;
+//_hide: const parseUnits = utils.parseUnits;
+//_hide: const formatUnits = utils.formatUnits;
+
+// Before...
+//_result:
+formatUnits(await erc20_rw.balanceOf(signer.getAddress()));
+//_log:
+
+// Transfer 1.23 tokens to the ENS name "ricmoo.eth"
+//_result:
+tx = await erc20_rw.transfer("ricmoo.eth", parseUnits("1.23"));
+//_log:
+
+// Wait for the transaction to be mined...
+//_result:
+await tx.wait();
+//_log:
+
+// After!
+//_result:
+formatUnits(await erc20_rw.balanceOf(signer.getAddress()));
+//_log:
+
+//_result:
+formatUnits(await erc20_rw.balanceOf("ricmoo.eth"));
+//_log:
+
 _property: erc20.callStatic.transfer(target, amount [, overrides ]) => Promise<boolean>
 Performs a dry-run of transferring //amount// tokens to //target// from
 the current signer, without actually signing or sending a transaction.
 
 This can be used to preflight check that a transaction will be successful.
 
+_code: @lang<javascript>
+
+//_hide: const erc20_rw = _page.erc20_rw;
+//_hide: const randomWallet = ethers.Wallet.createRandom().connect(erc20_rw.provider);
+//_hide: const parseUnits = utils.parseUnits;
+
+// The signer has enough tokens to send, so true is returned
+//_result:
+await erc20_rw.callStatic.transfer("ricmoo.eth", parseUnits("1.23"));
+//_log:
+
+// A random address does not have enough tokens to
+// send, in which case the contract throws an error
+erc20_random = erc20_rw.connect(randomWallet);
+//_throws:
+await erc20_random.callStatic.transfer("ricmoo.eth", parseUnits("1.23"));
+//_log:
+
 _property: erc20.estimateGas.transfer(target, amount [, overrides ]) => Promise<[[BigNumber]]>
 Returns an estimate for how many units of gas would be required
 to transfer //amount// tokens to //target//.
+
+_code: @lang<javascript>
+
+//_hide: const erc20_rw = _page.erc20_rw;
+//_hide: const parseUnits = utils.parseUnits;
+
+//_result:
+await erc20_rw.estimateGas.transfer("ricmoo.eth", parseUnits("1.23"));
+//_log:
 
 _property: erc20.populateTransaction.transfer(target, amount [, overrides ]) => Promise<[UnsignedTx](UnsignedTransaction)>
 Returns an [[UnsignedTransaction]] which could be signed and submitted
 to the network to transaction //amount// tokens to //target//.
 
+_code: @lang<javascript>
+
+//_hide: const erc20_rw = _page.erc20_rw;
+//_hide: const parseUnits = utils.parseUnits;
+
+//_result:
+await erc20_rw.populateTransaction.transfer("ricmoo.eth", parseUnits("1.23"));
+//_log:
 
 _note: Note on Estimating and Static Calling
 
@@ -173,7 +317,7 @@ blockchain also means there are certain consistency modes that cannot be
 known until an actual transaction is attempted.
 
 
-_subsection: Meta-Class Filters @NOTE<(added at Runtime)>
+_subsection: Meta-Class Filters @NOTE<(added at Runtime)> @<erc20-meta-events>
 
 Since the Contract is a Meta-Class, the methods available here depend
 on the ABI which was passed into the **Contract**.
@@ -184,3 +328,75 @@ to [subscribe/unsubscribe to events](erc20-events).
 
 If //fromAddress// is null or not provided, then any from address matches.
 If //toAddress// is null or not provided, then any to address matches.
+
+_code: query filter *from* events @lang<javascript>
+
+//_hide: const signer = localSigner;
+//_hide: const erc20 = _page.erc20;
+
+//_result:
+filterFrom = erc20.filters.Transfer(signer.address);
+//_log:
+
+// Search for transfers *from* me in the last 10 blocks
+//_result:
+logsFrom = await erc20.queryFilter(filterFrom, -10, "latest");
+//_log:
+
+// Note that the args providees the details of the event, each
+// parameters is available positionally, and since our ABI
+// included parameter names also by name
+//_result:
+logsFrom[0].args
+//_log:
+
+//_hide: _page.filterFrom = filterFrom;
+
+
+_code: query filter with *to* events @lang<javascript>
+
+//_hide: const signer = localSigner;
+//_hide: const erc20 = _page.erc20;
+
+//_result:
+filterTo = erc20.filters.Transfer(null, signer.address);
+//_log:
+
+// Search for transfers *to* me in the last 10 blocks
+// Note: the contract transferred totalSupply tokens to us
+//       when it was deployed in its constructor
+//_result:
+logsTo = await erc20.queryFilter(filterTo, -10, "latest");
+//_log:
+
+// Note that the args providees the details of the event, each
+// parameters is available positionally, and since our ABI
+// included parameter names also by name
+//_result:
+logsTo[0].args
+//_log:
+
+//_hide: _page.filterTo = filterTo;
+
+_code: listen for events @lang<javascript>
+
+//_hide: const erc20 = _page.erc20;
+//_hide: const filterFrom = _page.filterFrom;
+//_hide: const filterTo = _page.filterTo;
+
+// Listen to incoming events from signer:
+erc20.on(filterFrom, (from, to, amount, event) => {
+  // The `from` will always be the signer address
+});
+
+// Listen to incoming events to signer:
+erc20.on(filterTo, (from, to, amount, event) => {
+  // The `to` will always be the signer address
+});
+
+// Listen to all Transfer events:
+erc20.on("Transfer", (from, to, amount, event) => {
+  // ...
+});
+
+//_hide: erc20.removeAllListeners();
