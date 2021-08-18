@@ -3,6 +3,11 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.4.5 (2021-08-18 03:05)
+--------------------------------
+
+  - Fxied getBlockWithTransactions results (1858). ([78e4273](https://github.com/ethers-io/ethers.js/commit/78e4273a327d12da9a1ec008d3f2146d97385921))
+
 ethers/v5.4.4 (2021-08-04 01:37)
 --------------------------------
 

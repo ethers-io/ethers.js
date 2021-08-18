@@ -1609,7 +1609,7 @@ var BaseProvider = /** @class */ (function (_super) {
                                         return [3 /*break*/, 2];
                                     case 7:
                                         blockWithTxs = this.formatter.blockWithTransactions(block);
-                                        blockWithTxs.transactions = block.transactions.map(function (tx) { return _this._wrapTransaction(tx); });
+                                        blockWithTxs.transactions = blockWithTxs.transactions.map(function (tx) { return _this._wrapTransaction(tx); });
                                         return [2 /*return*/, blockWithTxs];
                                     case 8: return [2 /*return*/, this.formatter.block(block)];
                                 }

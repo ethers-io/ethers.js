@@ -18301,7 +18301,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.4.3";
+const version$m = "providers/5.4.4";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -18570,7 +18570,7 @@ class Formatter {
         if (transaction.to == null && transaction.creates == null) {
             transaction.creates = this.contractAddress(transaction);
         }
-        if (transaction.type === 1 && transaction.accessList == null) {
+        if ((transaction.type === 1 || transaction.type === 2) && transaction.accessList == null) {
             transaction.accessList = [];
         }
         const result = Formatter.check(this.formats.transaction, transaction);
@@ -19970,7 +19970,7 @@ class BaseProvider extends Provider {
                         }
                     }
                     const blockWithTxs = this.formatter.blockWithTransactions(block);
-                    blockWithTxs.transactions = block.transactions.map((tx) => this._wrapTransaction(tx));
+                    blockWithTxs.transactions = blockWithTxs.transactions.map((tx) => this._wrapTransaction(tx));
                     return blockWithTxs;
                 }
                 return this.formatter.block(block);
@@ -23180,7 +23180,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.4.4";
+const version$o = "ethers/5.4.5";
 
 "use strict";
 const logger$H = new Logger(version$o);

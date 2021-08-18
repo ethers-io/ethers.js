@@ -20614,7 +20614,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.4.3";
+	exports.version = "providers/5.4.4";
 
 	});
 
@@ -20900,7 +20900,7 @@
 	        if (transaction.to == null && transaction.creates == null) {
 	            transaction.creates = this.contractAddress(transaction);
 	        }
-	        if (transaction.type === 1 && transaction.accessList == null) {
+	        if ((transaction.type === 1 || transaction.type === 2) && transaction.accessList == null) {
 	            transaction.accessList = [];
 	        }
 	        var result = Formatter.check(this.formats.transaction, transaction);
@@ -22686,7 +22686,7 @@
 	                                        return [3 /*break*/, 2];
 	                                    case 7:
 	                                        blockWithTxs = this.formatter.blockWithTransactions(block);
-	                                        blockWithTxs.transactions = block.transactions.map(function (tx) { return _this._wrapTransaction(tx); });
+	                                        blockWithTxs.transactions = blockWithTxs.transactions.map(function (tx) { return _this._wrapTransaction(tx); });
 	                                        return [2 /*return*/, blockWithTxs];
 	                                    case 8: return [2 /*return*/, this.formatter.block(block)];
 	                                }
@@ -27008,7 +27008,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.4.4";
+	exports.version = "ethers/5.4.5";
 
 	});
 

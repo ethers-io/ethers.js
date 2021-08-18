@@ -1249,7 +1249,7 @@ export class BaseProvider extends Provider {
                         }
                     }
                     const blockWithTxs = this.formatter.blockWithTransactions(block);
-                    blockWithTxs.transactions = block.transactions.map((tx) => this._wrapTransaction(tx));
+                    blockWithTxs.transactions = blockWithTxs.transactions.map((tx) => this._wrapTransaction(tx));
                     return blockWithTxs;
                 }
                 return this.formatter.block(block);

@@ -273,7 +273,7 @@ export class Formatter {
         if (transaction.to == null && transaction.creates == null) {
             transaction.creates = this.contractAddress(transaction);
         }
-        if (transaction.type === 1 && transaction.accessList == null) {
+        if ((transaction.type === 1 || transaction.type === 2) && transaction.accessList == null) {
             transaction.accessList = [];
         }
         const result = Formatter.check(this.formats.transaction, transaction);
