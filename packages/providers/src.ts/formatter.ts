@@ -334,7 +334,7 @@ export class Formatter {
             transaction.creates = this.contractAddress(transaction);
         }
 
-        if (transaction.type === 1 && transaction.accessList == null) {
+        if ((transaction.type === 1 || transaction.type === 2)&& transaction.accessList == null) {
             transaction.accessList = [ ];
         }
 

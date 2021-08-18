@@ -1389,8 +1389,8 @@ export class BaseProvider extends Provider implements EnsProvider {
                     }
                 }
 
-                const blockWithTxs = this.formatter.blockWithTransactions(block);
-                blockWithTxs.transactions = block.transactions.map((tx: TransactionResponse) => this._wrapTransaction(tx));
+                const blockWithTxs: any = this.formatter.blockWithTransactions(block);
+                blockWithTxs.transactions = blockWithTxs.transactions.map((tx: TransactionResponse) => this._wrapTransaction(tx));
                 return blockWithTxs;
             }
 
