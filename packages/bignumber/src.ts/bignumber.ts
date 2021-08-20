@@ -245,7 +245,7 @@ export class BigNumber implements Hexable {
                 throwFault("underflow", "BigNumber.from", value);
             }
 
-            if (value >= MAX_SAFE || value <= -MAX_SAFE) {
+            if (value > MAX_SAFE || value < -MAX_SAFE) {
                 throwFault("overflow", "BigNumber.from", value);
             }
 

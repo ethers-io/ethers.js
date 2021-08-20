@@ -116,13 +116,13 @@
   },
   {
     "testcase": "Numbers - BigNumber Safe",
-    "value": 9007199254740990,
-    "expectedValue": "0x1ffffffffffffe"
+    "value": 9007199254740991,
+    "expectedValue": "0x1fffffffffffff"
   },
   {
     "testcase": "Numbers - BigNumber Safe (negative)",
-    "value": -9007199254740990,
-    "expectedValue": "-0x1ffffffffffffe"
+    "value": -9007199254740991,
+    "expectedValue": "-0x1fffffffffffff"
   },
   {
     "testcase": "Invalid - Empty value",
@@ -150,13 +150,13 @@
     "expectedValue": null
   },
   {
-    "testcase": "Invalid - MAX_SAFE_INTEGER",
-    "value": 9007199254740991,
+    "testcase": "Invalid - MAX_SAFE_INTEGER + 1",
+    "value": 9007199254740992,
     "expectedValue": null
   },
   {
-    "testcase": "Invalid - -MAX_SAFE_INTEGER",
-    "value": -9007199254740991,
+    "testcase": "Invalid - -MAX_SAFE_INTEGER - 1",
+    "value": -9007199254740992,
     "expectedValue": null
   },
   {
