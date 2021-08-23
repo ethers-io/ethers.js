@@ -778,3 +778,19 @@ html.single-page .sidebar .toc .link.selected a {
 html.single-page .sidebar .toc .link.title.selected a {
     color: #fff;
 }
+
+@media print {
+  .sidebar {
+    display: none;
+  }
+  div.code {
+    font-size: 10pt;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .content {
+    box-shadow: none;
+    padding: 0;
+    width: auto;
+  }
+}
