@@ -556,6 +556,7 @@ var Interface = /** @class */ (function () {
                 // Make error named values throw on access
                 if (value_1 instanceof Error) {
                     Object.defineProperty(result, param.name, {
+                        enumerable: true,
                         get: function () { throw wrapAccessError("property " + JSON.stringify(param.name), value_1); }
                     });
                 }
@@ -568,6 +569,7 @@ var Interface = /** @class */ (function () {
             var value = result[i];
             if (value instanceof Error) {
                 Object.defineProperty(result, i, {
+                    enumerable: true,
                     get: function () { throw wrapAccessError("index " + i, value); }
                 });
             }

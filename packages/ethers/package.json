@@ -2,7 +2,7 @@
   "author": "Richard Moore <me@ricmoo.com>",
   "browser-old": "./dist/ethers.umd.js",
   "dependencies": {
-    "@ethersproject/abi": "5.4.0",
+    "@ethersproject/abi": "5.4.1",
     "@ethersproject/abstract-provider": "5.4.1",
     "@ethersproject/abstract-signer": "5.4.1",
     "@ethersproject/address": "5.4.0",
@@ -16,11 +16,11 @@
     "@ethersproject/hdnode": "5.4.0",
     "@ethersproject/json-wallets": "5.4.0",
     "@ethersproject/keccak256": "5.4.0",
-    "@ethersproject/logger": "5.4.0",
+    "@ethersproject/logger": "5.4.1",
     "@ethersproject/networks": "5.4.2",
     "@ethersproject/pbkdf2": "5.4.0",
-    "@ethersproject/properties": "5.4.0",
-    "@ethersproject/providers": "5.4.4",
+    "@ethersproject/properties": "5.4.1",
+    "@ethersproject/providers": "5.4.5",
     "@ethersproject/random": "5.4.0",
     "@ethersproject/rlp": "5.4.0",
     "@ethersproject/sha2": "5.4.0",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x586000a5750fe06f8d8971c469a6d07062e0caa346098aab7085d13b35ad1d1e",
+  "tarballHash": "0x7d73b78a4e88f87373c2e4bfc67854ec790e1d020b528b0570c8e4ba16660ce7",
   "types": "./lib/index.d.ts",
-  "version": "5.4.5"
+  "version": "5.4.6"
 }

@@ -73,7 +73,16 @@ function _isFrozen(object) {
         }
         const keys = Object.keys(object);
         for (let i = 0; i < keys.length; i++) {
-            if (!_isFrozen(object[keys[i]])) {
+            let value = null;
+            try {
+                value = object[keys[i]];
+            }
+            catch (error) {
+                // If accessing a value triggers an error, it is a getter
+                // designed to do so (e.g. Result) and is therefore "frozen"
+                continue;
+            }
+            if (!_isFrozen(value)) {
                 return false;
             }
         }

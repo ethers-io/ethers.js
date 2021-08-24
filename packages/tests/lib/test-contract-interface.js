@@ -586,4 +586,14 @@ describe('Test EIP-838 Error Codes', function () {
         });
     });
 });
+describe("Additional test cases", function () {
+    // See: #1906
+    it("allows addresses without the 0x", function () {
+        var iface = new ethers_1.ethers.utils.Interface([
+            "function test(address foo) view returns (bool)"
+        ]);
+        var tx = iface.encodeFunctionData("test", ["c1912fee45d61c87cc5ea59dae31190fffff232d"]);
+        console.log(tx);
+    });
+});
 //# sourceMappingURL=test-contract-interface.js.map

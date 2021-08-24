@@ -3490,7 +3490,7 @@ var bn = createCommonjsModule(function (module) {
 })('object' === 'undefined' || module, commonjsGlobal);
 });
 
-const version = "logger/5.4.0";
+const version = "logger/5.4.1";
 
 "use strict";
 let _permanentCensorErrors = false;
@@ -3609,6 +3609,7 @@ var ErrorCode;
     ErrorCode["TRANSACTION_REPLACED"] = "TRANSACTION_REPLACED";
 })(ErrorCode || (ErrorCode = {}));
 ;
+const HEX = "0123456789abcdef";
 class Logger {
     constructor(version) {
         Object.defineProperty(this, "version", {
@@ -3649,8 +3650,19 @@ class Logger {
         }
         const messageDetails = [];
         Object.keys(params).forEach((key) => {
+            const value = params[key];
             try {
-                messageDetails.push(key + "=" + JSON.stringify(params[key]));
+                if (value instanceof Uint8Array) {
+                    let hex = "";
+                    for (let i = 0; i < value.length; i++) {
+                        hex += HEX[value[i] >> 4];
+                        hex += HEX[value[i] & 0x0f];
+                    }
+                    messageDetails.push(key + "=Uint8Array(0x" + hex + ")");
+                }
+                else {
+                    messageDetails.push(key + "=" + JSON.stringify(value));
+                }
             }
             catch (error) {
                 messageDetails.push(key + "=" + JSON.stringify(params[key].toString()));
@@ -4835,7 +4847,7 @@ class FixedNumber {
 const ONE = FixedNumber.from(1);
 const BUMP = FixedNumber.from("0.5");
 
-const version$3 = "properties/5.4.0";
+const version$3 = "properties/5.4.1";
 
 "use strict";
 var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -4910,7 +4922,16 @@ function _isFrozen(object) {
         }
         const keys = Object.keys(object);
         for (let i = 0; i < keys.length; i++) {
-            if (!_isFrozen(object[keys[i]])) {
+            let value = null;
+            try {
+                value = object[keys[i]];
+            }
+            catch (error) {
+                // If accessing a value triggers an error, it is a getter
+                // designed to do so (e.g. Result) and is therefore "frozen"
+                continue;
+            }
+            if (!_isFrozen(value)) {
                 return false;
             }
         }
@@ -4952,7 +4973,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.4.0";
+const version$4 = "abi/5.4.1";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -6694,7 +6715,7 @@ class AddressCoder extends Coder {
     }
     encode(writer, value) {
         try {
-            getAddress(value);
+            value = getAddress(value);
         }
         catch (error) {
             this._throwError(error.message, value);
@@ -6853,6 +6874,7 @@ function unpack(reader, coders) {
         const value = values[index];
         if (value instanceof Error) {
             Object.defineProperty(values, name, {
+                enumerable: true,
                 get: () => { throw value; }
             });
         }
@@ -6864,6 +6886,7 @@ function unpack(reader, coders) {
         const value = values[i];
         if (value instanceof Error) {
             Object.defineProperty(values, i, {
+                enumerable: true,
                 get: () => { throw value; }
             });
         }
@@ -8692,6 +8715,7 @@ class Interface {
                 // Make error named values throw on access
                 if (value instanceof Error) {
                     Object.defineProperty(result, param.name, {
+                        enumerable: true,
                         get: () => { throw wrapAccessError(`property ${JSON.stringify(param.name)}`, value); }
                     });
                 }
@@ -8705,6 +8729,7 @@ class Interface {
             const value = result[i];
             if (value instanceof Error) {
                 Object.defineProperty(result, i, {
+                    enumerable: true,
                     get: () => { throw wrapAccessError(`index ${i}`, value); }
                 });
             }
@@ -18301,7 +18326,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.4.4";
+const version$m = "providers/5.4.5";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -21247,15 +21272,6 @@ class UrlJsonRpcProvider extends StaticJsonRpcProvider {
 }
 
 "use strict";
-var __awaiter$d = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 const logger$x = new Logger(version$m);
 // This key was provided to ethers.js by Alchemy to be used by the
 // default provider, but it is recommended that for your own
@@ -21325,27 +21341,13 @@ class AlchemyProvider extends UrlJsonRpcProvider {
             }
         };
     }
-    perform(method, params) {
-        const _super = Object.create(null, {
-            perform: { get: () => super.perform }
-        });
-        return __awaiter$d(this, void 0, void 0, function* () {
-            if ((method === "estimateGas" && params.transaction.type === 2) || (method === "sendTransaction" && params.signedTransaction.substring(0, 4) === "0x02")) {
-                logger$x.throwError("AlchemyProvider does not currently support EIP-1559", Logger.errors.UNSUPPORTED_OPERATION, {
-                    operation: method,
-                    transaction: params.transaction
-                });
-            }
-            return _super.perform.call(this, method, params);
-        });
-    }
     isCommunityResource() {
         return (this.apiKey === defaultApiKey);
     }
 }
 
 "use strict";
-var __awaiter$e = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$d = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -21377,7 +21379,7 @@ class CloudflareProvider extends UrlJsonRpcProvider {
         const _super = Object.create(null, {
             perform: { get: () => super.perform }
         });
-        return __awaiter$e(this, void 0, void 0, function* () {
+        return __awaiter$d(this, void 0, void 0, function* () {
             // The Cloudflare provider does not support eth_blockNumber,
             // so we get the latest block and pull it from that
             if (method === "getBlockNumber") {
@@ -21390,7 +21392,7 @@ class CloudflareProvider extends UrlJsonRpcProvider {
 }
 
 "use strict";
-var __awaiter$f = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$e = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -21582,7 +21584,7 @@ class EtherscanProvider extends BaseProvider {
         return params;
     }
     fetch(module, params, post) {
-        return __awaiter$f(this, void 0, void 0, function* () {
+        return __awaiter$e(this, void 0, void 0, function* () {
             const url = (post ? this.getPostUrl() : this.getUrl(module, params));
             const payload = (post ? this.getPostData(module, params) : null);
             const procFunc = (module === "proxy") ? getJsonResult : getResult$1;
@@ -21619,7 +21621,7 @@ class EtherscanProvider extends BaseProvider {
         });
     }
     detectNetwork() {
-        return __awaiter$f(this, void 0, void 0, function* () {
+        return __awaiter$e(this, void 0, void 0, function* () {
             return this.network;
         });
     }
@@ -21627,7 +21629,7 @@ class EtherscanProvider extends BaseProvider {
         const _super = Object.create(null, {
             perform: { get: () => super.perform }
         });
-        return __awaiter$f(this, void 0, void 0, function* () {
+        return __awaiter$e(this, void 0, void 0, function* () {
             switch (method) {
                 case "getBlockNumber":
                     return this.fetch("proxy", { action: "eth_blockNumber" });
@@ -21769,7 +21771,7 @@ class EtherscanProvider extends BaseProvider {
     //       Error: Result window is too large, PageNo x Offset size must
     //              be less than or equal to 10000
     getHistory(addressOrName, startBlock, endBlock) {
-        return __awaiter$f(this, void 0, void 0, function* () {
+        return __awaiter$e(this, void 0, void 0, function* () {
             const params = {
                 action: "txlist",
                 address: (yield this.resolveName(addressOrName)),
@@ -21801,7 +21803,7 @@ class EtherscanProvider extends BaseProvider {
 }
 
 "use strict";
-var __awaiter$g = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$f = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -22064,7 +22066,7 @@ function getProcessFunc(provider, method, params) {
 // If we are doing a blockTag query, we need to make sure the backend is
 // caught up to the FallbackProvider, before sending a request to it.
 function waitForSync(config, blockNumber) {
-    return __awaiter$g(this, void 0, void 0, function* () {
+    return __awaiter$f(this, void 0, void 0, function* () {
         const provider = (config.provider);
         if ((provider.blockNumber != null && provider.blockNumber >= blockNumber) || blockNumber === -1) {
             return provider;
@@ -22088,7 +22090,7 @@ function waitForSync(config, blockNumber) {
     });
 }
 function getRunner(config, currentBlockNumber, method, params) {
-    return __awaiter$g(this, void 0, void 0, function* () {
+    return __awaiter$f(this, void 0, void 0, function* () {
         let provider = config.provider;
         switch (method) {
             case "getBlockNumber":
@@ -22191,13 +22193,13 @@ class FallbackProvider extends BaseProvider {
         this._highestBlockNumber = -1;
     }
     detectNetwork() {
-        return __awaiter$g(this, void 0, void 0, function* () {
+        return __awaiter$f(this, void 0, void 0, function* () {
             const networks = yield Promise.all(this.providerConfigs.map((c) => c.provider.getNetwork()));
             return checkNetworks(networks);
         });
     }
     perform(method, params) {
-        return __awaiter$g(this, void 0, void 0, function* () {
+        return __awaiter$f(this, void 0, void 0, function* () {
             // Sending transactions is special; always broadcast it to all backends
             if (method === "sendTransaction") {
                 const results = yield Promise.all(this.providerConfigs.map((c) => {
@@ -23180,7 +23182,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.4.5";
+const version$o = "ethers/5.4.6";
 
 "use strict";
 const logger$H = new Logger(version$o);

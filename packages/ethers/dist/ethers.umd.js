@@ -3500,7 +3500,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "logger/5.4.0";
+	exports.version = "logger/5.4.1";
 
 	});
 
@@ -3627,6 +3627,7 @@
 	    ErrorCode["TRANSACTION_REPLACED"] = "TRANSACTION_REPLACED";
 	})(ErrorCode = exports.ErrorCode || (exports.ErrorCode = {}));
 	;
+	var HEX = "0123456789abcdef";
 	var Logger = /** @class */ (function () {
 	    function Logger(version) {
 	        Object.defineProperty(this, "version", {
@@ -3679,8 +3680,19 @@
 	        }
 	        var messageDetails = [];
 	        Object.keys(params).forEach(function (key) {
+	            var value = params[key];
 	            try {
-	                messageDetails.push(key + "=" + JSON.stringify(params[key]));
+	                if (value instanceof Uint8Array) {
+	                    var hex = "";
+	                    for (var i = 0; i < value.length; i++) {
+	                        hex += HEX[value[i] >> 4];
+	                        hex += HEX[value[i] & 0x0f];
+	                    }
+	                    messageDetails.push(key + "=Uint8Array(0x" + hex + ")");
+	                }
+	                else {
+	                    messageDetails.push(key + "=" + JSON.stringify(value));
+	                }
 	            }
 	            catch (error) {
 	                messageDetails.push(key + "=" + JSON.stringify(params[key].toString()));
@@ -4981,7 +4993,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "properties/5.4.0";
+	exports.version = "properties/5.4.1";
 
 	});
 
@@ -5105,7 +5117,16 @@
 	        }
 	        var keys = Object.keys(object);
 	        for (var i = 0; i < keys.length; i++) {
-	            if (!_isFrozen(object[keys[i]])) {
+	            var value = null;
+	            try {
+	                value = object[keys[i]];
+	            }
+	            catch (error) {
+	                // If accessing a value triggers an error, it is a getter
+	                // designed to do so (e.g. Result) and is therefore "frozen"
+	                continue;
+	            }
+	            if (!_isFrozen(value)) {
 	                return false;
 	            }
 	        }
@@ -5158,7 +5179,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abi/5.4.0";
+	exports.version = "abi/5.4.1";
 
 	});
 
@@ -7070,7 +7091,7 @@
 	    };
 	    AddressCoder.prototype.encode = function (writer, value) {
 	        try {
-	            lib$6.getAddress(value);
+	            value = lib$6.getAddress(value);
 	        }
 	        catch (error) {
 	            this._throwError(error.message, value);
@@ -7285,6 +7306,7 @@
 	        var value = values[index];
 	        if (value instanceof Error) {
 	            Object.defineProperty(values, name, {
+	                enumerable: true,
 	                get: function () { throw value; }
 	            });
 	        }
@@ -7296,6 +7318,7 @@
 	        var value = values[i];
 	        if (value instanceof Error) {
 	            Object.defineProperty(values, i, {
+	                enumerable: true,
 	                get: function () { throw value; }
 	            });
 	        }
@@ -9675,6 +9698,7 @@
 	                // Make error named values throw on access
 	                if (value_1 instanceof Error) {
 	                    Object.defineProperty(result, param.name, {
+	                        enumerable: true,
 	                        get: function () { throw wrapAccessError("property " + JSON.stringify(param.name), value_1); }
 	                    });
 	                }
@@ -9687,6 +9711,7 @@
 	            var value = result[i];
 	            if (value instanceof Error) {
 	                Object.defineProperty(result, i, {
+	                    enumerable: true,
 	                    get: function () { throw wrapAccessError("index " + i, value); }
 	                });
 	            }
@@ -20614,7 +20639,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.4.4";
+	exports.version = "providers/5.4.5";
 
 	});
 
@@ -24437,42 +24462,6 @@
 	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	    };
 	})();
-	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
-	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-	    return new (P || (P = Promise))(function (resolve, reject) {
-	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-	        step((generator = generator.apply(thisArg, _arguments || [])).next());
-	    });
-	};
-	var __generator = (commonjsGlobal && commonjsGlobal.__generator) || function (thisArg, body) {
-	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-	    function verb(n) { return function (v) { return step([n, v]); }; }
-	    function step(op) {
-	        if (f) throw new TypeError("Generator is already executing.");
-	        while (_) try {
-	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-	            if (y = 0, t) op = [op[0] & 2, t.value];
-	            switch (op[0]) {
-	                case 0: case 1: t = op; break;
-	                case 4: _.label++; return { value: op[1], done: false };
-	                case 5: _.label++; y = op[1]; op = [0]; continue;
-	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-	                default:
-	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-	                    if (t[2]) _.ops.pop();
-	                    _.trys.pop(); continue;
-	            }
-	            op = body.call(thisArg, _);
-	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-	    }
-	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.AlchemyProvider = exports.AlchemyWebSocketProvider = void 0;
 
@@ -24558,19 +24547,6 @@
 	                return Promise.resolve(true);
 	            }
 	        };
-	    };
-	    AlchemyProvider.prototype.perform = function (method, params) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                if ((method === "estimateGas" && params.transaction.type === 2) || (method === "sendTransaction" && params.signedTransaction.substring(0, 4) === "0x02")) {
-	                    logger.throwError("AlchemyProvider does not currently support EIP-1559", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	                        operation: method,
-	                        transaction: params.transaction
-	                    });
-	                }
-	                return [2 /*return*/, _super.prototype.perform.call(this, method, params)];
-	            });
-	        });
 	    };
 	    AlchemyProvider.prototype.isCommunityResource = function () {
 	        return (this.apiKey === defaultApiKey);
@@ -27008,7 +26984,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.4.5";
+	exports.version = "ethers/5.4.6";
 
 	});
 

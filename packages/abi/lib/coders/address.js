@@ -29,7 +29,7 @@ var AddressCoder = /** @class */ (function (_super) {
     };
     AddressCoder.prototype.encode = function (writer, value) {
         try {
-            address_1.getAddress(value);
+            value = address_1.getAddress(value);
         }
         catch (error) {
             this._throwError(error.message, value);

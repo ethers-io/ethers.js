@@ -149,6 +149,7 @@ function unpack(reader, coders) {
         var value = values[index];
         if (value instanceof Error) {
             Object.defineProperty(values, name, {
+                enumerable: true,
                 get: function () { throw value; }
             });
         }
@@ -160,6 +161,7 @@ function unpack(reader, coders) {
         var value = values[i];
         if (value instanceof Error) {
             Object.defineProperty(values, i, {
+                enumerable: true,
                 get: function () { throw value; }
             });
         }

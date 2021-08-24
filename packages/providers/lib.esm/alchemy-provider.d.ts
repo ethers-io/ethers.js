@@ -12,7 +12,6 @@ export declare class AlchemyProvider extends UrlJsonRpcProvider {
     static getWebSocketProvider(network?: Networkish, apiKey?: any): AlchemyWebSocketProvider;
     static getApiKey(apiKey: any): any;
     static getUrl(network: Network, apiKey: string): ConnectionInfo;
-    perform(method: string, params: any): Promise<any>;
     isCommunityResource(): boolean;
 }
 //# sourceMappingURL=alchemy-provider.d.ts.map

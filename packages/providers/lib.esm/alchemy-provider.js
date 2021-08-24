@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import { defineReadOnly } from "@ethersproject/properties";
 import { showThrottleMessage } from "./formatter";
 import { WebSocketProvider } from "./websocket-provider";
@@ -82,20 +73,6 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
                 return Promise.resolve(true);
             }
         };
-    }
-    perform(method, params) {
-        const _super = Object.create(null, {
-            perform: { get: () => super.perform }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            if ((method === "estimateGas" && params.transaction.type === 2) || (method === "sendTransaction" && params.signedTransaction.substring(0, 4) === "0x02")) {
-                logger.throwError("AlchemyProvider does not currently support EIP-1559", Logger.errors.UNSUPPORTED_OPERATION, {
-                    operation: method,
-                    transaction: params.transaction
-                });
-            }
-            return _super.perform.call(this, method, params);
-        });
     }
     isCommunityResource() {
         return (this.apiKey === defaultApiKey);

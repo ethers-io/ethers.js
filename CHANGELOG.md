@@ -3,6 +3,14 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.4.6 (2021-08-24 16:13)
+--------------------------------
+
+  - More readable errors involving Uint8Arrays. ([b6a061e](https://github.com/ethers-io/ethers.js/commit/b6a061e7bfd14c1f2df1418df37f704275908e8b))
+  - Added Deferred Error support to Description objects to extent Interface parse methods. ([#1894](https://github.com/ethers-io/ethers.js/issues/1894); [a662490](https://github.com/ethers-io/ethers.js/commit/a662490e82a9b71b5f6dee0a8242e6fa78409d79))
+  - Fix address coder to prepare non-hexdatastring addresses as hexdatastring. ([#1906](https://github.com/ethers-io/ethers.js/issues/1906); [017b1fe](https://github.com/ethers-io/ethers.js/commit/017b1feba2c9dea88f078b299d211cbd58d43b49))
+  - Removed temporary code for better errors needed until Alchemy added EIP-1559 support. ([#1893](https://github.com/ethers-io/ethers.js/issues/1893); [accb852](https://github.com/ethers-io/ethers.js/commit/accb85268c92fa894e769ec1dca322e117d33e5f))
+
 ethers/v5.4.5 (2021-08-18 03:05)
 --------------------------------
 
