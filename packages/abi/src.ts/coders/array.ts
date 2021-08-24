@@ -144,6 +144,7 @@ export function unpack(reader: Reader, coders: Array<Coder>): Result {
 
         if (value instanceof Error) {
             Object.defineProperty(values, name, {
+                enumerable: true,
                 get: () => { throw value; }
             });
         } else {
@@ -155,6 +156,7 @@ export function unpack(reader: Reader, coders: Array<Coder>): Result {
         const value = values[i];
         if (value instanceof Error) {
             Object.defineProperty(values, i, {
+                enumerable: true,
                 get: () => { throw value; }
             });
         }

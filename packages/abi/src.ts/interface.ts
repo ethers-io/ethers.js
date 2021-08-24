@@ -606,6 +606,7 @@ export class Interface {
                 // Make error named values throw on access
                 if (value instanceof Error) {
                     Object.defineProperty(result, param.name, {
+                        enumerable: true,
                         get: () => { throw wrapAccessError(`property ${ JSON.stringify(param.name) }`, value); }
                     });
                 } else {
@@ -619,6 +620,7 @@ export class Interface {
             const value = result[i];
             if (value instanceof Error) {
                 Object.defineProperty(result, i, {
+                    enumerable: true,
                     get: () => { throw wrapAccessError(`index ${ i }`, value); }
                 });
             }
