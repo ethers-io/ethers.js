@@ -168,6 +168,10 @@ Returns true if and only if the value of //BigNumber// is zero.
 
 _heading: Conversion
 
+_property: BigNumber.toBigInt() => bigint  @SRC<bignumber>
+Returns the value of //BigNumber// as a [JavScript BigInt](link-js-bigint) value,
+on platforms which support them.
+
 _property: BigNumber.toNumber() => number  @SRC<bignumber>
 Returns the value of //BigNumber// as a JavaScript value.
 
