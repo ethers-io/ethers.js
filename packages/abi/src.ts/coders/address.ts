@@ -17,7 +17,7 @@ export class AddressCoder extends Coder {
 
     encode(writer: Writer, value: string): number {
         try {
-            getAddress(value);
+            value = getAddress(value)
         } catch (error) {
             this._throwError(error.message, value);
         }
