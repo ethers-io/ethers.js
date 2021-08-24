@@ -266,7 +266,9 @@ The number of blocks that have been mined (including the initial block) since th
 transaction was mined.
 
 _property: transaction.raw => string<[[DataHexString]]>
-The serialized transaction.
+The serialized transaction. This may be null as some backends do not
+rpopulate it. If this is required, it can be computed from a **TransactionResponse**
+object using [this cookbook recipe](cookbook--compute-raw-transaction).
 
 _property: transaction.wait([ confirms = 1 ]) => Promise<[[providers-TransactionReceipt]]>
 Resolves to the [[providers-TransactionReceipt]] once the transaction
