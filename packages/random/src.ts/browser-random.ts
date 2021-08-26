@@ -34,7 +34,7 @@ if (!crypto || !crypto.getRandomValues) {
 }
 
 export function randomBytes(length: number): Uint8Array {
-    if (length <= 0 || length > 1024 || (length % 1)) {
+    if (!Number.isInteger(length) || length <= 0 || length > 1024) {
         logger.throwArgumentError("invalid length", "length", length);
     }
 
