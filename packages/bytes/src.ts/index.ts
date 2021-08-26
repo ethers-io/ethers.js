@@ -75,11 +75,11 @@ export function isBytes(value: any): value is Bytes {
 
     if (value.constructor === Uint8Array) { return true; }
     if (typeof(value) === "string") { return false; }
-    if (value.length == null) { return false; }
+    if (!Number.isInteger(value.length) || value.length < 0) { return false; }
 
     for (let i = 0; i < value.length; i++) {
         const v = value[i];
-        if (typeof(v) !== "number" || v < 0 || v >= 256 || (v % 1)) {
+        if (!Number.isInteger(v) || v < 0 || v >= 256) {
             return false;
         }
     }
