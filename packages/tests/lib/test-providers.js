@@ -242,7 +242,7 @@ var blockchainData = {
                 difficulty: 2,
                 gasLimit: bnify("0x47e7c4"),
                 gasUsed: bnify(0),
-                miner: "0x0000000000000000000000000000000000000000",
+                //                miner: "0x42EB768f2244C8811C63729A21A3569731535f06",
                 extraData: "0xd783010600846765746887676f312e372e33856c696e757800000000000000004e10f96536e45ceca7e34cc1bdda71db3f3bb029eb69afd28b57eb0202c0ec0859d383a99f63503c4df9ab6c1dc63bf6b9db77be952f47d86d2d7b208e77397301",
                 transactions: []
             },
@@ -444,7 +444,7 @@ var blockchainData = {
                 difficulty: 2,
                 gasLimit: bnify("10455073"),
                 gasUsed: bnify("0"),
-                miner: "0x0000000000000000000000000000000000000000",
+                //                miner: "0xe0a2Bd4258D2768837BAa26A28fE71Dc079f84c7",
                 extraData: "0x506172697479205465636820417574686f7269747900000000000000000000002822e1b202411c38084d96c84302b8361ec4840a51cd2fad9cb4bd9921cad7e64bc2e5dc7b41f3f75b33358be3aec718cf4d4317ace940e01b3581a95c9259ac01",
                 transactions: []
             },
@@ -457,7 +457,7 @@ var blockchainData = {
                 difficulty: 2,
                 gasLimit: bnify(0x7a1200),
                 gasUsed: bnify("0x0d0ef5"),
-                miner: "0x0000000000000000000000000000000000000000",
+                //                miner: "0x22eA9f6b28DB76A7162054c05ed812dEb2f519Cd",
                 extraData: "0x0000000000000000000000000000000000000000000000000000000000000000f4e6fc1fbd88adf57a272d98f725487f872ef0495a54c2b873a58d14e010bf517cc5650417f18cfd4ad2396272c564a7da1265ae27c397609293f488ec57d68e01",
                 transactions: [
                     "0xea29f0764f03c5c67ac53a866a28ce23a4a032c2de4327e452b39f482920761a",

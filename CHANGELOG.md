@@ -3,9 +3,10 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
-ethers/v5.4.6 (2021-08-24 16:13)
+ethers/v5.4.6 (2021-08-27 15:34)
 --------------------------------
 
+  - Temporarily remove the block miner for clique-based networks from CI testing. ([#1967](https://github.com/ethers-io/ethers.js/issues/1967); [8320d53](https://github.com/ethers-io/ethers.js/commit/8320d534d78173dfa8ecb4def634a00483a6aa9c))
   - More readable errors involving Uint8Arrays. ([b6a061e](https://github.com/ethers-io/ethers.js/commit/b6a061e7bfd14c1f2df1418df37f704275908e8b))
   - Added Deferred Error support to Description objects to extent Interface parse methods. ([#1894](https://github.com/ethers-io/ethers.js/issues/1894); [a662490](https://github.com/ethers-io/ethers.js/commit/a662490e82a9b71b5f6dee0a8242e6fa78409d79))
   - Fix address coder to prepare non-hexdatastring addresses as hexdatastring. ([#1906](https://github.com/ethers-io/ethers.js/issues/1906); [017b1fe](https://github.com/ethers-io/ethers.js/commit/017b1feba2c9dea88f078b299d211cbd58d43b49))
