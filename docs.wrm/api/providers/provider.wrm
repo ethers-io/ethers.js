@@ -240,6 +240,27 @@ gasPrice = await provider.getGasPrice()
 utils.formatUnits(gasPrice, "gwei")
 //_log:
 
+_property: provider.getFeeData() => Promise<[[providers-FeeData]]>  @<Provider-getFeeData> @SRC<abstract-provider>
+Returns the current recommended [[providers-FeeData]] to use in a transaction.
+
+For an EIP-1559 transaction, the ``maxFeePerGas`` and ``maxPriorityFeePerGas``
+should be used.
+
+For legacy transactions and networks which do not support EIP-1559, the ``gasPrice``
+should be used.
+
+_code: @lang<javascript>
+
+// The gas price (in wei)...
+feeData = await provider.getFeeData()
+//_log: feeData
+
+// ...often these values are easier to understand or
+// display to the user in gwei
+//_result:
+utils.formatUnits(feeData.maxFeePerGas, "gwei")
+//_log:
+
 _property: provider.ready => Promise<[[providers-Network]]> @<Provider-ready> @src<providers/base-provider>
 Returns a Promise which will stall until the network has heen established,
 ignoring errors due to the target node not being active yet.

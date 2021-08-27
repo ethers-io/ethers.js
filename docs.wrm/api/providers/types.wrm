@@ -34,6 +34,23 @@ _property: network.ensAddress => string<[[address]]>
 The address at which the ENS registry is deployed on this network.
 
 
+_subsection: FeeData @<providers-FeeData>
+
+A **FeeData** object encapsulates the necessary fee data required
+to send a transaction, based on the best available recommendations.
+
+_property: feeData.gasPrice => [[BigNumber]]
+The gasPrice to use for legacy transactions or networks which do not
+support EIP-1559.
+
+_property: feeData.maxFeePerGas => [[BigNumber]]
+The ``maxFeePerGas`` to use for a transaction. This is based on the
+most recent block's ``baseFee``.
+
+_property: feeData.maxPriorityFeePerGas => [[BigNumber]]
+The ``maxPriorityFeePerGas`` to use for a transaction. This accounts
+for the uncle risk and for the majority of current MEV risk.
+
 _subsection: Block @<providers-Block>
 
 _property: block.hash => string<[[DataHexString]]<32>>
