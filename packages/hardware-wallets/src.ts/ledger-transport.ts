@@ -1,4 +1,5 @@
 "use strict";
+import Transport from "@ledgerhq/hw-transport";
 
 export type TransportCreator = {
     create: () => Promise<Transport>;

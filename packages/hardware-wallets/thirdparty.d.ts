@@ -1,3 +1,5 @@
+import Transport from "@ledgerhq/hw-transport";
+
 declare module "@ledgerhq/hw-app-eth" {
     export type PublicAccount = {
         publicKey: string;
@@ -26,13 +28,12 @@ declare module "@ledgerhq/hw-app-eth" {
         signTransaction(path: string, unsignedTx: string): Promise<Signature>;
     }
 
-    export default Eth;
 }
 
 declare module "@ledgerhq/hw-transport-node-hid" {
     export function create(): Promise<Transport>;
 }
 
-declare module "@ledgerhq/hw-transport-u2f" {
+declare module "@ledgerhq/hw-transport-webusb" {
     export function create(): Promise<Transport>;
 }

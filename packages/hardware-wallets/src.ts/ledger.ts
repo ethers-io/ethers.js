@@ -101,6 +101,9 @@ export class LedgerSigner extends ethers.Signer {
             gasLimit: (tx.gasLimit || undefined),
             gasPrice: (tx.gasPrice || undefined),
             nonce: (tx.nonce ? ethers.BigNumber.from(tx.nonce).toNumber(): undefined),
+            maxFeePerGas: (tx.maxFeePerGas || undefined),
+            maxPriorityFeePerGas: (tx.maxPriorityFeePerGas || undefined),
+            type: tx.type,
             to: (tx.to || undefined),
             value: (tx.value || undefined),
         };
