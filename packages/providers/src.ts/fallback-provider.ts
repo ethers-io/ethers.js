@@ -323,8 +323,10 @@ function getProcessFunc(provider: FallbackProvider, method: string, params: { [ 
 
 // If we are doing a blockTag query, we need to make sure the backend is
 // caught up to the FallbackProvider, before sending a request to it.
-async function waitForSync(config: RunningConfig, blockNumber: number): Promise<BaseProvider> {
+async function waitForSync(config: RunningConfig, currentBlockNumber: number): Promise<BaseProvider> {
     const provider = <BaseProvider>(config.provider);
+
+    const blockNumber = currentBlockNumber === -1 ? (await this.getBlockNumber()) : currentBlockNumber;
 
     if ((provider.blockNumber != null && provider.blockNumber >= blockNumber) || blockNumber === -1) {
         return provider;
@@ -492,12 +494,6 @@ export class FallbackProvider extends BaseProvider {
 
             // They were all an error; pick the first error
             throw results[0];
-        }
-
-        // We need to make sure we are in sync with our backends, so we need
-        // to know this before we can make a lot of calls
-        if (this._highestBlockNumber === -1 && method !== "getBlockNumber") {
-            await this.getBlockNumber();
         }
 
         const processFunc = getProcessFunc(this, method, params);
