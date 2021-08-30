@@ -95,7 +95,7 @@ export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
 
     // Get significant digits to check truncation for underflow
     {
-    const sigFraction = fraction.replace(/^([0-9]*?)(0*)$/, (all, sig, zeros) => (sig));
+    const sigFraction = fraction.replace(/^([0-9]*[1-9])?0*$/, (all, sig) => (sig || ''));
         if (sigFraction.length > multiplier.length - 1) {
             throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
         }
