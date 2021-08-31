@@ -72,7 +72,7 @@ export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
     if (decimals == null) { decimals = 0; }
     const multiplier = getMultiplier(decimals);
 
-    if (typeof(value) !== "string" || !value.match(/^-?[0-9.,]+$/)) {
+    if (typeof(value) !== "string" || !value.match(/^-?[0-9.]+$/)) {
         logger.throwArgumentError("invalid decimal value", "value", value);
     }
 
