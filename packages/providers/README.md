@@ -4,7 +4,7 @@ Ethereum Providers
 This sub-module is part of the [ethers project](https://github.com/ethers-io/ethers.js).
 
 It contains common Provider classes, utility functions for dealing with providers
-and re-exports many of the classes and types needed implement a custom Provider.
+and re-exports many of the classes and types needed to implement a custom Provider.
 
 For more information, see the [documentation](https://docs.ethers.io/v5/api/providers/).
 
