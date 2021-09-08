@@ -130,7 +130,8 @@ export class Formatter {
         };
 
         formats.block = {
-            hash: hash,
+            // May be `null` if it's a 'pending' block
+            hash: Formatter.allowNull(hash),
             parentHash: hash,
             number: number,
 
@@ -141,7 +142,8 @@ export class Formatter {
             gasLimit: bigNumber,
             gasUsed: bigNumber,
 
-            miner: address,
+            // May be `null` if it's a 'pending' block
+            miner: Formatter.allowNull(address),
             extraData: data,
 
             transactions: Formatter.allowNull(Formatter.arrayOf(hash)),
