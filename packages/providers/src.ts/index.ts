@@ -43,7 +43,7 @@ const logger = new Logger(version);
 ////////////////////////
 // Helper Functions
 
-function getDefaultProvider(network?: Network | string, options?: any): BaseProvider {
+function getDefaultProvider(network?: Networkish, options?: any): BaseProvider {
     if (network == null) { network = "homestead"; }
 
     // If passed a URL, figure out the right type of provider based on the scheme
