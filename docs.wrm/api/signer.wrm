@@ -74,7 +74,7 @@ _property: signer.signMessage(message) => Promise<string<[RawSignature](signatur
 This returns a Promise which resolves to the [[signature-raw]]
 of //message//.
 
-A signed message is prefixd with ``"\\x19Ethereum signed message:\\n"`` and
+A signed message is prefixd with ``"\\x19Ethereum Signed Message:\\n"`` and
 the length of the message, using the [hashMessage](utils-hashMessage)
 method, so that it is [EIP-191](link-eip-191) compliant. If recovering
 the address in Solidity, this prefix will be required to create a matching
