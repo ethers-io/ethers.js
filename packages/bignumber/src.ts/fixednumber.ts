@@ -68,6 +68,7 @@ export function formatFixed(value: BigNumberish, decimals?: string | BigNumberis
 }
 
 export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
+
     if (decimals == null) { decimals = 0; }
     const multiplier = getMultiplier(decimals);
 
@@ -93,13 +94,18 @@ export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
     if (!whole) { whole = "0"; }
     if (!fraction) { fraction = "0"; }
 
-    // Get significant digits to check truncation for underflow
-    {
-    const sigFraction = fraction.replace(/^([0-9]*?)(0*)$/, (all, sig, zeros) => (sig));
-        if (sigFraction.length > multiplier.length - 1) {
-            throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
-        }
+    // Trim trialing zeros
+    while (fraction[fraction.length - 1] === "0") {
+        fraction = fraction.substring(0, fraction.length - 1);
     }
+
+    // Check the fraction doesn't exceed our decimals
+    if (fraction.length > multiplier.length - 1) {
+        throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
+    }
+
+    // If decimals is 0, we have an empty string for fraction
+    if (fraction === "") { fraction = "0"; }
 
     // Fully pad the string with zeros to get to wei
     while (fraction.length < multiplier.length - 1) { fraction += "0"; }
@@ -113,6 +119,7 @@ export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
 
     return wei;
 }
+
 
 export class FixedFormat {
     readonly signed: boolean;
