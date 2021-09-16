@@ -4197,7 +4197,7 @@ function joinSignature(signature) {
     ]));
 }
 
-const version$2 = "bignumber/5.4.1";
+const version$2 = "bignumber/5.4.2";
 
 "use strict";
 var BN = bn.BN;
@@ -4581,12 +4581,17 @@ function parseFixed(value, decimals) {
     if (!fraction) {
         fraction = "0";
     }
-    // Get significant digits to check truncation for underflow
-    {
-        const sigFraction = fraction.replace(/^([0-9]*?)(0*)$/, (all, sig, zeros) => (sig));
-        if (sigFraction.length > multiplier.length - 1) {
-            throwFault$1("fractional component exceeds decimals", "underflow", "parseFixed");
-        }
+    // Trim trialing zeros
+    while (fraction[fraction.length - 1] === "0") {
+        fraction = fraction.substring(0, fraction.length - 1);
+    }
+    // Check the fraction doesn't exceed our decimals
+    if (fraction.length > multiplier.length - 1) {
+        throwFault$1("fractional component exceeds decimals", "underflow", "parseFixed");
+    }
+    // If decimals is 0, we have an empty string for fraction
+    if (fraction === "") {
+        fraction = "0";
     }
     // Fully pad the string with zeros to get to wei
     while (fraction.length < multiplier.length - 1) {
@@ -23182,7 +23187,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$o = "ethers/5.4.6";
+const version$o = "ethers/5.4.7";
 
 "use strict";
 const logger$H = new Logger(version$o);

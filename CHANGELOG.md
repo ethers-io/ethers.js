@@ -3,6 +3,11 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+ethers/v5.4.7 (2021-09-16 13:17)
+--------------------------------
+
+  - Fix parseUints with excess zeros and fix ReDoS issue. ([#2016](https://github.com/ethers-io/ethers.js/issues/2016), [#1975](https://github.com/ethers-io/ethers.js/issues/1975), [#1976](https://github.com/ethers-io/ethers.js/issues/1976); [32a6b2a](https://github.com/ethers-io/ethers.js/commit/32a6b2a362815eb85ce3f3abad5adf92f2b80e10))
+
 ethers/v5.4.6 (2021-08-27 15:34)
 --------------------------------
 

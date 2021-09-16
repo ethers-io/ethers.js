@@ -8,7 +8,7 @@
     "@ethersproject/address": "5.4.0",
     "@ethersproject/base64": "5.4.0",
     "@ethersproject/basex": "5.4.0",
-    "@ethersproject/bignumber": "5.4.1",
+    "@ethersproject/bignumber": "5.4.2",
     "@ethersproject/bytes": "5.4.0",
     "@ethersproject/constants": "5.4.0",
     "@ethersproject/contracts": "5.4.1",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x7d73b78a4e88f87373c2e4bfc67854ec790e1d020b528b0570c8e4ba16660ce7",
+  "tarballHash": "0x9b3d45e0031920cb165c66b6d93837acec0cb9a0ac8dca55274105ef36ea7659",
   "types": "./lib/index.d.ts",
-  "version": "5.4.6"
+  "version": "5.4.7"
 }

@@ -4270,7 +4270,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "bignumber/5.4.1";
+	exports.version = "bignumber/5.4.2";
 
 	});
 
@@ -4693,12 +4693,17 @@
 	    if (!fraction) {
 	        fraction = "0";
 	    }
-	    // Get significant digits to check truncation for underflow
-	    {
-	        var sigFraction = fraction.replace(/^([0-9]*?)(0*)$/, function (all, sig, zeros) { return (sig); });
-	        if (sigFraction.length > multiplier.length - 1) {
-	            throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
-	        }
+	    // Trim trialing zeros
+	    while (fraction[fraction.length - 1] === "0") {
+	        fraction = fraction.substring(0, fraction.length - 1);
+	    }
+	    // Check the fraction doesn't exceed our decimals
+	    if (fraction.length > multiplier.length - 1) {
+	        throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
+	    }
+	    // If decimals is 0, we have an empty string for fraction
+	    if (fraction === "") {
+	        fraction = "0";
 	    }
 	    // Fully pad the string with zeros to get to wei
 	    while (fraction.length < multiplier.length - 1) {
@@ -26984,7 +26989,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.4.6";
+	exports.version = "ethers/5.4.7";
 
 	});
 

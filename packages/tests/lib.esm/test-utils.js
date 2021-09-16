@@ -184,6 +184,20 @@ describe('Test Unit Conversion', function () {
             assert.equal(ethers.utils.commify(test), tests[test]);
         });
     });
+    // See #2016; @TODO: Add more tests along these lines
+    it("checks extra tests", function () {
+        assert.ok(ethers.utils.parseUnits("2", 0).eq(2), "folds trailing zeros without decimal: 2");
+        assert.ok(ethers.utils.parseUnits("2.", 0).eq(2), "folds trailing zeros without decimal: 2.");
+        assert.ok(ethers.utils.parseUnits("2.0", 0).eq(2), "folds trailing zeros without decimal: 2.0");
+        assert.ok(ethers.utils.parseUnits("2.00", 0).eq(2), "folds trailing zeros without decimal: 2.00");
+        assert.ok(ethers.utils.parseUnits("2", 1).eq(20), "folds trailing zeros: 2");
+        assert.ok(ethers.utils.parseUnits("2.", 1).eq(20), "folds trailing zeros: 2.");
+        assert.ok(ethers.utils.parseUnits("2.0", 1).eq(20), "folds trailing zeros: 2.0");
+        assert.ok(ethers.utils.parseUnits("2.00", 1).eq(20), "folds trailing zeros: 2.00");
+        assert.ok(ethers.utils.parseUnits("2.5", 1).eq(25), "folds trailing zeros: 2.5");
+        assert.ok(ethers.utils.parseUnits("2.50", 1).eq(25), "folds trailing zeros: 2.50");
+        assert.ok(ethers.utils.parseUnits("2.500", 1).eq(25), "folds trailing zeros: 2.500");
+    });
 });
 describe('Test Namehash', function () {
     const tests = loadTests('namehash');
