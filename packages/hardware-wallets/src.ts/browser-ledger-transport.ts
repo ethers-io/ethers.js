@@ -1,12 +1,12 @@
 "use strict";
-
-import u2f from "@ledgerhq/hw-transport-u2f";
+import Transport from "@ledgerhq/hw-transport";
+import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 
 export type TransportCreator = {
     create: () => Promise<Transport>;
 };
 
 export const transports: { [ name: string ]: TransportCreator } = {
-    "u2f": u2f,
-    "default": u2f
+    "webusb": TransportWebUSB,
+    "default": TransportWebUSB
 };

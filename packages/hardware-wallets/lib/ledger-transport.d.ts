@@ -1,3 +1,4 @@
+import Transport from "@ledgerhq/hw-transport";
 export declare type TransportCreator = {
     create: () => Promise<Transport>;
 };
