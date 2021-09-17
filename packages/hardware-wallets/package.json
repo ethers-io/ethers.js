@@ -7,8 +7,8 @@
     "./lib/ledger-transport.js": "./lib/browser-ledger-transport.js"
   },
   "dependencies": {
-    "@ledgerhq/hw-app-eth": "5.27.2",
-    "@ledgerhq/hw-transport": "5.26.0",
+    "@ledgerhq/hw-app-eth": "6.7.0",
+    "@ledgerhq/hw-transport": "6.7.0",
     "@ledgerhq/hw-transport-u2f": "5.26.0",
     "ethers": "^5.4.0"
   },
