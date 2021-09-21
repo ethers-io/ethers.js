@@ -128,7 +128,6 @@ const networks: { [name: string]: Network } = {
     homestead: homestead,
     mainnet: homestead,
 
-    morden: { chainId: 2, name: "morden" },
 
     ropsten: ropsten,
     testnet: ropsten,
