@@ -94,7 +94,7 @@ export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
     if (!whole) { whole = "0"; }
     if (!fraction) { fraction = "0"; }
 
-    // Trim trialing zeros
+    // Trim trailing zeros
     while (fraction[fraction.length - 1] === "0") {
         fraction = fraction.substring(0, fraction.length - 1);
     }
