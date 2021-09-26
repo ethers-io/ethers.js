@@ -669,4 +669,14 @@ describe("Additional test cases", function() {
         const tx = iface.encodeFunctionData("test", [ "c1912fee45d61c87cc5ea59dae31190fffff232d" ]);
         console.log(tx);
     });
+
+    // https://github.com/ethers-io/ethers.js/issues/2054
+    it("`interface.functions` fragment names do not conflict with prototype keys", () => {
+        const contract = new ethers.Contract(
+            "0x0000000000000000000000000000000000000000",
+            ["function toString() external", "function valueOf() external"]
+        );
+        assert.equal(typeof contract["toString()"], "function", "set correct toString() property");
+        assert.equal(typeof contract["valueOf()"], "function", "set correct valueOf() property");
+    });
 });
