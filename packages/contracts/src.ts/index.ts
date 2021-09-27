@@ -696,7 +696,7 @@ export class BaseContract {
             }
         }
 
-        const uniqueNames = new Map<string, Array<string>>();
+        const uniqueNames: { [ name: string ]: Array<string> } = Object.create(null);
         const uniqueSignatures: { [ signature: string ]: boolean } = { };
         Object.keys(this.interface.functions).forEach((signature) => {
             const fragment = this.interface.functions[signature];
@@ -713,10 +713,8 @@ export class BaseContract {
             // are ambiguous
             {
                 const name = fragment.name;
-                if (!uniqueNames.has(name)) {
-                    uniqueNames.set(name, []);
-                }
-                uniqueNames.get(name).push(signature);
+                if (!uniqueNames[name]) { uniqueNames[name] = [ ]; }
+                uniqueNames[name].push(signature);
             }
 
             if ((<Contract>this)[signature] == null) {
@@ -746,7 +744,7 @@ export class BaseContract {
         Object.keys(uniqueNames).forEach((name) => {
 
             // Ambiguous names to not get attached as bare names
-            const signatures = uniqueNames.get(name);
+            const signatures = uniqueNames[name];
             if (signatures.length > 1) { return; }
 
             const signature = signatures[0];
