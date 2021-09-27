@@ -179,6 +179,9 @@ const networks: { [name: string]: Network } = {
 
     bnb: { chainId: 56, name: "bnb" },
     bnbt: { chainId: 97, name: "bnbt" },
+    
+    arbitrumOne: { chainId: 42161, name: "arbitrumOne" },
+    arbitrumRinkeby: { chainId: 421611, name: "arbitrumRinkeby" },
 }
 
 /**
