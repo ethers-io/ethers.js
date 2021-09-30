@@ -652,7 +652,7 @@ export class BaseContract {
         defineReadOnly(this, "filters", { });
 
         {
-            const uniqueFilters: { [ name: string ]: Array<string> } = { };
+            const uniqueFilters: { [ name: string ]: Array<string> } = Object.create(null);
             Object.keys(this.interface.events).forEach((eventSignature) => {
                 const event = this.interface.events[eventSignature];
                 defineReadOnly(this.filters, eventSignature, (...args: Array<any>) => {
@@ -696,8 +696,8 @@ export class BaseContract {
             }
         }
 
-        const uniqueNames: { [ name: string ]: Array<string> } = { };
-        const uniqueSignatures: { [ signature: string ]: boolean } = { };
+        const uniqueNames: { [ name: string ]: Array<string> } = Object.create(null);
+        const uniqueSignatures: { [ signature: string ]: boolean } = Object.create(null);
         Object.keys(this.interface.functions).forEach((signature) => {
             const fragment = this.interface.functions[signature];
 
