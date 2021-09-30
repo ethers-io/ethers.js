@@ -22,7 +22,7 @@ import { BaseProvider, EnsProvider, EnsResolver, Resolver } from "./base-provide
 import { AlchemyProvider, AlchemyWebSocketProvider } from "./alchemy-provider";
 import { CloudflareProvider } from "./cloudflare-provider";
 import { EtherscanProvider } from "./etherscan-provider";
-import { FallbackProvider } from "./fallback-provider";
+import { FallbackProvider, FallbackProviderConfig } from "./fallback-provider";
 import { IpcProvider } from "./ipc-provider";
 import { InfuraProvider, InfuraWebSocketProvider } from "./infura-provider";
 import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
@@ -168,6 +168,11 @@ export {
     EnsProvider,
     EnsResolver,
 
-    CommunityResourcable
+    CommunityResourcable,
+
+    ///////////////////////
+    // Interfaces
+
+    FallbackProviderConfig
 };
 
