@@ -215,7 +215,7 @@ export class Interface {
             return this.functions[matching[0]];
         }
 
-        // Normlize the signature and lookup the function
+        // Normalize the signature and lookup the function
         const result = this.functions[FunctionFragment.fromString(nameOrSignatureOrSighash).format()];
         if (!result) {
             logger.throwArgumentError("no matching function", "signature", nameOrSignatureOrSighash);
@@ -248,7 +248,7 @@ export class Interface {
             return this.events[matching[0]];
         }
 
-        // Normlize the signature and lookup the function
+        // Normalize the signature and lookup the function
         const result = this.events[EventFragment.fromString(nameOrSignatureOrTopic).format()];
         if (!result) {
             logger.throwArgumentError("no matching event", "signature", nameOrSignatureOrTopic);
@@ -282,7 +282,7 @@ export class Interface {
             return this.errors[matching[0]];
         }
 
-        // Normlize the signature and lookup the function
+        // Normalize the signature and lookup the function
         const result = this.errors[FunctionFragment.fromString(nameOrSignatureOrSighash).format()];
         if (!result) {
             logger.throwArgumentError("no matching error", "signature", nameOrSignatureOrSighash);
@@ -521,7 +521,7 @@ export class Interface {
                 } else if (param.type === "bytes") {
                     topics.push(keccak256(value))
                 } else if (param.baseType === "tuple" || param.baseType === "array") {
-                    // @TOOD
+                    // @TODO
                     throw new Error("not implemented");
                 } else {
                     topics.push(this._abiCoder.encode([ param.type] , [ value ]));
@@ -658,7 +658,7 @@ export class Interface {
 
         // @TODO: If anonymous, and the only method, and the input count matches, should we parse?
         //        Probably not, because just because it is the only event in the ABI does
-        //        not mean we have the full ABI; maybe jsut a fragment?
+        //        not mean we have the full ABI; maybe just a fragment?
 
 
        return new LogDescription({

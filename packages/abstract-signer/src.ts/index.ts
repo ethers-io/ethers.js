@@ -49,7 +49,7 @@ export interface ExternallyOwnedAccount {
 //    key or mnemonic) in a function, so that console.log does not leak
 //    the data
 
-// @TODO: This is a temporary measure to preserse backwards compatibility
+// @TODO: This is a temporary measure to preserve backwards compatibility
 //        In v6, the method on TypedDataSigner will be added to Signer
 export interface TypedDataSigner {
     _signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
@@ -70,7 +70,7 @@ export abstract class Signer {
     // i.e. "0x1234" is a SIX (6) byte string, NOT 2 bytes of data
     abstract signMessage(message: Bytes | string): Promise<string>;
 
-    // Signs a transaxction and returns the fully serialized, signed transaction.
+    // Signs a transaction and returns the fully serialized, signed transaction.
     // The EXACT transaction MUST be signed, and NO additional properties to be added.
     // - This MAY throw if signing transactions is not supports, but if
     //   it does, sentTransaction MUST be overridden.
@@ -104,14 +104,14 @@ export abstract class Signer {
         return await this.provider.getTransactionCount(this.getAddress(), blockTag);
     }
 
-    // Populates "from" if unspecified, and estimates the gas for the transation
+    // Populates "from" if unspecified, and estimates the gas for the transaction
     async estimateGas(transaction: Deferrable<TransactionRequest>): Promise<BigNumber> {
         this._checkProvider("estimateGas");
         const tx = await resolveProperties(this.checkTransaction(transaction));
         return await this.provider.estimateGas(tx);
     }
 
-    // Populates "from" if unspecified, and calls with the transation
+    // Populates "from" if unspecified, and calls with the transaction
     async call(transaction: Deferrable<TransactionRequest>, blockTag?: BlockTag): Promise<string> {
         this._checkProvider("call");
         const tx = await resolveProperties(this.checkTransaction(transaction));
@@ -212,7 +212,7 @@ export abstract class Signer {
             tx.to.catch((error) => {  });
         }
 
-        // Do not allow mixing pre-eip-1559 and eip-1559 proerties
+        // Do not allow mixing pre-eip-1559 and eip-1559 properties
         const hasEip1559 = (tx.maxFeePerGas != null || tx.maxPriorityFeePerGas != null);
         if (tx.gasPrice != null && (tx.type === 2 || hasEip1559)) {
             logger.throwArgumentError("eip-1559 transaction do not support gasPrice", "transaction", transaction);

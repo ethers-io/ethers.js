@@ -312,7 +312,7 @@ export class LinkNode extends ValueNode {
         }
 
         if (value == null) {
-             throwError("labels can only be targetted as offsets", this.location);
+             throwError("labels can only be targeted as offsets", this.location);
         }
 
         if (isOffset && assembler.positionIndependentCode) {
@@ -975,7 +975,7 @@ class SemanticChecker extends Assembler {
 
             if (node.location.statement) {
                 if (node instanceof PopNode) {
-                    // $$ by istelf is useless and is intended to be an operand
+                    // $$ by itself is useless and is intended to be an operand
                     errors.push({
                         message: `$$ must be an operand`,
                         severity: SemanticErrorSeverity.error,
@@ -1079,7 +1079,7 @@ class CodeGenerationAssembler extends Assembler {
         return this._changed;
     }
 
-    // Reset the assmebler for another run with updated values
+    // Reset the assembler for another run with updated values
     reset(): void {
         this._changed = false;
         this._objectCache = { };
@@ -1172,7 +1172,7 @@ class CodeGenerationAssembler extends Assembler {
     // This is used by evaluate to access properties in JavaScript
     // - "defines" allow meta-programming values to be used
     // - jump destinations are available as numbers
-    // - bytecode and data are available as an immuatble DataSource
+    // - bytecode and data are available as an immutable DataSource
     get(name: string, source: Node): any {
         if (name === "defines") {
             return this.defines;
@@ -1277,8 +1277,8 @@ type _Location = {
 export function parse(code: string, options?: ParserOptions): Node {
     if (options == null) { options = { }; }
 
-    // Since jison allows \n, \r or \r\n line endings, we need some
-    // twekaing to get the correct position
+    // Since Jison allows \n, \r or \r\n line endings, we need some
+    // tweaking to get the correct position
     const lines: Array<{ line: string, offset: number }> = [ ];
     let offset = 0;
     code.split(/(\r\n?|\n)/g).forEach((clump, index) => {

@@ -10,7 +10,7 @@ const logger = new Logger(version);
 
 import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 
-// These are load-balancer-based applicatoin IDs
+// These are load-balancer-based application IDs
 const defaultApplicationIds: Record<string, string> = {
     homestead: "6004bcd10040261633ade990",
     ropsten: "6004bd4d0040261633ade991",

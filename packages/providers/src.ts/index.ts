@@ -102,7 +102,7 @@ export {
     UrlJsonRpcProvider,
 
     ///////////////////////
-    // Concreate Providers
+    // Concrete Providers
 
     FallbackProvider,
 

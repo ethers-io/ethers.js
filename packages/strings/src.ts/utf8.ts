@@ -43,7 +43,7 @@ export enum Utf8ErrorReason {
     // - badCodepoint = the computed codepoint; inside the UTF-16 surrogate range
     UTF16_SURROGATE       = "UTF-16 surrogate",
 
-    // The string is an overlong reperesentation
+    // The string is an overlong representation
     // - offset       = start of this codepoint
     // - badCodepoint = the computed codepoint; already bounds checked
     OVERLONG              = "overlong representation",
@@ -171,7 +171,7 @@ function getUtf8CodePoints(bytes: BytesLike, onError?: Utf8ErrorFunc): Array<num
             i++;
         }
 
-        // See above loop for invalid contimuation byte
+        // See above loop for invalid continuation byte
         if (res === null) { continue; }
 
         // Maximum code point

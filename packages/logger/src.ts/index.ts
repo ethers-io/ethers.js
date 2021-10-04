@@ -123,7 +123,7 @@ export enum ErrorCode {
     //  - reason: The reason (only for EIP848 "Error(string)")
     CALL_EXCEPTION = "CALL_EXCEPTION",
 
-    // Insufficien funds (< value + gasLimit * gasPrice)
+    // Insufficient funds (< value + gasLimit * gasPrice)
     //   - transaction: the transaction attempted
     INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS",
 
