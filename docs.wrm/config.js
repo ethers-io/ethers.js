@@ -237,7 +237,7 @@ module.exports = {
       "link-infura": { name: "INFURA", url: "https:/\/infura.io" },
       "link-javascriptcore": { name: "JavaScriptCore", url: "https:/\/developer.apple.com/documentation/javascriptcore?language=objc" },
       "link-ledger": "https:/\/www.ledger.com",
-      "link-metamask": { name: "Metamask", url: "https:/\/metamask.io/" },
+      "link-metamask": { name: "MetaMask", url: "https:/\/metamask.io/" },
       "link-otto": "https:/\/github.com/robertkrimen/otto",
       "link-parity": { name: "Parity", url: "https:/\/www.parity.io" },
       "link-pocket": { name: "Pocket Network", url: "https:/\/pokt.network" },

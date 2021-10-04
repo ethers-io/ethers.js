@@ -73,7 +73,7 @@ $Contract:  A Contract is an abstraction which represents a connection to a
 | **Contract**     | $Contract      |
 
 
-_subsection: Connecting to Ethereum: Metamask @<getting-started--connecting>
+_subsection: Connecting to Ethereum: MetaMask @<getting-started--connecting>
 
 The quickest and easiest way to experiment and begin developing on
 Ethereum is to use [[link-metamask]], which is a browser extension
@@ -82,13 +82,13 @@ that provides:
 - A connection to the Ethereum network (a [[Provider]])
 - Holds your private key and can sign things (a [[Signer]])
 
-_code: Connecting to Metamask @lang<script>
+_code: Connecting to MetaMask @lang<script>
 
 // A Web3Provider wraps a standard Web3 provider, which is
-// what Metamask injects as window.ethereum into each page
+// what MetaMask injects as window.ethereum into each page
 const provider = new ethers.providers.Web3Provider(window.ethereum)
 
-// The Metamask plugin also allows signing transactions to
+// The MetaMask plugin also allows signing transactions to
 // send ether and pay to change state within the blockchain.
 // For this, you need the account signer...
 const signer = provider.getSigner()
