@@ -6,6 +6,9 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 
+// Debugging line for testing browser lib in node
+//const window = { crypto: { getRandomValues: () => { } } };
+
 let anyGlobal: any = null;
 try {
     anyGlobal = (window as any);
@@ -34,7 +37,7 @@ if (!crypto || !crypto.getRandomValues) {
 }
 
 export function randomBytes(length: number): Uint8Array {
-    if (length <= 0 || length > 1024 || (length % 1)) {
+    if (length <= 0 || length > 1024 || (length % 1) || length != length) {
         logger.throwArgumentError("invalid length", "length", length);
     }
 
