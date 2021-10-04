@@ -70,18 +70,20 @@ export function isBytesLike(value: any): value is BytesLike {
     return ((isHexString(value) && !(value.length % 2)) || isBytes(value));
 }
 
+function isInteger(value: number) {
+    return (typeof(value) === "number" && value == value && (value % 1) === 0);
+}
+
 export function isBytes(value: any): value is Bytes {
     if (value == null) { return false; }
 
     if (value.constructor === Uint8Array) { return true; }
     if (typeof(value) === "string") { return false; }
-    if (value.length == null) { return false; }
+    if (!isInteger(value.length) || value.length < 0) { return false; }
 
     for (let i = 0; i < value.length; i++) {
         const v = value[i];
-        if (typeof(v) !== "number" || v < 0 || v >= 256 || (v % 1)) {
-            return false;
-        }
+        if (!isInteger(v) || v < 0 || v >= 256) { return false; }
     }
     return true;
 }
