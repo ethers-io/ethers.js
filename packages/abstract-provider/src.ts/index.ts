@@ -56,7 +56,7 @@ export interface TransactionResponse extends Transaction {
 
 export type BlockTag = string | number;
 
-interface _Block {
+export interface _Block {
     hash: string;
     parentHash: string;
     number: number;
@@ -64,6 +64,7 @@ interface _Block {
     timestamp: number;
     nonce: string;
     difficulty: number;
+    _difficulty: BigNumber;
 
     gasLimit: BigNumber;
     gasUsed: BigNumber;
