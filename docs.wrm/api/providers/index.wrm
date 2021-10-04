@@ -116,7 +116,7 @@ _code: Example: Override the ENS registry @lang<script>
 
 const network = {
     name: "dev",
-    chianId: 1337,
+    chainId: 1337,
     ensAddress: customEnsAddress
 };
 
