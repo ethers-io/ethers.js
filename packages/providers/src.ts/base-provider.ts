@@ -1338,7 +1338,7 @@ export class BaseProvider extends Provider implements EnsProvider {
             params.blockHash = blockHashOrBlockTag;
         } else {
             try {
-                params.blockTag = this.formatter.blockTag(await this._getBlockTag(blockHashOrBlockTag));
+                params.blockTag = await this._getBlockTag(blockHashOrBlockTag);
                 if (isHexString(params.blockTag)) {
                     blockNumber = parseInt(params.blockTag.substring(2), 16);
                 }
