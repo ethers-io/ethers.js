@@ -193,21 +193,21 @@ export interface EnsResolver {
 
     // Multichain address resolution (also normal address resolution)
     // See: https://eips.ethereum.org/EIPS/eip-2304
-    getAddress(coinType?: 60): Promise<string>
+    getAddress(coinType?: 60): Promise<null | string>
 
     // Contenthash field
     // See: https://eips.ethereum.org/EIPS/eip-1577
-    getContentHash(): Promise<string>;
+    getContentHash(): Promise<null | string>;
 
     // Storage of text records
     // See: https://eips.ethereum.org/EIPS/eip-634
-    getText(key: string): Promise<string>;
+    getText(key: string): Promise<null | string>;
 };
 
 export interface EnsProvider {
-    resolveName(name: string): Promise<string>;
-    lookupAddress(address: string): Promise<string>;
-    getResolver(name: string): Promise<EnsResolver>;
+    resolveName(name: string): Promise<null | string>;
+    lookupAddress(address: string): Promise<null | string>;
+    getResolver(name: string): Promise<null | EnsResolver>;
 }
 
 type CoinInfo = {
@@ -1512,7 +1512,7 @@ export class BaseProvider extends Provider implements EnsProvider {
     }
 
 
-    async getResolver(name: string): Promise<Resolver> {
+    async getResolver(name: string): Promise<null | Resolver> {
         try {
             const address = await this._getResolver(name);
             if (address == null) { return null; }
@@ -1550,7 +1550,7 @@ export class BaseProvider extends Provider implements EnsProvider {
         }
     }
 
-    async resolveName(name: string | Promise<string>): Promise<string> {
+    async resolveName(name: string | Promise<string>): Promise<null | string> {
         name = await name;
 
         // If it is already an address, nothing to resolve
@@ -1572,7 +1572,7 @@ export class BaseProvider extends Provider implements EnsProvider {
         return await resolver.getAddress();
     }
 
-    async lookupAddress(address: string | Promise<string>): Promise<string> {
+    async lookupAddress(address: string | Promise<string>): Promise<null | string> {
         address = await address;
         address = this.formatter.address(address);
 
