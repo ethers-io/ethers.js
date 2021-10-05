@@ -9,16 +9,18 @@ export { GetUrlResponse, Options };
 export async function getUrl(href: string, options?: Options): Promise<GetUrlResponse> {
     if (options == null) { options = { }; }
 
-    const request = {
+    const request: RequestInit = {
         method: (options.method || "GET"),
         headers: (options.headers || { }),
         body: (options.body || undefined),
+    };
 
-        mode: <RequestMode>"cors",                       // no-cors, cors, *same-origin
-        cache: <RequestCache>"no-cache",                 // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: <RequestCredentials>"same-origin",  // include, *same-origin, omit
-        redirect: <RequestRedirect>"follow",             // manual, *follow, error
-        referrer: "client",         // no-referrer, *client
+    if (options.skipFetchSetup !== true) {
+        request.mode = <RequestMode>"cors";              // no-cors, cors, *same-origin
+        request.cache = <RequestCache>"no-cache";        // *default, no-cache, reload, force-cache, only-if-cached
+        request.credentials = <RequestCredentials>"same-origin";  // include, *same-origin, omit
+        request.redirect = <RequestRedirect>"follow";    // manual, *follow, error
+        request.referrer = "client";                     // no-referrer, *client
     };
 
     const response = await fetch(href, request);
