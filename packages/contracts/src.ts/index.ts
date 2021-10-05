@@ -22,6 +22,7 @@ export interface Overrides {
     nonce?: BigNumberish | Promise<BigNumberish>;
     type?: number;
     accessList?: AccessListish;
+    customData?: Record<string, any>;
 };
 
 export interface PayableOverrides extends Overrides {
@@ -55,6 +56,8 @@ export interface PopulatedTransaction {
 
     maxFeePerGas?: BigNumber;
     maxPriorityFeePerGas?: BigNumber;
+
+    customData?: Record<string, any>;
 };
 
 export type EventFilter = {
@@ -106,7 +109,8 @@ export interface ContractTransaction extends TransactionResponse {
 const allowedTransactionKeys: { [ key: string ]: boolean } = {
     chainId: true, data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true,
     type: true, accessList: true,
-    maxFeePerGas: true, maxPriorityFeePerGas: true
+    maxFeePerGas: true, maxPriorityFeePerGas: true,
+    customData: true
 }
 
 async function resolveName(resolver: Signer | Provider, nameOrPromise: string | Promise<string>): Promise<string> {
@@ -257,6 +261,10 @@ async function populateTransaction(contract: Contract, fragment: FunctionFragmen
         tx.value = roValue;
     }
 
+    if (ro.customData) {
+        tx.customData = shallowCopy(ro.customData);
+    }
+
     // Remove the overrides
     delete overrides.nonce;
     delete overrides.gasLimit;
@@ -269,6 +277,8 @@ async function populateTransaction(contract: Contract, fragment: FunctionFragmen
 
     delete overrides.maxFeePerGas;
     delete overrides.maxPriorityFeePerGas;
+
+    delete overrides.customData;
 
     // Make sure there are no stray overrides, which may indicate a
     // typo or using an unsupported key.

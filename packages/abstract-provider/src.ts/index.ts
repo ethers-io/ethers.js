@@ -32,6 +32,8 @@ export type TransactionRequest = {
 
     maxPriorityFeePerGas?: BigNumberish;
     maxFeePerGas?: BigNumberish;
+
+    customData?: Record<string, any>;
 }
 
 export interface TransactionResponse extends Transaction {
