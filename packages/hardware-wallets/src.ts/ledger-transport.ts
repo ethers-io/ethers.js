@@ -1,5 +1,7 @@
 "use strict";
 
+import type { Transport } from "@ledgerhq/hw-transport-node-hid";
+
 export type TransportCreator = {
     create: () => Promise<Transport>;
 };

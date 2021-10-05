@@ -3,7 +3,7 @@
 import u2f from "@ledgerhq/hw-transport-u2f";
 
 export type TransportCreator = {
-    create: () => Promise<Transport>;
+    create: () => Promise<u2f.Transport>;
 };
 
 export const transports: { [ name: string ]: TransportCreator } = {
