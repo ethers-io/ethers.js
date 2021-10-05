@@ -157,7 +157,12 @@ async function resolveAddresses(resolver: Signer | Provider, value: any, paramTy
     }
 
     if (paramType.baseType === "array") {
-        if (!Array.isArray(value)) { return Promise.reject(new Error("invalid value for array")); }
+        if (!Array.isArray(value)) {
+            return Promise.reject(logger.makeError("invalid value for array", Logger.errors.INVALID_ARGUMENT, {
+                argument: "value",
+                value
+            }));
+        }
         return await Promise.all(value.map((v) => resolveAddresses(resolver, v, paramType.arrayChildren)));
     }
 

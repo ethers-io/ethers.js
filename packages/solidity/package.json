@@ -1,11 +1,12 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bignumber": "^5.4.0",
-    "@ethersproject/bytes": "^5.4.0",
-    "@ethersproject/keccak256": "^5.4.0",
-    "@ethersproject/sha2": "^5.4.0",
-    "@ethersproject/strings": "^5.4.0"
+    "@ethersproject/bignumber": "^5.5.0",
+    "@ethersproject/bytes": "^5.5.0",
+    "@ethersproject/keccak256": "^5.5.0",
+    "@ethersproject/logger": "^5.5.0",
+    "@ethersproject/sha2": "^5.5.0",
+    "@ethersproject/strings": "^5.5.0"
   },
   "description": "Solidity coder for non-standard (tight) packing.",
   "ethereum": "donations.ethers.eth",
@@ -41,5 +42,5 @@
   "sideEffects": false,
   "tarballHash": "0x44154ee5d7130c1d61b72b000f1c5acb7bfa7b0870dde55ea8dec7b6045a465d",
   "types": "./lib/index.d.ts",
-  "version": "5.4.0"
+  "version": "5.5.0"
 }
