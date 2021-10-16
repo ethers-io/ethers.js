@@ -728,8 +728,8 @@ export class BaseContract {
             // are ambiguous
             {
                 const name = fragment.name;
-                if (!uniqueNames[name]) { uniqueNames[name] = [ ]; }
-                uniqueNames[name].push(signature);
+                if (!uniqueNames[`%${ name }`]) { uniqueNames[`%${ name }`] = [ ]; }
+                uniqueNames[`%${ name }`].push(signature);
             }
 
             if ((<Contract>this)[signature] == null) {
@@ -757,10 +757,12 @@ export class BaseContract {
         });
 
         Object.keys(uniqueNames).forEach((name) => {
-
             // Ambiguous names to not get attached as bare names
             const signatures = uniqueNames[name];
             if (signatures.length > 1) { return; }
+
+            // Strip off the leading "%" used for prototype protection
+            name = name.substring(1);
 
             const signature = signatures[0];
 
