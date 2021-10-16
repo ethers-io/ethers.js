@@ -3,6 +3,28 @@ Changelog
 
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
+
+ethers/v5.5.0 (2021-10-16 02:04)
+--------------------------------
+
+  - admin: fixed alias script. ([#1494](https://github.com/ethers-io/ethers.js/issues/1494); [8f3d71d](https://github.com/ethers-io/ethers.js/commit/8f3d71dc5fd0e91407737a4b82c58c31269ed2be))
+  - Better errors when non-string address or ENS name is passed into Contracts or provider methods. ([#1051](https://github.com/ethers-io/ethers.js/issues/1051); [a5c6a46](https://github.com/ethers-io/ethers.js/commit/a5c6a468f4a7ad29fb5277e08c6b8b208383a575))
+  - Use personal_sign instead of eth_sign for message signing with JsonRpcSigner; added _legacySignMessage for legacy support. ([#1542](https://github.com/ethers-io/ethers.js/issues/1542), [#1840](https://github.com/ethers-io/ethers.js/issues/1840); [8947fd4](https://github.com/ethers-io/ethers.js/commit/8947fd405e3aea07f6db958d89a3ad39abe3a25a))
+  - Removed extra wordlists from the dist files. ([#2058](https://github.com/ethers-io/ethers.js/issues/2058), [#2077](https://github.com/ethers-io/ethers.js/issues/2077); [cb43a99](https://github.com/ethers-io/ethers.js/commit/cb43a99405cdc5bdcc875efc1821e00e55447791))
+  - Fix issue when Solidity method collises with JavaScript prototype. ([#1432](https://github.com/ethers-io/ethers.js/issues/1432), [#2054](https://github.com/ethers-io/ethers.js/issues/2054), [#2120](https://github.com/ethers-io/ethers.js/issues/2120); [0a8be37](https://github.com/ethers-io/ethers.js/commit/0a8be37b087470d9354f387d7c439cb0166eaf4d))
+  - Add support for Cloudflare Workers. ([#1886](https://github.com/ethers-io/ethers.js/issues/1886); [6582ede](https://github.com/ethers-io/ethers.js/commit/6582ede1ce46be0b3abafb120e052b95a2d172b3))
+  - Added more information to some invalid argument errors. ([#1130](https://github.com/ethers-io/ethers.js/issues/1130); [f3c6d81](https://github.com/ethers-io/ethers.js/commit/f3c6d819f34b6d93f53d98b9f337ade5aa37a594))
+  - Fix compile-time error in new TypeScript version. ([bee76a4](https://github.com/ethers-io/ethers.js/commit/bee76a49b2e5f95ea2eab49aabf5e44cb4ca794b))
+  - Adding customData support to transactions to assist L2 chains. ([#1761](https://github.com/ethers-io/ethers.js/issues/1761); [68095a4](https://github.com/ethers-io/ethers.js/commit/68095a48ae19ed06cbcf2f415f1fcbda90d4b2ae))
+  - Added some explicit null results to previously implicit null results for ENS. ([#1850](https://github.com/ethers-io/ethers.js/issues/1850); [0e5419e](https://github.com/ethers-io/ethers.js/commit/0e5419ec79cb18d82bab8c47bfa3ab4a21cfd293))
+  - Added BigNumber _difficulty to Block results. ([#2001](https://github.com/ethers-io/ethers.js/issues/2001), [#2036](https://github.com/ethers-io/ethers.js/issues/2036); [a48552a](https://github.com/ethers-io/ethers.js/commit/a48552a4fb85a08178d07437a3934db98b7d0736))
+  - Removed redundant call to normalizing blockTag (1838). ([d5b41ce](https://github.com/ethers-io/ethers.js/commit/d5b41ce210c0f22dd795749810f6ce798f71a00f))
+  - Fixed isBytes check for invalid length or elements. ([#1964](https://github.com/ethers-io/ethers.js/issues/1964); [7a404fb](https://github.com/ethers-io/ethers.js/commit/7a404fb8ed95a99baab8f3b384f438b697fa5d76))
+  - Fixed randomBytes not rejecting NaN as a length. ([#1977](https://github.com/ethers-io/ethers.js/issues/1977); [f8adf82](https://github.com/ethers-io/ethers.js/commit/f8adf82e16aaad1a7c1750e7f2e3a9f8073b73e1))
+  - Allow any Networkish for getDefaultProvider. ([#2031](https://github.com/ethers-io/ethers.js/issues/2031); [cc250b2](https://github.com/ethers-io/ethers.js/commit/cc250b2060451e0ee6b1cf3edb6b005f9eee9c61))
+  - Stop allowing commas in fixed numbers; left over from legacy comma support. ([#2083](https://github.com/ethers-io/ethers.js/issues/2083); [45f3675](https://github.com/ethers-io/ethers.js/commit/45f367512d1d5dccfd06fad9cc8688e4d0cccdb8))
+  - Export FallbackProviderConfig. ([#2121](https://github.com/ethers-io/ethers.js/issues/2121); [48c9e0b](https://github.com/ethers-io/ethers.js/commit/48c9e0bf39eec9b5b30ab7cd5685effdccaa1b1a))
+
 ethers/v5.4.7 (2021-09-16 13:17)
 --------------------------------
 
@@ -20,7 +42,7 @@ ethers/v5.4.6 (2021-08-27 15:34)
 ethers/v5.4.5 (2021-08-18 03:05)
 --------------------------------
 
-  - Fxied getBlockWithTransactions results (1858). ([78e4273](https://github.com/ethers-io/ethers.js/commit/78e4273a327d12da9a1ec008d3f2146d97385921))
+  - Fxied getBlockWithTransactions results (#1858). ([78e4273](https://github.com/ethers-io/ethers.js/commit/78e4273a327d12da9a1ec008d3f2146d97385921))
 
 ethers/v5.4.4 (2021-08-04 01:37)
 --------------------------------
