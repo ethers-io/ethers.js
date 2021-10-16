@@ -249,6 +249,13 @@ export class JsonRpcSigner extends Signer implements TypedDataSigner {
         const data = ((typeof(message) === "string") ? toUtf8Bytes(message): message);
         const address = await this.getAddress();
 
+        return await this.provider.send("personal_sign", [ hexlify(data), address.toLowerCase() ]);
+    }
+
+    async _legacySignMessage(message: Bytes | string): Promise<string> {
+        const data = ((typeof(message) === "string") ? toUtf8Bytes(message): message);
+        const address = await this.getAddress();
+
         // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
         return await this.provider.send("eth_sign", [ address.toLowerCase(), hexlify(data) ]);
     }
@@ -610,7 +617,6 @@ export class JsonRpcProvider extends BaseProvider {
         }
         super._stopEvent(event);
     }
-
 
     // Convert an ethers.js transaction into a JSON-RPC transaction
     //  - gasLimit => gas
