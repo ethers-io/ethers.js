@@ -3,15 +3,15 @@
     "./lib/wordlists": "./lib/wordlists.js"
   },
   "_ethers.alias": {
-    "dead-wordlists.js": "dead-browser-wordlists.js"
+    "wordlists.js": "browser-wordlists.js"
   },
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bytes": "^5.4.0",
-    "@ethersproject/hash": "^5.4.0",
-    "@ethersproject/logger": "^5.4.0",
-    "@ethersproject/properties": "^5.4.0",
-    "@ethersproject/strings": "^5.4.0"
+    "@ethersproject/bytes": "^5.5.0",
+    "@ethersproject/hash": "^5.5.0",
+    "@ethersproject/logger": "^5.5.0",
+    "@ethersproject/properties": "^5.5.0",
+    "@ethersproject/strings": "^5.5.0"
   },
   "description": "Word lists for BIP39 wallets.",
   "ethereum": "donations.ethers.eth",
@@ -45,7 +45,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xed146d30213e5f1c9faca4285d27254e3143759f02793b80a5ebc0f19703ea11",
+  "tarballHash": "0x50636816baaed99154f0458e399e704ed58bebaa67a480ab3edebb900ee57965",
   "types": "./lib/index.d.ts",
-  "version": "5.4.0"
+  "version": "5.5.0"
 }
