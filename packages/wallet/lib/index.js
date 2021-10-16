@@ -68,7 +68,7 @@ var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 function isAccount(value) {
-    return (value != null && bytes_1.isHexString(value.privateKey, 32) && value.address != null);
+    return (value != null && (0, bytes_1.isHexString)(value.privateKey, 32) && value.address != null);
 }
 function hasMnemonic(value) {
     var mnemonic = value.mnemonic;
@@ -83,26 +83,26 @@ var Wallet = /** @class */ (function (_super) {
         _this = _super.call(this) || this;
         if (isAccount(privateKey)) {
             var signingKey_1 = new signing_key_1.SigningKey(privateKey.privateKey);
-            properties_1.defineReadOnly(_this, "_signingKey", function () { return signingKey_1; });
-            properties_1.defineReadOnly(_this, "address", transactions_1.computeAddress(_this.publicKey));
-            if (_this.address !== address_1.getAddress(privateKey.address)) {
+            (0, properties_1.defineReadOnly)(_this, "_signingKey", function () { return signingKey_1; });
+            (0, properties_1.defineReadOnly)(_this, "address", (0, transactions_1.computeAddress)(_this.publicKey));
+            if (_this.address !== (0, address_1.getAddress)(privateKey.address)) {
                 logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDACTED]");
             }
             if (hasMnemonic(privateKey)) {
                 var srcMnemonic_1 = privateKey.mnemonic;
-                properties_1.defineReadOnly(_this, "_mnemonic", function () { return ({
+                (0, properties_1.defineReadOnly)(_this, "_mnemonic", function () { return ({
                     phrase: srcMnemonic_1.phrase,
                     path: srcMnemonic_1.path || hdnode_1.defaultPath,
                     locale: srcMnemonic_1.locale || "en"
                 }); });
                 var mnemonic = _this.mnemonic;
                 var node = hdnode_1.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
-                if (transactions_1.computeAddress(node.privateKey) !== _this.address) {
+                if ((0, transactions_1.computeAddress)(node.privateKey) !== _this.address) {
                     logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDACTED]");
                 }
             }
             else {
-                properties_1.defineReadOnly(_this, "_mnemonic", function () { return null; });
+                (0, properties_1.defineReadOnly)(_this, "_mnemonic", function () { return null; });
             }
         }
         else {
@@ -111,7 +111,7 @@ var Wallet = /** @class */ (function (_super) {
                 if (privateKey.curve !== "secp256k1") {
                     logger.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
                 }
-                properties_1.defineReadOnly(_this, "_signingKey", function () { return privateKey; });
+                (0, properties_1.defineReadOnly)(_this, "_signingKey", function () { return privateKey; });
             }
             else {
                 // A lot of common tools do not prefix private keys with a 0x (see: #1166)
@@ -121,16 +121,16 @@ var Wallet = /** @class */ (function (_super) {
                     }
                 }
                 var signingKey_2 = new signing_key_1.SigningKey(privateKey);
-                properties_1.defineReadOnly(_this, "_signingKey", function () { return signingKey_2; });
+                (0, properties_1.defineReadOnly)(_this, "_signingKey", function () { return signingKey_2; });
             }
-            properties_1.defineReadOnly(_this, "_mnemonic", function () { return null; });
-            properties_1.defineReadOnly(_this, "address", transactions_1.computeAddress(_this.publicKey));
+            (0, properties_1.defineReadOnly)(_this, "_mnemonic", function () { return null; });
+            (0, properties_1.defineReadOnly)(_this, "address", (0, transactions_1.computeAddress)(_this.publicKey));
         }
         /* istanbul ignore if */
         if (provider && !abstract_provider_1.Provider.isProvider(provider)) {
             logger.throwArgumentError("invalid provider", "provider", provider);
         }
-        properties_1.defineReadOnly(_this, "provider", provider || null);
+        (0, properties_1.defineReadOnly)(_this, "provider", provider || null);
         return _this;
     }
     Object.defineProperty(Wallet.prototype, "mnemonic", {
@@ -156,21 +156,21 @@ var Wallet = /** @class */ (function (_super) {
     };
     Wallet.prototype.signTransaction = function (transaction) {
         var _this = this;
-        return properties_1.resolveProperties(transaction).then(function (tx) {
+        return (0, properties_1.resolveProperties)(transaction).then(function (tx) {
             if (tx.from != null) {
-                if (address_1.getAddress(tx.from) !== _this.address) {
+                if ((0, address_1.getAddress)(tx.from) !== _this.address) {
                     logger.throwArgumentError("transaction from address mismatch", "transaction.from", transaction.from);
                 }
                 delete tx.from;
             }
-            var signature = _this._signingKey().signDigest(keccak256_1.keccak256(transactions_1.serialize(tx)));
-            return transactions_1.serialize(tx, signature);
+            var signature = _this._signingKey().signDigest((0, keccak256_1.keccak256)((0, transactions_1.serialize)(tx)));
+            return (0, transactions_1.serialize)(tx, signature);
         });
     };
     Wallet.prototype.signMessage = function (message) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, bytes_1.joinSignature(this._signingKey().signDigest(hash_1.hashMessage(message)))];
+                return [2 /*return*/, (0, bytes_1.joinSignature)(this._signingKey().signDigest((0, hash_1.hashMessage)(message)))];
             });
         });
     };
@@ -191,7 +191,7 @@ var Wallet = /** @class */ (function (_super) {
                         })];
                     case 1:
                         populated = _a.sent();
-                        return [2 /*return*/, bytes_1.joinSignature(this._signingKey().signDigest(hash_1._TypedDataEncoder.hash(populated.domain, types, populated.value)))];
+                        return [2 /*return*/, (0, bytes_1.joinSignature)(this._signingKey().signDigest(hash_1._TypedDataEncoder.hash(populated.domain, types, populated.value)))];
                 }
             });
         });
@@ -207,29 +207,29 @@ var Wallet = /** @class */ (function (_super) {
         if (!options) {
             options = {};
         }
-        return json_wallets_1.encryptKeystore(this, password, options, progressCallback);
+        return (0, json_wallets_1.encryptKeystore)(this, password, options, progressCallback);
     };
     /**
      *  Static methods to create Wallet instances.
      */
     Wallet.createRandom = function (options) {
-        var entropy = random_1.randomBytes(16);
+        var entropy = (0, random_1.randomBytes)(16);
         if (!options) {
             options = {};
         }
         if (options.extraEntropy) {
-            entropy = bytes_1.arrayify(bytes_1.hexDataSlice(keccak256_1.keccak256(bytes_1.concat([entropy, options.extraEntropy])), 0, 16));
+            entropy = (0, bytes_1.arrayify)((0, bytes_1.hexDataSlice)((0, keccak256_1.keccak256)((0, bytes_1.concat)([entropy, options.extraEntropy])), 0, 16));
         }
-        var mnemonic = hdnode_1.entropyToMnemonic(entropy, options.locale);
+        var mnemonic = (0, hdnode_1.entropyToMnemonic)(entropy, options.locale);
         return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
     };
     Wallet.fromEncryptedJson = function (json, password, progressCallback) {
-        return json_wallets_1.decryptJsonWallet(json, password, progressCallback).then(function (account) {
+        return (0, json_wallets_1.decryptJsonWallet)(json, password, progressCallback).then(function (account) {
             return new Wallet(account);
         });
     };
     Wallet.fromEncryptedJsonSync = function (json, password) {
-        return new Wallet(json_wallets_1.decryptJsonWalletSync(json, password));
+        return new Wallet((0, json_wallets_1.decryptJsonWalletSync)(json, password));
     };
     Wallet.fromMnemonic = function (mnemonic, path, wordlist) {
         if (!path) {
@@ -241,11 +241,11 @@ var Wallet = /** @class */ (function (_super) {
 }(abstract_signer_1.Signer));
 exports.Wallet = Wallet;
 function verifyMessage(message, signature) {
-    return transactions_1.recoverAddress(hash_1.hashMessage(message), signature);
+    return (0, transactions_1.recoverAddress)((0, hash_1.hashMessage)(message), signature);
 }
 exports.verifyMessage = verifyMessage;
 function verifyTypedData(domain, types, value, signature) {
-    return transactions_1.recoverAddress(hash_1._TypedDataEncoder.hash(domain, types, value), signature);
+    return (0, transactions_1.recoverAddress)(hash_1._TypedDataEncoder.hash(domain, types, value), signature);
 }
 exports.verifyTypedData = verifyTypedData;
 //# sourceMappingURL=index.js.map

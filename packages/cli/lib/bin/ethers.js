@@ -81,13 +81,13 @@ function setupContext(path, context, plugin) {
         context.__filename = path;
     }
     if (!context.__dirname) {
-        context.__dirname = path_1.dirname(path);
+        context.__dirname = (0, path_1.dirname)(path);
     }
     if (!context.console) {
         context.console = console;
     }
     if (!context.require) {
-        context.require = solc_1.customRequire(path);
+        context.require = (0, solc_1.customRequire)(path);
     }
     if (!context.process) {
         context.process = process;
@@ -129,7 +129,7 @@ function setupContext(path, context, plugin) {
 }
 var cli = new cli_1.CLI("sandbox");
 function prepareCode(code) {
-    var ast = parser_1.parseExpression(code, {
+    var ast = (0, parser_1.parseExpression)(code, {
         createParenthesizedExpressions: true
     });
     // Crawl the AST, to compute needed source code manipulations
@@ -212,7 +212,7 @@ var SandboxPlugin = /** @class */ (function (_super) {
     SandboxPlugin.prototype.run = function () {
         console.log("version: " + ethers_1.ethers.version);
         console.log("network: " + this.network.name + " (chainId: " + this.network.chainId + ")");
-        var filename = path_1.resolve(process.cwd(), "./sandbox.js");
+        var filename = (0, path_1.resolve)(process.cwd(), "./sandbox.js");
         var prompt = (this.provider ? this.network.name : "no-network") + "> ";
         var evaluate = function (code, context, file, _callback) {
             // Pausing the stdin (which prompt does when it leaves), causes
@@ -333,17 +333,17 @@ var InitPlugin = /** @class */ (function (_super) {
                         console.log("Creating a new JSON Wallet - " + this.filename);
                         console.log('Keep this password and file SAFE!! If lost or forgotten');
                         console.log('it CANNOT be recovered, by ANYone, EVER.');
-                        return [4 /*yield*/, prompt_1.getPassword("Choose a password: ")];
+                        return [4 /*yield*/, (0, prompt_1.getPassword)("Choose a password: ")];
                     case 1:
                         password = _a.sent();
-                        return [4 /*yield*/, prompt_1.getPassword("Confirm password: ")];
+                        return [4 /*yield*/, (0, prompt_1.getPassword)("Confirm password: ")];
                     case 2:
                         confirm = _a.sent();
                         if (password !== confirm) {
                             this.throwError("Passwords do not match");
                         }
                         wallet = ethers_1.ethers.Wallet.createRandom();
-                        return [4 /*yield*/, prompt_1.getProgressBar("Encrypting")];
+                        return [4 /*yield*/, (0, prompt_1.getProgressBar)("Encrypting")];
                     case 3:
                         progressBar = _a.sent();
                         return [4 /*yield*/, wallet.encrypt(password, {}, progressBar)];
@@ -504,7 +504,7 @@ var InfoPlugin = /** @class */ (function (_super) {
                         if (reverse) {
                             info["Reverse Lookup"] = reverse;
                         }
-                        cli_1.dump(this.queries[i], info);
+                        (0, cli_1.dump)(this.queries[i], info);
                         _b.label = 3;
                     case 3:
                         i++;
@@ -780,7 +780,7 @@ var EvalPlugin = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         contextObject = {};
-                        setupContext(path_1.resolve(process.cwd(), "./sandbox.js"), contextObject, this);
+                        setupContext((0, path_1.resolve)(process.cwd(), "./sandbox.js"), contextObject, this);
                         context = vm_1.default.createContext(contextObject);
                         script = new vm_1.default.Script(this.code, { filename: "-" });
                         result = script.runInContext(context);
@@ -833,7 +833,7 @@ var RunPlugin = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         contextObject = {};
-                        setupContext(path_1.resolve(this.filename), contextObject, this);
+                        setupContext((0, path_1.resolve)(this.filename), contextObject, this);
                         context = vm_1.default.createContext(contextObject);
                         script = new vm_1.default.Script(fs_1.default.readFileSync(this.filename).toString(), { filename: this.filename });
                         result = script.runInContext(context);
@@ -889,7 +889,7 @@ var WaitPlugin = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.provider.waitForTransaction(this.hash)];
                     case 1:
                         receipt = _a.sent();
-                        cli_1.dump("Response:", {
+                        (0, cli_1.dump)("Response:", {
                             "Block": receipt.blockNumber,
                             "Block Hash": receipt.blockHash,
                             "Status": (receipt.status ? "ok" : "failed")
@@ -1185,7 +1185,7 @@ var CompilePlugin = /** @class */ (function (_super) {
                         if (args.length !== 1) {
                             this.throwError("compile requires exactly FILENAME");
                         }
-                        this.filename = path_1.resolve(args[0]);
+                        this.filename = (0, path_1.resolve)(args[0]);
                         return [2 /*return*/];
                 }
             });
@@ -1198,7 +1198,7 @@ var CompilePlugin = /** @class */ (function (_super) {
                 source = fs_1.default.readFileSync(this.filename).toString();
                 result = null;
                 try {
-                    result = solc_1.compile(source, {
+                    result = (0, solc_1.compile)(source, {
                         filename: this.filename,
                         optimize: (!this.noOptimize)
                     });
@@ -1281,7 +1281,7 @@ var DeployPlugin = /** @class */ (function (_super) {
                         if (args.length !== 1) {
                             this.throwError("deploy requires exactly FILENAME");
                         }
-                        this.filename = path_1.resolve(args[0]);
+                        this.filename = (0, path_1.resolve)(args[0]);
                         return [2 /*return*/];
                 }
             });
@@ -1297,7 +1297,7 @@ var DeployPlugin = /** @class */ (function (_super) {
                         source = fs_1.default.readFileSync(this.filename).toString();
                         result = null;
                         try {
-                            result = solc_1.compile(source, {
+                            result = (0, solc_1.compile)(source, {
                                 filename: this.filename,
                                 optimize: (!this.noOptimize)
                             });
@@ -1321,7 +1321,7 @@ var DeployPlugin = /** @class */ (function (_super) {
                             this.throwError("No contract found");
                         }
                         factory = new ethers_1.ethers.ContractFactory(codes[0].interface, codes[0].bytecode, this.accounts[0]);
-                        cli_1.dump("Deploying:", {
+                        (0, cli_1.dump)("Deploying:", {
                             Contract: codes[0].name,
                             Bytecode: codes[0].bytecode,
                             Interface: codes[0].interface.fragments.map(function (f) { return f.format(ethers_1.ethers.utils.FormatTypes.full); }),
@@ -1331,7 +1331,7 @@ var DeployPlugin = /** @class */ (function (_super) {
                         return [4 /*yield*/, factory.deploy()];
                     case 1:
                         contract = _a.sent();
-                        cli_1.dump("Deployed:", {
+                        (0, cli_1.dump)("Deployed:", {
                             Contract: codes[0].name,
                             Address: contract.address,
                         });

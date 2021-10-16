@@ -19,6 +19,9 @@ function addSlice(array) {
 export function isBytesLike(value) {
     return ((isHexString(value) && !(value.length % 2)) || isBytes(value));
 }
+function isInteger(value) {
+    return (typeof (value) === "number" && value == value && (value % 1) === 0);
+}
 export function isBytes(value) {
     if (value == null) {
         return false;
@@ -29,12 +32,12 @@ export function isBytes(value) {
     if (typeof (value) === "string") {
         return false;
     }
-    if (value.length == null) {
+    if (!isInteger(value.length) || value.length < 0) {
         return false;
     }
     for (let i = 0; i < value.length; i++) {
         const v = value[i];
-        if (typeof (v) !== "number" || v < 0 || v >= 256 || (v % 1)) {
+        if (!isInteger(v) || v < 0 || v >= 256) {
             return false;
         }
     }

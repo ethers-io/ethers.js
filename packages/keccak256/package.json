@@ -1,8 +1,8 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bytes": "^5.4.0",
-    "js-sha3": "0.5.7"
+    "@ethersproject/bytes": "^5.5.0",
+    "js-sha3": "0.8.0"
   },
   "description": "The keccak256 hash function for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -36,7 +36,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xff518e09182e092a418a7492dd162b683c927dece550a7eab388314058e34c90",
+  "tarballHash": "0xdd7111141318ba77399dff10f1012094266be538dcabc80de0154a0ddfa262f0",
   "types": "./lib/index.d.ts",
-  "version": "5.4.0"
+  "version": "5.5.0"
 }

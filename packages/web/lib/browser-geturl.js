@@ -51,12 +51,15 @@ function getUrl(href, options) {
                         method: (options.method || "GET"),
                         headers: (options.headers || {}),
                         body: (options.body || undefined),
-                        mode: "cors",
-                        cache: "no-cache",
-                        credentials: "same-origin",
-                        redirect: "follow",
-                        referrer: "client", // no-referrer, *client
                     };
+                    if (options.skipFetchSetup !== true) {
+                        request.mode = "cors"; // no-cors, cors, *same-origin
+                        request.cache = "no-cache"; // *default, no-cache, reload, force-cache, only-if-cached
+                        request.credentials = "same-origin"; // include, *same-origin, omit
+                        request.redirect = "follow"; // manual, *follow, error
+                        request.referrer = "client"; // no-referrer, *client
+                    }
+                    ;
                     return [4 /*yield*/, fetch(href, request)];
                 case 1:
                     response = _a.sent();
@@ -78,7 +81,7 @@ function getUrl(href, options) {
                             headers: headers,
                             statusCode: response.status,
                             statusMessage: response.statusText,
-                            body: bytes_1.arrayify(new Uint8Array(body)),
+                            body: (0, bytes_1.arrayify)(new Uint8Array(body)),
                         }];
             }
         });

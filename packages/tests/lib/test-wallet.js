@@ -63,7 +63,7 @@ var ethers_1 = require("ethers");
 var testcases_1 = require("@ethersproject/testcases");
 var utils = __importStar(require("./utils"));
 describe('Test JSON Wallets', function () {
-    var tests = testcases_1.loadTests('wallets');
+    var tests = (0, testcases_1.loadTests)('wallets');
     tests.forEach(function (test) {
         it(('decrypts wallet - ' + test.name), function () {
             return __awaiter(this, void 0, void 0, function () {
@@ -169,7 +169,7 @@ describe('Test Transaction Signing and Parsing', function () {
         });
         return transaction;
     }
-    var tests = testcases_1.loadTests('transactions');
+    var tests = (0, testcases_1.loadTests)('transactions');
     tests.forEach(function (test) {
         it(('parses and signs transaction - ' + test.name), function () {
             this.timeout(120000);

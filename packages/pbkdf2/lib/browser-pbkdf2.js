@@ -4,8 +4,8 @@ exports.pbkdf2 = void 0;
 var bytes_1 = require("@ethersproject/bytes");
 var sha2_1 = require("@ethersproject/sha2");
 function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
-    password = bytes_1.arrayify(password);
-    salt = bytes_1.arrayify(salt);
+    password = (0, bytes_1.arrayify)(password);
+    salt = (0, bytes_1.arrayify)(salt);
     var hLen;
     var l = 1;
     var DK = new Uint8Array(keylen);
@@ -21,7 +21,7 @@ function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
         block1[salt.length + 2] = (i >> 8) & 0xff;
         block1[salt.length + 3] = i & 0xff;
         //let U = createHmac(password).update(block1).digest();
-        var U = bytes_1.arrayify(sha2_1.computeHmac(hashAlgorithm, password, block1));
+        var U = (0, bytes_1.arrayify)((0, sha2_1.computeHmac)(hashAlgorithm, password, block1));
         if (!hLen) {
             hLen = U.length;
             T = new Uint8Array(hLen);
@@ -32,16 +32,16 @@ function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
         T.set(U);
         for (var j = 1; j < iterations; j++) {
             //U = createHmac(password).update(U).digest();
-            U = bytes_1.arrayify(sha2_1.computeHmac(hashAlgorithm, password, U));
+            U = (0, bytes_1.arrayify)((0, sha2_1.computeHmac)(hashAlgorithm, password, U));
             for (var k = 0; k < hLen; k++)
                 T[k] ^= U[k];
         }
         var destPos = (i - 1) * hLen;
         var len = (i === l ? r : hLen);
         //T.copy(DK, destPos, 0, len)
-        DK.set(bytes_1.arrayify(T).slice(0, len), destPos);
+        DK.set((0, bytes_1.arrayify)(T).slice(0, len), destPos);
     }
-    return bytes_1.hexlify(DK);
+    return (0, bytes_1.hexlify)(DK);
 }
 exports.pbkdf2 = pbkdf2;
 //# sourceMappingURL=browser-pbkdf2.js.map

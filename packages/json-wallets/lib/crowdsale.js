@@ -44,27 +44,27 @@ exports.CrowdsaleAccount = CrowdsaleAccount;
 // See: https://github.com/ethereum/pyethsaletool
 function decrypt(json, password) {
     var data = JSON.parse(json);
-    password = utils_1.getPassword(password);
+    password = (0, utils_1.getPassword)(password);
     // Ethereum Address
-    var ethaddr = address_1.getAddress(utils_1.searchPath(data, "ethaddr"));
+    var ethaddr = (0, address_1.getAddress)((0, utils_1.searchPath)(data, "ethaddr"));
     // Encrypted Seed
-    var encseed = utils_1.looseArrayify(utils_1.searchPath(data, "encseed"));
+    var encseed = (0, utils_1.looseArrayify)((0, utils_1.searchPath)(data, "encseed"));
     if (!encseed || (encseed.length % 16) !== 0) {
         logger.throwArgumentError("invalid encseed", "json", json);
     }
-    var key = bytes_1.arrayify(pbkdf2_1.pbkdf2(password, password, 2000, 32, "sha256")).slice(0, 16);
+    var key = (0, bytes_1.arrayify)((0, pbkdf2_1.pbkdf2)(password, password, 2000, 32, "sha256")).slice(0, 16);
     var iv = encseed.slice(0, 16);
     var encryptedSeed = encseed.slice(16);
     // Decrypt the seed
     var aesCbc = new aes_js_1.default.ModeOfOperation.cbc(key, iv);
-    var seed = aes_js_1.default.padding.pkcs7.strip(bytes_1.arrayify(aesCbc.decrypt(encryptedSeed)));
+    var seed = aes_js_1.default.padding.pkcs7.strip((0, bytes_1.arrayify)(aesCbc.decrypt(encryptedSeed)));
     // This wallet format is weird... Convert the binary encoded hex to a string.
     var seedHex = "";
     for (var i = 0; i < seed.length; i++) {
         seedHex += String.fromCharCode(seed[i]);
     }
-    var seedHexBytes = strings_1.toUtf8Bytes(seedHex);
-    var privateKey = keccak256_1.keccak256(seedHexBytes);
+    var seedHexBytes = (0, strings_1.toUtf8Bytes)(seedHex);
+    var privateKey = (0, keccak256_1.keccak256)(seedHexBytes);
     return new CrowdsaleAccount({
         _isCrowdsaleAccount: true,
         address: ethaddr,

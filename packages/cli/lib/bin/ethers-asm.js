@@ -149,7 +149,7 @@ var AssemblePlugin = /** @class */ (function (_super) {
                         return [3 /*break*/, 5];
                     case 2:
                         if (!(args.length === 1)) return [3 /*break*/, 3];
-                        this.filename = path_1.resolve(args[0]);
+                        this.filename = (0, path_1.resolve)(args[0]);
                         this.content = fs_1.default.readFileSync(this.filename).toString();
                         return [3 /*break*/, 5];
                     case 3:
@@ -203,15 +203,15 @@ var AssemblePlugin = /** @class */ (function (_super) {
                 switch (_c.label) {
                     case 0:
                         if (!this.disassemble) return [3 /*break*/, 1];
-                        console.log(asm_1.formatBytecode(asm_1.disassemble(this.content)));
+                        console.log((0, asm_1.formatBytecode)((0, asm_1.disassemble)(this.content)));
                         return [3 /*break*/, 4];
                     case 1:
                         _c.trys.push([1, 3, , 4]);
-                        ast = asm_1.parse(this.content, {
+                        ast = (0, asm_1.parse)(this.content, {
                             ignoreWarnings: !!this.ignoreWarnings
                         });
                         _b = (_a = console).log;
-                        return [4 /*yield*/, asm_1.assemble(ast, {
+                        return [4 /*yield*/, (0, asm_1.assemble)(ast, {
                                 defines: this.defines,
                                 filename: this.filename,
                                 positionIndependentCode: this.pic,

@@ -66,7 +66,7 @@ export function parseFixed(value, decimals) {
         decimals = 0;
     }
     const multiplier = getMultiplier(decimals);
-    if (typeof (value) !== "string" || !value.match(/^-?[0-9.,]+$/)) {
+    if (typeof (value) !== "string" || !value.match(/^-?[0-9.]+$/)) {
         logger.throwArgumentError("invalid decimal value", "value", value);
     }
     // Is it negative?
@@ -89,11 +89,11 @@ export function parseFixed(value, decimals) {
     if (!fraction) {
         fraction = "0";
     }
-    // Trim trialing zeros
+    // Trim trailing zeros
     while (fraction[fraction.length - 1] === "0") {
         fraction = fraction.substring(0, fraction.length - 1);
     }
-    // Check the fraction doesn't exceed our decimals
+    // Check the fraction doesn't exceed our decimals size
     if (fraction.length > multiplier.length - 1) {
         throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
     }

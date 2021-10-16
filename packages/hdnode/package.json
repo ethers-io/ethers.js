@@ -1,18 +1,18 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/abstract-signer": "^5.4.0",
-    "@ethersproject/basex": "^5.4.0",
-    "@ethersproject/bignumber": "^5.4.0",
-    "@ethersproject/bytes": "^5.4.0",
-    "@ethersproject/logger": "^5.4.0",
-    "@ethersproject/pbkdf2": "^5.4.0",
-    "@ethersproject/properties": "^5.4.0",
-    "@ethersproject/sha2": "^5.4.0",
-    "@ethersproject/signing-key": "^5.4.0",
-    "@ethersproject/strings": "^5.4.0",
-    "@ethersproject/transactions": "^5.4.0",
-    "@ethersproject/wordlists": "^5.4.0"
+    "@ethersproject/abstract-signer": "^5.5.0",
+    "@ethersproject/basex": "^5.5.0",
+    "@ethersproject/bignumber": "^5.5.0",
+    "@ethersproject/bytes": "^5.5.0",
+    "@ethersproject/logger": "^5.5.0",
+    "@ethersproject/pbkdf2": "^5.5.0",
+    "@ethersproject/properties": "^5.5.0",
+    "@ethersproject/sha2": "^5.5.0",
+    "@ethersproject/signing-key": "^5.5.0",
+    "@ethersproject/strings": "^5.5.0",
+    "@ethersproject/transactions": "^5.5.0",
+    "@ethersproject/wordlists": "^5.5.0"
   },
   "description": "BIP32 Hierarchal Deterministic Node operations.",
   "ethereum": "donations.ethers.eth",
@@ -46,7 +46,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x5bc10132d4e5c4d94c2eb5be681a5966605da5c6289908191ee0a44321421e06",
+  "tarballHash": "0xe0380795f54dd16283bb2614baafa8ce9beb51856a8a99b48f44c8658db7876c",
   "types": "./lib/index.d.ts",
-  "version": "5.4.0"
+  "version": "5.5.0"
 }

@@ -220,7 +220,7 @@ export function _fetchData(connection, body, processFunc) {
                     }
                 }
                 runningTimeout.cancel();
-                // If we had a processFunc, it eitehr returned a T or threw above.
+                // If we had a processFunc, it either returned a T or threw above.
                 // The "body" is now a Uint8Array.
                 return body;
             }

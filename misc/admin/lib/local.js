@@ -9,7 +9,7 @@ const path_1 = require("./path");
 const run_1 = require("./run");
 const utils_1 = require("./utils");
 function getPackage(name) {
-    const value = utils_1.loadJson(path_1.getPackageJsonPath(name));
+    const value = (0, utils_1.loadJson)((0, path_1.getPackageJsonPath)(name));
     return {
         name: value.name,
         version: value.version,
@@ -23,7 +23,7 @@ function getPackage(name) {
 }
 exports.getPackage = getPackage;
 function updateJson(path, replace, sort) {
-    const values = utils_1.loadJson(path);
+    const values = (0, utils_1.loadJson)(path);
     Object.keys(replace).forEach((key) => {
         const value = replace[key];
         if (value === undefined) {
@@ -33,12 +33,12 @@ function updateJson(path, replace, sort) {
             values[key] = replace[key];
         }
     });
-    utils_1.saveJson(path, values, !!sort);
+    (0, utils_1.saveJson)(path, values, !!sort);
 }
 exports.updateJson = updateJson;
 function getDependencies(name, filter) {
     if (name) {
-        return utils_1.sortRecords(getPackage(name).dependencies);
+        return (0, utils_1.sortRecords)(getPackage(name).dependencies);
     }
     // Find all versions for each package dependency
     const deps = path_1.dirnames.reduce((accum, dirname) => {
@@ -55,7 +55,7 @@ function getDependencies(name, filter) {
         return accum;
     }, {});
     // Make sure each package dependency only has 1 version
-    return utils_1.sortRecords(Object.keys(deps).reduce((accum, name) => {
+    return (0, utils_1.sortRecords)(Object.keys(deps).reduce((accum, name) => {
         const versions = Object.keys(deps[name]);
         if (versions.length > 1) {
             throw new Error(`cannot depend on multiple versions for ${JSON.stringify(name)}: ${versions.map(v => JSON.stringify(v)).join(", ")}`);
@@ -66,7 +66,7 @@ function getDependencies(name, filter) {
 }
 exports.getDependencies = getDependencies;
 function getPackList(name) {
-    const result = run_1.run("npm", ["pack", "--json", path_1.getPackagePath(name), "--dry-run"]);
+    const result = (0, run_1.run)("npm", ["pack", "--json", (0, path_1.getPackagePath)(name), "--dry-run"]);
     if (!result.ok) {
         const error = new Error(`failed to run npm pack: ${name}`);
         error.result = result;
@@ -118,9 +118,9 @@ function computeTarballHash(name) {
     const files = getPackList(name);
     files.sort();
     // Compute the hash for each file
-    const packageRoot = path_1.getPackagePath(name);
+    const packageRoot = (0, path_1.getPackagePath)(name);
     const hashes = files.reduce((accum, filename) => {
-        let content = fs_1.default.readFileSync(path_1.resolve(packageRoot, filename));
+        let content = fs_1.default.readFileSync((0, path_1.resolve)(packageRoot, filename));
         // The package.json includes the hash, so we need to nix it to get a consistent hash
         if (filename === "package.json") {
             const info = JSON.parse(content.toString());
@@ -128,10 +128,10 @@ function computeTarballHash(name) {
             delete info.tarballHash;
             content = Buffer.from(JSON.stringify(info, null, 2));
         }
-        accum[filename] = utils_1.sha256(content);
+        accum[filename] = (0, utils_1.sha256)(content);
         return accum;
     }, {});
-    return utils_1.sha256(Buffer.from("{" + files.map((filename) => {
+    return (0, utils_1.sha256)(Buffer.from("{" + files.map((filename) => {
         return `${JSON.stringify(filename)}:"${hashes[filename]}"`;
     }).join(",") + "}"));
 }

@@ -35,10 +35,10 @@ function _encode(object) {
         length_1.unshift(0xf7 + length_1.length);
         return length_1.concat(payload_1);
     }
-    if (!bytes_1.isBytesLike(object)) {
+    if (!(0, bytes_1.isBytesLike)(object)) {
         logger.throwArgumentError("RLP object must be BytesLike", "object", object);
     }
-    var data = Array.prototype.slice.call(bytes_1.arrayify(object));
+    var data = Array.prototype.slice.call((0, bytes_1.arrayify)(object));
     if (data.length === 1 && data[0] <= 0x7f) {
         return data;
     }
@@ -51,7 +51,7 @@ function _encode(object) {
     return length.concat(data);
 }
 function encode(object) {
-    return bytes_1.hexlify(_encode(object));
+    return (0, bytes_1.hexlify)(_encode(object));
 }
 exports.encode = encode;
 function _decodeChildren(data, offset, childOffset, length) {
@@ -99,7 +99,7 @@ function _decode(data, offset) {
         if (offset + 1 + lengthLength + length_4 > data.length) {
             logger.throwError("data array too short", logger_1.Logger.errors.BUFFER_OVERRUN, {});
         }
-        var result = bytes_1.hexlify(data.slice(offset + 1 + lengthLength, offset + 1 + lengthLength + length_4));
+        var result = (0, bytes_1.hexlify)(data.slice(offset + 1 + lengthLength, offset + 1 + lengthLength + length_4));
         return { consumed: (1 + lengthLength + length_4), result: result };
     }
     else if (data[offset] >= 0x80) {
@@ -107,13 +107,13 @@ function _decode(data, offset) {
         if (offset + 1 + length_5 > data.length) {
             logger.throwError("data too short", logger_1.Logger.errors.BUFFER_OVERRUN, {});
         }
-        var result = bytes_1.hexlify(data.slice(offset + 1, offset + 1 + length_5));
+        var result = (0, bytes_1.hexlify)(data.slice(offset + 1, offset + 1 + length_5));
         return { consumed: (1 + length_5), result: result };
     }
-    return { consumed: 1, result: bytes_1.hexlify(data[offset]) };
+    return { consumed: 1, result: (0, bytes_1.hexlify)(data[offset]) };
 }
 function decode(data) {
-    var bytes = bytes_1.arrayify(data);
+    var bytes = (0, bytes_1.arrayify)(data);
     var decoded = _decode(bytes, 0);
     if (decoded.consumed !== bytes.length) {
         logger.throwArgumentError("invalid rlp data", "data", data);

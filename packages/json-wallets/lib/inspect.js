@@ -34,7 +34,7 @@ exports.isKeystoreWallet = isKeystoreWallet;
 function getJsonWalletAddress(json) {
     if (isCrowdsaleWallet(json)) {
         try {
-            return address_1.getAddress(JSON.parse(json).ethaddr);
+            return (0, address_1.getAddress)(JSON.parse(json).ethaddr);
         }
         catch (error) {
             return null;
@@ -42,7 +42,7 @@ function getJsonWalletAddress(json) {
     }
     if (isKeystoreWallet(json)) {
         try {
-            return address_1.getAddress(JSON.parse(json).address);
+            return (0, address_1.getAddress)(JSON.parse(json).address);
         }
         catch (error) {
             return null;

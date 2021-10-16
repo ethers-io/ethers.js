@@ -13,7 +13,7 @@ var ethers_1 = require("ethers");
 function populateOptions(options) {
     options = ethers_1.ethers.utils.shallowCopy(options || {});
     if (options.filename && !options.basedir) {
-        options.basedir = path_1.dirname(options.filename);
+        options.basedir = (0, path_1.dirname)(options.filename);
     }
     if (!options.filename) {
         options.filename = "_contract.sol";
@@ -61,7 +61,7 @@ function _compile(_solc, source, options) {
     var findImport = function (filename) {
         try {
             return {
-                contents: fs_1.default.readFileSync(path_1.resolve(options.basedir, filename)).toString()
+                contents: fs_1.default.readFileSync((0, path_1.resolve)(options.basedir, filename)).toString()
             };
         }
         catch (error) {
@@ -105,8 +105,8 @@ function customRequire(path) {
     var createRequire = (module_1.default.createRequireFromPath || (function (path) {
         return require;
     }));
-    var pathRequire = createRequire(path_1.resolve(path, "./sandbox.js"));
-    var libRequire = createRequire(path_1.resolve(__filename));
+    var pathRequire = createRequire((0, path_1.resolve)(path, "./sandbox.js"));
+    var libRequire = createRequire((0, path_1.resolve)(__filename));
     return function (name) {
         try {
             return pathRequire(name);

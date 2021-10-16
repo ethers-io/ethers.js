@@ -64,7 +64,7 @@ function formatUnits(value, unitName) {
             unitName = 3 * index;
         }
     }
-    return bignumber_1.formatFixed(value, (unitName != null) ? unitName : 18);
+    return (0, bignumber_1.formatFixed)(value, (unitName != null) ? unitName : 18);
 }
 exports.formatUnits = formatUnits;
 function parseUnits(value, unitName) {
@@ -77,7 +77,7 @@ function parseUnits(value, unitName) {
             unitName = 3 * index;
         }
     }
-    return bignumber_1.parseFixed(value, (unitName != null) ? unitName : 18);
+    return (0, bignumber_1.parseFixed)(value, (unitName != null) ? unitName : 18);
 }
 exports.parseUnits = parseUnits;
 function formatEther(wei) {

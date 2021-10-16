@@ -22,7 +22,7 @@ function loadTests(tag) {
             var comps = fileData.split(",");
             var size = parseInt(comps[0]), compressedData = ethers_1.ethers.utils.base64.decode(comps[1]);
             var uncompressedData = new Uint8Array(size);
-            tiny_inflate_1.default(compressedData, uncompressedData);
+            (0, tiny_inflate_1.default)(compressedData, uncompressedData);
             Cache[filename] = JSON.parse(ethers_1.ethers.utils.toUtf8String(uncompressedData));
         }
         catch (error) {

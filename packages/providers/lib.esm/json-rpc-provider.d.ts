@@ -18,6 +18,7 @@ export declare class JsonRpcSigner extends Signer implements TypedDataSigner {
     signTransaction(transaction: Deferrable<TransactionRequest>): Promise<string>;
     sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse>;
     signMessage(message: Bytes | string): Promise<string>;
+    _legacySignMessage(message: Bytes | string): Promise<string>;
     _signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
     unlock(password: string): Promise<boolean>;
 }

@@ -47,7 +47,7 @@ function getOrdered(skipNobuild) {
     };
     for (let i = 0; i < path_1.dirnames.length; i++) {
         let dirname = path_1.dirnames[i];
-        let info = local_1.getPackage(dirname);
+        let info = (0, local_1.getPackage)(dirname);
         if (skipNobuild && info._ethers_nobuild) {
             continue;
         }
@@ -91,8 +91,8 @@ exports.getOrdered = getOrdered;
 function sort(dirnames) {
     let ordered = getOrdered();
     dirnames.sort((a, b) => {
-        let ai = ordered.indexOf(local_1.getPackage(a).name);
-        let bi = ordered.indexOf(local_1.getPackage(b).name);
+        let ai = ordered.indexOf((0, local_1.getPackage)(a).name);
+        let bi = ordered.indexOf((0, local_1.getPackage)(b).name);
         if (ai === -1 || bi === -1) {
             throw new Error("unknown dirname - " + [a, b].join(", "));
         }

@@ -22,7 +22,7 @@ function _fetchGitHub(user, password, getUrlFunc, url) {
     return __awaiter(this, void 0, void 0, function* () {
         const result = [];
         while (true) {
-            const filename = path_1.resolve("github-cache", Buffer.from(js_sha3_1.keccak_256.create().update(Buffer.from(url)).digest()).toString("hex").substring(0, 12));
+            const filename = (0, path_1.resolve)("github-cache", Buffer.from(js_sha3_1.keccak_256.create().update(Buffer.from(url)).digest()).toString("hex").substring(0, 12));
             const headers = {
                 "User-Agent": "ethers-io",
             };
@@ -41,7 +41,7 @@ function _fetchGitHub(user, password, getUrlFunc, url) {
                     throw error;
                 }
             }
-            const response = yield geturl_1.getUrl(url, { headers, user, password });
+            const response = yield (0, geturl_1.getUrl)(url, { headers, user, password });
             console.log(response.statusCode);
             // Cached response is good; use it!
             if (response.statusCode !== 304) {
@@ -129,7 +129,7 @@ function syncIssues(user, password) {
 exports.syncIssues = syncIssues;
 function createRelease(user, password, tagName, title, body, prerelease, commit) {
     return __awaiter(this, void 0, void 0, function* () {
-        const result = yield geturl_1.getUrl("https:/\/api.github.com/repos/ethers-io/ethers.js/releases", {
+        const result = yield (0, geturl_1.getUrl)("https:/\/api.github.com/repos/ethers-io/ethers.js/releases", {
             body: Buffer.from(JSON.stringify({
                 tag_name: tagName,
                 target_commitish: (commit || "master"),

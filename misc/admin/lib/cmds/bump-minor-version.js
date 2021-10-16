@@ -65,7 +65,7 @@ const path_1 = require("../path");
                 accum[name] = version;
                 return accum;
             }, {});
-            const packageJsonPath = path_1.getPackageJsonPath(dirname);
+            const packageJsonPath = (0, path_1.getPackageJsonPath)(dirname);
             local.updateJson(packageJsonPath, {
                 dependencies: deps,
                 version: newVersion

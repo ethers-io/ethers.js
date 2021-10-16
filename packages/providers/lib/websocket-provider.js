@@ -67,7 +67,7 @@ var logger = new logger_1.Logger(_version_1.version);
  *  will stall responses to ensure a consistent state, while this
  *  WebSocket provider assumes the connected backend will manage this.
  *
- *  For example, if a polling provider emits an event which indicats
+ *  For example, if a polling provider emits an event which indicates
  *  the event occurred in blockhash XXX, a call to fetch that block by
  *  its hash XXX, if not present will retry until it is present. This
  *  can occur when querying a pool of nodes that are mildly out of sync
@@ -89,11 +89,11 @@ var WebSocketProvider = /** @class */ (function (_super) {
         _this = _super.call(this, url, network) || this;
         _this._pollingInterval = -1;
         _this._wsReady = false;
-        properties_1.defineReadOnly(_this, "_websocket", new ws_1.WebSocket(_this.connection.url));
-        properties_1.defineReadOnly(_this, "_requests", {});
-        properties_1.defineReadOnly(_this, "_subs", {});
-        properties_1.defineReadOnly(_this, "_subIds", {});
-        properties_1.defineReadOnly(_this, "_detectNetwork", _super.prototype.detectNetwork.call(_this));
+        (0, properties_1.defineReadOnly)(_this, "_websocket", new ws_1.WebSocket(_this.connection.url));
+        (0, properties_1.defineReadOnly)(_this, "_requests", {});
+        (0, properties_1.defineReadOnly)(_this, "_subs", {});
+        (0, properties_1.defineReadOnly)(_this, "_subIds", {});
+        (0, properties_1.defineReadOnly)(_this, "_detectNetwork", _super.prototype.detectNetwork.call(_this));
         // Stall sending requests until the socket is open...
         _this._websocket.onopen = function () {
             _this._wsReady = true;
@@ -121,8 +121,8 @@ var WebSocketProvider = /** @class */ (function (_super) {
                     var error = null;
                     if (result.error) {
                         error = new Error(result.error.message || "unknown error");
-                        properties_1.defineReadOnly(error, "code", result.error.code || null);
-                        properties_1.defineReadOnly(error, "response", data);
+                        (0, properties_1.defineReadOnly)(error, "code", result.error.code || null);
+                        (0, properties_1.defineReadOnly)(error, "response", data);
                     }
                     else {
                         error = new Error("unknown error");

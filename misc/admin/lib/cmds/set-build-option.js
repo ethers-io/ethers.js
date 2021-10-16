@@ -19,19 +19,19 @@ const utils_1 = require("../utils");
             console.log(log_1.colorify.bold("Setting Option:"), arg);
             switch (arg) {
                 case "esm":
-                    build_1.setupBuild(true);
+                    (0, build_1.setupBuild)(true);
                     break;
                 case "cjs":
-                    build_1.setupBuild(false);
+                    (0, build_1.setupBuild)(false);
                     break;
                 // This will remove the browser field entirely, so make sure
                 // to set esm of cjs first as they will restore the browser
                 // field
                 case "browser-lang-all": {
-                    const filename = path_1.getPackageJsonPath("wordlists");
-                    const info = utils_1.loadJson(filename);
+                    const filename = (0, path_1.getPackageJsonPath)("wordlists");
+                    const info = (0, utils_1.loadJson)(filename);
                     delete info.browser;
-                    utils_1.saveJson(filename, info, true);
+                    (0, utils_1.saveJson)(filename, info, true);
                     break;
                 }
                 default:

@@ -9,7 +9,7 @@ var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 function getChecksumAddress(address) {
-    if (!bytes_1.isHexString(address, 20)) {
+    if (!(0, bytes_1.isHexString)(address, 20)) {
         logger.throwArgumentError("invalid address", "address", address);
     }
     address = address.toLowerCase();
@@ -18,7 +18,7 @@ function getChecksumAddress(address) {
     for (var i = 0; i < 40; i++) {
         expanded[i] = chars[i].charCodeAt(0);
     }
-    var hashed = bytes_1.arrayify(keccak256_1.keccak256(expanded));
+    var hashed = (0, bytes_1.arrayify)((0, keccak256_1.keccak256)(expanded));
     for (var i = 0; i < 40; i += 2) {
         if ((hashed[i >> 1] >> 4) >= 8) {
             chars[i] = chars[i].toUpperCase();
@@ -86,7 +86,7 @@ function getAddress(address) {
         if (address.substring(2, 4) !== ibanChecksum(address)) {
             logger.throwArgumentError("bad icap checksum", "address", address);
         }
-        result = bignumber_1._base36To16(address.substring(4));
+        result = (0, bignumber_1._base36To16)(address.substring(4));
         while (result.length < 40) {
             result = "0" + result;
         }
@@ -108,7 +108,7 @@ function isAddress(address) {
 }
 exports.isAddress = isAddress;
 function getIcapAddress(address) {
-    var base36 = bignumber_1._base16To36(getAddress(address).substring(2)).toUpperCase();
+    var base36 = (0, bignumber_1._base16To36)(getAddress(address).substring(2)).toUpperCase();
     while (base36.length < 30) {
         base36 = "0" + base36;
     }
@@ -124,18 +124,18 @@ function getContractAddress(transaction) {
     catch (error) {
         logger.throwArgumentError("missing from address", "transaction", transaction);
     }
-    var nonce = bytes_1.stripZeros(bytes_1.arrayify(bignumber_1.BigNumber.from(transaction.nonce).toHexString()));
-    return getAddress(bytes_1.hexDataSlice(keccak256_1.keccak256(rlp_1.encode([from, nonce])), 12));
+    var nonce = (0, bytes_1.stripZeros)((0, bytes_1.arrayify)(bignumber_1.BigNumber.from(transaction.nonce).toHexString()));
+    return getAddress((0, bytes_1.hexDataSlice)((0, keccak256_1.keccak256)((0, rlp_1.encode)([from, nonce])), 12));
 }
 exports.getContractAddress = getContractAddress;
 function getCreate2Address(from, salt, initCodeHash) {
-    if (bytes_1.hexDataLength(salt) !== 32) {
+    if ((0, bytes_1.hexDataLength)(salt) !== 32) {
         logger.throwArgumentError("salt must be 32 bytes", "salt", salt);
     }
-    if (bytes_1.hexDataLength(initCodeHash) !== 32) {
+    if ((0, bytes_1.hexDataLength)(initCodeHash) !== 32) {
         logger.throwArgumentError("initCodeHash must be 32 bytes", "initCodeHash", initCodeHash);
     }
-    return getAddress(bytes_1.hexDataSlice(keccak256_1.keccak256(bytes_1.concat(["0xff", getAddress(from), salt, initCodeHash])), 12));
+    return getAddress((0, bytes_1.hexDataSlice)((0, keccak256_1.keccak256)((0, bytes_1.concat)(["0xff", getAddress(from), salt, initCodeHash])), 12));
 }
 exports.getCreate2Address = getCreate2Address;
 //# sourceMappingURL=index.js.map

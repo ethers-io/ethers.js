@@ -37,7 +37,7 @@ var Utf8ErrorReason;
     // - offset       = start of this codepoint
     // - badCodepoint = the computed codepoint; inside the UTF-16 surrogate range
     Utf8ErrorReason["UTF16_SURROGATE"] = "UTF-16 surrogate";
-    // The string is an overlong reperesentation
+    // The string is an overlong representation
     // - offset       = start of this codepoint
     // - badCodepoint = the computed codepoint; already bounds checked
     Utf8ErrorReason["OVERLONG"] = "overlong representation";
@@ -88,7 +88,7 @@ function getUtf8CodePoints(bytes, onError) {
     if (onError == null) {
         onError = exports.Utf8ErrorFuncs.error;
     }
-    bytes = bytes_1.arrayify(bytes);
+    bytes = (0, bytes_1.arrayify)(bytes);
     var result = [];
     var i = 0;
     // Invalid bytes are ignored
@@ -145,7 +145,7 @@ function getUtf8CodePoints(bytes, onError) {
             res = (res << 6) | (nextChar & 0x3f);
             i++;
         }
-        // See above loop for invalid contimuation byte
+        // See above loop for invalid continuation byte
         if (res === null) {
             continue;
         }
@@ -204,7 +204,7 @@ function toUtf8Bytes(str, form) {
             result.push((c & 0x3f) | 0x80);
         }
     }
-    return bytes_1.arrayify(result);
+    return (0, bytes_1.arrayify)(result);
 }
 exports.toUtf8Bytes = toUtf8Bytes;
 ;

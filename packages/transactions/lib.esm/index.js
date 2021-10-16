@@ -185,7 +185,7 @@ function _serialize(transaction, signature) {
         raw.push("0x");
         raw.push("0x");
     }
-    // Requesting an unsigned transation
+    // Requesting an unsigned transaction
     if (!signature) {
         return RLP.encode(raw);
     }
@@ -341,7 +341,7 @@ function _parse(rawTransaction) {
         tx.v = 0;
     }
     else {
-        // Signed Tranasaction
+        // Signed Transaction
         tx.chainId = Math.floor((tx.v - 35) / 2);
         if (tx.chainId < 0) {
             tx.chainId = 0;

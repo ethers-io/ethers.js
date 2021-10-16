@@ -8,6 +8,9 @@ const regexBytes = new RegExp("^bytes([0-9]+)$");
 const regexNumber = new RegExp("^(u?int)([0-9]*)$");
 const regexArray = new RegExp("^(.*)\\[([0-9]*)\\]$");
 const Zeros = "0000000000000000000000000000000000000000000000000000000000000000";
+import { Logger } from "@ethersproject/logger";
+import { version } from "./_version";
+const logger = new Logger(version);
 function _pack(type, value, isArray) {
     switch (type) {
         case "address":
@@ -31,7 +34,7 @@ function _pack(type, value, isArray) {
         //let signed = (match[1] === "int")
         let size = parseInt(match[2] || "256");
         if ((match[2] && String(size) !== match[2]) || (size % 8 !== 0) || size === 0 || size > 256) {
-            throw new Error("invalid number type - " + type);
+            logger.throwArgumentError("invalid number type", "type", type);
         }
         if (isArray) {
             size = 256;
@@ -43,10 +46,10 @@ function _pack(type, value, isArray) {
     if (match) {
         const size = parseInt(match[1]);
         if (String(size) !== match[1] || size === 0 || size > 32) {
-            throw new Error("invalid bytes type - " + type);
+            logger.throwArgumentError("invalid bytes type", "type", type);
         }
         if (arrayify(value).byteLength !== size) {
-            throw new Error("invalid value for " + type);
+            logger.throwArgumentError(`invalid value for ${type}`, "value", value);
         }
         if (isArray) {
             return arrayify((value + Zeros).substring(0, 66));
@@ -58,7 +61,7 @@ function _pack(type, value, isArray) {
         const baseType = match[1];
         const count = parseInt(match[2] || String(value.length));
         if (count != value.length) {
-            throw new Error("invalid value for " + type);
+            logger.throwArgumentError(`invalid array length for ${type}`, "value", value);
         }
         const result = [];
         value.forEach(function (value) {
@@ -66,12 +69,12 @@ function _pack(type, value, isArray) {
         });
         return concat(result);
     }
-    throw new Error("invalid type - " + type);
+    return logger.throwArgumentError("invalid type", "type", type);
 }
 // @TODO: Array Enum
 export function pack(types, values) {
     if (types.length != values.length) {
-        throw new Error("type/value count mismatch");
+        logger.throwArgumentError("wrong number of values; expected ${ types.length }", "values", values);
     }
     const tight = [];
     types.forEach(function (type, index) {

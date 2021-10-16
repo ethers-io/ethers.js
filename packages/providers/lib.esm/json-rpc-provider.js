@@ -223,6 +223,13 @@ export class JsonRpcSigner extends Signer {
         return __awaiter(this, void 0, void 0, function* () {
             const data = ((typeof (message) === "string") ? toUtf8Bytes(message) : message);
             const address = yield this.getAddress();
+            return yield this.provider.send("personal_sign", [hexlify(data), address.toLowerCase()]);
+        });
+    }
+    _legacySignMessage(message) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = ((typeof (message) === "string") ? toUtf8Bytes(message) : message);
+            const address = yield this.getAddress();
             // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
             return yield this.provider.send("eth_sign", [address.toLowerCase(), hexlify(data)]);
         });

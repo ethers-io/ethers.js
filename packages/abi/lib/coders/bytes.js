@@ -27,7 +27,7 @@ var DynamicBytesCoder = /** @class */ (function (_super) {
         return "0x";
     };
     DynamicBytesCoder.prototype.encode = function (writer, value) {
-        value = bytes_1.arrayify(value);
+        value = (0, bytes_1.arrayify)(value);
         var length = writer.writeValue(value.length);
         length += writer.writeBytes(value);
         return length;
@@ -44,7 +44,7 @@ var BytesCoder = /** @class */ (function (_super) {
         return _super.call(this, "bytes", localName) || this;
     }
     BytesCoder.prototype.decode = function (reader) {
-        return reader.coerce(this.name, bytes_1.hexlify(_super.prototype.decode.call(this, reader)));
+        return reader.coerce(this.name, (0, bytes_1.hexlify)(_super.prototype.decode.call(this, reader)));
     };
     return BytesCoder;
 }(DynamicBytesCoder));

@@ -14,8 +14,8 @@ const path_1 = require("../path");
 const local_1 = require("../local");
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
-        const ordered = depgraph_1.getOrdered(true);
-        local_1.updateJson(path_1.resolve("tsconfig.project.json"), {
+        const ordered = (0, depgraph_1.getOrdered)(true);
+        (0, local_1.updateJson)((0, path_1.resolve)("tsconfig.project.json"), {
             references: ordered.map((name) => ({ path: ("./packages/" + name) }))
         });
     });

@@ -98,7 +98,7 @@ function _getPrompt(prompt, options, callback) {
                     (process.stdout).clearLine();
                     (process.stdout).cursorTo(0);
                     if (options.mask) {
-                        process.stdout.write(prompt + utils_1.repeat(options.mask, message.length));
+                        process.stdout.write(prompt + (0, utils_1.repeat)(options.mask, message.length));
                     }
                     else {
                         process.stdout.write(prompt + message);

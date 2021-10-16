@@ -24,8 +24,8 @@ const log_1 = require("../log");
 function alias(name) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`  Aliasing: ${name}`);
-        const baseDir = path_2.resolve("packages", name);
-        const info = utils_1.loadJson(path_2.resolve(baseDir, "package.json"));
+        const baseDir = (0, path_2.resolve)("packages", name);
+        const info = (0, utils_1.loadJson)((0, path_2.resolve)(baseDir, "package.json"));
         const replacements = info["_ethers.alias"] || {};
         const skip = Object.keys(replacements).reduce((accum, key) => {
             const replace = replacements[key];
@@ -37,10 +37,10 @@ function alias(name) {
         }, ({}));
         const transforms = [];
         const recurse = function (input, output) {
-            fs_1.default.readdirSync(path_1.join(baseDir, input)).forEach((filename) => {
-                const stat = fs_1.default.statSync(path_1.join(baseDir, input, filename));
+            fs_1.default.readdirSync((0, path_1.join)(baseDir, input)).forEach((filename) => {
+                const stat = fs_1.default.statSync((0, path_1.join)(baseDir, input, filename));
                 if (stat.isDirectory()) {
-                    recurse(path_1.join(input, filename), path_1.join(output, filename));
+                    recurse((0, path_1.join)(input, filename), (0, path_1.join)(output, filename));
                     return;
                 }
                 if (skip[filename]) {
@@ -61,7 +61,7 @@ function alias(name) {
                     if (replace) {
                         inputFilename = replace;
                         transform = function (content) {
-                            content = content.replace(/(\/\/# sourceMappingURL=)(.*)$/g, (all, prefix, mapFilename) => {
+                            content = content.replace(/^(\/\/# sourceMappingURL=)(.*)$/mg, (all, prefix, mapFilename) => {
                                 return prefix + filename + ".map";
                             });
                             return content;
@@ -118,19 +118,19 @@ function alias(name) {
                         };
                     }
                 }
-                transforms.push({ input: path_1.join(input, inputFilename), output: path_1.join(output, filename), transform });
+                transforms.push({ input: (0, path_1.join)(input, inputFilename), output: (0, path_1.join)(output, filename), transform });
             });
         };
         recurse("lib._esm", "lib.esm");
         transforms.forEach(({ input, output, transform }) => {
-            const sourceFile = path_1.join(baseDir, input);
+            const sourceFile = (0, path_1.join)(baseDir, input);
             let content = fs_1.default.readFileSync(sourceFile).toString();
             if (transform) {
                 content = transform(content);
             }
-            const targetFile = path_1.join(baseDir, output);
-            const targetDir = path_1.dirname(targetFile);
-            utils_1.mkdir(targetDir);
+            const targetFile = (0, path_1.join)(baseDir, output);
+            const targetDir = (0, path_1.dirname)(targetFile);
+            (0, utils_1.mkdir)(targetDir);
             fs_1.default.writeFileSync(targetFile, content);
         });
     });
@@ -138,9 +138,9 @@ function alias(name) {
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(log_1.colorify.bold(`Aliasing Node ESM to Browser ESM...`));
-        const dirnames = depgraph_1.getOrdered(true);
+        const dirnames = (0, depgraph_1.getOrdered)(true);
         for (let i = 0; i < dirnames.length; i++) {
-            //if (dirnames[i] !== "base64") { continue; }
+            //if (dirnames[i] !== "signing-key") { continue; }
             yield alias(dirnames[i]);
         }
     });

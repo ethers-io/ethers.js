@@ -37,9 +37,9 @@ var InfuraWebSocketProvider = /** @class */ (function (_super) {
         }
         var url = connection.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
         _this = _super.call(this, url, network) || this;
-        properties_1.defineReadOnly(_this, "apiKey", provider.projectId);
-        properties_1.defineReadOnly(_this, "projectId", provider.projectId);
-        properties_1.defineReadOnly(_this, "projectSecret", provider.projectSecret);
+        (0, properties_1.defineReadOnly)(_this, "apiKey", provider.projectId);
+        (0, properties_1.defineReadOnly)(_this, "projectId", provider.projectId);
+        (0, properties_1.defineReadOnly)(_this, "projectSecret", provider.projectSecret);
         return _this;
     }
     InfuraWebSocketProvider.prototype.isCommunityResource = function () {
@@ -115,7 +115,7 @@ var InfuraProvider = /** @class */ (function (_super) {
             url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId),
             throttleCallback: function (attempt, url) {
                 if (apiKey.projectId === defaultProjectId) {
-                    formatter_1.showThrottleMessage();
+                    (0, formatter_1.showThrottleMessage)();
                 }
                 return Promise.resolve(true);
             }

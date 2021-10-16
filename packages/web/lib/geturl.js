@@ -70,12 +70,12 @@ function getResponse(request) {
                 if (response.body == null) {
                     response.body = new Uint8Array(0);
                 }
-                response.body = bytes_1.concat([response.body, chunk]);
+                response.body = (0, bytes_1.concat)([response.body, chunk]);
             });
             resp.on("end", function () {
                 if (response.headers["content-encoding"] === "gzip") {
                     //const size = response.body.length;
-                    response.body = bytes_1.arrayify(zlib_1.gunzipSync(response.body));
+                    response.body = (0, bytes_1.arrayify)((0, zlib_1.gunzipSync)(response.body));
                     //console.log("Delta:", response.body.length - size, Buffer.from(response.body).toString());
                 }
                 resolve(response);
@@ -105,14 +105,14 @@ function getUrl(href, options) {
                     if (options == null) {
                         options = {};
                     }
-                    url = url_1.parse(href);
+                    url = (0, url_1.parse)(href);
                     request = {
                         protocol: nonnull(url.protocol),
                         hostname: nonnull(url.hostname),
                         port: nonnull(url.port),
                         path: (nonnull(url.pathname) + nonnull(url.search)),
                         method: (options.method || "GET"),
-                        headers: properties_1.shallowCopy(options.headers || {}),
+                        headers: (0, properties_1.shallowCopy)(options.headers || {}),
                     };
                     if (options.allowGzip) {
                         request.headers["accept-encoding"] = "gzip";

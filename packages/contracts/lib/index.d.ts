@@ -12,6 +12,7 @@ export interface Overrides {
     nonce?: BigNumberish | Promise<BigNumberish>;
     type?: number;
     accessList?: AccessListish;
+    customData?: Record<string, any>;
 }
 export interface PayableOverrides extends Overrides {
     value?: BigNumberish | Promise<BigNumberish>;
@@ -33,6 +34,7 @@ export interface PopulatedTransaction {
     accessList?: AccessList;
     maxFeePerGas?: BigNumber;
     maxPriorityFeePerGas?: BigNumber;
+    customData?: Record<string, any>;
 }
 export declare type EventFilter = {
     address?: string;

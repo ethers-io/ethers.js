@@ -129,7 +129,7 @@ function getStrings(source) {
 const Include = new RegExp("packages/.*/src.ts/.*\.ts$");
 const Exclude = new RegExp("/node_modules/|src.ts/.*browser.*");
 function getAllStrings(path) {
-    const Root = path_1.resolve(__dirname, path);
+    const Root = (0, path_1.resolve)(__dirname, path);
     const readdir = function (path) {
         if (path.match(Exclude)) {
             return [];
@@ -137,7 +137,7 @@ function getAllStrings(path) {
         const stat = fs_1.default.statSync(path);
         if (stat.isDirectory()) {
             return fs_1.default.readdirSync(path).reduce((result, filename) => {
-                readdir(path_1.resolve(path, filename)).forEach((file) => {
+                readdir((0, path_1.resolve)(path, filename)).forEach((file) => {
                     result.push(file);
                 });
                 return result;
@@ -174,7 +174,7 @@ function starts(text, prefix) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(log_1.colorify.bold("Spell checking source code strings..."));
         let count = 0;
-        getAllStrings(path_1.resolve(__dirname, "../../../../packages")).forEach((file) => {
+        getAllStrings((0, path_1.resolve)(__dirname, "../../../../packages")).forEach((file) => {
             if (starts(file.filename, "/testcases/src.ts/generation-scripts")) {
                 return;
             }

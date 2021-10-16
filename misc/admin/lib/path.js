@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.isEthers = exports.getPackageJsonPath = exports.getDirname = exports.getPackagePath = exports.packages = exports.dirnames = exports.dirs = exports.resolve = exports.root = void 0;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = require("path");
-exports.root = path_1.resolve(__dirname, "../../../");
+exports.root = (0, path_1.resolve)(__dirname, "../../../");
 function resolve(...args) {
     args.unshift(exports.root);
     return path_1.resolve.apply(null, args);
@@ -23,8 +23,8 @@ exports.dirnames = Object.freeze(fs_1.default.readdirSync(exports.dirs.packages)
     return (dirname[0] !== ".");
 }));
 const packageLookup = exports.dirnames.reduce((accum, dirname) => {
-    const packagePath = path_1.resolve(exports.dirs.packages, dirname);
-    const packageJsonPath = path_1.resolve(packagePath, "package.json");
+    const packagePath = (0, path_1.resolve)(exports.dirs.packages, dirname);
+    const packageJsonPath = (0, path_1.resolve)(packagePath, "package.json");
     const info = JSON.parse(fs_1.default.readFileSync(packageJsonPath).toString());
     const packageName = info.name;
     const version = info.version;

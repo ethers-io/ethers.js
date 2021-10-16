@@ -23,13 +23,13 @@ var wordlist = null;
 var lookup = {};
 function dropDiacritic(word) {
     wordlist_1.logger.checkNormalize();
-    return strings_1.toUtf8String(Array.prototype.filter.call(strings_1.toUtf8Bytes(word.normalize("NFD").toLowerCase()), function (c) {
+    return (0, strings_1.toUtf8String)(Array.prototype.filter.call((0, strings_1.toUtf8Bytes)(word.normalize("NFD").toLowerCase()), function (c) {
         return ((c >= 65 && c <= 90) || (c >= 97 && c <= 123));
     }));
 }
 function expand(word) {
     var output = [];
-    Array.prototype.forEach.call(strings_1.toUtf8Bytes(word), function (c) {
+    Array.prototype.forEach.call((0, strings_1.toUtf8Bytes)(word), function (c) {
         // Acute accent
         if (c === 47) {
             output.push(204);
@@ -44,7 +44,7 @@ function expand(word) {
             output.push(c);
         }
     });
-    return strings_1.toUtf8String(output);
+    return (0, strings_1.toUtf8String)(output);
 }
 function loadWords(lang) {
     if (wordlist != null) {

@@ -90,7 +90,7 @@ var StaticJsonRpcProvider = /** @class */ (function (_super) {
                         // If still not set, set it
                         if (this._network == null) {
                             // A static network does not support "any"
-                            properties_1.defineReadOnly(this, "_network", network);
+                            (0, properties_1.defineReadOnly)(this, "_network", network);
                             this.emit("network", network, null);
                         }
                         _a.label = 2;
@@ -109,16 +109,16 @@ var UrlJsonRpcProvider = /** @class */ (function (_super) {
         var _this = this;
         logger.checkAbstract(_newTarget, UrlJsonRpcProvider);
         // Normalize the Network and API Key
-        network = properties_1.getStatic((_newTarget), "getNetwork")(network);
-        apiKey = properties_1.getStatic((_newTarget), "getApiKey")(apiKey);
-        var connection = properties_1.getStatic((_newTarget), "getUrl")(network, apiKey);
+        network = (0, properties_1.getStatic)(_newTarget, "getNetwork")(network);
+        apiKey = (0, properties_1.getStatic)(_newTarget, "getApiKey")(apiKey);
+        var connection = (0, properties_1.getStatic)(_newTarget, "getUrl")(network, apiKey);
         _this = _super.call(this, connection, network) || this;
         if (typeof (apiKey) === "string") {
-            properties_1.defineReadOnly(_this, "apiKey", apiKey);
+            (0, properties_1.defineReadOnly)(_this, "apiKey", apiKey);
         }
         else if (apiKey != null) {
             Object.keys(apiKey).forEach(function (key) {
-                properties_1.defineReadOnly(_this, key, apiKey[key]);
+                (0, properties_1.defineReadOnly)(_this, key, apiKey[key]);
             });
         }
         return _this;

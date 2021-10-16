@@ -54,10 +54,10 @@ var JsonRpcBatchProvider = /** @class */ (function (_super) {
                 var request = batch.map(function (inflight) { return inflight.request; });
                 _this.emit("debug", {
                     action: "requestBatch",
-                    request: properties_1.deepCopy(request),
+                    request: (0, properties_1.deepCopy)(request),
                     provider: _this
                 });
-                return web_1.fetchJson(_this.connection, JSON.stringify(request)).then(function (result) {
+                return (0, web_1.fetchJson)(_this.connection, JSON.stringify(request)).then(function (result) {
                     _this.emit("debug", {
                         action: "response",
                         request: request,

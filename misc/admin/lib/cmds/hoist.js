@@ -14,11 +14,11 @@ const local_1 = require("../local");
 const log_1 = require("../log");
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
-        const dependencies = local_1.getDependencies(null, (name) => {
-            return !path_1.isEthers(name);
+        const dependencies = (0, local_1.getDependencies)(null, (name) => {
+            return !(0, path_1.isEthers)(name);
         });
         console.log(log_1.colorify.bold(`Hoisting ${Object.keys(dependencies).length} dependencies into root package...`));
-        local_1.updateJson(path_1.dirs.rootPackageJsonPath, { dependencies });
+        (0, local_1.updateJson)(path_1.dirs.rootPackageJsonPath, { dependencies });
     });
 })().catch((error) => {
     console.log(`Error running ${process.argv[0]}: ${error.message}`);

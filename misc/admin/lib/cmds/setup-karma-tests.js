@@ -16,7 +16,7 @@ const fs_1 = __importDefault(require("fs"));
 const path_1 = require("../path");
 const utils_1 = require("../utils");
 function copy(src, dst, transform) {
-    let data = fs_1.default.readFileSync(path_1.resolve(src));
+    let data = fs_1.default.readFileSync((0, path_1.resolve)(src));
     if (transform) {
         data = Buffer.from(transform(data.toString()));
     }
@@ -24,14 +24,14 @@ function copy(src, dst, transform) {
 }
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
-        yield utils_1.mkdir(path_1.resolve("output/karma"));
-        copy(path_1.resolve("packages/ethers/dist/ethers.esm.js"), path_1.resolve("output/karma/ethers.esm.js"));
-        copy(path_1.resolve("packages/tests/dist/tests.esm.js"), path_1.resolve("output/karma/tests.esm.js"), (data) => {
+        yield (0, utils_1.mkdir)((0, path_1.resolve)("output/karma"));
+        copy((0, path_1.resolve)("packages/ethers/dist/ethers.esm.js"), (0, path_1.resolve)("output/karma/ethers.esm.js"));
+        copy((0, path_1.resolve)("packages/tests/dist/tests.esm.js"), (0, path_1.resolve)("output/karma/tests.esm.js"), (data) => {
             return data.replace(/^(import [^;]* from ')(ethers)(';)/, (all, prefix, id, suffix) => {
                 return prefix + "./ethers.esm.js" + suffix;
             });
         });
-        copy(path_1.resolve("packages/ethers/dist/ethers.umd.js"), path_1.resolve("output/karma/ethers.umd.js"));
-        copy(path_1.resolve("packages/tests/dist/tests.umd.js"), path_1.resolve("output/karma/tests.umd.js"));
+        copy((0, path_1.resolve)("packages/ethers/dist/ethers.umd.js"), (0, path_1.resolve)("output/karma/ethers.umd.js"));
+        copy((0, path_1.resolve)("packages/tests/dist/tests.umd.js"), (0, path_1.resolve)("output/karma/tests.umd.js"));
     });
 })();

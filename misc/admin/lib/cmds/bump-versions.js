@@ -40,8 +40,8 @@ const npm = __importStar(require("../npm"));
 const utils_1 = require("../utils");
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
-        const common = utils_1.loadJson(path_1.resolve("package.json")).common;
-        const progress = log_1.getProgressBar(log_1.colorify.bold("Bumping package.json versions"));
+        const common = (0, utils_1.loadJson)((0, path_1.resolve)("package.json")).common;
+        const progress = (0, log_1.getProgressBar)(log_1.colorify.bold("Bumping package.json versions"));
         const latestVersions = {};
         let updated = false;
         const output = [];
@@ -49,7 +49,7 @@ const utils_1 = require("../utils");
         for (let i = 0; i < path_1.dirnames.length; i++) {
             progress(i / path_1.dirnames.length);
             const dirname = path_1.dirnames[i];
-            const packageJsonPath = path_1.getPackageJsonPath(dirname);
+            const packageJsonPath = (0, path_1.getPackageJsonPath)(dirname);
             // Set the common elements to the package.json
             local.updateJson(packageJsonPath, common, true);
             const pLocal = local.getPackage(dirname);
@@ -68,7 +68,7 @@ const utils_1 = require("../utils");
                 output.push([
                     "  ",
                     log_1.colorify.blue(pLocal.name),
-                    utils_1.repeat(" ", 47 - pLocal.name.length - pNpm.version.length),
+                    (0, utils_1.repeat)(" ", 47 - pLocal.name.length - pNpm.version.length),
                     pNpm.version,
                     log_1.colorify.bold(" => "),
                     log_1.colorify.green(version)
@@ -80,13 +80,13 @@ const utils_1 = require("../utils");
             // Write out the _version.ts
             if (!pLocal._ethers_nobuild) {
                 const code = "export const version = " + JSON.stringify(dirname + "/" + version) + ";\n";
-                fs_1.default.writeFileSync(path_1.resolve(path_1.getPackagePath(dirname), "src.ts/_version.ts"), code);
+                fs_1.default.writeFileSync((0, path_1.resolve)((0, path_1.getPackagePath)(dirname), "src.ts/_version.ts"), code);
             }
         }
         progress(1);
         if (updated) {
-            const filename = path_1.resolve("packages/ethers/package.json");
-            const info = utils_1.loadJson(filename);
+            const filename = (0, path_1.resolve)("packages/ethers/package.json");
+            const info = (0, utils_1.loadJson)(filename);
             Object.keys(info.dependencies).forEach((name) => {
                 const version = latestVersions[name];
                 if (name == null) {
@@ -94,7 +94,7 @@ const utils_1 = require("../utils");
                 }
                 info.dependencies[name] = version;
             });
-            utils_1.saveJson(filename, info);
+            (0, utils_1.saveJson)(filename, info);
         }
         output.forEach((line) => { console.log(line); });
     });

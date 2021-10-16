@@ -36,7 +36,7 @@ var AlchemyWebSocketProvider = /** @class */ (function (_super) {
         var url = provider.connection.url.replace(/^http/i, "ws")
             .replace(".alchemyapi.", ".ws.alchemyapi.");
         _this = _super.call(this, url, provider.network) || this;
-        properties_1.defineReadOnly(_this, "apiKey", provider.apiKey);
+        (0, properties_1.defineReadOnly)(_this, "apiKey", provider.apiKey);
         return _this;
     }
     AlchemyWebSocketProvider.prototype.isCommunityResource = function () {
@@ -94,7 +94,7 @@ var AlchemyProvider = /** @class */ (function (_super) {
             url: ("https:/" + "/" + host + apiKey),
             throttleCallback: function (attempt, url) {
                 if (apiKey === defaultApiKey) {
-                    formatter_1.showThrottleMessage();
+                    (0, formatter_1.showThrottleMessage)();
                 }
                 return Promise.resolve(true);
             }

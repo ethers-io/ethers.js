@@ -6,17 +6,17 @@ var bytes_1 = require("@ethersproject/bytes");
 var utf8_1 = require("./utf8");
 function formatBytes32String(text) {
     // Get the bytes
-    var bytes = utf8_1.toUtf8Bytes(text);
+    var bytes = (0, utf8_1.toUtf8Bytes)(text);
     // Check we have room for null-termination
     if (bytes.length > 31) {
         throw new Error("bytes32 string must be less than 32 bytes");
     }
     // Zero-pad (implicitly null-terminates)
-    return bytes_1.hexlify(bytes_1.concat([bytes, constants_1.HashZero]).slice(0, 32));
+    return (0, bytes_1.hexlify)((0, bytes_1.concat)([bytes, constants_1.HashZero]).slice(0, 32));
 }
 exports.formatBytes32String = formatBytes32String;
 function parseBytes32String(bytes) {
-    var data = bytes_1.arrayify(bytes);
+    var data = (0, bytes_1.arrayify)(bytes);
     // Must be 32 bytes with a null-termination
     if (data.length !== 32) {
         throw new Error("invalid bytes32 - not 32 bytes long");
@@ -30,7 +30,7 @@ function parseBytes32String(bytes) {
         length--;
     }
     // Determine the string value
-    return utf8_1.toUtf8String(data.slice(0, length));
+    return (0, utf8_1.toUtf8String)(data.slice(0, length));
 }
 exports.parseBytes32String = parseBytes32String;
 //# sourceMappingURL=bytes32.js.map

@@ -67,7 +67,7 @@ export {
 // Abstract Providers (or Abstract-ish)
 Provider, BaseProvider, Resolver, UrlJsonRpcProvider, 
 ///////////////////////
-// Concreate Providers
+// Concrete Providers
 FallbackProvider, AlchemyProvider, AlchemyWebSocketProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, InfuraWebSocketProvider, JsonRpcProvider, JsonRpcBatchProvider, NodesmithProvider, PocketProvider, StaticJsonRpcProvider, Web3Provider, WebSocketProvider, IpcProvider, 
 ///////////////////////
 // Signer

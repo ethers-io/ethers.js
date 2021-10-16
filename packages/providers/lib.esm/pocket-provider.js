@@ -4,7 +4,7 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
-// These are load-balancer-based applicatoin IDs
+// These are load-balancer-based application IDs
 const defaultApplicationIds = {
     homestead: "6004bcd10040261633ade990",
     ropsten: "6004bd4d0040261633ade991",
@@ -16,7 +16,7 @@ export class PocketProvider extends UrlJsonRpcProvider {
         // We need a bit of creativity in the constructor because
         // Pocket uses different default API keys based on the network
         if (apiKey == null) {
-            const n = getStatic((new.target), "getNetwork")(network);
+            const n = getStatic(new.target, "getNetwork")(network);
             if (n) {
                 const applicationId = defaultApplicationIds[n.name];
                 if (applicationId) {

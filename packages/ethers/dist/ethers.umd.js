@@ -3500,7 +3500,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "logger/5.4.1";
+	exports.version = "logger/5.5.0";
 
 	});
 
@@ -3606,7 +3606,7 @@
 	    //  - errorArgs?: The EIP848 error parameters
 	    //  - reason: The reason (only for EIP848 "Error(string)")
 	    ErrorCode["CALL_EXCEPTION"] = "CALL_EXCEPTION";
-	    // Insufficien funds (< value + gasLimit * gasPrice)
+	    // Insufficient funds (< value + gasLimit * gasPrice)
 	    //   - transaction: the transaction attempted
 	    ErrorCode["INSUFFICIENT_FUNDS"] = "INSUFFICIENT_FUNDS";
 	    // Nonce has already been used
@@ -3847,7 +3847,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "bytes/5.4.0";
+	exports.version = "bytes/5.5.0";
 
 	});
 
@@ -3878,6 +3878,9 @@
 	    return ((isHexString(value) && !(value.length % 2)) || isBytes(value));
 	}
 	exports.isBytesLike = isBytesLike;
+	function isInteger(value) {
+	    return (typeof (value) === "number" && value == value && (value % 1) === 0);
+	}
 	function isBytes(value) {
 	    if (value == null) {
 	        return false;
@@ -3888,12 +3891,12 @@
 	    if (typeof (value) === "string") {
 	        return false;
 	    }
-	    if (value.length == null) {
+	    if (!isInteger(value.length) || value.length < 0) {
 	        return false;
 	    }
 	    for (var i = 0; i < value.length; i++) {
 	        var v = value[i];
-	        if (typeof (v) !== "number" || v < 0 || v >= 256 || (v % 1)) {
+	        if (!isInteger(v) || v < 0 || v >= 256) {
 	            return false;
 	        }
 	    }
@@ -4270,7 +4273,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "bignumber/5.4.2";
+	exports.version = "bignumber/5.5.0";
 
 	});
 
@@ -4302,9 +4305,9 @@
 	    return (value != null) && (BigNumber.isBigNumber(value) ||
 	        (typeof (value) === "number" && (value % 1) === 0) ||
 	        (typeof (value) === "string" && !!value.match(/^-?[0-9]+$/)) ||
-	        lib$1.isHexString(value) ||
+	        (0, lib$1.isHexString)(value) ||
 	        (typeof (value) === "bigint") ||
-	        lib$1.isBytes(value));
+	        (0, lib$1.isBytes)(value));
 	}
 	exports.isBigNumberish = isBigNumberish;
 	// Only warn about passing 10 into radix once
@@ -4492,11 +4495,11 @@
 	        if (typeof (anyValue) === "bigint") {
 	            return BigNumber.from(anyValue.toString());
 	        }
-	        if (lib$1.isBytes(anyValue)) {
-	            return BigNumber.from(lib$1.hexlify(anyValue));
+	        if ((0, lib$1.isBytes)(anyValue)) {
+	            return BigNumber.from((0, lib$1.hexlify)(anyValue));
 	        }
 	        if (anyValue) {
-	            // Hexable interface (takes piority)
+	            // Hexable interface (takes priority)
 	            if (anyValue.toHexString) {
 	                var hex = anyValue.toHexString();
 	                if (typeof (hex) === "string") {
@@ -4511,7 +4514,7 @@
 	                    hex = anyValue.hex;
 	                }
 	                if (typeof (hex) === "string") {
-	                    if (lib$1.isHexString(hex) || (hex[0] === "-" && lib$1.isHexString(hex.substring(1)))) {
+	                    if ((0, lib$1.isHexString)(hex) || (hex[0] === "-" && (0, lib$1.isHexString)(hex.substring(1)))) {
 	                        return BigNumber.from(hex);
 	                    }
 	                }
@@ -4535,7 +4538,7 @@
 	    if (value[0] === "-") {
 	        // Strip off the negative sign
 	        value = value.substring(1);
-	        // Cannot have mulitple negative signs (e.g. "--0x04")
+	        // Cannot have multiple negative signs (e.g. "--0x04")
 	        if (value[0] === "-") {
 	            logger.throwArgumentError("invalid hex", "value", value);
 	        }
@@ -4670,7 +4673,7 @@
 	        decimals = 0;
 	    }
 	    var multiplier = getMultiplier(decimals);
-	    if (typeof (value) !== "string" || !value.match(/^-?[0-9.,]+$/)) {
+	    if (typeof (value) !== "string" || !value.match(/^-?[0-9.]+$/)) {
 	        logger.throwArgumentError("invalid decimal value", "value", value);
 	    }
 	    // Is it negative?
@@ -4693,11 +4696,11 @@
 	    if (!fraction) {
 	        fraction = "0";
 	    }
-	    // Trim trialing zeros
+	    // Trim trailing zeros
 	    while (fraction[fraction.length - 1] === "0") {
 	        fraction = fraction.substring(0, fraction.length - 1);
 	    }
-	    // Check the fraction doesn't exceed our decimals
+	    // Check the fraction doesn't exceed our decimals size
 	    if (fraction.length > multiplier.length - 1) {
 	        throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
 	    }
@@ -4887,7 +4890,7 @@
 	            logger.throwArgumentError("invalid byte width", "width", width);
 	        }
 	        var hex = bignumber.BigNumber.from(this._hex).fromTwos(this.format.width).toTwos(width).toHexString();
-	        return lib$1.hexZeroPad(hex, width / 8);
+	        return (0, lib$1.hexZeroPad)(hex, width / 8);
 	    };
 	    FixedNumber.prototype.toUnsafeFloat = function () { return parseFloat(this.toString()); };
 	    FixedNumber.prototype.toFormat = function (format) {
@@ -4895,7 +4898,7 @@
 	    };
 	    FixedNumber.fromValue = function (value, decimals, format) {
 	        // If decimals looks more like a format, and there is no format, shift the parameters
-	        if (format == null && decimals != null && !bignumber.isBigNumberish(decimals)) {
+	        if (format == null && decimals != null && !(0, bignumber.isBigNumberish)(decimals)) {
 	            format = decimals;
 	            decimals = null;
 	        }
@@ -4922,7 +4925,7 @@
 	        }
 	        else {
 	            hex = numeric.toHexString();
-	            hex = lib$1.hexZeroPad(hex, fixedFormat.width / 8);
+	            hex = (0, lib$1.hexZeroPad)(hex, fixedFormat.width / 8);
 	        }
 	        var decimal = formatFixed(numeric, fixedFormat.decimals);
 	        return new FixedNumber(_constructorGuard, hex, decimal, fixedFormat);
@@ -4932,7 +4935,7 @@
 	            format = "fixed";
 	        }
 	        var fixedFormat = FixedFormat.from(format);
-	        if (lib$1.arrayify(value).length > fixedFormat.width / 8) {
+	        if ((0, lib$1.arrayify)(value).length > fixedFormat.width / 8) {
 	            throw new Error("overflow");
 	        }
 	        var numeric = bignumber.BigNumber.from(value);
@@ -4947,7 +4950,7 @@
 	        if (typeof (value) === "string") {
 	            return FixedNumber.fromString(value, format);
 	        }
-	        if (lib$1.isBytes(value)) {
+	        if ((0, lib$1.isBytes)(value)) {
 	            return FixedNumber.fromBytes(value, format);
 	        }
 	        try {
@@ -4998,7 +5001,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "properties/5.4.1";
+	exports.version = "properties/5.5.0";
 
 	});
 
@@ -5184,7 +5187,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abi/5.4.1";
+	exports.version = "abi/5.5.0";
 
 	});
 
@@ -5403,7 +5406,7 @@
 	}
 	function populate(object, params) {
 	    for (var key in params) {
-	        lib$3.defineReadOnly(object, key, params[key]);
+	        (0, lib$3.defineReadOnly)(object, key, params[key]);
 	    }
 	}
 	exports.FormatTypes = Object.freeze({
@@ -5411,7 +5414,7 @@
 	    sighash: "sighash",
 	    // Human-Readable with Minimal spacing and without names (compact human-readable)
 	    minimal: "minimal",
-	    // Human-Readble with nice spacing, including all names
+	    // Human-Readable with nice spacing, including all names
 	    full: "full",
 	    // JSON-format a la Solidity
 	    json: "json"
@@ -5449,7 +5452,7 @@
 	    // Format the parameter fragment
 	    //   - sighash: "(uint256,address)"
 	    //   - minimal: "tuple(uint256,address) indexed"
-	    //   - full:    "tuple(uint256 foo, addres bar) indexed baz"
+	    //   - full:    "tuple(uint256 foo, address bar) indexed baz"
 	    ParamType.prototype.format = function (format) {
 	        if (!format) {
 	            format = exports.FormatTypes.sighash;
@@ -6143,14 +6146,14 @@
 	exports.Coder = Coder;
 	var Writer = /** @class */ (function () {
 	    function Writer(wordSize) {
-	        lib$3.defineReadOnly(this, "wordSize", wordSize || 32);
+	        (0, lib$3.defineReadOnly)(this, "wordSize", wordSize || 32);
 	        this._data = [];
 	        this._dataLength = 0;
 	        this._padding = new Uint8Array(wordSize);
 	    }
 	    Object.defineProperty(Writer.prototype, "data", {
 	        get: function () {
-	            return lib$1.hexConcat(this._data);
+	            return (0, lib$1.hexConcat)(this._data);
 	        },
 	        enumerable: false,
 	        configurable: true
@@ -6166,19 +6169,19 @@
 	        return data.length;
 	    };
 	    Writer.prototype.appendWriter = function (writer) {
-	        return this._writeData(lib$1.concat(writer._data));
+	        return this._writeData((0, lib$1.concat)(writer._data));
 	    };
 	    // Arrayish items; padded on the right to wordSize
 	    Writer.prototype.writeBytes = function (value) {
-	        var bytes = lib$1.arrayify(value);
+	        var bytes = (0, lib$1.arrayify)(value);
 	        var paddingOffset = bytes.length % this.wordSize;
 	        if (paddingOffset) {
-	            bytes = lib$1.concat([bytes, this._padding.slice(paddingOffset)]);
+	            bytes = (0, lib$1.concat)([bytes, this._padding.slice(paddingOffset)]);
 	        }
 	        return this._writeData(bytes);
 	    };
 	    Writer.prototype._getValue = function (value) {
-	        var bytes = lib$1.arrayify(lib$2.BigNumber.from(value));
+	        var bytes = (0, lib$1.arrayify)(lib$2.BigNumber.from(value));
 	        if (bytes.length > this.wordSize) {
 	            logger.throwError("value out-of-bounds", lib.Logger.errors.BUFFER_OVERRUN, {
 	                length: this.wordSize,
@@ -6186,7 +6189,7 @@
 	            });
 	        }
 	        if (bytes.length % this.wordSize) {
-	            bytes = lib$1.concat([this._padding.slice(bytes.length % this.wordSize), bytes]);
+	            bytes = (0, lib$1.concat)([this._padding.slice(bytes.length % this.wordSize), bytes]);
 	        }
 	        return bytes;
 	    };
@@ -6208,14 +6211,14 @@
 	exports.Writer = Writer;
 	var Reader = /** @class */ (function () {
 	    function Reader(data, wordSize, coerceFunc, allowLoose) {
-	        lib$3.defineReadOnly(this, "_data", lib$1.arrayify(data));
-	        lib$3.defineReadOnly(this, "wordSize", wordSize || 32);
-	        lib$3.defineReadOnly(this, "_coerceFunc", coerceFunc);
-	        lib$3.defineReadOnly(this, "allowLoose", allowLoose);
+	        (0, lib$3.defineReadOnly)(this, "_data", (0, lib$1.arrayify)(data));
+	        (0, lib$3.defineReadOnly)(this, "wordSize", wordSize || 32);
+	        (0, lib$3.defineReadOnly)(this, "_coerceFunc", coerceFunc);
+	        (0, lib$3.defineReadOnly)(this, "allowLoose", allowLoose);
 	        this._offset = 0;
 	    }
 	    Object.defineProperty(Reader.prototype, "data", {
-	        get: function () { return lib$1.hexlify(this._data); },
+	        get: function () { return (0, lib$1.hexlify)(this._data); },
 	        enumerable: false,
 	        configurable: true
 	    });
@@ -6277,34 +6280,62 @@
 	/**
 	 * [js-sha3]{@link https://github.com/emn178/js-sha3}
 	 *
-	 * @version 0.5.7
+	 * @version 0.8.0
 	 * @author Chen, Yi-Cyuan [emn178@gmail.com]
-	 * @copyright Chen, Yi-Cyuan 2015-2016
+	 * @copyright Chen, Yi-Cyuan 2015-2018
 	 * @license MIT
 	 */
 	/*jslint bitwise: true */
 	(function () {
 	  'use strict';
 
-	  var root = typeof window === 'object' ? window : {};
+	  var INPUT_ERROR = 'input is invalid type';
+	  var FINALIZE_ERROR = 'finalize already called';
+	  var WINDOW = typeof window === 'object';
+	  var root = WINDOW ? window : {};
+	  if (root.JS_SHA3_NO_WINDOW) {
+	    WINDOW = false;
+	  }
+	  var WEB_WORKER = !WINDOW && typeof self === 'object';
 	  var NODE_JS = !root.JS_SHA3_NO_NODE_JS && typeof process === 'object' && process.versions && process.versions.node;
 	  if (NODE_JS) {
 	    root = commonjsGlobal;
+	  } else if (WEB_WORKER) {
+	    root = self;
 	  }
 	  var COMMON_JS = !root.JS_SHA3_NO_COMMON_JS && 'object' === 'object' && module.exports;
+	  var AMD = typeof undefined === 'function' && undefined.amd;
+	  var ARRAY_BUFFER = !root.JS_SHA3_NO_ARRAY_BUFFER && typeof ArrayBuffer !== 'undefined';
 	  var HEX_CHARS = '0123456789abcdef'.split('');
 	  var SHAKE_PADDING = [31, 7936, 2031616, 520093696];
+	  var CSHAKE_PADDING = [4, 1024, 262144, 67108864];
 	  var KECCAK_PADDING = [1, 256, 65536, 16777216];
 	  var PADDING = [6, 1536, 393216, 100663296];
 	  var SHIFT = [0, 8, 16, 24];
 	  var RC = [1, 0, 32898, 0, 32906, 2147483648, 2147516416, 2147483648, 32907, 0, 2147483649,
-	            0, 2147516545, 2147483648, 32777, 2147483648, 138, 0, 136, 0, 2147516425, 0,
-	            2147483658, 0, 2147516555, 0, 139, 2147483648, 32905, 2147483648, 32771,
-	            2147483648, 32770, 2147483648, 128, 2147483648, 32778, 0, 2147483658, 2147483648,
-	            2147516545, 2147483648, 32896, 2147483648, 2147483649, 0, 2147516424, 2147483648];
+	    0, 2147516545, 2147483648, 32777, 2147483648, 138, 0, 136, 0, 2147516425, 0,
+	    2147483658, 0, 2147516555, 0, 139, 2147483648, 32905, 2147483648, 32771,
+	    2147483648, 32770, 2147483648, 128, 2147483648, 32778, 0, 2147483658, 2147483648,
+	    2147516545, 2147483648, 32896, 2147483648, 2147483649, 0, 2147516424, 2147483648];
 	  var BITS = [224, 256, 384, 512];
 	  var SHAKE_BITS = [128, 256];
-	  var OUTPUT_TYPES = ['hex', 'buffer', 'arrayBuffer', 'array'];
+	  var OUTPUT_TYPES = ['hex', 'buffer', 'arrayBuffer', 'array', 'digest'];
+	  var CSHAKE_BYTEPAD = {
+	    '128': 168,
+	    '256': 136
+	  };
+
+	  if (root.JS_SHA3_NO_NODE_JS || !Array.isArray) {
+	    Array.isArray = function (obj) {
+	      return Object.prototype.toString.call(obj) === '[object Array]';
+	    };
+	  }
+
+	  if (ARRAY_BUFFER && (root.JS_SHA3_NO_ARRAY_BUFFER_IS_VIEW || !ArrayBuffer.isView)) {
+	    ArrayBuffer.isView = function (obj) {
+	      return typeof obj === 'object' && obj.buffer && obj.buffer.constructor === ArrayBuffer;
+	    };
+	  }
 
 	  var createOutputMethod = function (bits, padding, outputType) {
 	    return function (message) {
@@ -6318,6 +6349,26 @@
 	    };
 	  };
 
+	  var createCshakeOutputMethod = function (bits, padding, outputType) {
+	    return function (message, outputBits, n, s) {
+	      return methods['cshake' + bits].update(message, outputBits, n, s)[outputType]();
+	    };
+	  };
+
+	  var createKmacOutputMethod = function (bits, padding, outputType) {
+	    return function (key, message, outputBits, s) {
+	      return methods['kmac' + bits].update(key, message, outputBits, s)[outputType]();
+	    };
+	  };
+
+	  var createOutputMethods = function (method, createMethod, bits, padding) {
+	    for (var i = 0; i < OUTPUT_TYPES.length; ++i) {
+	      var type = OUTPUT_TYPES[i];
+	      method[type] = createMethod(bits, padding, type);
+	    }
+	    return method;
+	  };
+
 	  var createMethod = function (bits, padding) {
 	    var method = createOutputMethod(bits, padding, 'hex');
 	    method.create = function () {
@@ -6326,11 +6377,7 @@
 	    method.update = function (message) {
 	      return method.create().update(message);
 	    };
-	    for (var i = 0; i < OUTPUT_TYPES.length; ++i) {
-	      var type = OUTPUT_TYPES[i];
-	      method[type] = createOutputMethod(bits, padding, type);
-	    }
-	    return method;
+	    return createOutputMethods(method, createOutputMethod, bits, padding);
 	  };
 
 	  var createShakeMethod = function (bits, padding) {
@@ -6341,28 +6388,59 @@
 	    method.update = function (message, outputBits) {
 	      return method.create(outputBits).update(message);
 	    };
-	    for (var i = 0; i < OUTPUT_TYPES.length; ++i) {
-	      var type = OUTPUT_TYPES[i];
-	      method[type] = createShakeOutputMethod(bits, padding, type);
-	    }
-	    return method;
+	    return createOutputMethods(method, createShakeOutputMethod, bits, padding);
+	  };
+
+	  var createCshakeMethod = function (bits, padding) {
+	    var w = CSHAKE_BYTEPAD[bits];
+	    var method = createCshakeOutputMethod(bits, padding, 'hex');
+	    method.create = function (outputBits, n, s) {
+	      if (!n && !s) {
+	        return methods['shake' + bits].create(outputBits);
+	      } else {
+	        return new Keccak(bits, padding, outputBits).bytepad([n, s], w);
+	      }
+	    };
+	    method.update = function (message, outputBits, n, s) {
+	      return method.create(outputBits, n, s).update(message);
+	    };
+	    return createOutputMethods(method, createCshakeOutputMethod, bits, padding);
+	  };
+
+	  var createKmacMethod = function (bits, padding) {
+	    var w = CSHAKE_BYTEPAD[bits];
+	    var method = createKmacOutputMethod(bits, padding, 'hex');
+	    method.create = function (key, outputBits, s) {
+	      return new Kmac(bits, padding, outputBits).bytepad(['KMAC', s], w).bytepad([key], w);
+	    };
+	    method.update = function (key, message, outputBits, s) {
+	      return method.create(key, outputBits, s).update(message);
+	    };
+	    return createOutputMethods(method, createKmacOutputMethod, bits, padding);
 	  };
 
 	  var algorithms = [
-	    {name: 'keccak', padding: KECCAK_PADDING, bits: BITS, createMethod: createMethod},
-	    {name: 'sha3', padding: PADDING, bits: BITS, createMethod: createMethod},
-	    {name: 'shake', padding: SHAKE_PADDING, bits: SHAKE_BITS, createMethod: createShakeMethod}
+	    { name: 'keccak', padding: KECCAK_PADDING, bits: BITS, createMethod: createMethod },
+	    { name: 'sha3', padding: PADDING, bits: BITS, createMethod: createMethod },
+	    { name: 'shake', padding: SHAKE_PADDING, bits: SHAKE_BITS, createMethod: createShakeMethod },
+	    { name: 'cshake', padding: CSHAKE_PADDING, bits: SHAKE_BITS, createMethod: createCshakeMethod },
+	    { name: 'kmac', padding: CSHAKE_PADDING, bits: SHAKE_BITS, createMethod: createKmacMethod }
 	  ];
 
 	  var methods = {}, methodNames = [];
 
 	  for (var i = 0; i < algorithms.length; ++i) {
 	    var algorithm = algorithms[i];
-	    var bits  = algorithm.bits;
+	    var bits = algorithm.bits;
 	    for (var j = 0; j < bits.length; ++j) {
-	      var methodName = algorithm.name +'_' + bits[j];
+	      var methodName = algorithm.name + '_' + bits[j];
 	      methodNames.push(methodName);
 	      methods[methodName] = algorithm.createMethod(bits[j], algorithm.padding);
+	      if (algorithm.name !== 'sha3') {
+	        var newMethodName = algorithm.name + bits[j];
+	        methodNames.push(newMethodName);
+	        methods[newMethodName] = methods[methodName];
+	      }
 	    }
 	  }
 
@@ -6372,6 +6450,7 @@
 	    this.padding = padding;
 	    this.outputBits = outputBits;
 	    this.reset = true;
+	    this.finalized = false;
 	    this.block = 0;
 	    this.start = 0;
 	    this.blockCount = (1600 - (bits << 1)) >> 5;
@@ -6385,11 +6464,27 @@
 	  }
 
 	  Keccak.prototype.update = function (message) {
-	    var notString = typeof message !== 'string';
-	    if (notString && message.constructor === ArrayBuffer) {
-	      message = new Uint8Array(message);
+	    if (this.finalized) {
+	      throw new Error(FINALIZE_ERROR);
 	    }
-	    var length = message.length, blocks = this.blocks, byteCount = this.byteCount,
+	    var notString, type = typeof message;
+	    if (type !== 'string') {
+	      if (type === 'object') {
+	        if (message === null) {
+	          throw new Error(INPUT_ERROR);
+	        } else if (ARRAY_BUFFER && message.constructor === ArrayBuffer) {
+	          message = new Uint8Array(message);
+	        } else if (!Array.isArray(message)) {
+	          if (!ARRAY_BUFFER || !ArrayBuffer.isView(message)) {
+	            throw new Error(INPUT_ERROR);
+	          }
+	        }
+	      } else {
+	        throw new Error(INPUT_ERROR);
+	      }
+	      notString = true;
+	    }
+	    var blocks = this.blocks, byteCount = this.byteCount, length = message.length,
 	      blockCount = this.blockCount, index = 0, s = this.s, i, code;
 
 	    while (index < length) {
@@ -6441,7 +6536,84 @@
 	    return this;
 	  };
 
+	  Keccak.prototype.encode = function (x, right) {
+	    var o = x & 255, n = 1;
+	    var bytes = [o];
+	    x = x >> 8;
+	    o = x & 255;
+	    while (o > 0) {
+	      bytes.unshift(o);
+	      x = x >> 8;
+	      o = x & 255;
+	      ++n;
+	    }
+	    if (right) {
+	      bytes.push(n);
+	    } else {
+	      bytes.unshift(n);
+	    }
+	    this.update(bytes);
+	    return bytes.length;
+	  };
+
+	  Keccak.prototype.encodeString = function (str) {
+	    var notString, type = typeof str;
+	    if (type !== 'string') {
+	      if (type === 'object') {
+	        if (str === null) {
+	          throw new Error(INPUT_ERROR);
+	        } else if (ARRAY_BUFFER && str.constructor === ArrayBuffer) {
+	          str = new Uint8Array(str);
+	        } else if (!Array.isArray(str)) {
+	          if (!ARRAY_BUFFER || !ArrayBuffer.isView(str)) {
+	            throw new Error(INPUT_ERROR);
+	          }
+	        }
+	      } else {
+	        throw new Error(INPUT_ERROR);
+	      }
+	      notString = true;
+	    }
+	    var bytes = 0, length = str.length;
+	    if (notString) {
+	      bytes = length;
+	    } else {
+	      for (var i = 0; i < str.length; ++i) {
+	        var code = str.charCodeAt(i);
+	        if (code < 0x80) {
+	          bytes += 1;
+	        } else if (code < 0x800) {
+	          bytes += 2;
+	        } else if (code < 0xd800 || code >= 0xe000) {
+	          bytes += 3;
+	        } else {
+	          code = 0x10000 + (((code & 0x3ff) << 10) | (str.charCodeAt(++i) & 0x3ff));
+	          bytes += 4;
+	        }
+	      }
+	    }
+	    bytes += this.encode(bytes * 8);
+	    this.update(str);
+	    return bytes;
+	  };
+
+	  Keccak.prototype.bytepad = function (strs, w) {
+	    var bytes = this.encode(w);
+	    for (var i = 0; i < strs.length; ++i) {
+	      bytes += this.encodeString(strs[i]);
+	    }
+	    var paddingBytes = w - bytes % w;
+	    var zeros = [];
+	    zeros.length = paddingBytes;
+	    this.update(zeros);
+	    return this;
+	  };
+
 	  Keccak.prototype.finalize = function () {
+	    if (this.finalized) {
+	      return;
+	    }
+	    this.finalized = true;
 	    var blocks = this.blocks, i = this.lastByteIndex, blockCount = this.blockCount, s = this.s;
 	    blocks[i >> 2] |= this.padding[i & 3];
 	    if (this.lastByteIndex === this.byteCount) {
@@ -6461,15 +6633,15 @@
 	    this.finalize();
 
 	    var blockCount = this.blockCount, s = this.s, outputBlocks = this.outputBlocks,
-	        extraBytes = this.extraBytes, i = 0, j = 0;
+	      extraBytes = this.extraBytes, i = 0, j = 0;
 	    var hex = '', block;
 	    while (j < outputBlocks) {
 	      for (i = 0; i < blockCount && j < outputBlocks; ++i, ++j) {
 	        block = s[i];
 	        hex += HEX_CHARS[(block >> 4) & 0x0F] + HEX_CHARS[block & 0x0F] +
-	               HEX_CHARS[(block >> 12) & 0x0F] + HEX_CHARS[(block >> 8) & 0x0F] +
-	               HEX_CHARS[(block >> 20) & 0x0F] + HEX_CHARS[(block >> 16) & 0x0F] +
-	               HEX_CHARS[(block >> 28) & 0x0F] + HEX_CHARS[(block >> 24) & 0x0F];
+	          HEX_CHARS[(block >> 12) & 0x0F] + HEX_CHARS[(block >> 8) & 0x0F] +
+	          HEX_CHARS[(block >> 20) & 0x0F] + HEX_CHARS[(block >> 16) & 0x0F] +
+	          HEX_CHARS[(block >> 28) & 0x0F] + HEX_CHARS[(block >> 24) & 0x0F];
 	      }
 	      if (j % blockCount === 0) {
 	        f(s);
@@ -6478,9 +6650,7 @@
 	    }
 	    if (extraBytes) {
 	      block = s[i];
-	      if (extraBytes > 0) {
-	        hex += HEX_CHARS[(block >> 4) & 0x0F] + HEX_CHARS[block & 0x0F];
-	      }
+	      hex += HEX_CHARS[(block >> 4) & 0x0F] + HEX_CHARS[block & 0x0F];
 	      if (extraBytes > 1) {
 	        hex += HEX_CHARS[(block >> 12) & 0x0F] + HEX_CHARS[(block >> 8) & 0x0F];
 	      }
@@ -6495,7 +6665,7 @@
 	    this.finalize();
 
 	    var blockCount = this.blockCount, s = this.s, outputBlocks = this.outputBlocks,
-	        extraBytes = this.extraBytes, i = 0, j = 0;
+	      extraBytes = this.extraBytes, i = 0, j = 0;
 	    var bytes = this.outputBits >> 3;
 	    var buffer;
 	    if (extraBytes) {
@@ -6525,7 +6695,7 @@
 	    this.finalize();
 
 	    var blockCount = this.blockCount, s = this.s, outputBlocks = this.outputBlocks,
-	        extraBytes = this.extraBytes, i = 0, j = 0;
+	      extraBytes = this.extraBytes, i = 0, j = 0;
 	    var array = [], offset, block;
 	    while (j < outputBlocks) {
 	      for (i = 0; i < blockCount && j < outputBlocks; ++i, ++j) {
@@ -6543,9 +6713,7 @@
 	    if (extraBytes) {
 	      offset = j << 2;
 	      block = s[i];
-	      if (extraBytes > 0) {
-	        array[offset] = block & 0xFF;
-	      }
+	      array[offset] = block & 0xFF;
 	      if (extraBytes > 1) {
 	        array[offset + 1] = (block >> 8) & 0xFF;
 	      }
@@ -6556,11 +6724,22 @@
 	    return array;
 	  };
 
+	  function Kmac(bits, padding, outputBits) {
+	    Keccak.call(this, bits, padding, outputBits);
+	  }
+
+	  Kmac.prototype = new Keccak();
+
+	  Kmac.prototype.finalize = function () {
+	    this.encode(this.outputBits, true);
+	    return Keccak.prototype.finalize.call(this);
+	  };
+
 	  var f = function (s) {
 	    var h, l, n, c0, c1, c2, c3, c4, c5, c6, c7, c8, c9,
-	        b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17,
-	        b18, b19, b20, b21, b22, b23, b24, b25, b26, b27, b28, b29, b30, b31, b32, b33,
-	        b34, b35, b36, b37, b38, b39, b40, b41, b42, b43, b44, b45, b46, b47, b48, b49;
+	      b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17,
+	      b18, b19, b20, b21, b22, b23, b24, b25, b26, b27, b28, b29, b30, b31, b32, b33,
+	      b34, b35, b36, b37, b38, b39, b40, b41, b42, b43, b44, b45, b46, b47, b48, b49;
 	    for (n = 0; n < 48; n += 2) {
 	      c0 = s[0] ^ s[10] ^ s[20] ^ s[30] ^ s[40];
 	      c1 = s[1] ^ s[11] ^ s[21] ^ s[31] ^ s[41];
@@ -6744,8 +6923,13 @@
 	  if (COMMON_JS) {
 	    module.exports = methods;
 	  } else {
-	    for (var i = 0; i < methodNames.length; ++i) {
+	    for (i = 0; i < methodNames.length; ++i) {
 	      root[methodNames[i]] = methods[methodNames[i]];
+	    }
+	    if (AMD) {
+	      undefined(function () {
+	        return methods;
+	      });
 	    }
 	  }
 	})();
@@ -6761,7 +6945,7 @@
 	var js_sha3_1 = __importDefault(sha3);
 
 	function keccak256(data) {
-	    return '0x' + js_sha3_1.default.keccak_256(lib$1.arrayify(data));
+	    return '0x' + js_sha3_1.default.keccak_256((0, lib$1.arrayify)(data));
 	}
 	exports.keccak256 = keccak256;
 
@@ -6773,7 +6957,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "rlp/5.4.0";
+	exports.version = "rlp/5.5.0";
 
 	});
 
@@ -6817,10 +7001,10 @@
 	        length_1.unshift(0xf7 + length_1.length);
 	        return length_1.concat(payload_1);
 	    }
-	    if (!lib$1.isBytesLike(object)) {
+	    if (!(0, lib$1.isBytesLike)(object)) {
 	        logger.throwArgumentError("RLP object must be BytesLike", "object", object);
 	    }
-	    var data = Array.prototype.slice.call(lib$1.arrayify(object));
+	    var data = Array.prototype.slice.call((0, lib$1.arrayify)(object));
 	    if (data.length === 1 && data[0] <= 0x7f) {
 	        return data;
 	    }
@@ -6833,7 +7017,7 @@
 	    return length.concat(data);
 	}
 	function encode(object) {
-	    return lib$1.hexlify(_encode(object));
+	    return (0, lib$1.hexlify)(_encode(object));
 	}
 	exports.encode = encode;
 	function _decodeChildren(data, offset, childOffset, length) {
@@ -6881,7 +7065,7 @@
 	        if (offset + 1 + lengthLength + length_4 > data.length) {
 	            logger.throwError("data array too short", lib.Logger.errors.BUFFER_OVERRUN, {});
 	        }
-	        var result = lib$1.hexlify(data.slice(offset + 1 + lengthLength, offset + 1 + lengthLength + length_4));
+	        var result = (0, lib$1.hexlify)(data.slice(offset + 1 + lengthLength, offset + 1 + lengthLength + length_4));
 	        return { consumed: (1 + lengthLength + length_4), result: result };
 	    }
 	    else if (data[offset] >= 0x80) {
@@ -6889,13 +7073,13 @@
 	        if (offset + 1 + length_5 > data.length) {
 	            logger.throwError("data too short", lib.Logger.errors.BUFFER_OVERRUN, {});
 	        }
-	        var result = lib$1.hexlify(data.slice(offset + 1, offset + 1 + length_5));
+	        var result = (0, lib$1.hexlify)(data.slice(offset + 1, offset + 1 + length_5));
 	        return { consumed: (1 + length_5), result: result };
 	    }
-	    return { consumed: 1, result: lib$1.hexlify(data[offset]) };
+	    return { consumed: 1, result: (0, lib$1.hexlify)(data[offset]) };
 	}
 	function decode(data) {
-	    var bytes = lib$1.arrayify(data);
+	    var bytes = (0, lib$1.arrayify)(data);
 	    var decoded = _decode(bytes, 0);
 	    if (decoded.consumed !== bytes.length) {
 	        logger.throwArgumentError("invalid rlp data", "data", data);
@@ -6912,7 +7096,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "address/5.4.0";
+	exports.version = "address/5.5.0";
 
 	});
 
@@ -6930,7 +7114,7 @@
 
 	var logger = new lib.Logger(_version$c.version);
 	function getChecksumAddress(address) {
-	    if (!lib$1.isHexString(address, 20)) {
+	    if (!(0, lib$1.isHexString)(address, 20)) {
 	        logger.throwArgumentError("invalid address", "address", address);
 	    }
 	    address = address.toLowerCase();
@@ -6939,7 +7123,7 @@
 	    for (var i = 0; i < 40; i++) {
 	        expanded[i] = chars[i].charCodeAt(0);
 	    }
-	    var hashed = lib$1.arrayify(lib$4.keccak256(expanded));
+	    var hashed = (0, lib$1.arrayify)((0, lib$4.keccak256)(expanded));
 	    for (var i = 0; i < 40; i += 2) {
 	        if ((hashed[i >> 1] >> 4) >= 8) {
 	            chars[i] = chars[i].toUpperCase();
@@ -7007,7 +7191,7 @@
 	        if (address.substring(2, 4) !== ibanChecksum(address)) {
 	            logger.throwArgumentError("bad icap checksum", "address", address);
 	        }
-	        result = lib$2._base36To16(address.substring(4));
+	        result = (0, lib$2._base36To16)(address.substring(4));
 	        while (result.length < 40) {
 	            result = "0" + result;
 	        }
@@ -7029,7 +7213,7 @@
 	}
 	exports.isAddress = isAddress;
 	function getIcapAddress(address) {
-	    var base36 = lib$2._base16To36(getAddress(address).substring(2)).toUpperCase();
+	    var base36 = (0, lib$2._base16To36)(getAddress(address).substring(2)).toUpperCase();
 	    while (base36.length < 30) {
 	        base36 = "0" + base36;
 	    }
@@ -7045,18 +7229,18 @@
 	    catch (error) {
 	        logger.throwArgumentError("missing from address", "transaction", transaction);
 	    }
-	    var nonce = lib$1.stripZeros(lib$1.arrayify(lib$2.BigNumber.from(transaction.nonce).toHexString()));
-	    return getAddress(lib$1.hexDataSlice(lib$4.keccak256(lib$5.encode([from, nonce])), 12));
+	    var nonce = (0, lib$1.stripZeros)((0, lib$1.arrayify)(lib$2.BigNumber.from(transaction.nonce).toHexString()));
+	    return getAddress((0, lib$1.hexDataSlice)((0, lib$4.keccak256)((0, lib$5.encode)([from, nonce])), 12));
 	}
 	exports.getContractAddress = getContractAddress;
 	function getCreate2Address(from, salt, initCodeHash) {
-	    if (lib$1.hexDataLength(salt) !== 32) {
+	    if ((0, lib$1.hexDataLength)(salt) !== 32) {
 	        logger.throwArgumentError("salt must be 32 bytes", "salt", salt);
 	    }
-	    if (lib$1.hexDataLength(initCodeHash) !== 32) {
+	    if ((0, lib$1.hexDataLength)(initCodeHash) !== 32) {
 	        logger.throwArgumentError("initCodeHash must be 32 bytes", "initCodeHash", initCodeHash);
 	    }
-	    return getAddress(lib$1.hexDataSlice(lib$4.keccak256(lib$1.concat(["0xff", getAddress(from), salt, initCodeHash])), 12));
+	    return getAddress((0, lib$1.hexDataSlice)((0, lib$4.keccak256)((0, lib$1.concat)(["0xff", getAddress(from), salt, initCodeHash])), 12));
 	}
 	exports.getCreate2Address = getCreate2Address;
 
@@ -7096,7 +7280,7 @@
 	    };
 	    AddressCoder.prototype.encode = function (writer, value) {
 	        try {
-	            value = lib$6.getAddress(value);
+	            value = (0, lib$6.getAddress)(value);
 	        }
 	        catch (error) {
 	            this._throwError(error.message, value);
@@ -7104,7 +7288,7 @@
 	        return writer.writeValue(value);
 	    };
 	    AddressCoder.prototype.decode = function (reader) {
-	        return lib$6.getAddress(lib$1.hexZeroPad(reader.readValue().toHexString(), 20));
+	        return (0, lib$6.getAddress)((0, lib$1.hexZeroPad)(reader.readValue().toHexString(), 20));
 	    };
 	    return AddressCoder;
 	}(abstractCoder.Coder));
@@ -7472,7 +7656,7 @@
 	        return "0x";
 	    };
 	    DynamicBytesCoder.prototype.encode = function (writer, value) {
-	        value = lib$1.arrayify(value);
+	        value = (0, lib$1.arrayify)(value);
 	        var length = writer.writeValue(value.length);
 	        length += writer.writeBytes(value);
 	        return length;
@@ -7489,7 +7673,7 @@
 	        return _super.call(this, "bytes", localName) || this;
 	    }
 	    BytesCoder.prototype.decode = function (reader) {
-	        return reader.coerce(this.name, lib$1.hexlify(_super.prototype.decode.call(this, reader)));
+	        return reader.coerce(this.name, (0, lib$1.hexlify)(_super.prototype.decode.call(this, reader)));
 	    };
 	    return BytesCoder;
 	}(DynamicBytesCoder));
@@ -7534,14 +7718,14 @@
 	        return ("0x0000000000000000000000000000000000000000000000000000000000000000").substring(0, 2 + this.size * 2);
 	    };
 	    FixedBytesCoder.prototype.encode = function (writer, value) {
-	        var data = lib$1.arrayify(value);
+	        var data = (0, lib$1.arrayify)(value);
 	        if (data.length !== this.size) {
 	            this._throwError("incorrect data length", value);
 	        }
 	        return writer.writeBytes(data);
 	    };
 	    FixedBytesCoder.prototype.decode = function (reader) {
-	        return reader.coerce(this.name, lib$1.hexlify(reader.readBytes(this.size)));
+	        return reader.coerce(this.name, (0, lib$1.hexlify)(reader.readBytes(this.size)));
 	    };
 	    return FixedBytesCoder;
 	}(abstractCoder.Coder));
@@ -7751,7 +7935,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "strings/5.4.0";
+	exports.version = "strings/5.5.0";
 
 	});
 
@@ -7797,7 +7981,7 @@
 	    // - offset       = start of this codepoint
 	    // - badCodepoint = the computed codepoint; inside the UTF-16 surrogate range
 	    Utf8ErrorReason["UTF16_SURROGATE"] = "UTF-16 surrogate";
-	    // The string is an overlong reperesentation
+	    // The string is an overlong representation
 	    // - offset       = start of this codepoint
 	    // - badCodepoint = the computed codepoint; already bounds checked
 	    Utf8ErrorReason["OVERLONG"] = "overlong representation";
@@ -7848,7 +8032,7 @@
 	    if (onError == null) {
 	        onError = exports.Utf8ErrorFuncs.error;
 	    }
-	    bytes = lib$1.arrayify(bytes);
+	    bytes = (0, lib$1.arrayify)(bytes);
 	    var result = [];
 	    var i = 0;
 	    // Invalid bytes are ignored
@@ -7905,7 +8089,7 @@
 	            res = (res << 6) | (nextChar & 0x3f);
 	            i++;
 	        }
-	        // See above loop for invalid contimuation byte
+	        // See above loop for invalid continuation byte
 	        if (res === null) {
 	            continue;
 	        }
@@ -7964,7 +8148,7 @@
 	            result.push((c & 0x3f) | 0x80);
 	        }
 	    }
-	    return lib$1.arrayify(result);
+	    return (0, lib$1.arrayify)(result);
 	}
 	exports.toUtf8Bytes = toUtf8Bytes;
 	;
@@ -8028,17 +8212,17 @@
 
 	function formatBytes32String(text) {
 	    // Get the bytes
-	    var bytes = utf8.toUtf8Bytes(text);
+	    var bytes = (0, utf8.toUtf8Bytes)(text);
 	    // Check we have room for null-termination
 	    if (bytes.length > 31) {
 	        throw new Error("bytes32 string must be less than 32 bytes");
 	    }
 	    // Zero-pad (implicitly null-terminates)
-	    return lib$1.hexlify(lib$1.concat([bytes, lib$7.HashZero]).slice(0, 32));
+	    return (0, lib$1.hexlify)((0, lib$1.concat)([bytes, lib$7.HashZero]).slice(0, 32));
 	}
 	exports.formatBytes32String = formatBytes32String;
 	function parseBytes32String(bytes) {
-	    var data = lib$1.arrayify(bytes);
+	    var data = (0, lib$1.arrayify)(bytes);
 	    // Must be 32 bytes with a null-termination
 	    if (data.length !== 32) {
 	        throw new Error("invalid bytes32 - not 32 bytes long");
@@ -8052,7 +8236,7 @@
 	        length--;
 	    }
 	    // Determine the string value
-	    return utf8.toUtf8String(data.slice(0, length));
+	    return (0, utf8.toUtf8String)(data.slice(0, length));
 	}
 	exports.parseBytes32String = parseBytes32String;
 
@@ -8210,7 +8394,7 @@
 	        return value.toLowerCase();
 	    }
 	    // Get the code points (keeping the current normalization)
-	    var codes = utf8.toUtf8CodePoints(value);
+	    var codes = (0, utf8.toUtf8CodePoints)(value);
 	    codes = flatten(codes.map(function (code) {
 	        // Substitute Table B.1 (Maps to Nothing)
 	        if (Table_B_1_flags.indexOf(code) >= 0) {
@@ -8228,7 +8412,7 @@
 	        return [code];
 	    }));
 	    // Normalize using form KC
-	    codes = utf8.toUtf8CodePoints(utf8._toUtf8String(codes), utf8.UnicodeNormalizationForm.NFKC);
+	    codes = (0, utf8.toUtf8CodePoints)((0, utf8._toUtf8String)(codes), utf8.UnicodeNormalizationForm.NFKC);
 	    // Prohibit Tables C.1.2, C.2.2, C.3, C.4, C.5, C.6, C.7, C.8, C.9
 	    codes.forEach(function (code) {
 	        if (_nameprepTableC(code)) {
@@ -8242,7 +8426,7 @@
 	        }
 	    });
 	    // IDNA extras
-	    var name = utf8._toUtf8String(codes);
+	    var name = (0, utf8._toUtf8String)(codes);
 	    // IDNA: 4.2.3.1
 	    if (name.substring(0, 1) === "-" || name.substring(2, 4) === "--" || name.substring(name.length - 1) === "-") {
 	        throw new Error("invalid hyphen");
@@ -8311,10 +8495,10 @@
 	        return "";
 	    };
 	    StringCoder.prototype.encode = function (writer, value) {
-	        return _super.prototype.encode.call(this, writer, lib$8.toUtf8Bytes(value));
+	        return _super.prototype.encode.call(this, writer, (0, lib$8.toUtf8Bytes)(value));
 	    };
 	    StringCoder.prototype.decode = function (reader) {
-	        return lib$8.toUtf8String(_super.prototype.decode.call(this, reader));
+	        return (0, lib$8.toUtf8String)(_super.prototype.decode.call(this, reader));
 	    };
 	    return StringCoder;
 	}(bytes.DynamicBytesCoder));
@@ -8395,10 +8579,10 @@
 	        return Object.freeze(values);
 	    };
 	    TupleCoder.prototype.encode = function (writer, value) {
-	        return array.pack(writer, this.coders, value);
+	        return (0, array.pack)(writer, this.coders, value);
 	    };
 	    TupleCoder.prototype.decode = function (reader) {
-	        return reader.coerce(this.name, array.unpack(reader, this.coders));
+	        return reader.coerce(this.name, (0, array.unpack)(reader, this.coders));
 	    };
 	    return TupleCoder;
 	}(abstractCoder.Coder));
@@ -8435,7 +8619,7 @@
 	    function AbiCoder(coerceFunc) {
 	        var _newTarget = this.constructor;
 	        logger.checkNew(_newTarget, AbiCoder);
-	        lib$3.defineReadOnly(this, "coerceFunc", coerceFunc || null);
+	        (0, lib$3.defineReadOnly)(this, "coerceFunc", coerceFunc || null);
 	    }
 	    AbiCoder.prototype._getCoder = function (param) {
 	        var _this = this;
@@ -8508,7 +8692,7 @@
 	        var _this = this;
 	        var coders = types.map(function (type) { return _this._getCoder(fragments.ParamType.from(type)); });
 	        var coder = new tuple.TupleCoder(coders, "_");
-	        return coder.decode(this._getReader(lib$1.arrayify(data), loose));
+	        return coder.decode(this._getReader((0, lib$1.arrayify)(data), loose));
 	    };
 	    return AbiCoder;
 	}());
@@ -8526,7 +8710,7 @@
 
 
 	function id(text) {
-	    return lib$4.keccak256(lib$8.toUtf8Bytes(text));
+	    return (0, lib$4.keccak256)((0, lib$8.toUtf8Bytes)(text));
 	}
 	exports.id = id;
 
@@ -8538,7 +8722,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "hash/5.4.0";
+	exports.version = "hash/5.5.0";
 
 	});
 
@@ -8561,7 +8745,7 @@
 	    try {
 	        var comps = name.split(".");
 	        for (var i = 0; i < comps.length; i++) {
-	            if (lib$8.nameprep(comps[i]).length === 0) {
+	            if ((0, lib$8.nameprep)(comps[i]).length === 0) {
 	                throw new Error("empty");
 	            }
 	        }
@@ -8583,11 +8767,11 @@
 	        if (partition == null || partition[2] === "") {
 	            logger.throwArgumentError("invalid ENS address; missing component", "name", name);
 	        }
-	        var label = lib$8.toUtf8Bytes(lib$8.nameprep(partition[3]));
-	        result = lib$4.keccak256(lib$1.concat([result, lib$4.keccak256(label)]));
+	        var label = (0, lib$8.toUtf8Bytes)((0, lib$8.nameprep)(partition[3]));
+	        result = (0, lib$4.keccak256)((0, lib$1.concat)([result, (0, lib$4.keccak256)(label)]));
 	        current = partition[2] || "";
 	    }
-	    return lib$1.hexlify(result);
+	    return (0, lib$1.hexlify)(result);
 	}
 	exports.namehash = namehash;
 
@@ -8605,11 +8789,11 @@
 	exports.messagePrefix = "\x19Ethereum Signed Message:\n";
 	function hashMessage(message) {
 	    if (typeof (message) === "string") {
-	        message = lib$8.toUtf8Bytes(message);
+	        message = (0, lib$8.toUtf8Bytes)(message);
 	    }
-	    return lib$4.keccak256(lib$1.concat([
-	        lib$8.toUtf8Bytes(exports.messagePrefix),
-	        lib$8.toUtf8Bytes(String(message.length)),
+	    return (0, lib$4.keccak256)((0, lib$1.concat)([
+	        (0, lib$8.toUtf8Bytes)(exports.messagePrefix),
+	        (0, lib$8.toUtf8Bytes)(String(message.length)),
 	        message
 	    ]));
 	}
@@ -8675,15 +8859,15 @@
 	var One = lib$2.BigNumber.from(1);
 	var MaxUint256 = lib$2.BigNumber.from("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 	function hexPadRight(value) {
-	    var bytes = lib$1.arrayify(value);
+	    var bytes = (0, lib$1.arrayify)(value);
 	    var padOffset = bytes.length % 32;
 	    if (padOffset) {
-	        return lib$1.hexConcat([bytes, padding.slice(padOffset)]);
+	        return (0, lib$1.hexConcat)([bytes, padding.slice(padOffset)]);
 	    }
-	    return lib$1.hexlify(bytes);
+	    return (0, lib$1.hexlify)(bytes);
 	}
-	var hexTrue = lib$1.hexZeroPad(One.toHexString(), 32);
-	var hexFalse = lib$1.hexZeroPad(Zero.toHexString(), 32);
+	var hexTrue = (0, lib$1.hexZeroPad)(One.toHexString(), 32);
+	var hexFalse = (0, lib$1.hexZeroPad)(Zero.toHexString(), 32);
 	var domainFieldTypes = {
 	    name: "string",
 	    version: "string",
@@ -8714,18 +8898,18 @@
 	    },
 	    verifyingContract: function (value) {
 	        try {
-	            return lib$6.getAddress(value).toLowerCase();
+	            return (0, lib$6.getAddress)(value).toLowerCase();
 	        }
 	        catch (error) { }
 	        return logger.throwArgumentError("invalid domain value \"verifyingContract\"", "domain.verifyingContract", value);
 	    },
 	    salt: function (value) {
 	        try {
-	            var bytes = lib$1.arrayify(value);
+	            var bytes = (0, lib$1.arrayify)(value);
 	            if (bytes.length !== 32) {
 	                throw new Error("bad length");
 	            }
-	            return lib$1.hexlify(bytes);
+	            return (0, lib$1.hexlify)(bytes);
 	        }
 	        catch (error) { }
 	        return logger.throwArgumentError("invalid domain value \"salt\"", "domain.salt", value);
@@ -8748,7 +8932,7 @@
 	                if (v.lt(boundsLower_1) || v.gt(boundsUpper_1)) {
 	                    logger.throwArgumentError("value out-of-bounds for " + type, "value", value);
 	                }
-	                return lib$1.hexZeroPad(v.toTwos(256).toHexString(), 32);
+	                return (0, lib$1.hexZeroPad)(v.toTwos(256).toHexString(), 32);
 	            };
 	        }
 	    }
@@ -8761,7 +8945,7 @@
 	                logger.throwArgumentError("invalid bytes width", "type", type);
 	            }
 	            return function (value) {
-	                var bytes = lib$1.arrayify(value);
+	                var bytes = (0, lib$1.arrayify)(value);
 	                if (bytes.length !== width_1) {
 	                    logger.throwArgumentError("invalid length for " + type, "value", value);
 	                }
@@ -8771,16 +8955,16 @@
 	    }
 	    switch (type) {
 	        case "address": return function (value) {
-	            return lib$1.hexZeroPad(lib$6.getAddress(value), 32);
+	            return (0, lib$1.hexZeroPad)((0, lib$6.getAddress)(value), 32);
 	        };
 	        case "bool": return function (value) {
 	            return ((!value) ? hexFalse : hexTrue);
 	        };
 	        case "bytes": return function (value) {
-	            return lib$4.keccak256(value);
+	            return (0, lib$4.keccak256)(value);
 	        };
 	        case "string": return function (value) {
-	            return id_1.id(value);
+	            return (0, id_1.id)(value);
 	        };
 	    }
 	    return null;
@@ -8793,9 +8977,9 @@
 	}
 	var TypedDataEncoder = /** @class */ (function () {
 	    function TypedDataEncoder(types) {
-	        lib$3.defineReadOnly(this, "types", Object.freeze(lib$3.deepCopy(types)));
-	        lib$3.defineReadOnly(this, "_encoderCache", {});
-	        lib$3.defineReadOnly(this, "_types", {});
+	        (0, lib$3.defineReadOnly)(this, "types", Object.freeze((0, lib$3.deepCopy)(types)));
+	        (0, lib$3.defineReadOnly)(this, "_encoderCache", {});
+	        (0, lib$3.defineReadOnly)(this, "_types", {});
 	        // Link struct types to their direct child structs
 	        var links = {};
 	        // Link structs to structs which contain them as a child
@@ -8844,7 +9028,7 @@
 	        else if (primaryTypes.length > 1) {
 	            logger.throwArgumentError("ambiguous primary types or unused types: " + primaryTypes.map(function (t) { return (JSON.stringify(t)); }).join(", "), "types", types);
 	        }
-	        lib$3.defineReadOnly(this, "primaryType", primaryTypes[0]);
+	        (0, lib$3.defineReadOnly)(this, "primaryType", primaryTypes[0]);
 	        // Check for circular type references
 	        function checkCircular(type, found) {
 	            if (found[type]) {
@@ -8902,24 +9086,24 @@
 	                if (_this._types[subtype_1]) {
 	                    result = result.map(lib$4.keccak256);
 	                }
-	                return lib$4.keccak256(lib$1.hexConcat(result));
+	                return (0, lib$4.keccak256)((0, lib$1.hexConcat)(result));
 	            };
 	        }
 	        // Struct
 	        var fields = this.types[type];
 	        if (fields) {
-	            var encodedType_1 = id_1.id(this._types[type]);
+	            var encodedType_1 = (0, id_1.id)(this._types[type]);
 	            return function (value) {
 	                var values = fields.map(function (_a) {
 	                    var name = _a.name, type = _a.type;
 	                    var result = _this.getEncoder(type)(value[name]);
 	                    if (_this._types[type]) {
-	                        return lib$4.keccak256(result);
+	                        return (0, lib$4.keccak256)(result);
 	                    }
 	                    return result;
 	                });
 	                values.unshift(encodedType_1);
-	                return lib$1.hexConcat(values);
+	                return (0, lib$1.hexConcat)(values);
 	            };
 	        }
 	        return logger.throwArgumentError("unknown type: " + type, "type", type);
@@ -8935,7 +9119,7 @@
 	        return this.getEncoder(type)(value);
 	    };
 	    TypedDataEncoder.prototype.hashStruct = function (name, value) {
-	        return lib$4.keccak256(this.encodeData(name, value));
+	        return (0, lib$4.keccak256)(this.encodeData(name, value));
 	    };
 	    TypedDataEncoder.prototype.encode = function (value) {
 	        return this.encodeData(this.primaryType, value);
@@ -9000,14 +9184,14 @@
 	        return TypedDataEncoder.hashStruct("EIP712Domain", { EIP712Domain: domainFields }, domain);
 	    };
 	    TypedDataEncoder.encode = function (domain, types, value) {
-	        return lib$1.hexConcat([
+	        return (0, lib$1.hexConcat)([
 	            "0x1901",
 	            TypedDataEncoder.hashDomain(domain),
 	            TypedDataEncoder.from(types).hash(value)
 	        ]);
 	    };
 	    TypedDataEncoder.hash = function (domain, types, value) {
-	        return lib$4.keccak256(TypedDataEncoder.encode(domain, types, value));
+	        return (0, lib$4.keccak256)(TypedDataEncoder.encode(domain, types, value));
 	    };
 	    // Replaces all address types with ENS names with their looked up address
 	    TypedDataEncoder.resolveNames = function (domain, types, value, resolveName) {
@@ -9017,16 +9201,16 @@
 	                switch (_e.label) {
 	                    case 0:
 	                        // Make a copy to isolate it from the object passed in
-	                        domain = lib$3.shallowCopy(domain);
+	                        domain = (0, lib$3.shallowCopy)(domain);
 	                        ensCache = {};
 	                        // Do we need to look up the domain's verifyingContract?
-	                        if (domain.verifyingContract && !lib$1.isHexString(domain.verifyingContract, 20)) {
+	                        if (domain.verifyingContract && !(0, lib$1.isHexString)(domain.verifyingContract, 20)) {
 	                            ensCache[domain.verifyingContract] = "0x";
 	                        }
 	                        encoder = TypedDataEncoder.from(types);
 	                        // Get a list of all the addresses
 	                        encoder.visit(value, function (type, value) {
-	                            if (type === "address" && !lib$1.isHexString(value, 20)) {
+	                            if (type === "address" && !(0, lib$1.isHexString)(value, 20)) {
 	                                ensCache[value] = "0x";
 	                            }
 	                            return value;
@@ -9080,7 +9264,7 @@
 	            domainTypes.push({ name: name, type: domainFieldTypes[name] });
 	        });
 	        var encoder = TypedDataEncoder.from(types);
-	        var typesWithDomain = lib$3.shallowCopy(types);
+	        var typesWithDomain = (0, lib$3.shallowCopy)(types);
 	        if (typesWithDomain.EIP712Domain) {
 	            logger.throwArgumentError("types must not contain EIP712Domain type", "types.EIP712Domain", types);
 	        }
@@ -9096,7 +9280,7 @@
 	            message: encoder.visit(value, function (type, value) {
 	                // bytes
 	                if (type.match(/^bytes(\d*)/)) {
-	                    return lib$1.hexlify(lib$1.arrayify(value));
+	                    return (0, lib$1.hexlify)((0, lib$1.arrayify)(value));
 	                }
 	                // uint or int
 	                if (type.match(/^u?int/)) {
@@ -9245,14 +9429,14 @@
 	        else {
 	            abi = fragments$1;
 	        }
-	        lib$3.defineReadOnly(this, "fragments", abi.map(function (fragment) {
+	        (0, lib$3.defineReadOnly)(this, "fragments", abi.map(function (fragment) {
 	            return fragments.Fragment.from(fragment);
 	        }).filter(function (fragment) { return (fragment != null); }));
-	        lib$3.defineReadOnly(this, "_abiCoder", lib$3.getStatic((_newTarget), "getAbiCoder")());
-	        lib$3.defineReadOnly(this, "functions", {});
-	        lib$3.defineReadOnly(this, "errors", {});
-	        lib$3.defineReadOnly(this, "events", {});
-	        lib$3.defineReadOnly(this, "structs", {});
+	        (0, lib$3.defineReadOnly)(this, "_abiCoder", (0, lib$3.getStatic)(_newTarget, "getAbiCoder")());
+	        (0, lib$3.defineReadOnly)(this, "functions", {});
+	        (0, lib$3.defineReadOnly)(this, "errors", {});
+	        (0, lib$3.defineReadOnly)(this, "events", {});
+	        (0, lib$3.defineReadOnly)(this, "structs", {});
 	        // Add all fragments by their signature
 	        this.fragments.forEach(function (fragment) {
 	            var bucket = null;
@@ -9263,7 +9447,7 @@
 	                        return;
 	                    }
 	                    //checkNames(fragment, "input", fragment.inputs);
-	                    lib$3.defineReadOnly(_this, "deploy", fragment);
+	                    (0, lib$3.defineReadOnly)(_this, "deploy", fragment);
 	                    return;
 	                case "function":
 	                    //checkNames(fragment, "input", fragment.inputs);
@@ -9289,12 +9473,12 @@
 	        });
 	        // If we do not have a constructor add a default
 	        if (!this.deploy) {
-	            lib$3.defineReadOnly(this, "deploy", fragments.ConstructorFragment.from({
+	            (0, lib$3.defineReadOnly)(this, "deploy", fragments.ConstructorFragment.from({
 	                payable: false,
 	                type: "constructor"
 	            }));
 	        }
-	        lib$3.defineReadOnly(this, "_isInterface", true);
+	        (0, lib$3.defineReadOnly)(this, "_isInterface", true);
 	    }
 	    Interface.prototype.format = function (format) {
 	        if (!format) {
@@ -9315,17 +9499,17 @@
 	        return abiCoder.defaultAbiCoder;
 	    };
 	    Interface.getAddress = function (address) {
-	        return lib$6.getAddress(address);
+	        return (0, lib$6.getAddress)(address);
 	    };
 	    Interface.getSighash = function (fragment) {
-	        return lib$1.hexDataSlice(lib$9.id(fragment.format()), 0, 4);
+	        return (0, lib$1.hexDataSlice)((0, lib$9.id)(fragment.format()), 0, 4);
 	    };
 	    Interface.getEventTopic = function (eventFragment) {
-	        return lib$9.id(eventFragment.format());
+	        return (0, lib$9.id)(eventFragment.format());
 	    };
 	    // Find a function definition by any means necessary (unless it is ambiguous)
 	    Interface.prototype.getFunction = function (nameOrSignatureOrSighash) {
-	        if (lib$1.isHexString(nameOrSignatureOrSighash)) {
+	        if ((0, lib$1.isHexString)(nameOrSignatureOrSighash)) {
 	            for (var name_1 in this.functions) {
 	                if (nameOrSignatureOrSighash === this.getSighash(name_1)) {
 	                    return this.functions[name_1];
@@ -9345,7 +9529,7 @@
 	            }
 	            return this.functions[matching[0]];
 	        }
-	        // Normlize the signature and lookup the function
+	        // Normalize the signature and lookup the function
 	        var result = this.functions[fragments.FunctionFragment.fromString(nameOrSignatureOrSighash).format()];
 	        if (!result) {
 	            logger.throwArgumentError("no matching function", "signature", nameOrSignatureOrSighash);
@@ -9354,7 +9538,7 @@
 	    };
 	    // Find an event definition by any means necessary (unless it is ambiguous)
 	    Interface.prototype.getEvent = function (nameOrSignatureOrTopic) {
-	        if (lib$1.isHexString(nameOrSignatureOrTopic)) {
+	        if ((0, lib$1.isHexString)(nameOrSignatureOrTopic)) {
 	            var topichash = nameOrSignatureOrTopic.toLowerCase();
 	            for (var name_3 in this.events) {
 	                if (topichash === this.getEventTopic(name_3)) {
@@ -9375,7 +9559,7 @@
 	            }
 	            return this.events[matching[0]];
 	        }
-	        // Normlize the signature and lookup the function
+	        // Normalize the signature and lookup the function
 	        var result = this.events[fragments.EventFragment.fromString(nameOrSignatureOrTopic).format()];
 	        if (!result) {
 	            logger.throwArgumentError("no matching event", "signature", nameOrSignatureOrTopic);
@@ -9384,8 +9568,8 @@
 	    };
 	    // Find a function definition by any means necessary (unless it is ambiguous)
 	    Interface.prototype.getError = function (nameOrSignatureOrSighash) {
-	        if (lib$1.isHexString(nameOrSignatureOrSighash)) {
-	            var getSighash = lib$3.getStatic(this.constructor, "getSighash");
+	        if ((0, lib$1.isHexString)(nameOrSignatureOrSighash)) {
+	            var getSighash = (0, lib$3.getStatic)(this.constructor, "getSighash");
 	            for (var name_5 in this.errors) {
 	                var error = this.errors[name_5];
 	                if (nameOrSignatureOrSighash === getSighash(error)) {
@@ -9406,7 +9590,7 @@
 	            }
 	            return this.errors[matching[0]];
 	        }
-	        // Normlize the signature and lookup the function
+	        // Normalize the signature and lookup the function
 	        var result = this.errors[fragments.FunctionFragment.fromString(nameOrSignatureOrSighash).format()];
 	        if (!result) {
 	            logger.throwArgumentError("no matching error", "signature", nameOrSignatureOrSighash);
@@ -9428,14 +9612,14 @@
 	                }
 	            }
 	        }
-	        return lib$3.getStatic(this.constructor, "getSighash")(fragment);
+	        return (0, lib$3.getStatic)(this.constructor, "getSighash")(fragment);
 	    };
 	    // Get the topic (the bytes32 hash) used by Solidity to identify an event
 	    Interface.prototype.getEventTopic = function (eventFragment) {
 	        if (typeof (eventFragment) === "string") {
 	            eventFragment = this.getEvent(eventFragment);
 	        }
-	        return lib$3.getStatic(this.constructor, "getEventTopic")(eventFragment);
+	        return (0, lib$3.getStatic)(this.constructor, "getEventTopic")(eventFragment);
 	    };
 	    Interface.prototype._decodeParams = function (params, data) {
 	        return this._abiCoder.decode(params, data);
@@ -9450,9 +9634,9 @@
 	        if (typeof (fragment) === "string") {
 	            fragment = this.getError(fragment);
 	        }
-	        var bytes = lib$1.arrayify(data);
-	        if (lib$1.hexlify(bytes.slice(0, 4)) !== this.getSighash(fragment)) {
-	            logger.throwArgumentError("data signature does not match error " + fragment.name + ".", "data", lib$1.hexlify(bytes));
+	        var bytes = (0, lib$1.arrayify)(data);
+	        if ((0, lib$1.hexlify)(bytes.slice(0, 4)) !== this.getSighash(fragment)) {
+	            logger.throwArgumentError("data signature does not match error " + fragment.name + ".", "data", (0, lib$1.hexlify)(bytes));
 	        }
 	        return this._decodeParams(fragment.inputs, bytes.slice(4));
 	    };
@@ -9460,7 +9644,7 @@
 	        if (typeof (fragment) === "string") {
 	            fragment = this.getError(fragment);
 	        }
-	        return lib$1.hexlify(lib$1.concat([
+	        return (0, lib$1.hexlify)((0, lib$1.concat)([
 	            this.getSighash(fragment),
 	            this._encodeParams(fragment.inputs, values || [])
 	        ]));
@@ -9470,9 +9654,9 @@
 	        if (typeof (functionFragment) === "string") {
 	            functionFragment = this.getFunction(functionFragment);
 	        }
-	        var bytes = lib$1.arrayify(data);
-	        if (lib$1.hexlify(bytes.slice(0, 4)) !== this.getSighash(functionFragment)) {
-	            logger.throwArgumentError("data signature does not match function " + functionFragment.name + ".", "data", lib$1.hexlify(bytes));
+	        var bytes = (0, lib$1.arrayify)(data);
+	        if ((0, lib$1.hexlify)(bytes.slice(0, 4)) !== this.getSighash(functionFragment)) {
+	            logger.throwArgumentError("data signature does not match function " + functionFragment.name + ".", "data", (0, lib$1.hexlify)(bytes));
 	        }
 	        return this._decodeParams(functionFragment.inputs, bytes.slice(4));
 	    };
@@ -9481,7 +9665,7 @@
 	        if (typeof (functionFragment) === "string") {
 	            functionFragment = this.getFunction(functionFragment);
 	        }
-	        return lib$1.hexlify(lib$1.concat([
+	        return (0, lib$1.hexlify)((0, lib$1.concat)([
 	            this.getSighash(functionFragment),
 	            this._encodeParams(functionFragment.inputs, values || [])
 	        ]));
@@ -9491,7 +9675,7 @@
 	        if (typeof (functionFragment) === "string") {
 	            functionFragment = this.getFunction(functionFragment);
 	        }
-	        var bytes = lib$1.arrayify(data);
+	        var bytes = (0, lib$1.arrayify)(data);
 	        var reason = null;
 	        var errorArgs = null;
 	        var errorName = null;
@@ -9504,7 +9688,7 @@
 	                catch (error) { }
 	                break;
 	            case 4: {
-	                var selector = lib$1.hexlify(bytes.slice(0, 4));
+	                var selector = (0, lib$1.hexlify)(bytes.slice(0, 4));
 	                var builtin = BuiltinErrors[selector];
 	                if (builtin) {
 	                    errorArgs = this._abiCoder.decode(builtin.inputs, bytes.slice(4));
@@ -9530,7 +9714,10 @@
 	        }
 	        return logger.throwError("call revert exception", lib.Logger.errors.CALL_EXCEPTION, {
 	            method: functionFragment.format(),
-	            errorArgs: errorArgs, errorName: errorName, errorSignature: errorSignature, reason: reason
+	            errorArgs: errorArgs,
+	            errorName: errorName,
+	            errorSignature: errorSignature,
+	            reason: reason
 	        });
 	    };
 	    // Encode the result for a function call (e.g. for eth_call)
@@ -9538,7 +9725,7 @@
 	        if (typeof (functionFragment) === "string") {
 	            functionFragment = this.getFunction(functionFragment);
 	        }
-	        return lib$1.hexlify(this._abiCoder.encode(functionFragment.outputs, values || []));
+	        return (0, lib$1.hexlify)(this._abiCoder.encode(functionFragment.outputs, values || []));
 	    };
 	    // Create the filter for the event with search criteria (e.g. for eth_filterLog)
 	    Interface.prototype.encodeFilterTopics = function (eventFragment, values) {
@@ -9558,16 +9745,16 @@
 	        }
 	        var encodeTopic = function (param, value) {
 	            if (param.type === "string") {
-	                return lib$9.id(value);
+	                return (0, lib$9.id)(value);
 	            }
 	            else if (param.type === "bytes") {
-	                return lib$4.keccak256(lib$1.hexlify(value));
+	                return (0, lib$4.keccak256)((0, lib$1.hexlify)(value));
 	            }
 	            // Check addresses are valid
 	            if (param.type === "address") {
 	                _this._abiCoder.encode(["address"], [value]);
 	            }
-	            return lib$1.hexZeroPad(lib$1.hexlify(value), 32);
+	            return (0, lib$1.hexZeroPad)((0, lib$1.hexlify)(value), 32);
 	        };
 	        values.forEach(function (value, index) {
 	            var param = eventFragment.inputs[index];
@@ -9614,13 +9801,13 @@
 	            var value = values[index];
 	            if (param.indexed) {
 	                if (param.type === "string") {
-	                    topics.push(lib$9.id(value));
+	                    topics.push((0, lib$9.id)(value));
 	                }
 	                else if (param.type === "bytes") {
-	                    topics.push(lib$4.keccak256(value));
+	                    topics.push((0, lib$4.keccak256)(value));
 	                }
 	                else if (param.baseType === "tuple" || param.baseType === "array") {
-	                    // @TOOD
+	                    // @TODO
 	                    throw new Error("not implemented");
 	                }
 	                else {
@@ -9644,7 +9831,7 @@
 	        }
 	        if (topics != null && !eventFragment.anonymous) {
 	            var topicHash = this.getEventTopic(eventFragment);
-	            if (!lib$1.isHexString(topics[0], 32) || topics[0].toLowerCase() !== topicHash) {
+	            if (!(0, lib$1.isHexString)(topics[0], 32) || topics[0].toLowerCase() !== topicHash) {
 	                logger.throwError("fragment/topic mismatch", lib.Logger.errors.INVALID_ARGUMENT, { argument: "topics[0]", expected: topicHash, value: topics[0] });
 	            }
 	            topics = topics.slice(1);
@@ -9668,7 +9855,7 @@
 	                dynamic.push(false);
 	            }
 	        });
-	        var resultIndexed = (topics != null) ? this._abiCoder.decode(indexed, lib$1.concat(topics)) : null;
+	        var resultIndexed = (topics != null) ? this._abiCoder.decode(indexed, (0, lib$1.concat)(topics)) : null;
 	        var resultNonIndexed = this._abiCoder.decode(nonIndexed, data, true);
 	        var result = [];
 	        var nonIndexedIndex = 0, indexedIndex = 0;
@@ -9754,7 +9941,7 @@
 	        }
 	        // @TODO: If anonymous, and the only method, and the input count matches, should we parse?
 	        //        Probably not, because just because it is the only event in the ABI does
-	        //        not mean we have the full ABI; maybe jsut a fragment?
+	        //        not mean we have the full ABI; maybe just a fragment?
 	        return new LogDescription({
 	            eventFragment: fragment,
 	            name: fragment.name,
@@ -9764,7 +9951,7 @@
 	        });
 	    };
 	    Interface.prototype.parseError = function (data) {
-	        var hexData = lib$1.hexlify(data);
+	        var hexData = (0, lib$1.hexlify)(data);
 	        var fragment = this.getError(hexData.substring(0, 10).toLowerCase());
 	        if (!fragment) {
 	            return null;
@@ -9829,7 +10016,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abstract-provider/5.4.1";
+	exports.version = "abstract-provider/5.5.0";
 
 	});
 
@@ -9916,7 +10103,7 @@
 	    __extends(BlockForkEvent, _super);
 	    function BlockForkEvent(blockHash, expiry) {
 	        var _this = this;
-	        if (!lib$1.isHexString(blockHash, 32)) {
+	        if (!(0, lib$1.isHexString)(blockHash, 32)) {
 	            logger.throwArgumentError("invalid blockHash", "blockHash", blockHash);
 	        }
 	        _this = _super.call(this, {
@@ -9934,7 +10121,7 @@
 	    __extends(TransactionForkEvent, _super);
 	    function TransactionForkEvent(hash, expiry) {
 	        var _this = this;
-	        if (!lib$1.isHexString(hash, 32)) {
+	        if (!(0, lib$1.isHexString)(hash, 32)) {
 	            logger.throwArgumentError("invalid transaction hash", "hash", hash);
 	        }
 	        _this = _super.call(this, {
@@ -9952,10 +10139,10 @@
 	    __extends(TransactionOrderForkEvent, _super);
 	    function TransactionOrderForkEvent(beforeHash, afterHash, expiry) {
 	        var _this = this;
-	        if (!lib$1.isHexString(beforeHash, 32)) {
+	        if (!(0, lib$1.isHexString)(beforeHash, 32)) {
 	            logger.throwArgumentError("invalid transaction hash", "beforeHash", beforeHash);
 	        }
-	        if (!lib$1.isHexString(afterHash, 32)) {
+	        if (!(0, lib$1.isHexString)(afterHash, 32)) {
 	            logger.throwArgumentError("invalid transaction hash", "afterHash", afterHash);
 	        }
 	        _this = _super.call(this, {
@@ -9976,14 +10163,14 @@
 	    function Provider() {
 	        var _newTarget = this.constructor;
 	        logger.checkAbstract(_newTarget, Provider);
-	        lib$3.defineReadOnly(this, "_isProvider", true);
+	        (0, lib$3.defineReadOnly)(this, "_isProvider", true);
 	    }
 	    Provider.prototype.getFeeData = function () {
 	        return __awaiter(this, void 0, void 0, function () {
 	            var _a, block, gasPrice, maxFeePerGas, maxPriorityFeePerGas;
 	            return __generator(this, function (_b) {
 	                switch (_b.label) {
-	                    case 0: return [4 /*yield*/, lib$3.resolveProperties({
+	                    case 0: return [4 /*yield*/, (0, lib$3.resolveProperties)({
 	                            block: this.getBlock("latest"),
 	                            gasPrice: this.getGasPrice().catch(function (error) {
 	                                // @TODO: Why is this now failing on Calaveras?
@@ -10029,7 +10216,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abstract-signer/5.4.1";
+	exports.version = "abstract-signer/5.5.0";
 
 	});
 
@@ -10095,7 +10282,7 @@
 
 	var logger = new lib.Logger(_version$k.version);
 	var allowedTransactionKeys = [
-	    "accessList", "chainId", "data", "from", "gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "to", "type", "value"
+	    "accessList", "chainId", "customData", "data", "from", "gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "to", "type", "value"
 	];
 	var forwardErrors = [
 	    lib.Logger.errors.INSUFFICIENT_FUNDS,
@@ -10110,7 +10297,7 @@
 	    function Signer() {
 	        var _newTarget = this.constructor;
 	        logger.checkAbstract(_newTarget, Signer);
-	        lib$3.defineReadOnly(this, "_isSigner", true);
+	        (0, lib$3.defineReadOnly)(this, "_isSigner", true);
 	    }
 	    ///////////////////
 	    // Sub-classes MAY override these
@@ -10138,7 +10325,7 @@
 	            });
 	        });
 	    };
-	    // Populates "from" if unspecified, and estimates the gas for the transation
+	    // Populates "from" if unspecified, and estimates the gas for the transaction
 	    Signer.prototype.estimateGas = function (transaction) {
 	        return __awaiter(this, void 0, void 0, function () {
 	            var tx;
@@ -10146,7 +10333,7 @@
 	                switch (_a.label) {
 	                    case 0:
 	                        this._checkProvider("estimateGas");
-	                        return [4 /*yield*/, lib$3.resolveProperties(this.checkTransaction(transaction))];
+	                        return [4 /*yield*/, (0, lib$3.resolveProperties)(this.checkTransaction(transaction))];
 	                    case 1:
 	                        tx = _a.sent();
 	                        return [4 /*yield*/, this.provider.estimateGas(tx)];
@@ -10155,7 +10342,7 @@
 	            });
 	        });
 	    };
-	    // Populates "from" if unspecified, and calls with the transation
+	    // Populates "from" if unspecified, and calls with the transaction
 	    Signer.prototype.call = function (transaction, blockTag) {
 	        return __awaiter(this, void 0, void 0, function () {
 	            var tx;
@@ -10163,7 +10350,7 @@
 	                switch (_a.label) {
 	                    case 0:
 	                        this._checkProvider("call");
-	                        return [4 /*yield*/, lib$3.resolveProperties(this.checkTransaction(transaction))];
+	                        return [4 /*yield*/, (0, lib$3.resolveProperties)(this.checkTransaction(transaction))];
 	                    case 1:
 	                        tx = _a.sent();
 	                        return [4 /*yield*/, this.provider.call(tx, blockTag)];
@@ -10258,7 +10445,7 @@
 	                logger.throwArgumentError("invalid transaction key: " + key, "transaction", transaction);
 	            }
 	        }
-	        var tx = lib$3.shallowCopy(transaction);
+	        var tx = (0, lib$3.shallowCopy)(transaction);
 	        if (tx.from == null) {
 	            tx.from = this.getAddress();
 	        }
@@ -10289,7 +10476,7 @@
 	            var _this = this;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, lib$3.resolveProperties(this.checkTransaction(transaction))];
+	                    case 0: return [4 /*yield*/, (0, lib$3.resolveProperties)(this.checkTransaction(transaction))];
 	                    case 1:
 	                        tx = _a.sent();
 	                        if (tx.to != null) {
@@ -10420,7 +10607,7 @@
 	                                return results[0];
 	                            });
 	                        }
-	                        return [4 /*yield*/, lib$3.resolveProperties(tx)];
+	                        return [4 /*yield*/, (0, lib$3.resolveProperties)(tx)];
 	                    case 6: return [2 /*return*/, _a.sent()];
 	                }
 	            });
@@ -10448,8 +10635,8 @@
 	        var _this = this;
 	        logger.checkNew(_newTarget, VoidSigner);
 	        _this = _super.call(this) || this;
-	        lib$3.defineReadOnly(_this, "address", address);
-	        lib$3.defineReadOnly(_this, "provider", provider || null);
+	        (0, lib$3.defineReadOnly)(_this, "address", address);
+	        (0, lib$3.defineReadOnly)(_this, "provider", provider || null);
 	        return _this;
 	    }
 	    VoidSigner.prototype.getAddress = function () {
@@ -14204,7 +14391,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "signing-key/5.4.0";
+	exports.version = "signing-key/5.5.0";
 
 	});
 
@@ -14229,35 +14416,35 @@
 	}
 	var SigningKey = /** @class */ (function () {
 	    function SigningKey(privateKey) {
-	        lib$3.defineReadOnly(this, "curve", "secp256k1");
-	        lib$3.defineReadOnly(this, "privateKey", lib$1.hexlify(privateKey));
-	        var keyPair = getCurve().keyFromPrivate(lib$1.arrayify(this.privateKey));
-	        lib$3.defineReadOnly(this, "publicKey", "0x" + keyPair.getPublic(false, "hex"));
-	        lib$3.defineReadOnly(this, "compressedPublicKey", "0x" + keyPair.getPublic(true, "hex"));
-	        lib$3.defineReadOnly(this, "_isSigningKey", true);
+	        (0, lib$3.defineReadOnly)(this, "curve", "secp256k1");
+	        (0, lib$3.defineReadOnly)(this, "privateKey", (0, lib$1.hexlify)(privateKey));
+	        var keyPair = getCurve().keyFromPrivate((0, lib$1.arrayify)(this.privateKey));
+	        (0, lib$3.defineReadOnly)(this, "publicKey", "0x" + keyPair.getPublic(false, "hex"));
+	        (0, lib$3.defineReadOnly)(this, "compressedPublicKey", "0x" + keyPair.getPublic(true, "hex"));
+	        (0, lib$3.defineReadOnly)(this, "_isSigningKey", true);
 	    }
 	    SigningKey.prototype._addPoint = function (other) {
-	        var p0 = getCurve().keyFromPublic(lib$1.arrayify(this.publicKey));
-	        var p1 = getCurve().keyFromPublic(lib$1.arrayify(other));
+	        var p0 = getCurve().keyFromPublic((0, lib$1.arrayify)(this.publicKey));
+	        var p1 = getCurve().keyFromPublic((0, lib$1.arrayify)(other));
 	        return "0x" + p0.pub.add(p1.pub).encodeCompressed("hex");
 	    };
 	    SigningKey.prototype.signDigest = function (digest) {
-	        var keyPair = getCurve().keyFromPrivate(lib$1.arrayify(this.privateKey));
-	        var digestBytes = lib$1.arrayify(digest);
+	        var keyPair = getCurve().keyFromPrivate((0, lib$1.arrayify)(this.privateKey));
+	        var digestBytes = (0, lib$1.arrayify)(digest);
 	        if (digestBytes.length !== 32) {
 	            logger.throwArgumentError("bad digest length", "digest", digest);
 	        }
 	        var signature = keyPair.sign(digestBytes, { canonical: true });
-	        return lib$1.splitSignature({
+	        return (0, lib$1.splitSignature)({
 	            recoveryParam: signature.recoveryParam,
-	            r: lib$1.hexZeroPad("0x" + signature.r.toString(16), 32),
-	            s: lib$1.hexZeroPad("0x" + signature.s.toString(16), 32),
+	            r: (0, lib$1.hexZeroPad)("0x" + signature.r.toString(16), 32),
+	            s: (0, lib$1.hexZeroPad)("0x" + signature.s.toString(16), 32),
 	        });
 	    };
 	    SigningKey.prototype.computeSharedSecret = function (otherKey) {
-	        var keyPair = getCurve().keyFromPrivate(lib$1.arrayify(this.privateKey));
-	        var otherKeyPair = getCurve().keyFromPublic(lib$1.arrayify(computePublicKey(otherKey)));
-	        return lib$1.hexZeroPad("0x" + keyPair.derive(otherKeyPair.getPublic()).toString(16), 32);
+	        var keyPair = getCurve().keyFromPrivate((0, lib$1.arrayify)(this.privateKey));
+	        var otherKeyPair = getCurve().keyFromPublic((0, lib$1.arrayify)(computePublicKey(otherKey)));
+	        return (0, lib$1.hexZeroPad)("0x" + keyPair.derive(otherKeyPair.getPublic()).toString(16), 32);
 	    };
 	    SigningKey.isSigningKey = function (value) {
 	        return !!(value && value._isSigningKey);
@@ -14266,13 +14453,13 @@
 	}());
 	exports.SigningKey = SigningKey;
 	function recoverPublicKey(digest, signature) {
-	    var sig = lib$1.splitSignature(signature);
-	    var rs = { r: lib$1.arrayify(sig.r), s: lib$1.arrayify(sig.s) };
-	    return "0x" + getCurve().recoverPubKey(lib$1.arrayify(digest), rs, sig.recoveryParam).encode("hex", false);
+	    var sig = (0, lib$1.splitSignature)(signature);
+	    var rs = { r: (0, lib$1.arrayify)(sig.r), s: (0, lib$1.arrayify)(sig.s) };
+	    return "0x" + getCurve().recoverPubKey((0, lib$1.arrayify)(digest), rs, sig.recoveryParam).encode("hex", false);
 	}
 	exports.recoverPublicKey = recoverPublicKey;
 	function computePublicKey(key, compressed) {
-	    var bytes = lib$1.arrayify(key);
+	    var bytes = (0, lib$1.arrayify)(key);
 	    if (bytes.length === 32) {
 	        var signingKey = new SigningKey(bytes);
 	        if (compressed) {
@@ -14282,13 +14469,13 @@
 	    }
 	    else if (bytes.length === 33) {
 	        if (compressed) {
-	            return lib$1.hexlify(bytes);
+	            return (0, lib$1.hexlify)(bytes);
 	        }
 	        return "0x" + getCurve().keyFromPublic(bytes).getPublic(false, "hex");
 	    }
 	    else if (bytes.length === 65) {
 	        if (!compressed) {
-	            return lib$1.hexlify(bytes);
+	            return (0, lib$1.hexlify)(bytes);
 	        }
 	        return "0x" + getCurve().keyFromPublic(bytes).getPublic(true, "hex");
 	    }
@@ -14304,7 +14491,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "transactions/5.4.0";
+	exports.version = "transactions/5.5.0";
 
 	});
 
@@ -14356,7 +14543,7 @@
 	    if (value === "0x") {
 	        return null;
 	    }
-	    return lib$6.getAddress(value);
+	    return (0, lib$6.getAddress)(value);
 	}
 	function handleNumber(value) {
 	    if (value === "0x") {
@@ -14377,16 +14564,16 @@
 	    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, type: true, value: true
 	};
 	function computeAddress(key) {
-	    var publicKey = lib$d.computePublicKey(key);
-	    return lib$6.getAddress(lib$1.hexDataSlice(lib$4.keccak256(lib$1.hexDataSlice(publicKey, 1)), 12));
+	    var publicKey = (0, lib$d.computePublicKey)(key);
+	    return (0, lib$6.getAddress)((0, lib$1.hexDataSlice)((0, lib$4.keccak256)((0, lib$1.hexDataSlice)(publicKey, 1)), 12));
 	}
 	exports.computeAddress = computeAddress;
 	function recoverAddress(digest, signature) {
-	    return computeAddress(lib$d.recoverPublicKey(lib$1.arrayify(digest), signature));
+	    return computeAddress((0, lib$d.recoverPublicKey)((0, lib$1.arrayify)(digest), signature));
 	}
 	exports.recoverAddress = recoverAddress;
 	function formatNumber(value, name) {
-	    var result = lib$1.stripZeros(lib$2.BigNumber.from(value).toHexString());
+	    var result = (0, lib$1.stripZeros)(lib$2.BigNumber.from(value).toHexString());
 	    if (result.length > 32) {
 	        logger.throwArgumentError("invalid length for " + name, ("transaction:" + name), value);
 	    }
@@ -14394,9 +14581,9 @@
 	}
 	function accessSetify(addr, storageKeys) {
 	    return {
-	        address: lib$6.getAddress(addr),
+	        address: (0, lib$6.getAddress)(addr),
 	        storageKeys: (storageKeys || []).map(function (storageKey, index) {
-	            if (lib$1.hexDataLength(storageKey) !== 32) {
+	            if ((0, lib$1.hexDataLength)(storageKey) !== 32) {
 	                logger.throwArgumentError("invalid access list storageKey", "accessList[" + addr + ":" + index + "]", storageKey);
 	            }
 	            return storageKey.toLowerCase();
@@ -14438,7 +14625,8 @@
 	        var maxFeePerGas = lib$2.BigNumber.from(transaction.maxFeePerGas || 0);
 	        if (!gasPrice.eq(maxFeePerGas)) {
 	            logger.throwArgumentError("mismatch EIP-1559 gasPrice != maxFeePerGas", "tx", {
-	                gasPrice: gasPrice, maxFeePerGas: maxFeePerGas
+	                gasPrice: gasPrice,
+	                maxFeePerGas: maxFeePerGas
 	            });
 	        }
 	    }
@@ -14448,18 +14636,18 @@
 	        formatNumber(transaction.maxPriorityFeePerGas || 0, "maxPriorityFeePerGas"),
 	        formatNumber(transaction.maxFeePerGas || 0, "maxFeePerGas"),
 	        formatNumber(transaction.gasLimit || 0, "gasLimit"),
-	        ((transaction.to != null) ? lib$6.getAddress(transaction.to) : "0x"),
+	        ((transaction.to != null) ? (0, lib$6.getAddress)(transaction.to) : "0x"),
 	        formatNumber(transaction.value || 0, "value"),
 	        (transaction.data || "0x"),
 	        (formatAccessList(transaction.accessList || []))
 	    ];
 	    if (signature) {
-	        var sig = lib$1.splitSignature(signature);
+	        var sig = (0, lib$1.splitSignature)(signature);
 	        fields.push(formatNumber(sig.recoveryParam, "recoveryParam"));
-	        fields.push(lib$1.stripZeros(sig.r));
-	        fields.push(lib$1.stripZeros(sig.s));
+	        fields.push((0, lib$1.stripZeros)(sig.r));
+	        fields.push((0, lib$1.stripZeros)(sig.s));
 	    }
-	    return lib$1.hexConcat(["0x02", RLP.encode(fields)]);
+	    return (0, lib$1.hexConcat)(["0x02", RLP.encode(fields)]);
 	}
 	function _serializeEip2930(transaction, signature) {
 	    var fields = [
@@ -14467,22 +14655,22 @@
 	        formatNumber(transaction.nonce || 0, "nonce"),
 	        formatNumber(transaction.gasPrice || 0, "gasPrice"),
 	        formatNumber(transaction.gasLimit || 0, "gasLimit"),
-	        ((transaction.to != null) ? lib$6.getAddress(transaction.to) : "0x"),
+	        ((transaction.to != null) ? (0, lib$6.getAddress)(transaction.to) : "0x"),
 	        formatNumber(transaction.value || 0, "value"),
 	        (transaction.data || "0x"),
 	        (formatAccessList(transaction.accessList || []))
 	    ];
 	    if (signature) {
-	        var sig = lib$1.splitSignature(signature);
+	        var sig = (0, lib$1.splitSignature)(signature);
 	        fields.push(formatNumber(sig.recoveryParam, "recoveryParam"));
-	        fields.push(lib$1.stripZeros(sig.r));
-	        fields.push(lib$1.stripZeros(sig.s));
+	        fields.push((0, lib$1.stripZeros)(sig.r));
+	        fields.push((0, lib$1.stripZeros)(sig.s));
 	    }
-	    return lib$1.hexConcat(["0x01", RLP.encode(fields)]);
+	    return (0, lib$1.hexConcat)(["0x01", RLP.encode(fields)]);
 	}
 	// Legacy Transactions and EIP-155
 	function _serialize(transaction, signature) {
-	    lib$3.checkProperties(transaction, allowedTransactionKeys);
+	    (0, lib$3.checkProperties)(transaction, allowedTransactionKeys);
 	    var raw = [];
 	    transactionFields.forEach(function (fieldInfo) {
 	        var value = transaction[fieldInfo.name] || ([]);
@@ -14490,19 +14678,19 @@
 	        if (fieldInfo.numeric) {
 	            options.hexPad = "left";
 	        }
-	        value = lib$1.arrayify(lib$1.hexlify(value, options));
+	        value = (0, lib$1.arrayify)((0, lib$1.hexlify)(value, options));
 	        // Fixed-width field
 	        if (fieldInfo.length && value.length !== fieldInfo.length && value.length > 0) {
 	            logger.throwArgumentError("invalid length for " + fieldInfo.name, ("transaction:" + fieldInfo.name), value);
 	        }
 	        // Variable-width (with a maximum)
 	        if (fieldInfo.maxLength) {
-	            value = lib$1.stripZeros(value);
+	            value = (0, lib$1.stripZeros)(value);
 	            if (value.length > fieldInfo.maxLength) {
 	                logger.throwArgumentError("invalid length for " + fieldInfo.name, ("transaction:" + fieldInfo.name), value);
 	            }
 	        }
-	        raw.push(lib$1.hexlify(value));
+	        raw.push((0, lib$1.hexlify)(value));
 	    });
 	    var chainId = 0;
 	    if (transaction.chainId != null) {
@@ -14512,23 +14700,23 @@
 	            logger.throwArgumentError("invalid transaction.chainId", "transaction", transaction);
 	        }
 	    }
-	    else if (signature && !lib$1.isBytesLike(signature) && signature.v > 28) {
+	    else if (signature && !(0, lib$1.isBytesLike)(signature) && signature.v > 28) {
 	        // No chainId provided, but the signature is signing with EIP-155; derive chainId
 	        chainId = Math.floor((signature.v - 35) / 2);
 	    }
 	    // We have an EIP-155 transaction (chainId was specified and non-zero)
 	    if (chainId !== 0) {
-	        raw.push(lib$1.hexlify(chainId)); // @TODO: hexValue?
+	        raw.push((0, lib$1.hexlify)(chainId)); // @TODO: hexValue?
 	        raw.push("0x");
 	        raw.push("0x");
 	    }
-	    // Requesting an unsigned transation
+	    // Requesting an unsigned transaction
 	    if (!signature) {
 	        return RLP.encode(raw);
 	    }
 	    // The splitSignature will ensure the transaction has a recoveryParam in the
 	    // case that the signTransaction function only adds a v.
-	    var sig = lib$1.splitSignature(signature);
+	    var sig = (0, lib$1.splitSignature)(signature);
 	    // We pushed a chainId and null r, s on for hashing only; remove those
 	    var v = 27 + sig.recoveryParam;
 	    if (chainId !== 0) {
@@ -14544,9 +14732,9 @@
 	    else if (sig.v !== v) {
 	        logger.throwArgumentError("transaction.chainId/signature.v mismatch", "signature", signature);
 	    }
-	    raw.push(lib$1.hexlify(v));
-	    raw.push(lib$1.stripZeros(lib$1.arrayify(sig.r)));
-	    raw.push(lib$1.stripZeros(lib$1.arrayify(sig.s)));
+	    raw.push((0, lib$1.hexlify)(v));
+	    raw.push((0, lib$1.stripZeros)((0, lib$1.arrayify)(sig.r)));
+	    raw.push((0, lib$1.stripZeros)((0, lib$1.arrayify)(sig.s)));
 	    return RLP.encode(raw);
 	}
 	function serialize(transaction, signature) {
@@ -14583,10 +14771,10 @@
 	    catch (error) {
 	        logger.throwArgumentError("invalid v for transaction type: 1", "v", fields[0]);
 	    }
-	    tx.r = lib$1.hexZeroPad(fields[1], 32);
-	    tx.s = lib$1.hexZeroPad(fields[2], 32);
+	    tx.r = (0, lib$1.hexZeroPad)(fields[1], 32);
+	    tx.s = (0, lib$1.hexZeroPad)(fields[2], 32);
 	    try {
-	        var digest = lib$4.keccak256(serialize(tx));
+	        var digest = (0, lib$4.keccak256)(serialize(tx));
 	        tx.from = recoverAddress(digest, { r: tx.r, s: tx.s, recoveryParam: tx.v });
 	    }
 	    catch (error) {
@@ -14596,7 +14784,7 @@
 	function _parseEip1559(payload) {
 	    var transaction = RLP.decode(payload.slice(1));
 	    if (transaction.length !== 9 && transaction.length !== 12) {
-	        logger.throwArgumentError("invalid component count for transaction type: 2", "payload", lib$1.hexlify(payload));
+	        logger.throwArgumentError("invalid component count for transaction type: 2", "payload", (0, lib$1.hexlify)(payload));
 	    }
 	    var maxPriorityFeePerGas = handleNumber(transaction[2]);
 	    var maxFeePerGas = handleNumber(transaction[3]);
@@ -14617,14 +14805,14 @@
 	    if (transaction.length === 9) {
 	        return tx;
 	    }
-	    tx.hash = lib$4.keccak256(payload);
+	    tx.hash = (0, lib$4.keccak256)(payload);
 	    _parseEipSignature(tx, transaction.slice(9), _serializeEip1559);
 	    return tx;
 	}
 	function _parseEip2930(payload) {
 	    var transaction = RLP.decode(payload.slice(1));
 	    if (transaction.length !== 8 && transaction.length !== 11) {
-	        logger.throwArgumentError("invalid component count for transaction type: 1", "payload", lib$1.hexlify(payload));
+	        logger.throwArgumentError("invalid component count for transaction type: 1", "payload", (0, lib$1.hexlify)(payload));
 	    }
 	    var tx = {
 	        type: 1,
@@ -14641,7 +14829,7 @@
 	    if (transaction.length === 8) {
 	        return tx;
 	    }
-	    tx.hash = lib$4.keccak256(payload);
+	    tx.hash = (0, lib$4.keccak256)(payload);
 	    _parseEipSignature(tx, transaction.slice(8), _serializeEip2930);
 	    return tx;
 	}
@@ -14671,15 +14859,15 @@
 	        console.log(error);
 	        return tx;
 	    }
-	    tx.r = lib$1.hexZeroPad(transaction[7], 32);
-	    tx.s = lib$1.hexZeroPad(transaction[8], 32);
+	    tx.r = (0, lib$1.hexZeroPad)(transaction[7], 32);
+	    tx.s = (0, lib$1.hexZeroPad)(transaction[8], 32);
 	    if (lib$2.BigNumber.from(tx.r).isZero() && lib$2.BigNumber.from(tx.s).isZero()) {
 	        // EIP-155 unsigned transaction
 	        tx.chainId = tx.v;
 	        tx.v = 0;
 	    }
 	    else {
-	        // Signed Tranasaction
+	        // Signed Transaction
 	        tx.chainId = Math.floor((tx.v - 35) / 2);
 	        if (tx.chainId < 0) {
 	            tx.chainId = 0;
@@ -14687,25 +14875,25 @@
 	        var recoveryParam = tx.v - 27;
 	        var raw = transaction.slice(0, 6);
 	        if (tx.chainId !== 0) {
-	            raw.push(lib$1.hexlify(tx.chainId));
+	            raw.push((0, lib$1.hexlify)(tx.chainId));
 	            raw.push("0x");
 	            raw.push("0x");
 	            recoveryParam -= tx.chainId * 2 + 8;
 	        }
-	        var digest = lib$4.keccak256(RLP.encode(raw));
+	        var digest = (0, lib$4.keccak256)(RLP.encode(raw));
 	        try {
-	            tx.from = recoverAddress(digest, { r: lib$1.hexlify(tx.r), s: lib$1.hexlify(tx.s), recoveryParam: recoveryParam });
+	            tx.from = recoverAddress(digest, { r: (0, lib$1.hexlify)(tx.r), s: (0, lib$1.hexlify)(tx.s), recoveryParam: recoveryParam });
 	        }
 	        catch (error) {
 	            console.log(error);
 	        }
-	        tx.hash = lib$4.keccak256(rawTransaction);
+	        tx.hash = (0, lib$4.keccak256)(rawTransaction);
 	    }
 	    tx.type = null;
 	    return tx;
 	}
 	function parse(rawTransaction) {
-	    var payload = lib$1.arrayify(rawTransaction);
+	    var payload = (0, lib$1.arrayify)(rawTransaction);
 	    // Legacy and EIP-155 Transactions
 	    if (payload[0] > 0x7f) {
 	        return _parse(payload);
@@ -14734,7 +14922,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "contracts/5.4.1";
+	exports.version = "contracts/5.5.0";
 
 	});
 
@@ -14793,10 +14981,14 @@
 	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
 	    }
 	};
-	var __spreadArray = (commonjsGlobal && commonjsGlobal.__spreadArray) || function (to, from) {
-	    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-	        to[j] = from[i];
-	    return to;
+	var __spreadArray = (commonjsGlobal && commonjsGlobal.__spreadArray) || function (to, from, pack) {
+	    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+	        if (ar || !(i in from)) {
+	            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+	            ar[i] = from[i];
+	        }
+	    }
+	    return to.concat(ar || Array.prototype.slice.call(from));
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.ContractFactory = exports.Contract = exports.BaseContract = void 0;
@@ -14817,7 +15009,8 @@
 	var allowedTransactionKeys = {
 	    chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
 	    type: true, accessList: true,
-	    maxFeePerGas: true, maxPriorityFeePerGas: true
+	    maxFeePerGas: true, maxPriorityFeePerGas: true,
+	    customData: true
 	};
 	function resolveName(resolver, nameOrPromise) {
 	    return __awaiter(this, void 0, void 0, function () {
@@ -14827,9 +15020,12 @@
 	                case 0: return [4 /*yield*/, nameOrPromise];
 	                case 1:
 	                    name = _a.sent();
+	                    if (typeof (name) !== "string") {
+	                        logger.throwArgumentError("invalid address or ENS name", "name", name);
+	                    }
 	                    // If it is already an address, just use it (after adding checksum)
 	                    try {
-	                        return [2 /*return*/, lib$6.getAddress(name)];
+	                        return [2 /*return*/, (0, lib$6.getAddress)(name)];
 	                    }
 	                    catch (error) { }
 	                    if (!resolver) {
@@ -14870,7 +15066,10 @@
 	                case 6:
 	                    if (!(paramType.baseType === "array")) return [3 /*break*/, 8];
 	                    if (!Array.isArray(value)) {
-	                        return [2 /*return*/, Promise.reject(new Error("invalid value for array"))];
+	                        return [2 /*return*/, Promise.reject(logger.makeError("invalid value for array", lib.Logger.errors.INVALID_ARGUMENT, {
+	                                argument: "value",
+	                                value: value
+	                            }))];
 	                    }
 	                    return [4 /*yield*/, Promise.all(value.map(function (v) { return resolveAddresses(resolver, v, paramType.arrayChildren); }))];
 	                case 7: return [2 /*return*/, _a.sent()];
@@ -14888,7 +15087,7 @@
 	                case 0:
 	                    overrides = {};
 	                    if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
-	                        overrides = lib$3.shallowCopy(args.pop());
+	                        overrides = (0, lib$3.shallowCopy)(args.pop());
 	                    }
 	                    // Make sure the parameter count matches
 	                    logger.checkArgumentCount(args.length, fragment.inputs.length, "passed to contract");
@@ -14897,12 +15096,12 @@
 	                        if (overrides.from) {
 	                            // Contracts with a Signer are from the Signer's frame-of-reference;
 	                            // but we allow overriding "from" if it matches the signer
-	                            overrides.from = lib$3.resolveProperties({
+	                            overrides.from = (0, lib$3.resolveProperties)({
 	                                override: resolveName(contract.signer, overrides.from),
 	                                signer: contract.signer.getAddress()
 	                            }).then(function (check) { return __awaiter(_this, void 0, void 0, function () {
 	                                return __generator(this, function (_a) {
-	                                    if (lib$6.getAddress(check.signer) !== check.override) {
+	                                    if ((0, lib$6.getAddress)(check.signer) !== check.override) {
 	                                        logger.throwError("Contract with a Signer cannot override from", lib.Logger.errors.UNSUPPORTED_OPERATION, {
 	                                            operation: "overrides.from"
 	                                        });
@@ -14922,10 +15121,10 @@
 	                        // unspecified the zero address is used
 	                        //overrides.from = AddressZero;
 	                    }
-	                    return [4 /*yield*/, lib$3.resolveProperties({
+	                    return [4 /*yield*/, (0, lib$3.resolveProperties)({
 	                            args: resolveAddresses(contract.signer || contract.provider, args, fragment.inputs),
 	                            address: contract.resolvedAddress,
-	                            overrides: (lib$3.resolveProperties(overrides) || {})
+	                            overrides: ((0, lib$3.resolveProperties)(overrides) || {})
 	                        })];
 	                case 1:
 	                    resolved = _a.sent();
@@ -14958,12 +15157,12 @@
 	                        tx.type = ro.type;
 	                    }
 	                    if (ro.accessList != null) {
-	                        tx.accessList = lib$e.accessListify(ro.accessList);
+	                        tx.accessList = (0, lib$e.accessListify)(ro.accessList);
 	                    }
 	                    // If there was no "gasLimit" override, but the ABI specifies a default, use it
 	                    if (tx.gasLimit == null && fragment.gas != null) {
 	                        intrinsic = 21000;
-	                        bytes = lib$1.arrayify(data);
+	                        bytes = (0, lib$1.arrayify)(data);
 	                        for (i = 0; i < bytes.length; i++) {
 	                            intrinsic += 4;
 	                            if (bytes[i]) {
@@ -14983,7 +15182,10 @@
 	                        }
 	                        tx.value = roValue;
 	                    }
-	                    // Remvoe the overrides
+	                    if (ro.customData) {
+	                        tx.customData = (0, lib$3.shallowCopy)(ro.customData);
+	                    }
+	                    // Remove the overrides
 	                    delete overrides.nonce;
 	                    delete overrides.gasLimit;
 	                    delete overrides.gasPrice;
@@ -14993,6 +15195,7 @@
 	                    delete overrides.accessList;
 	                    delete overrides.maxFeePerGas;
 	                    delete overrides.maxPriorityFeePerGas;
+	                    delete overrides.customData;
 	                    leftovers = Object.keys(overrides).filter(function (key) { return (overrides[key] != null); });
 	                    if (leftovers.length) {
 	                        logger.throwError("cannot override " + leftovers.map(function (l) { return JSON.stringify(l); }).join(","), lib.Logger.errors.UNSUPPORTED_OPERATION, {
@@ -15055,7 +15258,7 @@
 	                    case 0:
 	                        blockTag = undefined;
 	                        if (!(args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object")) return [3 /*break*/, 3];
-	                        overrides = lib$3.shallowCopy(args.pop());
+	                        overrides = (0, lib$3.shallowCopy)(args.pop());
 	                        if (!(overrides.blockTag != null)) return [3 /*break*/, 2];
 	                        return [4 /*yield*/, overrides.blockTag];
 	                    case 1:
@@ -15129,7 +15332,7 @@
 	                        tx.wait = function (confirmations) {
 	                            return wait(confirmations).then(function (receipt) {
 	                                receipt.events = receipt.logs.map(function (log) {
-	                                    var event = lib$3.deepCopy(log);
+	                                    var event = (0, lib$3.deepCopy)(log);
 	                                    var parsed = null;
 	                                    try {
 	                                        parsed = contract.interface.parseLog(log);
@@ -15185,8 +15388,8 @@
 	}
 	var RunningEvent = /** @class */ (function () {
 	    function RunningEvent(tag, filter) {
-	        lib$3.defineReadOnly(this, "tag", tag);
-	        lib$3.defineReadOnly(this, "filter", filter);
+	        (0, lib$3.defineReadOnly)(this, "tag", tag);
+	        (0, lib$3.defineReadOnly)(this, "filter", filter);
 	        this._listeners = [];
 	    }
 	    RunningEvent.prototype.addListener = function (listener, once) {
@@ -15244,7 +15447,7 @@
 	//       or have a common abstract super class, with enough constructor
 	//       options to configure both.
 	// A Fragment Event will populate all the properties that Wildcard
-	// will, and additioanlly dereference the arguments when emitting
+	// will, and additionally dereference the arguments when emitting
 	var FragmentRunningEvent = /** @class */ (function (_super) {
 	    __extends(FragmentRunningEvent, _super);
 	    function FragmentRunningEvent(address, contractInterface, fragment, topics) {
@@ -15263,9 +15466,9 @@
 	            filter.topics = [topic];
 	        }
 	        _this = _super.call(this, getEventTag(filter), filter) || this;
-	        lib$3.defineReadOnly(_this, "address", address);
-	        lib$3.defineReadOnly(_this, "interface", contractInterface);
-	        lib$3.defineReadOnly(_this, "fragment", fragment);
+	        (0, lib$3.defineReadOnly)(_this, "address", address);
+	        (0, lib$3.defineReadOnly)(_this, "interface", contractInterface);
+	        (0, lib$3.defineReadOnly)(_this, "fragment", fragment);
 	        return _this;
 	    }
 	    FragmentRunningEvent.prototype.prepareEvent = function (event) {
@@ -15285,7 +15488,7 @@
 	        }
 	    };
 	    FragmentRunningEvent.prototype.getEmit = function (event) {
-	        var errors = lib$a.checkResultErrors(event.args);
+	        var errors = (0, lib$a.checkResultErrors)(event.args);
 	        if (errors.length) {
 	            throw errors[0].error;
 	        }
@@ -15295,7 +15498,7 @@
 	    };
 	    return FragmentRunningEvent;
 	}(RunningEvent));
-	// A Wildard Event will attempt to populate:
+	// A Wildcard Event will attempt to populate:
 	//  - event            The name of the event name
 	//  - eventSignature   The full signature of the event
 	//  - decode           A function to decode data and topics
@@ -15304,8 +15507,8 @@
 	    __extends(WildcardRunningEvent, _super);
 	    function WildcardRunningEvent(address, contractInterface) {
 	        var _this = _super.call(this, "*", { address: address }) || this;
-	        lib$3.defineReadOnly(_this, "address", address);
-	        lib$3.defineReadOnly(_this, "interface", contractInterface);
+	        (0, lib$3.defineReadOnly)(_this, "address", address);
+	        (0, lib$3.defineReadOnly)(_this, "interface", contractInterface);
 	        return _this;
 	    }
 	    WildcardRunningEvent.prototype.prepareEvent = function (event) {
@@ -15333,32 +15536,32 @@
 	        logger.checkNew(_newTarget, Contract);
 	        // @TODO: Maybe still check the addressOrName looks like a valid address or name?
 	        //address = getAddress(address);
-	        lib$3.defineReadOnly(this, "interface", lib$3.getStatic((_newTarget), "getInterface")(contractInterface));
+	        (0, lib$3.defineReadOnly)(this, "interface", (0, lib$3.getStatic)(_newTarget, "getInterface")(contractInterface));
 	        if (signerOrProvider == null) {
-	            lib$3.defineReadOnly(this, "provider", null);
-	            lib$3.defineReadOnly(this, "signer", null);
+	            (0, lib$3.defineReadOnly)(this, "provider", null);
+	            (0, lib$3.defineReadOnly)(this, "signer", null);
 	        }
 	        else if (lib$c.Signer.isSigner(signerOrProvider)) {
-	            lib$3.defineReadOnly(this, "provider", signerOrProvider.provider || null);
-	            lib$3.defineReadOnly(this, "signer", signerOrProvider);
+	            (0, lib$3.defineReadOnly)(this, "provider", signerOrProvider.provider || null);
+	            (0, lib$3.defineReadOnly)(this, "signer", signerOrProvider);
 	        }
 	        else if (lib$b.Provider.isProvider(signerOrProvider)) {
-	            lib$3.defineReadOnly(this, "provider", signerOrProvider);
-	            lib$3.defineReadOnly(this, "signer", null);
+	            (0, lib$3.defineReadOnly)(this, "provider", signerOrProvider);
+	            (0, lib$3.defineReadOnly)(this, "signer", null);
 	        }
 	        else {
 	            logger.throwArgumentError("invalid signer or provider", "signerOrProvider", signerOrProvider);
 	        }
-	        lib$3.defineReadOnly(this, "callStatic", {});
-	        lib$3.defineReadOnly(this, "estimateGas", {});
-	        lib$3.defineReadOnly(this, "functions", {});
-	        lib$3.defineReadOnly(this, "populateTransaction", {});
-	        lib$3.defineReadOnly(this, "filters", {});
+	        (0, lib$3.defineReadOnly)(this, "callStatic", {});
+	        (0, lib$3.defineReadOnly)(this, "estimateGas", {});
+	        (0, lib$3.defineReadOnly)(this, "functions", {});
+	        (0, lib$3.defineReadOnly)(this, "populateTransaction", {});
+	        (0, lib$3.defineReadOnly)(this, "filters", {});
 	        {
 	            var uniqueFilters_1 = {};
 	            Object.keys(this.interface.events).forEach(function (eventSignature) {
 	                var event = _this.interface.events[eventSignature];
-	                lib$3.defineReadOnly(_this.filters, eventSignature, function () {
+	                (0, lib$3.defineReadOnly)(_this.filters, eventSignature, function () {
 	                    var args = [];
 	                    for (var _i = 0; _i < arguments.length; _i++) {
 	                        args[_i] = arguments[_i];
@@ -15376,25 +15579,25 @@
 	            Object.keys(uniqueFilters_1).forEach(function (name) {
 	                var filters = uniqueFilters_1[name];
 	                if (filters.length === 1) {
-	                    lib$3.defineReadOnly(_this.filters, name, _this.filters[filters[0]]);
+	                    (0, lib$3.defineReadOnly)(_this.filters, name, _this.filters[filters[0]]);
 	                }
 	                else {
 	                    logger.warn("Duplicate definition of " + name + " (" + filters.join(", ") + ")");
 	                }
 	            });
 	        }
-	        lib$3.defineReadOnly(this, "_runningEvents", {});
-	        lib$3.defineReadOnly(this, "_wrappedEmits", {});
+	        (0, lib$3.defineReadOnly)(this, "_runningEvents", {});
+	        (0, lib$3.defineReadOnly)(this, "_wrappedEmits", {});
 	        if (addressOrName == null) {
 	            logger.throwArgumentError("invalid contract address or ENS name", "addressOrName", addressOrName);
 	        }
-	        lib$3.defineReadOnly(this, "address", addressOrName);
+	        (0, lib$3.defineReadOnly)(this, "address", addressOrName);
 	        if (this.provider) {
-	            lib$3.defineReadOnly(this, "resolvedAddress", resolveName(this.provider, addressOrName));
+	            (0, lib$3.defineReadOnly)(this, "resolvedAddress", resolveName(this.provider, addressOrName));
 	        }
 	        else {
 	            try {
-	                lib$3.defineReadOnly(this, "resolvedAddress", Promise.resolve(lib$6.getAddress(addressOrName)));
+	                (0, lib$3.defineReadOnly)(this, "resolvedAddress", Promise.resolve((0, lib$6.getAddress)(addressOrName)));
 	            }
 	            catch (error) {
 	                // Without a provider, we cannot use ENS names
@@ -15418,28 +15621,28 @@
 	            // are ambiguous
 	            {
 	                var name_1 = fragment.name;
-	                if (!uniqueNames[name_1]) {
-	                    uniqueNames[name_1] = [];
+	                if (!uniqueNames["%" + name_1]) {
+	                    uniqueNames["%" + name_1] = [];
 	                }
-	                uniqueNames[name_1].push(signature);
+	                uniqueNames["%" + name_1].push(signature);
 	            }
 	            if (_this[signature] == null) {
-	                lib$3.defineReadOnly(_this, signature, buildDefault(_this, fragment, true));
+	                (0, lib$3.defineReadOnly)(_this, signature, buildDefault(_this, fragment, true));
 	            }
 	            // We do not collapse simple calls on this bucket, which allows
 	            // frameworks to safely use this without introspection as well as
 	            // allows decoding error recovery.
 	            if (_this.functions[signature] == null) {
-	                lib$3.defineReadOnly(_this.functions, signature, buildDefault(_this, fragment, false));
+	                (0, lib$3.defineReadOnly)(_this.functions, signature, buildDefault(_this, fragment, false));
 	            }
 	            if (_this.callStatic[signature] == null) {
-	                lib$3.defineReadOnly(_this.callStatic, signature, buildCall(_this, fragment, true));
+	                (0, lib$3.defineReadOnly)(_this.callStatic, signature, buildCall(_this, fragment, true));
 	            }
 	            if (_this.populateTransaction[signature] == null) {
-	                lib$3.defineReadOnly(_this.populateTransaction, signature, buildPopulate(_this, fragment));
+	                (0, lib$3.defineReadOnly)(_this.populateTransaction, signature, buildPopulate(_this, fragment));
 	            }
 	            if (_this.estimateGas[signature] == null) {
-	                lib$3.defineReadOnly(_this.estimateGas, signature, buildEstimate(_this, fragment));
+	                (0, lib$3.defineReadOnly)(_this.estimateGas, signature, buildEstimate(_this, fragment));
 	            }
 	        });
 	        Object.keys(uniqueNames).forEach(function (name) {
@@ -15448,30 +15651,32 @@
 	            if (signatures.length > 1) {
 	                return;
 	            }
+	            // Strip off the leading "%" used for prototype protection
+	            name = name.substring(1);
 	            var signature = signatures[0];
 	            // If overwriting a member property that is null, swallow the error
 	            try {
 	                if (_this[name] == null) {
-	                    lib$3.defineReadOnly(_this, name, _this[signature]);
+	                    (0, lib$3.defineReadOnly)(_this, name, _this[signature]);
 	                }
 	            }
 	            catch (e) { }
 	            if (_this.functions[name] == null) {
-	                lib$3.defineReadOnly(_this.functions, name, _this.functions[signature]);
+	                (0, lib$3.defineReadOnly)(_this.functions, name, _this.functions[signature]);
 	            }
 	            if (_this.callStatic[name] == null) {
-	                lib$3.defineReadOnly(_this.callStatic, name, _this.callStatic[signature]);
+	                (0, lib$3.defineReadOnly)(_this.callStatic, name, _this.callStatic[signature]);
 	            }
 	            if (_this.populateTransaction[name] == null) {
-	                lib$3.defineReadOnly(_this.populateTransaction, name, _this.populateTransaction[signature]);
+	                (0, lib$3.defineReadOnly)(_this.populateTransaction, name, _this.populateTransaction[signature]);
 	            }
 	            if (_this.estimateGas[name] == null) {
-	                lib$3.defineReadOnly(_this.estimateGas, name, _this.estimateGas[signature]);
+	                (0, lib$3.defineReadOnly)(_this.estimateGas, name, _this.estimateGas[signature]);
 	            }
 	        });
 	    }
 	    BaseContract.getContractAddress = function (transaction) {
-	        return lib$6.getContractAddress(transaction);
+	        return (0, lib$6.getContractAddress)(transaction);
 	    };
 	    BaseContract.getInterface = function (contractInterface) {
 	        if (lib$a.Interface.isInterface(contractInterface)) {
@@ -15518,7 +15723,7 @@
 	        if (!this.signer) {
 	            logger.throwError("sending a transactions require a signer", lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: "sendTransaction(fallback)" });
 	        }
-	        var tx = lib$3.shallowCopy(overrides || {});
+	        var tx = (0, lib$3.shallowCopy)(overrides || {});
 	        ["from", "to"].forEach(function (key) {
 	            if (tx[key] == null) {
 	                return;
@@ -15537,7 +15742,7 @@
 	        }
 	        var contract = new (this.constructor)(this.address, this.interface, signerOrProvider);
 	        if (this.deployTransaction) {
-	            lib$3.defineReadOnly(contract, "deployTransaction", this.deployTransaction);
+	            (0, lib$3.defineReadOnly)(contract, "deployTransaction", this.deployTransaction);
 	        }
 	        return contract;
 	    };
@@ -15610,7 +15815,7 @@
 	    // from parse errors if they wish
 	    BaseContract.prototype._wrapEvent = function (runningEvent, log, listener) {
 	        var _this = this;
-	        var event = lib$3.deepCopy(log);
+	        var event = (0, lib$3.deepCopy)(log);
 	        event.removeListener = function () {
 	            if (!listener) {
 	                return;
@@ -15641,7 +15846,7 @@
 	                if (event.decodeError == null) {
 	                    try {
 	                        var args = runningEvent.getEmit(event);
-	                        _this.emit.apply(_this, __spreadArray([runningEvent.filter], args));
+	                        _this.emit.apply(_this, __spreadArray([runningEvent.filter], args, false));
 	                    }
 	                    catch (error) {
 	                        event.decodeError = error.error;
@@ -15666,8 +15871,8 @@
 	    BaseContract.prototype.queryFilter = function (event, fromBlockOrBlockhash, toBlock) {
 	        var _this = this;
 	        var runningEvent = this._getRunningEvent(event);
-	        var filter = lib$3.shallowCopy(runningEvent.filter);
-	        if (typeof (fromBlockOrBlockhash) === "string" && lib$1.isHexString(fromBlockOrBlockhash, 32)) {
+	        var filter = (0, lib$3.shallowCopy)(runningEvent.filter);
+	        if (typeof (fromBlockOrBlockhash) === "string" && (0, lib$1.isHexString)(fromBlockOrBlockhash, 32)) {
 	            if (toBlock != null) {
 	                logger.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
 	            }
@@ -15778,8 +15983,8 @@
 	        if (typeof (bytecode) === "string") {
 	            bytecodeHex = bytecode;
 	        }
-	        else if (lib$1.isBytes(bytecode)) {
-	            bytecodeHex = lib$1.hexlify(bytecode);
+	        else if ((0, lib$1.isBytes)(bytecode)) {
+	            bytecodeHex = (0, lib$1.hexlify)(bytecode);
 	        }
 	        else if (bytecode && typeof (bytecode.object) === "string") {
 	            // Allow the bytecode object from the Solidity compiler
@@ -15794,18 +15999,18 @@
 	            bytecodeHex = "0x" + bytecodeHex;
 	        }
 	        // Make sure the final result is valid bytecode
-	        if (!lib$1.isHexString(bytecodeHex) || (bytecodeHex.length % 2)) {
+	        if (!(0, lib$1.isHexString)(bytecodeHex) || (bytecodeHex.length % 2)) {
 	            logger.throwArgumentError("invalid bytecode", "bytecode", bytecode);
 	        }
 	        // If we have a signer, make sure it is valid
 	        if (signer && !lib$c.Signer.isSigner(signer)) {
 	            logger.throwArgumentError("invalid signer", "signer", signer);
 	        }
-	        lib$3.defineReadOnly(this, "bytecode", bytecodeHex);
-	        lib$3.defineReadOnly(this, "interface", lib$3.getStatic((_newTarget), "getInterface")(contractInterface));
-	        lib$3.defineReadOnly(this, "signer", signer || null);
+	        (0, lib$3.defineReadOnly)(this, "bytecode", bytecodeHex);
+	        (0, lib$3.defineReadOnly)(this, "interface", (0, lib$3.getStatic)(_newTarget, "getInterface")(contractInterface));
+	        (0, lib$3.defineReadOnly)(this, "signer", signer || null);
 	    }
-	    // @TODO: Future; rename to populteTransaction?
+	    // @TODO: Future; rename to populateTransaction?
 	    ContractFactory.prototype.getDeployTransaction = function () {
 	        var args = [];
 	        for (var _i = 0; _i < arguments.length; _i++) {
@@ -15814,7 +16019,7 @@
 	        var tx = {};
 	        // If we have 1 additional argument, we allow transaction overrides
 	        if (args.length === this.interface.deploy.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
-	            tx = lib$3.shallowCopy(args.pop());
+	            tx = (0, lib$3.shallowCopy)(args.pop());
 	            for (var key in tx) {
 	                if (!allowedTransactionKeys[key]) {
 	                    throw new Error("unknown transaction override " + key);
@@ -15840,7 +16045,7 @@
 	        // Make sure the call matches the constructor signature
 	        logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
 	        // Set the data to the bytecode + the encoded constructor arguments
-	        tx.data = lib$1.hexlify(lib$1.concat([
+	        tx.data = (0, lib$1.hexlify)((0, lib$1.concat)([
 	            this.bytecode,
 	            this.interface.encodeDeploy(args)
 	        ]));
@@ -15871,9 +16076,9 @@
 	                        return [4 /*yield*/, this.signer.sendTransaction(unsignedTx)];
 	                    case 2:
 	                        tx = _a.sent();
-	                        address = lib$3.getStatic(this.constructor, "getContractAddress")(tx);
-	                        contract = lib$3.getStatic(this.constructor, "getContract")(address, this.interface, this.signer);
-	                        lib$3.defineReadOnly(contract, "deployTransaction", tx);
+	                        address = (0, lib$3.getStatic)(this.constructor, "getContractAddress")(tx);
+	                        contract = (0, lib$3.getStatic)(this.constructor, "getContract")(address, this.interface, this.signer);
+	                        (0, lib$3.defineReadOnly)(contract, "deployTransaction", tx);
 	                        return [2 /*return*/, contract];
 	                }
 	            });
@@ -15906,7 +16111,7 @@
 	        return Contract.getInterface(contractInterface);
 	    };
 	    ContractFactory.getContractAddress = function (tx) {
-	        return lib$6.getContractAddress(tx);
+	        return (0, lib$6.getContractAddress)(tx);
 	    };
 	    ContractFactory.getContract = function (address, contractInterface, signer) {
 	        return new Contract(address, contractInterface, signer);
@@ -15966,17 +16171,17 @@
 
 	var BaseX = /** @class */ (function () {
 	    function BaseX(alphabet) {
-	        lib$3.defineReadOnly(this, "alphabet", alphabet);
-	        lib$3.defineReadOnly(this, "base", alphabet.length);
-	        lib$3.defineReadOnly(this, "_alphabetMap", {});
-	        lib$3.defineReadOnly(this, "_leader", alphabet.charAt(0));
+	        (0, lib$3.defineReadOnly)(this, "alphabet", alphabet);
+	        (0, lib$3.defineReadOnly)(this, "base", alphabet.length);
+	        (0, lib$3.defineReadOnly)(this, "_alphabetMap", {});
+	        (0, lib$3.defineReadOnly)(this, "_leader", alphabet.charAt(0));
 	        // pre-compute lookup table
 	        for (var i = 0; i < alphabet.length; i++) {
 	            this._alphabetMap[alphabet.charAt(i)] = i;
 	        }
 	    }
 	    BaseX.prototype.encode = function (value) {
-	        var source = lib$1.arrayify(value);
+	        var source = (0, lib$1.arrayify)(value);
 	        if (source.length === 0) {
 	            return "";
 	        }
@@ -16033,7 +16238,7 @@
 	        for (var k = 0; value[k] === this._leader && k < value.length - 1; ++k) {
 	            bytes.push(0);
 	        }
-	        return lib$1.arrayify(new Uint8Array(bytes.reverse()));
+	        return (0, lib$1.arrayify)(new Uint8Array(bytes.reverse()));
 	    };
 	    return BaseX;
 	}());
@@ -16068,7 +16273,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "sha2/5.4.0";
+	exports.version = "sha2/5.5.0";
 
 	});
 
@@ -16089,15 +16294,15 @@
 
 	var logger = new lib.Logger(_version$s.version);
 	function ripemd160(data) {
-	    return "0x" + (hash_js_1.default.ripemd160().update(lib$1.arrayify(data)).digest("hex"));
+	    return "0x" + (hash_js_1.default.ripemd160().update((0, lib$1.arrayify)(data)).digest("hex"));
 	}
 	exports.ripemd160 = ripemd160;
 	function sha256(data) {
-	    return "0x" + (hash_js_1.default.sha256().update(lib$1.arrayify(data)).digest("hex"));
+	    return "0x" + (hash_js_1.default.sha256().update((0, lib$1.arrayify)(data)).digest("hex"));
 	}
 	exports.sha256 = sha256;
 	function sha512(data) {
-	    return "0x" + (hash_js_1.default.sha512().update(lib$1.arrayify(data)).digest("hex"));
+	    return "0x" + (hash_js_1.default.sha512().update((0, lib$1.arrayify)(data)).digest("hex"));
 	}
 	exports.sha512 = sha512;
 	function computeHmac(algorithm, key, data) {
@@ -16107,7 +16312,7 @@
 	            algorithm: algorithm
 	        });
 	    }
-	    return "0x" + hash_js_1.default.hmac(hash_js_1.default[algorithm], lib$1.arrayify(key)).update(lib$1.arrayify(data)).digest("hex");
+	    return "0x" + hash_js_1.default.hmac(hash_js_1.default[algorithm], (0, lib$1.arrayify)(key)).update((0, lib$1.arrayify)(data)).digest("hex");
 	}
 	exports.computeHmac = computeHmac;
 
@@ -16138,8 +16343,8 @@
 
 
 	function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
-	    password = lib$1.arrayify(password);
-	    salt = lib$1.arrayify(salt);
+	    password = (0, lib$1.arrayify)(password);
+	    salt = (0, lib$1.arrayify)(salt);
 	    var hLen;
 	    var l = 1;
 	    var DK = new Uint8Array(keylen);
@@ -16155,7 +16360,7 @@
 	        block1[salt.length + 2] = (i >> 8) & 0xff;
 	        block1[salt.length + 3] = i & 0xff;
 	        //let U = createHmac(password).update(block1).digest();
-	        var U = lib$1.arrayify(lib$h.computeHmac(hashAlgorithm, password, block1));
+	        var U = (0, lib$1.arrayify)((0, lib$h.computeHmac)(hashAlgorithm, password, block1));
 	        if (!hLen) {
 	            hLen = U.length;
 	            T = new Uint8Array(hLen);
@@ -16166,16 +16371,16 @@
 	        T.set(U);
 	        for (var j = 1; j < iterations; j++) {
 	            //U = createHmac(password).update(U).digest();
-	            U = lib$1.arrayify(lib$h.computeHmac(hashAlgorithm, password, U));
+	            U = (0, lib$1.arrayify)((0, lib$h.computeHmac)(hashAlgorithm, password, U));
 	            for (var k = 0; k < hLen; k++)
 	                T[k] ^= U[k];
 	        }
 	        var destPos = (i - 1) * hLen;
 	        var len = (i === l ? r : hLen);
 	        //T.copy(DK, destPos, 0, len)
-	        DK.set(lib$1.arrayify(T).slice(0, len), destPos);
+	        DK.set((0, lib$1.arrayify)(T).slice(0, len), destPos);
 	    }
-	    return lib$1.hexlify(DK);
+	    return (0, lib$1.hexlify)(DK);
 	}
 	exports.pbkdf2 = pbkdf2;
 
@@ -16198,7 +16403,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "wordlists/5.4.0";
+	exports.version = "wordlists/5.5.0";
 
 	});
 
@@ -16219,7 +16424,7 @@
 	    function Wordlist(locale) {
 	        var _newTarget = this.constructor;
 	        exports.logger.checkAbstract(_newTarget, Wordlist);
-	        lib$3.defineReadOnly(this, "locale", locale);
+	        (0, lib$3.defineReadOnly)(this, "locale", locale);
 	    }
 	    // Subclasses may override this
 	    Wordlist.prototype.split = function (mnemonic) {
@@ -16239,7 +16444,7 @@
 	            }
 	            words.push(word);
 	        }
-	        return lib$9.id(words.join("\n") + "\n");
+	        return (0, lib$9.id)(words.join("\n") + "\n");
 	    };
 	    Wordlist.register = function (lang, name) {
 	        if (!name) {
@@ -16251,7 +16456,7 @@
 	                var anyGlobal = window;
 	                if (anyGlobal._ethers && anyGlobal._ethers.wordlists) {
 	                    if (!anyGlobal._ethers.wordlists[name]) {
-	                        lib$3.defineReadOnly(anyGlobal._ethers.wordlists, name, lang);
+	                        (0, lib$3.defineReadOnly)(anyGlobal._ethers.wordlists, name, lang);
 	                    }
 	                }
 	            }
@@ -16265,63 +16470,6 @@
 	});
 
 	var wordlist$1 = /*@__PURE__*/getDefaultExportFromCjs(wordlist);
-
-	var langCz_1 = createCommonjsModule(function (module, exports) {
-	"use strict";
-	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
-	    var extendStatics = function (d, b) {
-	        extendStatics = Object.setPrototypeOf ||
-	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-	        return extendStatics(d, b);
-	    };
-	    return function (d, b) {
-	        if (typeof b !== "function" && b !== null)
-	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-	        extendStatics(d, b);
-	        function __() { this.constructor = d; }
-	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	    };
-	})();
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.langCz = void 0;
-
-	var words = "AbdikaceAbecedaAdresaAgreseAkceAktovkaAlejAlkoholAmputaceAnanasAndulkaAnekdotaAnketaAntikaAnulovatArchaAroganceAsfaltAsistentAspiraceAstmaAstronomAtlasAtletikaAtolAutobusAzylBabkaBachorBacilBaculkaBadatelBagetaBagrBahnoBakterieBaladaBaletkaBalkonBalonekBalvanBalzaBambusBankomatBarbarBaretBarmanBarokoBarvaBaterkaBatohBavlnaBazalkaBazilikaBazukaBednaBeranBesedaBestieBetonBezinkaBezmocBeztakBicyklBidloBiftekBikinyBilanceBiografBiologBitvaBizonBlahobytBlatouchBlechaBleduleBleskBlikatBliznaBlokovatBlouditBludBobekBobrBodlinaBodnoutBohatostBojkotBojovatBokorysBolestBorecBoroviceBotaBoubelBouchatBoudaBouleBouratBoxerBradavkaBramboraBrankaBratrBreptaBriketaBrkoBrlohBronzBroskevBrunetkaBrusinkaBrzdaBrzyBublinaBubnovatBuchtaBuditelBudkaBudovaBufetBujarostBukviceBuldokBulvaBundaBunkrBurzaButikBuvolBuzolaBydletBylinaBytovkaBzukotCapartCarevnaCedrCeduleCejchCejnCelaCelerCelkemCelniceCeninaCennostCenovkaCentrumCenzorCestopisCetkaChalupaChapadloCharitaChataChechtatChemieChichotChirurgChladChlebaChlubitChmelChmuraChobotChocholChodbaCholeraChomoutChopitChorobaChovChrapotChrlitChrtChrupChtivostChudinaChutnatChvatChvilkaChvostChybaChystatChytitCibuleCigaretaCihelnaCihlaCinkotCirkusCisternaCitaceCitrusCizinecCizostClonaCokolivCouvatCtitelCtnostCudnostCuketaCukrCupotCvaknoutCvalCvikCvrkotCyklistaDalekoDarebaDatelDatumDceraDebataDechovkaDecibelDeficitDeflaceDeklDekretDemokratDepreseDerbyDeskaDetektivDikobrazDiktovatDiodaDiplomDiskDisplejDivadloDivochDlahaDlouhoDluhopisDnesDobroDobytekDocentDochutitDodnesDohledDohodaDohraDojemDojniceDokladDokolaDoktorDokumentDolarDolevaDolinaDomaDominantDomluvitDomovDonutitDopadDopisDoplnitDoposudDoprovodDopustitDorazitDorostDortDosahDoslovDostatekDosudDosytaDotazDotekDotknoutDoufatDoutnatDovozceDozaduDoznatDozorceDrahotaDrakDramatikDravecDrazeDrdolDrobnostDrogerieDrozdDrsnostDrtitDrzostDubenDuchovnoDudekDuhaDuhovkaDusitDusnoDutostDvojiceDvorecDynamitEkologEkonomieElektronElipsaEmailEmiseEmoceEmpatieEpizodaEpochaEpopejEposEsejEsenceEskortaEskymoEtiketaEuforieEvoluceExekuceExkurzeExpediceExplozeExportExtraktFackaFajfkaFakultaFanatikFantazieFarmacieFavoritFazoleFederaceFejetonFenkaFialkaFigurantFilozofFiltrFinanceFintaFixaceFjordFlanelFlirtFlotilaFondFosforFotbalFotkaFotonFrakceFreskaFrontaFukarFunkceFyzikaGalejeGarantGenetikaGeologGilotinaGlazuraGlejtGolemGolfistaGotikaGrafGramofonGranuleGrepGrilGrogGroteskaGumaHadiceHadrHalaHalenkaHanbaHanopisHarfaHarpunaHavranHebkostHejkalHejnoHejtmanHektarHelmaHematomHerecHernaHesloHezkyHistorikHladovkaHlasivkyHlavaHledatHlenHlodavecHlohHloupostHltatHlubinaHluchotaHmatHmotaHmyzHnisHnojivoHnoutHoblinaHobojHochHodinyHodlatHodnotaHodovatHojnostHokejHolinkaHolkaHolubHomoleHonitbaHonoraceHoralHordaHorizontHorkoHorlivecHormonHorninaHoroskopHorstvoHospodaHostinaHotovostHoubaHoufHoupatHouskaHovorHradbaHraniceHravostHrazdaHrbolekHrdinaHrdloHrdostHrnekHrobkaHromadaHrotHroudaHrozenHrstkaHrubostHryzatHubenostHubnoutHudbaHukotHumrHusitaHustotaHvozdHybnostHydrantHygienaHymnaHysterikIdylkaIhnedIkonaIluzeImunitaInfekceInflaceInkasoInovaceInspekceInternetInvalidaInvestorInzerceIronieJablkoJachtaJahodaJakmileJakostJalovecJantarJarmarkJaroJasanJasnoJatkaJavorJazykJedinecJedleJednatelJehlanJekotJelenJelitoJemnostJenomJepiceJeseterJevitJezdecJezeroJinakJindyJinochJiskraJistotaJitrniceJizvaJmenovatJogurtJurtaKabaretKabelKabinetKachnaKadetKadidloKahanKajakKajutaKakaoKaktusKalamitaKalhotyKalibrKalnostKameraKamkolivKamnaKanibalKanoeKantorKapalinaKapelaKapitolaKapkaKapleKapotaKaprKapustaKapybaraKaramelKarotkaKartonKasaKatalogKatedraKauceKauzaKavalecKazajkaKazetaKazivostKdekolivKdesiKedlubenKempKeramikaKinoKlacekKladivoKlamKlapotKlasikaKlaunKlecKlenbaKlepatKlesnoutKlidKlimaKlisnaKloboukKlokanKlopaKloubKlubovnaKlusatKluzkostKmenKmitatKmotrKnihaKnotKoaliceKoberecKobkaKoblihaKobylaKocourKohoutKojenecKokosKoktejlKolapsKoledaKolizeKoloKomandoKometaKomikKomnataKomoraKompasKomunitaKonatKonceptKondiceKonecKonfeseKongresKoninaKonkursKontaktKonzervaKopanecKopieKopnoutKoprovkaKorbelKorektorKormidloKoroptevKorpusKorunaKorytoKorzetKosatecKostkaKotelKotletaKotoulKoukatKoupelnaKousekKouzloKovbojKozaKozorohKrabiceKrachKrajinaKralovatKrasopisKravataKreditKrejcarKresbaKrevetaKriketKritikKrizeKrkavecKrmelecKrmivoKrocanKrokKronikaKropitKroupaKrovkaKrtekKruhadloKrupiceKrutostKrvinkaKrychleKryptaKrystalKrytKudlankaKufrKujnostKuklaKulajdaKulichKulkaKulometKulturaKunaKupodivuKurtKurzorKutilKvalitaKvasinkaKvestorKynologKyselinaKytaraKyticeKytkaKytovecKyvadloLabradorLachtanLadnostLaikLakomecLamelaLampaLanovkaLasiceLasoLasturaLatinkaLavinaLebkaLeckdyLedenLedniceLedovkaLedvinaLegendaLegieLegraceLehceLehkostLehnoutLektvarLenochodLentilkaLepenkaLepidloLetadloLetecLetmoLetokruhLevhartLevitaceLevobokLibraLichotkaLidojedLidskostLihovinaLijavecLilekLimetkaLinieLinkaLinoleumListopadLitinaLitovatLobistaLodivodLogikaLogopedLokalitaLoketLomcovatLopataLopuchLordLososLotrLoudalLouhLoukaLouskatLovecLstivostLucernaLuciferLumpLuskLustraceLviceLyraLyrikaLysinaMadamMadloMagistrMahagonMajetekMajitelMajoritaMakakMakoviceMakrelaMalbaMalinaMalovatMalviceMaminkaMandleMankoMarnostMasakrMaskotMasopustMaticeMatrikaMaturitaMazanecMazivoMazlitMazurkaMdlobaMechanikMeditaceMedovinaMelasaMelounMentolkaMetlaMetodaMetrMezeraMigraceMihnoutMihuleMikinaMikrofonMilenecMilimetrMilostMimikaMincovnaMinibarMinometMinulostMiskaMistrMixovatMladostMlhaMlhovinaMlokMlsatMluvitMnichMnohemMobilMocnostModelkaModlitbaMohylaMokroMolekulaMomentkaMonarchaMonoklMonstrumMontovatMonzunMosazMoskytMostMotivaceMotorkaMotykaMouchaMoudrostMozaikaMozekMozolMramorMravenecMrkevMrtvolaMrzetMrzutostMstitelMudrcMuflonMulatMumieMuniceMusetMutaceMuzeumMuzikantMyslivecMzdaNabouratNachytatNadaceNadbytekNadhozNadobroNadpisNahlasNahnatNahodileNahraditNaivitaNajednouNajistoNajmoutNaklonitNakonecNakrmitNalevoNamazatNamluvitNanometrNaokoNaopakNaostroNapadatNapevnoNaplnitNapnoutNaposledNaprostoNaroditNarubyNarychloNasaditNasekatNaslepoNastatNatolikNavenekNavrchNavzdoryNazvatNebeNechatNeckyNedalekoNedbatNeduhNegaceNehetNehodaNejenNejprveNeklidNelibostNemilostNemocNeochotaNeonkaNepokojNerostNervNesmyslNesouladNetvorNeuronNevinaNezvykleNicotaNijakNikamNikdyNiklNikterakNitroNoclehNohaviceNominaceNoraNorekNositelNosnostNouzeNovinyNovotaNozdraNudaNudleNugetNutitNutnostNutrieNymfaObalObarvitObavaObdivObecObehnatObejmoutObezitaObhajobaObilniceObjasnitObjektObklopitOblastOblekOblibaOblohaObludaObnosObohatitObojekOboutObrazecObrnaObrubaObrysObsahObsluhaObstaratObuvObvazObvinitObvodObvykleObyvatelObzorOcasOcelOcenitOchladitOchotaOchranaOcitnoutOdbojOdbytOdchodOdcizitOdebratOdeslatOdevzdatOdezvaOdhadceOdhoditOdjetOdjinudOdkazOdkoupitOdlivOdlukaOdmlkaOdolnostOdpadOdpisOdploutOdporOdpustitOdpykatOdrazkaOdsouditOdstupOdsunOdtokOdtudOdvahaOdvetaOdvolatOdvracetOdznakOfinaOfsajdOhlasOhniskoOhradaOhrozitOhryzekOkapOkeniceOklikaOknoOkouzlitOkovyOkrasaOkresOkrsekOkruhOkupantOkurkaOkusitOlejninaOlizovatOmakOmeletaOmezitOmladinaOmlouvatOmluvaOmylOnehdyOpakovatOpasekOperaceOpiceOpilostOpisovatOporaOpoziceOpravduOprotiOrbitalOrchestrOrgieOrliceOrlojOrtelOsadaOschnoutOsikaOsivoOslavaOslepitOslnitOslovitOsnovaOsobaOsolitOspalecOstenOstrahaOstudaOstychOsvojitOteplitOtiskOtopOtrhatOtrlostOtrokOtrubyOtvorOvanoutOvarOvesOvlivnitOvoceOxidOzdobaPachatelPacientPadouchPahorekPaktPalandaPalecPalivoPalubaPamfletPamlsekPanenkaPanikaPannaPanovatPanstvoPantoflePaprikaParketaParodiePartaParukaParybaPasekaPasivitaPastelkaPatentPatronaPavoukPaznehtPazourekPeckaPedagogPejsekPekloPelotonPenaltaPendrekPenzePeriskopPeroPestrostPetardaPeticePetrolejPevninaPexesoPianistaPihaPijavicePiklePiknikPilinaPilnostPilulkaPinzetaPipetaPisatelPistolePitevnaPivnicePivovarPlacentaPlakatPlamenPlanetaPlastikaPlatitPlavidloPlazPlechPlemenoPlentaPlesPletivoPlevelPlivatPlnitPlnoPlochaPlodinaPlombaPloutPlukPlynPobavitPobytPochodPocitPoctivecPodatPodcenitPodepsatPodhledPodivitPodkladPodmanitPodnikPodobaPodporaPodrazPodstataPodvodPodzimPoeziePohankaPohnutkaPohovorPohromaPohybPointaPojistkaPojmoutPokazitPoklesPokojPokrokPokutaPokynPolednePolibekPolknoutPolohaPolynomPomaluPominoutPomlkaPomocPomstaPomysletPonechatPonorkaPonurostPopadatPopelPopisekPoplachPoprositPopsatPopudPoradcePorcePorodPoruchaPoryvPosaditPosedPosilaPoskokPoslanecPosouditPospoluPostavaPosudekPosypPotahPotkanPotleskPotomekPotravaPotupaPotvoraPoukazPoutoPouzdroPovahaPovidlaPovlakPovozPovrchPovstatPovykPovzdechPozdravPozemekPoznatekPozorPozvatPracovatPrahoryPraktikaPralesPraotecPraporekPrasePravdaPrincipPrknoProbuditProcentoProdejProfeseProhraProjektProlomitPromilePronikatPropadProrokProsbaProtonProutekProvazPrskavkaPrstenPrudkostPrutPrvekPrvohoryPsanecPsovodPstruhPtactvoPubertaPuchPudlPukavecPuklinaPukrlePultPumpaPuncPupenPusaPusinkaPustinaPutovatPutykaPyramidaPyskPytelRacekRachotRadiaceRadniceRadonRaftRagbyRaketaRakovinaRamenoRampouchRandeRarachRaritaRasovnaRastrRatolestRazanceRazidloReagovatReakceReceptRedaktorReferentReflexRejnokReklamaRekordRekrutRektorReputaceRevizeRevmaRevolverRezervaRiskovatRizikoRobotikaRodokmenRohovkaRokleRokokoRomanetoRopovodRopuchaRorejsRosolRostlinaRotmistrRotopedRotundaRoubenkaRouchoRoupRouraRovinaRovniceRozborRozchodRozdatRozeznatRozhodceRozinkaRozjezdRozkazRozlohaRozmarRozpadRozruchRozsahRoztokRozumRozvodRubrikaRuchadloRukaviceRukopisRybaRybolovRychlostRydloRypadloRytinaRyzostSadistaSahatSakoSamecSamizdatSamotaSanitkaSardinkaSasankaSatelitSazbaSazeniceSborSchovatSebrankaSeceseSedadloSedimentSedloSehnatSejmoutSekeraSektaSekundaSekvojeSemenoSenoServisSesaditSeshoraSeskokSeslatSestraSesuvSesypatSetbaSetinaSetkatSetnoutSetrvatSeverSeznamShodaShrnoutSifonSilniceSirkaSirotekSirupSituaceSkafandrSkaliskoSkanzenSkautSkeptikSkicaSkladbaSkleniceSkloSkluzSkobaSkokanSkoroSkriptaSkrzSkupinaSkvostSkvrnaSlabikaSladidloSlaninaSlastSlavnostSledovatSlepecSlevaSlezinaSlibSlinaSlizniceSlonSloupekSlovoSluchSluhaSlunceSlupkaSlzaSmaragdSmetanaSmilstvoSmlouvaSmogSmradSmrkSmrtkaSmutekSmyslSnadSnahaSnobSobotaSochaSodovkaSokolSopkaSotvaSoubojSoucitSoudceSouhlasSouladSoumrakSoupravaSousedSoutokSouvisetSpalovnaSpasitelSpisSplavSpodekSpojenecSpoluSponzorSpornostSpoustaSprchaSpustitSrandaSrazSrdceSrnaSrnecSrovnatSrpenSrstSrubStaniceStarostaStatikaStavbaStehnoStezkaStodolaStolekStopaStornoStoupatStrachStresStrhnoutStromStrunaStudnaStupniceStvolStykSubjektSubtropySucharSudostSuknoSundatSunoutSurikataSurovinaSvahSvalstvoSvetrSvatbaSvazekSvisleSvitekSvobodaSvodidloSvorkaSvrabSykavkaSykotSynekSynovecSypatSypkostSyrovostSyselSytostTabletkaTabuleTahounTajemnoTajfunTajgaTajitTajnostTaktikaTamhleTamponTancovatTanecTankerTapetaTaveninaTazatelTechnikaTehdyTekutinaTelefonTemnotaTendenceTenistaTenorTeplotaTepnaTeprveTerapieTermoskaTextilTichoTiskopisTitulekTkadlecTkaninaTlapkaTleskatTlukotTlupaTmelToaletaTopinkaTopolTorzoTouhaToulecTradiceTraktorTrampTrasaTraverzaTrefitTrestTrezorTrhavinaTrhlinaTrochuTrojiceTroskaTroubaTrpceTrpitelTrpkostTrubecTruchlitTruhliceTrusTrvatTudyTuhnoutTuhostTundraTuristaTurnajTuzemskoTvarohTvorbaTvrdostTvrzTygrTykevUbohostUbozeUbratUbrousekUbrusUbytovnaUchoUctivostUdivitUhraditUjednatUjistitUjmoutUkazatelUklidnitUklonitUkotvitUkrojitUliceUlitaUlovitUmyvadloUnavitUniformaUniknoutUpadnoutUplatnitUplynoutUpoutatUpravitUranUrazitUsednoutUsilovatUsmrtitUsnadnitUsnoutUsouditUstlatUstrnoutUtahovatUtkatUtlumitUtonoutUtopenecUtrousitUvalitUvolnitUvozovkaUzdravitUzelUzeninaUzlinaUznatVagonValchaValounVanaVandalVanilkaVaranVarhanyVarovatVcelkuVchodVdovaVedroVegetaceVejceVelbloudVeletrhVelitelVelmocVelrybaVenkovVerandaVerzeVeselkaVeskrzeVesniceVespoduVestaVeterinaVeverkaVibraceVichrVideohraVidinaVidleVilaViniceVisetVitalitaVizeVizitkaVjezdVkladVkusVlajkaVlakVlasecVlevoVlhkostVlivVlnovkaVloupatVnucovatVnukVodaVodivostVodoznakVodstvoVojenskyVojnaVojskoVolantVolbaVolitVolnoVoskovkaVozidloVozovnaVpravoVrabecVracetVrahVrataVrbaVrcholekVrhatVrstvaVrtuleVsaditVstoupitVstupVtipVybavitVybratVychovatVydatVydraVyfotitVyhledatVyhnoutVyhoditVyhraditVyhubitVyjasnitVyjetVyjmoutVyklopitVykonatVylekatVymazatVymezitVymizetVymysletVynechatVynikatVynutitVypadatVyplatitVypravitVypustitVyrazitVyrovnatVyrvatVyslovitVysokoVystavitVysunoutVysypatVytasitVytesatVytratitVyvinoutVyvolatVyvrhelVyzdobitVyznatVzaduVzbuditVzchopitVzdorVzduchVzdychatVzestupVzhledemVzkazVzlykatVznikVzorekVzpouraVztahVztekXylofonZabratZabydletZachovatZadarmoZadusitZafoukatZahltitZahoditZahradaZahynoutZajatecZajetZajistitZaklepatZakoupitZalepitZamezitZamotatZamysletZanechatZanikatZaplatitZapojitZapsatZarazitZastavitZasunoutZatajitZatemnitZatknoutZaujmoutZavalitZaveletZavinitZavolatZavrtatZazvonitZbavitZbrusuZbudovatZbytekZdalekaZdarmaZdatnostZdivoZdobitZdrojZdvihZdymadloZeleninaZemanZeminaZeptatZezaduZezdolaZhatitZhltnoutZhlubokaZhotovitZhrubaZimaZimniceZjemnitZklamatZkoumatZkratkaZkumavkaZlatoZlehkaZlobaZlomZlostZlozvykZmapovatZmarZmatekZmijeZmizetZmocnitZmodratZmrzlinaZmutovatZnakZnalostZnamenatZnovuZobrazitZotavitZoubekZoufaleZploditZpomalitZpravaZprostitZprudkaZprvuZradaZranitZrcadloZrnitostZrnoZrovnaZrychlitZrzavostZtichaZtratitZubovinaZubrZvednoutZvenkuZveselaZvonZvratZvukovodZvyk";
-	var wordlist$1 = null;
-	function loadWords(lang) {
-	    if (wordlist$1 != null) {
-	        return;
-	    }
-	    wordlist$1 = words.replace(/([A-Z])/g, " $1").toLowerCase().substring(1).split(" ");
-	    // Verify the computed list matches the official list
-	    /* istanbul ignore if */
-	    if (wordlist.Wordlist.check(lang) !== "0x25f44555f4af25b51a711136e1c7d6e50ce9f8917d39d6b1f076b2bb4d2fac1a") {
-	        wordlist$1 = null;
-	        throw new Error("BIP39 Wordlist for en (English) FAILED");
-	    }
-	}
-	var LangCz = /** @class */ (function (_super) {
-	    __extends(LangCz, _super);
-	    function LangCz() {
-	        return _super.call(this, "cz") || this;
-	    }
-	    LangCz.prototype.getWord = function (index) {
-	        loadWords(this);
-	        return wordlist$1[index];
-	    };
-	    LangCz.prototype.getWordIndex = function (word) {
-	        loadWords(this);
-	        return wordlist$1.indexOf(word);
-	    };
-	    return LangCz;
-	}(wordlist.Wordlist));
-	var langCz = new LangCz();
-	exports.langCz = langCz;
-	wordlist.Wordlist.register(langCz);
-
-	});
-
-	var langCz = /*@__PURE__*/getDefaultExportFromCjs(langCz_1);
 
 	var langEn_1 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -16380,599 +16528,18 @@
 
 	var langEn = /*@__PURE__*/getDefaultExportFromCjs(langEn_1);
 
-	var langEs_1 = createCommonjsModule(function (module, exports) {
-	"use strict";
-	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
-	    var extendStatics = function (d, b) {
-	        extendStatics = Object.setPrototypeOf ||
-	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-	        return extendStatics(d, b);
-	    };
-	    return function (d, b) {
-	        if (typeof b !== "function" && b !== null)
-	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-	        extendStatics(d, b);
-	        function __() { this.constructor = d; }
-	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	    };
-	})();
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.langEs = void 0;
-
-
-	var words = "A/bacoAbdomenAbejaAbiertoAbogadoAbonoAbortoAbrazoAbrirAbueloAbusoAcabarAcademiaAccesoAccio/nAceiteAcelgaAcentoAceptarA/cidoAclararAcne/AcogerAcosoActivoActoActrizActuarAcudirAcuerdoAcusarAdictoAdmitirAdoptarAdornoAduanaAdultoAe/reoAfectarAficio/nAfinarAfirmarA/gilAgitarAgoni/aAgostoAgotarAgregarAgrioAguaAgudoA/guilaAgujaAhogoAhorroAireAislarAjedrezAjenoAjusteAlacra/nAlambreAlarmaAlbaA/lbumAlcaldeAldeaAlegreAlejarAlertaAletaAlfilerAlgaAlgodo/nAliadoAlientoAlivioAlmaAlmejaAlmi/barAltarAltezaAltivoAltoAlturaAlumnoAlzarAmableAmanteAmapolaAmargoAmasarA/mbarA/mbitoAmenoAmigoAmistadAmorAmparoAmplioAnchoAncianoAnclaAndarAnde/nAnemiaA/nguloAnilloA/nimoAni/sAnotarAntenaAntiguoAntojoAnualAnularAnuncioA~adirA~ejoA~oApagarAparatoApetitoApioAplicarApodoAporteApoyoAprenderAprobarApuestaApuroAradoAra~aArarA/rbitroA/rbolArbustoArchivoArcoArderArdillaArduoA/reaA/ridoAriesArmoni/aArne/sAromaArpaArpo/nArregloArrozArrugaArteArtistaAsaAsadoAsaltoAscensoAsegurarAseoAsesorAsientoAsiloAsistirAsnoAsombroA/speroAstillaAstroAstutoAsumirAsuntoAtajoAtaqueAtarAtentoAteoA/ticoAtletaA/tomoAtraerAtrozAtu/nAudazAudioAugeAulaAumentoAusenteAutorAvalAvanceAvaroAveAvellanaAvenaAvestruzAvio/nAvisoAyerAyudaAyunoAzafra/nAzarAzoteAzu/carAzufreAzulBabaBaborBacheBahi/aBaileBajarBalanzaBalco/nBaldeBambu/BancoBandaBa~oBarbaBarcoBarnizBarroBa/sculaBasto/nBasuraBatallaBateri/aBatirBatutaBau/lBazarBebe/BebidaBelloBesarBesoBestiaBichoBienBingoBlancoBloqueBlusaBoaBobinaBoboBocaBocinaBodaBodegaBoinaBolaBoleroBolsaBombaBondadBonitoBonoBonsa/iBordeBorrarBosqueBoteBoti/nBo/vedaBozalBravoBrazoBrechaBreveBrilloBrincoBrisaBrocaBromaBronceBroteBrujaBruscoBrutoBuceoBucleBuenoBueyBufandaBufo/nBu/hoBuitreBultoBurbujaBurlaBurroBuscarButacaBuzo/nCaballoCabezaCabinaCabraCacaoCada/verCadenaCaerCafe/Cai/daCaima/nCajaCajo/nCalCalamarCalcioCaldoCalidadCalleCalmaCalorCalvoCamaCambioCamelloCaminoCampoCa/ncerCandilCanelaCanguroCanicaCantoCa~aCa~o/nCaobaCaosCapazCapita/nCapoteCaptarCapuchaCaraCarbo/nCa/rcelCaretaCargaCari~oCarneCarpetaCarroCartaCasaCascoCaseroCaspaCastorCatorceCatreCaudalCausaCazoCebollaCederCedroCeldaCe/lebreCelosoCe/lulaCementoCenizaCentroCercaCerdoCerezaCeroCerrarCertezaCe/spedCetroChacalChalecoChampu/ChanclaChapaCharlaChicoChisteChivoChoqueChozaChuletaChuparCiclo/nCiegoCieloCienCiertoCifraCigarroCimaCincoCineCintaCipre/sCircoCiruelaCisneCitaCiudadClamorClanClaroClaseClaveClienteClimaCli/nicaCobreCoccio/nCochinoCocinaCocoCo/digoCodoCofreCogerCoheteCoji/nCojoColaColchaColegioColgarColinaCollarColmoColumnaCombateComerComidaCo/modoCompraCondeConejoCongaConocerConsejoContarCopaCopiaCorazo/nCorbataCorchoCordo/nCoronaCorrerCoserCosmosCostaCra/neoCra/terCrearCrecerCrei/doCremaCri/aCrimenCriptaCrisisCromoCro/nicaCroquetaCrudoCruzCuadroCuartoCuatroCuboCubrirCucharaCuelloCuentoCuerdaCuestaCuevaCuidarCulebraCulpaCultoCumbreCumplirCunaCunetaCuotaCupo/nCu/pulaCurarCuriosoCursoCurvaCutisDamaDanzaDarDardoDa/tilDeberDe/bilDe/cadaDecirDedoDefensaDefinirDejarDelfi/nDelgadoDelitoDemoraDensoDentalDeporteDerechoDerrotaDesayunoDeseoDesfileDesnudoDestinoDesvi/oDetalleDetenerDeudaDi/aDiabloDiademaDiamanteDianaDiarioDibujoDictarDienteDietaDiezDifi/cilDignoDilemaDiluirDineroDirectoDirigirDiscoDise~oDisfrazDivaDivinoDobleDoceDolorDomingoDonDonarDoradoDormirDorsoDosDosisDrago/nDrogaDuchaDudaDueloDue~oDulceDu/oDuqueDurarDurezaDuroE/banoEbrioEcharEcoEcuadorEdadEdicio/nEdificioEditorEducarEfectoEficazEjeEjemploElefanteElegirElementoElevarElipseE/liteElixirElogioEludirEmbudoEmitirEmocio/nEmpateEmpe~oEmpleoEmpresaEnanoEncargoEnchufeEnci/aEnemigoEneroEnfadoEnfermoEnga~oEnigmaEnlaceEnormeEnredoEnsayoEnse~arEnteroEntrarEnvaseEnvi/oE/pocaEquipoErizoEscalaEscenaEscolarEscribirEscudoEsenciaEsferaEsfuerzoEspadaEspejoEspi/aEsposaEspumaEsqui/EstarEsteEstiloEstufaEtapaEternoE/ticaEtniaEvadirEvaluarEventoEvitarExactoExamenExcesoExcusaExentoExigirExilioExistirE/xitoExpertoExplicarExponerExtremoFa/bricaFa/bulaFachadaFa/cilFactorFaenaFajaFaldaFalloFalsoFaltarFamaFamiliaFamosoFarao/nFarmaciaFarolFarsaFaseFatigaFaunaFavorFaxFebreroFechaFelizFeoFeriaFerozFe/rtilFervorFesti/nFiableFianzaFiarFibraFiccio/nFichaFideoFiebreFielFieraFiestaFiguraFijarFijoFilaFileteFilialFiltroFinFincaFingirFinitoFirmaFlacoFlautaFlechaFlorFlotaFluirFlujoFlu/orFobiaFocaFogataFogo/nFolioFolletoFondoFormaForroFortunaForzarFosaFotoFracasoFra/gilFranjaFraseFraudeFrei/rFrenoFresaFri/oFritoFrutaFuegoFuenteFuerzaFugaFumarFuncio/nFundaFurgo/nFuriaFusilFu/tbolFuturoGacelaGafasGaitaGajoGalaGaleri/aGalloGambaGanarGanchoGangaGansoGarajeGarzaGasolinaGastarGatoGavila/nGemeloGemirGenGe/neroGenioGenteGeranioGerenteGermenGestoGiganteGimnasioGirarGiroGlaciarGloboGloriaGolGolfoGolosoGolpeGomaGordoGorilaGorraGotaGoteoGozarGradaGra/ficoGranoGrasaGratisGraveGrietaGrilloGripeGrisGritoGrosorGru/aGruesoGrumoGrupoGuanteGuapoGuardiaGuerraGui/aGui~oGuionGuisoGuitarraGusanoGustarHaberHa/bilHablarHacerHachaHadaHallarHamacaHarinaHazHaza~aHebillaHebraHechoHeladoHelioHembraHerirHermanoHe/roeHervirHieloHierroHi/gadoHigieneHijoHimnoHistoriaHocicoHogarHogueraHojaHombreHongoHonorHonraHoraHormigaHornoHostilHoyoHuecoHuelgaHuertaHuesoHuevoHuidaHuirHumanoHu/medoHumildeHumoHundirHuraca/nHurtoIconoIdealIdiomaI/doloIglesiaIglu/IgualIlegalIlusio/nImagenIma/nImitarImparImperioImponerImpulsoIncapazI/ndiceInerteInfielInformeIngenioInicioInmensoInmuneInnatoInsectoInstanteIntere/sI/ntimoIntuirInu/tilInviernoIraIrisIroni/aIslaIsloteJabali/Jabo/nJamo/nJarabeJardi/nJarraJaulaJazmi/nJefeJeringaJineteJornadaJorobaJovenJoyaJuergaJuevesJuezJugadorJugoJugueteJuicioJuncoJunglaJunioJuntarJu/piterJurarJustoJuvenilJuzgarKiloKoalaLabioLacioLacraLadoLadro/nLagartoLa/grimaLagunaLaicoLamerLa/minaLa/mparaLanaLanchaLangostaLanzaLa/pizLargoLarvaLa/stimaLataLa/texLatirLaurelLavarLazoLealLeccio/nLecheLectorLeerLegio/nLegumbreLejanoLenguaLentoLe~aLeo/nLeopardoLesio/nLetalLetraLeveLeyendaLibertadLibroLicorLi/derLidiarLienzoLigaLigeroLimaLi/miteLimo/nLimpioLinceLindoLi/neaLingoteLinoLinternaLi/quidoLisoListaLiteraLitioLitroLlagaLlamaLlantoLlaveLlegarLlenarLlevarLlorarLloverLluviaLoboLocio/nLocoLocuraLo/gicaLogroLombrizLomoLonjaLoteLuchaLucirLugarLujoLunaLunesLupaLustroLutoLuzMacetaMachoMaderaMadreMaduroMaestroMafiaMagiaMagoMai/zMaldadMaletaMallaMaloMama/MamboMamutMancoMandoManejarMangaManiqui/ManjarManoMansoMantaMa~anaMapaMa/quinaMarMarcoMareaMarfilMargenMaridoMa/rmolMarro/nMartesMarzoMasaMa/scaraMasivoMatarMateriaMatizMatrizMa/ximoMayorMazorcaMechaMedallaMedioMe/dulaMejillaMejorMelenaMelo/nMemoriaMenorMensajeMenteMenu/MercadoMerengueMe/ritoMesMeso/nMetaMeterMe/todoMetroMezclaMiedoMielMiembroMigaMilMilagroMilitarMillo/nMimoMinaMineroMi/nimoMinutoMiopeMirarMisaMiseriaMisilMismoMitadMitoMochilaMocio/nModaModeloMohoMojarMoldeMolerMolinoMomentoMomiaMonarcaMonedaMonjaMontoMo~oMoradaMorderMorenoMorirMorroMorsaMortalMoscaMostrarMotivoMoverMo/vilMozoMuchoMudarMuebleMuelaMuerteMuestraMugreMujerMulaMuletaMultaMundoMu~ecaMuralMuroMu/sculoMuseoMusgoMu/sicaMusloNa/carNacio/nNadarNaipeNaranjaNarizNarrarNasalNatalNativoNaturalNa/useaNavalNaveNavidadNecioNe/ctarNegarNegocioNegroNeo/nNervioNetoNeutroNevarNeveraNichoNidoNieblaNietoNi~ezNi~oNi/tidoNivelNoblezaNocheNo/minaNoriaNormaNorteNotaNoticiaNovatoNovelaNovioNubeNucaNu/cleoNudilloNudoNueraNueveNuezNuloNu/meroNutriaOasisObesoObispoObjetoObraObreroObservarObtenerObvioOcaOcasoOce/anoOchentaOchoOcioOcreOctavoOctubreOcultoOcuparOcurrirOdiarOdioOdiseaOesteOfensaOfertaOficioOfrecerOgroOi/doOi/rOjoOlaOleadaOlfatoOlivoOllaOlmoOlorOlvidoOmbligoOndaOnzaOpacoOpcio/nO/peraOpinarOponerOptarO/pticaOpuestoOracio/nOradorOralO/rbitaOrcaOrdenOrejaO/rganoOrgi/aOrgulloOrienteOrigenOrillaOroOrquestaOrugaOsadi/aOscuroOseznoOsoOstraOto~oOtroOvejaO/vuloO/xidoOxi/genoOyenteOzonoPactoPadrePaellaPa/ginaPagoPai/sPa/jaroPalabraPalcoPaletaPa/lidoPalmaPalomaPalparPanPanalPa/nicoPanteraPa~ueloPapa/PapelPapillaPaquetePararParcelaParedParirParoPa/rpadoParquePa/rrafoPartePasarPaseoPasio/nPasoPastaPataPatioPatriaPausaPautaPavoPayasoPeato/nPecadoPeceraPechoPedalPedirPegarPeinePelarPelda~oPeleaPeligroPellejoPeloPelucaPenaPensarPe~o/nPeo/nPeorPepinoPeque~oPeraPerchaPerderPerezaPerfilPericoPerlaPermisoPerroPersonaPesaPescaPe/simoPesta~aPe/taloPetro/leoPezPezu~aPicarPicho/nPiePiedraPiernaPiezaPijamaPilarPilotoPimientaPinoPintorPinzaPi~aPiojoPipaPirataPisarPiscinaPisoPistaPito/nPizcaPlacaPlanPlataPlayaPlazaPleitoPlenoPlomoPlumaPluralPobrePocoPoderPodioPoemaPoesi/aPoetaPolenPolici/aPolloPolvoPomadaPomeloPomoPompaPonerPorcio/nPortalPosadaPoseerPosiblePostePotenciaPotroPozoPradoPrecozPreguntaPremioPrensaPresoPrevioPrimoPri/ncipePrisio/nPrivarProaProbarProcesoProductoProezaProfesorProgramaProlePromesaProntoPropioPro/ximoPruebaPu/blicoPucheroPudorPuebloPuertaPuestoPulgaPulirPulmo/nPulpoPulsoPumaPuntoPu~alPu~oPupaPupilaPure/QuedarQuejaQuemarQuererQuesoQuietoQui/micaQuinceQuitarRa/banoRabiaRaboRacio/nRadicalRai/zRamaRampaRanchoRangoRapazRa/pidoRaptoRasgoRaspaRatoRayoRazaRazo/nReaccio/nRealidadReba~oReboteRecaerRecetaRechazoRecogerRecreoRectoRecursoRedRedondoReducirReflejoReformaRefra/nRefugioRegaloRegirReglaRegresoRehe/nReinoRei/rRejaRelatoRelevoRelieveRellenoRelojRemarRemedioRemoRencorRendirRentaRepartoRepetirReposoReptilResRescateResinaRespetoRestoResumenRetiroRetornoRetratoReunirReve/sRevistaReyRezarRicoRiegoRiendaRiesgoRifaRi/gidoRigorRinco/nRi~o/nRi/oRiquezaRisaRitmoRitoRizoRobleRoceRociarRodarRodeoRodillaRoerRojizoRojoRomeroRomperRonRoncoRondaRopaRoperoRosaRoscaRostroRotarRubi/RuborRudoRuedaRugirRuidoRuinaRuletaRuloRumboRumorRupturaRutaRutinaSa/badoSaberSabioSableSacarSagazSagradoSalaSaldoSaleroSalirSalmo/nSalo/nSalsaSaltoSaludSalvarSambaSancio/nSandi/aSanearSangreSanidadSanoSantoSapoSaqueSardinaSarte/nSastreSata/nSaunaSaxofo/nSeccio/nSecoSecretoSectaSedSeguirSeisSelloSelvaSemanaSemillaSendaSensorSe~alSe~orSepararSepiaSequi/aSerSerieSermo/nServirSesentaSesio/nSetaSetentaSeveroSexoSextoSidraSiestaSieteSigloSignoSi/labaSilbarSilencioSillaSi/mboloSimioSirenaSistemaSitioSituarSobreSocioSodioSolSolapaSoldadoSoledadSo/lidoSoltarSolucio/nSombraSondeoSonidoSonoroSonrisaSopaSoplarSoporteSordoSorpresaSorteoSoste/nSo/tanoSuaveSubirSucesoSudorSuegraSueloSue~oSuerteSufrirSujetoSulta/nSumarSuperarSuplirSuponerSupremoSurSurcoSure~oSurgirSustoSutilTabacoTabiqueTablaTabu/TacoTactoTajoTalarTalcoTalentoTallaTalo/nTama~oTamborTangoTanqueTapaTapeteTapiaTapo/nTaquillaTardeTareaTarifaTarjetaTarotTarroTartaTatuajeTauroTazaTazo/nTeatroTechoTeclaTe/cnicaTejadoTejerTejidoTelaTele/fonoTemaTemorTemploTenazTenderTenerTenisTensoTeori/aTerapiaTercoTe/rminoTernuraTerrorTesisTesoroTestigoTeteraTextoTezTibioTiburo/nTiempoTiendaTierraTiesoTigreTijeraTildeTimbreTi/midoTimoTintaTi/oTi/picoTipoTiraTiro/nTita/nTi/tereTi/tuloTizaToallaTobilloTocarTocinoTodoTogaToldoTomarTonoTontoToparTopeToqueTo/raxToreroTormentaTorneoToroTorpedoTorreTorsoTortugaTosToscoToserTo/xicoTrabajoTractorTraerTra/ficoTragoTrajeTramoTranceTratoTraumaTrazarTre/bolTreguaTreintaTrenTreparTresTribuTrigoTripaTristeTriunfoTrofeoTrompaTroncoTropaTroteTrozoTrucoTruenoTrufaTuberi/aTuboTuertoTumbaTumorTu/nelTu/nicaTurbinaTurismoTurnoTutorUbicarU/lceraUmbralUnidadUnirUniversoUnoUntarU~aUrbanoUrbeUrgenteUrnaUsarUsuarioU/tilUtopi/aUvaVacaVaci/oVacunaVagarVagoVainaVajillaValeVa/lidoValleValorVa/lvulaVampiroVaraVariarVaro/nVasoVecinoVectorVehi/culoVeinteVejezVelaVeleroVelozVenaVencerVendaVenenoVengarVenirVentaVenusVerVeranoVerboVerdeVeredaVerjaVersoVerterVi/aViajeVibrarVicioVi/ctimaVidaVi/deoVidrioViejoViernesVigorVilVillaVinagreVinoVi~edoVioli/nViralVirgoVirtudVisorVi/speraVistaVitaminaViudoVivazViveroVivirVivoVolca/nVolumenVolverVorazVotarVotoVozVueloVulgarYacerYateYeguaYemaYernoYesoYodoYogaYogurZafiroZanjaZapatoZarzaZonaZorroZumoZurdo";
-	var lookup = {};
-	var wordlist$1 = null;
-	function dropDiacritic(word) {
-	    wordlist.logger.checkNormalize();
-	    return lib$8.toUtf8String(Array.prototype.filter.call(lib$8.toUtf8Bytes(word.normalize("NFD").toLowerCase()), function (c) {
-	        return ((c >= 65 && c <= 90) || (c >= 97 && c <= 123));
-	    }));
-	}
-	function expand(word) {
-	    var output = [];
-	    Array.prototype.forEach.call(lib$8.toUtf8Bytes(word), function (c) {
-	        // Acute accent
-	        if (c === 47) {
-	            output.push(204);
-	            output.push(129);
-	            // n-tilde
-	        }
-	        else if (c === 126) {
-	            output.push(110);
-	            output.push(204);
-	            output.push(131);
-	        }
-	        else {
-	            output.push(c);
-	        }
-	    });
-	    return lib$8.toUtf8String(output);
-	}
-	function loadWords(lang) {
-	    if (wordlist$1 != null) {
-	        return;
-	    }
-	    wordlist$1 = words.replace(/([A-Z])/g, " $1").toLowerCase().substring(1).split(" ").map(function (w) { return expand(w); });
-	    wordlist$1.forEach(function (word, index) {
-	        lookup[dropDiacritic(word)] = index;
-	    });
-	    // Verify the computed list matches the official list
-	    /* istanbul ignore if */
-	    if (wordlist.Wordlist.check(lang) !== "0xf74fb7092aeacdfbf8959557de22098da512207fb9f109cb526994938cf40300") {
-	        wordlist$1 = null;
-	        throw new Error("BIP39 Wordlist for es (Spanish) FAILED");
-	    }
-	}
-	var LangEs = /** @class */ (function (_super) {
-	    __extends(LangEs, _super);
-	    function LangEs() {
-	        return _super.call(this, "es") || this;
-	    }
-	    LangEs.prototype.getWord = function (index) {
-	        loadWords(this);
-	        return wordlist$1[index];
-	    };
-	    LangEs.prototype.getWordIndex = function (word) {
-	        loadWords(this);
-	        return lookup[dropDiacritic(word)];
-	    };
-	    return LangEs;
-	}(wordlist.Wordlist));
-	var langEs = new LangEs();
-	exports.langEs = langEs;
-	wordlist.Wordlist.register(langEs);
-
-	});
-
-	var langEs = /*@__PURE__*/getDefaultExportFromCjs(langEs_1);
-
-	var langFr_1 = createCommonjsModule(function (module, exports) {
-	"use strict";
-	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
-	    var extendStatics = function (d, b) {
-	        extendStatics = Object.setPrototypeOf ||
-	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-	        return extendStatics(d, b);
-	    };
-	    return function (d, b) {
-	        if (typeof b !== "function" && b !== null)
-	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-	        extendStatics(d, b);
-	        function __() { this.constructor = d; }
-	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	    };
-	})();
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.langFr = void 0;
-
-
-	var words = "AbaisserAbandonAbdiquerAbeilleAbolirAborderAboutirAboyerAbrasifAbreuverAbriterAbrogerAbruptAbsenceAbsoluAbsurdeAbusifAbyssalAcade/mieAcajouAcarienAccablerAccepterAcclamerAccoladeAccrocheAccuserAcerbeAchatAcheterAcidulerAcierAcompteAcque/rirAcronymeActeurActifActuelAdepteAde/quatAdhe/sifAdjectifAdjugerAdmettreAdmirerAdopterAdorerAdoucirAdresseAdroitAdulteAdverbeAe/rerAe/ronefAffaireAffecterAfficheAffreuxAffublerAgacerAgencerAgileAgiterAgraferAgre/ableAgrumeAiderAiguilleAilierAimableAisanceAjouterAjusterAlarmerAlchimieAlerteAlge-breAlgueAlie/nerAlimentAlle/gerAlliageAllouerAllumerAlourdirAlpagaAltesseAlve/oleAmateurAmbiguAmbreAme/nagerAmertumeAmidonAmiralAmorcerAmourAmovibleAmphibieAmpleurAmusantAnalyseAnaphoreAnarchieAnatomieAncienAne/antirAngleAngoisseAnguleuxAnimalAnnexerAnnonceAnnuelAnodinAnomalieAnonymeAnormalAntenneAntidoteAnxieuxApaiserApe/ritifAplanirApologieAppareilAppelerApporterAppuyerAquariumAqueducArbitreArbusteArdeurArdoiseArgentArlequinArmatureArmementArmoireArmureArpenterArracherArriverArroserArsenicArte/rielArticleAspectAsphalteAspirerAssautAsservirAssietteAssocierAssurerAsticotAstreAstuceAtelierAtomeAtriumAtroceAttaqueAttentifAttirerAttraperAubaineAubergeAudaceAudibleAugurerAuroreAutomneAutrucheAvalerAvancerAvariceAvenirAverseAveugleAviateurAvideAvionAviserAvoineAvouerAvrilAxialAxiomeBadgeBafouerBagageBaguetteBaignadeBalancerBalconBaleineBalisageBambinBancaireBandageBanlieueBannie-reBanquierBarbierBarilBaronBarqueBarrageBassinBastionBatailleBateauBatterieBaudrierBavarderBeletteBe/lierBeloteBe/ne/ficeBerceauBergerBerlineBermudaBesaceBesogneBe/tailBeurreBiberonBicycleBiduleBijouBilanBilingueBillardBinaireBiologieBiopsieBiotypeBiscuitBisonBistouriBitumeBizarreBlafardBlagueBlanchirBlessantBlinderBlondBloquerBlousonBobardBobineBoireBoiserBolideBonbonBondirBonheurBonifierBonusBordureBorneBotteBoucleBoueuxBougieBoulonBouquinBourseBoussoleBoutiqueBoxeurBrancheBrasierBraveBrebisBre-cheBreuvageBricolerBrigadeBrillantBriocheBriqueBrochureBroderBronzerBrousseBroyeurBrumeBrusqueBrutalBruyantBuffleBuissonBulletinBureauBurinBustierButinerButoirBuvableBuvetteCabanonCabineCachetteCadeauCadreCafe/ineCaillouCaissonCalculerCalepinCalibreCalmerCalomnieCalvaireCamaradeCame/raCamionCampagneCanalCanetonCanonCantineCanularCapableCaporalCapriceCapsuleCapterCapucheCarabineCarboneCaresserCaribouCarnageCarotteCarreauCartonCascadeCasierCasqueCassureCauserCautionCavalierCaverneCaviarCe/dilleCeintureCe/lesteCelluleCendrierCensurerCentralCercleCe/re/bralCeriseCernerCerveauCesserChagrinChaiseChaleurChambreChanceChapitreCharbonChasseurChatonChaussonChavirerChemiseChenilleChe/quierChercherChevalChienChiffreChignonChime-reChiotChlorureChocolatChoisirChoseChouetteChromeChuteCigareCigogneCimenterCine/maCintrerCirculerCirerCirqueCiterneCitoyenCitronCivilClaironClameurClaquerClasseClavierClientClignerClimatClivageClocheClonageCloporteCobaltCobraCocasseCocotierCoderCodifierCoffreCognerCohe/sionCoifferCoincerCole-reColibriCollineColmaterColonelCombatCome/dieCommandeCompactConcertConduireConfierCongelerConnoterConsonneContactConvexeCopainCopieCorailCorbeauCordageCornicheCorpusCorrectCorte-geCosmiqueCostumeCotonCoudeCoupureCourageCouteauCouvrirCoyoteCrabeCrainteCravateCrayonCre/atureCre/diterCre/meuxCreuserCrevetteCriblerCrierCristalCrite-reCroireCroquerCrotaleCrucialCruelCrypterCubiqueCueillirCuille-reCuisineCuivreCulminerCultiverCumulerCupideCuratifCurseurCyanureCycleCylindreCyniqueDaignerDamierDangerDanseurDauphinDe/battreDe/biterDe/borderDe/briderDe/butantDe/calerDe/cembreDe/chirerDe/ciderDe/clarerDe/corerDe/crireDe/cuplerDe/daleDe/ductifDe/esseDe/fensifDe/filerDe/frayerDe/gagerDe/givrerDe/glutirDe/graferDe/jeunerDe/liceDe/logerDemanderDemeurerDe/molirDe/nicherDe/nouerDentelleDe/nuderDe/partDe/penserDe/phaserDe/placerDe/poserDe/rangerDe/roberDe/sastreDescenteDe/sertDe/signerDe/sobe/irDessinerDestrierDe/tacherDe/testerDe/tourerDe/tresseDevancerDevenirDevinerDevoirDiableDialogueDiamantDicterDiffe/rerDige/rerDigitalDigneDiluerDimancheDiminuerDioxydeDirectifDirigerDiscuterDisposerDissiperDistanceDivertirDiviserDocileDocteurDogmeDoigtDomaineDomicileDompterDonateurDonjonDonnerDopamineDortoirDorureDosageDoseurDossierDotationDouanierDoubleDouceurDouterDoyenDragonDraperDresserDribblerDroitureDuperieDuplexeDurableDurcirDynastieE/blouirE/carterE/charpeE/chelleE/clairerE/clipseE/cloreE/cluseE/coleE/conomieE/corceE/couterE/craserE/cre/merE/crivainE/crouE/cumeE/cureuilE/difierE/duquerEffacerEffectifEffigieEffortEffrayerEffusionE/galiserE/garerE/jecterE/laborerE/largirE/lectronE/le/gantE/le/phantE/le-veE/ligibleE/litismeE/logeE/luciderE/luderEmballerEmbellirEmbryonE/meraudeE/missionEmmenerE/motionE/mouvoirEmpereurEmployerEmporterEmpriseE/mulsionEncadrerEnche-reEnclaveEncocheEndiguerEndosserEndroitEnduireE/nergieEnfanceEnfermerEnfouirEngagerEnginEngloberE/nigmeEnjamberEnjeuEnleverEnnemiEnnuyeuxEnrichirEnrobageEnseigneEntasserEntendreEntierEntourerEntraverE/nume/rerEnvahirEnviableEnvoyerEnzymeE/olienE/paissirE/pargneE/patantE/pauleE/picerieE/pide/mieE/pierE/pilogueE/pineE/pisodeE/pitapheE/poqueE/preuveE/prouverE/puisantE/querreE/quipeE/rigerE/rosionErreurE/ruptionEscalierEspadonEspe-ceEspie-gleEspoirEspritEsquiverEssayerEssenceEssieuEssorerEstimeEstomacEstradeE/tage-reE/talerE/tancheE/tatiqueE/teindreE/tendoirE/ternelE/thanolE/thiqueEthnieE/tirerE/tofferE/toileE/tonnantE/tourdirE/trangeE/troitE/tudeEuphorieE/valuerE/vasionE/ventailE/videnceE/viterE/volutifE/voquerExactExage/rerExaucerExcellerExcitantExclusifExcuseExe/cuterExempleExercerExhalerExhorterExigenceExilerExisterExotiqueExpe/dierExplorerExposerExprimerExquisExtensifExtraireExulterFableFabuleuxFacetteFacileFactureFaiblirFalaiseFameuxFamilleFarceurFarfeluFarineFaroucheFascinerFatalFatigueFauconFautifFaveurFavoriFe/brileFe/conderFe/de/rerFe/linFemmeFe/murFendoirFe/odalFermerFe/roceFerveurFestivalFeuilleFeutreFe/vrierFiascoFicelerFictifFide-leFigureFilatureFiletageFilie-reFilleulFilmerFilouFiltrerFinancerFinirFioleFirmeFissureFixerFlairerFlammeFlasqueFlatteurFle/auFle-cheFleurFlexionFloconFloreFluctuerFluideFluvialFolieFonderieFongibleFontaineForcerForgeronFormulerFortuneFossileFoudreFouge-reFouillerFoulureFourmiFragileFraiseFranchirFrapperFrayeurFre/gateFreinerFrelonFre/mirFre/ne/sieFre-reFriableFrictionFrissonFrivoleFroidFromageFrontalFrotterFruitFugitifFuiteFureurFurieuxFurtifFusionFuturGagnerGalaxieGalerieGambaderGarantirGardienGarnirGarrigueGazelleGazonGe/antGe/latineGe/luleGendarmeGe/ne/ralGe/nieGenouGentilGe/ologieGe/ome-treGe/raniumGermeGestuelGeyserGibierGiclerGirafeGivreGlaceGlaiveGlisserGlobeGloireGlorieuxGolfeurGommeGonflerGorgeGorilleGoudronGouffreGoulotGoupilleGourmandGoutteGraduelGraffitiGraineGrandGrappinGratuitGravirGrenatGriffureGrillerGrimperGrognerGronderGrotteGroupeGrugerGrutierGruye-reGue/pardGuerrierGuideGuimauveGuitareGustatifGymnasteGyrostatHabitudeHachoirHalteHameauHangarHannetonHaricotHarmonieHarponHasardHe/liumHe/matomeHerbeHe/rissonHermineHe/ronHe/siterHeureuxHibernerHibouHilarantHistoireHiverHomardHommageHomoge-neHonneurHonorerHonteuxHordeHorizonHorlogeHormoneHorribleHouleuxHousseHublotHuileuxHumainHumbleHumideHumourHurlerHydromelHygie-neHymneHypnoseIdylleIgnorerIguaneIlliciteIllusionImageImbiberImiterImmenseImmobileImmuableImpactImpe/rialImplorerImposerImprimerImputerIncarnerIncendieIncidentInclinerIncoloreIndexerIndiceInductifIne/ditIneptieInexactInfiniInfligerInformerInfusionInge/rerInhalerInhiberInjecterInjureInnocentInoculerInonderInscrireInsecteInsigneInsoliteInspirerInstinctInsulterIntactIntenseIntimeIntrigueIntuitifInutileInvasionInventerInviterInvoquerIroniqueIrradierIrre/elIrriterIsolerIvoireIvresseJaguarJaillirJambeJanvierJardinJaugerJauneJavelotJetableJetonJeudiJeunesseJoindreJoncherJonglerJoueurJouissifJournalJovialJoyauJoyeuxJubilerJugementJuniorJuponJuristeJusticeJuteuxJuve/nileKayakKimonoKiosqueLabelLabialLabourerLace/rerLactoseLaguneLaineLaisserLaitierLambeauLamelleLampeLanceurLangageLanterneLapinLargeurLarmeLaurierLavaboLavoirLectureLe/galLe/gerLe/gumeLessiveLettreLevierLexiqueLe/zardLiasseLibe/rerLibreLicenceLicorneLie-geLie-vreLigatureLigoterLigueLimerLimiteLimonadeLimpideLine/aireLingotLionceauLiquideLisie-reListerLithiumLitigeLittoralLivreurLogiqueLointainLoisirLombricLoterieLouerLourdLoutreLouveLoyalLubieLucideLucratifLueurLugubreLuisantLumie-reLunaireLundiLuronLutterLuxueuxMachineMagasinMagentaMagiqueMaigreMaillonMaintienMairieMaisonMajorerMalaxerMale/ficeMalheurMaliceMalletteMammouthMandaterManiableManquantManteauManuelMarathonMarbreMarchandMardiMaritimeMarqueurMarronMartelerMascotteMassifMate/rielMatie-reMatraqueMaudireMaussadeMauveMaximalMe/chantMe/connuMe/dailleMe/decinMe/diterMe/duseMeilleurMe/langeMe/lodieMembreMe/moireMenacerMenerMenhirMensongeMentorMercrediMe/riteMerleMessagerMesureMe/talMe/te/oreMe/thodeMe/tierMeubleMiaulerMicrobeMietteMignonMigrerMilieuMillionMimiqueMinceMine/ralMinimalMinorerMinuteMiracleMiroiterMissileMixteMobileModerneMoelleuxMondialMoniteurMonnaieMonotoneMonstreMontagneMonumentMoqueurMorceauMorsureMortierMoteurMotifMoucheMoufleMoulinMoussonMoutonMouvantMultipleMunitionMurailleMure-neMurmureMuscleMuse/umMusicienMutationMuterMutuelMyriadeMyrtilleMyste-reMythiqueNageurNappeNarquoisNarrerNatationNationNatureNaufrageNautiqueNavireNe/buleuxNectarNe/fasteNe/gationNe/gligerNe/gocierNeigeNerveuxNettoyerNeuroneNeutronNeveuNicheNickelNitrateNiveauNobleNocifNocturneNoirceurNoisetteNomadeNombreuxNommerNormatifNotableNotifierNotoireNourrirNouveauNovateurNovembreNoviceNuageNuancerNuireNuisibleNume/roNuptialNuqueNutritifObe/irObjectifObligerObscurObserverObstacleObtenirObturerOccasionOccuperOce/anOctobreOctroyerOctuplerOculaireOdeurOdorantOffenserOfficierOffrirOgiveOiseauOisillonOlfactifOlivierOmbrageOmettreOnctueuxOndulerOne/reuxOniriqueOpaleOpaqueOpe/rerOpinionOpportunOpprimerOpterOptiqueOrageuxOrangeOrbiteOrdonnerOreilleOrganeOrgueilOrificeOrnementOrqueOrtieOscillerOsmoseOssatureOtarieOuraganOursonOutilOutragerOuvrageOvationOxydeOxyge-neOzonePaisiblePalacePalmare-sPalourdePalperPanachePandaPangolinPaniquerPanneauPanoramaPantalonPapayePapierPapoterPapyrusParadoxeParcelleParesseParfumerParlerParoleParrainParsemerPartagerParureParvenirPassionPaste-quePaternelPatiencePatronPavillonPavoiserPayerPaysagePeignePeintrePelagePe/licanPellePelousePeluchePendulePe/ne/trerPe/niblePensifPe/nuriePe/pitePe/plumPerdrixPerforerPe/riodePermuterPerplexePersilPertePeserPe/talePetitPe/trirPeuplePharaonPhobiePhoquePhotonPhrasePhysiquePianoPicturalPie-cePierrePieuvrePilotePinceauPipettePiquerPiroguePiscinePistonPivoterPixelPizzaPlacardPlafondPlaisirPlanerPlaquePlastronPlateauPleurerPlexusPliagePlombPlongerPluiePlumagePochettePoe/siePoe-tePointePoirierPoissonPoivrePolairePolicierPollenPolygonePommadePompierPonctuelPonde/rerPoneyPortiquePositionPosse/derPosturePotagerPoteauPotionPoucePoulainPoumonPourprePoussinPouvoirPrairiePratiquePre/cieuxPre/direPre/fixePre/ludePre/nomPre/sencePre/textePre/voirPrimitifPrincePrisonPriverProble-meProce/derProdigeProfondProgre-sProieProjeterProloguePromenerPropreProspe-reProte/gerProuesseProverbePrudencePruneauPsychosePublicPuceronPuiserPulpePulsarPunaisePunitifPupitrePurifierPuzzlePyramideQuasarQuerelleQuestionQuie/tudeQuitterQuotientRacineRaconterRadieuxRagondinRaideurRaisinRalentirRallongeRamasserRapideRasageRatisserRavagerRavinRayonnerRe/actifRe/agirRe/aliserRe/animerRecevoirRe/citerRe/clamerRe/colterRecruterReculerRecyclerRe/digerRedouterRefaireRe/flexeRe/formerRefrainRefugeRe/galienRe/gionRe/glageRe/gulierRe/ite/rerRejeterRejouerRelatifReleverReliefRemarqueReme-deRemiseRemonterRemplirRemuerRenardRenfortReniflerRenoncerRentrerRenvoiReplierReporterRepriseReptileRequinRe/serveRe/sineuxRe/soudreRespectResterRe/sultatRe/tablirRetenirRe/ticuleRetomberRetracerRe/unionRe/ussirRevancheRevivreRe/volteRe/vulsifRichesseRideauRieurRigideRigolerRincerRiposterRisibleRisqueRituelRivalRivie-reRocheuxRomanceRompreRonceRondinRoseauRosierRotatifRotorRotuleRougeRouilleRouleauRoutineRoyaumeRubanRubisRucheRuelleRugueuxRuinerRuisseauRuserRustiqueRythmeSablerSaboterSabreSacocheSafariSagesseSaisirSaladeSaliveSalonSaluerSamediSanctionSanglierSarcasmeSardineSaturerSaugrenuSaumonSauterSauvageSavantSavonnerScalpelScandaleSce/le/ratSce/narioSceptreSche/maScienceScinderScoreScrutinSculpterSe/anceSe/cableSe/cherSecouerSe/cre/terSe/datifSe/duireSeigneurSe/jourSe/lectifSemaineSemblerSemenceSe/minalSe/nateurSensibleSentenceSe/parerSe/quenceSereinSergentSe/rieuxSerrureSe/rumServiceSe/sameSe/virSevrageSextupleSide/ralSie-cleSie/gerSifflerSigleSignalSilenceSiliciumSimpleSince-reSinistreSiphonSiropSismiqueSituerSkierSocialSocleSodiumSoigneuxSoldatSoleilSolitudeSolubleSombreSommeilSomnolerSondeSongeurSonnetteSonoreSorcierSortirSosieSottiseSoucieuxSoudureSouffleSouleverSoupapeSourceSoutirerSouvenirSpacieuxSpatialSpe/cialSphe-reSpiralStableStationSternumStimulusStipulerStrictStudieuxStupeurStylisteSublimeSubstratSubtilSubvenirSucce-sSucreSuffixeSugge/rerSuiveurSulfateSuperbeSupplierSurfaceSuricateSurmenerSurpriseSursautSurvieSuspectSyllabeSymboleSyme/trieSynapseSyntaxeSyste-meTabacTablierTactileTaillerTalentTalismanTalonnerTambourTamiserTangibleTapisTaquinerTarderTarifTartineTasseTatamiTatouageTaupeTaureauTaxerTe/moinTemporelTenailleTendreTeneurTenirTensionTerminerTerneTerribleTe/tineTexteThe-meThe/orieThe/rapieThoraxTibiaTie-deTimideTirelireTiroirTissuTitaneTitreTituberTobogganTole/rantTomateToniqueTonneauToponymeTorcheTordreTornadeTorpilleTorrentTorseTortueTotemToucherTournageTousserToxineTractionTraficTragiqueTrahirTrainTrancherTravailTre-fleTremperTre/sorTreuilTriageTribunalTricoterTrilogieTriompheTriplerTriturerTrivialTromboneTroncTropicalTroupeauTuileTulipeTumulteTunnelTurbineTuteurTutoyerTuyauTympanTyphonTypiqueTyranUbuesqueUltimeUltrasonUnanimeUnifierUnionUniqueUnitaireUniversUraniumUrbainUrticantUsageUsineUsuelUsureUtileUtopieVacarmeVaccinVagabondVagueVaillantVaincreVaisseauValableValiseVallonValveVampireVanilleVapeurVarierVaseuxVassalVasteVecteurVedetteVe/ge/talVe/hiculeVeinardVe/loceVendrediVe/ne/rerVengerVenimeuxVentouseVerdureVe/rinVernirVerrouVerserVertuVestonVe/te/ranVe/tusteVexantVexerViaducViandeVictoireVidangeVide/oVignetteVigueurVilainVillageVinaigreViolonVipe-reVirementVirtuoseVirusVisageViseurVisionVisqueuxVisuelVitalVitesseViticoleVitrineVivaceVivipareVocationVoguerVoileVoisinVoitureVolailleVolcanVoltigerVolumeVoraceVortexVoterVouloirVoyageVoyelleWagonXe/nonYachtZe-breZe/nithZesteZoologie";
-	var wordlist$1 = null;
-	var lookup = {};
-	function dropDiacritic(word) {
-	    wordlist.logger.checkNormalize();
-	    return lib$8.toUtf8String(Array.prototype.filter.call(lib$8.toUtf8Bytes(word.normalize("NFD").toLowerCase()), function (c) {
-	        return ((c >= 65 && c <= 90) || (c >= 97 && c <= 123));
-	    }));
-	}
-	function expand(word) {
-	    var output = [];
-	    Array.prototype.forEach.call(lib$8.toUtf8Bytes(word), function (c) {
-	        // Acute accent
-	        if (c === 47) {
-	            output.push(204);
-	            output.push(129);
-	            // Grave accent
-	        }
-	        else if (c === 45) {
-	            output.push(204);
-	            output.push(128);
-	        }
-	        else {
-	            output.push(c);
-	        }
-	    });
-	    return lib$8.toUtf8String(output);
-	}
-	function loadWords(lang) {
-	    if (wordlist$1 != null) {
-	        return;
-	    }
-	    wordlist$1 = words.replace(/([A-Z])/g, " $1").toLowerCase().substring(1).split(" ").map(function (w) { return expand(w); });
-	    wordlist$1.forEach(function (word, index) {
-	        lookup[dropDiacritic(word)] = index;
-	    });
-	    // Verify the computed list matches the official list
-	    /* istanbul ignore if */
-	    if (wordlist.Wordlist.check(lang) !== "0x51deb7ae009149dc61a6bd18a918eb7ac78d2775726c68e598b92d002519b045") {
-	        wordlist$1 = null;
-	        throw new Error("BIP39 Wordlist for fr (French) FAILED");
-	    }
-	}
-	var LangFr = /** @class */ (function (_super) {
-	    __extends(LangFr, _super);
-	    function LangFr() {
-	        return _super.call(this, "fr") || this;
-	    }
-	    LangFr.prototype.getWord = function (index) {
-	        loadWords(this);
-	        return wordlist$1[index];
-	    };
-	    LangFr.prototype.getWordIndex = function (word) {
-	        loadWords(this);
-	        return lookup[dropDiacritic(word)];
-	    };
-	    return LangFr;
-	}(wordlist.Wordlist));
-	var langFr = new LangFr();
-	exports.langFr = langFr;
-	wordlist.Wordlist.register(langFr);
-
-	});
-
-	var langFr = /*@__PURE__*/getDefaultExportFromCjs(langFr_1);
-
-	var langJa_1 = createCommonjsModule(function (module, exports) {
-	"use strict";
-	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
-	    var extendStatics = function (d, b) {
-	        extendStatics = Object.setPrototypeOf ||
-	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-	        return extendStatics(d, b);
-	    };
-	    return function (d, b) {
-	        if (typeof b !== "function" && b !== null)
-	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-	        extendStatics(d, b);
-	        function __() { this.constructor = d; }
-	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	    };
-	})();
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.langJa = void 0;
-
-
-
-	var data = [
-	    // 4-kana words
-	    "AQRASRAGBAGUAIRAHBAghAURAdBAdcAnoAMEAFBAFCBKFBQRBSFBCXBCDBCHBGFBEQBpBBpQBIkBHNBeOBgFBVCBhBBhNBmOBmRBiHBiFBUFBZDBvFBsXBkFBlcBjYBwDBMBBTBBTRBWBBWXXaQXaRXQWXSRXCFXYBXpHXOQXHRXhRXuRXmXXbRXlXXwDXTRXrCXWQXWGaBWaKcaYgasFadQalmaMBacAKaRKKBKKXKKjKQRKDRKCYKCRKIDKeVKHcKlXKjHKrYNAHNBWNaRNKcNIBNIONmXNsXNdXNnBNMBNRBNrXNWDNWMNFOQABQAHQBrQXBQXFQaRQKXQKDQKOQKFQNBQNDQQgQCXQCDQGBQGDQGdQYXQpBQpQQpHQLXQHuQgBQhBQhCQuFQmXQiDQUFQZDQsFQdRQkHQbRQlOQlmQPDQjDQwXQMBQMDQcFQTBQTHQrDDXQDNFDGBDGQDGRDpFDhFDmXDZXDbRDMYDRdDTRDrXSAhSBCSBrSGQSEQSHBSVRShYShkSyQSuFSiBSdcSoESocSlmSMBSFBSFKSFNSFdSFcCByCaRCKcCSBCSRCCrCGbCEHCYXCpBCpQCIBCIHCeNCgBCgFCVECVcCmkCmwCZXCZFCdRClOClmClFCjDCjdCnXCwBCwXCcRCFQCFjGXhGNhGDEGDMGCDGCHGIFGgBGVXGVEGVRGmXGsXGdYGoSGbRGnXGwXGwDGWRGFNGFLGFOGFdGFkEABEBDEBFEXOEaBEKSENBENDEYXEIgEIkEgBEgQEgHEhFEudEuFEiBEiHEiFEZDEvBEsXEsFEdXEdREkFEbBEbRElFEPCEfkEFNYAEYAhYBNYQdYDXYSRYCEYYoYgQYgRYuRYmCYZTYdBYbEYlXYjQYRbYWRpKXpQopQnpSFpCXpIBpISphNpdBpdRpbRpcZpFBpFNpFDpFopFrLADLBuLXQLXcLaFLCXLEhLpBLpFLHXLeVLhILdHLdRLoDLbRLrXIABIBQIBCIBsIBoIBMIBRIXaIaRIKYIKRINBINuICDIGBIIDIIkIgRIxFIyQIiHIdRIbYIbRIlHIwRIMYIcRIRVITRIFBIFNIFQOABOAFOBQOaFONBONMOQFOSFOCDOGBOEQOpBOLXOIBOIFOgQOgFOyQOycOmXOsXOdIOkHOMEOMkOWWHBNHXNHXWHNXHDuHDRHSuHSRHHoHhkHmRHdRHkQHlcHlRHwBHWcgAEgAggAkgBNgBQgBEgXOgYcgLXgHjgyQgiBgsFgdagMYgWSgFQgFEVBTVXEVKBVKNVKDVKYVKRVNBVNYVDBVDxVSBVSRVCjVGNVLXVIFVhBVhcVsXVdRVbRVlRhBYhKYhDYhGShxWhmNhdahdkhbRhjohMXhTRxAXxXSxKBxNBxEQxeNxeQxhXxsFxdbxlHxjcxFBxFNxFQxFOxFoyNYyYoybcyMYuBQuBRuBruDMuCouHBudQukkuoBulVuMXuFEmCYmCRmpRmeDmiMmjdmTFmFQiADiBOiaRiKRiNBiNRiSFiGkiGFiERipRiLFiIFihYibHijBijEiMXiWBiFBiFCUBQUXFUaRUNDUNcUNRUNFUDBUSHUCDUGBUGFUEqULNULoUIRUeEUeYUgBUhFUuRUiFUsXUdFUkHUbBUjSUjYUwXUMDUcHURdUTBUrBUrXUrQZAFZXZZaRZKFZNBZQFZCXZGBZYdZpBZLDZIFZHXZHNZeQZVRZVFZmXZiBZvFZdFZkFZbHZbFZwXZcCZcRZRBvBQvBGvBLvBWvCovMYsAFsBDsaRsKFsNFsDrsSHsSFsCXsCRsEBsEHsEfspBsLBsLDsIgsIRseGsbRsFBsFQsFSdNBdSRdCVdGHdYDdHcdVbdySduDdsXdlRdwXdWYdWcdWRkBMkXOkaRkNIkNFkSFkCFkYBkpRkeNkgBkhVkmXksFklVkMBkWDkFNoBNoaQoaFoNBoNXoNaoNEoSRoEroYXoYCoYbopRopFomXojkowXorFbBEbEIbdBbjYlaRlDElMXlFDjKjjSRjGBjYBjYkjpRjLXjIBjOFjeVjbRjwBnXQnSHnpFnLXnINnMBnTRwXBwXNwXYwNFwQFwSBwGFwLXwLDweNwgBwuHwjDwnXMBXMpFMIBMeNMTHcaQcNBcDHcSFcCXcpBcLXcLDcgFcuFcnXcwXccDcTQcrFTQErXNrCHrpFrgFrbFrTHrFcWNYWNbWEHWMXWTR",
-	    // 5-kana words
-	    "ABGHABIJAEAVAYJQALZJAIaRAHNXAHdcAHbRAZJMAZJRAZTRAdVJAklmAbcNAjdRAMnRAMWYAWpRAWgRAFgBAFhBAFdcBNJBBNJDBQKBBQhcBQlmBDEJBYJkBYJTBpNBBpJFBIJBBIJDBIcABOKXBOEJBOVJBOiJBOZJBepBBeLXBeIFBegBBgGJBVJXBuocBiJRBUJQBlXVBlITBwNFBMYVBcqXBTlmBWNFBWiJBWnRBFGHBFwXXKGJXNJBXNZJXDTTXSHSXSVRXSlHXCJDXGQJXEhXXYQJXYbRXOfXXeNcXVJFXhQJXhEJXdTRXjdXXMhBXcQTXRGBXTEBXTnQXFCXXFOFXFgFaBaFaBNJaBCJaBpBaBwXaNJKaNJDaQIBaDpRaEPDaHMFamDJalEJaMZJaFaFaFNBaFQJaFLDaFVHKBCYKBEBKBHDKXaFKXGdKXEJKXpHKXIBKXZDKXwXKKwLKNacKNYJKNJoKNWcKDGdKDTRKChXKGaRKGhBKGbRKEBTKEaRKEPTKLMDKLWRKOHDKVJcKdBcKlIBKlOPKFSBKFEPKFpFNBNJNJBQNBGHNBEPNBHXNBgFNBVXNBZDNBsXNBwXNNaRNNJDNNJENNJkNDCJNDVDNGJRNJiDNZJNNsCJNJFNNFSBNFCXNFEPNFLXNFIFQJBFQCaRQJEQQLJDQLJFQIaRQOqXQHaFQHHQQVJXQVJDQhNJQmEIQZJFQsJXQJrFQWbRDJABDBYJDXNFDXCXDXLXDXZDDXsJDQqXDSJFDJCXDEPkDEqXDYmQDpSJDOCkDOGQDHEIDVJDDuDuDWEBDJFgSBNDSBSFSBGHSBIBSBTQSKVYSJQNSJQiSJCXSEqXSJYVSIiJSOMYSHAHSHaQSeCFSepQSegBSHdHSHrFShSJSJuHSJUFSkNRSrSrSWEBSFaHSJFQSFCXSFGDSFYXSFODSFgBSFVXSFhBSFxFSFkFSFbBSFMFCADdCJXBCXaFCXKFCXNFCXCXCXGBCXEJCXYBCXLDCXIBCXOPCXHXCXgBCXhBCXiBCXlDCXcHCJNBCJNFCDCJCDGBCDVXCDhBCDiDCDJdCCmNCpJFCIaRCOqXCHCHCHZJCViJCuCuCmddCJiFCdNBCdHhClEJCnUJCreSCWlgCWTRCFBFCFNBCFYBCFVFCFhFCFdSCFTBCFWDGBNBGBQFGJBCGBEqGBpBGBgQGNBEGNJYGNkOGNJRGDUFGJpQGHaBGJeNGJeEGVBlGVKjGiJDGvJHGsVJGkEBGMIJGWjNGFBFGFCXGFGBGFYXGFpBGFMFEASJEAWpEJNFECJVEIXSEIQJEOqXEOcFEeNcEHEJEHlFEJgFEhlmEmDJEmZJEiMBEUqXEoSREPBFEPXFEPKFEPSFEPEFEPpFEPLXEPIBEJPdEPcFEPTBEJnXEqlHEMpREFCXEFODEFcFYASJYJAFYBaBYBVXYXpFYDhBYCJBYJGFYYbRYeNcYJeVYiIJYZJcYvJgYvJRYJsXYsJFYMYMYreVpBNHpBEJpBwXpQxFpYEJpeNDpJeDpeSFpeCHpHUJpHbBpHcHpmUJpiiJpUJrpsJuplITpFaBpFQqpFGBpFEfpFYBpFpBpFLJpFIDpFgBpFVXpFyQpFuFpFlFpFjDpFnXpFwXpJFMpFTBLXCJLXEFLXhFLXUJLXbFLalmLNJBLSJQLCLCLGJBLLDJLHaFLeNFLeSHLeCXLepFLhaRLZsJLsJDLsJrLocaLlLlLMdbLFNBLFSBLFEHLFkFIBBFIBXFIBaQIBKXIBSFIBpHIBLXIBgBIBhBIBuHIBmXIBiFIBZXIBvFIBbFIBjQIBwXIBWFIKTRIQUJIDGFICjQIYSRIINXIJeCIVaRImEkIZJFIvJRIsJXIdCJIJoRIbBQIjYBIcqXITFVIreVIFKFIFSFIFCJIFGFIFLDIFIBIJFOIFgBIFVXIJFhIFxFIFmXIFdHIFbBIJFrIJFWOBGBOQfXOOKjOUqXOfXBOqXEOcqXORVJOFIBOFlDHBIOHXiFHNTRHCJXHIaRHHJDHHEJHVbRHZJYHbIBHRsJHRkDHWlmgBKFgBSBgBCDgBGHgBpBgBIBgBVJgBuBgBvFgKDTgQVXgDUJgGSJgOqXgmUMgZIJgTUJgWIEgFBFgFNBgFDJgFSFgFGBgFYXgJFOgFgQgFVXgFhBgFbHgJFWVJABVQKcVDgFVOfXVeDFVhaRVmGdViJYVMaRVFNHhBNDhBCXhBEqhBpFhBLXhNJBhSJRheVXhhKEhxlmhZIJhdBQhkIJhbMNhMUJhMZJxNJgxQUJxDEkxDdFxSJRxplmxeSBxeCXxeGFxeYXxepQxegBxWVcxFEQxFLXxFIBxFgBxFxDxFZtxFdcxFbBxFwXyDJXyDlcuASJuDJpuDIBuCpJuGSJuIJFueEFuZIJusJXudWEuoIBuWGJuFBcuFKEuFNFuFQFuFDJuFGJuFVJuFUtuFdHuFTBmBYJmNJYmQhkmLJDmLJomIdXmiJYmvJRmsJRmklmmMBymMuCmclmmcnQiJABiJBNiJBDiBSFiBCJiBEFiBYBiBpFiBLXiBTHiJNciDEfiCZJiECJiJEqiOkHiHKFieNDiHJQieQcieDHieSFieCXieGFieEFieIHiegFihUJixNoioNXiFaBiFKFiFNDiFEPiFYXitFOitFHiFgBiFVEiFmXiFitiFbBiFMFiFrFUCXQUIoQUIJcUHQJUeCEUHwXUUJDUUqXUdWcUcqXUrnQUFNDUFSHUFCFUFEfUFLXUtFOZBXOZXSBZXpFZXVXZEQJZEJkZpDJZOqXZeNHZeCDZUqXZFBQZFEHZFLXvBAFvBKFvBCXvBEPvBpHvBIDvBgFvBuHvQNJvFNFvFGBvFIBvJFcsXCDsXLXsXsXsXlFsXcHsQqXsJQFsEqXseIFsFEHsFjDdBxOdNpRdNJRdEJbdpJRdhZJdnSJdrjNdFNJdFQHdFhNkNJDkYaRkHNRkHSRkVbRkuMRkjSJkcqDoSJFoEiJoYZJoOfXohEBoMGQocqXbBAFbBXFbBaFbBNDbBGBbBLXbBTBbBWDbGJYbIJHbFQqbFpQlDgQlOrFlVJRjGEBjZJRnXvJnXbBnEfHnOPDngJRnxfXnUJWwXEJwNpJwDpBwEfXwrEBMDCJMDGHMDIJMLJDcQGDcQpHcqXccqNFcqCXcFCJRBSBRBGBRBEJRBpQTBNFTBQJTBpBTBVXTFABTFSBTFCFTFGBTFMDrXCJrXLDrDNJrEfHrFQJrFitWNjdWNTR",
-	    // 6-kana words
-	    "AKLJMANOPFASNJIAEJWXAYJNRAIIbRAIcdaAeEfDAgidRAdjNYAMYEJAMIbRAFNJBAFpJFBBIJYBDZJFBSiJhBGdEBBEJfXBEJqXBEJWRBpaUJBLXrXBIYJMBOcfXBeEfFBestXBjNJRBcDJOBFEqXXNvJRXDMBhXCJNYXOAWpXONJWXHDEBXeIaRXhYJDXZJSJXMDJOXcASJXFVJXaBQqXaBZJFasXdQaFSJQaFEfXaFpJHaFOqXKBNSRKXvJBKQJhXKEJQJKEJGFKINJBKIJjNKgJNSKVElmKVhEBKiJGFKlBgJKjnUJKwsJYKMFIJKFNJDKFIJFKFOfXNJBSFNJBCXNBpJFNJBvQNJBMBNJLJXNJOqXNJeCXNJeGFNdsJCNbTKFNwXUJQNFEPQDiJcQDMSJQSFpBQGMQJQJeOcQyCJEQUJEBQJFBrQFEJqDXDJFDJXpBDJXIMDGiJhDIJGRDJeYcDHrDJDVXgFDkAWpDkIgRDjDEqDMvJRDJFNFDJFIBSKclmSJQOFSJQVHSJQjDSJGJBSJGJFSECJoSHEJqSJHTBSJVJDSViJYSZJNBSJsJDSFSJFSFEfXSJFLXCBUJVCJXSBCJXpBCXVJXCJXsXCJXdFCJNJHCLIJgCHiJFCVNJMChCJhCUHEJCsJTRCJdYcCoQJCCFEfXCFIJgCFUJxCFstFGJBaQGJBIDGQJqXGYJNRGJHKFGeQqDGHEJFGJeLXGHIiJGHdBlGUJEBGkIJTGFQPDGJFEqEAGegEJIJBEJVJXEhQJTEiJNcEJZJFEJoEqEjDEqEPDsXEPGJBEPOqXEPeQFEfDiDEJfEFEfepQEfMiJEqXNBEqDIDEqeSFEqVJXEMvJRYXNJDYXEJHYKVJcYYJEBYJeEcYJUqXYFpJFYFstXpAZJMpBSJFpNBNFpeQPDpHLJDpHIJFpHgJFpeitFpHZJFpJFADpFSJFpJFCJpFOqXpFitBpJFZJLXIJFLIJgRLVNJWLVHJMLwNpJLFGJBLFLJDLFOqXLJFUJIBDJXIBGJBIJBYQIJBIBIBOqXIBcqDIEGJFILNJTIIJEBIOiJhIJeNBIJeIBIhiJIIWoTRIJFAHIJFpBIJFuHIFUtFIJFTHOSBYJOEcqXOHEJqOvBpFOkVJrObBVJOncqDOcNJkHhNJRHuHJuHdMhBgBUqXgBsJXgONJBgHNJDgHHJQgJeitgHsJXgJyNagyDJBgZJDrgsVJQgkEJNgkjSJgJFAHgFCJDgFZtMVJXNFVXQfXVJXDJVXoQJVQVJQVDEfXVDvJHVEqNFVeQfXVHpJFVHxfXVVJSRVVmaRVlIJOhCXVJhHjYkhxCJVhWVUJhWiJcxBNJIxeEqDxfXBFxcFEPxFSJFxFYJXyBDQJydaUJyFOPDuYCJYuLvJRuHLJXuZJLDuFOPDuFZJHuFcqXmKHJdmCQJcmOsVJiJAGFitLCFieOfXiestXiZJMEikNJQirXzFiFQqXiFIJFiFZJFiFvtFUHpJFUteIcUteOcUVCJkUhdHcUbEJEUJqXQUMNJhURjYkUFitFZDGJHZJIxDZJVJXZJFDJZJFpQvBNJBvBSJFvJxBrseQqDsVFVJdFLJDkEJNBkmNJYkFLJDoQJOPoGsJRoEAHBoEJfFbBQqDbBZJHbFVJXlFIJBjYIrXjeitcjjCEBjWMNBwXQfXwXOaFwDsJXwCJTRwrCZJMDNJQcDDJFcqDOPRYiJFTBsJXTQIJBTFEfXTFLJDrXEJFrEJXMrFZJFWEJdEWYTlm",
-	    // 7-kana words
-	    "ABCDEFACNJTRAMBDJdAcNJVXBLNJEBXSIdWRXErNJkXYDJMBXZJCJaXMNJaYKKVJKcKDEJqXKDcNJhKVJrNYKbgJVXKFVJSBNBYBwDNJeQfXNJeEqXNhGJWENJFiJRQlIJbEQJfXxDQqXcfXQFNDEJQFwXUJDYcnUJDJIBgQDIUJTRDJFEqDSJQSJFSJQIJFSOPeZtSJFZJHCJXQfXCTDEqFGJBSJFGJBOfXGJBcqXGJHNJDGJRLiJEJfXEqEJFEJPEFpBEJYJBZJFYBwXUJYiJMEBYJZJyTYTONJXpQMFXFpeGIDdpJFstXpJFcPDLBVSJRLHQJqXLJFZJFIJBNJDIJBUqXIBkFDJIJEJPTIYJGWRIJeQPDIJeEfHIJFsJXOqGDSFHXEJqXgJCsJCgGQJqXgdQYJEgFMFNBgJFcqDVJwXUJVJFZJchIgJCCxOEJqXxOwXUJyDJBVRuscisciJBiJBieUtqXiJFDJkiFsJXQUGEZJcUJFsJXZtXIrXZDZJDrZJFNJDZJFstXvJFQqXvJFCJEsJXQJqkhkNGBbDJdTRbYJMEBlDwXUJMEFiJFcfXNJDRcNJWMTBLJXC",
-	    // 8-kana words
-	    "BraFUtHBFSJFdbNBLJXVJQoYJNEBSJBEJfHSJHwXUJCJdAZJMGjaFVJXEJPNJBlEJfFiJFpFbFEJqIJBVJCrIBdHiJhOPFChvJVJZJNJWxGFNIFLueIBQJqUHEJfUFstOZJDrlXEASJRlXVJXSFwVJNJWD",
-	    // 9-kana words
-	    "QJEJNNJDQJEJIBSFQJEJxegBQJEJfHEPSJBmXEJFSJCDEJqXLXNJFQqXIcQsFNJFIFEJqXUJgFsJXIJBUJEJfHNFvJxEqXNJnXUJFQqD",
-	    // 10-kana words
-	    "IJBEJqXZJ"
-	];
-	// Maps each character into its kana value (the index)
-	var mapping = "~~AzB~X~a~KN~Q~D~S~C~G~E~Y~p~L~I~O~eH~g~V~hxyumi~~U~~Z~~v~~s~~dkoblPjfnqwMcRTr~W~~~F~~~~~Jt";
-	var wordlist$1 = null;
-	function hex(word) {
-	    return lib$1.hexlify(lib$8.toUtf8Bytes(word));
-	}
-	var KiYoKu = "0xe3818de38284e3818f";
-	var KyoKu = "0xe3818de38283e3818f";
-	function loadWords(lang) {
-	    if (wordlist$1 !== null) {
-	        return;
-	    }
-	    wordlist$1 = [];
-	    // Transforms for normalizing (sort is a not quite UTF-8)
-	    var transform = {};
-	    // Delete the diacritic marks
-	    transform[lib$8.toUtf8String([227, 130, 154])] = false;
-	    transform[lib$8.toUtf8String([227, 130, 153])] = false;
-	    // Some simple transforms that sort out most of the order
-	    transform[lib$8.toUtf8String([227, 130, 133])] = lib$8.toUtf8String([227, 130, 134]);
-	    transform[lib$8.toUtf8String([227, 129, 163])] = lib$8.toUtf8String([227, 129, 164]);
-	    transform[lib$8.toUtf8String([227, 130, 131])] = lib$8.toUtf8String([227, 130, 132]);
-	    transform[lib$8.toUtf8String([227, 130, 135])] = lib$8.toUtf8String([227, 130, 136]);
-	    // Normalize words using the transform
-	    function normalize(word) {
-	        var result = "";
-	        for (var i = 0; i < word.length; i++) {
-	            var kana = word[i];
-	            var target = transform[kana];
-	            if (target === false) {
-	                continue;
-	            }
-	            if (target) {
-	                kana = target;
-	            }
-	            result += kana;
-	        }
-	        return result;
-	    }
-	    // Sort how the Japanese list is sorted
-	    function sortJapanese(a, b) {
-	        a = normalize(a);
-	        b = normalize(b);
-	        if (a < b) {
-	            return -1;
-	        }
-	        if (a > b) {
-	            return 1;
-	        }
-	        return 0;
-	    }
-	    // Load all the words
-	    for (var length_1 = 3; length_1 <= 9; length_1++) {
-	        var d = data[length_1 - 3];
-	        for (var offset = 0; offset < d.length; offset += length_1) {
-	            var word = [];
-	            for (var i = 0; i < length_1; i++) {
-	                var k = mapping.indexOf(d[offset + i]);
-	                word.push(227);
-	                word.push((k & 0x40) ? 130 : 129);
-	                word.push((k & 0x3f) + 128);
-	            }
-	            wordlist$1.push(lib$8.toUtf8String(word));
-	        }
-	    }
-	    wordlist$1.sort(sortJapanese);
-	    // For some reason kyoku and kiyoku are flipped in node (!!).
-	    // The order SHOULD be:
-	    //   - kyoku
-	    //   - kiyoku
-	    // This should ignore "if", but that doesn't work here??
-	    /* istanbul ignore next */
-	    if (hex(wordlist$1[442]) === KiYoKu && hex(wordlist$1[443]) === KyoKu) {
-	        var tmp = wordlist$1[442];
-	        wordlist$1[442] = wordlist$1[443];
-	        wordlist$1[443] = tmp;
-	    }
-	    // Verify the computed list matches the official list
-	    /* istanbul ignore if */
-	    if (wordlist.Wordlist.check(lang) !== "0xcb36b09e6baa935787fd762ce65e80b0c6a8dabdfbc3a7f86ac0e2c4fd111600") {
-	        wordlist$1 = null;
-	        throw new Error("BIP39 Wordlist for ja (Japanese) FAILED");
-	    }
-	}
-	var LangJa = /** @class */ (function (_super) {
-	    __extends(LangJa, _super);
-	    function LangJa() {
-	        return _super.call(this, "ja") || this;
-	    }
-	    LangJa.prototype.getWord = function (index) {
-	        loadWords(this);
-	        return wordlist$1[index];
-	    };
-	    LangJa.prototype.getWordIndex = function (word) {
-	        loadWords(this);
-	        return wordlist$1.indexOf(word);
-	    };
-	    LangJa.prototype.split = function (mnemonic) {
-	        wordlist.logger.checkNormalize();
-	        return mnemonic.split(/(?:\u3000| )+/g);
-	    };
-	    LangJa.prototype.join = function (words) {
-	        return words.join("\u3000");
-	    };
-	    return LangJa;
-	}(wordlist.Wordlist));
-	var langJa = new LangJa();
-	exports.langJa = langJa;
-	wordlist.Wordlist.register(langJa);
-
-	});
-
-	var langJa = /*@__PURE__*/getDefaultExportFromCjs(langJa_1);
-
-	var langKo_1 = createCommonjsModule(function (module, exports) {
-	"use strict";
-	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
-	    var extendStatics = function (d, b) {
-	        extendStatics = Object.setPrototypeOf ||
-	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-	        return extendStatics(d, b);
-	    };
-	    return function (d, b) {
-	        if (typeof b !== "function" && b !== null)
-	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-	        extendStatics(d, b);
-	        function __() { this.constructor = d; }
-	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	    };
-	})();
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.langKo = void 0;
-
-
-	var data = [
-	    "OYAa",
-	    "ATAZoATBl3ATCTrATCl8ATDloATGg3ATHT8ATJT8ATJl3ATLlvATLn4ATMT8ATMX8ATMboATMgoAToLbAToMTATrHgATvHnAT3AnAT3JbAT3MTAT8DbAT8JTAT8LmAT8MYAT8MbAT#LnAUHT8AUHZvAUJXrAUJX8AULnrAXJnvAXLUoAXLgvAXMn6AXRg3AXrMbAX3JTAX3QbAYLn3AZLgvAZrSUAZvAcAZ8AaAZ8AbAZ8AnAZ8HnAZ8LgAZ8MYAZ8MgAZ8OnAaAboAaDTrAaFTrAaJTrAaJboAaLVoAaMXvAaOl8AaSeoAbAUoAbAg8AbAl4AbGnrAbMT8AbMXrAbMn4AbQb8AbSV8AbvRlAb8AUAb8AnAb8HgAb8JTAb8NTAb8RbAcGboAcLnvAcMT8AcMX8AcSToAcrAaAcrFnAc8AbAc8MgAfGgrAfHboAfJnvAfLV8AfLkoAfMT8AfMnoAfQb8AfScrAfSgrAgAZ8AgFl3AgGX8AgHZvAgHgrAgJXoAgJX8AgJboAgLZoAgLn4AgOX8AgoATAgoAnAgoCUAgoJgAgoLXAgoMYAgoSeAgrDUAgrJTAhrFnAhrLjAhrQgAjAgoAjJnrAkMX8AkOnoAlCTvAlCV8AlClvAlFg4AlFl6AlFn3AloSnAlrAXAlrAfAlrFUAlrFbAlrGgAlrOXAlvKnAlvMTAl3AbAl3MnAnATrAnAcrAnCZ3AnCl8AnDg8AnFboAnFl3AnHX4AnHbrAnHgrAnIl3AnJgvAnLXoAnLX4AnLbrAnLgrAnLhrAnMXoAnMgrAnOn3AnSbrAnSeoAnvLnAn3OnCTGgvCTSlvCTvAUCTvKnCTvNTCT3CZCT3GUCT3MTCT8HnCUCZrCULf8CULnvCU3HnCU3JUCY6NUCbDb8CbFZoCbLnrCboOTCboScCbrFnCbvLnCb8AgCb8HgCb$LnCkLfoClBn3CloDUDTHT8DTLl3DTSU8DTrAaDTrLXDTrLjDTrOYDTrOgDTvFXDTvFnDT3HUDT3LfDUCT9DUDT4DUFVoDUFV8DUFkoDUGgrDUJnrDULl8DUMT8DUMXrDUMX4DUMg8DUOUoDUOgvDUOg8DUSToDUSZ8DbDXoDbDgoDbGT8DbJn3DbLg3DbLn4DbMXrDbMg8DbOToDboJXGTClvGTDT8GTFZrGTLVoGTLlvGTLl3GTMg8GTOTvGTSlrGToCUGTrDgGTrJYGTrScGTtLnGTvAnGTvQgGUCZrGUDTvGUFZoGUHXrGULnvGUMT8GUoMgGXoLnGXrMXGXrMnGXvFnGYLnvGZOnvGZvOnGZ8LaGZ8LmGbAl3GbDYvGbDlrGbHX3GbJl4GbLV8GbLn3GbMn4GboJTGboRfGbvFUGb3GUGb4JnGgDX3GgFl$GgJlrGgLX6GgLZoGgLf8GgOXoGgrAgGgrJXGgrMYGgrScGgvATGgvOYGnAgoGnJgvGnLZoGnLg3GnLnrGnQn8GnSbrGnrMgHTClvHTDToHTFT3HTQT8HToJTHToJgHTrDUHTrMnHTvFYHTvRfHT8MnHT8SUHUAZ8HUBb4HUDTvHUoMYHXFl6HXJX6HXQlrHXrAUHXrMnHXrSbHXvFYHXvKXHX3LjHX3MeHYvQlHZrScHZvDbHbAcrHbFT3HbFl3HbJT8HbLTrHbMT8HbMXrHbMbrHbQb8HbSX3HboDbHboJTHbrFUHbrHgHbrJTHb8JTHb8MnHb8QgHgAlrHgDT3HgGgrHgHgrHgJTrHgJT8HgLX@HgLnrHgMT8HgMX8HgMboHgOnrHgQToHgRg3HgoHgHgrCbHgrFnHgrLVHgvAcHgvAfHnAloHnCTrHnCnvHnGTrHnGZ8HnGnvHnJT8HnLf8HnLkvHnMg8HnRTrITvFUITvFnJTAXrJTCV8JTFT3JTFT8JTFn4JTGgvJTHT8JTJT8JTJXvJTJl3JTJnvJTLX4JTLf8JTLhvJTMT8JTMXrJTMnrJTObrJTQT8JTSlvJT8DUJT8FkJT8MTJT8OXJT8OgJT8QUJT8RfJUHZoJXFT4JXFlrJXGZ8JXGnrJXLV8JXLgvJXMXoJXMX3JXNboJXPlvJXoJTJXoLkJXrAXJXrHUJXrJgJXvJTJXvOnJX4KnJYAl3JYJT8JYLhvJYQToJYrQXJY6NUJbAl3JbCZrJbDloJbGT8JbGgrJbJXvJbJboJbLf8JbLhrJbLl3JbMnvJbRg8JbSZ8JboDbJbrCZJbrSUJb3KnJb8LnJfRn8JgAXrJgCZrJgDTrJgGZrJgGZ8JgHToJgJT8JgJXoJgJgvJgLX4JgLZ3JgLZ8JgLn4JgMgrJgMn4JgOgvJgPX6JgRnvJgSToJgoCZJgoJbJgoMYJgrJXJgrJgJgrLjJg6MTJlCn3JlGgvJlJl8Jl4AnJl8FnJl8HgJnAToJnATrJnAbvJnDUoJnGnrJnJXrJnJXvJnLhvJnLnrJnLnvJnMToJnMT8JnMXvJnMX3JnMg8JnMlrJnMn4JnOX8JnST4JnSX3JnoAgJnoAnJnoJTJnoObJnrAbJnrAkJnrHnJnrJTJnrJYJnrOYJnrScJnvCUJnvFaJnvJgJnvJnJnvOYJnvQUJnvRUJn3FnJn3JTKnFl3KnLT6LTDlvLTMnoLTOn3LTRl3LTSb4LTSlrLToAnLToJgLTrAULTrAcLTrCULTrHgLTrMgLT3JnLULnrLUMX8LUoJgLVATrLVDTrLVLb8LVoJgLV8MgLV8RTLXDg3LXFlrLXrCnLXrLXLX3GTLX4GgLX4OYLZAXrLZAcrLZAgrLZAhrLZDXyLZDlrLZFbrLZFl3LZJX6LZJX8LZLc8LZLnrLZSU8LZoJTLZoJnLZrAgLZrAnLZrJYLZrLULZrMgLZrSkLZvAnLZvGULZvJeLZvOTLZ3FZLZ4JXLZ8STLZ8ScLaAT3LaAl3LaHT8LaJTrLaJT8LaJXrLaJgvLaJl4LaLVoLaMXrLaMXvLaMX8LbClvLbFToLbHlrLbJn4LbLZ3LbLhvLbMXrLbMnoLbvSULcLnrLc8HnLc8MTLdrMnLeAgoLeOgvLeOn3LfAl3LfLnvLfMl3LfOX8Lf8AnLf8JXLf8LXLgJTrLgJXrLgJl8LgMX8LgRZrLhCToLhrAbLhrFULhrJXLhvJYLjHTrLjHX4LjJX8LjLhrLjSX3LjSZ4LkFX4LkGZ8LkGgvLkJTrLkMXoLkSToLkSU8LkSZ8LkoOYLl3FfLl3MgLmAZrLmCbrLmGgrLmHboLmJnoLmJn3LmLfoLmLhrLmSToLnAX6LnAb6LnCZ3LnCb3LnDTvLnDb8LnFl3LnGnrLnHZvLnHgvLnITvLnJT8LnJX8LnJlvLnLf8LnLg6LnLhvLnLnoLnMXrLnMg8LnQlvLnSbrLnrAgLnrAnLnrDbLnrFkLnrJdLnrMULnrOYLnrSTLnvAnLnvDULnvHgLnvOYLnvOnLn3GgLn4DULn4JTLn4JnMTAZoMTAloMTDb8MTFT8MTJnoMTJnrMTLZrMTLhrMTLkvMTMX8MTRTrMToATMTrDnMTrOnMT3JnMT4MnMT8FUMT8FaMT8FlMT8GTMT8GbMT8GnMT8HnMT8JTMT8JbMT8OTMUCl8MUJTrMUJU8MUMX8MURTrMUSToMXAX6MXAb6MXCZoMXFXrMXHXrMXLgvMXOgoMXrAUMXrAnMXrHgMXrJYMXrJnMXrMTMXrMgMXrOYMXrSZMXrSgMXvDUMXvOTMX3JgMX3OTMX4JnMX8DbMX8FnMX8HbMX8HgMX8HnMX8LbMX8MnMX8OnMYAb8MYGboMYHTvMYHX4MYLTrMYLnvMYMToMYOgvMYRg3MYSTrMbAToMbAXrMbAl3MbAn8MbGZ8MbJT8MbJXrMbMXvMbMX8MbMnoMbrMUMb8AfMb8FbMb8FkMcJXoMeLnrMgFl3MgGTvMgGXoMgGgrMgGnrMgHT8MgHZrMgJnoMgLnrMgLnvMgMT8MgQUoMgrHnMgvAnMg8HgMg8JYMg8LfMloJnMl8ATMl8AXMl8JYMnAToMnAT4MnAZ8MnAl3MnAl4MnCl8MnHT8MnHg8MnJnoMnLZoMnLhrMnMXoMnMX3MnMnrMnOgvMnrFbMnrFfMnrFnMnrNTMnvJXNTMl8OTCT3OTFV8OTFn3OTHZvOTJXrOTOl3OT3ATOT3JUOT3LZOT3LeOT3MbOT8ATOT8AbOT8AgOT8MbOUCXvOUMX3OXHXvOXLl3OXrMUOXvDbOX6NUOX8JbOYFZoOYLbrOYLkoOYMg8OYSX3ObHTrObHT4ObJgrObLhrObMX3ObOX8Ob8FnOeAlrOeJT8OeJXrOeJnrOeLToOeMb8OgJXoOgLXoOgMnrOgOXrOgOloOgoAgOgoJbOgoMYOgoSTOg8AbOjLX4OjMnoOjSV8OnLVoOnrAgOn3DUPXQlrPXvFXPbvFTPdAT3PlFn3PnvFbQTLn4QToAgQToMTQULV8QURg8QUoJnQXCXvQbFbrQb8AaQb8AcQb8FbQb8MYQb8ScQeAlrQeLhrQjAn3QlFXoQloJgQloSnRTLnvRTrGURTrJTRUJZrRUoJlRUrQnRZrLmRZrMnRZrSnRZ8ATRZ8JbRZ8ScRbMT8RbST3RfGZrRfMX8RfMgrRfSZrRnAbrRnGT8RnvJgRnvLfRnvMTRn8AaSTClvSTJgrSTOXrSTRg3STRnvSToAcSToAfSToAnSToHnSToLjSToMTSTrAaSTrEUST3BYST8AgST8LmSUAZvSUAgrSUDT4SUDT8SUGgvSUJXoSUJXvSULTrSU8JTSU8LjSV8AnSV8JgSXFToSXLf8SYvAnSZrDUSZrMUSZrMnSZ8HgSZ8JTSZ8JgSZ8MYSZ8QUSaQUoSbCT3SbHToSbQYvSbSl4SboJnSbvFbSb8HbSb8JgSb8OTScGZrScHgrScJTvScMT8ScSToScoHbScrMTScvAnSeAZrSeAcrSeHboSeJUoSeLhrSeMT8SeMXrSe6JgSgHTrSkJnoSkLnvSk8CUSlFl3SlrSnSl8GnSmAboSmGT8SmJU8",
-	    "ATLnDlATrAZoATrJX4ATrMT8ATrMX4ATrRTrATvDl8ATvJUoATvMl8AT3AToAT3MX8AT8CT3AT8DT8AT8HZrAT8HgoAUAgFnAUCTFnAXoMX8AXrAT8AXrGgvAXrJXvAXrOgoAXvLl3AZvAgoAZvFbrAZvJXoAZvJl8AZvJn3AZvMX8AZvSbrAZ8FZoAZ8LZ8AZ8MU8AZ8OTvAZ8SV8AZ8SX3AbAgFZAboJnoAbvGboAb8ATrAb8AZoAb8AgrAb8Al4Ab8Db8Ab8JnoAb8LX4Ab8LZrAb8LhrAb8MT8Ab8OUoAb8Qb8Ab8ST8AcrAUoAcrAc8AcrCZ3AcrFT3AcrFZrAcrJl4AcrJn3AcrMX3AcrOTvAc8AZ8Ac8MT8AfAcJXAgoFn4AgoGgvAgoGnrAgoLc8AgoMXoAgrLnrAkrSZ8AlFXCTAloHboAlrHbrAlrLhrAlrLkoAl3CZrAl3LUoAl3LZrAnrAl4AnrMT8An3HT4BT3IToBX4MnvBb!Ln$CTGXMnCToLZ4CTrHT8CT3JTrCT3RZrCT#GTvCU6GgvCU8Db8CU8GZrCU8HT8CboLl3CbrGgrCbrMU8Cb8DT3Cb8GnrCb8LX4Cb8MT8Cb8ObrCgrGgvCgrKX4Cl8FZoDTrAbvDTrDboDTrGT6DTrJgrDTrMX3DTrRZrDTrRg8DTvAVvDTvFZoDT3DT8DT3Ln3DT4HZrDT4MT8DT8AlrDT8MT8DUAkGbDUDbJnDYLnQlDbDUOYDbMTAnDbMXSnDboAT3DboFn4DboLnvDj6JTrGTCgFTGTGgFnGTJTMnGTLnPlGToJT8GTrCT3GTrLVoGTrLnvGTrMX3GTrMboGTvKl3GZClFnGZrDT3GZ8DTrGZ8FZ8GZ8MXvGZ8On8GZ8ST3GbCnQXGbMbFnGboFboGboJg3GboMXoGb3JTvGb3JboGb3Mn6Gb3Qb8GgDXLjGgMnAUGgrDloGgrHX4GgrSToGgvAXrGgvAZvGgvFbrGgvLl3GgvMnvGnDnLXGnrATrGnrMboGnuLl3HTATMnHTAgCnHTCTCTHTrGTvHTrHTvHTrJX8HTrLl8HTrMT8HTrMgoHTrOTrHTuOn3HTvAZrHTvDTvHTvGboHTvJU8HTvLl3HTvMXrHTvQb4HT4GT6HT4JT8HT4Jb#HT8Al3HT8GZrHT8GgrHT8HX4HT8Jb8HT8JnoHT8LTrHT8LgvHT8SToHT8SV8HUoJUoHUoJX8HUoLnrHXrLZoHXvAl3HX3LnrHX4FkvHX4LhrHX4MXoHX4OnoHZrAZ8HZrDb8HZrGZ8HZrJnrHZvGZ8HZvLnvHZ8JnvHZ8LhrHbCXJlHbMTAnHboJl4HbpLl3HbrJX8HbrLnrHbrMnvHbvRYrHgoSTrHgrFV8HgrGZ8HgrJXoHgrRnvHgvBb!HgvGTrHgvHX4HgvHn!HgvLTrHgvSU8HnDnLbHnFbJbHnvDn8Hn6GgvHn!BTvJTCTLnJTQgFnJTrAnvJTrLX4JTrOUoJTvFn3JTvLnrJTvNToJT3AgoJT3Jn4JT3LhvJT3ObrJT8AcrJT8Al3JT8JT8JT8JnoJT8LX4JT8LnrJT8MX3JT8Rg3JT8Sc8JUoBTvJU8AToJU8GZ8JU8GgvJU8JTrJU8JXrJU8JnrJU8LnvJU8ScvJXHnJlJXrGgvJXrJU8JXrLhrJXrMT8JXrMXrJXrQUoJXvCTvJXvGZ8JXvGgrJXvQT8JX8Ab8JX8DT8JX8GZ8JX8HZvJX8LnrJX8MT8JX8MXoJX8MnvJX8ST3JYGnCTJbAkGbJbCTAnJbLTAcJboDT3JboLb6JbrAnvJbrCn3JbrDl8JbrGboJbrIZoJbrJnvJbrMnvJbrQb4Jb8RZrJeAbAnJgJnFbJgScAnJgrATrJgvHZ8JgvMn4JlJlFbJlLiQXJlLjOnJlRbOlJlvNXoJlvRl3Jl4AcrJl8AUoJl8MnrJnFnMlJnHgGbJnoDT8JnoFV8JnoGgvJnoIT8JnoQToJnoRg3JnrCZ3JnrGgrJnrHTvJnrLf8JnrOX8JnvAT3JnvFZoJnvGT8JnvJl4JnvMT8JnvMX8JnvOXrJnvPX6JnvSX3JnvSZrJn3MT8Jn3MX8Jn3RTrLTATKnLTJnLTLTMXKnLTRTQlLToGb8LTrAZ8LTrCZ8LTrDb8LTrHT8LT3PX6LT4FZoLT$CTvLT$GgrLUvHX3LVoATrLVoAgoLVoJboLVoMX3LVoRg3LV8CZ3LV8FZoLV8GTvLXrDXoLXrFbrLXvAgvLXvFlrLXvLl3LXvRn6LX4Mb8LX8GT8LYCXMnLYrMnrLZoSTvLZrAZvLZrAloLZrFToLZrJXvLZrJboLZrJl4LZrLnrLZrMT8LZrOgvLZrRnvLZrST4LZvMX8LZvSlvLZ8AgoLZ8CT3LZ8JT8LZ8LV8LZ8LZoLZ8Lg8LZ8SV8LZ8SbrLZ$HT8LZ$Mn4La6CTvLbFbMnLbRYFTLbSnFZLboJT8LbrAT9LbrGb3LbrQb8LcrJX8LcrMXrLerHTvLerJbrLerNboLgrDb8LgrGZ8LgrHTrLgrMXrLgrSU8LgvJTrLgvLl3Lg6Ll3LhrLnrLhrMT8LhvAl4LiLnQXLkoAgrLkoJT8LkoJn4LlrSU8Ll3FZoLl3HTrLl3JX8Ll3JnoLl3LToLmLeFbLnDUFbLnLVAnLnrATrLnrAZoLnrAb8LnrAlrLnrGgvLnrJU8LnrLZrLnrLhrLnrMb8LnrOXrLnrSZ8LnvAb4LnvDTrLnvDl8LnvHTrLnvHbrLnvJT8LnvJU8LnvJbrLnvLhvLnvMX8LnvMb8LnvNnoLnvSU8Ln3Al3Ln4FZoLn4GT6Ln4JgvLn4LhrLn4MT8Ln4SToMToCZrMToJX8MToLX4MToLf8MToRg3MTrEloMTvGb6MT3BTrMT3Lb6MT8AcrMT8AgrMT8GZrMT8JnoMT8LnrMT8MX3MUOUAnMXAbFnMXoAloMXoJX8MXoLf8MXoLl8MXrAb8MXrDTvMXrGT8MXrGgrMXrHTrMXrLf8MXrMU8MXrOXvMXrQb8MXvGT8MXvHTrMXvLVoMX3AX3MX3Jn3MX3LhrMX3MX3MX4AlrMX4OboMX8GTvMX8GZrMX8GgrMX8JT8MX8JX8MX8LhrMX8MT8MYDUFbMYMgDbMbGnFfMbvLX4MbvLl3Mb8Mb8Mb8ST4MgGXCnMg8ATrMg8AgoMg8CZrMg8DTrMg8DboMg8HTrMg8JgrMg8LT8MloJXoMl8AhrMl8JT8MnLgAUMnoJXrMnoLX4MnoLhrMnoMT8MnrAl4MnrDb8MnrOTvMnrOgvMnrQb8MnrSU8MnvGgrMnvHZ8Mn3MToMn4DTrMn4LTrMn4Mg8NnBXAnOTFTFnOToAToOTrGgvOTrJX8OT3JXoOT6MTrOT8GgrOT8HTpOT8MToOUoHT8OUoJT8OUoLn3OXrAgoOXrDg8OXrMT8OXvSToOX6CTvOX8CZrOX8OgrOb6HgvOb8AToOb8MT8OcvLZ8OgvAlrOgvHTvOgvJTrOgvJnrOgvLZrOgvLn4OgvMT8OgvRTrOg8AZoOg8DbvOnrOXoOnvJn4OnvLhvOnvRTrOn3GgoOn3JnvOn6JbvOn8OTrPTGYFTPbBnFnPbGnDnPgDYQTPlrAnvPlrETvPlrLnvPlrMXvPlvFX4QTMTAnQTrJU8QYCnJlQYJlQlQbGTQbQb8JnrQb8LZoQb8LnvQb8MT8Qb8Ml8Qb8ST4QloAl4QloHZvQloJX8QloMn8QnJZOlRTrAZvRTrDTrRTvJn4RTvLhvRT4Jb8RZrAZrRZ8AkrRZ8JU8RZ8LV8RZ8LnvRbJlQXRg3GboRg3MnvRg8AZ8Rg8JboRg8Jl4RnLTCbRnvFl3RnvQb8SToAl4SToCZrSToFZoSToHXrSToJU8SToJgvSToJl4SToLhrSToMX3STrAlvSTrCT9STrCgrSTrGgrSTrHXrSTrHboSTrJnoSTrNboSTvLnrST4AZoST8Ab8ST8JT8SUoJn3SU6HZ#SU6JTvSU8Db8SU8HboSU8LgrSV8JT8SZrAcrSZrAl3SZrJT8SZrJnvSZrMT8SZvLUoSZ4FZoSZ8JnoSZ8RZrScoLnrScoMT8ScoMX8ScrAT4ScrAZ8ScrLZ8ScrLkvScvDb8ScvLf8ScvNToSgrFZrShvKnrSloHUoSloLnrSlrMXoSl8HgrSmrJUoSn3BX6",
-	    "ATFlOn3ATLgrDYAT4MTAnAT8LTMnAYJnRTrAbGgJnrAbLV8LnAbvNTAnAeFbLg3AgOYMXoAlQbFboAnDboAfAnJgoJTBToDgAnBUJbAl3BboDUAnCTDlvLnCTFTrSnCYoQTLnDTwAbAnDUDTrSnDUHgHgrDX8LXFnDbJXAcrETvLTLnGTFTQbrGTMnGToGT3DUFbGUJlPX3GbQg8LnGboJbFnGb3GgAYGgAg8ScGgMbAXrGgvAbAnGnJTLnvGnvATFgHTDT6ATHTrDlJnHYLnMn8HZrSbJTHZ8LTFnHbFTJUoHgSeMT8HgrLjAnHgvAbAnHlFUrDlHnDgvAnHnHTFT3HnQTGnrJTAaMXvJTGbCn3JTOgrAnJXvAXMnJbMg8SnJbMnRg3Jb8LTMnJnAl3OnJnGYrQlJnJlQY3LTDlCn3LTJjLg3LTLgvFXLTMg3GTLV8HUOgLXFZLg3LXNXrMnLX8QXFnLX9AlMYLYLXPXrLZAbJU8LZDUJU8LZMXrSnLZ$AgFnLaPXrDULbFYrMnLbMn8LXLboJgJgLeFbLg3LgLZrSnLgOYAgoLhrRnJlLkCTrSnLkOnLhrLnFX%AYLnFZoJXLnHTvJbLnLloAbMTATLf8MTHgJn3MTMXrAXMT3MTFnMUITvFnMXFX%AYMXMXvFbMXrFTDbMYAcMX3MbLf8SnMb8JbFnMgMXrMTMgvAXFnMgvGgCmMnAloSnMnFnJTrOXvMXSnOX8HTMnObJT8ScObLZFl3ObMXCZoPTLgrQXPUFnoQXPU3RXJlPX3RkQXPbrJXQlPlrJbFnQUAhrDbQXGnCXvQYLnHlvQbLfLnvRTOgvJbRXJYrQlRYLnrQlRbLnrQlRlFT8JlRlFnrQXSTClCn3STHTrAnSTLZQlrSTMnGTrSToHgGbSTrGTDnSTvGXCnST3HgFbSU3HXAXSbAnJn3SbFT8LnScLfLnv",
-	    "AT3JgJX8AT8FZoSnAT8JgFV8AT8LhrDbAZ8JT8DbAb8GgLhrAb8SkLnvAe8MT8SnAlMYJXLVAl3GYDTvAl3LfLnvBUDTvLl3CTOn3HTrCT3DUGgrCU8MT8AbCbFTrJUoCgrDb8MTDTLV8JX8DTLnLXQlDT8LZrSnDUQb8FZ8DUST4JnvDb8ScOUoDj6GbJl4GTLfCYMlGToAXvFnGboAXvLnGgAcrJn3GgvFnSToGnLf8JnvGn#HTDToHTLnFXJlHTvATFToHTvHTDToHTvMTAgoHT3STClvHT4AlFl6HT8HTDToHUoDgJTrHUoScMX3HbRZrMXoHboJg8LTHgDb8JTrHgMToLf8HgvLnLnoHnHn3HT4Hn6MgvAnJTJU8ScvJT3AaQT8JT8HTrAnJXrRg8AnJbAloMXoJbrATFToJbvMnoSnJgDb6GgvJgDb8MXoJgSX3JU8JguATFToJlPYLnQlJlQkDnLbJlQlFYJlJl8Lf8OTJnCTFnLbJnLTHXMnJnLXGXCnJnoFfRg3JnrMYRg3Jn3HgFl3KT8Dg8LnLTRlFnPTLTvPbLbvLVoSbrCZLXMY6HT3LXNU7DlrLXNXDTATLX8DX8LnLZDb8JU8LZMnoLhrLZSToJU8LZrLaLnrLZvJn3SnLZ8LhrSnLaJnoMT8LbFlrHTvLbrFTLnrLbvATLlvLb6OTFn3LcLnJZOlLeAT6Mn4LeJT3ObrLg6LXFlrLhrJg8LnLhvDlPX4LhvLfLnvLj6JTFT3LnFbrMXoLnQluCTvLnrQXCY6LnvLfLnvLnvMgLnvLnvSeLf8MTMbrJn3MT3JgST3MT8AnATrMT8LULnrMUMToCZrMUScvLf8MXoDT8SnMX6ATFToMX8AXMT8MX8FkMT8MX8HTrDUMX8ScoSnMYJT6CTvMgAcrMXoMg8SToAfMlvAXLg3MnFl3AnvOT3AnFl3OUoATHT8OU3RnLXrOXrOXrSnObPbvFn6Og8HgrSnOg8OX8DbPTvAgoJgPU3RYLnrPXrDnJZrPb8CTGgvPlrLTDlvPlvFUJnoQUvFXrQlQeMnoAl3QlrQlrSnRTFTrJUoSTDlLiLXSTFg6HT3STJgoMn4STrFTJTrSTrLZFl3ST4FnMXoSUrDlHUoScvHTvSnSfLkvMXo",
-	    "AUoAcrMXoAZ8HboAg8AbOg6ATFgAg8AloMXoAl3AT8JTrAl8MX8MXoCT3SToJU8Cl8Db8MXoDT8HgrATrDboOT8MXoGTOTrATMnGT8LhrAZ8GnvFnGnQXHToGgvAcrHTvAXvLl3HbrAZoMXoHgBlFXLg3HgMnFXrSnHgrSb8JUoHn6HT8LgvITvATrJUoJUoLZrRnvJU8HT8Jb8JXvFX8QT8JXvLToJTrJYrQnGnQXJgrJnoATrJnoJU8ScvJnvMnvMXoLTCTLgrJXLTJlRTvQlLbRnJlQYvLbrMb8LnvLbvFn3RnoLdCVSTGZrLeSTvGXCnLg3MnoLn3MToLlrETvMT8SToAl3MbrDU6GTvMb8LX4LhrPlrLXGXCnSToLf8Rg3STrDb8LTrSTvLTHXMnSb3RYLnMnSgOg6ATFg",
-	    "HUDlGnrQXrJTrHgLnrAcJYMb8DULc8LTvFgGnCk3Mg8JbAnLX4QYvFYHnMXrRUoJnGnvFnRlvFTJlQnoSTrBXHXrLYSUJgLfoMT8Se8DTrHbDb",
-	    "AbDl8SToJU8An3RbAb8ST8DUSTrGnrAgoLbFU6Db8LTrMg8AaHT8Jb8ObDl8SToJU8Pb3RlvFYoJl"
-	];
-	var codes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-	function getHangul(code) {
-	    if (code >= 40) {
-	        code = code + 168 - 40;
-	    }
-	    else if (code >= 19) {
-	        code = code + 97 - 19;
-	    }
-	    return lib$8.toUtf8String([225, (code >> 6) + 132, (code & 0x3f) + 128]);
-	}
-	var wordlist$1 = null;
-	function loadWords(lang) {
-	    if (wordlist$1 != null) {
-	        return;
-	    }
-	    wordlist$1 = [];
-	    data.forEach(function (data, length) {
-	        length += 4;
-	        for (var i = 0; i < data.length; i += length) {
-	            var word = "";
-	            for (var j = 0; j < length; j++) {
-	                word += getHangul(codes.indexOf(data[i + j]));
-	            }
-	            wordlist$1.push(word);
-	        }
-	    });
-	    wordlist$1.sort();
-	    // Verify the computed list matches the official list
-	    /* istanbul ignore if */
-	    if (wordlist.Wordlist.check(lang) !== "0xf9eddeace9c5d3da9c93cf7d3cd38f6a13ed3affb933259ae865714e8a3ae71a") {
-	        wordlist$1 = null;
-	        throw new Error("BIP39 Wordlist for ko (Korean) FAILED");
-	    }
-	}
-	var LangKo = /** @class */ (function (_super) {
-	    __extends(LangKo, _super);
-	    function LangKo() {
-	        return _super.call(this, "ko") || this;
-	    }
-	    LangKo.prototype.getWord = function (index) {
-	        loadWords(this);
-	        return wordlist$1[index];
-	    };
-	    LangKo.prototype.getWordIndex = function (word) {
-	        loadWords(this);
-	        return wordlist$1.indexOf(word);
-	    };
-	    return LangKo;
-	}(wordlist.Wordlist));
-	var langKo = new LangKo();
-	exports.langKo = langKo;
-	wordlist.Wordlist.register(langKo);
-
-	});
-
-	var langKo = /*@__PURE__*/getDefaultExportFromCjs(langKo_1);
-
-	var langIt_1 = createCommonjsModule(function (module, exports) {
-	"use strict";
-	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
-	    var extendStatics = function (d, b) {
-	        extendStatics = Object.setPrototypeOf ||
-	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-	        return extendStatics(d, b);
-	    };
-	    return function (d, b) {
-	        if (typeof b !== "function" && b !== null)
-	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-	        extendStatics(d, b);
-	        function __() { this.constructor = d; }
-	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	    };
-	})();
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.langIt = void 0;
-
-	var words = "AbacoAbbaglioAbbinatoAbeteAbissoAbolireAbrasivoAbrogatoAccadereAccennoAccusatoAcetoneAchilleAcidoAcquaAcreAcrilicoAcrobataAcutoAdagioAddebitoAddomeAdeguatoAderireAdipeAdottareAdulareAffabileAffettoAffissoAffrantoAforismaAfosoAfricanoAgaveAgenteAgevoleAggancioAgireAgitareAgonismoAgricoloAgrumetoAguzzoAlabardaAlatoAlbatroAlberatoAlboAlbumeAlceAlcolicoAlettoneAlfaAlgebraAlianteAlibiAlimentoAllagatoAllegroAllievoAllodolaAllusivoAlmenoAlogenoAlpacaAlpestreAltalenaAlternoAlticcioAltroveAlunnoAlveoloAlzareAmalgamaAmanitaAmarenaAmbitoAmbratoAmebaAmericaAmetistaAmicoAmmassoAmmendaAmmirareAmmonitoAmoreAmpioAmpliareAmuletoAnacardoAnagrafeAnalistaAnarchiaAnatraAncaAncellaAncoraAndareAndreaAnelloAngeloAngolareAngustoAnimaAnnegareAnnidatoAnnoAnnuncioAnonimoAnticipoAnziApaticoAperturaApodeApparireAppetitoAppoggioApprodoAppuntoAprileArabicaArachideAragostaAraldicaArancioAraturaArazzoArbitroArchivioArditoArenileArgentoArgineArgutoAriaArmoniaArneseArredatoArringaArrostoArsenicoArsoArteficeArzilloAsciuttoAscoltoAsepsiAsetticoAsfaltoAsinoAsolaAspiratoAsproAssaggioAsseAssolutoAssurdoAstaAstenutoAsticeAstrattoAtavicoAteismoAtomicoAtonoAttesaAttivareAttornoAttritoAttualeAusilioAustriaAutistaAutonomoAutunnoAvanzatoAvereAvvenireAvvisoAvvolgereAzioneAzotoAzzimoAzzurroBabeleBaccanoBacinoBacoBadessaBadilataBagnatoBaitaBalconeBaldoBalenaBallataBalzanoBambinoBandireBaraondaBarbaroBarcaBaritonoBarlumeBaroccoBasilicoBassoBatostaBattutoBauleBavaBavosaBeccoBeffaBelgioBelvaBendaBenevoleBenignoBenzinaBereBerlinaBetaBibitaBiciBidoneBifidoBigaBilanciaBimboBinocoloBiologoBipedeBipolareBirbanteBirraBiscottoBisestoBisnonnoBisonteBisturiBizzarroBlandoBlattaBollitoBonificoBordoBoscoBotanicoBottinoBozzoloBraccioBradipoBramaBrancaBravuraBretellaBrevettoBrezzaBrigliaBrillanteBrindareBroccoloBrodoBronzinaBrulloBrunoBubboneBucaBudinoBuffoneBuioBulboBuonoBurloneBurrascaBussolaBustaCadettoCaducoCalamaroCalcoloCalesseCalibroCalmoCaloriaCambusaCamerataCamiciaCamminoCamolaCampaleCanapaCandelaCaneCaninoCanottoCantinaCapaceCapelloCapitoloCapogiroCapperoCapraCapsulaCarapaceCarcassaCardoCarismaCarovanaCarrettoCartolinaCasaccioCascataCasermaCasoCassoneCastelloCasualeCatastaCatenaCatrameCautoCavilloCedibileCedrataCefaloCelebreCellulareCenaCenoneCentesimoCeramicaCercareCertoCerumeCervelloCesoiaCespoCetoChelaChiaroChiccaChiedereChimeraChinaChirurgoChitarraCiaoCiclismoCifrareCignoCilindroCiottoloCircaCirrosiCitricoCittadinoCiuffoCivettaCivileClassicoClinicaCloroCoccoCodardoCodiceCoerenteCognomeCollareColmatoColoreColposoColtivatoColzaComaCometaCommandoComodoComputerComuneConcisoCondurreConfermaCongelareConiugeConnessoConoscereConsumoContinuoConvegnoCopertoCopioneCoppiaCopricapoCorazzaCordataCoricatoCorniceCorollaCorpoCorredoCorsiaCorteseCosmicoCostanteCotturaCovatoCratereCravattaCreatoCredereCremosoCrescitaCretaCricetoCrinaleCrisiCriticoCroceCronacaCrostataCrucialeCruscaCucireCuculoCuginoCullatoCupolaCuratoreCursoreCurvoCuscinoCustodeDadoDainoDalmataDamerinoDanielaDannosoDanzareDatatoDavantiDavveroDebuttoDecennioDecisoDeclinoDecolloDecretoDedicatoDefinitoDeformeDegnoDelegareDelfinoDelirioDeltaDemenzaDenotatoDentroDepositoDerapataDerivareDerogaDescrittoDesertoDesiderioDesumereDetersivoDevotoDiametroDicembreDiedroDifesoDiffusoDigerireDigitaleDiluvioDinamicoDinnanziDipintoDiplomaDipoloDiradareDireDirottoDirupoDisagioDiscretoDisfareDisgeloDispostoDistanzaDisumanoDitoDivanoDiveltoDividereDivoratoDobloneDocenteDoganaleDogmaDolceDomatoDomenicaDominareDondoloDonoDormireDoteDottoreDovutoDozzinaDragoDruidoDubbioDubitareDucaleDunaDuomoDupliceDuraturoEbanoEccessoEccoEclissiEconomiaEderaEdicolaEdileEditoriaEducareEgemoniaEgliEgoismoEgregioElaboratoElargireEleganteElencatoElettoElevareElficoElicaElmoElsaElusoEmanatoEmblemaEmessoEmiroEmotivoEmozioneEmpiricoEmuloEndemicoEnduroEnergiaEnfasiEnotecaEntrareEnzimaEpatiteEpilogoEpisodioEpocaleEppureEquatoreErarioErbaErbosoEredeEremitaErigereErmeticoEroeErosivoErranteEsagonoEsameEsanimeEsaudireEscaEsempioEsercitoEsibitoEsigenteEsistereEsitoEsofagoEsortatoEsosoEspansoEspressoEssenzaEssoEstesoEstimareEstoniaEstrosoEsultareEtilicoEtnicoEtruscoEttoEuclideoEuropaEvasoEvidenzaEvitatoEvolutoEvvivaFabbricaFaccendaFachiroFalcoFamigliaFanaleFanfaraFangoFantasmaFareFarfallaFarinosoFarmacoFasciaFastosoFasulloFaticareFatoFavolosoFebbreFecolaFedeFegatoFelpaFeltroFemminaFendereFenomenoFermentoFerroFertileFessuraFestivoFettaFeudoFiabaFiduciaFifaFiguratoFiloFinanzaFinestraFinireFioreFiscaleFisicoFiumeFlaconeFlamencoFleboFlemmaFloridoFluenteFluoroFobicoFocacciaFocosoFoderatoFoglioFolataFolcloreFolgoreFondenteFoneticoFoniaFontanaForbitoForchettaForestaFormicaFornaioForoFortezzaForzareFosfatoFossoFracassoFranaFrassinoFratelloFreccettaFrenataFrescoFrigoFrollinoFrondeFrugaleFruttaFucilataFucsiaFuggenteFulmineFulvoFumanteFumettoFumosoFuneFunzioneFuocoFurboFurgoneFuroreFusoFutileGabbianoGaffeGalateoGallinaGaloppoGamberoGammaGaranziaGarboGarofanoGarzoneGasdottoGasolioGastricoGattoGaudioGazeboGazzellaGecoGelatinaGelsoGemelloGemmatoGeneGenitoreGennaioGenotipoGergoGhepardoGhiaccioGhisaGialloGildaGineproGiocareGioielloGiornoGioveGiratoGironeGittataGiudizioGiuratoGiustoGlobuloGlutineGnomoGobbaGolfGomitoGommoneGonfioGonnaGovernoGracileGradoGraficoGrammoGrandeGrattareGravosoGraziaGrecaGreggeGrifoneGrigioGrinzaGrottaGruppoGuadagnoGuaioGuantoGuardareGufoGuidareIbernatoIconaIdenticoIdillioIdoloIdraIdricoIdrogenoIgieneIgnaroIgnoratoIlareIllesoIllogicoIlludereImballoImbevutoImboccoImbutoImmaneImmersoImmolatoImpaccoImpetoImpiegoImportoImprontaInalareInarcareInattivoIncantoIncendioInchinoIncisivoInclusoIncontroIncrocioIncuboIndagineIndiaIndoleIneditoInfattiInfilareInflittoIngaggioIngegnoIngleseIngordoIngrossoInnescoInodoreInoltrareInondatoInsanoInsettoInsiemeInsonniaInsulinaIntasatoInteroIntonacoIntuitoInumidireInvalidoInveceInvitoIperboleIpnoticoIpotesiIppicaIrideIrlandaIronicoIrrigatoIrrorareIsolatoIsotopoIstericoIstitutoIstriceItaliaIterareLabbroLabirintoLaccaLaceratoLacrimaLacunaLaddoveLagoLampoLancettaLanternaLardosoLargaLaringeLastraLatenzaLatinoLattugaLavagnaLavoroLegaleLeggeroLemboLentezzaLenzaLeoneLepreLesivoLessatoLestoLetteraleLevaLevigatoLiberoLidoLievitoLillaLimaturaLimitareLimpidoLineareLinguaLiquidoLiraLiricaLiscaLiteLitigioLivreaLocandaLodeLogicaLombareLondraLongevoLoquaceLorenzoLotoLotteriaLuceLucidatoLumacaLuminosoLungoLupoLuppoloLusingaLussoLuttoMacabroMacchinaMaceroMacinatoMadamaMagicoMagliaMagneteMagroMaiolicaMalafedeMalgradoMalintesoMalsanoMaltoMalumoreManaManciaMandorlaMangiareManifestoMannaroManovraMansardaMantideManubrioMappaMaratonaMarcireMarettaMarmoMarsupioMascheraMassaiaMastinoMaterassoMatricolaMattoneMaturoMazurcaMeandroMeccanicoMecenateMedesimoMeditareMegaMelassaMelisMelodiaMeningeMenoMensolaMercurioMerendaMerloMeschinoMeseMessereMestoloMetalloMetodoMettereMiagolareMicaMicelioMicheleMicroboMidolloMieleMiglioreMilanoMiliteMimosaMineraleMiniMinoreMirinoMirtilloMiscelaMissivaMistoMisurareMitezzaMitigareMitraMittenteMnemonicoModelloModificaModuloMoganoMogioMoleMolossoMonasteroMoncoMondinaMonetarioMonileMonotonoMonsoneMontatoMonvisoMoraMordereMorsicatoMostroMotivatoMotosegaMottoMovenzaMovimentoMozzoMuccaMucosaMuffaMughettoMugnaioMulattoMulinelloMultiploMummiaMuntoMuovereMuraleMusaMuscoloMusicaMutevoleMutoNababboNaftaNanometroNarcisoNariceNarratoNascereNastrareNaturaleNauticaNaviglioNebulosaNecrosiNegativoNegozioNemmenoNeofitaNerettoNervoNessunoNettunoNeutraleNeveNevroticoNicchiaNinfaNitidoNobileNocivoNodoNomeNominaNordicoNormaleNorvegeseNostranoNotareNotiziaNotturnoNovellaNucleoNullaNumeroNuovoNutrireNuvolaNuzialeOasiObbedireObbligoObeliscoOblioOboloObsoletoOccasioneOcchioOccidenteOccorrereOccultareOcraOculatoOdiernoOdorareOffertaOffrireOffuscatoOggettoOggiOgnunoOlandeseOlfattoOliatoOlivaOlogrammaOltreOmaggioOmbelicoOmbraOmegaOmissioneOndosoOnereOniceOnnivoroOnorevoleOntaOperatoOpinioneOppostoOracoloOrafoOrdineOrecchinoOreficeOrfanoOrganicoOrigineOrizzonteOrmaOrmeggioOrnativoOrologioOrrendoOrribileOrtensiaOrticaOrzataOrzoOsareOscurareOsmosiOspedaleOspiteOssaOssidareOstacoloOsteOtiteOtreOttagonoOttimoOttobreOvaleOvestOvinoOviparoOvocitoOvunqueOvviareOzioPacchettoPacePacificoPadellaPadronePaesePagaPaginaPalazzinaPalesarePallidoPaloPaludePandoroPannelloPaoloPaonazzoPapricaParabolaParcellaParerePargoloPariParlatoParolaPartireParvenzaParzialePassivoPasticcaPataccaPatologiaPattumePavonePeccatoPedalarePedonalePeggioPelosoPenarePendicePenisolaPennutoPenombraPensarePentolaPepePepitaPerbenePercorsoPerdonatoPerforarePergamenaPeriodoPermessoPernoPerplessoPersuasoPertugioPervasoPesatorePesistaPesoPestiferoPetaloPettinePetulantePezzoPiacerePiantaPiattinoPiccinoPicozzaPiegaPietraPifferoPigiamaPigolioPigroPilaPiliferoPillolaPilotaPimpantePinetaPinnaPinoloPioggiaPiomboPiramidePireticoPiritePirolisiPitonePizzicoPlaceboPlanarePlasmaPlatanoPlenarioPochezzaPoderosoPodismoPoesiaPoggiarePolentaPoligonoPollicePolmonitePolpettaPolsoPoltronaPolverePomicePomodoroPontePopolosoPorfidoPorosoPorporaPorrePortataPosaPositivoPossessoPostulatoPotassioPoterePranzoPrassiPraticaPreclusoPredicaPrefissoPregiatoPrelievoPremerePrenotarePreparatoPresenzaPretestoPrevalsoPrimaPrincipePrivatoProblemaProcuraProdurreProfumoProgettoProlungaPromessaPronomePropostaProrogaProtesoProvaPrudentePrugnaPruritoPsichePubblicoPudicaPugilatoPugnoPulcePulitoPulsantePuntarePupazzoPupillaPuroQuadroQualcosaQuasiQuerelaQuotaRaccoltoRaddoppioRadicaleRadunatoRafficaRagazzoRagioneRagnoRamarroRamingoRamoRandagioRantolareRapatoRapinaRappresoRasaturaRaschiatoRasenteRassegnaRastrelloRataRavvedutoRealeRecepireRecintoReclutaReconditoRecuperoRedditoRedimereRegalatoRegistroRegolaRegressoRelazioneRemareRemotoRennaReplicaReprimereReputareResaResidenteResponsoRestauroReteRetinaRetoricaRettificaRevocatoRiassuntoRibadireRibelleRibrezzoRicaricaRiccoRicevereRiciclatoRicordoRicredutoRidicoloRidurreRifasareRiflessoRiformaRifugioRigareRigettatoRighelloRilassatoRilevatoRimanereRimbalzoRimedioRimorchioRinascitaRincaroRinforzoRinnovoRinomatoRinsavitoRintoccoRinunciaRinvenireRiparatoRipetutoRipienoRiportareRipresaRipulireRisataRischioRiservaRisibileRisoRispettoRistoroRisultatoRisvoltoRitardoRitegnoRitmicoRitrovoRiunioneRivaRiversoRivincitaRivoltoRizomaRobaRoboticoRobustoRocciaRocoRodaggioRodereRoditoreRogitoRollioRomanticoRompereRonzioRosolareRospoRotanteRotondoRotulaRovescioRubizzoRubricaRugaRullinoRumineRumorosoRuoloRupeRussareRusticoSabatoSabbiareSabotatoSagomaSalassoSaldaturaSalgemmaSalivareSalmoneSaloneSaltareSalutoSalvoSapereSapidoSaporitoSaracenoSarcasmoSartoSassosoSatelliteSatiraSatolloSaturnoSavanaSavioSaziatoSbadiglioSbalzoSbancatoSbarraSbattereSbavareSbendareSbirciareSbloccatoSbocciatoSbrinareSbruffoneSbuffareScabrosoScadenzaScalaScambiareScandaloScapolaScarsoScatenareScavatoSceltoScenicoScettroSchedaSchienaSciarpaScienzaScindereScippoSciroppoScivoloSclerareScodellaScolpitoScompartoSconfortoScoprireScortaScossoneScozzeseScribaScrollareScrutinioScuderiaScultoreScuolaScuroScusareSdebitareSdoganareSeccaturaSecondoSedanoSeggiolaSegnalatoSegregatoSeguitoSelciatoSelettivoSellaSelvaggioSemaforoSembrareSemeSeminatoSempreSensoSentireSepoltoSequenzaSerataSerbatoSerenoSerioSerpenteSerraglioServireSestinaSetolaSettimanaSfaceloSfaldareSfamatoSfarzosoSfaticatoSferaSfidaSfilatoSfingeSfocatoSfoderareSfogoSfoltireSforzatoSfrattoSfruttatoSfuggitoSfumareSfusoSgabelloSgarbatoSgonfiareSgorbioSgrassatoSguardoSibiloSiccomeSierraSiglaSignoreSilenzioSillabaSimboloSimpaticoSimulatoSinfoniaSingoloSinistroSinoSintesiSinusoideSiparioSismaSistoleSituatoSlittaSlogaturaSlovenoSmarritoSmemoratoSmentitoSmeraldoSmilzoSmontareSmottatoSmussatoSnellireSnervatoSnodoSobbalzoSobrioSoccorsoSocialeSodaleSoffittoSognoSoldatoSolenneSolidoSollazzoSoloSolubileSolventeSomaticoSommaSondaSonettoSonniferoSopireSoppesoSopraSorgereSorpassoSorrisoSorsoSorteggioSorvolatoSospiroSostaSottileSpadaSpallaSpargereSpatolaSpaventoSpazzolaSpecieSpedireSpegnereSpelaturaSperanzaSpessoreSpettraleSpezzatoSpiaSpigolosoSpillatoSpinosoSpiraleSplendidoSportivoSposoSprangaSprecareSpronatoSpruzzoSpuntinoSquilloSradicareSrotolatoStabileStaccoStaffaStagnareStampatoStantioStarnutoStaseraStatutoSteloSteppaSterzoStilettoStimaStirpeStivaleStizzosoStonatoStoricoStrappoStregatoStriduloStrozzareStruttoStuccareStufoStupendoSubentroSuccosoSudoreSuggeritoSugoSultanoSuonareSuperboSupportoSurgelatoSurrogatoSussurroSuturaSvagareSvedeseSveglioSvelareSvenutoSveziaSviluppoSvistaSvizzeraSvoltaSvuotareTabaccoTabulatoTacciareTaciturnoTaleTalismanoTamponeTanninoTaraTardivoTargatoTariffaTarpareTartarugaTastoTatticoTavernaTavolataTazzaTecaTecnicoTelefonoTemerarioTempoTemutoTendoneTeneroTensioneTentacoloTeoremaTermeTerrazzoTerzettoTesiTesseratoTestatoTetroTettoiaTifareTigellaTimbroTintoTipicoTipografoTiraggioTiroTitanioTitoloTitubanteTizioTizzoneToccareTollerareToltoTombolaTomoTonfoTonsillaTopazioTopologiaToppaTorbaTornareTorroneTortoraToscanoTossireTostaturaTotanoTraboccoTracheaTrafilaTragediaTralcioTramontoTransitoTrapanoTrarreTraslocoTrattatoTraveTrecciaTremolioTrespoloTributoTrichecoTrifoglioTrilloTrinceaTrioTristezzaTrituratoTrivellaTrombaTronoTroppoTrottolaTrovareTruccatoTubaturaTuffatoTulipanoTumultoTunisiaTurbareTurchinoTutaTutelaUbicatoUccelloUccisoreUdireUditivoUffaUfficioUgualeUlisseUltimatoUmanoUmileUmorismoUncinettoUngereUnghereseUnicornoUnificatoUnisonoUnitarioUnteUovoUpupaUraganoUrgenzaUrloUsanzaUsatoUscitoUsignoloUsuraioUtensileUtilizzoUtopiaVacanteVaccinatoVagabondoVagliatoValangaValgoValicoVallettaValorosoValutareValvolaVampataVangareVanitosoVanoVantaggioVanveraVaporeVaranoVarcatoVarianteVascaVedettaVedovaVedutoVegetaleVeicoloVelcroVelinaVellutoVeloceVenatoVendemmiaVentoVeraceVerbaleVergognaVerificaVeroVerrucaVerticaleVescicaVessilloVestaleVeteranoVetrinaVetustoViandanteVibranteVicendaVichingoVicinanzaVidimareVigiliaVignetoVigoreVileVillanoViminiVincitoreViolaViperaVirgolaVirologoVirulentoViscosoVisioneVispoVissutoVisuraVitaVitelloVittimaVivandaVividoViziareVoceVogaVolatileVolereVolpeVoragineVulcanoZampognaZannaZappatoZatteraZavorraZefiroZelanteZeloZenzeroZerbinoZibettoZincoZirconeZittoZollaZoticoZuccheroZufoloZuluZuppa";
-	var wordlist$1 = null;
-	function loadWords(lang) {
-	    if (wordlist$1 != null) {
-	        return;
-	    }
-	    wordlist$1 = words.replace(/([A-Z])/g, " $1").toLowerCase().substring(1).split(" ");
-	    // Verify the computed list matches the official list
-	    /* istanbul ignore if */
-	    if (wordlist.Wordlist.check(lang) !== "0x5c1362d88fd4cf614a96f3234941d29f7d37c08c5292fde03bf62c2db6ff7620") {
-	        wordlist$1 = null;
-	        throw new Error("BIP39 Wordlist for it (Italian) FAILED");
-	    }
-	}
-	var LangIt = /** @class */ (function (_super) {
-	    __extends(LangIt, _super);
-	    function LangIt() {
-	        return _super.call(this, "it") || this;
-	    }
-	    LangIt.prototype.getWord = function (index) {
-	        loadWords(this);
-	        return wordlist$1[index];
-	    };
-	    LangIt.prototype.getWordIndex = function (word) {
-	        loadWords(this);
-	        return wordlist$1.indexOf(word);
-	    };
-	    return LangIt;
-	}(wordlist.Wordlist));
-	var langIt = new LangIt();
-	exports.langIt = langIt;
-	wordlist.Wordlist.register(langIt);
-
-	});
-
-	var langIt = /*@__PURE__*/getDefaultExportFromCjs(langIt_1);
-
-	var langZh = createCommonjsModule(function (module, exports) {
-	"use strict";
-	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
-	    var extendStatics = function (d, b) {
-	        extendStatics = Object.setPrototypeOf ||
-	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-	        return extendStatics(d, b);
-	    };
-	    return function (d, b) {
-	        if (typeof b !== "function" && b !== null)
-	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-	        extendStatics(d, b);
-	        function __() { this.constructor = d; }
-	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	    };
-	})();
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.langZhTw = exports.langZhCn = void 0;
-
-
-	var data = "}aE#4A=Yv&co#4N#6G=cJ&SM#66|/Z#4t&kn~46#4K~4q%b9=IR#7l,mB#7W_X2*dl}Uo~7s}Uf&Iw#9c&cw~6O&H6&wx&IG%v5=IQ~8a&Pv#47$PR&50%Ko&QM&3l#5f,D9#4L|/H&tQ;v0~6n]nN<di,AM=W5%QO&ka&ua,hM^tm=zV=JA=wR&+X]7P&NB#4J#5L|/b[dA}tJ<Do&6m&u2[U1&Kb.HM&mC=w0&MW<rY,Hq#6M}QG,13&wP}Jp]Ow%ue&Kg<HP<D9~4k~9T&I2_c6$9T#9/[C5~7O~4a=cs&O7=KK=An&l9$6U$8A&uD&QI|/Y&bg}Ux&F2#6b}E2&JN&kW&kp=U/&bb=Xl<Cj}k+~5J#6L&5z&9i}b4&Fo,ho(X0_g3~4O$Fz&QE<HN=Ww]6/%GF-Vw=tj&/D&PN#9g=YO}cL&Of&PI~5I&Ip=vU=IW#9G;0o-wU}ss&QR<BT&R9=tk$PY_dh&Pq-yh]7T,nj.Xu=EP&76=cI&Fs*Xg}z7$Gb&+I=DF,AF=cA}rL#7j=Dz&3y<Aa$52=PQ}b0(iY$Fa}oL&xV#6U=ec=WZ,xh%RY<dp#9N&Fl&44=WH*A7=sh&TB&8P=07;u+&PK}uh}J5#72)V/=xC,AB$k0&f6;1E|+5=1B,3v]6n&wR%b+&xx]7f=Ol}fl;+D^wG]7E;nB;uh^Ir&l5=JL,nS=cf=g5;u6|/Q$Gc=MH%Hg#5d%M6^86=U+$Gz,l/,ir^5y&Ba&/F-IY&FI&be%IZ#77&PW_Nu$kE(Yf&NX]7Z,Jy&FJ(Xo&Nz#/d=y7&MX<Ag}Z+;nE]Dt(iG#4D=13&Pj~4c%v8&Zo%OL&/X#4W<HR&ie~6J_1O(Y2=y5=Ad*cv_eB#6k&PX:BU#7A;uk&Ft&Fx_dD=U2;vB=U5=4F}+O&GN.HH:9s=b0%NV(jO&IH=JT}Z9=VZ<Af,Kx^4m&uJ%c6,6r;9m#+L}cf%Kh&F3~4H=vP}bu,Hz|++,1w]nv}k6;uu$jw*Kl*WX&uM[x7&Fr[m7$NO&QN]hu=JN}nR^8g#/h(ps|KC;vd}xz=V0}p6&FD$G1#7K<bG_4p~8g&cf;u4=tl}+k%5/}fz;uw<cA=u1}gU}VM=LJ=eX&+L&Pr#4U}p2:nC,2K]7H:jF&9x}uX#9O=MB<fz~8X~5m&4D&kN&u5%E/(h7(ZF&VG<de(qM|/e-Wt=3x(a+,/R]f/&ND$Ro&nU}0g=KA%kH&NK$Ke<dS}cB&IX~5g$TN]6m=Uv,Is&Py=Ef%Kz#+/%bi&+A<F4$OG&4C&FL#9V<Zk=2I_eE&6c]nw&kq$HG}y+&A8$P3}OH=XP]70%IS(AJ_gH%GZ&tY&AZ=vb~6y&/r=VI=Wv<Zi=fl=xf&eL}c8}OL=MJ=g8$F7=YT}9u=0+^xC}JH&nL^N0~4T]K2,Cy%OC#6s;vG(AC^xe^cG&MF}Br#9P;wD-7h$O/&xA}Fn^PC]6i]7G&8V$Qs;vl(TB~73~4l<mW&6V=2y&uY&+3)aP}XF;LP&kx$wU=t7;uy<FN&lz)7E=Oo*Y+;wI}9q}le;J6&Ri&4t&Qr#8B=cb&vG=J5|Ql(h5<Yy~4+}QD,Lx=wn%K/&RK=dO&Pw,Q9=co%4u;9u}g0@6a^4I%b0=zo|/c&tX=dQ=OS#+b=yz_AB&wB&Pm=W9$HP_gR=62=AO=ti=hI,oA&jr&dH=tm&b6$P2(x8=zi;nG~7F;05]0n[Ix&3m}rg=Xp=cd&uz]7t;97=cN;vV<jf&FF&F1=6Q&Ik*Kk&P4,2z=fQ]7D&3u,H0=d/}Uw<ZN<7R}Kv;0f$H7,MD]7n$F0#88~9Z%da=by;+T#/u=VF&fO&kr^kf<AB]sU,I5$Ng&Pz;0i&QD&vM=Yl:BM;nJ_xJ]U7&Kf&30,3f|Z9*dC)je_jA&Q4&Kp$NH(Yz#6S&Id%Ib=KX,AD=KV%dP}tW&Pk^+E_Ni=cq,3R}VZ(Si=b+}rv;0j}rZ]uA,/w(Sx&Jv$w9&4d&wE,NJ$Gy=J/]Ls#7k<ZQ<Y/&uj]Ov$PM;v3,2F&+u:up=On&3e,Jv;90=J+&Qm]6q}bK#+d~8Y(h2]hA;99&AS=I/}qB&dQ}yJ-VM}Vl&ui,iB&G3|Dc]7d=eQ%dX%JC_1L~4d^NP;vJ&/1)ZI#7N]9X[bQ&PL=0L(UZ,Lm&kc&IR}n7(iR<AQ<dg=33=vN}ft}au]7I,Ba=x9=dR~6R&Tq=Xi,3d$Nr&Bc}DI&ku&vf]Dn,/F&iD,Ll&Nw=0y&I7=Ls=/A&tU=Qe}Ua&uk&+F=g4=gh=Vj#+1&Qn}Uy*44#5F,Pc&Rz*Xn=oh=5W;0n_Nf(iE<Y7=vr=Zu]oz#5Z%mI=kN=Bv_Jp(T2;vt_Ml<FS&uI=L/&6P]64$M7}86<bo%QX(SI%IY&VK=Al&Ux;vv;ut*E/%uh<ZE|O3,M2(yc]yu=Wk&tp:Ex}hr,Cl&WE)+Z=8U}I2_4Q,hA_si=iw=OM=tM=yZ%Ia=U7;wT}b+;uo=Za}yS!5x}HD}fb#5O_dA;Nv%uB(yB;01(Sf}Fk;v7}Pt#8v<mZ#7L,/r&Pl~4w&f5=Ph$Fw_LF&8m,bL=yJ&BH}p/*Jn}tU~5Q;wB(h6]Df]8p^+B;E4&Wc=d+;Ea&bw$8C&FN,DM=Yf}mP~5w=fT#6V=mC=Fi=AV}jB&AN}lW}aH#/D)dZ;hl;vE}/7,CJ;31&w8,hj%u9_Js=jJ&4M~8k=TN&eC}nL&uc-wi&lX}dj=Mv=e2#6u=cr$uq$6G]8W}Jb:nm=Yg<b3(UA;vX&6n&xF=KT,jC,De&R8&oY=Zv&oB]7/=Z2&Oa}bf,hh(4h^tZ&72&Nx;D2&xL~5h~40)ZG)h+=OJ&RA]Bv$yB=Oq=df,AQ%Jn}OJ;11,3z&Tl&tj;v+^Hv,Dh(id=s+]7N&N3)9Q~8f,S4=uW=w4&uX,LX&3d]CJ&yp&8x<b2_do&lP=y/<cy_dG=Oi=7R(VH(lt_1T,Iq_AA;12^6T%k6#8K[B1{oO<AU[Bt;1b$9S&Ps<8T=St{bY,jB(Zp&63&Uv$9V,PM]6v&Af}zW[bW_oq}sm}nB&Kq&gC&ff_eq_2m&5F&TI}rf}Gf;Zr_z9;ER&jk}iz_sn<BN~+n&vo=Vi%97|ZR=Wc,WE&6t]6z%85(ly#84=KY)6m_5/=aX,N3}Tm&he&6K]tR_B2-I3;u/&hU&lH<AP=iB&IA=XL;/5&Nh=wv<BH#79=vS=zl<AA=0X_RG}Bw&9p$NW,AX&kP_Lp&/Z(Tc]Mu}hs#6I}5B&cI<bq&H9#6m=K9}vH(Y1(Y0#4B&w6,/9&gG<bE,/O=zb}I4_l8<B/;wL%Qo<HO[Mq=XX}0v&BP&F4(mG}0i}nm,EC=9u{I3,xG&/9=JY*DK&hR)BX=EI=cx=b/{6k}yX%A+&wa}Xb=la;wi^lL;0t}jo&Qb=xg=XB}iO<qo{bR=NV&8f=a0&Jy;0v=uK)HK;vN#6h&jB(h/%ud&NI%wY.X7=Pt}Cu-uL&Gs_hl%mH,tm]78=Lb^Q0#7Y=1u<Bt&+Q=Co_RH,w3;1e}ux<aU;ui}U3&Q5%bt]63&UQ|0l&uL}O7&3o,AV&dm|Nj(Xt*5+(Uu&Hh(p7(UF=VR=Bp^Jl&Hd[ix)9/=Iq]C8<67]66}mB%6f}bb}JI]8T$HA}db=YM&pa=2J}tS&Y0=PS&y4=cX$6E,hX,XP&nR;04,FQ&l0&Vm_Dv#5Y~8Z=Bi%MA]6x=JO:+p,Az&9q,Hj~6/}SD=K1:EJ}nA;Qo#/E]9R,Ie&6X%W3]61&v4=xX_MC=0q;06(Xq=fs}IG}Dv=0l}o7$iZ;9v&LH&DP-7a&OY,SZ,Kz,Cv&dh=fx|Nh,F/~7q=XF&w+;9n&Gw;0h}Z7<7O&JK(S7&LS<AD<ac=wo<Dt&zw%4B=4v#8P;9o~6p*vV=Tm,Or&I6=1q}nY=P0=gq&Bl&Uu,Ch%yb}UY=zh}dh}rl(T4_xk(YA#8R*xH,IN}Jn]7V}C4&Ty}j3]7p=cL=3h&wW%Qv<Z3=f0&RI&+S(ic_zq}oN&/Y=z1;Td=LW=0e=OI(Vc,+b^ju(UL;0r:Za%8v=Rp=zw&58&73&wK}qX]6y&8E)a2}WR=wP^ur&nQ<cH}Re=Aq&wk}Q0&+q=PP,Gc|/d^k5,Fw]8Y}Pg]p3=ju=ed}r5_yf&Cs]7z$/G<Cm&Jp&54_1G_gP_Ll}JZ;0u]k8_7k(Sg]65{9i=LN&Sx&WK,iW&fD&Lk{9a}Em-9c#8N&io=sy]8d&nT&IK(lx#7/$lW(Td<s8~49,3o<7Y=MW(T+_Jr&Wd,iL}Ct=xh&5V;v4&8n%Kx=iF&l2_0B{B+,If(J0,Lv;u8=Kx-vB=HC&vS=Z6&fU&vE^xK;3D=4h=MR#45:Jw;0d}iw=LU}I5=I0]gB*im,K9}GU,1k_4U&Tt=Vs(iX&lU(TF#7y,ZO}oA&m5#5P}PN}Uz=hM<B1&FB<aG,e6~7T<tP(UQ_ZT=wu&F8)aQ]iN,1r_Lo&/g:CD}84{J1_Ki&Na&3n$jz&FE=dc;uv;va}in}ll=fv(h1&3h}fp=Cy}BM(+E~8m}lo%v7=hC(T6$cj=BQ=Bw(DR,2j=Ks,NS|F+;00=fU=70}Mb(YU;+G&m7&hr=Sk%Co]t+(X5_Jw}0r}gC(AS-IP&QK<Z2#8Q$WC]WX}T2&pG_Ka,HC=R4&/N;Z+;ch(C7,D4$3p_Mk&B2$8D=n9%Ky#5z(CT&QJ#7B]DC]gW}nf~5M;Iw#80}Tc_1F#4Z-aC}Hl=ph=fz,/3=aW}JM}nn;DG;vm}wn,4P}T3;wx&RG$u+}zK=0b;+J_Ek{re<aZ=AS}yY#5D]7q,Cp}xN=VP*2C}GZ}aG~+m_Cs=OY#6r]6g<GS}LC(UB=3A=Bo}Jy<c4}Is;1P<AG}Op<Z1}ld}nS=1Z,yM&95&98=CJ(4t:2L$Hk=Zo}Vc;+I}np&N1}9y=iv}CO*7p=jL)px]tb^zh&GS&Vl%v/;vR=14=zJ&49|/f]hF}WG;03=8P}o/&Gg&rp;DB,Kv}Ji&Pb;aA^ll(4j%yt}+K$Ht#4y&hY]7Y<F1,eN}bG(Uh%6Z]t5%G7;+F_RE;it}tL=LS&Da=Xx(S+(4f=8G=yI}cJ}WP=37=jS}pX}hd)fp<A8=Jt~+o$HJ=M6}iX=g9}CS=dv=Cj(mP%Kd,xq|+9&LD(4/=Xm&QP=Lc}LX&fL;+K=Op(lu=Qs.qC:+e&L+=Jj#8w;SL]7S(b+#4I=c1&nG_Lf&uH;+R)ZV<bV%B/,TE&0H&Jq&Ah%OF&Ss(p2,Wv&I3=Wl}Vq;1L&lJ#9b_1H=8r=b8=JH(SZ=hD=J2#7U,/U#/X~6P,FU<eL=jx,mG=hG=CE&PU=Se(qX&LY=X6=y4&tk&QQ&tf=4g&xI}W+&mZ=Dc#7w}Lg;DA;wQ_Kb(cJ=hR%yX&Yb,hw{bX_4X;EP;1W_2M}Uc=b5(YF,CM&Tp^OJ{DD]6s=vF=Yo~8q}XH}Fu%P5(SJ=Qt;MO]s8<F3&B3&8T(Ul-BS*dw&dR<87}/8]62$PZ]Lx<Au}9Q]7c=ja=KR,Go,Us&v6(qk}pG&G2=ev^GM%w4&H4]7F&dv]J6}Ew:9w=sj-ZL}Ym$+h(Ut(Um~4n=Xs(U7%eE=Qc_JR<CA#6t<Fv|/I,IS,EG<F2(Xy$/n<Fa(h9}+9_2o&N4#7X<Zq|+f_Dp=dt&na,Ca=NJ)jY=8C=YG=s6&Q+<DO}D3=xB&R1(lw;Qn<bF(Cu|/B}HV=SS&n7,10&u0]Dm%A6^4Q=WR(TD=Xo<GH,Rj(l8)bP&n/=LM&CF,F5&ml=PJ;0k=LG=tq,Rh,D6@4i=1p&+9=YC%er_Mh;nI;0q=Fw]80=xq=FM$Gv;v6&nc;wK%H2&Kj;vs,AA=YP,66}bI(qR~5U=6q~4b$Ni=K5.X3$So&Iu(p+]8G=Cf=RY(TS_O3(iH&57=fE=Dg_Do#9z#7H;FK{qd_2k%JR}en&gh_z8;Rx}9p<cN_Ne,DO;LN_7o~/p=NF=5Y}gN<ce<C1,QE]Wv=3u<BC}GK]yq}DY&u/_hj=II(pz&rC,jV&+Z}ut=NQ;Cg-SR_ZS,+o=u/;Oy_RK_QF(Fx&xP}Wr&TA,Uh&g1=yr{ax[VF$Pg(YB;Ox=Vy;+W(Sp}XV%dd&33(l/]l4#4Y}OE=6c=bw(A7&9t%wd&N/&mo,JH&Qe)fm=Ao}fu=tH";
-	var deltaData = "FAZDC6BALcLZCA+GBARCW8wNCcDDZ8LVFBOqqDUiou+M42TFAyERXFb7EjhP+vmBFpFrUpfDV2F7eB+eCltCHJFWLFCED+pWTojEIHFXc3aFn4F68zqjEuKidS1QBVPDEhE7NA4mhMF7oThD49ot3FgtzHFCK0acW1x8DH1EmLoIlrWFBLE+y5+NA3Cx65wJHTaEZVaK1mWAmPGxgYCdxwOjTDIt/faOEhTl1vqNsKtJCOhJWuio2g07KLZEQsFBUpNtwEByBgxFslFheFbiEPvi61msDvApxCzB6rBCzox7joYA5UdDc+Cb4FSgIabpXFAj3bjkmFAxCZE+mD/SFf/0ELecYCt3nLoxC6WEZf2tKDB4oZvrEmqFkKk7BwILA7gtYBpsTq//D4jD0F0wEB9pyQ1BD5Ba0oYHDI+sbDFhvrHXdDHfgFEIJLi5r8qercNFBgFLC4bo5ERJtamWBDFy73KCEb6M8VpmEt330ygCTK58EIIFkYgF84gtGA9Uyh3m68iVrFbWFbcbqiCYHZ9J1jeRPbL8yswhMiDbhEhdNoSwFbZrLT740ABEqgCkO8J1BLd1VhKKR4sD1yUo0z+FF59Mvg71CFbyEhbHSFBKEIKyoQNgQppq9T0KAqePu0ZFGrXOHdKJqkoTFhYvpDNyuuznrN84thJbsCoO6Cu6Xlvntvy0QYuAExQEYtTUBf3CoCqwgGFZ4u1HJFzDVwEy3cjcpV4QvsPaBC3rCGyCF23o4K3pp2gberGgFEJEHo4nHICtyKH2ZqyxhN05KBBJIQlKh/Oujv/DH32VrlqFdIFC7Fz9Ct4kaqFME0UETLprnN9kfy+kFmtQBB0+5CFu0N9Ij8l/VvJDh2oq3hT6EzjTHKFN7ZjZwoTsAZ4Exsko6Fpa6WC+sduz8jyrLpegTv2h1EBeYpLpm2czQW0KoCcS0bCVXCmuWJDBjN1nQNLdF58SFJ0h7i3pC3oEOKy/FjBklL70XvBEEIWp2yZ04xObzAWDDJG7f+DbqBEA7LyiR95j7MDVdDViz2RE5vWlBMv5e4+VfhP3aXNPhvLSynb9O2x4uFBV+3jqu6d5pCG28/sETByvmu/+IJ0L3wb4rj9DNOLBF6XPIODr4L19U9RRofAG6Nxydi8Bki8BhGJbBAJKzbJxkZSlF9Q2Cu8oKqggB9hBArwLLqEBWEtFowy8XK8bEyw9snT+BeyFk1ZCSrdmgfEwFePTgCjELBEnIbjaDDPJm36rG9pztcEzT8dGk23SBhXBB1H4z+OWze0ooFzz8pDBYFvp9j9tvFByf9y4EFdVnz026CGR5qMr7fxMHN8UUdlyJAzlTBDRC28k+L4FB8078ljyD91tUj1ocnTs8vdEf7znbzm+GIjEZnoZE5rnLL700Xc7yHfz05nWxy03vBB9YGHYOWxgMQGBCR24CVYNE1hpfKxN0zKnfJDmmMgMmBWqNbjfSyFCBWSCGCgR8yFXiHyEj+VtD1FB3FpC1zI0kFbzifiKTLm9yq5zFmur+q8FHqjoOBWsBPiDbnCC2ErunV6cJ6TygXFYHYp7MKN9RUlSIS8/xBAGYLzeqUnBF4QbsTuUkUqGs6CaiDWKWjQK9EJkjpkTmNCPYXL";
-	// @TODO: Load lazily
-	var wordlist$1 = {
-	    zh_cn: null,
-	    zh_tw: null
-	};
-	var Checks = {
-	    zh_cn: "0x17bcc4d8547e5a7135e365d1ab443aaae95e76d8230c2782c67305d4f21497a1",
-	    zh_tw: "0x51e720e90c7b87bec1d70eb6e74a21a449bd3ec9c020b01d3a40ed991b60ce5d"
-	};
-	var codes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-	var style = "~!@#$%^&*_-=[]{}|;:,.()<>?";
-	function loadWords(lang) {
-	    if (wordlist$1[lang.locale] !== null) {
-	        return;
-	    }
-	    wordlist$1[lang.locale] = [];
-	    var deltaOffset = 0;
-	    for (var i = 0; i < 2048; i++) {
-	        var s = style.indexOf(data[i * 3]);
-	        var bytes = [
-	            228 + (s >> 2),
-	            128 + codes.indexOf(data[i * 3 + 1]),
-	            128 + codes.indexOf(data[i * 3 + 2]),
-	        ];
-	        if (lang.locale === "zh_tw") {
-	            var common = s % 4;
-	            for (var i_1 = common; i_1 < 3; i_1++) {
-	                bytes[i_1] = codes.indexOf(deltaData[deltaOffset++]) + ((i_1 == 0) ? 228 : 128);
-	            }
-	        }
-	        wordlist$1[lang.locale].push(lib$8.toUtf8String(bytes));
-	    }
-	    // Verify the computed list matches the official list
-	    /* istanbul ignore if */
-	    if (wordlist.Wordlist.check(lang) !== Checks[lang.locale]) {
-	        wordlist$1[lang.locale] = null;
-	        throw new Error("BIP39 Wordlist for " + lang.locale + " (Chinese) FAILED");
-	    }
-	}
-	var LangZh = /** @class */ (function (_super) {
-	    __extends(LangZh, _super);
-	    function LangZh(country) {
-	        return _super.call(this, "zh_" + country) || this;
-	    }
-	    LangZh.prototype.getWord = function (index) {
-	        loadWords(this);
-	        return wordlist$1[this.locale][index];
-	    };
-	    LangZh.prototype.getWordIndex = function (word) {
-	        loadWords(this);
-	        return wordlist$1[this.locale].indexOf(word);
-	    };
-	    LangZh.prototype.split = function (mnemonic) {
-	        mnemonic = mnemonic.replace(/(?:\u3000| )+/g, "");
-	        return mnemonic.split("");
-	    };
-	    return LangZh;
-	}(wordlist.Wordlist));
-	var langZhCn = new LangZh("cn");
-	exports.langZhCn = langZhCn;
-	wordlist.Wordlist.register(langZhCn);
-	wordlist.Wordlist.register(langZhCn, "zh");
-	var langZhTw = new LangZh("tw");
-	exports.langZhTw = langZhTw;
-	wordlist.Wordlist.register(langZhTw);
-
-	});
-
-	var langZh$1 = /*@__PURE__*/getDefaultExportFromCjs(langZh);
-
-	var wordlists = createCommonjsModule(function (module, exports) {
+	var browserWordlists = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.wordlists = void 0;
 
-
-
-
-
-
-
-
 	exports.wordlists = {
-	    cz: langCz_1.langCz,
-	    en: langEn_1.langEn,
-	    es: langEs_1.langEs,
-	    fr: langFr_1.langFr,
-	    it: langIt_1.langIt,
-	    ja: langJa_1.langJa,
-	    ko: langKo_1.langKo,
-	    zh: langZh.langZhCn,
-	    zh_cn: langZh.langZhCn,
-	    zh_tw: langZh.langZhTw
+	    en: langEn_1.langEn
 	};
 
 	});
 
-	var wordlists$1 = /*@__PURE__*/getDefaultExportFromCjs(wordlists);
+	var browserWordlists$1 = /*@__PURE__*/getDefaultExportFromCjs(browserWordlists);
 
 	var lib$j = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -16984,7 +16551,7 @@
 	Object.defineProperty(exports, "logger", { enumerable: true, get: function () { return wordlist.logger; } });
 	Object.defineProperty(exports, "Wordlist", { enumerable: true, get: function () { return wordlist.Wordlist; } });
 
-	Object.defineProperty(exports, "wordlists", { enumerable: true, get: function () { return wordlists.wordlists; } });
+	Object.defineProperty(exports, "wordlists", { enumerable: true, get: function () { return browserWordlists.wordlists; } });
 
 	});
 
@@ -16994,7 +16561,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "hdnode/5.4.0";
+	exports.version = "hdnode/5.5.0";
 
 	});
 
@@ -17019,7 +16586,7 @@
 	var logger = new lib.Logger(_version$w.version);
 	var N = lib$2.BigNumber.from("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
 	// "Bitcoin seed"
-	var MasterSecret = lib$8.toUtf8Bytes("Bitcoin seed");
+	var MasterSecret = (0, lib$8.toUtf8Bytes)("Bitcoin seed");
 	var HardenedBit = 0x80000000;
 	// Returns a byte with the MSB bits set
 	function getUpperMask(bits) {
@@ -17030,10 +16597,10 @@
 	    return (1 << bits) - 1;
 	}
 	function bytes32(value) {
-	    return lib$1.hexZeroPad(lib$1.hexlify(value), 32);
+	    return (0, lib$1.hexZeroPad)((0, lib$1.hexlify)(value), 32);
 	}
 	function base58check(data) {
-	    return lib$g.Base58.encode(lib$1.concat([data, lib$1.hexDataSlice(lib$h.sha256(lib$h.sha256(data)), 0, 4)]));
+	    return lib$g.Base58.encode((0, lib$1.concat)([data, (0, lib$1.hexDataSlice)((0, lib$h.sha256)((0, lib$h.sha256)(data)), 0, 4)]));
 	}
 	function getWordlist(wordlist) {
 	    if (wordlist == null) {
@@ -17068,52 +16635,52 @@
 	        }
 	        if (privateKey) {
 	            var signingKey = new lib$d.SigningKey(privateKey);
-	            lib$3.defineReadOnly(this, "privateKey", signingKey.privateKey);
-	            lib$3.defineReadOnly(this, "publicKey", signingKey.compressedPublicKey);
+	            (0, lib$3.defineReadOnly)(this, "privateKey", signingKey.privateKey);
+	            (0, lib$3.defineReadOnly)(this, "publicKey", signingKey.compressedPublicKey);
 	        }
 	        else {
-	            lib$3.defineReadOnly(this, "privateKey", null);
-	            lib$3.defineReadOnly(this, "publicKey", lib$1.hexlify(publicKey));
+	            (0, lib$3.defineReadOnly)(this, "privateKey", null);
+	            (0, lib$3.defineReadOnly)(this, "publicKey", (0, lib$1.hexlify)(publicKey));
 	        }
-	        lib$3.defineReadOnly(this, "parentFingerprint", parentFingerprint);
-	        lib$3.defineReadOnly(this, "fingerprint", lib$1.hexDataSlice(lib$h.ripemd160(lib$h.sha256(this.publicKey)), 0, 4));
-	        lib$3.defineReadOnly(this, "address", lib$e.computeAddress(this.publicKey));
-	        lib$3.defineReadOnly(this, "chainCode", chainCode);
-	        lib$3.defineReadOnly(this, "index", index);
-	        lib$3.defineReadOnly(this, "depth", depth);
+	        (0, lib$3.defineReadOnly)(this, "parentFingerprint", parentFingerprint);
+	        (0, lib$3.defineReadOnly)(this, "fingerprint", (0, lib$1.hexDataSlice)((0, lib$h.ripemd160)((0, lib$h.sha256)(this.publicKey)), 0, 4));
+	        (0, lib$3.defineReadOnly)(this, "address", (0, lib$e.computeAddress)(this.publicKey));
+	        (0, lib$3.defineReadOnly)(this, "chainCode", chainCode);
+	        (0, lib$3.defineReadOnly)(this, "index", index);
+	        (0, lib$3.defineReadOnly)(this, "depth", depth);
 	        if (mnemonicOrPath == null) {
 	            // From a source that does not preserve the path (e.g. extended keys)
-	            lib$3.defineReadOnly(this, "mnemonic", null);
-	            lib$3.defineReadOnly(this, "path", null);
+	            (0, lib$3.defineReadOnly)(this, "mnemonic", null);
+	            (0, lib$3.defineReadOnly)(this, "path", null);
 	        }
 	        else if (typeof (mnemonicOrPath) === "string") {
 	            // From a source that does not preserve the mnemonic (e.g. neutered)
-	            lib$3.defineReadOnly(this, "mnemonic", null);
-	            lib$3.defineReadOnly(this, "path", mnemonicOrPath);
+	            (0, lib$3.defineReadOnly)(this, "mnemonic", null);
+	            (0, lib$3.defineReadOnly)(this, "path", mnemonicOrPath);
 	        }
 	        else {
 	            // From a fully qualified source
-	            lib$3.defineReadOnly(this, "mnemonic", mnemonicOrPath);
-	            lib$3.defineReadOnly(this, "path", mnemonicOrPath.path);
+	            (0, lib$3.defineReadOnly)(this, "mnemonic", mnemonicOrPath);
+	            (0, lib$3.defineReadOnly)(this, "path", mnemonicOrPath.path);
 	        }
 	    }
 	    Object.defineProperty(HDNode.prototype, "extendedKey", {
 	        get: function () {
 	            // We only support the mainnet values for now, but if anyone needs
-	            // testnet values, let me know. I believe current senitment is that
+	            // testnet values, let me know. I believe current sentiment is that
 	            // we should always use mainnet, and use BIP-44 to derive the network
 	            //   - Mainnet: public=0x0488B21E, private=0x0488ADE4
 	            //   - Testnet: public=0x043587CF, private=0x04358394
 	            if (this.depth >= 256) {
 	                throw new Error("Depth too large!");
 	            }
-	            return base58check(lib$1.concat([
+	            return base58check((0, lib$1.concat)([
 	                ((this.privateKey != null) ? "0x0488ADE4" : "0x0488B21E"),
-	                lib$1.hexlify(this.depth),
+	                (0, lib$1.hexlify)(this.depth),
 	                this.parentFingerprint,
-	                lib$1.hexZeroPad(lib$1.hexlify(this.index), 4),
+	                (0, lib$1.hexZeroPad)((0, lib$1.hexlify)(this.index), 4),
 	                this.chainCode,
-	                ((this.privateKey != null) ? lib$1.concat(["0x00", this.privateKey]) : this.publicKey),
+	                ((this.privateKey != null) ? (0, lib$1.concat)(["0x00", this.privateKey]) : this.publicKey),
 	            ]));
 	        },
 	        enumerable: false,
@@ -17137,7 +16704,7 @@
 	                throw new Error("cannot derive child of neutered node");
 	            }
 	            // Data = 0x00 || ser_256(k_par)
-	            data.set(lib$1.arrayify(this.privateKey), 1);
+	            data.set((0, lib$1.arrayify)(this.privateKey), 1);
 	            // Hardened path
 	            if (path) {
 	                path += "'";
@@ -17145,13 +16712,13 @@
 	        }
 	        else {
 	            // Data = ser_p(point(k_par))
-	            data.set(lib$1.arrayify(this.publicKey));
+	            data.set((0, lib$1.arrayify)(this.publicKey));
 	        }
 	        // Data += ser_32(i)
 	        for (var i = 24; i >= 0; i -= 8) {
 	            data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff);
 	        }
-	        var I = lib$1.arrayify(lib$h.computeHmac(lib$h.SupportedAlgorithm.sha512, this.chainCode, data));
+	        var I = (0, lib$1.arrayify)((0, lib$h.computeHmac)(lib$h.SupportedAlgorithm.sha512, this.chainCode, data));
 	        var IL = I.slice(0, 32);
 	        var IR = I.slice(32);
 	        // The private key
@@ -17162,7 +16729,7 @@
 	            ki = bytes32(lib$2.BigNumber.from(IL).add(this.privateKey).mod(N));
 	        }
 	        else {
-	            var ek = new lib$d.SigningKey(lib$1.hexlify(IL));
+	            var ek = new lib$d.SigningKey((0, lib$1.hexlify)(IL));
 	            Ki = ek._addPoint(this.publicKey);
 	        }
 	        var mnemonicOrPath = path;
@@ -17208,11 +16775,11 @@
 	        return result;
 	    };
 	    HDNode._fromSeed = function (seed, mnemonic) {
-	        var seedArray = lib$1.arrayify(seed);
+	        var seedArray = (0, lib$1.arrayify)(seed);
 	        if (seedArray.length < 16 || seedArray.length > 64) {
 	            throw new Error("invalid seed");
 	        }
-	        var I = lib$1.arrayify(lib$h.computeHmac(lib$h.SupportedAlgorithm.sha512, MasterSecret, seedArray));
+	        var I = (0, lib$1.arrayify)((0, lib$h.computeHmac)(lib$h.SupportedAlgorithm.sha512, MasterSecret, seedArray));
 	        return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic);
 	    };
 	    HDNode.fromMnemonic = function (mnemonic, password, wordlist) {
@@ -17235,22 +16802,22 @@
 	            logger.throwArgumentError("invalid extended key", "extendedKey", "[REDACTED]");
 	        }
 	        var depth = bytes[4];
-	        var parentFingerprint = lib$1.hexlify(bytes.slice(5, 9));
-	        var index = parseInt(lib$1.hexlify(bytes.slice(9, 13)).substring(2), 16);
-	        var chainCode = lib$1.hexlify(bytes.slice(13, 45));
+	        var parentFingerprint = (0, lib$1.hexlify)(bytes.slice(5, 9));
+	        var index = parseInt((0, lib$1.hexlify)(bytes.slice(9, 13)).substring(2), 16);
+	        var chainCode = (0, lib$1.hexlify)(bytes.slice(13, 45));
 	        var key = bytes.slice(45, 78);
-	        switch (lib$1.hexlify(bytes.slice(0, 4))) {
+	        switch ((0, lib$1.hexlify)(bytes.slice(0, 4))) {
 	            // Public Key
 	            case "0x0488b21e":
 	            case "0x043587cf":
-	                return new HDNode(_constructorGuard, null, lib$1.hexlify(key), parentFingerprint, chainCode, index, depth, null);
+	                return new HDNode(_constructorGuard, null, (0, lib$1.hexlify)(key), parentFingerprint, chainCode, index, depth, null);
 	            // Private Key
 	            case "0x0488ade4":
 	            case "0x04358394 ":
 	                if (key[0] !== 0) {
 	                    break;
 	                }
-	                return new HDNode(_constructorGuard, lib$1.hexlify(key.slice(1)), null, parentFingerprint, chainCode, index, depth, null);
+	                return new HDNode(_constructorGuard, (0, lib$1.hexlify)(key.slice(1)), null, parentFingerprint, chainCode, index, depth, null);
 	        }
 	        return logger.throwArgumentError("invalid extended key", "extendedKey", "[REDACTED]");
 	    };
@@ -17261,8 +16828,8 @@
 	    if (!password) {
 	        password = "";
 	    }
-	    var salt = lib$8.toUtf8Bytes("mnemonic" + password, lib$8.UnicodeNormalizationForm.NFKD);
-	    return lib$i.pbkdf2(lib$8.toUtf8Bytes(mnemonic, lib$8.UnicodeNormalizationForm.NFKD), salt, 2048, 64, "sha512");
+	    var salt = (0, lib$8.toUtf8Bytes)("mnemonic" + password, lib$8.UnicodeNormalizationForm.NFKD);
+	    return (0, lib$i.pbkdf2)((0, lib$8.toUtf8Bytes)(mnemonic, lib$8.UnicodeNormalizationForm.NFKD), salt, 2048, 64, "sha512");
 	}
 	exports.mnemonicToSeed = mnemonicToSeed;
 	function mnemonicToEntropy(mnemonic, wordlist) {
@@ -17272,7 +16839,7 @@
 	    if ((words.length % 3) !== 0) {
 	        throw new Error("invalid mnemonic");
 	    }
-	    var entropy = lib$1.arrayify(new Uint8Array(Math.ceil(11 * words.length / 8)));
+	    var entropy = (0, lib$1.arrayify)(new Uint8Array(Math.ceil(11 * words.length / 8)));
 	    var offset = 0;
 	    for (var i = 0; i < words.length; i++) {
 	        var index = wordlist.getWordIndex(words[i].normalize("NFKD"));
@@ -17289,16 +16856,16 @@
 	    var entropyBits = 32 * words.length / 3;
 	    var checksumBits = words.length / 3;
 	    var checksumMask = getUpperMask(checksumBits);
-	    var checksum = lib$1.arrayify(lib$h.sha256(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
+	    var checksum = (0, lib$1.arrayify)((0, lib$h.sha256)(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
 	    if (checksum !== (entropy[entropy.length - 1] & checksumMask)) {
 	        throw new Error("invalid checksum");
 	    }
-	    return lib$1.hexlify(entropy.slice(0, entropyBits / 8));
+	    return (0, lib$1.hexlify)(entropy.slice(0, entropyBits / 8));
 	}
 	exports.mnemonicToEntropy = mnemonicToEntropy;
 	function entropyToMnemonic(entropy, wordlist) {
 	    wordlist = getWordlist(wordlist);
-	    entropy = lib$1.arrayify(entropy);
+	    entropy = (0, lib$1.arrayify)(entropy);
 	    if ((entropy.length % 4) !== 0 || entropy.length < 16 || entropy.length > 32) {
 	        throw new Error("invalid entropy");
 	    }
@@ -17322,7 +16889,7 @@
 	    }
 	    // Compute the checksum bits
 	    var checksumBits = entropy.length / 4;
-	    var checksum = lib$1.arrayify(lib$h.sha256(entropy))[0] & getUpperMask(checksumBits);
+	    var checksum = (0, lib$1.arrayify)((0, lib$h.sha256)(entropy))[0] & getUpperMask(checksumBits);
 	    // Shift the checksum into the word indices
 	    indices[indices.length - 1] <<= checksumBits;
 	    indices[indices.length - 1] |= (checksum >> (8 - checksumBits));
@@ -17354,7 +16921,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "random/5.4.0";
+	exports.version = "random/5.5.0";
 
 	});
 
@@ -17368,6 +16935,8 @@
 
 
 	var logger = new lib.Logger(_version$y.version);
+	// Debugging line for testing browser lib in node
+	//const window = { crypto: { getRandomValues: () => { } } };
 	var anyGlobal = null;
 	try {
 	    anyGlobal = window;
@@ -17398,12 +16967,12 @@
 	    };
 	}
 	function randomBytes(length) {
-	    if (length <= 0 || length > 1024 || (length % 1)) {
+	    if (length <= 0 || length > 1024 || (length % 1) || length != length) {
 	        logger.throwArgumentError("invalid length", "length", length);
 	    }
 	    var result = new Uint8Array(length);
 	    crypto.getRandomValues(result);
-	    return lib$1.arrayify(result);
+	    return (0, lib$1.arrayify)(result);
 	}
 	exports.randomBytes = randomBytes;
 	;
@@ -18250,7 +17819,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "json-wallets/5.4.0";
+	exports.version = "json-wallets/5.5.0";
 
 	});
 
@@ -18266,7 +17835,7 @@
 	    if (typeof (hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
 	        hexString = '0x' + hexString;
 	    }
-	    return lib$1.arrayify(hexString);
+	    return (0, lib$1.arrayify)(hexString);
 	}
 	exports.looseArrayify = looseArrayify;
 	function zpad(value, length) {
@@ -18279,9 +17848,9 @@
 	exports.zpad = zpad;
 	function getPassword(password) {
 	    if (typeof (password) === 'string') {
-	        return lib$8.toUtf8Bytes(password, lib$8.UnicodeNormalizationForm.NFKC);
+	        return (0, lib$8.toUtf8Bytes)(password, lib$8.UnicodeNormalizationForm.NFKC);
 	    }
-	    return lib$1.arrayify(password);
+	    return (0, lib$1.arrayify)(password);
 	}
 	exports.getPassword = getPassword;
 	function searchPath(object, path) {
@@ -18308,7 +17877,7 @@
 	exports.searchPath = searchPath;
 	// See: https://www.ietf.org/rfc/rfc4122.txt (Section 4.4)
 	function uuidV4(randomBytes) {
-	    var bytes = lib$1.arrayify(randomBytes);
+	    var bytes = (0, lib$1.arrayify)(randomBytes);
 	    // Section: 4.1.3:
 	    // - time_hi_and_version[12:16] = 0b0100
 	    bytes[6] = (bytes[6] & 0x0f) | 0x40;
@@ -18316,7 +17885,7 @@
 	    // - clock_seq_hi_and_reserved[6] = 0b0
 	    // - clock_seq_hi_and_reserved[7] = 0b1
 	    bytes[8] = (bytes[8] & 0x3f) | 0x80;
-	    var value = lib$1.hexlify(bytes);
+	    var value = (0, lib$1.hexlify)(bytes);
 	    return [
 	        value.substring(2, 10),
 	        value.substring(10, 14),
@@ -18378,27 +17947,27 @@
 	// See: https://github.com/ethereum/pyethsaletool
 	function decrypt(json, password) {
 	    var data = JSON.parse(json);
-	    password = utils$1.getPassword(password);
+	    password = (0, utils$1.getPassword)(password);
 	    // Ethereum Address
-	    var ethaddr = lib$6.getAddress(utils$1.searchPath(data, "ethaddr"));
+	    var ethaddr = (0, lib$6.getAddress)((0, utils$1.searchPath)(data, "ethaddr"));
 	    // Encrypted Seed
-	    var encseed = utils$1.looseArrayify(utils$1.searchPath(data, "encseed"));
+	    var encseed = (0, utils$1.looseArrayify)((0, utils$1.searchPath)(data, "encseed"));
 	    if (!encseed || (encseed.length % 16) !== 0) {
 	        logger.throwArgumentError("invalid encseed", "json", json);
 	    }
-	    var key = lib$1.arrayify(lib$i.pbkdf2(password, password, 2000, 32, "sha256")).slice(0, 16);
+	    var key = (0, lib$1.arrayify)((0, lib$i.pbkdf2)(password, password, 2000, 32, "sha256")).slice(0, 16);
 	    var iv = encseed.slice(0, 16);
 	    var encryptedSeed = encseed.slice(16);
 	    // Decrypt the seed
 	    var aesCbc = new aes_js_1.default.ModeOfOperation.cbc(key, iv);
-	    var seed = aes_js_1.default.padding.pkcs7.strip(lib$1.arrayify(aesCbc.decrypt(encryptedSeed)));
+	    var seed = aes_js_1.default.padding.pkcs7.strip((0, lib$1.arrayify)(aesCbc.decrypt(encryptedSeed)));
 	    // This wallet format is weird... Convert the binary encoded hex to a string.
 	    var seedHex = "";
 	    for (var i = 0; i < seed.length; i++) {
 	        seedHex += String.fromCharCode(seed[i]);
 	    }
-	    var seedHexBytes = lib$8.toUtf8Bytes(seedHex);
-	    var privateKey = lib$4.keccak256(seedHexBytes);
+	    var seedHexBytes = (0, lib$8.toUtf8Bytes)(seedHex);
+	    var privateKey = (0, lib$4.keccak256)(seedHexBytes);
 	    return new CrowdsaleAccount({
 	        _isCrowdsaleAccount: true,
 	        address: ethaddr,
@@ -18448,7 +18017,7 @@
 	function getJsonWalletAddress(json) {
 	    if (isCrowdsaleWallet(json)) {
 	        try {
-	            return lib$6.getAddress(JSON.parse(json).ethaddr);
+	            return (0, lib$6.getAddress)(JSON.parse(json).ethaddr);
 	        }
 	        catch (error) {
 	            return null;
@@ -18456,7 +18025,7 @@
 	    }
 	    if (isKeystoreWallet(json)) {
 	        try {
-	            return lib$6.getAddress(JSON.parse(json).address);
+	            return (0, lib$6.getAddress)(JSON.parse(json).address);
 	        }
 	        catch (error) {
 	            return null;
@@ -19049,19 +18618,19 @@
 	}(lib$3.Description));
 	exports.KeystoreAccount = KeystoreAccount;
 	function _decrypt(data, key, ciphertext) {
-	    var cipher = utils$1.searchPath(data, "crypto/cipher");
+	    var cipher = (0, utils$1.searchPath)(data, "crypto/cipher");
 	    if (cipher === "aes-128-ctr") {
-	        var iv = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/cipherparams/iv"));
+	        var iv = (0, utils$1.looseArrayify)((0, utils$1.searchPath)(data, "crypto/cipherparams/iv"));
 	        var counter = new aes_js_1.default.Counter(iv);
 	        var aesCtr = new aes_js_1.default.ModeOfOperation.ctr(key, counter);
-	        return lib$1.arrayify(aesCtr.decrypt(ciphertext));
+	        return (0, lib$1.arrayify)(aesCtr.decrypt(ciphertext));
 	    }
 	    return null;
 	}
 	function _getAccount(data, key) {
-	    var ciphertext = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/ciphertext"));
-	    var computedMAC = lib$1.hexlify(lib$4.keccak256(lib$1.concat([key.slice(16, 32), ciphertext]))).substring(2);
-	    if (computedMAC !== utils$1.searchPath(data, "crypto/mac").toLowerCase()) {
+	    var ciphertext = (0, utils$1.looseArrayify)((0, utils$1.searchPath)(data, "crypto/ciphertext"));
+	    var computedMAC = (0, lib$1.hexlify)((0, lib$4.keccak256)((0, lib$1.concat)([key.slice(16, 32), ciphertext]))).substring(2);
+	    if (computedMAC !== (0, utils$1.searchPath)(data, "crypto/mac").toLowerCase()) {
 	        throw new Error("invalid password");
 	    }
 	    var privateKey = _decrypt(data, key.slice(0, 16), ciphertext);
@@ -19071,32 +18640,32 @@
 	        });
 	    }
 	    var mnemonicKey = key.slice(32, 64);
-	    var address = lib$e.computeAddress(privateKey);
+	    var address = (0, lib$e.computeAddress)(privateKey);
 	    if (data.address) {
 	        var check = data.address.toLowerCase();
 	        if (check.substring(0, 2) !== "0x") {
 	            check = "0x" + check;
 	        }
-	        if (lib$6.getAddress(check) !== address) {
+	        if ((0, lib$6.getAddress)(check) !== address) {
 	            throw new Error("address mismatch");
 	        }
 	    }
 	    var account = {
 	        _isKeystoreAccount: true,
 	        address: address,
-	        privateKey: lib$1.hexlify(privateKey)
+	        privateKey: (0, lib$1.hexlify)(privateKey)
 	    };
 	    // Version 0.1 x-ethers metadata must contain an encrypted mnemonic phrase
-	    if (utils$1.searchPath(data, "x-ethers/version") === "0.1") {
-	        var mnemonicCiphertext = utils$1.looseArrayify(utils$1.searchPath(data, "x-ethers/mnemonicCiphertext"));
-	        var mnemonicIv = utils$1.looseArrayify(utils$1.searchPath(data, "x-ethers/mnemonicCounter"));
+	    if ((0, utils$1.searchPath)(data, "x-ethers/version") === "0.1") {
+	        var mnemonicCiphertext = (0, utils$1.looseArrayify)((0, utils$1.searchPath)(data, "x-ethers/mnemonicCiphertext"));
+	        var mnemonicIv = (0, utils$1.looseArrayify)((0, utils$1.searchPath)(data, "x-ethers/mnemonicCounter"));
 	        var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
 	        var mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
-	        var path = utils$1.searchPath(data, "x-ethers/path") || lib$k.defaultPath;
-	        var locale = utils$1.searchPath(data, "x-ethers/locale") || "en";
-	        var entropy = lib$1.arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
+	        var path = (0, utils$1.searchPath)(data, "x-ethers/path") || lib$k.defaultPath;
+	        var locale = (0, utils$1.searchPath)(data, "x-ethers/locale") || "en";
+	        var entropy = (0, lib$1.arrayify)(mnemonicAesCtr.decrypt(mnemonicCiphertext));
 	        try {
-	            var mnemonic = lib$k.entropyToMnemonic(entropy, locale);
+	            var mnemonic = (0, lib$k.entropyToMnemonic)(entropy, locale);
 	            var node = lib$k.HDNode.fromMnemonic(mnemonic, null, locale).derivePath(path);
 	            if (node.privateKey != account.privateKey) {
 	                throw new Error("mnemonic mismatch");
@@ -19115,23 +18684,23 @@
 	    return new KeystoreAccount(account);
 	}
 	function pbkdf2Sync(passwordBytes, salt, count, dkLen, prfFunc) {
-	    return lib$1.arrayify(lib$i.pbkdf2(passwordBytes, salt, count, dkLen, prfFunc));
+	    return (0, lib$1.arrayify)((0, lib$i.pbkdf2)(passwordBytes, salt, count, dkLen, prfFunc));
 	}
 	function pbkdf2(passwordBytes, salt, count, dkLen, prfFunc) {
 	    return Promise.resolve(pbkdf2Sync(passwordBytes, salt, count, dkLen, prfFunc));
 	}
 	function _computeKdfKey(data, password, pbkdf2Func, scryptFunc, progressCallback) {
-	    var passwordBytes = utils$1.getPassword(password);
-	    var kdf = utils$1.searchPath(data, "crypto/kdf");
+	    var passwordBytes = (0, utils$1.getPassword)(password);
+	    var kdf = (0, utils$1.searchPath)(data, "crypto/kdf");
 	    if (kdf && typeof (kdf) === "string") {
 	        var throwError = function (name, value) {
 	            return logger.throwArgumentError("invalid key-derivation function parameters", name, value);
 	        };
 	        if (kdf.toLowerCase() === "scrypt") {
-	            var salt = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/kdfparams/salt"));
-	            var N = parseInt(utils$1.searchPath(data, "crypto/kdfparams/n"));
-	            var r = parseInt(utils$1.searchPath(data, "crypto/kdfparams/r"));
-	            var p = parseInt(utils$1.searchPath(data, "crypto/kdfparams/p"));
+	            var salt = (0, utils$1.looseArrayify)((0, utils$1.searchPath)(data, "crypto/kdfparams/salt"));
+	            var N = parseInt((0, utils$1.searchPath)(data, "crypto/kdfparams/n"));
+	            var r = parseInt((0, utils$1.searchPath)(data, "crypto/kdfparams/r"));
+	            var p = parseInt((0, utils$1.searchPath)(data, "crypto/kdfparams/p"));
 	            // Check for all required parameters
 	            if (!N || !r || !p) {
 	                throwError("kdf", kdf);
@@ -19140,16 +18709,16 @@
 	            if ((N & (N - 1)) !== 0) {
 	                throwError("N", N);
 	            }
-	            var dkLen = parseInt(utils$1.searchPath(data, "crypto/kdfparams/dklen"));
+	            var dkLen = parseInt((0, utils$1.searchPath)(data, "crypto/kdfparams/dklen"));
 	            if (dkLen !== 32) {
 	                throwError("dklen", dkLen);
 	            }
 	            return scryptFunc(passwordBytes, salt, N, r, p, 64, progressCallback);
 	        }
 	        else if (kdf.toLowerCase() === "pbkdf2") {
-	            var salt = utils$1.looseArrayify(utils$1.searchPath(data, "crypto/kdfparams/salt"));
+	            var salt = (0, utils$1.looseArrayify)((0, utils$1.searchPath)(data, "crypto/kdfparams/salt"));
 	            var prfFunc = null;
-	            var prf = utils$1.searchPath(data, "crypto/kdfparams/prf");
+	            var prf = (0, utils$1.searchPath)(data, "crypto/kdfparams/prf");
 	            if (prf === "hmac-sha256") {
 	                prfFunc = "sha256";
 	            }
@@ -19159,8 +18728,8 @@
 	            else {
 	                throwError("prf", prf);
 	            }
-	            var count = parseInt(utils$1.searchPath(data, "crypto/kdfparams/c"));
-	            var dkLen = parseInt(utils$1.searchPath(data, "crypto/kdfparams/dklen"));
+	            var count = parseInt((0, utils$1.searchPath)(data, "crypto/kdfparams/c"));
+	            var dkLen = parseInt((0, utils$1.searchPath)(data, "crypto/kdfparams/dklen"));
 	            if (dkLen !== 32) {
 	                throwError("dklen", dkLen);
 	            }
@@ -19194,7 +18763,7 @@
 	function encrypt(account, password, options, progressCallback) {
 	    try {
 	        // Check the address matches the private key
-	        if (lib$6.getAddress(account.address) !== lib$e.computeAddress(account.privateKey)) {
+	        if ((0, lib$6.getAddress)(account.address) !== (0, lib$e.computeAddress)(account.privateKey)) {
 	            throw new Error("address/privateKey mismatch");
 	        }
 	        // Check the mnemonic (if any) matches the private key
@@ -19217,14 +18786,14 @@
 	    if (!options) {
 	        options = {};
 	    }
-	    var privateKey = lib$1.arrayify(account.privateKey);
-	    var passwordBytes = utils$1.getPassword(password);
+	    var privateKey = (0, lib$1.arrayify)(account.privateKey);
+	    var passwordBytes = (0, utils$1.getPassword)(password);
 	    var entropy = null;
 	    var path = null;
 	    var locale = null;
 	    if (hasMnemonic(account)) {
 	        var srcMnemonic = account.mnemonic;
-	        entropy = lib$1.arrayify(lib$k.mnemonicToEntropy(srcMnemonic.phrase, srcMnemonic.locale || "en"));
+	        entropy = (0, lib$1.arrayify)((0, lib$k.mnemonicToEntropy)(srcMnemonic.phrase, srcMnemonic.locale || "en"));
 	        path = srcMnemonic.path || lib$k.defaultPath;
 	        locale = srcMnemonic.locale || "en";
 	    }
@@ -19235,33 +18804,33 @@
 	    // Check/generate the salt
 	    var salt = null;
 	    if (options.salt) {
-	        salt = lib$1.arrayify(options.salt);
+	        salt = (0, lib$1.arrayify)(options.salt);
 	    }
 	    else {
-	        salt = lib$l.randomBytes(32);
+	        salt = (0, lib$l.randomBytes)(32);
 	        ;
 	    }
 	    // Override initialization vector
 	    var iv = null;
 	    if (options.iv) {
-	        iv = lib$1.arrayify(options.iv);
+	        iv = (0, lib$1.arrayify)(options.iv);
 	        if (iv.length !== 16) {
 	            throw new Error("invalid iv");
 	        }
 	    }
 	    else {
-	        iv = lib$l.randomBytes(16);
+	        iv = (0, lib$l.randomBytes)(16);
 	    }
 	    // Override the uuid
 	    var uuidRandom = null;
 	    if (options.uuid) {
-	        uuidRandom = lib$1.arrayify(options.uuid);
+	        uuidRandom = (0, lib$1.arrayify)(options.uuid);
 	        if (uuidRandom.length !== 16) {
 	            throw new Error("invalid uuid");
 	        }
 	    }
 	    else {
-	        uuidRandom = lib$l.randomBytes(16);
+	        uuidRandom = (0, lib$l.randomBytes)(16);
 	    }
 	    // Override the scrypt password-based key derivation function parameters
 	    var N = (1 << 17), r = 8, p = 1;
@@ -19280,7 +18849,7 @@
 	    //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
 	    //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
 	    return scrypt_js_1.default.scrypt(passwordBytes, salt, N, r, p, 64, progressCallback).then(function (key) {
-	        key = lib$1.arrayify(key);
+	        key = (0, lib$1.arrayify)(key);
 	        // This will be used to encrypt the wallet (as per Web3 secret storage)
 	        var derivedKey = key.slice(0, 16);
 	        var macPrefix = key.slice(16, 32);
@@ -19289,23 +18858,23 @@
 	        // Encrypt the private key
 	        var counter = new aes_js_1.default.Counter(iv);
 	        var aesCtr = new aes_js_1.default.ModeOfOperation.ctr(derivedKey, counter);
-	        var ciphertext = lib$1.arrayify(aesCtr.encrypt(privateKey));
+	        var ciphertext = (0, lib$1.arrayify)(aesCtr.encrypt(privateKey));
 	        // Compute the message authentication code, used to check the password
-	        var mac = lib$4.keccak256(lib$1.concat([macPrefix, ciphertext]));
+	        var mac = (0, lib$4.keccak256)((0, lib$1.concat)([macPrefix, ciphertext]));
 	        // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
 	        var data = {
 	            address: account.address.substring(2).toLowerCase(),
-	            id: utils$1.uuidV4(uuidRandom),
+	            id: (0, utils$1.uuidV4)(uuidRandom),
 	            version: 3,
 	            Crypto: {
 	                cipher: "aes-128-ctr",
 	                cipherparams: {
-	                    iv: lib$1.hexlify(iv).substring(2),
+	                    iv: (0, lib$1.hexlify)(iv).substring(2),
 	                },
-	                ciphertext: lib$1.hexlify(ciphertext).substring(2),
+	                ciphertext: (0, lib$1.hexlify)(ciphertext).substring(2),
 	                kdf: "scrypt",
 	                kdfparams: {
-	                    salt: lib$1.hexlify(salt).substring(2),
+	                    salt: (0, lib$1.hexlify)(salt).substring(2),
 	                    n: N,
 	                    dklen: 32,
 	                    p: p,
@@ -19316,22 +18885,22 @@
 	        };
 	        // If we have a mnemonic, encrypt it into the JSON wallet
 	        if (entropy) {
-	            var mnemonicIv = lib$l.randomBytes(16);
+	            var mnemonicIv = (0, lib$l.randomBytes)(16);
 	            var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
 	            var mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
-	            var mnemonicCiphertext = lib$1.arrayify(mnemonicAesCtr.encrypt(entropy));
+	            var mnemonicCiphertext = (0, lib$1.arrayify)(mnemonicAesCtr.encrypt(entropy));
 	            var now = new Date();
 	            var timestamp = (now.getUTCFullYear() + "-" +
-	                utils$1.zpad(now.getUTCMonth() + 1, 2) + "-" +
-	                utils$1.zpad(now.getUTCDate(), 2) + "T" +
-	                utils$1.zpad(now.getUTCHours(), 2) + "-" +
-	                utils$1.zpad(now.getUTCMinutes(), 2) + "-" +
-	                utils$1.zpad(now.getUTCSeconds(), 2) + ".0Z");
+	                (0, utils$1.zpad)(now.getUTCMonth() + 1, 2) + "-" +
+	                (0, utils$1.zpad)(now.getUTCDate(), 2) + "T" +
+	                (0, utils$1.zpad)(now.getUTCHours(), 2) + "-" +
+	                (0, utils$1.zpad)(now.getUTCMinutes(), 2) + "-" +
+	                (0, utils$1.zpad)(now.getUTCSeconds(), 2) + ".0Z");
 	            data["x-ethers"] = {
 	                client: client,
 	                gethFilename: ("UTC--" + timestamp + "--" + data.address),
-	                mnemonicCounter: lib$1.hexlify(mnemonicIv).substring(2),
-	                mnemonicCiphertext: lib$1.hexlify(mnemonicCiphertext).substring(2),
+	                mnemonicCounter: (0, lib$1.hexlify)(mnemonicIv).substring(2),
+	                mnemonicCiphertext: (0, lib$1.hexlify)(mnemonicCiphertext).substring(2),
 	                path: path,
 	                locale: locale,
 	                version: "0.1"
@@ -19361,28 +18930,28 @@
 	Object.defineProperty(exports, "decryptKeystoreSync", { enumerable: true, get: function () { return keystore.decryptSync; } });
 	Object.defineProperty(exports, "encryptKeystore", { enumerable: true, get: function () { return keystore.encrypt; } });
 	function decryptJsonWallet(json, password, progressCallback) {
-	    if (inspect.isCrowdsaleWallet(json)) {
+	    if ((0, inspect.isCrowdsaleWallet)(json)) {
 	        if (progressCallback) {
 	            progressCallback(0);
 	        }
-	        var account = crowdsale.decrypt(json, password);
+	        var account = (0, crowdsale.decrypt)(json, password);
 	        if (progressCallback) {
 	            progressCallback(1);
 	        }
 	        return Promise.resolve(account);
 	    }
-	    if (inspect.isKeystoreWallet(json)) {
-	        return keystore.decrypt(json, password, progressCallback);
+	    if ((0, inspect.isKeystoreWallet)(json)) {
+	        return (0, keystore.decrypt)(json, password, progressCallback);
 	    }
 	    return Promise.reject(new Error("invalid JSON wallet"));
 	}
 	exports.decryptJsonWallet = decryptJsonWallet;
 	function decryptJsonWalletSync(json, password) {
-	    if (inspect.isCrowdsaleWallet(json)) {
-	        return crowdsale.decrypt(json, password);
+	    if ((0, inspect.isCrowdsaleWallet)(json)) {
+	        return (0, crowdsale.decrypt)(json, password);
 	    }
-	    if (inspect.isKeystoreWallet(json)) {
-	        return keystore.decryptSync(json, password);
+	    if ((0, inspect.isKeystoreWallet)(json)) {
+	        return (0, keystore.decryptSync)(json, password);
 	    }
 	    throw new Error("invalid JSON wallet");
 	}
@@ -19396,7 +18965,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "wallet/5.4.0";
+	exports.version = "wallet/5.5.0";
 
 	});
 
@@ -19473,7 +19042,7 @@
 
 	var logger = new lib.Logger(_version$C.version);
 	function isAccount(value) {
-	    return (value != null && lib$1.isHexString(value.privateKey, 32) && value.address != null);
+	    return (value != null && (0, lib$1.isHexString)(value.privateKey, 32) && value.address != null);
 	}
 	function hasMnemonic(value) {
 	    var mnemonic = value.mnemonic;
@@ -19488,26 +19057,26 @@
 	        _this = _super.call(this) || this;
 	        if (isAccount(privateKey)) {
 	            var signingKey_1 = new lib$d.SigningKey(privateKey.privateKey);
-	            lib$3.defineReadOnly(_this, "_signingKey", function () { return signingKey_1; });
-	            lib$3.defineReadOnly(_this, "address", lib$e.computeAddress(_this.publicKey));
-	            if (_this.address !== lib$6.getAddress(privateKey.address)) {
+	            (0, lib$3.defineReadOnly)(_this, "_signingKey", function () { return signingKey_1; });
+	            (0, lib$3.defineReadOnly)(_this, "address", (0, lib$e.computeAddress)(_this.publicKey));
+	            if (_this.address !== (0, lib$6.getAddress)(privateKey.address)) {
 	                logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDACTED]");
 	            }
 	            if (hasMnemonic(privateKey)) {
 	                var srcMnemonic_1 = privateKey.mnemonic;
-	                lib$3.defineReadOnly(_this, "_mnemonic", function () { return ({
+	                (0, lib$3.defineReadOnly)(_this, "_mnemonic", function () { return ({
 	                    phrase: srcMnemonic_1.phrase,
 	                    path: srcMnemonic_1.path || lib$k.defaultPath,
 	                    locale: srcMnemonic_1.locale || "en"
 	                }); });
 	                var mnemonic = _this.mnemonic;
 	                var node = lib$k.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
-	                if (lib$e.computeAddress(node.privateKey) !== _this.address) {
+	                if ((0, lib$e.computeAddress)(node.privateKey) !== _this.address) {
 	                    logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDACTED]");
 	                }
 	            }
 	            else {
-	                lib$3.defineReadOnly(_this, "_mnemonic", function () { return null; });
+	                (0, lib$3.defineReadOnly)(_this, "_mnemonic", function () { return null; });
 	            }
 	        }
 	        else {
@@ -19516,7 +19085,7 @@
 	                if (privateKey.curve !== "secp256k1") {
 	                    logger.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
 	                }
-	                lib$3.defineReadOnly(_this, "_signingKey", function () { return privateKey; });
+	                (0, lib$3.defineReadOnly)(_this, "_signingKey", function () { return privateKey; });
 	            }
 	            else {
 	                // A lot of common tools do not prefix private keys with a 0x (see: #1166)
@@ -19526,16 +19095,16 @@
 	                    }
 	                }
 	                var signingKey_2 = new lib$d.SigningKey(privateKey);
-	                lib$3.defineReadOnly(_this, "_signingKey", function () { return signingKey_2; });
+	                (0, lib$3.defineReadOnly)(_this, "_signingKey", function () { return signingKey_2; });
 	            }
-	            lib$3.defineReadOnly(_this, "_mnemonic", function () { return null; });
-	            lib$3.defineReadOnly(_this, "address", lib$e.computeAddress(_this.publicKey));
+	            (0, lib$3.defineReadOnly)(_this, "_mnemonic", function () { return null; });
+	            (0, lib$3.defineReadOnly)(_this, "address", (0, lib$e.computeAddress)(_this.publicKey));
 	        }
 	        /* istanbul ignore if */
 	        if (provider && !lib$b.Provider.isProvider(provider)) {
 	            logger.throwArgumentError("invalid provider", "provider", provider);
 	        }
-	        lib$3.defineReadOnly(_this, "provider", provider || null);
+	        (0, lib$3.defineReadOnly)(_this, "provider", provider || null);
 	        return _this;
 	    }
 	    Object.defineProperty(Wallet.prototype, "mnemonic", {
@@ -19561,21 +19130,21 @@
 	    };
 	    Wallet.prototype.signTransaction = function (transaction) {
 	        var _this = this;
-	        return lib$3.resolveProperties(transaction).then(function (tx) {
+	        return (0, lib$3.resolveProperties)(transaction).then(function (tx) {
 	            if (tx.from != null) {
-	                if (lib$6.getAddress(tx.from) !== _this.address) {
+	                if ((0, lib$6.getAddress)(tx.from) !== _this.address) {
 	                    logger.throwArgumentError("transaction from address mismatch", "transaction.from", transaction.from);
 	                }
 	                delete tx.from;
 	            }
-	            var signature = _this._signingKey().signDigest(lib$4.keccak256(lib$e.serialize(tx)));
-	            return lib$e.serialize(tx, signature);
+	            var signature = _this._signingKey().signDigest((0, lib$4.keccak256)((0, lib$e.serialize)(tx)));
+	            return (0, lib$e.serialize)(tx, signature);
 	        });
 	    };
 	    Wallet.prototype.signMessage = function (message) {
 	        return __awaiter(this, void 0, void 0, function () {
 	            return __generator(this, function (_a) {
-	                return [2 /*return*/, lib$1.joinSignature(this._signingKey().signDigest(lib$9.hashMessage(message)))];
+	                return [2 /*return*/, (0, lib$1.joinSignature)(this._signingKey().signDigest((0, lib$9.hashMessage)(message)))];
 	            });
 	        });
 	    };
@@ -19596,7 +19165,7 @@
 	                        })];
 	                    case 1:
 	                        populated = _a.sent();
-	                        return [2 /*return*/, lib$1.joinSignature(this._signingKey().signDigest(lib$9._TypedDataEncoder.hash(populated.domain, types, populated.value)))];
+	                        return [2 /*return*/, (0, lib$1.joinSignature)(this._signingKey().signDigest(lib$9._TypedDataEncoder.hash(populated.domain, types, populated.value)))];
 	                }
 	            });
 	        });
@@ -19612,29 +19181,29 @@
 	        if (!options) {
 	            options = {};
 	        }
-	        return lib$m.encryptKeystore(this, password, options, progressCallback);
+	        return (0, lib$m.encryptKeystore)(this, password, options, progressCallback);
 	    };
 	    /**
 	     *  Static methods to create Wallet instances.
 	     */
 	    Wallet.createRandom = function (options) {
-	        var entropy = lib$l.randomBytes(16);
+	        var entropy = (0, lib$l.randomBytes)(16);
 	        if (!options) {
 	            options = {};
 	        }
 	        if (options.extraEntropy) {
-	            entropy = lib$1.arrayify(lib$1.hexDataSlice(lib$4.keccak256(lib$1.concat([entropy, options.extraEntropy])), 0, 16));
+	            entropy = (0, lib$1.arrayify)((0, lib$1.hexDataSlice)((0, lib$4.keccak256)((0, lib$1.concat)([entropy, options.extraEntropy])), 0, 16));
 	        }
-	        var mnemonic = lib$k.entropyToMnemonic(entropy, options.locale);
+	        var mnemonic = (0, lib$k.entropyToMnemonic)(entropy, options.locale);
 	        return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
 	    };
 	    Wallet.fromEncryptedJson = function (json, password, progressCallback) {
-	        return lib$m.decryptJsonWallet(json, password, progressCallback).then(function (account) {
+	        return (0, lib$m.decryptJsonWallet)(json, password, progressCallback).then(function (account) {
 	            return new Wallet(account);
 	        });
 	    };
 	    Wallet.fromEncryptedJsonSync = function (json, password) {
-	        return new Wallet(lib$m.decryptJsonWalletSync(json, password));
+	        return new Wallet((0, lib$m.decryptJsonWalletSync)(json, password));
 	    };
 	    Wallet.fromMnemonic = function (mnemonic, path, wordlist) {
 	        if (!path) {
@@ -19646,11 +19215,11 @@
 	}(lib$c.Signer));
 	exports.Wallet = Wallet;
 	function verifyMessage(message, signature) {
-	    return lib$e.recoverAddress(lib$9.hashMessage(message), signature);
+	    return (0, lib$e.recoverAddress)((0, lib$9.hashMessage)(message), signature);
 	}
 	exports.verifyMessage = verifyMessage;
 	function verifyTypedData(domain, types, value, signature) {
-	    return lib$e.recoverAddress(lib$9._TypedDataEncoder.hash(domain, types, value), signature);
+	    return (0, lib$e.recoverAddress)(lib$9._TypedDataEncoder.hash(domain, types, value), signature);
 	}
 	exports.verifyTypedData = verifyTypedData;
 
@@ -19662,7 +19231,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "networks/5.4.2";
+	exports.version = "networks/5.5.0";
 
 	});
 
@@ -19904,11 +19473,11 @@
 	    for (var i = 0; i < textData.length; i++) {
 	        data.push(textData.charCodeAt(i));
 	    }
-	    return lib$1.arrayify(data);
+	    return (0, lib$1.arrayify)(data);
 	}
 	exports.decode = decode;
 	function encode(data) {
-	    data = lib$1.arrayify(data);
+	    data = (0, lib$1.arrayify)(data);
 	    var textData = "";
 	    for (var i = 0; i < data.length; i++) {
 	        textData += String.fromCharCode(data[i]);
@@ -19937,7 +19506,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "web/5.4.0";
+	exports.version = "web/5.5.0";
 
 	});
 
@@ -19997,12 +19566,15 @@
 	                        method: (options.method || "GET"),
 	                        headers: (options.headers || {}),
 	                        body: (options.body || undefined),
-	                        mode: "cors",
-	                        cache: "no-cache",
-	                        credentials: "same-origin",
-	                        redirect: "follow",
-	                        referrer: "client", // no-referrer, *client
 	                    };
+	                    if (options.skipFetchSetup !== true) {
+	                        request.mode = "cors"; // no-cors, cors, *same-origin
+	                        request.cache = "no-cache"; // *default, no-cache, reload, force-cache, only-if-cached
+	                        request.credentials = "same-origin"; // include, *same-origin, omit
+	                        request.redirect = "follow"; // manual, *follow, error
+	                        request.referrer = "client"; // no-referrer, *client
+	                    }
+	                    ;
 	                    return [4 /*yield*/, fetch(href, request)];
 	                case 1:
 	                    response = _a.sent();
@@ -20024,7 +19596,7 @@
 	                            headers: headers,
 	                            statusCode: response.status,
 	                            statusMessage: response.statusText,
-	                            body: lib$1.arrayify(new Uint8Array(body)),
+	                            body: (0, lib$1.arrayify)(new Uint8Array(body)),
 	                        }];
 	            }
 	        });
@@ -20096,15 +19668,15 @@
 	    if (typeof (value) === "string") {
 	        return value;
 	    }
-	    if (lib$1.isBytesLike(value)) {
+	    if ((0, lib$1.isBytesLike)(value)) {
 	        if (type && (type.split("/")[0] === "text" || type.split(";")[0].trim() === "application/json")) {
 	            try {
-	                return lib$8.toUtf8String(value);
+	                return (0, lib$8.toUtf8String)(value);
 	            }
 	            catch (error) { }
 	            ;
 	        }
-	        return lib$1.hexlify(value);
+	        return (0, lib$1.hexlify)(value);
 	    }
 	    return value;
 	}
@@ -20156,7 +19728,7 @@
 	            var authorization = connection.user + ":" + connection.password;
 	            headers["authorization"] = {
 	                key: "Authorization",
-	                value: "Basic " + lib$p.encode(lib$8.toUtf8Bytes(authorization))
+	                value: "Basic " + (0, lib$p.encode)((0, lib$8.toUtf8Bytes)(authorization))
 	            };
 	        }
 	    }
@@ -20217,7 +19789,7 @@
 	                        _a.label = 2;
 	                    case 2:
 	                        _a.trys.push([2, 8, , 9]);
-	                        return [4 /*yield*/, browserGeturl.getUrl(url, options)];
+	                        return [4 /*yield*/, (0, browserGeturl.getUrl)(url, options)];
 	                    case 3:
 	                        response = _a.sent();
 	                        if (!(response.statusCode === 429 && attempt < attemptLimit)) return [3 /*break*/, 7];
@@ -20312,7 +19884,7 @@
 	                        return [3 /*break*/, 17];
 	                    case 17:
 	                        runningTimeout.cancel();
-	                        // If we had a processFunc, it eitehr returned a T or threw above.
+	                        // If we had a processFunc, it either returned a T or threw above.
 	                        // The "body" is now a Uint8Array.
 	                        return [2 /*return*/, body_1];
 	                    case 18:
@@ -20335,7 +19907,7 @@
 	        var result = null;
 	        if (value != null) {
 	            try {
-	                result = JSON.parse(lib$8.toUtf8String(value));
+	                result = JSON.parse((0, lib$8.toUtf8String)(value));
 	            }
 	            catch (error) {
 	                logger.throwError("invalid JSON", lib.Logger.errors.SERVER_ERROR, {
@@ -20354,13 +19926,13 @@
 	    // - convert the json to bytes
 	    var body = null;
 	    if (json != null) {
-	        body = lib$8.toUtf8Bytes(json);
+	        body = (0, lib$8.toUtf8Bytes)(json);
 	        // Create a connection with the content-type set for JSON
-	        var updated = (typeof (connection) === "string") ? ({ url: connection }) : lib$3.shallowCopy(connection);
+	        var updated = (typeof (connection) === "string") ? ({ url: connection }) : (0, lib$3.shallowCopy)(connection);
 	        if (updated.headers) {
 	            var hasContentType = (Object.keys(updated.headers).filter(function (k) { return (k.toLowerCase() === "content-type"); }).length) !== 0;
 	            if (!hasContentType) {
-	                updated.headers = lib$3.shallowCopy(updated.headers);
+	                updated.headers = (0, lib$3.shallowCopy)(updated.headers);
 	                updated.headers["content-type"] = "application/json";
 	            }
 	        }
@@ -20376,7 +19948,7 @@
 	    if (!options) {
 	        options = {};
 	    }
-	    options = lib$3.shallowCopy(options);
+	    options = (0, lib$3.shallowCopy)(options);
 	    if (options.floor == null) {
 	        options.floor = 0;
 	    }
@@ -20644,7 +20216,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.4.5";
+	exports.version = "providers/5.5.0";
 
 	});
 
@@ -20762,7 +20334,7 @@
 	            transactions: Formatter.allowNull(Formatter.arrayOf(hash)),
 	            baseFeePerGas: Formatter.allowNull(bigNumber)
 	        };
-	        formats.blockWithTransactions = lib$3.shallowCopy(formats.block);
+	        formats.blockWithTransactions = (0, lib$3.shallowCopy)(formats.block);
 	        formats.blockWithTransactions.transactions = Formatter.allowNull(Formatter.arrayOf(this.transactionResponse.bind(this)));
 	        formats.filter = {
 	            fromBlock: Formatter.allowNull(blockTag, undefined),
@@ -20785,7 +20357,7 @@
 	        return formats;
 	    };
 	    Formatter.prototype.accessList = function (accessList) {
-	        return lib$e.accessListify(accessList || []);
+	        return (0, lib$e.accessListify)(accessList || []);
 	    };
 	    // Requires a BigNumberish that is within the IEEE754 safe integer range; returns a number
 	    // Strict! Used on input.
@@ -20826,7 +20398,7 @@
 	            if (!strict && value.substring(0, 2) !== "0x") {
 	                value = "0x" + value;
 	            }
-	            if (lib$1.isHexString(value)) {
+	            if ((0, lib$1.isHexString)(value)) {
 	                return value.toLowerCase();
 	            }
 	        }
@@ -20842,17 +20414,17 @@
 	    // Requires an address
 	    // Strict! Used on input.
 	    Formatter.prototype.address = function (value) {
-	        return lib$6.getAddress(value);
+	        return (0, lib$6.getAddress)(value);
 	    };
 	    Formatter.prototype.callAddress = function (value) {
-	        if (!lib$1.isHexString(value, 32)) {
+	        if (!(0, lib$1.isHexString)(value, 32)) {
 	            return null;
 	        }
-	        var address = lib$6.getAddress(lib$1.hexDataSlice(value, 12));
+	        var address = (0, lib$6.getAddress)((0, lib$1.hexDataSlice)(value, 12));
 	        return (address === lib$7.AddressZero) ? null : address;
 	    };
 	    Formatter.prototype.contractAddress = function (value) {
-	        return lib$6.getContractAddress(value);
+	        return (0, lib$6.getContractAddress)(value);
 	    };
 	    // Strict! Used on input.
 	    Formatter.prototype.blockTag = function (blockTag) {
@@ -20865,15 +20437,15 @@
 	        if (blockTag === "latest" || blockTag === "pending") {
 	            return blockTag;
 	        }
-	        if (typeof (blockTag) === "number" || lib$1.isHexString(blockTag)) {
-	            return lib$1.hexValue(blockTag);
+	        if (typeof (blockTag) === "number" || (0, lib$1.isHexString)(blockTag)) {
+	            return (0, lib$1.hexValue)(blockTag);
 	        }
 	        throw new Error("invalid blockTag");
 	    };
 	    // Requires a hash, optionally requires 0x prefix; returns prefixed lowercase hash.
 	    Formatter.prototype.hash = function (value, strict) {
 	        var result = this.hex(value, strict);
-	        if (lib$1.hexDataLength(result) !== 32) {
+	        if ((0, lib$1.hexDataLength)(result) !== 32) {
 	            return logger.throwArgumentError("invalid hash", "value", value);
 	        }
 	        return result;
@@ -20891,16 +20463,20 @@
 	        return null;
 	    };
 	    Formatter.prototype.uint256 = function (value) {
-	        if (!lib$1.isHexString(value)) {
+	        if (!(0, lib$1.isHexString)(value)) {
 	            throw new Error("invalid uint256");
 	        }
-	        return lib$1.hexZeroPad(value, 32);
+	        return (0, lib$1.hexZeroPad)(value, 32);
 	    };
 	    Formatter.prototype._block = function (value, format) {
 	        if (value.author != null && value.miner == null) {
 	            value.miner = value.author;
 	        }
-	        return Formatter.check(format, value);
+	        // The difficulty may need to come from _difficulty in recursed blocks
+	        var difficulty = (value._difficulty != null) ? value._difficulty : value.difficulty;
+	        var result = Formatter.check(format, value);
+	        result._difficulty = ((difficulty == null) ? null : lib$2.BigNumber.from(difficulty));
+	        return result;
 	    };
 	    Formatter.prototype.block = function (value) {
 	        return this._block(value, this.formats.block);
@@ -20936,7 +20512,7 @@
 	        var result = Formatter.check(this.formats.transaction, transaction);
 	        if (transaction.chainId != null) {
 	            var chainId = transaction.chainId;
-	            if (lib$1.isHexString(chainId)) {
+	            if ((0, lib$1.isHexString)(chainId)) {
 	                chainId = lib$2.BigNumber.from(chainId).toNumber();
 	            }
 	            result.chainId = chainId;
@@ -20947,7 +20523,7 @@
 	            if (chainId == null && result.v == null) {
 	                chainId = transaction.chainId;
 	            }
-	            if (lib$1.isHexString(chainId)) {
+	            if ((0, lib$1.isHexString)(chainId)) {
 	                chainId = lib$2.BigNumber.from(chainId).toNumber();
 	            }
 	            if (typeof (chainId) !== "number" && result.v != null) {
@@ -20969,7 +20545,7 @@
 	        return result;
 	    };
 	    Formatter.prototype.transaction = function (value) {
-	        return lib$e.parse(value);
+	        return (0, lib$e.parse)(value);
 	    };
 	    Formatter.prototype.receiptLog = function (value) {
 	        return Formatter.check(this.formats.receiptLog, value);
@@ -21184,7 +20760,7 @@
 	    if (topic == null) {
 	        return "null";
 	    }
-	    if (lib$1.hexDataLength(topic) !== 32) {
+	    if ((0, lib$1.hexDataLength)(topic) !== 32) {
 	        logger.throwArgumentError("invalid topic", "topic", topic);
 	    }
 	    return topic.toLowerCase();
@@ -21229,7 +20805,7 @@
 	function getEventTag(eventName) {
 	    if (typeof (eventName) === "string") {
 	        eventName = eventName.toLowerCase();
-	        if (lib$1.hexDataLength(eventName) === 32) {
+	        if ((0, lib$1.hexDataLength)(eventName) === 32) {
 	            return "tx:" + eventName;
 	        }
 	        if (eventName.indexOf(":") === -1) {
@@ -21275,9 +20851,9 @@
 	var PollableEvents = ["block", "network", "pending", "poll"];
 	var Event = /** @class */ (function () {
 	    function Event(tag, listener, once) {
-	        lib$3.defineReadOnly(this, "tag", tag);
-	        lib$3.defineReadOnly(this, "listener", listener);
-	        lib$3.defineReadOnly(this, "once", once);
+	        (0, lib$3.defineReadOnly)(this, "tag", tag);
+	        (0, lib$3.defineReadOnly)(this, "listener", listener);
+	        (0, lib$3.defineReadOnly)(this, "once", once);
 	    }
 	    Object.defineProperty(Event.prototype, "event", {
 	        get: function () {
@@ -21347,17 +20923,17 @@
 	    "700": { symbol: "xdai", ilk: "eth" },
 	};
 	function bytes32ify(value) {
-	    return lib$1.hexZeroPad(lib$2.BigNumber.from(value).toHexString(), 32);
+	    return (0, lib$1.hexZeroPad)(lib$2.BigNumber.from(value).toHexString(), 32);
 	}
 	// Compute the Base58Check encoded data (checksum is first 4 bytes of sha256d)
 	function base58Encode(data) {
-	    return lib$g.Base58.encode(lib$1.concat([data, lib$1.hexDataSlice(lib$h.sha256(lib$h.sha256(data)), 0, 4)]));
+	    return lib$g.Base58.encode((0, lib$1.concat)([data, (0, lib$1.hexDataSlice)((0, lib$h.sha256)((0, lib$h.sha256)(data)), 0, 4)]));
 	}
 	var Resolver = /** @class */ (function () {
 	    function Resolver(provider, address, name) {
-	        lib$3.defineReadOnly(this, "provider", provider);
-	        lib$3.defineReadOnly(this, "name", name);
-	        lib$3.defineReadOnly(this, "address", provider.formatter.address(address));
+	        (0, lib$3.defineReadOnly)(this, "provider", provider);
+	        (0, lib$3.defineReadOnly)(this, "name", name);
+	        (0, lib$3.defineReadOnly)(this, "address", provider.formatter.address(address));
 	    }
 	    Resolver.prototype._fetchBytes = function (selector, parameters) {
 	        return __awaiter(this, void 0, void 0, function () {
@@ -21367,7 +20943,7 @@
 	                    case 0:
 	                        transaction = {
 	                            to: this.address,
-	                            data: lib$1.hexConcat([selector, lib$9.namehash(this.name), (parameters || "0x")])
+	                            data: (0, lib$1.hexConcat)([selector, (0, lib$9.namehash)(this.name), (parameters || "0x")])
 	                        };
 	                        _a.label = 1;
 	                    case 1:
@@ -21378,9 +20954,9 @@
 	                        if (result === "0x") {
 	                            return [2 /*return*/, null];
 	                        }
-	                        offset = lib$2.BigNumber.from(lib$1.hexDataSlice(result, 0, 32)).toNumber();
-	                        length_1 = lib$2.BigNumber.from(lib$1.hexDataSlice(result, offset, offset + 32)).toNumber();
-	                        return [2 /*return*/, lib$1.hexDataSlice(result, offset + 32, offset + 32 + length_1)];
+	                        offset = lib$2.BigNumber.from((0, lib$1.hexDataSlice)(result, 0, 32)).toNumber();
+	                        length_1 = lib$2.BigNumber.from((0, lib$1.hexDataSlice)(result, offset, offset + 32)).toNumber();
+	                        return [2 /*return*/, (0, lib$1.hexDataSlice)(result, offset + 32, offset + 32 + length_1)];
 	                    case 3:
 	                        error_1 = _a.sent();
 	                        if (error_1.code === lib.Logger.errors.CALL_EXCEPTION) {
@@ -21402,14 +20978,14 @@
 	        if (coinInfo.ilk === "eth") {
 	            return this.provider.formatter.address(hexBytes);
 	        }
-	        var bytes = lib$1.arrayify(hexBytes);
+	        var bytes = (0, lib$1.arrayify)(hexBytes);
 	        // P2PKH: OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
 	        if (coinInfo.p2pkh != null) {
 	            var p2pkh = hexBytes.match(/^0x76a9([0-9a-f][0-9a-f])([0-9a-f]*)88ac$/);
 	            if (p2pkh) {
 	                var length_2 = parseInt(p2pkh[1], 16);
 	                if (p2pkh[2].length === length_2 * 2 && length_2 >= 1 && length_2 <= 75) {
-	                    return base58Encode(lib$1.concat([[coinInfo.p2pkh], ("0x" + p2pkh[2])]));
+	                    return base58Encode((0, lib$1.concat)([[coinInfo.p2pkh], ("0x" + p2pkh[2])]));
 	                }
 	            }
 	        }
@@ -21419,7 +20995,7 @@
 	            if (p2sh) {
 	                var length_3 = parseInt(p2sh[1], 16);
 	                if (p2sh[2].length === length_3 * 2 && length_3 >= 1 && length_3 <= 75) {
-	                    return base58Encode(lib$1.concat([[coinInfo.p2sh], ("0x" + p2sh[2])]));
+	                    return base58Encode((0, lib$1.concat)([[coinInfo.p2sh], ("0x" + p2sh[2])]));
 	                }
 	            }
 	        }
@@ -21459,7 +21035,7 @@
 	                        _a.trys.push([1, 3, , 4]);
 	                        transaction = {
 	                            to: this.address,
-	                            data: ("0x3b3b57de" + lib$9.namehash(this.name).substring(2))
+	                            data: ("0x3b3b57de" + (0, lib$9.namehash)(this.name).substring(2))
 	                        };
 	                        return [4 /*yield*/, this.provider.call(transaction)];
 	                    case 2:
@@ -21534,21 +21110,21 @@
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
-	                        keyBytes = lib$8.toUtf8Bytes(key);
+	                        keyBytes = (0, lib$8.toUtf8Bytes)(key);
 	                        // The nodehash consumes the first slot, so the string pointer targets
 	                        // offset 64, with the length at offset 64 and data starting at offset 96
-	                        keyBytes = lib$1.concat([bytes32ify(64), bytes32ify(keyBytes.length), keyBytes]);
+	                        keyBytes = (0, lib$1.concat)([bytes32ify(64), bytes32ify(keyBytes.length), keyBytes]);
 	                        // Pad to word-size (32 bytes)
 	                        if ((keyBytes.length % 32) !== 0) {
-	                            keyBytes = lib$1.concat([keyBytes, lib$1.hexZeroPad("0x", 32 - (key.length % 32))]);
+	                            keyBytes = (0, lib$1.concat)([keyBytes, (0, lib$1.hexZeroPad)("0x", 32 - (key.length % 32))]);
 	                        }
-	                        return [4 /*yield*/, this._fetchBytes("0x59d1d43c", lib$1.hexlify(keyBytes))];
+	                        return [4 /*yield*/, this._fetchBytes("0x59d1d43c", (0, lib$1.hexlify)(keyBytes))];
 	                    case 1:
 	                        hexBytes = _a.sent();
 	                        if (hexBytes == null || hexBytes === "0x") {
 	                            return [2 /*return*/, null];
 	                        }
-	                        return [2 /*return*/, lib$8.toUtf8String(hexBytes)];
+	                        return [2 /*return*/, (0, lib$8.toUtf8String)(hexBytes)];
 	                }
 	            });
 	        });
@@ -21581,7 +21157,7 @@
 	        // If network is any, this Provider allows the underlying
 	        // network to change dynamically, and we auto-detect the
 	        // current network
-	        lib$3.defineReadOnly(_this, "anyNetwork", (network === "any"));
+	        (0, lib$3.defineReadOnly)(_this, "anyNetwork", (network === "any"));
 	        if (_this.anyNetwork) {
 	            network = _this.detectNetwork();
 	        }
@@ -21593,9 +21169,9 @@
 	            _this._ready().catch(function (error) { });
 	        }
 	        else {
-	            var knownNetwork = lib$3.getStatic((_newTarget), "getNetwork")(network);
+	            var knownNetwork = (0, lib$3.getStatic)(_newTarget, "getNetwork")(network);
 	            if (knownNetwork) {
-	                lib$3.defineReadOnly(_this, "_network", knownNetwork);
+	                (0, lib$3.defineReadOnly)(_this, "_network", knownNetwork);
 	                _this.emit("network", knownNetwork, null);
 	            }
 	            else {
@@ -21645,7 +21221,7 @@
 	                                this._network = network;
 	                            }
 	                            else {
-	                                lib$3.defineReadOnly(this, "_network", network);
+	                                (0, lib$3.defineReadOnly)(this, "_network", network);
 	                            }
 	                            this.emit("network", network, null);
 	                        }
@@ -21658,10 +21234,10 @@
 	    Object.defineProperty(BaseProvider.prototype, "ready", {
 	        // This will always return the most recently established network.
 	        // For "any", this can change (a "network" event is emitted before
-	        // any change is refelcted); otherwise this cannot change
+	        // any change is reflected); otherwise this cannot change
 	        get: function () {
 	            var _this = this;
-	            return lib$q.poll(function () {
+	            return (0, lib$q.poll)(function () {
 	                return _this._ready().then(function (network) {
 	                    return network;
 	                }, function (error) {
@@ -21685,7 +21261,7 @@
 	    };
 	    // @TODO: Remove this and just use getNetwork
 	    BaseProvider.getNetwork = function (network) {
-	        return lib$o.getNetwork((network == null) ? "homestead" : network);
+	        return (0, lib$o.getNetwork)((network == null) ? "homestead" : network);
 	    };
 	    // Fetches the blockNumber, but will reuse any result that is less
 	    // than maxAge old or has been requested since the last request
@@ -21727,7 +21303,7 @@
 	                    case 6: return [3 /*break*/, 2];
 	                    case 7:
 	                        reqTime = getTime();
-	                        checkInternalBlockNumber = lib$3.resolveProperties({
+	                        checkInternalBlockNumber = (0, lib$3.resolveProperties)({
 	                            blockNumber: this.perform("getBlockNumber", {}),
 	                            networkError: this.getNetwork().then(function (network) { return (null); }, function (error) { return (error); })
 	                        }).then(function (_a) {
@@ -22249,7 +21825,8 @@
 	                        catch (error) {
 	                            return [2 /*return*/, logger.throwError("bad result from backend", lib.Logger.errors.SERVER_ERROR, {
 	                                    method: "getGasPrice",
-	                                    result: result, error: error
+	                                    result: result,
+	                                    error: error
 	                                })];
 	                        }
 	                        return [2 /*return*/];
@@ -22265,7 +21842,7 @@
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _a.sent();
-	                        return [4 /*yield*/, lib$3.resolveProperties({
+	                        return [4 /*yield*/, (0, lib$3.resolveProperties)({
 	                                address: this._getAddress(addressOrName),
 	                                blockTag: this._getBlockTag(blockTag)
 	                            })];
@@ -22280,7 +21857,9 @@
 	                        catch (error) {
 	                            return [2 /*return*/, logger.throwError("bad result from backend", lib.Logger.errors.SERVER_ERROR, {
 	                                    method: "getBalance",
-	                                    params: params, result: result, error: error
+	                                    params: params,
+	                                    result: result,
+	                                    error: error
 	                                })];
 	                        }
 	                        return [2 /*return*/];
@@ -22296,7 +21875,7 @@
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _a.sent();
-	                        return [4 /*yield*/, lib$3.resolveProperties({
+	                        return [4 /*yield*/, (0, lib$3.resolveProperties)({
 	                                address: this._getAddress(addressOrName),
 	                                blockTag: this._getBlockTag(blockTag)
 	                            })];
@@ -22311,7 +21890,9 @@
 	                        catch (error) {
 	                            return [2 /*return*/, logger.throwError("bad result from backend", lib.Logger.errors.SERVER_ERROR, {
 	                                    method: "getTransactionCount",
-	                                    params: params, result: result, error: error
+	                                    params: params,
+	                                    result: result,
+	                                    error: error
 	                                })];
 	                        }
 	                        return [2 /*return*/];
@@ -22327,7 +21908,7 @@
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _a.sent();
-	                        return [4 /*yield*/, lib$3.resolveProperties({
+	                        return [4 /*yield*/, (0, lib$3.resolveProperties)({
 	                                address: this._getAddress(addressOrName),
 	                                blockTag: this._getBlockTag(blockTag)
 	                            })];
@@ -22337,12 +21918,14 @@
 	                    case 3:
 	                        result = _a.sent();
 	                        try {
-	                            return [2 /*return*/, lib$1.hexlify(result)];
+	                            return [2 /*return*/, (0, lib$1.hexlify)(result)];
 	                        }
 	                        catch (error) {
 	                            return [2 /*return*/, logger.throwError("bad result from backend", lib.Logger.errors.SERVER_ERROR, {
 	                                    method: "getCode",
-	                                    params: params, result: result, error: error
+	                                    params: params,
+	                                    result: result,
+	                                    error: error
 	                                })];
 	                        }
 	                        return [2 /*return*/];
@@ -22358,10 +21941,10 @@
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _a.sent();
-	                        return [4 /*yield*/, lib$3.resolveProperties({
+	                        return [4 /*yield*/, (0, lib$3.resolveProperties)({
 	                                address: this._getAddress(addressOrName),
 	                                blockTag: this._getBlockTag(blockTag),
-	                                position: Promise.resolve(position).then(function (p) { return lib$1.hexValue(p); })
+	                                position: Promise.resolve(position).then(function (p) { return (0, lib$1.hexValue)(p); })
 	                            })];
 	                    case 2:
 	                        params = _a.sent();
@@ -22369,12 +21952,14 @@
 	                    case 3:
 	                        result = _a.sent();
 	                        try {
-	                            return [2 /*return*/, lib$1.hexlify(result)];
+	                            return [2 /*return*/, (0, lib$1.hexlify)(result)];
 	                        }
 	                        catch (error) {
 	                            return [2 /*return*/, logger.throwError("bad result from backend", lib.Logger.errors.SERVER_ERROR, {
 	                                    method: "getStorageAt",
-	                                    params: params, result: result, error: error
+	                                    params: params,
+	                                    result: result,
+	                                    error: error
 	                                })];
 	                        }
 	                        return [2 /*return*/];
@@ -22385,7 +21970,7 @@
 	    // This should be called by any subclass wrapping a TransactionResponse
 	    BaseProvider.prototype._wrapTransaction = function (tx, hash, startBlock) {
 	        var _this = this;
-	        if (hash != null && lib$1.hexDataLength(hash) !== 32) {
+	        if (hash != null && (0, lib$1.hexDataLength)(hash) !== 32) {
 	            throw new Error("invalid response - sendTransaction");
 	        }
 	        var result = tx;
@@ -22444,7 +22029,7 @@
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _a.sent();
-	                        return [4 /*yield*/, Promise.resolve(signedTransaction).then(function (t) { return lib$1.hexlify(t); })];
+	                        return [4 /*yield*/, Promise.resolve(signedTransaction).then(function (t) { return (0, lib$1.hexlify)(t); })];
 	                    case 2:
 	                        hexTx = _a.sent();
 	                        tx = this.formatter.transaction(signedTransaction);
@@ -22506,10 +22091,10 @@
 	                            if (values[key] == null) {
 	                                return;
 	                            }
-	                            tx[key] = Promise.resolve(values[key]).then(function (v) { return (v ? lib$1.hexlify(v) : null); });
+	                            tx[key] = Promise.resolve(values[key]).then(function (v) { return (v ? (0, lib$1.hexlify)(v) : null); });
 	                        });
 	                        _b = (_a = this.formatter).transactionRequest;
-	                        return [4 /*yield*/, lib$3.resolveProperties(tx)];
+	                        return [4 /*yield*/, (0, lib$3.resolveProperties)(tx)];
 	                    case 2: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
 	                }
 	            });
@@ -22541,7 +22126,7 @@
 	                            result[key] = _this._getBlockTag(filter[key]);
 	                        });
 	                        _b = (_a = this.formatter).filter;
-	                        return [4 /*yield*/, lib$3.resolveProperties(result)];
+	                        return [4 /*yield*/, (0, lib$3.resolveProperties)(result)];
 	                    case 2: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
 	                }
 	            });
@@ -22555,7 +22140,7 @@
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _a.sent();
-	                        return [4 /*yield*/, lib$3.resolveProperties({
+	                        return [4 /*yield*/, (0, lib$3.resolveProperties)({
 	                                transaction: this._getTransactionRequest(transaction),
 	                                blockTag: this._getBlockTag(blockTag)
 	                            })];
@@ -22565,12 +22150,14 @@
 	                    case 3:
 	                        result = _a.sent();
 	                        try {
-	                            return [2 /*return*/, lib$1.hexlify(result)];
+	                            return [2 /*return*/, (0, lib$1.hexlify)(result)];
 	                        }
 	                        catch (error) {
 	                            return [2 /*return*/, logger.throwError("bad result from backend", lib.Logger.errors.SERVER_ERROR, {
 	                                    method: "call",
-	                                    params: params, result: result, error: error
+	                                    params: params,
+	                                    result: result,
+	                                    error: error
 	                                })];
 	                        }
 	                        return [2 /*return*/];
@@ -22586,7 +22173,7 @@
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _a.sent();
-	                        return [4 /*yield*/, lib$3.resolveProperties({
+	                        return [4 /*yield*/, (0, lib$3.resolveProperties)({
 	                                transaction: this._getTransactionRequest(transaction)
 	                            })];
 	                    case 2:
@@ -22600,7 +22187,9 @@
 	                        catch (error) {
 	                            return [2 /*return*/, logger.throwError("bad result from backend", lib.Logger.errors.SERVER_ERROR, {
 	                                    method: "estimateGas",
-	                                    params: params, result: result, error: error
+	                                    params: params,
+	                                    result: result,
+	                                    error: error
 	                                })];
 	                        }
 	                        return [2 /*return*/];
@@ -22613,8 +22202,14 @@
 	            var address;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, this.resolveName(addressOrName)];
+	                    case 0: return [4 /*yield*/, addressOrName];
 	                    case 1:
+	                        addressOrName = _a.sent();
+	                        if (typeof (addressOrName) !== "string") {
+	                            logger.throwArgumentError("invalid address or ENS name", "name", addressOrName);
+	                        }
+	                        return [4 /*yield*/, this.resolveName(addressOrName)];
+	                    case 2:
 	                        address = _a.sent();
 	                        if (address == null) {
 	                            logger.throwError("ENS name not configured", lib.Logger.errors.UNSUPPORTED_OPERATION, {
@@ -22628,39 +22223,38 @@
 	    };
 	    BaseProvider.prototype._getBlock = function (blockHashOrBlockTag, includeTransactions) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var blockNumber, params, _a, _b, _c, error_7;
+	            var blockNumber, params, _a, error_7;
 	            var _this = this;
-	            return __generator(this, function (_d) {
-	                switch (_d.label) {
+	            return __generator(this, function (_b) {
+	                switch (_b.label) {
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
-	                        _d.sent();
+	                        _b.sent();
 	                        return [4 /*yield*/, blockHashOrBlockTag];
 	                    case 2:
-	                        blockHashOrBlockTag = _d.sent();
+	                        blockHashOrBlockTag = _b.sent();
 	                        blockNumber = -128;
 	                        params = {
 	                            includeTransactions: !!includeTransactions
 	                        };
-	                        if (!lib$1.isHexString(blockHashOrBlockTag, 32)) return [3 /*break*/, 3];
+	                        if (!(0, lib$1.isHexString)(blockHashOrBlockTag, 32)) return [3 /*break*/, 3];
 	                        params.blockHash = blockHashOrBlockTag;
 	                        return [3 /*break*/, 6];
 	                    case 3:
-	                        _d.trys.push([3, 5, , 6]);
+	                        _b.trys.push([3, 5, , 6]);
 	                        _a = params;
-	                        _c = (_b = this.formatter).blockTag;
 	                        return [4 /*yield*/, this._getBlockTag(blockHashOrBlockTag)];
 	                    case 4:
-	                        _a.blockTag = _c.apply(_b, [_d.sent()]);
-	                        if (lib$1.isHexString(params.blockTag)) {
+	                        _a.blockTag = _b.sent();
+	                        if ((0, lib$1.isHexString)(params.blockTag)) {
 	                            blockNumber = parseInt(params.blockTag.substring(2), 16);
 	                        }
 	                        return [3 /*break*/, 6];
 	                    case 5:
-	                        error_7 = _d.sent();
+	                        error_7 = _b.sent();
 	                        logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
 	                        return [3 /*break*/, 6];
-	                    case 6: return [2 /*return*/, lib$q.poll(function () { return __awaiter(_this, void 0, void 0, function () {
+	                    case 6: return [2 /*return*/, (0, lib$q.poll)(function () { return __awaiter(_this, void 0, void 0, function () {
 	                            var block, blockNumber_1, i, tx, confirmations, blockWithTxs;
 	                            var _this = this;
 	                            return __generator(this, function (_a) {
@@ -22745,7 +22339,7 @@
 	                    case 2:
 	                        transactionHash = _a.sent();
 	                        params = { transactionHash: this.formatter.hash(transactionHash, true) };
-	                        return [2 /*return*/, lib$q.poll(function () { return __awaiter(_this, void 0, void 0, function () {
+	                        return [2 /*return*/, (0, lib$q.poll)(function () { return __awaiter(_this, void 0, void 0, function () {
 	                                var result, tx, blockNumber, confirmations;
 	                                return __generator(this, function (_a) {
 	                                    switch (_a.label) {
@@ -22794,7 +22388,7 @@
 	                    case 2:
 	                        transactionHash = _a.sent();
 	                        params = { transactionHash: this.formatter.hash(transactionHash, true) };
-	                        return [2 /*return*/, lib$q.poll(function () { return __awaiter(_this, void 0, void 0, function () {
+	                        return [2 /*return*/, (0, lib$q.poll)(function () { return __awaiter(_this, void 0, void 0, function () {
 	                                var result, receipt, blockNumber, confirmations;
 	                                return __generator(this, function (_a) {
 	                                    switch (_a.label) {
@@ -22842,7 +22436,7 @@
 	                    case 0: return [4 /*yield*/, this.getNetwork()];
 	                    case 1:
 	                        _a.sent();
-	                        return [4 /*yield*/, lib$3.resolveProperties({ filter: this._getFilter(filter) })];
+	                        return [4 /*yield*/, (0, lib$3.resolveProperties)({ filter: this._getFilter(filter) })];
 	                    case 2:
 	                        params = _a.sent();
 	                        return [4 /*yield*/, this.perform("getLogs", params)];
@@ -22934,7 +22528,7 @@
 	                        }
 	                        transaction = {
 	                            to: network.ensAddress,
-	                            data: ("0x0178b8bf" + lib$9.namehash(name).substring(2))
+	                            data: ("0x0178b8bf" + (0, lib$9.namehash)(name).substring(2))
 	                        };
 	                        _c.label = 2;
 	                    case 2:
@@ -22967,7 +22561,7 @@
 	                        }
 	                        catch (error) {
 	                            // If is is a hexstring, the address is bad (See #694)
-	                            if (lib$1.isHexString(name)) {
+	                            if ((0, lib$1.isHexString)(name)) {
 	                                throw error;
 	                            }
 	                        }
@@ -23005,7 +22599,7 @@
 	                        _a = lib$1.arrayify;
 	                        return [4 /*yield*/, this.call({
 	                                to: resolverAddress,
-	                                data: ("0x691f3431" + lib$9.namehash(reverseName).substring(2))
+	                                data: ("0x691f3431" + (0, lib$9.namehash)(reverseName).substring(2))
 	                            })];
 	                    case 3:
 	                        bytes = _a.apply(void 0, [_b.sent()]);
@@ -23024,7 +22618,7 @@
 	                        if (length > bytes.length) {
 	                            return [2 /*return*/, null];
 	                        }
-	                        name = lib$8.toUtf8String(bytes.slice(0, length));
+	                        name = (0, lib$8.toUtf8String)(bytes.slice(0, length));
 	                        return [4 /*yield*/, this.resolveName(name)];
 	                    case 4:
 	                        addr = _b.sent();
@@ -23224,7 +22818,7 @@
 	    // incompatibility; maybe for v6 consider forwarding reverts as errors
 	    if (method === "call" && error.code === lib.Logger.errors.SERVER_ERROR) {
 	        var e = error.error;
-	        if (e && e.message.match("reverted") && lib$1.isHexString(e.data)) {
+	        if (e && e.message.match("reverted") && (0, lib$1.isHexString)(e.data)) {
 	            return e.data;
 	        }
 	        logger.throwError("missing revert data in call exception", lib.Logger.errors.CALL_EXCEPTION, {
@@ -23247,30 +22841,40 @@
 	    // "insufficient funds for gas * price + value + cost(data)"
 	    if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
 	        logger.throwError("insufficient funds for intrinsic transaction cost", lib.Logger.errors.INSUFFICIENT_FUNDS, {
-	            error: error, method: method, transaction: transaction
+	            error: error,
+	            method: method,
+	            transaction: transaction
 	        });
 	    }
 	    // "nonce too low"
 	    if (message.match(/nonce too low/)) {
 	        logger.throwError("nonce has already been used", lib.Logger.errors.NONCE_EXPIRED, {
-	            error: error, method: method, transaction: transaction
+	            error: error,
+	            method: method,
+	            transaction: transaction
 	        });
 	    }
 	    // "replacement transaction underpriced"
 	    if (message.match(/replacement transaction underpriced/)) {
 	        logger.throwError("replacement fee too low", lib.Logger.errors.REPLACEMENT_UNDERPRICED, {
-	            error: error, method: method, transaction: transaction
+	            error: error,
+	            method: method,
+	            transaction: transaction
 	        });
 	    }
 	    // "replacement transaction underpriced"
 	    if (message.match(/only replay-protected/)) {
 	        logger.throwError("legacy pre-eip-155 transactions not supported", lib.Logger.errors.UNSUPPORTED_OPERATION, {
-	            error: error, method: method, transaction: transaction
+	            error: error,
+	            method: method,
+	            transaction: transaction
 	        });
 	    }
 	    if (errorGas.indexOf(method) >= 0 && message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
 	        logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", lib.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
-	            error: error, method: method, transaction: transaction
+	            error: error,
+	            method: method,
+	            transaction: transaction
 	        });
 	    }
 	    throw error;
@@ -23307,17 +22911,17 @@
 	        if (constructorGuard !== _constructorGuard) {
 	            throw new Error("do not call the JsonRpcSigner constructor directly; use provider.getSigner");
 	        }
-	        lib$3.defineReadOnly(_this, "provider", provider);
+	        (0, lib$3.defineReadOnly)(_this, "provider", provider);
 	        if (addressOrIndex == null) {
 	            addressOrIndex = 0;
 	        }
 	        if (typeof (addressOrIndex) === "string") {
-	            lib$3.defineReadOnly(_this, "_address", _this.provider.formatter.address(addressOrIndex));
-	            lib$3.defineReadOnly(_this, "_index", null);
+	            (0, lib$3.defineReadOnly)(_this, "_address", _this.provider.formatter.address(addressOrIndex));
+	            (0, lib$3.defineReadOnly)(_this, "_index", null);
 	        }
 	        else if (typeof (addressOrIndex) === "number") {
-	            lib$3.defineReadOnly(_this, "_index", addressOrIndex);
-	            lib$3.defineReadOnly(_this, "_address", null);
+	            (0, lib$3.defineReadOnly)(_this, "_index", addressOrIndex);
+	            (0, lib$3.defineReadOnly)(_this, "_address", null);
 	        }
 	        else {
 	            logger.throwArgumentError("invalid address or index", "addressOrIndex", addressOrIndex);
@@ -23348,7 +22952,7 @@
 	    };
 	    JsonRpcSigner.prototype.sendUncheckedTransaction = function (transaction) {
 	        var _this = this;
-	        transaction = lib$3.shallowCopy(transaction);
+	        transaction = (0, lib$3.shallowCopy)(transaction);
 	        var fromAddress = this.getAddress().then(function (address) {
 	            if (address) {
 	                address = address.toLowerCase();
@@ -23359,7 +22963,7 @@
 	        // wishes to use this, it is easy to specify explicitly, otherwise
 	        // we look it up for them.
 	        if (transaction.gasLimit == null) {
-	            var estimate = lib$3.shallowCopy(transaction);
+	            var estimate = (0, lib$3.shallowCopy)(transaction);
 	            estimate.from = fromAddress;
 	            transaction.gasLimit = this.provider.estimateGas(estimate);
 	        }
@@ -23383,8 +22987,8 @@
 	                });
 	            }); });
 	        }
-	        return lib$3.resolveProperties({
-	            tx: lib$3.resolveProperties(transaction),
+	        return (0, lib$3.resolveProperties)({
+	            tx: (0, lib$3.resolveProperties)(transaction),
 	            sender: fromAddress
 	        }).then(function (_a) {
 	            var tx = _a.tx, sender = _a.sender;
@@ -23424,7 +23028,7 @@
 	                        _a.label = 3;
 	                    case 3:
 	                        _a.trys.push([3, 5, , 6]);
-	                        return [4 /*yield*/, lib$q.poll(function () { return __awaiter(_this, void 0, void 0, function () {
+	                        return [4 /*yield*/, (0, lib$q.poll)(function () { return __awaiter(_this, void 0, void 0, function () {
 	                                var tx;
 	                                return __generator(this, function (_a) {
 	                                    switch (_a.label) {
@@ -23458,11 +23062,27 @@
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
-	                        data = ((typeof (message) === "string") ? lib$8.toUtf8Bytes(message) : message);
+	                        data = ((typeof (message) === "string") ? (0, lib$8.toUtf8Bytes)(message) : message);
 	                        return [4 /*yield*/, this.getAddress()];
 	                    case 1:
 	                        address = _a.sent();
-	                        return [4 /*yield*/, this.provider.send("eth_sign", [address.toLowerCase(), lib$1.hexlify(data)])];
+	                        return [4 /*yield*/, this.provider.send("personal_sign", [(0, lib$1.hexlify)(data), address.toLowerCase()])];
+	                    case 2: return [2 /*return*/, _a.sent()];
+	                }
+	            });
+	        });
+	    };
+	    JsonRpcSigner.prototype._legacySignMessage = function (message) {
+	        return __awaiter(this, void 0, void 0, function () {
+	            var data, address;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0:
+	                        data = ((typeof (message) === "string") ? (0, lib$8.toUtf8Bytes)(message) : message);
+	                        return [4 /*yield*/, this.getAddress()];
+	                    case 1:
+	                        address = _a.sent();
+	                        return [4 /*yield*/, this.provider.send("eth_sign", [address.toLowerCase(), (0, lib$1.hexlify)(data)])];
 	                    case 2: 
 	                    // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
 	                    return [2 /*return*/, _a.sent()];
@@ -23562,15 +23182,15 @@
 	        _this = _super.call(this, networkOrReady) || this;
 	        // Default URL
 	        if (!url) {
-	            url = lib$3.getStatic(_this.constructor, "defaultUrl")();
+	            url = (0, lib$3.getStatic)(_this.constructor, "defaultUrl")();
 	        }
 	        if (typeof (url) === "string") {
-	            lib$3.defineReadOnly(_this, "connection", Object.freeze({
+	            (0, lib$3.defineReadOnly)(_this, "connection", Object.freeze({
 	                url: url
 	            }));
 	        }
 	        else {
-	            lib$3.defineReadOnly(_this, "connection", Object.freeze(lib$3.shallowCopy(url)));
+	            (0, lib$3.defineReadOnly)(_this, "connection", Object.freeze((0, lib$3.shallowCopy)(url)));
 	        }
 	        _this._nextId = 42;
 	        return _this;
@@ -23630,7 +23250,7 @@
 	                    case 8: return [3 /*break*/, 9];
 	                    case 9:
 	                        if (chainId != null) {
-	                            getNetwork = lib$3.getStatic(this.constructor, "getNetwork");
+	                            getNetwork = (0, lib$3.getStatic)(this.constructor, "getNetwork");
 	                            try {
 	                                return [2 /*return*/, getNetwork(lib$2.BigNumber.from(chainId).toNumber())];
 	                            }
@@ -23671,7 +23291,7 @@
 	        };
 	        this.emit("debug", {
 	            action: "request",
-	            request: lib$3.deepCopy(request),
+	            request: (0, lib$3.deepCopy)(request),
 	            provider: this
 	        });
 	        // We can expand this in the future to any call, but for now these
@@ -23680,7 +23300,7 @@
 	        if (cache && this._cache[method]) {
 	            return this._cache[method];
 	        }
-	        var result = lib$q.fetchJson(this.connection, JSON.stringify(request), getResult).then(function (result) {
+	        var result = (0, lib$q.fetchJson)(this.connection, JSON.stringify(request), getResult).then(function (result) {
 	            _this.emit("debug", {
 	                action: "response",
 	                request: request,
@@ -23735,11 +23355,11 @@
 	            case "getTransactionReceipt":
 	                return ["eth_getTransactionReceipt", [params.transactionHash]];
 	            case "call": {
-	                var hexlifyTransaction = lib$3.getStatic(this.constructor, "hexlifyTransaction");
+	                var hexlifyTransaction = (0, lib$3.getStatic)(this.constructor, "hexlifyTransaction");
 	                return ["eth_call", [hexlifyTransaction(params.transaction, { from: true }), params.blockTag]];
 	            }
 	            case "estimateGas": {
-	                var hexlifyTransaction = lib$3.getStatic(this.constructor, "hexlifyTransaction");
+	                var hexlifyTransaction = (0, lib$3.getStatic)(this.constructor, "hexlifyTransaction");
 	                return ["eth_estimateGas", [hexlifyTransaction(params.transaction, { from: true })]];
 	            }
 	            case "getLogs":
@@ -23767,8 +23387,8 @@
 	                        feeData = _a.sent();
 	                        if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
 	                            // Network doesn't know about EIP-1559 (and hence type)
-	                            params = lib$3.shallowCopy(params);
-	                            params.transaction = lib$3.shallowCopy(tx);
+	                            params = (0, lib$3.shallowCopy)(params);
+	                            params.transaction = (0, lib$3.shallowCopy)(tx);
 	                            delete params.transaction.type;
 	                        }
 	                        _a.label = 2;
@@ -23853,7 +23473,7 @@
 	    //        will be the preferred method for this.
 	    JsonRpcProvider.hexlifyTransaction = function (transaction, allowExtra) {
 	        // Check only allowed properties are given
-	        var allowed = lib$3.shallowCopy(allowedTransactionKeys);
+	        var allowed = (0, lib$3.shallowCopy)(allowedTransactionKeys);
 	        if (allowExtra) {
 	            for (var key in allowExtra) {
 	                if (allowExtra[key]) {
@@ -23861,14 +23481,14 @@
 	                }
 	            }
 	        }
-	        lib$3.checkProperties(transaction, allowed);
+	        (0, lib$3.checkProperties)(transaction, allowed);
 	        var result = {};
 	        // Some nodes (INFURA ropsten; INFURA mainnet is fine) do not like leading zeros.
 	        ["gasLimit", "gasPrice", "type", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "value"].forEach(function (key) {
 	            if (transaction[key] == null) {
 	                return;
 	            }
-	            var value = lib$1.hexValue(transaction[key]);
+	            var value = (0, lib$1.hexValue)(transaction[key]);
 	            if (key === "gasLimit") {
 	                key = "gas";
 	            }
@@ -23878,10 +23498,10 @@
 	            if (transaction[key] == null) {
 	                return;
 	            }
-	            result[key] = lib$1.hexlify(transaction[key]);
+	            result[key] = (0, lib$1.hexlify)(transaction[key]);
 	        });
 	        if (transaction.accessList) {
-	            result["accessList"] = lib$e.accessListify(transaction.accessList);
+	            result["accessList"] = (0, lib$e.accessListify)(transaction.accessList);
 	        }
 	        return result;
 	    };
@@ -23990,7 +23610,7 @@
 	 *  will stall responses to ensure a consistent state, while this
 	 *  WebSocket provider assumes the connected backend will manage this.
 	 *
-	 *  For example, if a polling provider emits an event which indicats
+	 *  For example, if a polling provider emits an event which indicates
 	 *  the event occurred in blockhash XXX, a call to fetch that block by
 	 *  its hash XXX, if not present will retry until it is present. This
 	 *  can occur when querying a pool of nodes that are mildly out of sync
@@ -24012,11 +23632,11 @@
 	        _this = _super.call(this, url, network) || this;
 	        _this._pollingInterval = -1;
 	        _this._wsReady = false;
-	        lib$3.defineReadOnly(_this, "_websocket", new browserWs.WebSocket(_this.connection.url));
-	        lib$3.defineReadOnly(_this, "_requests", {});
-	        lib$3.defineReadOnly(_this, "_subs", {});
-	        lib$3.defineReadOnly(_this, "_subIds", {});
-	        lib$3.defineReadOnly(_this, "_detectNetwork", _super.prototype.detectNetwork.call(_this));
+	        (0, lib$3.defineReadOnly)(_this, "_websocket", new browserWs.WebSocket(_this.connection.url));
+	        (0, lib$3.defineReadOnly)(_this, "_requests", {});
+	        (0, lib$3.defineReadOnly)(_this, "_subs", {});
+	        (0, lib$3.defineReadOnly)(_this, "_subIds", {});
+	        (0, lib$3.defineReadOnly)(_this, "_detectNetwork", _super.prototype.detectNetwork.call(_this));
 	        // Stall sending requests until the socket is open...
 	        _this._websocket.onopen = function () {
 	            _this._wsReady = true;
@@ -24044,8 +23664,8 @@
 	                    var error = null;
 	                    if (result.error) {
 	                        error = new Error(result.error.message || "unknown error");
-	                        lib$3.defineReadOnly(error, "code", result.error.code || null);
-	                        lib$3.defineReadOnly(error, "response", data);
+	                        (0, lib$3.defineReadOnly)(error, "code", result.error.code || null);
+	                        (0, lib$3.defineReadOnly)(error, "response", data);
 	                    }
 	                    else {
 	                        error = new Error("unknown error");
@@ -24385,7 +24005,7 @@
 	                        // If still not set, set it
 	                        if (this._network == null) {
 	                            // A static network does not support "any"
-	                            lib$3.defineReadOnly(this, "_network", network);
+	                            (0, lib$3.defineReadOnly)(this, "_network", network);
 	                            this.emit("network", network, null);
 	                        }
 	                        _a.label = 2;
@@ -24404,16 +24024,16 @@
 	        var _this = this;
 	        logger.checkAbstract(_newTarget, UrlJsonRpcProvider);
 	        // Normalize the Network and API Key
-	        network = lib$3.getStatic((_newTarget), "getNetwork")(network);
-	        apiKey = lib$3.getStatic((_newTarget), "getApiKey")(apiKey);
-	        var connection = lib$3.getStatic((_newTarget), "getUrl")(network, apiKey);
+	        network = (0, lib$3.getStatic)(_newTarget, "getNetwork")(network);
+	        apiKey = (0, lib$3.getStatic)(_newTarget, "getApiKey")(apiKey);
+	        var connection = (0, lib$3.getStatic)(_newTarget, "getUrl")(network, apiKey);
 	        _this = _super.call(this, connection, network) || this;
 	        if (typeof (apiKey) === "string") {
-	            lib$3.defineReadOnly(_this, "apiKey", apiKey);
+	            (0, lib$3.defineReadOnly)(_this, "apiKey", apiKey);
 	        }
 	        else if (apiKey != null) {
 	            Object.keys(apiKey).forEach(function (key) {
-	                lib$3.defineReadOnly(_this, key, apiKey[key]);
+	                (0, lib$3.defineReadOnly)(_this, key, apiKey[key]);
 	            });
 	        }
 	        return _this;
@@ -24489,7 +24109,7 @@
 	        var url = provider.connection.url.replace(/^http/i, "ws")
 	            .replace(".alchemyapi.", ".ws.alchemyapi.");
 	        _this = _super.call(this, url, provider.network) || this;
-	        lib$3.defineReadOnly(_this, "apiKey", provider.apiKey);
+	        (0, lib$3.defineReadOnly)(_this, "apiKey", provider.apiKey);
 	        return _this;
 	    }
 	    AlchemyWebSocketProvider.prototype.isCommunityResource = function () {
@@ -24547,7 +24167,7 @@
 	            url: ("https:/" + "/" + host + apiKey),
 	            throttleCallback: function (attempt, url) {
 	                if (apiKey === defaultApiKey) {
-	                    formatter.showThrottleMessage();
+	                    (0, formatter.showThrottleMessage)();
 	                }
 	                return Promise.resolve(true);
 	            }
@@ -24746,15 +24366,15 @@
 	        }
 	        // Quantity-types require no leading zero, unless 0
 	        if ({ type: true, gasLimit: true, gasPrice: true, maxFeePerGs: true, maxPriorityFeePerGas: true, nonce: true, value: true }[key]) {
-	            value = lib$1.hexValue(lib$1.hexlify(value));
+	            value = (0, lib$1.hexValue)((0, lib$1.hexlify)(value));
 	        }
 	        else if (key === "accessList") {
-	            value = "[" + lib$e.accessListify(value).map(function (set) {
+	            value = "[" + (0, lib$e.accessListify)(value).map(function (set) {
 	                return "{address:\"" + set.address + "\",storageKeys:[\"" + set.storageKeys.join('","') + "\"]}";
 	            }).join(",") + "]";
 	        }
 	        else {
-	            value = lib$1.hexlify(value);
+	            value = (0, lib$1.hexlify)(value);
 	        }
 	        result[key] = value;
 	    }
@@ -24825,7 +24445,7 @@
 	            if (data) {
 	                data = "0x" + data.replace(/^.*0x/i, "");
 	            }
-	            if (lib$1.isHexString(data)) {
+	            if ((0, lib$1.isHexString)(data)) {
 	                return data;
 	            }
 	            logger.throwError("missing revert data in call exception", lib.Logger.errors.CALL_EXCEPTION, {
@@ -24851,24 +24471,32 @@
 	    // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
 	    if (message.match(/insufficient funds/)) {
 	        logger.throwError("insufficient funds for intrinsic transaction cost", lib.Logger.errors.INSUFFICIENT_FUNDS, {
-	            error: error, method: method, transaction: transaction
+	            error: error,
+	            method: method,
+	            transaction: transaction
 	        });
 	    }
 	    // "Transaction with the same hash was already imported."
 	    if (message.match(/same hash was already imported|transaction nonce is too low|nonce too low/)) {
 	        logger.throwError("nonce has already been used", lib.Logger.errors.NONCE_EXPIRED, {
-	            error: error, method: method, transaction: transaction
+	            error: error,
+	            method: method,
+	            transaction: transaction
 	        });
 	    }
 	    // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
 	    if (message.match(/another transaction with same nonce/)) {
 	        logger.throwError("replacement fee too low", lib.Logger.errors.REPLACEMENT_UNDERPRICED, {
-	            error: error, method: method, transaction: transaction
+	            error: error,
+	            method: method,
+	            transaction: transaction
 	        });
 	    }
 	    if (message.match(/execution failed due to an exception|execution reverted/)) {
 	        logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", lib.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
-	            error: error, method: method, transaction: transaction
+	            error: error,
+	            method: method,
+	            transaction: transaction
 	        });
 	    }
 	    throw error;
@@ -24880,8 +24508,8 @@
 	        var _this = this;
 	        logger.checkNew(_newTarget, EtherscanProvider);
 	        _this = _super.call(this, network) || this;
-	        lib$3.defineReadOnly(_this, "baseUrl", _this.getBaseUrl());
-	        lib$3.defineReadOnly(_this, "apiKey", apiKey || defaultApiKey);
+	        (0, lib$3.defineReadOnly)(_this, "baseUrl", _this.getBaseUrl());
+	        (0, lib$3.defineReadOnly)(_this, "apiKey", apiKey || defaultApiKey);
 	        return _this;
 	    }
 	    EtherscanProvider.prototype.getBaseUrl = function () {
@@ -24939,7 +24567,7 @@
 	                            throttleSlotInterval: 1000,
 	                            throttleCallback: function (attempt, url) {
 	                                if (_this.isCommunityResource()) {
-	                                    formatter.showThrottleMessage();
+	                                    (0, formatter.showThrottleMessage)();
 	                                }
 	                                return Promise.resolve(true);
 	                            }
@@ -24951,13 +24579,13 @@
 	                                return key + "=" + payload[key];
 	                            }).join("&");
 	                        }
-	                        return [4 /*yield*/, lib$q.fetchJson(connection, payloadStr, procFunc || getJsonResult)];
+	                        return [4 /*yield*/, (0, lib$q.fetchJson)(connection, payloadStr, procFunc || getJsonResult)];
 	                    case 1:
 	                        result = _a.sent();
 	                        this.emit("debug", {
 	                            action: "response",
 	                            request: url,
-	                            response: lib$3.deepCopy(result),
+	                            response: (0, lib$3.deepCopy)(result),
 	                            provider: this
 	                        });
 	                        return [2 /*return*/, result];
@@ -25136,7 +24764,7 @@
 	        });
 	    };
 	    // Note: The `page` page parameter only allows pagination within the
-	    //       10,000 window abailable without a page and offset parameter
+	    //       10,000 window available without a page and offset parameter
 	    //       Error: Result window is too large, PageNo x Offset size must
 	    //              be less than or equal to 10000
 	    EtherscanProvider.prototype.getHistory = function (addressOrName, startBlock, endBlock) {
@@ -25468,7 +25096,7 @@
 	                if (tx == null) {
 	                    return null;
 	                }
-	                tx = lib$3.shallowCopy(tx);
+	                tx = (0, lib$3.shallowCopy)(tx);
 	                tx.confirmations = -1;
 	                return serialize(tx);
 	            };
@@ -25481,9 +25109,9 @@
 	                    if (block == null) {
 	                        return null;
 	                    }
-	                    block = lib$3.shallowCopy(block);
+	                    block = (0, lib$3.shallowCopy)(block);
 	                    block.transactions = block.transactions.map(function (tx) {
-	                        tx = lib$3.shallowCopy(tx);
+	                        tx = (0, lib$3.shallowCopy)(tx);
 	                        tx.confirmations = -1;
 	                        return tx;
 	                    });
@@ -25516,7 +25144,7 @@
 	            if ((provider.blockNumber != null && provider.blockNumber >= blockNumber) || blockNumber === -1) {
 	                return [2 /*return*/, provider];
 	            }
-	            return [2 /*return*/, lib$q.poll(function () {
+	            return [2 /*return*/, (0, lib$q.poll)(function () {
 	                    return new Promise(function (resolve, reject) {
 	                        setTimeout(function () {
 	                            // We are synced
@@ -25566,28 +25194,28 @@
 	                    }
 	                    return [3 /*break*/, 19];
 	                case 3:
-	                    if (!(params.blockTag && lib$1.isHexString(params.blockTag))) return [3 /*break*/, 5];
+	                    if (!(params.blockTag && (0, lib$1.isHexString)(params.blockTag))) return [3 /*break*/, 5];
 	                    return [4 /*yield*/, waitForSync(config, currentBlockNumber)];
 	                case 4:
 	                    provider = _b.sent();
 	                    _b.label = 5;
 	                case 5: return [2 /*return*/, provider[method](params.address, params.blockTag || "latest")];
 	                case 6:
-	                    if (!(params.blockTag && lib$1.isHexString(params.blockTag))) return [3 /*break*/, 8];
+	                    if (!(params.blockTag && (0, lib$1.isHexString)(params.blockTag))) return [3 /*break*/, 8];
 	                    return [4 /*yield*/, waitForSync(config, currentBlockNumber)];
 	                case 7:
 	                    provider = _b.sent();
 	                    _b.label = 8;
 	                case 8: return [2 /*return*/, provider.getStorageAt(params.address, params.position, params.blockTag || "latest")];
 	                case 9:
-	                    if (!(params.blockTag && lib$1.isHexString(params.blockTag))) return [3 /*break*/, 11];
+	                    if (!(params.blockTag && (0, lib$1.isHexString)(params.blockTag))) return [3 /*break*/, 11];
 	                    return [4 /*yield*/, waitForSync(config, currentBlockNumber)];
 	                case 10:
 	                    provider = _b.sent();
 	                    _b.label = 11;
 	                case 11: return [2 /*return*/, provider[(params.includeTransactions ? "getBlockWithTransactions" : "getBlock")](params.blockTag || params.blockHash)];
 	                case 12:
-	                    if (!(params.blockTag && lib$1.isHexString(params.blockTag))) return [3 /*break*/, 14];
+	                    if (!(params.blockTag && (0, lib$1.isHexString)(params.blockTag))) return [3 /*break*/, 14];
 	                    return [4 /*yield*/, waitForSync(config, currentBlockNumber)];
 	                case 13:
 	                    provider = _b.sent();
@@ -25596,7 +25224,7 @@
 	                case 15: return [2 /*return*/, provider[method](params.transactionHash)];
 	                case 16:
 	                    filter = params.filter;
-	                    if (!((filter.fromBlock && lib$1.isHexString(filter.fromBlock)) || (filter.toBlock && lib$1.isHexString(filter.toBlock)))) return [3 /*break*/, 18];
+	                    if (!((filter.fromBlock && (0, lib$1.isHexString)(filter.fromBlock)) || (filter.toBlock && (0, lib$1.isHexString)(filter.toBlock)))) return [3 /*break*/, 18];
 	                    return [4 /*yield*/, waitForSync(config, currentBlockNumber)];
 	                case 17:
 	                    provider = _b.sent();
@@ -25621,16 +25249,16 @@
 	        }
 	        var providerConfigs = providers.map(function (configOrProvider, index) {
 	            if (lib$b.Provider.isProvider(configOrProvider)) {
-	                var stallTimeout = formatter.isCommunityResource(configOrProvider) ? 2000 : 750;
+	                var stallTimeout = (0, formatter.isCommunityResource)(configOrProvider) ? 2000 : 750;
 	                var priority = 1;
 	                return Object.freeze({ provider: configOrProvider, weight: 1, stallTimeout: stallTimeout, priority: priority });
 	            }
-	            var config = lib$3.shallowCopy(configOrProvider);
+	            var config = (0, lib$3.shallowCopy)(configOrProvider);
 	            if (config.priority == null) {
 	                config.priority = 1;
 	            }
 	            if (config.stallTimeout == null) {
-	                config.stallTimeout = formatter.isCommunityResource(configOrProvider) ? 2000 : 750;
+	                config.stallTimeout = (0, formatter.isCommunityResource)(configOrProvider) ? 2000 : 750;
 	            }
 	            if (config.weight == null) {
 	                config.weight = 1;
@@ -25660,8 +25288,8 @@
 	        }
 	        _this = _super.call(this, networkOrReady) || this;
 	        // Preserve a copy, so we do not get mutated
-	        lib$3.defineReadOnly(_this, "providerConfigs", Object.freeze(providerConfigs));
-	        lib$3.defineReadOnly(_this, "quorum", quorum);
+	        (0, lib$3.defineReadOnly)(_this, "providerConfigs", Object.freeze(providerConfigs));
+	        (0, lib$3.defineReadOnly)(_this, "quorum", quorum);
 	        _this._highestBlockNumber = -1;
 	        return _this;
 	    }
@@ -25712,7 +25340,7 @@
 	                        _a.label = 4;
 	                    case 4:
 	                        processFunc = getProcessFunc(this, method, params);
-	                        configs = lib$l.shuffled(this.providerConfigs.map(lib$3.shallowCopy));
+	                        configs = (0, lib$l.shuffled)(this.providerConfigs.map(lib$3.shallowCopy));
 	                        configs.sort(function (a, b) { return (a.priority - b.priority); });
 	                        currentBlockNumber = this._highestBlockNumber;
 	                        i = 0;
@@ -25739,7 +25367,7 @@
 	                                                        action: "request",
 	                                                        rid: rid,
 	                                                        backend: exposeDebugConfig(config, now()),
-	                                                        request: { method: method, params: lib$3.deepCopy(params) },
+	                                                        request: { method: method, params: (0, lib$3.deepCopy)(params) },
 	                                                        provider: _this
 	                                                    });
 	                                                }
@@ -25751,7 +25379,7 @@
 	                                                        action: "request",
 	                                                        rid: rid,
 	                                                        backend: exposeDebugConfig(config, now()),
-	                                                        request: { method: method, params: lib$3.deepCopy(params) },
+	                                                        request: { method: method, params: (0, lib$3.deepCopy)(params) },
 	                                                        provider: _this
 	                                                    });
 	                                                }
@@ -25761,7 +25389,7 @@
 	                                                    action: "request",
 	                                                    rid: rid,
 	                                                    backend: exposeDebugConfig(config, null),
-	                                                    request: { method: method, params: lib$3.deepCopy(params) },
+	                                                    request: { method: method, params: (0, lib$3.deepCopy)(params) },
 	                                                    provider: this_1
 	                                                });
 	                                            }
@@ -25943,9 +25571,9 @@
 	        }
 	        var url = connection.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
 	        _this = _super.call(this, url, network) || this;
-	        lib$3.defineReadOnly(_this, "apiKey", provider.projectId);
-	        lib$3.defineReadOnly(_this, "projectId", provider.projectId);
-	        lib$3.defineReadOnly(_this, "projectSecret", provider.projectSecret);
+	        (0, lib$3.defineReadOnly)(_this, "apiKey", provider.projectId);
+	        (0, lib$3.defineReadOnly)(_this, "projectId", provider.projectId);
+	        (0, lib$3.defineReadOnly)(_this, "projectSecret", provider.projectSecret);
 	        return _this;
 	    }
 	    InfuraWebSocketProvider.prototype.isCommunityResource = function () {
@@ -26021,7 +25649,7 @@
 	            url: ("https:/" + "/" + host + "/v3/" + apiKey.projectId),
 	            throttleCallback: function (attempt, url) {
 	                if (apiKey.projectId === defaultProjectId) {
-	                    formatter.showThrottleMessage();
+	                    (0, formatter.showThrottleMessage)();
 	                }
 	                return Promise.resolve(true);
 	            }
@@ -26100,10 +25728,10 @@
 	                var request = batch.map(function (inflight) { return inflight.request; });
 	                _this.emit("debug", {
 	                    action: "requestBatch",
-	                    request: lib$3.deepCopy(request),
+	                    request: (0, lib$3.deepCopy)(request),
 	                    provider: _this
 	                });
-	                return lib$q.fetchJson(_this.connection, JSON.stringify(request)).then(function (result) {
+	                return (0, lib$q.fetchJson)(_this.connection, JSON.stringify(request)).then(function (result) {
 	                    _this.emit("debug", {
 	                        action: "response",
 	                        request: request,
@@ -26240,7 +25868,7 @@
 
 	var logger = new lib.Logger(_version$I.version);
 
-	// These are load-balancer-based applicatoin IDs
+	// These are load-balancer-based application IDs
 	var defaultApplicationIds = {
 	    homestead: "6004bcd10040261633ade990",
 	    ropsten: "6004bd4d0040261633ade991",
@@ -26255,7 +25883,7 @@
 	        var _newTarget = this.constructor;
 	        var _this = this;
 	        if (apiKey == null) {
-	            var n = lib$3.getStatic((_newTarget), "getNetwork")(network);
+	            var n = (0, lib$3.getStatic)(_newTarget, "getNetwork")(network);
 	            if (n) {
 	                var applicationId = defaultApplicationIds[n.name];
 	                if (applicationId) {
@@ -26387,12 +26015,6 @@
 	    var fetcher = "Web3LegacyFetcher";
 	    return function (method, params) {
 	        var _this = this;
-	        // Metamask complains about eth_sign (and on some versions hangs)
-	        if (method == "eth_sign" && (provider.isMetaMask || provider.isStatus)) {
-	            // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
-	            method = "personal_sign";
-	            params = [params[1], params[0]];
-	        }
 	        var request = {
 	            method: method,
 	            params: params,
@@ -26403,7 +26025,7 @@
 	            _this.emit("debug", {
 	                action: "request",
 	                fetcher: fetcher,
-	                request: lib$3.deepCopy(request),
+	                request: (0, lib$3.deepCopy)(request),
 	                provider: _this
 	            });
 	            sendFunc(request, function (error, response) {
@@ -26441,17 +26063,11 @@
 	        if (params == null) {
 	            params = [];
 	        }
-	        // Metamask complains about eth_sign (and on some versions hangs)
-	        if (method == "eth_sign" && (provider.isMetaMask || provider.isStatus)) {
-	            // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
-	            method = "personal_sign";
-	            params = [params[1], params[0]];
-	        }
 	        var request = { method: method, params: params };
 	        this.emit("debug", {
 	            action: "request",
 	            fetcher: "Eip1193Fetcher",
-	            request: lib$3.deepCopy(request),
+	            request: (0, lib$3.deepCopy)(request),
 	            provider: this
 	        });
 	        return provider.request(request).then(function (response) {
@@ -26517,8 +26133,8 @@
 	            }
 	        }
 	        _this = _super.call(this, path, network) || this;
-	        lib$3.defineReadOnly(_this, "jsonRpcFetchFunc", jsonRpcFetchFunc);
-	        lib$3.defineReadOnly(_this, "provider", subprovider);
+	        (0, lib$3.defineReadOnly)(_this, "jsonRpcFetchFunc", jsonRpcFetchFunc);
+	        (0, lib$3.defineReadOnly)(_this, "provider", subprovider);
 	        return _this;
 	    }
 	    Web3Provider.prototype.send = function (method, params) {
@@ -26603,7 +26219,7 @@
 	            }
 	        }
 	    }
-	    var n = lib$o.getNetwork(network);
+	    var n = (0, lib$o.getNetwork)(network);
 	    if (!n || !n._defaultProvider) {
 	        logger.throwError("unsupported getDefaultProvider network", lib.Logger.errors.NETWORK_ERROR, {
 	            operation: "getDefaultProvider",
@@ -26629,6 +26245,16 @@
 
 	var index$r = /*@__PURE__*/getDefaultExportFromCjs(lib$r);
 
+	var _version$K = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.version = void 0;
+	exports.version = "solidity/5.5.0";
+
+	});
+
+	var _version$L = /*@__PURE__*/getDefaultExportFromCjs(_version$K);
+
 	var lib$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
@@ -26642,48 +26268,51 @@
 	var regexNumber = new RegExp("^(u?int)([0-9]*)$");
 	var regexArray = new RegExp("^(.*)\\[([0-9]*)\\]$");
 	var Zeros = "0000000000000000000000000000000000000000000000000000000000000000";
+
+
+	var logger = new lib.Logger(_version$K.version);
 	function _pack(type, value, isArray) {
 	    switch (type) {
 	        case "address":
 	            if (isArray) {
-	                return lib$1.zeroPad(value, 32);
+	                return (0, lib$1.zeroPad)(value, 32);
 	            }
-	            return lib$1.arrayify(value);
+	            return (0, lib$1.arrayify)(value);
 	        case "string":
-	            return lib$8.toUtf8Bytes(value);
+	            return (0, lib$8.toUtf8Bytes)(value);
 	        case "bytes":
-	            return lib$1.arrayify(value);
+	            return (0, lib$1.arrayify)(value);
 	        case "bool":
 	            value = (value ? "0x01" : "0x00");
 	            if (isArray) {
-	                return lib$1.zeroPad(value, 32);
+	                return (0, lib$1.zeroPad)(value, 32);
 	            }
-	            return lib$1.arrayify(value);
+	            return (0, lib$1.arrayify)(value);
 	    }
 	    var match = type.match(regexNumber);
 	    if (match) {
 	        //let signed = (match[1] === "int")
 	        var size = parseInt(match[2] || "256");
 	        if ((match[2] && String(size) !== match[2]) || (size % 8 !== 0) || size === 0 || size > 256) {
-	            throw new Error("invalid number type - " + type);
+	            logger.throwArgumentError("invalid number type", "type", type);
 	        }
 	        if (isArray) {
 	            size = 256;
 	        }
 	        value = lib$2.BigNumber.from(value).toTwos(size);
-	        return lib$1.zeroPad(value, size / 8);
+	        return (0, lib$1.zeroPad)(value, size / 8);
 	    }
 	    match = type.match(regexBytes);
 	    if (match) {
 	        var size = parseInt(match[1]);
 	        if (String(size) !== match[1] || size === 0 || size > 32) {
-	            throw new Error("invalid bytes type - " + type);
+	            logger.throwArgumentError("invalid bytes type", "type", type);
 	        }
-	        if (lib$1.arrayify(value).byteLength !== size) {
-	            throw new Error("invalid value for " + type);
+	        if ((0, lib$1.arrayify)(value).byteLength !== size) {
+	            logger.throwArgumentError("invalid value for " + type, "value", value);
 	        }
 	        if (isArray) {
-	            return lib$1.arrayify((value + Zeros).substring(0, 66));
+	            return (0, lib$1.arrayify)((value + Zeros).substring(0, 66));
 	        }
 	        return value;
 	    }
@@ -26692,34 +26321,34 @@
 	        var baseType_1 = match[1];
 	        var count = parseInt(match[2] || String(value.length));
 	        if (count != value.length) {
-	            throw new Error("invalid value for " + type);
+	            logger.throwArgumentError("invalid array length for " + type, "value", value);
 	        }
 	        var result_1 = [];
 	        value.forEach(function (value) {
 	            result_1.push(_pack(baseType_1, value, true));
 	        });
-	        return lib$1.concat(result_1);
+	        return (0, lib$1.concat)(result_1);
 	    }
-	    throw new Error("invalid type - " + type);
+	    return logger.throwArgumentError("invalid type", "type", type);
 	}
 	// @TODO: Array Enum
 	function pack(types, values) {
 	    if (types.length != values.length) {
-	        throw new Error("type/value count mismatch");
+	        logger.throwArgumentError("wrong number of values; expected ${ types.length }", "values", values);
 	    }
 	    var tight = [];
 	    types.forEach(function (type, index) {
 	        tight.push(_pack(type, values[index]));
 	    });
-	    return lib$1.hexlify(lib$1.concat(tight));
+	    return (0, lib$1.hexlify)((0, lib$1.concat)(tight));
 	}
 	exports.pack = pack;
 	function keccak256(types, values) {
-	    return lib$4.keccak256(pack(types, values));
+	    return (0, lib$4.keccak256)(pack(types, values));
 	}
 	exports.keccak256 = keccak256;
 	function sha256(types, values) {
-	    return lib$h.sha256(pack(types, values));
+	    return (0, lib$h.sha256)(pack(types, values));
 	}
 	exports.sha256 = sha256;
 
@@ -26727,15 +26356,15 @@
 
 	var index$s = /*@__PURE__*/getDefaultExportFromCjs(lib$s);
 
-	var _version$K = createCommonjsModule(function (module, exports) {
+	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "units/5.4.0";
+	exports.version = "units/5.5.0";
 
 	});
 
-	var _version$L = /*@__PURE__*/getDefaultExportFromCjs(_version$K);
+	var _version$N = /*@__PURE__*/getDefaultExportFromCjs(_version$M);
 
 	var lib$t = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -26744,7 +26373,7 @@
 
 
 
-	var logger = new lib.Logger(_version$K.version);
+	var logger = new lib.Logger(_version$M.version);
 	var names = [
 	    "wei",
 	    "kwei",
@@ -26804,7 +26433,7 @@
 	            unitName = 3 * index;
 	        }
 	    }
-	    return lib$2.formatFixed(value, (unitName != null) ? unitName : 18);
+	    return (0, lib$2.formatFixed)(value, (unitName != null) ? unitName : 18);
 	}
 	exports.formatUnits = formatUnits;
 	function parseUnits(value, unitName) {
@@ -26817,7 +26446,7 @@
 	            unitName = 3 * index;
 	        }
 	    }
-	    return lib$2.parseFixed(value, (unitName != null) ? unitName : 18);
+	    return (0, lib$2.parseFixed)(value, (unitName != null) ? unitName : 18);
 	}
 	exports.parseUnits = parseUnits;
 	function formatEther(wei) {
@@ -26985,15 +26614,15 @@
 
 	var utils$4 = /*@__PURE__*/getDefaultExportFromCjs(utils$3);
 
-	var _version$M = createCommonjsModule(function (module, exports) {
+	var _version$O = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.4.7";
+	exports.version = "ethers/5.5.0";
 
 	});
 
-	var _version$N = /*@__PURE__*/getDefaultExportFromCjs(_version$M);
+	var _version$P = /*@__PURE__*/getDefaultExportFromCjs(_version$O);
 
 	var ethers = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -27047,8 +26676,8 @@
 	// Compile-Time Constants
 	// This is generated by "npm run dist"
 
-	Object.defineProperty(exports, "version", { enumerable: true, get: function () { return _version$M.version; } });
-	var logger = new lib.Logger(_version$M.version);
+	Object.defineProperty(exports, "version", { enumerable: true, get: function () { return _version$O.version; } });
+	var logger = new lib.Logger(_version$O.version);
 	exports.logger = logger;
 
 	});

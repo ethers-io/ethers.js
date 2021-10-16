@@ -108,7 +108,7 @@ function TestContractEvents() {
                     console.log('*** Triggered Transaction Hash: ' + data.hash);
                     contract.on("error", function (error) {
                         console.log(error);
-                        assert_1.default(false);
+                        (0, assert_1.default)(false);
                         contract.removeAllListeners();
                     });
                     return [2 /*return*/, new Promise(function (resolve, reject) {

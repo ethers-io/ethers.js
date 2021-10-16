@@ -7,7 +7,7 @@ var assert_1 = __importDefault(require("assert"));
 var ethers_1 = require("ethers");
 var testcases_1 = require("@ethersproject/testcases");
 describe('Private key generation', function () {
-    var tests = testcases_1.loadTests('accounts');
+    var tests = (0, testcases_1.loadTests)('accounts');
     tests.forEach(function (test) {
         if (!test.privateKey) {
             return;
@@ -19,7 +19,7 @@ describe('Private key generation', function () {
     });
 });
 describe('Checksum and ICAP address generation', function () {
-    var tests = testcases_1.loadTests('accounts');
+    var tests = (0, testcases_1.loadTests)('accounts');
     tests.forEach(function (test) {
         it(('correctly transforms address - ' + test.name), function () {
             assert_1.default.equal(ethers_1.ethers.utils.getAddress(test.address), test.checksumAddress, 'correctly computes checksum address from address');

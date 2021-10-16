@@ -137,7 +137,7 @@ function getValues(object, named) {
 }
 describe('ABI Coder Encoding', function () {
     var coder = ethers_1.ethers.utils.defaultAbiCoder;
-    var tests = testcases_1.loadTests('contract-interface');
+    var tests = (0, testcases_1.loadTests)('contract-interface');
     tests.forEach(function (test) {
         var values = getValues(JSON.parse(test.normalizedValues));
         var types = JSON.parse(test.types);
@@ -152,7 +152,7 @@ describe('ABI Coder Encoding', function () {
 });
 describe('ABI Coder Decoding', function () {
     var coder = ethers_1.ethers.utils.defaultAbiCoder;
-    var tests = testcases_1.loadTests('contract-interface');
+    var tests = (0, testcases_1.loadTests)('contract-interface');
     tests.forEach(function (test) {
         var values = getValues(JSON.parse(test.normalizedValues));
         var types = JSON.parse(test.types);
@@ -167,7 +167,7 @@ describe('ABI Coder Decoding', function () {
 });
 describe('ABI Coder ABIv2 Encoding', function () {
     var coder = ethers_1.ethers.utils.defaultAbiCoder;
-    var tests = testcases_1.loadTests('contract-interface-abi2');
+    var tests = (0, testcases_1.loadTests)('contract-interface-abi2');
     tests.forEach(function (test) {
         var values = getValues(JSON.parse(test.values));
         //let namedValues = getValues(JSON.parse(test.values), true);
@@ -185,7 +185,7 @@ describe('ABI Coder ABIv2 Encoding', function () {
 });
 describe('ABI Coder ABIv2 Decoding', function () {
     var coder = ethers_1.ethers.utils.defaultAbiCoder;
-    var tests = testcases_1.loadTests('contract-interface-abi2');
+    var tests = (0, testcases_1.loadTests)('contract-interface-abi2');
     tests.forEach(function (test) {
         var values = getValues(JSON.parse(test.values));
         var types = JSON.parse(test.types);
@@ -199,7 +199,7 @@ describe('ABI Coder ABIv2 Decoding', function () {
     });
 });
 describe('Test Contract Events', function () {
-    var tests = testcases_1.loadTests('contract-events');
+    var tests = (0, testcases_1.loadTests)('contract-events');
     tests.forEach(function (test, index) {
         it(('decodes event parameters - ' + test.name + ' - ' + test.types), function () {
             this.timeout(120000);
@@ -232,7 +232,7 @@ describe('Test Contract Events', function () {
     });
 });
 describe('Test Interface Signatures', function () {
-    var tests = testcases_1.loadTests('contract-signatures');
+    var tests = (0, testcases_1.loadTests)('contract-signatures');
     tests.forEach(function (test) {
         it('derives the correct signature - ' + test.name, function () {
             var iface = new ethers_1.ethers.utils.Interface(test.abi);

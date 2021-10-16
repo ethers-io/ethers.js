@@ -32,14 +32,14 @@ var FixedBytesCoder = /** @class */ (function (_super) {
         return ("0x0000000000000000000000000000000000000000000000000000000000000000").substring(0, 2 + this.size * 2);
     };
     FixedBytesCoder.prototype.encode = function (writer, value) {
-        var data = bytes_1.arrayify(value);
+        var data = (0, bytes_1.arrayify)(value);
         if (data.length !== this.size) {
             this._throwError("incorrect data length", value);
         }
         return writer.writeBytes(data);
     };
     FixedBytesCoder.prototype.decode = function (reader) {
-        return reader.coerce(this.name, bytes_1.hexlify(reader.readBytes(this.size)));
+        return reader.coerce(this.name, (0, bytes_1.hexlify)(reader.readBytes(this.size)));
     };
     return FixedBytesCoder;
 }(abstract_coder_1.Coder));

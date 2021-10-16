@@ -12,7 +12,7 @@ var Wordlist = /** @class */ (function () {
     function Wordlist(locale) {
         var _newTarget = this.constructor;
         exports.logger.checkAbstract(_newTarget, Wordlist);
-        properties_1.defineReadOnly(this, "locale", locale);
+        (0, properties_1.defineReadOnly)(this, "locale", locale);
     }
     // Subclasses may override this
     Wordlist.prototype.split = function (mnemonic) {
@@ -32,7 +32,7 @@ var Wordlist = /** @class */ (function () {
             }
             words.push(word);
         }
-        return hash_1.id(words.join("\n") + "\n");
+        return (0, hash_1.id)(words.join("\n") + "\n");
     };
     Wordlist.register = function (lang, name) {
         if (!name) {
@@ -44,7 +44,7 @@ var Wordlist = /** @class */ (function () {
                 var anyGlobal = window;
                 if (anyGlobal._ethers && anyGlobal._ethers.wordlists) {
                     if (!anyGlobal._ethers.wordlists[name]) {
-                        properties_1.defineReadOnly(anyGlobal._ethers.wordlists, name, lang);
+                        (0, properties_1.defineReadOnly)(anyGlobal._ethers.wordlists, name, lang);
                     }
                 }
             }

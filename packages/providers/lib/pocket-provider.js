@@ -21,7 +21,7 @@ var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var url_json_rpc_provider_1 = require("./url-json-rpc-provider");
-// These are load-balancer-based applicatoin IDs
+// These are load-balancer-based application IDs
 var defaultApplicationIds = {
     homestead: "6004bcd10040261633ade990",
     ropsten: "6004bd4d0040261633ade991",
@@ -36,7 +36,7 @@ var PocketProvider = /** @class */ (function (_super) {
         var _newTarget = this.constructor;
         var _this = this;
         if (apiKey == null) {
-            var n = properties_1.getStatic((_newTarget), "getNetwork")(network);
+            var n = (0, properties_1.getStatic)(_newTarget, "getNetwork")(network);
             if (n) {
                 var applicationId = defaultApplicationIds[n.name];
                 if (applicationId) {

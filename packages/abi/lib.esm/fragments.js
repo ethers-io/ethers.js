@@ -201,7 +201,7 @@ export const FormatTypes = Object.freeze({
     sighash: "sighash",
     // Human-Readable with Minimal spacing and without names (compact human-readable)
     minimal: "minimal",
-    // Human-Readble with nice spacing, including all names
+    // Human-Readable with nice spacing, including all names
     full: "full",
     // JSON-format a la Solidity
     json: "json"
@@ -239,7 +239,7 @@ export class ParamType {
     // Format the parameter fragment
     //   - sighash: "(uint256,address)"
     //   - minimal: "tuple(uint256,address) indexed"
-    //   - full:    "tuple(uint256 foo, addres bar) indexed baz"
+    //   - full:    "tuple(uint256 foo, address bar) indexed baz"
     format(format) {
         if (!format) {
             format = FormatTypes.sighash;

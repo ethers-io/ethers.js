@@ -69,7 +69,7 @@ function parseFixed(value, decimals) {
         decimals = 0;
     }
     var multiplier = getMultiplier(decimals);
-    if (typeof (value) !== "string" || !value.match(/^-?[0-9.,]+$/)) {
+    if (typeof (value) !== "string" || !value.match(/^-?[0-9.]+$/)) {
         logger.throwArgumentError("invalid decimal value", "value", value);
     }
     // Is it negative?
@@ -92,11 +92,11 @@ function parseFixed(value, decimals) {
     if (!fraction) {
         fraction = "0";
     }
-    // Trim trialing zeros
+    // Trim trailing zeros
     while (fraction[fraction.length - 1] === "0") {
         fraction = fraction.substring(0, fraction.length - 1);
     }
-    // Check the fraction doesn't exceed our decimals
+    // Check the fraction doesn't exceed our decimals size
     if (fraction.length > multiplier.length - 1) {
         throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
     }
@@ -286,7 +286,7 @@ var FixedNumber = /** @class */ (function () {
             logger.throwArgumentError("invalid byte width", "width", width);
         }
         var hex = bignumber_1.BigNumber.from(this._hex).fromTwos(this.format.width).toTwos(width).toHexString();
-        return bytes_1.hexZeroPad(hex, width / 8);
+        return (0, bytes_1.hexZeroPad)(hex, width / 8);
     };
     FixedNumber.prototype.toUnsafeFloat = function () { return parseFloat(this.toString()); };
     FixedNumber.prototype.toFormat = function (format) {
@@ -294,7 +294,7 @@ var FixedNumber = /** @class */ (function () {
     };
     FixedNumber.fromValue = function (value, decimals, format) {
         // If decimals looks more like a format, and there is no format, shift the parameters
-        if (format == null && decimals != null && !bignumber_1.isBigNumberish(decimals)) {
+        if (format == null && decimals != null && !(0, bignumber_1.isBigNumberish)(decimals)) {
             format = decimals;
             decimals = null;
         }
@@ -321,7 +321,7 @@ var FixedNumber = /** @class */ (function () {
         }
         else {
             hex = numeric.toHexString();
-            hex = bytes_1.hexZeroPad(hex, fixedFormat.width / 8);
+            hex = (0, bytes_1.hexZeroPad)(hex, fixedFormat.width / 8);
         }
         var decimal = formatFixed(numeric, fixedFormat.decimals);
         return new FixedNumber(_constructorGuard, hex, decimal, fixedFormat);
@@ -331,7 +331,7 @@ var FixedNumber = /** @class */ (function () {
             format = "fixed";
         }
         var fixedFormat = FixedFormat.from(format);
-        if (bytes_1.arrayify(value).length > fixedFormat.width / 8) {
+        if ((0, bytes_1.arrayify)(value).length > fixedFormat.width / 8) {
             throw new Error("overflow");
         }
         var numeric = bignumber_1.BigNumber.from(value);
@@ -346,7 +346,7 @@ var FixedNumber = /** @class */ (function () {
         if (typeof (value) === "string") {
             return FixedNumber.fromString(value, format);
         }
-        if (bytes_1.isBytes(value)) {
+        if ((0, bytes_1.isBytes)(value)) {
             return FixedNumber.fromBytes(value, format);
         }
         try {

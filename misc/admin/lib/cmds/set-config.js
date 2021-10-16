@@ -18,7 +18,7 @@ if (process.argv.length !== 3) {
 const key = process.argv[2];
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
-        const value = yield log_1.getPassword("Value: ");
+        const value = yield (0, log_1.getPassword)("Value: ");
         yield config_1.config.set(key, value);
     });
 })().catch((error) => {

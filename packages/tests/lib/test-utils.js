@@ -165,7 +165,7 @@ describe('Test Contract Address Generation', function () {
     });
 });
 describe('Test RLP Coder', function () {
-    var tests = testcases_1.loadTests('rlp-coder');
+    var tests = (0, testcases_1.loadTests)('rlp-coder');
     tests.forEach(function (test) {
         it(('RLP coder encoded - ' + test.name), function () {
             this.timeout(120000);
@@ -180,7 +180,7 @@ describe('Test RLP Coder', function () {
     });
 });
 describe('Test Unit Conversion', function () {
-    var tests = testcases_1.loadTests('units');
+    var tests = (0, testcases_1.loadTests)('units');
     tests.forEach(function (test) {
         var wei = ethers_1.ethers.BigNumber.from(test.wei);
         it(('parses ' + test.ether + ' ether'), function () {
@@ -250,7 +250,7 @@ describe('Test Unit Conversion', function () {
     });
 });
 describe('Test Namehash', function () {
-    var tests = testcases_1.loadTests('namehash');
+    var tests = (0, testcases_1.loadTests)('namehash');
     tests.forEach(function (test) {
         it(('computes namehash - "' + test.name + '"'), function () {
             this.timeout(120000);
@@ -310,7 +310,7 @@ describe('Test ID Hash Functions', function () {
     });
 });
 describe('Test Solidity Hash Functions', function () {
-    var tests = testcases_1.loadTests('solidity-hashes');
+    var tests = (0, testcases_1.loadTests)('solidity-hashes');
     function test(funcName, testKey) {
         it("computes " + funcName + " correctly", function () {
             this.timeout(120000);
@@ -345,7 +345,7 @@ describe('Test Solidity Hash Functions', function () {
     });
 });
 describe('Test Hash Functions', function () {
-    var tests = testcases_1.loadTests('hashes');
+    var tests = (0, testcases_1.loadTests)('hashes');
     it('computes keccak256 correctly', function () {
         this.timeout(120000);
         tests.forEach(function (test) {
@@ -498,7 +498,7 @@ function getHex(value) {
     return ethers_1.ethers.utils.hexlify(ethers_1.ethers.utils.toUtf8Bytes(value));
 }
 describe("Test nameprep", function () {
-    var Tests = testcases_1.loadTests("nameprep");
+    var Tests = (0, testcases_1.loadTests)("nameprep");
     Tests.forEach(function (test) {
         // No RTL support yet... These will always fail
         if ([
@@ -536,7 +536,7 @@ describe("Test nameprep", function () {
     });
 });
 describe("Test Signature Manipulation", function () {
-    var tests = testcases_1.loadTests("transactions");
+    var tests = (0, testcases_1.loadTests)("transactions");
     tests.forEach(function (test) {
         it("autofills partial signatures - " + test.name, function () {
             var address = ethers_1.ethers.utils.getAddress(test.accountAddress);
@@ -566,7 +566,7 @@ describe("Test Signature Manipulation", function () {
     });
 });
 describe("Test Typed Transactions", function () {
-    var tests = testcases_1.loadTests("typed-transactions");
+    var tests = (0, testcases_1.loadTests)("typed-transactions");
     function equalsData(name, a, b, ifNull) {
         assert_1.default.equal(ethers_1.ethers.utils.hexlify(a), ethers_1.ethers.utils.hexlify((b == null) ? ifNull : b), name);
         return true;
@@ -661,7 +661,7 @@ describe("Test Typed Transactions", function () {
     });
 });
 describe("BigNumber", function () {
-    var tests = testcases_1.loadTests("bignumber");
+    var tests = (0, testcases_1.loadTests)("bignumber");
     tests.forEach(function (test) {
         if (test.expectedValue == null) {
             it(test.testcase, function () {
@@ -819,7 +819,7 @@ describe("Web Fetch", function() {
 });
 */
 describe("EIP-712", function () {
-    var tests = testcases_1.loadTests("eip712");
+    var tests = (0, testcases_1.loadTests)("eip712");
     tests.forEach(function (test) {
         it("encoding " + test.name, function () {
             var encoder = ethers_1.ethers.utils._TypedDataEncoder.from(test.types);

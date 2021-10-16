@@ -13,5 +13,6 @@ export declare type Options = {
     headers?: {
         [key: string]: string;
     };
+    skipFetchSetup?: boolean;
 };
 //# sourceMappingURL=types.d.ts.map

@@ -1,2 +1,2 @@
-export const version = "logger/5.4.1";
+export const version = "logger/5.5.0";
 //# sourceMappingURL=_version.js.map

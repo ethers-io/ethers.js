@@ -68,7 +68,7 @@ function getDefaultProvider(network, options) {
             }
         }
     }
-    var n = networks_1.getNetwork(network);
+    var n = (0, networks_1.getNetwork)(network);
     if (!n || !n._defaultProvider) {
         logger.throwError("unsupported getDefaultProvider network", logger_1.Logger.errors.NETWORK_ERROR, {
             operation: "getDefaultProvider",

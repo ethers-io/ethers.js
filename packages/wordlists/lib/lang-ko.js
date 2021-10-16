@@ -36,7 +36,7 @@ function getHangul(code) {
     else if (code >= 19) {
         code = code + 97 - 19;
     }
-    return strings_1.toUtf8String([225, (code >> 6) + 132, (code & 0x3f) + 128]);
+    return (0, strings_1.toUtf8String)([225, (code >> 6) + 132, (code & 0x3f) + 128]);
 }
 var wordlist = null;
 function loadWords(lang) {

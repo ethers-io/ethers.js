@@ -51,9 +51,9 @@ export class UrlJsonRpcProvider extends StaticJsonRpcProvider {
     constructor(network, apiKey) {
         logger.checkAbstract(new.target, UrlJsonRpcProvider);
         // Normalize the Network and API Key
-        network = getStatic((new.target), "getNetwork")(network);
-        apiKey = getStatic((new.target), "getApiKey")(apiKey);
-        const connection = getStatic((new.target), "getUrl")(network, apiKey);
+        network = getStatic(new.target, "getNetwork")(network);
+        apiKey = getStatic(new.target, "getApiKey")(apiKey);
+        const connection = getStatic(new.target, "getUrl")(network, apiKey);
         super(connection, network);
         if (typeof (apiKey) === "string") {
             defineReadOnly(this, "apiKey", apiKey);

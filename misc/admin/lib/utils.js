@@ -28,7 +28,7 @@ function repeat(char, length) {
 }
 exports.repeat = repeat;
 function sha256(content) {
-    const hasher = crypto_1.createHash("sha256");
+    const hasher = (0, crypto_1.createHash)("sha256");
     hasher.update(content);
     return "0x" + hasher.digest("hex");
 }
@@ -43,7 +43,7 @@ function sortRecords(record) {
 }
 exports.sortRecords = sortRecords;
 function atomicWrite(path, value) {
-    const tmp = path_1.resolve(__dirname, "../../../.atomic-tmp");
+    const tmp = (0, path_1.resolve)(__dirname, "../../../.atomic-tmp");
     fs_1.default.writeFileSync(tmp, value);
     fs_1.default.renameSync(tmp, path);
 }
@@ -96,7 +96,7 @@ function mkdir(path) {
             break;
         }
         dirs.push(path);
-        path = path_1.dirname(path);
+        path = (0, path_1.dirname)(path);
     }
     while (dirs.length) {
         fs_1.default.mkdirSync(dirs.pop());

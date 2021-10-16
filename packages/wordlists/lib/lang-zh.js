@@ -50,7 +50,7 @@ function loadWords(lang) {
                 bytes[i_1] = codes.indexOf(deltaData[deltaOffset++]) + ((i_1 == 0) ? 228 : 128);
             }
         }
-        wordlist[lang.locale].push(strings_1.toUtf8String(bytes));
+        wordlist[lang.locale].push((0, strings_1.toUtf8String)(bytes));
     }
     // Verify the computed list matches the official list
     /* istanbul ignore if */

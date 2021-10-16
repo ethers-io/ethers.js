@@ -3,6 +3,8 @@ import { arrayify } from "@ethersproject/bytes";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
+// Debugging line for testing browser lib in node
+//const window = { crypto: { getRandomValues: () => { } } };
 let anyGlobal = null;
 try {
     anyGlobal = window;
@@ -33,7 +35,7 @@ if (!crypto || !crypto.getRandomValues) {
     };
 }
 export function randomBytes(length) {
-    if (length <= 0 || length > 1024 || (length % 1)) {
+    if (length <= 0 || length > 1024 || (length % 1) || length != length) {
         logger.throwArgumentError("invalid length", "length", length);
     }
     const result = new Uint8Array(length);

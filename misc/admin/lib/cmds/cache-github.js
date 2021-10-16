@@ -15,6 +15,6 @@ const github_1 = require("../github");
     return __awaiter(this, void 0, void 0, function* () {
         const user = yield config_1.config.get("github-user");
         const password = yield config_1.config.get("github-readonly");
-        yield github_1.syncIssues(user, password);
+        yield (0, github_1.syncIssues)(user, password);
     });
 })();

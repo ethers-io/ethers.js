@@ -116,7 +116,7 @@ function _getFiles(result, root) {
         if (filename === '.DS_Store') {
             return;
         }
-        const fullFilename = path_1.join(root, filename);
+        const fullFilename = (0, path_1.join)(root, filename);
         const stat = fs_1.default.statSync(fullFilename);
         if (stat.isDirectory()) {
             _getFiles(result, fullFilename);
@@ -150,7 +150,7 @@ function getFiles(basedir) {
             secretAccessKey: awsSecretKey
         });
         const added = [], removed = [], changed = [], upload = [];
-        const basedir = path_2.resolve("docs");
+        const basedir = (0, path_2.resolve)("docs");
         const local = yield getFiles(basedir);
         const remote = yield getKeys(s3, bucket);
         Object.keys(local).forEach((filename) => {
@@ -177,7 +177,7 @@ function getFiles(basedir) {
         console.log('Changed:  ', changed.length);
         for (let i = 0; i < upload.length; i++) {
             const filename = upload[i];
-            const content = fs_1.default.readFileSync(path_1.join(basedir, filename));
+            const content = fs_1.default.readFileSync((0, path_1.join)(basedir, filename));
             console.log(`Uploading: ${filename} (${content.length} bytes)`);
             yield putObject(s3, bucket, filename, content);
         }

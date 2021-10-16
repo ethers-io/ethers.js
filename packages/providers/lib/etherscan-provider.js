@@ -74,15 +74,15 @@ function getTransactionPostData(transaction) {
         }
         // Quantity-types require no leading zero, unless 0
         if ({ type: true, gasLimit: true, gasPrice: true, maxFeePerGs: true, maxPriorityFeePerGas: true, nonce: true, value: true }[key]) {
-            value = bytes_1.hexValue(bytes_1.hexlify(value));
+            value = (0, bytes_1.hexValue)((0, bytes_1.hexlify)(value));
         }
         else if (key === "accessList") {
-            value = "[" + transactions_1.accessListify(value).map(function (set) {
+            value = "[" + (0, transactions_1.accessListify)(value).map(function (set) {
                 return "{address:\"" + set.address + "\",storageKeys:[\"" + set.storageKeys.join('","') + "\"]}";
             }).join(",") + "]";
         }
         else {
-            value = bytes_1.hexlify(value);
+            value = (0, bytes_1.hexlify)(value);
         }
         result[key] = value;
     }
@@ -153,7 +153,7 @@ function checkError(method, error, transaction) {
             if (data) {
                 data = "0x" + data.replace(/^.*0x/i, "");
             }
-            if (bytes_1.isHexString(data)) {
+            if ((0, bytes_1.isHexString)(data)) {
                 return data;
             }
             logger.throwError("missing revert data in call exception", logger_1.Logger.errors.CALL_EXCEPTION, {
@@ -179,24 +179,32 @@ function checkError(method, error, transaction) {
     // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
     if (message.match(/insufficient funds/)) {
         logger.throwError("insufficient funds for intrinsic transaction cost", logger_1.Logger.errors.INSUFFICIENT_FUNDS, {
-            error: error, method: method, transaction: transaction
+            error: error,
+            method: method,
+            transaction: transaction
         });
     }
     // "Transaction with the same hash was already imported."
     if (message.match(/same hash was already imported|transaction nonce is too low|nonce too low/)) {
         logger.throwError("nonce has already been used", logger_1.Logger.errors.NONCE_EXPIRED, {
-            error: error, method: method, transaction: transaction
+            error: error,
+            method: method,
+            transaction: transaction
         });
     }
     // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
     if (message.match(/another transaction with same nonce/)) {
         logger.throwError("replacement fee too low", logger_1.Logger.errors.REPLACEMENT_UNDERPRICED, {
-            error: error, method: method, transaction: transaction
+            error: error,
+            method: method,
+            transaction: transaction
         });
     }
     if (message.match(/execution failed due to an exception|execution reverted/)) {
         logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
-            error: error, method: method, transaction: transaction
+            error: error,
+            method: method,
+            transaction: transaction
         });
     }
     throw error;
@@ -208,8 +216,8 @@ var EtherscanProvider = /** @class */ (function (_super) {
         var _this = this;
         logger.checkNew(_newTarget, EtherscanProvider);
         _this = _super.call(this, network) || this;
-        properties_1.defineReadOnly(_this, "baseUrl", _this.getBaseUrl());
-        properties_1.defineReadOnly(_this, "apiKey", apiKey || defaultApiKey);
+        (0, properties_1.defineReadOnly)(_this, "baseUrl", _this.getBaseUrl());
+        (0, properties_1.defineReadOnly)(_this, "apiKey", apiKey || defaultApiKey);
         return _this;
     }
     EtherscanProvider.prototype.getBaseUrl = function () {
@@ -267,7 +275,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
                             throttleSlotInterval: 1000,
                             throttleCallback: function (attempt, url) {
                                 if (_this.isCommunityResource()) {
-                                    formatter_1.showThrottleMessage();
+                                    (0, formatter_1.showThrottleMessage)();
                                 }
                                 return Promise.resolve(true);
                             }
@@ -279,13 +287,13 @@ var EtherscanProvider = /** @class */ (function (_super) {
                                 return key + "=" + payload[key];
                             }).join("&");
                         }
-                        return [4 /*yield*/, web_1.fetchJson(connection, payloadStr, procFunc || getJsonResult)];
+                        return [4 /*yield*/, (0, web_1.fetchJson)(connection, payloadStr, procFunc || getJsonResult)];
                     case 1:
                         result = _a.sent();
                         this.emit("debug", {
                             action: "response",
                             request: url,
-                            response: properties_1.deepCopy(result),
+                            response: (0, properties_1.deepCopy)(result),
                             provider: this
                         });
                         return [2 /*return*/, result];
@@ -464,7 +472,7 @@ var EtherscanProvider = /** @class */ (function (_super) {
         });
     };
     // Note: The `page` page parameter only allows pagination within the
-    //       10,000 window abailable without a page and offset parameter
+    //       10,000 window available without a page and offset parameter
     //       Error: Result window is too large, PageNo x Offset size must
     //              be less than or equal to 10000
     EtherscanProvider.prototype.getHistory = function (addressOrName, startBlock, endBlock) {

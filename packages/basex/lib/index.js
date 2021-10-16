@@ -44,17 +44,17 @@ var bytes_1 = require("@ethersproject/bytes");
 var properties_1 = require("@ethersproject/properties");
 var BaseX = /** @class */ (function () {
     function BaseX(alphabet) {
-        properties_1.defineReadOnly(this, "alphabet", alphabet);
-        properties_1.defineReadOnly(this, "base", alphabet.length);
-        properties_1.defineReadOnly(this, "_alphabetMap", {});
-        properties_1.defineReadOnly(this, "_leader", alphabet.charAt(0));
+        (0, properties_1.defineReadOnly)(this, "alphabet", alphabet);
+        (0, properties_1.defineReadOnly)(this, "base", alphabet.length);
+        (0, properties_1.defineReadOnly)(this, "_alphabetMap", {});
+        (0, properties_1.defineReadOnly)(this, "_leader", alphabet.charAt(0));
         // pre-compute lookup table
         for (var i = 0; i < alphabet.length; i++) {
             this._alphabetMap[alphabet.charAt(i)] = i;
         }
     }
     BaseX.prototype.encode = function (value) {
-        var source = bytes_1.arrayify(value);
+        var source = (0, bytes_1.arrayify)(value);
         if (source.length === 0) {
             return "";
         }
@@ -111,7 +111,7 @@ var BaseX = /** @class */ (function () {
         for (var k = 0; value[k] === this._leader && k < value.length - 1; ++k) {
             bytes.push(0);
         }
-        return bytes_1.arrayify(new Uint8Array(bytes.reverse()));
+        return (0, bytes_1.arrayify)(new Uint8Array(bytes.reverse()));
     };
     return BaseX;
 }());

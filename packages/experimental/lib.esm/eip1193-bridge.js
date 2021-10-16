@@ -94,7 +94,7 @@ export class Eip1193Bridge extends EventEmitter {
                     const result = yield this.provider.estimateGas(req);
                     return result.toHexString();
                 }
-                // @TOOD: Transform? No uncles?
+                // @TODO: Transform? No uncles?
                 case "eth_getBlockByHash":
                 case "eth_getBlockByNumber": {
                     if (params[1]) {

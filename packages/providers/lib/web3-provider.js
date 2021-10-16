@@ -26,12 +26,6 @@ function buildWeb3LegacyFetcher(provider, sendFunc) {
     var fetcher = "Web3LegacyFetcher";
     return function (method, params) {
         var _this = this;
-        // Metamask complains about eth_sign (and on some versions hangs)
-        if (method == "eth_sign" && (provider.isMetaMask || provider.isStatus)) {
-            // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
-            method = "personal_sign";
-            params = [params[1], params[0]];
-        }
         var request = {
             method: method,
             params: params,
@@ -42,7 +36,7 @@ function buildWeb3LegacyFetcher(provider, sendFunc) {
             _this.emit("debug", {
                 action: "request",
                 fetcher: fetcher,
-                request: properties_1.deepCopy(request),
+                request: (0, properties_1.deepCopy)(request),
                 provider: _this
             });
             sendFunc(request, function (error, response) {
@@ -80,17 +74,11 @@ function buildEip1193Fetcher(provider) {
         if (params == null) {
             params = [];
         }
-        // Metamask complains about eth_sign (and on some versions hangs)
-        if (method == "eth_sign" && (provider.isMetaMask || provider.isStatus)) {
-            // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
-            method = "personal_sign";
-            params = [params[1], params[0]];
-        }
         var request = { method: method, params: params };
         this.emit("debug", {
             action: "request",
             fetcher: "Eip1193Fetcher",
-            request: properties_1.deepCopy(request),
+            request: (0, properties_1.deepCopy)(request),
             provider: this
         });
         return provider.request(request).then(function (response) {
@@ -156,8 +144,8 @@ var Web3Provider = /** @class */ (function (_super) {
             }
         }
         _this = _super.call(this, path, network) || this;
-        properties_1.defineReadOnly(_this, "jsonRpcFetchFunc", jsonRpcFetchFunc);
-        properties_1.defineReadOnly(_this, "provider", subprovider);
+        (0, properties_1.defineReadOnly)(_this, "jsonRpcFetchFunc", jsonRpcFetchFunc);
+        (0, properties_1.defineReadOnly)(_this, "provider", subprovider);
         return _this;
     }
     Web3Provider.prototype.send = function (method, params) {

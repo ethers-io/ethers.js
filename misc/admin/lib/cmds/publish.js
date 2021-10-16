@@ -89,10 +89,10 @@ function invalidate(cloudfront, distributionId) {
 exports.invalidate = invalidate;
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
-        const dirnames = depgraph_1.getOrdered();
+        const dirnames = (0, depgraph_1.getOrdered)();
         // @TODO: Fail if there are any untracked files or unchecked in files
         const publish = {};
-        const progressUpdate = log_1.getProgressBar(log_1.colorify.bold("Finding updated packages..."));
+        const progressUpdate = (0, log_1.getProgressBar)(log_1.colorify.bold("Finding updated packages..."));
         for (let i = 0; i < dirnames.length; i++) {
             progressUpdate(i / dirnames.length);
             let dirname = dirnames[i];
@@ -103,8 +103,8 @@ exports.invalidate = invalidate;
                 continue;
             }
             // Get the latest commit this package was modified at
-            const path = path_1.resolve("packages", dirname);
-            const gitHead = yield git_1.getGitTag(path);
+            const path = (0, path_1.resolve)("packages", dirname);
+            const gitHead = yield (0, git_1.getGitTag)(path);
             if (gitHead == null) {
                 throw new Error("hmmm...");
             }
@@ -119,7 +119,7 @@ exports.invalidate = invalidate;
         console.log(log_1.colorify.bold(`Found ${Object.keys(publish).length} updated pacakges...`));
         Object.keys(publish).forEach((dirname) => {
             const info = publish[dirname];
-            console.log(`  ${log_1.colorify.blue(info.name)} ${utils_1.repeat(" ", 50 - info.name.length - info.oldVersion.length)} ${info.oldVersion} ${log_1.colorify.bold("=>")} ${log_1.colorify.green(info.newVersion)}`);
+            console.log(`  ${log_1.colorify.blue(info.name)} ${(0, utils_1.repeat)(" ", 50 - info.name.length - info.oldVersion.length)} ${info.oldVersion} ${log_1.colorify.bold("=>")} ${log_1.colorify.green(info.newVersion)}`);
         });
         const publishNames = Object.keys(publish);
         publishNames.sort((a, b) => (dirnames.indexOf(a) - dirnames.indexOf(b)));
@@ -149,17 +149,17 @@ exports.invalidate = invalidate;
         console.log(log_1.colorify.bold("Publishing:"));
         for (let i = 0; i < publishNames.length; i++) {
             const dirname = publishNames[i];
-            const path = path_1.resolve("packages", dirname);
-            const pathJson = path_1.resolve("packages", dirname, "package.json");
+            const path = (0, path_1.resolve)("packages", dirname);
+            const pathJson = (0, path_1.resolve)("packages", dirname, "package.json");
             const { gitHead, name, newVersion } = publish[dirname];
             console.log(`  ${log_1.colorify.blue(name)} @ ${log_1.colorify.green(newVersion)}`);
             local.updateJson(pathJson, { gitHead: gitHead }, true);
-            const info = utils_1.loadJson(pathJson);
+            const info = (0, utils_1.loadJson)(pathJson);
             yield npm.publish(path, info, options);
             local.updateJson(pathJson, { gitHead: undefined }, true);
         }
         if (publishNames.indexOf("ethers") >= 0 || forcePublish) {
-            const change = changelog_1.getLatestChange();
+            const change = (0, changelog_1.getLatestChange)();
             const patchVersion = change.version.substring(1);
             const minorVersion = patchVersion.split(".").slice(0, 2).join(".");
             const awsAccessId = yield config_1.config.get("aws-upload-scripts-accesskey");
@@ -169,8 +169,8 @@ exports.invalidate = invalidate;
                 // The password above already succeeded
                 const username = yield config_1.config.get("github-user");
                 const password = yield config_1.config.get("github-release");
-                const hash = createHash("sha384").update(fs_1.default.readFileSync(path_1.resolve("packages/ethers/dist/ethers.umd.min.js"))).digest("base64");
-                const gitCommit = yield git_1.getGitTag(path_1.resolve("CHANGELOG.md"));
+                const hash = createHash("sha384").update(fs_1.default.readFileSync((0, path_1.resolve)("packages/ethers/dist/ethers.umd.min.js"))).digest("base64");
+                const gitCommit = yield (0, git_1.getGitTag)((0, path_1.resolve)("CHANGELOG.md"));
                 let content = change.content.trim();
                 content += '\n\n----\n\n';
                 content += '**Embedding UMD with [SRI](https:/\/developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity):**\n';
@@ -183,7 +183,7 @@ exports.invalidate = invalidate;
                 content += '```';
                 // Publish the release
                 const beta = false;
-                const link = yield github_1.createRelease(username, password, change.version, change.title, content, beta, gitCommit);
+                const link = yield (0, github_1.createRelease)(username, password, change.version, change.title, content, beta, gitCommit);
                 console.log(`${log_1.colorify.bold("Published release:")} ${link}`);
             }
             // Upload libs to the CDN (as ethers-v5.1 and ethers-5.1.x)
@@ -244,7 +244,7 @@ exports.invalidate = invalidate;
                     const { bucketName, originRoot, filename, key, suffix } = fileInfos[i];
                     yield putObject(s3, {
                         ACL: "public-read",
-                        Body: fs_1.default.readFileSync(path_1.resolve(filename)),
+                        Body: fs_1.default.readFileSync((0, path_1.resolve)(filename)),
                         Bucket: bucketName,
                         ContentType: "application/javascript; charset=utf-8",
                         Key: (originRoot + key)

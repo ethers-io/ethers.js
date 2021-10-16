@@ -100,7 +100,7 @@ var Script = /** @class */ (function () {
         var _this = this;
         return new Proxy({
             __filename: this.filename,
-            __dirname: path_1.dirname(this.filename),
+            __dirname: (0, path_1.dirname)(this.filename),
             console: console,
             Uint8Array: Uint8Array,
             ethers: ethers_1.ethers,
@@ -348,7 +348,7 @@ var LinkNode = /** @class */ (function (_super) {
                     }
                 }
                 if (value == null) {
-                    throwError("labels can only be targetted as offsets", this.location);
+                    throwError("labels can only be targeted as offsets", this.location);
                 }
                 if (isOffset && assembler.positionIndependentCode) {
                     here = assembler.getOffset(this, this);
@@ -991,7 +991,7 @@ var SemanticChecker = /** @class */ (function (_super) {
             }
             if (node.location.statement) {
                 if (node instanceof PopNode) {
-                    // $$ by istelf is useless and is intended to be an operand
+                    // $$ by itself is useless and is intended to be an operand
                     errors.push({
                         message: "$$ must be an operand",
                         severity: SemanticErrorSeverity.error,
@@ -1060,7 +1060,7 @@ var CodeGenerationAssembler = /** @class */ (function (_super) {
     function CodeGenerationAssembler(root, options) {
         var _this = _super.call(this, root, !!options.positionIndependentCode) || this;
         ethers_1.ethers.utils.defineReadOnly(_this, "retry", ((options.retry != null) ? options.retry : 512));
-        ethers_1.ethers.utils.defineReadOnly(_this, "filename", path_1.resolve(options.filename || "./contract.asm"));
+        ethers_1.ethers.utils.defineReadOnly(_this, "filename", (0, path_1.resolve)(options.filename || "./contract.asm"));
         ethers_1.ethers.utils.defineReadOnly(_this, "defines", Object.freeze(options.defines || {}));
         ethers_1.ethers.utils.defineReadOnly(_this, "_stack", []);
         _this.reset();
@@ -1076,7 +1076,7 @@ var CodeGenerationAssembler = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    // Reset the assmebler for another run with updated values
+    // Reset the assembler for another run with updated values
     CodeGenerationAssembler.prototype.reset = function () {
         var _this = this;
         this._changed = false;
@@ -1163,7 +1163,7 @@ var CodeGenerationAssembler = /** @class */ (function (_super) {
     // This is used by evaluate to access properties in JavaScript
     // - "defines" allow meta-programming values to be used
     // - jump destinations are available as numbers
-    // - bytecode and data are available as an immuatble DataSource
+    // - bytecode and data are available as an immutable DataSource
     CodeGenerationAssembler.prototype.get = function (name, source) {
         if (name === "defines") {
             return this.defines;
@@ -1277,8 +1277,8 @@ function parse(code, options) {
     if (options == null) {
         options = {};
     }
-    // Since jison allows \n, \r or \r\n line endings, we need some
-    // twekaing to get the correct position
+    // Since Jison allows \n, \r or \r\n line endings, we need some
+    // tweaking to get the correct position
     var lines = [];
     var offset = 0;
     code.split(/(\r\n?|\n)/g).forEach(function (clump, index) {
@@ -1325,7 +1325,7 @@ function parse(code, options) {
             statement: (!!loc.statement)
         };
     };
-    var result = Node.from(_parser_1.parse(code));
+    var result = Node.from((0, _parser_1.parse)(code));
     // Nuke the source code lookup callback
     _parser_1.parser.yy._ethersLocation = null;
     // Semantic Checks

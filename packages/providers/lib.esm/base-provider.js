@@ -390,7 +390,7 @@ export class BaseProvider extends Provider {
             this._ready().catch((error) => { });
         }
         else {
-            const knownNetwork = getStatic((new.target), "getNetwork")(network);
+            const knownNetwork = getStatic(new.target, "getNetwork")(network);
             if (knownNetwork) {
                 defineReadOnly(this, "_network", knownNetwork);
                 this.emit("network", knownNetwork, null);
@@ -439,7 +439,7 @@ export class BaseProvider extends Provider {
     }
     // This will always return the most recently established network.
     // For "any", this can change (a "network" event is emitted before
-    // any change is refelcted); otherwise this cannot change
+    // any change is reflected); otherwise this cannot change
     get ready() {
         return poll(() => {
             return this._ready().then((network) => {
@@ -1175,6 +1175,10 @@ export class BaseProvider extends Provider {
     }
     _getAddress(addressOrName) {
         return __awaiter(this, void 0, void 0, function* () {
+            addressOrName = yield addressOrName;
+            if (typeof (addressOrName) !== "string") {
+                logger.throwArgumentError("invalid address or ENS name", "name", addressOrName);
+            }
             const address = yield this.resolveName(addressOrName);
             if (address == null) {
                 logger.throwError("ENS name not configured", Logger.errors.UNSUPPORTED_OPERATION, {
@@ -1198,7 +1202,7 @@ export class BaseProvider extends Provider {
             }
             else {
                 try {
-                    params.blockTag = this.formatter.blockTag(yield this._getBlockTag(blockHashOrBlockTag));
+                    params.blockTag = yield this._getBlockTag(blockHashOrBlockTag);
                     if (isHexString(params.blockTag)) {
                         blockNumber = parseInt(params.blockTag.substring(2), 16);
                     }

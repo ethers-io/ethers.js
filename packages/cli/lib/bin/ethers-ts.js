@@ -88,7 +88,7 @@ function walkFilenames(filenames) {
     filenames.forEach(function (filename) {
         var stat = fs_1.default.statSync(filename);
         if (stat.isDirectory()) {
-            walkFilenames(fs_1.default.readdirSync(filename).map(function (x) { return path_1.join(filename, x); })).forEach(function (filename) {
+            walkFilenames(fs_1.default.readdirSync(filename).map(function (x) { return (0, path_1.join)(filename, x); })).forEach(function (filename) {
                 result.push(filename);
             });
         }
@@ -179,7 +179,7 @@ var GeneratePlugin = /** @class */ (function (_super) {
                     var contracts = null;
                     var content = fs_1.default.readFileSync(filename).toString();
                     try {
-                        contracts = solc_1.compile(content, { filename: filename, optimize: _this.optimize });
+                        contracts = (0, solc_1.compile)(content, { filename: filename, optimize: _this.optimize });
                     }
                     catch (error) {
                         console.log(error);
@@ -191,7 +191,7 @@ var GeneratePlugin = /** @class */ (function (_super) {
                         throw new Error("errors during compilation");
                     }
                     contracts.forEach(function (contract) {
-                        output += typescript_1.generate(contract, (_this.noBytecode ? null : contract.bytecode));
+                        output += (0, typescript_1.generate)(contract, (_this.noBytecode ? null : contract.bytecode));
                         output += "\n";
                     });
                 });

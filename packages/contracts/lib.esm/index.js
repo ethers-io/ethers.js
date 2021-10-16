@@ -25,11 +25,15 @@ const logger = new Logger(version);
 const allowedTransactionKeys = {
     chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
     type: true, accessList: true,
-    maxFeePerGas: true, maxPriorityFeePerGas: true
+    maxFeePerGas: true, maxPriorityFeePerGas: true,
+    customData: true
 };
 function resolveName(resolver, nameOrPromise) {
     return __awaiter(this, void 0, void 0, function* () {
         const name = yield nameOrPromise;
+        if (typeof (name) !== "string") {
+            logger.throwArgumentError("invalid address or ENS name", "name", name);
+        }
         // If it is already an address, just use it (after adding checksum)
         try {
             return getAddress(name);
@@ -63,7 +67,10 @@ function resolveAddresses(resolver, value, paramType) {
         }
         if (paramType.baseType === "array") {
             if (!Array.isArray(value)) {
-                return Promise.reject(new Error("invalid value for array"));
+                return Promise.reject(logger.makeError("invalid value for array", Logger.errors.INVALID_ARGUMENT, {
+                    argument: "value",
+                    value
+                }));
             }
             return yield Promise.all(value.map((v) => resolveAddresses(resolver, v, paramType.arrayChildren)));
         }
@@ -148,7 +155,7 @@ function populateTransaction(contract, fragment, args) {
         }
         // If there was no "gasLimit" override, but the ABI specifies a default, use it
         if (tx.gasLimit == null && fragment.gas != null) {
-            // Conmpute the intrinisic gas cost for this transaction
+            // Compute the intrinsic gas cost for this transaction
             // @TODO: This is based on the yellow paper as of Petersburg; this is something
             // we may wish to parameterize in v6 as part of the Network object. Since this
             // is always a non-nil to address, we can ignore G_create, but may wish to add
@@ -174,7 +181,10 @@ function populateTransaction(contract, fragment, args) {
             }
             tx.value = roValue;
         }
-        // Remvoe the overrides
+        if (ro.customData) {
+            tx.customData = shallowCopy(ro.customData);
+        }
+        // Remove the overrides
         delete overrides.nonce;
         delete overrides.gasLimit;
         delete overrides.gasPrice;
@@ -184,6 +194,7 @@ function populateTransaction(contract, fragment, args) {
         delete overrides.accessList;
         delete overrides.maxFeePerGas;
         delete overrides.maxPriorityFeePerGas;
+        delete overrides.customData;
         // Make sure there are no stray overrides, which may indicate a
         // typo or using an unsupported key.
         const leftovers = Object.keys(overrides).filter((key) => (overrides[key] != null));
@@ -262,13 +273,13 @@ function buildSend(contract, fragment) {
                     operation: "sendTransaction"
                 });
             }
-            // If the contract was just deployed, wait until it is minded
+            // If the contract was just deployed, wait until it is mined
             if (contract.deployTransaction != null) {
                 yield contract._deployed();
             }
             const txRequest = yield populateTransaction(contract, fragment, args);
             const tx = yield contract.signer.sendTransaction(txRequest);
-            // Tweak the tw.wait so the receipt has extra properties
+            // Tweak the tx.wait so the receipt has extra properties
             const wait = tx.wait.bind(tx);
             tx.wait = (confirmations) => {
                 return wait(confirmations).then((receipt) => {
@@ -382,7 +393,7 @@ class ErrorRunningEvent extends RunningEvent {
 //       or have a common abstract super class, with enough constructor
 //       options to configure both.
 // A Fragment Event will populate all the properties that Wildcard
-// will, and additioanlly dereference the arguments when emitting
+// will, and additionally dereference the arguments when emitting
 class FragmentRunningEvent extends RunningEvent {
     constructor(address, contractInterface, fragment, topics) {
         const filter = {
@@ -428,7 +439,7 @@ class FragmentRunningEvent extends RunningEvent {
         return args;
     }
 }
-// A Wildard Event will attempt to populate:
+// A Wildcard Event will attempt to populate:
 //  - event            The name of the event name
 //  - eventSignature   The full signature of the event
 //  - decode           A function to decode data and topics
@@ -460,7 +471,7 @@ export class BaseContract {
         logger.checkNew(new.target, Contract);
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
-        defineReadOnly(this, "interface", getStatic((new.target), "getInterface")(contractInterface));
+        defineReadOnly(this, "interface", getStatic(new.target, "getInterface")(contractInterface));
         if (signerOrProvider == null) {
             defineReadOnly(this, "provider", null);
             defineReadOnly(this, "signer", null);
@@ -541,10 +552,10 @@ export class BaseContract {
             // are ambiguous
             {
                 const name = fragment.name;
-                if (!uniqueNames[name]) {
-                    uniqueNames[name] = [];
+                if (!uniqueNames[`%${name}`]) {
+                    uniqueNames[`%${name}`] = [];
                 }
-                uniqueNames[name].push(signature);
+                uniqueNames[`%${name}`].push(signature);
             }
             if (this[signature] == null) {
                 defineReadOnly(this, signature, buildDefault(this, fragment, true));
@@ -571,6 +582,8 @@ export class BaseContract {
             if (signatures.length > 1) {
                 return;
             }
+            // Strip off the leading "%" used for prototype protection
+            name = name.substring(1);
             const signature = signatures[0];
             // If overwriting a member property that is null, swallow the error
             try {
@@ -906,10 +919,10 @@ export class ContractFactory {
             logger.throwArgumentError("invalid signer", "signer", signer);
         }
         defineReadOnly(this, "bytecode", bytecodeHex);
-        defineReadOnly(this, "interface", getStatic((new.target), "getInterface")(contractInterface));
+        defineReadOnly(this, "interface", getStatic(new.target, "getInterface")(contractInterface));
         defineReadOnly(this, "signer", signer || null);
     }
-    // @TODO: Future; rename to populteTransaction?
+    // @TODO: Future; rename to populateTransaction?
     getDeployTransaction(...args) {
         let tx = {};
         // If we have 1 additional argument, we allow transaction overrides

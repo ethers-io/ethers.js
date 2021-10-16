@@ -10,7 +10,7 @@ function run(progname, args, currentWorkingDirectory) {
     if (currentWorkingDirectory) {
         options.cwd = currentWorkingDirectory;
     }
-    const child = child_process_1.spawnSync(progname, args, options);
+    const child = (0, child_process_1.spawnSync)(progname, args, options);
     const result = {
         _stderr: child.stderr,
         stderr: (child.stderr.toString() || null),

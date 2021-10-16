@@ -17,6 +17,7 @@ export declare type TransactionRequest = {
     accessList?: AccessListish;
     maxPriorityFeePerGas?: BigNumberish;
     maxFeePerGas?: BigNumberish;
+    customData?: Record<string, any>;
 };
 export interface TransactionResponse extends Transaction {
     hash: string;
@@ -29,13 +30,14 @@ export interface TransactionResponse extends Transaction {
     wait: (confirmations?: number) => Promise<TransactionReceipt>;
 }
 export declare type BlockTag = string | number;
-interface _Block {
+export interface _Block {
     hash: string;
     parentHash: string;
     number: number;
     timestamp: number;
     nonce: string;
     difficulty: number;
+    _difficulty: BigNumber;
     gasLimit: BigNumber;
     gasUsed: BigNumber;
     miner: string;
@@ -149,5 +151,4 @@ export declare abstract class Provider implements OnceBlockable {
     constructor();
     static isProvider(value: any): value is Provider;
 }
-export {};
 //# sourceMappingURL=index.d.ts.map

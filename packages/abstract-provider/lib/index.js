@@ -78,7 +78,7 @@ var BlockForkEvent = /** @class */ (function (_super) {
     __extends(BlockForkEvent, _super);
     function BlockForkEvent(blockHash, expiry) {
         var _this = this;
-        if (!bytes_1.isHexString(blockHash, 32)) {
+        if (!(0, bytes_1.isHexString)(blockHash, 32)) {
             logger.throwArgumentError("invalid blockHash", "blockHash", blockHash);
         }
         _this = _super.call(this, {
@@ -96,7 +96,7 @@ var TransactionForkEvent = /** @class */ (function (_super) {
     __extends(TransactionForkEvent, _super);
     function TransactionForkEvent(hash, expiry) {
         var _this = this;
-        if (!bytes_1.isHexString(hash, 32)) {
+        if (!(0, bytes_1.isHexString)(hash, 32)) {
             logger.throwArgumentError("invalid transaction hash", "hash", hash);
         }
         _this = _super.call(this, {
@@ -114,10 +114,10 @@ var TransactionOrderForkEvent = /** @class */ (function (_super) {
     __extends(TransactionOrderForkEvent, _super);
     function TransactionOrderForkEvent(beforeHash, afterHash, expiry) {
         var _this = this;
-        if (!bytes_1.isHexString(beforeHash, 32)) {
+        if (!(0, bytes_1.isHexString)(beforeHash, 32)) {
             logger.throwArgumentError("invalid transaction hash", "beforeHash", beforeHash);
         }
-        if (!bytes_1.isHexString(afterHash, 32)) {
+        if (!(0, bytes_1.isHexString)(afterHash, 32)) {
             logger.throwArgumentError("invalid transaction hash", "afterHash", afterHash);
         }
         _this = _super.call(this, {
@@ -138,14 +138,14 @@ var Provider = /** @class */ (function () {
     function Provider() {
         var _newTarget = this.constructor;
         logger.checkAbstract(_newTarget, Provider);
-        properties_1.defineReadOnly(this, "_isProvider", true);
+        (0, properties_1.defineReadOnly)(this, "_isProvider", true);
     }
     Provider.prototype.getFeeData = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _a, block, gasPrice, maxFeePerGas, maxPriorityFeePerGas;
             return __generator(this, function (_b) {
                 switch (_b.label) {
-                    case 0: return [4 /*yield*/, properties_1.resolveProperties({
+                    case 0: return [4 /*yield*/, (0, properties_1.resolveProperties)({
                             block: this.getBlock("latest"),
                             gasPrice: this.getGasPrice().catch(function (error) {
                                 // @TODO: Why is this now failing on Calaveras?

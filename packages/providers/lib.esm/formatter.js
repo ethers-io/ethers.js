@@ -243,7 +243,11 @@ export class Formatter {
         if (value.author != null && value.miner == null) {
             value.miner = value.author;
         }
-        return Formatter.check(format, value);
+        // The difficulty may need to come from _difficulty in recursed blocks
+        const difficulty = (value._difficulty != null) ? value._difficulty : value.difficulty;
+        const result = Formatter.check(format, value);
+        result._difficulty = ((difficulty == null) ? null : BigNumber.from(difficulty));
+        return result;
     }
     block(value) {
         return this._block(value, this.formats.block);

@@ -210,7 +210,7 @@ function parseParamType(param, allowIndexed) {
 }
 function populate(object, params) {
     for (var key in params) {
-        properties_1.defineReadOnly(object, key, params[key]);
+        (0, properties_1.defineReadOnly)(object, key, params[key]);
     }
 }
 exports.FormatTypes = Object.freeze({
@@ -218,7 +218,7 @@ exports.FormatTypes = Object.freeze({
     sighash: "sighash",
     // Human-Readable with Minimal spacing and without names (compact human-readable)
     minimal: "minimal",
-    // Human-Readble with nice spacing, including all names
+    // Human-Readable with nice spacing, including all names
     full: "full",
     // JSON-format a la Solidity
     json: "json"
@@ -256,7 +256,7 @@ var ParamType = /** @class */ (function () {
     // Format the parameter fragment
     //   - sighash: "(uint256,address)"
     //   - minimal: "tuple(uint256,address) indexed"
-    //   - full:    "tuple(uint256 foo, addres bar) indexed baz"
+    //   - full:    "tuple(uint256 foo, address bar) indexed baz"
     ParamType.prototype.format = function (format) {
         if (!format) {
             format = exports.FormatTypes.sighash;

@@ -57,15 +57,15 @@ function bodyify(value, type) {
     if (typeof (value) === "string") {
         return value;
     }
-    if (bytes_1.isBytesLike(value)) {
+    if ((0, bytes_1.isBytesLike)(value)) {
         if (type && (type.split("/")[0] === "text" || type.split(";")[0].trim() === "application/json")) {
             try {
-                return strings_1.toUtf8String(value);
+                return (0, strings_1.toUtf8String)(value);
             }
             catch (error) { }
             ;
         }
-        return bytes_1.hexlify(value);
+        return (0, bytes_1.hexlify)(value);
     }
     return value;
 }
@@ -117,7 +117,7 @@ function _fetchData(connection, body, processFunc) {
             var authorization = connection.user + ":" + connection.password;
             headers["authorization"] = {
                 key: "Authorization",
-                value: "Basic " + base64_1.encode(strings_1.toUtf8Bytes(authorization))
+                value: "Basic " + (0, base64_1.encode)((0, strings_1.toUtf8Bytes)(authorization))
             };
         }
     }
@@ -178,7 +178,7 @@ function _fetchData(connection, body, processFunc) {
                         _a.label = 2;
                     case 2:
                         _a.trys.push([2, 8, , 9]);
-                        return [4 /*yield*/, geturl_1.getUrl(url, options)];
+                        return [4 /*yield*/, (0, geturl_1.getUrl)(url, options)];
                     case 3:
                         response = _a.sent();
                         if (!(response.statusCode === 429 && attempt < attemptLimit)) return [3 /*break*/, 7];
@@ -273,7 +273,7 @@ function _fetchData(connection, body, processFunc) {
                         return [3 /*break*/, 17];
                     case 17:
                         runningTimeout.cancel();
-                        // If we had a processFunc, it eitehr returned a T or threw above.
+                        // If we had a processFunc, it either returned a T or threw above.
                         // The "body" is now a Uint8Array.
                         return [2 /*return*/, body_1];
                     case 18:
@@ -296,7 +296,7 @@ function fetchJson(connection, json, processFunc) {
         var result = null;
         if (value != null) {
             try {
-                result = JSON.parse(strings_1.toUtf8String(value));
+                result = JSON.parse((0, strings_1.toUtf8String)(value));
             }
             catch (error) {
                 logger.throwError("invalid JSON", logger_1.Logger.errors.SERVER_ERROR, {
@@ -315,13 +315,13 @@ function fetchJson(connection, json, processFunc) {
     // - convert the json to bytes
     var body = null;
     if (json != null) {
-        body = strings_1.toUtf8Bytes(json);
+        body = (0, strings_1.toUtf8Bytes)(json);
         // Create a connection with the content-type set for JSON
-        var updated = (typeof (connection) === "string") ? ({ url: connection }) : properties_1.shallowCopy(connection);
+        var updated = (typeof (connection) === "string") ? ({ url: connection }) : (0, properties_1.shallowCopy)(connection);
         if (updated.headers) {
             var hasContentType = (Object.keys(updated.headers).filter(function (k) { return (k.toLowerCase() === "content-type"); }).length) !== 0;
             if (!hasContentType) {
-                updated.headers = properties_1.shallowCopy(updated.headers);
+                updated.headers = (0, properties_1.shallowCopy)(updated.headers);
                 updated.headers["content-type"] = "application/json";
             }
         }
@@ -337,7 +337,7 @@ function poll(func, options) {
     if (!options) {
         options = {};
     }
-    options = properties_1.shallowCopy(options);
+    options = (0, properties_1.shallowCopy)(options);
     if (options.floor == null) {
         options.floor = 0;
     }

@@ -42,8 +42,8 @@ function start(root, options) {
     if (options.port == null) {
         options.port = 8000;
     }
-    root = path_1.resolve(root);
-    const server = http_1.createServer((req, resp) => {
+    root = (0, path_1.resolve)(root);
+    const server = (0, http_1.createServer)((req, resp) => {
         const url = req.url.split("?")[0];
         // Follow redirects in options
         if (options.redirects && options.redirects[url]) {
@@ -51,7 +51,7 @@ function start(root, options) {
             resp.end();
             return;
         }
-        let filename = path_1.resolve(root, "." + url);
+        let filename = (0, path_1.resolve)(root, "." + url);
         // Make sure we aren't crawling out of our sandbox
         if (url[0] !== "/" || filename.substring(0, filename.length) !== filename) {
             resp.writeHead(403);
@@ -94,7 +94,7 @@ function start(root, options) {
     return server;
 }
 exports.start = start;
-start(path_2.resolve("docs"), {
+start((0, path_2.resolve)("docs"), {
     redirects: {
         "/": "/v5/"
     }

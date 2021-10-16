@@ -13,7 +13,7 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 const allowedTransactionKeys = [
-    "accessList", "chainId", "data", "from", "gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "to", "type", "value"
+    "accessList", "chainId", "customData", "data", "from", "gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "to", "type", "value"
 ];
 const forwardErrors = [
     Logger.errors.INSUFFICIENT_FUNDS,
@@ -43,7 +43,7 @@ export class Signer {
             return yield this.provider.getTransactionCount(this.getAddress(), blockTag);
         });
     }
-    // Populates "from" if unspecified, and estimates the gas for the transation
+    // Populates "from" if unspecified, and estimates the gas for the transaction
     estimateGas(transaction) {
         return __awaiter(this, void 0, void 0, function* () {
             this._checkProvider("estimateGas");
@@ -51,7 +51,7 @@ export class Signer {
             return yield this.provider.estimateGas(tx);
         });
     }
-    // Populates "from" if unspecified, and calls with the transation
+    // Populates "from" if unspecified, and calls with the transaction
     call(transaction, blockTag) {
         return __awaiter(this, void 0, void 0, function* () {
             this._checkProvider("call");
@@ -150,7 +150,7 @@ export class Signer {
                 // Prevent this error from causing an UnhandledPromiseException
                 tx.to.catch((error) => { });
             }
-            // Do not allow mixing pre-eip-1559 and eip-1559 proerties
+            // Do not allow mixing pre-eip-1559 and eip-1559 properties
             const hasEip1559 = (tx.maxFeePerGas != null || tx.maxPriorityFeePerGas != null);
             if (tx.gasPrice != null && (tx.type === 2 || hasEip1559)) {
                 logger.throwArgumentError("eip-1559 transaction do not support gasPrice", "transaction", transaction);

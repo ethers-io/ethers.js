@@ -68,10 +68,10 @@ var TupleCoder = /** @class */ (function (_super) {
         return Object.freeze(values);
     };
     TupleCoder.prototype.encode = function (writer, value) {
-        return array_1.pack(writer, this.coders, value);
+        return (0, array_1.pack)(writer, this.coders, value);
     };
     TupleCoder.prototype.decode = function (reader) {
-        return reader.coerce(this.name, array_1.unpack(reader, this.coders));
+        return reader.coerce(this.name, (0, array_1.unpack)(reader, this.coders));
     };
     return TupleCoder;
 }(abstract_coder_1.Coder));

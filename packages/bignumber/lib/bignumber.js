@@ -23,9 +23,9 @@ function isBigNumberish(value) {
     return (value != null) && (BigNumber.isBigNumber(value) ||
         (typeof (value) === "number" && (value % 1) === 0) ||
         (typeof (value) === "string" && !!value.match(/^-?[0-9]+$/)) ||
-        bytes_1.isHexString(value) ||
+        (0, bytes_1.isHexString)(value) ||
         (typeof (value) === "bigint") ||
-        bytes_1.isBytes(value));
+        (0, bytes_1.isBytes)(value));
 }
 exports.isBigNumberish = isBigNumberish;
 // Only warn about passing 10 into radix once
@@ -213,11 +213,11 @@ var BigNumber = /** @class */ (function () {
         if (typeof (anyValue) === "bigint") {
             return BigNumber.from(anyValue.toString());
         }
-        if (bytes_1.isBytes(anyValue)) {
-            return BigNumber.from(bytes_1.hexlify(anyValue));
+        if ((0, bytes_1.isBytes)(anyValue)) {
+            return BigNumber.from((0, bytes_1.hexlify)(anyValue));
         }
         if (anyValue) {
-            // Hexable interface (takes piority)
+            // Hexable interface (takes priority)
             if (anyValue.toHexString) {
                 var hex = anyValue.toHexString();
                 if (typeof (hex) === "string") {
@@ -232,7 +232,7 @@ var BigNumber = /** @class */ (function () {
                     hex = anyValue.hex;
                 }
                 if (typeof (hex) === "string") {
-                    if (bytes_1.isHexString(hex) || (hex[0] === "-" && bytes_1.isHexString(hex.substring(1)))) {
+                    if ((0, bytes_1.isHexString)(hex) || (hex[0] === "-" && (0, bytes_1.isHexString)(hex.substring(1)))) {
                         return BigNumber.from(hex);
                     }
                 }
@@ -256,7 +256,7 @@ function toHex(value) {
     if (value[0] === "-") {
         // Strip off the negative sign
         value = value.substring(1);
-        // Cannot have mulitple negative signs (e.g. "--0x04")
+        // Cannot have multiple negative signs (e.g. "--0x04")
         if (value[0] === "-") {
             logger.throwArgumentError("invalid hex", "value", value);
         }

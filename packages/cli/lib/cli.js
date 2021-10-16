@@ -147,7 +147,7 @@ function isAllowed(wrapper, message) {
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 3, , 4]);
-                    return [4 /*yield*/, prompt_1.getChoice(message, "yna", "n")];
+                    return [4 /*yield*/, (0, prompt_1.getChoice)(message, "yna", "n")];
                 case 2:
                     allow = _a.sent();
                     if (allow === "a") {
@@ -542,7 +542,7 @@ function loadAccount(arg, plugin, preventFile) {
             switch (_a.label) {
                 case 0:
                     if (!(arg === "-")) return [3 /*break*/, 2];
-                    return [4 /*yield*/, prompt_1.getPassword("Private Key / Mnemonic: ")];
+                    return [4 /*yield*/, (0, prompt_1.getPassword)("Private Key / Mnemonic: ")];
                 case 1:
                     content = _a.sent();
                     return [2 /*return*/, loadAccount(content, plugin, true)];
@@ -557,16 +557,16 @@ function loadAccount(arg, plugin, preventFile) {
                         mnemonic_1 = arg;
                         signerPromise_1 = null;
                         if (plugin.mnemonicPassword) {
-                            signerPromise_1 = prompt_1.getPassword("Password (mnemonic): ").then(function (password) {
+                            signerPromise_1 = (0, prompt_1.getPassword)("Password (mnemonic): ").then(function (password) {
                                 var node = ethers_1.ethers.utils.HDNode.fromMnemonic(mnemonic_1, password).derivePath(plugin.mnemonicPath);
                                 return new ethers_1.ethers.Wallet(node.privateKey, plugin.provider);
                             });
                         }
                         else if (plugin._xxxMnemonicPasswordHard) {
-                            signerPromise_1 = prompt_1.getPassword("Password (mnemonic; experimental - hard): ").then(function (password) {
+                            signerPromise_1 = (0, prompt_1.getPassword)("Password (mnemonic; experimental - hard): ").then(function (password) {
                                 var passwordBytes = ethers_1.ethers.utils.toUtf8Bytes(password, ethers_1.ethers.utils.UnicodeNormalizationForm.NFKC);
                                 var saltBytes = ethers_1.ethers.utils.arrayify(ethers_1.ethers.utils.HDNode.fromMnemonic(mnemonic_1).privateKey);
-                                var progressBar = prompt_1.getProgressBar("Decrypting");
+                                var progressBar = (0, prompt_1.getProgressBar)("Decrypting");
                                 return scrypt.scrypt(passwordBytes, saltBytes, (1 << 20), 8, 1, 32, progressBar).then(function (key) {
                                     var derivedPassword = ethers_1.ethers.utils.hexlify(key).substring(2);
                                     var node = ethers_1.ethers.utils.HDNode.fromMnemonic(mnemonic_1, derivedPassword).derivePath(plugin.mnemonicPath);
@@ -588,10 +588,10 @@ function loadAccount(arg, plugin, preventFile) {
                                     var password, progressBar;
                                     return __generator(this, function (_a) {
                                         switch (_a.label) {
-                                            case 0: return [4 /*yield*/, prompt_1.getPassword("Password (" + arg + "): ")];
+                                            case 0: return [4 /*yield*/, (0, prompt_1.getPassword)("Password (" + arg + "): ")];
                                             case 1:
                                                 password = _a.sent();
-                                                progressBar = prompt_1.getProgressBar("Decrypting");
+                                                progressBar = (0, prompt_1.getProgressBar)("Decrypting");
                                                 return [2 /*return*/, ethers_1.ethers.Wallet.fromEncryptedJson(content_1, password, progressBar).then(function (wallet) {
                                                         return wallet.connect(plugin.provider);
                                                     })];
@@ -872,7 +872,7 @@ var CLI = /** @class */ (function () {
     }
     CLI.getAppName = function () {
         try {
-            return path_1.basename(process.mainModule.filename).split(".")[0];
+            return (0, path_1.basename)(process.mainModule.filename).split(".")[0];
         }
         catch (error) { }
         return "ethers";

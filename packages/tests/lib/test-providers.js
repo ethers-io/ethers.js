@@ -1318,13 +1318,16 @@ describe("Test API Key Formatting", function () {
         // Test complex API key with loadBalancer
         [true, false].forEach(function (loadBalancer) {
             var apiKeyObject = ethers_1.ethers.providers.PocketProvider.getApiKey({
-                applicationId: applicationId, loadBalancer: loadBalancer
+                applicationId: applicationId,
+                loadBalancer: loadBalancer
             });
             assert_1.default.equal(apiKeyObject.applicationId, applicationId);
             assert_1.default.equal(apiKeyObject.loadBalancer, loadBalancer);
             assert_1.default.ok(apiKeyObject.applicationSecretKey == null);
             var apiKeyObject2 = ethers_1.ethers.providers.PocketProvider.getApiKey({
-                applicationId: applicationId, applicationSecretKey: applicationSecretKey, loadBalancer: loadBalancer
+                applicationId: applicationId,
+                applicationSecretKey: applicationSecretKey,
+                loadBalancer: loadBalancer
             });
             assert_1.default.equal(apiKeyObject2.applicationId, applicationId);
             assert_1.default.equal(apiKeyObject2.applicationSecretKey, applicationSecretKey);

@@ -7,7 +7,7 @@ function looseArrayify(hexString) {
     if (typeof (hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
         hexString = '0x' + hexString;
     }
-    return bytes_1.arrayify(hexString);
+    return (0, bytes_1.arrayify)(hexString);
 }
 exports.looseArrayify = looseArrayify;
 function zpad(value, length) {
@@ -20,9 +20,9 @@ function zpad(value, length) {
 exports.zpad = zpad;
 function getPassword(password) {
     if (typeof (password) === 'string') {
-        return strings_1.toUtf8Bytes(password, strings_1.UnicodeNormalizationForm.NFKC);
+        return (0, strings_1.toUtf8Bytes)(password, strings_1.UnicodeNormalizationForm.NFKC);
     }
-    return bytes_1.arrayify(password);
+    return (0, bytes_1.arrayify)(password);
 }
 exports.getPassword = getPassword;
 function searchPath(object, path) {
@@ -49,7 +49,7 @@ function searchPath(object, path) {
 exports.searchPath = searchPath;
 // See: https://www.ietf.org/rfc/rfc4122.txt (Section 4.4)
 function uuidV4(randomBytes) {
-    var bytes = bytes_1.arrayify(randomBytes);
+    var bytes = (0, bytes_1.arrayify)(randomBytes);
     // Section: 4.1.3:
     // - time_hi_and_version[12:16] = 0b0100
     bytes[6] = (bytes[6] & 0x0f) | 0x40;
@@ -57,7 +57,7 @@ function uuidV4(randomBytes) {
     // - clock_seq_hi_and_reserved[6] = 0b0
     // - clock_seq_hi_and_reserved[7] = 0b1
     bytes[8] = (bytes[8] & 0x3f) | 0x80;
-    var value = bytes_1.hexlify(bytes);
+    var value = (0, bytes_1.hexlify)(bytes);
     return [
         value.substring(2, 10),
         value.substring(10, 14),

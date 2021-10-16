@@ -85,19 +85,19 @@ var KeystoreAccount = /** @class */ (function (_super) {
 }(properties_1.Description));
 exports.KeystoreAccount = KeystoreAccount;
 function _decrypt(data, key, ciphertext) {
-    var cipher = utils_1.searchPath(data, "crypto/cipher");
+    var cipher = (0, utils_1.searchPath)(data, "crypto/cipher");
     if (cipher === "aes-128-ctr") {
-        var iv = utils_1.looseArrayify(utils_1.searchPath(data, "crypto/cipherparams/iv"));
+        var iv = (0, utils_1.looseArrayify)((0, utils_1.searchPath)(data, "crypto/cipherparams/iv"));
         var counter = new aes_js_1.default.Counter(iv);
         var aesCtr = new aes_js_1.default.ModeOfOperation.ctr(key, counter);
-        return bytes_1.arrayify(aesCtr.decrypt(ciphertext));
+        return (0, bytes_1.arrayify)(aesCtr.decrypt(ciphertext));
     }
     return null;
 }
 function _getAccount(data, key) {
-    var ciphertext = utils_1.looseArrayify(utils_1.searchPath(data, "crypto/ciphertext"));
-    var computedMAC = bytes_1.hexlify(keccak256_1.keccak256(bytes_1.concat([key.slice(16, 32), ciphertext]))).substring(2);
-    if (computedMAC !== utils_1.searchPath(data, "crypto/mac").toLowerCase()) {
+    var ciphertext = (0, utils_1.looseArrayify)((0, utils_1.searchPath)(data, "crypto/ciphertext"));
+    var computedMAC = (0, bytes_1.hexlify)((0, keccak256_1.keccak256)((0, bytes_1.concat)([key.slice(16, 32), ciphertext]))).substring(2);
+    if (computedMAC !== (0, utils_1.searchPath)(data, "crypto/mac").toLowerCase()) {
         throw new Error("invalid password");
     }
     var privateKey = _decrypt(data, key.slice(0, 16), ciphertext);
@@ -107,32 +107,32 @@ function _getAccount(data, key) {
         });
     }
     var mnemonicKey = key.slice(32, 64);
-    var address = transactions_1.computeAddress(privateKey);
+    var address = (0, transactions_1.computeAddress)(privateKey);
     if (data.address) {
         var check = data.address.toLowerCase();
         if (check.substring(0, 2) !== "0x") {
             check = "0x" + check;
         }
-        if (address_1.getAddress(check) !== address) {
+        if ((0, address_1.getAddress)(check) !== address) {
             throw new Error("address mismatch");
         }
     }
     var account = {
         _isKeystoreAccount: true,
         address: address,
-        privateKey: bytes_1.hexlify(privateKey)
+        privateKey: (0, bytes_1.hexlify)(privateKey)
     };
     // Version 0.1 x-ethers metadata must contain an encrypted mnemonic phrase
-    if (utils_1.searchPath(data, "x-ethers/version") === "0.1") {
-        var mnemonicCiphertext = utils_1.looseArrayify(utils_1.searchPath(data, "x-ethers/mnemonicCiphertext"));
-        var mnemonicIv = utils_1.looseArrayify(utils_1.searchPath(data, "x-ethers/mnemonicCounter"));
+    if ((0, utils_1.searchPath)(data, "x-ethers/version") === "0.1") {
+        var mnemonicCiphertext = (0, utils_1.looseArrayify)((0, utils_1.searchPath)(data, "x-ethers/mnemonicCiphertext"));
+        var mnemonicIv = (0, utils_1.looseArrayify)((0, utils_1.searchPath)(data, "x-ethers/mnemonicCounter"));
         var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
         var mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
-        var path = utils_1.searchPath(data, "x-ethers/path") || hdnode_1.defaultPath;
-        var locale = utils_1.searchPath(data, "x-ethers/locale") || "en";
-        var entropy = bytes_1.arrayify(mnemonicAesCtr.decrypt(mnemonicCiphertext));
+        var path = (0, utils_1.searchPath)(data, "x-ethers/path") || hdnode_1.defaultPath;
+        var locale = (0, utils_1.searchPath)(data, "x-ethers/locale") || "en";
+        var entropy = (0, bytes_1.arrayify)(mnemonicAesCtr.decrypt(mnemonicCiphertext));
         try {
-            var mnemonic = hdnode_1.entropyToMnemonic(entropy, locale);
+            var mnemonic = (0, hdnode_1.entropyToMnemonic)(entropy, locale);
             var node = hdnode_1.HDNode.fromMnemonic(mnemonic, null, locale).derivePath(path);
             if (node.privateKey != account.privateKey) {
                 throw new Error("mnemonic mismatch");
@@ -151,23 +151,23 @@ function _getAccount(data, key) {
     return new KeystoreAccount(account);
 }
 function pbkdf2Sync(passwordBytes, salt, count, dkLen, prfFunc) {
-    return bytes_1.arrayify(pbkdf2_1.pbkdf2(passwordBytes, salt, count, dkLen, prfFunc));
+    return (0, bytes_1.arrayify)((0, pbkdf2_1.pbkdf2)(passwordBytes, salt, count, dkLen, prfFunc));
 }
 function pbkdf2(passwordBytes, salt, count, dkLen, prfFunc) {
     return Promise.resolve(pbkdf2Sync(passwordBytes, salt, count, dkLen, prfFunc));
 }
 function _computeKdfKey(data, password, pbkdf2Func, scryptFunc, progressCallback) {
-    var passwordBytes = utils_1.getPassword(password);
-    var kdf = utils_1.searchPath(data, "crypto/kdf");
+    var passwordBytes = (0, utils_1.getPassword)(password);
+    var kdf = (0, utils_1.searchPath)(data, "crypto/kdf");
     if (kdf && typeof (kdf) === "string") {
         var throwError = function (name, value) {
             return logger.throwArgumentError("invalid key-derivation function parameters", name, value);
         };
         if (kdf.toLowerCase() === "scrypt") {
-            var salt = utils_1.looseArrayify(utils_1.searchPath(data, "crypto/kdfparams/salt"));
-            var N = parseInt(utils_1.searchPath(data, "crypto/kdfparams/n"));
-            var r = parseInt(utils_1.searchPath(data, "crypto/kdfparams/r"));
-            var p = parseInt(utils_1.searchPath(data, "crypto/kdfparams/p"));
+            var salt = (0, utils_1.looseArrayify)((0, utils_1.searchPath)(data, "crypto/kdfparams/salt"));
+            var N = parseInt((0, utils_1.searchPath)(data, "crypto/kdfparams/n"));
+            var r = parseInt((0, utils_1.searchPath)(data, "crypto/kdfparams/r"));
+            var p = parseInt((0, utils_1.searchPath)(data, "crypto/kdfparams/p"));
             // Check for all required parameters
             if (!N || !r || !p) {
                 throwError("kdf", kdf);
@@ -176,16 +176,16 @@ function _computeKdfKey(data, password, pbkdf2Func, scryptFunc, progressCallback
             if ((N & (N - 1)) !== 0) {
                 throwError("N", N);
             }
-            var dkLen = parseInt(utils_1.searchPath(data, "crypto/kdfparams/dklen"));
+            var dkLen = parseInt((0, utils_1.searchPath)(data, "crypto/kdfparams/dklen"));
             if (dkLen !== 32) {
                 throwError("dklen", dkLen);
             }
             return scryptFunc(passwordBytes, salt, N, r, p, 64, progressCallback);
         }
         else if (kdf.toLowerCase() === "pbkdf2") {
-            var salt = utils_1.looseArrayify(utils_1.searchPath(data, "crypto/kdfparams/salt"));
+            var salt = (0, utils_1.looseArrayify)((0, utils_1.searchPath)(data, "crypto/kdfparams/salt"));
             var prfFunc = null;
-            var prf = utils_1.searchPath(data, "crypto/kdfparams/prf");
+            var prf = (0, utils_1.searchPath)(data, "crypto/kdfparams/prf");
             if (prf === "hmac-sha256") {
                 prfFunc = "sha256";
             }
@@ -195,8 +195,8 @@ function _computeKdfKey(data, password, pbkdf2Func, scryptFunc, progressCallback
             else {
                 throwError("prf", prf);
             }
-            var count = parseInt(utils_1.searchPath(data, "crypto/kdfparams/c"));
-            var dkLen = parseInt(utils_1.searchPath(data, "crypto/kdfparams/dklen"));
+            var count = parseInt((0, utils_1.searchPath)(data, "crypto/kdfparams/c"));
+            var dkLen = parseInt((0, utils_1.searchPath)(data, "crypto/kdfparams/dklen"));
             if (dkLen !== 32) {
                 throwError("dklen", dkLen);
             }
@@ -230,7 +230,7 @@ exports.decrypt = decrypt;
 function encrypt(account, password, options, progressCallback) {
     try {
         // Check the address matches the private key
-        if (address_1.getAddress(account.address) !== transactions_1.computeAddress(account.privateKey)) {
+        if ((0, address_1.getAddress)(account.address) !== (0, transactions_1.computeAddress)(account.privateKey)) {
             throw new Error("address/privateKey mismatch");
         }
         // Check the mnemonic (if any) matches the private key
@@ -253,14 +253,14 @@ function encrypt(account, password, options, progressCallback) {
     if (!options) {
         options = {};
     }
-    var privateKey = bytes_1.arrayify(account.privateKey);
-    var passwordBytes = utils_1.getPassword(password);
+    var privateKey = (0, bytes_1.arrayify)(account.privateKey);
+    var passwordBytes = (0, utils_1.getPassword)(password);
     var entropy = null;
     var path = null;
     var locale = null;
     if (hasMnemonic(account)) {
         var srcMnemonic = account.mnemonic;
-        entropy = bytes_1.arrayify(hdnode_1.mnemonicToEntropy(srcMnemonic.phrase, srcMnemonic.locale || "en"));
+        entropy = (0, bytes_1.arrayify)((0, hdnode_1.mnemonicToEntropy)(srcMnemonic.phrase, srcMnemonic.locale || "en"));
         path = srcMnemonic.path || hdnode_1.defaultPath;
         locale = srcMnemonic.locale || "en";
     }
@@ -271,33 +271,33 @@ function encrypt(account, password, options, progressCallback) {
     // Check/generate the salt
     var salt = null;
     if (options.salt) {
-        salt = bytes_1.arrayify(options.salt);
+        salt = (0, bytes_1.arrayify)(options.salt);
     }
     else {
-        salt = random_1.randomBytes(32);
+        salt = (0, random_1.randomBytes)(32);
         ;
     }
     // Override initialization vector
     var iv = null;
     if (options.iv) {
-        iv = bytes_1.arrayify(options.iv);
+        iv = (0, bytes_1.arrayify)(options.iv);
         if (iv.length !== 16) {
             throw new Error("invalid iv");
         }
     }
     else {
-        iv = random_1.randomBytes(16);
+        iv = (0, random_1.randomBytes)(16);
     }
     // Override the uuid
     var uuidRandom = null;
     if (options.uuid) {
-        uuidRandom = bytes_1.arrayify(options.uuid);
+        uuidRandom = (0, bytes_1.arrayify)(options.uuid);
         if (uuidRandom.length !== 16) {
             throw new Error("invalid uuid");
         }
     }
     else {
-        uuidRandom = random_1.randomBytes(16);
+        uuidRandom = (0, random_1.randomBytes)(16);
     }
     // Override the scrypt password-based key derivation function parameters
     var N = (1 << 17), r = 8, p = 1;
@@ -316,7 +316,7 @@ function encrypt(account, password, options, progressCallback) {
     //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
     //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
     return scrypt_js_1.default.scrypt(passwordBytes, salt, N, r, p, 64, progressCallback).then(function (key) {
-        key = bytes_1.arrayify(key);
+        key = (0, bytes_1.arrayify)(key);
         // This will be used to encrypt the wallet (as per Web3 secret storage)
         var derivedKey = key.slice(0, 16);
         var macPrefix = key.slice(16, 32);
@@ -325,23 +325,23 @@ function encrypt(account, password, options, progressCallback) {
         // Encrypt the private key
         var counter = new aes_js_1.default.Counter(iv);
         var aesCtr = new aes_js_1.default.ModeOfOperation.ctr(derivedKey, counter);
-        var ciphertext = bytes_1.arrayify(aesCtr.encrypt(privateKey));
+        var ciphertext = (0, bytes_1.arrayify)(aesCtr.encrypt(privateKey));
         // Compute the message authentication code, used to check the password
-        var mac = keccak256_1.keccak256(bytes_1.concat([macPrefix, ciphertext]));
+        var mac = (0, keccak256_1.keccak256)((0, bytes_1.concat)([macPrefix, ciphertext]));
         // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
         var data = {
             address: account.address.substring(2).toLowerCase(),
-            id: utils_1.uuidV4(uuidRandom),
+            id: (0, utils_1.uuidV4)(uuidRandom),
             version: 3,
             Crypto: {
                 cipher: "aes-128-ctr",
                 cipherparams: {
-                    iv: bytes_1.hexlify(iv).substring(2),
+                    iv: (0, bytes_1.hexlify)(iv).substring(2),
                 },
-                ciphertext: bytes_1.hexlify(ciphertext).substring(2),
+                ciphertext: (0, bytes_1.hexlify)(ciphertext).substring(2),
                 kdf: "scrypt",
                 kdfparams: {
-                    salt: bytes_1.hexlify(salt).substring(2),
+                    salt: (0, bytes_1.hexlify)(salt).substring(2),
                     n: N,
                     dklen: 32,
                     p: p,
@@ -352,22 +352,22 @@ function encrypt(account, password, options, progressCallback) {
         };
         // If we have a mnemonic, encrypt it into the JSON wallet
         if (entropy) {
-            var mnemonicIv = random_1.randomBytes(16);
+            var mnemonicIv = (0, random_1.randomBytes)(16);
             var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
             var mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
-            var mnemonicCiphertext = bytes_1.arrayify(mnemonicAesCtr.encrypt(entropy));
+            var mnemonicCiphertext = (0, bytes_1.arrayify)(mnemonicAesCtr.encrypt(entropy));
             var now = new Date();
             var timestamp = (now.getUTCFullYear() + "-" +
-                utils_1.zpad(now.getUTCMonth() + 1, 2) + "-" +
-                utils_1.zpad(now.getUTCDate(), 2) + "T" +
-                utils_1.zpad(now.getUTCHours(), 2) + "-" +
-                utils_1.zpad(now.getUTCMinutes(), 2) + "-" +
-                utils_1.zpad(now.getUTCSeconds(), 2) + ".0Z");
+                (0, utils_1.zpad)(now.getUTCMonth() + 1, 2) + "-" +
+                (0, utils_1.zpad)(now.getUTCDate(), 2) + "T" +
+                (0, utils_1.zpad)(now.getUTCHours(), 2) + "-" +
+                (0, utils_1.zpad)(now.getUTCMinutes(), 2) + "-" +
+                (0, utils_1.zpad)(now.getUTCSeconds(), 2) + ".0Z");
             data["x-ethers"] = {
                 client: client,
                 gethFilename: ("UTC--" + timestamp + "--" + data.address),
-                mnemonicCounter: bytes_1.hexlify(mnemonicIv).substring(2),
-                mnemonicCiphertext: bytes_1.hexlify(mnemonicCiphertext).substring(2),
+                mnemonicCounter: (0, bytes_1.hexlify)(mnemonicIv).substring(2),
+                mnemonicCiphertext: (0, bytes_1.hexlify)(mnemonicCiphertext).substring(2),
                 path: path,
                 locale: locale,
                 version: "0.1"

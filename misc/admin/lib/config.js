@@ -22,15 +22,15 @@ const scrypt_js_1 = __importDefault(require("scrypt-js"));
 const log_1 = require("./log");
 function getRandomBytes(length) {
     const result = new Uint8Array(length);
-    result.set(crypto_1.randomBytes(length));
+    result.set((0, crypto_1.randomBytes)(length));
     return result;
 }
 function computeHmac(key, data) {
-    return "0x" + crypto_1.createHmac("sha512", key).update(data).digest("hex");
+    return "0x" + (0, crypto_1.createHmac)("sha512", key).update(data).digest("hex");
 }
 function getScrypt(message, password, salt) {
     return __awaiter(this, void 0, void 0, function* () {
-        const progress = log_1.getProgressBar(message);
+        const progress = (0, log_1.getProgressBar)(message);
         return yield scrypt_js_1.default.scrypt(Buffer.from(password), Buffer.from(salt), (1 << 17), 8, 1, 64, progress);
     });
 }
@@ -58,7 +58,7 @@ class Config {
             }
             this.canary = data.canary || "";
             this.salt = data.salt;
-            const password = yield log_1.getPassword(log_1.colorify.bold("Password (config-store): "));
+            const password = yield (0, log_1.getPassword)(log_1.colorify.bold("Password (config-store): "));
             this.dkey = yield getScrypt(log_1.colorify.bold("Unlocking config"), password, this.salt);
             if (data.ciphertext) {
                 const ciphertext = Buffer.from(data.ciphertext, "base64");
@@ -113,7 +113,7 @@ class Config {
         this.salt = this.dkey = null;
     }
 }
-const _config = new Config(path_1.resolve(os_1.default.homedir(), ".ethers-dist"));
+const _config = new Config((0, path_1.resolve)(os_1.default.homedir(), ".ethers-dist"));
 exports.config = {
     get: function (key) {
         return _config.get(key);

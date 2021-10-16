@@ -38,10 +38,10 @@ const config = {
         console.log(log_1.colorify.bold(`Bundling Testcase Data...`));
         const data = { "_": JSON.stringify({ name: "browser-fs", config: config }) };
         config.dirs.forEach((dirname) => {
-            let fulldirname = path_2.resolve("packages/testcases", dirname);
+            let fulldirname = (0, path_2.resolve)("packages/testcases", dirname);
             fs_1.default.readdirSync(fulldirname).forEach((filename) => {
-                const key = path_1.join(dirname, filename);
-                const content = fs_1.default.readFileSync(path_1.join(fulldirname, filename));
+                const key = (0, path_1.join)(dirname, filename);
+                const content = fs_1.default.readFileSync((0, path_1.join)(fulldirname, filename));
                 if (filename.split(".").pop() === "gz") {
                     const contentData = zlib_1.default.gunzipSync(content);
                     data[key] = String(contentData.length) + "," + zlib_1.default.deflateRawSync(contentData).toString("base64");
@@ -52,15 +52,15 @@ const config = {
                 //console.log(`  - Added ${ key } (${ data[key].length } bytes)`);
             });
         });
-        utils_1.mkdir(path_2.resolve("packages/testcases/lib"));
-        utils_1.mkdir(path_2.resolve("packages/testcases/lib._esm"));
-        utils_1.mkdir(path_2.resolve("packages/testcases/lib.esm"));
+        (0, utils_1.mkdir)((0, path_2.resolve)("packages/testcases/lib"));
+        (0, utils_1.mkdir)((0, path_2.resolve)("packages/testcases/lib._esm"));
+        (0, utils_1.mkdir)((0, path_2.resolve)("packages/testcases/lib.esm"));
         // We write it out to all needed places
-        fs_1.default.writeFileSync(path_2.resolve("packages/testcases/lib/browser-data.json"), JSON.stringify(data));
-        fs_1.default.writeFileSync(path_2.resolve("packages/testcases/lib._esm/browser-data.json"), JSON.stringify(data));
-        fs_1.default.writeFileSync(path_2.resolve("packages/testcases/lib.esm/browser-data.json"), JSON.stringify(data));
+        fs_1.default.writeFileSync((0, path_2.resolve)("packages/testcases/lib/browser-data.json"), JSON.stringify(data));
+        fs_1.default.writeFileSync((0, path_2.resolve)("packages/testcases/lib._esm/browser-data.json"), JSON.stringify(data));
+        fs_1.default.writeFileSync((0, path_2.resolve)("packages/testcases/lib.esm/browser-data.json"), JSON.stringify(data));
         // Write it to the TypeScript source last, in case it is running it will
         // be regenerated overwriting the above files, but with identical content
-        fs_1.default.writeFileSync(path_2.resolve("packages/testcases/src.ts/browser-data.json"), JSON.stringify(data));
+        fs_1.default.writeFileSync((0, path_2.resolve)("packages/testcases/src.ts/browser-data.json"), JSON.stringify(data));
     });
 })();

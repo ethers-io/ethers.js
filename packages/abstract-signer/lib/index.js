@@ -57,7 +57,7 @@ var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var allowedTransactionKeys = [
-    "accessList", "chainId", "data", "from", "gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "to", "type", "value"
+    "accessList", "chainId", "customData", "data", "from", "gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "to", "type", "value"
 ];
 var forwardErrors = [
     logger_1.Logger.errors.INSUFFICIENT_FUNDS,
@@ -72,7 +72,7 @@ var Signer = /** @class */ (function () {
     function Signer() {
         var _newTarget = this.constructor;
         logger.checkAbstract(_newTarget, Signer);
-        properties_1.defineReadOnly(this, "_isSigner", true);
+        (0, properties_1.defineReadOnly)(this, "_isSigner", true);
     }
     ///////////////////
     // Sub-classes MAY override these
@@ -100,7 +100,7 @@ var Signer = /** @class */ (function () {
             });
         });
     };
-    // Populates "from" if unspecified, and estimates the gas for the transation
+    // Populates "from" if unspecified, and estimates the gas for the transaction
     Signer.prototype.estimateGas = function (transaction) {
         return __awaiter(this, void 0, void 0, function () {
             var tx;
@@ -108,7 +108,7 @@ var Signer = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         this._checkProvider("estimateGas");
-                        return [4 /*yield*/, properties_1.resolveProperties(this.checkTransaction(transaction))];
+                        return [4 /*yield*/, (0, properties_1.resolveProperties)(this.checkTransaction(transaction))];
                     case 1:
                         tx = _a.sent();
                         return [4 /*yield*/, this.provider.estimateGas(tx)];
@@ -117,7 +117,7 @@ var Signer = /** @class */ (function () {
             });
         });
     };
-    // Populates "from" if unspecified, and calls with the transation
+    // Populates "from" if unspecified, and calls with the transaction
     Signer.prototype.call = function (transaction, blockTag) {
         return __awaiter(this, void 0, void 0, function () {
             var tx;
@@ -125,7 +125,7 @@ var Signer = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         this._checkProvider("call");
-                        return [4 /*yield*/, properties_1.resolveProperties(this.checkTransaction(transaction))];
+                        return [4 /*yield*/, (0, properties_1.resolveProperties)(this.checkTransaction(transaction))];
                     case 1:
                         tx = _a.sent();
                         return [4 /*yield*/, this.provider.call(tx, blockTag)];
@@ -220,7 +220,7 @@ var Signer = /** @class */ (function () {
                 logger.throwArgumentError("invalid transaction key: " + key, "transaction", transaction);
             }
         }
-        var tx = properties_1.shallowCopy(transaction);
+        var tx = (0, properties_1.shallowCopy)(transaction);
         if (tx.from == null) {
             tx.from = this.getAddress();
         }
@@ -251,7 +251,7 @@ var Signer = /** @class */ (function () {
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, properties_1.resolveProperties(this.checkTransaction(transaction))];
+                    case 0: return [4 /*yield*/, (0, properties_1.resolveProperties)(this.checkTransaction(transaction))];
                     case 1:
                         tx = _a.sent();
                         if (tx.to != null) {
@@ -382,7 +382,7 @@ var Signer = /** @class */ (function () {
                                 return results[0];
                             });
                         }
-                        return [4 /*yield*/, properties_1.resolveProperties(tx)];
+                        return [4 /*yield*/, (0, properties_1.resolveProperties)(tx)];
                     case 6: return [2 /*return*/, _a.sent()];
                 }
             });
@@ -410,8 +410,8 @@ var VoidSigner = /** @class */ (function (_super) {
         var _this = this;
         logger.checkNew(_newTarget, VoidSigner);
         _this = _super.call(this) || this;
-        properties_1.defineReadOnly(_this, "address", address);
-        properties_1.defineReadOnly(_this, "provider", provider || null);
+        (0, properties_1.defineReadOnly)(_this, "address", address);
+        (0, properties_1.defineReadOnly)(_this, "provider", provider || null);
         return _this;
     }
     VoidSigner.prototype.getAddress = function () {

@@ -66,7 +66,7 @@ function _getPrompt(prompt, options, callback) {
                     }
                 }
                 else {
-                    // More passsword characters
+                    // More password characters
                     if (options.mask) {
                         process.stdout.write('*');
                     }

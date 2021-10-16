@@ -70,7 +70,7 @@ function checkError(method, error, params) {
     // incompatibility; maybe for v6 consider forwarding reverts as errors
     if (method === "call" && error.code === logger_1.Logger.errors.SERVER_ERROR) {
         var e = error.error;
-        if (e && e.message.match("reverted") && bytes_1.isHexString(e.data)) {
+        if (e && e.message.match("reverted") && (0, bytes_1.isHexString)(e.data)) {
             return e.data;
         }
         logger.throwError("missing revert data in call exception", logger_1.Logger.errors.CALL_EXCEPTION, {
@@ -93,30 +93,40 @@ function checkError(method, error, params) {
     // "insufficient funds for gas * price + value + cost(data)"
     if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
         logger.throwError("insufficient funds for intrinsic transaction cost", logger_1.Logger.errors.INSUFFICIENT_FUNDS, {
-            error: error, method: method, transaction: transaction
+            error: error,
+            method: method,
+            transaction: transaction
         });
     }
     // "nonce too low"
     if (message.match(/nonce too low/)) {
         logger.throwError("nonce has already been used", logger_1.Logger.errors.NONCE_EXPIRED, {
-            error: error, method: method, transaction: transaction
+            error: error,
+            method: method,
+            transaction: transaction
         });
     }
     // "replacement transaction underpriced"
     if (message.match(/replacement transaction underpriced/)) {
         logger.throwError("replacement fee too low", logger_1.Logger.errors.REPLACEMENT_UNDERPRICED, {
-            error: error, method: method, transaction: transaction
+            error: error,
+            method: method,
+            transaction: transaction
         });
     }
     // "replacement transaction underpriced"
     if (message.match(/only replay-protected/)) {
         logger.throwError("legacy pre-eip-155 transactions not supported", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
-            error: error, method: method, transaction: transaction
+            error: error,
+            method: method,
+            transaction: transaction
         });
     }
     if (errorGas.indexOf(method) >= 0 && message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
         logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
-            error: error, method: method, transaction: transaction
+            error: error,
+            method: method,
+            transaction: transaction
         });
     }
     throw error;
@@ -153,17 +163,17 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         if (constructorGuard !== _constructorGuard) {
             throw new Error("do not call the JsonRpcSigner constructor directly; use provider.getSigner");
         }
-        properties_1.defineReadOnly(_this, "provider", provider);
+        (0, properties_1.defineReadOnly)(_this, "provider", provider);
         if (addressOrIndex == null) {
             addressOrIndex = 0;
         }
         if (typeof (addressOrIndex) === "string") {
-            properties_1.defineReadOnly(_this, "_address", _this.provider.formatter.address(addressOrIndex));
-            properties_1.defineReadOnly(_this, "_index", null);
+            (0, properties_1.defineReadOnly)(_this, "_address", _this.provider.formatter.address(addressOrIndex));
+            (0, properties_1.defineReadOnly)(_this, "_index", null);
         }
         else if (typeof (addressOrIndex) === "number") {
-            properties_1.defineReadOnly(_this, "_index", addressOrIndex);
-            properties_1.defineReadOnly(_this, "_address", null);
+            (0, properties_1.defineReadOnly)(_this, "_index", addressOrIndex);
+            (0, properties_1.defineReadOnly)(_this, "_address", null);
         }
         else {
             logger.throwArgumentError("invalid address or index", "addressOrIndex", addressOrIndex);
@@ -194,7 +204,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
     };
     JsonRpcSigner.prototype.sendUncheckedTransaction = function (transaction) {
         var _this = this;
-        transaction = properties_1.shallowCopy(transaction);
+        transaction = (0, properties_1.shallowCopy)(transaction);
         var fromAddress = this.getAddress().then(function (address) {
             if (address) {
                 address = address.toLowerCase();
@@ -205,7 +215,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
         // wishes to use this, it is easy to specify explicitly, otherwise
         // we look it up for them.
         if (transaction.gasLimit == null) {
-            var estimate = properties_1.shallowCopy(transaction);
+            var estimate = (0, properties_1.shallowCopy)(transaction);
             estimate.from = fromAddress;
             transaction.gasLimit = this.provider.estimateGas(estimate);
         }
@@ -229,8 +239,8 @@ var JsonRpcSigner = /** @class */ (function (_super) {
                 });
             }); });
         }
-        return properties_1.resolveProperties({
-            tx: properties_1.resolveProperties(transaction),
+        return (0, properties_1.resolveProperties)({
+            tx: (0, properties_1.resolveProperties)(transaction),
             sender: fromAddress
         }).then(function (_a) {
             var tx = _a.tx, sender = _a.sender;
@@ -270,7 +280,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
                         _a.label = 3;
                     case 3:
                         _a.trys.push([3, 5, , 6]);
-                        return [4 /*yield*/, web_1.poll(function () { return __awaiter(_this, void 0, void 0, function () {
+                        return [4 /*yield*/, (0, web_1.poll)(function () { return __awaiter(_this, void 0, void 0, function () {
                                 var tx;
                                 return __generator(this, function (_a) {
                                     switch (_a.label) {
@@ -304,11 +314,27 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        data = ((typeof (message) === "string") ? strings_1.toUtf8Bytes(message) : message);
+                        data = ((typeof (message) === "string") ? (0, strings_1.toUtf8Bytes)(message) : message);
                         return [4 /*yield*/, this.getAddress()];
                     case 1:
                         address = _a.sent();
-                        return [4 /*yield*/, this.provider.send("eth_sign", [address.toLowerCase(), bytes_1.hexlify(data)])];
+                        return [4 /*yield*/, this.provider.send("personal_sign", [(0, bytes_1.hexlify)(data), address.toLowerCase()])];
+                    case 2: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    JsonRpcSigner.prototype._legacySignMessage = function (message) {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, address;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        data = ((typeof (message) === "string") ? (0, strings_1.toUtf8Bytes)(message) : message);
+                        return [4 /*yield*/, this.getAddress()];
+                    case 1:
+                        address = _a.sent();
+                        return [4 /*yield*/, this.provider.send("eth_sign", [address.toLowerCase(), (0, bytes_1.hexlify)(data)])];
                     case 2: 
                     // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
                     return [2 /*return*/, _a.sent()];
@@ -408,15 +434,15 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         _this = _super.call(this, networkOrReady) || this;
         // Default URL
         if (!url) {
-            url = properties_1.getStatic(_this.constructor, "defaultUrl")();
+            url = (0, properties_1.getStatic)(_this.constructor, "defaultUrl")();
         }
         if (typeof (url) === "string") {
-            properties_1.defineReadOnly(_this, "connection", Object.freeze({
+            (0, properties_1.defineReadOnly)(_this, "connection", Object.freeze({
                 url: url
             }));
         }
         else {
-            properties_1.defineReadOnly(_this, "connection", Object.freeze(properties_1.shallowCopy(url)));
+            (0, properties_1.defineReadOnly)(_this, "connection", Object.freeze((0, properties_1.shallowCopy)(url)));
         }
         _this._nextId = 42;
         return _this;
@@ -476,7 +502,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                     case 8: return [3 /*break*/, 9];
                     case 9:
                         if (chainId != null) {
-                            getNetwork = properties_1.getStatic(this.constructor, "getNetwork");
+                            getNetwork = (0, properties_1.getStatic)(this.constructor, "getNetwork");
                             try {
                                 return [2 /*return*/, getNetwork(bignumber_1.BigNumber.from(chainId).toNumber())];
                             }
@@ -517,7 +543,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         };
         this.emit("debug", {
             action: "request",
-            request: properties_1.deepCopy(request),
+            request: (0, properties_1.deepCopy)(request),
             provider: this
         });
         // We can expand this in the future to any call, but for now these
@@ -526,7 +552,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
         if (cache && this._cache[method]) {
             return this._cache[method];
         }
-        var result = web_1.fetchJson(this.connection, JSON.stringify(request), getResult).then(function (result) {
+        var result = (0, web_1.fetchJson)(this.connection, JSON.stringify(request), getResult).then(function (result) {
             _this.emit("debug", {
                 action: "response",
                 request: request,
@@ -581,11 +607,11 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             case "getTransactionReceipt":
                 return ["eth_getTransactionReceipt", [params.transactionHash]];
             case "call": {
-                var hexlifyTransaction = properties_1.getStatic(this.constructor, "hexlifyTransaction");
+                var hexlifyTransaction = (0, properties_1.getStatic)(this.constructor, "hexlifyTransaction");
                 return ["eth_call", [hexlifyTransaction(params.transaction, { from: true }), params.blockTag]];
             }
             case "estimateGas": {
-                var hexlifyTransaction = properties_1.getStatic(this.constructor, "hexlifyTransaction");
+                var hexlifyTransaction = (0, properties_1.getStatic)(this.constructor, "hexlifyTransaction");
                 return ["eth_estimateGas", [hexlifyTransaction(params.transaction, { from: true })]];
             }
             case "getLogs":
@@ -613,8 +639,8 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                         feeData = _a.sent();
                         if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
                             // Network doesn't know about EIP-1559 (and hence type)
-                            params = properties_1.shallowCopy(params);
-                            params.transaction = properties_1.shallowCopy(tx);
+                            params = (0, properties_1.shallowCopy)(params);
+                            params.transaction = (0, properties_1.shallowCopy)(tx);
                             delete params.transaction.type;
                         }
                         _a.label = 2;
@@ -699,7 +725,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
     //        will be the preferred method for this.
     JsonRpcProvider.hexlifyTransaction = function (transaction, allowExtra) {
         // Check only allowed properties are given
-        var allowed = properties_1.shallowCopy(allowedTransactionKeys);
+        var allowed = (0, properties_1.shallowCopy)(allowedTransactionKeys);
         if (allowExtra) {
             for (var key in allowExtra) {
                 if (allowExtra[key]) {
@@ -707,14 +733,14 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                 }
             }
         }
-        properties_1.checkProperties(transaction, allowed);
+        (0, properties_1.checkProperties)(transaction, allowed);
         var result = {};
         // Some nodes (INFURA ropsten; INFURA mainnet is fine) do not like leading zeros.
         ["gasLimit", "gasPrice", "type", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "value"].forEach(function (key) {
             if (transaction[key] == null) {
                 return;
             }
-            var value = bytes_1.hexValue(transaction[key]);
+            var value = (0, bytes_1.hexValue)(transaction[key]);
             if (key === "gasLimit") {
                 key = "gas";
             }
@@ -724,10 +750,10 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             if (transaction[key] == null) {
                 return;
             }
-            result[key] = bytes_1.hexlify(transaction[key]);
+            result[key] = (0, bytes_1.hexlify)(transaction[key]);
         });
         if (transaction.accessList) {
-            result["accessList"] = transactions_1.accessListify(transaction.accessList);
+            result["accessList"] = (0, transactions_1.accessListify)(transaction.accessList);
         }
         return result;
     };

@@ -28,7 +28,7 @@ function checkWordlist(content, wordlist) {
     });
 }
 describe('Check Wordlists', function () {
-    var tests = testcases_1.loadTests("wordlists");
+    var tests = (0, testcases_1.loadTests)("wordlists");
     tests.forEach(function (test) {
         var wordlist = (ethers_1.ethers.wordlists)[test.locale];
         if (wordlist == null) {

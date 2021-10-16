@@ -35,7 +35,7 @@ export var Utf8ErrorReason;
     // - offset       = start of this codepoint
     // - badCodepoint = the computed codepoint; inside the UTF-16 surrogate range
     Utf8ErrorReason["UTF16_SURROGATE"] = "UTF-16 surrogate";
-    // The string is an overlong reperesentation
+    // The string is an overlong representation
     // - offset       = start of this codepoint
     // - badCodepoint = the computed codepoint; already bounds checked
     Utf8ErrorReason["OVERLONG"] = "overlong representation";
@@ -143,7 +143,7 @@ function getUtf8CodePoints(bytes, onError) {
             res = (res << 6) | (nextChar & 0x3f);
             i++;
         }
-        // See above loop for invalid contimuation byte
+        // See above loop for invalid continuation byte
         if (res === null) {
             continue;
         }

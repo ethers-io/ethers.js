@@ -95,7 +95,7 @@ export var ErrorCode;
     //  - errorArgs?: The EIP848 error parameters
     //  - reason: The reason (only for EIP848 "Error(string)")
     ErrorCode["CALL_EXCEPTION"] = "CALL_EXCEPTION";
-    // Insufficien funds (< value + gasLimit * gasPrice)
+    // Insufficient funds (< value + gasLimit * gasPrice)
     //   - transaction: the transaction attempted
     ErrorCode["INSUFFICIENT_FUNDS"] = "INSUFFICIENT_FUNDS";
     // Nonce has already been used

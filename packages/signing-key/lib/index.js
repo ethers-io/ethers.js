@@ -16,35 +16,35 @@ function getCurve() {
 }
 var SigningKey = /** @class */ (function () {
     function SigningKey(privateKey) {
-        properties_1.defineReadOnly(this, "curve", "secp256k1");
-        properties_1.defineReadOnly(this, "privateKey", bytes_1.hexlify(privateKey));
-        var keyPair = getCurve().keyFromPrivate(bytes_1.arrayify(this.privateKey));
-        properties_1.defineReadOnly(this, "publicKey", "0x" + keyPair.getPublic(false, "hex"));
-        properties_1.defineReadOnly(this, "compressedPublicKey", "0x" + keyPair.getPublic(true, "hex"));
-        properties_1.defineReadOnly(this, "_isSigningKey", true);
+        (0, properties_1.defineReadOnly)(this, "curve", "secp256k1");
+        (0, properties_1.defineReadOnly)(this, "privateKey", (0, bytes_1.hexlify)(privateKey));
+        var keyPair = getCurve().keyFromPrivate((0, bytes_1.arrayify)(this.privateKey));
+        (0, properties_1.defineReadOnly)(this, "publicKey", "0x" + keyPair.getPublic(false, "hex"));
+        (0, properties_1.defineReadOnly)(this, "compressedPublicKey", "0x" + keyPair.getPublic(true, "hex"));
+        (0, properties_1.defineReadOnly)(this, "_isSigningKey", true);
     }
     SigningKey.prototype._addPoint = function (other) {
-        var p0 = getCurve().keyFromPublic(bytes_1.arrayify(this.publicKey));
-        var p1 = getCurve().keyFromPublic(bytes_1.arrayify(other));
+        var p0 = getCurve().keyFromPublic((0, bytes_1.arrayify)(this.publicKey));
+        var p1 = getCurve().keyFromPublic((0, bytes_1.arrayify)(other));
         return "0x" + p0.pub.add(p1.pub).encodeCompressed("hex");
     };
     SigningKey.prototype.signDigest = function (digest) {
-        var keyPair = getCurve().keyFromPrivate(bytes_1.arrayify(this.privateKey));
-        var digestBytes = bytes_1.arrayify(digest);
+        var keyPair = getCurve().keyFromPrivate((0, bytes_1.arrayify)(this.privateKey));
+        var digestBytes = (0, bytes_1.arrayify)(digest);
         if (digestBytes.length !== 32) {
             logger.throwArgumentError("bad digest length", "digest", digest);
         }
         var signature = keyPair.sign(digestBytes, { canonical: true });
-        return bytes_1.splitSignature({
+        return (0, bytes_1.splitSignature)({
             recoveryParam: signature.recoveryParam,
-            r: bytes_1.hexZeroPad("0x" + signature.r.toString(16), 32),
-            s: bytes_1.hexZeroPad("0x" + signature.s.toString(16), 32),
+            r: (0, bytes_1.hexZeroPad)("0x" + signature.r.toString(16), 32),
+            s: (0, bytes_1.hexZeroPad)("0x" + signature.s.toString(16), 32),
         });
     };
     SigningKey.prototype.computeSharedSecret = function (otherKey) {
-        var keyPair = getCurve().keyFromPrivate(bytes_1.arrayify(this.privateKey));
-        var otherKeyPair = getCurve().keyFromPublic(bytes_1.arrayify(computePublicKey(otherKey)));
-        return bytes_1.hexZeroPad("0x" + keyPair.derive(otherKeyPair.getPublic()).toString(16), 32);
+        var keyPair = getCurve().keyFromPrivate((0, bytes_1.arrayify)(this.privateKey));
+        var otherKeyPair = getCurve().keyFromPublic((0, bytes_1.arrayify)(computePublicKey(otherKey)));
+        return (0, bytes_1.hexZeroPad)("0x" + keyPair.derive(otherKeyPair.getPublic()).toString(16), 32);
     };
     SigningKey.isSigningKey = function (value) {
         return !!(value && value._isSigningKey);
@@ -53,13 +53,13 @@ var SigningKey = /** @class */ (function () {
 }());
 exports.SigningKey = SigningKey;
 function recoverPublicKey(digest, signature) {
-    var sig = bytes_1.splitSignature(signature);
-    var rs = { r: bytes_1.arrayify(sig.r), s: bytes_1.arrayify(sig.s) };
-    return "0x" + getCurve().recoverPubKey(bytes_1.arrayify(digest), rs, sig.recoveryParam).encode("hex", false);
+    var sig = (0, bytes_1.splitSignature)(signature);
+    var rs = { r: (0, bytes_1.arrayify)(sig.r), s: (0, bytes_1.arrayify)(sig.s) };
+    return "0x" + getCurve().recoverPubKey((0, bytes_1.arrayify)(digest), rs, sig.recoveryParam).encode("hex", false);
 }
 exports.recoverPublicKey = recoverPublicKey;
 function computePublicKey(key, compressed) {
-    var bytes = bytes_1.arrayify(key);
+    var bytes = (0, bytes_1.arrayify)(key);
     if (bytes.length === 32) {
         var signingKey = new SigningKey(bytes);
         if (compressed) {
@@ -69,13 +69,13 @@ function computePublicKey(key, compressed) {
     }
     else if (bytes.length === 33) {
         if (compressed) {
-            return bytes_1.hexlify(bytes);
+            return (0, bytes_1.hexlify)(bytes);
         }
         return "0x" + getCurve().keyFromPublic(bytes).getPublic(false, "hex");
     }
     else if (bytes.length === 65) {
         if (!compressed) {
-            return bytes_1.hexlify(bytes);
+            return (0, bytes_1.hexlify)(bytes);
         }
         return "0x" + getCurve().keyFromPublic(bytes).getPublic(true, "hex");
     }

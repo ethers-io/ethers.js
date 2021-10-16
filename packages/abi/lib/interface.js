@@ -98,14 +98,14 @@ var Interface = /** @class */ (function () {
         else {
             abi = fragments;
         }
-        properties_1.defineReadOnly(this, "fragments", abi.map(function (fragment) {
+        (0, properties_1.defineReadOnly)(this, "fragments", abi.map(function (fragment) {
             return fragments_1.Fragment.from(fragment);
         }).filter(function (fragment) { return (fragment != null); }));
-        properties_1.defineReadOnly(this, "_abiCoder", properties_1.getStatic((_newTarget), "getAbiCoder")());
-        properties_1.defineReadOnly(this, "functions", {});
-        properties_1.defineReadOnly(this, "errors", {});
-        properties_1.defineReadOnly(this, "events", {});
-        properties_1.defineReadOnly(this, "structs", {});
+        (0, properties_1.defineReadOnly)(this, "_abiCoder", (0, properties_1.getStatic)(_newTarget, "getAbiCoder")());
+        (0, properties_1.defineReadOnly)(this, "functions", {});
+        (0, properties_1.defineReadOnly)(this, "errors", {});
+        (0, properties_1.defineReadOnly)(this, "events", {});
+        (0, properties_1.defineReadOnly)(this, "structs", {});
         // Add all fragments by their signature
         this.fragments.forEach(function (fragment) {
             var bucket = null;
@@ -116,7 +116,7 @@ var Interface = /** @class */ (function () {
                         return;
                     }
                     //checkNames(fragment, "input", fragment.inputs);
-                    properties_1.defineReadOnly(_this, "deploy", fragment);
+                    (0, properties_1.defineReadOnly)(_this, "deploy", fragment);
                     return;
                 case "function":
                     //checkNames(fragment, "input", fragment.inputs);
@@ -142,12 +142,12 @@ var Interface = /** @class */ (function () {
         });
         // If we do not have a constructor add a default
         if (!this.deploy) {
-            properties_1.defineReadOnly(this, "deploy", fragments_1.ConstructorFragment.from({
+            (0, properties_1.defineReadOnly)(this, "deploy", fragments_1.ConstructorFragment.from({
                 payable: false,
                 type: "constructor"
             }));
         }
-        properties_1.defineReadOnly(this, "_isInterface", true);
+        (0, properties_1.defineReadOnly)(this, "_isInterface", true);
     }
     Interface.prototype.format = function (format) {
         if (!format) {
@@ -168,17 +168,17 @@ var Interface = /** @class */ (function () {
         return abi_coder_1.defaultAbiCoder;
     };
     Interface.getAddress = function (address) {
-        return address_1.getAddress(address);
+        return (0, address_1.getAddress)(address);
     };
     Interface.getSighash = function (fragment) {
-        return bytes_1.hexDataSlice(hash_1.id(fragment.format()), 0, 4);
+        return (0, bytes_1.hexDataSlice)((0, hash_1.id)(fragment.format()), 0, 4);
     };
     Interface.getEventTopic = function (eventFragment) {
-        return hash_1.id(eventFragment.format());
+        return (0, hash_1.id)(eventFragment.format());
     };
     // Find a function definition by any means necessary (unless it is ambiguous)
     Interface.prototype.getFunction = function (nameOrSignatureOrSighash) {
-        if (bytes_1.isHexString(nameOrSignatureOrSighash)) {
+        if ((0, bytes_1.isHexString)(nameOrSignatureOrSighash)) {
             for (var name_1 in this.functions) {
                 if (nameOrSignatureOrSighash === this.getSighash(name_1)) {
                     return this.functions[name_1];
@@ -198,7 +198,7 @@ var Interface = /** @class */ (function () {
             }
             return this.functions[matching[0]];
         }
-        // Normlize the signature and lookup the function
+        // Normalize the signature and lookup the function
         var result = this.functions[fragments_1.FunctionFragment.fromString(nameOrSignatureOrSighash).format()];
         if (!result) {
             logger.throwArgumentError("no matching function", "signature", nameOrSignatureOrSighash);
@@ -207,7 +207,7 @@ var Interface = /** @class */ (function () {
     };
     // Find an event definition by any means necessary (unless it is ambiguous)
     Interface.prototype.getEvent = function (nameOrSignatureOrTopic) {
-        if (bytes_1.isHexString(nameOrSignatureOrTopic)) {
+        if ((0, bytes_1.isHexString)(nameOrSignatureOrTopic)) {
             var topichash = nameOrSignatureOrTopic.toLowerCase();
             for (var name_3 in this.events) {
                 if (topichash === this.getEventTopic(name_3)) {
@@ -228,7 +228,7 @@ var Interface = /** @class */ (function () {
             }
             return this.events[matching[0]];
         }
-        // Normlize the signature and lookup the function
+        // Normalize the signature and lookup the function
         var result = this.events[fragments_1.EventFragment.fromString(nameOrSignatureOrTopic).format()];
         if (!result) {
             logger.throwArgumentError("no matching event", "signature", nameOrSignatureOrTopic);
@@ -237,8 +237,8 @@ var Interface = /** @class */ (function () {
     };
     // Find a function definition by any means necessary (unless it is ambiguous)
     Interface.prototype.getError = function (nameOrSignatureOrSighash) {
-        if (bytes_1.isHexString(nameOrSignatureOrSighash)) {
-            var getSighash = properties_1.getStatic(this.constructor, "getSighash");
+        if ((0, bytes_1.isHexString)(nameOrSignatureOrSighash)) {
+            var getSighash = (0, properties_1.getStatic)(this.constructor, "getSighash");
             for (var name_5 in this.errors) {
                 var error = this.errors[name_5];
                 if (nameOrSignatureOrSighash === getSighash(error)) {
@@ -259,7 +259,7 @@ var Interface = /** @class */ (function () {
             }
             return this.errors[matching[0]];
         }
-        // Normlize the signature and lookup the function
+        // Normalize the signature and lookup the function
         var result = this.errors[fragments_1.FunctionFragment.fromString(nameOrSignatureOrSighash).format()];
         if (!result) {
             logger.throwArgumentError("no matching error", "signature", nameOrSignatureOrSighash);
@@ -281,14 +281,14 @@ var Interface = /** @class */ (function () {
                 }
             }
         }
-        return properties_1.getStatic(this.constructor, "getSighash")(fragment);
+        return (0, properties_1.getStatic)(this.constructor, "getSighash")(fragment);
     };
     // Get the topic (the bytes32 hash) used by Solidity to identify an event
     Interface.prototype.getEventTopic = function (eventFragment) {
         if (typeof (eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
         }
-        return properties_1.getStatic(this.constructor, "getEventTopic")(eventFragment);
+        return (0, properties_1.getStatic)(this.constructor, "getEventTopic")(eventFragment);
     };
     Interface.prototype._decodeParams = function (params, data) {
         return this._abiCoder.decode(params, data);
@@ -303,9 +303,9 @@ var Interface = /** @class */ (function () {
         if (typeof (fragment) === "string") {
             fragment = this.getError(fragment);
         }
-        var bytes = bytes_1.arrayify(data);
-        if (bytes_1.hexlify(bytes.slice(0, 4)) !== this.getSighash(fragment)) {
-            logger.throwArgumentError("data signature does not match error " + fragment.name + ".", "data", bytes_1.hexlify(bytes));
+        var bytes = (0, bytes_1.arrayify)(data);
+        if ((0, bytes_1.hexlify)(bytes.slice(0, 4)) !== this.getSighash(fragment)) {
+            logger.throwArgumentError("data signature does not match error " + fragment.name + ".", "data", (0, bytes_1.hexlify)(bytes));
         }
         return this._decodeParams(fragment.inputs, bytes.slice(4));
     };
@@ -313,7 +313,7 @@ var Interface = /** @class */ (function () {
         if (typeof (fragment) === "string") {
             fragment = this.getError(fragment);
         }
-        return bytes_1.hexlify(bytes_1.concat([
+        return (0, bytes_1.hexlify)((0, bytes_1.concat)([
             this.getSighash(fragment),
             this._encodeParams(fragment.inputs, values || [])
         ]));
@@ -323,9 +323,9 @@ var Interface = /** @class */ (function () {
         if (typeof (functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
         }
-        var bytes = bytes_1.arrayify(data);
-        if (bytes_1.hexlify(bytes.slice(0, 4)) !== this.getSighash(functionFragment)) {
-            logger.throwArgumentError("data signature does not match function " + functionFragment.name + ".", "data", bytes_1.hexlify(bytes));
+        var bytes = (0, bytes_1.arrayify)(data);
+        if ((0, bytes_1.hexlify)(bytes.slice(0, 4)) !== this.getSighash(functionFragment)) {
+            logger.throwArgumentError("data signature does not match function " + functionFragment.name + ".", "data", (0, bytes_1.hexlify)(bytes));
         }
         return this._decodeParams(functionFragment.inputs, bytes.slice(4));
     };
@@ -334,7 +334,7 @@ var Interface = /** @class */ (function () {
         if (typeof (functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
         }
-        return bytes_1.hexlify(bytes_1.concat([
+        return (0, bytes_1.hexlify)((0, bytes_1.concat)([
             this.getSighash(functionFragment),
             this._encodeParams(functionFragment.inputs, values || [])
         ]));
@@ -344,7 +344,7 @@ var Interface = /** @class */ (function () {
         if (typeof (functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
         }
-        var bytes = bytes_1.arrayify(data);
+        var bytes = (0, bytes_1.arrayify)(data);
         var reason = null;
         var errorArgs = null;
         var errorName = null;
@@ -357,7 +357,7 @@ var Interface = /** @class */ (function () {
                 catch (error) { }
                 break;
             case 4: {
-                var selector = bytes_1.hexlify(bytes.slice(0, 4));
+                var selector = (0, bytes_1.hexlify)(bytes.slice(0, 4));
                 var builtin = BuiltinErrors[selector];
                 if (builtin) {
                     errorArgs = this._abiCoder.decode(builtin.inputs, bytes.slice(4));
@@ -383,7 +383,10 @@ var Interface = /** @class */ (function () {
         }
         return logger.throwError("call revert exception", logger_1.Logger.errors.CALL_EXCEPTION, {
             method: functionFragment.format(),
-            errorArgs: errorArgs, errorName: errorName, errorSignature: errorSignature, reason: reason
+            errorArgs: errorArgs,
+            errorName: errorName,
+            errorSignature: errorSignature,
+            reason: reason
         });
     };
     // Encode the result for a function call (e.g. for eth_call)
@@ -391,7 +394,7 @@ var Interface = /** @class */ (function () {
         if (typeof (functionFragment) === "string") {
             functionFragment = this.getFunction(functionFragment);
         }
-        return bytes_1.hexlify(this._abiCoder.encode(functionFragment.outputs, values || []));
+        return (0, bytes_1.hexlify)(this._abiCoder.encode(functionFragment.outputs, values || []));
     };
     // Create the filter for the event with search criteria (e.g. for eth_filterLog)
     Interface.prototype.encodeFilterTopics = function (eventFragment, values) {
@@ -411,16 +414,16 @@ var Interface = /** @class */ (function () {
         }
         var encodeTopic = function (param, value) {
             if (param.type === "string") {
-                return hash_1.id(value);
+                return (0, hash_1.id)(value);
             }
             else if (param.type === "bytes") {
-                return keccak256_1.keccak256(bytes_1.hexlify(value));
+                return (0, keccak256_1.keccak256)((0, bytes_1.hexlify)(value));
             }
             // Check addresses are valid
             if (param.type === "address") {
                 _this._abiCoder.encode(["address"], [value]);
             }
-            return bytes_1.hexZeroPad(bytes_1.hexlify(value), 32);
+            return (0, bytes_1.hexZeroPad)((0, bytes_1.hexlify)(value), 32);
         };
         values.forEach(function (value, index) {
             var param = eventFragment.inputs[index];
@@ -467,13 +470,13 @@ var Interface = /** @class */ (function () {
             var value = values[index];
             if (param.indexed) {
                 if (param.type === "string") {
-                    topics.push(hash_1.id(value));
+                    topics.push((0, hash_1.id)(value));
                 }
                 else if (param.type === "bytes") {
-                    topics.push(keccak256_1.keccak256(value));
+                    topics.push((0, keccak256_1.keccak256)(value));
                 }
                 else if (param.baseType === "tuple" || param.baseType === "array") {
-                    // @TOOD
+                    // @TODO
                     throw new Error("not implemented");
                 }
                 else {
@@ -497,7 +500,7 @@ var Interface = /** @class */ (function () {
         }
         if (topics != null && !eventFragment.anonymous) {
             var topicHash = this.getEventTopic(eventFragment);
-            if (!bytes_1.isHexString(topics[0], 32) || topics[0].toLowerCase() !== topicHash) {
+            if (!(0, bytes_1.isHexString)(topics[0], 32) || topics[0].toLowerCase() !== topicHash) {
                 logger.throwError("fragment/topic mismatch", logger_1.Logger.errors.INVALID_ARGUMENT, { argument: "topics[0]", expected: topicHash, value: topics[0] });
             }
             topics = topics.slice(1);
@@ -521,7 +524,7 @@ var Interface = /** @class */ (function () {
                 dynamic.push(false);
             }
         });
-        var resultIndexed = (topics != null) ? this._abiCoder.decode(indexed, bytes_1.concat(topics)) : null;
+        var resultIndexed = (topics != null) ? this._abiCoder.decode(indexed, (0, bytes_1.concat)(topics)) : null;
         var resultNonIndexed = this._abiCoder.decode(nonIndexed, data, true);
         var result = [];
         var nonIndexedIndex = 0, indexedIndex = 0;
@@ -607,7 +610,7 @@ var Interface = /** @class */ (function () {
         }
         // @TODO: If anonymous, and the only method, and the input count matches, should we parse?
         //        Probably not, because just because it is the only event in the ABI does
-        //        not mean we have the full ABI; maybe jsut a fragment?
+        //        not mean we have the full ABI; maybe just a fragment?
         return new LogDescription({
             eventFragment: fragment,
             name: fragment.name,
@@ -617,7 +620,7 @@ var Interface = /** @class */ (function () {
         });
     };
     Interface.prototype.parseError = function (data) {
-        var hexData = bytes_1.hexlify(data);
+        var hexData = (0, bytes_1.hexlify)(data);
         var fragment = this.getError(hexData.substring(0, 10).toLowerCase());
         if (!fragment) {
             return null;

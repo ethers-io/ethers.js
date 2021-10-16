@@ -14,7 +14,7 @@ function isValidName(name) {
     try {
         var comps = name.split(".");
         for (var i = 0; i < comps.length; i++) {
-            if (strings_1.nameprep(comps[i]).length === 0) {
+            if ((0, strings_1.nameprep)(comps[i]).length === 0) {
                 throw new Error("empty");
             }
         }
@@ -36,11 +36,11 @@ function namehash(name) {
         if (partition == null || partition[2] === "") {
             logger.throwArgumentError("invalid ENS address; missing component", "name", name);
         }
-        var label = strings_1.toUtf8Bytes(strings_1.nameprep(partition[3]));
-        result = keccak256_1.keccak256(bytes_1.concat([result, keccak256_1.keccak256(label)]));
+        var label = (0, strings_1.toUtf8Bytes)((0, strings_1.nameprep)(partition[3]));
+        result = (0, keccak256_1.keccak256)((0, bytes_1.concat)([result, (0, keccak256_1.keccak256)(label)]));
         current = partition[2] || "";
     }
-    return bytes_1.hexlify(result);
+    return (0, bytes_1.hexlify)(result);
 }
 exports.namehash = namehash;
 //# sourceMappingURL=namehash.js.map

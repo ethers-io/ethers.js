@@ -27,10 +27,10 @@ var StringCoder = /** @class */ (function (_super) {
         return "";
     };
     StringCoder.prototype.encode = function (writer, value) {
-        return _super.prototype.encode.call(this, writer, strings_1.toUtf8Bytes(value));
+        return _super.prototype.encode.call(this, writer, (0, strings_1.toUtf8Bytes)(value));
     };
     StringCoder.prototype.decode = function (reader) {
-        return strings_1.toUtf8String(_super.prototype.decode.call(this, reader));
+        return (0, strings_1.toUtf8String)(_super.prototype.decode.call(this, reader));
     };
     return StringCoder;
 }(bytes_1.DynamicBytesCoder));

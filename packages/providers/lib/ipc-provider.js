@@ -32,7 +32,7 @@ var IpcProvider = /** @class */ (function (_super) {
             logger.throwError("missing path", logger_1.Logger.errors.MISSING_ARGUMENT, { arg: "path" });
         }
         _this = _super.call(this, "ipc://" + path, network) || this;
-        properties_1.defineReadOnly(_this, "path", path);
+        (0, properties_1.defineReadOnly)(_this, "path", path);
         return _this;
     }
     // @TODO: Create a connection to the IPC path and use filters instead of polling for block
@@ -50,7 +50,7 @@ var IpcProvider = /** @class */ (function (_super) {
         });
         return new Promise(function (resolve, reject) {
             var response = Buffer.alloc(0);
-            var stream = net_1.connect(_this.path);
+            var stream = (0, net_1.connect)(_this.path);
             stream.on("data", function (data) {
                 response = Buffer.concat([response, data]);
             });

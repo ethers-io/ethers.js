@@ -19,14 +19,14 @@ export declare class Event {
 export interface EnsResolver {
     readonly name: string;
     readonly address: string;
-    getAddress(coinType?: 60): Promise<string>;
-    getContentHash(): Promise<string>;
-    getText(key: string): Promise<string>;
+    getAddress(coinType?: 60): Promise<null | string>;
+    getContentHash(): Promise<null | string>;
+    getText(key: string): Promise<null | string>;
 }
 export interface EnsProvider {
-    resolveName(name: string): Promise<string>;
-    lookupAddress(address: string): Promise<string>;
-    getResolver(name: string): Promise<EnsResolver>;
+    resolveName(name: string): Promise<null | string>;
+    lookupAddress(address: string): Promise<null | string>;
+    getResolver(name: string): Promise<null | EnsResolver>;
 }
 export declare class Resolver implements EnsResolver {
     readonly provider: BaseProvider;
@@ -118,10 +118,10 @@ export declare class BaseProvider extends Provider implements EnsProvider {
     getLogs(filter: Filter | FilterByBlockHash | Promise<Filter | FilterByBlockHash>): Promise<Array<Log>>;
     getEtherPrice(): Promise<number>;
     _getBlockTag(blockTag: BlockTag | Promise<BlockTag>): Promise<BlockTag>;
-    getResolver(name: string): Promise<Resolver>;
+    getResolver(name: string): Promise<null | Resolver>;
     _getResolver(name: string): Promise<string>;
-    resolveName(name: string | Promise<string>): Promise<string>;
-    lookupAddress(address: string | Promise<string>): Promise<string>;
+    resolveName(name: string | Promise<string>): Promise<null | string>;
+    lookupAddress(address: string | Promise<string>): Promise<null | string>;
     perform(method: string, params: any): Promise<any>;
     _startEvent(event: Event): void;
     _stopEvent(event: Event): void;

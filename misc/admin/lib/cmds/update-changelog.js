@@ -19,6 +19,6 @@ const path_1 = require("../path");
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(log_1.colorify.bold("Updating CHANGELOG.md..."));
-        fs_1.default.writeFileSync(path_1.resolve("CHANGELOG.md"), yield changelog_1.generate());
+        fs_1.default.writeFileSync((0, path_1.resolve)("CHANGELOG.md"), yield (0, changelog_1.generate)());
     });
 })();

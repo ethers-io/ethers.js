@@ -22,10 +22,10 @@ const cache = {};
 function getPackageInfo(name) {
     return __awaiter(this, void 0, void 0, function* () {
         // Convert dirname to package if needed
-        name = local_1.getPackage(name).name;
+        name = (0, local_1.getPackage)(name).name;
         if (!cache[name]) {
             try {
-                const result = yield geturl_1.getUrl("http:/" + "/registry.npmjs.org/" + name);
+                const result = yield (0, geturl_1.getUrl)("https:/\/registry.npmjs.org/" + name);
                 cache[name] = JSON.parse(Buffer.from(result.body).toString("utf8"));
             }
             catch (error) {
@@ -66,12 +66,12 @@ exports.getPackage = getPackage;
 function publish(path, manifest, options) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield libnpmpublish_1.publish(path, manifest, options);
+            yield (0, libnpmpublish_1.publish)(path, manifest, options);
         }
         catch (error) {
             // We need an OTP
             if (error.code === "EOTP") {
-                const otp = yield log_1.getPrompt(log_1.colorify.bold("Enter OTP: "));
+                const otp = yield (0, log_1.getPrompt)(log_1.colorify.bold("Enter OTP: "));
                 options.otp = otp.replace(" ", "");
                 // Retry with the new OTP
                 return yield publish(path, manifest, options);

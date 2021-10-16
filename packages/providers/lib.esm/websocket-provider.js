@@ -23,7 +23,7 @@ const logger = new Logger(version);
  *  will stall responses to ensure a consistent state, while this
  *  WebSocket provider assumes the connected backend will manage this.
  *
- *  For example, if a polling provider emits an event which indicats
+ *  For example, if a polling provider emits an event which indicates
  *  the event occurred in blockhash XXX, a call to fetch that block by
  *  its hash XXX, if not present will retry until it is present. This
  *  can occur when querying a pool of nodes that are mildly out of sync

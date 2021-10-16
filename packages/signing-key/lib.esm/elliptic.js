@@ -2475,4 +2475,4 @@ elliptic.eddsa = /*RicMoo:ethers:require(./elliptic/eddsa)*/(null);
 var EC$1 = elliptic_1.ec;
 
 export { EC$1 as EC };
-//# sourceMappingURL=browser-elliptic.js.map
+//# sourceMappingURL=elliptic.js.map

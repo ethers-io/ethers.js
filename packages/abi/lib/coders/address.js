@@ -29,7 +29,7 @@ var AddressCoder = /** @class */ (function (_super) {
     };
     AddressCoder.prototype.encode = function (writer, value) {
         try {
-            value = address_1.getAddress(value);
+            value = (0, address_1.getAddress)(value);
         }
         catch (error) {
             this._throwError(error.message, value);
@@ -37,7 +37,7 @@ var AddressCoder = /** @class */ (function (_super) {
         return writer.writeValue(value);
     };
     AddressCoder.prototype.decode = function (reader) {
-        return address_1.getAddress(bytes_1.hexZeroPad(reader.readValue().toHexString(), 20));
+        return (0, address_1.getAddress)((0, bytes_1.hexZeroPad)(reader.readValue().toHexString(), 20));
     };
     return AddressCoder;
 }(abstract_coder_1.Coder));

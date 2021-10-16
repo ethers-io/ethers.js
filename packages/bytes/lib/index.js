@@ -22,6 +22,9 @@ function isBytesLike(value) {
     return ((isHexString(value) && !(value.length % 2)) || isBytes(value));
 }
 exports.isBytesLike = isBytesLike;
+function isInteger(value) {
+    return (typeof (value) === "number" && value == value && (value % 1) === 0);
+}
 function isBytes(value) {
     if (value == null) {
         return false;
@@ -32,12 +35,12 @@ function isBytes(value) {
     if (typeof (value) === "string") {
         return false;
     }
-    if (value.length == null) {
+    if (!isInteger(value.length) || value.length < 0) {
         return false;
     }
     for (var i = 0; i < value.length; i++) {
         var v = value[i];
-        if (typeof (v) !== "number" || v < 0 || v >= 256 || (v % 1)) {
+        if (!isInteger(v) || v < 0 || v >= 256) {
             return false;
         }
     }
