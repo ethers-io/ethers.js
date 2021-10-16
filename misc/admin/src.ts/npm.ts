@@ -15,7 +15,7 @@ async function getPackageInfo(name: string): Promise<any> {
 
     if (!cache[name]) {
         try {
-            const result = await getUrl("http:/" + "/registry.npmjs.org/" + name);
+            const result = await getUrl("https:/\/registry.npmjs.org/" + name);
             cache[name] = JSON.parse(Buffer.from(result.body).toString("utf8"));
         } catch (error) {
             if (error.status === 404) { return null; }
