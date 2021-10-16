@@ -116,6 +116,10 @@ const allowedTransactionKeys: { [ key: string ]: boolean } = {
 async function resolveName(resolver: Signer | Provider, nameOrPromise: string | Promise<string>): Promise<string> {
     const name = await nameOrPromise;
 
+    if (typeof(name) !== "string") {
+        logger.throwArgumentError("invalid address or ENS name", "name", name);
+    }
+
     // If it is already an address, just use it (after adding checksum)
     try {
         return getAddress(name);

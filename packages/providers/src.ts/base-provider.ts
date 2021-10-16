@@ -1313,6 +1313,11 @@ export class BaseProvider extends Provider implements EnsProvider {
     }
 
     async _getAddress(addressOrName: string | Promise<string>): Promise<string> {
+        addressOrName = await addressOrName;
+        if (typeof(addressOrName) !== "string") {
+            logger.throwArgumentError("invalid address or ENS name", "name", addressOrName);
+        }
+
         const address = await this.resolveName(addressOrName);
         if (address == null) {
             logger.throwError("ENS name not configured", Logger.errors.UNSUPPORTED_OPERATION, {
