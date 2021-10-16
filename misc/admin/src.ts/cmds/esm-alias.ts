@@ -52,7 +52,7 @@ async function alias(name: string): Promise<void> {
                 if (replace) {
                     inputFilename = replace;
                     transform = function(content: string) {
-                        content = content.replace(/(\/\/# sourceMappingURL=)(.*)$/g, (all, prefix, mapFilename) => {
+                        content = content.replace(/^(\/\/# sourceMappingURL=)(.*)$/mg, (all, prefix, mapFilename) => {
                             return prefix + filename + ".map";
                         });
                         return content;
@@ -132,7 +132,7 @@ async function alias(name: string): Promise<void> {
     console.log(colorify.bold(`Aliasing Node ESM to Browser ESM...`));
     const dirnames = getOrdered(true);
     for (let i = 0; i < dirnames.length; i++) {
-        //if (dirnames[i] !== "base64") { continue; }
+        //if (dirnames[i] !== "signing-key") { continue; }
         await alias(dirnames[i]);
     }
 })();
