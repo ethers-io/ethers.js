@@ -4,7 +4,7 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
-ethers/v5.5.0 (2021-10-16 02:04)
+ethers/v5.5.0 (2021-10-17 16:23)
 --------------------------------
 
   - admin: fixed alias script. ([#1494](https://github.com/ethers-io/ethers.js/issues/1494); [8f3d71d](https://github.com/ethers-io/ethers.js/commit/8f3d71dc5fd0e91407737a4b82c58c31269ed2be))

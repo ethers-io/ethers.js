@@ -20,10 +20,14 @@ function checkRandom(name) {
     */
     return true;
 }
+const isBrowser = (typeof (navigator) !== "undefined");
 describe('Test HD Node Derivation is Case Agnostic', function () {
     let tests = loadTests('hdnode');
     tests.forEach((test) => {
         if (!checkRandom(test.name)) {
+            return;
+        }
+        if (isBrowser && test.locale !== "en") {
             return;
         }
         it("Normalizes case - " + test.name, function () {
@@ -46,6 +50,9 @@ describe('Test HD Node Derivation from Seed', function () {
         if (test.hdnodes.length === 0) {
             return;
         }
+        if (isBrowser && test.locale !== "en") {
+            return;
+        }
         it('Derives the HD nodes - ' + test.name, function () {
             this.timeout(10000);
             let rootNode = ethers.utils.HDNode.fromSeed(test.seed);
@@ -62,6 +69,9 @@ describe('Test HD Node Derivation from Mnemonic', function () {
     let tests = loadTests('hdnode');
     tests.forEach((test) => {
         if (!checkRandom(test.name)) {
+            return;
+        }
+        if (isBrowser && test.locale !== "en") {
             return;
         }
         // If there is nothing to derive, skip this portion of the test
@@ -87,6 +97,9 @@ describe('Test HD Mnemonic Phrases', function testMnemonic() {
     let tests = loadTests('hdnode');
     tests.forEach(function (test) {
         if (!checkRandom(test.name)) {
+            return;
+        }
+        if (isBrowser && test.locale !== "en") {
             return;
         }
         it(('converts mnemonic phrases - ' + test.name), function () {
