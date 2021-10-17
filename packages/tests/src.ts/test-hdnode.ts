@@ -25,10 +25,14 @@ function checkRandom(name: string): boolean {
     return true;
 }
 
+const isBrowser = (typeof(navigator) !== "undefined");
+
 describe('Test HD Node Derivation is Case Agnostic', function() {
     let tests: Array<TestCase.HDWallet> = loadTests('hdnode');
     tests.forEach((test) => {
         if (!checkRandom(test.name)) { return; }
+
+        if (isBrowser && test.locale !== "en") { return; }
 
         it("Normalizes case - " + test.name, function() {
             this.timeout(10000);
@@ -54,6 +58,8 @@ describe('Test HD Node Derivation from Seed', function() {
         // If there is nothing to derive, skip this portion of the test
         if (test.hdnodes.length === 0) { return; }
 
+        if (isBrowser && test.locale !== "en") { return; }
+
         it('Derives the HD nodes - ' + test.name, function() {
             this.timeout(10000);
 
@@ -78,6 +84,8 @@ describe('Test HD Node Derivation from Mnemonic', function() {
 
     tests.forEach((test) => {
         if (!checkRandom(test.name)) { return; }
+
+        if (isBrowser && test.locale !== "en") { return; }
 
         // If there is nothing to derive, skip this portion of the test
         if (test.hdnodes.length === 0) { return; }
@@ -113,6 +121,8 @@ describe('Test HD Mnemonic Phrases', function testMnemonic() {
 
     tests.forEach(function(test) {
         if (!checkRandom(test.name)) { return; }
+
+        if (isBrowser && test.locale !== "en") { return; }
 
         it(('converts mnemonic phrases - ' + test.name), function() {
             this.timeout(1000000);
