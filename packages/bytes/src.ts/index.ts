@@ -406,8 +406,11 @@ export function splitSignature(signature: SignatureLike): Signature {
         } else {
             if (result.v == null) {
                 result.v = 27 + result.recoveryParam;
-            } else if (result.recoveryParam !== (1 - (result.v % 2))) {
-                logger.throwArgumentError("signature recoveryParam mismatch v", "signature", signature);
+            } else {
+                const recId = (result.v === 0 || result.v === 1) ? result.v :(1 - (result.v % 2));
+                if (result.recoveryParam !== recId) {
+                    logger.throwArgumentError("signature recoveryParam mismatch v", "signature", signature);
+                }
             }
         }
 
