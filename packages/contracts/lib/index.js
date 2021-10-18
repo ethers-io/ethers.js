@@ -313,6 +313,43 @@ function buildEstimate(contract, fragment) {
         });
     };
 }
+function addContractWait(contract, tx) {
+    var wait = tx.wait.bind(tx);
+    tx.wait = function (confirmations) {
+        return wait(confirmations).then(function (receipt) {
+            receipt.events = receipt.logs.map(function (log) {
+                var event = (0, properties_1.deepCopy)(log);
+                var parsed = null;
+                try {
+                    parsed = contract.interface.parseLog(log);
+                }
+                catch (e) { }
+                // Successfully parsed the event log; include it
+                if (parsed) {
+                    event.args = parsed.args;
+                    event.decode = function (data, topics) {
+                        return contract.interface.decodeEventLog(parsed.eventFragment, data, topics);
+                    };
+                    event.event = parsed.name;
+                    event.eventSignature = parsed.signature;
+                }
+                // Useful operations
+                event.removeListener = function () { return contract.provider; };
+                event.getBlock = function () {
+                    return contract.provider.getBlock(receipt.blockHash);
+                };
+                event.getTransaction = function () {
+                    return contract.provider.getTransaction(receipt.transactionHash);
+                };
+                event.getTransactionReceipt = function () {
+                    return Promise.resolve(receipt);
+                };
+                return event;
+            });
+            return receipt;
+        });
+    };
+}
 function buildCall(contract, fragment, collapseSimple) {
     var signerOrProvider = (contract.signer || contract.provider);
     return function () {
@@ -377,7 +414,7 @@ function buildSend(contract, fragment) {
             args[_i] = arguments[_i];
         }
         return __awaiter(this, void 0, void 0, function () {
-            var txRequest, tx, wait;
+            var txRequest, tx;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -397,41 +434,8 @@ function buildSend(contract, fragment) {
                         return [4 /*yield*/, contract.signer.sendTransaction(txRequest)];
                     case 4:
                         tx = _a.sent();
-                        wait = tx.wait.bind(tx);
-                        tx.wait = function (confirmations) {
-                            return wait(confirmations).then(function (receipt) {
-                                receipt.events = receipt.logs.map(function (log) {
-                                    var event = (0, properties_1.deepCopy)(log);
-                                    var parsed = null;
-                                    try {
-                                        parsed = contract.interface.parseLog(log);
-                                    }
-                                    catch (e) { }
-                                    // Successfully parsed the event log; include it
-                                    if (parsed) {
-                                        event.args = parsed.args;
-                                        event.decode = function (data, topics) {
-                                            return contract.interface.decodeEventLog(parsed.eventFragment, data, topics);
-                                        };
-                                        event.event = parsed.name;
-                                        event.eventSignature = parsed.signature;
-                                    }
-                                    // Useful operations
-                                    event.removeListener = function () { return contract.provider; };
-                                    event.getBlock = function () {
-                                        return contract.provider.getBlock(receipt.blockHash);
-                                    };
-                                    event.getTransaction = function () {
-                                        return contract.provider.getTransaction(receipt.transactionHash);
-                                    };
-                                    event.getTransactionReceipt = function () {
-                                        return Promise.resolve(receipt);
-                                    };
-                                    return event;
-                                });
-                                return receipt;
-                            });
-                        };
+                        // Tweak the tx.wait so the receipt has extra properties
+                        addContractWait(contract, tx);
                         return [2 /*return*/, tx];
                 }
             });
@@ -1147,6 +1151,8 @@ var ContractFactory = /** @class */ (function () {
                         tx = _a.sent();
                         address = (0, properties_1.getStatic)(this.constructor, "getContractAddress")(tx);
                         contract = (0, properties_1.getStatic)(this.constructor, "getContract")(address, this.interface, this.signer);
+                        // Add the modified wait that wraps events
+                        addContractWait(contract, tx);
                         (0, properties_1.defineReadOnly)(contract, "deployTransaction", tx);
                         return [2 /*return*/, contract];
                 }

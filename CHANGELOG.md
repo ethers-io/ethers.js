@@ -4,9 +4,11 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
-ethers/v5.5.0 (2021-10-17 16:23)
+ethers/v5.5.0 (2021-10-17 23:02)
 --------------------------------
 
+  - Fixed splitSignature logic for verifying EIP-2930 and EIP-1559 v. ([#2084](https://github.com/ethers-io/ethers.js/issues/2084); [3de1b81](https://github.com/ethers-io/ethers.js/commit/3de1b815014b10d223a42e524fe9c25f9087293b))
+  - Include events on ContractFactory deployment transactions. ([#1334](https://github.com/ethers-io/ethers.js/issues/1334); [ab319f2](https://github.com/ethers-io/ethers.js/commit/ab319f2f4c365d4cd1b1e17e577ecd18a7a89276))
   - admin: fixed alias script. ([#1494](https://github.com/ethers-io/ethers.js/issues/1494); [8f3d71d](https://github.com/ethers-io/ethers.js/commit/8f3d71dc5fd0e91407737a4b82c58c31269ed2be))
   - Better errors when non-string address or ENS name is passed into Contracts or provider methods. ([#1051](https://github.com/ethers-io/ethers.js/issues/1051); [a5c6a46](https://github.com/ethers-io/ethers.js/commit/a5c6a468f4a7ad29fb5277e08c6b8b208383a575))
   - Use personal_sign instead of eth_sign for message signing with JsonRpcSigner; added _legacySignMessage for legacy support. ([#1542](https://github.com/ethers-io/ethers.js/issues/1542), [#1840](https://github.com/ethers-io/ethers.js/issues/1840); [8947fd4](https://github.com/ethers-io/ethers.js/commit/8947fd405e3aea07f6db958d89a3ad39abe3a25a))

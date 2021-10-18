@@ -4214,8 +4214,11 @@
 	            if (result.v == null) {
 	                result.v = 27 + result.recoveryParam;
 	            }
-	            else if (result.recoveryParam !== (1 - (result.v % 2))) {
-	                logger.throwArgumentError("signature recoveryParam mismatch v", "signature", signature);
+	            else {
+	                var recId = (result.v === 0 || result.v === 1) ? result.v : (1 - (result.v % 2));
+	                if (result.recoveryParam !== recId) {
+	                    logger.throwArgumentError("signature recoveryParam mismatch v", "signature", signature);
+	                }
 	            }
 	        }
 	        if (result.r == null || !isHexString(result.r)) {
@@ -15244,6 +15247,43 @@
 	        });
 	    };
 	}
+	function addContractWait(contract, tx) {
+	    var wait = tx.wait.bind(tx);
+	    tx.wait = function (confirmations) {
+	        return wait(confirmations).then(function (receipt) {
+	            receipt.events = receipt.logs.map(function (log) {
+	                var event = (0, lib$3.deepCopy)(log);
+	                var parsed = null;
+	                try {
+	                    parsed = contract.interface.parseLog(log);
+	                }
+	                catch (e) { }
+	                // Successfully parsed the event log; include it
+	                if (parsed) {
+	                    event.args = parsed.args;
+	                    event.decode = function (data, topics) {
+	                        return contract.interface.decodeEventLog(parsed.eventFragment, data, topics);
+	                    };
+	                    event.event = parsed.name;
+	                    event.eventSignature = parsed.signature;
+	                }
+	                // Useful operations
+	                event.removeListener = function () { return contract.provider; };
+	                event.getBlock = function () {
+	                    return contract.provider.getBlock(receipt.blockHash);
+	                };
+	                event.getTransaction = function () {
+	                    return contract.provider.getTransaction(receipt.transactionHash);
+	                };
+	                event.getTransactionReceipt = function () {
+	                    return Promise.resolve(receipt);
+	                };
+	                return event;
+	            });
+	            return receipt;
+	        });
+	    };
+	}
 	function buildCall(contract, fragment, collapseSimple) {
 	    var signerOrProvider = (contract.signer || contract.provider);
 	    return function () {
@@ -15308,7 +15348,7 @@
 	            args[_i] = arguments[_i];
 	        }
 	        return __awaiter(this, void 0, void 0, function () {
-	            var txRequest, tx, wait;
+	            var txRequest, tx;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
@@ -15328,41 +15368,8 @@
 	                        return [4 /*yield*/, contract.signer.sendTransaction(txRequest)];
 	                    case 4:
 	                        tx = _a.sent();
-	                        wait = tx.wait.bind(tx);
-	                        tx.wait = function (confirmations) {
-	                            return wait(confirmations).then(function (receipt) {
-	                                receipt.events = receipt.logs.map(function (log) {
-	                                    var event = (0, lib$3.deepCopy)(log);
-	                                    var parsed = null;
-	                                    try {
-	                                        parsed = contract.interface.parseLog(log);
-	                                    }
-	                                    catch (e) { }
-	                                    // Successfully parsed the event log; include it
-	                                    if (parsed) {
-	                                        event.args = parsed.args;
-	                                        event.decode = function (data, topics) {
-	                                            return contract.interface.decodeEventLog(parsed.eventFragment, data, topics);
-	                                        };
-	                                        event.event = parsed.name;
-	                                        event.eventSignature = parsed.signature;
-	                                    }
-	                                    // Useful operations
-	                                    event.removeListener = function () { return contract.provider; };
-	                                    event.getBlock = function () {
-	                                        return contract.provider.getBlock(receipt.blockHash);
-	                                    };
-	                                    event.getTransaction = function () {
-	                                        return contract.provider.getTransaction(receipt.transactionHash);
-	                                    };
-	                                    event.getTransactionReceipt = function () {
-	                                        return Promise.resolve(receipt);
-	                                    };
-	                                    return event;
-	                                });
-	                                return receipt;
-	                            });
-	                        };
+	                        // Tweak the tx.wait so the receipt has extra properties
+	                        addContractWait(contract, tx);
 	                        return [2 /*return*/, tx];
 	                }
 	            });
@@ -16078,6 +16085,8 @@
 	                        tx = _a.sent();
 	                        address = (0, lib$3.getStatic)(this.constructor, "getContractAddress")(tx);
 	                        contract = (0, lib$3.getStatic)(this.constructor, "getContract")(address, this.interface, this.signer);
+	                        // Add the modified wait that wraps events
+	                        addContractWait(contract, tx);
 	                        (0, lib$3.defineReadOnly)(contract, "deployTransaction", tx);
 	                        return [2 /*return*/, contract];
 	                }
