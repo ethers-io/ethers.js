@@ -323,6 +323,47 @@ function buildEstimate(contract: Contract, fragment: FunctionFragment): Contract
     };
 }
 
+function addContractWait(contract: Contract, tx: TransactionResponse) {
+    const wait = tx.wait.bind(tx);
+    tx.wait = (confirmations?: number) => {
+        return wait(confirmations).then((receipt: ContractReceipt) => {
+            receipt.events = receipt.logs.map((log) => {
+                let event: Event = (<Event>deepCopy(log));
+                let parsed: LogDescription = null;
+                try {
+                    parsed = contract.interface.parseLog(log);
+                } catch (e){ }
+
+                // Successfully parsed the event log; include it
+                if (parsed) {
+                    event.args = parsed.args;
+                    event.decode = (data: BytesLike, topics?: Array<any>) => {
+                        return contract.interface.decodeEventLog(parsed.eventFragment, data, topics);
+                    };
+                    event.event = parsed.name;
+                    event.eventSignature = parsed.signature;
+                }
+
+                // Useful operations
+                event.removeListener = () => { return contract.provider; }
+                event.getBlock = () => {
+                    return contract.provider.getBlock(receipt.blockHash);
+                }
+                event.getTransaction = () => {
+                    return contract.provider.getTransaction(receipt.transactionHash);
+                }
+                event.getTransactionReceipt = () => {
+                    return Promise.resolve(receipt);
+                }
+
+                return event;
+            });
+
+            return receipt;
+        });
+    };
+}
+
 function buildCall(contract: Contract, fragment: FunctionFragment, collapseSimple: boolean): ContractFunction {
     const signerOrProvider = (contract.signer || contract.provider);
 
@@ -383,44 +424,8 @@ function buildSend(contract: Contract, fragment: FunctionFragment): ContractFunc
         const tx = await contract.signer.sendTransaction(txRequest);
 
         // Tweak the tx.wait so the receipt has extra properties
-        const wait = tx.wait.bind(tx);
-        tx.wait = (confirmations?: number) => {
-            return wait(confirmations).then((receipt: ContractReceipt) => {
-                receipt.events = receipt.logs.map((log) => {
-                    let event: Event = (<Event>deepCopy(log));
-                    let parsed: LogDescription = null;
-                    try {
-                        parsed = contract.interface.parseLog(log);
-                    } catch (e){ }
+        addContractWait(contract, tx);
 
-                    // Successfully parsed the event log; include it
-                    if (parsed) {
-                        event.args = parsed.args;
-                        event.decode = (data: BytesLike, topics?: Array<any>) => {
-                            return contract.interface.decodeEventLog(parsed.eventFragment, data, topics);
-                        };
-                        event.event = parsed.name;
-                        event.eventSignature = parsed.signature;
-                    }
-
-                    // Useful operations
-                    event.removeListener = () => { return contract.provider; }
-                    event.getBlock = () => {
-                        return contract.provider.getBlock(receipt.blockHash);
-                    }
-                    event.getTransaction = () => {
-                        return contract.provider.getTransaction(receipt.transactionHash);
-                    }
-                    event.getTransactionReceipt = () => {
-                        return Promise.resolve(receipt);
-                    }
-
-                    return event;
-                });
-
-                return receipt;
-            });
-        };
         return tx;
     };
 }
@@ -1233,6 +1238,10 @@ export class ContractFactory {
 
         const address = getStatic<(tx: TransactionResponse) => string>(this.constructor, "getContractAddress")(tx);
         const contract = getStatic<(address: string, contractInterface: ContractInterface, signer?: Signer) => Contract>(this.constructor, "getContract")(address, this.interface, this.signer);
+
+        // Add the modified wait that wraps events
+        addContractWait(contract, tx);
+
         defineReadOnly(contract, "deployTransaction", tx);
         return contract;
     }
