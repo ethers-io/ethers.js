@@ -246,36 +246,53 @@ function bytes32ify(value) {
 function base58Encode(data) {
     return basex_1.Base58.encode((0, bytes_1.concat)([data, (0, bytes_1.hexDataSlice)((0, sha2_1.sha256)((0, sha2_1.sha256)(data)), 0, 4)]));
 }
+var matchers = [
+    new RegExp("^(https):/\/(.*)$", "i"),
+    new RegExp("^(data):(.*)$", "i"),
+    new RegExp("^(ipfs):/\/(.*)$", "i"),
+    new RegExp("^eip155:[0-9]+/(erc[0-9]+):(.*)$", "i"),
+];
+function _parseString(result) {
+    try {
+        return (0, strings_1.toUtf8String)(_parseBytes(result));
+    }
+    catch (error) { }
+    return null;
+}
+function _parseBytes(result) {
+    if (result === "0x") {
+        return null;
+    }
+    var offset = bignumber_1.BigNumber.from((0, bytes_1.hexDataSlice)(result, 0, 32)).toNumber();
+    var length = bignumber_1.BigNumber.from((0, bytes_1.hexDataSlice)(result, offset, offset + 32)).toNumber();
+    return (0, bytes_1.hexDataSlice)(result, offset + 32, offset + 32 + length);
+}
 var Resolver = /** @class */ (function () {
-    function Resolver(provider, address, name) {
+    // The resolvedAddress is only for creating a ReverseLookup resolver
+    function Resolver(provider, address, name, resolvedAddress) {
         (0, properties_1.defineReadOnly)(this, "provider", provider);
         (0, properties_1.defineReadOnly)(this, "name", name);
         (0, properties_1.defineReadOnly)(this, "address", provider.formatter.address(address));
+        (0, properties_1.defineReadOnly)(this, "_resolvedAddress", resolvedAddress);
     }
     Resolver.prototype._fetchBytes = function (selector, parameters) {
         return __awaiter(this, void 0, void 0, function () {
-            var transaction, result, offset, length_1, error_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var tx, _a, error_1;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
-                        transaction = {
+                        tx = {
                             to: this.address,
                             data: (0, bytes_1.hexConcat)([selector, (0, hash_1.namehash)(this.name), (parameters || "0x")])
                         };
-                        _a.label = 1;
+                        _b.label = 1;
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, this.provider.call(transaction)];
-                    case 2:
-                        result = _a.sent();
-                        if (result === "0x") {
-                            return [2 /*return*/, null];
-                        }
-                        offset = bignumber_1.BigNumber.from((0, bytes_1.hexDataSlice)(result, 0, 32)).toNumber();
-                        length_1 = bignumber_1.BigNumber.from((0, bytes_1.hexDataSlice)(result, offset, offset + 32)).toNumber();
-                        return [2 /*return*/, (0, bytes_1.hexDataSlice)(result, offset + 32, offset + 32 + length_1)];
+                        _b.trys.push([1, 3, , 4]);
+                        _a = _parseBytes;
+                        return [4 /*yield*/, this.provider.call(tx)];
+                    case 2: return [2 /*return*/, _a.apply(void 0, [_b.sent()])];
                     case 3:
-                        error_1 = _a.sent();
+                        error_1 = _b.sent();
                         if (error_1.code === logger_1.Logger.errors.CALL_EXCEPTION) {
                             return [2 /*return*/, null];
                         }
@@ -300,8 +317,8 @@ var Resolver = /** @class */ (function () {
         if (coinInfo.p2pkh != null) {
             var p2pkh = hexBytes.match(/^0x76a9([0-9a-f][0-9a-f])([0-9a-f]*)88ac$/);
             if (p2pkh) {
-                var length_2 = parseInt(p2pkh[1], 16);
-                if (p2pkh[2].length === length_2 * 2 && length_2 >= 1 && length_2 <= 75) {
+                var length_1 = parseInt(p2pkh[1], 16);
+                if (p2pkh[2].length === length_1 * 2 && length_1 >= 1 && length_1 <= 75) {
                     return base58Encode((0, bytes_1.concat)([[coinInfo.p2pkh], ("0x" + p2pkh[2])]));
                 }
             }
@@ -310,26 +327,26 @@ var Resolver = /** @class */ (function () {
         if (coinInfo.p2sh != null) {
             var p2sh = hexBytes.match(/^0xa9([0-9a-f][0-9a-f])([0-9a-f]*)87$/);
             if (p2sh) {
-                var length_3 = parseInt(p2sh[1], 16);
-                if (p2sh[2].length === length_3 * 2 && length_3 >= 1 && length_3 <= 75) {
+                var length_2 = parseInt(p2sh[1], 16);
+                if (p2sh[2].length === length_2 * 2 && length_2 >= 1 && length_2 <= 75) {
                     return base58Encode((0, bytes_1.concat)([[coinInfo.p2sh], ("0x" + p2sh[2])]));
                 }
             }
         }
         // Bech32
         if (coinInfo.prefix != null) {
-            var length_4 = bytes[1];
+            var length_3 = bytes[1];
             // https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#witness-program
             var version_1 = bytes[0];
             if (version_1 === 0x00) {
-                if (length_4 !== 20 && length_4 !== 32) {
+                if (length_3 !== 20 && length_3 !== 32) {
                     version_1 = -1;
                 }
             }
             else {
                 version_1 = -1;
             }
-            if (version_1 >= 0 && bytes.length === 2 + length_4 && length_4 >= 1 && length_4 <= 75) {
+            if (version_1 >= 0 && bytes.length === 2 + length_3 && length_3 >= 1 && length_3 <= 75) {
                 var words = bech32_1.default.toWords(bytes.slice(2));
                 words.unshift(version_1);
                 return bech32_1.default.encode(coinInfo.prefix, words);
@@ -388,9 +405,134 @@ var Resolver = /** @class */ (function () {
             });
         });
     };
+    Resolver.prototype.getAvatar = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var linkage, avatar, i, match, _a, selector, owner, _b, comps, addr, tokenId, tokenOwner, _c, _d, balance, _e, _f, tx, metadataUrl, _g, metadata, error_3;
+            return __generator(this, function (_h) {
+                switch (_h.label) {
+                    case 0:
+                        linkage = [];
+                        _h.label = 1;
+                    case 1:
+                        _h.trys.push([1, 19, , 20]);
+                        return [4 /*yield*/, this.getText("avatar")];
+                    case 2:
+                        avatar = _h.sent();
+                        if (avatar == null) {
+                            return [2 /*return*/, null];
+                        }
+                        i = 0;
+                        _h.label = 3;
+                    case 3:
+                        if (!(i < matchers.length)) return [3 /*break*/, 18];
+                        match = avatar.match(matchers[i]);
+                        if (match == null) {
+                            return [3 /*break*/, 17];
+                        }
+                        _a = match[1];
+                        switch (_a) {
+                            case "https": return [3 /*break*/, 4];
+                            case "data": return [3 /*break*/, 5];
+                            case "ipfs": return [3 /*break*/, 6];
+                            case "erc721": return [3 /*break*/, 7];
+                            case "erc1155": return [3 /*break*/, 7];
+                        }
+                        return [3 /*break*/, 17];
+                    case 4:
+                        linkage.push({ type: "url", content: avatar });
+                        return [2 /*return*/, { linkage: linkage, url: avatar }];
+                    case 5:
+                        linkage.push({ type: "data", content: avatar });
+                        return [2 /*return*/, { linkage: linkage, url: avatar }];
+                    case 6:
+                        linkage.push({ type: "ipfs", content: avatar });
+                        return [2 /*return*/, { linkage: linkage, url: "https://gateway.ipfs.io/ipfs/" + avatar.substring(7) }];
+                    case 7:
+                        selector = (match[1] === "erc721") ? "0xc87b56dd" : "0x0e89341c";
+                        linkage.push({ type: match[1], content: avatar });
+                        _b = this._resolvedAddress;
+                        if (_b) return [3 /*break*/, 9];
+                        return [4 /*yield*/, this.getAddress()];
+                    case 8:
+                        _b = (_h.sent());
+                        _h.label = 9;
+                    case 9:
+                        owner = (_b);
+                        comps = (match[2] || "").split("/");
+                        if (comps.length !== 2) {
+                            return [2 /*return*/, null];
+                        }
+                        return [4 /*yield*/, this.provider.formatter.address(comps[0])];
+                    case 10:
+                        addr = _h.sent();
+                        tokenId = (0, bytes_1.hexZeroPad)(bignumber_1.BigNumber.from(comps[1]).toHexString(), 32);
+                        if (!(match[1] === "erc721")) return [3 /*break*/, 12];
+                        _d = (_c = this.provider.formatter).callAddress;
+                        return [4 /*yield*/, this.provider.call({
+                                to: addr, data: (0, bytes_1.hexConcat)(["0x6352211e", tokenId])
+                            })];
+                    case 11:
+                        tokenOwner = _d.apply(_c, [_h.sent()]);
+                        if (owner !== tokenOwner) {
+                            return [2 /*return*/, null];
+                        }
+                        linkage.push({ type: "owner", content: tokenOwner });
+                        return [3 /*break*/, 14];
+                    case 12:
+                        if (!(match[1] === "erc1155")) return [3 /*break*/, 14];
+                        _f = (_e = bignumber_1.BigNumber).from;
+                        return [4 /*yield*/, this.provider.call({
+                                to: addr, data: (0, bytes_1.hexConcat)(["0x00fdd58e", (0, bytes_1.hexZeroPad)(owner, 32), tokenId])
+                            })];
+                    case 13:
+                        balance = _f.apply(_e, [_h.sent()]);
+                        if (balance.isZero()) {
+                            return [2 /*return*/, null];
+                        }
+                        linkage.push({ type: "balance", content: balance.toString() });
+                        _h.label = 14;
+                    case 14:
+                        tx = {
+                            to: this.provider.formatter.address(comps[0]),
+                            data: (0, bytes_1.hexConcat)([selector, tokenId])
+                        };
+                        _g = _parseString;
+                        return [4 /*yield*/, this.provider.call(tx)];
+                    case 15:
+                        metadataUrl = _g.apply(void 0, [_h.sent()]);
+                        if (metadataUrl == null) {
+                            return [2 /*return*/, null];
+                        }
+                        linkage.push({ type: "metadata-url", content: metadataUrl });
+                        // ERC-1155 allows a generic {id} in the URL
+                        if (match[1] === "erc1155") {
+                            metadataUrl = metadataUrl.replace("{id}", tokenId.substring(2));
+                        }
+                        return [4 /*yield*/, (0, web_1.fetchJson)(metadataUrl)];
+                    case 16:
+                        metadata = _h.sent();
+                        // Pull the image URL out
+                        if (!metadata || typeof (metadata.image) !== "string" || !metadata.image.match(/^https:\/\//i)) {
+                            return [2 /*return*/, null];
+                        }
+                        linkage.push({ type: "metadata", content: JSON.stringify(metadata) });
+                        linkage.push({ type: "url", content: metadata.image });
+                        return [2 /*return*/, { linkage: linkage, url: metadata.image }];
+                    case 17:
+                        i++;
+                        return [3 /*break*/, 3];
+                    case 18: return [3 /*break*/, 20];
+                    case 19:
+                        error_3 = _h.sent();
+                        return [3 /*break*/, 20];
+                    case 20: return [2 /*return*/, null];
+                }
+            });
+        });
+    };
     Resolver.prototype.getContentHash = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var hexBytes, ipfs, length_5, swarm;
+            var hexBytes, ipfs, length_4, swarm;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this._fetchBytes("0xbc1c58d1")];
@@ -402,8 +544,8 @@ var Resolver = /** @class */ (function () {
                         }
                         ipfs = hexBytes.match(/^0xe3010170(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
                         if (ipfs) {
-                            length_5 = parseInt(ipfs[3], 16);
-                            if (ipfs[4].length === length_5 * 2) {
+                            length_4 = parseInt(ipfs[3], 16);
+                            if (ipfs[4].length === length_4 * 2) {
                                 return [2 /*return*/, "ipfs:/\/" + basex_1.Base58.encode("0x" + ipfs[1])];
                             }
                         }
@@ -503,7 +645,7 @@ var BaseProvider = /** @class */ (function (_super) {
     }
     BaseProvider.prototype._ready = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var network, error_3;
+            var network, error_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -518,7 +660,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         network = _a.sent();
                         return [3 /*break*/, 4];
                     case 3:
-                        error_3 = _a.sent();
+                        error_4 = _a.sent();
                         return [3 /*break*/, 4];
                     case 4:
                         if (!(network == null)) return [3 /*break*/, 6];
@@ -584,7 +726,7 @@ var BaseProvider = /** @class */ (function (_super) {
     // than maxAge old or has been requested since the last request
     BaseProvider.prototype._getInternalBlockNumber = function (maxAge) {
         return __awaiter(this, void 0, void 0, function () {
-            var internalBlockNumber, result, error_4, reqTime, checkInternalBlockNumber;
+            var internalBlockNumber, result, error_5, reqTime, checkInternalBlockNumber;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -608,7 +750,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         // Too old; fetch a new value
                         return [3 /*break*/, 7];
                     case 5:
-                        error_4 = _a.sent();
+                        error_5 = _a.sent();
                         // The fetch rejected; if we are the first to get the
                         // rejection, drop through so we replace it with a new
                         // fetch; all others blocked will then get that fetch
@@ -657,7 +799,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype.poll = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var pollId, runners, blockNumber, error_5, i;
+            var pollId, runners, blockNumber, error_6, i;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -673,8 +815,8 @@ var BaseProvider = /** @class */ (function (_super) {
                         blockNumber = _a.sent();
                         return [3 /*break*/, 4];
                     case 3:
-                        error_5 = _a.sent();
-                        this.emit("error", error_5);
+                        error_6 = _a.sent();
+                        this.emit("error", error_6);
                         return [2 /*return*/];
                     case 4:
                         this._setFastBlockNumber(blockNumber);
@@ -1340,7 +1482,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype.sendTransaction = function (signedTransaction) {
         return __awaiter(this, void 0, void 0, function () {
-            var hexTx, tx, blockNumber, hash, error_6;
+            var hexTx, tx, blockNumber, hash, error_7;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.getNetwork()];
@@ -1364,10 +1506,10 @@ var BaseProvider = /** @class */ (function (_super) {
                         hash = _a.sent();
                         return [2 /*return*/, this._wrapTransaction(tx, hash, blockNumber)];
                     case 6:
-                        error_6 = _a.sent();
-                        error_6.transaction = tx;
-                        error_6.transactionHash = tx.hash;
-                        throw error_6;
+                        error_7 = _a.sent();
+                        error_7.transaction = tx;
+                        error_7.transactionHash = tx.hash;
+                        throw error_7;
                     case 7: return [2 /*return*/];
                 }
             });
@@ -1540,7 +1682,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype._getBlock = function (blockHashOrBlockTag, includeTransactions) {
         return __awaiter(this, void 0, void 0, function () {
-            var blockNumber, params, _a, error_7;
+            var blockNumber, params, _a, error_8;
             var _this = this;
             return __generator(this, function (_b) {
                 switch (_b.label) {
@@ -1568,7 +1710,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         }
                         return [3 /*break*/, 6];
                     case 5:
-                        error_7 = _b.sent();
+                        error_8 = _b.sent();
                         logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
                         return [3 /*break*/, 6];
                     case 6: return [2 /*return*/, (0, web_1.poll)(function () { return __awaiter(_this, void 0, void 0, function () {
@@ -1808,7 +1950,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype.getResolver = function (name) {
         return __awaiter(this, void 0, void 0, function () {
-            var address, error_8;
+            var address, error_9;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1821,8 +1963,8 @@ var BaseProvider = /** @class */ (function (_super) {
                         }
                         return [2 /*return*/, new Resolver(this, address, name)];
                     case 2:
-                        error_8 = _a.sent();
-                        if (error_8.code === logger_1.Logger.errors.CALL_EXCEPTION) {
+                        error_9 = _a.sent();
+                        if (error_9.code === logger_1.Logger.errors.CALL_EXCEPTION) {
                             return [2 /*return*/, null];
                         }
                         return [2 /*return*/, null];
@@ -1833,7 +1975,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype._getResolver = function (name) {
         return __awaiter(this, void 0, void 0, function () {
-            var network, transaction, _a, _b, error_9;
+            var network, transaction, _a, _b, error_10;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0: return [4 /*yield*/, this.getNetwork()];
@@ -1854,11 +1996,11 @@ var BaseProvider = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.call(transaction)];
                     case 3: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
                     case 4:
-                        error_9 = _c.sent();
-                        if (error_9.code === logger_1.Logger.errors.CALL_EXCEPTION) {
+                        error_10 = _c.sent();
+                        if (error_10.code === logger_1.Logger.errors.CALL_EXCEPTION) {
                             return [2 /*return*/, null];
                         }
-                        throw error_9;
+                        throw error_10;
                     case 5: return [2 /*return*/];
                 }
             });
@@ -1943,6 +2085,40 @@ var BaseProvider = /** @class */ (function (_super) {
                             return [2 /*return*/, null];
                         }
                         return [2 /*return*/, name];
+                }
+            });
+        });
+    };
+    BaseProvider.prototype.getAvatar = function (nameOrAddress) {
+        return __awaiter(this, void 0, void 0, function () {
+            var resolver, address, reverseName, resolverAddress, avatar;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        resolver = null;
+                        if (!(0, bytes_1.isHexString)(nameOrAddress)) return [3 /*break*/, 2];
+                        address = this.formatter.address(nameOrAddress);
+                        reverseName = address.substring(2).toLowerCase() + ".addr.reverse";
+                        return [4 /*yield*/, this._getResolver(reverseName)];
+                    case 1:
+                        resolverAddress = _a.sent();
+                        if (!resolverAddress) {
+                            return [2 /*return*/, null];
+                        }
+                        resolver = new Resolver(this, resolverAddress, "_", address);
+                        return [3 /*break*/, 4];
+                    case 2: return [4 /*yield*/, this.getResolver(nameOrAddress)];
+                    case 3:
+                        // ENS name; forward lookup
+                        resolver = _a.sent();
+                        _a.label = 4;
+                    case 4: return [4 /*yield*/, resolver.getAvatar()];
+                    case 5:
+                        avatar = _a.sent();
+                        if (avatar == null) {
+                            return [2 /*return*/, null];
+                        }
+                        return [2 /*return*/, avatar.url];
                 }
             });
         });

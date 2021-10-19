@@ -28,14 +28,23 @@ export interface EnsProvider {
     lookupAddress(address: string): Promise<null | string>;
     getResolver(name: string): Promise<null | EnsResolver>;
 }
+export interface Avatar {
+    url: string;
+    linkage: Array<{
+        type: string;
+        content: string;
+    }>;
+}
 export declare class Resolver implements EnsResolver {
     readonly provider: BaseProvider;
     readonly name: string;
     readonly address: string;
-    constructor(provider: BaseProvider, address: string, name: string);
-    _fetchBytes(selector: string, parameters?: string): Promise<string>;
+    readonly _resolvedAddress: null | string;
+    constructor(provider: BaseProvider, address: string, name: string, resolvedAddress?: string);
+    _fetchBytes(selector: string, parameters?: string): Promise<null | string>;
     _getAddress(coinType: number, hexBytes: string): string;
     getAddress(coinType?: number): Promise<string>;
+    getAvatar(): Promise<null | Avatar>;
     getContentHash(): Promise<string>;
     getText(key: string): Promise<string>;
 }
@@ -122,6 +131,7 @@ export declare class BaseProvider extends Provider implements EnsProvider {
     _getResolver(name: string): Promise<string>;
     resolveName(name: string | Promise<string>): Promise<null | string>;
     lookupAddress(address: string | Promise<string>): Promise<null | string>;
+    getAvatar(nameOrAddress: string): Promise<null | string>;
     perform(method: string, params: any): Promise<any>;
     _startEvent(event: Event): void;
     _stopEvent(event: Event): void;

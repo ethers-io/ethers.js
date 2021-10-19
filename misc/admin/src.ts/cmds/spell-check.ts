@@ -13,7 +13,7 @@ const Words = fs.readFileSync("/usr/share/dict/words").toString().split("\n").re
 
 `
 // Words missing from the dictionary
-accessing addresses aligned autofill called cancelled changed censored
+accessing addresses aligned autofill avatar called cancelled changed censored
 clamping compiled computed configured consumed creating decoded decoding
 decreased decrypt decrypted decrypting deployed deploying deprecated detected
 discontinued earliest email emitted enabled encoded encoder encoding encrypt
@@ -49,9 +49,9 @@ ABIEncoder testcase numberish Wordlist
 abi addr api app arg arrayify asm backend basex bigint bignumber bn byte
 bytecode callback calldata charset checksum ciphertext cli codepoint
 commify config
-contenthash ctr ctrl debug dd dklen eexist encseed eof eq ethaddr
+contenthash ctr ctrl debug dd dklen eexist encseed eof eq erc ethaddr
 ethseed ethers eval exec filename func gz gzip hid http https hw iv
-info init ipc json kdf kdfparams labelhash lang lib mm multihash nfc
+info init ipc json kdf kdfparams labelhash lang lib metadata mm multihash nfc
 nfkc nfd nfkd nodehash notok nowait nullish oob opcode pbkdf pc plugin
 pragma pre prf recid repl rpc sighash topichash solc stdin stdout subclasses
 subnode timeout todo txt typeof ufixed utc utf util url urlencoded uuid vm
@@ -70,6 +70,7 @@ ropsten testnet lb maticmum
 
 // Demo words
 args foo eth foo foobar ll localhost passwd ricmoo tx xxx yna
+brantly 
 
 // nameprep tags
 ALCat BiDi LCat nameprep

@@ -4,9 +4,10 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
-ethers/v5.5.0 (2021-10-17 23:02)
+ethers/v5.5.0 (2021-10-19 00:01)
 --------------------------------
 
+  - Added ENS avatar support to provider. ([#2185](https://github.com/ethers-io/ethers.js/issues/2185); [ecce861](https://github.com/ethers-io/ethers.js/commit/ecce86125d87ef5258406bde2fff5bc8c9ff3141))
   - Fixed splitSignature logic for verifying EIP-2930 and EIP-1559 v. ([#2084](https://github.com/ethers-io/ethers.js/issues/2084); [3de1b81](https://github.com/ethers-io/ethers.js/commit/3de1b815014b10d223a42e524fe9c25f9087293b))
   - Include events on ContractFactory deployment transactions. ([#1334](https://github.com/ethers-io/ethers.js/issues/1334); [ab319f2](https://github.com/ethers-io/ethers.js/commit/ab319f2f4c365d4cd1b1e17e577ecd18a7a89276))
   - admin: fixed alias script. ([#1494](https://github.com/ethers-io/ethers.js/issues/1494); [8f3d71d](https://github.com/ethers-io/ethers.js/commit/8f3d71dc5fd0e91407737a4b82c58c31269ed2be))

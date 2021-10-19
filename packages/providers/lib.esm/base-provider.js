@@ -18,7 +18,7 @@ import { getNetwork } from "@ethersproject/networks";
 import { defineReadOnly, getStatic, resolveProperties } from "@ethersproject/properties";
 import { sha256 } from "@ethersproject/sha2";
 import { toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
-import { poll } from "@ethersproject/web";
+import { fetchJson, poll } from "@ethersproject/web";
 import bech32 from "bech32";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -181,27 +181,44 @@ function bytes32ify(value) {
 function base58Encode(data) {
     return Base58.encode(concat([data, hexDataSlice(sha256(sha256(data)), 0, 4)]));
 }
+const matchers = [
+    new RegExp("^(https):/\/(.*)$", "i"),
+    new RegExp("^(data):(.*)$", "i"),
+    new RegExp("^(ipfs):/\/(.*)$", "i"),
+    new RegExp("^eip155:[0-9]+/(erc[0-9]+):(.*)$", "i"),
+];
+function _parseString(result) {
+    try {
+        return toUtf8String(_parseBytes(result));
+    }
+    catch (error) { }
+    return null;
+}
+function _parseBytes(result) {
+    if (result === "0x") {
+        return null;
+    }
+    const offset = BigNumber.from(hexDataSlice(result, 0, 32)).toNumber();
+    const length = BigNumber.from(hexDataSlice(result, offset, offset + 32)).toNumber();
+    return hexDataSlice(result, offset + 32, offset + 32 + length);
+}
 export class Resolver {
-    constructor(provider, address, name) {
+    // The resolvedAddress is only for creating a ReverseLookup resolver
+    constructor(provider, address, name, resolvedAddress) {
         defineReadOnly(this, "provider", provider);
         defineReadOnly(this, "name", name);
         defineReadOnly(this, "address", provider.formatter.address(address));
+        defineReadOnly(this, "_resolvedAddress", resolvedAddress);
     }
     _fetchBytes(selector, parameters) {
         return __awaiter(this, void 0, void 0, function* () {
-            // keccak256("addr(bytes32,uint256)")
-            const transaction = {
+            // e.g. keccak256("addr(bytes32,uint256)")
+            const tx = {
                 to: this.address,
                 data: hexConcat([selector, namehash(this.name), (parameters || "0x")])
             };
             try {
-                const result = yield this.provider.call(transaction);
-                if (result === "0x") {
-                    return null;
-                }
-                const offset = BigNumber.from(hexDataSlice(result, 0, 32)).toNumber();
-                const length = BigNumber.from(hexDataSlice(result, offset, offset + 32)).toNumber();
-                return hexDataSlice(result, offset + 32, offset + 32 + length);
+                return _parseBytes(yield this.provider.call(tx));
             }
             catch (error) {
                 if (error.code === Logger.errors.CALL_EXCEPTION) {
@@ -306,6 +323,94 @@ export class Resolver {
                 });
             }
             return address;
+        });
+    }
+    getAvatar() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const linkage = [];
+            try {
+                const avatar = yield this.getText("avatar");
+                if (avatar == null) {
+                    return null;
+                }
+                for (let i = 0; i < matchers.length; i++) {
+                    const match = avatar.match(matchers[i]);
+                    if (match == null) {
+                        continue;
+                    }
+                    switch (match[1]) {
+                        case "https":
+                            linkage.push({ type: "url", content: avatar });
+                            return { linkage, url: avatar };
+                        case "data":
+                            linkage.push({ type: "data", content: avatar });
+                            return { linkage, url: avatar };
+                        case "ipfs":
+                            linkage.push({ type: "ipfs", content: avatar });
+                            return { linkage, url: `https:/\/gateway.ipfs.io/ipfs/${avatar.substring(7)}` };
+                        case "erc721":
+                        case "erc1155": {
+                            // Depending on the ERC type, use tokenURI(uint256) or url(uint256)
+                            const selector = (match[1] === "erc721") ? "0xc87b56dd" : "0x0e89341c";
+                            linkage.push({ type: match[1], content: avatar });
+                            // The owner of this name
+                            const owner = (this._resolvedAddress || (yield this.getAddress()));
+                            const comps = (match[2] || "").split("/");
+                            if (comps.length !== 2) {
+                                return null;
+                            }
+                            const addr = yield this.provider.formatter.address(comps[0]);
+                            const tokenId = hexZeroPad(BigNumber.from(comps[1]).toHexString(), 32);
+                            // Check that this account owns the token
+                            if (match[1] === "erc721") {
+                                // ownerOf(uint256 tokenId)
+                                const tokenOwner = this.provider.formatter.callAddress(yield this.provider.call({
+                                    to: addr, data: hexConcat(["0x6352211e", tokenId])
+                                }));
+                                if (owner !== tokenOwner) {
+                                    return null;
+                                }
+                                linkage.push({ type: "owner", content: tokenOwner });
+                            }
+                            else if (match[1] === "erc1155") {
+                                // balanceOf(address owner, uint256 tokenId)
+                                const balance = BigNumber.from(yield this.provider.call({
+                                    to: addr, data: hexConcat(["0x00fdd58e", hexZeroPad(owner, 32), tokenId])
+                                }));
+                                if (balance.isZero()) {
+                                    return null;
+                                }
+                                linkage.push({ type: "balance", content: balance.toString() });
+                            }
+                            // Call the token contract for the metadata URL
+                            const tx = {
+                                to: this.provider.formatter.address(comps[0]),
+                                data: hexConcat([selector, tokenId])
+                            };
+                            let metadataUrl = _parseString(yield this.provider.call(tx));
+                            if (metadataUrl == null) {
+                                return null;
+                            }
+                            linkage.push({ type: "metadata-url", content: metadataUrl });
+                            // ERC-1155 allows a generic {id} in the URL
+                            if (match[1] === "erc1155") {
+                                metadataUrl = metadataUrl.replace("{id}", tokenId.substring(2));
+                            }
+                            // Get the token metadata
+                            const metadata = yield fetchJson(metadataUrl);
+                            // Pull the image URL out
+                            if (!metadata || typeof (metadata.image) !== "string" || !metadata.image.match(/^https:\/\//i)) {
+                                return null;
+                            }
+                            linkage.push({ type: "metadata", content: JSON.stringify(metadata) });
+                            linkage.push({ type: "url", content: metadata.image });
+                            return { linkage, url: metadata.image };
+                        }
+                    }
+                }
+            }
+            catch (error) { }
+            return null;
         });
     }
     getContentHash() {
@@ -1468,6 +1573,30 @@ export class BaseProvider extends Provider {
                 return null;
             }
             return name;
+        });
+    }
+    getAvatar(nameOrAddress) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let resolver = null;
+            if (isHexString(nameOrAddress)) {
+                // Address; reverse lookup
+                const address = this.formatter.address(nameOrAddress);
+                const reverseName = address.substring(2).toLowerCase() + ".addr.reverse";
+                const resolverAddress = yield this._getResolver(reverseName);
+                if (!resolverAddress) {
+                    return null;
+                }
+                resolver = new Resolver(this, resolverAddress, "_", address);
+            }
+            else {
+                // ENS name; forward lookup
+                resolver = yield this.getResolver(nameOrAddress);
+            }
+            const avatar = yield resolver.getAvatar();
+            if (avatar == null) {
+                return null;
+            }
+            return avatar.url;
         });
     }
     perform(method, params) {
