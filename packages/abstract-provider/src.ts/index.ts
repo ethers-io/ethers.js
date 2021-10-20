@@ -274,8 +274,8 @@ export abstract class Provider implements OnceBlockable {
     abstract getLogs(filter: Filter): Promise<Array<Log>>;
 
     // ENS
-    abstract resolveName(name: string | Promise<string>): Promise<string>;
-    abstract lookupAddress(address: string | Promise<string>): Promise<string>;
+    abstract resolveName(name: string | Promise<string>): Promise<null | string>;
+    abstract lookupAddress(address: string | Promise<string>): Promise<null | string>;
 
     // Event Emitter (ish)
     abstract on(eventName: EventType, listener: Listener): Provider;
