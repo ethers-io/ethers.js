@@ -8996,7 +8996,7 @@ class Interface {
 
 "use strict";
 
-const version$9 = "abstract-provider/5.5.0";
+const version$9 = "abstract-provider/5.5.1";
 
 "use strict";
 var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -23091,7 +23091,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$p = "ethers/5.5.0";
+const version$p = "ethers/5.5.1";
 
 "use strict";
 const logger$I = new Logger(version$p);

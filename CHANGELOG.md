@@ -4,6 +4,11 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+ethers/v5.5.1 (2021-10-20 03:59)
+--------------------------------
+
+  - Fixed abstract Provider signature issue. ([#2190](https://github.com/ethers-io/ethers.js/issues/2190); [1bd9161](https://github.com/ethers-io/ethers.js/commit/1bd91615eedcb34a24fca04aa93a9aac394968ed))
+
 ethers/v5.5.0 (2021-10-19 00:01)
 --------------------------------
 

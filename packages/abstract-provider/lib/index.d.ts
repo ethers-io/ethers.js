@@ -135,8 +135,8 @@ export declare abstract class Provider implements OnceBlockable {
     abstract getTransaction(transactionHash: string): Promise<TransactionResponse>;
     abstract getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
     abstract getLogs(filter: Filter): Promise<Array<Log>>;
-    abstract resolveName(name: string | Promise<string>): Promise<string>;
-    abstract lookupAddress(address: string | Promise<string>): Promise<string>;
+    abstract resolveName(name: string | Promise<string>): Promise<null | string>;
+    abstract lookupAddress(address: string | Promise<string>): Promise<null | string>;
     abstract on(eventName: EventType, listener: Listener): Provider;
     abstract once(eventName: EventType, listener: Listener): Provider;
     abstract emit(eventName: EventType, ...args: Array<any>): boolean;
