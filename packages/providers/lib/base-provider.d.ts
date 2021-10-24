@@ -9,6 +9,7 @@ export declare class Event {
     readonly listener: Listener;
     readonly once: boolean;
     readonly tag: string;
+    lastBlockNumber: number | undefined;
     constructor(tag: string, listener: Listener, once: boolean);
     get event(): EventType;
     get type(): string;

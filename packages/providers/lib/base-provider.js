@@ -891,16 +891,19 @@ var BaseProvider = /** @class */ (function (_super) {
                                 }
                                 case "filter": {
                                     var filter_1 = event.filter;
-                                    filter_1.fromBlock = _this._lastBlockNumber + 1;
+                                    filter_1.fromBlock = event.lastBlockNumber + 1;
                                     filter_1.toBlock = blockNumber;
                                     var runner = _this.getLogs(filter_1).then(function (logs) {
                                         if (logs.length === 0) {
                                             return;
                                         }
-                                        logs.forEach(function (log) {
+                                        logs.forEach(function (log, index, array) {
                                             _this._emitted["b:" + log.blockHash] = log.blockNumber;
                                             _this._emitted["t:" + log.transactionHash] = log.blockNumber;
                                             _this.emit(filter_1, log);
+                                            if (index === array.length - 1) {
+                                                event.lastBlockNumber = log.blockNumber;
+                                            }
                                         });
                                     }).catch(function (error) { _this.emit("error", error); });
                                     runners.push(runner);
