@@ -137,6 +137,7 @@ export class Event {
     readonly listener: Listener;
     readonly once: boolean;
     readonly tag: string;
+    lastBlockNumber: number | undefined;
 
     constructor(tag: string, listener: Listener, once: boolean) {
         defineReadOnly(this, "tag", tag);
@@ -870,15 +871,18 @@ export class BaseProvider extends Provider implements EnsProvider {
 
                 case "filter": {
                     const filter = event.filter;
-                    filter.fromBlock = this._lastBlockNumber + 1;
+                    filter.fromBlock = event.lastBlockNumber + 1;
                     filter.toBlock = blockNumber;
 
                     const runner = this.getLogs(filter).then((logs) => {
                         if (logs.length === 0) { return; }
-                        logs.forEach((log: Log) => {
+                        logs.forEach((log: Log, index, array) => {
                             this._emitted["b:" + log.blockHash] = log.blockNumber;
                             this._emitted["t:" + log.transactionHash] = log.blockNumber;
                             this.emit(filter, log);
+                            if (index === array.length - 1) {
+                                event.lastBlockNumber = log.blockNumber;
+                            }
                         });
                     }).catch((error: Error) => { this.emit("error", error); });
                     runners.push(runner);
