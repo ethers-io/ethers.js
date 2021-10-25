@@ -851,6 +851,10 @@ export class BaseProvider extends Provider implements EnsProvider {
             this._lastBlockNumber = blockNumber - 1;
         }
 
+        // Make sure we don't poll too much data. Here we are using the same 
+        // threshold as for removing obsolete events.
+        let latestBlockNumber = Math.max(this._lastBlockNumber, blockNumber - 12);
+
         // Find all transaction hashes we are waiting on
         this._events.forEach((event) => {
             switch (event.type) {
@@ -858,6 +862,7 @@ export class BaseProvider extends Provider implements EnsProvider {
                     const hash = event.hash;
                     let runner = this.getTransactionReceipt(hash).then((receipt) => {
                         if (!receipt || receipt.blockNumber == null) { return null; }
+                        latestBlockNumber = Math.max(latestBlockNumber, receipt.blockNumber);
                         this._emitted["t:" + hash] = receipt.blockNumber;
                         this.emit(hash, receipt);
                         return null;
@@ -876,6 +881,7 @@ export class BaseProvider extends Provider implements EnsProvider {
                     const runner = this.getLogs(filter).then((logs) => {
                         if (logs.length === 0) { return; }
                         logs.forEach((log: Log) => {
+                            latestBlockNumber = Math.max(latestBlockNumber, log.blockNumber);
                             this._emitted["b:" + log.blockHash] = log.blockNumber;
                             this._emitted["t:" + log.transactionHash] = log.blockNumber;
                             this.emit(filter, log);
@@ -888,10 +894,9 @@ export class BaseProvider extends Provider implements EnsProvider {
             }
         });
 
-        this._lastBlockNumber = blockNumber;
-
         // Once all events for this loop have been processed, emit "didPoll"
         Promise.all(runners).then(() => {
+            this._lastBlockNumber = latestBlockNumber;
             this.emit("didPoll", pollId);
         }).catch((error) => { this.emit("error", error); });
 
