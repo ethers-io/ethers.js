@@ -799,7 +799,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype.poll = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var pollId, runners, blockNumber, error_6, i;
+            var pollId, runners, blockNumber, error_6, i, latestBlockNumber;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -873,6 +873,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         if (this._lastBlockNumber === -2) {
                             this._lastBlockNumber = blockNumber - 1;
                         }
+                        latestBlockNumber = Math.max(this._lastBlockNumber, blockNumber - 12);
                         // Find all transaction hashes we are waiting on
                         this._events.forEach(function (event) {
                             switch (event.type) {
@@ -882,6 +883,7 @@ var BaseProvider = /** @class */ (function (_super) {
                                         if (!receipt || receipt.blockNumber == null) {
                                             return null;
                                         }
+                                        latestBlockNumber = Math.max(latestBlockNumber, receipt.blockNumber);
                                         _this._emitted["t:" + hash_2] = receipt.blockNumber;
                                         _this.emit(hash_2, receipt);
                                         return null;
@@ -898,6 +900,7 @@ var BaseProvider = /** @class */ (function (_super) {
                                             return;
                                         }
                                         logs.forEach(function (log) {
+                                            latestBlockNumber = Math.max(latestBlockNumber, log.blockNumber);
                                             _this._emitted["b:" + log.blockHash] = log.blockNumber;
                                             _this._emitted["t:" + log.transactionHash] = log.blockNumber;
                                             _this.emit(filter_1, log);
@@ -908,9 +911,9 @@ var BaseProvider = /** @class */ (function (_super) {
                                 }
                             }
                         });
-                        this._lastBlockNumber = blockNumber;
                         // Once all events for this loop have been processed, emit "didPoll"
                         Promise.all(runners).then(function () {
+                            _this._lastBlockNumber = latestBlockNumber;
                             _this.emit("didPoll", pollId);
                         }).catch(function (error) { _this.emit("error", error); });
                         return [2 /*return*/];
