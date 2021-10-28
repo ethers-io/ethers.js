@@ -92,11 +92,13 @@ It is highly recommended for production, you register with [INFURA](https://infu
 
 #### **Supported Networks**
 
-- Homestead (Mainnet) 
-- Ropsten (proof-of-work testnet) 
-- Rinkeby (proof-of-authority testnet) 
-- Gorli (clique testnet) 
-- Kovan (proof-of-authority testnet) 
+- Homestead (Mainnet)                   -> network = "homestead"
+- Ropsten (proof-of-work testnet)       -> network = "ropsten"
+- Rinkeby (proof-of-authority testnet)  -> network = "rinkeby"
+- Görli (clique testnet)                -> network = "goerli"
+- Kovan (proof-of-authority testnet)    -> network = "kovan"
+- Polygon Mainnet (proof-of-stake L2)   -> network = "matic"
+- Polygon Mumbai (Polygon testnet)      -> network = "maticmum"
 
 
 
@@ -142,11 +144,13 @@ It is highly recommended for production, you register with [Alchemy](https://alc
 
 #### **Supported Networks**
 
-- Homestead (Mainnet) 
-- Ropsten (proof-of-work testnet) 
-- Rinkeby (proof-of-authority testnet) 
-- Gorli (clique testnet) 
-- Kovan (proof-of-authority testnet) 
+- Homestead (Mainnet)                   -> network = "homestead"
+- Ropsten (proof-of-work testnet)       -> network = "ropsten"
+- Rinkeby (proof-of-authority testnet)  -> network = "rinkeby"
+- Görli (clique testnet)                -> network = "goerli"
+- Kovan (proof-of-authority testnet)    -> network = "kovan"
+- Polygon Mainnet (proof-of-stake L2)   -> network = "matic"
+- Polygon Mumbai (Polygon testnet)      -> network = "maticmum" 
 
 
 
