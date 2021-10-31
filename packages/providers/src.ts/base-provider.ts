@@ -1747,6 +1747,7 @@ export class BaseProvider extends Provider implements EnsProvider {
         } else {
             // ENS name; forward lookup
             resolver = await this.getResolver(nameOrAddress);
+            if (!resolver) { return null; }
         }
 
         const avatar = await resolver.getAvatar();
