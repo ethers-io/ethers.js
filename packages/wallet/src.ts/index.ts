@@ -35,7 +35,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
     // Wrapping the _signingKey and _mnemonic in a getter function prevents
     // leaking the private key in console.log; still, be careful! :)
     readonly _signingKey: () => SigningKey;
-    readonly _mnemonic: () => Mnemonic;
+    readonly _mnemonic: () => Mnemonic | null;
 
     constructor(privateKey: BytesLike | ExternallyOwnedAccount | SigningKey, provider?: Provider) {
         logger.checkNew(new.target, Wallet);
@@ -102,7 +102,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
         defineReadOnly(this, "provider", provider || null);
     }
 
-    get mnemonic(): Mnemonic { return this._mnemonic(); }
+    get mnemonic(): Mnemonic | null { return this._mnemonic(); }
     get privateKey(): string { return this._signingKey().privateKey; }
     get publicKey(): string { return this._signingKey().publicKey; }
 
