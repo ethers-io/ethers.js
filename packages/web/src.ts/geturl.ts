@@ -96,7 +96,7 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
             req = https.request(request);
             break;
         case "ipfs:":
-            request.protocol = "https";
+            request.protocol = "https:";
             request.hostname = "gateway.ipfs.io";
             request.path = "/ipfs/" + request.path
             req = https.request(request);
