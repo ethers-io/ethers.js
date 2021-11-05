@@ -73,12 +73,6 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
     //        to this request object
     const url = parse(href);
 
-    // if(nonnull(url.protocol) == "ipfs"){
-    //     url.protocol = "https";
-    //     url.hostname = "gateway.ipfs.io";
-    //     url.pathname = "/ipfs/" + url.pathname
-    // }
-    //
     const request = {
         protocol: nonnull(url.protocol),
         hostname: nonnull(url.hostname),
