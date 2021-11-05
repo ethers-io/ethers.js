@@ -475,9 +475,15 @@ export class Resolver implements EnsResolver {
                         const metadata = await fetchJson(metadataUrl);
 
                         // Pull the image URL out
-                        if (!metadata || typeof(metadata.image) !== "string" || !metadata.image.match(/^https:\/\//i)) {
+                        if (!metadata || typeof(metadata.image) !== "string" || (!metadata.image.match(/^https:\/\//i) && !metadata.image.match(/^ipfs:\/\//i))) {
                             return null;
                         }
+
+                        // If image URL is IPFS transform to HTTP URL
+                        if(metadata.image.match(/^ipfs:\/\//i)){
+                            metadata.image = metadata.image.replace("ipfs://", "https://gateway.ipfs.io/ipfs/");
+                        }
+
                         linkage.push({ type: "metadata", content: JSON.stringify(metadata) });
                         linkage.push({ type: "url", content: metadata.image });
 

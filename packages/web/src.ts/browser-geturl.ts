@@ -23,6 +23,10 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
         request.referrer = "client";                     // no-referrer, *client
     };
 
+    if(href.startsWith("ipfs")){
+        href = href.replace("ipfs://", "https://gateway.ipfs.io/ipfs/");
+    }
+
     const response = await fetch(href, request);
     const body = await response.arrayBuffer();
 
