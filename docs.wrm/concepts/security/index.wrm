@@ -26,7 +26,7 @@ importantly securely released.
 
 [Historically](https://github.com/nodejs/node/issues/4660),
 ``new Buffer(16)`` would re-use old memory that had been
-released. This would mean that code runnint later, may have
+released. This would mean that code running later, may have
 access to data that was discarded.
 
 As an example of the dangers, imagine if you had used a Buffer
@@ -39,7 +39,7 @@ steal the funds from that account.
 There are also many debugging tools and systems designed to
 assist develoeprs inspect the memory contents of JavaScript
 programs. In these cases, any //private key// or //mnemonic//
-siiting in memory may be visible to other users on the system,
+sitting in memory may be visible to other users on the system,
 or malicious scripts.
 
 _heading: Timing Attack
@@ -65,9 +65,9 @@ will. By timing how long the code took to execute, they now know
 whether garbage collection occured and therefore whether the simple
 or complex path was taken.
 
-Advancced timing attacks are very difficult to mitigate in any
+Advanced timing attacks are very difficult to mitigate in any
 garbage-collection-based language. Most libraries where this
-matters will hopefully mitigated this for you as much as possible,
+matters will hopefully mitigate this for you as much as possible,
 but it is still good to be aware of.
 
 _heading: General Concerns
@@ -128,7 +128,7 @@ progress callback which will be periodically called with a number between
 In general a progress bar makes the experience feel faster, as well as
 more comfortable since there is a clear indication how much (relative) time
 is remaining. Additionally, using language like //"decrypting..."// in
-a progress bar makes a user feel like there time is not being //needlessly//
+a progress bar makes a user feel like their time is not being //needlessly//
 wasted.
 
 _heading: Work-Arounds (not recommended)
