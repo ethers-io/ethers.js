@@ -65,7 +65,7 @@
     "@types/node": "^12.7.4",
     "@types/semver": "^7.3.4",
     "aes-js": "3.0.0",
-    "aws-sdk": "2.137.0",
+    "aws-sdk": "2.814.0",
     "diff": "4.0.1",
     "flatworm": "0.0.2-beta.7",
     "jison": "0.4.18",
