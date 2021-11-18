@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [ 8.x, 10.x, 12.x, 13.x ]
+        node-version: [ 10.x, 12.x, 13.x ]
 
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
@@ -77,6 +77,8 @@ jobs:
     continue-on-error: true
 
     strategy:
+      matrix:
+        node-version: [ '12.x' ]
       fail-fast: false
 
     steps:
