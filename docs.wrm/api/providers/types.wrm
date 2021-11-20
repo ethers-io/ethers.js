@@ -363,6 +363,9 @@ must be considered.
 _property: receipt.gasUsed => [[BigNumber]]
 The amount of gas actually used by this transaction.
 
+_property: receipt.effectiveGasPrice => [[BigNumber]]
+Pre-London, it is equal to the transaction’s gasPrice. Post-London, it is equal to the actual gas price paid for inclusion. This value differs depending if the transaction is an EIP-1559 transaction or not.
+
 _property: receipt.logsBloom => string<[[DataHexString]]>
 A [bloom-filter](link-wiki-bloomfilter), which
 includes all the addresses and topics included in any log in this
