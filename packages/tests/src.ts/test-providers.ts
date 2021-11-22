@@ -1373,7 +1373,7 @@ describe("Resolve ENS avatar", function() {
         { title: "ipfs", name: "ipfs-avatar.tests.eth", value: "https:/\/gateway.ipfs.io/ipfs/QmQsQgpda6JAYkFoeVcj5iPbwV3xRcvaiXv3bhp1VuYUqw" },
         { title: "url", name: "url-avatar.tests.eth", value: "https:/\/ethers.org/static/logo.png" },
     ].forEach((test) => {
-        it(`Resolves avatar for ${ test.title }`, async function() {
+        xit(`Resolves avatar for ${ test.title }`, async function() {
             this.timeout(60000);
             const provider = ethers.getDefaultProvider("ropsten", getApiKeys("ropsten"));
             const avatar = await provider.getAvatar(test.name);
