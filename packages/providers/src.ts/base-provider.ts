@@ -158,13 +158,13 @@ export class Event {
         return this.tag.split(":")[0]
     }
 
-    get hash(): string {
+    get hash(): null | string {
         const comps = this.tag.split(":");
         if (comps[0] !== "tx") { return null; }
         return comps[1];
     }
 
-    get filter(): Filter {
+    get filter(): null | Filter {
         const comps = this.tag.split(":");
         if (comps[0] !== "filter") { return null; }
         const address = comps[1];
@@ -296,7 +296,7 @@ export class Resolver implements EnsResolver {
         }
     }
 
-    _getAddress(coinType: number, hexBytes: string): string {
+    _getAddress(coinType: number, hexBytes: string): null | string {
         const coinInfo = coinInfos[String(coinType)];
 
         if (coinInfo == null) {
@@ -358,7 +358,7 @@ export class Resolver implements EnsResolver {
     }
 
 
-    async getAddress(coinType?: number): Promise<string> {
+    async getAddress(coinType?: number): Promise<null | string> {
         if (coinType == null) { coinType = 60; }
 
         // If Ethereum, use the standard `addr(bytes32)`
@@ -490,7 +490,7 @@ export class Resolver implements EnsResolver {
         return null;
     }
 
-    async getContentHash(): Promise<string> {
+    async getContentHash(): Promise<null | string> {
 
         // keccak256("contenthash()")
         const hexBytes = await this._fetchBytes("0xbc1c58d1");
@@ -521,7 +521,7 @@ export class Resolver implements EnsResolver {
         });
     }
 
-    async getText(key: string): Promise<string> {
+    async getText(key: string): Promise<null | string> {
 
         // The key encoded as parameter to fetchBytes
         let keyBytes = toUtf8Bytes(key);
@@ -1644,7 +1644,7 @@ export class BaseProvider extends Provider implements EnsProvider {
         }
     }
 
-    async _getResolver(name: string): Promise<string> {
+    async _getResolver(name: string): Promise<null | string> {
         // Get the resolver from the blockchain
         const network = await this.getNetwork();
 
