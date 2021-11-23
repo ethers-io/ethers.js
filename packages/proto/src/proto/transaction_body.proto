@@ -1,0 +1,318 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "system_delete.proto";
+import "system_undelete.proto";
+import "freeze.proto";
+
+import "contract_call.proto";
+import "contract_create.proto";
+import "contract_update.proto";
+
+import "crypto_add_live_hash.proto";
+import "crypto_create.proto";
+import "crypto_delete.proto";
+import "crypto_delete_live_hash.proto";
+import "crypto_transfer.proto";
+import "crypto_update.proto";
+
+import "file_append.proto";
+import "file_create.proto";
+import "file_delete.proto";
+import "file_update.proto";
+
+import "duration.proto";
+import "basic_types.proto";
+import "contract_delete.proto";
+
+import "consensus_create_topic.proto";
+import "consensus_update_topic.proto";
+import "consensus_delete_topic.proto";
+import "consensus_submit_message.proto";
+
+import "unchecked_submit.proto";
+
+import "token_create.proto";
+import "token_freeze_account.proto";
+import "token_unfreeze_account.proto";
+import "token_grant_kyc.proto";
+import "token_revoke_kyc.proto";
+import "token_delete.proto";
+import "token_update.proto";
+import "token_mint.proto";
+import "token_burn.proto";
+import "token_wipe_account.proto";
+import "token_associate.proto";
+import "token_dissociate.proto";
+import "token_fee_schedule_update.proto";
+import "token_pause.proto";
+import "token_unpause.proto";
+
+import "schedule_create.proto";
+import "schedule_delete.proto";
+import "schedule_sign.proto";
+
+/**
+ * A single transaction. All transaction types are possible here.
+ */
+message TransactionBody {
+  /**
+   * The ID for this transaction, which includes the payer's account (the account paying the
+   * transaction fee). If two transactions have the same transactionID, they won't both have an
+   * effect
+   */
+  TransactionID transactionID = 1;
+
+  /**
+   * The account of the node that submits the client's transaction to the network
+   */
+  AccountID nodeAccountID = 2;
+
+  /**
+   * The maximum transaction fee the client is willing to pay
+   */
+  uint64 transactionFee = 3;
+
+  /**
+   * The transaction is invalid if consensusTimestamp > transactionID.transactionValidStart +
+   * transactionValidDuration
+   */
+  Duration transactionValidDuration = 4;
+
+  /**
+   * Should a record of this transaction be generated? (A receipt is always generated, but the
+   * record is optional)
+   */
+  bool generateRecord = 5 [deprecated = true];
+
+  /**
+   * Any notes or descriptions that should be put into the record (max length 100)
+   */
+  string memo = 6;
+
+  oneof data {
+    /**
+     * Calls a function of a contract instance
+     */
+    ContractCallTransactionBody contractCall = 7;
+
+    /**
+     * Creates a contract instance
+     */
+    ContractCreateTransactionBody contractCreateInstance = 8;
+
+    /**
+     * Updates a contract
+     */
+    ContractUpdateTransactionBody contractUpdateInstance = 9;
+
+    /**
+     * Delete contract and transfer remaining balance into specified account
+     */
+    ContractDeleteTransactionBody contractDeleteInstance = 22;
+
+    /**
+     * Attach a new livehash to an account
+     */
+    CryptoAddLiveHashTransactionBody cryptoAddLiveHash = 10;
+
+    /**
+     * Create a new cryptocurrency account
+     */
+    CryptoCreateTransactionBody cryptoCreateAccount = 11;
+
+    /**
+     * Delete a cryptocurrency account (mark as deleted, and transfer hbars out)
+     */
+    CryptoDeleteTransactionBody cryptoDelete = 12;
+
+    /**
+     * Remove a livehash from an account
+     */
+    CryptoDeleteLiveHashTransactionBody cryptoDeleteLiveHash = 13;
+
+    /**
+     * Transfer amount between accounts
+     */
+    CryptoTransferTransactionBody cryptoTransfer = 14;
+
+    /**
+     * Modify information such as the expiration date for an account
+     */
+    CryptoUpdateTransactionBody cryptoUpdateAccount = 15;
+
+    /**
+     * Add bytes to the end of the contents of a file
+     */
+    FileAppendTransactionBody fileAppend = 16;
+
+    /**
+     * Create a new file
+     */
+    FileCreateTransactionBody fileCreate = 17;
+
+    /**
+     * Delete a file (remove contents and mark as deleted until it expires)
+     */
+    FileDeleteTransactionBody fileDelete = 18;
+
+    /**
+     * Modify information such as the expiration date for a file
+     */
+    FileUpdateTransactionBody fileUpdate = 19;
+
+    /**
+     * Hedera administrative deletion of a file or smart contract
+     */
+    SystemDeleteTransactionBody systemDelete = 20;
+
+    /**
+     * To undelete an entity deleted by SystemDelete
+     */
+    SystemUndeleteTransactionBody systemUndelete = 21;
+
+    /**
+     * Freeze the nodes
+     */
+    FreezeTransactionBody freeze = 23;
+
+    /**
+     * Creates a topic
+     */
+    ConsensusCreateTopicTransactionBody consensusCreateTopic = 24;
+
+    /**
+     * Updates a topic
+     */
+    ConsensusUpdateTopicTransactionBody consensusUpdateTopic = 25;
+
+    /**
+     * Deletes a topic
+     */
+    ConsensusDeleteTopicTransactionBody consensusDeleteTopic = 26;
+
+    /**
+     * Submits message to a topic
+     */
+    ConsensusSubmitMessageTransactionBody consensusSubmitMessage = 27;
+
+    /**
+     * UNDOCUMENTED
+     */
+    UncheckedSubmitBody uncheckedSubmit = 28;
+
+    /**
+     * Creates a token instance
+     */
+    TokenCreateTransactionBody tokenCreation = 29;
+
+    /**
+     * Freezes account not to be able to transact with a token
+     */
+    TokenFreezeAccountTransactionBody tokenFreeze = 31;
+
+    /**
+     * Unfreezes account for a token
+     */
+    TokenUnfreezeAccountTransactionBody tokenUnfreeze = 32;
+
+    /**
+     * Grants KYC to an account for a token
+     */
+    TokenGrantKycTransactionBody tokenGrantKyc = 33;
+
+    /**
+     * Revokes KYC of an account for a token
+     */
+    TokenRevokeKycTransactionBody tokenRevokeKyc = 34;
+
+    /**
+     * Deletes a token instance
+     */
+    TokenDeleteTransactionBody tokenDeletion = 35;
+
+    /**
+     * Updates a token instance
+     */
+    TokenUpdateTransactionBody tokenUpdate = 36;
+
+    /**
+     * Mints new tokens to a token's treasury account
+     */
+    TokenMintTransactionBody tokenMint = 37;
+
+    /**
+     * Burns tokens from a token's treasury account
+     */
+    TokenBurnTransactionBody tokenBurn = 38;
+
+    /**
+     * Wipes amount of tokens from an account
+     */
+    TokenWipeAccountTransactionBody tokenWipe = 39;
+
+    /**
+     * Associate tokens to an account
+     */
+    TokenAssociateTransactionBody tokenAssociate = 40;
+
+    /**
+     * Dissociate tokens from an account
+     */
+    TokenDissociateTransactionBody tokenDissociate = 41;
+
+    /**
+     * Creates a schedule in the network's action queue
+     */
+    ScheduleCreateTransactionBody scheduleCreate = 42;
+
+    /**
+     * Deletes a schedule from the network's action queue
+     */
+    ScheduleDeleteTransactionBody scheduleDelete = 43;
+
+    /**
+     * Adds one or more Ed25519 keys to the affirmed signers of a scheduled transaction
+     */
+    ScheduleSignTransactionBody scheduleSign = 44;
+
+    /**
+     * Updates a token's custom fee schedule
+     */
+    TokenFeeScheduleUpdateTransactionBody token_fee_schedule_update = 45;
+
+    /**
+     * Pauses the Token
+     */
+    TokenPauseTransactionBody token_pause = 46;
+
+     /**
+      * Unpauses the Token
+      */
+    TokenUnpauseTransactionBody token_unpause = 47;
+  }
+}

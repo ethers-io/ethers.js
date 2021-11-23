@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "query_header.proto";
+import "response_header.proto";
+import "timestamp.proto";
+
+/**
+ * Represents an NFT on the Ledger
+ */
+message NftID {
+    /**
+     * The (non-fungible) token of which this NFT is an instance
+     */
+    TokenID tokenID = 1;
+
+    /**
+     * The unique identifier of this instance
+     */
+    int64 serialNumber = 2;
+}
+
+/**
+ * Applicable only to tokens of type NON_FUNGIBLE_UNIQUE. Gets info on a NFT for a given TokenID (of
+ * type NON_FUNGIBLE_UNIQUE) and serial number
+ */
+message TokenGetNftInfoQuery {
+    /**
+     * Standard info sent from client to node, including the signed payment, and what kind of
+     * response is requested (cost, state proof, both, or neither).
+     */
+    QueryHeader header = 1;
+
+    /**
+     * The ID of the NFT
+     */
+    NftID nftID = 2;
+}
+
+/**
+ * UNDOCUMENTED
+ */
+message TokenNftInfo {
+    /**
+     * The ID of the NFT
+     */
+    NftID nftID = 1;
+
+    /**
+     * The current owner of the NFT
+     */
+    AccountID accountID = 2;
+
+    /**
+     * The effective consensus timestamp at which the NFT was minted
+     */
+    Timestamp creationTime = 3;
+
+    /**
+     * Represents the unique metadata of the NFT
+     */
+    bytes metadata = 4;
+}
+
+/**
+ * UNDOCUMENTED
+ */
+message TokenGetNftInfoResponse {
+    /**
+     * Standard response from node to client, including the requested fields: cost, or state proof,
+     * or both, or neither
+     */
+    ResponseHeader header = 1;
+
+    /**
+     * The information about this NFT
+     */
+    TokenNftInfo nft = 2;
+}

@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * Transfers cryptocurrency among two or more accounts by making the desired adjustments to their
+ * balances. Each transfer list can specify up to 10 adjustments. Each negative amount is withdrawn
+ * from the corresponding account (a sender), and each positive one is added to the corresponding
+ * account (a receiver). The amounts list must sum to zero. Each amount is a number of tinybars
+ * (there are 100,000,000 tinybars in one hbar).  If any sender account fails to have sufficient
+ * hbars, then the entire transaction fails, and none of those transfers occur, though the
+ * transaction fee is still charged. This transaction must be signed by the keys for all the sending
+ * accounts, and for any receiving accounts that have receiverSigRequired == true. The signatures
+ * are in the same order as the accounts, skipping those accounts that don't need a signature. 
+ */
+message CryptoTransferTransactionBody {
+    /**
+     * The desired hbar balance adjustments
+     */
+    TransferList transfers = 1;
+
+    /**
+     * The desired token unit balance adjustments; if any custom fees are assessed, the ledger will
+     * try to deduct them from the payer of this CryptoTransfer, resolving the transaction to
+     * INSUFFICIENT_PAYER_BALANCE_FOR_CUSTOM_FEE if this is not possible
+     */
+    repeated TokenTransferList tokenTransfers = 2;
+}

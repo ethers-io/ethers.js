@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "timestamp.proto";
+import "duration.proto";
+import "basic_types.proto";
+import "query_header.proto";
+import "response_header.proto";
+
+/**
+ * Get information about a smart contract instance. This includes the account that it uses, the file
+ * containing its bytecode, and the time when it will expire.
+ */
+message ContractGetInfoQuery {
+    /**
+     * standard info sent from client to node, including the signed payment, and what kind of
+     * response is requested (cost, state proof, both, or neither).
+     */
+    QueryHeader header = 1;
+
+    /**
+     * the contract for which information is requested
+     */
+    ContractID contractID = 2;
+}
+
+/**
+ * Response when the client sends the node ContractGetInfoQuery
+ */
+message ContractGetInfoResponse {
+    /**
+     * standard response from node to client, including the requested fields: cost, or state proof,
+     * or both, or neither
+     */
+    ResponseHeader header = 1;
+
+    message ContractInfo {
+        /**
+         * ID of the contract instance, in the format used in transactions
+         */
+        ContractID contractID = 1;
+
+        /**
+         * ID of the cryptocurrency account owned by the contract instance, in the format used in
+         * transactions
+         */
+        AccountID accountID = 2;
+
+        /**
+         * ID of both the contract instance and the cryptocurrency account owned by the contract
+         * instance, in the format used by Solidity
+         */
+        string contractAccountID = 3;
+
+        /**
+         * the state of the instance and its fields can be modified arbitrarily if this key signs a
+         * transaction to modify it. If this is null, then such modifications are not possible, and
+         * there is no administrator that can override the normal operation of this smart contract
+         * instance. Note that if it is created with no admin keys, then there is no administrator
+         * to authorize changing the admin keys, so there can never be any admin keys for that
+         * instance.
+         */
+        Key adminKey = 4;
+
+        /**
+         * the current time at which this contract instance (and its account) is set to expire
+         */
+        Timestamp expirationTime = 5;
+
+        /**
+         * the expiration time will extend every this many seconds. If there are insufficient funds,
+         * then it extends as long as possible. If the account is empty when it expires, then it is
+         * deleted.
+         */
+        Duration autoRenewPeriod = 6;
+
+        /**
+         * number of bytes of storage being used by this instance (which affects the cost to extend
+         * the expiration time)
+         */
+        int64 storage = 7;
+
+        /**
+         * the memo associated with the contract (max 100 bytes)
+         */
+        string memo = 8;
+
+        /**
+         * The current balance, in tinybars
+         */
+        uint64 balance = 9;
+
+        /**
+         * Whether the contract has been deleted
+         */
+        bool deleted = 10;
+
+        /**
+         * The tokens associated to the contract
+         */
+        repeated TokenRelationship tokenRelationships = 11;
+    }
+
+    /**
+     * the information about this contract instance (a state proof can be generated for this)
+     */
+    ContractInfo contractInfo = 2;
+}
+

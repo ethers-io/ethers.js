@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hedera.services.stream.proto";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "timestamp.proto";
+
+message TokenUnitBalance {
+    /**
+     * A unique token id
+     */
+    TokenID tokenId = 1;
+
+    /**
+     * Number of transferable units of the identified token. For token of type FUNGIBLE_COMMON -
+     * balance in the smallest denomination. For token of type NON_FUNGIBLE_UNIQUE - the number of
+     * NFTs held by the account
+     */
+    uint64 balance = 2;
+}
+
+/**
+ * Includes all currency balances (both hbar and token) of a single account in the ledger.
+ */
+message SingleAccountBalances {
+    /**
+     * The account
+     */
+    AccountID accountID = 1;
+
+    /**
+     * The account's hbar balance
+     */
+    uint64 hbarBalance = 2;
+
+    /**
+     * The list of the account's token balances
+     */
+    repeated TokenUnitBalance tokenUnitBalances = 3;
+}
+
+/**
+ * Includes all currency balances (both hbar and token) of all accounts in the ledger.
+ */
+message AllAccountBalances {
+    /**
+     * An instant in consensus time 
+     */
+    Timestamp consensusTimestamp = 1;
+
+    /**
+     * The list of account balances for all accounts, after handling all transactions with consensus
+     * timestamp up to and including the above instant
+     */
+    repeated SingleAccountBalances allAccounts = 2;
+}

@@ -1,0 +1,75 @@
+{
+  "name": "@hethers/proto",
+  "version": "2.0.1-beta.2",
+  "description": "Protobufs for the Hedera™ Hashgraph SDK",
+  "main": "lib/index.js",
+  "browser": "src/index.js",
+  "types": "lib/index.d.ts",
+  "license": "Apache-2.0",
+  "author": "Launchbadge <contact@launchbadge.com>",
+  "repository": "https://github.com/hashgraph/hedera-sdk-js",
+  "bugs": "https://github.com/hashgraph/hedera-sdk-js/issues",
+  "keywords": [
+    "hedera",
+    "hashgraph",
+    "sdk",
+    "transactions"
+  ],
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./lib/index.js",
+      "require": "./lib/index.js"
+    }
+  },
+  "files": [
+    "lib/",
+    "src/"
+  ],
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "browserslist": [
+    "last 1 Chrome versions",
+    "last 1 Firefox versions"
+  ],
+  "scripts": {
+    "docs": "typedoc --theme minimal --mode modules --excludeNotExported --excludePrivate --excludeProtected --out docs --listInvalidSymbolLinks",
+    "cp:ts": "copyfiles -u 1 src/index.d.ts src/proto.d.ts lib/",
+    "compile": "run-s compile:proto compile:proto_ts compile:js",
+    "compile:js": "babel src -d lib",
+    "compile:proto": "pbjs -t static-module -w es6 --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/*.proto",
+    "test-compile:proto": "pbjs -t static-module -w es6 --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/*.proto",
+    "compile:proto_ts": "pbts -o src/proto.d.ts src/proto.js",
+    "lint": "run-s lint:*",
+    "lint:types": "tsc",
+    "lint:format": "prettier src '*.json' 'src/*.js' --check",
+    "lint:js": "eslint --fix 'src/**/*.js'",
+    "format": "prettier src '*.json' 'src/*.js' --write",
+    "build": "run-s compile cp:ts lint",
+    "prepare": "run-s compile cp:ts"
+  },
+  "dependencies": {
+    "protobufjs": "^6.11.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.13.16",
+    "@babel/core": "^7.14.2",
+    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
+    "@babel/plugin-transform-modules-commonjs": "^7.14.0",
+    "babel-plugin-dynamic-import-node": "^2.3.3",
+    "babel-preset-minify": "^0.5.1",
+    "chalk": "^4.1.1",
+    "copyfiles": "^2.4.1",
+    "escodegen": "^2.0.0",
+    "eslint": "^7.26.0",
+    "estraverse": "^5.2.0",
+    "jsdoc": "^3.6.7",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.3.0",
+    "replace-in-file": "^6.2.0",
+    "semver": "^7.3.5",
+    "tmp": "^0.2.1",
+    "typescript": "^4.2.4"
+  }
+}

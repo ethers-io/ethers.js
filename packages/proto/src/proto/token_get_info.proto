@@ -1,0 +1,211 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "custom_fees.proto";
+import "query_header.proto";
+import "response_header.proto";
+import "timestamp.proto";
+import "duration.proto";
+
+/**
+ * Gets information about Token instance
+ */
+message TokenGetInfoQuery {
+    /**
+     * Standard info sent from client to node, including the signed payment, and what kind of
+     * response is requested (cost, state proof, both, or neither)
+     */
+    QueryHeader header = 1;
+
+    /**
+     * The token for which information is requested. If invalid token is provided, INVALID_TOKEN_ID
+     * response is returned.
+     */
+    TokenID token = 2;
+}
+
+/**
+ * The metadata about a Token instance
+ */
+message TokenInfo {
+    /**
+     * ID of the token instance
+     */
+    TokenID tokenId = 1;
+
+    /**
+     * The name of the token. It is a string of ASCII only characters
+     */
+    string name = 2;
+
+    /**
+     * The symbol of the token. It is a UTF-8 capitalized alphabetical string
+     */
+    string symbol = 3;
+
+    /**
+     * The number of decimal places a token is divisible by. Always 0 for tokens of type
+     * NON_FUNGIBLE_UNIQUE
+     */
+    uint32 decimals = 4;
+
+    /**
+     * For tokens of type FUNGIBLE_COMMON - the total supply of tokens that are currently in
+     * circulation. For tokens of type NON_FUNGIBLE_UNIQUE - the number of NFTs created of this
+     * token instance
+     */
+    uint64 totalSupply = 5;
+
+    /**
+     * The ID of the account which is set as Treasury
+     */
+    AccountID treasury = 6;
+
+    /**
+     * The key which can perform update/delete operations on the token. If empty, the token can be
+     * perceived as immutable (not being able to be updated/deleted)
+     */
+    Key adminKey = 7;
+
+    /**
+     * The key which can grant or revoke KYC of an account for the token's transactions. If empty,
+     * KYC is not required, and KYC grant or revoke operations are not possible.
+     */
+    Key kycKey = 8;
+
+    /**
+     * The key which can freeze or unfreeze an account for token transactions. If empty, freezing is
+     * not possible
+     */
+    Key freezeKey = 9;
+
+    /**
+     * The key which can wipe token balance of an account. If empty, wipe is not possible
+     */
+    Key wipeKey = 10;
+
+    /**
+     * The key which can change the supply of a token. The key is used to sign Token Mint/Burn
+     * operations
+     */
+    Key supplyKey = 11;
+
+    /**
+     * The default Freeze status (not applicable, frozen or unfrozen) of Hedera accounts relative to
+     * this token. FreezeNotApplicable is returned if Token Freeze Key is empty. Frozen is returned
+     * if Token Freeze Key is set and defaultFreeze is set to true. Unfrozen is returned if Token
+     * Freeze Key is set and defaultFreeze is set to false
+     */
+    TokenFreezeStatus defaultFreezeStatus = 12;
+
+    /**
+     * The default KYC status (KycNotApplicable or Revoked) of Hedera accounts relative to this
+     * token. KycNotApplicable is returned if KYC key is not set, otherwise Revoked
+     */
+    TokenKycStatus defaultKycStatus = 13;
+
+    /**
+     * Specifies whether the token was deleted or not
+     */
+    bool deleted = 14;
+
+    /**
+     * An account which will be automatically charged to renew the token's expiration, at
+     * autoRenewPeriod interval
+     */
+    AccountID autoRenewAccount = 15;
+
+    /**
+     * The interval at which the auto-renew account will be charged to extend the token's expiry
+     */
+    Duration autoRenewPeriod = 16;
+
+    /**
+     * The epoch second at which the token will expire
+     */
+    Timestamp expiry = 17;
+
+    /**
+     * The memo associated with the token
+     */
+    string memo = 18;
+
+    /**
+     * The token type
+     */
+    TokenType tokenType = 19;
+
+    /**
+     * The token supply type
+     */
+    TokenSupplyType supplyType = 20;
+
+    /**
+     * For tokens of type FUNGIBLE_COMMON - The Maximum number of fungible tokens that can be in
+     * circulation. For tokens of type NON_FUNGIBLE_UNIQUE - the maximum number of NFTs (serial
+     * numbers) that can be in circulation
+     */
+    int64 maxSupply = 21;
+
+    /**
+     * The key which can change the custom fee schedule of the token; if not set, the fee schedule
+     * is immutable
+     */
+    Key fee_schedule_key = 22;
+
+    /**
+     * The custom fees to be assessed during a CryptoTransfer that transfers units of this token
+     */
+    repeated CustomFee custom_fees = 23;
+
+    /**
+     * The Key which can pause and unpause the Token.
+     */
+    Key pause_key = 24;
+
+    /**
+     * Specifies whether the token is paused or not. PauseNotApplicable is returned if pauseKey is not set.
+     */
+    TokenPauseStatus pause_status = 25;
+}
+
+/**
+ * Response when the client sends the node TokenGetInfoQuery
+ */
+message TokenGetInfoResponse {
+    /**
+     * Standard response from node to client, including the requested fields: cost, or state proof,
+     * or both, or neither
+     */
+    ResponseHeader header = 1;
+
+    /**
+     * The information requested about this token instance
+     */
+    TokenInfo tokenInfo = 2;
+}

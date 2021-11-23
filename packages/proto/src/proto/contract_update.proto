@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "duration.proto";
+import "timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+/**
+ * At consensus, updates the fields of a smart contract to the given values.
+ * 
+ * If no value is given for a field, that field is left unchanged on the contract. For an immutable
+ * smart contract (that is, a contract created without an adminKey), only the expirationTime may be
+ * updated; setting any other field in this case will cause the transaction status to resolve to
+ * MODIFYING_IMMUTABLE_CONTRACT.
+ * 
+ * --- Signing Requirements ---
+ * 1. Whether or not a contract has an admin Key, its expiry can be extended with only the
+ *    transaction payer's signature.
+ * 2. Updating any other field of a mutable contract requires the admin key's signature.
+ * 3. If the update transaction includes a new admin key, this new key must also sign <b>unless</b>
+ *    it is exactly an empty <tt>KeyList</tt>. This special sentinel key removes the existing admin
+ *    key and causes the contract to become immutable. (Other <tt>Key</tt> structures without a
+ *    constituent <tt>Ed25519</tt> key will be rejected with <tt>INVALID_ADMIN_KEY</tt>.)
+ */
+message ContractUpdateTransactionBody {
+    /**
+     * The id of the contract to be updated
+     */
+    ContractID contractID = 1;
+
+    /**
+     * The new expiry of the contract, no earlier than the current expiry (resolves to
+     * EXPIRATION_REDUCTION_NOT_ALLOWED otherwise)
+     */
+    Timestamp expirationTime = 2;
+
+    /**
+     * The new key to control updates to the contract
+     */
+    Key adminKey = 3;
+
+    /**
+     * (NOT YET IMPLEMENTED) The new id of the account to which the contract is proxy staked
+     */
+    AccountID proxyAccountID = 6;
+
+    /**
+     * (NOT YET IMPLEMENTED) The new interval at which the contract will pay to extend its expiry
+     * (by the same interval)
+     */
+    Duration autoRenewPeriod = 7;
+
+    /**
+     * [Deprecated] The new id of the file asserted to contain the bytecode of the Solidity transaction that
+     * created this contract
+     */
+    FileID fileID = 8 [deprecated=true];
+
+    /**
+     * The new contract memo, assumed to be Unicode encoded with UTF-8 (at most 100 bytes)
+     */
+    oneof memoField {
+      /**
+       * [Deprecated] If set with a non-zero length, the new memo to be associated with the account
+       * (UTF-8 encoding max 100 bytes)
+       */
+      string memo = 9 [deprecated = true];
+
+      /**
+       * If set, the new memo to be associated with the account (UTF-8 encoding max 100 bytes)
+       */
+      google.protobuf.StringValue memoWrapper = 10;
+    }
+}
+

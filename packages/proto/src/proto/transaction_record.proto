@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "timestamp.proto";
+import "basic_types.proto";
+import "custom_fees.proto";
+import "transaction_receipt.proto";
+import "crypto_transfer.proto";
+import "contract_call_local.proto";
+
+/**
+ * Response when the client sends the node TransactionGetRecordResponse
+ */
+message TransactionRecord {
+    /**
+     * The status (reach consensus, or failed, or is unknown) and the ID of any new
+     * account/file/instance created.
+     */
+    TransactionReceipt receipt = 1;
+
+    /**
+     * The hash of the Transaction that executed (not the hash of any Transaction that failed for
+     * having a duplicate TransactionID)
+     */
+    bytes transactionHash = 2;
+
+    /**
+     * The consensus timestamp (or null if didn't reach consensus yet)
+     */
+    Timestamp consensusTimestamp = 3;
+
+    /**
+     * The ID of the transaction this record represents
+     */
+    TransactionID transactionID = 4;
+
+    /**
+     * The memo that was submitted as part of the transaction (max 100 bytes)
+     */
+    string memo = 5;
+
+    /**
+     * The actual transaction fee charged, not the original transactionFee value from
+     * TransactionBody
+     */
+    uint64 transactionFee = 6;
+
+    oneof body {
+        /**
+         * Record of the value returned by the smart contract function (if it completed and didn't
+         * fail) from ContractCallTransaction
+         */
+        ContractFunctionResult contractCallResult = 7;
+
+        /**
+         * Record of the value returned by the smart contract constructor (if it completed and
+         * didn't fail) from ContractCreateTransaction
+         */
+        ContractFunctionResult contractCreateResult = 8;
+    }
+
+    /**
+     * All hbar transfers as a result of this transaction, such as fees, or transfers performed by
+     * the transaction, or by a smart contract it calls, or by the creation of threshold records
+     * that it triggers.
+     */
+    TransferList transferList = 10;
+
+    /**
+     * All Token transfers as a result of this transaction
+     */
+    repeated TokenTransferList tokenTransferLists = 11;
+
+    /**
+     * Reference to the scheduled transaction ID that this transaction record represent
+     */
+    ScheduleID scheduleRef = 12;
+
+    /**
+     * All custom fees that were assessed during a CryptoTransfer, and must be paid if the
+     * transaction status resolved to SUCCESS
+     */
+    repeated AssessedCustomFee assessed_custom_fees = 13;
+
+    /**
+     * All token associations implicitly created while handling this transaction
+     */
+    repeated TokenAssociation automatic_token_associations = 14;
+}

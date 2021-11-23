@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package proto;
+
+option java_package = "com.hedera.hashgraph.sdk.proto";
+option java_multiple_files = true;
+
+import "transaction.proto";
+
+/**
+ * A simple protobuf wrapper to store a list of transactions. This is used by
+ * `Transaction.[from|to]Bytes()` in the SDKs. The reason the SDK needs a list of transactions is
+ * because it holds onto a transaction per node. So if a transaction is to be submitted to nodes 3
+ * and 4 the SDK Transaction type would contain a list of 2 protobuf transactions, one for node 3
+ * and one for node 4.
+ */
+message TransactionList {
+    repeated Transaction transaction_list = 1;
+}

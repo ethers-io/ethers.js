@@ -1,0 +1,152 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "query_header.proto";
+import "response_header.proto";
+
+/**
+ * The log information for an event returned by a smart contract function call. One function call
+ * may return several such events.
+ */
+message ContractLoginfo {
+    /**
+     * address of a contract that emitted the event
+     */
+    ContractID contractID = 1;
+
+    /**
+     * bloom filter for a particular log
+     */
+    bytes bloom = 2;
+
+    /**
+     * topics of a particular event
+     */
+    repeated bytes topic = 3;
+
+    /**
+     * event data
+     */
+    bytes data = 4;
+}
+
+/**
+ * The result returned by a call to a smart contract function. This is part of the response to a
+ * ContractCallLocal query, and is in the record for a ContractCall or ContractCreateInstance
+ * transaction. The ContractCreateInstance transaction record has the results of the call to the
+ * constructor.
+ */
+message ContractFunctionResult {
+    /**
+     * the smart contract instance whose function was called
+     */
+    ContractID contractID = 1;
+
+    /**
+     * the result returned by the function
+     */
+    bytes contractCallResult = 2;
+
+    /**
+     * message In case there was an error during smart contract execution
+     */
+    string errorMessage = 3;
+
+    /**
+     * bloom filter for record
+     */
+    bytes bloom = 4;
+
+    /**
+     * units of gas used to execute contract
+     */
+    uint64 gasUsed = 5;
+
+    /**
+     * the log info for events returned by the function
+     */
+    repeated ContractLoginfo logInfo = 6;
+
+    /**
+     * the list of smart contracts that were created by the function call
+     */
+    repeated ContractID createdContractIDs = 7;
+}
+
+/**
+ * Call a function of the given smart contract instance, giving it functionParameters as its inputs.
+ * This is performed locally on the particular node that the client is communicating with.
+ * It cannot change the state of the contract instance (and so, cannot spend anything from the instance's cryptocurrency account).
+ * It will not have a consensus timestamp. It cannot generate a record or a receipt. The response will contain the output
+ * returned by the function call.  This is useful for calling getter functions, which purely read the state and don't change it.
+ * It is faster and cheaper than a normal call, because it is purely local to a single  node.
+ * 
+ * Unlike a ContractCall transaction, the node will consume the entire amount of provided gas in determining
+ * the fee for this query.
+ */
+message ContractCallLocalQuery {
+    /**
+     * standard info sent from client to node, including the signed payment, and what kind of response is requested (cost, state proof, both, or neither). The payment must cover the fees and all of the gas offered.
+     */
+    QueryHeader header = 1;
+
+    /**
+     * the contract instance to call, in the format used in transactions
+     */
+    ContractID contractID = 2;
+
+    /**
+     * The amount of gas to use for the call; all of the gas offered will be used and charged a corresponding fee
+     */
+    int64 gas = 3;
+
+    /**
+     * which function to call, and the parameters to pass to the function
+     */
+    bytes functionParameters = 4;
+
+    /**
+     * [Deprecated] max number of bytes that the result might include. The run will fail if it would have returned more than this number of bytes.
+     */
+    int64 maxResultSize = 5 [deprecated=true];
+}
+
+/**
+ * Response when the client sends the node ContractCallLocalQuery
+ */
+message ContractCallLocalResponse {
+    /**
+     * standard response from node to client, including the requested fields: cost, or state proof, or both, or neither
+     */
+    ResponseHeader header = 1;
+
+    /**
+     * the value returned by the function (if it completed and didn't fail)
+     */
+    ContractFunctionResult functionResult = 2;
+}

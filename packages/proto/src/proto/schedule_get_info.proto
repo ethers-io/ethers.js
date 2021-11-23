@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "timestamp.proto";
+import "query_header.proto";
+import "response_header.proto";
+import "schedulable_transaction_body.proto";
+
+/**
+ * Gets information about a schedule in the network's action queue.
+ * 
+ * Responds with <tt>INVALID_SCHEDULE_ID</tt> if the requested schedule doesn't exist.
+ */
+message ScheduleGetInfoQuery {
+  /**
+   * standard info sent from client to node including the signed payment, and what kind of response
+   * is requested (cost, state proof, both, or neither).
+   */
+  QueryHeader header = 1;
+
+  /**
+   * The id of the schedule to interrogate
+   */
+  ScheduleID scheduleID = 2;
+}
+
+/**
+ * Information summarizing schedule state
+ */
+message ScheduleInfo {  
+  /**
+   * The id of the schedule
+   */
+  ScheduleID scheduleID = 1;
+
+  oneof data {
+    /**
+     * If the schedule has been deleted, the consensus time when this occurred
+     */
+    Timestamp deletion_time = 2;
+
+    /**
+     * If the schedule has been executed, the consensus time when this occurred
+     */
+    Timestamp execution_time = 3;
+  }
+
+  /**
+   * The time at which the schedule will expire
+   */
+  Timestamp expirationTime = 4;
+
+  /**
+   * The scheduled transaction
+   */
+  SchedulableTransactionBody scheduledTransactionBody = 5;
+
+  /**
+   * The publicly visible memo of the schedule
+   */
+  string memo = 6;
+
+  /**
+   * The key used to delete the schedule from state
+   */
+  Key adminKey = 7;
+
+  /**
+   * The Ed25519 keys the network deems to have signed the scheduled transaction
+   */
+  KeyList signers = 8;
+
+  /**
+   * The id of the account that created the schedule
+   */
+  AccountID creatorAccountID = 9;
+
+  /**
+   * The id of the account responsible for the service fee of the scheduled transaction
+   */
+  AccountID payerAccountID = 10;
+
+  /**
+   * The transaction id that will be used in the record of the scheduled transaction (if it
+   * executes)
+   */
+  TransactionID scheduledTransactionID = 11;
+}  
+
+/**
+ * Response wrapper for the <tt>ScheduleInfo</tt>
+ */
+message ScheduleGetInfoResponse {
+  /**
+   * Standard response from node to client, including the requested fields: cost, or state proof, or
+   * both, or neither
+   */
+  ResponseHeader header = 1;
+
+  /**
+   * The information requested about this schedule instance
+   */
+  ScheduleInfo scheduleInfo = 2;
+}

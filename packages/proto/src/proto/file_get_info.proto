@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "timestamp.proto";
+import "basic_types.proto";
+import "query_header.proto";
+import "response_header.proto";
+
+/**
+ * Get all of the information about a file, except for its contents. When a file expires, it no
+ * longer exists, and there will be no info about it, and the fileInfo field will be blank. If a
+ * transaction or smart contract deletes the file, but it has not yet expired, then the fileInfo
+ * field will be non-empty, the deleted field will be true, its size will be 0, and its contents
+ * will be empty.
+ */
+message FileGetInfoQuery {
+    /**
+     * Standard info sent from client to node, including the signed payment, and what kind of
+     * response is requested (cost, state proof, both, or neither).
+     */
+    QueryHeader header = 1;
+
+    /**
+     * The file ID of the file for which information is requested
+     */
+    FileID fileID = 2;
+}
+
+/**
+ * Response when the client sends the node FileGetInfoQuery
+ */
+message FileGetInfoResponse {
+    /**
+     * Standard response from node to client, including the requested fields: cost, or state proof,
+     * or both, or neither
+     */
+    ResponseHeader header = 1;
+
+
+    message FileInfo {
+        /**
+         * The file ID of the file for which information is requested
+         */
+        FileID fileID = 1;
+
+        /**
+         * Number of bytes in contents
+         */
+        int64 size = 2;
+
+        /**
+         * The current time at which this account is set to expire
+         */
+        Timestamp expirationTime = 3;
+
+        /**
+         * True if deleted but not yet expired
+         */
+        bool deleted = 4;
+
+        /**
+         * One of these keys must sign in order to modify or delete the file
+         */
+        KeyList keys = 5;
+
+        /**
+         * The memo associated with the file
+         */
+        string memo = 6;
+    }
+
+    /**
+     * The information about the file
+     */
+    FileInfo fileInfo = 2;
+}

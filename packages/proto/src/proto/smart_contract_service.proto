@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+option java_package = "com.hederahashgraph.service.proto.java";
+
+import "transaction_response.proto";
+import "query.proto";
+import "response.proto";
+import "transaction.proto";
+
+/**
+ * Transactions and queries for the file service. 
+ */
+service SmartContractService {
+    /**
+     * Creates a contract
+     */
+    rpc createContract (Transaction) returns (TransactionResponse);
+
+    /**
+     * Updates a contract with the content
+     */
+    rpc updateContract (Transaction) returns (TransactionResponse);
+
+    /**
+     * Calls a contract
+     */
+    rpc contractCallMethod (Transaction) returns (TransactionResponse);
+
+    /**
+     * Retrieves the contract information
+     */
+    rpc getContractInfo (Query) returns (Response);
+
+    /**
+     * Calls a smart contract to be run on a single node
+     */
+    rpc contractCallLocalMethod (Query) returns (Response);
+
+    /**
+     * Retrieves the byte code of a contract
+     */
+    rpc ContractGetBytecode (Query) returns (Response);
+
+    /**
+     * Retrieves a contract by its Solidity address
+     */
+    rpc getBySolidityID (Query) returns (Response);
+
+    /**
+     * Always returns an empty record list, as contract accounts are never effective payers for
+     * transactions
+     */
+    rpc getTxRecordByContractID (Query) returns (Response) {
+        option deprecated = true;
+    };
+
+    /**
+     * Deletes a contract instance and transfers any remaining hbars to a specified receiver
+     */
+    rpc deleteContract (Transaction) returns (TransactionResponse);
+
+    /**
+     * Deletes a contract if the submitting account has network admin privileges
+     */
+    rpc systemDelete (Transaction) returns (TransactionResponse);
+
+    /**
+     * Undeletes a contract if the submitting account has network admin privileges
+     */
+    rpc systemUndelete (Transaction) returns (TransactionResponse);
+}

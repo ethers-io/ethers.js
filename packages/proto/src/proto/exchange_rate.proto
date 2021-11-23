@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "timestamp.proto";
+
+
+/**
+ * An exchange rate between hbar and cents (USD) and the time at which the exchange rate will
+ * expire, and be superseded by a new exchange rate. 
+ */
+message ExchangeRate {
+    /**
+     * Denominator in calculation of exchange rate between hbar and cents
+     */
+    int32 hbarEquiv = 1;
+
+    /**
+     * Numerator in calculation of exchange rate between hbar and cents
+     */
+    int32 centEquiv = 2;
+
+    /**
+     * Expiration time in seconds for this exchange rate
+     */
+    TimestampSeconds expirationTime = 3;
+}
+
+/**
+ * Two sets of exchange rates
+ */
+message ExchangeRateSet {
+    /**
+     * Current exchange rate
+     */
+    ExchangeRate currentRate = 1;
+
+    /**
+     * Next exchange rate which will take effect when current rate expires
+     */
+    ExchangeRate nextRate = 2;
+}

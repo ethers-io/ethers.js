@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * Delete the given file. After deletion, it will be marked as deleted and will have no contents.
+ * But information about it will continue to exist until it expires. A list of keys was given when
+ * the file was created. All the top level keys on that list must sign transactions to create or
+ * modify the file, but any single one of the top level keys can be used to delete the file. This
+ * transaction must be signed by 1-of-M KeyList keys. If keys contains additional KeyList or
+ * ThresholdKey then 1-of-M secondary KeyList or ThresholdKey signing requirements must be meet.
+ */
+message FileDeleteTransactionBody {
+    /**
+     * The file to delete. It will be marked as deleted until it expires. Then it will disappear.
+     */
+    FileID fileID = 2;
+}

@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "query_header.proto";
+import "response_header.proto";
+import "crypto_add_live_hash.proto";
+
+/**
+ * Requests a livehash associated to an account.
+ */
+message CryptoGetLiveHashQuery {
+    /**
+     * Standard info sent from client to node, including the signed payment, and what kind of
+     * response is requested (cost, state proof, both, or neither).
+     */
+    QueryHeader header = 1;
+
+    /**
+     * The account to which the livehash is associated
+     */
+    AccountID accountID = 2;
+
+    /**
+     * The SHA-384 data in the livehash
+     */
+    bytes hash = 3;
+}
+
+/**
+ * Returns the full livehash associated to an account, if it is present. Note that the only way to
+ * obtain a state proof exhibiting the absence of a livehash from an account is to retrieve a state
+ * proof of the entire account with its list of livehashes.
+ */
+message CryptoGetLiveHashResponse {
+    /**
+     * Standard response from node to client, including the requested fields: cost, or state proof,
+     * or both, or neither
+     */
+    ResponseHeader header = 1;
+
+    /**
+     * The livehash, if present
+     */
+    LiveHash liveHash = 2;
+}
+
+

@@ -1,0 +1,148 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * A fraction of the transferred units of a token to assess as a fee. The amount assessed will never
+ * be less than the given minimum_amount, and never greater than the given maximum_amount.  The
+ * denomination is always units of the token to which this fractional fee is attached.
+ */
+message FractionalFee {
+  /**
+   * The fraction of the transferred units to assess as a fee
+   */
+  Fraction fractional_amount = 1;
+
+  /**
+   * The minimum amount to assess
+   */
+  int64 minimum_amount = 2;
+
+  /**
+   * The maximum amount to assess (zero implies no maximum)
+   */
+  int64 maximum_amount = 3;
+
+  /**
+   * If true, assesses the fee to the sender, so the receiver gets the full amount from the token
+   * transfer list, and the sender is charged an additional fee; if false, the receiver does NOT get
+   * the full amount, but only what is left over after paying the fractional fee
+   */
+  bool net_of_transfers = 4;
+}
+
+/**
+ * A fixed number of units (hbar or token) to assess as a fee during a CryptoTransfer that transfers
+ * units of the token to which this fixed fee is attached.
+ */
+message FixedFee {
+  /**
+   * The number of units to assess as a fee
+   */
+  int64 amount = 1;
+
+  /**
+   * The denomination of the fee; taken as hbar if left unset and, in a TokenCreate, taken as the id
+   * of the newly created token if set to the sentinel value of 0.0.0
+   */
+  TokenID denominating_token_id = 2;
+}
+
+/**
+ * A fee to assess during a CryptoTransfer that changes ownership of an NFT. Defines the fraction of
+ * the fungible value exchanged for an NFT that the ledger should collect as a royalty. ("Fungible
+ * value" includes both ℏ and units of fungible HTS tokens.) When the NFT sender does not receive
+ * any fungible value, the ledger will assess the fallback fee, if present, to the new NFT owner.
+ * Royalty fees can only be added to tokens of type type NON_FUNGIBLE_UNIQUE.
+ */
+message RoyaltyFee {
+  /**
+   * The fraction of fungible value exchanged for an NFT to collect as royalty
+   */
+  Fraction exchange_value_fraction = 1;
+
+  /**
+   * If present, the fixed fee to assess to the NFT receiver when no fungible value is exchanged
+   * with the sender
+   */
+  FixedFee fallback_fee = 2;
+}
+
+/**
+ * A transfer fee to assess during a CryptoTransfer that transfers units of the token to which the
+ * fee is attached. A custom fee may be either fixed or fractional, and must specify a fee collector
+ * account to receive the assessed fees. Only positive fees may be assessed.
+ */
+message CustomFee {
+  oneof fee {
+    /**
+     * Fixed fee to be charged
+     */
+    FixedFee fixed_fee = 1;
+
+    /**
+     * Fractional fee to be charged
+     */
+    FractionalFee fractional_fee = 2;
+
+    /**
+     * Royalty fee to be charged
+     */
+    RoyaltyFee royalty_fee = 4;
+
+  }
+  /**
+   * The account to receive the custom fee
+   */
+  AccountID fee_collector_account_id = 3;
+}
+
+/**
+ * A custom transfer fee that was assessed during handling of a CryptoTransfer.
+ */
+message AssessedCustomFee {
+  /**
+   * The number of units assessed for the fee
+   */
+  int64 amount = 1;
+
+  /**
+   * The denomination of the fee; taken as hbar if left unset
+   */
+  TokenID token_id = 2;
+
+  /**
+   * The account to receive the assessed fee
+   */
+  AccountID fee_collector_account_id = 3;
+
+  /**
+   * The account(s) whose final balances would have been higher in the absence of this assessed fee
+   */
+  repeated AccountID effective_payer_account_id = 4;
+}

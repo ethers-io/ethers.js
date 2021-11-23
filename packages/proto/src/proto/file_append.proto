@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+
+import "basic_types.proto";
+
+/**
+ * Append the given contents to the end of the specified file. If a file is too big to create with a
+ * single FileCreateTransaction, then it can be created with the first part of its contents, and
+ * then appended as many times as necessary to create the entire file. This transaction must be
+ * signed by all initial M-of-M KeyList keys. If keys contains additional KeyList or ThresholdKey
+ * then M-of-M secondary KeyList or ThresholdKey signing requirements must be meet. 
+ */
+message FileAppendTransactionBody {
+    /**
+     * The file to which the bytes will be appended
+     */
+    FileID fileID = 2;
+
+    /**
+     * The bytes that will be appended to the end of the specified file
+     */
+    bytes contents = 4;
+}

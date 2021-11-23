@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "duration.proto";
+import "timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+/**
+ * At consensus, updates an already created token to the given values.
+ * 
+ * If no value is given for a field, that field is left unchanged. For an immutable tokens (that is,
+ * a token without an admin key), only the expiry may be updated. Setting any other field in that
+ * case will cause the transaction status to resolve to TOKEN_IS_IMMUTABLE.
+ * 
+ * --- Signing Requirements ---
+ * 1. Whether or not a token has an admin key, its expiry can be extended with only the transaction
+ *    payer's signature.
+ * 2. Updating any other field of a mutable token requires the admin key's signature.
+ * 3. If a new admin key is set, this new key must sign <b>unless</b> it is exactly an empty
+ *    <tt>KeyList</tt>. This special sentinel key removes the existing admin key and causes the
+ *    token to become immutable. (Other <tt>Key</tt> structures without a constituent
+ *    <tt>Ed25519</tt> key will be rejected with <tt>INVALID_ADMIN_KEY</tt>.)
+ * 4. If a new treasury is set, the new treasury account's key must sign the transaction.
+ * 
+ * --- Nft Requirements ---
+ * 1. If a non fungible token has a positive treasury balance, the operation will abort with
+ *    CURRENT_TREASURY_STILL_OWNS_NFTS.
+ */
+message TokenUpdateTransactionBody {
+    /**
+     * The Token to be updated
+     */
+    TokenID token = 1;
+
+    /**
+     * The new publicly visible Token symbol, limited to a UTF-8 encoding of length
+     * <tt>tokens.maxTokenNameUtf8Bytes</tt>.
+     */
+    string symbol = 2;
+
+    /**
+     * The new publicly visible name of the Token, limited to a UTF-8 encoding of length
+     * <tt>tokens.maxSymbolUtf8Bytes</tt>.
+     */
+    string name = 3;
+
+    /**
+     * The new Treasury account of the Token. If the provided treasury account is not existing or
+     * deleted, the response will be INVALID_TREASURY_ACCOUNT_FOR_TOKEN. If successful, the Token
+     * balance held in the previous Treasury Account is transferred to the new one.
+     */
+    AccountID treasury = 4;
+
+    /**
+     * The new admin key of the Token. If Token is immutable, transaction will resolve to
+     * TOKEN_IS_IMMUTABlE.
+     */
+    Key adminKey = 5;
+
+    /**
+     * The new KYC key of the Token. If Token does not have currently a KYC key, transaction will
+     * resolve to TOKEN_HAS_NO_KYC_KEY.
+     */
+    Key kycKey = 6;
+
+    /**
+     * The new Freeze key of the Token. If the Token does not have currently a Freeze key,
+     * transaction will resolve to TOKEN_HAS_NO_FREEZE_KEY.
+     */
+    Key freezeKey = 7;
+
+    /**
+     * The new Wipe key of the Token. If the Token does not have currently a Wipe key, transaction
+     * will resolve to TOKEN_HAS_NO_WIPE_KEY.
+     */
+    Key wipeKey = 8;
+
+    /**
+     * The new Supply key of the Token. If the Token does not have currently a Supply key,
+     * transaction will resolve to TOKEN_HAS_NO_SUPPLY_KEY.
+     */
+    Key supplyKey = 9;
+
+    /**
+     * The new account which will be automatically charged to renew the token's expiration, at
+     * autoRenewPeriod interval.
+     */
+    AccountID autoRenewAccount = 10;
+
+    /**
+     * The new interval at which the auto-renew account will be charged to extend the token's
+     * expiry.
+     */
+    Duration autoRenewPeriod = 11;
+
+    /**
+     * The new expiry time of the token. Expiry can be updated even if admin key is not set. If the
+     * provided expiry is earlier than the current token expiry, transaction wil resolve to
+     * INVALID_EXPIRATION_TIME
+     */
+    Timestamp expiry = 12;
+
+    /**
+     * If set, the new memo to be associated with the token (UTF-8 encoding max 100 bytes)
+     */
+    google.protobuf.StringValue memo = 13;
+
+    /**
+     * If set, the new key to use to update the token's custom fee schedule; if the token does not
+     * currently have this key, transaction will resolve to TOKEN_HAS_NO_FEE_SCHEDULE_KEY
+     */
+    Key fee_schedule_key = 14;
+
+    /**
+     * The Key which can pause and unpause the Token. If the Token does not currently have a pause key,
+     * transaction will resolve to TOKEN_HAS_NO_PAUSE_KEY
+     */
+    Key pause_key = 15;
+}

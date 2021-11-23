@@ -1,0 +1,182 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "get_by_key.proto";
+import "get_by_solidity_id.proto";
+
+import "contract_call_local.proto";
+import "contract_get_bytecode.proto";
+import "contract_get_info.proto";
+import "contract_get_records.proto";
+
+import "crypto_get_account_balance.proto";
+import "crypto_get_account_records.proto";
+import "crypto_get_info.proto";
+import "crypto_get_live_hash.proto";
+import "crypto_get_stakers.proto";
+
+import "file_get_contents.proto";
+import "file_get_info.proto";
+
+import "transaction_get_receipt.proto";
+import "transaction_get_record.proto";
+import "transaction_get_fast_record.proto";
+
+import "consensus_get_topic_info.proto";
+
+import "network_get_version_info.proto";
+
+import "token_get_account_nft_infos.proto";
+import "token_get_info.proto";
+import "token_get_nft_info.proto";
+import "token_get_nft_infos.proto";
+
+import "schedule_get_info.proto";
+
+
+/**
+ * A single response, which is returned from the node to the client, after the client sent the node
+ * a query. This includes all responses.
+ */
+message Response {
+    oneof response {
+        /**
+         * Get all entities associated with a given key
+         */
+        GetByKeyResponse getByKey = 1;
+
+        /**
+         * Get the IDs in the format used in transactions, given the format used in Solidity
+         */
+        GetBySolidityIDResponse getBySolidityID = 2;
+
+        /**
+         * Response to call a function of a smart contract instance
+         */
+        ContractCallLocalResponse contractCallLocal = 3;
+
+        /**
+         * Get the bytecode for a smart contract instance
+         */
+        ContractGetBytecodeResponse contractGetBytecodeResponse = 5;
+
+        /**
+         * Get information about a smart contract instance
+         */
+        ContractGetInfoResponse contractGetInfo = 4;
+
+        /**
+         * Get all existing records for a smart contract instance
+         */
+        ContractGetRecordsResponse contractGetRecordsResponse = 6;
+
+        /**
+         * Get the current balance in a cryptocurrency account
+         */
+        CryptoGetAccountBalanceResponse cryptogetAccountBalance = 7;
+
+        /**
+         * Get all the records that currently exist for transactions involving an account
+         */
+        CryptoGetAccountRecordsResponse cryptoGetAccountRecords = 8;
+
+        /**
+         * Get all information about an account
+         */
+        CryptoGetInfoResponse cryptoGetInfo = 9;
+
+        /**
+         * Contains a livehash associated to an account
+         */
+        CryptoGetLiveHashResponse cryptoGetLiveHash = 10;
+
+        /**
+         * Get all the accounts that proxy stake to a given account, and how much they proxy stake
+         */
+        CryptoGetStakersResponse cryptoGetProxyStakers = 11;
+
+        /**
+         * Get the contents of a file (the bytes stored in it)
+         */
+        FileGetContentsResponse fileGetContents = 12;
+
+        /**
+         * Get information about a file, such as its expiration date
+         */
+        FileGetInfoResponse fileGetInfo = 13;
+
+        /**
+         * Get a receipt for a transaction
+         */
+        TransactionGetReceiptResponse transactionGetReceipt = 14;
+
+        /**
+         * Get a record for a transaction
+         */
+        TransactionGetRecordResponse transactionGetRecord = 15;
+
+        /**
+         * Get a record for a transaction (lasts 180 seconds)
+         */
+        TransactionGetFastRecordResponse transactionGetFastRecord = 16;
+
+        /**
+         * Parameters of and state of a consensus topic..
+         */
+        ConsensusGetTopicInfoResponse consensusGetTopicInfo = 150;
+
+        /**
+         * Semantic versions of Hedera Services and HAPI proto
+         */
+        NetworkGetVersionInfoResponse networkGetVersionInfo = 151;
+
+        /**
+         * Get all information about a token
+         */
+        TokenGetInfoResponse tokenGetInfo = 152;
+
+        /**
+         * Get all information about a schedule entity
+         */
+        ScheduleGetInfoResponse scheduleGetInfo = 153;
+
+        /**
+         * A list of the NFTs associated with the account
+         */
+        TokenGetAccountNftInfosResponse tokenGetAccountNftInfos = 154;
+
+        /**
+         * All information about an NFT
+         */
+        TokenGetNftInfoResponse tokenGetNftInfo = 155;
+
+        /**
+         * A list of the NFTs for the token
+         */
+        TokenGetNftInfosResponse tokenGetNftInfos = 156;
+    }
+}

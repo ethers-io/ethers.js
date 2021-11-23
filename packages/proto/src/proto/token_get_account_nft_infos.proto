@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "token_get_nft_info.proto";
+import "query_header.proto";
+import "response_header.proto";
+
+/**
+ * Applicable only to tokens of type NON_FUNGIBLE_UNIQUE. Gets info on NFTs N through M owned by the
+ * specified accountId.
+ * Example: If Account A owns 5 NFTs (might be of different Token Entity), having start=0 and end=5
+ * will return all of the NFTs
+ *
+ * INVALID_QUERY_RANGE response code will be returned if:
+ * 1) Start > End
+ * 2) Start and End indices are non-positive
+ * 3) Start and End indices are out of boundaries for the retrieved nft list
+ * 4) The range between Start and End is bigger than the global dynamic property for maximum query
+ *    range
+ *
+ * NOT_SUPPORTED response code will be returned if the queried token is of type FUNGIBLE_COMMON
+ *
+ * INVALID_ACCOUNT_ID response code will be returned if the queried account does not exist
+ *
+ * ACCOUNT_DELETED response code will be returned if the queried account has been deleted
+ */
+message TokenGetAccountNftInfosQuery {
+    /**
+     * Standard info sent from client to node, including the signed payment, and what kind of
+     * response is requested (cost, state proof, both, or neither).
+     */
+    QueryHeader header = 1;
+
+    /**
+     * The Account for which information is requested
+     */
+    AccountID accountID = 2;
+
+    /**
+     * Specifies the start index (inclusive) of the range of NFTs to query for. Value must be in the
+     * range [0; ownedNFTs-1]
+     */
+    int64 start = 3;
+
+    /**
+     * Specifies the end index (exclusive) of the range of NFTs to query for. Value must be in the
+     * range (start; ownedNFTs]
+     */
+    int64 end = 4;
+}
+
+/**
+ * UNDOCUMENTED
+ */
+message TokenGetAccountNftInfosResponse {
+    /**
+     * Standard response from node to client, including the requested fields: cost, or state proof,
+     * or both, or neither
+     */
+    ResponseHeader header = 1;
+
+    /**
+     * List of NFTs associated to the account
+     */
+    repeated TokenNftInfo nfts = 2;
+}

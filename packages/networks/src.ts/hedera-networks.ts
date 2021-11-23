@@ -1,10 +1,11 @@
 import {AccountID} from "../../proto";
+import Long from "long";
 
-function propsWithAccountNum(num:number) : {shardNum:number, realmNum:number, accountNum:number} {
+function propsWithAccountNum(num: number): { shardNum: Long, realmNum: Long, accountNum: Long } {
     return {
-        shardNum: 0,
-        realmNum: 0,
-        accountNum: num
+        shardNum: Long.ZERO,
+        realmNum: Long.ZERO,
+        accountNum: Long.fromNumber(num)
     }
 }
 
@@ -32,22 +33,22 @@ export class Network {
     private static readonly MAINNET = {
         "35.237.200.180:50211": new AccountID(propsWithAccountNum(3)),
         "35.186.191.247:50211": new AccountID(propsWithAccountNum(4)),
-        "35.192.2.25:50211":    new AccountID(propsWithAccountNum(5)),
+        "35.192.2.25:50211": new AccountID(propsWithAccountNum(5)),
         "35.199.161.108:50211": new AccountID(propsWithAccountNum(6)),
-        "35.203.82.240:50211":  new AccountID(propsWithAccountNum(7)),
-        "35.236.5.219:50211":   new AccountID(propsWithAccountNum(8)),
+        "35.203.82.240:50211": new AccountID(propsWithAccountNum(7)),
+        "35.236.5.219:50211": new AccountID(propsWithAccountNum(8)),
         "35.197.192.225:50211": new AccountID(propsWithAccountNum(9)),
         "35.242.233.154:50211": new AccountID(propsWithAccountNum(10)),
-        "35.240.118.96:50211":  new AccountID(propsWithAccountNum(11)),
-        "35.204.86.32:50211":   new AccountID(propsWithAccountNum(12)),
+        "35.240.118.96:50211": new AccountID(propsWithAccountNum(11)),
+        "35.204.86.32:50211": new AccountID(propsWithAccountNum(12)),
         "35.234.132.107:50211": new AccountID(propsWithAccountNum(13)),
-        "35.236.2.27:50211":    new AccountID(propsWithAccountNum(14)),
-        "35.228.11.53:50211":   new AccountID(propsWithAccountNum(15)),
-        "34.91.181.183:50211":  new AccountID(propsWithAccountNum(16)),
-        "34.86.212.247:50211":  new AccountID(propsWithAccountNum(17)),
+        "35.236.2.27:50211": new AccountID(propsWithAccountNum(14)),
+        "35.228.11.53:50211": new AccountID(propsWithAccountNum(15)),
+        "34.91.181.183:50211": new AccountID(propsWithAccountNum(16)),
+        "34.86.212.247:50211": new AccountID(propsWithAccountNum(17)),
         "172.105.247.67:50211": new AccountID(propsWithAccountNum(18)),
-        "34.89.87.138:50211":   new AccountID(propsWithAccountNum(19)),
-        "34.82.78.255:50211":   new AccountID(propsWithAccountNum(20)),
+        "34.89.87.138:50211": new AccountID(propsWithAccountNum(19)),
+        "34.82.78.255:50211": new AccountID(propsWithAccountNum(20)),
     }
 
     private static readonly TESTNET = {
@@ -99,5 +100,11 @@ export class MirrorNetwork {
     private static readonly PREVIEWNET: string[] = [
         "hcs.previewnet.mirrornode.hedera.com:5600"
     ];
+
+    public static chainIDs = {
+        MAINNET: 290,
+        TESTNET: 291,
+        PREVIEWNET: 292
+    }
 
 }

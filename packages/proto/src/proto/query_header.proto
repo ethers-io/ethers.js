@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "transaction.proto";
+
+/**
+ * The client uses the ResponseType to indicate that it desires the node send just the answer, or
+ * both the answer and a state proof. It can also ask for just the cost and not the answer itself
+ * (allowing it to tailor the payment transaction accordingly). If the payment in the query fails
+ * the precheck, then the response may have some fields blank. The state proof is only available for
+ * some types of information. It is available for a Record, but not a receipt. It is available for
+ * the information in each kind of *GetInfo request. 
+ */
+enum ResponseType {
+    /**
+     * Response returns answer
+     */
+    ANSWER_ONLY = 0;
+
+    /**
+     * (NOT YET SUPPORTED) Response returns both answer and state proof
+     */
+    ANSWER_STATE_PROOF = 1;
+
+    /**
+     * Response returns the cost of answer
+     */
+    COST_ANSWER = 2;
+
+    /**
+     * (NOT YET SUPPORTED) Response returns the total cost of answer and state proof
+     */
+    COST_ANSWER_STATE_PROOF = 3;
+}
+
+/**
+ * Each query from the client to the node will contain the QueryHeader, which gives the requested
+ * response type, and includes a payment transaction that will compensate the node for responding to
+ * the query. The payment can be blank if the query is free. 
+ */
+message QueryHeader {
+    /**
+     * A signed CryptoTransferTransaction to pay the node a fee for handling this query
+     */
+    Transaction payment = 1;
+
+    /**
+     * The requested response, asking for cost, state proof, both, or neither
+     */
+    ResponseType responseType = 2;
+}

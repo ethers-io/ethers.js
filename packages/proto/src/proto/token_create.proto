@@ -1,0 +1,200 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "duration.proto";
+import "basic_types.proto";
+import "custom_fees.proto";
+import "timestamp.proto";
+
+/**
+ * Create a new token. After the token is created, the Token ID for it is in the receipt.
+ * The specified Treasury Account is receiving the initial supply of tokens as-well as the tokens
+ * from the Token Mint operation once executed. The balance of the treasury account is decreased
+ * when the Token Burn operation is executed.
+ * 
+ * The <tt>initialSupply</tt> is the initial supply of the smallest parts of a token (like a
+ * tinybar, not an hbar). These are the smallest units of the token which may be transferred.
+ * 
+ * The supply can change over time. If the total supply at some moment is <i>S</i> parts of tokens,
+ * and the token is using <i>D</i> decimals, then <i>S</i> must be less than or equal to
+ * 2<sup>63</sup>-1, which is 9,223,372,036,854,775,807. The number of whole tokens (not parts) will
+ * be <i>S / 10<sup>D</sup></i>.
+ * 
+ * If decimals is 8 or 11, then the number of whole tokens can be at most a few billions or
+ * millions, respectively. For example, it could match Bitcoin (21 million whole tokens with 8
+ * decimals) or hbars (50 billion whole tokens with 8 decimals). It could even match Bitcoin with
+ * milli-satoshis (21 million whole tokens with 11 decimals).
+ * 
+ * Note that a created token is <i>immutable</i> if the <tt>adminKey</tt> is omitted. No property of
+ * an immutable token can ever change, with the sole exception of its expiry. Anyone can pay to
+ * extend the expiry time of an immutable token.
+ * 
+ * A token can be either <i>FUNGIBLE_COMMON</i> or <i>NON_FUNGIBLE_UNIQUE</i>, based on its
+ * <i>TokenType</i>. If it has been omitted, <i>FUNGIBLE_COMMON</i> type is used.
+ * 
+ * A token can have either <i>INFINITE</i> or <i>FINITE</i> supply type, based on its
+ * <i>TokenType</i>. If it has been omitted, <i>INFINITE</i> type is used.
+ * 
+ * If a <i>FUNGIBLE</i> TokenType is used, <i>initialSupply</i> should explicitly be set to a
+ * non-negative. If not, the transaction will resolve to INVALID_TOKEN_INITIAL_SUPPLY.
+ * 
+ * If a <i>NON_FUNGIBLE_UNIQUE</i> TokenType is used, <i>initialSupply</i> should explicitly be set
+ * to 0. If not, the transaction will resolve to INVALID_TOKEN_INITIAL_SUPPLY.
+ * 
+ * If an <i>INFINITE</i> TokenSupplyType is used, <i>maxSupply</i> should explicitly be set to 0. If
+ * it is not 0, the transaction will resolve to INVALID_TOKEN_MAX_SUPPLY.
+ * 
+ * If a <i>FINITE</i> TokenSupplyType is used, <i>maxSupply</i> should be explicitly set to a
+ * non-negative value. If it is not, the transaction will resolve to INVALID_TOKEN_MAX_SUPPLY.
+ */
+message TokenCreateTransactionBody {
+    /**
+     * The publicly visible name of the token, limited to a UTF-8 encoding of
+     * length <tt>tokens.maxSymbolUtf8Bytes</tt>.
+     */
+    string name = 1;
+
+    /**
+     * The publicly visible token symbol, limited to a UTF-8 encoding of length
+     * <tt>tokens.maxTokenNameUtf8Bytes</tt>.
+     */
+    string symbol = 2;
+
+    /**
+     * For tokens of type FUNGIBLE_COMMON - the number of decimal places a
+     * token is divisible by. For tokens of type NON_FUNGIBLE_UNIQUE - value
+     * must be 0
+     */
+    uint32 decimals = 3;
+
+    /**
+     * Specifies the initial supply of tokens to be put in circulation. The
+     * initial supply is sent to the Treasury Account. The supply is in the
+     * lowest denomination possible. In the case for NON_FUNGIBLE_UNIQUE Type
+     * the value must be 0
+     */
+    uint64 initialSupply = 4;
+
+    /**
+     * The account which will act as a treasury for the token. This account
+     * will receive the specified initial supply or the newly minted NFTs in
+     * the case for NON_FUNGIBLE_UNIQUE Type
+     */
+    AccountID treasury = 5;
+
+    /**
+     * The key which can perform update/delete operations on the token. If empty, the token can be
+     * perceived as immutable (not being able to be updated/deleted)
+     */
+    Key adminKey = 6;
+
+    /**
+     * The key which can grant or revoke KYC of an account for the token's transactions. If empty,
+     * KYC is not required, and KYC grant or revoke operations are not possible.
+     */
+    Key kycKey = 7;
+
+    /**
+     * The key which can sign to freeze or unfreeze an account for token transactions. If empty,
+     * freezing is not possible
+     */
+    Key freezeKey = 8;
+
+    /**
+     * The key which can wipe the token balance of an account. If empty, wipe is not possible
+     */
+    Key wipeKey = 9;
+
+    /**
+     * The key which can change the supply of a token. The key is used to sign Token Mint/Burn
+     * operations
+     */
+    Key supplyKey = 10;
+
+    /**
+     * The default Freeze status (frozen or unfrozen) of Hedera accounts relative to this token. If
+     * true, an account must be unfrozen before it can receive the token
+     */
+    bool freezeDefault = 11;
+
+    /**
+     * The epoch second at which the token should expire; if an auto-renew account and period are
+     * specified, this is coerced to the current epoch second plus the autoRenewPeriod
+     */
+    Timestamp expiry = 13;
+
+    /**
+     * An account which will be automatically charged to renew the token's expiration, at
+     * autoRenewPeriod interval
+     */
+    AccountID autoRenewAccount = 14;
+
+    /**
+     * The interval at which the auto-renew account will be charged to extend the token's expiry
+     */
+    Duration autoRenewPeriod = 15;
+
+    /**
+     * The memo associated with the token (UTF-8 encoding max 100 bytes)
+     */
+    string memo = 16;
+
+    /**
+     * IWA compatibility. Specifies the token type. Defaults to FUNGIBLE_COMMON
+     */
+    TokenType tokenType = 17;
+
+    /**
+     * IWA compatibility. Specified the token supply type. Defaults to INFINITE
+     */
+    TokenSupplyType supplyType = 18;
+
+    /**
+     * IWA Compatibility. Depends on TokenSupplyType. For tokens of type FUNGIBLE_COMMON - the
+     * maximum number of tokens that can be in circulation. For tokens of type NON_FUNGIBLE_UNIQUE -
+     * the maximum number of NFTs (serial numbers) that can be minted. This field can never be
+     * changed!
+     */
+    int64 maxSupply = 19;
+
+    /**
+     * The key which can change the token's custom fee schedule; must sign a TokenFeeScheduleUpdate
+     * transaction
+     */
+    Key fee_schedule_key = 20;
+
+    /**
+     * The custom fees to be assessed during a CryptoTransfer that transfers units of this token
+     */
+    repeated CustomFee custom_fees = 21;
+
+    /**
+     * The Key which can pause and unpause the Token.
+     * If Empty the token pause status defaults to PauseNotApplicable, otherwise Unpaused.
+     */
+    Key pause_key = 22;
+}

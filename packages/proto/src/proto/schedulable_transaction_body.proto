@@ -1,0 +1,260 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "system_delete.proto";
+import "system_undelete.proto";
+import "freeze.proto";
+
+import "contract_call.proto";
+import "contract_create.proto";
+import "contract_update.proto";
+
+import "crypto_create.proto";
+import "crypto_delete.proto";
+import "crypto_transfer.proto";
+import "crypto_update.proto";
+
+import "file_append.proto";
+import "file_create.proto";
+import "file_delete.proto";
+import "file_update.proto";
+
+import "contract_delete.proto";
+
+import "consensus_create_topic.proto";
+import "consensus_update_topic.proto";
+import "consensus_delete_topic.proto";
+import "consensus_submit_message.proto";
+
+import "token_create.proto";
+import "token_freeze_account.proto";
+import "token_unfreeze_account.proto";
+import "token_grant_kyc.proto";
+import "token_revoke_kyc.proto";
+import "token_delete.proto";
+import "token_update.proto";
+import "token_mint.proto";
+import "token_burn.proto";
+import "token_wipe_account.proto";
+import "token_associate.proto";
+import "token_dissociate.proto";
+
+import "schedule_delete.proto";
+
+import "token_pause.proto";
+import "token_unpause.proto";
+
+/**
+ * A schedulable transaction. Note that the global/dynamic system property
+ * <tt>scheduling.whitelist</tt> controls which transaction types may be scheduled.  In Hedera
+ * Services 0.13.0, it will include only <tt>CryptoTransfer</tt> and <tt>ConsensusSubmitMessage</tt>
+ * functions.
+ */
+message SchedulableTransactionBody {
+  /**
+   * The maximum transaction fee the client is willing to pay
+   */
+  uint64 transactionFee = 1;
+
+  /**
+   * A memo to include the execution record; the UTF-8 encoding may be up to 100 bytes and must not
+   * include the zero byte
+   */
+  string memo = 2;
+
+  oneof data {
+    /**
+     * Calls a function of a contract instance
+     */
+    ContractCallTransactionBody contractCall = 3;
+
+    /**
+     * Creates a contract instance
+     */
+    ContractCreateTransactionBody contractCreateInstance = 4;
+
+    /**
+     * Updates a contract
+     */
+    ContractUpdateTransactionBody contractUpdateInstance = 5;
+
+    /**
+     * Delete contract and transfer remaining balance into specified account
+     */
+    ContractDeleteTransactionBody contractDeleteInstance = 6;
+
+    /**
+     * Create a new cryptocurrency account
+     */
+    CryptoCreateTransactionBody cryptoCreateAccount = 7;
+
+    /**
+     * Delete a cryptocurrency account (mark as deleted, and transfer hbars out)
+     */
+    CryptoDeleteTransactionBody cryptoDelete = 8;
+
+    /**
+     * Transfer amount between accounts
+     */
+    CryptoTransferTransactionBody cryptoTransfer = 9;
+
+    /**
+     * Modify information such as the expiration date for an account
+     */
+    CryptoUpdateTransactionBody cryptoUpdateAccount = 10;
+
+    /**
+     * Add bytes to the end of the contents of a file
+     */
+    FileAppendTransactionBody fileAppend = 11;
+
+    /**
+     * Create a new file
+     */
+    FileCreateTransactionBody fileCreate = 12;
+
+    /**
+     * Delete a file (remove contents and mark as deleted until it expires)
+     */
+    FileDeleteTransactionBody fileDelete = 13;
+
+    /**
+     * Modify information such as the expiration date for a file
+     */
+    FileUpdateTransactionBody fileUpdate = 14;
+
+    /**
+     * Hedera administrative deletion of a file or smart contract
+     */
+    SystemDeleteTransactionBody systemDelete = 15;
+
+    /**
+     * To undelete an entity deleted by SystemDelete
+     */
+    SystemUndeleteTransactionBody systemUndelete = 16;
+
+    /**
+     * Freeze the nodes
+     */
+    FreezeTransactionBody freeze = 17;
+
+    /**
+     * Creates a topic
+     */
+    ConsensusCreateTopicTransactionBody consensusCreateTopic = 18;
+
+    /**
+     * Updates a topic
+     */
+    ConsensusUpdateTopicTransactionBody consensusUpdateTopic = 19;
+
+    /**
+     * Deletes a topic
+     */
+    ConsensusDeleteTopicTransactionBody consensusDeleteTopic = 20;
+
+    /**
+     * Submits message to a topic
+     */
+    ConsensusSubmitMessageTransactionBody consensusSubmitMessage = 21;
+
+    /**
+     * Creates a token instance
+     */
+    TokenCreateTransactionBody tokenCreation = 22;
+
+    /**
+     * Freezes account not to be able to transact with a token
+     */
+    TokenFreezeAccountTransactionBody tokenFreeze = 23;
+
+    /**
+     * Unfreezes account for a token
+     */
+    TokenUnfreezeAccountTransactionBody tokenUnfreeze = 24;
+
+    /**
+     * Grants KYC to an account for a token
+     */
+    TokenGrantKycTransactionBody tokenGrantKyc = 25;
+
+    /**
+     * Revokes KYC of an account for a token
+     */
+    TokenRevokeKycTransactionBody tokenRevokeKyc = 26;
+
+    /**
+     * Deletes a token instance
+     */
+    TokenDeleteTransactionBody tokenDeletion = 27;
+
+    /**
+     * Updates a token instance
+     */
+    TokenUpdateTransactionBody tokenUpdate = 28;
+
+    /**
+     * Mints new tokens to a token's treasury account
+     */
+    TokenMintTransactionBody tokenMint = 29;
+
+    /**
+     * Burns tokens from a token's treasury account
+     */
+    TokenBurnTransactionBody tokenBurn = 30;
+
+    /**
+     * Wipes amount of tokens from an account
+     */
+    TokenWipeAccountTransactionBody tokenWipe = 31;
+
+    /**
+     * Associate tokens to an account
+     */
+    TokenAssociateTransactionBody tokenAssociate = 32;
+
+    /**
+     * Dissociate tokens from an account
+     */
+    TokenDissociateTransactionBody tokenDissociate = 33;
+
+    /**
+     * Marks a schedule in the network's action queue as deleted, preventing it from executing
+     */
+    ScheduleDeleteTransactionBody scheduleDelete = 34;
+
+    /**
+     * Pauses the Token
+     */
+     TokenPauseTransactionBody token_pause = 35;
+
+     /**
+      * Unpauses the Token
+      */
+     TokenUnpauseTransactionBody token_unpause = 36;
+  }
+}

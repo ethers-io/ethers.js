@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * For details behind this throttling design, please see the <i>docs/throttle-design.md</i> document
+ * in the <a href="https://github.com/hashgraph/hedera-services">Hedera Services</a> repository.
+ */
+
+/**
+ * A set of operations which should be collectively throttled at a given milli-ops-per-second limit.
+ */
+message ThrottleGroup {
+  /**
+   * The operations to be throttled
+   */
+  repeated HederaFunctionality operations = 1;
+
+  /**
+   * The number of total operations per second across the entire network, multiplied by 1000. So, to
+   * choose 3 operations per second (which on a network of 30 nodes is a tenth of an operation per
+   * second for each node), set milliOpsPerSec = 3000. And to choose 3.6 ops per second, use
+   * milliOpsPerSec = 3600. Minimum allowed value is 1, and maximum allowed value is 9223372.
+   */
+  uint64 milliOpsPerSec = 2;
+}
+
+/**
+ * A list of throttle groups that should all compete for the same internal bucket.
+ */
+message ThrottleBucket {
+  /**
+   * A name for this bucket (primarily for use in logs)
+   */
+  string name = 1;
+
+  /**
+   * The number of milliseconds required for this bucket to drain completely when full. The product
+   * of this number and the least common multiple of the milliOpsPerSec values in this bucket must
+   * not exceed 9223372036.
+   */
+  uint64 burstPeriodMs = 2;
+
+  /**
+   * The throttle groups competing for this bucket
+   */
+  repeated ThrottleGroup throttleGroups = 3;
+}
+
+/**
+ * A list of throttle buckets which, simultaneously enforced, define the system's throttling policy.
+ * <ol>
+ * <li> When an operation appears in more than one throttling bucket, all its buckets must have room
+ * or it will be throttled.</li> 
+ * <li>An operation assigned to no buckets is always throttled.</li>
+ * </ol> 
+ */
+message ThrottleDefinitions {
+  repeated ThrottleBucket throttleBuckets = 1;
+}

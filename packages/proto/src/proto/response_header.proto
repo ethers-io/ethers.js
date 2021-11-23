@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "transaction_response.proto";
+import "query_header.proto";
+import "response_code.proto";
+
+/**
+ * Every query receives a response containing the QueryResponseHeader. Either or both of the cost
+ * and stateProof fields may be blank, if the responseType didn't ask for the cost or stateProof.
+ */
+message ResponseHeader {
+    /**
+     * Result of fee transaction precheck, saying it passed, or why it failed
+     */
+    ResponseCodeEnum nodeTransactionPrecheckCode = 1;
+
+    /**
+     * The requested response is repeated back here, for convenience
+     */
+    ResponseType responseType = 2;
+
+    /**
+     * The fee that would be charged to get the requested information (if a cost was requested).
+     * Note: This cost only includes the query fee and does not include the transfer fee(which is
+     * required to execute the transfer transaction to debit the payer account and credit the node
+     * account with query fee)
+     */
+    uint64 cost = 3;
+
+    /**
+     * The state proof for this information (if a state proof was requested, and is available)
+     */
+    bytes stateProof = 4;
+}

@@ -1,0 +1,100 @@
+/*-
+ * ‌
+ * Hedera Mirror Node
+ * ​
+ * Copyright (C) 2019 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+syntax = "proto3";
+
+package proto;
+
+/**
+ * Required for the reactor-grpc generator to work correctly
+ */
+option java_multiple_files = true;
+
+option java_package = "com.hedera.mirror.api.proto";
+
+import "basic_types.proto";
+import "timestamp.proto";
+import "consensus_submit_message.proto";
+
+message ConsensusTopicQuery {
+    /**
+     * A required topic ID to retrieve messages for.
+     */
+    .proto.TopicID topicID = 1;
+
+    /**
+     * Include messages which reached consensus on or after this time. Defaults to current time if
+     * not set.
+     */
+    .proto.Timestamp consensusStartTime = 2;
+
+    /**
+     * Include messages which reached consensus before this time. If not set it will receive
+     * indefinitely.
+     */
+    .proto.Timestamp consensusEndTime = 3;
+
+    /**
+     * The maximum number of messages to receive before stopping. If not set or set to zero it will
+     * return messages indefinitely.
+     */
+    uint64 limit = 4;
+}
+
+message ConsensusTopicResponse {
+    /**
+     * The time at which the transaction reached consensus
+     */
+    .proto.Timestamp consensusTimestamp = 1;
+
+    /**
+     * The message body originally in the ConsensusSubmitMessageTransactionBody. Message size will
+     * be less than 6KiB.
+     */
+    bytes message = 2;
+
+    /**
+     * The running hash (SHA384) of every message.
+     */
+    bytes runningHash = 3;
+
+    /**
+     * Starts at 1 for first submitted message. Incremented on each submitted message.
+     */
+    uint64 sequenceNumber = 4;
+
+    /**
+     * Version of the SHA-384 digest used to update the running hash.
+     */
+    uint64 runningHashVersion = 5;
+
+    /**
+     * Optional information of the current chunk in a fragmented message.
+     */
+    .proto.ConsensusMessageChunkInfo chunkInfo = 6;
+}
+
+/**
+ * The Mirror Service provides the ability to query a stream of Hedera Consensus Service (HCS)
+ * messages for an HCS Topic via a specific (possibly open-ended) time range.
+ */
+service MirrorConsensusService {
+    rpc subscribeTopic (ConsensusTopicQuery) returns (stream ConsensusTopicResponse);
+}

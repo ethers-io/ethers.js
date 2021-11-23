@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "schedulable_transaction_body.proto";
+
+/**
+ * Create a new <i>schedule entity</i> (or simply, <i>schedule</i>) in the network's action queue.
+ * Upon <tt>SUCCESS</tt>, the receipt contains the `ScheduleID` of the created schedule. A schedule
+ * entity includes a <tt>scheduledTransactionBody</tt> to be executed when the schedule has
+ * collected enough signing Ed25519 keys to satisfy the scheduled transaction's signing
+ * requirements. Upon `SUCCESS`, the receipt also includes the <tt>scheduledTransactionID</tt> to
+ * use to query for the record of the scheduled transaction's execution (if it occurs). 
+ * 
+ * The expiration time of a schedule is always 30 minutes; it remains in state and can be queried
+ * using <tt>GetScheduleInfo</tt> until expiration, no matter if the scheduled transaction has
+ * executed or marked deleted.
+ * 
+ * If the <tt>adminKey</tt> field is omitted, the resulting schedule is immutable. If the
+ * <tt>adminKey</tt> is set, the <tt>ScheduleDelete</tt> transaction can be used to mark it as
+ * deleted. The creator may also specify an optional <tt>memo</tt> whose UTF-8 encoding is at most
+ * 100 bytes and does not include the zero byte is also supported.
+ * 
+ * When a scheduled transaction whose schedule has collected enough signing keys is executed, the
+ * network only charges its payer the service fee, and not the node and network fees. If the
+ * optional <tt>payerAccountID</tt> is set, the network charges this account. Otherwise it charges
+ * the payer of the originating <tt>ScheduleCreate</tt>.  
+ * 
+ * Two <tt>ScheduleCreate</tt> transactions are <i>identical</i> if they are equal in all their
+ * fields other than <tt>payerAccountID</tt>.  (Here "equal" should be understood in the sense of
+ * gRPC object equality in the network software runtime. In particular, a gRPC object with <a
+ * href="https://developers.google.com/protocol-buffers/docs/proto3#unknowns">unknown fields</a> is
+ * not equal to a gRPC object without unknown fields, even if they agree on all known fields.) 
+ * 
+ * A <tt>ScheduleCreate</tt> transaction that attempts to re-create an identical schedule already in
+ * state will receive a receipt with status <tt>IDENTICAL_SCHEDULE_ALREADY_CREATED</tt>; the receipt
+ * will include the <tt>ScheduleID</tt> of the extant schedule, which may be used in a subsequent
+ * <tt>ScheduleSign</tt> transaction. (The receipt will also include the <tt>TransactionID</tt> to
+ * use in querying for the receipt or record of the scheduled transaction.)
+ * 
+ * Other notable response codes include, <tt>INVALID_ACCOUNT_ID</tt>,
+ * <tt>UNSCHEDULABLE_TRANSACTION</tt>, <tt>UNRESOLVABLE_REQUIRED_SIGNERS</tt>,
+ * <tt>INVALID_SIGNATURE</tt>. For more information please see the section of this documentation on
+ * the <tt>ResponseCode</tt> enum. 
+ */
+message ScheduleCreateTransactionBody {
+  /**
+   * The scheduled transaction
+   */
+  SchedulableTransactionBody scheduledTransactionBody = 1;
+
+  /**
+   * An optional memo with a UTF-8 encoding of no more than 100 bytes which does not contain the
+   * zero byte
+   */
+  string memo = 2;
+
+  /**
+   * An optional Hedera key which can be used to sign a ScheduleDelete and remove the schedule
+   */
+  Key adminKey = 3;
+
+  /**
+   * An optional id of the account to be charged the service fee for the scheduled transaction at
+   * the consensus time that it executes (if ever); defaults to the ScheduleCreate payer if not
+   * given
+   */
+  AccountID payerAccountID = 4;
+}

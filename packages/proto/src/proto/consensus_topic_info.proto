@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "duration.proto";
+import "timestamp.proto";
+
+/**
+ * Current state of a topic.
+ */
+message ConsensusTopicInfo {
+    /**
+     * The memo associated with the topic (UTF-8 encoding max 100 bytes)
+     */
+    string memo = 1;
+
+
+    /**
+     * When a topic is created, its running hash is initialized to 48 bytes of binary zeros.
+     * For each submitted message, the topic's running hash is then updated to the output
+     * of a particular SHA-384 digest whose input data include the previous running hash.
+     * 
+     * See the TransactionReceipt.proto documentation for an exact description of the
+     * data included in the SHA-384 digest used for the update.
+     */
+    bytes runningHash = 2;
+
+    /**
+     * Sequence number (starting at 1 for the first submitMessage) of messages on the topic.
+     */
+    uint64 sequenceNumber = 3;
+
+    /**
+     * Effective consensus timestamp at (and after) which submitMessage calls will no longer succeed on the topic
+     * and the topic will expire and after AUTORENEW_GRACE_PERIOD be automatically deleted.
+     */
+    Timestamp expirationTime = 4;
+
+    /**
+     * Access control for update/delete of the topic. Null if there is no key.
+     */
+    Key adminKey = 5;
+
+    /**
+     * Access control for ConsensusService.submitMessage. Null if there is no key.
+     */
+    Key submitKey = 6;
+
+    /**
+     * If an auto-renew account is specified, when the topic expires, its lifetime will be extended
+     * by up to this duration (depending on the solvency of the auto-renew account). If the
+     * auto-renew account has no funds at all, the topic will be deleted instead.
+     */
+    Duration autoRenewPeriod = 7;
+
+    /**
+     * The account, if any, to charge for automatic renewal of the topic's lifetime upon expiry.
+     */
+    AccountID autoRenewAccount = 8;
+}

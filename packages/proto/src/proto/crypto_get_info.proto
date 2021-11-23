@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "timestamp.proto";
+import "duration.proto";
+import "basic_types.proto";
+import "query_header.proto";
+import "response_header.proto";
+import "crypto_add_live_hash.proto";
+
+/**
+ * Get all the information about an account, including the balance. This does not get the list of
+ * account records.
+ */
+message CryptoGetInfoQuery {
+    /**
+     * Standard info sent from client to node, including the signed payment, and what kind of
+     * response is requested (cost, state proof, both, or neither).
+     */
+    QueryHeader header = 1;
+
+    /**
+     * The account ID for which information is requested
+     */
+    AccountID accountID = 2;
+}
+
+/**
+ * Response when the client sends the node CryptoGetInfoQuery
+ */
+message CryptoGetInfoResponse {
+    /**
+     * Standard response from node to client, including the requested fields: cost, or state proof,
+     * or both, or neither
+     */
+    ResponseHeader header = 1;
+
+
+    message AccountInfo {
+        /**
+         * The account ID for which this information applies
+         */
+        AccountID accountID = 1;
+
+        /**
+         * The Contract Account ID comprising of both the contract instance and the cryptocurrency
+         * account owned by the contract instance, in the format used by Solidity
+         */
+        string contractAccountID = 2;
+
+        /**
+         * If true, then this account has been deleted, it will disappear when it expires, and all
+         * transactions for it will fail except the transaction to extend its expiration date
+         */
+        bool deleted = 3;
+
+        /**
+         * The Account ID of the account to which this is proxy staked. If proxyAccountID is null,
+         * or is an invalid account, or is an account that isn't a node, then this account is
+         * automatically proxy staked to a node chosen by the network, but without earning payments.
+         * If the proxyAccountID account refuses to accept proxy staking , or if it is not currently
+         * running a node, then it will behave as if proxyAccountID was null.
+         */
+        AccountID proxyAccountID = 4;
+
+        /**
+         * The total number of tinybars proxy staked to this account
+         */
+        int64 proxyReceived = 6;
+
+        /**
+         * The key for the account, which must sign in order to transfer out, or to modify the
+         * account in any way other than extending its expiration date.
+         */
+        Key key = 7;
+
+        /**
+         * The current balance of account in tinybars
+         */
+        uint64 balance = 8;
+
+        /**
+         * [Deprecated]. The threshold amount, in tinybars, at which a record is created of any
+         * transaction that decreases the balance of this account by more than the threshold
+         */
+        uint64 generateSendRecordThreshold = 9 [deprecated=true];
+
+        /**
+         * [Deprecated]. The threshold amount, in tinybars, at which a record is created of any
+         * transaction that increases the balance of this account by more than the threshold
+         */
+        uint64 generateReceiveRecordThreshold = 10 [deprecated=true];
+
+        /**
+         * If true, no transaction can transfer to this account unless signed by this account's key
+         */
+        bool receiverSigRequired = 11;
+
+        /**
+         * The TimeStamp time at which this account is set to expire
+         */
+        Timestamp expirationTime = 12;
+
+        /**
+         * The duration for expiration time will extend every this many seconds. If there are
+         * insufficient funds, then it extends as long as possible. If it is empty when it expires,
+         * then it is deleted.
+         */
+        Duration autoRenewPeriod = 13;
+
+        /**
+         * All of the livehashes attached to the account (each of which is a hash along with the
+         * keys that authorized it and can delete it)
+         */
+        repeated LiveHash liveHashes = 14;
+
+        /**
+         * All tokens related to this account
+         */
+        repeated TokenRelationship tokenRelationships = 15;
+
+        /**
+         * The memo associated with the account
+         */
+        string memo = 16;
+
+        /**
+         * The number of NFTs owned by this account
+         */
+        int64 ownedNfts = 17;
+
+        /**
+         * The maximum number of tokens that an Account can be implicitly associated with.
+         */
+        uint32 max_automatic_token_associations = 18;
+    }
+
+    /**
+     * Info about the account (a state proof can be generated for this)
+     */
+    AccountInfo accountInfo = 2;
+}

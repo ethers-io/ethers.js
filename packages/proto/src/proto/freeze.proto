@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "duration.proto";
+import "timestamp.proto";
+import "basic_types.proto";
+
+/**
+ * At consensus, sets the consensus time at which the platform should stop creating events and
+ * accepting transactions, and enter a maintenance window.
+ */
+message FreezeTransactionBody {
+    /**
+     * !! DEPRECATED and REJECTED by nodes
+     * The start hour (in UTC time), a value between 0 and 23
+     */
+    int32 startHour = 1 [deprecated=true];
+
+    /**
+     * !! DEPRECATED and REJECTED by nodes
+     * The start minute (in UTC time), a value between 0 and 59
+     */
+    int32 startMin = 2 [deprecated=true];
+
+    /**
+     * !! DEPRECATED and REJECTED by nodes
+     * The end hour (in UTC time), a value between 0 and 23
+     */
+    int32 endHour = 3 [deprecated=true];
+
+    /**
+     * !! DEPRECATED and REJECTED by nodes
+     * The end minute (in UTC time), a value between 0 and 59
+     */
+    int32 endMin = 4 [deprecated=true];
+
+    /**
+     * If set, the file whose contents should be used for a network software update during the
+     * maintenance window.
+     */
+    FileID update_file = 5;
+
+    /**
+     * If set, the expected hash of the contents of the update file (used to verify the update).
+     */
+    bytes file_hash = 6;
+
+    /**
+     * The consensus time at which the maintenance window should begin.
+     */
+    Timestamp start_time = 7;
+
+    /**
+     * The type of network freeze or upgrade operation to perform.
+     */
+    FreezeType freeze_type = 8;
+}

@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+option java_package = "com.hederahashgraph.service.proto.java";
+
+import "query.proto";
+import "response.proto";
+import "transaction_response.proto";
+import "transaction.proto";
+
+/**
+ * Transactions and queries for the Crypto Service
+ */
+service CryptoService {
+    /**
+     * Creates a new account by submitting the transaction
+     */
+    rpc createAccount (Transaction) returns (TransactionResponse);
+
+    /**
+     * Updates an account by submitting the transaction
+     */
+    rpc updateAccount (Transaction) returns (TransactionResponse);
+
+    /**
+     * Initiates a transfer by submitting the transaction
+     */
+    rpc cryptoTransfer (Transaction) returns (TransactionResponse);
+
+    /**
+     * Deletes and account by submitting the transaction
+     */
+    rpc cryptoDelete (Transaction) returns (TransactionResponse);
+
+    /**
+     * (NOT CURRENTLY SUPPORTED) Adds a livehash
+     */
+    rpc addLiveHash (Transaction) returns (TransactionResponse);
+
+    /**
+     * (NOT CURRENTLY SUPPORTED) Deletes a livehash
+     */
+    rpc deleteLiveHash (Transaction) returns (TransactionResponse);
+
+    /**
+     * (NOT CURRENTLY SUPPORTED) Retrieves a livehash for an account
+     */
+    rpc getLiveHash (Query) returns (Response);
+
+    /**
+     * Returns all transactions in the last 180s of consensus time for which the given account was
+     * the effective payer <b>and</b> network property <tt>ledger.keepRecordsInState</tt> was
+     * <tt>true</tt>.
+     */
+    rpc getAccountRecords (Query) returns (Response);
+
+    /**
+     * Retrieves the balance of an account
+     */
+    rpc cryptoGetBalance (Query) returns (Response);
+
+    /**
+     * Retrieves the metadata of an account
+     */
+    rpc getAccountInfo (Query) returns (Response);
+
+    /**
+     * Retrieves the latest receipt for a transaction that is either awaiting consensus, or reached
+     * consensus in the last 180 seconds
+     */
+    rpc getTransactionReceipts (Query) returns (Response);
+
+    /**
+     * (NOT CURRENTLY SUPPORTED) Returns the records of transactions recently funded by an account
+     */
+    rpc getFastTransactionRecord (Query) returns (Response);
+
+    /**
+     * Retrieves the record of a transaction that is either awaiting consensus, or reached consensus
+     * in the last 180 seconds
+     */
+    rpc getTxRecordByTxID (Query) returns (Response);
+
+    /**
+     * (NOT CURRENTLY SUPPORTED) Retrieves the stakers for a node by account id
+     */
+    rpc getStakersByAccountID (Query) returns (Response);
+}

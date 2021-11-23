@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * Mints tokens to the Token's treasury Account. If no Supply Key is defined, the transaction will
+ * resolve to TOKEN_HAS_NO_SUPPLY_KEY.
+ * The operation increases the Total Supply of the Token. The maximum total supply a token can have
+ * is 2^63-1.
+ * The amount provided must be in the lowest denomination possible. Example:
+ * Token A has 2 decimals. In order to mint 100 tokens, one must provide amount of 10000. In order
+ * to mint 100.55 tokens, one must provide amount of 10055.
+ * If both amount and metadata list get filled, a INVALID_TRANSACTION_BODY response code will be
+ * returned.
+ * If the metadata list contains metadata which is too large, a METADATA_TOO_LONG response code will
+ * be returned.
+ * If neither the amount nor the metadata list get filled, a INVALID_TOKEN_MINT_AMOUNT response code
+ * will be returned.
+ * If the metadata list count is greater than the batch size limit global dynamic property, a
+ * BATCH_SIZE_LIMIT_EXCEEDED response code will be returned.
+ */
+message TokenMintTransactionBody {
+    /**
+     * The token for which to mint tokens. If token does not exist, transaction results in
+     * INVALID_TOKEN_ID
+     */
+    TokenID token = 1;
+
+    /**
+     * Applicable to tokens of type FUNGIBLE_COMMON. The amount to mint to the Treasury Account.
+     * Amount must be a positive non-zero number represented in the lowest denomination of the
+     * token. The new supply must be lower than 2^63.
+     */
+    uint64 amount = 2;
+
+    /**
+     * Applicable to tokens of type NON_FUNGIBLE_UNIQUE. A list of metadata that are being created.
+     * Maximum allowed size of each metadata is 100 bytes
+     */
+    repeated bytes metadata = 3;
+}

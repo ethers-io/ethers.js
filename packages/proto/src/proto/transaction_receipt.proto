@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "response_code.proto";
+import "exchange_rate.proto";
+
+/**
+ * The summary of a transaction's result so far. If the transaction has not reached consensus, this
+ * result will be necessarily incomplete. 
+ */
+message TransactionReceipt {
+    /**
+     * The consensus status of the transaction; is UNKNOWN if consensus has not been reached, or if
+     * the associated transaction did not have a valid payer signature
+     */
+    ResponseCodeEnum status = 1;
+
+    /**
+     * In the receipt of a CryptoCreate, the id of the newly created account
+     */
+    AccountID accountID = 2;
+
+    /**
+     * In the receipt of a FileCreate, the id of the newly created file
+     */
+    FileID fileID = 3;
+
+    /**
+     * In the receipt of a ContractCreate, the id of the newly created contract
+     */
+    ContractID contractID = 4;
+
+    /**
+     * The exchange rates in effect when the transaction reached consensus
+     */
+    ExchangeRateSet exchangeRate = 5;
+
+    /**
+     * In the receipt of a ConsensusCreateTopic, the id of the newly created topic.
+     */
+    TopicID topicID = 6;
+
+    /**
+     * In the receipt of a ConsensusSubmitMessage, the new sequence number of the topic that
+     * received the message
+     */
+    uint64 topicSequenceNumber = 7;
+
+    /**
+     * In the receipt of a ConsensusSubmitMessage, the new running hash of the topic that received
+     * the message.  This 48-byte field is the output of a particular SHA-384 digest whose input
+     * data are determined by the value of the topicRunningHashVersion below. The bytes of each
+     * uint64 or uint32 are to be in Big-Endian format.
+     * 
+     * IF the topicRunningHashVersion is '0' or '1', then the input data to the SHA-384 digest are,
+     * in order:
+     * ---
+     * 1. The previous running hash of the topic (48 bytes)
+     * 2. The topic's shard (8 bytes)
+     * 3. The topic's realm (8 bytes)
+     * 4. The topic's number (8 bytes)
+     * 5. The number of seconds since the epoch before the ConsensusSubmitMessage reached 
+     *    consensus (8 bytes)
+     * 6. The number of nanoseconds since 5. before the ConsensusSubmitMessage reached 
+     *    consensus (4 bytes)
+     * 7. The topicSequenceNumber from above (8 bytes)
+     * 8. The message bytes from the ConsensusSubmitMessage (variable).
+     * 
+     * IF the topicRunningHashVersion is '2', then the input data to the SHA-384 digest are, in
+     * order:
+     * ---
+     * 1. The previous running hash of the topic (48 bytes)
+     * 2. The topicRunningHashVersion below (8 bytes)
+     * 3. The topic's shard (8 bytes)
+     * 4. The topic's realm (8 bytes)
+     * 5. The topic's number (8 bytes)
+     * 6. The number of seconds since the epoch before the ConsensusSubmitMessage reached 
+     *    consensus (8 bytes)
+     * 7. The number of nanoseconds since 6. before the ConsensusSubmitMessage reached 
+     *    consensus (4 bytes)
+     * 8. The topicSequenceNumber from above (8 bytes)
+     * 9. The output of the SHA-384 digest of the message bytes from the 
+     *    consensusSubmitMessage (48 bytes)
+     * 
+     * Otherwise, IF the topicRunningHashVersion is '3', then the input data to the SHA-384 digest
+     * are, in order:
+     * ---
+     * 1. The previous running hash of the topic (48 bytes)
+     * 2. The topicRunningHashVersion below (8 bytes)
+     * 3. The payer account's shard (8 bytes)
+     * 4. The payer account's realm (8 bytes)
+     * 5. The payer account's number (8 bytes)
+     * 6. The topic's shard (8 bytes)
+     * 7. The topic's realm (8 bytes)
+     * 8. The topic's number (8 bytes)
+     * 9. The number of seconds since the epoch before the ConsensusSubmitMessage reached 
+     *    consensus (8 bytes)
+     * 10. The number of nanoseconds since 9. before the ConsensusSubmitMessage reached 
+     *     consensus (4 bytes)
+     * 11. The topicSequenceNumber from above (8 bytes)
+     * 12. The output of the SHA-384 digest of the message bytes from the 
+     *     consensusSubmitMessage (48 bytes)
+     */
+    bytes topicRunningHash = 8;
+
+    /**
+     * In the receipt of a ConsensusSubmitMessage, the version of the SHA-384 digest used to update
+     * the running hash.
+     */
+    uint64 topicRunningHashVersion = 9;
+
+    /**
+     * In the receipt of a CreateToken, the id of the newly created token
+     */
+    TokenID tokenID = 10;
+
+    /**
+     * In the receipt of TokenMint, TokenWipe, TokenBurn, For fungible tokens - the current total
+     * supply of this token. For non fungible tokens - the total number of NFTs issued for a given
+     * tokenID
+     */
+    uint64 newTotalSupply = 11;
+
+    /**
+     * In the receipt of a ScheduleCreate, the id of the newly created Scheduled Entity
+     */
+    ScheduleID scheduleID = 12;
+
+    /**
+     * In the receipt of a ScheduleCreate or ScheduleSign that resolves to SUCCESS, the
+     * TransactionID that should be used to query for the receipt or record of the relevant
+     * scheduled transaction
+     */
+    TransactionID scheduledTransactionID = 13;
+
+    /**
+     * In the receipt of a TokenMint for tokens of type NON_FUNGIBLE_UNIQUE, the serial numbers of
+     * the newly created NFTs
+     */
+    repeated int64 serialNumbers = 14;
+}

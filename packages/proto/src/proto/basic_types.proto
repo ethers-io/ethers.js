@@ -1,0 +1,1411 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+import "timestamp.proto";
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+/**
+ * Each shard has a nonnegative shard number. Each realm within a given shard has a nonnegative
+ * realm number (that number might be reused in other shards). And each account, file, and smart
+ * contract instance within a given realm has a nonnegative number (which might be reused in other
+ * realms).  Every account, file, and smart contract instance is within exactly one realm. So a
+ * FileID is a triplet of numbers, like 0.1.2 for entity number 2 within realm 1  within shard 0.
+ * Each realm maintains a single counter for assigning numbers,  so if there is a file with ID
+ * 0.1.2, then there won't be an account or smart  contract instance with ID 0.1.2.
+ *
+ * Everything is partitioned into realms so that each Solidity smart contract can  access everything
+ * in just a single realm, locking all those entities while it's  running, but other smart contracts
+ * could potentially run in other realms in  parallel. So realms allow Solidity to be parallelized
+ * somewhat, even though the  language itself assumes everything is serial.
+ */
+message ShardID {
+    /**
+     * the shard number (nonnegative)
+     */
+    int64 shardNum = 1;
+}
+
+/**
+ * The ID for a realm. Within a given shard, every realm has a unique ID. Each account, file, and
+ * contract instance belongs to exactly one realm.
+ */
+message RealmID {
+    /**
+     * The shard number (nonnegative)
+     */
+    int64 shardNum = 1;
+
+    /**
+     * The realm number (nonnegative)
+     */
+    int64 realmNum = 2;
+}
+
+/**
+ * The ID for an a cryptocurrency account 
+ */
+message AccountID {
+    /**
+     * The shard number (nonnegative)
+     */
+    int64 shardNum = 1;
+
+    /**
+     * The realm number (nonnegative)
+     */
+    int64 realmNum = 2;
+
+    /**
+     * A nonnegative account number unique within its realm
+     */
+    int64 accountNum = 3;
+}
+
+/**
+ * The ID for a file 
+ */
+message FileID {
+    /**
+     * The shard number (nonnegative)
+     */
+    int64 shardNum = 1;
+
+    /**
+     * The realm number (nonnegative)
+     */
+    int64 realmNum = 2;
+
+    /**
+     * A nonnegative File number unique within its realm
+     */
+    int64 fileNum = 3;
+}
+
+/**
+ * The ID for a smart contract instance 
+ */
+message ContractID {
+    /**
+     * The shard number (nonnegative)
+     */
+    int64 shardNum = 1;
+
+    /**
+     * The realm number (nonnegative)
+     */
+    int64 realmNum = 2;
+
+    /**
+     * A nonnegative number unique within its realm
+     */
+    int64 contractNum = 3;
+}
+
+/**
+ * The ID for a transaction. This is used for retrieving receipts and records for a transaction, for
+ * appending to a file right after creating it, for instantiating a smart contract with bytecode in
+ * a file just created, and internally by the network for detecting when duplicate transactions are
+ * submitted. A user might get a transaction processed faster by submitting it to N nodes, each with
+ * a different node account, but all with the same TransactionID. Then, the transaction will take
+ * effect when the first of all those nodes submits the transaction and it reaches consensus. The
+ * other transactions will not take effect. So this could make the transaction take effect faster,
+ * if any given node might be slow. However, the full transaction fee is charged for each
+ * transaction, so the total fee is N times as much if the transaction is sent to N nodes.
+ *
+ * Applicable to Scheduled Transactions:
+ *  - The ID of a Scheduled Transaction has transactionValidStart and accountIDs inherited from the
+ *    ScheduleCreate transaction that created it. That is to say that they are equal
+ *  - The scheduled property is true for Scheduled Transactions
+ *  - transactionValidStart, accountID and scheduled properties should be omitted
+ */
+message TransactionID {
+    /**
+     * The transaction is invalid if consensusTimestamp < transactionID.transactionStartValid
+     */
+    Timestamp transactionValidStart = 1;
+
+    /**
+     * The Account ID that paid for this transaction
+     */
+    AccountID accountID = 2;
+
+    /**
+     * Whether the Transaction is of type Scheduled or no
+     */
+    bool scheduled = 3;
+}
+
+/**
+ * An account, and the amount that it sends or receives during a cryptocurrency or token transfer.
+ */
+message AccountAmount {
+    /**
+     * The Account ID that sends/receives cryptocurrency or tokens
+     */
+    AccountID accountID = 1;
+
+    /**
+     * The amount of tinybars (for Crypto transfers) or in the lowest
+     * denomination (for Token transfers) that the account sends(negative) or
+     * receives(positive)
+     */
+    sint64 amount = 2;
+}
+
+/**
+ * A list of accounts and amounts to transfer out of each account (negative) or into it (positive).
+ */
+message TransferList {
+    /**
+     * Multiple list of AccountAmount pairs, each of which has an account and
+     * an amount to transfer into it (positive) or out of it (negative)
+     */
+    repeated AccountAmount accountAmounts = 1;
+}
+
+/**
+ * A sender account, a receiver account, and the serial number of an NFT of a Token with
+ * NON_FUNGIBLE_UNIQUE type. When minting NFTs the sender will be the default AccountID instance
+ * (0.0.0) and when burning NFTs, the receiver will be the default AccountID instance.
+ */
+message NftTransfer {
+    /**
+     * The accountID of the sender
+     */
+    AccountID senderAccountID = 1;
+
+    /**
+     * The accountID of the receiver
+     */
+    AccountID receiverAccountID = 2;
+
+    /**
+     * The serial number of the NFT
+     */
+    int64 serialNumber = 3;
+}
+
+/**
+ * A list of token IDs and amounts representing the transferred out (negative) or into (positive)
+ * amounts, represented in the lowest denomination of the token
+ */
+message TokenTransferList {
+    /**
+     * The ID of the token
+     */
+    TokenID token = 1;
+
+    /**
+     * Applicable to tokens of type FUNGIBLE_COMMON. Multiple list of AccountAmounts, each of which
+     * has an account and amount
+     */
+    repeated AccountAmount transfers = 2;
+
+    /**
+     * Applicable to tokens of type NON_FUNGIBLE_UNIQUE. Multiple list of NftTransfers, each of
+     * which has a sender and receiver account, including the serial number of the NFT
+     */
+    repeated NftTransfer nftTransfers = 3;
+}
+
+/**
+ * A rational number, used to set the amount of a value transfer to collect as a custom fee
+ */
+message Fraction {
+    /**
+     * The rational's numerator
+     */
+    int64 numerator = 1;
+
+    /**
+     * The rational's denominator; a zero value will result in FRACTION_DIVIDES_BY_ZERO
+     */
+    int64 denominator = 2;
+}
+
+/**
+ * Unique identifier for a topic (used by the consensus service)
+ */
+message TopicID {
+    /**
+     * The shard number (nonnegative)
+     */
+    int64 shardNum = 1;
+
+    /**
+     * The realm number (nonnegative)
+     */
+    int64 realmNum = 2;
+
+    /**
+     * Unique topic identifier within a realm (nonnegative).
+     */
+    int64 topicNum = 3;
+}
+
+/**
+ * Unique identifier for a token
+ */
+message TokenID {
+    /**
+     * A nonnegative shard number
+     */
+    int64 shardNum = 1;
+
+    /**
+     * A nonnegative realm number
+     */
+    int64 realmNum = 2;
+
+    /**
+     * A nonnegative token number
+     */
+    int64 tokenNum = 3;
+}
+
+/**
+ * Unique identifier for a Schedule
+ */
+message ScheduleID {
+    /**
+     * A nonnegative shard number
+     */
+    int64 shardNum = 1;
+
+    /**
+     * A nonnegative realm number
+     */
+    int64 realmNum = 2;
+
+    /**
+     * A nonnegative schedule number
+     */
+    int64 scheduleNum = 3;
+}
+
+/**
+ * Possible Token Types (IWA Compatibility).
+ * Apart from fungible and non-fungible, Tokens can have either a common or unique representation.
+ * This distinction might seem subtle, but it is important when considering how tokens can be traced
+ * and if they can have isolated and unique properties.
+ */
+enum TokenType {
+    /**
+     * Interchangeable value with one another, where any quantity of them has the same value as
+     * another equal quantity if they are in the same class.  Share a single set of properties, not
+     * distinct from one another. Simply represented as a balance or quantity to a given Hedera
+     * account.
+     */
+    FUNGIBLE_COMMON = 0;
+
+    /**
+     * Unique, not interchangeable with other tokens of the same type as they typically have
+     * different values.  Individually traced and can carry unique properties (e.g. serial number).
+     */
+    NON_FUNGIBLE_UNIQUE = 1;
+}
+
+/**
+ * Allows a set of resource prices to be scoped to a certain type of a HAPI operation. 
+ * 
+ * For example, the resource prices for a TokenMint operation are different between minting fungible
+ * and non-fungible tokens. This enum allows us to "mark" a set of prices as applying to one or the
+ * other.
+ * 
+ * Similarly, the resource prices for a basic TokenCreate without a custom fee schedule yield a
+ * total price of $1. The resource prices for a TokenCreate with a custom fee schedule are different
+ * and yield a total base price of $2.
+ */
+enum SubType {
+    /**
+     * The resource prices have no special scope 
+     */
+    DEFAULT = 0;
+
+    /**
+     * The resource prices are scoped to an operation on a fungible common token
+     */
+    TOKEN_FUNGIBLE_COMMON = 1;
+
+    /**
+     * The resource prices are scoped to an operation on a non-fungible unique token
+     */
+    TOKEN_NON_FUNGIBLE_UNIQUE = 2;
+
+    /**
+     * The resource prices are scoped to an operation on a fungible common
+     * token with a custom fee schedule
+     */
+    TOKEN_FUNGIBLE_COMMON_WITH_CUSTOM_FEES = 3;
+
+    /**
+     * The resource prices are scoped to an operation on a non-fungible unique
+     * token with a custom fee schedule
+     */
+    TOKEN_NON_FUNGIBLE_UNIQUE_WITH_CUSTOM_FEES = 4;
+}
+
+/**
+ * Possible Token Supply Types (IWA Compatibility).
+ * Indicates how many tokens can have during its lifetime.
+ */
+enum TokenSupplyType {
+    /**
+     * Indicates that tokens of that type have an upper bound of Long.MAX_VALUE.
+     */
+    INFINITE = 0;
+
+    /**
+     * Indicates that tokens of that type have an upper bound of maxSupply,
+     * provided on token creation.
+     */
+    FINITE = 1;
+}
+
+/**
+ * Possible Freeze statuses returned on TokenGetInfoQuery or CryptoGetInfoResponse in
+ * TokenRelationship
+ */
+enum TokenFreezeStatus {
+    /**
+     * UNDOCUMENTED
+     */
+    FreezeNotApplicable = 0;
+
+    /**
+     * UNDOCUMENTED
+     */
+    Frozen = 1;
+
+    /**
+     * UNDOCUMENTED
+     */
+    Unfrozen = 2;
+}
+
+/**
+ * Possible KYC statuses returned on TokenGetInfoQuery or CryptoGetInfoResponse in TokenRelationship
+ */
+enum TokenKycStatus {
+    /**
+     * UNDOCUMENTED
+     */
+    KycNotApplicable = 0;
+
+    /**
+     * UNDOCUMENTED
+     */
+    Granted = 1;
+
+    /**
+     * UNDOCUMENTED
+     */
+    Revoked = 2;
+}
+
+/**
+ * Possible Pause statuses returned on TokenGetInfoQuery
+ */
+ enum TokenPauseStatus {
+    /**
+     * Indicates that a Token has no pauseKey
+     */
+    PauseNotApplicable = 0;
+
+    /**
+     * Indicates that a Token is Paused
+     */
+    Paused = 1;
+
+    /**
+     * Indicates that a Token is Unpaused
+     */
+    Unpaused = 2;
+}
+
+/**
+ * A Key can be a public key from one of the three supported systems (ed25519, RSA-3072,  ECDSA with
+ * p384). Or, it can be the ID of a smart contract instance, which is authorized to act as if it had
+ * a key. If an account has an ed25519 key associated with it, then the corresponding private key
+ * must sign any transaction to transfer cryptocurrency out of it. And similarly for RSA and ECDSA.
+ *
+ * A Key can be a smart contract ID, which means that smart contract is to authorize operations as
+ * if it had signed with a key that it owned. The smart contract doesn't actually have a key, and
+ * doesn't actually sign a transaction. But it's as if a virtual transaction were created, and the
+ * smart contract signed it with a private key.
+ *
+ * A Key can be a "threshold key", which means a list of M keys, any N of which must sign in order
+ * for the threshold signature to be considered valid. The keys within a threshold signature may
+ * themselves be threshold signatures, to allow complex signature requirements.
+ *
+ * A Key can be a "key list" where all keys in the list must sign unless specified otherwise in the
+ * documentation for a specific transaction type (e.g.  FileDeleteTransactionBody).  Their use is
+ * dependent on context. For example, a Hedera file is created with a list of keys, where all of
+ * them must sign a transaction to create or modify the file, but only one of them is needed to sign
+ * a transaction to delete the file. So it's a single list that sometimes acts as a 1-of-M threshold
+ * key, and sometimes acts as an M-of-M threshold key.  A key list is always an M-of-M, unless
+ * specified otherwise in documentation. A key list can have nested key lists or threshold keys.
+ * Nested key lists are always M-of-M. A key list can have repeated Ed25519 public keys, but all
+ * repeated keys are only required to sign once.
+ *
+ * A Key can contain a ThresholdKey or KeyList, which in turn contain a Key, so this mutual
+ * recursion would allow nesting arbitrarily deep. A ThresholdKey which contains a list of primitive
+ * keys (e.g., ed25519) has 3 levels: ThresholdKey -> KeyList -> Key. A KeyList which contains
+ * several primitive keys (e.g., ed25519) has 2 levels: KeyList -> Key. A Key with 2 levels of
+ * nested ThresholdKeys has 7 levels: Key -> ThresholdKey -> KeyList -> Key -> ThresholdKey ->
+ * KeyList -> Key.
+ *
+ * Each Key should not have more than 46 levels, which implies 15 levels of nested ThresholdKeys.
+ * Only ed25519 primitive keys are currently supported.
+ */
+message Key {
+    oneof key {
+        /**
+         * smart contract instance that is authorized as if it had signed with a key
+         */
+        ContractID contractID = 1;
+
+        /**
+         * ed25519 public key bytes
+         */
+        bytes ed25519 = 2;
+
+        /**
+         * RSA-3072 public key bytes
+         */
+        bytes RSA_3072 = 3;
+
+        /**
+         * ECDSA with the p-384 curve public key bytes
+         */
+        bytes ECDSA_384 = 4;
+
+        /**
+         * a threshold N followed by a list of M keys, any N of which are required to form a valid
+         * signature
+         */
+        ThresholdKey thresholdKey = 5;
+
+        /**
+         * A list of Keys of the Key type.
+         */
+        KeyList keyList = 6;
+    }
+}
+
+/**
+ * A set of public keys that are used together to form a threshold signature.  If the threshold is N
+ * and there are M keys, then this is an N of M threshold signature. If an account is associated
+ * with ThresholdKeys, then a transaction to move cryptocurrency out of it must be signed by a list
+ * of M signatures, where at most M-N of them are blank, and the other at least N of them are valid
+ * signatures corresponding to at least N of the public keys listed here.
+ */
+message ThresholdKey {
+    /**
+     * A valid signature set must have at least this many signatures
+     */
+    uint32 threshold = 1;
+
+    /**
+     * List of all the keys that can sign
+     */
+    KeyList keys = 2;
+}
+
+/**
+ * A list of keys that requires all keys (M-of-M) to sign unless otherwise specified in
+ * documentation. A KeyList may contain repeated keys, but all repeated keys are only required to
+ * sign once.
+ */
+message KeyList {
+    /**
+     * list of keys
+     */
+    repeated Key keys = 1;
+}
+
+/**
+ * A Signature corresponding to a Key. It is a sequence of bytes holding a public key signature from
+ * one of the three supported systems (ed25519, RSA-3072,  ECDSA with p384). Or, it can be a list of
+ * signatures corresponding to a single threshold key. Or, it can be the ID of a smart contract
+ * instance, which is authorized to act as if it had a key. If an account has an ed25519 key
+ * associated with it, then the corresponding private key must sign any transaction to transfer
+ * cryptocurrency out of it.  If it has a smart contract ID associated with it, then that smart
+ * contract is allowed to transfer cryptocurrency out of it. The smart contract doesn't actually
+ * have a key, and  doesn't actually sign a transaction. But it's as if a virtual transaction were
+ * created, and the smart contract signed it with a private key. A key can also be a "threshold
+ * key", which means a list of M keys, any N of which must sign in order for the threshold signature
+ * to be considered valid. The keys within a threshold signature may themselves be threshold
+ * signatures, to allow complex signature requirements (this nesting is not supported in the
+ * currently, but will be supported in a future version of API). If a Signature message is missing
+ * the "signature" field, then this is considered to be a null signature. That is useful in cases
+ * such as threshold signatures, where some of the signatures can be null.  The definition of Key
+ * uses mutual recursion, so it allows nesting that is arbitrarily deep. But the current API only
+ * accepts Key messages up to 3 levels deep, such as a list of threshold keys, each of which is a
+ * list of primitive keys. Therefore, the matching Signature will have the same limitation. This
+ * restriction may be relaxed in future versions of the API, to allow deeper nesting.
+ *
+ * This message is deprecated and succeeded by SignaturePair and SignatureMap messages.
+ */
+message Signature {
+    option deprecated = true;
+
+    oneof signature {
+        /**
+         * smart contract virtual signature (always length zero)
+         */
+        bytes contract = 1;
+
+        /**
+         * ed25519 signature bytes
+         */
+        bytes ed25519 = 2;
+
+        /**
+         * RSA-3072 signature bytes
+         */
+        bytes RSA_3072 = 3;
+
+        /**
+         * ECDSA p-384 signature bytes
+         */
+        bytes ECDSA_384 = 4;
+
+        /**
+         * A list of signatures for a single N-of-M threshold Key. This must be a list of exactly M
+         * signatures, at least N of which are non-null.
+         */
+        ThresholdSignature thresholdSignature = 5;
+
+        /**
+         * A list of M signatures, each corresponding to a Key in a KeyList of the same length.
+         */
+        SignatureList signatureList = 6;
+    }
+}
+
+/**
+ * A signature corresponding to a ThresholdKey. For an N-of-M threshold key, this is a list of M
+ * signatures, at least N of which must be non-null.  This message is deprecated and succeeded by
+ * SignaturePair and SignatureMap messages.
+ */
+message ThresholdSignature {
+    option deprecated = true;
+
+    /**
+     * for an N-of-M threshold key, this is a list of M signatures, at least N of which must be
+     * non-null
+     */
+    SignatureList sigs = 2;
+}
+
+/**
+ * The signatures corresponding to a KeyList of the same length.  This message is deprecated and
+ * succeeded by SignaturePair and SignatureMap messages.
+ */
+message SignatureList {
+    option deprecated = true;
+
+    /**
+     * each signature corresponds to a Key in the KeyList
+     */
+    repeated Signature sigs = 2;
+}
+
+/**
+ * The client may use any number of bytes from 0 to the whole length of the public key for
+ * pubKeyPrefix.  If 0 bytes is used, then it is assumed that only one public key is used to sign.
+ * Only ed25519 keys and hence signatures are currently supported. 
+ */
+message SignaturePair {
+    /**
+     * First few bytes of the public key
+     */
+    bytes pubKeyPrefix = 1;
+
+    oneof signature {
+        /**
+         * smart contract virtual signature (always length zero)
+         */
+        bytes contract = 2;
+
+        /**
+         * ed25519 signature
+         */
+        bytes ed25519 = 3;
+
+        /**
+         * RSA-3072 signature
+         */
+        bytes RSA_3072 = 4;
+
+        /**
+         * ECDSA p-384 signature
+         */
+        bytes ECDSA_384 = 5;
+    }
+}
+
+/**
+ * A set of signatures corresponding to every unique public key used to sign a given transaction. If
+ * one public key matches more than one prefixes on the signature map, the transaction containing
+ * the map will fail immediately with the response code KEY_PREFIX_MISMATCH.
+ */
+message SignatureMap {
+    /**
+     * Each signature pair corresponds to a unique Key required to sign the transaction.
+     */
+    repeated SignaturePair sigPair = 1;
+}
+
+/**
+ * The transactions and queries supported by Hedera Hashgraph.
+ */
+enum HederaFunctionality {
+    /**
+     * UNSPECIFIED - Need to keep first value as unspecified because first element is ignored and
+     * not parsed (0 is ignored by parser)
+     */
+    NONE = 0;
+
+    /**
+     * crypto transfer
+     */
+    CryptoTransfer = 1;
+
+    /**
+     * crypto update account
+     */
+    CryptoUpdate = 2;
+
+    /**
+     * crypto delete account
+     */
+    CryptoDelete = 3;
+
+    /**
+     * Add a livehash to a crypto account
+     */
+    CryptoAddLiveHash = 4;
+
+    /**
+     * Delete a livehash from a crypto account
+     */
+    CryptoDeleteLiveHash = 5;
+
+    /**
+     * Smart Contract Call
+     */
+    ContractCall = 6;
+
+    /**
+     * Smart Contract Create Contract
+     */
+    ContractCreate = 7;
+
+    /**
+     * Smart Contract update contract
+     */
+    ContractUpdate = 8;
+
+    /**
+     * File Operation create file
+     */
+    FileCreate = 9;
+
+    /**
+     * File Operation append file
+     */
+    FileAppend = 10;
+
+    /**
+     * File Operation update file
+     */
+    FileUpdate = 11;
+
+    /**
+     * File Operation delete file
+     */
+    FileDelete = 12;
+
+    /**
+     * crypto get account balance
+     */
+    CryptoGetAccountBalance = 13;
+
+    /**
+     * crypto get account record
+     */
+    CryptoGetAccountRecords = 14;
+
+    /**
+     * Crypto get info
+     */
+    CryptoGetInfo = 15;
+
+    /**
+     * Smart Contract Call
+     */
+    ContractCallLocal = 16;
+
+    /**
+     * Smart Contract get info
+     */
+    ContractGetInfo = 17;
+
+    /**
+     * Smart Contract, get the byte code
+     */
+    ContractGetBytecode = 18;
+
+    /**
+     * Smart Contract, get by solidity ID
+     */
+    GetBySolidityID = 19;
+
+    /**
+     * Smart Contract, get by key
+     */
+    GetByKey = 20;
+
+    /**
+     * Get a live hash from a crypto account
+     */
+    CryptoGetLiveHash = 21;
+
+    /**
+     * Crypto, get the stakers for the node
+     */
+    CryptoGetStakers = 22;
+
+    /**
+     * File Operations get file contents
+     */
+    FileGetContents = 23;
+
+    /**
+     * File Operations get the info of the file
+     */
+    FileGetInfo = 24;
+
+    /**
+     * Crypto get the transaction records
+     */
+    TransactionGetRecord = 25;
+
+    /**
+     * Contract get the transaction records
+     */
+    ContractGetRecords = 26;
+
+    /**
+     * crypto create account
+     */
+    CryptoCreate = 27;
+
+    /**
+     * system delete file
+     */
+    SystemDelete = 28;
+
+    /**
+     * system undelete file
+     */
+    SystemUndelete = 29;
+
+    /**
+     * delete contract
+     */
+    ContractDelete = 30;
+
+    /**
+     * freeze
+     */
+    Freeze = 31;
+
+    /**
+     * Create Tx Record
+     */
+    CreateTransactionRecord = 32;
+
+    /**
+     * Crypto Auto Renew
+     */
+    CryptoAccountAutoRenew = 33;
+
+    /**
+     * Contract Auto Renew
+     */
+    ContractAutoRenew = 34;
+
+    /**
+     * Get Version
+     */
+    GetVersionInfo = 35;
+
+    /**
+     * Transaction Get Receipt
+     */
+    TransactionGetReceipt = 36;
+
+    /**
+     * Create Topic
+     */
+    ConsensusCreateTopic = 50;
+
+    /**
+     * Update Topic
+     */
+    ConsensusUpdateTopic = 51;
+
+    /**
+     * Delete Topic
+     */
+    ConsensusDeleteTopic = 52;
+
+    /**
+     * Get Topic information
+     */
+    ConsensusGetTopicInfo = 53;
+
+    /**
+     * Submit message to topic
+     */
+    ConsensusSubmitMessage = 54;
+
+    UncheckedSubmit = 55;
+    /**
+     * Create Token
+     */
+    TokenCreate = 56;
+
+    /**
+     * Get Token information
+     */
+    TokenGetInfo = 58;
+
+    /**
+     * Freeze Account
+     */
+    TokenFreezeAccount = 59;
+
+    /**
+     * Unfreeze Account
+     */
+    TokenUnfreezeAccount = 60;
+
+    /**
+     * Grant KYC to Account
+     */
+    TokenGrantKycToAccount = 61;
+
+    /**
+     * Revoke KYC from Account
+     */
+    TokenRevokeKycFromAccount = 62;
+
+    /**
+     * Delete Token
+     */
+    TokenDelete = 63;
+
+    /**
+     * Update Token
+     */
+    TokenUpdate = 64;
+
+    /**
+     * Mint tokens to treasury
+     */
+    TokenMint = 65;
+
+    /**
+     * Burn tokens from treasury
+     */
+    TokenBurn = 66;
+
+    /**
+     * Wipe token amount from Account holder
+     */
+    TokenAccountWipe = 67;
+
+    /**
+     * Associate tokens to an account
+     */
+    TokenAssociateToAccount = 68;
+
+    /**
+     * Dissociate tokens from an account
+     */
+    TokenDissociateFromAccount = 69;
+
+    /**
+     * Create Scheduled Transaction
+     */
+    ScheduleCreate = 70;
+
+    /**
+     * Delete Scheduled Transaction
+     */
+    ScheduleDelete = 71;
+
+    /**
+     * Sign Scheduled Transaction
+     */
+    ScheduleSign = 72;
+
+    /**
+     * Get Scheduled Transaction Information
+     */
+    ScheduleGetInfo = 73;
+
+    /**
+     * Get Token Account Nft Information
+     */
+    TokenGetAccountNftInfos = 74;
+
+    /**
+     * Get Token Nft Information
+     */
+    TokenGetNftInfo = 75;
+
+    /**
+     * Get Token Nft List Information
+     */
+    TokenGetNftInfos = 76;
+
+    /**
+     * Update a token's custom fee schedule, if permissible
+     */
+    TokenFeeScheduleUpdate = 77;
+
+    /**
+     * Pause the Token
+     */
+     TokenPause = 79;
+
+     /**
+      * Unpause the Token
+      */
+     TokenUnpause = 80;
+}
+
+/**
+ * A set of prices the nodes use in determining transaction and query fees, and constants involved
+ * in fee calculations.  Nodes multiply the amount of resources consumed by a transaction or query
+ * by the corresponding price to calculate the appropriate fee. Units are one-thousandth of a
+ * tinyCent.
+ */
+message FeeComponents {
+    /**
+     * A minimum, the calculated fee must be greater than this value
+     */
+    int64 min = 1;
+
+    /**
+     * A maximum, the calculated fee must be less than this value
+     */
+    int64 max = 2;
+
+    /**
+     * A constant contribution to the fee
+     */
+    int64 constant = 3;
+
+    /**
+     * The price of bandwidth consumed by a transaction, measured in bytes
+     */
+    int64 bpt = 4;
+
+    /**
+     * The price per signature verification for a transaction
+     */
+    int64 vpt = 5;
+
+    /**
+     * The price of RAM consumed by a transaction, measured in byte-hours
+     */
+    int64 rbh = 6;
+
+    /**
+     * The price of storage consumed by a transaction, measured in byte-hours
+     */
+    int64 sbh = 7;
+
+    /**
+     * The price of computation for a smart contract transaction, measured in gas
+     */
+    int64 gas = 8;
+
+    /**
+     * The price per hbar transferred for a transfer
+     */
+    int64 tv = 9;
+
+    /**
+     * The price of bandwidth for data retrieved from memory for a response, measured in bytes
+     */
+    int64 bpr = 10;
+
+    /**
+     * The price of bandwidth for data retrieved from disk for a response, measured in bytes
+     */
+    int64 sbpr = 11;
+}
+
+/**
+ * The fees for a specific transaction or query based on the fee data.
+ */
+message TransactionFeeSchedule {
+    /**
+     * A particular transaction or query
+     */
+    HederaFunctionality hederaFunctionality = 1;
+
+    /**
+     * Resource price coefficients
+     */
+    FeeData feeData = 2 [deprecated=true];
+
+    /**
+     * Resource price coefficients. Supports subtype price definition.
+     */
+    repeated FeeData fees = 3;
+}
+
+/**
+ * The total fee charged for a transaction. It is composed of three components – a node fee that
+ * compensates the specific node that submitted the transaction, a network fee that compensates the
+ * network for assigning the transaction a consensus timestamp, and a service fee that compensates
+ * the network for the ongoing maintenance of the consequences of the transaction.
+ */
+message FeeData {
+    /**
+     * Fee paid to the submitting node
+     */
+    FeeComponents nodedata = 1;
+
+    /**
+     * Fee paid to the network for processing a transaction into consensus
+     */
+    FeeComponents networkdata = 2;
+
+    /**
+     * Fee paid to the network for providing the service associated with the
+     * transaction; for instance, storing a file
+     */
+    FeeComponents servicedata = 3;
+
+    /**
+     * SubType distinguishing between different types of FeeData, correlating
+     * to the same HederaFunctionality
+     */
+    SubType subType = 4;
+}
+
+/**
+ * A list of resource prices fee for different transactions and queries and the time period at which
+ * this fee schedule will expire. Nodes use the prices to determine the fees for all transactions
+ * based on how much of those resources each transaction uses.
+ */
+message FeeSchedule {
+    /**
+     * List of price coefficients for network resources
+     */
+    repeated TransactionFeeSchedule transactionFeeSchedule = 1;
+
+    /**
+     * FeeSchedule expiry time
+     */
+    TimestampSeconds expiryTime = 2;
+}
+
+/**
+ * This contains two Fee Schedules with expiry timestamp.
+ */
+message CurrentAndNextFeeSchedule {
+    /**
+     * Contains current Fee Schedule
+     */
+    FeeSchedule currentFeeSchedule = 1;
+
+    /**
+     * Contains next Fee Schedule
+     */
+    FeeSchedule nextFeeSchedule = 2;
+}
+
+/**
+ * Contains the IP address and the port representing a service endpoint of a Node in a network. Used
+ * to reach the Hedera API and submit transactions to the network.
+ */
+message ServiceEndpoint {
+    /**
+     * The 32-bit IPv4 address of the node encoded in left to right order (e.g.  127.0.0.1 has 127
+     * as its first byte)
+     */
+    bytes ipAddressV4 = 1;
+
+    /**
+     * The port of the node
+     */
+    int32 port = 2;
+}
+
+/**
+ * The data about a node, including its service endpoints and the Hedera account to be paid for
+ * services provided by the node (that is, queries answered and transactions submitted.)
+ * 
+ * If the <tt>serviceEndpoint</tt> list is not set, or empty, then the endpoint given by the
+ * (deprecated) <tt>ipAddress</tt> and <tt>portno</tt> fields should be used.
+ *
+ * All fields are populated in the 0.0.102 address book file while only fields that start with # are
+ * populated in the 0.0.101 address book file.
+ */
+message NodeAddress {
+    /**
+     * The IP address of the Node with separator & octets encoded in UTF-8.  Usage is deprecated,
+     * ServiceEndpoint is preferred to retrieve a node's list of IP addresses and ports
+     */
+    bytes ipAddress = 1 [deprecated=true];
+
+    /**
+     * The port number of the grpc server for the node.  Usage is deprecated, ServiceEndpoint is
+     * preferred to retrieve a node's list of IP addresses and ports
+     */
+    int32 portno = 2 [deprecated=true];
+
+    /**
+     * Usage is deprecated, nodeAccountId is preferred to retrieve a node's account ID
+     */
+    bytes memo = 3 [deprecated=true];
+
+    /**
+     * The node's X509 RSA public key used to sign stream files (e.g., record stream 
+     * files). Precisely, this field is a string of hexadecimal characters which, 
+     * translated to binary, are the public key's DER encoding.  
+     */
+    string RSA_PubKey = 4;
+
+    /**
+     * # A non-sequential identifier for the node
+     */
+    int64 nodeId = 5;
+
+    /**
+     * # The account to be paid for queries and transactions sent to this node
+     */
+    AccountID nodeAccountId = 6;
+
+    /**
+     * # Hash of the node's TLS certificate. Precisely, this field is a string of 
+     * hexadecimal characters which, translated to binary, are the SHA-384 hash of 
+     * the UTF-8 NFKD encoding of the node's TLS cert in PEM format. Its value can be 
+     * used to verify the node's certificate it presents during TLS negotiations.
+     */
+    bytes nodeCertHash = 7;
+
+    /**
+     * # A node's service IP addresses and ports
+     */
+    repeated ServiceEndpoint serviceEndpoint = 8;
+
+    /**
+     * A description of the node, with UTF-8 encoding up to 100 bytes
+     */
+    string description = 9;
+
+    /**
+     * The amount of tinybars staked to the node
+     */
+    int64 stake = 10;
+}
+
+/**
+ * A list of nodes and their metadata that contains all details of the nodes for the network.  Used
+ * to parse the contents of system files <tt>0.0.101</tt> and <tt>0.0.102</tt>.
+ */
+message NodeAddressBook {
+    /**
+     * Metadata of all nodes in the network
+     */
+    repeated NodeAddress nodeAddress = 1;
+}
+
+/**
+ * Hedera follows semantic versioning (https://semver.org/) for both the HAPI protobufs and the
+ * Services software.  This type allows the <tt>getVersionInfo</tt> query in the
+ * <tt>NetworkService</tt> to return the deployed versions of both protobufs and software on the
+ * node answering the query.
+ */
+message SemanticVersion {
+    /**
+     * Increases with incompatible API changes
+     */
+    int32 major = 1;
+
+    /**
+     * Increases with backwards-compatible new functionality
+     */
+    int32 minor = 2;
+
+    /**
+     * Increases with backwards-compatible bug fixes
+     */
+    int32 patch = 3;
+
+    /**
+     * A pre-release version MAY be denoted by appending a hyphen and a series of dot separated
+     * identifiers (https://semver.org/#spec-item-9); so given a semver 0.14.0-alpha.1+21AF26D3,
+     * this field would contain 'alpha.1'
+     */
+    string pre = 4;
+
+    /**
+     * Build metadata MAY be denoted by appending a plus sign and a series of dot separated
+     * identifiers immediately following the patch or pre-release version
+     * (https://semver.org/#spec-item-10); so given a semver 0.14.0-alpha.1+21AF26D3, this field
+     * would contain '21AF26D3'
+     */
+    string build = 5;
+}
+
+/**
+ * UNDOCUMENTED
+ */
+message Setting {
+    /**
+     * name of the property
+     */
+    string name = 1;
+
+    /**
+     * value of the property
+     */
+    string value = 2;
+
+    /**
+     * any data associated with property
+     */
+    bytes data = 3;
+}
+
+/**
+ * UNDOCUMENTED
+ */
+message ServicesConfigurationList {
+    /**
+     * list of name value pairs of the application properties
+     */
+    repeated Setting nameValue = 1;
+}
+
+/**
+ * Token's information related to the given Account
+ */
+message TokenRelationship {
+    /**
+     * The ID of the token
+     */
+    TokenID tokenId = 1;
+
+    /**
+     * The Symbol of the token
+     */
+    string symbol = 2;
+
+    /**
+     * For token of type FUNGIBLE_COMMON - the balance that the Account holds in the smallest
+     * denomination. For token of type NON_FUNGIBLE_UNIQUE - the number of NFTs held by the account
+     */
+    uint64 balance = 3;
+
+    /**
+     * The KYC status of the account (KycNotApplicable, Granted or Revoked). If the token does not
+     * have KYC key, KycNotApplicable is returned
+     */
+    TokenKycStatus kycStatus = 4;
+
+    /**
+     * The Freeze status of the account (FreezeNotApplicable, Frozen or Unfrozen). If the token does
+     * not have Freeze key, FreezeNotApplicable is returned
+     */
+    TokenFreezeStatus freezeStatus = 5;
+
+    /**
+     * Tokens divide into <tt>10<sup>decimals</sup></tt> pieces
+     */
+    uint32 decimals = 6;
+
+    /**
+     * Specifies if the relationship is created implicitly. False : explicitly associated, True :
+     * implicitly associated.
+     */
+    bool automatic_association = 7;
+}
+
+/**
+ * A number of <i>transferable units</i> of a certain token.
+ *
+ * The transferable unit of a token is its smallest denomination, as given by the token's
+ * <tt>decimals</tt> property---each minted token contains <tt>10<sup>decimals</sup></tt>
+ * transferable units. For example, we could think of the cent as the transferable unit of the US
+ * dollar (<tt>decimals=2</tt>); and the tinybar as the transferable unit of hbar
+ * (<tt>decimals=8</tt>).
+ *
+ * Transferable units are not directly comparable across different tokens.
+ */
+message TokenBalance {
+    /**
+     * A unique token id
+     */
+    TokenID tokenId = 1;
+
+    /**
+     * Number of transferable units of the identified token. For token of type FUNGIBLE_COMMON -
+     * balance in the smallest denomination. For token of type NON_FUNGIBLE_UNIQUE - the number of
+     * NFTs held by the account
+     */
+    uint64 balance = 2;
+
+    /**
+     * Tokens divide into <tt>10<sup>decimals</sup></tt> pieces
+     */
+    uint32 decimals = 3;
+}
+
+/**
+ * A sequence of token balances
+ */
+message TokenBalances {
+    repeated TokenBalance tokenBalances = 1;
+}
+
+/* A token - account association */
+message TokenAssociation {
+    TokenID token_id = 1;  // The token involved in the association
+    AccountID account_id = 2; // The account involved in the association
+}

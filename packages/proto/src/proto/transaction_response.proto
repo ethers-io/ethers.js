@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package proto;
+
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "response_code.proto";
+
+
+/**
+ * When the client sends the node a transaction of any kind, the node replies with this, which
+ * simply says that the transaction passed the precheck (so the node will submit it to the network)
+ * or it failed (so it won't). If the fee offered was insufficient, this will also contain the
+ * amount of the required fee. To learn the consensus result, the client should later obtain a
+ * receipt (free), or can buy a more detailed record (not free).
+ */
+message TransactionResponse {
+	/**
+	 * The response code that indicates the current status of the transaction.
+	 */
+	ResponseCodeEnum nodeTransactionPrecheckCode = 1;
+
+	/**
+     * If the response code was INSUFFICIENT_TX_FEE, the actual transaction fee that would be
+     * required to execute the transaction.
+	 */
+	uint64 cost = 2;
+}
