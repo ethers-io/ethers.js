@@ -53,7 +53,7 @@ function getDefaultProvider(network?: Networkish, options?: any): BaseProvider {
         // Handle http and ws (and their secure variants)
         const match = network.match(/^(ws|http)s?:/i);
         if (match) {
-            switch (match[1]) {
+            switch (match[1].toLocaleLowerCase()) {
                 case "http":
                     return new JsonRpcProvider(network);
                 case "ws":
