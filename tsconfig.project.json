@@ -10,6 +10,9 @@
   },
   "references": [
     {
+      "path": "./packages/hedera-sdk-js"
+    },
+    {
       "path": "./packages/logger"
     },
     {
@@ -35,6 +38,9 @@
     },
     {
       "path": "./packages/basex"
+    },
+    {
+      "path": "./packages/proto"
     },
     {
       "path": "./packages/random"
