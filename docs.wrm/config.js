@@ -340,7 +340,7 @@ module.exports = {
       "link-wiki-hmac": "https:/\/en.wikipedia.org/wiki/HMAC",
       "link-wiki-iban": "https:/\/en.wikipedia.org/wiki/International_Bank_Account_Number",
       "link-wiki-ieee754": "https:/\/en.wikipedia.org/wiki/Double-precision_floating-point_format",
-      "link-wiki-observer-pattern": { name: "Obeserver Pattern", url: "https:/\/en.wikipedia.org/wiki/Observer_pattern" },
+      "link-wiki-observer-pattern": { name: "Observer Pattern", url: "https:/\/en.wikipedia.org/wiki/Observer_pattern" },
       "link-wiki-phishing": "https:/\/en.wikipedia.org/wiki/Phishing",
       "link-wiki-ripemd": "https:/\/en.m.wikipedia.org/wiki/RIPEMD",
       "link-wiki-sha2": "https:/\/en.wikipedia.org/wiki/SHA-2",
