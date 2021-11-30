@@ -23,7 +23,7 @@ Consumes the output of the Solidity compiler, extracting the ABI
 and bytecode from it, allowing for the various formats the solc
 compiler has emitted over its life.
 
-_property: contractFactory.connect(signer) => [[Contract]] @<ContractFactory-connect>
+_property: contractFactory.connect(signer) => [[ContractFactory]] @<ContractFactory-connect>
 
 Returns a **new instance** of the ContractFactory with the same //interface//
 and //bytecode//, but with a different //signer//.
