@@ -19240,7 +19240,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "networks/5.5.0";
+	exports.version = "networks/5.5.1";
 
 	});
 
@@ -19350,6 +19350,7 @@
 	    name: "classicMordor",
 	    _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/mordor", "classicMordor")
 	};
+	// See: https://chainlist.org
 	var networks = {
 	    unspecified: { chainId: 0, name: "unspecified" },
 	    homestead: homestead,
@@ -19391,6 +19392,11 @@
 	    xdai: { chainId: 100, name: "xdai" },
 	    matic: { chainId: 137, name: "matic" },
 	    maticmum: { chainId: 80001, name: "maticmum" },
+	    optimism: { chainId: 10, name: "optimism" },
+	    "optimism-kovan": { chainId: 69, name: "optimism-kovan" },
+	    "optimism-goerli": { chainId: 420, name: "optimism-goerli" },
+	    arbitrum: { chainId: 42161, name: "arbitrum" },
+	    "arbitrum-rinkeby": { chainId: 421611, name: "arbitrum-rinkeby" },
 	    bnb: { chainId: 56, name: "bnb" },
 	    bnbt: { chainId: 97, name: "bnbt" },
 	};
@@ -19515,7 +19521,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "web/5.5.0";
+	exports.version = "web/5.5.1";
 
 	});
 
@@ -19739,6 +19745,32 @@
 	                key: "Authorization",
 	                value: "Basic " + (0, lib$p.encode)((0, lib$8.toUtf8Bytes)(authorization))
 	            };
+	        }
+	    }
+	    var reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
+	    var dataMatch = ((url) ? url.match(reData) : null);
+	    if (dataMatch) {
+	        try {
+	            var response = {
+	                statusCode: 200,
+	                statusMessage: "OK",
+	                headers: { "content-type": dataMatch[1] },
+	                body: (0, lib$p.decode)(dataMatch[2])
+	            };
+	            var result = response.body;
+	            if (processFunc) {
+	                result = processFunc(response.body, response);
+	            }
+	            return Promise.resolve(result);
+	        }
+	        catch (error) {
+	            logger.throwError("processing response error", lib.Logger.errors.SERVER_ERROR, {
+	                body: bodyify(dataMatch[1], dataMatch[2]),
+	                error: error,
+	                requestBody: null,
+	                requestMethod: "GET",
+	                url: url
+	            });
 	        }
 	    }
 	    if (body) {
@@ -20225,7 +20257,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.5.0";
+	exports.version = "providers/5.5.1";
 
 	});
 
@@ -21204,7 +21236,7 @@
 	                    case 16:
 	                        metadata = _h.sent();
 	                        // Pull the image URL out
-	                        if (!metadata || typeof (metadata.image) !== "string" || !metadata.image.match(/^https:\/\//i)) {
+	                        if (!metadata || typeof (metadata.image) !== "string" || !metadata.image.match(/^(https:\/\/|data:)/i)) {
 	                            return [2 /*return*/, null];
 	                        }
 	                        linkage.push({ type: "metadata", content: JSON.stringify(metadata) });
@@ -22803,6 +22835,9 @@
 	                    case 3:
 	                        // ENS name; forward lookup
 	                        resolver = _a.sent();
+	                        if (!resolver) {
+	                            return [2 /*return*/, null];
+	                        }
 	                        _a.label = 4;
 	                    case 4: return [4 /*yield*/, resolver.getAvatar()];
 	                    case 5:
@@ -24344,6 +24379,18 @@
 	            case "maticmum":
 	                host = "polygon-mumbai.g.alchemy.com/v2/";
 	                break;
+	            case "arbitrum":
+	                host = "arb-mainnet.g.alchemy.com/v2/";
+	                break;
+	            case "arbitrum-rinkeby":
+	                host = "arb-rinkeby.g.alchemy.com/v2/";
+	                break;
+	            case "optimism":
+	                host = "opt-mainnet.g.alchemy.com/v2/";
+	                break;
+	            case "optimism-kovan":
+	                host = "opt-kovan.g.alchemy.com/v2/";
+	                break;
 	            default:
 	                logger.throwArgumentError("unsupported network", "network", arguments[0]);
 	        }
@@ -25823,6 +25870,18 @@
 	            case "maticmum":
 	                host = "polygon-mumbai.infura.io";
 	                break;
+	            case "optimism":
+	                host = "optimism-mainnet.infura.io";
+	                break;
+	            case "optimism-kovan":
+	                host = "optimism-kovan.infura.io";
+	                break;
+	            case "arbitrum":
+	                host = "arbitrum-mainnet.infura.io";
+	                break;
+	            case "arbitrum-rinkeby":
+	                host = "arbitrum-rinkeby.infura.io";
+	                break;
 	            default:
 	                logger.throwError("unsupported network", lib.Logger.errors.INVALID_ARGUMENT, {
 	                    argument: "network",
@@ -26803,7 +26862,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.5.1";
+	exports.version = "ethers/5.5.2";
 
 	});
 

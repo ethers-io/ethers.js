@@ -17273,7 +17273,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.5.0";
+const version$k = "networks/5.5.1";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -17374,6 +17374,7 @@ const classicMordor = {
     name: "classicMordor",
     _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/mordor", "classicMordor")
 };
+// See: https://chainlist.org
 const networks = {
     unspecified: { chainId: 0, name: "unspecified" },
     homestead: homestead,
@@ -17415,6 +17416,11 @@ const networks = {
     xdai: { chainId: 100, name: "xdai" },
     matic: { chainId: 137, name: "matic" },
     maticmum: { chainId: 80001, name: "maticmum" },
+    optimism: { chainId: 10, name: "optimism" },
+    "optimism-kovan": { chainId: 69, name: "optimism-kovan" },
+    "optimism-goerli": { chainId: 420, name: "optimism-goerli" },
+    arbitrum: { chainId: 42161, name: "arbitrum" },
+    "arbitrum-rinkeby": { chainId: 421611, name: "arbitrum-rinkeby" },
     bnb: { chainId: 56, name: "bnb" },
     bnbt: { chainId: 97, name: "bnbt" },
 };
@@ -17516,7 +17522,7 @@ var index$2 = /*#__PURE__*/Object.freeze({
 	encode: encode$1
 });
 
-const version$l = "web/5.5.0";
+const version$l = "web/5.5.1";
 
 "use strict";
 var __awaiter$7 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -17653,6 +17659,32 @@ function _fetchData(connection, body, processFunc) {
                 key: "Authorization",
                 value: "Basic " + encode$1(toUtf8Bytes(authorization))
             };
+        }
+    }
+    const reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
+    const dataMatch = ((url) ? url.match(reData) : null);
+    if (dataMatch) {
+        try {
+            const response = {
+                statusCode: 200,
+                statusMessage: "OK",
+                headers: { "content-type": dataMatch[1] },
+                body: decode$1(dataMatch[2])
+            };
+            let result = response.body;
+            if (processFunc) {
+                result = processFunc(response.body, response);
+            }
+            return Promise.resolve(result);
+        }
+        catch (error) {
+            logger$r.throwError("processing response error", Logger.errors.SERVER_ERROR, {
+                body: bodyify(dataMatch[1], dataMatch[2]),
+                error: error,
+                requestBody: null,
+                requestMethod: "GET",
+                url: url
+            });
         }
     }
     if (body) {
@@ -18100,7 +18132,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.5.0";
+const version$m = "providers/5.5.1";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -18853,6 +18885,8 @@ class Resolver {
         return __awaiter$9(this, void 0, void 0, function* () {
             const linkage = [];
             try {
+                // test data for ricmoo.eth
+                //const avatar = "eip155:1/erc721:0x265385c7f4132228A0d54EB1A9e7460b91c0cC68/29233";
                 const avatar = yield this.getText("avatar");
                 if (avatar == null) {
                     return null;
@@ -18923,7 +18957,7 @@ class Resolver {
                             // Get the token metadata
                             const metadata = yield fetchJson(metadataUrl);
                             // Pull the image URL out
-                            if (!metadata || typeof (metadata.image) !== "string" || !metadata.image.match(/^https:\/\//i)) {
+                            if (!metadata || typeof (metadata.image) !== "string" || !metadata.image.match(/^(https:\/\/|data:)/i)) {
                                 return null;
                             }
                             linkage.push({ type: "metadata", content: JSON.stringify(metadata) });
@@ -20115,6 +20149,9 @@ class BaseProvider extends Provider {
             else {
                 // ENS name; forward lookup
                 resolver = yield this.getResolver(nameOrAddress);
+                if (!resolver) {
+                    return null;
+                }
             }
             const avatar = yield resolver.getAvatar();
             if (avatar == null) {
@@ -21245,6 +21282,18 @@ class AlchemyProvider extends UrlJsonRpcProvider {
             case "maticmum":
                 host = "polygon-mumbai.g.alchemy.com/v2/";
                 break;
+            case "arbitrum":
+                host = "arb-mainnet.g.alchemy.com/v2/";
+                break;
+            case "arbitrum-rinkeby":
+                host = "arb-rinkeby.g.alchemy.com/v2/";
+                break;
+            case "optimism":
+                host = "opt-mainnet.g.alchemy.com/v2/";
+                break;
+            case "optimism-kovan":
+                host = "opt-kovan.g.alchemy.com/v2/";
+                break;
             default:
                 logger$x.throwArgumentError("unsupported network", "network", arguments[0]);
         }
@@ -22369,6 +22418,18 @@ class InfuraProvider extends UrlJsonRpcProvider {
             case "maticmum":
                 host = "polygon-mumbai.infura.io";
                 break;
+            case "optimism":
+                host = "optimism-mainnet.infura.io";
+                break;
+            case "optimism-kovan":
+                host = "optimism-kovan.infura.io";
+                break;
+            case "arbitrum":
+                host = "arbitrum-mainnet.infura.io";
+                break;
+            case "arbitrum-rinkeby":
+                host = "arbitrum-rinkeby.infura.io";
+                break;
             default:
                 logger$B.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
                     argument: "network",
@@ -23091,7 +23152,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$p = "ethers/5.5.1";
+const version$p = "ethers/5.5.2";
 
 "use strict";
 const logger$I = new Logger(version$p);

@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { encode as base64Encode } from "@ethersproject/base64";
+import { decode as base64Decode, encode as base64Encode } from "@ethersproject/base64";
 import { hexlify, isBytesLike } from "@ethersproject/bytes";
 import { shallowCopy } from "@ethersproject/properties";
 import { toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
@@ -90,6 +90,32 @@ export function _fetchData(connection, body, processFunc) {
                 key: "Authorization",
                 value: "Basic " + base64Encode(toUtf8Bytes(authorization))
             };
+        }
+    }
+    const reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
+    const dataMatch = ((url) ? url.match(reData) : null);
+    if (dataMatch) {
+        try {
+            const response = {
+                statusCode: 200,
+                statusMessage: "OK",
+                headers: { "content-type": dataMatch[1] },
+                body: base64Decode(dataMatch[2])
+            };
+            let result = response.body;
+            if (processFunc) {
+                result = processFunc(response.body, response);
+            }
+            return Promise.resolve(result);
+        }
+        catch (error) {
+            logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
+                body: bodyify(dataMatch[1], dataMatch[2]),
+                error: error,
+                requestBody: null,
+                requestMethod: "GET",
+                url: url
+            });
         }
     }
     if (body) {

@@ -121,6 +121,32 @@ function _fetchData(connection, body, processFunc) {
             };
         }
     }
+    var reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
+    var dataMatch = ((url) ? url.match(reData) : null);
+    if (dataMatch) {
+        try {
+            var response = {
+                statusCode: 200,
+                statusMessage: "OK",
+                headers: { "content-type": dataMatch[1] },
+                body: (0, base64_1.decode)(dataMatch[2])
+            };
+            var result = response.body;
+            if (processFunc) {
+                result = processFunc(response.body, response);
+            }
+            return Promise.resolve(result);
+        }
+        catch (error) {
+            logger.throwError("processing response error", logger_1.Logger.errors.SERVER_ERROR, {
+                body: bodyify(dataMatch[1], dataMatch[2]),
+                error: error,
+                requestBody: null,
+                requestMethod: "GET",
+                url: url
+            });
+        }
+    }
     if (body) {
         options.method = "POST";
         options.body = body;
