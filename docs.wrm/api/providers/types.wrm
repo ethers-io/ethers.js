@@ -210,7 +210,7 @@ _property: transactionRequest.gasLimit => [[BigNumber]] | Promise<[[BigNumber]]>
 The maximum amount of gas this transaction is permitted to use.
 
 If left unspecified, ethers will use ``estimateGas`` to determine the value
-to use. For transactions with unpredicatable gas estiamtes, this may be required
+to use. For transactions with unpredicatable gas estimates, this may be required
 to specify explicitly.
 
 _property: transactionRequest.gasPrice => [[BigNumber]] | Promise<[[BigNumber]]>
@@ -221,7 +221,7 @@ if ``maxFeePerGas`` or ``maxPriorityFeePerGas`` is given.
 
 _property: transactionRequest.maxFeePerGas => [[BigNumber]] | Promise<[[BigNumber]]>
 The maximum price (in wei) per unit of gas this transaction will pay for the
-[[link-eip-1559]] base fee.
+combined [[link-eip-1559]] block's base fee and this transaction's priority fee.
 
 Most developers should leave this unspecified and use the default value that
 ethers determines from the network.
@@ -230,9 +230,10 @@ This may not be specified for transactions with ``type`` set to ``0`` or if ``ga
 is specified..
 
 _property: transactionRequest.maxPriorityFeePerGas => [[BigNumber]] | Promise<[[BigNumber]]>
-The price (in wei) per unit of gas this transaction will pay for the
-[[link-eip-1559]] priority fee. This is **included in** the ``maxFeePerGass``,
-so this will **not affect** the total maximum cost set with ``maxFeePerGas``.
+The price (in wei) per unit of gas this transaction will allow in addition to
+the [[link-eip-1559]] block's base fee to bribe miners into giving this transaction
+priority. This is **included in** the ``maxFeePerGas``, so this will **not affect**
+the total maximum cost set with ``maxFeePerGas``.
 
 Most developers should leave this unspecified and use the default value that
 ethers determines from the network.
