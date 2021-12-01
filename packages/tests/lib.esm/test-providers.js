@@ -1254,14 +1254,14 @@ describe("Resolve ENS avatar", function () {
     });
     [
         { title: "ERC-1155", name: "nick.eth", value: "https:/\/lh3.googleusercontent.com/hKHZTZSTmcznonu8I6xcVZio1IF76fq0XmcxnvUykC-FGuVJ75UPdLDlKJsfgVXH9wOSmkyHw0C39VAYtsGyxT7WNybjQ6s3fM3macE" },
-        { title: "ERC-721", name: "brantly.eth", value: "https:/\/wrappedpunks.com:3000/images/punks/2430.png" },
+        { title: "ERC-721", name: "brantly.eth", value: "https:/\/api.wrappedpunks.com/images/punks/2430.png" }
     ].forEach((test) => {
         it(`Resolves avatar for ${test.title}`, function () {
             return __awaiter(this, void 0, void 0, function* () {
                 this.timeout(60000);
                 const provider = ethers.getDefaultProvider("homestead", getApiKeys("homestead"));
                 const avatar = yield provider.getAvatar(test.name);
-                assert.equal(test.value, avatar, "avatar url");
+                assert.equal(avatar, test.value, "avatar url");
             });
         });
     });

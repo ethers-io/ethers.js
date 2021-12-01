@@ -86,6 +86,18 @@ var AlchemyProvider = /** @class */ (function (_super) {
             case "maticmum":
                 host = "polygon-mumbai.g.alchemy.com/v2/";
                 break;
+            case "arbitrum":
+                host = "arb-mainnet.g.alchemy.com/v2/";
+                break;
+            case "arbitrum-rinkeby":
+                host = "arb-rinkeby.g.alchemy.com/v2/";
+                break;
+            case "optimism":
+                host = "opt-mainnet.g.alchemy.com/v2/";
+                break;
+            case "optimism-kovan":
+                host = "opt-kovan.g.alchemy.com/v2/";
+                break;
             default:
                 logger.throwArgumentError("unsupported network", "network", arguments[0]);
         }

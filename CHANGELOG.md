@@ -4,6 +4,15 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+ethers/v5.5.2 (2021-11-30 19:16)
+--------------------------------
+
+  - Fixed test case for getAvatar; url has moved ([617714d](https://github.com/ethers-io/ethers.js/commit/617714d19632c7b4789f042ef8357f858421fbae))
+  - Added basic redirect support. ([42784b8](https://github.com/ethers-io/ethers.js/commit/42784b8d38a96170d19ea8adcbc42ebf7415804c))
+  - Added arbitrum and optimism to networks and providers. ([#2335](https://github.com/ethers-io/ethers.js/issues/2335); [0844de4](https://github.com/ethers-io/ethers.js/commit/0844de4eb45eb4170fafb6f2a239b53b6be22f1c))
+  - Added support for data URLs for avatar metadata. ([b8391b0](https://github.com/ethers-io/ethers.js/commit/b8391b0e61bf3627702668920c4fd6506f9bdc60))
+  - Fixed getAvatar for unconfigured ENS names. ([1e1c93e](https://github.com/ethers-io/ethers.js/commit/1e1c93effa083765be52f3dee10400a9b3eeb003))
+
 ethers/v5.5.1 (2021-10-20 03:59)
 --------------------------------
 

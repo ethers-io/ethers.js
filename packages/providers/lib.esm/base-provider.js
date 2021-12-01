@@ -329,6 +329,8 @@ export class Resolver {
         return __awaiter(this, void 0, void 0, function* () {
             const linkage = [];
             try {
+                // test data for ricmoo.eth
+                //const avatar = "eip155:1/erc721:0x265385c7f4132228A0d54EB1A9e7460b91c0cC68/29233";
                 const avatar = yield this.getText("avatar");
                 if (avatar == null) {
                     return null;
@@ -399,7 +401,7 @@ export class Resolver {
                             // Get the token metadata
                             const metadata = yield fetchJson(metadataUrl);
                             // Pull the image URL out
-                            if (!metadata || typeof (metadata.image) !== "string" || !metadata.image.match(/^https:\/\//i)) {
+                            if (!metadata || typeof (metadata.image) !== "string" || !metadata.image.match(/^(https:\/\/|data:)/i)) {
                                 return null;
                             }
                             linkage.push({ type: "metadata", content: JSON.stringify(metadata) });
@@ -1591,6 +1593,9 @@ export class BaseProvider extends Provider {
             else {
                 // ENS name; forward lookup
                 resolver = yield this.getResolver(nameOrAddress);
+                if (!resolver) {
+                    return null;
+                }
             }
             const avatar = yield resolver.getAvatar();
             if (avatar == null) {
