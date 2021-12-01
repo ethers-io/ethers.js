@@ -96,13 +96,14 @@ describe the generic ways to interact with the properties added
 at run-time during the **Contract** constructor.
 
 
-_heading: Read-Only Methods (constant; i.e. view or pure)  @<Contract--readonly>
+_heading: Read-Only Methods (constant)  @<Contract--readonly>
 
-A constant method is read-only and evaluates a small amount of EVM
-code against the current blockchain state and can be computed by
-asking a single node, which can return a result. It is therefore
-free and does not require any ether, but **cannot make changes** to
-the blockchain state..
+A constant method (denoted by ``pure`` or ``view`` in Solidity)
+is read-only and evaluates a small amount of EVM code against the
+current blockchain state and can be computed by asking a single
+node, which can return a result. It is therefore free and does
+not require any ether, but **cannot make changes** to the
+blockchain state..
 
 _property: contract.METHOD_NAME(...args [, overrides ]) => Promise<any>  @<Contract-functionsCall>
 The type of the result depends on the ABI. If the method returns a single
