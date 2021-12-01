@@ -231,26 +231,36 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
             try {
                 response = await getUrl(url, options);
 
-                // Exponential back-off throttling
-                if (response.statusCode === 429 && attempt < attemptLimit) {
-                    let tryAgain = true;
-                    if (throttleCallback) {
-                        tryAgain = await throttleCallback(attempt, url);
-                    }
-
-                    if (tryAgain) {
-                        let stall = 0;
-
-                        const retryAfter = response.headers["retry-after"];
-                        if (typeof(retryAfter) === "string" && retryAfter.match(/^[1-9][0-9]*$/)) {
-                            stall = parseInt(retryAfter) * 1000;
-                        } else {
-                            stall = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                if (attempt < attemptLimit) {
+                    if (response.statusCode === 301 || response.statusCode === 302) {
+                        // Redirection; for now we only support absolute locataions
+                        const location = response.headers.location || "";
+                        if (options.method === "GET" && location.match(/^https:/)) {
+                            url = response.headers.location;
+                            continue;
                         }
 
-                        //console.log("Stalling 429");
-                        await staller(stall);
-                        continue;
+                    } else if (response.statusCode === 429) {
+                        // Exponential back-off throttling
+                        let tryAgain = true;
+                        if (throttleCallback) {
+                            tryAgain = await throttleCallback(attempt, url);
+                        }
+
+                        if (tryAgain) {
+                            let stall = 0;
+
+                            const retryAfter = response.headers["retry-after"];
+                            if (typeof(retryAfter) === "string" && retryAfter.match(/^[1-9][0-9]*$/)) {
+                                stall = parseInt(retryAfter) * 1000;
+                            } else {
+                                stall = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                            }
+
+                            //console.log("Stalling 429");
+                            await staller(stall);
+                            continue;
+                        }
                     }
                 }
 
