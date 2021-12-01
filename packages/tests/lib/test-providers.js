@@ -1520,7 +1520,7 @@ describe("Resolve ENS avatar", function () {
     });
     [
         { title: "ERC-1155", name: "nick.eth", value: "https:/\/lh3.googleusercontent.com/hKHZTZSTmcznonu8I6xcVZio1IF76fq0XmcxnvUykC-FGuVJ75UPdLDlKJsfgVXH9wOSmkyHw0C39VAYtsGyxT7WNybjQ6s3fM3macE" },
-        { title: "ERC-721", name: "brantly.eth", value: "https:/\/wrappedpunks.com:3000/images/punks/2430.png" },
+        { title: "ERC-721", name: "brantly.eth", value: "https:/\/api.wrappedpunks.com/images/punks/2430.png" }
     ].forEach(function (test) {
         it("Resolves avatar for " + test.title, function () {
             return __awaiter(this, void 0, void 0, function () {
@@ -1533,7 +1533,7 @@ describe("Resolve ENS avatar", function () {
                             return [4 /*yield*/, provider.getAvatar(test.name)];
                         case 1:
                             avatar = _a.sent();
-                            assert_1.default.equal(test.value, avatar, "avatar url");
+                            assert_1.default.equal(avatar, test.value, "avatar url");
                             return [2 /*return*/];
                     }
                 });

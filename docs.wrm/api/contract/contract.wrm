@@ -96,7 +96,7 @@ describe the generic ways to interact with the properties added
 at run-time during the **Contract** constructor.
 
 
-_heading: Read-Only Methods (constant)  @<Contract--readonly>
+_heading: Read-Only Methods (constant; i.e. view or pure)  @<Contract--readonly>
 
 A constant method is read-only and evaluates a small amount of EVM
 code against the current blockchain state and can be computed by

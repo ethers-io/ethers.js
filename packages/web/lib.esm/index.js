@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { encode as base64Encode } from "@ethersproject/base64";
+import { decode as base64Decode, encode as base64Encode } from "@ethersproject/base64";
 import { hexlify, isBytesLike } from "@ethersproject/bytes";
 import { shallowCopy } from "@ethersproject/properties";
 import { toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
@@ -92,6 +92,32 @@ export function _fetchData(connection, body, processFunc) {
             };
         }
     }
+    const reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
+    const dataMatch = ((url) ? url.match(reData) : null);
+    if (dataMatch) {
+        try {
+            const response = {
+                statusCode: 200,
+                statusMessage: "OK",
+                headers: { "content-type": dataMatch[1] },
+                body: base64Decode(dataMatch[2])
+            };
+            let result = response.body;
+            if (processFunc) {
+                result = processFunc(response.body, response);
+            }
+            return Promise.resolve(result);
+        }
+        catch (error) {
+            logger.throwError("processing response error", Logger.errors.SERVER_ERROR, {
+                body: bodyify(dataMatch[1], dataMatch[2]),
+                error: error,
+                requestBody: null,
+                requestMethod: "GET",
+                url: url
+            });
+        }
+    }
     if (body) {
         options.method = "POST";
         options.body = body;
@@ -141,24 +167,34 @@ export function _fetchData(connection, body, processFunc) {
                 let response = null;
                 try {
                     response = yield getUrl(url, options);
-                    // Exponential back-off throttling
-                    if (response.statusCode === 429 && attempt < attemptLimit) {
-                        let tryAgain = true;
-                        if (throttleCallback) {
-                            tryAgain = yield throttleCallback(attempt, url);
+                    if (attempt < attemptLimit) {
+                        if (response.statusCode === 301 || response.statusCode === 302) {
+                            // Redirection; for now we only support absolute locataions
+                            const location = response.headers.location || "";
+                            if (options.method === "GET" && location.match(/^https:/)) {
+                                url = response.headers.location;
+                                continue;
+                            }
                         }
-                        if (tryAgain) {
-                            let stall = 0;
-                            const retryAfter = response.headers["retry-after"];
-                            if (typeof (retryAfter) === "string" && retryAfter.match(/^[1-9][0-9]*$/)) {
-                                stall = parseInt(retryAfter) * 1000;
+                        else if (response.statusCode === 429) {
+                            // Exponential back-off throttling
+                            let tryAgain = true;
+                            if (throttleCallback) {
+                                tryAgain = yield throttleCallback(attempt, url);
                             }
-                            else {
-                                stall = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                            if (tryAgain) {
+                                let stall = 0;
+                                const retryAfter = response.headers["retry-after"];
+                                if (typeof (retryAfter) === "string" && retryAfter.match(/^[1-9][0-9]*$/)) {
+                                    stall = parseInt(retryAfter) * 1000;
+                                }
+                                else {
+                                    stall = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
+                                }
+                                //console.log("Stalling 429");
+                                yield staller(stall);
+                                continue;
                             }
-                            //console.log("Stalling 429");
-                            yield staller(stall);
-                            continue;
                         }
                     }
                 }

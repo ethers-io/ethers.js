@@ -19240,7 +19240,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "networks/5.5.0";
+	exports.version = "networks/5.5.1";
 
 	});
 
@@ -19350,6 +19350,7 @@
 	    name: "classicMordor",
 	    _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/mordor", "classicMordor")
 	};
+	// See: https://chainlist.org
 	var networks = {
 	    unspecified: { chainId: 0, name: "unspecified" },
 	    homestead: homestead,
@@ -19391,6 +19392,11 @@
 	    xdai: { chainId: 100, name: "xdai" },
 	    matic: { chainId: 137, name: "matic" },
 	    maticmum: { chainId: 80001, name: "maticmum" },
+	    optimism: { chainId: 10, name: "optimism" },
+	    "optimism-kovan": { chainId: 69, name: "optimism-kovan" },
+	    "optimism-goerli": { chainId: 420, name: "optimism-goerli" },
+	    arbitrum: { chainId: 42161, name: "arbitrum" },
+	    "arbitrum-rinkeby": { chainId: 421611, name: "arbitrum-rinkeby" },
 	    bnb: { chainId: 56, name: "bnb" },
 	    bnbt: { chainId: 97, name: "bnbt" },
 	};
@@ -19515,7 +19521,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "web/5.5.0";
+	exports.version = "web/5.5.1";
 
 	});
 
@@ -19741,6 +19747,32 @@
 	            };
 	        }
 	    }
+	    var reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
+	    var dataMatch = ((url) ? url.match(reData) : null);
+	    if (dataMatch) {
+	        try {
+	            var response = {
+	                statusCode: 200,
+	                statusMessage: "OK",
+	                headers: { "content-type": dataMatch[1] },
+	                body: (0, lib$p.decode)(dataMatch[2])
+	            };
+	            var result = response.body;
+	            if (processFunc) {
+	                result = processFunc(response.body, response);
+	            }
+	            return Promise.resolve(result);
+	        }
+	        catch (error) {
+	            logger.throwError("processing response error", lib.Logger.errors.SERVER_ERROR, {
+	                body: bodyify(dataMatch[1], dataMatch[2]),
+	                error: error,
+	                requestBody: null,
+	                requestMethod: "GET",
+	                url: url
+	            });
+	        }
+	    }
 	    if (body) {
 	        options.method = "POST";
 	        options.body = body;
@@ -19786,30 +19818,39 @@
 	    })();
 	    var runningFetch = (function () {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var attempt, response, tryAgain, stall, retryAfter, error_1, body_1, result, error_2, tryAgain, timeout_1;
+	            var attempt, response, location_1, tryAgain, stall, retryAfter, error_1, body_1, result, error_2, tryAgain, timeout_1;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
 	                        attempt = 0;
 	                        _a.label = 1;
 	                    case 1:
-	                        if (!(attempt < attemptLimit)) return [3 /*break*/, 19];
+	                        if (!(attempt < attemptLimit)) return [3 /*break*/, 20];
 	                        response = null;
 	                        _a.label = 2;
 	                    case 2:
-	                        _a.trys.push([2, 8, , 9]);
+	                        _a.trys.push([2, 9, , 10]);
 	                        return [4 /*yield*/, (0, browserGeturl.getUrl)(url, options)];
 	                    case 3:
 	                        response = _a.sent();
-	                        if (!(response.statusCode === 429 && attempt < attemptLimit)) return [3 /*break*/, 7];
-	                        tryAgain = true;
-	                        if (!throttleCallback) return [3 /*break*/, 5];
-	                        return [4 /*yield*/, throttleCallback(attempt, url)];
+	                        if (!(attempt < attemptLimit)) return [3 /*break*/, 8];
+	                        if (!(response.statusCode === 301 || response.statusCode === 302)) return [3 /*break*/, 4];
+	                        location_1 = response.headers.location || "";
+	                        if (options.method === "GET" && location_1.match(/^https:/)) {
+	                            url = response.headers.location;
+	                            return [3 /*break*/, 19];
+	                        }
+	                        return [3 /*break*/, 8];
 	                    case 4:
-	                        tryAgain = _a.sent();
-	                        _a.label = 5;
+	                        if (!(response.statusCode === 429)) return [3 /*break*/, 8];
+	                        tryAgain = true;
+	                        if (!throttleCallback) return [3 /*break*/, 6];
+	                        return [4 /*yield*/, throttleCallback(attempt, url)];
 	                    case 5:
-	                        if (!tryAgain) return [3 /*break*/, 7];
+	                        tryAgain = _a.sent();
+	                        _a.label = 6;
+	                    case 6:
+	                        if (!tryAgain) return [3 /*break*/, 8];
 	                        stall = 0;
 	                        retryAfter = response.headers["retry-after"];
 	                        if (typeof (retryAfter) === "string" && retryAfter.match(/^[1-9][0-9]*$/)) {
@@ -19820,12 +19861,12 @@
 	                        }
 	                        //console.log("Stalling 429");
 	                        return [4 /*yield*/, staller(stall)];
-	                    case 6:
+	                    case 7:
 	                        //console.log("Stalling 429");
 	                        _a.sent();
-	                        return [3 /*break*/, 18];
-	                    case 7: return [3 /*break*/, 9];
-	                    case 8:
+	                        return [3 /*break*/, 19];
+	                    case 8: return [3 /*break*/, 10];
+	                    case 9:
 	                        error_1 = _a.sent();
 	                        response = error_1.response;
 	                        if (response == null) {
@@ -19837,8 +19878,8 @@
 	                                url: url
 	                            });
 	                        }
-	                        return [3 /*break*/, 9];
-	                    case 9:
+	                        return [3 /*break*/, 10];
+	                    case 10:
 	                        body_1 = response.body;
 	                        if (allow304 && response.statusCode === 304) {
 	                            body_1 = null;
@@ -19854,34 +19895,34 @@
 	                                url: url
 	                            });
 	                        }
-	                        if (!processFunc) return [3 /*break*/, 17];
-	                        _a.label = 10;
-	                    case 10:
-	                        _a.trys.push([10, 12, , 17]);
-	                        return [4 /*yield*/, processFunc(body_1, response)];
+	                        if (!processFunc) return [3 /*break*/, 18];
+	                        _a.label = 11;
 	                    case 11:
+	                        _a.trys.push([11, 13, , 18]);
+	                        return [4 /*yield*/, processFunc(body_1, response)];
+	                    case 12:
 	                        result = _a.sent();
 	                        runningTimeout.cancel();
 	                        return [2 /*return*/, result];
-	                    case 12:
-	                        error_2 = _a.sent();
-	                        if (!(error_2.throttleRetry && attempt < attemptLimit)) return [3 /*break*/, 16];
-	                        tryAgain = true;
-	                        if (!throttleCallback) return [3 /*break*/, 14];
-	                        return [4 /*yield*/, throttleCallback(attempt, url)];
 	                    case 13:
-	                        tryAgain = _a.sent();
-	                        _a.label = 14;
+	                        error_2 = _a.sent();
+	                        if (!(error_2.throttleRetry && attempt < attemptLimit)) return [3 /*break*/, 17];
+	                        tryAgain = true;
+	                        if (!throttleCallback) return [3 /*break*/, 15];
+	                        return [4 /*yield*/, throttleCallback(attempt, url)];
 	                    case 14:
-	                        if (!tryAgain) return [3 /*break*/, 16];
+	                        tryAgain = _a.sent();
+	                        _a.label = 15;
+	                    case 15:
+	                        if (!tryAgain) return [3 /*break*/, 17];
 	                        timeout_1 = throttleSlotInterval * parseInt(String(Math.random() * Math.pow(2, attempt)));
 	                        //console.log("Stalling callback");
 	                        return [4 /*yield*/, staller(timeout_1)];
-	                    case 15:
+	                    case 16:
 	                        //console.log("Stalling callback");
 	                        _a.sent();
-	                        return [3 /*break*/, 18];
-	                    case 16:
+	                        return [3 /*break*/, 19];
+	                    case 17:
 	                        runningTimeout.cancel();
 	                        logger.throwError("processing response error", lib.Logger.errors.SERVER_ERROR, {
 	                            body: bodyify(body_1, ((response.headers) ? response.headers["content-type"] : null)),
@@ -19890,16 +19931,16 @@
 	                            requestMethod: options.method,
 	                            url: url
 	                        });
-	                        return [3 /*break*/, 17];
-	                    case 17:
+	                        return [3 /*break*/, 18];
+	                    case 18:
 	                        runningTimeout.cancel();
 	                        // If we had a processFunc, it either returned a T or threw above.
 	                        // The "body" is now a Uint8Array.
 	                        return [2 /*return*/, body_1];
-	                    case 18:
+	                    case 19:
 	                        attempt++;
 	                        return [3 /*break*/, 1];
-	                    case 19: return [2 /*return*/, logger.throwError("failed response", lib.Logger.errors.SERVER_ERROR, {
+	                    case 20: return [2 /*return*/, logger.throwError("failed response", lib.Logger.errors.SERVER_ERROR, {
 	                            requestBody: bodyify(options.body, flatHeaders["content-type"]),
 	                            requestMethod: options.method,
 	                            url: url
@@ -20225,7 +20266,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.5.0";
+	exports.version = "providers/5.5.1";
 
 	});
 
@@ -21204,7 +21245,7 @@
 	                    case 16:
 	                        metadata = _h.sent();
 	                        // Pull the image URL out
-	                        if (!metadata || typeof (metadata.image) !== "string" || !metadata.image.match(/^https:\/\//i)) {
+	                        if (!metadata || typeof (metadata.image) !== "string" || !metadata.image.match(/^(https:\/\/|data:)/i)) {
 	                            return [2 /*return*/, null];
 	                        }
 	                        linkage.push({ type: "metadata", content: JSON.stringify(metadata) });
@@ -22803,6 +22844,9 @@
 	                    case 3:
 	                        // ENS name; forward lookup
 	                        resolver = _a.sent();
+	                        if (!resolver) {
+	                            return [2 /*return*/, null];
+	                        }
 	                        _a.label = 4;
 	                    case 4: return [4 /*yield*/, resolver.getAvatar()];
 	                    case 5:
@@ -24344,6 +24388,18 @@
 	            case "maticmum":
 	                host = "polygon-mumbai.g.alchemy.com/v2/";
 	                break;
+	            case "arbitrum":
+	                host = "arb-mainnet.g.alchemy.com/v2/";
+	                break;
+	            case "arbitrum-rinkeby":
+	                host = "arb-rinkeby.g.alchemy.com/v2/";
+	                break;
+	            case "optimism":
+	                host = "opt-mainnet.g.alchemy.com/v2/";
+	                break;
+	            case "optimism-kovan":
+	                host = "opt-kovan.g.alchemy.com/v2/";
+	                break;
 	            default:
 	                logger.throwArgumentError("unsupported network", "network", arguments[0]);
 	        }
@@ -25823,6 +25879,18 @@
 	            case "maticmum":
 	                host = "polygon-mumbai.infura.io";
 	                break;
+	            case "optimism":
+	                host = "optimism-mainnet.infura.io";
+	                break;
+	            case "optimism-kovan":
+	                host = "optimism-kovan.infura.io";
+	                break;
+	            case "arbitrum":
+	                host = "arbitrum-mainnet.infura.io";
+	                break;
+	            case "arbitrum-rinkeby":
+	                host = "arbitrum-rinkeby.infura.io";
+	                break;
 	            default:
 	                logger.throwError("unsupported network", lib.Logger.errors.INVALID_ARGUMENT, {
 	                    argument: "network",
@@ -26803,7 +26871,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.5.1";
+	exports.version = "ethers/5.5.2";
 
 	});
 

@@ -512,7 +512,7 @@ var Resolver = /** @class */ (function () {
                     case 16:
                         metadata = _h.sent();
                         // Pull the image URL out
-                        if (!metadata || typeof (metadata.image) !== "string" || !metadata.image.match(/^https:\/\//i)) {
+                        if (!metadata || typeof (metadata.image) !== "string" || !metadata.image.match(/^(https:\/\/|data:)/i)) {
                             return [2 /*return*/, null];
                         }
                         linkage.push({ type: "metadata", content: JSON.stringify(metadata) });
@@ -2111,6 +2111,9 @@ var BaseProvider = /** @class */ (function (_super) {
                     case 3:
                         // ENS name; forward lookup
                         resolver = _a.sent();
+                        if (!resolver) {
+                            return [2 /*return*/, null];
+                        }
                         _a.label = 4;
                     case 4: return [4 /*yield*/, resolver.getAvatar()];
                     case 5:

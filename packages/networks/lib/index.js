@@ -101,6 +101,7 @@ var classicMordor = {
     name: "classicMordor",
     _defaultProvider: etcDefaultProvider("https://www.ethercluster.com/mordor", "classicMordor")
 };
+// See: https://chainlist.org
 var networks = {
     unspecified: { chainId: 0, name: "unspecified" },
     homestead: homestead,
@@ -142,6 +143,11 @@ var networks = {
     xdai: { chainId: 100, name: "xdai" },
     matic: { chainId: 137, name: "matic" },
     maticmum: { chainId: 80001, name: "maticmum" },
+    optimism: { chainId: 10, name: "optimism" },
+    "optimism-kovan": { chainId: 69, name: "optimism-kovan" },
+    "optimism-goerli": { chainId: 420, name: "optimism-goerli" },
+    arbitrum: { chainId: 42161, name: "arbitrum" },
+    "arbitrum-rinkeby": { chainId: 421611, name: "arbitrum-rinkeby" },
     bnb: { chainId: 56, name: "bnb" },
     bnbt: { chainId: 97, name: "bnbt" },
 };
