@@ -70,6 +70,7 @@ export class InfuraProvider extends UrlJsonRpcProvider {
                 "invalid projectSecret", "projectSecret", "[REDACTED]");
 
             apiKeyObj.projectId = apiKey.projectId;
+            apiKeyObj.apiKey = apiKey.projectId;
             apiKeyObj.projectSecret = apiKey.projectSecret;
 
         } else if (apiKey.projectId) {
