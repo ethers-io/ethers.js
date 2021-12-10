@@ -28,7 +28,7 @@ const {
     Transaction,
     UnsignedTransaction
 
-} = require("@ethersproject/abi");
+} = require("@ethersproject/transactions");
 ```
 
 
