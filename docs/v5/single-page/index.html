@@ -559,7 +559,7 @@ const contract = new Contract(tokenAddress, abi, provider);
 
 <a name="/v5/api-keys/-%23-api-keys--infura"></a><a name="/v5/api-keys/-%23-api-keys--api-keys--infura"></a><a name="/v5/api-keys/"></a><h2 class="show-anchors"><div>INFURA<div class="anchors"><a class="self" href="#/v5/api-keys/-%23-api-keys--infura"></a></div></div></h2><p>The INFURA service has been around for quite some time and is very robust and reliable and highly recommended.</p>
 
-<p>They offer a standard JSON-RPC interface and a WebSocket interface, which makes interaction with standard tools versatile, simple and straight forward.</p>
+<p>They offer a standard JSON-RPC interface and a WebSocket interface, which makes interaction with standard tools versatile, simple and straightforward.</p>
 
 <p><a href="https://infura.io/register">Sign up for a free Project ID on INFURA</a></p>
 
@@ -1638,7 +1638,7 @@ contract = new ethers.Contract("dai.tokens.ethers.eth", abi, signer)
 
 <a name="/v5/api/contract/contract/-%23-Contract-functionsCall"></a><div class="property show-anchors"><div class="signature"><span class="path">contract</span><span class="symbol">.</span><span class="method">METHOD_NAME</span><span class="symbol">(</span> ...<span class="param">args</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">overrides</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; any &gt;</span><div class="anchors"><a class="self" href="#/v5/api/contract/contract/-%23-Contract-functionsCall"></a></div></div><div class="body"><p>The type of the result depends on the ABI. If the method returns a single value, it will be returned directly, otherwise a <a href="#/v5/api/utils/abi/interface/-%23-Result">Result</a> object will be returned with each parameter available positionally and if the parameter is named, it will also be available by its name.</p>
 
-<p>For values that have a simple meaning in JavaScript, the types are fairly straight forward; strings and booleans are returned as JavaScript strings and booleans.</p>
+<p>For values that have a simple meaning in JavaScript, the types are fairly straightforward; strings and booleans are returned as JavaScript strings and booleans.</p>
 
 <p>For numbers, if the <b>type</b> is in the JavaScript safe range (i.e. less than 53 bits, such as an <code class="inline">int24</code> or <code class="inline">uint48</code>) a normal JavaScript number is used. Otherwise a <a href="#/v5/api/utils/bignumber/">BigNumber</a> is returned.</p>
 
@@ -4524,7 +4524,7 @@ wallet.mnemonic.path
 
 </div></div><a name="/v5/testing/-%23-testing-schemas"></a><a name="/v5/testing/-%23-testing--testing-schemas"></a><a name="/v5/testing/"></a><h2 class="show-anchors"><div>Schemas<div class="anchors"><a class="self" href="#/v5/testing/-%23-testing-schemas"></a></div></div></h2><p>This section is still a work in progress, but will outline some of the more nuanced aspects of the test cases and their values.</p>
 
-<p>There will likely be an overhaul of the test cases in the next major version, to make code coverage testing more straight forward and to collapse some of the redundancy.</p>
+<p>There will likely be an overhaul of the test cases in the next major version, to make code coverage testing more straightforward and to collapse some of the redundancy.</p>
 
 <p>For example, there is no longer a need to separate the ABI and ABIv2 test case and the accounts and transactions suites can be merged into one large collection.</p>
 
@@ -4700,7 +4700,7 @@ wallet.mnemonic.path
 
 <p>In general, <b>please start an issue <i>before</i> beginning a pull request</b>, so we can have a public discussion and figure out the best way to address the problem/feature. <b>:)</b></p>
 
-<a name="/v5/contributing/-%23-contributing--building"></a><a name="/v5/contributing/-%23-contributing--contributing--building"></a><a name="/v5/contributing/"></a><h2 class="show-anchors"><div>Building<div class="anchors"><a class="self" href="#/v5/contributing/-%23-contributing--building"></a></div></div></h2><p>The build process for ethers is unfortunatly not super trivial, but I have attempted to make it as straight-forward as possible.</p>
+<a name="/v5/contributing/-%23-contributing--building"></a><a name="/v5/contributing/-%23-contributing--contributing--building"></a><a name="/v5/contributing/"></a><h2 class="show-anchors"><div>Building<div class="anchors"><a class="self" href="#/v5/contributing/-%23-contributing--building"></a></div></div></h2><p>The build process for ethers is unfortunatly not super trivial, but I have attempted to make it as straightforward as possible.</p>
 
 <p>It is a mono-repo which attempts to be compatibile with a large number of environments, build tools and platforms, which is why there are a some weird things it must do.</p>
 

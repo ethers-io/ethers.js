@@ -119,7 +119,7 @@ Meta-Class
 
 The type of the result depends on the ABI. If the method returns a single value, it will be returned directly, otherwise a [Result](/v5/api/utils/abi/interface/#Result) object will be returned with each parameter available positionally and if the parameter is named, it will also be available by its name.
 
-For values that have a simple meaning in JavaScript, the types are fairly straight forward; strings and booleans are returned as JavaScript strings and booleans.
+For values that have a simple meaning in JavaScript, the types are fairly straightforward; strings and booleans are returned as JavaScript strings and booleans.
 
 For numbers, if the **type** is in the JavaScript safe range (i.e. less than 53 bits, such as an `int24` or `uint48`) a normal JavaScript number is used. Otherwise a [BigNumber](/v5/api/utils/bignumber/) is returned.
 

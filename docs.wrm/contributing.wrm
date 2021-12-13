@@ -31,7 +31,7 @@ have a public discussion and figure out the best way to address the problem/feat
 _subsection: Building @<contributing--building>
 
 The build process for ethers is unfortunatly not super trivial, but
-I have attempted to make it as straight-forward as possible.
+I have attempted to make it as straightforward as possible.
 
 It is a mono-repo which attempts to be compatibile with a large
 number of environments, build tools and platforms, which is why

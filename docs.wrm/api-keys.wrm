@@ -46,7 +46,7 @@ The INFURA service has been around for quite some time and is very robust
 and reliable and highly recommended.
 
 They offer a standard JSON-RPC interface and a WebSocket interface, which makes
-interaction with standard tools versatile, simple and straight forward.
+interaction with standard tools versatile, simple and straightforward.
 
 [Sign up for a free Project ID on INFURA](link-infura-signup)
 

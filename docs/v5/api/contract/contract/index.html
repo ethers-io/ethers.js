@@ -76,7 +76,7 @@
 
 <a name="Contract-functionsCall"></a><div class="property show-anchors"><div class="signature"><span class="path">contract</span><span class="symbol">.</span><span class="method">METHOD_NAME</span><span class="symbol">(</span> ...<span class="param">args</span> <span class="symbol">[</span> <span class="symbol">,</span> <span class="param">overrides</span> <span class="symbol">]</span> <span class="symbol">)</span> <span class="arrow">&rArr;</span> <span class="returns">Promise&lt; any &gt;</span><div class="anchors"><a class="self" href="/v5/api/contract/contract/#Contract-functionsCall"></a></div></div><div class="body"><p>The type of the result depends on the ABI. If the method returns a single value, it will be returned directly, otherwise a <a href="/v5/api/utils/abi/interface/#Result">Result</a> object will be returned with each parameter available positionally and if the parameter is named, it will also be available by its name.</p>
 
-<p>For values that have a simple meaning in JavaScript, the types are fairly straight forward; strings and booleans are returned as JavaScript strings and booleans.</p>
+<p>For values that have a simple meaning in JavaScript, the types are fairly straightforward; strings and booleans are returned as JavaScript strings and booleans.</p>
 
 <p>For numbers, if the <b>type</b> is in the JavaScript safe range (i.e. less than 53 bits, such as an <code class="inline">int24</code> or <code class="inline">uint48</code>) a normal JavaScript number is used. Otherwise a <a href="/v5/api/utils/bignumber/">BigNumber</a> is returned.</p>
 
