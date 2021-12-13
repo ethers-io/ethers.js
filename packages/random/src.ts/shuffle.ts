@@ -1,6 +1,6 @@
 "use strict";
 
-export function shuffled(array: Array<any>): Array<any> {
+export function shuffled<T = any>(array: Array<T>): Array<T> {
     array = array.slice();
 
     for (let i = array.length - 1; i > 0; i--) {
