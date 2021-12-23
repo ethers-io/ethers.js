@@ -35,7 +35,7 @@ as well as simple for humans to type and inline into code, which improves
 code readability. The Human-Readable ABI is also considerably smaller, which
 helps reduce code size.
 
-A Huamn-Readable ABI is simple an array of strings, where each string is
+A Human-Readable ABI is simple an array of strings, where each string is
 the Solidity signature.
 
 Signatures may be minimally specified (i.e. names of inputs and outputs
