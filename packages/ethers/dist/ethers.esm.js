@@ -15278,30 +15278,27 @@ function getAccountPath(index) {
     return `m/44'/60'/${index}'/0/0`;
 }
 
-const version$h = "random/5.5.0";
+const version$h = "random/5.5.1";
 
 "use strict";
 const logger$m = new Logger(version$h);
 // Debugging line for testing browser lib in node
 //const window = { crypto: { getRandomValues: () => { } } };
-let anyGlobal = null;
-try {
-    anyGlobal = window;
-    if (anyGlobal == null) {
-        throw new Error("try next");
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/globalThis
+function getGlobal() {
+    if (typeof self !== 'undefined') {
+        return self;
     }
+    if (typeof window !== 'undefined') {
+        return window;
+    }
+    if (typeof global !== 'undefined') {
+        return global;
+    }
+    throw new Error('unable to locate global object');
 }
-catch (error) {
-    try {
-        anyGlobal = global;
-        if (anyGlobal == null) {
-            throw new Error("try next");
-        }
-    }
-    catch (error) {
-        anyGlobal = {};
-    }
-}
+;
+const anyGlobal = getGlobal();
 let crypto = anyGlobal.crypto || anyGlobal.msCrypto;
 if (!crypto || !crypto.getRandomValues) {
     logger$m.warn("WARNING: Missing strong random number source");
@@ -18142,7 +18139,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.5.1";
+const version$m = "providers/5.5.2";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -18747,10 +18744,11 @@ function bytes32ify(value) {
 function base58Encode(data) {
     return Base58.encode(concat([data, hexDataSlice(sha256$1(sha256$1(data)), 0, 4)]));
 }
+const matcherIpfs = new RegExp("^(ipfs):/\/(.*)$", "i");
 const matchers = [
     new RegExp("^(https):/\/(.*)$", "i"),
     new RegExp("^(data):(.*)$", "i"),
-    new RegExp("^(ipfs):/\/(.*)$", "i"),
+    matcherIpfs,
     new RegExp("^eip155:[0-9]+/(erc[0-9]+):(.*)$", "i"),
 ];
 function _parseString(result) {
@@ -18767,6 +18765,10 @@ function _parseBytes(result) {
     const offset = BigNumber.from(hexDataSlice(result, 0, 32)).toNumber();
     const length = BigNumber.from(hexDataSlice(result, offset, offset + 32)).toNumber();
     return hexDataSlice(result, offset + 32, offset + 32 + length);
+}
+// Trim off the ipfs:// prefix and return the default gateway URL
+function getIpfsLink(link) {
+    return `https:/\/gateway.ipfs.io/ipfs/${link.substring(7)}`;
 }
 class Resolver {
     // The resolvedAddress is only for creating a ReverseLookup resolver
@@ -18893,7 +18895,7 @@ class Resolver {
     }
     getAvatar() {
         return __awaiter$9(this, void 0, void 0, function* () {
-            const linkage = [];
+            const linkage = [{ type: "name", content: this.name }];
             try {
                 // test data for ricmoo.eth
                 //const avatar = "eip155:1/erc721:0x265385c7f4132228A0d54EB1A9e7460b91c0cC68/29233";
@@ -18915,7 +18917,7 @@ class Resolver {
                             return { linkage, url: avatar };
                         case "ipfs":
                             linkage.push({ type: "ipfs", content: avatar });
-                            return { linkage, url: `https:/\/gateway.ipfs.io/ipfs/${avatar.substring(7)}` };
+                            return { linkage, url: getIpfsLink(avatar) };
                         case "erc721":
                         case "erc1155": {
                             // Depending on the ERC type, use tokenURI(uint256) or url(uint256)
@@ -18963,16 +18965,33 @@ class Resolver {
                             // ERC-1155 allows a generic {id} in the URL
                             if (match[1] === "erc1155") {
                                 metadataUrl = metadataUrl.replace("{id}", tokenId.substring(2));
+                                linkage.push({ type: "metadata-url-expanded", content: metadataUrl });
                             }
                             // Get the token metadata
                             const metadata = yield fetchJson(metadataUrl);
-                            // Pull the image URL out
-                            if (!metadata || typeof (metadata.image) !== "string" || !metadata.image.match(/^(https:\/\/|data:)/i)) {
+                            if (!metadata) {
                                 return null;
                             }
                             linkage.push({ type: "metadata", content: JSON.stringify(metadata) });
-                            linkage.push({ type: "url", content: metadata.image });
-                            return { linkage, url: metadata.image };
+                            // Pull the image URL out
+                            let imageUrl = metadata.image;
+                            if (typeof (imageUrl) !== "string") {
+                                return null;
+                            }
+                            if (imageUrl.match(/^(https:\/\/|data:)/i)) {
+                                // Allow
+                            }
+                            else {
+                                // Transform IPFS link to gateway
+                                const ipfs = imageUrl.match(matcherIpfs);
+                                if (ipfs == null) {
+                                    return null;
+                                }
+                                linkage.push({ type: "url-ipfs", content: imageUrl });
+                                imageUrl = getIpfsLink(imageUrl);
+                            }
+                            linkage.push({ type: "url", content: imageUrl });
+                            return { linkage, url: imageUrl };
                         }
                     }
                 }
@@ -20052,7 +20071,7 @@ class BaseProvider extends Provider {
                 if (error.code === Logger.errors.CALL_EXCEPTION) {
                     return null;
                 }
-                return null;
+                throw error;
             }
         });
     }
@@ -23162,7 +23181,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$p = "ethers/5.5.2";
+const version$p = "ethers/5.5.3";
 
 "use strict";
 const logger$I = new Logger(version$p);

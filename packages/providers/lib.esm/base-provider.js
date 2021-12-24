@@ -181,10 +181,11 @@ function bytes32ify(value) {
 function base58Encode(data) {
     return Base58.encode(concat([data, hexDataSlice(sha256(sha256(data)), 0, 4)]));
 }
+const matcherIpfs = new RegExp("^(ipfs):/\/(.*)$", "i");
 const matchers = [
     new RegExp("^(https):/\/(.*)$", "i"),
     new RegExp("^(data):(.*)$", "i"),
-    new RegExp("^(ipfs):/\/(.*)$", "i"),
+    matcherIpfs,
     new RegExp("^eip155:[0-9]+/(erc[0-9]+):(.*)$", "i"),
 ];
 function _parseString(result) {
@@ -201,6 +202,10 @@ function _parseBytes(result) {
     const offset = BigNumber.from(hexDataSlice(result, 0, 32)).toNumber();
     const length = BigNumber.from(hexDataSlice(result, offset, offset + 32)).toNumber();
     return hexDataSlice(result, offset + 32, offset + 32 + length);
+}
+// Trim off the ipfs:// prefix and return the default gateway URL
+function getIpfsLink(link) {
+    return `https:/\/gateway.ipfs.io/ipfs/${link.substring(7)}`;
 }
 export class Resolver {
     // The resolvedAddress is only for creating a ReverseLookup resolver
@@ -327,7 +332,7 @@ export class Resolver {
     }
     getAvatar() {
         return __awaiter(this, void 0, void 0, function* () {
-            const linkage = [];
+            const linkage = [{ type: "name", content: this.name }];
             try {
                 // test data for ricmoo.eth
                 //const avatar = "eip155:1/erc721:0x265385c7f4132228A0d54EB1A9e7460b91c0cC68/29233";
@@ -349,7 +354,7 @@ export class Resolver {
                             return { linkage, url: avatar };
                         case "ipfs":
                             linkage.push({ type: "ipfs", content: avatar });
-                            return { linkage, url: `https:/\/gateway.ipfs.io/ipfs/${avatar.substring(7)}` };
+                            return { linkage, url: getIpfsLink(avatar) };
                         case "erc721":
                         case "erc1155": {
                             // Depending on the ERC type, use tokenURI(uint256) or url(uint256)
@@ -397,16 +402,33 @@ export class Resolver {
                             // ERC-1155 allows a generic {id} in the URL
                             if (match[1] === "erc1155") {
                                 metadataUrl = metadataUrl.replace("{id}", tokenId.substring(2));
+                                linkage.push({ type: "metadata-url-expanded", content: metadataUrl });
                             }
                             // Get the token metadata
                             const metadata = yield fetchJson(metadataUrl);
-                            // Pull the image URL out
-                            if (!metadata || typeof (metadata.image) !== "string" || !metadata.image.match(/^(https:\/\/|data:)/i)) {
+                            if (!metadata) {
                                 return null;
                             }
                             linkage.push({ type: "metadata", content: JSON.stringify(metadata) });
-                            linkage.push({ type: "url", content: metadata.image });
-                            return { linkage, url: metadata.image };
+                            // Pull the image URL out
+                            let imageUrl = metadata.image;
+                            if (typeof (imageUrl) !== "string") {
+                                return null;
+                            }
+                            if (imageUrl.match(/^(https:\/\/|data:)/i)) {
+                                // Allow
+                            }
+                            else {
+                                // Transform IPFS link to gateway
+                                const ipfs = imageUrl.match(matcherIpfs);
+                                if (ipfs == null) {
+                                    return null;
+                                }
+                                linkage.push({ type: "url-ipfs", content: imageUrl });
+                                imageUrl = getIpfsLink(imageUrl);
+                            }
+                            linkage.push({ type: "url", content: imageUrl });
+                            return { linkage, url: imageUrl };
                         }
                     }
                 }
@@ -1486,7 +1508,7 @@ export class BaseProvider extends Provider {
                 if (error.code === Logger.errors.CALL_EXCEPTION) {
                     return null;
                 }
-                return null;
+                throw error;
             }
         });
     }

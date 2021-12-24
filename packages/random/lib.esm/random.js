@@ -5,24 +5,21 @@ import { version } from "./_version";
 const logger = new Logger(version);
 // Debugging line for testing browser lib in node
 //const window = { crypto: { getRandomValues: () => { } } };
-let anyGlobal = null;
-try {
-    anyGlobal = window;
-    if (anyGlobal == null) {
-        throw new Error("try next");
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/globalThis
+function getGlobal() {
+    if (typeof self !== 'undefined') {
+        return self;
     }
+    if (typeof window !== 'undefined') {
+        return window;
+    }
+    if (typeof global !== 'undefined') {
+        return global;
+    }
+    throw new Error('unable to locate global object');
 }
-catch (error) {
-    try {
-        anyGlobal = global;
-        if (anyGlobal == null) {
-            throw new Error("try next");
-        }
-    }
-    catch (error) {
-        anyGlobal = {};
-    }
-}
+;
+const anyGlobal = getGlobal();
 let crypto = anyGlobal.crypto || anyGlobal.msCrypto;
 if (!crypto || !crypto.getRandomValues) {
     logger.warn("WARNING: Missing strong random number source");

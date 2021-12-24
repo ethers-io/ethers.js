@@ -4,6 +4,13 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+ethers/v5.5.3 (2021-12-24 02:14)
+--------------------------------
+
+  - Fix browser random in WebWorkers. ([#2405](https://github.com/ethers-io/ethers.js/issues/2405); [4ba63ac](https://github.com/ethers-io/ethers.js/commit/4ba63acc107fdd0a6d6ef3e27349e65edb007447))
+  - Add support for IPFS metadata imageUrl in getAvatar. ([#2426](https://github.com/ethers-io/ethers.js/issues/2426); [3d6a7ec](https://github.com/ethers-io/ethers.js/commit/3d6a7ec020eacd993b4b0fd3274574de3ddcc257))
+  - Do not swallow ENS not supported errors. ([#2387](https://github.com/ethers-io/ethers.js/issues/2387); [2f57c6a](https://github.com/ethers-io/ethers.js/commit/2f57c6a4ab44083b2c03f5e57b2702ab7078d286))
+
 ethers/v5.5.2 (2021-11-30 19:16)
 --------------------------------
 

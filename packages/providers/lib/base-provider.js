@@ -246,10 +246,11 @@ function bytes32ify(value) {
 function base58Encode(data) {
     return basex_1.Base58.encode((0, bytes_1.concat)([data, (0, bytes_1.hexDataSlice)((0, sha2_1.sha256)((0, sha2_1.sha256)(data)), 0, 4)]));
 }
+var matcherIpfs = new RegExp("^(ipfs):/\/(.*)$", "i");
 var matchers = [
     new RegExp("^(https):/\/(.*)$", "i"),
     new RegExp("^(data):(.*)$", "i"),
-    new RegExp("^(ipfs):/\/(.*)$", "i"),
+    matcherIpfs,
     new RegExp("^eip155:[0-9]+/(erc[0-9]+):(.*)$", "i"),
 ];
 function _parseString(result) {
@@ -266,6 +267,10 @@ function _parseBytes(result) {
     var offset = bignumber_1.BigNumber.from((0, bytes_1.hexDataSlice)(result, 0, 32)).toNumber();
     var length = bignumber_1.BigNumber.from((0, bytes_1.hexDataSlice)(result, offset, offset + 32)).toNumber();
     return (0, bytes_1.hexDataSlice)(result, offset + 32, offset + 32 + length);
+}
+// Trim off the ipfs:// prefix and return the default gateway URL
+function getIpfsLink(link) {
+    return "https://gateway.ipfs.io/ipfs/" + link.substring(7);
 }
 var Resolver = /** @class */ (function () {
     // The resolvedAddress is only for creating a ReverseLookup resolver
@@ -407,11 +412,11 @@ var Resolver = /** @class */ (function () {
     };
     Resolver.prototype.getAvatar = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var linkage, avatar, i, match, _a, selector, owner, _b, comps, addr, tokenId, tokenOwner, _c, _d, balance, _e, _f, tx, metadataUrl, _g, metadata, error_3;
+            var linkage, avatar, i, match, _a, selector, owner, _b, comps, addr, tokenId, tokenOwner, _c, _d, balance, _e, _f, tx, metadataUrl, _g, metadata, imageUrl, ipfs, error_3;
             return __generator(this, function (_h) {
                 switch (_h.label) {
                     case 0:
-                        linkage = [];
+                        linkage = [{ type: "name", content: this.name }];
                         _h.label = 1;
                     case 1:
                         _h.trys.push([1, 19, , 20]);
@@ -446,7 +451,7 @@ var Resolver = /** @class */ (function () {
                         return [2 /*return*/, { linkage: linkage, url: avatar }];
                     case 6:
                         linkage.push({ type: "ipfs", content: avatar });
-                        return [2 /*return*/, { linkage: linkage, url: "https://gateway.ipfs.io/ipfs/" + avatar.substring(7) }];
+                        return [2 /*return*/, { linkage: linkage, url: getIpfsLink(avatar) }];
                     case 7:
                         selector = (match[1] === "erc721") ? "0xc87b56dd" : "0x0e89341c";
                         linkage.push({ type: match[1], content: avatar });
@@ -507,17 +512,32 @@ var Resolver = /** @class */ (function () {
                         // ERC-1155 allows a generic {id} in the URL
                         if (match[1] === "erc1155") {
                             metadataUrl = metadataUrl.replace("{id}", tokenId.substring(2));
+                            linkage.push({ type: "metadata-url-expanded", content: metadataUrl });
                         }
                         return [4 /*yield*/, (0, web_1.fetchJson)(metadataUrl)];
                     case 16:
                         metadata = _h.sent();
-                        // Pull the image URL out
-                        if (!metadata || typeof (metadata.image) !== "string" || !metadata.image.match(/^(https:\/\/|data:)/i)) {
+                        if (!metadata) {
                             return [2 /*return*/, null];
                         }
                         linkage.push({ type: "metadata", content: JSON.stringify(metadata) });
-                        linkage.push({ type: "url", content: metadata.image });
-                        return [2 /*return*/, { linkage: linkage, url: metadata.image }];
+                        imageUrl = metadata.image;
+                        if (typeof (imageUrl) !== "string") {
+                            return [2 /*return*/, null];
+                        }
+                        if (imageUrl.match(/^(https:\/\/|data:)/i)) {
+                            // Allow
+                        }
+                        else {
+                            ipfs = imageUrl.match(matcherIpfs);
+                            if (ipfs == null) {
+                                return [2 /*return*/, null];
+                            }
+                            linkage.push({ type: "url-ipfs", content: imageUrl });
+                            imageUrl = getIpfsLink(imageUrl);
+                        }
+                        linkage.push({ type: "url", content: imageUrl });
+                        return [2 /*return*/, { linkage: linkage, url: imageUrl }];
                     case 17:
                         i++;
                         return [3 /*break*/, 3];
@@ -1967,7 +1987,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         if (error_9.code === logger_1.Logger.errors.CALL_EXCEPTION) {
                             return [2 /*return*/, null];
                         }
-                        return [2 /*return*/, null];
+                        throw error_9;
                     case 3: return [2 /*return*/];
                 }
             });
