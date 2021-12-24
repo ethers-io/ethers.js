@@ -1642,7 +1642,7 @@ export class BaseProvider extends Provider implements EnsProvider {
             return new Resolver(this, address, name);
         } catch (error) {
             if (error.code === Logger.errors.CALL_EXCEPTION) { return null; }
-            return null;
+            throw error;
         }
     }
 
