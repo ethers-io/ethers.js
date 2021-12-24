@@ -242,10 +242,11 @@ export interface Avatar {
     linkage: Array<{ type: string, content: string }>;
 }
 
+const matcherIpfs = new RegExp("^(ipfs):/\/(.*)$", "i");
 const matchers = [
     new RegExp("^(https):/\/(.*)$", "i"),
     new RegExp("^(data):(.*)$", "i"),
-    new RegExp("^(ipfs):/\/(.*)$", "i"),
+    matcherIpfs,
     new RegExp("^eip155:[0-9]+/(erc[0-9]+):(.*)$", "i"),
 ];
 
@@ -264,6 +265,10 @@ function _parseBytes(result: string): null | string {
     return hexDataSlice(result, offset + 32, offset + 32 + length);
 }
 
+// Trim off the ipfs:// prefix and return the default gateway URL
+function getIpfsLink(link: string): string {
+    return `https:/\/gateway.ipfs.io/ipfs/${ link.substring(7) }`;
+}
 
 export class Resolver implements EnsResolver {
     readonly provider: BaseProvider;
@@ -402,7 +407,7 @@ export class Resolver implements EnsResolver {
     }
 
     async getAvatar(): Promise<null | Avatar> {
-        const linkage: Array<{ type: string, content: string }> = [ ];
+        const linkage: Array<{ type: string, content: string }> = [ { type: "name", content: this.name } ];
         try {
             // test data for ricmoo.eth
             //const avatar = "eip155:1/erc721:0x265385c7f4132228A0d54EB1A9e7460b91c0cC68/29233";
@@ -411,8 +416,8 @@ export class Resolver implements EnsResolver {
 
             for (let i = 0; i < matchers.length; i++) {
                 const match = avatar.match(matchers[i]);
-
                 if (match == null) { continue; }
+
                 switch (match[1]) {
                     case "https":
                         linkage.push({ type: "url", content: avatar });
@@ -424,7 +429,7 @@ export class Resolver implements EnsResolver {
 
                     case "ipfs":
                         linkage.push({ type: "ipfs", content: avatar });
-                        return { linkage, url: `https:/\/gateway.ipfs.io/ipfs/${ avatar.substring(7) }` }
+                        return { linkage, url: getIpfsLink(avatar) };
 
                     case "erc721":
                     case "erc1155": {
@@ -471,19 +476,32 @@ export class Resolver implements EnsResolver {
                         // ERC-1155 allows a generic {id} in the URL
                         if (match[1] === "erc1155") {
                             metadataUrl = metadataUrl.replace("{id}", tokenId.substring(2));
+                            linkage.push({ type: "metadata-url-expanded", content: metadataUrl });
                         }
 
                         // Get the token metadata
                         const metadata = await fetchJson(metadataUrl);
+                        if (!metadata) { return null; }
+                        linkage.push({ type: "metadata", content: JSON.stringify(metadata) });
 
                         // Pull the image URL out
-                        if (!metadata || typeof(metadata.image) !== "string" || !metadata.image.match(/^(https:\/\/|data:)/i)) {
-                            return null;
-                        }
-                        linkage.push({ type: "metadata", content: JSON.stringify(metadata) });
-                        linkage.push({ type: "url", content: metadata.image });
+                        let imageUrl = metadata.image;
+                        if (typeof(imageUrl) !== "string") { return null; }
 
-                        return { linkage, url: metadata.image };
+                        if (imageUrl.match(/^(https:\/\/|data:)/i)) {
+                            // Allow
+                        } else {
+                            // Transform IPFS link to gateway
+                            const ipfs = imageUrl.match(matcherIpfs);
+                            if (ipfs == null) { return null; }
+
+                            linkage.push({ type: "url-ipfs", content: imageUrl });
+                            imageUrl = getIpfsLink(imageUrl);
+                        }
+
+                        linkage.push({ type: "url", content: imageUrl });
+
+                        return { linkage, url: imageUrl };
                     }
                 }
             }
