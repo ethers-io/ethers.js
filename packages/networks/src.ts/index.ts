@@ -187,6 +187,9 @@ const networks: { [name: string]: Network } = {
 
     bnb: { chainId: 56, name: "bnb" },
     bnbt: { chainId: 97, name: "bnbt" },
+
+    moonriver: { chainId: 1285, name: "moonriver" },
+    moonbase: { chainId: 1287, name: "moonbase" },
 }
 
 /**
