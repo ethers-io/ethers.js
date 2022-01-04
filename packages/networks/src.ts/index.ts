@@ -190,6 +190,7 @@ const networks: { [name: string]: Network } = {
 
     moonriver: { chainId: 1285, name: "moonriver" },
     moonbase: { chainId: 1287, name: "moonbase" },
+    moonbeam: { chainId: 1284, name: "moonbeam" }
 }
 
 /**
