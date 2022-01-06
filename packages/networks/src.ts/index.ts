@@ -152,7 +152,9 @@ const networks: { [name: string]: Network } = {
         ensAddress: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
         name: "goerli",
         _defaultProvider: ethDefaultProvider("goerli")
-     },
+    },
+
+    kintsugi: { chainId: 1337702, name: "kintsugi" },
 
 
     // ETC (See: #351)
