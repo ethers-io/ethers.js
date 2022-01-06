@@ -418,7 +418,9 @@ export class Resolver implements EnsResolver {
                 const match = avatar.match(matchers[i]);
                 if (match == null) { continue; }
 
-                switch (match[1]) {
+                const scheme = match[1].toLowerCase();
+
+                switch (scheme) {
                     case "https":
                         linkage.push({ type: "url", content: avatar });
                         return { linkage, url: avatar };
@@ -434,8 +436,8 @@ export class Resolver implements EnsResolver {
                     case "erc721":
                     case "erc1155": {
                         // Depending on the ERC type, use tokenURI(uint256) or url(uint256)
-                        const selector = (match[1] === "erc721") ? "0xc87b56dd": "0x0e89341c";
-                        linkage.push({ type: match[1], content: avatar });
+                        const selector = (scheme === "erc721") ? "0xc87b56dd": "0x0e89341c";
+                        linkage.push({ type: scheme, content: avatar });
 
                         // The owner of this name
                         const owner = (this._resolvedAddress || await this.getAddress());
@@ -447,7 +449,7 @@ export class Resolver implements EnsResolver {
                         const tokenId = hexZeroPad(BigNumber.from(comps[1]).toHexString(), 32);
 
                         // Check that this account owns the token
-                        if (match[1] === "erc721") {
+                        if (scheme === "erc721") {
                             // ownerOf(uint256 tokenId)
                             const tokenOwner = this.provider.formatter.callAddress(await this.provider.call({
                                 to: addr, data: hexConcat([ "0x6352211e", tokenId ])
@@ -455,7 +457,7 @@ export class Resolver implements EnsResolver {
                             if (owner !== tokenOwner) { return null; }
                             linkage.push({ type: "owner", content: tokenOwner });
 
-                        } else if (match[1] === "erc1155") {
+                        } else if (scheme === "erc1155") {
                             // balanceOf(address owner, uint256 tokenId)
                             const balance = BigNumber.from(await this.provider.call({
                                 to: addr, data: hexConcat([ "0x00fdd58e", hexZeroPad(owner, 32), tokenId ])
@@ -474,7 +476,7 @@ export class Resolver implements EnsResolver {
                         linkage.push({ type: "metadata-url", content: metadataUrl });
 
                         // ERC-1155 allows a generic {id} in the URL
-                        if (match[1] === "erc1155") {
+                        if (scheme === "erc1155") {
                             metadataUrl = metadataUrl.replace("{id}", tokenId.substring(2));
                             linkage.push({ type: "metadata-url-expanded", content: metadataUrl });
                         }
