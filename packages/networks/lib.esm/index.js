@@ -124,6 +124,7 @@ const networks = {
         name: "goerli",
         _defaultProvider: ethDefaultProvider("goerli")
     },
+    kintsugi: { chainId: 1337702, name: "kintsugi" },
     // ETC (See: #351)
     classic: {
         chainId: 61,

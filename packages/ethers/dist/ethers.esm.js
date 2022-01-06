@@ -17270,7 +17270,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.5.1";
+const version$k = "networks/5.5.2";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -17396,6 +17396,7 @@ const networks = {
         name: "goerli",
         _defaultProvider: ethDefaultProvider("goerli")
     },
+    kintsugi: { chainId: 1337702, name: "kintsugi" },
     // ETC (See: #351)
     classic: {
         chainId: 61,
@@ -18908,7 +18909,8 @@ class Resolver {
                     if (match == null) {
                         continue;
                     }
-                    switch (match[1]) {
+                    const scheme = match[1].toLowerCase();
+                    switch (scheme) {
                         case "https":
                             linkage.push({ type: "url", content: avatar });
                             return { linkage, url: avatar };
@@ -18921,8 +18923,8 @@ class Resolver {
                         case "erc721":
                         case "erc1155": {
                             // Depending on the ERC type, use tokenURI(uint256) or url(uint256)
-                            const selector = (match[1] === "erc721") ? "0xc87b56dd" : "0x0e89341c";
-                            linkage.push({ type: match[1], content: avatar });
+                            const selector = (scheme === "erc721") ? "0xc87b56dd" : "0x0e89341c";
+                            linkage.push({ type: scheme, content: avatar });
                             // The owner of this name
                             const owner = (this._resolvedAddress || (yield this.getAddress()));
                             const comps = (match[2] || "").split("/");
@@ -18932,7 +18934,7 @@ class Resolver {
                             const addr = yield this.provider.formatter.address(comps[0]);
                             const tokenId = hexZeroPad(BigNumber.from(comps[1]).toHexString(), 32);
                             // Check that this account owns the token
-                            if (match[1] === "erc721") {
+                            if (scheme === "erc721") {
                                 // ownerOf(uint256 tokenId)
                                 const tokenOwner = this.provider.formatter.callAddress(yield this.provider.call({
                                     to: addr, data: hexConcat(["0x6352211e", tokenId])
@@ -18942,7 +18944,7 @@ class Resolver {
                                 }
                                 linkage.push({ type: "owner", content: tokenOwner });
                             }
-                            else if (match[1] === "erc1155") {
+                            else if (scheme === "erc1155") {
                                 // balanceOf(address owner, uint256 tokenId)
                                 const balance = BigNumber.from(yield this.provider.call({
                                     to: addr, data: hexConcat(["0x00fdd58e", hexZeroPad(owner, 32), tokenId])
@@ -18963,7 +18965,7 @@ class Resolver {
                             }
                             linkage.push({ type: "metadata-url", content: metadataUrl });
                             // ERC-1155 allows a generic {id} in the URL
-                            if (match[1] === "erc1155") {
+                            if (scheme === "erc1155") {
                                 metadataUrl = metadataUrl.replace("{id}", tokenId.substring(2));
                                 linkage.push({ type: "metadata-url-expanded", content: metadataUrl });
                             }

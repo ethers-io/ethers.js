@@ -19237,7 +19237,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "networks/5.5.1";
+	exports.version = "networks/5.5.2";
 
 	});
 
@@ -19372,6 +19372,7 @@
 	        name: "goerli",
 	        _defaultProvider: ethDefaultProvider("goerli")
 	    },
+	    kintsugi: { chainId: 1337702, name: "kintsugi" },
 	    // ETC (See: #351)
 	    classic: {
 	        chainId: 61,
@@ -21142,7 +21143,7 @@
 	    };
 	    Resolver.prototype.getAvatar = function () {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var linkage, avatar, i, match, _a, selector, owner, _b, comps, addr, tokenId, tokenOwner, _c, _d, balance, _e, _f, tx, metadataUrl, _g, metadata, imageUrl, ipfs, error_3;
+	            var linkage, avatar, i, match, scheme, _a, selector, owner, _b, comps, addr, tokenId, tokenOwner, _c, _d, balance, _e, _f, tx, metadataUrl, _g, metadata, imageUrl, ipfs, error_3;
 	            return __generator(this, function (_h) {
 	                switch (_h.label) {
 	                    case 0:
@@ -21164,7 +21165,8 @@
 	                        if (match == null) {
 	                            return [3 /*break*/, 17];
 	                        }
-	                        _a = match[1];
+	                        scheme = match[1].toLowerCase();
+	                        _a = scheme;
 	                        switch (_a) {
 	                            case "https": return [3 /*break*/, 4];
 	                            case "data": return [3 /*break*/, 5];
@@ -21183,8 +21185,8 @@
 	                        linkage.push({ type: "ipfs", content: avatar });
 	                        return [2 /*return*/, { linkage: linkage, url: getIpfsLink(avatar) }];
 	                    case 7:
-	                        selector = (match[1] === "erc721") ? "0xc87b56dd" : "0x0e89341c";
-	                        linkage.push({ type: match[1], content: avatar });
+	                        selector = (scheme === "erc721") ? "0xc87b56dd" : "0x0e89341c";
+	                        linkage.push({ type: scheme, content: avatar });
 	                        _b = this._resolvedAddress;
 	                        if (_b) return [3 /*break*/, 9];
 	                        return [4 /*yield*/, this.getAddress()];
@@ -21201,7 +21203,7 @@
 	                    case 10:
 	                        addr = _h.sent();
 	                        tokenId = (0, lib$1.hexZeroPad)(lib$2.BigNumber.from(comps[1]).toHexString(), 32);
-	                        if (!(match[1] === "erc721")) return [3 /*break*/, 12];
+	                        if (!(scheme === "erc721")) return [3 /*break*/, 12];
 	                        _d = (_c = this.provider.formatter).callAddress;
 	                        return [4 /*yield*/, this.provider.call({
 	                                to: addr, data: (0, lib$1.hexConcat)(["0x6352211e", tokenId])
@@ -21214,7 +21216,7 @@
 	                        linkage.push({ type: "owner", content: tokenOwner });
 	                        return [3 /*break*/, 14];
 	                    case 12:
-	                        if (!(match[1] === "erc1155")) return [3 /*break*/, 14];
+	                        if (!(scheme === "erc1155")) return [3 /*break*/, 14];
 	                        _f = (_e = lib$2.BigNumber).from;
 	                        return [4 /*yield*/, this.provider.call({
 	                                to: addr, data: (0, lib$1.hexConcat)(["0x00fdd58e", (0, lib$1.hexZeroPad)(owner, 32), tokenId])
@@ -21240,7 +21242,7 @@
 	                        }
 	                        linkage.push({ type: "metadata-url", content: metadataUrl });
 	                        // ERC-1155 allows a generic {id} in the URL
-	                        if (match[1] === "erc1155") {
+	                        if (scheme === "erc1155") {
 	                            metadataUrl = metadataUrl.replace("{id}", tokenId.substring(2));
 	                            linkage.push({ type: "metadata-url-expanded", content: metadataUrl });
 	                        }

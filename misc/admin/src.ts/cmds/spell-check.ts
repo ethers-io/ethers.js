@@ -63,9 +63,9 @@ abiv
 // Query parameters
 apikey asc endblock startblock
 
-alchemyapi Cloudflare Etherscan INFURA IPFS MetaMask Nodesmith
+alchemyapi arbitrum Cloudflare Etherscan INFURA IPFS MetaMask Nodesmith
 Trezor ledgerhq axic bitcoinjs browserify easyseed ethereumjs
-goerli homestead kotti kovan mainnet morden mordor rinkeby
+goerli homestead kotti kovan mainnet morden mordor rinkeby kintsugi
 ropsten testnet lb maticmum
 
 // Demo words

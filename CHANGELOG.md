@@ -4,9 +4,11 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
-ethers/v5.5.3 (2021-12-24 02:14)
+ethers/v5.5.3 (2022-01-06 03:52)
 --------------------------------
 
+  - Fixed case-folding in schemes for ENS avatars. ([#2500](https://github.com/ethers-io/ethers.js/issues/2500); [3f5bc6d](https://github.com/ethers-io/ethers.js/commit/3f5bc6ddc1013f0a5974f2ee6f542d6c91480c13))
+  - Added Kintsugi network. ([#2434](https://github.com/ethers-io/ethers.js/issues/2434); [ab13887](https://github.com/ethers-io/ethers.js/commit/ab13887cda3939703dc1f7e27d139ef6001b7dd2))
   - Fix browser random in WebWorkers. ([#2405](https://github.com/ethers-io/ethers.js/issues/2405); [4ba63ac](https://github.com/ethers-io/ethers.js/commit/4ba63acc107fdd0a6d6ef3e27349e65edb007447))
   - Add support for IPFS metadata imageUrl in getAvatar. ([#2426](https://github.com/ethers-io/ethers.js/issues/2426); [3d6a7ec](https://github.com/ethers-io/ethers.js/commit/3d6a7ec020eacd993b4b0fd3274574de3ddcc257))
   - Do not swallow ENS not supported errors. ([#2387](https://github.com/ethers-io/ethers.js/issues/2387); [2f57c6a](https://github.com/ethers-io/ethers.js/commit/2f57c6a4ab44083b2c03f5e57b2702ab7078d286))

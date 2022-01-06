@@ -85,6 +85,18 @@ We will keep a list of useful packages here.
 - `@ethersproject/hardware-wallets` ([documentation](https://docs.ethers.io))
 
 
+Sponsors
+--------
+
+Support the ethers project by [becoming a sponsor](https://ethers.org/sponsoring.html).
+Get your logo added below with a link to your website (Gold and Unobtainium tiers)
+and on the [ethers.org](https://ethers.org) website.
+
+Huge thanks to our sponsors! `<3 <3`
+
+<a href="https://ethers.org/sponsors/tally-link" target="_blank"><img src="https://ethers.org/sponsors/tally-readme.svg"></a>
+
+
 License
 -------
 
