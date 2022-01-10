@@ -26,7 +26,7 @@ importantly securely released.
 
 [Historically](https://github.com/nodejs/node/issues/4660),
 ``new Buffer(16)`` would re-use old memory that had been
-released. This would mean that code runnint later, may have
+released. This would mean that code running later, may have
 access to data that was discarded.
 
 As an example of the dangers, imagine if you had used a Buffer
