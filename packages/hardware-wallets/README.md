@@ -1,7 +1,7 @@
 Hardware Wallets
 ================
 
-Thid is still very experimental.
+This is still very experimental.
 
 I only have 1 ledger nano, and testing is done locally (CirlceCI doesn't have
 ledgers plugged in ;)).
