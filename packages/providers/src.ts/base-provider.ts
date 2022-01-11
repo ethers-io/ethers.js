@@ -491,6 +491,7 @@ export class Resolver implements EnsResolver {
                             case "http:":
                             case "https:":
                                 metadata = yield fetchJson(metadataUrl);
+                                break;
                         }
                         
                         const metadata = await fetchJson(metadataUrl);
