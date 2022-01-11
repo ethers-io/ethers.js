@@ -482,6 +482,17 @@ export class Resolver implements EnsResolver {
                         }
 
                         // Get the token metadata
+                        const url = new URL(metadataUrl);
+                        let metadata = null;
+                        switch (url.protocol) {
+                            case "ipfs:":
+                                metadata = yield fetchJson(getIpfsLink(url.pathname));
+                                break;
+                            case "http:":
+                            case "https:":
+                                metadata = yield fetchJson(metadataUrl);
+                        }
+                        
                         const metadata = await fetchJson(metadataUrl);
                         if (!metadata) { return null; }
                         linkage.push({ type: "metadata", content: JSON.stringify(metadata) });
