@@ -56,6 +56,9 @@ Connecting to Ethereum: Metamask
 // what Metamask injects as window.ethereum into each page
 const provider = new ethers.providers.Web3Provider(window.ethereum)
 
+// Prompt user for account connections.
+await provider.send("eth_requestAccounts", []);
+
 // The Metamask plugin also allows signing transactions to
 // send ether and pay to change state within the blockchain.
 // For this, you need the account signer...
