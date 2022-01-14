@@ -156,6 +156,8 @@ const networks: { [name: string]: Network } = {
 
     kintsugi: { chainId: 1337702, name: "kintsugi" },
 
+    avalanche: { chainId: 43114, name: "avalanche"},
+    fuji: { chainId: 43113, name: "fuji"},
 
     // ETC (See: #351)
     classic: {
