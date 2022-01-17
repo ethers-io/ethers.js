@@ -325,8 +325,8 @@ function buildEstimate(contract: Contract, fragment: FunctionFragment): Contract
 
 function addContractWait(contract: Contract, tx: TransactionResponse) {
     const wait = tx.wait.bind(tx);
-    tx.wait = (confirmations?: number) => {
-        return wait(confirmations).then((receipt: ContractReceipt) => {
+    tx.wait = (confirmations?: number, timeout?: number) => {
+        return wait(confirmations, timeout).then((receipt: ContractReceipt) => {
             receipt.events = receipt.logs.map((log) => {
                 let event: Event = (<Event>deepCopy(log));
                 let parsed: LogDescription = null;
