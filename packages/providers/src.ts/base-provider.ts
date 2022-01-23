@@ -1754,23 +1754,17 @@ export class BaseProvider extends Provider implements EnsProvider {
     }
 
     async getAvatar(nameOrAddress: string): Promise<null | string> {
-        let resolver: Resolver = null;
         if (isHexString(nameOrAddress)) {
             // Address; reverse lookup
-            const address = this.formatter.address(nameOrAddress);
-
-            const reverseName = address.substring(2).toLowerCase() + ".addr.reverse";
-
-            const resolverAddress = await this._getResolver(reverseName);
-            if (!resolverAddress) { return null; }
-
-            resolver = new Resolver(this, resolverAddress, "_", address);
-
-        } else {
-            // ENS name; forward lookup
-            resolver = await this.getResolver(nameOrAddress);
-            if (!resolver) { return null; }
+            const name = await this.lookupAddress(nameOrAddress);
+            if (name == null) { return null; }
+            
+            return this.getAvatar(name);
         }
+        
+        // ENS name; forward lookup
+        const resolver = await this.getResolver(nameOrAddress);
+        if (!resolver) { return null; }
 
         const avatar = await resolver.getAvatar();
         if (avatar == null) { return null; }
