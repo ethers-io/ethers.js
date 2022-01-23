@@ -1756,6 +1756,15 @@ export class BaseProvider extends Provider implements EnsProvider {
     async getAvatar(nameOrAddress: string): Promise<null | string> {
         if (isHexString(nameOrAddress)) {
             // Address; reverse lookup
+            const address = this.formatter.address(nameOrAddress); 
+  
+            const reverseName = address.substring(2).toLowerCase() + ".addr.reverse"; 
+                
+            // Check to see if avatar is on reverse record
+            const avatar = await this.getAvatar(reverseName)
+            if (avatar != null) { return avatar; }
+
+            // If not, lookup address and try on forwards records 
             const name = await this.lookupAddress(nameOrAddress);
             if (name == null) { return null; }
             
