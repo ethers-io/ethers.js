@@ -1392,4 +1392,16 @@ describe("Resolve ENS avatar", function() {
             assert.equal(avatar, test.value, "avatar url");
         });
     });
+
+    it(`Resolves to same avatar from ENS or address`, async function() {
+        this.timeout(60000);
+        const provider = ethers.getDefaultProvider("homestead", getApiKeys("homestead"));
+
+        const ensName = "nick.eth";
+        const address = await provider.resolveName(ensName);
+        
+        const avatarFromEns = await provider.getAvatar(ensName);
+        const avatarFromAddress = await provider.getAvatar(address);
+        assert.equal(avatarFromEns, avatarFromAddress, "avatar url");
+    });
 });
