@@ -66,7 +66,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x990c462ead427b6baebb1edc744999b5b24bf5eea0b57a5d093cb46e764901dd",
+  "tarballHash": "0x0976aab1e9e29f054b5e55d41359597400775eb87ea407447c62feefb732eaeb",
   "types": "./lib/index.d.ts",
-  "version": "5.5.2"
+  "version": "5.5.3"
 }

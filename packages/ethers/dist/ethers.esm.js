@@ -18140,7 +18140,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.5.2";
+const version$m = "providers/5.5.3";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -18769,7 +18769,16 @@ function _parseBytes(result) {
 }
 // Trim off the ipfs:// prefix and return the default gateway URL
 function getIpfsLink(link) {
-    return `https:/\/gateway.ipfs.io/ipfs/${link.substring(7)}`;
+    if (link.match(/^ipfs:\/\/ipfs\//i)) {
+        link = link.substring(12);
+    }
+    else if (link.match(/^ipfs:\/\//i)) {
+        link = link.substring(7);
+    }
+    else {
+        logger$t.throwArgumentError("unsupported IPFS format", "link", link);
+    }
+    return `https:/\/gateway.ipfs.io/ipfs/${link}`;
 }
 class Resolver {
     // The resolvedAddress is only for creating a ReverseLookup resolver
@@ -18963,12 +18972,17 @@ class Resolver {
                             if (metadataUrl == null) {
                                 return null;
                             }
-                            linkage.push({ type: "metadata-url", content: metadataUrl });
+                            linkage.push({ type: "metadata-url-base", content: metadataUrl });
                             // ERC-1155 allows a generic {id} in the URL
                             if (scheme === "erc1155") {
                                 metadataUrl = metadataUrl.replace("{id}", tokenId.substring(2));
                                 linkage.push({ type: "metadata-url-expanded", content: metadataUrl });
                             }
+                            // Transform IPFS metadata links
+                            if (metadataUrl.match(/^ipfs:/i)) {
+                                metadataUrl = getIpfsLink(metadataUrl);
+                            }
+                            linkage.push({ type: "metadata-url", content: metadataUrl });
                             // Get the token metadata
                             const metadata = yield fetchJson(metadataUrl);
                             if (!metadata) {
@@ -23183,7 +23197,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$p = "ethers/5.5.3";
+const version$p = "ethers/5.5.4";
 
 "use strict";
 const logger$I = new Logger(version$p);

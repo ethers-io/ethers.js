@@ -4,6 +4,11 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+ethers/v5.5.4 (2022-01-24 16:45)
+--------------------------------
+
+  - Support invalid but popular IPFS URI format. ([#2271](https://github.com/ethers-io/ethers.js/issues/2271), [#2527](https://github.com/ethers-io/ethers.js/issues/2527), [#2590](https://github.com/ethers-io/ethers.js/issues/2590); [03545aa](https://github.com/ethers-io/ethers.js/commit/03545aa78b0e7bd177e22432e4842b0580a11d7d))
+
 ethers/v5.5.3 (2022-01-06 03:52)
 --------------------------------
 

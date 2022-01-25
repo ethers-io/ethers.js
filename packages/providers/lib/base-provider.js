@@ -270,7 +270,16 @@ function _parseBytes(result) {
 }
 // Trim off the ipfs:// prefix and return the default gateway URL
 function getIpfsLink(link) {
-    return "https://gateway.ipfs.io/ipfs/" + link.substring(7);
+    if (link.match(/^ipfs:\/\/ipfs\//i)) {
+        link = link.substring(12);
+    }
+    else if (link.match(/^ipfs:\/\//i)) {
+        link = link.substring(7);
+    }
+    else {
+        logger.throwArgumentError("unsupported IPFS format", "link", link);
+    }
+    return "https://gateway.ipfs.io/ipfs/" + link;
 }
 var Resolver = /** @class */ (function () {
     // The resolvedAddress is only for creating a ReverseLookup resolver
@@ -509,12 +518,17 @@ var Resolver = /** @class */ (function () {
                         if (metadataUrl == null) {
                             return [2 /*return*/, null];
                         }
-                        linkage.push({ type: "metadata-url", content: metadataUrl });
+                        linkage.push({ type: "metadata-url-base", content: metadataUrl });
                         // ERC-1155 allows a generic {id} in the URL
                         if (scheme === "erc1155") {
                             metadataUrl = metadataUrl.replace("{id}", tokenId.substring(2));
                             linkage.push({ type: "metadata-url-expanded", content: metadataUrl });
                         }
+                        // Transform IPFS metadata links
+                        if (metadataUrl.match(/^ipfs:/i)) {
+                            metadataUrl = getIpfsLink(metadataUrl);
+                        }
+                        linkage.push({ type: "metadata-url", content: metadataUrl });
                         return [4 /*yield*/, (0, web_1.fetchJson)(metadataUrl)];
                     case 16:
                         metadata = _h.sent();
