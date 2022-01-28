@@ -1765,7 +1765,7 @@ export class BaseProvider extends Provider implements EnsProvider {
             if (avatar != null) { return avatar; }
 
             // If not, lookup address and try on forwards records 
-            const name = await this.lookupAddress(nameOrAddress);
+            const name = await this.lookupAddress(address);
             if (name == null) { return null; }
             
             return this.getAvatar(name);
