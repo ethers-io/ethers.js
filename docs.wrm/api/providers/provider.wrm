@@ -96,6 +96,10 @@ reading and debugging much simpler.
 The provider offers some basic operations to help resolve and
 work with ENS names.
 
+_property: provider.getAvatar(name) => Promise<string>
+Returns the URL for the avatar associated to the ENS name, or null
+if no avatar was configured.
+
 _property: provider.getResolver(name) => Promise<[[EnsResolver]]>
 Returns an EnsResolver instance which can be used to further inquire
 about specific entries for an ENS name.
@@ -162,6 +166,18 @@ await resolver.getAddress();
 //_result:
 await resolver.getAddress(0);
 //_log:
+
+_property: resolver.getAvatar() => Promise<AvatarInfo>
+Returns an object the provides the URL of the avatar and the
+linkage representing each stage in the avatar resolution.
+
+If there is no avatar found (or the owner of any NFT does not
+match the name owner), null is returned.
+
+The AvatarInfo has the properties:
+
+- ``info.linkage`` - An array of info on each step resolving the avatar
+- ``info.url`` - The URL of the avatar
 
 _property: resolver.getContentHash() => Promise<string>
 Returns a Promise which resolves to any stored [[link-eip-1577]] content hash.
