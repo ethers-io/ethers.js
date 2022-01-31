@@ -19,6 +19,9 @@ command-line flags, configuration or settings in their UI to enable
 JSON-RPC, unlock accounts or expose specific APIs. Please consult
 their documentation.
 
+_property: jsonRpcProvider.connection => [[ConnectionInfo]]
+The fully formed [[ConnectionInfo]] the Provider is connected to.
+
 _property: jsonRpcProvider.getSigner([ addressOrIndex ]) => [[JsonRpcSigner]]  @<JsonRpcProvider-getSigner> @SRC<providers/json-rpc-provider>
 Returns a [[JsonRpcSigner]] which is managed by this Ethereum node, at
 //addressOrIndex//. If no //addressOrIndex// is provided, the first
