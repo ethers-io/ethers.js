@@ -50,6 +50,7 @@ export type ConnectionInfo = {
     throttleCallback?: (attempt: number, url: string) => Promise<boolean>,
 
     timeout?: number,
+    signal?: AbortSignal;
 };
 
 export interface OnceBlockable {
@@ -149,6 +150,8 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
                 value: "Basic " + base64Encode(toUtf8Bytes(authorization))
             };
         }
+
+        options.signal = connection.signal
     }
     const reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
     const dataMatch = ((url) ? url.match(reData): null);

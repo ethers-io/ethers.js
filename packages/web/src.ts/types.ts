@@ -13,5 +13,6 @@ export type Options = {
     body?: Uint8Array;
     headers?: { [ key: string] : string };
     skipFetchSetup?: boolean;
+    signal?: AbortSignal;
 };
 

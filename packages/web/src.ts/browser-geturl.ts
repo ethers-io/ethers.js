@@ -15,6 +15,8 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
         body: (options.body || undefined),
     };
 
+    if (options.signal) request.signal = options.signal
+
     if (options.skipFetchSetup !== true) {
         request.mode = <RequestMode>"cors";              // no-cors, cors, *same-origin
         request.cache = <RequestCache>"no-cache";        // *default, no-cache, reload, force-cache, only-if-cached
