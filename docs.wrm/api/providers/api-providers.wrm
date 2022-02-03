@@ -39,11 +39,11 @@ It is highly recommended for production, you register with
 
 _definition: **Supported Networks**
 
-- Homestead (Mainnet)
-- Ropsten (proof-of-work testnet)
-- Rinkeby (proof-of-authority testnet)
-- G&ouml;rli (clique testnet)
-- Kovan (proof-of-authority testnet)
+- ``homestead`` - Homestead (Mainnet)
+- ``ropsten`` - Ropsten (proof-of-work testnet)
+- ``rinkeby`` - Rinkeby (proof-of-authority testnet)
+- ``goerli`` - G&ouml;rli (clique testnet)
+- ``kovan`` - Kovan (proof-of-authority testnet)
 
 _code: Etherscan Examples @lang<javascript>
 
@@ -106,11 +106,17 @@ It is highly recommended for production, you register with
 
 _definition: **Supported Networks**
 
-- Homestead (Mainnet)
-- Ropsten (proof-of-work testnet)
-- Rinkeby (proof-of-authority testnet)
-- G&ouml;rli (clique testnet)
-- Kovan (proof-of-authority testnet)
+- ``homestead`` - Homestead (Mainnet)
+- ``ropsten`` - Ropsten (proof-of-work testnet)
+- ``rinkeby`` - Rinkeby (proof-of-authority testnet)
+- ``goerli`` - G&ouml;rli (clique testnet)
+- ``kovan`` - Kovan (proof-of-authority testnet)
+- ``matic`` - Polygon
+- ``maticmum`` - Polygon Mumbai Testnet
+- ``optimism`` - Optimism (L2; optimistic roll-up)
+- ``optimism-kovan`` - Optimism Testnet (L2; optimistic roll-up testnet)
+- ``arbitrum`` - Arbitrum (L2; optimistic roll-up)
+- ``arbitrum-rinkeby`` - Arbitrum Testnet (L2; optimistic roll-up testnet)
 
 _code: INFURA Examples @lang<javascript>
 
@@ -161,11 +167,17 @@ It is highly recommended for production, you register with
 
 _definition: **Supported Networks**
 
-- Homestead (Mainnet)
-- Ropsten (proof-of-work testnet)
-- Rinkeby (proof-of-authority testnet)
-- G&ouml;rli (clique testnet)
-- Kovan (proof-of-authority testnet)
+- ``homestead`` - Homestead (Mainnet)
+- ``ropsten`` - Ropsten (proof-of-work testnet)
+- ``rinkeby`` - Rinkeby (proof-of-authority testnet)
+- ``goerli`` - G&ouml;rli (clique testnet)
+- ``kovan`` - Kovan (proof-of-authority testnet)
+- ``matic`` - Polygon
+- ``maticmum`` - Polygon Mumbai Testnet
+- ``optimism`` - Optimism (L2; optimistic roll-up)
+- ``optimism-kovan`` - Optimism Testnet (L2; optimistic roll-up testnet)
+- ``arbitrum`` - Arbitrum (L2; optimistic roll-up)
+- ``arbitrum-rinkeby`` - Arbitrum Testnet (L2; optimistic roll-up testnet)
 
 _code: Alchemy Examples @lang<javascript>
 
@@ -197,7 +209,7 @@ Create a new **CloudflareProvider** connected to mainnet (i.e. "homestead").
 
 _definition: **Supported Networks**
 
-- Homestead (Mainnet)
+- ``homestead`` - Homestead (Mainnet)
 
 _code: Cloudflare Examples @lang<javascript>
 
