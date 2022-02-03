@@ -13,6 +13,7 @@ import { JsonRpcProvider } from "./json-rpc-provider";
 export type ExternalProvider = {
     isMetaMask?: boolean;
     isStatus?: boolean;
+    isCoinbaseWallet: boolean;
     host?: string;
     path?: string;
     sendAsync?: (request: { method: string, params?: Array<any> }, callback: (error: any, response: any) => void) => void
