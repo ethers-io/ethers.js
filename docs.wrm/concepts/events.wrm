@@ -91,7 +91,7 @@ _code: ERC-20 Transfer Filter Examples @lang<javascript>
 filter = {
     address: tokenAddress,
     topics: [
-        id("Transfer(address,address,uint256)"),
+        utils.id("Transfer(address,address,uint256)"),
         hexZeroPad(myAddress, 32)
     ]
 };
@@ -100,7 +100,7 @@ filter = {
 filter = {
     address: tokenAddress,
     topics: [
-        id("Transfer(address,address,uint256)"),
+        utils.id("Transfer(address,address,uint256)"),
         null,
         hexZeroPad(myAddress, 32)
     ]
@@ -110,7 +110,7 @@ filter = {
 filter = {
     address: tokenAddress,
     topics: [
-        id("Transfer(address,address,uint256)"),
+        utils.id("Transfer(address,address,uint256)"),
         null,
         [
             hexZeroPad(myAddress, 32),
