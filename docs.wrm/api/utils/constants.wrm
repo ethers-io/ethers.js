@@ -1,6 +1,6 @@
 _section: Constants @<constants>
 
-The **ethers.contants** Object contains commonly used values.
+The **ethers.constants** Object contains commonly used values.
 
 
 _subsection: Bytes
