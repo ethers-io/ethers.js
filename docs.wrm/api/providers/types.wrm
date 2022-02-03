@@ -364,6 +364,16 @@ must be considered.
 _property: receipt.gasUsed => [[BigNumber]]
 The amount of gas actually used by this transaction.
 
+_property: receipt.effectiveGasPrice => [[BigNumber]]
+The effective gas price the transaction was charged at.
+
+Prior to EIP-1559 or on chains that do not support it, this value will
+simply be equal to the transaction ``gasPrice``.
+
+On EIP-1559 chains, this is equal to the block ``baseFee`` for the block
+that the transaction was included in, plus the transaction
+``maxPriorityFeePerGas`` clamped to the transaction ``maxFeePerGas``.
+
 _property: receipt.logsBloom => string<[[DataHexString]]>
 A [bloom-filter](link-wiki-bloomfilter), which
 includes all the addresses and topics included in any log in this
