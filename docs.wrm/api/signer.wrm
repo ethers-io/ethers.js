@@ -228,7 +228,7 @@ does not have a secure entropy source, an error is thrown.
 Wallets created using this method will have a mnemonic.
 
 _property: ethers.Wallet.fromEncryptedJson(json, password [ , progress ])  => Promise<[[Wallet]]> @<Wallet-fromEncryptedJson> @SRC<wallet>
-Create an instance from an encrypted JSON wallet.
+Create an instance by decrypting an encrypted JSON wallet.
 
 If //progress// is provided it will be called during decryption
 with a value between 0 and 1 indicating the progress towards
