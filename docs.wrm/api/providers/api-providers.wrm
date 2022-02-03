@@ -11,7 +11,7 @@ To mitigate these issues, it is recommended you use a
 [Default Provider](providers-getDefaultProvider).
 
 
-_subsection: EtherscanProvider @<EtherscanProvider> @inherit<[[Provider]]> @src<providers:class.EtherscanProvider>
+_subsection: EtherscanProvider @<EtherscanProvider> @inherit<[[BaseProvider]]> @src<providers:class.EtherscanProvider>
 
 The **EtherscanProvider** is backed by a combination of the various
 [Etherscan APIs](link-etherscan-api).

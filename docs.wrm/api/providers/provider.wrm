@@ -550,3 +550,17 @@ _subsection: Inspection Methods  @<Provider--inspection-methods>
 _property: Provider.isProvider(object) => boolean  @<Provider-isProvider> @SRC<abstract-provider>
 Returns true if and only if //object// is a Provider.
 
+
+_subsection: BaseProvider @<BaseProvider> @INHERIT<[[Provider]]> @SRC<providers:class.BaseProvider>
+
+Most Providers available in ethers are sub-classes of BaseProvider, which
+simplifies sub-classes, as it handles much of the event operations, such as
+polling and formatting.
+
+_property: provider.polling => boolean
+Indicates if the Provider is currently polling. If there are no events to
+poll for or polling has been explicitly disabled, this will be false.
+
+_property: provider.pollingInterval => number
+The frequency at which the provider polls.
+
