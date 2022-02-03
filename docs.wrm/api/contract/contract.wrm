@@ -112,7 +112,7 @@ be returned with each parameter available positionally and if the parameter
 is named, it will also be available by its name.
 
 For values that have a simple meaning in JavaScript, the types are fairly
-straight forward; strings and booleans are returned as JavaScript strings
+straightforward; strings and booleans are returned as JavaScript strings
 and booleans.
 
 For numbers, if the **type** is in the JavaScript safe range (i.e. less

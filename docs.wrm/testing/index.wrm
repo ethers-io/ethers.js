@@ -151,7 +151,7 @@ This section is still a work in progress, but will outline some of the more nuan
 aspects of the test cases and their values.
 
 There will likely be an overhaul of the test cases in the next major version, to
-make code coverage testing more straight forward and to collapse some of the redundancy.
+make code coverage testing more straightforward and to collapse some of the redundancy.
 
 For example, there is no longer a need to separate the ABI and ABIv2 test case and the
 accounts and transactions suites can be merged into one large collection.
