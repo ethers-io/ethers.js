@@ -12,6 +12,17 @@ import { version } from "./_version";
 const logger = new Logger(version);
 
 import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
+import {
+    AssetTransfersParams,
+    AssetTransfersResponse,
+    GetNftMetadataResponse,
+    GetNftsResponse,
+    Nft,
+    TokenBalancesResponse,
+    TokenMetadataResponse,
+    TransactionReceiptsParams,
+    TransactionReceiptsResponse
+} from "./alchemy-provider-types";
 
 // This key was provided to ethers.js by Alchemy to be used by the
 // default provider, but it is recommended that for your own
@@ -19,6 +30,7 @@ import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 //   https://dashboard.alchemyapi.io
 
 const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC"
+const DEFAULT_CONTRACT_ADDRESSES = "DEFAULT_TOKENS";
 
 export class AlchemyWebSocketProvider extends WebSocketProvider implements CommunityResourcable {
     readonly apiKey: string;
@@ -27,7 +39,7 @@ export class AlchemyWebSocketProvider extends WebSocketProvider implements Commu
         const provider = new AlchemyProvider(network, apiKey);
 
         const url = provider.connection.url.replace(/^http/i, "ws")
-                                           .replace(".alchemyapi.", ".ws.alchemyapi.");
+            .replace(".alchemyapi.", ".ws.alchemyapi.");
 
         super(url, provider.network);
         defineReadOnly(this, "apiKey", provider.apiKey);
@@ -89,7 +101,7 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
                 host = "opt-kovan.g.alchemy.com/v2/";
                 break;
             default:
-               logger.throwArgumentError("unsupported network", "network", arguments[0]);
+                logger.throwArgumentError("unsupported network", "network", arguments[0]);
         }
 
         return {
@@ -107,4 +119,65 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
     isCommunityResource(): boolean {
         return (this.apiKey === defaultApiKey);
     }
+
+    getTokenAllowance(contract: string, owner: string, spender: string): Promise<string> {
+        return this.send("alchemy_getTokenAllowance", [contract, owner, spender]);
+    }
+
+    getTokenBalances(address: string, contractAddresses?: string[]): Promise<TokenBalancesResponse> {
+        return this.send("alchemy_getTokenBalances", [address, contractAddresses || DEFAULT_CONTRACT_ADDRESSES]);
+    }
+
+    // Token API
+    getTokenMetadata(address: string): Promise<TokenMetadataResponse> {
+        return this.send("alchemy_getTokenMetadata", [address]);
+    }
+
+    getAssetTransfers(params: AssetTransfersParams): Promise<AssetTransfersResponse> {
+        return this.send("alchemy_getAssetTransfers",
+            [
+                {
+                    ...params,
+                    fromBlock:
+                        params.fromBlock != null
+                            ? formatBlock(params.fromBlock)
+                            : undefined,
+                    toBlock:
+                        params.toBlock != null ? formatBlock(params.toBlock) : undefined,
+                    maxCount:
+                        params.maxCount != null ? toHex(params.maxCount) : undefined,
+                },
+            ]);
+    }
+
+    getNftMetadata(contractAddress: string, tokenId: string, tokenType?: "erc721" | "erc1155"):
+        Promise<GetNftMetadataResponse> {
+        return this.send("alchemy_getNftMetadata", [contractAddress, tokenId, tokenType]);
+    }
+
+    getNfts(ownedNfts: Nft[], pageKey?: string, contractAddresses?: string[]):
+        Promise<GetNftsResponse> {
+        return this.send("alchemy_getNfts", [ownedNfts, pageKey, contractAddresses]);
+    }
+
+    getTransactionReceipts(params: TransactionReceiptsParams): Promise<TransactionReceiptsResponse> {
+        return this.send("alchemy_getTransactionReceipts", [params]);
+    }
+}
+
+export function toHex(n: number): string {
+    return `0x${n.toString(16)}`;
+}
+
+export function fromHex(hexString: string): number {
+    return Number.parseInt(hexString, 16);
+}
+
+export function formatBlock(block: string | number): string {
+    if (typeof block === "string") {
+        return block;
+    } else if (typeof block === "number" && Number.isInteger(block)) {
+        return toHex(block);
+    }
+    return block.toString();
 }

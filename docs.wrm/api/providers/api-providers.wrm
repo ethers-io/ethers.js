@@ -179,6 +179,9 @@ _definition: **Supported Networks**
 - ``arbitrum`` - Arbitrum (L2; optimistic roll-up)
 - ``arbitrum-rinkeby`` - Arbitrum Testnet (L2; optimistic roll-up testnet)
 
+_property: alchemyProvider.getTokenAllowance([ contract, owner, spender ]) => Promise<string>
+Returns the amount which the spender is allowed to withdraw from the owner.
+
 _code: Alchemy Examples @lang<javascript>
 
 //_hide: const AlchemyProvider = ethers.providers.AlchemyProvider;

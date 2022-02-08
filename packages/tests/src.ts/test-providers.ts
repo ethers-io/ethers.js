@@ -959,6 +959,60 @@ testFunctions.push({
     }
 });
 
+testFunctions.push({
+    name: "alchemy getTokenAllowance",
+    extras: ["funding"],
+    timeout: 900,
+    networks: ["ropsten"],
+    checkSkip: (provider: string) => {
+        return (provider !== "AlchemyProvider");
+    },
+    execute: async (provider: ethers.providers.AlchemyProvider) => {
+        console.log("Start alchemy_getTokenAllowance Test");
+    }
+});
+
+testFunctions.push({
+    name: "alchemy getTokenBalances success",
+    extras: ["nowait"],
+    timeout: 900,
+    networks: ["ropsten"],
+    checkSkip: (provider: string) => {
+        return (provider !== "AlchemyProvider");
+    },
+    execute: async (provider: ethers.providers.AlchemyProvider) => {
+        console.log("Start alchemy_getTokenBalances Test");
+        const wallet = fundWallet.connect(provider);
+        const tokenBalances = await provider.getTokenBalances(wallet.address);
+        assert.ok(tokenBalances.tokenBalances.length > 0, "has token balances");
+        assert.ok(typeof(tokenBalances.tokenBalances[0].tokenBalance) === "string", "success has token balance");
+        assert.ok(tokenBalances.tokenBalances[0].error === null, "success has no error");
+    }
+});
+
+testFunctions.unshift({
+    name: "alchemy getTokenMetadata success",
+    extras: ["funding"],
+    timeout: 900,
+    networks: ["default"],
+    checkSkip: (provider: string) => {
+        return (provider !== "AlchemyProvider");
+    },
+    execute: async (provider: ethers.providers.AlchemyProvider) => {
+        console.log("Start alchemy_getTokenMetadata Test");
+        // Use DAI address for testing.
+        const address = "0x6b175474e89094c44da98b954eedeac495271d0f";
+        const tokenMetadata = await provider.getTokenMetadata(address);
+        assert.ok(typeof(tokenMetadata.decimals) === 'number', "has number");
+        assert.ok(typeof(tokenMetadata.logo) === 'string', "has logo");
+        assert.ok(typeof(tokenMetadata.name) === 'string', "has name");
+        assert.ok(typeof(tokenMetadata.symbol) === 'string', "has string");
+    }
+});
+
+
+
+
 describe("Test Provider Methods", function() {
     let fundReceipt: Promise<ethers.providers.TransactionReceipt> = null;
     const faucet = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
