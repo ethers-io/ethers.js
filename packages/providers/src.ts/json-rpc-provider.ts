@@ -296,7 +296,7 @@ class UncheckedJsonRpcSigner extends JsonRpcSigner {
                 chainId: null,
                 confirmations: 0,
                 from: null,
-                wait: (confirmations?: number) => { return this.provider.waitForTransaction(hash, confirmations); }
+                wait: (confirmations?: number, timeout?: number) => this.provider.waitForTransaction(hash, confirmations, timeout),
             };
         });
     }
