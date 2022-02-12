@@ -288,10 +288,15 @@ The serialized transaction. This may be null as some backends do not
 rpopulate it. If this is required, it can be computed from a **TransactionResponse**
 object using [this cookbook recipe](cookbook--compute-raw-transaction).
 
-_property: transaction.wait([ confirms = 1 ]) => Promise<[[providers-TransactionReceipt]]>
+_property: transaction.wait([ confirms = 1 [ , timeout = 0 ] ]) => Promise<[[providers-TransactionReceipt]]>
 Resolves to the [[providers-TransactionReceipt]] once the transaction
 has been included in the chain for //confirms// blocks. If //confirms//
 is 0, and the transaction has not been mined, ``null`` is returned.
+
+//timeout// can be used to specifiy how long to wait for the transaction
+to be reached the provided number of confirmations. If the wait process
+takes as much time as //timeout// value, [TIMEOUT](errors--timeout) error
+will be rejected with provided //timeout// value in ``error.timeout``.
 
 If the transaction execution failed (i.e. the receipt status is ``0``),
 a [CALL_EXCEPTION](errors--call-exception) error will be rejected with
