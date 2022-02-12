@@ -53,7 +53,7 @@ export interface TransactionResponse extends Transaction {
     raw?: string,
 
     // This function waits until the transaction has been mined
-    wait: (confirmations?: number) => Promise<TransactionReceipt>
+    wait: (confirmations?: number, timeout?: number) => Promise<TransactionReceipt>
 };
 
 export type BlockTag = string | number;
