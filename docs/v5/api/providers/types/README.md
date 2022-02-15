@@ -363,7 +363,7 @@ This is generally of little interest to developers.
 This is true if the block is in a [post-Byzantium Hard Fork](https://eips.ethereum.org/EIPS/eip-609) block.
 
 
-#### *receipt* . **status** => *boolean*
+#### *receipt* . **status** => *number*
 
 The status of a transaction is 1 is successful or 0 if it was reverted. Only transactions included in blocks [post-Byzantium Hard Fork](https://eips.ethereum.org/EIPS/eip-609) have this property.
 
