@@ -59,7 +59,7 @@ export class Eip1193Bridge extends EventEmitter {
              }
              case "eth_chainId": {
                  const result = await this.provider.getNetwork();
-                 return result.chainId;
+                 return '0x' + result.chainId.toString(16);
              }
              case "eth_getBalance": {
                  const result = await this.provider.getBalance(params[0], params[1]);
