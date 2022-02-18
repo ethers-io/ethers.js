@@ -83,7 +83,7 @@ export class BigNumber implements Hexable {
     div(other: BigNumberish): BigNumber {
         const o = BigNumber.from(other);
         if (o.isZero()) {
-            throwFault("division by zero", "div");
+            throwFault("division-by-zero", "div");
         }
         return toBigNumber(toBN(this).div(toBN(other)));
     }
@@ -95,7 +95,7 @@ export class BigNumber implements Hexable {
     mod(other: BigNumberish): BigNumber {
         const value = toBN(other);
         if (value.isNeg()) {
-            throwFault("cannot modulo negative values", "mod");
+            throwFault("division-by-zero", "mod");
         }
         return toBigNumber(toBN(this).umod(value));
     }
@@ -103,7 +103,7 @@ export class BigNumber implements Hexable {
     pow(other: BigNumberish): BigNumber {
         const value = toBN(other);
         if (value.isNeg()) {
-            throwFault("cannot raise to negative values", "pow");
+            throwFault("negative-power", "pow");
         }
         return toBigNumber(toBN(this).pow(value));
     }
@@ -111,7 +111,7 @@ export class BigNumber implements Hexable {
     and(other: BigNumberish): BigNumber {
         const value = toBN(other);
         if (this.isNegative() || value.isNeg()) {
-            throwFault("cannot 'and' negative values", "and");
+            throwFault("unbound-bitwise-result", "and");
         }
         return toBigNumber(toBN(this).and(value));
     }
@@ -119,7 +119,7 @@ export class BigNumber implements Hexable {
     or(other: BigNumberish): BigNumber {
         const value = toBN(other);
         if (this.isNegative() || value.isNeg()) {
-            throwFault("cannot 'or' negative values", "or");
+            throwFault("unbound-bitwise-result", "or");
         }
         return toBigNumber(toBN(this).or(value));
     }
@@ -127,28 +127,28 @@ export class BigNumber implements Hexable {
     xor(other: BigNumberish): BigNumber {
         const value = toBN(other);
         if (this.isNegative() || value.isNeg()) {
-            throwFault("cannot 'xor' negative values", "xor");
+            throwFault("unbound-bitwise-result", "xor");
         }
         return toBigNumber(toBN(this).xor(value));
     }
 
     mask(value: number): BigNumber {
         if (this.isNegative() || value < 0) {
-            throwFault("cannot mask negative values", "mask");
+            throwFault("negative-width", "mask");
         }
         return toBigNumber(toBN(this).maskn(value));
     }
 
     shl(value: number): BigNumber {
         if (this.isNegative() || value < 0) {
-            throwFault("cannot shift negative values", "shl");
+            throwFault("negative-width", "shl");
         }
         return toBigNumber(toBN(this).shln(value));
     }
 
     shr(value: number): BigNumber {
         if (this.isNegative() || value < 0) {
-            throwFault("cannot shift negative values", "shr");
+            throwFault("negative-width", "shr");
         }
         return toBigNumber(toBN(this).shrn(value));
     }

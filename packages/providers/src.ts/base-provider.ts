@@ -8,7 +8,7 @@ import { Base58 } from "@ethersproject/basex";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { arrayify, concat, hexConcat, hexDataLength, hexDataSlice, hexlify, hexValue, hexZeroPad, isHexString } from "@ethersproject/bytes";
 import { HashZero } from "@ethersproject/constants";
-import { namehash } from "@ethersproject/hash";
+import { dnsEncode, namehash } from "@ethersproject/hash";
 import { getNetwork, Network, Networkish } from "@ethersproject/networks";
 import { Deferrable, defineReadOnly, getStatic, resolveProperties } from "@ethersproject/properties";
 import { Transaction } from "@ethersproject/transactions";
@@ -278,6 +278,24 @@ function getIpfsLink(link: string): string {
     return `https:/\/gateway.ipfs.io/ipfs/${ link }`;
 }
 
+function numPad(value: number): Uint8Array {
+    const result = arrayify(value);
+    if (result.length > 32) { throw new Error("internal; should not happen"); }
+
+    const padded = new Uint8Array(32);
+    padded.set(result, 32 - result.length);
+    return padded;
+}
+
+function bytesPad(value: Uint8Array): Uint8Array {
+    if ((value.length % 32) === 0) { return value; }
+
+    const result = new Uint8Array(Math.ceil(value.length / 32) * 32);
+    result.set(value);
+    return result;
+}
+
+
 export class Resolver implements EnsResolver {
     readonly provider: BaseProvider;
 
@@ -285,6 +303,9 @@ export class Resolver implements EnsResolver {
     readonly address: string;
 
     readonly _resolvedAddress: null | string;
+
+    // For EIP-2544 names, the ancestor that provided the resolver
+    _supportsEip2544: null | Promise<boolean>;
 
     // The resolvedAddress is only for creating a ReverseLookup resolver
     constructor(provider: BaseProvider, address: string, name: string, resolvedAddress?: string) {
@@ -294,19 +315,83 @@ export class Resolver implements EnsResolver {
         defineReadOnly(this, "_resolvedAddress", resolvedAddress);
     }
 
-    async _fetchBytes(selector: string, parameters?: string): Promise<null | string> {
+    supportsWildcard(): Promise<boolean> {
+        if (!this._supportsEip2544) {
+            // supportsInterface(bytes4 = selector("resolve(bytes,bytes)"))
+            this._supportsEip2544 = this.provider.call({
+                to: this.address,
+                data: "0x01ffc9a79061b92300000000000000000000000000000000000000000000000000000000"
+            }).then((result) => {
+                return BigNumber.from(result).eq(1);
+            }).catch((error) => {
+                if (error.code === Logger.errors.CALL_EXCEPTION) { return false; }
+                // Rethrow the error: link is down, etc. Let future attempts retry.
+                this._supportsEip2544 = null;
+                throw error;
+            });
+        }
+
+        return this._supportsEip2544;
+    }
+
+    async _fetch(selector: string, parameters?: string): Promise<null | string> {
         // e.g. keccak256("addr(bytes32,uint256)")
         const tx = {
             to: this.address,
             data: hexConcat([ selector, namehash(this.name), (parameters || "0x") ])
         };
 
+        // Wildcard support; use EIP-2544 to resolve the request
+        let parseBytes = false;
+        if (await this.supportsWildcard()) {
+            parseBytes = true;
+
+            const p0 = arrayify(dnsEncode(this.name));
+            const p1 = arrayify(tx.data);
+
+            // selector("resolve(bytes,bytes)")
+            const bytes: Array<string | Uint8Array> = [ "0x9061b923" ];
+            let byteCount = 0;
+
+            // Place-holder pointer to p0
+            const placeHolder0 = bytes.length;
+            bytes.push("0x");
+            byteCount += 32;
+
+            // Place-holder pointer to p1
+            const placeHolder1 = bytes.length;
+            bytes.push("0x");
+            byteCount += 32;
+
+            // The length and padded value of p0
+            bytes[placeHolder0] = numPad(byteCount);
+            bytes.push(numPad(p0.length));
+            bytes.push(bytesPad(p0));
+            byteCount += 32 + Math.ceil(p0.length / 32) * 32;
+
+            // The length and padded value of p0
+            bytes[placeHolder1] = numPad(byteCount);
+            bytes.push(numPad(p1.length));
+            bytes.push(bytesPad(p1));
+            byteCount += 32 + Math.ceil(p1.length / 32) * 32;
+
+            tx.data = hexConcat(bytes);
+        }
+
         try {
-            return _parseBytes(await this.provider.call(tx));
+            let result = await this.provider.call(tx);
+            if (parseBytes) { result = _parseBytes(result); }
+            return result;
         } catch (error) {
             if (error.code === Logger.errors.CALL_EXCEPTION) { return null; }
             return null;
         }
+    }
+
+    async _fetchBytes(selector: string, parameters?: string): Promise<null | string> {
+        const result = await this._fetch(selector, parameters);
+        if (result != null) { return _parseBytes(result); }
+        return null;
     }
 
     _getAddress(coinType: number, hexBytes: string): string {
@@ -378,16 +463,12 @@ export class Resolver implements EnsResolver {
         if (coinType === 60) {
             try {
                 // keccak256("addr(bytes32)")
-                const transaction = {
-                    to: this.address,
-                    data: ("0x3b3b57de" + namehash(this.name).substring(2))
-                };
-                const hexBytes = await this.provider.call(transaction);
+                const result = await this._fetch("0x3b3b57de");
 
                 // No address
-                if (hexBytes === "0x" || hexBytes === HashZero) { return null; }
+                if (result === "0x" || result === HashZero) { return null; }
 
-                return this.provider.formatter.callAddress(hexBytes);
+                return this.provider.formatter.callAddress(result);
             } catch (error) {
                 if (error.code === Logger.errors.CALL_EXCEPTION) { return null; }
                 throw error;
@@ -1672,18 +1753,36 @@ export class BaseProvider extends Provider implements EnsProvider {
 
 
     async getResolver(name: string): Promise<null | Resolver> {
-        try {
-            const address = await this._getResolver(name);
-            if (address == null) { return null; }
-            return new Resolver(this, address, name);
-        } catch (error) {
-            if (error.code === Logger.errors.CALL_EXCEPTION) { return null; }
-            throw error;
+        let currentName = name;
+        while (true) {
+            if (currentName === "" || currentName === ".") { return null; }
+
+            // Optimization since the eth node cannot change and does
+            // not have a wildcar resolver
+            if (name !== "eth" && currentName === "eth") { return null; }
+
+            // Check the current node for a resolver
+            const addr = await this._getResolver(currentName, "getResolver");
+
+            // Found a resolver!
+            if (addr != null) {
+                const resolver = new Resolver(this, addr, name);
+
+                // Legacy resolver found, using EIP-2544 so it isn't safe to use
+                if (currentName !== name && !(await resolver.supportsWildcard())) { return null; }
+
+                return resolver;
+            }
+
+            // Get the parent node
+            currentName = currentName.split(".").slice(1).join(".");
         }
+
     }
 
-    async _getResolver(name: string): Promise<string> {
-        // Get the resolver from the blockchain
+    async _getResolver(name: string, operation?: string): Promise<string> {
+        if (operation == null) { operation = "ENS"; }
+
         const network = await this.getNetwork();
 
         // No ENS...
@@ -1691,22 +1790,22 @@ export class BaseProvider extends Provider implements EnsProvider {
             logger.throwError(
                 "network does not support ENS",
                 Logger.errors.UNSUPPORTED_OPERATION,
-                { operation: "ENS", network: network.name }
+                { operation, network: network.name }
             );
         }
 
-        // keccak256("resolver(bytes32)")
-        const transaction = {
-            to: network.ensAddress,
-            data: ("0x0178b8bf" + namehash(name).substring(2))
-        };
-
         try {
-            return this.formatter.callAddress(await this.call(transaction));
+            // keccak256("resolver(bytes32)")
+            const addrData = await this.call({
+                to: network.ensAddress,
+                data: ("0x0178b8bf" + namehash(name).substring(2))
+            });
+            return this.formatter.callAddress(addrData);
         } catch (error) {
-            if (error.code === Logger.errors.CALL_EXCEPTION) { return null; }
-            throw error;
+            // ENS registry cannot throw errors on resolver(bytes32)
         }
+
+        return null;
     }
 
     async resolveName(name: string | Promise<string>): Promise<null | string> {
@@ -1735,34 +1834,17 @@ export class BaseProvider extends Provider implements EnsProvider {
         address = await address;
         address = this.formatter.address(address);
 
-        const reverseName = address.substring(2).toLowerCase() + ".addr.reverse";
+        const node = address.substring(2).toLowerCase() + ".addr.reverse";
 
-        const resolverAddress = await this._getResolver(reverseName);
-        if (!resolverAddress) { return null; }
+        const resolverAddr = await this._getResolver(node, "lookupAddress");
+        if (resolverAddr == null) { return null; }
 
         // keccak("name(bytes32)")
-        let bytes = arrayify(await this.call({
-            to: resolverAddress,
-            data: ("0x691f3431" + namehash(reverseName).substring(2))
+        const name = _parseString(await this.call({
+            to: resolverAddr,
+            data: ("0x691f3431" + namehash(node).substring(2))
         }));
 
-        // Strip off the dynamic string pointer (0x20)
-        if (bytes.length < 32 || !BigNumber.from(bytes.slice(0, 32)).eq(32)) { return null; }
-        bytes = bytes.slice(32);
-
-        // Not a length-prefixed string
-        if (bytes.length < 32) { return null; }
-
-        // Get the length of the string (from the length-prefix)
-        const length = BigNumber.from(bytes.slice(0, 32)).toNumber();
-        bytes = bytes.slice(32);
-
-        // Length longer than available data
-        if (length > bytes.length) { return null; }
-
-        const name = toUtf8String(bytes.slice(0, length));
-
-        // Make sure the reverse record matches the foward record
         const addr = await this.resolveName(name);
         if (addr != address) { return null; }
 
@@ -1775,15 +1857,35 @@ export class BaseProvider extends Provider implements EnsProvider {
             // Address; reverse lookup
             const address = this.formatter.address(nameOrAddress);
 
-            const reverseName = address.substring(2).toLowerCase() + ".addr.reverse";
+            const node = address.substring(2).toLowerCase() + ".addr.reverse";
 
-            const resolverAddress = await this._getResolver(reverseName);
+            const resolverAddress = await this._getResolver(node, "getAvatar");
             if (!resolverAddress) { return null; }
 
-            resolver = new Resolver(this, resolverAddress, "_", address);
+            // Try resolving the avatar against the addr.reverse resolver
+            resolver = new Resolver(this, resolverAddress, node);
+            try {
+                const avatar = await resolver.getAvatar();
+                if (avatar) { return avatar.url; }
+            } catch (error) {
+                if (error.code !== Logger.errors.CALL_EXCEPTION) { throw error; }
+            }
+
+            // Try getting the name and performing forward lookup; allowing wildcards
+            try {
+                // keccak("name(bytes32)")
+                const name = _parseString(await this.call({
+                    to: resolverAddress,
+                    data: ("0x691f3431" + namehash(node).substring(2))
+                }));
+                resolver = await this.getResolver(name);
+            } catch (error) {
+                if (error.code !== Logger.errors.CALL_EXCEPTION) { throw error; }
+                return null;
+            }
 
         } else {
-            // ENS name; forward lookup
+            // ENS name; forward lookup with wildcard
             resolver = await this.getResolver(nameOrAddress);
             if (!resolver) { return null; }
         }

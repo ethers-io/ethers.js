@@ -217,6 +217,45 @@ export class Logger {
         messageDetails.push(`version=${ this.version }`);
 
         const reason = message;
+
+        let url = "";
+
+        switch (code) {
+            case ErrorCode.NUMERIC_FAULT: {
+                url = "NUMERIC_FAULT";
+                const fault = message;
+
+                switch (fault) {
+                    case "overflow": case "underflow":
+                        url += "-" + fault;
+                        break;
+                    case "division-by-zero": case "negative-modulo":
+                        url += "-undefined";
+                        break;
+                    case "negative-power": case "negative-width":
+                        url += "-unsupported";
+                        break;
+                    case "unbound-bitwise-result":
+                        url += "-unbound-result";
+                        break;
+                }
+                break;
+            }
+            case ErrorCode.CALL_EXCEPTION:
+            case ErrorCode.INSUFFICIENT_FUNDS:
+            case ErrorCode.MISSING_NEW:
+            case ErrorCode.NONCE_EXPIRED:
+            case ErrorCode.REPLACEMENT_UNDERPRICED:
+            case ErrorCode.TRANSACTION_REPLACED:
+            case ErrorCode.UNPREDICTABLE_GAS_LIMIT:
+                url = code;
+                break;
+        }
+
+        if (url) {
+            message += " [ See: https:/\/ethers.org/errors/" + url + " ]";
+        }
+
         if (messageDetails.length) {
             message += " (" + messageDetails.join(", ") + ")";
         }
