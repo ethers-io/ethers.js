@@ -33,6 +33,12 @@ How long to wait before rejecting with a //timeout// error.
 _property: connection.headers => { [ key: string]: string }
 Additional headers to include in the connection.
 
+_property: connection.skipFetchSetup => boolean
+Normally a connection will specify the default values for a connection
+such as CORS-behavior and caching policy, to ensure compatibility across
+platforms. On some services, such as Cloudflare Workers, specifying any
+value (inclluding the default values) will cause failure. Setting this
+to true will prevent any values being passed to the underlying API.
 
 _heading: PollOptions @<PollOptions>
 
