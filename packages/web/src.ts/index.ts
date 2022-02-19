@@ -49,6 +49,8 @@ export type ConnectionInfo = {
     throttleSlotInterval?: number;
     throttleCallback?: (attempt: number, url: string) => Promise<boolean>,
 
+    skipFetchSetup?: boolean;
+
     timeout?: number,
 };
 
@@ -148,6 +150,10 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
                 key: "Authorization",
                 value: "Basic " + base64Encode(toUtf8Bytes(authorization))
             };
+        }
+
+        if (connection.skipFetchSetup != null) {
+            options.skipFetchSetup = !!connection.skipFetchSetup;
         }
     }
     const reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
