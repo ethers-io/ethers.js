@@ -414,9 +414,7 @@ export class Interface {
                         errorArgs = this._abiCoder.decode(error.inputs, bytes.slice(4));
                         errorName = error.name;
                         errorSignature = error.format();
-                    } catch (error) {
-                        console.log(error);
-                    }
+                    } catch (error) { }
                 }
                 break;
             }
