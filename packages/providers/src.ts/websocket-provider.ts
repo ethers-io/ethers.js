@@ -39,6 +39,16 @@ export type Subscription = {
     processFunc: (payload: any) => void;
 };
 
+export interface WebSocketLike {
+    onopen: (...args: Array<any>) => any;
+    onmessage: (...args: Array<any>) => any;
+    onerror: (...args: Array<any>) => any;
+
+    readyState: number;
+
+    send(payload: any): void;
+    close(code?: number, reason?: string): void;
+}
 
 // For more info about the Real-time Event API see:
 //   https://geth.ethereum.org/docs/rpc/pubsub
@@ -56,7 +66,8 @@ export class WebSocketProvider extends JsonRpcProvider {
 
     _wsReady: boolean;
 
-    constructor(url: string, network?: Networkish) {
+    constructor(url: string | WebSocketLike, network?: Networkish) {
+
         // This will be added in the future; please open an issue to expedite
         if (network === "any") {
             logger.throwError("WebSocketProvider does not support 'any' network yet", Logger.errors.UNSUPPORTED_OPERATION, {
@@ -64,26 +75,36 @@ export class WebSocketProvider extends JsonRpcProvider {
             });
         }
 
-        super(url, network);
+        if (typeof(url) === "string") {
+            super(url, network);
+        } else {
+            super("_websocket", network);
+        }
+
         this._pollingInterval = -1;
 
         this._wsReady = false;
 
-        defineReadOnly(this, "_websocket", new WebSocket(this.connection.url));
+        if (typeof(url) === "string") {
+            defineReadOnly(this, "_websocket", new WebSocket(this.connection.url));
+        } else {
+            defineReadOnly(this, "_websocket", url);
+        }
+
         defineReadOnly(this, "_requests", { });
         defineReadOnly(this, "_subs", { });
         defineReadOnly(this, "_subIds", { });
         defineReadOnly(this, "_detectNetwork", super.detectNetwork());
 
         // Stall sending requests until the socket is open...
-        this._websocket.onopen = () => {
+        this.websocket.onopen = () => {
             this._wsReady = true;
             Object.keys(this._requests).forEach((id) => {
-                this._websocket.send(this._requests[id].payload);
+                this.websocket.send(this._requests[id].payload);
             });
         };
 
-        this._websocket.onmessage = (messageEvent: { data: string }) => {
+        this.websocket.onmessage = (messageEvent: { data: string }) => {
             const data = messageEvent.data;
             const result = JSON.parse(data);
             if (result.id != null) {
@@ -144,6 +165,10 @@ export class WebSocketProvider extends JsonRpcProvider {
         if (fauxPoll.unref) { fauxPoll.unref(); }
     }
 
+    // Cannot narrow the type of _websocket, as that is not backwards compatible
+    // so we add a getter and let the WebSocket be a public API.
+    get websocket(): WebSocketLike { return this._websocket; }
+
     detectNetwork(): Promise<Network> {
         return this._detectNetwork;
     }
@@ -200,7 +225,7 @@ export class WebSocketProvider extends JsonRpcProvider {
 
             this._requests[String(rid)] = { callback, payload };
 
-            if (this._wsReady) { this._websocket.send(payload); }
+            if (this._wsReady) { this.websocket.send(payload); }
         });
     }
 
@@ -306,13 +331,13 @@ export class WebSocketProvider extends JsonRpcProvider {
 
     async destroy(): Promise<void> {
         // Wait until we have connected before trying to disconnect
-        if (this._websocket.readyState === WebSocket.CONNECTING) {
+        if (this.websocket.readyState === WebSocket.CONNECTING) {
             await (new Promise((resolve) => {
-                this._websocket.onopen = function() {
+                this.websocket.onopen = function() {
                     resolve(true);
                 };
 
-                this._websocket.onerror = function() {
+                this.websocket.onerror = function() {
                     resolve(false);
                 };
             }));
@@ -320,6 +345,6 @@ export class WebSocketProvider extends JsonRpcProvider {
 
         // Hangup
         // See: https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent#Status_codes
-        this._websocket.close(1000);
+        this.websocket.close(1000);
     }
 }
