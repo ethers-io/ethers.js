@@ -57,11 +57,12 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
                     {
                         phrase: srcMnemonic.phrase,
                         path: srcMnemonic.path || defaultPath,
-                        locale: srcMnemonic.locale || "en"
+                        locale: srcMnemonic.locale || "en",
+                        passphrase: srcMnemonic.passphrase
                     }
                 ));
                 const mnemonic = this.mnemonic;
-                const node = HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
+                const node = HDNode.fromMnemonic(mnemonic.phrase, mnemonic.passphrase, mnemonic.locale).derivePath(mnemonic.path);
                 if (computeAddress(node.privateKey) !== this.address) {
                     logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDACTED]");
                 }
@@ -176,7 +177,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
         }
 
         const mnemonic = entropyToMnemonic(entropy, options.locale);
-        return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
+        return Wallet.fromMnemonic(mnemonic, options.path, options.locale, options.passphrase);
     }
 
     static fromEncryptedJson(json: string, password: Bytes | string, progressCallback?: ProgressCallback): Promise<Wallet> {
@@ -189,9 +190,9 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
         return new Wallet(decryptJsonWalletSync(json, password));
     }
 
-    static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet {
+    static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist, password?: string): Wallet {
         if (!path) { path = defaultPath; }
-        return new Wallet(HDNode.fromMnemonic(mnemonic, null, wordlist).derivePath(path));
+        return new Wallet(HDNode.fromMnemonic(mnemonic, password, wordlist).derivePath(path));
     }
 }
 

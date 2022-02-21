@@ -70,6 +70,7 @@ export interface Mnemonic {
     readonly phrase: string;
     readonly path: string;
     readonly locale: string;
+    readonly passphrase?: string;
 };
 
 export class HDNode implements ExternallyOwnedAccount {
@@ -215,7 +216,8 @@ export class HDNode implements ExternallyOwnedAccount {
             mnemonicOrPath = Object.freeze({
                 phrase: srcMnemonic.phrase,
                 path: path,
-                locale: (srcMnemonic.locale || "en")
+                locale: (srcMnemonic.locale || "en"),
+                passphrase: (srcMnemonic.passphrase || "")
             });
         }
 
@@ -271,7 +273,8 @@ export class HDNode implements ExternallyOwnedAccount {
         return HDNode._fromSeed(mnemonicToSeed(mnemonic, password), {
             phrase: mnemonic,
             path: "m",
-            locale: wordlist.locale
+            locale: wordlist.locale,
+            passphrase: password
         });
     }
 
