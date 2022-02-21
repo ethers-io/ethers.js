@@ -226,11 +226,8 @@ export class Logger {
                 const fault = message;
 
                 switch (fault) {
-                    case "overflow": case "underflow":
+                    case "overflow": case "underflow": case "division-by-zero":
                         url += "-" + fault;
-                        break;
-                    case "division-by-zero": case "negative-modulo":
-                        url += "-undefined";
                         break;
                     case "negative-power": case "negative-width":
                         url += "-unsupported";
