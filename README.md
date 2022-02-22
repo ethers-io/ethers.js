@@ -2,8 +2,7 @@ Hethers
 ==================
 
 [![npm (tag)](https://img.shields.io/npm/v/hethers)](https://www.npmjs.com/package/hethers)
-[![Node.js CI](https://github.com/hashgraph/hethers.js/actions/workflows/nodejs.yml/badge.svg?branch=master)]
-(https://github.com/hashgraph/hethers.js/actions/workflows/nodejs.yml)
+[![Node.js CI](https://github.com/hashgraph/hethers.js/actions/workflows/nodejs.yml/badge.svg?branch=master)](https://github.com/hashgraph/hethers.js/actions/workflows/nodejs.yml)
 
 A complete SDK targeting the Hedera Hashgraph Smart Contract Service (EVM) in JavaScript (and TypeScript).
 The library is a modified fork of the [ethers](https://github.com/ethers-io/ethers.js) library.

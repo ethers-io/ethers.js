@@ -110,6 +110,9 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
                 if (npmInfo && info.version === npmInfo.version) {
                     continue;
                 }
+                if (dirname === "testcases" || dirname === "tests") {
+                    continue;
+                }
             }
             catch (err) {
                 console.error(err);
