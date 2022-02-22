@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "composite": true,
     "declaration": true,
     "declarationMap": true,
@@ -7,6 +8,7 @@
     "forceConsistentCasingInFileNames": true,
     "lib": [
       "es2015",
+      "es2021",
       "es5",
       "dom"
     ],
@@ -20,6 +22,7 @@
     "preserveSymlinks": true,
     "preserveWatchOutput": true,
     "pretty": false,
+    "resolveJsonModule": true,
     "sourceMap": true,
     "target": "es5"
   }

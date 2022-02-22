@@ -16,7 +16,7 @@ async function alias(name: string): Promise<void> {
     const baseDir = resolve("packages", name);
 
     const info = loadJson(resolve(baseDir, "package.json"));
-    const replacements: Record<string, string> = info["_ethers.alias"] || { };
+    const replacements: Record<string, string> = info["_hethers.alias"] || { };
     const skip = Object.keys(replacements).reduce((accum, key) => {
         const replace = replacements[key];
         accum[replace] = true;

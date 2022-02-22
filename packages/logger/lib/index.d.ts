@@ -20,10 +20,7 @@ export declare enum ErrorCode {
     UNEXPECTED_ARGUMENT = "UNEXPECTED_ARGUMENT",
     CALL_EXCEPTION = "CALL_EXCEPTION",
     INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS",
-    NONCE_EXPIRED = "NONCE_EXPIRED",
-    REPLACEMENT_UNDERPRICED = "REPLACEMENT_UNDERPRICED",
-    UNPREDICTABLE_GAS_LIMIT = "UNPREDICTABLE_GAS_LIMIT",
-    TRANSACTION_REPLACED = "TRANSACTION_REPLACED"
+    UNPREDICTABLE_GAS_LIMIT = "UNPREDICTABLE_GAS_LIMIT"
 }
 export declare class Logger {
     readonly version: string;
@@ -34,8 +31,8 @@ export declare class Logger {
     debug(...args: Array<any>): void;
     info(...args: Array<any>): void;
     warn(...args: Array<any>): void;
-    makeError(message: string, code?: ErrorCode, params?: any): Error;
-    throwError(message: string, code?: ErrorCode, params?: any): never;
+    makeError(message: string, code?: ErrorCode | string, params?: any): Error;
+    throwError(message: string, code?: ErrorCode | string, params?: any): never;
     throwArgumentError(message: string, name: string, value: any): never;
     assert(condition: any, message: string, code?: ErrorCode, params?: any): void;
     assertArgument(condition: any, message: string, name: string, value: any): void;

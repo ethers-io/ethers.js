@@ -41,7 +41,7 @@ function getPackageInfo(name) {
 function getPackage(name, version) {
     return __awaiter(this, void 0, void 0, function* () {
         const infos = yield getPackageInfo(name);
-        if (infos == null) {
+        if (infos == null || infos.error) {
             return null;
         }
         if (version == null) {

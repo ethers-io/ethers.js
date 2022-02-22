@@ -8,6 +8,7 @@ import { resolve } from "./path";
 
 type GetUrlFunc = (href: string, options?: Options) => Promise<GetUrlResponse>;
 
+const githubRepo = 'hashgraph/hethers.js';
 
 async function _fetchGitHub(user: string, password: string, getUrlFunc: GetUrlFunc, url: string): Promise<Array<any>> {
     const result: Array<any> = [ ];
@@ -91,7 +92,7 @@ export async function fetchGitHub(user: string, password: string, url: string, c
 async function _getIssues(user: string, password: string): Promise<Array<any>> {
     const cacheOnly = (user == null);
 
-    let issues = await fetchGitHub(user, password, "https:/\/api.github.com/repos/ethers-io/ethers.js/issues?state=all&per_page=100", cacheOnly)
+    let issues = await fetchGitHub(user, password, `https:/\/api.github.com/repos/${githubRepo}/issues?state=all&per_page=100`, cacheOnly)
     if (!cacheOnly) { console.log(`Found ${ issues.length } issues`); }
     const result = [ ];
     for (let i = 0; i < issues.length; i++) {
@@ -113,14 +114,14 @@ export async function syncIssues(user: string, password: string): Promise<Array<
 }
 
 export async function createRelease(user: string, password: string, tagName: string, title: string, body: string, prerelease?: boolean, commit?: string): Promise<string> {
-    const result = await getUrl("https:/\/api.github.com/repos/ethers-io/ethers.js/releases", {
+    const result = await getUrl(`https://api.github.com/repos/${githubRepo}/releases`, {
         body: Buffer.from(JSON.stringify({
             tag_name: tagName,
             target_commitish: (commit || "master"),
             name: title,
             body: body,
-            //draft: true,
-            draft: false,
+            draft: true,
+            // draft: false,
             prerelease: !!prerelease
         })),
         method: "POST",

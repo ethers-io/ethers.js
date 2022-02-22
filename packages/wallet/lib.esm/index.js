@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,41 +7,51 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { getAddress } from "@ethersproject/address";
-import { Provider } from "@ethersproject/abstract-provider";
-import { Signer } from "@ethersproject/abstract-signer";
-import { arrayify, concat, hexDataSlice, isHexString, joinSignature } from "@ethersproject/bytes";
-import { hashMessage, _TypedDataEncoder } from "@ethersproject/hash";
-import { defaultPath, HDNode, entropyToMnemonic } from "@ethersproject/hdnode";
+import { getAccountFromAddress, getAddress, getAddressFromAccount } from "@hethers/address";
+import { Provider } from "@hethers/abstract-provider";
+import { Signer } from "@hethers/abstract-signer";
+import { arrayify, concat, hexDataSlice, hexlify, isHexString, joinSignature } from "@ethersproject/bytes";
+import { hashMessage } from "@ethersproject/hash";
+import { defaultPath, entropyToMnemonic, HDNode } from "@hethers/hdnode";
 import { keccak256 } from "@ethersproject/keccak256";
-import { defineReadOnly, resolveProperties } from "@ethersproject/properties";
+import { defineReadOnly } from "@ethersproject/properties";
 import { randomBytes } from "@ethersproject/random";
-import { SigningKey } from "@ethersproject/signing-key";
-import { decryptJsonWallet, decryptJsonWalletSync, encryptKeystore } from "@ethersproject/json-wallets";
-import { computeAddress, recoverAddress, serialize } from "@ethersproject/transactions";
-import { Logger } from "@ethersproject/logger";
+import { SigningKey, recoverPublicKey } from "@ethersproject/signing-key";
+import { decryptJsonWallet, decryptJsonWalletSync, encryptKeystore } from "@hethers/json-wallets";
+import { computeAlias, serializeHederaTransaction } from "@hethers/transactions";
+import { Logger } from "@hethers/logger";
 import { version } from "./_version";
+import { PrivateKey as HederaPrivKey, PublicKey as HederaPubKey } from "@hashgraph/sdk";
 const logger = new Logger(version);
 function isAccount(value) {
-    return (value != null && isHexString(value.privateKey, 32) && value.address != null);
+    return value != null && isHexString(value.privateKey, 32);
 }
 function hasMnemonic(value) {
     const mnemonic = value.mnemonic;
     return (mnemonic && mnemonic.phrase);
 }
+function hasAlias(value) {
+    return isAccount(value) && value.alias != null;
+}
 export class Wallet extends Signer {
-    constructor(privateKey, provider) {
+    constructor(identity, provider) {
         logger.checkNew(new.target, Wallet);
         super();
-        if (isAccount(privateKey)) {
-            const signingKey = new SigningKey(privateKey.privateKey);
+        if (isAccount(identity) && !SigningKey.isSigningKey(identity)) {
+            const signingKey = new SigningKey(identity.privateKey);
             defineReadOnly(this, "_signingKey", () => signingKey);
-            defineReadOnly(this, "address", computeAddress(this.publicKey));
-            if (this.address !== getAddress(privateKey.address)) {
-                logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDACTED]");
+            if (identity.address || identity.account) {
+                defineReadOnly(this, "address", identity.address ? getAddress(identity.address) : getAddressFromAccount(identity.account));
+                defineReadOnly(this, "account", identity.account ? identity.account : getAccountFromAddress(identity.address));
             }
-            if (hasMnemonic(privateKey)) {
-                const srcMnemonic = privateKey.mnemonic;
+            if (hasAlias(identity)) {
+                defineReadOnly(this, "alias", identity.alias);
+                if (this.alias !== computeAlias(signingKey.privateKey)) {
+                    logger.throwArgumentError("privateKey/alias mismatch", "privateKey", "[REDACTED]");
+                }
+            }
+            if (hasMnemonic(identity)) {
+                const srcMnemonic = identity.mnemonic;
                 defineReadOnly(this, "_mnemonic", () => ({
                     phrase: srcMnemonic.phrase,
                     path: srcMnemonic.path || defaultPath,
@@ -50,8 +59,8 @@ export class Wallet extends Signer {
                 }));
                 const mnemonic = this.mnemonic;
                 const node = HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
-                if (computeAddress(node.privateKey) !== this.address) {
-                    logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDACTED]");
+                if (node.privateKey !== this._signingKey().privateKey) {
+                    logger.throwArgumentError("mnemonic/privateKey mismatch", "privateKey", "[REDACTED]");
                 }
             }
             else {
@@ -59,25 +68,25 @@ export class Wallet extends Signer {
             }
         }
         else {
-            if (SigningKey.isSigningKey(privateKey)) {
+            if (SigningKey.isSigningKey(identity)) {
                 /* istanbul ignore if */
-                if (privateKey.curve !== "secp256k1") {
+                if (identity.curve !== "secp256k1") {
                     logger.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
                 }
-                defineReadOnly(this, "_signingKey", () => privateKey);
+                defineReadOnly(this, "_signingKey", () => identity);
             }
             else {
                 // A lot of common tools do not prefix private keys with a 0x (see: #1166)
-                if (typeof (privateKey) === "string") {
-                    if (privateKey.match(/^[0-9a-f]*$/i) && privateKey.length === 64) {
-                        privateKey = "0x" + privateKey;
+                if (typeof (identity) === "string") {
+                    if (identity.match(/^[0-9a-f]*$/i) && identity.length === 64) {
+                        identity = "0x" + identity;
                     }
                 }
-                const signingKey = new SigningKey(privateKey);
+                const signingKey = new SigningKey(identity);
                 defineReadOnly(this, "_signingKey", () => signingKey);
             }
             defineReadOnly(this, "_mnemonic", () => null);
-            defineReadOnly(this, "address", computeAddress(this.publicKey));
+            defineReadOnly(this, "alias", computeAlias(this._signingKey().privateKey));
         }
         /* istanbul ignore if */
         if (provider && !Provider.isProvider(provider)) {
@@ -85,26 +94,46 @@ export class Wallet extends Signer {
         }
         defineReadOnly(this, "provider", provider || null);
     }
-    get mnemonic() { return this._mnemonic(); }
-    get privateKey() { return this._signingKey().privateKey; }
-    get publicKey() { return this._signingKey().publicKey; }
+    get mnemonic() {
+        return this._mnemonic();
+    }
+    get privateKey() {
+        return this._signingKey().privateKey;
+    }
+    get publicKey() {
+        return this._signingKey().publicKey;
+    }
     getAddress() {
         return Promise.resolve(this.address);
+    }
+    getAccount() {
+        return Promise.resolve(this.account);
+    }
+    getAlias() {
+        return Promise.resolve(this.alias);
     }
     connect(provider) {
         return new Wallet(this, provider);
     }
+    connectAccount(accountLike) {
+        const eoa = {
+            privateKey: this._signingKey().privateKey,
+            address: getAddressFromAccount(accountLike),
+            alias: this.alias,
+            mnemonic: this._mnemonic()
+        };
+        return new Wallet(eoa, this.provider);
+    }
     signTransaction(transaction) {
-        return resolveProperties(transaction).then((tx) => {
-            if (tx.from != null) {
-                if (getAddress(tx.from) !== this.address) {
-                    logger.throwArgumentError("transaction from address mismatch", "transaction.from", transaction.from);
-                }
-                delete tx.from;
-            }
-            const signature = this._signingKey().signDigest(keccak256(serialize(tx)));
-            return serialize(tx, signature);
-        });
+        this._checkAddress('signTransaction');
+        let tx = this.checkTransaction(transaction);
+        return this.populateTransaction(tx).then((readyTx) => __awaiter(this, void 0, void 0, function* () {
+            const pubKey = HederaPubKey.fromString(this._signingKey().compressedPublicKey);
+            const tx = serializeHederaTransaction(readyTx, pubKey);
+            const privKey = HederaPrivKey.fromStringECDSA(this._signingKey().privateKey);
+            const signed = yield tx.sign(privKey);
+            return hexlify(signed.toBytes());
+        }));
     }
     signMessage(message) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -113,17 +142,9 @@ export class Wallet extends Signer {
     }
     _signTypedData(domain, types, value) {
         return __awaiter(this, void 0, void 0, function* () {
-            // Populate any ENS names
-            const populated = yield _TypedDataEncoder.resolveNames(domain, types, value, (name) => {
-                if (this.provider == null) {
-                    logger.throwError("cannot resolve ENS names without a provider", Logger.errors.UNSUPPORTED_OPERATION, {
-                        operation: "resolveName",
-                        value: name
-                    });
-                }
-                return this.provider.resolveName(name);
+            return logger.throwError("_signTypedData not supported", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: '_signTypedData'
             });
-            return joinSignature(this._signingKey().signDigest(_TypedDataEncoder.hash(populated.domain, types, populated.value)));
         });
     }
     encrypt(password, options, progressCallback) {
@@ -140,6 +161,13 @@ export class Wallet extends Signer {
         return encryptKeystore(this, password, options, progressCallback);
     }
     /**
+     * Performs a contract local call (ContractCallQuery) against the given contract in the provider's network.
+     * In the future, this method should automatically perform getCost and apply the results for gasLimit/txFee.
+     * TODO: utilize getCost when implemented
+     *
+     * @param txRequest - the call request to be submitted
+     */
+    /**
      *  Static methods to create Wallet instances.
      */
     static createRandom(options) {
@@ -153,6 +181,20 @@ export class Wallet extends Signer {
         const mnemonic = entropyToMnemonic(entropy, options.locale);
         return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
     }
+    createAccount(pubKey, initialBalance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!initialBalance)
+                initialBalance = BigInt(0);
+            const signed = yield this.signTransaction({
+                customData: {
+                    publicKey: pubKey,
+                    initialBalance
+                }
+            });
+            return this.provider.sendTransaction(signed);
+        });
+    }
+    ;
     static fromEncryptedJson(json, password, progressCallback) {
         return decryptJsonWallet(json, password, progressCallback).then((account) => {
             return new Wallet(account);
@@ -167,11 +209,20 @@ export class Wallet extends Signer {
         }
         return new Wallet(HDNode.fromMnemonic(mnemonic, null, wordlist).derivePath(path));
     }
+    _checkAddress(operation) {
+        if (!this.address) {
+            logger.throwError("missing address", Logger.errors.UNSUPPORTED_OPERATION, {
+                operation: (operation || "_checkAddress")
+            });
+        }
+    }
 }
 export function verifyMessage(message, signature) {
-    return recoverAddress(hashMessage(message), signature);
+    return recoverPublicKey(arrayify(hashMessage(message)), signature);
 }
 export function verifyTypedData(domain, types, value, signature) {
-    return recoverAddress(_TypedDataEncoder.hash(domain, types, value), signature);
+    return logger.throwError("verifyTypedData not supported", Logger.errors.UNSUPPORTED_OPERATION, {
+        operation: 'verifyTypedData'
+    });
 }
 //# sourceMappingURL=index.js.map

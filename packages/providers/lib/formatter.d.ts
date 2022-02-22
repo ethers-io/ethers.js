@@ -1,6 +1,6 @@
-import { Block, TransactionReceipt, TransactionResponse } from "@ethersproject/abstract-provider";
+import { Log, TransactionReceipt, TransactionResponse, HederaTransactionRecord } from "@hethers/abstract-provider";
 import { BigNumber } from "@ethersproject/bignumber";
-import { AccessList } from "@ethersproject/transactions";
+import { AccessList } from "@hethers/transactions";
 export declare type FormatFunc = (value: any) => any;
 export declare type FormatFuncs = {
     [key: string]: FormatFunc;
@@ -10,8 +10,6 @@ export declare type Formats = {
     transactionRequest: FormatFuncs;
     receipt: FormatFuncs;
     receiptLog: FormatFuncs;
-    block: FormatFuncs;
-    blockWithTransactions: FormatFuncs;
     filter: FormatFuncs;
     filterLog: FormatFuncs;
 };
@@ -19,6 +17,8 @@ export declare class Formatter {
     readonly formats: Formats;
     constructor();
     getDefaultFormats(): Formats;
+    logsMapper(values: Array<any>): Array<Log>;
+    timestamp(value: any): string;
     accessList(accessList: Array<any>): AccessList;
     number(number: any): number;
     type(number: any): number;
@@ -29,18 +29,17 @@ export declare class Formatter {
     address(value: any): string;
     callAddress(value: any): string;
     contractAddress(value: any): string;
-    blockTag(blockTag: any): string;
-    hash(value: any, strict?: boolean): string;
+    hash48(value: any, strict?: boolean): string;
+    hash32(value: any, strict?: boolean): string;
     difficulty(value: any): number;
     uint256(value: any): string;
-    _block(value: any, format: any): Block;
-    block(value: any): Block;
-    blockWithTransactions(value: any): Block;
     transactionRequest(value: any): any;
     transactionResponse(transaction: any): TransactionResponse;
     transaction(value: any): any;
     receiptLog(value: any): any;
     receipt(value: any): TransactionReceipt;
+    responseFromRecord(record: HederaTransactionRecord): TransactionResponse;
+    receiptFromResponse(response: TransactionResponse): TransactionReceipt;
     topics(value: any): any;
     filter(value: any): any;
     filterLog(value: any): any;
@@ -51,10 +50,4 @@ export declare class Formatter {
     static allowFalsish(format: FormatFunc, replaceValue: any): FormatFunc;
     static arrayOf(format: FormatFunc): FormatFunc;
 }
-export interface CommunityResourcable {
-    isCommunityResource(): boolean;
-}
-export declare function isCommunityResourcable(value: any): value is CommunityResourcable;
-export declare function isCommunityResource(value: any): boolean;
-export declare function showThrottleMessage(): void;
 //# sourceMappingURL=formatter.d.ts.map

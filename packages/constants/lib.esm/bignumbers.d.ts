@@ -5,7 +5,8 @@ declare const One: BigNumber;
 declare const Two: BigNumber;
 declare const WeiPerEther: BigNumber;
 declare const MaxUint256: BigNumber;
+declare const TinybarPerHbar: BigNumber;
 declare const MinInt256: BigNumber;
 declare const MaxInt256: BigNumber;
-export { NegativeOne, Zero, One, Two, WeiPerEther, MaxUint256, MinInt256, MaxInt256, };
+export { NegativeOne, Zero, One, Two, WeiPerEther, MaxUint256, MinInt256, MaxInt256, TinybarPerHbar, };
 //# sourceMappingURL=bignumbers.d.ts.map

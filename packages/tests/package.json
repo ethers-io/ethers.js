@@ -1,43 +1,33 @@
 {
-  "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/cli": "^5.5.0",
-    "@ethersproject/testcases": "^5.5.0",
+    "@hethers/testcases": "1.0.0",
     "@types/mocha": "^5.2.0",
-    "ethers": "^5.5.0"
+    "hethers": "1.0.0"
   },
-  "description": "Testing package for ethers.",
-  "ethereum": "donations.ethers.eth",
-  "funding": [
-    {
-      "type": "individual",
-      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
-    },
-    {
-      "type": "individual",
-      "url": "https://www.buymeacoffee.com/ricmoo"
-    }
-  ],
+  "description": "Testing package for hethers.",
   "keywords": [
+    "Hedera",
+    "Hashgraph",
     "Ethereum",
+    "hethers",
     "ethers"
   ],
   "license": "MIT",
   "main": "./lib/index.js",
   "module": "./lib.esm/index.js",
-  "name": "@ethersproject/tests",
+  "name": "@hethers/tests",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "directory": "packages/tests",
     "type": "git",
-    "url": "git://github.com/ethers-io/ethers.js.git"
+    "url": "git://github.com/hashgraph/hethers.js.git"
   },
   "scripts": {
     "test": "exit 1"
   },
   "tarballHash": "0xd2cbf0d358a3fb5f6c1e9794c6b0caa74ff17536eba8974eac16d24962edc478",
   "types": "./lib/index.d.ts",
-  "version": "5.5.0"
+  "version": "1.0.0"
 }

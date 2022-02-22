@@ -1,12 +1,11 @@
 'use strict';
+const hethers = require("hethers");
 
 import fs from "fs";
 import { resolve } from "path";
 
 import * as bip39 from "bip39";
 import { HDNode } from "bitcoinjs-lib";
-
-import * as ethereumUtil from "ethereumjs-util";
 
 import { randomHexString, randomNumber, saveTests, TestCase } from "..";
 
@@ -33,7 +32,7 @@ function getHD(seed: string): Array<TestCase.HDWalletNode> {
     let hdnodes: Array<TestCase.HDWalletNode> = [{
         path: 'm',
         privateKey: '0x' + privateKey.toString('hex'),
-        address: '0x' + ethereumUtil.privateToAddress(privateKey).toString('hex'),
+        alias: hethers.utils.computeAlias('0x' + privateKey.toString('hex'))
     }];
 
     for (let j = 0; j < 5; j++) {
@@ -43,7 +42,7 @@ function getHD(seed: string): Array<TestCase.HDWalletNode> {
         hdnodes.push({
             path: path,
             privateKey: '0x' + privateKey.toString('hex'),
-            address: '0x' + ethereumUtil.privateToAddress(privateKey).toString('hex'),
+            alias: '0x' + hethers.utils.computeAlias('0x' + privateKey.toString('hex')),
         });
     }
 
@@ -62,7 +61,7 @@ testcases.push({
     hdnodes: [
         {
             path: "m/44'/60'/0'/0/0",
-            address: '0xac39b311dceb2a4b2f5d8461c1cdaf756f4f7ae9',
+            alias: '0xac39b311dceb2a4b2f5d8461c1cdaf756f4f7ae9',
             privateKey: '0xb96e9ccb774cc33213cbcb2c69d3cdae17b0fe4888a1ccd343cbd1a17fd98b18',
         }
     ]

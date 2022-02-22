@@ -83,6 +83,11 @@ OYAa IJBEJqXZJ
 Jx Trw BMd
 lorem ipsum dolor sit amet  consectetur adipiscing elit  sed do eiusmod tempor incididunt ut labore et dolore magna aliqua  ut enim ad minim veniam  quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat  duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur  excepteur sint occaecat cupidatat non proident  sunt in culpa qui officia deserunt mollit anim id est laborum
 
+// Hedera Words
+hethers hashgraph sdk Hedera proto submittable aes mac previewnet axios 
+CRYPTOCREATEACCOUNT CRYPTOTRANSFER lte bool sig Coder Sig hup Param Transacton 
+hedera Formatters tinybar microbar millibar hbar kilobar megabar gigabar Hbar 
+coder Tinybar getters 
 
 `.split("\n").filter((l) => (l.substring(0, 2) != "/\/")).join("\n").split(/\s+/g,).forEach((word) => {
     word = word.trim();

@@ -1,2 +1,2 @@
-export const version = "hdnode/5.5.0";
+export const version = "hdnode/1.0.0";
 //# sourceMappingURL=_version.js.map

@@ -3,19 +3,18 @@
 import aes from "aes-js";
 import scrypt from "scrypt-js";
 
-import { ExternallyOwnedAccount } from "@ethersproject/abstract-signer";
-import { getAddress } from "@ethersproject/address";
+import { ExternallyOwnedAccount } from "@hethers/abstract-signer";
+import { getAddress } from "@hethers/address";
 import { arrayify, Bytes, BytesLike, concat, hexlify } from "@ethersproject/bytes";
-import { defaultPath, entropyToMnemonic, HDNode, Mnemonic, mnemonicToEntropy } from "@ethersproject/hdnode";
+import { defaultPath, entropyToMnemonic, HDNode, Mnemonic, mnemonicToEntropy } from "@hethers/hdnode";
 import { keccak256 } from "@ethersproject/keccak256";
 import { pbkdf2 as _pbkdf2 } from "@ethersproject/pbkdf2";
 import { randomBytes } from "@ethersproject/random";
 import { Description } from "@ethersproject/properties";
-import { computeAddress } from "@ethersproject/transactions";
 
 import { getPassword, looseArrayify, searchPath, uuidV4, zpad } from "./utils";
 
-import { Logger } from "@ethersproject/logger";
+import { Logger } from "@hethers/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 
@@ -26,7 +25,7 @@ function hasMnemonic(value: any): value is { mnemonic: Mnemonic } {
 }
 
 export interface _KeystoreAccount {
-    address: string;
+    address?: string;
     privateKey: string;
     mnemonic?: Mnemonic;
 
@@ -34,7 +33,7 @@ export interface _KeystoreAccount {
 }
 
 export class KeystoreAccount extends Description<_KeystoreAccount> implements ExternallyOwnedAccount {
-    readonly address: string;
+    readonly address?: string;
     readonly privateKey: string;
     readonly mnemonic?: Mnemonic;
 
@@ -92,19 +91,15 @@ function _getAccount(data: any, key: Uint8Array): KeystoreAccount {
 
     const mnemonicKey = key.slice(32, 64);
 
-    const address = computeAddress(privateKey);
+    let address;
     if (data.address) {
-        let check = data.address.toLowerCase();
-        if (check.substring(0, 2) !== "0x") { check = "0x" + check; }
-
-        if (getAddress(check) !== address) {
-            throw new Error("address mismatch");
-        }
+        address = data.address.toLowerCase();
+        if (address.substring(0, 2) !== "0x") { address = "0x" + address; }
     }
 
     const account: _KeystoreAccount = {
         _isKeystoreAccount: true,
-        address: address,
+        address: address ? getAddress(address) : undefined,
         privateKey: hexlify(privateKey)
     };
 
@@ -140,7 +135,6 @@ function _getAccount(data: any, key: Uint8Array): KeystoreAccount {
             }
         }
     }
-
     return new KeystoreAccount(account);
 }
 
@@ -227,11 +221,6 @@ export async function decrypt(json: string, password: Bytes | string, progressCa
 export function encrypt(account: ExternallyOwnedAccount, password: Bytes | string, options?: EncryptOptions, progressCallback?: ProgressCallback): Promise<string> {
 
     try {
-        // Check the address matches the private key
-        if (getAddress(account.address) !== computeAddress(account.privateKey)) {
-            throw new Error("address/privateKey mismatch");
-        }
-
         // Check the mnemonic (if any) matches the private key
         if (hasMnemonic(account)) {
             const mnemonic = account.mnemonic;
@@ -325,8 +314,9 @@ export function encrypt(account: ExternallyOwnedAccount, password: Bytes | strin
         const mac = keccak256(concat([macPrefix, ciphertext]))
 
         // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
+        // As per Version 3, the address field is OPTIONAL
         const data: { [key: string]: any } = {
-            address: account.address.substring(2).toLowerCase(),
+            address: account.address ? account.address.substring(2).toLowerCase() : undefined,
             id: uuidV4(uuidRandom),
             version: 3,
             Crypto: {

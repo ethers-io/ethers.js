@@ -1,13 +1,28 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCreate2Address = exports.getContractAddress = exports.getIcapAddress = exports.isAddress = exports.getAddress = void 0;
+exports.parseAccount = exports.getAccountFromAddress = exports.getAddressFromAccount = exports.getCreate2Address = exports.getIcapAddress = exports.isAddress = exports.getAddress = exports.getChecksumAddress = exports.asAccountString = exports.getAccountFromTransactionId = void 0;
 var bytes_1 = require("@ethersproject/bytes");
 var bignumber_1 = require("@ethersproject/bignumber");
 var keccak256_1 = require("@ethersproject/keccak256");
-var rlp_1 = require("@ethersproject/rlp");
-var logger_1 = require("@ethersproject/logger");
+var logger_1 = require("@hethers/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
+function getAccountFromTransactionId(transactionId) {
+    // TransactionId look like this: '0.0.99999999-9999999999-999999999'
+    // or like this:                 '0.0.99999999@9999999999-999999999'
+    if (!transactionId.match(/^\d+?\.\d+?\.\d+[-|@]\d+-\d+$/)) {
+        logger.throwArgumentError("invalid transactionId", "transactionId", transactionId);
+    }
+    var splitSymbol = transactionId.indexOf('@') === -1 ? '-' : '@';
+    var account = transactionId.split(splitSymbol);
+    return account[0];
+}
+exports.getAccountFromTransactionId = getAccountFromTransactionId;
+function asAccountString(accountLike) {
+    var parsedAccount = typeof (accountLike) === "string" ? parseAccount(accountLike) : accountLike;
+    return parsedAccount.shard + "." + parsedAccount.realm + "." + parsedAccount.num;
+}
+exports.asAccountString = asAccountString;
 function getChecksumAddress(address) {
     if (!(0, bytes_1.isHexString)(address, 20)) {
         logger.throwArgumentError("invalid address", "address", address);
@@ -29,6 +44,7 @@ function getChecksumAddress(address) {
     }
     return "0x" + chars.join("");
 }
+exports.getChecksumAddress = getChecksumAddress;
 // Shims for environments that are missing some required constants and functions
 var MAX_SAFE_INTEGER = 0x1fffffffffffff;
 function log10(x) {
@@ -51,7 +67,9 @@ var safeDigits = Math.floor(log10(MAX_SAFE_INTEGER));
 function ibanChecksum(address) {
     address = address.toUpperCase();
     address = address.substring(4) + address.substring(0, 2) + "00";
-    var expanded = address.split("").map(function (c) { return ibanLookup[c]; }).join("");
+    var expanded = address.split("").map(function (c) {
+        return ibanLookup[c];
+    }).join("");
     // Javascript can handle integers safely up to 15 (decimal) digits
     while (expanded.length >= safeDigits) {
         var block = expanded.substring(0, safeDigits);
@@ -63,7 +81,6 @@ function ibanChecksum(address) {
     }
     return checksum;
 }
-;
 function getAddress(address) {
     var result = null;
     if (typeof (address) !== "string") {
@@ -103,7 +120,8 @@ function isAddress(address) {
         getAddress(address);
         return true;
     }
-    catch (error) { }
+    catch (error) {
+    }
     return false;
 }
 exports.isAddress = isAddress;
@@ -115,19 +133,6 @@ function getIcapAddress(address) {
     return "XE" + ibanChecksum("XE00" + base36) + base36;
 }
 exports.getIcapAddress = getIcapAddress;
-// http://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
-function getContractAddress(transaction) {
-    var from = null;
-    try {
-        from = getAddress(transaction.from);
-    }
-    catch (error) {
-        logger.throwArgumentError("missing from address", "transaction", transaction);
-    }
-    var nonce = (0, bytes_1.stripZeros)((0, bytes_1.arrayify)(bignumber_1.BigNumber.from(transaction.nonce).toHexString()));
-    return getAddress((0, bytes_1.hexDataSlice)((0, keccak256_1.keccak256)((0, rlp_1.encode)([from, nonce])), 12));
-}
-exports.getContractAddress = getContractAddress;
 function getCreate2Address(from, salt, initCodeHash) {
     if ((0, bytes_1.hexDataLength)(salt) !== 32) {
         logger.throwArgumentError("salt must be 32 bytes", "salt", salt);
@@ -138,4 +143,46 @@ function getCreate2Address(from, salt, initCodeHash) {
     return getAddress((0, bytes_1.hexDataSlice)((0, keccak256_1.keccak256)((0, bytes_1.concat)(["0xff", getAddress(from), salt, initCodeHash])), 12));
 }
 exports.getCreate2Address = getCreate2Address;
+function getAddressFromAccount(accountLike) {
+    var parsedAccount = typeof (accountLike) === "string" ? parseAccount(accountLike) : accountLike;
+    var buffer = new Uint8Array(20);
+    var view = new DataView(buffer.buffer, 0, 20);
+    view.setInt32(0, Number(parsedAccount.shard));
+    view.setBigInt64(4, parsedAccount.realm);
+    view.setBigInt64(12, parsedAccount.num);
+    return (0, bytes_1.hexlify)(buffer);
+}
+exports.getAddressFromAccount = getAddressFromAccount;
+function getAccountFromAddress(address) {
+    var buffer = (0, bytes_1.arrayify)(getAddress(address));
+    var view = new DataView(buffer.buffer, 0, 20);
+    return {
+        shard: BigInt(view.getInt32(0)),
+        realm: BigInt(view.getBigInt64(4)),
+        num: BigInt(view.getBigInt64(12))
+    };
+}
+exports.getAccountFromAddress = getAccountFromAddress;
+function parseAccount(account) {
+    var result = null;
+    if (typeof (account) !== "string") {
+        logger.throwArgumentError("invalid account", "account", account);
+    }
+    if (account.match(/^[0-9]+\.[0-9]+\.[0-9]+$/)) {
+        var parsedAccount = account.split('.');
+        result = {
+            shard: BigInt(parsedAccount[0]),
+            realm: BigInt(parsedAccount[1]),
+            num: BigInt(parsedAccount[2])
+        };
+    }
+    else if (isAddress(account)) {
+        result = getAccountFromAddress(account);
+    }
+    else {
+        logger.throwArgumentError("invalid account", "account", account);
+    }
+    return result;
+}
+exports.parseAccount = parseAccount;
 //# sourceMappingURL=index.js.map

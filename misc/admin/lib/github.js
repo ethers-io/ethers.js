@@ -18,6 +18,7 @@ const zlib_1 = __importDefault(require("zlib"));
 const js_sha3_1 = require("js-sha3");
 const geturl_1 = require("./geturl");
 const path_1 = require("./path");
+const githubRepo = 'hashgraph/hethers.js';
 function _fetchGitHub(user, password, getUrlFunc, url) {
     return __awaiter(this, void 0, void 0, function* () {
         const result = [];
@@ -98,7 +99,7 @@ exports.fetchGitHub = fetchGitHub;
 function _getIssues(user, password) {
     return __awaiter(this, void 0, void 0, function* () {
         const cacheOnly = (user == null);
-        let issues = yield fetchGitHub(user, password, "https:/\/api.github.com/repos/ethers-io/ethers.js/issues?state=all&per_page=100", cacheOnly);
+        let issues = yield fetchGitHub(user, password, `https:/\/api.github.com/repos/${githubRepo}/issues?state=all&per_page=100`, cacheOnly);
         if (!cacheOnly) {
             console.log(`Found ${issues.length} issues`);
         }
@@ -129,14 +130,14 @@ function syncIssues(user, password) {
 exports.syncIssues = syncIssues;
 function createRelease(user, password, tagName, title, body, prerelease, commit) {
     return __awaiter(this, void 0, void 0, function* () {
-        const result = yield (0, geturl_1.getUrl)("https:/\/api.github.com/repos/ethers-io/ethers.js/releases", {
+        const result = yield (0, geturl_1.getUrl)(`https://api.github.com/repos/${githubRepo}/releases`, {
             body: Buffer.from(JSON.stringify({
                 tag_name: tagName,
                 target_commitish: (commit || "master"),
                 name: title,
                 body: body,
-                //draft: true,
-                draft: false,
+                draft: true,
+                // draft: false,
                 prerelease: !!prerelease
             })),
             method: "POST",

@@ -1,16 +1,6 @@
 "use strict";
 
-import { getAddress } from "@ethersproject/address";
-
-
-export function isCrowdsaleWallet(json: string): boolean {
-    let data: any = null;
-    try {
-        data = JSON.parse(json);
-    } catch (error) { return false; }
-
-    return (data.encseed && data.ethaddr);
-}
+import { getAddress } from "@hethers/address";
 
 export function isKeystoreWallet(json: string): boolean {
     let data: any = null;
@@ -26,17 +16,7 @@ export function isKeystoreWallet(json: string): boolean {
     return true;
 }
 
-//export function isJsonWallet(json: string): boolean {
-//    return (isSecretStorageWallet(json) || isCrowdsaleWallet(json));
-//}
-
 export function getJsonWalletAddress(json: string): string {
-    if (isCrowdsaleWallet(json)) {
-        try {
-            return getAddress(JSON.parse(json).ethaddr);
-        } catch (error) { return null; }
-    }
-
     if (isKeystoreWallet(json)) {
         try {
             return getAddress(JSON.parse(json).address);

@@ -8,46 +8,47 @@ import { terser } from "rollup-plugin-terser";
 
 function getConfig(project, minify) {
 
-    const suffix = [ "esm" ];
+	const suffix = ["esm"];
 
-    const plugins = [
-        resolve({
-            mainFields: [ "browser", "module", "main" ],
-            preferBuiltins: false
-        }),
-        commonjs({
-            namedExports: {
-                "bn.js": [ "BN" ],
-                "elliptic": [ "ec" ],
-                "scrypt-js": [ "scrypt" ],
-                "u2f-api": [ "isSupported", "sign" ],
-                "js-sha3": [ null ]
-            },
-        }),
-        _globals(),
-    ];
+	const plugins = [
+		resolve({
+			mainFields: ["browser", "module", "main"],
+			preferBuiltins: false
+		}),
+		commonjs({
+			namedExports: {
+				"bn.js": ["BN"],
+				"elliptic": ["ec"],
+				"scrypt-js": ["scrypt"],
+				"u2f-api": ["isSupported", "sign"],
+				"js-sha3": [null]
+			},
+		}),
+		_globals(),
+	];
 
-    if (minify) {
-        suffix.push("min");
-        plugins.push(terser());
-    }
+	if (minify) {
+		suffix.push("min");
+		plugins.push(terser());
+	}
 
-    return {
-      input: `packages/${ project }/lib.esm/index.js`,
-      output: {
-        file: `packages/${ project }/dist/hardware-wallets.${ suffix.join(".") }.js`,
-        format: "esm",
-        name: "_ethersAncillary",
-        exports: "named"
-      },
-      context: "window",
-      treeshake: false,
-      plugins: plugins
-  };
+	return {
+		input: `packages/${project}/lib.esm/index.js`,
+		output: {
+			file: `packages/${project}/dist/hardware-wallets.${suffix.join(".")}.js`,
+			format: "esm",
+			name: "_ethersAncillary",
+			exports: "named"
+		},
+		context: "window",
+		treeshake: false,
+		plugins: plugins,
+		external: ['long', 'util', 'fs']
+	};
 }
 
 export default [
-    getConfig("hardware-wallets", false),
-    getConfig("hardware-wallets", true),
+	getConfig("hardware-wallets", false),
+	getConfig("hardware-wallets", true),
 ]
 

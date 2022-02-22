@@ -8,13 +8,13 @@ import { version } from "./_version";
 const logger = new Logger(version);
 
 const names = [
-    "wei",
-    "kwei",
-    "mwei",
-    "gwei",
-    "szabo",
-    "finney",
-    "ether",
+    "tinybar",
+    "microbar",
+    "millibar",
+    "hbar",
+    "kilobar",
+    "megabar",
+    "gigabar",
 ];
 
 
@@ -64,9 +64,9 @@ export function commify(value: string | number): string {
 export function formatUnits(value: BigNumberish, unitName?: string | BigNumberish): string {
     if (typeof(unitName) === "string") {
         const index = names.indexOf(unitName);
-        if (index !== -1) { unitName = 3 * index; }
+        if (index !== -1) { unitName = Math.max((3 * index) - 1, 0); }
     }
-    return formatFixed(value, (unitName != null) ? unitName: 18);
+    return formatFixed(value, (unitName != null) ? unitName: 8);
 }
 
 export function parseUnits(value: string, unitName?: BigNumberish): BigNumber {
@@ -75,16 +75,15 @@ export function parseUnits(value: string, unitName?: BigNumberish): BigNumber {
     }
     if (typeof(unitName) === "string") {
         const index = names.indexOf(unitName);
-        if (index !== -1) { unitName = 3 * index; }
+        if (index !== -1) { unitName = Math.max((3 * index) - 1, 0); }
     }
-    return parseFixed(value, (unitName != null) ? unitName: 18);
+    return parseFixed(value, (unitName != null) ? unitName: 8);
 }
 
-export function formatEther(wei: BigNumberish): string {
-    return formatUnits(wei, 18);
+export function formatHbar(tinybar: BigNumberish): string {
+    return formatUnits(tinybar, 8);
 }
 
-export function parseEther(ether: string): BigNumber {
-    return parseUnits(ether, 18);
+export function parseHbar(hbar: string): BigNumber {
+    return parseUnits(hbar, 8);
 }
-

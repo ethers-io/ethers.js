@@ -100,22 +100,9 @@ var ErrorCode;
     // Insufficient funds (< value + gasLimit * gasPrice)
     //   - transaction: the transaction attempted
     ErrorCode["INSUFFICIENT_FUNDS"] = "INSUFFICIENT_FUNDS";
-    // Nonce has already been used
-    //   - transaction: the transaction attempted
-    ErrorCode["NONCE_EXPIRED"] = "NONCE_EXPIRED";
-    // The replacement fee for the transaction is too low
-    //   - transaction: the transaction attempted
-    ErrorCode["REPLACEMENT_UNDERPRICED"] = "REPLACEMENT_UNDERPRICED";
     // The gas limit could not be estimated
     //   - transaction: the transaction passed to estimateGas
     ErrorCode["UNPREDICTABLE_GAS_LIMIT"] = "UNPREDICTABLE_GAS_LIMIT";
-    // The transaction was replaced by one with a higher gas price
-    //   - reason: "cancelled", "replaced" or "repriced"
-    //   - cancelled: true if reason == "cancelled" or reason == "replaced")
-    //   - hash: original transaction hash
-    //   - replacement: the full TransactionsResponse for the replacement
-    //   - receipt: the receipt of the replacement
-    ErrorCode["TRANSACTION_REPLACED"] = "TRANSACTION_REPLACED";
 })(ErrorCode = exports.ErrorCode || (exports.ErrorCode = {}));
 ;
 var HEX = "0123456789abcdef";

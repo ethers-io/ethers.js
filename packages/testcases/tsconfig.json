@@ -4,9 +4,7 @@
     "resolveJsonModule": true,
     "rootDir": "./src.ts"
   },
-  "exclude": [
-    "./src.ts/generation-scripts/*"
-  ],
+  "exclude": [],
   "extends": "../../tsconfig.package.json",
   "include": [
     "./thirdparty.d.ts",

@@ -9,8 +9,8 @@ export {
     WeiPerEther,
     MaxUint256,
     MinInt256,
-    MaxInt256
+    MaxInt256,
+    TinybarPerHbar
 } from "./bignumbers";
 export { HashZero } from "./hashes";
-export { EtherSymbol } from "./strings";
-
+export { EtherSymbol, HBarSymbol } from "./strings";

@@ -1,9 +1,0 @@
-_section: Other Libraries
-
-Now that ethers is more modular, it is possible to have additional
-ancillary packages, which are not part of the core but optionally
-add functionality only needed in certain situations.
-
-_toc:
-    assembly
-    hardware

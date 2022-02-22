@@ -2,7 +2,7 @@
 
 import inflate from "tiny-inflate";
 
-import { ethers } from "ethers";
+import { hethers } from "hethers";
 
 // This file is populated by the rollup-pre-alias.config.js
 import data from "./browser-data.json";
@@ -19,10 +19,10 @@ export function loadTests(tag: string): any {
         try {
             let fileData: string = (<any>data)[filename];
             const comps = fileData.split(",");
-            const size = parseInt(comps[0]), compressedData = ethers.utils.base64.decode(comps[1]);
+            const size = parseInt(comps[0]), compressedData = hethers.utils.base64.decode(comps[1]);
             const uncompressedData = new Uint8Array(size);
             inflate(compressedData, uncompressedData);
-            Cache[filename] = JSON.parse(ethers.utils.toUtf8String(uncompressedData));
+            Cache[filename] = JSON.parse(hethers.utils.toUtf8String(uncompressedData));
         } catch (error) {
             console.log("ERROR", error);
             throw error;
@@ -36,6 +36,6 @@ export function loadData(filename: string): Uint8Array {
     filename = filename.replace(/^[^a-z0-9_]/i, "");
     console.log(`Loading Data File: ${ filename }`);
     //filename = path.join(filename);
-    return ethers.utils.base64.decode((<any>data)[filename]);
+    return hethers.utils.base64.decode((<any>data)[filename]);
 }
 

@@ -113,7 +113,7 @@ class Config {
         this.salt = this.dkey = null;
     }
 }
-const _config = new Config((0, path_1.resolve)(os_1.default.homedir(), ".ethers-dist"));
+const _config = new Config((0, path_1.resolve)(os_1.default.homedir(), ".hethers-dist"));
 exports.config = {
     get: function (key) {
         return _config.get(key);

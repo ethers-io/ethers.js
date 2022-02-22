@@ -1,8 +1,0 @@
-_section: Migration Guide @<migration>
-
-Here are some migration guides when upgrading from older versions
-of Ethers or other libraries.
-
-_toc:
-    web3
-    ethers-v4

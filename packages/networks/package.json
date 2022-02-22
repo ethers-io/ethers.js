@@ -1,35 +1,26 @@
 {
-  "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/logger": "^5.5.0"
+    "@hethers/logger": "1.0.0"
   },
-  "description": "Network definitions for ethers.",
-  "ethereum": "donations.ethers.eth",
-  "funding": [
-    {
-      "type": "individual",
-      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
-    },
-    {
-      "type": "individual",
-      "url": "https://www.buymeacoffee.com/ricmoo"
-    }
-  ],
+  "description": "Network definitions for hethers.",
   "keywords": [
+    "Hedera",
+    "Hashgraph",
     "Ethereum",
+    "hethers",
     "ethers"
   ],
   "license": "MIT",
   "main": "./lib/index.js",
   "module": "./lib.esm/index.js",
-  "name": "@ethersproject/networks",
+  "name": "@hethers/networks",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "directory": "packages/networks",
     "type": "git",
-    "url": "git://github.com/ethers-io/ethers.js.git"
+    "url": "git://github.com/hashgraph/hethers.js.git"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -37,5 +28,5 @@
   "sideEffects": false,
   "tarballHash": "0xb0c8c32e75988809cd61e29b1c725a2a8ecd871842e8d15d836a4d8ad13130d4",
   "types": "./lib/index.d.ts",
-  "version": "5.5.0"
+  "version": "1.0.0"
 }

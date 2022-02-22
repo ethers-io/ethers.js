@@ -15,13 +15,13 @@ function copy(src: string, dst: string, transform?: (data: string) => string): v
 (async function() {
     await mkdir(resolve("output/karma"));
 
-    copy(resolve("packages/ethers/dist/ethers.esm.js"), resolve("output/karma/ethers.esm.js"));
+    copy(resolve("packages/hethers/dist/hethers.esm.js"), resolve("output/karma/hethers.esm.js"));
     copy(resolve("packages/tests/dist/tests.esm.js"), resolve("output/karma/tests.esm.js"), (data) => {
-        return data.replace(/^(import [^;]* from ')(ethers)(';)/, (all, prefix, id, suffix) => {
-            return prefix + "./ethers.esm.js" + suffix;
+        return data.replace(/^(import [^;]* from ')(hethers)(';)/, (all, prefix, id, suffix) => {
+            return prefix + "./hethers.esm.js" + suffix;
         });
     });
 
-    copy(resolve("packages/ethers/dist/ethers.umd.js"), resolve("output/karma/ethers.umd.js"));
+    copy(resolve("packages/hethers/dist/hethers.umd.js"), resolve("output/karma/hethers.umd.js"));
     copy(resolve("packages/tests/dist/tests.umd.js"), resolve("output/karma/tests.umd.js"));
 })();

@@ -4,13 +4,13 @@ import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 const names = [
-    "wei",
-    "kwei",
-    "mwei",
-    "gwei",
-    "szabo",
-    "finney",
-    "ether",
+    "tinybar",
+    "microbar",
+    "millibar",
+    "hbar",
+    "kilobar",
+    "megabar",
+    "gigabar",
 ];
 // Some environments have issues with RegEx that contain back-tracking, so we cannot
 // use them.
@@ -58,10 +58,10 @@ export function formatUnits(value, unitName) {
     if (typeof (unitName) === "string") {
         const index = names.indexOf(unitName);
         if (index !== -1) {
-            unitName = 3 * index;
+            unitName = Math.max((3 * index) - 1, 0);
         }
     }
-    return formatFixed(value, (unitName != null) ? unitName : 18);
+    return formatFixed(value, (unitName != null) ? unitName : 8);
 }
 export function parseUnits(value, unitName) {
     if (typeof (value) !== "string") {
@@ -70,15 +70,15 @@ export function parseUnits(value, unitName) {
     if (typeof (unitName) === "string") {
         const index = names.indexOf(unitName);
         if (index !== -1) {
-            unitName = 3 * index;
+            unitName = Math.max((3 * index) - 1, 0);
         }
     }
-    return parseFixed(value, (unitName != null) ? unitName : 18);
+    return parseFixed(value, (unitName != null) ? unitName : 8);
 }
-export function formatEther(wei) {
-    return formatUnits(wei, 18);
+export function formatHbar(tinybar) {
+    return formatUnits(tinybar, 8);
 }
-export function parseEther(ether) {
-    return parseUnits(ether, 18);
+export function parseHbar(hbar) {
+    return parseUnits(hbar, 8);
 }
 //# sourceMappingURL=index.js.map

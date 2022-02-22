@@ -1,5 +1,5 @@
-import { Network, Networkish } from "./types";
-export { Network, Networkish };
+import { Network, Networkish, HederaNetworkConfigLike, HederaOperator, NodeUrlEntries } from "./types";
+export { Network, Networkish, HederaNetworkConfigLike, HederaOperator, NodeUrlEntries };
 /**
  *  getNetwork
  *

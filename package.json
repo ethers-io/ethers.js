@@ -1,23 +1,12 @@
 {
-  "name": "ethers",
-  "common": {
-    "ethereum": "donations.ethers.eth",
-    "funding": [
-      {
-        "type": "individual",
-        "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
-      },
-      {
-        "type": "individual",
-        "url": "https://www.buymeacoffee.com/ricmoo"
-      }
-    ]
-  },
+  "name": "@hashgraph/hethers",
+  "version": "1.0.0",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git://github.com/ethers-io/ethers.js.git"
+    "url": "git@github.com:hashgraph/hethers.js.git"
   },
+  "common": {},
   "scripts": {
     "preinstall": "npm run bootstrap-hoist",
     "postinstall": "node ./misc/admin/lib/cmds/update-depgraph && npm run bootstrap-link",
@@ -34,8 +23,8 @@
     "_test-browser-esm": "karma start --single-run --browsers HeadlessLittleLiar karma-esm.conf.js",
     "test-browser-umd": "npm run _test-dist && npm run _test-browser-umd",
     "test-browser-esm": "npm run _test-dist && npm run _test-browser-esm",
-    "test-coverage": "nyc --report-dir=output --reporter=lcov --reporter=text mocha --reporter ./packages/tests/reporter-keepalive ./packages/tests/lib/test-*.js | tee output/summary.txt",
-    "test-node": "mocha --no-colors --reporter ./packages/tests/reporter ./packages/tests/lib/test-*.js",
+    "test-coverage": "nyc --report-dir=output --reporter=lcov --reporter=text mocha --reporter ./packages/tests/reporter-keepalive ./packages/tests/lib/*spec.js | tee output/summary.txt",
+    "test-node": "mocha --no-colors --reporter ./packages/tests/reporter ./packages/tests/lib/*.spec.js",
     "test-react": "npm run _test-dist && pushd misc/ReactNativeTestApp && ./run-tests.sh && popd",
     "test": "npm run build-all && npm run test-node",
     "build-docs": "flatworm docs.wrm docs",
@@ -43,26 +32,26 @@
     "upload-docs": " node ./misc/admin/lib/cmds/upload-docs.js",
     "spell-check": "node ./misc/admin/lib/cmds/spell-check.js",
     "_reset-build": "node ./misc/admin/lib/cmds/set-build-option cjs",
-    "_esm-alias-nodesafe": "node ./misc/admin/lib/cmds/echo 'Bundling ESM elliptic (lib._esm/browser-elliptic.js)...' && rollup -c rollup-pre-alias.config.js && node misc/admin/lib/cmds/esm-alias",
+    "_esm-alias-nodesafe": "node ./misc/admin/lib/cmds/echo 'Bundling ESM elliptic (lib._esm/browser-elliptic.js)...' && node misc/admin/lib/cmds/esm-alias",
     "_esm-alias": "node ./misc/admin/lib/cmds/npm-skip-node8.js || npm run _esm-alias-nodesafe",
-    "build-libs": "node ./misc/admin/lib/cmds/update-exports.js && node ./misc/admin/lib/cmds/bundle-testcases && npm run _build-cjs && npm run _build-esm && npm run _reset-build && node packages/asm/generate.js && npm run _esm-alias && chmod 755 packages/*/lib/bin/*.js",
-    "build-dist-shims": "rollup -c rollup-shims.config.js && uglifyjs --compress --mangle --output ./packages/shims/dist/index.min.js -- ./packages/shims/dist/index.js",
-    "build-dist-libs": "rollup -c rollup-dist.config.js && uglifyjs packages/ethers/dist/ethers.umd.js --output packages/ethers/dist/ethers.umd.min.js --source-map 'content=packages/ethers/dist/ethers.umd.js.map' && uglifyjs packages/ethers/dist/ethers.esm.js --output packages/ethers/dist/ethers.esm.min.js --source-map 'content=packages/ethers/dist/ethers.esm.js.map'",
-    "_build-dist-nodesafe": "node ./misc/admin/lib/cmds/echo 'Building dist files...' && npm run build-dist-libs && npm run build-dist-shims",
+    "build-libs": "node ./misc/admin/lib/cmds/update-exports.js && node ./misc/admin/lib/cmds/bundle-testcases && npm run _build-cjs && npm run _build-esm && npm run _reset-build && npm run _esm-alias",
+    "build-dist-libs": "rollup -c rollup-dist.config.js && terser packages/hethers/dist/hethers.umd.js --output packages/hethers/dist/hethers.umd.min.js --source-map content='packages/hethers/dist/hethers.umd.js.map' && terser packages/hethers/dist/hethers.esm.js --output packages/hethers/dist/hethers.esm.min.js --source-map content='packages/hethers/dist/hethers.esm.js.map'",
+    "_build-dist-nodesafe": "node ./misc/admin/lib/cmds/echo 'Building dist files...' && npm run build-dist-libs",
     "build-dist": "node ./misc/admin/lib/cmds/npm-skip-node8.js || npm run _build-dist-nodesafe",
     "build-all": "npm run build-libs && npm run build-dist",
-    "update-versions": "npm run clean && npm install && npm run spell-check && npm run build-all && node ./misc/admin/lib/cmds/bump-versions && npm run build-all && node ./misc/admin/lib/cmds/update-hashes && node ./misc/admin/lib/cmds/update-changelog",
+    "update-versions": "npm install && npm run spell-check && npm run build-all && node ./misc/admin/lib/cmds/bump-versions && npm run build-all && node ./misc/admin/lib/cmds/update-hashes && node ./misc/admin/lib/cmds/update-changelog",
     "publish-all": "node ./misc/admin/lib/cmds/publish",
-    "TODO-sync-github": "node ./admin/cmds/cache-github"
+    "TODO-sync-github": "node ./admin/cmds/cache-github",
+    "local-ci": "npm run build-all && npm run test-node"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "15.1.0",
-    "@rollup/plugin-json": "4.1.0",
+    "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "9.0.0",
     "@rollup/plugin-replace": "2.3.3",
     "@types/assert": "^1.4.1",
     "@types/mocha": "^5.2.0",
-    "@types/node": "^12.7.4",
+    "@types/node": "^12.20.37",
     "@types/semver": "^7.3.4",
     "aes-js": "3.0.0",
     "aws-sdk": "2.137.0",
@@ -80,24 +69,36 @@
     "rollup-plugin-sourcemaps": "0.6.3",
     "scrypt-js": "3.0.1",
     "semver": "^5.6.0",
+    "terser": "^5.10.0",
+    "ts-node": "^10.4.0",
     "typescript": "4.4.4",
     "uglify-es": "3.3.9"
   },
   "dependencies": {
-    "@babel/parser": "7.8.4",
-    "@babel/types": "7.8.3",
-    "@ledgerhq/hw-app-eth": "5.27.2",
-    "@ledgerhq/hw-transport": "5.26.0",
-    "@ledgerhq/hw-transport-u2f": "5.26.0",
+    "@ethersproject/abi": "5.5.0",
+    "@ethersproject/base64": "5.5.0",
+    "@ethersproject/basex": "5.5.0",
+    "@ethersproject/bignumber": "5.5.0",
+    "@ethersproject/bytes": "5.5.0",
+    "@ethersproject/hash": "5.5.0",
+    "@ethersproject/keccak256": "5.5.0",
+    "@ethersproject/pbkdf2": "5.5.0",
+    "@ethersproject/properties": "5.5.0",
+    "@ethersproject/random": "5.5.0",
+    "@ethersproject/sha2": "5.5.0",
+    "@ethersproject/signing-key": "5.5.0",
+    "@ethersproject/solidity": "5.5.0",
+    "@ethersproject/strings": "5.5.0",
+    "@ethersproject/web": "5.5.0",
+    "@ethersproject/wordlists": "5.5.0",
+    "@hashgraph/proto": "2.1.2",
+    "@hashgraph/sdk": "2.7.0-beta.4",
+    "@types/axios": "^0.14.0",
     "@types/mocha": "^5.2.0",
     "aes-js": "3.0.0",
+    "axios": "^0.24.0",
     "bech32": "1.1.4",
-    "bn.js": "^4.11.9",
-    "elliptic": "6.5.4",
-    "hash.js": "1.1.7",
-    "js-sha3": "0.8.0",
     "scrypt-js": "3.0.1",
-    "solc": "0.7.1",
     "tiny-inflate": "1.0.3",
     "ws": "7.4.6"
   }

@@ -1,5 +1,5 @@
 {
-  "_ethers.alias": {
+  "_hethers.alias": {
     "browser-net.d.ts": "",
     "browser-net.d.ts.map": "",
     "browser-net.js": "",
@@ -7,60 +7,54 @@
     "ipc-provider.js": "browser-ipc-provider.js",
     "ws.js": "browser-ws.js"
   },
-  "author": "Richard Moore <me@ricmoo.com>",
   "browser": {
     "./lib/ipc-provider": "./lib/browser-ipc-provider.js",
     "./lib/ws": "./lib/browser-ws.js",
     "net": "./lib/browser-net.js"
   },
   "dependencies": {
-    "@ethersproject/abstract-provider": "^5.5.0",
-    "@ethersproject/abstract-signer": "^5.5.0",
-    "@ethersproject/address": "^5.5.0",
-    "@ethersproject/basex": "^5.5.0",
-    "@ethersproject/bignumber": "^5.5.0",
-    "@ethersproject/bytes": "^5.5.0",
-    "@ethersproject/constants": "^5.5.0",
-    "@ethersproject/hash": "^5.5.0",
-    "@ethersproject/logger": "^5.5.0",
-    "@ethersproject/networks": "^5.5.0",
-    "@ethersproject/properties": "^5.5.0",
-    "@ethersproject/random": "^5.5.0",
-    "@ethersproject/rlp": "^5.5.0",
-    "@ethersproject/sha2": "^5.5.0",
-    "@ethersproject/strings": "^5.5.0",
-    "@ethersproject/transactions": "^5.5.0",
-    "@ethersproject/web": "^5.5.0",
+    "@hethers/abstract-provider": "1.0.0",
+    "@hethers/abstract-signer": "1.0.0",
+    "@hethers/address": "1.0.0",
+    "@ethersproject/basex": "5.5.0",
+    "@ethersproject/bignumber": "5.5.0",
+    "@ethersproject/bytes": "5.5.0",
+    "@hethers/constants": "1.0.0",
+    "@ethersproject/hash": "5.5.0",
+    "@hethers/logger": "1.0.0",
+    "@hethers/networks": "1.0.0",
+    "@ethersproject/properties": "5.5.0",
+    "@ethersproject/random": "5.5.0",
+    "@ethersproject/sha2": "5.5.0",
+    "@ethersproject/strings": "5.5.0",
+    "@hethers/transactions": "1.0.0",
+    "@ethersproject/web": "5.5.0",
+    "@hashgraph/proto": "2.1.2",
+    "@hashgraph/sdk": "2.7.0-beta.4",
+    "@types/axios": "^0.14.0",
+    "axios": "^0.24.0",
     "bech32": "1.1.4",
     "ws": "7.4.6"
   },
-  "description": "Ethereum Providers for ethers.",
-  "ethereum": "donations.ethers.eth",
-  "funding": [
-    {
-      "type": "individual",
-      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
-    },
-    {
-      "type": "individual",
-      "url": "https://www.buymeacoffee.com/ricmoo"
-    }
-  ],
+  "description": "Hedera Hashgraph Providers for hethers.",
   "keywords": [
+    "Hedera",
+    "Hashgraph",
     "Ethereum",
+    "hethers",
     "ethers"
   ],
   "license": "MIT",
   "main": "./lib/index.js",
   "module": "./lib.esm/index.js",
-  "name": "@ethersproject/providers",
+  "name": "@hethers/providers",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "directory": "packages/providers",
     "type": "git",
-    "url": "git://github.com/ethers-io/ethers.js.git"
+    "url": "git://github.com/hashgraph/hethers.js.git"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -68,5 +62,6 @@
   "sideEffects": false,
   "tarballHash": "0x2582ad9a43f5113ef9143cf4f5b35cc5fe0cc709861834d5f5236ab06b2f4476",
   "types": "./lib/index.d.ts",
-  "version": "5.5.0"
+  "version": "1.0.0",
+  "devDependencies": {}
 }

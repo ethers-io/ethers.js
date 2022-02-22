@@ -1,18 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseEther = exports.formatEther = exports.parseUnits = exports.formatUnits = exports.commify = void 0;
+exports.parseHbar = exports.formatHbar = exports.parseUnits = exports.formatUnits = exports.commify = void 0;
 var bignumber_1 = require("@ethersproject/bignumber");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var names = [
-    "wei",
-    "kwei",
-    "mwei",
-    "gwei",
-    "szabo",
-    "finney",
-    "ether",
+    "tinybar",
+    "microbar",
+    "millibar",
+    "hbar",
+    "kilobar",
+    "megabar",
+    "gigabar",
 ];
 // Some environments have issues with RegEx that contain back-tracking, so we cannot
 // use them.
@@ -61,10 +61,10 @@ function formatUnits(value, unitName) {
     if (typeof (unitName) === "string") {
         var index = names.indexOf(unitName);
         if (index !== -1) {
-            unitName = 3 * index;
+            unitName = Math.max((3 * index) - 1, 0);
         }
     }
-    return (0, bignumber_1.formatFixed)(value, (unitName != null) ? unitName : 18);
+    return (0, bignumber_1.formatFixed)(value, (unitName != null) ? unitName : 8);
 }
 exports.formatUnits = formatUnits;
 function parseUnits(value, unitName) {
@@ -74,18 +74,18 @@ function parseUnits(value, unitName) {
     if (typeof (unitName) === "string") {
         var index = names.indexOf(unitName);
         if (index !== -1) {
-            unitName = 3 * index;
+            unitName = Math.max((3 * index) - 1, 0);
         }
     }
-    return (0, bignumber_1.parseFixed)(value, (unitName != null) ? unitName : 18);
+    return (0, bignumber_1.parseFixed)(value, (unitName != null) ? unitName : 8);
 }
 exports.parseUnits = parseUnits;
-function formatEther(wei) {
-    return formatUnits(wei, 18);
+function formatHbar(tinybar) {
+    return formatUnits(tinybar, 8);
 }
-exports.formatEther = formatEther;
-function parseEther(ether) {
-    return parseUnits(ether, 18);
+exports.formatHbar = formatHbar;
+function parseHbar(hbar) {
+    return parseUnits(hbar, 8);
 }
-exports.parseEther = parseEther;
+exports.parseHbar = parseHbar;
 //# sourceMappingURL=index.js.map

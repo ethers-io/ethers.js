@@ -20,7 +20,7 @@ export interface Hash {
 
 export interface HDWalletNode {
     path: string;
-    address: string;
+    alias: string;
     privateKey: string;
 };
 
@@ -47,9 +47,10 @@ export interface Nameprep {
 export interface Wallet {
     name: string;
 
-    type: "crowdsale" | "secret-storage";
+    type: "secret-storage";
     hasAddress: boolean;
     address: string;
+    alias: string;
     privateKey: string;
     mnemonic?: string;
     password?: string;

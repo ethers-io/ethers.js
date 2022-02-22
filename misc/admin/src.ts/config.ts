@@ -116,7 +116,7 @@ class Config {
     }
 }
 
-const _config = new Config(resolve(os.homedir(), ".ethers-dist"));
+const _config = new Config(resolve(os.homedir(), ".hethers-dist"));
 
 export const config = {
     get: function(key: string) {

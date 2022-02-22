@@ -1,3 +1,3 @@
-declare let WS: any;
-export { WS as WebSocket };
+import WebSocket from "ws";
+export { WebSocket };
 //# sourceMappingURL=ws.d.ts.map

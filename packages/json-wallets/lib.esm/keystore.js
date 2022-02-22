@@ -10,16 +10,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import aes from "aes-js";
 import scrypt from "scrypt-js";
-import { getAddress } from "@ethersproject/address";
+import { getAddress } from "@hethers/address";
 import { arrayify, concat, hexlify } from "@ethersproject/bytes";
-import { defaultPath, entropyToMnemonic, HDNode, mnemonicToEntropy } from "@ethersproject/hdnode";
+import { defaultPath, entropyToMnemonic, HDNode, mnemonicToEntropy } from "@hethers/hdnode";
 import { keccak256 } from "@ethersproject/keccak256";
 import { pbkdf2 as _pbkdf2 } from "@ethersproject/pbkdf2";
 import { randomBytes } from "@ethersproject/random";
 import { Description } from "@ethersproject/properties";
-import { computeAddress } from "@ethersproject/transactions";
 import { getPassword, looseArrayify, searchPath, uuidV4, zpad } from "./utils";
-import { Logger } from "@ethersproject/logger";
+import { Logger } from "@hethers/logger";
 import { version } from "./_version";
 const logger = new Logger(version);
 // Exported Types
@@ -54,19 +53,16 @@ function _getAccount(data, key) {
         });
     }
     const mnemonicKey = key.slice(32, 64);
-    const address = computeAddress(privateKey);
+    let address;
     if (data.address) {
-        let check = data.address.toLowerCase();
-        if (check.substring(0, 2) !== "0x") {
-            check = "0x" + check;
-        }
-        if (getAddress(check) !== address) {
-            throw new Error("address mismatch");
+        address = data.address.toLowerCase();
+        if (address.substring(0, 2) !== "0x") {
+            address = "0x" + address;
         }
     }
     const account = {
         _isKeystoreAccount: true,
-        address: address,
+        address: address ? getAddress(address) : undefined,
         privateKey: hexlify(privateKey)
     };
     // Version 0.1 x-ethers metadata must contain an encrypted mnemonic phrase
@@ -166,10 +162,6 @@ export function decrypt(json, password, progressCallback) {
 }
 export function encrypt(account, password, options, progressCallback) {
     try {
-        // Check the address matches the private key
-        if (getAddress(account.address) !== computeAddress(account.privateKey)) {
-            throw new Error("address/privateKey mismatch");
-        }
         // Check the mnemonic (if any) matches the private key
         if (hasMnemonic(account)) {
             const mnemonic = account.mnemonic;
@@ -266,8 +258,9 @@ export function encrypt(account, password, options, progressCallback) {
         // Compute the message authentication code, used to check the password
         const mac = keccak256(concat([macPrefix, ciphertext]));
         // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
+        // As per Version 3, the address field is OPTIONAL
         const data = {
-            address: account.address.substring(2).toLowerCase(),
+            address: account.address ? account.address.substring(2).toLowerCase() : undefined,
             id: uuidV4(uuidRandom),
             version: 3,
             Crypto: {

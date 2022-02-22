@@ -1,32 +1,29 @@
 import { Fragment, Indexed, Interface, JsonFragment, Result } from "@ethersproject/abi";
-import { Block, BlockTag, Listener, Log, Provider, TransactionReceipt, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
-import { Signer } from "@ethersproject/abstract-signer";
+import { Listener, Log, Provider, TransactionReceipt, TransactionRequest, TransactionResponse } from "@hethers/abstract-provider";
+import { Signer } from "@hethers/abstract-signer";
+import { AccountLike } from "@hethers/address";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike } from "@ethersproject/bytes";
-import { AccessList, AccessListish } from "@ethersproject/transactions";
+import { AccessList, AccessListish } from "@hethers/transactions";
 export interface Overrides {
     gasLimit?: BigNumberish | Promise<BigNumberish>;
-    gasPrice?: BigNumberish | Promise<BigNumberish>;
     maxFeePerGas?: BigNumberish | Promise<BigNumberish>;
     maxPriorityFeePerGas?: BigNumberish | Promise<BigNumberish>;
-    nonce?: BigNumberish | Promise<BigNumberish>;
     type?: number;
     accessList?: AccessListish;
     customData?: Record<string, any>;
+    nodeId?: AccountLike;
 }
 export interface PayableOverrides extends Overrides {
     value?: BigNumberish | Promise<BigNumberish>;
 }
 export interface CallOverrides extends PayableOverrides {
-    blockTag?: BlockTag | Promise<BlockTag>;
     from?: string | Promise<string>;
 }
 export interface PopulatedTransaction {
-    to?: string;
-    from?: string;
-    nonce?: number;
+    to?: AccountLike;
+    from?: AccountLike;
     gasLimit?: BigNumber;
-    gasPrice?: BigNumber;
     data?: string;
     value?: BigNumber;
     chainId?: number;
@@ -35,9 +32,10 @@ export interface PopulatedTransaction {
     maxFeePerGas?: BigNumber;
     maxPriorityFeePerGas?: BigNumber;
     customData?: Record<string, any>;
+    nodeId?: AccountLike;
 }
 export declare type EventFilter = {
-    address?: string;
+    address?: AccountLike;
     topics?: Array<string | Array<string>>;
 };
 export declare type ContractFunction<T = any> = (...args: Array<any>) => Promise<T>;
@@ -48,7 +46,6 @@ export interface Event extends Log {
     decodeError?: Error;
     decode?: (data: string, topics?: Array<string>) => any;
     removeListener: () => void;
-    getBlock: () => Promise<Block>;
     getTransaction: () => Promise<TransactionResponse>;
     getTransactionReceipt: () => Promise<TransactionReceipt>;
 }
@@ -74,7 +71,7 @@ declare class RunningEvent {
 }
 export declare type ContractInterface = string | ReadonlyArray<Fragment | JsonFragment | string> | Interface;
 export declare class BaseContract {
-    readonly address: string;
+    private _address;
     readonly interface: Interface;
     readonly signer: Signer;
     readonly provider: Provider;
@@ -102,24 +99,23 @@ export declare class BaseContract {
     _wrappedEmits: {
         [eventTag: string]: (...args: Array<any>) => void;
     };
-    constructor(addressOrName: string, contractInterface: ContractInterface, signerOrProvider?: Signer | Provider);
-    static getContractAddress(transaction: {
-        from: string;
-        nonce: BigNumberish;
-    }): string;
+    constructor(address: AccountLike | null, contractInterface: ContractInterface, signerOrProvider?: Signer | Provider);
+    set address(val: string);
+    get address(): string;
     static getInterface(contractInterface: ContractInterface): Interface;
     deployed(): Promise<Contract>;
-    _deployed(blockTag?: BlockTag): Promise<Contract>;
+    _deployed(): Promise<Contract>;
     fallback(overrides?: TransactionRequest): Promise<TransactionResponse>;
     connect(signerOrProvider: Signer | Provider | string): Contract;
     attach(addressOrName: string): Contract;
     static isIndexed(value: any): value is Indexed;
     private _normalizeRunningEvent;
     private _getRunningEvent;
+    _requireAddressSet(): void;
     _checkRunningEvents(runningEvent: RunningEvent): void;
     _wrapEvent(runningEvent: RunningEvent, log: Log, listener: Listener): Event;
     private _addEventListener;
-    queryFilter(event: EventFilter, fromBlockOrBlockhash?: BlockTag | string, toBlock?: BlockTag): Promise<Array<Event>>;
+    queryFilter(event: EventFilter, fromTimestamp?: string | number, toTimestamp?: string | number): Promise<Array<Event>>;
     on(event: EventFilter | string, listener: Listener): this;
     once(event: EventFilter | string, listener: Listener): this;
     emit(eventName: EventFilter | string, ...args: Array<any>): boolean;
@@ -145,11 +141,7 @@ export declare class ContractFactory {
     connect(signer: Signer): ContractFactory;
     static fromSolidity(compilerOutput: any, signer?: Signer): ContractFactory;
     static getInterface(contractInterface: ContractInterface): Interface;
-    static getContractAddress(tx: {
-        from: string;
-        nonce: BytesLike | BigNumber | number;
-    }): string;
-    static getContract(address: string, contractInterface: ContractInterface, signer?: Signer): Contract;
+    static getContract(address: AccountLike, contractInterface: ContractInterface, signer?: Signer): Contract;
 }
 export {};
 //# sourceMappingURL=index.d.ts.map

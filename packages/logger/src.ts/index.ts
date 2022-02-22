@@ -127,25 +127,9 @@ export enum ErrorCode {
     //   - transaction: the transaction attempted
     INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS",
 
-    // Nonce has already been used
-    //   - transaction: the transaction attempted
-    NONCE_EXPIRED = "NONCE_EXPIRED",
-
-    // The replacement fee for the transaction is too low
-    //   - transaction: the transaction attempted
-    REPLACEMENT_UNDERPRICED = "REPLACEMENT_UNDERPRICED",
-
     // The gas limit could not be estimated
     //   - transaction: the transaction passed to estimateGas
     UNPREDICTABLE_GAS_LIMIT = "UNPREDICTABLE_GAS_LIMIT",
-
-    // The transaction was replaced by one with a higher gas price
-    //   - reason: "cancelled", "replaced" or "repriced"
-    //   - cancelled: true if reason == "cancelled" or reason == "replaced")
-    //   - hash: original transaction hash
-    //   - replacement: the full TransactionsResponse for the replacement
-    //   - receipt: the receipt of the replacement
-    TRANSACTION_REPLACED = "TRANSACTION_REPLACED",
 };
 
 const HEX = "0123456789abcdef";
@@ -186,7 +170,7 @@ export class Logger {
         this._log(Logger.levels.WARNING, args);
     }
 
-    makeError(message: string, code?: ErrorCode, params?: any): Error {
+    makeError(message: string, code?: ErrorCode | string, params?: any): Error {
         // Errors are being censored
         if (_censorErrors) {
             return this.makeError("censored error", code, { });
@@ -233,7 +217,7 @@ export class Logger {
         return error;
     }
 
-    throwError(message: string, code?: ErrorCode, params?: any): never {
+    throwError(message: string, code?: ErrorCode | string, params?: any): never {
         throw this.makeError(message, code, params);
     }
 

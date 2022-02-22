@@ -38,7 +38,7 @@ const npm = __importStar(require("../npm"));
 const path_1 = require("../path");
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
-        const pNpm = yield npm.getPackage("ethers");
+        const pNpm = yield npm.getPackage("hethers");
         const newVersion = semver_1.default.inc(pNpm.version, "minor");
         for (let i = 0; i < path_1.dirnames.length; i++) {
             const dirname = path_1.dirnames[i];
@@ -46,8 +46,8 @@ const path_1 = require("../path");
             const deps = Object.keys(pLocal.dependencies).reduce((accum, name) => {
                 let version = pLocal.dependencies[name];
                 const prefix = name.split("/")[0];
-                if (dirname === "ethers") {
-                    if (prefix === "@ethersproject") {
+                if (dirname === "hethers") {
+                    if (prefix === "@hethers") {
                         if (!version.match(/^[0-9]+\.[0-9]+\.[0-9]+$/)) {
                             throw new Error(`bad version for bumping: ${dirname}:${name}:${version}`);
                         }
@@ -55,7 +55,7 @@ const path_1 = require("../path");
                     }
                 }
                 else {
-                    if (prefix === "ethers" || prefix === "@ethersproject") {
+                    if (prefix === "hethers" || prefix === "@hethers") {
                         if (version.substring(0, 1) !== "^") {
                             throw new Error(`bad version for bumping: ${dirname}:${name}:${version}`);
                         }

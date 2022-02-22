@@ -14,6 +14,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -62,94 +73,27 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContractFactory = exports.Contract = exports.BaseContract = void 0;
 var abi_1 = require("@ethersproject/abi");
-var abstract_provider_1 = require("@ethersproject/abstract-provider");
-var abstract_signer_1 = require("@ethersproject/abstract-signer");
-var address_1 = require("@ethersproject/address");
+var abstract_provider_1 = require("@hethers/abstract-provider");
+var providers_1 = require("@hethers/providers");
+var abstract_signer_1 = require("@hethers/abstract-signer");
+var address_1 = require("@hethers/address");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
 var properties_1 = require("@ethersproject/properties");
-var transactions_1 = require("@ethersproject/transactions");
-var logger_1 = require("@ethersproject/logger");
+var transactions_1 = require("@hethers/transactions");
+var logger_1 = require("@hethers/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
-;
-;
 ///////////////////////////////
 var allowedTransactionKeys = {
-    chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
-    type: true, accessList: true,
+    chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, to: true, value: true,
+    type: true,
     maxFeePerGas: true, maxPriorityFeePerGas: true,
-    customData: true
+    customData: true, nodeId: true,
 };
-function resolveName(resolver, nameOrPromise) {
-    return __awaiter(this, void 0, void 0, function () {
-        var name, address;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, nameOrPromise];
-                case 1:
-                    name = _a.sent();
-                    if (typeof (name) !== "string") {
-                        logger.throwArgumentError("invalid address or ENS name", "name", name);
-                    }
-                    // If it is already an address, just use it (after adding checksum)
-                    try {
-                        return [2 /*return*/, (0, address_1.getAddress)(name)];
-                    }
-                    catch (error) { }
-                    if (!resolver) {
-                        logger.throwError("a provider or signer is needed to resolve ENS names", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
-                            operation: "resolveName"
-                        });
-                    }
-                    return [4 /*yield*/, resolver.resolveName(name)];
-                case 2:
-                    address = _a.sent();
-                    if (address == null) {
-                        logger.throwArgumentError("resolver or addr is not configured for ENS name", "name", name);
-                    }
-                    return [2 /*return*/, address];
-            }
-        });
-    });
-}
-// Recursively replaces ENS names with promises to resolve the name and resolves all properties
-function resolveAddresses(resolver, value, paramType) {
-    return __awaiter(this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    if (!Array.isArray(paramType)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, Promise.all(paramType.map(function (paramType, index) {
-                            return resolveAddresses(resolver, ((Array.isArray(value)) ? value[index] : value[paramType.name]), paramType);
-                        }))];
-                case 1: return [2 /*return*/, _a.sent()];
-                case 2:
-                    if (!(paramType.type === "address")) return [3 /*break*/, 4];
-                    return [4 /*yield*/, resolveName(resolver, value)];
-                case 3: return [2 /*return*/, _a.sent()];
-                case 4:
-                    if (!(paramType.type === "tuple")) return [3 /*break*/, 6];
-                    return [4 /*yield*/, resolveAddresses(resolver, value, paramType.components)];
-                case 5: return [2 /*return*/, _a.sent()];
-                case 6:
-                    if (!(paramType.baseType === "array")) return [3 /*break*/, 8];
-                    if (!Array.isArray(value)) {
-                        return [2 /*return*/, Promise.reject(logger.makeError("invalid value for array", logger_1.Logger.errors.INVALID_ARGUMENT, {
-                                argument: "value",
-                                value: value
-                            }))];
-                    }
-                    return [4 /*yield*/, Promise.all(value.map(function (v) { return resolveAddresses(resolver, v, paramType.arrayChildren); }))];
-                case 7: return [2 /*return*/, _a.sent()];
-                case 8: return [2 /*return*/, value];
-            }
-        });
-    });
-}
 function populateTransaction(contract, fragment, args) {
     return __awaiter(this, void 0, void 0, function () {
-        var overrides, resolved, data, tx, ro, intrinsic, bytes, i, roValue, leftovers;
+        var overrides, resolved, data, tx, ro, intrinsic, contractCreationExtraGasCost, bytes, i, txGas, roValue, leftovers;
         var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -166,7 +110,7 @@ function populateTransaction(contract, fragment, args) {
                             // Contracts with a Signer are from the Signer's frame-of-reference;
                             // but we allow overriding "from" if it matches the signer
                             overrides.from = (0, properties_1.resolveProperties)({
-                                override: resolveName(contract.signer, overrides.from),
+                                override: overrides.from,
                                 signer: contract.signer.getAddress()
                             }).then(function (check) { return __awaiter(_this, void 0, void 0, function () {
                                 return __generator(this, function (_a) {
@@ -183,16 +127,9 @@ function populateTransaction(contract, fragment, args) {
                             overrides.from = contract.signer.getAddress();
                         }
                     }
-                    else if (overrides.from) {
-                        overrides.from = resolveName(contract.provider, overrides.from);
-                        //} else {
-                        // Contracts without a signer can override "from", and if
-                        // unspecified the zero address is used
-                        //overrides.from = AddressZero;
-                    }
                     return [4 /*yield*/, (0, properties_1.resolveProperties)({
-                            args: resolveAddresses(contract.signer || contract.provider, args, fragment.inputs),
-                            address: contract.resolvedAddress,
+                            args: args,
+                            address: contract.address,
                             overrides: ((0, properties_1.resolveProperties)(overrides) || {})
                         })];
                 case 1:
@@ -204,14 +141,8 @@ function populateTransaction(contract, fragment, args) {
                     };
                     ro = resolved.overrides;
                     // Populate simple overrides
-                    if (ro.nonce != null) {
-                        tx.nonce = bignumber_1.BigNumber.from(ro.nonce).toNumber();
-                    }
                     if (ro.gasLimit != null) {
                         tx.gasLimit = bignumber_1.BigNumber.from(ro.gasLimit);
-                    }
-                    if (ro.gasPrice != null) {
-                        tx.gasPrice = bignumber_1.BigNumber.from(ro.gasPrice);
                     }
                     if (ro.maxFeePerGas != null) {
                         tx.maxFeePerGas = bignumber_1.BigNumber.from(ro.maxFeePerGas);
@@ -228,17 +159,22 @@ function populateTransaction(contract, fragment, args) {
                     if (ro.accessList != null) {
                         tx.accessList = (0, transactions_1.accessListify)(ro.accessList);
                     }
+                    if (ro.nodeId != null) {
+                        tx.nodeId = ro.nodeId;
+                    }
                     // If there was no "gasLimit" override, but the ABI specifies a default, use it
                     if (tx.gasLimit == null && fragment.gas != null) {
                         intrinsic = 21000;
+                        contractCreationExtraGasCost = 11000;
                         bytes = (0, bytes_1.arrayify)(data);
                         for (i = 0; i < bytes.length; i++) {
                             intrinsic += 4;
                             if (bytes[i]) {
-                                intrinsic += 64;
+                                intrinsic += 16;
                             }
                         }
-                        tx.gasLimit = bignumber_1.BigNumber.from(fragment.gas).add(intrinsic);
+                        txGas = tx.to != null ? intrinsic : intrinsic + contractCreationExtraGasCost;
+                        tx.gasLimit = bignumber_1.BigNumber.from(fragment.gas).add(txGas);
                     }
                     // Populate "value" override
                     if (ro.value) {
@@ -255,9 +191,7 @@ function populateTransaction(contract, fragment, args) {
                         tx.customData = (0, properties_1.shallowCopy)(ro.customData);
                     }
                     // Remove the overrides
-                    delete overrides.nonce;
                     delete overrides.gasLimit;
-                    delete overrides.gasPrice;
                     delete overrides.from;
                     delete overrides.value;
                     delete overrides.type;
@@ -265,6 +199,7 @@ function populateTransaction(contract, fragment, args) {
                     delete overrides.maxFeePerGas;
                     delete overrides.maxPriorityFeePerGas;
                     delete overrides.customData;
+                    delete overrides.nodeId;
                     leftovers = Object.keys(overrides).filter(function (key) { return (overrides[key] != null); });
                     if (leftovers.length) {
                         logger.throwError("cannot override " + leftovers.map(function (l) { return JSON.stringify(l); }).join(","), logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
@@ -286,6 +221,7 @@ function buildPopulate(contract, fragment) {
         return populateTransaction(contract, fragment, args);
     };
 }
+// @ts-ignore
 function buildEstimate(contract, fragment) {
     var signerOrProvider = (contract.signer || contract.provider);
     return function () {
@@ -315,8 +251,8 @@ function buildEstimate(contract, fragment) {
 }
 function addContractWait(contract, tx) {
     var wait = tx.wait.bind(tx);
-    tx.wait = function (confirmations) {
-        return wait(confirmations).then(function (receipt) {
+    tx.wait = function (timeout) {
+        return wait(timeout).then(function (receipt) {
             receipt.events = receipt.logs.map(function (log) {
                 var event = (0, properties_1.deepCopy)(log);
                 var parsed = null;
@@ -335,11 +271,8 @@ function addContractWait(contract, tx) {
                 }
                 // Useful operations
                 event.removeListener = function () { return contract.provider; };
-                event.getBlock = function () {
-                    return contract.provider.getBlock(receipt.blockHash);
-                };
                 event.getTransaction = function () {
-                    return contract.provider.getTransaction(receipt.transactionHash);
+                    return contract.provider.getTransaction(receipt.transactionId);
                 };
                 event.getTransactionReceipt = function () {
                     return Promise.resolve(receipt);
@@ -351,40 +284,31 @@ function addContractWait(contract, tx) {
     };
 }
 function buildCall(contract, fragment, collapseSimple) {
-    var signerOrProvider = (contract.signer || contract.provider);
+    var signer = contract.signer;
     return function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
         }
         return __awaiter(this, void 0, void 0, function () {
-            var blockTag, overrides, tx, result, value;
+            var overrides, tx, result, value;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        blockTag = undefined;
-                        if (!(args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object")) return [3 /*break*/, 3];
-                        overrides = (0, properties_1.shallowCopy)(args.pop());
-                        if (!(overrides.blockTag != null)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, overrides.blockTag];
+                        if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
+                            overrides = (0, properties_1.shallowCopy)(args.pop());
+                            args.push(overrides);
+                        }
+                        if (!(contract.deployTransaction != null)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, contract._deployed()];
                     case 1:
-                        blockTag = _a.sent();
-                        _a.label = 2;
-                    case 2:
-                        delete overrides.blockTag;
-                        args.push(overrides);
-                        _a.label = 3;
-                    case 3:
-                        if (!(contract.deployTransaction != null)) return [3 /*break*/, 5];
-                        return [4 /*yield*/, contract._deployed(blockTag)];
-                    case 4:
                         _a.sent();
-                        _a.label = 5;
-                    case 5: return [4 /*yield*/, populateTransaction(contract, fragment, args)];
-                    case 6:
+                        _a.label = 2;
+                    case 2: return [4 /*yield*/, populateTransaction(contract, fragment, args)];
+                    case 3:
                         tx = _a.sent();
-                        return [4 /*yield*/, signerOrProvider.call(tx, blockTag)];
-                    case 7:
+                        return [4 /*yield*/, signer.call(tx)];
+                    case 4:
                         result = _a.sent();
                         try {
                             value = contract.interface.decodeFunctionResult(fragment, result);
@@ -603,12 +527,13 @@ var WildcardRunningEvent = /** @class */ (function (_super) {
     return WildcardRunningEvent;
 }(RunningEvent));
 var BaseContract = /** @class */ (function () {
-    function BaseContract(addressOrName, contractInterface, signerOrProvider) {
+    function BaseContract(address, contractInterface, signerOrProvider) {
         var _newTarget = this.constructor;
         var _this = this;
         logger.checkNew(_newTarget, Contract);
-        // @TODO: Maybe still check the addressOrName looks like a valid address or name?
-        //address = getAddress(address);
+        if (address) {
+            this.address = (0, address_1.getAddressFromAccount)(address);
+        }
         (0, properties_1.defineReadOnly)(this, "interface", (0, properties_1.getStatic)(_newTarget, "getInterface")(contractInterface));
         if (signerOrProvider == null) {
             (0, properties_1.defineReadOnly)(this, "provider", null);
@@ -626,7 +551,6 @@ var BaseContract = /** @class */ (function () {
             logger.throwArgumentError("invalid signer or provider", "signerOrProvider", signerOrProvider);
         }
         (0, properties_1.defineReadOnly)(this, "callStatic", {});
-        (0, properties_1.defineReadOnly)(this, "estimateGas", {});
         (0, properties_1.defineReadOnly)(this, "functions", {});
         (0, properties_1.defineReadOnly)(this, "populateTransaction", {});
         (0, properties_1.defineReadOnly)(this, "filters", {});
@@ -661,24 +585,6 @@ var BaseContract = /** @class */ (function () {
         }
         (0, properties_1.defineReadOnly)(this, "_runningEvents", {});
         (0, properties_1.defineReadOnly)(this, "_wrappedEmits", {});
-        if (addressOrName == null) {
-            logger.throwArgumentError("invalid contract address or ENS name", "addressOrName", addressOrName);
-        }
-        (0, properties_1.defineReadOnly)(this, "address", addressOrName);
-        if (this.provider) {
-            (0, properties_1.defineReadOnly)(this, "resolvedAddress", resolveName(this.provider, addressOrName));
-        }
-        else {
-            try {
-                (0, properties_1.defineReadOnly)(this, "resolvedAddress", Promise.resolve((0, address_1.getAddress)(addressOrName)));
-            }
-            catch (error) {
-                // Without a provider, we cannot use ENS names
-                logger.throwError("provider is required to use ENS name as contract address", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
-                    operation: "new Contract"
-                });
-            }
-        }
         var uniqueNames = {};
         var uniqueSignatures = {};
         Object.keys(this.interface.functions).forEach(function (signature) {
@@ -714,9 +620,6 @@ var BaseContract = /** @class */ (function () {
             if (_this.populateTransaction[signature] == null) {
                 (0, properties_1.defineReadOnly)(_this.populateTransaction, signature, buildPopulate(_this, fragment));
             }
-            if (_this.estimateGas[signature] == null) {
-                (0, properties_1.defineReadOnly)(_this.estimateGas, signature, buildEstimate(_this, fragment));
-            }
         });
         Object.keys(uniqueNames).forEach(function (name) {
             // Ambiguous names to not get attached as bare names
@@ -743,14 +646,18 @@ var BaseContract = /** @class */ (function () {
             if (_this.populateTransaction[name] == null) {
                 (0, properties_1.defineReadOnly)(_this.populateTransaction, name, _this.populateTransaction[signature]);
             }
-            if (_this.estimateGas[name] == null) {
-                (0, properties_1.defineReadOnly)(_this.estimateGas, name, _this.estimateGas[signature]);
-            }
         });
     }
-    BaseContract.getContractAddress = function (transaction) {
-        return (0, address_1.getContractAddress)(transaction);
-    };
+    Object.defineProperty(BaseContract.prototype, "address", {
+        get: function () {
+            return this._address;
+        },
+        set: function (val) {
+            this._address = (0, address_1.getAddressFromAccount)(val);
+        },
+        enumerable: false,
+        configurable: true
+    });
     BaseContract.getInterface = function (contractInterface) {
         if (abi_1.Interface.isInterface(contractInterface)) {
             return contractInterface;
@@ -761,7 +668,7 @@ var BaseContract = /** @class */ (function () {
     BaseContract.prototype.deployed = function () {
         return this._deployed();
     };
-    BaseContract.prototype._deployed = function (blockTag) {
+    BaseContract.prototype._deployed = function () {
         var _this = this;
         if (!this._deployedPromise) {
             // If we were just deployed, we know the transaction we should occur in
@@ -774,10 +681,10 @@ var BaseContract = /** @class */ (function () {
                 // @TODO: Once we allow a timeout to be passed in, we will wait
                 // up to that many blocks for getCode
                 // Otherwise, poll for our code to be deployed
-                this._deployedPromise = this.provider.getCode(this.address, blockTag).then(function (code) {
+                this._deployedPromise = this.provider.getCode(this.address).then(function (code) {
                     if (code === "0x") {
                         logger.throwError("contract not deployed", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
-                            contractAddress: _this.address,
+                            contractAddress: _this._address,
                             operation: "getDeployed"
                         });
                     }
@@ -873,6 +780,11 @@ var BaseContract = /** @class */ (function () {
         }
         return this._normalizeRunningEvent(new WildcardRunningEvent(this.address, this.interface));
     };
+    BaseContract.prototype._requireAddressSet = function () {
+        if (!this.address || this.address == "") {
+            logger.throwArgumentError("Missing address", logger_1.Logger.errors.INVALID_ARGUMENT, this.address);
+        }
+    };
     BaseContract.prototype._checkRunningEvents = function (runningEvent) {
         if (runningEvent.listenerCount() === 0) {
             delete this._runningEvents[runningEvent.tag];
@@ -896,9 +808,12 @@ var BaseContract = /** @class */ (function () {
             runningEvent.removeListener(listener);
             _this._checkRunningEvents(runningEvent);
         };
-        event.getBlock = function () { return _this.provider.getBlock(log.blockHash); };
-        event.getTransaction = function () { return _this.provider.getTransaction(log.transactionHash); };
-        event.getTransactionReceipt = function () { return _this.provider.getTransactionReceipt(log.transactionHash); };
+        event.getTransaction = function () {
+            return _this.provider.getTransaction(log.timestamp);
+        };
+        event.getTransactionReceipt = function () {
+            return logger.throwError("NOT_SUPPORTED", logger_1.Logger.errors.UNSUPPORTED_OPERATION);
+        };
         // This may throw if the topics and data mismatch the signature
         runningEvent.prepareEvent(event);
         return event;
@@ -941,29 +856,37 @@ var BaseContract = /** @class */ (function () {
             }
         }
     };
-    BaseContract.prototype.queryFilter = function (event, fromBlockOrBlockhash, toBlock) {
-        var _this = this;
-        var runningEvent = this._getRunningEvent(event);
-        var filter = (0, properties_1.shallowCopy)(runningEvent.filter);
-        if (typeof (fromBlockOrBlockhash) === "string" && (0, bytes_1.isHexString)(fromBlockOrBlockhash, 32)) {
-            if (toBlock != null) {
-                logger.throwArgumentError("cannot specify toBlock with blockhash", "toBlock", toBlock);
-            }
-            filter.blockHash = fromBlockOrBlockhash;
-        }
-        else {
-            filter.fromBlock = ((fromBlockOrBlockhash != null) ? fromBlockOrBlockhash : 0);
-            filter.toBlock = ((toBlock != null) ? toBlock : "latest");
-        }
-        return this.provider.getLogs(filter).then(function (logs) {
-            return logs.map(function (log) { return _this._wrapEvent(runningEvent, log, null); });
+    BaseContract.prototype.queryFilter = function (event, fromTimestamp, toTimestamp) {
+        return __awaiter(this, void 0, void 0, function () {
+            var runningEvent, filter, logs;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this._requireAddressSet();
+                        runningEvent = this._getRunningEvent(event);
+                        filter = (0, properties_1.shallowCopy)(runningEvent.filter);
+                        if (fromTimestamp) {
+                            filter.fromTimestamp = (0, providers_1.composeHederaTimestamp)(fromTimestamp);
+                        }
+                        if (toTimestamp) {
+                            filter.toTimestamp = (0, providers_1.composeHederaTimestamp)(toTimestamp);
+                        }
+                        return [4 /*yield*/, this.provider.getLogs(filter)];
+                    case 1:
+                        logs = _a.sent();
+                        return [2 /*return*/, logs.map(function (log) { return _this._wrapEvent(runningEvent, log, null); })];
+                }
+            });
         });
     };
     BaseContract.prototype.on = function (event, listener) {
+        this._requireAddressSet();
         this._addEventListener(this._getRunningEvent(event), listener, false);
         return this;
     };
     BaseContract.prototype.once = function (event, listener) {
+        this._requireAddressSet();
         this._addEventListener(this._getRunningEvent(event), listener, true);
         return this;
     };
@@ -975,6 +898,7 @@ var BaseContract = /** @class */ (function () {
         if (!this.provider) {
             return false;
         }
+        this._requireAddressSet();
         var runningEvent = this._getRunningEvent(eventName);
         var result = (runningEvent.run(args) > 0);
         // May have drained all the "once" events; check for living events
@@ -986,6 +910,7 @@ var BaseContract = /** @class */ (function () {
         if (!this.provider) {
             return 0;
         }
+        this._requireAddressSet();
         if (eventName == null) {
             return Object.keys(this._runningEvents).reduce(function (accum, key) {
                 return accum + _this._runningEvents[key].listenerCount();
@@ -997,6 +922,7 @@ var BaseContract = /** @class */ (function () {
         if (!this.provider) {
             return [];
         }
+        this._requireAddressSet();
         if (eventName == null) {
             var result_1 = [];
             for (var tag in this._runningEvents) {
@@ -1012,6 +938,7 @@ var BaseContract = /** @class */ (function () {
         if (!this.provider) {
             return this;
         }
+        this._requireAddressSet();
         if (eventName == null) {
             for (var tag in this._runningEvents) {
                 var runningEvent_1 = this._runningEvents[tag];
@@ -1030,12 +957,14 @@ var BaseContract = /** @class */ (function () {
         if (!this.provider) {
             return this;
         }
+        this._requireAddressSet();
         var runningEvent = this._getRunningEvent(eventName);
         runningEvent.removeListener(listener);
         this._checkRunningEvents(runningEvent);
         return this;
     };
     BaseContract.prototype.removeListener = function (eventName, listener) {
+        this._requireAddressSet();
         return this.off(eventName, listener);
     };
     return BaseContract;
@@ -1083,46 +1012,43 @@ var ContractFactory = /** @class */ (function () {
         (0, properties_1.defineReadOnly)(this, "interface", (0, properties_1.getStatic)(_newTarget, "getInterface")(contractInterface));
         (0, properties_1.defineReadOnly)(this, "signer", signer || null);
     }
-    // @TODO: Future; rename to populateTransaction?
     ContractFactory.prototype.getDeployTransaction = function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
         }
-        var tx = {};
-        // If we have 1 additional argument, we allow transaction overrides
+        var contractCreateTx = {};
         if (args.length === this.interface.deploy.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
-            tx = (0, properties_1.shallowCopy)(args.pop());
-            for (var key in tx) {
+            contractCreateTx = (0, properties_1.shallowCopy)(args.pop());
+            for (var key in contractCreateTx) {
                 if (!allowedTransactionKeys[key]) {
                     throw new Error("unknown transaction override " + key);
                 }
             }
         }
-        // Do not allow these to be overridden in a deployment transaction
-        ["data", "from", "to"].forEach(function (key) {
-            if (tx[key] == null) {
+        // Allow only these to be overwritten in a deployment transaction
+        Object.keys(contractCreateTx).forEach(function (key) {
+            if (["gasLimit", "value"].indexOf(key) > -1) {
                 return;
             }
             logger.throwError("cannot override " + key, logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
         });
-        if (tx.value) {
-            var value = bignumber_1.BigNumber.from(tx.value);
+        if (contractCreateTx.value) {
+            var value = bignumber_1.BigNumber.from(contractCreateTx.value);
             if (!value.isZero() && !this.interface.deploy.payable) {
                 logger.throwError("non-payable constructor cannot override value", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
                     operation: "overrides.value",
-                    value: tx.value
+                    value: contractCreateTx.value
                 });
             }
         }
         // Make sure the call matches the constructor signature
         logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
-        // Set the data to the bytecode + the encoded constructor arguments
-        tx.data = (0, bytes_1.hexlify)((0, bytes_1.concat)([
-            this.bytecode,
-            this.interface.encodeDeploy(args)
-        ]));
-        return tx;
+        contractCreateTx = __assign(__assign({}, contractCreateTx), { data: (0, bytes_1.hexlify)((0, bytes_1.concat)([
+                this.bytecode,
+                this.interface.encodeDeploy(args)
+            ])), customData: {} });
+        return contractCreateTx;
     };
     ContractFactory.prototype.deploy = function () {
         var args = [];
@@ -1130,7 +1056,7 @@ var ContractFactory = /** @class */ (function () {
             args[_i] = arguments[_i];
         }
         return __awaiter(this, void 0, void 0, function () {
-            var overrides, params, unsignedTx, tx, address, contract;
+            var overrides, contractCreate, contractCreateResponse, address, contract;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1141,26 +1067,23 @@ var ContractFactory = /** @class */ (function () {
                         }
                         // Make sure the call matches the constructor signature
                         logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
-                        return [4 /*yield*/, resolveAddresses(this.signer, args, this.interface.deploy.inputs)];
+                        args.push(overrides);
+                        contractCreate = this.getDeployTransaction.apply(this, args);
+                        return [4 /*yield*/, this.signer.sendTransaction(contractCreate)];
                     case 1:
-                        params = _a.sent();
-                        params.push(overrides);
-                        unsignedTx = this.getDeployTransaction.apply(this, params);
-                        return [4 /*yield*/, this.signer.sendTransaction(unsignedTx)];
-                    case 2:
-                        tx = _a.sent();
-                        address = (0, properties_1.getStatic)(this.constructor, "getContractAddress")(tx);
+                        contractCreateResponse = _a.sent();
+                        address = contractCreateResponse.customData.contractId;
                         contract = (0, properties_1.getStatic)(this.constructor, "getContract")(address, this.interface, this.signer);
                         // Add the modified wait that wraps events
-                        addContractWait(contract, tx);
-                        (0, properties_1.defineReadOnly)(contract, "deployTransaction", tx);
+                        addContractWait(contract, contractCreateResponse);
+                        (0, properties_1.defineReadOnly)(contract, "deployTransaction", contractCreateResponse);
                         return [2 /*return*/, contract];
                 }
             });
         });
     };
     ContractFactory.prototype.attach = function (address) {
-        return (this.constructor).getContract(address, this.interface, this.signer);
+        return new (this.constructor).getContract(address, this.interface, this.signer);
     };
     ContractFactory.prototype.connect = function (signer) {
         return new (this.constructor)(this.interface, this.bytecode, signer);
@@ -1184,9 +1107,6 @@ var ContractFactory = /** @class */ (function () {
     };
     ContractFactory.getInterface = function (contractInterface) {
         return Contract.getInterface(contractInterface);
-    };
-    ContractFactory.getContractAddress = function (tx) {
-        return (0, address_1.getContractAddress)(tx);
     };
     ContractFactory.getContract = function (address, contractInterface, signer) {
         return new Contract(address, contractInterface, signer);

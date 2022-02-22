@@ -21,7 +21,7 @@ export async function generate(): Promise<string> {
 
     let firstLine: number = null;
     const versions: Array<string> = Object.keys(lines.reduce((accum, line, index) => {
-        const match = line.match(/^ethers\/v([^ ]*)/);
+        const match = line.match(/^hethers\/v([^ ]*)/);
         if (match) {
             if (firstLine == null) { firstLine = index; }
             accum[match[1]] = true;
@@ -29,8 +29,8 @@ export async function generate(): Promise<string> {
         return accum;
     }, <Record<string, boolean>>{ }));
 
-    const version = local.getPackage("ethers").version;;
-    const published = await npm.getPackage("ethers");
+    const version = local.getPackage("hethers").version;;
+    const published = await npm.getPackage("hethers");
 
     if (versions.indexOf(version) >= 0) {
         const line = `Version ${ version } already in CHANGELOG. Please edit before committing.`;
@@ -67,7 +67,7 @@ export async function generate(): Promise<string> {
         output.push(lines[i]);
     }
 
-    const newTitle = `ethers/v${ version } (${ getDateTime(new Date()) })`;
+    const newTitle = `hethers/v${ version } (${ getDateTime(new Date()) })`;
     output.push(newTitle);
     output.push(repeat("-", newTitle.length));
     output.push("");
@@ -75,12 +75,12 @@ export async function generate(): Promise<string> {
     changes.forEach((change) => {
         let body = change.body.trim();
         let linkMatch = body.match(/(\((.*#.*)\))/)
-        let commit = `[${ change.commit.substring(0, 7) }](https://github.com/ethers-io/ethers.js/commit/${ change.commit })`;
+        let commit = `[${ change.commit.substring(0, 7) }](https://github.com/hethers-io/hethers.js/commit/${ change.commit })`;
         let link = commit;
         if (linkMatch) {
             body = body.replace(/ *(\(.*#.*)\) */, "");
             link = linkMatch[2].replace(/#([0-9]+)/g, (all, issue) => {
-                return `[#${ issue }](https://github.com/ethers-io/ethers.js/issues/${ issue })`;
+                return `[#${ issue }](https://github.com/hethers-io/hethers.js/issues/${ issue })`;
             }) + "; " + commit;
         }
         output.push(`  - ${ body } (${ link })`);
@@ -101,7 +101,7 @@ export function getLatestChange(): Change {
     const lines = fs.readFileSync(changelogPath).toString().split("\n");
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        const match = line.match(/ethers\/([^\(]*)\(([^\)]*)\)/);
+        const match = line.match(/hethers\/([^\(]*)\(([^\)]*)\)/);
         if (match) {
             if (result) { break; }
             result = {

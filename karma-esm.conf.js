@@ -5,7 +5,7 @@ module.exports = function(config) {
     basePath: "./output/karma",
     frameworks: [ 'mocha' ],
     files: [
-        { pattern: "./ethers.esm.js", type: "module" },
+        { pattern: "./hethers.esm.js", type: "module" },
         { pattern: "./tests.esm.js", type: "module" }
     ],
     reporters: [ 'karma' ],
@@ -26,7 +26,6 @@ module.exports = function(config) {
         // https://peter.sh/experiments/chromium-command-line-switches/
         flags: [
           '--disable-extensions',
-
           // Enable this to help debug CORS issues (otherwise fetch throws a useless TypeError)
           //'--disable-web-security',
 

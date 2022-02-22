@@ -1,126 +1,95 @@
 "use strict";
 
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
-import { BytesLike, isHexString } from "@ethersproject/bytes";
-import { Network } from "@ethersproject/networks";
-import { Deferrable, Description, defineReadOnly, resolveProperties } from "@ethersproject/properties";
-import { AccessListish, Transaction } from "@ethersproject/transactions";
-import { OnceBlockable } from "@ethersproject/web";
+import { BytesLike } from "@ethersproject/bytes";
+import { Network } from "@hethers/networks";
+import { Deferrable, defineReadOnly } from "@ethersproject/properties";
+import { AccessListish, Transaction } from "@hethers/transactions";
 
-import { Logger } from "@ethersproject/logger";
+import { Logger } from "@hethers/logger";
 import { version } from "./_version";
+import { AccountLike } from "@hethers/address";
+import { AccountId, Client } from '@hashgraph/sdk';
 const logger = new Logger(version);
-
 ///////////////////////////////
 // Exported Types
 
 
 export type TransactionRequest = {
-    to?: string,
-    from?: string,
-    nonce?: BigNumberish,
-
+    to?: AccountLike,
+    from?: AccountLike,
     gasLimit?: BigNumberish,
-    gasPrice?: BigNumberish,
-
     data?: BytesLike,
     value?: BigNumberish,
     chainId?: number
-
     type?: number;
     accessList?: AccessListish;
-
     maxPriorityFeePerGas?: BigNumberish;
     maxFeePerGas?: BigNumberish;
-
+    nodeId?: AccountLike,
     customData?: Record<string, any>;
+}
+
+export type HederaTransactionRecord = {
+    chainId: number,
+    transactionId: string,
+    result: string,
+    amount?: number,
+    call_result?: string,
+    contract_id?: string,
+    created_contract_ids?: string[],
+    error_message?: string,
+    from: string,
+    function_parameters?: string,
+    gas_limit?: number,
+    gas_used?: number,
+    timestamp: string,
+    to?: string,
+    block_hash?: string,
+    block_number?: number,
+    hash: string,
+    logs?: {},
+    accountAddress?: string,
+    transfersList?: Array<{ to: string, amount: number }>
 }
 
 export interface TransactionResponse extends Transaction {
     hash: string;
-
-    // Only if a transaction has been mined
-    blockNumber?: number,
-    blockHash?: string,
-    timestamp?: number,
-
-    confirmations: number,
-
-    // Not optional (as it is in Transaction)
+    timestamp: string,
     from: string;
-
-    // The raw transaction
     raw?: string,
-
-    // This function waits until the transaction has been mined
-    wait: (confirmations?: number) => Promise<TransactionReceipt>
-};
-
-export type BlockTag = string | number;
-
-export interface _Block {
-    hash: string;
-    parentHash: string;
-    number: number;
-
-    timestamp: number;
-    nonce: string;
-    difficulty: number;
-    _difficulty: BigNumber;
-
-    gasLimit: BigNumber;
-    gasUsed: BigNumber;
-
-    miner: string;
-    extraData: string;
-
-    baseFeePerGas?: null | BigNumber;
+    wait: (timestamp?: number) => Promise<TransactionReceipt>,
+    customData?: {
+        [key: string]:any;
+    }
 }
-
-export interface Block extends _Block {
-    transactions: Array<string>;
-}
-
-export interface BlockWithTransactions extends _Block {
-    transactions: Array<TransactionResponse>;
-}
-
 
 export interface Log {
-    blockNumber: number;
-    blockHash: string;
-    transactionIndex: number;
-
-    removed: boolean;
-
+    timestamp: string;
     address: string;
     data: string;
-
     topics: Array<string>;
-
     transactionHash: string;
     logIndex: number;
+    transactionIndex: number;
 }
 
 export interface TransactionReceipt {
     to: string;
     from: string;
     contractAddress: string,
-    transactionIndex: number,
-    root?: string,
+    timestamp: string,
     gasUsed: BigNumber,
     logsBloom: string,
-    blockHash: string,
+    transactionId: string,
     transactionHash: string,
     logs: Array<Log>,
-    blockNumber: number,
-    confirmations: number,
     cumulativeGasUsed: BigNumber,
-    effectiveGasPrice: BigNumber,
-    byzantium: boolean,
-    type: number;
-    status?: number
-};
+    byzantium: true,
+    type: 0,
+    status?: number,
+    accountAddress?: string
+}
 
 export interface FeeData {
     maxFeePerGas: null | BigNumber;
@@ -129,153 +98,60 @@ export interface FeeData {
 }
 
 export interface EventFilter {
-    address?: string;
+    address?: AccountLike;
     topics?: Array<string | Array<string> | null>;
 }
 
 export interface Filter extends EventFilter {
-    fromBlock?: BlockTag,
-    toBlock?: BlockTag,
-}
-
-export interface FilterByBlockHash extends EventFilter {
-    blockHash?: string;
+    fromTimestamp?: string,
+    toTimestamp?: string,
 }
 
 //export type CallTransactionable = {
 //    call(transaction: TransactionRequest): Promise<TransactionResponse>;
 //};
 
-export abstract class ForkEvent extends Description {
-    readonly expiry: number;
-
-    readonly _isForkEvent?: boolean;
-
-    static isForkEvent(value: any): value is ForkEvent {
-        return !!(value && value._isForkEvent);
-    }
-}
-
-export class BlockForkEvent extends ForkEvent {
-    readonly blockHash: string;
-
-    readonly _isBlockForkEvent?: boolean;
-
-    constructor(blockHash: string, expiry?: number) {
-        if (!isHexString(blockHash, 32)) {
-            logger.throwArgumentError("invalid blockHash", "blockHash", blockHash);
-        }
-
-        super({
-            _isForkEvent: true,
-            _isBlockForkEvent: true,
-            expiry: (expiry || 0),
-            blockHash: blockHash
-        });
-    }
-}
-
-export class TransactionForkEvent extends ForkEvent {
-    readonly hash: string;
-
-    readonly _isTransactionOrderForkEvent?: boolean;
-
-    constructor(hash: string, expiry?: number) {
-        if (!isHexString(hash, 32)) {
-            logger.throwArgumentError("invalid transaction hash", "hash", hash);
-        }
-
-        super({
-            _isForkEvent: true,
-            _isTransactionForkEvent: true,
-            expiry: (expiry || 0),
-            hash: hash
-        });
-    }
-}
-
-export class TransactionOrderForkEvent extends ForkEvent {
-    readonly beforeHash: string;
-    readonly afterHash: string;
-
-    constructor(beforeHash: string, afterHash: string, expiry?: number) {
-        if (!isHexString(beforeHash, 32)) {
-            logger.throwArgumentError("invalid transaction hash", "beforeHash", beforeHash);
-        }
-        if (!isHexString(afterHash, 32)) {
-            logger.throwArgumentError("invalid transaction hash", "afterHash", afterHash);
-        }
-
-        super({
-            _isForkEvent: true,
-            _isTransactionOrderForkEvent: true,
-            expiry: (expiry || 0),
-            beforeHash: beforeHash,
-            afterHash: afterHash
-        });
-    }
-}
-
-export type EventType = string | Array<string | Array<string>> | EventFilter | ForkEvent;
+export type EventType = string | Array<string | Array<string>> | EventFilter;
 
 export type Listener = (...args: Array<any>) => void;
 
 ///////////////////////////////
 // Exported Abstracts
-export abstract class Provider implements OnceBlockable {
+export abstract class Provider {
 
     // Network
     abstract getNetwork(): Promise<Network>;
+    getHederaClient() : Client {
+        return logger.throwError("getHederaClient not implemented", Logger.errors.NOT_IMPLEMENTED, {
+            operation: 'getHederaClient'
+        })
+    }
 
+    getHederaNetworkConfig() : AccountId[] {
+        return logger.throwError("getHederaNetworkConfig not implemented", Logger.errors.NOT_IMPLEMENTED, {
+            operation: 'getHederaNetworkConfig'
+        })
+    }
     // Latest State
-    abstract getBlockNumber(): Promise<number>;
-    abstract getGasPrice(): Promise<BigNumber>;
-    async getFeeData(): Promise<FeeData> {
-        const { block, gasPrice } = await resolveProperties({
-            block: this.getBlock("latest"),
-            gasPrice: this.getGasPrice().catch((error) => {
-                // @TODO: Why is this now failing on Calaveras?
-                //console.log(error);
-                return null;
-            })
+    getGasPrice(): Promise<BigNumber> {
+        return logger.throwArgumentError("getGasPrice not implemented", Logger.errors.NOT_IMPLEMENTED, {
+            operation: "getGasPrice"
         });
-
-        let maxFeePerGas = null, maxPriorityFeePerGas = null;
-
-        if (block && block.baseFeePerGas) {
-            // We may want to compute this more accurately in the future,
-            // using the formula "check if the base fee is correct".
-            // See: https://eips.ethereum.org/EIPS/eip-1559
-            maxPriorityFeePerGas = BigNumber.from("2500000000");
-            maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
-        }
-
-        return { maxFeePerGas, maxPriorityFeePerGas, gasPrice };
     }
 
     // Account
-    abstract getBalance(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<BigNumber>;
-    abstract getTransactionCount(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<number>;
-    abstract getCode(addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> ;
-    abstract getStorageAt(addressOrName: string | Promise<string>, position: BigNumberish | Promise<BigNumberish>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
+    abstract getBalance(addressOrName: string | Promise<string>): Promise<BigNumber>;
+    abstract getCode(accountLike: AccountLike | Promise<AccountLike>, throwOnNonExisting?: boolean): Promise<string>;
 
     // Execution
     abstract sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
-    abstract call(transaction: Deferrable<TransactionRequest>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
     abstract estimateGas(transaction: Deferrable<TransactionRequest>): Promise<BigNumber>;
 
-    // Queries
-    abstract getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block>;
-    abstract getBlockWithTransactions(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<BlockWithTransactions>;
     abstract getTransaction(transactionHash: string): Promise<TransactionResponse>;
     abstract getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
 
     // Bloom-filter Queries
     abstract getLogs(filter: Filter): Promise<Array<Log>>;
-
-    // ENS
-    abstract resolveName(name: string | Promise<string>): Promise<null | string>;
-    abstract lookupAddress(address: string | Promise<string>): Promise<null | string>;
 
     // Event Emitter (ish)
     abstract on(eventName: EventType, listener: Listener): Provider;
@@ -309,44 +185,4 @@ export abstract class Provider implements OnceBlockable {
     static isProvider(value: any): value is Provider {
         return !!(value && value._isProvider);
     }
-
-/*
-    static getResolver(network: Network, callable: CallTransactionable, namehash: string): string {
-        // No ENS...
-        if (!network.ensAddress) {
-            errors.throwError(
-                "network does support ENS",
-                errors.UNSUPPORTED_OPERATION,
-                { operation: "ENS", network: network.name }
-            );
-        }
-
-        // Not a namehash
-        if (!isHexString(namehash, 32)) {
-            errors.throwArgumentError("invalid name hash", "namehash", namehash);
-        }
-
-        // keccak256("resolver(bytes32)")
-        let data = "0x0178b8bf" + namehash.substring(2);
-        let transaction = { to: network.ensAddress, data: data };
-
-        return provider.call(transaction).then((data) => {
-            return provider.formatter.callAddress(data);
-        });
-    }
-
-    static resolveNamehash(network: Network, callable: CallTransactionable, namehash: string): string {
-        return this.getResolver(network, callable, namehash).then((resolverAddress) => {
-            if (!resolverAddress) { return null; }
-
-            // keccak256("addr(bytes32)")
-            let data = "0x3b3b57de" + namehash(name).substring(2);
-            let transaction = { to: resolverAddress, data: data };
-            return callable.call(transaction).then((data) => {
-                return this.formatter.callAddress(data);
-            });
-
-        })
-    }
-*/
 }

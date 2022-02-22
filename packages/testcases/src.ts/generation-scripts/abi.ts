@@ -3,7 +3,6 @@
 //let web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:8549'));
 
 //import { compile as _compile } from "solc";
-import { solc } from "@ethersproject/cli";
 
 import { randomHexString, randomNumber } from ".."
 import { BN, keccak256, toChecksumAddress } from "ethereumjs-util";
@@ -617,7 +616,8 @@ for (let i = 0; i < 100; i++) {
     let solidity = generateSolidity(params);
     console.log(solidity);
     console.log(i);
-    let bytecode = solc.compile(solidity)[0].bytecode;
+    // let bytecode = solc.compile(solidity)[0].bytecode;
+    let bytecode = "";
     //console.log(params.map(p => p.type).join(", "));
     //console.log(bytecode);
     let testcase = {

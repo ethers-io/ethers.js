@@ -20,8 +20,8 @@ const utils_1 = require("../utils");
             return accum;
         }, ({}));
         path_1.dirnames.forEach((dirname) => {
-            // Skip ethers; it's versions are locked during update-versions
-            if (dirname === "ethers") {
+            // Skip hethers; it's versions are locked during update-versions
+            if (dirname === "hethers") {
                 return;
             }
             console.log(dirname);

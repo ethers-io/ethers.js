@@ -1,9 +1,9 @@
-const { createHash } = require("crypto");
-import fs from "fs";
+// const { createHash } = require("crypto");
+// import fs from "fs";
 
-import AWS from 'aws-sdk';
+// import AWS from 'aws-sdk';
 
-import { getLatestChange } from "../changelog";
+// import { getLatestChange } from "../changelog";
 import { config } from "../config";
 import { getOrdered } from "../depgraph";
 import { getGitTag } from "../git";
@@ -14,10 +14,12 @@ import * as npm from "../npm";
 import { resolve } from "../path";
 import { loadJson, repeat } from "../utils";
 
-const USER_AGENT = "ethers-dist@0.0.1";
+const USER_AGENT = "hethers-dist@0.0.1";
 const TAG = "latest";
 
 const forcePublish = (process.argv.slice(2).indexOf("--publish") >= 0);
+
+/*
 
 type PutInfo = {
     ACL: "public-read";
@@ -65,6 +67,8 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
     });
 }
 
+*/
+
 (async function() {
     const dirnames = getOrdered();
 
@@ -79,12 +83,22 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
         let dirname = dirnames[i];
 
         let info = local.getPackage(dirname);
-        let npmInfo = await npm.getPackage(dirname);
 
-        // No change in version, no need to publish
-        if (info.version === npmInfo.version) { continue; }
+        let npmInfo;
+        try {
+            npmInfo = await npm.getPackage(dirname);
 
-        // Get the latest commit this package was modified at
+            // No change in version, no need to publish
+            if (npmInfo && info.version === npmInfo.version) {
+                continue;
+            }
+        }
+        catch(err) {
+            console.error(err);
+        }
+
+
+    // Get the latest commit this package was modified at
         const path = resolve("packages", dirname);
         const gitHead = await getGitTag(path);
         if (gitHead == null) { throw new Error("hmmm..."); }
@@ -92,7 +106,7 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
         publish[dirname] = {
             name: info.name,
             gitHead: gitHead,
-            oldVersion: (npmInfo ? npmInfo.version: "NEW"),
+            oldVersion: (npmInfo && npmInfo.version ? npmInfo.version : "NEW"),
             newVersion: info.version
         };
     }
@@ -143,18 +157,20 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
 
         local.updateJson(pathJson, { gitHead: gitHead }, true);
         const info = loadJson(pathJson);
+
         await npm.publish(path, info, options);
         local.updateJson(pathJson, { gitHead: undefined }, true);
     }
 
-    if (publishNames.indexOf("ethers") >= 0 || forcePublish) {
-        const change = getLatestChange();
+    if (publishNames.indexOf("hethers") >= 0 || forcePublish) {
+        // const change = getLatestChange();
+        const change = {
+            version: "1.0.0",
+            title: "Initial Release",
+            content: "",
+        };
 
-        const patchVersion = change.version.substring(1);
-        const minorVersion = patchVersion.split(".").slice(0, 2).join(".")
-
-        const awsAccessId = await config.get("aws-upload-scripts-accesskey");
-        const awsSecretKey = await config.get("aws-upload-scripts-secretkey");
+        // const patchVersion = change.version.substring(1);
 
         // Publish tagged release on GitHub
         {
@@ -162,20 +178,20 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
             const username = await config.get("github-user");
             const password = await config.get("github-release");
 
-            const hash = createHash("sha384").update(fs.readFileSync(resolve("packages/ethers/dist/ethers.umd.min.js"))).digest("base64");
+            // const hash = createHash("sha384").update(fs.readFileSync(resolve("packages/hethers/dist/hethers.umd.min.js"))).digest("base64");
 
             const gitCommit = await getGitTag(resolve("CHANGELOG.md"));
 
             let content = change.content.trim();
-            content += '\n\n----\n\n';
-            content += '**Embedding UMD with [SRI](https:/\/developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity):**\n';
-            content += '```html\n';
-            content += '<script type="text/javascript"\n';
-            content += `        integrity="sha384-${ hash }"\n`;
-            content += '        crossorigin="anonymous"\n';
-            content += `        src="https:/\/cdn-cors.ethers.io/lib/ethers-${ patchVersion }.umd.min.js">\n`;
-            content += '</script>\n';
-            content += '```';
+            // content += '\n\n----\n\n';
+            // content += '**Embedding UMD with [SRI](https:/\/developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity):**\n';
+            // content += '```html\n';
+            // content += '<script type="text/javascript"\n';
+            // content += `        integrity="sha384-${ hash }"\n`;
+            // content += '        crossorigin="anonymous"\n';
+            // content += `        src="https:/\/cdn-cors.hethers.io/lib/hethers-${ patchVersion }.umd.min.js">\n`;
+            // content += '</script>\n';
+            // content += '```';
 
             // Publish the release
             const beta = false;
@@ -183,7 +199,13 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
             console.log(`${ colorify.bold("Published release:") } ${ link }`);
         }
 
-        // Upload libs to the CDN (as ethers-v5.1 and ethers-5.1.x)
+/*
+        const minorVersion = patchVersion.split(".").slice(0, 2).join(".")
+
+        const awsAccessId = await config.get("aws-upload-scripts-accesskey");
+        const awsSecretKey = await config.get("aws-upload-scripts-secretkey");
+
+        // Upload libs to the CDN (as hethers-v5.1 and hethers-5.1.x)
         {
             const bucketNameLib = await config.get("aws-upload-scripts-bucket");
             const originRootLib = await config.get("aws-upload-scripts-root");
@@ -197,48 +219,48 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
                 secretAccessKey: awsSecretKey
             });
 
-            // Upload the libs to ethers-v5.1 and ethers-5.1.x
+            // Upload the libs to hethers-v5.1 and hethers-5.1.x
             const fileInfos: Array<{ bucketName: string, originRoot: string, filename: string, key: string, suffix?: string }> = [
-                // The CORS-enabled versions on cdn-cors.ethers.io
+                // The CORS-enabled versions on cdn-cors.hethers.io
                 {
                     bucketName: bucketNameCors,
                     originRoot: originRootCors,
                     suffix: "-cors",
-                    filename: "packages/ethers/dist/ethers.esm.min.js",
-                    key: `ethers-${ patchVersion }.esm.min.js`
+                    filename: "packages/hethers/dist/hethers.esm.min.js",
+                    key: `hethers-${ patchVersion }.esm.min.js`
                 },
                 {
                     bucketName: bucketNameCors,
                     originRoot: originRootCors,
                     suffix: "-cors",
-                    filename: "packages/ethers/dist/ethers.umd.min.js",
-                    key: `ethers-${ patchVersion }.umd.min.js`
+                    filename: "packages/hethers/dist/hethers.umd.min.js",
+                    key: `hethers-${ patchVersion }.umd.min.js`
                 },
 
-                // The non-CORS-enabled versions on cdn.ethers.io
+                // The non-CORS-enabled versions on cdn.hethers.io
                 {
                     bucketName: bucketNameLib,
                     originRoot: originRootLib,
-                    filename: "packages/ethers/dist/ethers.esm.min.js",
-                    key: `ethers-${ patchVersion }.esm.min.js`
+                    filename: "packages/hethers/dist/hethers.esm.min.js",
+                    key: `hethers-${ patchVersion }.esm.min.js`
                 },
                 {
                     bucketName: bucketNameLib,
                     originRoot: originRootLib,
-                    filename: "packages/ethers/dist/ethers.umd.min.js",
-                    key: `ethers-${ patchVersion }.umd.min.js`
+                    filename: "packages/hethers/dist/hethers.umd.min.js",
+                    key: `hethers-${ patchVersion }.umd.min.js`
                 },
                 {
                     bucketName: bucketNameLib,
                     originRoot: originRootLib,
-                    filename: "packages/ethers/dist/ethers.esm.min.js",
-                    key: `ethers-${ minorVersion }.esm.min.js`
+                    filename: "packages/hethers/dist/hethers.esm.min.js",
+                    key: `hethers-${ minorVersion }.esm.min.js`
                 },
                 {
                     bucketName: bucketNameLib,
                     originRoot: originRootLib,
-                    filename: "packages/ethers/dist/ethers.umd.min.js",
-                    key: `ethers-${ minorVersion }.umd.min.js`
+                    filename: "packages/hethers/dist/hethers.umd.min.js",
+                    key: `hethers-${ minorVersion }.umd.min.js`
                 },
             ];
 
@@ -251,7 +273,7 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
                     ContentType: "application/javascript; charset=utf-8",
                     Key: (originRoot + key)
                 });
-                console.log(`${ colorify.bold("Uploaded:") } https://cdn${ suffix || "" }.ethers.io/lib/${ key }`);
+                console.log(`${ colorify.bold("Uploaded:") } https://cdn${ suffix || "" }.hethers.io/lib/${ key }`);
             }
         }
 
@@ -267,5 +289,6 @@ export function invalidate(cloudfront: AWS.CloudFront, distributionId: string): 
             const invalidationId = await invalidate(cloudfront, distributionId);
             console.log(`${ colorify.bold("Invalidating Edge Cache:") } ${ invalidationId }`);
         }
+ */
     }
 })();

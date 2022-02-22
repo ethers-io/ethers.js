@@ -1,1 +1,0 @@
-index.html => /v5/api-keys

@@ -1,1 +1,0 @@
-{"version":3,"file":"browser-ledger-transport.d.ts","sourceRoot":"","sources":["../src.ts/browser-ledger-transport.ts"],"names":[],"mappings":"AAEA,OAAO,GAAG,MAAM,4BAA4B,CAAC;AAE7C,oBAAY,gBAAgB,GAAG;IAC3B,MAAM,EAAE,MAAM,OAAO,CAAC,GAAG,CAAC,SAAS,CAAC,CAAC;CACxC,CAAC;AAEF,eAAO,MAAM,UAAU,EAAE;IAAE,CAAE,IAAI,EAAE,MAAM,GAAI,gBAAgB,CAAA;CAG5D,CAAC"}

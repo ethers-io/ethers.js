@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "outDir": "./lib/",
     "rootDir": "./src.ts"
   },

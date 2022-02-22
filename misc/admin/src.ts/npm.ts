@@ -27,7 +27,7 @@ async function getPackageInfo(name: string): Promise<any> {
 
 export async function getPackage(name: string, version?: string): Promise<Package> {
     const infos = await getPackageInfo(name);
-    if (infos == null) { return null; }
+    if (infos == null || infos.error) { return null; }
 
     if (version == null) {
         const versions = Object.keys(infos.versions);
