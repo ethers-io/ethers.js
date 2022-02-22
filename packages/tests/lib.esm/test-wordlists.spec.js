@@ -1,6 +1,6 @@
 'use strict';
 import assert from 'assert';
-import { ethers } from "ethers";
+import { hethers } from "hethers";
 import { loadTests } from "@hethers/testcases";
 function checkWordlist(content, wordlist) {
     let words = content.split('\n');
@@ -26,7 +26,7 @@ function checkWordlist(content, wordlist) {
 describe('Check Wordlists', function () {
     let tests = loadTests("wordlists");
     tests.forEach((test) => {
-        let wordlist = (ethers.wordlists)[test.locale];
+        let wordlist = (hethers.wordlists)[test.locale];
         if (wordlist == null) {
             return;
         }

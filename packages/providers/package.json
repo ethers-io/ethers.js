@@ -5,7 +5,7 @@
     "browser-net.js": "",
     "browser-net.js.map": "",
     "ipc-provider.js": "browser-ipc-provider.js",
-    "ws.js": "browser-ws.js"
+    "ws.js": ""
   },
   "browser": {
     "./lib/ipc-provider": "./lib/browser-ipc-provider.js",

@@ -3,8 +3,8 @@
 import * as hethers from "./hethers";
 try {
     const anyGlobal = window;
-    if (anyGlobal._ethers == null) {
-        anyGlobal._ethers = hethers;
+    if (anyGlobal._hethers == null) {
+        anyGlobal._hethers = hethers;
     }
 }
 catch (error) { }

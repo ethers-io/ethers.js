@@ -15,6 +15,8 @@ import * as utils from './utils';
 import { arrayify, getAddressFromAccount, Logger } from "hethers/lib/utils";
 import { PublicKey, Transaction, } from "@hashgraph/sdk";
 import { readFileSync } from "fs";
+const abi = JSON.parse(readFileSync('packages/tests/contracts/Token.json').toString());
+const abiTokenWithArgs = JSON.parse(readFileSync('packages/tests/contracts/TokenWithArgs.json').toString());
 describe('Test JSON Wallets', function () {
     let tests = loadTests('wallets');
     tests.forEach(function (test) {
@@ -428,11 +430,8 @@ describe("Wallet local calls", function () {
         // @ts-ignore
         const wallet = new hethers.Wallet(hederaEoa, provider);
         const contractAddr = '0000000000000000000000000000000001b34cbb';
-        const abi = JSON.parse(readFileSync('examples/assets/abi/GLDToken_abi.json').toString());
         const contract = hethers.ContractFactory.getContract(contractAddr, abi, wallet);
-        const balanceOfParams = contract.interface.encodeFunctionData('balanceOf', [
-            yield wallet.getAddress()
-        ]);
+        const balanceOfParams = contract.interface.encodeFunctionData('balanceOf', [wallet.getAddress()]);
         // skipped - no balance in account
         xit("Should be able to perform local call", function () {
             return __awaiter(this, void 0, void 0, function* () {
@@ -502,7 +501,7 @@ describe("Wallet local calls", function () {
 });
 describe("Wallet createAccount", function () {
     let wallet, newAccount, newAccountPublicKey, provider, acc1Wallet, acc2Wallet, acc1Eoa, acc2Eoa;
-    const timeout = 60000;
+    const timeout = 90000;
     before(function () {
         return __awaiter(this, void 0, void 0, function* () {
             this.timeout(timeout);
@@ -629,9 +628,8 @@ describe("Wallet createAccount", function () {
     }).timeout(timeout);
     it("Should make a contract call with 'to' and 'value' with provided contract address as 'to'", function () {
         return __awaiter(this, void 0, void 0, function* () {
-            const abiGLDTokenWithConstructorArgs = JSON.parse(readFileSync('examples/assets/abi/GLDTokenWithConstructorArgs_abi.json').toString());
-            const contractByteCodeGLDTokenWithConstructorArgs = readFileSync('examples/assets/bytecode/GLDTokenWithConstructorArgs.bin').toString();
-            const contractFactory = new hethers.ContractFactory(abiGLDTokenWithConstructorArgs, contractByteCodeGLDTokenWithConstructorArgs, acc1Wallet);
+            const bytecodeTokenWithArgs = readFileSync('packages/tests/contracts/TokenWithArgs.bin').toString();
+            const contractFactory = new hethers.ContractFactory(abiTokenWithArgs, bytecodeTokenWithArgs, acc1Wallet);
             const contract = yield contractFactory.deploy(hethers.BigNumber.from('10000'), { gasLimit: 3000000 });
             yield contract.deployed();
             let exceptionThrown = false;

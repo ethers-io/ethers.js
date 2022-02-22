@@ -1091,7 +1091,7 @@ describe("Test Hedera Provider", function () {
                 assert.strictEqual(receipt.from, getAddressFromAccount(hederaTestnetOperableAccount.operator.accountId));
                 assert.strictEqual(receipt.transactionHash, sendTransactionResponse.hash);
             });
-        }).timeout(timeout * 4);
+        }).timeout(timeout * 8);
         it("Should populate transaction receipt with timeout", function () {
             return __awaiter(this, void 0, void 0, function* () {
                 const sendTransactionResponse = yield provider.sendTransaction(yield signedTx);
