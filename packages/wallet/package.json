@@ -14,7 +14,8 @@
     "@ethersproject/random": "5.5.0",
     "@ethersproject/signing-key": "5.5.0",
     "@hethers/transactions": "1.0.0",
-    "@ethersproject/wordlists": "5.5.0"
+    "@ethersproject/wordlists": "5.5.0",
+    "@hashgraph/sdk": "2.7.0-beta.4"
   },
   "description": "Classes for managing, encrypting and decrypting ECDSA private keys as a Signer for hethers.",
   "keywords": [

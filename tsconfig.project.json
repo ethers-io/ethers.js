@@ -35,9 +35,6 @@
       "path": "./packages/abstract-signer"
     },
     {
-      "path": "./packages/contracts"
-    },
-    {
       "path": "./packages/hdnode"
     },
     {
@@ -45,6 +42,9 @@
     },
     {
       "path": "./packages/providers"
+    },
+    {
+      "path": "./packages/contracts"
     },
     {
       "path": "./packages/units"

@@ -2,7 +2,6 @@ import { AccountLike } from "@hethers/address";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { BytesLike, SignatureLike } from "@ethersproject/bytes";
 import { Transaction as HederaTransaction, PublicKey as HederaPubKey } from "@hashgraph/sdk";
-import { TransactionRequest } from "@hethers/abstract-provider";
 export declare type AccessList = Array<{
     address: string;
     storageKeys: Array<string>;
@@ -15,16 +14,17 @@ export declare enum TransactionTypes {
 }
 export declare type UnsignedTransaction = {
     to?: AccountLike;
-    nonce?: number;
+    from?: AccountLike;
     gasLimit?: BigNumberish;
-    gasPrice?: BigNumberish;
     data?: BytesLike;
     value?: BigNumberish;
     chainId?: number;
-    type?: number | null;
+    type?: number;
     accessList?: AccessListish;
     maxPriorityFeePerGas?: BigNumberish;
     maxFeePerGas?: BigNumberish;
+    nodeId?: AccountLike;
+    customData?: Record<string, any>;
 };
 export interface Transaction {
     transactionId: string;
@@ -45,7 +45,7 @@ export declare function computeAlias(key: BytesLike | string): string;
 export declare function computeAliasFromPubKey(pubKey: string): string;
 export declare function recoverAddress(digest: BytesLike, signature: SignatureLike): string;
 export declare function accessListify(value: AccessListish): AccessList;
-export declare function serializeHederaTransaction(transaction: TransactionRequest, pubKey?: HederaPubKey): HederaTransaction;
+export declare function serializeHederaTransaction(transaction: UnsignedTransaction, pubKey?: HederaPubKey): HederaTransaction;
 export declare function parse(rawTransaction: BytesLike): Promise<Transaction>;
 export declare function numberify(num: BigNumberish): number;
 //# sourceMappingURL=index.d.ts.map

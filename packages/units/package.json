@@ -1,7 +1,6 @@
 {
   "dependencies": {
     "@ethersproject/bignumber": "5.5.0",
-    "@hethers/constants": "1.0.0",
     "@hethers/logger": "1.0.0"
   },
   "description": "Unit conversion functions for Hedera Hashgraph.",

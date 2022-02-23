@@ -1,11 +1,5 @@
-import {
-	Account,
-	AccountLike,
-	getAccountFromAddress,
-	getAddress,
-	getAddressFromAccount
-} from "@hethers/address";
-import { Provider, TransactionRequest, TransactionResponse } from "@hethers/abstract-provider";
+import {Account, AccountLike, getAccountFromAddress, getAddress, getAddressFromAccount} from "@hethers/address";
+import {Provider, TransactionRequest, TransactionResponse} from "@hethers/abstract-provider";
 import {
 	ExternallyOwnedAccount,
 	Signer,
@@ -18,31 +12,25 @@ import {
 	Bytes,
 	BytesLike,
 	concat,
-	hexDataSlice, hexlify,
+	hexDataSlice,
+	hexlify,
 	isHexString,
 	joinSignature,
 	SignatureLike
 } from "@ethersproject/bytes";
-import { hashMessage } from "@ethersproject/hash";
-import { defaultPath, entropyToMnemonic, HDNode, Mnemonic } from "@hethers/hdnode";
-import { keccak256 } from "@ethersproject/keccak256";
-import { defineReadOnly } from "@ethersproject/properties";
-import { randomBytes } from "@ethersproject/random";
-import { SigningKey, recoverPublicKey } from "@ethersproject/signing-key";
-import {
-	decryptJsonWallet,
-	decryptJsonWalletSync,
-	encryptKeystore,
-	ProgressCallback
-} from "@hethers/json-wallets";
-import { computeAlias, serializeHederaTransaction } from "@hethers/transactions";
-import { Wordlist } from "@ethersproject/wordlists";
+import {hashMessage} from "@ethersproject/hash";
+import {defaultPath, entropyToMnemonic, HDNode, Mnemonic} from "@hethers/hdnode";
+import {keccak256} from "@ethersproject/keccak256";
+import {defineReadOnly} from "@ethersproject/properties";
+import {randomBytes} from "@ethersproject/random";
+import {recoverPublicKey, SigningKey} from "@ethersproject/signing-key";
+import {decryptJsonWallet, decryptJsonWalletSync, encryptKeystore, ProgressCallback} from "@hethers/json-wallets";
+import {computeAlias, serializeHederaTransaction, UnsignedTransaction} from "@hethers/transactions";
+import {Wordlist} from "@ethersproject/wordlists";
 
-import { Logger } from "@hethers/logger";
-import { version } from "./_version";
-import {
-	PrivateKey as HederaPrivKey, PublicKey as HederaPubKey
-} from "@hashgraph/sdk";
+import {Logger} from "@hethers/logger";
+import {version} from "./_version";
+import {PrivateKey as HederaPrivKey, PublicKey as HederaPubKey} from "@hashgraph/sdk";
 
 const logger = new Logger(version);
 
@@ -184,7 +172,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
 		let tx = this.checkTransaction(transaction);
 		return this.populateTransaction(tx).then(async readyTx => {
 			const pubKey = HederaPubKey.fromString(this._signingKey().compressedPublicKey);
-			const tx = serializeHederaTransaction(readyTx, pubKey);
+			const tx = serializeHederaTransaction(<UnsignedTransaction>readyTx, pubKey);
 			const privKey = HederaPrivKey.fromStringECDSA(this._signingKey().privateKey);
 			const signed = await tx.sign(privKey);
 			return hexlify(signed.toBytes());
@@ -237,7 +225,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
 		}
 
 		if (options.extraEntropy) {
-			entropy = arrayify(hexDataSlice(keccak256(concat([ entropy, options.extraEntropy ])), 0, 16));
+			entropy = arrayify(hexDataSlice(keccak256(concat([entropy, options.extraEntropy])), 0, 16));
 		}
 
 		const mnemonic = entropyToMnemonic(entropy, options.locale);
@@ -274,8 +262,10 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
 	}
 
 	_checkAddress(operation?: string): void {
-		if (!this.address) { logger.throwError("missing address", Logger.errors.UNSUPPORTED_OPERATION, {
-			operation: (operation || "_checkAddress") });
+		if (!this.address) {
+			logger.throwError("missing address", Logger.errors.UNSUPPORTED_OPERATION, {
+				operation: (operation || "_checkAddress")
+			});
 		}
 	}
 }

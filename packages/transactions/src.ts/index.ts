@@ -25,7 +25,6 @@ import {
     Transaction as HederaTransaction,
     PublicKey as HederaPubKey, TransactionId, AccountId, TransferTransaction, AccountCreateTransaction, Hbar, HbarUnit
 } from "@hashgraph/sdk";
-import { TransactionRequest } from "@hethers/abstract-provider";
 
 const logger = new Logger(version);
 
@@ -46,25 +45,18 @@ export enum TransactionTypes {
 }
 
 export type UnsignedTransaction = {
-    to?: AccountLike;
-    nonce?: number;
-
-    gasLimit?: BigNumberish;
-    gasPrice?: BigNumberish;
-
-    data?: BytesLike;
-    value?: BigNumberish;
-    chainId?: number;
-
-    // Typed-Transaction features
-    type?: number | null;
-
-    // EIP-2930; Type 1 & EIP-1559; Type 2
+    to?: AccountLike,
+    from?: AccountLike,
+    gasLimit?: BigNumberish,
+    data?: BytesLike,
+    value?: BigNumberish,
+    chainId?: number
+    type?: number;
     accessList?: AccessListish;
-
-    // EIP-1559; Type 2
     maxPriorityFeePerGas?: BigNumberish;
     maxFeePerGas?: BigNumberish;
+    nodeId?: AccountLike,
+    customData?: Record<string, any>;
 }
 
 export interface Transaction {
@@ -159,7 +151,7 @@ export function accessListify(value: AccessListish): AccessList {
     return result;
 }
 
-export function serializeHederaTransaction(transaction: TransactionRequest, pubKey?: HederaPubKey) : HederaTransaction {
+export function serializeHederaTransaction(transaction: UnsignedTransaction, pubKey?: HederaPubKey) : HederaTransaction {
     let tx: HederaTransaction;
     const arrayifiedData = transaction.data ? arrayify(transaction.data) : new Uint8Array();
     const gas = numberify(transaction.gasLimit ? transaction.gasLimit : 0);
@@ -220,97 +212,6 @@ export function serializeHederaTransaction(transaction: TransactionRequest, pubK
     .freeze();
     return tx;
 }
-
-// function _parseEipSignature(tx: Transaction, fields: Array<string>, serialize: (tx: UnsignedTransaction) => string): void {
-//     try {
-//         const recid = handleNumber(fields[0]).toNumber();
-//         if (recid !== 0 && recid !== 1) { throw new Error("bad recid"); }
-//         tx.v = recid;
-//     } catch (error) {
-//         logger.throwArgumentError("invalid v for transaction type: 1", "v", fields[0]);
-//     }
-//
-//     tx.r = hexZeroPad(fields[1], 32);
-//     tx.s = hexZeroPad(fields[2], 32);
-//
-//     try {
-//         const digest = keccak256(serialize(tx));
-//         tx.from = recoverAddress(digest, { r: tx.r, s: tx.s, recoveryParam: tx.v });
-//     } catch (error) {
-//         console.log(error);
-//     }
-// }
-
-//
-
-// // Legacy Transactions and EIP-155
-// function _parse(rawTransaction: Uint8Array): Transaction {
-//     const transaction = RLP.decode(rawTransaction);
-//
-//     if (transaction.length !== 9 && transaction.length !== 6) {
-//         logger.throwArgumentError("invalid raw transaction", "rawTransaction", rawTransaction);
-//     }
-//
-//     const tx: Transaction = {
-//         nonce:    handleNumber(transaction[0]).toNumber(),
-//         gasPrice: handleNumber(transaction[1]),
-//         gasLimit: handleNumber(transaction[2]),
-//         to:       handleAddress(transaction[3]),
-//         value:    handleNumber(transaction[4]),
-//         data:     transaction[5],
-//         chainId:  0
-//     };
-//
-//     // Legacy unsigned transaction
-//     if (transaction.length === 6) { return tx; }
-//
-//     try {
-//         tx.v = BigNumber.from(transaction[6]).toNumber();
-//
-//     } catch (error) {
-//         console.log(error);
-//         return tx;
-//     }
-//
-//     tx.r = hexZeroPad(transaction[7], 32);
-//     tx.s = hexZeroPad(transaction[8], 32);
-//
-//     if (BigNumber.from(tx.r).isZero() && BigNumber.from(tx.s).isZero()) {
-//         // EIP-155 unsigned transaction
-//         tx.chainId = tx.v;
-//         tx.v = 0;
-//
-//     } else {
-//         // Signed Transaction
-//
-//         tx.chainId = Math.floor((tx.v - 35) / 2);
-//         if (tx.chainId < 0) { tx.chainId = 0; }
-//
-//         let recoveryParam = tx.v - 27;
-//
-//         const raw = transaction.slice(0, 6);
-//
-//         if (tx.chainId !== 0) {
-//             raw.push(hexlify(tx.chainId));
-//             raw.push("0x");
-//             raw.push("0x");
-//             recoveryParam -= tx.chainId * 2 + 8;
-//         }
-//
-//         const digest = keccak256(RLP.encode(raw));
-//         try {
-//             tx.from = recoverAddress(digest, { r: hexlify(tx.r), s: hexlify(tx.s), recoveryParam: recoveryParam });
-//         } catch (error) {
-//             console.log(error);
-//         }
-//
-//         tx.hash = keccak256(rawTransaction);
-//     }
-//
-//     tx.type = null;
-//
-//     return tx;
-// }
 
 export async function parse(rawTransaction: BytesLike): Promise<Transaction> {
     const payload = arrayify(rawTransaction);

@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "@hethers/logger": "1.0.0"
+    "@hethers/logger": "1.0.0",
+    "@hethers/address": "1.0.0"
   },
   "description": "Network definitions for hethers.",
   "keywords": [
