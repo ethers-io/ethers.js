@@ -13,7 +13,8 @@
     "@hethers/providers": "1.0.1",
     "@hethers/transactions": "1.0.1",
     "@hethers/units": "1.0.1",
-    "@hethers/wallet": "1.0.1"
+    "@hethers/wallet": "1.0.1",
+    "@ethersproject/solidity": "5.5.0"
   },
   "description": "Umbrella package for most common Hethers libraries.",
   "devDependencies": {},

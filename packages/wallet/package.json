@@ -9,13 +9,13 @@
     "@ethersproject/signing-key": "5.5.0",
     "@ethersproject/wordlists": "5.5.0",
     "@hashgraph/sdk": "2.7.0-beta.4",
-    "@hethers/abstract-provider": "1.0.0",
-    "@hethers/abstract-signer": "1.0.0",
-    "@hethers/address": "1.0.0",
-    "@hethers/hdnode": "1.0.0",
-    "@hethers/json-wallets": "1.0.0",
-    "@hethers/logger": "1.0.0",
-    "@hethers/transactions": "1.0.0"
+    "@hethers/abstract-provider": "1.0.1",
+    "@hethers/abstract-signer": "1.0.1",
+    "@hethers/address": "1.0.1",
+    "@hethers/hdnode": "1.0.1",
+    "@hethers/json-wallets": "1.0.1",
+    "@hethers/logger": "1.0.1",
+    "@hethers/transactions": "1.0.1"
   },
   "description": "Classes for managing, encrypting and decrypting ECDSA private keys as a Signer for hethers.",
   "keywords": [

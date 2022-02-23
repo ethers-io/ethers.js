@@ -9,9 +9,9 @@
     "@ethersproject/signing-key": "5.5.0",
     "@ethersproject/strings": "5.5.0",
     "@ethersproject/wordlists": "5.5.0",
-    "@hethers/abstract-signer": "1.0.0",
-    "@hethers/logger": "1.0.0",
-    "@hethers/transactions": "1.0.0"
+    "@hethers/abstract-signer": "1.0.1",
+    "@hethers/logger": "1.0.1",
+    "@hethers/transactions": "1.0.1"
   },
   "description": "BIP32 Hierarchal Deterministic Node operations.",
   "keywords": [

@@ -18,7 +18,7 @@
     "@ethersproject/bytes": "5.5.0",
     "@ethersproject/keccak256": "5.5.0",
     "@ethersproject/strings": "5.5.0",
-    "@hashgraph/hethers": "1.0.0",
+    "@hashgraph/hethers": "1.0.1",
     "tiny-inflate": "1.0.3"
   },
   "description": "Testcases for Hethers and scripts to generate testcases.",
