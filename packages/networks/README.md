@@ -6,7 +6,7 @@ This sub-module is part of the [hethers project](https://github.com/hashgraph/he
 It is responsible for tracking common networks along with important
 parameters for each.
 
-For more information, see the [documentation](https://docs.ethers.io/v5/api/providers/types/#providers-Network). TODO Docs
+For more information, see the [documentation](https://docs.hedera.com/hethers/application-programming-interface/providers/types).
 
 Importing
 ---------

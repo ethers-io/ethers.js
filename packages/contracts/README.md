@@ -8,7 +8,7 @@ contract as a native JavaScript object.
 
 If you are familiar with ORM for Databases, this is similar, but for smart contracts.
 
-For more information, see the [documentation](https://docs.ethers.io/v5/api/contract/).
+For more information, see the [documentation](https://docs.hedera.com/hethers/application-programming-interface/contract-interaction).
 
 Importing
 ---------

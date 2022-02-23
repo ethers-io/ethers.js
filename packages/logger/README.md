@@ -6,7 +6,7 @@ This sub-module is part of the [hethers project](https://github.com/hashgraph/he
 It is responsible for managing logging and errors to maintain a standard
 structure.
 
-For more information, see the [documentation](https://docs.ethers.io/v5/api/utils/logger/). TODO Docs
+For more information, see the [documentation](https://docs.hedera.com/hethers/application-programming-interface/utilities/logging).
 
 Importing
 ---------

@@ -14,7 +14,7 @@ For signing, see the [Abstract Signer](https://github.com/hashgraph/hethers.js/t
 or [Wallet](https://github.com/hashgraph/hethers.js/tree/develop/packages/wallet) sub-modules. TODO update `develop` 
 link
 
-For more information, see the [documentation](https://docs.ethers.io/v5/api/providers/). TODO add docs link
+For more information, see the [documentation](https://docs.hedera.com/hethers/application-programming-interface/providers).
 
 Importing
 ---------

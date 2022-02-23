@@ -96,7 +96,7 @@ lorem ipsum dolor sit amet  consectetur adipiscing elit  sed do eiusmod tempor i
 hethers hashgraph sdk Hedera proto submittable aes mac previewnet axios 
 CRYPTOCREATEACCOUNT CRYPTOTRANSFER lte bool sig Coder Sig hup Param Transacton 
 hedera Formatters tinybar microbar millibar hbar kilobar megabar gigabar Hbar 
-coder Tinybar getters 
+coder Tinybar getters Timestamp timestamp toTimestamp gte nullified specified captured
 
 `.split("\n").filter((l) => (l.substring(0, 2) != "/\/")).join("\n").split(/\s+/g).forEach((word) => {
     word = word.trim();

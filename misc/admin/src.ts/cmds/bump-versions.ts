@@ -23,6 +23,9 @@ import { loadJson, repeat, saveJson } from "../utils";
         progress(i / dirnames.length);
 
         const dirname = dirnames[i];
+
+        if (dirname == 'tests' || dirname == 'testcases') continue;
+
         const packageJsonPath = getPackageJsonPath(dirname);
 
         // Set the common elements to the package.json

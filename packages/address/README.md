@@ -7,7 +7,7 @@ It is responsible for encoding, verifying and computing checksums for
 Ethereum addresses and computing special addresses, such as those
 enerated by and for contracts under various situations.
 
-For more information, see the [documentation](https://docs.ethers.io/v5/api/utils/address/). TODO links to docs
+For more information, see the [documentation](https://docs.hedera.com/hethers/application-programming-interface/utilities/addresses).
 
 Importing
 ---------

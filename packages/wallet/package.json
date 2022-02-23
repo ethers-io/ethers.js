@@ -1,21 +1,21 @@
 {
   "dependencies": {
-    "@hethers/abstract-provider": "1.0.0",
-    "@hethers/abstract-signer": "1.0.0",
-    "@hethers/address": "1.0.0",
     "@ethersproject/bignumber": "5.5.0",
     "@ethersproject/bytes": "5.5.0",
     "@ethersproject/hash": "5.5.0",
-    "@hethers/hdnode": "1.0.0",
-    "@hethers/json-wallets": "1.0.0",
     "@ethersproject/keccak256": "5.5.0",
-    "@hethers/logger": "1.0.0",
     "@ethersproject/properties": "5.5.0",
     "@ethersproject/random": "5.5.0",
     "@ethersproject/signing-key": "5.5.0",
-    "@hethers/transactions": "1.0.0",
     "@ethersproject/wordlists": "5.5.0",
-    "@hashgraph/sdk": "2.7.0-beta.4"
+    "@hashgraph/sdk": "2.7.0-beta.4",
+    "@hethers/abstract-provider": "1.0.0",
+    "@hethers/abstract-signer": "1.0.0",
+    "@hethers/address": "1.0.0",
+    "@hethers/hdnode": "1.0.0",
+    "@hethers/json-wallets": "1.0.0",
+    "@hethers/logger": "1.0.0",
+    "@hethers/transactions": "1.0.0"
   },
   "description": "Classes for managing, encrypting and decrypting ECDSA private keys as a Signer for hethers.",
   "keywords": [
@@ -41,7 +41,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x769743426d97a1e3f789a1b72ec8ae71b8bb1b3bfefd9f4c75474573ded1f502",
+  "tarballHash": "0xda1f1d755e6f0df2b9536ac7bc47bbcbcfe9c59cd6fd97a0a9113d47a6d24b00",
   "types": "./lib/index.d.ts",
-  "version": "1.0.0"
+  "version": "1.0.1"
 }

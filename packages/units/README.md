@@ -6,7 +6,7 @@ This sub-module is part of the [hethers project](https://github.com/hashgraph/he
 It contains functions to convert between string representations and numeric
 representations of numbers, including those out of the range of JavaScript.
 
-For more information, see the [documentation](https://docs.ethers.io/v5/api/utils/display-logic/). TODO Docs
+For more information, see the [documentation](https://docs.hedera.com/hethers/application-programming-interface/utilities/display-logic-and-input#named-units).
 
 
 Importing

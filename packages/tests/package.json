@@ -1,8 +1,8 @@
 {
   "dependencies": {
+    "@hashgraph/hethers": "1.0.0",
     "@hethers/testcases": "1.0.0",
-    "@types/mocha": "^5.2.0",
-    "@hashgraph/hethers": "1.0.0"
+    "@types/mocha": "^5.2.0"
   },
   "description": "Testing package for hethers.",
   "keywords": [
@@ -27,7 +27,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0xd2cbf0d358a3fb5f6c1e9794c6b0caa74ff17536eba8974eac16d24962edc478",
+  "tarballHash": "0xbe3490bc03487a107b211a79085fe3daeccebcf034e817d91e243fed6e12fe20",
   "types": "./lib/index.d.ts",
   "version": "1.0.0"
 }

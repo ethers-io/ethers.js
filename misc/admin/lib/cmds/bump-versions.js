@@ -49,6 +49,8 @@ const utils_1 = require("../utils");
         for (let i = 0; i < path_1.dirnames.length; i++) {
             progress(i / path_1.dirnames.length);
             const dirname = path_1.dirnames[i];
+            if (dirname == 'tests' || dirname == 'testcases')
+                continue;
             const packageJsonPath = (0, path_1.getPackageJsonPath)(dirname);
             // Set the common elements to the package.json
             local.updateJson(packageJsonPath, common, true);

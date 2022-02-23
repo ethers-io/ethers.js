@@ -7,7 +7,7 @@ adapted for Hedera Hashgraph's Smart Contract Service.
 
 It is an abstraction of an EVM account, which may be backed by a [Wallet](https://www.npmjs.com/package/@hethers/wallet) instance.
 
-For more information, see the [documentation](https://docs.ethers.io/v5/api/signer/). TODO links to docs
+For more information, see the [documentation](https://docs.hedera.com/hethers/application-programming-interface/signers).
 
 Importing
 ---------
