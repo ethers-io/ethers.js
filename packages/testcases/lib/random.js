@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.randomNumber = exports.randomHexString = exports.randomBytes = void 0;
-var hethers_1 = require("hethers");
+var hethers_1 = require("@hashgraph/hethers");
 function randomBytes(seed, lower, upper) {
     if (!upper) {
         upper = lower;

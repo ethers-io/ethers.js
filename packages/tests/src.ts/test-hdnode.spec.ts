@@ -2,7 +2,7 @@
 
 import assert from "assert";
 
-import {hethers} from "hethers";
+import {hethers} from "@hashgraph/hethers";
 import {loadTests, randomNumber, TestCase} from "@hethers/testcases";
 
 function randomCase(seed: string, text: string): string {

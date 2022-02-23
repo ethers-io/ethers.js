@@ -59,10 +59,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var assert_1 = __importDefault(require("assert"));
-var hethers_1 = require("hethers");
+var hethers_1 = require("@hashgraph/hethers");
 var testcases_1 = require("@hethers/testcases");
 var utils = __importStar(require("./utils"));
-var utils_1 = require("hethers/lib/utils");
 var sdk_1 = require("@hashgraph/sdk");
 var fs_1 = require("fs");
 var abi = JSON.parse((0, fs_1.readFileSync)('packages/tests/contracts/Token.json').toString());
@@ -386,7 +385,7 @@ describe("Wallet tx signing", function () {
                     case 0:
                         data = Buffer.from("\"abi\":{},\"values\":{}").toString('hex');
                         tx = {
-                            to: (0, utils_1.getAddressFromAccount)("0.0.98"),
+                            to: hethers_1.hethers.utils.getAddressFromAccount("0.0.98"),
                             from: wallet.address,
                             data: '0x' + data,
                             gasLimit: 100000
@@ -395,7 +394,7 @@ describe("Wallet tx signing", function () {
                     case 1:
                         signed = _a.sent();
                         assert_1.default.ok(signed !== "", "Unexpected nil signed tx");
-                        fromBytes = sdk_1.Transaction.fromBytes((0, utils_1.arrayify)(signed));
+                        fromBytes = sdk_1.Transaction.fromBytes(hethers_1.hethers.utils.arrayify(signed));
                         cc = fromBytes;
                         assert_1.default.ok(cc.gas.toNumber() === tx.gasLimit, "Gas mismatch");
                         return [2 /*return*/];
@@ -420,7 +419,7 @@ describe("Wallet tx signing", function () {
                     case 1:
                         signed = _a.sent();
                         assert_1.default.ok(signed !== "", "Unexpected nil signed tx");
-                        fromBytes = sdk_1.Transaction.fromBytes((0, utils_1.arrayify)(signed));
+                        fromBytes = sdk_1.Transaction.fromBytes(hethers_1.hethers.utils.arrayify(signed));
                         cc = fromBytes;
                         assert_1.default.ok(cc.gas.toNumber() === tx.gasLimit, "Gas mismatch");
                         return [2 /*return*/];
@@ -446,7 +445,7 @@ describe("Wallet tx signing", function () {
                     case 1:
                         signed = _a.sent();
                         assert_1.default.ok(signed !== "", "Unexpected nil signed tx");
-                        fromBytes = sdk_1.Transaction.fromBytes((0, utils_1.arrayify)(signed));
+                        fromBytes = sdk_1.Transaction.fromBytes(hethers_1.hethers.utils.arrayify(signed));
                         fc = fromBytes;
                         assert_1.default.ok(Buffer.from(fc.contents).toString() == tx.customData.fileChunk, "Contents mismatch");
                         return [2 /*return*/];
@@ -472,7 +471,7 @@ describe("Wallet tx signing", function () {
                     case 1:
                         signed = _a.sent();
                         assert_1.default.ok(signed !== "", "Unexpected nil signed tx");
-                        fromBytes = sdk_1.Transaction.fromBytes((0, utils_1.arrayify)(signed));
+                        fromBytes = sdk_1.Transaction.fromBytes(hethers_1.hethers.utils.arrayify(signed));
                         fa = fromBytes;
                         assert_1.default.ok(Buffer.from(fa.contents).toString() == tx.customData.fileChunk, "Contents mismatch");
                         assert_1.default.ok(fa.fileId.toString() == tx.customData.fileId, "FileId mismatch");
@@ -558,7 +557,7 @@ describe("Wallet local calls", function () {
                                 balanceOfTx = {
                                     to: contractAddr,
                                     gasLimit: 30000,
-                                    data: (0, utils_1.arrayify)(balanceOfParams),
+                                    data: hethers_1.hethers.utils.arrayify(balanceOfParams),
                                 };
                                 return [4 /*yield*/, wallet.call(balanceOfTx)];
                             case 1:
@@ -592,7 +591,7 @@ describe("Wallet local calls", function () {
                                 return [3 /*break*/, 4];
                             case 3:
                                 err_1 = _a.sent();
-                                assert_1.default.strictEqual(err_1.code, utils_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT);
+                                assert_1.default.strictEqual(err_1.code, hethers_1.hethers.utils.Logger.errors.UNPREDICTABLE_GAS_LIMIT);
                                 return [3 /*break*/, 4];
                             case 4: return [2 /*return*/];
                         }
@@ -609,7 +608,7 @@ describe("Wallet local calls", function () {
                                 balanceOfTx = {
                                     to: contractAddr,
                                     gasLimit: 100,
-                                    data: (0, utils_1.arrayify)(balanceOfParams),
+                                    data: hethers_1.hethers.utils.arrayify(balanceOfParams),
                                     nodeId: "0.0.3"
                                 };
                                 _a.label = 1;
@@ -621,7 +620,7 @@ describe("Wallet local calls", function () {
                                 return [3 /*break*/, 4];
                             case 3:
                                 err_2 = _a.sent();
-                                assert_1.default.strictEqual(err_2.code, utils_1.Logger.errors.INSUFFICIENT_FUNDS);
+                                assert_1.default.strictEqual(err_2.code, hethers_1.hethers.utils.Logger.errors.INSUFFICIENT_FUNDS);
                                 return [3 /*break*/, 4];
                             case 4: return [2 /*return*/];
                         }
@@ -639,7 +638,7 @@ describe("Wallet local calls", function () {
                                     // incorrect addr
                                     to: 'z000000000000000000000000000000001b34cbb',
                                     gasLimit: 30000,
-                                    data: (0, utils_1.arrayify)(balanceOfParams),
+                                    data: hethers_1.hethers.utils.arrayify(balanceOfParams),
                                     nodeId: "0.0.3"
                                 };
                                 _a.label = 1;
@@ -651,7 +650,7 @@ describe("Wallet local calls", function () {
                                 return [3 /*break*/, 4];
                             case 3:
                                 err_3 = _a.sent();
-                                assert_1.default.strictEqual(err_3.code, utils_1.Logger.errors.INVALID_ARGUMENT);
+                                assert_1.default.strictEqual(err_3.code, hethers_1.hethers.utils.Logger.errors.INVALID_ARGUMENT);
                                 return [3 /*break*/, 4];
                             case 4: return [2 /*return*/];
                         }
@@ -722,7 +721,7 @@ describe("Wallet createAccount", function () {
                         assert_1.default.ok(tx, 'tx exists');
                         assert_1.default.ok(tx.customData, 'tx.customData exists');
                         assert_1.default.ok(tx.customData.accountId, 'accountId exists');
-                        newAccountAddress = (0, utils_1.getAddressFromAccount)(tx.customData.accountId.toString());
+                        newAccountAddress = hethers_1.hethers.utils.getAddressFromAccount(tx.customData.accountId.toString());
                         return [4 /*yield*/, provider.getBalance(newAccountAddress)];
                     case 2:
                         newAccBalance = _a.sent();

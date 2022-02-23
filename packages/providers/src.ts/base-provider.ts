@@ -25,7 +25,7 @@ import {Formatter} from "./formatter";
 import {getAccountFromTransactionId, AccountLike, asAccountString, getAddressFromAccount} from "@hethers/address";
 import {AccountBalanceQuery, AccountId, Client, NetworkName, Transaction as HederaTransaction} from "@hashgraph/sdk";
 import axios from "axios";
-import {base64} from "hethers/lib/utils";
+import * as base64 from "@ethersproject/base64";
 
 const ZERO_HEDERA_TIMESTAMP = "1000000000.000000000";
 

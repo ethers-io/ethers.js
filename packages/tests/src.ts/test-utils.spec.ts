@@ -3,7 +3,7 @@
 import assert from 'assert';
 
 // @ts-ignore
-import { BigNumber, hethers } from "hethers";
+import { BigNumber, hethers } from "@hashgraph/hethers";
 import { loadTests, TestCase } from "@hethers/testcases";
 
 import * as utils from './utils';
@@ -14,7 +14,6 @@ import {
     ContractFunctionParameters, Hbar, HbarUnit,
     TransactionId, TransferTransaction
 } from "@hashgraph/sdk";
-import { getAddressFromAccount, hexlify } from "hethers/lib/utils";
 import { asAccountString } from "@hethers/address";
 import { Logger } from "@hethers/logger";
 
@@ -478,14 +477,14 @@ describe("Test Typed Transactions", function() {
             .setBytecodeFileId("0.0.111111")
             .setNodeAccountIds([new AccountId(0,0,3)])
             .setInitialBalance(initialBalance)
-            .setConstructorParameters(new ContractFunctionParameters().addAddress(getAddressFromAccount(sendingAccount)))
+            .setConstructorParameters(new ContractFunctionParameters().addAddress(hethers.utils.getAddressFromAccount(sendingAccount)))
             .setTransactionId(TransactionId.generate(sendingAccount))
             .freeze();
         const tx =await  hethers.utils.parseTransaction(cc.toBytes());
         assert(tx.gasLimit.toNumber() === 1000, "Invalid gas limit");
-        assert(tx.data == hexlify(cc.constructorParameters));
-        assert(tx.from === getAddressFromAccount(sendingAccount), "Invalid sending account");
-        assert(tx.hash === hexlify(await cc.getTransactionHash()), "Hash mismatch");
+        assert(tx.data == hethers.utils.hexlify(cc.constructorParameters));
+        assert(tx.from === hethers.utils.getAddressFromAccount(sendingAccount), "Invalid sending account");
+        assert(tx.hash === hethers.utils.hexlify(await cc.getTransactionHash()), "Hash mismatch");
         assert(tx.value.toString() === "1",
             `Invalid initial balance tx.value(${tx.value.toString()}) != ce.initialBalance(1)`);
     });
@@ -496,17 +495,17 @@ describe("Test Typed Transactions", function() {
             .setGas(1000)
             .setPayableAmount(payableAmount)
             .setContractId("0.0.1112121")
-            .setFunction("exec", new ContractFunctionParameters().addAddress(getAddressFromAccount(sendingAccount)))
+            .setFunction("exec", new ContractFunctionParameters().addAddress(hethers.utils.getAddressFromAccount(sendingAccount)))
             .setTransactionId(TransactionId.generate(sendingAccount))
             .setNodeAccountIds([new AccountId(0,0,3)])
             .freeze();
         const tx = await hethers.utils.parseTransaction(ce.toBytes());
         assert(tx.gasLimit.toNumber() === 1000, "Invalid gas");
-        assert(tx.from === getAddressFromAccount(sendingAccount), "Invalid sending account");
+        assert(tx.from === hethers.utils.getAddressFromAccount(sendingAccount), "Invalid sending account");
         // remove 0x prefix
         assert(tx.to.slice(2) === ce.contractId.toSolidityAddress(), "Invalid tx.to");
-        assert(tx.data == hexlify(ce.functionParameters));
-        assert(tx.hash === hexlify(await ce.getTransactionHash()), "Hash mismatch");
+        assert(tx.data == hethers.utils.hexlify(ce.functionParameters));
+        assert(tx.hash === hethers.utils.hexlify(await ce.getTransactionHash()), "Hash mismatch");
         assert(tx.value.toString() === "1",
             `Invalid initial balance tx.value(${tx.value.toString()}) != ce.payableAmount(1); Tinybar value ${ce.payableAmount.toTinybars().toNumber()}`);
     });

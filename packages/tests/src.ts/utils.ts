@@ -2,7 +2,7 @@
 
 'use strict';
 
-import { hethers } from "hethers";
+import { hethers } from "@hashgraph/hethers";
 
 function randomBytes(seed: string, lower: number, upper?: number): Uint8Array {
     if (!upper) { upper = lower; }

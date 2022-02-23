@@ -9,10 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import assert from "assert";
-import { hethers } from "hethers";
+import { hethers } from "@hashgraph/hethers";
 import { loadTests } from "@hethers/testcases";
 import * as utils from './utils';
-import { arrayify, getAddressFromAccount, Logger } from "hethers/lib/utils";
 import { PublicKey, Transaction, } from "@hashgraph/sdk";
 import { readFileSync } from "fs";
 const abi = JSON.parse(readFileSync('packages/tests/contracts/Token.json').toString());
@@ -330,14 +329,14 @@ describe("Wallet tx signing", function () {
         return __awaiter(this, void 0, void 0, function* () {
             const data = Buffer.from(`"abi":{},"values":{}`).toString('hex');
             const tx = {
-                to: getAddressFromAccount("0.0.98"),
+                to: hethers.utils.getAddressFromAccount("0.0.98"),
                 from: wallet.address,
                 data: '0x' + data,
                 gasLimit: 100000
             };
             const signed = yield wallet.signTransaction(tx);
             assert.ok(signed !== "", "Unexpected nil signed tx");
-            const fromBytes = Transaction.fromBytes(arrayify(signed));
+            const fromBytes = Transaction.fromBytes(hethers.utils.arrayify(signed));
             const cc = fromBytes;
             assert.ok(cc.gas.toNumber() === tx.gasLimit, "Gas mismatch");
         });
@@ -353,7 +352,7 @@ describe("Wallet tx signing", function () {
             };
             const signed = yield wallet.signTransaction(tx);
             assert.ok(signed !== "", "Unexpected nil signed tx");
-            const fromBytes = Transaction.fromBytes(arrayify(signed));
+            const fromBytes = Transaction.fromBytes(hethers.utils.arrayify(signed));
             const cc = fromBytes;
             assert.ok(cc.gas.toNumber() === tx.gasLimit, "Gas mismatch");
         });
@@ -370,7 +369,7 @@ describe("Wallet tx signing", function () {
             };
             const signed = yield wallet.signTransaction(tx);
             assert.ok(signed !== "", "Unexpected nil signed tx");
-            const fromBytes = Transaction.fromBytes(arrayify(signed));
+            const fromBytes = Transaction.fromBytes(hethers.utils.arrayify(signed));
             const fc = fromBytes;
             assert.ok(Buffer.from(fc.contents).toString() == tx.customData.fileChunk, "Contents mismatch");
         });
@@ -387,7 +386,7 @@ describe("Wallet tx signing", function () {
             };
             const signed = yield wallet.signTransaction(tx);
             assert.ok(signed !== "", "Unexpected nil signed tx");
-            const fromBytes = Transaction.fromBytes(arrayify(signed));
+            const fromBytes = Transaction.fromBytes(hethers.utils.arrayify(signed));
             const fa = fromBytes;
             assert.ok(Buffer.from(fa.contents).toString() == tx.customData.fileChunk, "Contents mismatch");
             assert.ok(fa.fileId.toString() == tx.customData.fileId, "FileId mismatch");
@@ -438,7 +437,7 @@ describe("Wallet local calls", function () {
                 const balanceOfTx = {
                     to: contractAddr,
                     gasLimit: 30000,
-                    data: arrayify(balanceOfParams),
+                    data: hethers.utils.arrayify(balanceOfParams),
                 };
                 const response = yield wallet.call(balanceOfTx);
                 assert.notStrictEqual(response, null);
@@ -458,7 +457,7 @@ describe("Wallet local calls", function () {
                     yield wallet.call(balanceOfTx);
                 }
                 catch (err) {
-                    assert.strictEqual(err.code, Logger.errors.UNPREDICTABLE_GAS_LIMIT);
+                    assert.strictEqual(err.code, hethers.utils.Logger.errors.UNPREDICTABLE_GAS_LIMIT);
                 }
             });
         });
@@ -468,14 +467,14 @@ describe("Wallet local calls", function () {
                 const balanceOfTx = {
                     to: contractAddr,
                     gasLimit: 100,
-                    data: arrayify(balanceOfParams),
+                    data: hethers.utils.arrayify(balanceOfParams),
                     nodeId: "0.0.3"
                 };
                 try {
                     yield wallet.call(balanceOfTx);
                 }
                 catch (err) {
-                    assert.strictEqual(err.code, Logger.errors.INSUFFICIENT_FUNDS);
+                    assert.strictEqual(err.code, hethers.utils.Logger.errors.INSUFFICIENT_FUNDS);
                 }
             });
         });
@@ -486,14 +485,14 @@ describe("Wallet local calls", function () {
                     // incorrect addr
                     to: 'z000000000000000000000000000000001b34cbb',
                     gasLimit: 30000,
-                    data: arrayify(balanceOfParams),
+                    data: hethers.utils.arrayify(balanceOfParams),
                     nodeId: "0.0.3"
                 };
                 try {
                     yield wallet.call(balanceOfTx);
                 }
                 catch (err) {
-                    assert.strictEqual(err.code, Logger.errors.INVALID_ARGUMENT);
+                    assert.strictEqual(err.code, hethers.utils.Logger.errors.INVALID_ARGUMENT);
                 }
             });
         });
@@ -538,7 +537,7 @@ describe("Wallet createAccount", function () {
             assert.ok(tx, 'tx exists');
             assert.ok(tx.customData, 'tx.customData exists');
             assert.ok(tx.customData.accountId, 'accountId exists');
-            const newAccountAddress = getAddressFromAccount(tx.customData.accountId.toString());
+            const newAccountAddress = hethers.utils.getAddressFromAccount(tx.customData.accountId.toString());
             const newAccBalance = yield provider.getBalance(newAccountAddress);
             assert.strictEqual(BigInt(123).toString(), newAccBalance.toString(), 'The initial balance is correct');
         });

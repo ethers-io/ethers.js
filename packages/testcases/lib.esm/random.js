@@ -1,5 +1,5 @@
 "use strict";
-import { hethers } from "hethers";
+import { hethers } from "@hashgraph/hethers";
 export function randomBytes(seed, lower, upper) {
     if (!upper) {
         upper = lower;

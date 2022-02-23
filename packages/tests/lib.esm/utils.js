@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 'use strict';
-import { hethers } from "hethers";
+import { hethers } from "@hashgraph/hethers";
 function randomBytes(seed, lower, upper) {
     if (!upper) {
         upper = lower;

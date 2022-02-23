@@ -1,6 +1,6 @@
 'use strict';
 import assert from 'assert';
-import { hethers } from "hethers";
+import { hethers } from "@hashgraph/hethers";
 import { loadTests } from "@hethers/testcases";
 function checkWordlist(content, wordlist) {
     let words = content.split('\n');

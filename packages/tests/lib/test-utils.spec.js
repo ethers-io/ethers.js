@@ -60,11 +60,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var assert_1 = __importDefault(require("assert"));
 // @ts-ignore
-var hethers_1 = require("hethers");
+var hethers_1 = require("@hashgraph/hethers");
 var testcases_1 = require("@hethers/testcases");
 var utils = __importStar(require("./utils"));
 var sdk_1 = require("@hashgraph/sdk");
-var utils_1 = require("hethers/lib/utils");
 var address_1 = require("@hethers/address");
 var logger_1 = require("@hethers/logger");
 // @ts-ignore
@@ -442,9 +441,9 @@ describe("Test Typed Transactions", function () {
     var sendingAccount = "0.0.101010";
     it('Should parse ContractCreate', function () {
         return __awaiter(this, void 0, void 0, function () {
-            var initialBalance, cc, tx, _a, _b, _c;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
+            var initialBalance, cc, tx, _a, _b, _c, _d;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
                     case 0:
                         initialBalance = sdk_1.Hbar.fromTinybars(1);
                         cc = new sdk_1.ContractCreateTransaction()
@@ -453,21 +452,21 @@ describe("Test Typed Transactions", function () {
                             .setBytecodeFileId("0.0.111111")
                             .setNodeAccountIds([new sdk_1.AccountId(0, 0, 3)])
                             .setInitialBalance(initialBalance)
-                            .setConstructorParameters(new sdk_1.ContractFunctionParameters().addAddress((0, utils_1.getAddressFromAccount)(sendingAccount)))
+                            .setConstructorParameters(new sdk_1.ContractFunctionParameters().addAddress(hethers_1.hethers.utils.getAddressFromAccount(sendingAccount)))
                             .setTransactionId(sdk_1.TransactionId.generate(sendingAccount))
                             .freeze();
                         return [4 /*yield*/, hethers_1.hethers.utils.parseTransaction(cc.toBytes())];
                     case 1:
-                        tx = _d.sent();
+                        tx = _e.sent();
                         (0, assert_1.default)(tx.gasLimit.toNumber() === 1000, "Invalid gas limit");
-                        (0, assert_1.default)(tx.data == (0, utils_1.hexlify)(cc.constructorParameters));
-                        (0, assert_1.default)(tx.from === (0, utils_1.getAddressFromAccount)(sendingAccount), "Invalid sending account");
+                        (0, assert_1.default)(tx.data == hethers_1.hethers.utils.hexlify(cc.constructorParameters));
+                        (0, assert_1.default)(tx.from === hethers_1.hethers.utils.getAddressFromAccount(sendingAccount), "Invalid sending account");
                         _a = assert_1.default;
                         _b = tx.hash;
-                        _c = utils_1.hexlify;
+                        _d = (_c = hethers_1.hethers.utils).hexlify;
                         return [4 /*yield*/, cc.getTransactionHash()];
                     case 2:
-                        _a.apply(void 0, [_b === _c.apply(void 0, [_d.sent()]), "Hash mismatch"]);
+                        _a.apply(void 0, [_b === _d.apply(_c, [_e.sent()]), "Hash mismatch"]);
                         (0, assert_1.default)(tx.value.toString() === "1", "Invalid initial balance tx.value(" + tx.value.toString() + ") != ce.initialBalance(1)");
                         return [2 /*return*/];
                 }
@@ -476,33 +475,33 @@ describe("Test Typed Transactions", function () {
     });
     it("Should parse ContractExecute", function () {
         return __awaiter(this, void 0, void 0, function () {
-            var payableAmount, ce, tx, _a, _b, _c;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
+            var payableAmount, ce, tx, _a, _b, _c, _d;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
                     case 0:
                         payableAmount = sdk_1.Hbar.fromTinybars(1);
                         ce = new sdk_1.ContractExecuteTransaction()
                             .setGas(1000)
                             .setPayableAmount(payableAmount)
                             .setContractId("0.0.1112121")
-                            .setFunction("exec", new sdk_1.ContractFunctionParameters().addAddress((0, utils_1.getAddressFromAccount)(sendingAccount)))
+                            .setFunction("exec", new sdk_1.ContractFunctionParameters().addAddress(hethers_1.hethers.utils.getAddressFromAccount(sendingAccount)))
                             .setTransactionId(sdk_1.TransactionId.generate(sendingAccount))
                             .setNodeAccountIds([new sdk_1.AccountId(0, 0, 3)])
                             .freeze();
                         return [4 /*yield*/, hethers_1.hethers.utils.parseTransaction(ce.toBytes())];
                     case 1:
-                        tx = _d.sent();
+                        tx = _e.sent();
                         (0, assert_1.default)(tx.gasLimit.toNumber() === 1000, "Invalid gas");
-                        (0, assert_1.default)(tx.from === (0, utils_1.getAddressFromAccount)(sendingAccount), "Invalid sending account");
+                        (0, assert_1.default)(tx.from === hethers_1.hethers.utils.getAddressFromAccount(sendingAccount), "Invalid sending account");
                         // remove 0x prefix
                         (0, assert_1.default)(tx.to.slice(2) === ce.contractId.toSolidityAddress(), "Invalid tx.to");
-                        (0, assert_1.default)(tx.data == (0, utils_1.hexlify)(ce.functionParameters));
+                        (0, assert_1.default)(tx.data == hethers_1.hethers.utils.hexlify(ce.functionParameters));
                         _a = assert_1.default;
                         _b = tx.hash;
-                        _c = utils_1.hexlify;
+                        _d = (_c = hethers_1.hethers.utils).hexlify;
                         return [4 /*yield*/, ce.getTransactionHash()];
                     case 2:
-                        _a.apply(void 0, [_b === _c.apply(void 0, [_d.sent()]), "Hash mismatch"]);
+                        _a.apply(void 0, [_b === _d.apply(_c, [_e.sent()]), "Hash mismatch"]);
                         (0, assert_1.default)(tx.value.toString() === "1", "Invalid initial balance tx.value(" + tx.value.toString() + ") != ce.payableAmount(1); Tinybar value " + ce.payableAmount.toTinybars().toNumber());
                         return [2 /*return*/];
                 }

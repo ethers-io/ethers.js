@@ -2,7 +2,7 @@
   "dependencies": {
     "@hethers/testcases": "1.0.0",
     "@types/mocha": "^5.2.0",
-    "hethers": "1.0.0"
+    "@hashgraph/hethers": "1.0.0"
   },
   "description": "Testing package for hethers.",
   "keywords": [

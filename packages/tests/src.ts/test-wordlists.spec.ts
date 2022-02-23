@@ -2,7 +2,7 @@
 
 import assert from 'assert';
 
-import { hethers } from "hethers";
+import { hethers } from "@hashgraph/hethers";
 import { loadTests, TestCase } from "@hethers/testcases";
 
 

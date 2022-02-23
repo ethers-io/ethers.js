@@ -2,7 +2,7 @@
 
 import inflate from "tiny-inflate";
 
-import { hethers } from "hethers";
+import { hethers } from "@hashgraph/hethers";
 
 // This file is populated by the rollup-pre-alias.config.js
 import data from "./browser-data.json";

@@ -4,11 +4,10 @@ import assert from "assert";
 
 // import Web3HttpProvider from "web3-providers-http";
 
-import { hethers } from "hethers";
+import { hethers } from "@hashgraph/hethers";
 import { BigNumber } from "@ethersproject/bignumber";
 import { DefaultHederaProvider } from "@hethers/providers";
 import { HederaTransactionRecord, TransactionResponse, TransactionReceipt } from "@hethers/abstract-provider";
-import { getAddressFromAccount } from "hethers/lib/utils";
 import { HederaNetworks } from "@hethers/providers/lib/default-hedera-provider";
 import {
     AccountId,
@@ -1041,7 +1040,7 @@ describe("Test Basic Authentication", function() {
 describe("Test Hedera Provider", function () {
     const provider = new DefaultHederaProvider(HederaNetworks.TESTNET);
     const accountConfig = { shard : BigInt(0), realm: BigInt(0), num: BigInt(98)};
-    const solAddr = getAddressFromAccount(accountConfig);
+    const solAddr = hethers.utils.getAddressFromAccount(accountConfig);
     const nonExistingAddress = "0x0000000000000000000000000000000000000000";
     const timeout = 15000;
 
@@ -1193,7 +1192,7 @@ describe("Test Hedera Provider", function () {
             // assert.strict(receipt.logs.length > 0);
             assert.strictEqual(receipt.to, null);
             assert.strictEqual(receipt.contractAddress, '0x'+sendTransactionResponse.customData.contractId);
-            assert.strictEqual(receipt.from, getAddressFromAccount(hederaTestnetOperableAccount.operator.accountId));
+            assert.strictEqual(receipt.from, hethers.utils.getAddressFromAccount(hederaTestnetOperableAccount.operator.accountId));
             assert.strictEqual(receipt.transactionHash, sendTransactionResponse.hash);
         }).timeout(timeout * 8);
 
@@ -1203,7 +1202,7 @@ describe("Test Hedera Provider", function () {
             // assert.strict(receipt.logs.length > 0);
             assert.strictEqual(receipt.to, null);
             assert.strictEqual(receipt.contractAddress, '0x'+sendTransactionResponse.customData.contractId);
-            assert.strictEqual(receipt.from, getAddressFromAccount(hederaTestnetOperableAccount.operator.accountId));
+            assert.strictEqual(receipt.from, hethers.utils.getAddressFromAccount(hederaTestnetOperableAccount.operator.accountId));
             assert.strictEqual(receipt.transactionHash, sendTransactionResponse.hash);
         }).timeout(timeout * 10);
 
@@ -1317,7 +1316,7 @@ describe("Test Hedera Provider", function () {
         const provider = hethers.providers.getDefaultProvider('testnet');
         const txResponse = await provider.sendTransaction(signedTx);
         assert.strictEqual(txResponse.gasLimit.toNumber(), 300000);
-        assert.strictEqual(txResponse.from, getAddressFromAccount(hederaTestnetOperableAccount.operator.accountId));
+        assert.strictEqual(txResponse.from, hethers.utils.getAddressFromAccount(hederaTestnetOperableAccount.operator.accountId));
         assert.strictEqual(txResponse.to, undefined); // contract create TX should not be addressed to anything
         // assert.strictEqual(txResponse.value.toNumber(), 100000000000);
     }).timeout(timeout*4);
@@ -1358,7 +1357,7 @@ describe("Test Hedera Provider", function () {
 
     it("Should get bytecode of contract", async function() {
         const contractAccountConfig = { shard : BigInt(0), realm: BigInt(0), num: BigInt(16645669)};
-        const contractAddress = getAddressFromAccount(contractAccountConfig);
+        const contractAddress = hethers.utils.getAddressFromAccount(contractAccountConfig);
         let result = await provider.getCode(contractAddress);
         assert.strict((typeof result === "string" && result != "0x"),  `returns bytecode of contract - ` + contractAddress);
     }).timeout(timeout * 4);

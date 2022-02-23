@@ -1,6 +1,6 @@
 'use strict';
 import assert from "assert";
-import { hethers } from "hethers";
+import { hethers } from "@hashgraph/hethers";
 import { loadTests, randomNumber } from "@hethers/testcases";
 function randomCase(seed, text) {
     return text.split("").map(function (c, index) {

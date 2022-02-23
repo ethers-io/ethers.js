@@ -2,11 +2,10 @@
 
 import assert from "assert";
 
-import { hethers } from "hethers";
+import { hethers } from "@hashgraph/hethers";
 import { loadTests, TestCase } from "@hethers/testcases";
 import { BytesLike } from "@ethersproject/bytes";
 import * as utils from './utils';
-import { arrayify, getAddressFromAccount, Logger } from "hethers/lib/utils";
 import {
     ContractCreateTransaction,
     ContractExecuteTransaction,
@@ -375,7 +374,7 @@ describe("Wallet tx signing", function () {
     it("Should sign ContractCall", async function() {
         const data = Buffer.from(`"abi":{},"values":{}`).toString('hex');
         const tx = {
-            to: getAddressFromAccount("0.0.98"),
+            to: hethers.utils.getAddressFromAccount("0.0.98"),
             from: wallet.address,
             data: '0x'+data,
             gasLimit: 100000
@@ -383,7 +382,7 @@ describe("Wallet tx signing", function () {
         };
         const signed = await wallet.signTransaction(tx);
         assert.ok(signed !== "", "Unexpected nil signed tx");
-        const fromBytes = Transaction.fromBytes(arrayify(signed));
+        const fromBytes = Transaction.fromBytes(hethers.utils.arrayify(signed));
         const cc = fromBytes as ContractExecuteTransaction;
         assert.ok(cc.gas.toNumber() === tx.gasLimit, "Gas mismatch");
     });
@@ -398,7 +397,7 @@ describe("Wallet tx signing", function () {
         };
         const signed = await wallet.signTransaction(tx);
         assert.ok(signed !== "", "Unexpected nil signed tx");
-        const fromBytes = Transaction.fromBytes(arrayify(signed));
+        const fromBytes = Transaction.fromBytes(hethers.utils.arrayify(signed));
         const cc = fromBytes as ContractCreateTransaction;
         assert.ok(cc.gas.toNumber() === tx.gasLimit, "Gas mismatch");
     });
@@ -414,7 +413,7 @@ describe("Wallet tx signing", function () {
         };
         const signed = await wallet.signTransaction(tx);
         assert.ok(signed !== "", "Unexpected nil signed tx");
-        const fromBytes = Transaction.fromBytes(arrayify(signed));
+        const fromBytes = Transaction.fromBytes(hethers.utils.arrayify(signed));
         const fc = fromBytes as FileCreateTransaction;
         assert.ok(Buffer.from(fc.contents).toString() == tx.customData.fileChunk, "Contents mismatch");
     });
@@ -430,7 +429,7 @@ describe("Wallet tx signing", function () {
         };
         const signed = await wallet.signTransaction(tx);
         assert.ok(signed !== "", "Unexpected nil signed tx");
-        const fromBytes = Transaction.fromBytes(arrayify(signed));
+        const fromBytes = Transaction.fromBytes(hethers.utils.arrayify(signed));
         const fa = fromBytes as FileAppendTransaction;
         assert.ok(Buffer.from(fa.contents).toString() == tx.customData.fileChunk, "Contents mismatch");
         assert.ok(fa.fileId.toString() == tx.customData.fileId, "FileId mismatch");
@@ -475,7 +474,7 @@ describe("Wallet local calls", async function () {
         const balanceOfTx = {
             to: contractAddr,
             gasLimit: 30000,
-            data: arrayify(balanceOfParams),
+            data: hethers.utils.arrayify(balanceOfParams),
         };
         const response = await wallet.call(balanceOfTx);
         assert.notStrictEqual(response, null);
@@ -493,7 +492,7 @@ describe("Wallet local calls", async function () {
         try {
             await wallet.call(balanceOfTx);
         } catch (err) {
-            assert.strictEqual(err.code, Logger.errors.UNPREDICTABLE_GAS_LIMIT)
+            assert.strictEqual(err.code, hethers.utils.Logger.errors.UNPREDICTABLE_GAS_LIMIT)
         }
     });
 
@@ -502,13 +501,13 @@ describe("Wallet local calls", async function () {
         const balanceOfTx = {
             to: contractAddr,
             gasLimit: 100,
-            data: arrayify(balanceOfParams),
+            data: hethers.utils.arrayify(balanceOfParams),
             nodeId: "0.0.3"
         };
         try {
             await wallet.call(balanceOfTx);
         } catch (err) {
-            assert.strictEqual(err.code, Logger.errors.INSUFFICIENT_FUNDS)
+            assert.strictEqual(err.code, hethers.utils.Logger.errors.INSUFFICIENT_FUNDS)
         }
     });
 
@@ -518,13 +517,13 @@ describe("Wallet local calls", async function () {
             // incorrect addr
             to: 'z000000000000000000000000000000001b34cbb',
             gasLimit: 30000,
-            data: arrayify(balanceOfParams),
+            data: hethers.utils.arrayify(balanceOfParams),
             nodeId: "0.0.3"
         };
         try {
             await wallet.call(balanceOfTx);
         } catch (err) {
-            assert.strictEqual(err.code, Logger.errors.INVALID_ARGUMENT)
+            assert.strictEqual(err.code, hethers.utils.Logger.errors.INVALID_ARGUMENT)
         }
     });
 });
@@ -571,7 +570,7 @@ describe("Wallet createAccount", function () {
         assert.ok(tx.customData, 'tx.customData exists');
         assert.ok(tx.customData.accountId, 'accountId exists');
 
-        const newAccountAddress = getAddressFromAccount(tx.customData.accountId.toString());
+        const newAccountAddress = hethers.utils.getAddressFromAccount(tx.customData.accountId.toString());
         const newAccBalance = await provider.getBalance(newAccountAddress);
         assert.strictEqual(BigInt(123).toString(), newAccBalance.toString(), 'The initial balance is correct');
     }).timeout(timeout);

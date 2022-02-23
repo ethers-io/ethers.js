@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loadData = exports.loadTests = exports.saveTests = void 0;
 var tiny_inflate_1 = __importDefault(require("tiny-inflate"));
-var hethers_1 = require("hethers");
+var hethers_1 = require("@hashgraph/hethers");
 // This file is populated by the rollup-pre-alias.config.js
 var browser_data_json_1 = __importDefault(require("./browser-data.json"));
 function saveTests(tag, data) {

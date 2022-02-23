@@ -16,7 +16,8 @@ import {computePublicKey, recoverPublicKey} from "@ethersproject/signing-key";
 
 import {Logger} from "@hethers/logger";
 import {version} from "./_version";
-import {base64, getAddressFromAccount} from "hethers/lib/utils";
+import * as base64 from "@ethersproject/base64";
+import {getAddressFromAccount} from "@hethers/address";
 import {
     ContractCreateTransaction,
     ContractExecuteTransaction, ContractId, FileAppendTransaction,

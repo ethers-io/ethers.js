@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var assert_1 = __importDefault(require("assert"));
-var hethers_1 = require("hethers");
+var hethers_1 = require("@hashgraph/hethers");
 var testcases_1 = require("@hethers/testcases");
 describe('Private key generation & Alias population', function () {
     var tests = (0, testcases_1.loadTests)('accounts');

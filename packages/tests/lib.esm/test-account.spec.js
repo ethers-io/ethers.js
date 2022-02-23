@@ -1,6 +1,6 @@
 'use strict';
 import assert from 'assert';
-import { hethers } from "hethers";
+import { hethers } from "@hashgraph/hethers";
 import { loadTests } from "@hethers/testcases";
 describe('Private key generation & Alias population', function () {
     let tests = loadTests('accounts');

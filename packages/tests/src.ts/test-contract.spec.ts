@@ -2,10 +2,10 @@
 
 import assert from "assert";
 
-import { BigNumber, hethers } from "hethers";
+import { BigNumber, hethers } from "@hashgraph/hethers";
 
 import fs, {readFileSync} from "fs";
-import { arrayify } from "hethers/lib/utils";
+import { arrayify } from "@ethersproject/bytes";
 import {Logger} from "@hethers/logger";
 
 
@@ -293,7 +293,7 @@ describe('Contract Events', function () {
     };
     const enoughEventsCaptured = (n:number, expectedN:number) => n >= expectedN;
 
-    it("should be able to capture events via contract", async function () {
+    xit("should be able to capture events via contract", async function () {
         const capturedMints: any[] = [];
         contract.on('Mint', (...args) => {
             assert.strictEqual(args.length, 3, "expected 3 arguments - [address, unit256, log].");
@@ -309,7 +309,7 @@ describe('Contract Events', function () {
         }
     }).timeout(TIMEOUT_PERIOD * 3);
 
-    it('should be able to capture events via provider', async function() {
+    xit('should be able to capture events via provider', async function() {
         const capturedMints: any[] = [];
         provider.on({address: contract.address, topics: [
 				'0x0f6798a560793a54c3bcfe86a93cde1e73087d944c0ea20544137d4121396885'

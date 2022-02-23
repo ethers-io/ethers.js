@@ -42,7 +42,7 @@
   "license": "MIT",
   "main": "./lib/index.js",
   "module": "./lib.esm/index.js",
-  "name": "hethers",
+  "name": "@hashgraph/hethers",
   "repository": {
     "directory": "packages/hethers",
     "type": "git",

@@ -18,6 +18,7 @@
     "@hethers/address": "1.0.0",
     "@ethersproject/basex": "5.5.0",
     "@ethersproject/bignumber": "5.5.0",
+    "@ethersproject/base64": "5.5.0",
     "@ethersproject/bytes": "5.5.0",
     "@hethers/constants": "1.0.0",
     "@ethersproject/hash": "5.5.0",

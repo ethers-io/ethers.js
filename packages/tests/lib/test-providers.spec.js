@@ -41,10 +41,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var assert_1 = __importDefault(require("assert"));
 // import Web3HttpProvider from "web3-providers-http";
-var hethers_1 = require("hethers");
+var hethers_1 = require("@hashgraph/hethers");
 var bignumber_1 = require("@ethersproject/bignumber");
 var providers_1 = require("@hethers/providers");
-var utils_1 = require("hethers/lib/utils");
 var default_hedera_provider_1 = require("@hethers/providers/lib/default-hedera-provider");
 var sdk_1 = require("@hashgraph/sdk");
 var bnify = hethers_1.hethers.BigNumber.from;
@@ -1007,7 +1006,7 @@ describe("Test Basic Authentication", function () {
 describe("Test Hedera Provider", function () {
     var provider = new providers_1.DefaultHederaProvider(default_hedera_provider_1.HederaNetworks.TESTNET);
     var accountConfig = { shard: BigInt(0), realm: BigInt(0), num: BigInt(98) };
-    var solAddr = (0, utils_1.getAddressFromAccount)(accountConfig);
+    var solAddr = hethers_1.hethers.utils.getAddressFromAccount(accountConfig);
     var nonExistingAddress = "0x0000000000000000000000000000000000000000";
     var timeout = 15000;
     it('Gets the balance', function () {
@@ -1212,7 +1211,7 @@ describe("Test Hedera Provider", function () {
                             // assert.strict(receipt.logs.length > 0);
                             assert_1.default.strictEqual(receipt.to, null);
                             assert_1.default.strictEqual(receipt.contractAddress, '0x' + sendTransactionResponse.customData.contractId);
-                            assert_1.default.strictEqual(receipt.from, (0, utils_1.getAddressFromAccount)(hederaTestnetOperableAccount.operator.accountId));
+                            assert_1.default.strictEqual(receipt.from, hethers_1.hethers.utils.getAddressFromAccount(hederaTestnetOperableAccount.operator.accountId));
                             assert_1.default.strictEqual(receipt.transactionHash, sendTransactionResponse.hash);
                             return [2 /*return*/];
                     }
@@ -1236,7 +1235,7 @@ describe("Test Hedera Provider", function () {
                             // assert.strict(receipt.logs.length > 0);
                             assert_1.default.strictEqual(receipt.to, null);
                             assert_1.default.strictEqual(receipt.contractAddress, '0x' + sendTransactionResponse.customData.contractId);
-                            assert_1.default.strictEqual(receipt.from, (0, utils_1.getAddressFromAccount)(hederaTestnetOperableAccount.operator.accountId));
+                            assert_1.default.strictEqual(receipt.from, hethers_1.hethers.utils.getAddressFromAccount(hederaTestnetOperableAccount.operator.accountId));
                             assert_1.default.strictEqual(receipt.transactionHash, sendTransactionResponse.hash);
                             return [2 /*return*/];
                     }
@@ -1455,7 +1454,7 @@ describe("Test Hedera Provider", function () {
                     case 2:
                         txResponse = _a.sent();
                         assert_1.default.strictEqual(txResponse.gasLimit.toNumber(), 300000);
-                        assert_1.default.strictEqual(txResponse.from, (0, utils_1.getAddressFromAccount)(hederaTestnetOperableAccount.operator.accountId));
+                        assert_1.default.strictEqual(txResponse.from, hethers_1.hethers.utils.getAddressFromAccount(hederaTestnetOperableAccount.operator.accountId));
                         assert_1.default.strictEqual(txResponse.to, undefined); // contract create TX should not be addressed to anything
                         return [2 /*return*/];
                 }
@@ -1520,7 +1519,7 @@ describe("Test Hedera Provider", function () {
                 switch (_a.label) {
                     case 0:
                         contractAccountConfig = { shard: BigInt(0), realm: BigInt(0), num: BigInt(16645669) };
-                        contractAddress = (0, utils_1.getAddressFromAccount)(contractAccountConfig);
+                        contractAddress = hethers_1.hethers.utils.getAddressFromAccount(contractAccountConfig);
                         return [4 /*yield*/, provider.getCode(contractAddress)];
                     case 1:
                         result = _a.sent();

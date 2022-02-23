@@ -10,6 +10,25 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -56,7 +75,8 @@ var keccak256_1 = require("@ethersproject/keccak256");
 var signing_key_1 = require("@ethersproject/signing-key");
 var logger_1 = require("@hethers/logger");
 var _version_1 = require("./_version");
-var utils_1 = require("hethers/lib/utils");
+var base64 = __importStar(require("@ethersproject/base64"));
+var address_2 = require("@hethers/address");
 var sdk_1 = require("@hashgraph/sdk");
 var logger = new logger_1.Logger(_version_1.version);
 var TransactionTypes;
@@ -83,7 +103,7 @@ function computeAlias(key) {
 }
 exports.computeAlias = computeAlias;
 function computeAliasFromPubKey(pubKey) {
-    return "0.0." + utils_1.base64.encode(pubKey);
+    return "0.0." + base64.encode(pubKey);
 }
 exports.computeAliasFromPubKey = computeAliasFromPubKey;
 function recoverAddress(digest, signature) {
@@ -136,7 +156,7 @@ function serializeHederaTransaction(transaction, pubKey) {
     }
     else if (transaction.to) {
         tx = new sdk_1.ContractExecuteTransaction()
-            .setContractId(sdk_1.ContractId.fromSolidityAddress((0, utils_1.getAddressFromAccount)(transaction.to)))
+            .setContractId(sdk_1.ContractId.fromSolidityAddress((0, address_2.getAddressFromAccount)(transaction.to)))
             .setFunctionParameters(arrayifiedData)
             .setGas(gas);
         if (transaction.value) {
@@ -301,11 +321,11 @@ function parse(rawTransaction) {
                     return [4 /*yield*/, parsed.getTransactionHash()];
                 case 1:
                     contents = (_c.hash = _b.apply(void 0, [_d.sent()]),
-                        _c.from = (0, utils_1.getAddressFromAccount)(parsed.transactionId.accountId.toString()),
+                        _c.from = (0, address_2.getAddressFromAccount)(parsed.transactionId.accountId.toString()),
                         _c);
                     if (parsed instanceof sdk_1.ContractExecuteTransaction) {
                         parsed = parsed;
-                        contents.to = (0, utils_1.getAddressFromAccount)((_a = parsed.contractId) === null || _a === void 0 ? void 0 : _a.toString());
+                        contents.to = (0, address_2.getAddressFromAccount)((_a = parsed.contractId) === null || _a === void 0 ? void 0 : _a.toString());
                         contents.gasLimit = handleNumber(parsed.gas.toString());
                         contents.value = parsed.payableAmount ?
                             handleNumber(parsed.payableAmount.toBigNumber().toString()) : handleNumber('0');

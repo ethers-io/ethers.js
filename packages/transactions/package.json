@@ -3,6 +3,7 @@
     "@hethers/address": "1.0.0",
     "@ethersproject/bignumber": "5.5.0",
     "@ethersproject/bytes": "5.5.0",
+    "@ethersproject/base64": "5.5.0",
     "@hethers/constants": "1.0.0",
     "@ethersproject/keccak256": "5.5.0",
     "@hethers/logger": "1.0.0",

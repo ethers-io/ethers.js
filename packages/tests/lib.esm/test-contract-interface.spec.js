@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import assert from "assert";
-import { hethers } from "hethers";
+import { hethers } from "@hashgraph/hethers";
 import { loadTests } from "@hethers/testcases";
 const bnify = hethers.BigNumber.from;
 function equals(actual, expected) {
