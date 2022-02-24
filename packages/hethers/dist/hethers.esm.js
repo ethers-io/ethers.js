@@ -80931,7 +80931,7 @@ exports.setup = setup;
 var channelz$1 = /*@__PURE__*/getDefaultExportFromCjs(channelz);
 
 var name$1 = "@grpc/grpc-js";
-var version$e = "1.5.5";
+var version$e = "1.5.6";
 var description$1 = "gRPC Library for Node - pure JS implementation";
 var homepage$1 = "https://grpc.io/";
 var repository$1 = "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js";
@@ -81289,6 +81289,9 @@ class Subchannel {
     }
     flowControlTrace(text) {
         logging.trace(constants.LogVerbosity.DEBUG, FLOW_CONTROL_TRACER_NAME, '(' + this.channelzRef.id + ') ' + this.subchannelAddressString + ' ' + text);
+    }
+    internalsTrace(text) {
+        logging.trace(constants.LogVerbosity.DEBUG, 'subchannel_internals', '(' + this.channelzRef.id + ') ' + this.subchannelAddressString + ' ' + text);
     }
     handleBackoffTimer() {
         if (this.continueConnecting) {
@@ -81702,6 +81705,12 @@ class Subchannel {
             ' remote window size: ' +
             this.session.state.remoteWindowSize);
         const streamSession = this.session;
+        this.internalsTrace('session.closed=' +
+            streamSession.closed +
+            ' session.destroyed=' +
+            streamSession.destroyed +
+            ' session.socket.destroyed=' +
+            streamSession.socket.destroyed);
         let statsTracker;
         if (this.channelzEnabled) {
             this.callTracker.addCallStarted();
