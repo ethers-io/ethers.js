@@ -720,6 +720,9 @@ export class BaseContract {
             }
         }
 
+        // Swallow bad ENS names to prevent Unhandled Exceptions
+        this.resolvedAddress.catch((e) => { });
+
         const uniqueNames: { [ name: string ]: Array<string> } = { };
         const uniqueSignatures: { [ signature: string ]: boolean } = { };
         Object.keys(this.interface.functions).forEach((signature) => {
@@ -879,6 +882,7 @@ export class BaseContract {
         if (this.deployTransaction) {
             defineReadOnly(contract, "deployTransaction", this.deployTransaction);
         }
+
         return contract;
     }
 
