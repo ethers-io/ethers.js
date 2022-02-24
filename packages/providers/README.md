@@ -1,4 +1,4 @@
-Ethereum Providers
+Hedera Providers
 ==================
 
 This sub-module is part of the [hethers project](https://github.com/hashgraph/hethers.js). It is a fork of the original [ethers project](https://github.com/ethers-io/ethers.js) sub-module.
@@ -17,57 +17,23 @@ but for those with more specific needs, individual components can be imported.
 
 ```javascript
 const {
-
     Provider,
     BaseProvider,
-
-    JsonRpcProvider,
-    StaticJsonRpcProvider,
-    UrlJsonRpcProvider,
-
-    FallbackProvider,
-
-    AlchemyProvider,
-    CloudflareProvider,
-    EtherscanProvider,
-    InfuraProvider,
-    NodesmithProvider,
-
-    IpcProvider,
-
-    Web3Provider,
-
-    WebSocketProvider,
-
-    JsonRpcSigner,
-
+    DefaultHederaProvider,
+    HederaProvider,
     getDefaultProvider,
-
     getNetwork,
-
     Formatter,
-
-    // Types
-
+    EventType,
+    FeeData,
+    Filter,
+    Log,
+    Listener,
     TransactionReceipt,
     TransactionRequest,
     TransactionResponse,
-
-    Listener,
-
-    ExternalProvider,
-
-    Block,
-    BlockTag,
-    EventType,
-    Filter,
-    Log,
-
-    JsonRpcFetchFunc,
-
     Network,
     Networkish
-
 } = require("@hethers/providers");
 ```
 

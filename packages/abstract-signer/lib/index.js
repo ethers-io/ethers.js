@@ -81,8 +81,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.randomNumBetween = exports.VoidSigner = exports.Signer = void 0;
-var transactions_1 = require("@hethers/transactions");
+exports.VoidSigner = exports.Signer = void 0;
+var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
 var properties_1 = require("@ethersproject/properties");
 var logger_1 = require("@hethers/logger");
@@ -196,7 +196,7 @@ var Signer = /** @class */ (function () {
                             .setContractId(to)
                             .setFunctionParameters((0, bytes_1.arrayify)(tx.data))
                             .setNodeAccountIds([nodeID])
-                            .setGas((0, transactions_1.numberify)(tx.gasLimit))
+                            .setGas(bignumber_1.BigNumber.from(tx.gasLimit).toNumber())
                             .setPaymentTransactionId(paymentTxId);
                         cost = 3;
                         paymentBody = {
@@ -497,7 +497,6 @@ function randomNumBetween(min, max) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-exports.randomNumBetween = randomNumBetween;
 /**
  * Splits data (utf8) into chunks with the given size
  * @param data

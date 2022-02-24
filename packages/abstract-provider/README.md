@@ -24,21 +24,17 @@ but for those with more specific needs, individual components can be imported.
 
 ```javascript
 const {
-
-    Provider,
-    
     TransactionRequest,
+    HederaTransactionRecord,
     TransactionResponse,
-    TransactionReceipt,
-
     Log,
+    TransactionReceipt,
+    FeeData,
     EventFilter,
-
     Filter,
-
     EventType,
-    Listener
-
+    Listener,
+    Provider
 } = require("@hethers/abstract-provider");
 ```
 

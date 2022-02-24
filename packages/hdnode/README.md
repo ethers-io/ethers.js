@@ -16,20 +16,14 @@ but for those with more specific needs, individual components can be imported.
 
 ```javascript
 const {
-
-    HDNode,
-
     defaultPath,
-
+    Mnemonic,
+    HDNode,
     mnemonicToSeed,
     mnemonicToEntropy,
     entropyToMnemonic,
     isValidMnemonic,
-
-    // Types
-
-    Mnemonic
-
+    getAccountPath
 } = require("@hethers/hdnode");
 ```
 

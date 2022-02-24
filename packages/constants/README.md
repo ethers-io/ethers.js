@@ -15,20 +15,19 @@ but for those with more specific needs, individual components can be imported.
 
 ```javascript
 const {
-
     AddressZero,
-    HashZero,
-
-    EtherSymbol,
-
     NegativeOne,
     Zero,
     One,
     Two,
-
     WeiPerEther,
-    MaxUint256
-
+    MaxUint256,
+    MinInt256,
+    MaxInt256,
+    TinybarPerHbar,
+    HashZero,
+    EtherSymbol,
+    HBarSymbol
 } = require("@hethers/constants");
 ```
 

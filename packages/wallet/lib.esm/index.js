@@ -220,9 +220,4 @@ export class Wallet extends Signer {
 export function verifyMessage(message, signature) {
     return recoverPublicKey(arrayify(hashMessage(message)), signature);
 }
-export function verifyTypedData(domain, types, value, signature) {
-    return logger.throwError("verifyTypedData not supported", Logger.errors.UNSUPPORTED_OPERATION, {
-        operation: 'verifyTypedData'
-    });
-}
 //# sourceMappingURL=index.js.map

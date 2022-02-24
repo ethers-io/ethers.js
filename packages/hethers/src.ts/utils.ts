@@ -18,7 +18,7 @@ import { computePublicKey, recoverPublicKey, SigningKey } from "@ethersproject/s
 import { formatBytes32String, nameprep, parseBytes32String, _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String, Utf8ErrorFuncs } from "@ethersproject/strings";
 import { accessListify, computeAddress, computeAlias, parse as parseTransaction, recoverAddress, TransactionTypes } from "@hethers/transactions";
 import { commify, formatHbar, parseHbar, formatUnits, parseUnits } from "@hethers/units";
-import { verifyMessage, verifyTypedData } from "@hethers/wallet";
+import { verifyMessage } from "@hethers/wallet";
 import { _fetchData, fetchJson, poll } from "@ethersproject/web";
 
 ////////////////////////
@@ -159,7 +159,6 @@ export {
     recoverPublicKey,
 
     verifyMessage,
-    verifyTypedData,
 
     getAccountPath,
     mnemonicToEntropy,

@@ -85,10 +85,4 @@ export declare class VoidSigner extends Signer implements TypedDataSigner {
     _signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
     connect(provider: Provider): VoidSigner;
 }
-/**
- * Generates a random integer in the given range
- * @param min - range start
- * @param max - range end
- */
-export declare function randomNumBetween(min: number, max: number): number;
 //# sourceMappingURL=index.d.ts.map

@@ -16,15 +16,9 @@ but for those with more specific needs, individual components can be imported.
 
 ```javascript
 const {
-
-    Logger,
-
-    // Enums
-
-    ErrorCode,
-
     LogLevel,
-
+    ErrorCode,
+    Logger
 } = require("@hethers/logger");
 ```
 

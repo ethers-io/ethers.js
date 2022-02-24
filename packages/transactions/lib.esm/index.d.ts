@@ -47,5 +47,4 @@ export declare function recoverAddress(digest: BytesLike, signature: SignatureLi
 export declare function accessListify(value: AccessListish): AccessList;
 export declare function serializeHederaTransaction(transaction: UnsignedTransaction, pubKey?: HederaPubKey): HederaTransaction;
 export declare function parse(rawTransaction: BytesLike): Promise<Transaction>;
-export declare function numberify(num: BigNumberish): number;
 //# sourceMappingURL=index.d.ts.map

@@ -201,7 +201,7 @@ export function parse(rawTransaction) {
         return Object.assign(Object.assign({}, contents), { chainId: 0, r: '', s: '', v: 0 });
     });
 }
-export function numberify(num) {
+function numberify(num) {
     return BigNumber.from(num).toNumber();
 }
 //# sourceMappingURL=index.js.map

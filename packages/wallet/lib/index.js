@@ -51,7 +51,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyTypedData = exports.verifyMessage = exports.Wallet = void 0;
+exports.verifyMessage = exports.Wallet = void 0;
 var address_1 = require("@hethers/address");
 var abstract_provider_1 = require("@hethers/abstract-provider");
 var abstract_signer_1 = require("@hethers/abstract-signer");
@@ -305,10 +305,4 @@ function verifyMessage(message, signature) {
     return (0, signing_key_1.recoverPublicKey)((0, bytes_1.arrayify)((0, hash_1.hashMessage)(message)), signature);
 }
 exports.verifyMessage = verifyMessage;
-function verifyTypedData(domain, types, value, signature) {
-    return logger.throwError("verifyTypedData not supported", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
-        operation: 'verifyTypedData'
-    });
-}
-exports.verifyTypedData = verifyTypedData;
 //# sourceMappingURL=index.js.map

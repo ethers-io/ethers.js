@@ -17,26 +17,15 @@ but for those with more specific needs, individual components can be imported.
 
 ```javascript
 const {
-
-    isCrowdsaleWallet,
-    decryptCrowdsale,
-
-    isKeystoreWallet,
     decryptKeystore,
     decryptKeystoreSync,
     encryptKeystore,
-
+    isKeystoreWallet,
     getJsonWalletAddress,
-
     decryptJsonWallet,
     decryptJsonWalletSync,
-
-    // Types
-
     ProgressCallback,
-
     EncryptOptions
-
 } = require("@hethers/json-wallets");
 ```
 

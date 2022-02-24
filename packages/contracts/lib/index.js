@@ -74,7 +74,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContractFactory = exports.Contract = exports.BaseContract = void 0;
 var abi_1 = require("@ethersproject/abi");
 var abstract_provider_1 = require("@hethers/abstract-provider");
-var providers_1 = require("@hethers/providers");
 var abstract_signer_1 = require("@hethers/abstract-signer");
 var address_1 = require("@hethers/address");
 var bignumber_1 = require("@ethersproject/bignumber");
@@ -867,10 +866,10 @@ var BaseContract = /** @class */ (function () {
                         runningEvent = this._getRunningEvent(event);
                         filter = (0, properties_1.shallowCopy)(runningEvent.filter);
                         if (fromTimestamp) {
-                            filter.fromTimestamp = (0, providers_1.composeHederaTimestamp)(fromTimestamp);
+                            filter.fromTimestamp = composeHederaTimestamp(fromTimestamp);
                         }
                         if (toTimestamp) {
-                            filter.toTimestamp = (0, providers_1.composeHederaTimestamp)(toTimestamp);
+                            filter.toTimestamp = composeHederaTimestamp(toTimestamp);
                         }
                         return [4 /*yield*/, this.provider.getLogs(filter)];
                     case 1:
@@ -1114,4 +1113,46 @@ var ContractFactory = /** @class */ (function () {
     return ContractFactory;
 }());
 exports.ContractFactory = ContractFactory;
+/**
+ * Always composes a hedera timestamp from the given string/numeric input.
+ * May lose precision - JavaScript's floating point loss
+ *
+ * @param timestamp - the timestamp to be formatted
+ */
+function composeHederaTimestamp(timestamp) {
+    if (typeof timestamp === "number") {
+        var tsCopy = timestamp.toString();
+        var seconds = tsCopy.slice(0, 10);
+        if (seconds.length < 10) {
+            for (var i = seconds.length; i < 10; i++) {
+                seconds += "0";
+            }
+        }
+        var nanosTemp = tsCopy.slice(seconds.length);
+        if (nanosTemp.length < 9) {
+            for (var i = nanosTemp.length; i < 9; i++) {
+                nanosTemp += "0";
+            }
+        }
+        return seconds + "." + nanosTemp;
+    }
+    else if (typeof timestamp === "string") {
+        if (timestamp.includes(".")) {
+            // already formatted
+            var split = timestamp.split(".");
+            if (split[0].length === 10 && split[1].length === 9) {
+                return timestamp;
+            }
+            // floating point number - we lose precision
+            return composeHederaTimestamp(parseInt(timestamp.split('.')[0]));
+        }
+        else {
+            return composeHederaTimestamp(parseInt(timestamp));
+        }
+    }
+    else {
+        // not a string, neither a number
+        return logger.throwArgumentError('invalid timestamp', logger_1.Logger.errors.INVALID_ARGUMENT, { timestamp: timestamp });
+    }
+}
 //# sourceMappingURL=index.js.map

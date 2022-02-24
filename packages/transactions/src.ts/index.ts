@@ -273,6 +273,6 @@ export async function parse(rawTransaction: BytesLike): Promise<Transaction> {
     };
 }
 
-export function numberify(num: BigNumberish) {
+function numberify(num: BigNumberish) {
     return BigNumber.from(num).toNumber();
 }

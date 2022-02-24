@@ -1,4 +1,4 @@
-Ethereum Transaction Utilities
+Hedera Transaction Utilities
 ==============================
 
 This sub-module is part of the [hethers project](https://github.com/hashgraph/hethers.js). It is a fork of the original [ethers project](https://github.com/ethers-io/ethers.js) sub-module.
@@ -16,18 +16,18 @@ but for those with more specific needs, individual components can be imported.
 
 ```javascript
 const {
-
-    computeAddress,
-    recoverAddress,
-
-    serialize,
-    parse,
-
-    // Types
-
+    AccessList,
+    AccessListish,
+    TransactionTypes,
+    UnsignedTransaction,
     Transaction,
-    UnsignedTransaction
-
+    computeAddress,
+    computeAlias,
+    computeAliasFromPubKey,
+    recoverAddress,
+    accessListify,
+    serializeHederaTransaction,
+    parse
 } = require("@hethers/abi");
 ```
 

@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { numberify } from "@hethers/transactions";
+import { BigNumber } from "@ethersproject/bignumber";
 import { arrayify, hexlify } from "@ethersproject/bytes";
 import { defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { Logger } from "@hethers/logger";
@@ -90,7 +90,7 @@ export class Signer {
                 .setContractId(to)
                 .setFunctionParameters(arrayify(tx.data))
                 .setNodeAccountIds([nodeID])
-                .setGas(numberify(tx.gasLimit))
+                .setGas(BigNumber.from(tx.gasLimit).toNumber())
                 .setPaymentTransactionId(paymentTxId);
             // TODO: the exact amount here will be computed using getCost when it's implemented
             const cost = 3;
@@ -323,7 +323,7 @@ export class VoidSigner extends Signer {
  * @param min - range start
  * @param max - range end
  */
-export function randomNumBetween(min, max) {
+function randomNumBetween(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;

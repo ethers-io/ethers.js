@@ -2,7 +2,6 @@
 
 import { Provider, TransactionRequest, TransactionResponse } from "@hethers/abstract-provider";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
-import { numberify } from "@hethers/transactions";
 import { arrayify, Bytes, BytesLike, hexlify } from "@ethersproject/bytes";
 import { Deferrable, defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { Logger } from "@hethers/logger";
@@ -180,7 +179,7 @@ export abstract class Signer {
             .setContractId(to)
             .setFunctionParameters(arrayify(tx.data))
             .setNodeAccountIds([nodeID])
-            .setGas(numberify(tx.gasLimit))
+            .setGas(BigNumber.from(tx.gasLimit).toNumber())
             .setPaymentTransactionId(paymentTxId);
 
         // TODO: the exact amount here will be computed using getCost when it's implemented
@@ -432,7 +431,7 @@ export class VoidSigner extends Signer implements TypedDataSigner {
  * @param min - range start
  * @param max - range end
  */
-export function randomNumBetween(min: number, max: number): number {
+function randomNumBetween(min: number, max: number): number {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
