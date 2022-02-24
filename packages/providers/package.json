@@ -25,13 +25,13 @@
     "@ethersproject/web": "5.5.0",
     "@hashgraph/proto": "2.1.2",
     "@hashgraph/sdk": "2.7.0-beta.4",
-    "@hethers/abstract-provider": "1.0.1",
-    "@hethers/abstract-signer": "1.0.1",
-    "@hethers/address": "1.0.1",
-    "@hethers/constants": "1.0.1",
-    "@hethers/logger": "1.0.1",
-    "@hethers/networks": "1.0.1",
-    "@hethers/transactions": "1.0.1",
+    "@hethers/abstract-provider": "1.0.2",
+    "@hethers/abstract-signer": "1.0.2",
+    "@hethers/address": "1.0.2",
+    "@hethers/constants": "1.0.2",
+    "@hethers/logger": "1.0.2",
+    "@hethers/networks": "1.0.2",
+    "@hethers/transactions": "1.0.2",
     "@types/axios": "^0.14.0",
     "axios": "^0.24.0",
     "bech32": "1.1.4",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xdc2fa06de99e8d83b5b3acdfefc7c27485a0b83907c3ca3a52a6396f5799ad04",
+  "tarballHash": "0xc000dd81738b4ad8632358f09ab21954fe1b1f989d7542f9d064d8eb9dc130da",
   "types": "./lib/index.d.ts",
-  "version": "1.0.1"
+  "version": "1.0.2"
 }

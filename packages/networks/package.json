@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "@hethers/address": "1.0.1",
-    "@hethers/logger": "1.0.1"
+    "@hethers/address": "1.0.2",
+    "@hethers/logger": "1.0.2"
   },
   "description": "Network definitions for hethers.",
   "keywords": [
@@ -27,7 +27,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x111c55eee6294730b0e2181856985f4ff6081d6095c82d28235d5e4833b2324c",
+  "tarballHash": "0x12de8de82dbef5ac52b34605ddc749c535bc5957425454d3c1183abd35df8b41",
   "types": "./lib/index.d.ts",
-  "version": "1.0.1"
+  "version": "1.0.2"
 }

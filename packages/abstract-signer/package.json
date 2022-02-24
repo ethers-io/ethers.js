@@ -3,10 +3,10 @@
     "@ethersproject/bignumber": "5.5.0",
     "@ethersproject/bytes": "5.5.0",
     "@ethersproject/properties": "5.5.0",
-    "@hethers/abstract-provider": "1.0.1",
-    "@hethers/address": "1.0.1",
-    "@hethers/logger": "1.0.1",
-    "@hethers/transactions": "1.0.1"
+    "@hethers/abstract-provider": "1.0.2",
+    "@hethers/address": "1.0.2",
+    "@hethers/logger": "1.0.2",
+    "@hethers/transactions": "1.0.2"
   },
   "description": "An Abstract Class for describing an Hedera Hashgraph Signer for hethers.",
   "keywords": [
@@ -32,7 +32,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xa926d56bbc40b8005c5e59911705fbb617ea0cfb61827aa9dd4dee7127e747c8",
+  "tarballHash": "0x24600f7e367c2ecbbe92c4bcc92252c8aca7cde02a955dc28d25d915a79a6cf5",
   "types": "./lib/index.d.ts",
-  "version": "1.0.1"
+  "version": "1.0.2"
 }

@@ -1,2 +1,2 @@
-export const version = "wallet/1.0.1";
+export const version = "wallet/1.0.2";
 //# sourceMappingURL=_version.js.map

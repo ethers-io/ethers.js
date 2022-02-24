@@ -4,12 +4,12 @@
     "@ethersproject/bignumber": "5.5.0",
     "@ethersproject/bytes": "5.5.0",
     "@ethersproject/properties": "5.5.0",
-    "@hethers/abstract-provider": "1.0.1",
-    "@hethers/abstract-signer": "1.0.1",
-    "@hethers/address": "1.0.1",
-    "@hethers/logger": "1.0.1",
-    "@hethers/providers": "1.0.1",
-    "@hethers/transactions": "1.0.1"
+    "@hethers/abstract-provider": "1.0.2",
+    "@hethers/abstract-signer": "1.0.2",
+    "@hethers/address": "1.0.2",
+    "@hethers/logger": "1.0.2",
+    "@hethers/providers": "1.0.2",
+    "@hethers/transactions": "1.0.2"
   },
   "description": "Contract abstraction meta-class for hethers.",
   "keywords": [
@@ -35,7 +35,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x57790256d1bcace7cda2056fa62a3129681661b4108629e1e58353a6a1eb3b0b",
+  "tarballHash": "0x552a3ac6ee1f674e06f06ae5ffab32777b672a139fd95c322182aa5e3498b0a9",
   "types": "./lib/index.d.ts",
-  "version": "1.0.1"
+  "version": "1.0.2"
 }

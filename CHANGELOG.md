@@ -4,6 +4,12 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+hethers/v1.0.2 (2022-02-24 16:57)
+---------------------------------
+
+  - feat: build prior to release
+  - Feature/Fix module packages readmes
+
 hethers/v1.0.1 (2022-02-23 14:32)
 ---------------------------------
 
