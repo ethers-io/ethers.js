@@ -4,6 +4,12 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+hethers/v1.0.3 (2022-02-24 17:45)
+---------------------------------
+
+  - feat: fix build (2) Signed-off-by: Daniel Ivanov <daniel.k.ivanov95@gmail.com> ([f3d747c](https://github.com/hethers-io/hethers.js/commit/f3d747c047358733ad27b5c173be827476810c72))
+  - feat: fix build Signed-off-by: Daniel Ivanov <daniel.k.ivanov95@gmail.com> ([72a6a5f](https://github.com/hethers-io/hethers.js/commit/72a6a5f53fc0b39498ed3a13518959014236857d))
+
 hethers/v1.0.2 (2022-02-24 16:57)
 ---------------------------------
 

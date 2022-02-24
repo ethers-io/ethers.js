@@ -1,19 +1,19 @@
 {
   "browser-old": "./dist/hethers.umd.js",
   "dependencies": {
-    "@hethers/abstract-provider": "1.0.2",
-    "@hethers/abstract-signer": "1.0.2",
-    "@hethers/address": "1.0.2",
+    "@hethers/abstract-provider": "1.0.3",
+    "@hethers/abstract-signer": "1.0.3",
+    "@hethers/address": "1.0.3",
     "@hethers/constants": "1.0.2",
-    "@hethers/contracts": "1.0.2",
-    "@hethers/hdnode": "1.0.2",
-    "@hethers/json-wallets": "1.0.2",
+    "@hethers/contracts": "1.0.3",
+    "@hethers/hdnode": "1.0.3",
+    "@hethers/json-wallets": "1.0.3",
     "@hethers/logger": "1.0.2",
-    "@hethers/networks": "1.0.2",
-    "@hethers/providers": "1.0.2",
-    "@hethers/transactions": "1.0.2",
-    "@hethers/units": "1.0.2",
-    "@hethers/wallet": "1.0.2",
+    "@hethers/networks": "1.0.3",
+    "@hethers/providers": "1.0.3",
+    "@hethers/transactions": "1.0.3",
+    "@hethers/units": "1.0.3",
+    "@hethers/wallet": "1.0.3",
     "@ethersproject/solidity": "5.5.0"
   },
   "description": "Umbrella package for most common Hethers libraries.",
@@ -38,7 +38,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x8cfd07abb618add001a58b634fad9a00c01deb7a893049873495b6a305f2998c",
+  "tarballHash": "0xa84837bf1b4d8559b44e2696b9ec1a8a4bc980ac4ae009b3cc1b6908074b78d2",
   "types": "./lib/index.d.ts",
-  "version": "1.0.2"
+  "version": "1.0.3"
 }
