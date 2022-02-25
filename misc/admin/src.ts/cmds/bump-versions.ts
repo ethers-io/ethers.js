@@ -76,7 +76,7 @@ import { loadJson, repeat, saveJson } from "../utils";
         const info = loadJson(filename);
         Object.keys(info.dependencies).forEach((name) => {
             const version = latestVersions[name];
-            if (name == null) { return; }
+            if (name == null || !version) { return; }
             info.dependencies[name] = version;
         });
         saveJson(filename, info);

@@ -91,7 +91,7 @@ const utils_1 = require("../utils");
             const info = (0, utils_1.loadJson)(filename);
             Object.keys(info.dependencies).forEach((name) => {
                 const version = latestVersions[name];
-                if (name == null) {
+                if (name == null || !version) {
                     return;
                 }
                 info.dependencies[name] = version;
