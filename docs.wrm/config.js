@@ -250,6 +250,7 @@ module.exports = {
       "link-sphinx": { name: "Sphinx", url: "https:/\/www.sphinx-doc.org/" },
 
       "link-alchemy-signup": "https:/\/dashboard.alchemyapi.io/signup?referral=55a35117-028e-4b7c-9e47-e275ad0acc6d",
+      "link-chainstack-signup": "https:/\/console.chainstack.com/user/account/create",
       "link-etherscan-signup": "https:/\/etherscan.io/apis",
       "link-etherscan-ratelimit": "https:/\/info.etherscan.com/api-return-errors/",
       "link-infura-signup": "https:/\/infura.io/register",
