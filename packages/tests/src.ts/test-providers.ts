@@ -1530,7 +1530,7 @@ describe("Test CCIP execution", function() {
         }
     });
 
-    it("testGetFallback passes if any URL returns coorectly", async function() {
+    it("testGetFallback passes if any URL returns correctly", async function() {
         this.timeout(60000);
         const data = "0x123456";
         const result = await contract.testGetFallback(data, { ccipReadEnabled: true });
