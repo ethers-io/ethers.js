@@ -50,6 +50,7 @@ export type ConnectionInfo = {
     throttleCallback?: (attempt: number, url: string) => Promise<boolean>,
 
     skipFetchSetup?: boolean;
+    errorPassThrough?: boolean;
 
     timeout?: number,
 };
@@ -97,6 +98,8 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
     const throttleSlotInterval = ((typeof(connection) === "object" && typeof(connection.throttleSlotInterval) === "number") ? connection.throttleSlotInterval: 100);
     logger.assertArgument((throttleSlotInterval > 0 && (throttleSlotInterval % 1) === 0),
         "invalid connection throttle slot interval", "connection.throttleSlotInterval", throttleSlotInterval);
+
+    const errorPassThrough = ((typeof(connection) === "object") ? !!(connection.errorPassThrough): false);
 
     const headers: { [key: string]: Header } = { };
 
@@ -288,8 +291,7 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
 
             if (allow304 && response.statusCode === 304) {
                 body = null;
-
-            } else if (response.statusCode < 200 || response.statusCode >= 300) {
+            } else if (!errorPassThrough && (response.statusCode < 200 || response.statusCode >= 300)) {
                 runningTimeout.cancel();
                 logger.throwError("bad response", Logger.errors.SERVER_ERROR, {
                     status: response.statusCode,

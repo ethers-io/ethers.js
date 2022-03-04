@@ -1393,3 +1393,155 @@ describe("Resolve ENS avatar", function() {
         });
     });
 });
+
+describe("Test EIP-2544 ENS wildcards", function() {
+    const provider = <ethers.providers.BaseProvider>(providerFunctions[0].create("ropsten"));
+
+    it("Resolves recursively", async function() {
+        const resolver = await provider.getResolver("ricmoose.hatch.eth");
+        assert.equal(resolver.address, "0x8fc4C380c5d539aE631daF3Ca9182b40FB21D1ae", "found the correct resolver");
+        assert.equal(await resolver.supportsWildcard(), true, "supportsWildcard");
+        assert.equal((await resolver.getAvatar()).url, "https://static.ricmoo.com/uploads/profile-06cb9c3031c9.jpg", "gets passed-through avatar");
+        assert.equal(await resolver.getAddress(), "0x4FaBE0A3a4DDd9968A7b4565184Ad0eFA7BE5411", "gets resolved address");
+    });
+});
+
+describe("Test CCIP execution", function() {
+    const address = "0xAe375B05A08204C809b3cA67C680765661998886";
+    const ABI = [
+      //'error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData)',
+      'function testGet(bytes callData) view returns (bytes32)',
+      'function testGetFail(bytes callData) view returns (bytes32)',
+      'function testGetSenderFail(bytes callData) view returns (bytes32)',
+      'function testGetFallback(bytes callData) view returns (bytes32)',
+      'function testGetMissing(bytes callData) view returns (bytes32)',
+      'function testPost(bytes callData) view returns (bytes32)',
+      'function verifyTest(bytes result, bytes extraData) pure returns (bytes32)'
+    ];
+
+    const provider = providerFunctions[0].create("ropsten");
+    const contract = new ethers.Contract(address, ABI, provider);
+
+    // This matches the verify method in the Solidity contract against the
+    // processed data from the endpoint
+    const verify = function(sender: string, data: string, result: string): void {
+        const check = ethers.utils.concat([
+            ethers.utils.arrayify(ethers.utils.arrayify(sender).length),
+            sender,
+            ethers.utils.arrayify(ethers.utils.arrayify(data).length),
+            data
+        ]);
+        assert.equal(result, ethers.utils.keccak256(check), "response is equal");
+    }
+
+    it("testGet passes under normal operation", async function() {
+        this.timeout(60000);
+        const data = "0x1234";
+        const result = await contract.testGet(data, { ccipReadEnabled: true });
+        verify(ethers.constants.AddressZero, data, result);
+    });
+
+    it("testGet should fail with CCIP not explicitly enabled by overrides", async function() {
+        this.timeout(60000);
+
+        try {
+            const data = "0x1234";
+            const result = await contract.testGet(data);
+            console.log(result);
+            assert.fail("throw-failed");
+        } catch (error: any) {
+            if (error.message === "throw-failed") { throw error; }
+            if (error.code !== "CALL_EXCEPTION") {
+                console.log(error);
+                assert.fail("failed");
+            }
+        }
+    });
+
+    it("testGet should fail with CCIP explicitly disabled on provider", async function() {
+        this.timeout(60000);
+
+        const provider = providerFunctions[0].create("ropsten");
+        (<ethers.providers.BaseProvider>provider).disableCcipRead = true;
+        const contract = new ethers.Contract(address, ABI, provider);
+
+        try {
+            const data = "0x1234";
+            const result = await contract.testGet(data, { ccipReadEnabled: true });
+            console.log(result);
+            assert.fail("throw-failed");
+        } catch (error: any) {
+            if (error.message === "throw-failed") { throw error; }
+            if (error.code !== "CALL_EXCEPTION") {
+                console.log(error);
+                assert.fail("failed");
+            }
+        }
+    });
+
+    it("testGetFail should fail if all URLs 5xx", async function() {
+        this.timeout(60000);
+
+        try {
+            const data = "0x1234";
+            const result = await contract.testGetFail(data, { ccipReadEnabled: true });
+            console.log(result);
+            assert.fail("throw-failed");
+        } catch (error: any) {
+            if (error.message === "throw-failed") { throw error; }
+            if (error.code !== "SERVER_ERROR" || (error.errorMessages || []).pop() !== "hello world") {
+                console.log(error);
+                assert.fail("failed");
+            }
+        }
+    });
+
+    it("testGetSenderFail should fail if sender does not match", async function() {
+        this.timeout(60000);
+
+        try {
+            const data = "0x1234";
+            const result = await contract.testGetSenderFail(data, { ccipReadEnabled: true });
+            console.log(result);
+            assert.fail("throw-failed");
+        } catch (error: any) {
+            if (error.message === "throw-failed") { throw error; }
+            if (error.code !== "CALL_EXCEPTION") {
+                console.log(error);
+                assert.fail("failed");
+            }
+        }
+    });
+
+    it("testGetMissing should fail if early URL 4xx", async function() {
+        this.timeout(60000);
+
+        try {
+            const data = "0x1234";
+            const result = await contract.testGetMissing(data, { ccipReadEnabled: true });
+            console.log(result);
+            assert.fail("throw-failed");
+        } catch (error: any) {
+            if (error.message === "throw-failed") { throw error; }
+            if (error.code !== "SERVER_ERROR" || error.errorMessage !== "hello world") {
+                console.log(error);
+                assert.fail("failed");
+            }
+        }
+    });
+
+    it("testGetFallback passes if any URL returns coorectly", async function() {
+        this.timeout(60000);
+        const data = "0x123456";
+        const result = await contract.testGetFallback(data, { ccipReadEnabled: true });
+        verify(ethers.constants.AddressZero, data, result);
+    });
+
+    it("testPost passes under normal operation", async function() {
+        this.timeout(60000);
+        const data = "0x1234";
+        const result = await contract.testPost(data, { ccipReadEnabled: true });
+        verify(ethers.constants.AddressZero, data, result);
+    });
+
+})

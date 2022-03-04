@@ -6,7 +6,7 @@ import {
 } from "@ethersproject/abstract-provider";
 import { Base58 } from "@ethersproject/basex";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
-import { arrayify, concat, hexConcat, hexDataLength, hexDataSlice, hexlify, hexValue, hexZeroPad, isHexString } from "@ethersproject/bytes";
+import { arrayify, BytesLike, concat, hexConcat, hexDataLength, hexDataSlice, hexlify, hexValue, hexZeroPad, isHexString } from "@ethersproject/bytes";
 import { HashZero } from "@ethersproject/constants";
 import { dnsEncode, namehash } from "@ethersproject/hash";
 import { getNetwork, Network, Networkish } from "@ethersproject/networks";
@@ -23,6 +23,8 @@ import { version } from "./_version";
 const logger = new Logger(version);
 
 import { Formatter } from "./formatter";
+
+const MAX_CCIP_REDIRECTS = 10;
 
 //////////////////////////////
 // Event Serializeing
@@ -250,18 +252,19 @@ const matchers = [
     new RegExp("^eip155:[0-9]+/(erc[0-9]+):(.*)$", "i"),
 ];
 
-function _parseString(result: string): null | string {
+function _parseString(result: string, start: number): null | string {
     try {
-        return toUtf8String(_parseBytes(result));
+        return toUtf8String(_parseBytes(result, start));
     } catch(error) { }
     return null;
 }
 
-function _parseBytes(result: string): null | string {
+function _parseBytes(result: string, start: number): null | string {
     if (result === "0x") { return null; }
 
-    const offset = BigNumber.from(hexDataSlice(result, 0, 32)).toNumber();
+    const offset = BigNumber.from(hexDataSlice(result, start, start + 32)).toNumber();
     const length = BigNumber.from(hexDataSlice(result, offset, offset + 32)).toNumber();
+
     return hexDataSlice(result, offset + 32, offset + 32 + length);
 }
 
@@ -295,6 +298,32 @@ function bytesPad(value: Uint8Array): Uint8Array {
     return result;
 }
 
+// ABI Encodes a series of (bytes, bytes, ...)
+function encodeBytes(datas: Array<BytesLike>) {
+    const result: Array<Uint8Array> = [ ];
+
+    let byteCount = 0;
+
+    // Add place-holders for pointers as we add items
+    for (let i = 0; i < datas.length; i++) {
+        result.push(null);
+        byteCount += 32;
+    }
+
+    for (let i = 0; i < datas.length; i++) {
+        const data = arrayify(datas[i]);
+
+        // Update the bytes offset
+        result[i] = numPad(byteCount);
+
+        // The length and padded value of data
+        result.push(numPad(data.length));
+        result.push(bytesPad(data));
+        byteCount += 32 + Math.ceil(data.length / 32) * 32;
+    }
+
+    return hexConcat(result);
+}
 
 export class Resolver implements EnsResolver {
     readonly provider: BaseProvider;
@@ -346,41 +375,13 @@ export class Resolver implements EnsResolver {
         if (await this.supportsWildcard()) {
             parseBytes = true;
 
-            const p0 = arrayify(dnsEncode(this.name));
-            const p1 = arrayify(tx.data);
-
             // selector("resolve(bytes,bytes)")
-            const bytes: Array<string | Uint8Array> = [ "0x9061b923" ];
-            let byteCount = 0;
-
-            // Place-holder pointer to p0
-            const placeHolder0 = bytes.length;
-            bytes.push("0x");
-            byteCount += 32;
-
-            // Place-holder pointer to p1
-            const placeHolder1 = bytes.length;
-            bytes.push("0x");
-            byteCount += 32;
-
-            // The length and padded value of p0
-            bytes[placeHolder0] = numPad(byteCount);
-            bytes.push(numPad(p0.length));
-            bytes.push(bytesPad(p0));
-            byteCount += 32 + Math.ceil(p0.length / 32) * 32;
-
-            // The length and padded value of p0
-            bytes[placeHolder1] = numPad(byteCount);
-            bytes.push(numPad(p1.length));
-            bytes.push(bytesPad(p1));
-            byteCount += 32 + Math.ceil(p1.length / 32) * 32;
-
-            tx.data = hexConcat(bytes);
+            tx.data = hexConcat([ "0x9061b923", encodeBytes([ dnsEncode(this.name), tx.data ]) ]);
         }
 
         try {
             let result = await this.provider.call(tx);
-            if (parseBytes) { result = _parseBytes(result); }
+            if (parseBytes) { result = _parseBytes(result, 0); }
             return result;
         } catch (error) {
             if (error.code === Logger.errors.CALL_EXCEPTION) { return null; }
@@ -390,7 +391,7 @@ export class Resolver implements EnsResolver {
 
     async _fetchBytes(selector: string, parameters?: string): Promise<null | string> {
         const result = await this._fetch(selector, parameters);
-        if (result != null) { return _parseBytes(result); }
+        if (result != null) { return _parseBytes(result, 0); }
         return null;
     }
 
@@ -561,7 +562,7 @@ export class Resolver implements EnsResolver {
                             data: hexConcat([ selector, tokenId ])
                         };
 
-                        let metadataUrl = _parseString(await this.provider.call(tx))
+                        let metadataUrl = _parseString(await this.provider.call(tx), 0);
                         if (metadataUrl == null) { return null; }
                         linkage.push({ type: "metadata-url-base", content: metadataUrl });
 
@@ -700,6 +701,8 @@ export class BaseProvider extends Provider implements EnsProvider {
 
     readonly anyNetwork: boolean;
 
+    disableCcipRead: boolean;
+
 
     /**
      *  ready
@@ -720,6 +723,8 @@ export class BaseProvider extends Provider implements EnsProvider {
         this._events = [];
 
         this._emitted = { block: -2 };
+
+        this.disableCcipRead = false;
 
         this.formatter = new.target.getFormatter();
 
@@ -820,6 +825,46 @@ export class BaseProvider extends Provider implements EnsProvider {
     // @TODO: Remove this and just use getNetwork
     static getNetwork(network: Networkish): Network {
         return getNetwork((network == null) ? "homestead": network);
+    }
+
+    async ccipReadFetch(tx: Transaction, calldata: string, urls: Array<string>): Promise<null | string> {
+        if (this.disableCcipRead || urls.length === 0) { return null; }
+
+        const sender = (tx.from || "0x0000000000000000000000000000000000000000").toLowerCase();
+        const data = calldata.toLowerCase();
+
+        const errorMessages: Array<string> = [ ];
+
+        for (let i = 0; i < urls.length; i++) {
+            const url = urls[i];
+
+            // URL expansion
+            const href = url.replace("{sender}", sender).replace("{data}", data);
+
+            // If no {data} is present, use POST; otherwise GET
+            const json: string | null = (url.indexOf("{data}") >= 0) ? null: JSON.stringify({ data, sender });
+
+            const result = await fetchJson({ url: href, errorPassThrough: true }, json, (value, response) => {
+                value.status = response.statusCode;
+                return value;
+            });
+
+            if (result.data) { return result.data; }
+
+            const errorMessage = (result.message || "unknown error");
+
+            // 4xx indicates the result is not present; stop
+            if (result.status >= 400 && result.status < 500) {
+                return logger.throwError(`response not found during CCIP fetch: ${ errorMessage }`, Logger.errors.SERVER_ERROR, { url, errorMessage });
+            }
+
+            // 5xx indicates server issue; try the next url
+            errorMessages.push(errorMessage);
+        }
+
+        return logger.throwError(`error encountered during CCIP fetch: ${ errorMessages.map((m) => JSON.stringify(m)).join(", ") }`, Logger.errors.SERVER_ERROR, {
+            urls, errorMessages
+        });
     }
 
     // Fetches the blockNumber, but will reuse any result that is less
@@ -1512,22 +1557,105 @@ export class BaseProvider extends Provider implements EnsProvider {
         return this.formatter.filter(await resolveProperties(result));
     }
 
-    async call(transaction: Deferrable<TransactionRequest>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
-        await this.getNetwork();
-        const params = await resolveProperties({
-            transaction: this._getTransactionRequest(transaction),
-            blockTag: this._getBlockTag(blockTag)
-        });
+    async _call(transaction: TransactionRequest, blockTag: BlockTag, attempt: number): Promise<string> {
+        if (attempt >= MAX_CCIP_REDIRECTS) {
+            logger.throwError("CCIP read exceeded maximum redirections", Logger.errors.SERVER_ERROR, {
+                redirects: attempt, transaction
+            });
+        }
 
-        const result = await this.perform("call", params);
+        const txSender = transaction.to;
+
+        const result = await this.perform("call", { transaction, blockTag });
+
+        // CCIP Read request via OffchainLookup(address,string[],bytes,bytes4,bytes)
+        if (attempt >= 0 && blockTag === "latest" && txSender != null && result.substring(0, 10) === "0x556f1830" && (hexDataLength(result) % 32 === 4)) {
+            try {
+                const data = hexDataSlice(result, 4);
+
+                // Check the sender of the OffchainLookup matches the transaction
+                const sender = hexDataSlice(data, 0, 32);
+                if (!BigNumber.from(sender).eq(txSender)) {
+                    logger.throwError("CCIP Read sender did not match", Logger.errors.CALL_EXCEPTION, {
+                        name: "OffchainLookup",
+                        signature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
+                        transaction, data: result
+                    });
+                }
+
+                // Read the URLs from the response
+                const urls: Array<string> = [];
+                const urlsOffset = BigNumber.from(hexDataSlice(data, 32, 64)).toNumber();
+                const urlsLength = BigNumber.from(hexDataSlice(data, urlsOffset, urlsOffset + 32)).toNumber();
+                const urlsData = hexDataSlice(data, urlsOffset + 32);
+                for (let u = 0; u < urlsLength; u++) {
+                    const url = _parseString(urlsData, u * 32);
+                    if (url == null) {
+                        logger.throwError("CCIP Read contained corrupt URL string", Logger.errors.CALL_EXCEPTION, {
+                            name: "OffchainLookup",
+                            signature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
+                            transaction, data: result
+                        });
+                    }
+                    urls.push(url);
+                }
+
+                // Get the CCIP calldata to forward
+                const calldata = _parseBytes(data, 64);
+
+                // Get the callbackSelector (bytes4)
+                if (!BigNumber.from(hexDataSlice(data, 100, 128)).isZero()) {
+                    logger.throwError("CCIP Read callback selector included junk", Logger.errors.CALL_EXCEPTION, {
+                        name: "OffchainLookup",
+                        signature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
+                        transaction, data: result
+                    });
+                }
+                const callbackSelector = hexDataSlice(data, 96, 100);
+
+                // Get the extra data to send back to the contract as context
+                const extraData = _parseBytes(data, 128);
+
+                const ccipResult = await this.ccipReadFetch(<Transaction>transaction, calldata, urls);
+                if (ccipResult == null) {
+                    logger.throwError("CCIP Read disabled or provided no URLs", Logger.errors.CALL_EXCEPTION, {
+                        name: "OffchainLookup",
+                        signature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
+                        transaction, data: result
+                    });
+                }
+
+                const tx = {
+                    to: txSender,
+                    data: hexConcat([ callbackSelector, encodeBytes([ ccipResult, extraData ]) ])
+                };
+
+                return this._call(tx, blockTag, attempt + 1);
+
+            } catch (error) {
+                if (error.code === Logger.errors.SERVER_ERROR) { throw error; }
+            }
+        }
+
         try {
             return hexlify(result);
         } catch (error) {
             return logger.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
                 method: "call",
-                params, result, error
+                params: { transaction, blockTag }, result, error
             });
         }
+
+    }
+
+    async call(transaction: Deferrable<TransactionRequest>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> {
+        await this.getNetwork();
+        const resolved = await resolveProperties({
+            transaction: this._getTransactionRequest(transaction),
+            blockTag: this._getBlockTag(blockTag),
+            ccipReadEnabled: Promise.resolve(transaction.ccipReadEnabled)
+        });
+        return this._call(resolved.transaction, resolved.blockTag, resolved.ccipReadEnabled ? 0: -1);
     }
 
     async estimateGas(transaction: Deferrable<TransactionRequest>): Promise<BigNumber> {
@@ -1843,7 +1971,7 @@ export class BaseProvider extends Provider implements EnsProvider {
         const name = _parseString(await this.call({
             to: resolverAddr,
             data: ("0x691f3431" + namehash(node).substring(2))
-        }));
+        }), 0);
 
         const addr = await this.resolveName(name);
         if (addr != address) { return null; }
@@ -1877,7 +2005,7 @@ export class BaseProvider extends Provider implements EnsProvider {
                 const name = _parseString(await this.call({
                     to: resolverAddress,
                     data: ("0x691f3431" + namehash(node).substring(2))
-                }));
+                }), 0);
                 resolver = await this.getResolver(name);
             } catch (error) {
                 if (error.code !== Logger.errors.CALL_EXCEPTION) { throw error; }

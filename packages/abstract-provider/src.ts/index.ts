@@ -34,6 +34,7 @@ export type TransactionRequest = {
     maxFeePerGas?: BigNumberish;
 
     customData?: Record<string, any>;
+    ccipReadEnabled?: boolean;
 }
 
 export interface TransactionResponse extends Transaction {

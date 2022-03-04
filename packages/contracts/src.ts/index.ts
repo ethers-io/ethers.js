@@ -23,6 +23,7 @@ export interface Overrides {
     type?: number;
     accessList?: AccessListish;
     customData?: Record<string, any>;
+    ccipReadEnabled?: boolean;
 };
 
 export interface PayableOverrides extends Overrides {
@@ -58,6 +59,7 @@ export interface PopulatedTransaction {
     maxPriorityFeePerGas?: BigNumber;
 
     customData?: Record<string, any>;
+    ccipReadEnabled?: boolean;
 };
 
 export type EventFilter = {
@@ -110,7 +112,8 @@ const allowedTransactionKeys: { [ key: string ]: boolean } = {
     chainId: true, data: true, from: true, gasLimit: true, gasPrice:true, nonce: true, to: true, value: true,
     type: true, accessList: true,
     maxFeePerGas: true, maxPriorityFeePerGas: true,
-    customData: true
+    customData: true,
+    ccipReadEnabled: true
 }
 
 async function resolveName(resolver: Signer | Provider, nameOrPromise: string | Promise<string>): Promise<string> {
@@ -274,6 +277,10 @@ async function populateTransaction(contract: Contract, fragment: FunctionFragmen
         tx.customData = shallowCopy(ro.customData);
     }
 
+    if (ro.ccipReadEnabled) {
+        tx.ccipReadEnabled = !!ro.ccipReadEnabled;
+    }
+
     // Remove the overrides
     delete overrides.nonce;
     delete overrides.gasLimit;
@@ -288,6 +295,7 @@ async function populateTransaction(contract: Contract, fragment: FunctionFragmen
     delete overrides.maxPriorityFeePerGas;
 
     delete overrides.customData;
+    delete overrides.ccipReadEnabled;
 
     // Make sure there are no stray overrides, which may indicate a
     // typo or using an unsupported key.
