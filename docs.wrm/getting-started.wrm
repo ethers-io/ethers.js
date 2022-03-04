@@ -304,7 +304,7 @@ filterFrom = daiContract.filters.Transfer(myAddress, null);
 filterTo = daiContract.filters.Transfer(null, myAddress);
 //_log: filterTo
 
-// List all transfers sent from me a specific block range
+// List all transfers sent from me in a specific block range
 //_result:
 await daiContract.queryFilter(filterFrom, 9843470, 9843480)
 //_log:
