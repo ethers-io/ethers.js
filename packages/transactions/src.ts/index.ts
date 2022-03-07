@@ -1,6 +1,6 @@
 "use strict";
 
-import { AccountLike, getAccountFromAddress, getAddress } from "@hethers/address";
+import {AccountLike, getAccountFromAddress, getAddress, getAddressFromAccount, isAddress} from "@hethers/address";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import {
     arrayify,
@@ -14,14 +14,23 @@ import {computePublicKey} from "@ethersproject/signing-key";
 import {Logger} from "@hethers/logger";
 import {version} from "./_version";
 import * as base64 from "@ethersproject/base64";
-import {getAddressFromAccount} from "@hethers/address";
 import {
+    AccountCreateTransaction,
+    AccountId,
     ContractCreateTransaction,
-    ContractExecuteTransaction, ContractId, FileAppendTransaction,
+    ContractExecuteTransaction,
+    ContractId,
+    FileAppendTransaction,
     FileCreateTransaction,
+    Hbar,
+    HbarUnit,
+    PublicKey as HederaPubKey,
     Transaction as HederaTransaction,
-    PublicKey as HederaPubKey, TransactionId, AccountId, TransferTransaction, AccountCreateTransaction, Hbar, HbarUnit
+    TransactionId,
+    TransferTransaction
 } from "@hashgraph/sdk";
+import {IKey, Key} from "@hashgraph/proto";
+import Long from "long";
 
 const logger = new Logger(version);
 
@@ -139,6 +148,20 @@ export function accessListify(value: AccessListish): AccessList {
     return result;
 }
 
+function isAccountLike(str: any) {
+    str = str.toString();
+    const m = str.split('.').map((e:string) => parseInt(e)).filter((e: number) => e>=0).length;
+    return m == 3;
+}
+
+function validateMemo(memo: string, memoType: string) {
+    if (memo.length > 100 || memo.length === 0) {
+        logger.throwArgumentError(`invalid ${memoType} memo`, Logger.errors.INVALID_ARGUMENT, {
+            memo: memo
+        });
+    }
+}
+
 export function serializeHederaTransaction(transaction: UnsignedTransaction, pubKey?: HederaPubKey) : HederaTransaction {
     let tx: HederaTransaction;
     const arrayifiedData = transaction.data ? arrayify(transaction.data) : new Uint8Array();
@@ -162,6 +185,36 @@ export function serializeHederaTransaction(transaction: UnsignedTransaction, pub
                 .setConstructorParameters(arrayifiedData)
                 .setInitialBalance(transaction.value?.toString())
                 .setGas(gas);
+            if (transaction.customData.contractAdminKey) {
+                const inputKey = transaction.customData.contractAdminKey;
+                const keyInitializer :IKey = {};
+                if (inputKey.toString().startsWith('0x')) {
+                    if(isAddress(inputKey)) {
+                        const account = getAccountFromAddress(inputKey);
+                        keyInitializer.contractID = {
+                            shardNum: new Long(numberify(account.shard)),
+                            realmNum: new Long(numberify(account.realm)),
+                            contractNum: new Long(numberify(account.num))
+                        };
+                    } else {
+                        keyInitializer.ECDSASecp256k1 = arrayify(inputKey);
+                    }
+                }
+                if(isAccountLike(inputKey)) {
+                    const account = inputKey.split('.').map((e:string) => parseInt(e));
+                    keyInitializer.contractID = {
+                        shardNum: new Long(account[0]),
+                        realmNum: new Long(account[1]),
+                        contractNum: new Long(account[2])
+                    }
+                }
+                const key = HederaPubKey._fromProtobufKey(Key.create(keyInitializer));
+                (tx as ContractCreateTransaction).setAdminKey(key);
+            }
+            if(transaction.customData.contractMemo) {
+                validateMemo(transaction.customData.contractMemo, 'contract');
+                (tx as ContractCreateTransaction).setContractMemo(transaction.customData.contractMemo);
+            }
         } else {
             if (transaction.customData.fileChunk && transaction.customData.fileId) {
                 tx = new FileAppendTransaction()
@@ -188,6 +241,10 @@ export function serializeHederaTransaction(transaction: UnsignedTransaction, pub
                     transaction);
             }
         }
+    }
+    if (transaction.customData.memo) {
+        validateMemo(transaction.customData.memo, 'tx');
+        tx.setTransactionMemo(transaction.customData.memo);
     }
     const account = getAccountFromAddress(transaction.from.toString());
     tx.setTransactionId(

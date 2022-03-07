@@ -66,6 +66,7 @@ var utils = __importStar(require("./utils"));
 var sdk_1 = require("@hashgraph/sdk");
 var address_1 = require("@hethers/address");
 var logger_1 = require("@hethers/logger");
+var bytes_1 = require("@ethersproject/bytes");
 // @ts-ignore
 function equals(a, b) {
     if (Array.isArray(a)) {
@@ -405,6 +406,7 @@ describe("Test nameprep", function () {
 //  FileCreate requires some of the changes made in `feat/signing-and-sending-transactions`,
 //  as it currently throws on FileCreate parsing
 describe("Test Typed Transactions", function () {
+    var _this = this;
     var sendingAccount = "0.0.101010";
     it('Should parse ContractCreate', function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -500,6 +502,208 @@ describe("Test Typed Transactions", function () {
                         (0, assert_1.default)(err_1 !== undefined, "expected error on parsing transfer tx");
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
+                }
+            });
+        });
+    });
+    var hederaEoa = {
+        account: '0.0.29562194',
+        privateKey: '0x3b6cd41ded6986add931390d5d3efa0bb2b311a8415cfe66716cac0234de035d'
+    };
+    var provider = hethers_1.hethers.providers.getDefaultProvider('testnet');
+    // @ts-ignore
+    var wallet = new hethers_1.hethers.Wallet(hederaEoa, provider);
+    it('should place admin key for contracts when given', function () { return __awaiter(_this, void 0, void 0, function () {
+        var tx, signedTx, signedBytes, parsedHederaTx, adminKey;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    tx = {
+                        data: '0x',
+                        gasLimit: 30000,
+                        customData: {
+                            bytecodeFileId: '1.1.1',
+                            contractAdminKey: wallet._signingKey().compressedPublicKey
+                        }
+                    };
+                    return [4 /*yield*/, wallet.signTransaction(tx)];
+                case 1:
+                    signedTx = _a.sent();
+                    signedBytes = hethers_1.hethers.utils.arrayify(signedTx);
+                    parsedHederaTx = sdk_1.Transaction.fromBytes(signedBytes);
+                    adminKey = (0, bytes_1.hexlify)(parsedHederaTx.adminKey._toProtobufKey().ECDSASecp256k1);
+                    assert_1.default.strictEqual(adminKey, tx.customData.contractAdminKey, 'admin key mismatch or not present');
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+    it('should accept contract id ', function () { return __awaiter(_this, void 0, void 0, function () {
+        var tx, signedTx, signedBytes, parsedHederaTx, adminKey;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    tx = {
+                        data: '0x',
+                        gasLimit: 30000,
+                        customData: {
+                            bytecodeFileId: '1.1.1',
+                            contractAdminKey: '0.0.2'
+                        }
+                    };
+                    return [4 /*yield*/, wallet.signTransaction(tx)];
+                case 1:
+                    signedTx = _a.sent();
+                    signedBytes = hethers_1.hethers.utils.arrayify(signedTx);
+                    parsedHederaTx = sdk_1.Transaction.fromBytes(signedBytes);
+                    adminKey = (parsedHederaTx.adminKey._toProtobufKey().contractID);
+                    assert_1.default.strictEqual(adminKey.shardNum + "." + adminKey.realmNum + "." + adminKey.contractNum, tx.customData.contractAdminKey, 'admin key mismatch or not present');
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+    it('should accept contract address', function () { return __awaiter(_this, void 0, void 0, function () {
+        var addr, tx, signedTx, signedBytes, parsedHederaTx, adminKey;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    addr = (0, address_1.getAddressFromAccount)('0.0.2');
+                    tx = {
+                        data: '0x',
+                        gasLimit: 30000,
+                        customData: {
+                            bytecodeFileId: '1.1.1',
+                            contractAdminKey: addr
+                        }
+                    };
+                    return [4 /*yield*/, wallet.signTransaction(tx)];
+                case 1:
+                    signedTx = _a.sent();
+                    signedBytes = hethers_1.hethers.utils.arrayify(signedTx);
+                    parsedHederaTx = sdk_1.Transaction.fromBytes(signedBytes);
+                    adminKey = (parsedHederaTx.adminKey._toProtobufKey().contractID);
+                    assert_1.default.strictEqual(adminKey.shardNum + "." + adminKey.realmNum + "." + adminKey.contractNum, '0.0.2', 'admin key mismatch or not present');
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+    it('should accept valid contract memo', function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var memo, tx, signedTx, signedBytes, parsedHederaTx, contractCreateTx;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        memo = 'memo';
+                        tx = {
+                            data: '0x',
+                            gasLimit: 30000,
+                            customData: {
+                                bytecodeFileId: '1.1.1',
+                                contractMemo: memo
+                            }
+                        };
+                        return [4 /*yield*/, wallet.signTransaction(tx)];
+                    case 1:
+                        signedTx = _a.sent();
+                        signedBytes = hethers_1.hethers.utils.arrayify(signedTx);
+                        parsedHederaTx = sdk_1.Transaction.fromBytes(signedBytes);
+                        contractCreateTx = parsedHederaTx;
+                        assert_1.default.strictEqual(memo, contractCreateTx.contractMemo, 'invalid contract memo');
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it('should reject invalid memos', function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var invalidMemo, tx, e_1, i, e_2, e_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        invalidMemo = '';
+                        tx = {
+                            data: '0x',
+                            gasLimit: 30000,
+                            customData: {
+                                bytecodeFileId: '1.1.1',
+                                contractMemo: invalidMemo
+                            }
+                        };
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, wallet.signTransaction(tx)];
+                    case 2:
+                        _a.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_1 = _a.sent();
+                        assert_1.default.strictEqual(logger_1.Logger.errors.INVALID_ARGUMENT, e_1.code, "expected invalid contract memo");
+                        assert_1.default.strictEqual(e_1.message.startsWith('invalid contract memo'), true, 'expected fail message on invalid memo');
+                        return [3 /*break*/, 4];
+                    case 4:
+                        for (i = 0; i <= 101; i++) {
+                            invalidMemo += '0';
+                        }
+                        tx.customData.contractMemo = invalidMemo;
+                        _a.label = 5;
+                    case 5:
+                        _a.trys.push([5, 7, , 8]);
+                        return [4 /*yield*/, wallet.signTransaction(tx)];
+                    case 6:
+                        _a.sent();
+                        return [3 /*break*/, 8];
+                    case 7:
+                        e_2 = _a.sent();
+                        assert_1.default.strictEqual(logger_1.Logger.errors.INVALID_ARGUMENT, e_2.code, "expected invalid contract memo");
+                        assert_1.default.strictEqual(e_2.message.startsWith('invalid contract memo'), true, 'expected fail message on invalid memo');
+                        return [3 /*break*/, 8];
+                    case 8:
+                        tx.customData.contractMemo = "validContractMemo";
+                        // @ts-ignore - does not allow setting memo when not present initially
+                        tx.customData.memo = invalidMemo;
+                        _a.label = 9;
+                    case 9:
+                        _a.trys.push([9, 11, , 12]);
+                        return [4 /*yield*/, wallet.signTransaction(tx)];
+                    case 10:
+                        _a.sent();
+                        return [3 /*break*/, 12];
+                    case 11:
+                        e_3 = _a.sent();
+                        assert_1.default.strictEqual(logger_1.Logger.errors.INVALID_ARGUMENT, e_3.code, "expected invalid tx memo");
+                        assert_1.default.strictEqual(e_3.message.startsWith('invalid tx memo'), true, 'expected fail message on invalid memo');
+                        return [3 /*break*/, 12];
+                    case 12: return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it('differentiates between contract memo and tx memo', function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var contractMemo, txMemo, tx, signedTx, signedBytes, parsedHederaTx, contractCreateTx;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        contractMemo = 'contractMemo';
+                        txMemo = "txMemo";
+                        tx = {
+                            data: '0x',
+                            gasLimit: 30000,
+                            customData: {
+                                bytecodeFileId: '1.1.1',
+                                contractMemo: contractMemo,
+                                memo: txMemo
+                            }
+                        };
+                        return [4 /*yield*/, wallet.signTransaction(tx)];
+                    case 1:
+                        signedTx = _a.sent();
+                        signedBytes = hethers_1.hethers.utils.arrayify(signedTx);
+                        parsedHederaTx = sdk_1.Transaction.fromBytes(signedBytes);
+                        contractCreateTx = parsedHederaTx;
+                        assert_1.default.strictEqual(contractMemo, contractCreateTx.contractMemo, 'invalid contract memo');
+                        assert_1.default.strictEqual(txMemo, contractCreateTx.transactionMemo, "invalid tx memo");
+                        return [2 /*return*/];
                 }
             });
         });
