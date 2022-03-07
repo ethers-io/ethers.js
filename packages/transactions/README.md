@@ -21,10 +21,8 @@ const {
     TransactionTypes,
     UnsignedTransaction,
     Transaction,
-    computeAddress,
     computeAlias,
     computeAliasFromPubKey,
-    recoverAddress,
     accessListify,
     serializeHederaTransaction,
     parse

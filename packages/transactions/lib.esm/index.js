@@ -10,10 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { getAccountFromAddress, getAddress } from "@hethers/address";
 import { BigNumber } from "@ethersproject/bignumber";
-import { arrayify, hexDataLength, hexDataSlice, hexlify, } from "@ethersproject/bytes";
+import { arrayify, hexDataLength, hexlify, } from "@ethersproject/bytes";
 import { Zero } from "@hethers/constants";
-import { keccak256 } from "@ethersproject/keccak256";
-import { computePublicKey, recoverPublicKey } from "@ethersproject/signing-key";
+import { computePublicKey } from "@ethersproject/signing-key";
 import { Logger } from "@hethers/logger";
 import { version } from "./_version";
 import * as base64 from "@ethersproject/base64";
@@ -33,19 +32,12 @@ function handleNumber(value) {
     }
     return BigNumber.from(value);
 }
-export function computeAddress(key) {
-    const publicKey = computePublicKey(key);
-    return getAddress(hexDataSlice(keccak256(hexDataSlice(publicKey, 1)), 12));
-}
 export function computeAlias(key) {
     const publicKey = computePublicKey(key);
     return computeAliasFromPubKey(publicKey);
 }
 export function computeAliasFromPubKey(pubKey) {
     return `0.0.${base64.encode(pubKey)}`;
-}
-export function recoverAddress(digest, signature) {
-    return computeAddress(recoverPublicKey(arrayify(digest), signature));
 }
 function accessSetify(addr, storageKeys) {
     return {

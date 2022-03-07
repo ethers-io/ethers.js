@@ -402,39 +402,6 @@ describe("Test nameprep", function () {
     });
 });
 // FIXME
-xdescribe("Test Signature Manipulation", function () {
-    // TODO: fix by recovering PublicKey and not address (ecrecover)
-    var tests = (0, testcases_1.loadTests)("transactions");
-    tests.forEach(function (test) {
-        it("autofills partial signatures - " + test.name, function () {
-            var address = hethers_1.hethers.utils.getAddress(test.accountAddress);
-            var hash = hethers_1.hethers.utils.keccak256(test.unsignedTransaction);
-            // @ts-ignore
-            var data = hethers_1.hethers.utils.RLP.decode(test.signedTransaction);
-            var s = data.pop(), r = data.pop(), v = parseInt(data.pop().substring(2), 16);
-            var sig = hethers_1.hethers.utils.splitSignature({ r: r, s: s, v: v });
-            {
-                var addr = hethers_1.hethers.utils.recoverAddress(hash, {
-                    r: r, s: s, v: v
-                });
-                assert_1.default.equal(addr, address, "Using r, s and v");
-            }
-            {
-                var addr = hethers_1.hethers.utils.recoverAddress(hash, {
-                    r: sig.r, _vs: sig._vs
-                });
-                assert_1.default.equal(addr, address, "Using r, _vs");
-            }
-            {
-                var addr = hethers_1.hethers.utils.recoverAddress(hash, {
-                    r: sig.r, s: sig.s, recoveryParam: sig.recoveryParam
-                });
-                assert_1.default.equal(addr, address, "Using r, s and recoveryParam");
-            }
-        });
-    });
-});
-// FIXME
 //  FileCreate requires some of the changes made in `feat/signing-and-sending-transactions`,
 //  as it currently throws on FileCreate parsing
 describe("Test Typed Transactions", function () {

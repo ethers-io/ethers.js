@@ -16,7 +16,7 @@ import { randomBytes, shuffled } from "@ethersproject/random";
 import { checkProperties, deepCopy, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { computePublicKey, recoverPublicKey, SigningKey } from "@ethersproject/signing-key";
 import { formatBytes32String, nameprep, parseBytes32String, _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String, Utf8ErrorFuncs } from "@ethersproject/strings";
-import { accessListify, computeAddress, computeAlias, parse as parseTransaction, recoverAddress, TransactionTypes } from "@hethers/transactions";
+import { accessListify, computeAlias, parse as parseTransaction, TransactionTypes } from "@hethers/transactions";
 import { commify, formatHbar, parseHbar, formatUnits, parseUnits } from "@hethers/units";
 import { verifyMessage } from "@hethers/wallet";
 import { _fetchData, fetchJson, poll } from "@ethersproject/web";
@@ -151,9 +151,7 @@ export {
 
     getJsonWalletAddress,
 
-    computeAddress,
     computeAlias,
-    recoverAddress,
 
     computePublicKey,
     recoverPublicKey,
