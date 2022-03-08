@@ -130,7 +130,7 @@ export class Formatter {
         };
 
         formats.block = {
-            hash: hash,
+            hash: Formatter.allowNull(hash),
             parentHash: hash,
             number: number,
 
@@ -141,7 +141,7 @@ export class Formatter {
             gasLimit: bigNumber,
             gasUsed: bigNumber,
 
-            miner: address,
+            miner: Formatter.allowNull(address),
             extraData: data,
 
             transactions: Formatter.allowNull(Formatter.arrayOf(hash)),
