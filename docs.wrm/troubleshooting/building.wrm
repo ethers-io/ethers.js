@@ -1,0 +1,15 @@
+_section: Building @<troubleshooting-building>
+
+@TODO
+
+_subsection: Packages
+
+Sometimes packages get out of sync.
+
+_code:
+
+/home/ethers> rm package-lock.json node_modules/
+
+/home/ethers> rm yarn.lock
+
+/home/ethers> npm install

@@ -250,7 +250,7 @@ export class Logger {
         }
 
         if (url) {
-            message += " [ See: https:/\/ethers.org/errors/" + url + " ]";
+            message += " [ See: https:/\/links.ethers.org/v5-errors-" + url + " ]";
         }
 
         if (messageDetails.length) {
