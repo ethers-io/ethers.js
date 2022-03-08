@@ -26,25 +26,25 @@ function ethDefaultProvider(network: string | Network): Renetworkable {
         if (options == null) { options = { }; }
         const providerList: Array<any> = [];
 
-        if (providers.InfuraProvider) {
+        if (providers.InfuraProvider && options.infura !== "-") {
             try {
                 providerList.push(new providers.InfuraProvider(network, options.infura));
             } catch(error) { }
         }
 
-        if (providers.EtherscanProvider) {
+        if (providers.EtherscanProvider && options.etherscan !== "-") {
             try {
                 providerList.push(new providers.EtherscanProvider(network, options.etherscan));
             } catch(error) { }
         }
 
-        if (providers.AlchemyProvider) {
+        if (providers.AlchemyProvider && options.alchemy !== "-") {
             try {
                 providerList.push(new providers.AlchemyProvider(network, options.alchemy));
             } catch(error) { }
         }
 
-        if (providers.PocketProvider) {
+        if (providers.PocketProvider && options.pocket !== "-") {
             // These networks are currently faulty on Pocket as their
             // network does not handle the Berlin hardfork, which is
             // live on these ones.
@@ -58,7 +58,7 @@ function ethDefaultProvider(network: string | Network): Renetworkable {
             } catch(error) { }
         }
 
-        if (providers.CloudflareProvider) {
+        if (providers.CloudflareProvider && options.cloudflare !== "-") {
             try {
                 providerList.push(new providers.CloudflareProvider(network));
             } catch(error) { }
