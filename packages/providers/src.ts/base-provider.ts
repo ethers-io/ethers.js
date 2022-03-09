@@ -697,7 +697,10 @@ export class BaseProvider extends Provider implements EnsProvider {
     _fastQueryDate: number;
 
     _maxInternalBlockNumber: number;
-    _internalBlockNumber: Promise<{ blockNumber: number, reqTime: number, respTime: number }>;
+    _internalBlockNumber: {
+        id: number
+        promise: Promise<void | { blockNumber: number, reqTime: number, respTime: number }>
+    };
 
     readonly anyNetwork: boolean;
 
@@ -879,12 +882,12 @@ export class BaseProvider extends Provider implements EnsProvider {
             while (this._internalBlockNumber) {
 
                 // ..."remember" which fetch we started with
-                const internalBlockNumber = this._internalBlockNumber;
+                const startId = this._internalBlockNumber.id;
 
                 try {
                     // Check the result is not too stale
-                    const result = await internalBlockNumber;
-                    if ((getTime() - result.respTime) <= maxAge) {
+                    const result = await this._internalBlockNumber.promise;
+                    if (result && (getTime() - result.respTime) <= maxAge) {
                         return result.blockNumber;
                     }
 
@@ -897,7 +900,7 @@ export class BaseProvider extends Provider implements EnsProvider {
                     // rejection, drop through so we replace it with a new
                     // fetch; all others blocked will then get that fetch
                     // which won't match the one they "remembered" and loop
-                    if (this._internalBlockNumber === internalBlockNumber) {
+                    if (this._internalBlockNumber.id == startId) {
                         break;
                     }
                 }
@@ -905,40 +908,39 @@ export class BaseProvider extends Provider implements EnsProvider {
         }
 
         const reqTime = getTime();
+        const reqId = this._internalBlockNumber ? this._internalBlockNumber.id + 1 : 0
 
-        const checkInternalBlockNumber = resolveProperties({
-            blockNumber: this.perform("getBlockNumber", { }),
-            networkError: this.getNetwork().then((network) => (null), (error) => (error))
-        }).then(({ blockNumber, networkError }) => {
-            if (networkError) {
-                // Unremember this bad internal block number
-                if (this._internalBlockNumber === checkInternalBlockNumber) {
+        this._internalBlockNumber = {
+            id: reqId,
+            promise: resolveProperties({
+                blockNumber: this.perform("getBlockNumber", { }),
+                networkError: this.getNetwork().then((network) => (null), (error) => (error))
+            }).then(({ blockNumber, networkError }) => {
+                if (networkError) {
+                    // Unremember this bad internal block number
+                    if (this._internalBlockNumber.id == reqId) {
+                        this._internalBlockNumber = null;
+                    }
+                    throw networkError;
+                }
+    
+                const respTime = getTime();
+    
+                blockNumber = BigNumber.from(blockNumber).toNumber();
+                if (blockNumber < this._maxInternalBlockNumber) { blockNumber = this._maxInternalBlockNumber; }
+    
+                this._maxInternalBlockNumber = blockNumber;
+                this._setFastBlockNumber(blockNumber); // @TODO: Still need this?
+                return { blockNumber, reqTime, respTime };
+            }, (error) => {
+                // Don't null the dead (rejected) fetch, if it has already been updated
+                if (this._internalBlockNumber.id === reqId) {
                     this._internalBlockNumber = null;
                 }
-                throw networkError;
-            }
+            })
+        };
 
-            const respTime = getTime();
-
-            blockNumber = BigNumber.from(blockNumber).toNumber();
-            if (blockNumber < this._maxInternalBlockNumber) { blockNumber = this._maxInternalBlockNumber; }
-
-            this._maxInternalBlockNumber = blockNumber;
-            this._setFastBlockNumber(blockNumber); // @TODO: Still need this?
-            return { blockNumber, reqTime, respTime };
-        });
-
-        this._internalBlockNumber = checkInternalBlockNumber;
-
-        // Swallow unhandled exceptions; if needed they are handled else where
-        checkInternalBlockNumber.catch((error) => {
-            // Don't null the dead (rejected) fetch, if it has already been updated
-            if (this._internalBlockNumber === checkInternalBlockNumber) {
-                this._internalBlockNumber = null;
-            }
-        });
-
-        return (await checkInternalBlockNumber).blockNumber;
+        return this._internalBlockNumber.promise.then(block => block ? block. blockNumber : -1)
     }
 
     async poll(): Promise<void> {
