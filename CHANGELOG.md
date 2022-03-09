@@ -4,10 +4,13 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
-ethers/v5.6.0 (2022-03-09 02:13)
+ethers/v5.6.0 (2022-03-09 14:57)
 --------------------------------
 
-  - Fix missing events on certain network conditions. ([#1798](https://github.com/ethers-io/ethers.js/issues/1798), [#1814](https://github.com/ethers-io/ethers.js/issues/1814), [#1830](https://github.com/ethers-io/ethers.js/issues/1830), [#2274](https://github.com/ethers-io/ethers.js/issues/2274), [#2652](https://github.com/ethers-io/ethers.js/issues/2652); [f67a9a8](https://github.com/ethers-io/ethers.js/commit/f67a9a8569cdfd0ef9ce5fbf09866aab6e4814d4))
+  - Tweaked test case to re-order transaction after event listeners added. ([fa4a290](https://github.com/ethers-io/ethers.js/commit/fa4a29028d97d598b43b2f5ff98077e8cadf56a4))
+  - Ignore errors when resolving ENS resolver properties. ([d160bac](https://github.com/ethers-io/ethers.js/commit/d160bac273775f928a9441b0275dbdb6032368fa))
+  - Enable CCIP Read for ENS resolvers. ([#2478](https://github.com/ethers-io/ethers.js/issues/2478); [be518c3](https://github.com/ethers-io/ethers.js/commit/be518c32ec7db9dd4769b57cdf130eb333aebb72))
+  - Fix missing events on certain network conditions. ([#1798](https://github.com/ethers-io/ethers.js/issues/1798), [#1814](https://github.com/ethers-io/ethers.js/issues/1814), [#1830](https://github.com/ethers-io/ethers.js/issues/1830), [#2274](https://github.com/ethers-io/ethers.js/issues/2274), [#2652](https://github.com/ethers-io/ethers.js/issues/2652); [f67a9a8](https://github.com/ethers-io/ethers.js/commit/f67a9a8569cdfd0ef9ce5fbf09866aab6e4814d4), [f46aa75](https://github.com/ethers-io/ethers.js/commit/f46aa75ef1f3428e640cd046db3f080d264b32f3))
   - Added defaultProvider option to omit specific Providers. ([bae215e](https://github.com/ethers-io/ethers.js/commit/bae215eb7fb3efea8473a544579abac1bebb7ef0))
   - Add support for pending blocks. ([#2225](https://github.com/ethers-io/ethers.js/issues/2225); [54e6e57](https://github.com/ethers-io/ethers.js/commit/54e6e57fcece4c1718a577ecbeb1af97998e8bdc))
   - Help URLs for errors. ([#2489](https://github.com/ethers-io/ethers.js/issues/2489); [38e825c](https://github.com/ethers-io/ethers.js/commit/38e825cee624ff935ec6b70023cf288126a6bb85), [c562150](https://github.com/ethers-io/ethers.js/commit/c562150d2678710f50e5ee3ffa88d0e62d6f696f))

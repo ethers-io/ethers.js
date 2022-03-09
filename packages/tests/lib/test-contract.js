@@ -75,6 +75,14 @@ function TestContractEvents() {
         function waitForEvent(eventName, expected) {
             return new Promise(function (resolve, reject) {
                 var done = false;
+                contract.on("error", function (error) {
+                    if (done) {
+                        return;
+                    }
+                    done = true;
+                    contract.removeAllListeners();
+                    reject(error);
+                });
                 contract.on(eventName, function () {
                     if (done) {
                         return;
@@ -99,34 +107,31 @@ function TestContractEvents() {
                 }
             });
         }
-        var data;
+        var running, data;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, ethers_1.ethers.utils.fetchJson('https://api.ethers.io/api/v1/?action=triggerTest&address=' + contract.address)];
+                case 0:
+                    running = new Promise(function (resolve, reject) {
+                        var p0 = '0x06B5955A67D827CDF91823E3bB8F069e6c89c1D6';
+                        var p0_1 = '0x06b5955A67d827CdF91823e3Bb8F069e6C89C1d7';
+                        var p1 = 0x42;
+                        var p1_1 = 0x43;
+                        return Promise.all([
+                            waitForEvent('Test', [p0, p1]),
+                            waitForEvent('TestP0', [p0, p1]),
+                            waitForEvent('TestP0P1', [p0, p1]),
+                            waitForEvent('TestIndexedString', [{ indexed: true, hash: '0x7c5ea36004851c764c44143b1dcb59679b11c9a68e5f41497f6cf3d480715331' }, p1]),
+                            waitForEvent('TestV2', [{ indexed: true }, [p0, p1]]),
+                            waitForEvent('TestV2Nested', [{ indexed: true }, [p0_1, p1_1, [p0, p1]]]),
+                        ]).then(function (result) {
+                            resolve(result);
+                        });
+                    });
+                    return [4 /*yield*/, ethers_1.ethers.utils.fetchJson('https://api.ethers.io/api/v1/?action=triggerTest&address=' + contract.address)];
                 case 1:
                     data = _a.sent();
                     console.log('*** Triggered Transaction Hash: ' + data.hash);
-                    contract.on("error", function (error) {
-                        console.log(error);
-                        (0, assert_1.default)(false);
-                        contract.removeAllListeners();
-                    });
-                    return [2 /*return*/, new Promise(function (resolve, reject) {
-                            var p0 = '0x06B5955A67D827CDF91823E3bB8F069e6c89c1D6';
-                            var p0_1 = '0x06b5955A67d827CdF91823e3Bb8F069e6C89C1d7';
-                            var p1 = 0x42;
-                            var p1_1 = 0x43;
-                            return Promise.all([
-                                waitForEvent('Test', [p0, p1]),
-                                waitForEvent('TestP0', [p0, p1]),
-                                waitForEvent('TestP0P1', [p0, p1]),
-                                waitForEvent('TestIndexedString', [{ indexed: true, hash: '0x7c5ea36004851c764c44143b1dcb59679b11c9a68e5f41497f6cf3d480715331' }, p1]),
-                                waitForEvent('TestV2', [{ indexed: true }, [p0, p1]]),
-                                waitForEvent('TestV2Nested', [{ indexed: true }, [p0_1, p1_1, [p0, p1]]]),
-                            ]).then(function (result) {
-                                resolve(result);
-                            });
-                        })];
+                    return [2 /*return*/, running];
             }
         });
     });

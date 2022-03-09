@@ -18754,6 +18754,8 @@ class Event {
         defineReadOnly(this, "tag", tag);
         defineReadOnly(this, "listener", listener);
         defineReadOnly(this, "once", once);
+        this._lastBlockNumber = -2;
+        this._inflight = false;
     }
     get event() {
         switch (this.type) {
@@ -18915,6 +18917,7 @@ class Resolver {
             // e.g. keccak256("addr(bytes32,uint256)")
             const tx = {
                 to: this.address,
+                ccipReadEnabled: true,
                 data: hexConcat([selector, namehash(this.name), (parameters || "0x")])
             };
             // Wildcard support; use EIP-2544 to resolve the request
@@ -18926,6 +18929,11 @@ class Resolver {
             }
             try {
                 let result = yield this.provider.call(tx);
+                if ((arrayify(result).length % 32) === 4) {
+                    logger$t.throwError("resolver threw error", Logger.errors.CALL_EXCEPTION, {
+                        transaction: tx, data: result
+                    });
+                }
                 if (parseBytes) {
                     result = _parseBytes(result, 0);
                 }
@@ -18935,7 +18943,7 @@ class Resolver {
                 if (error.code === Logger.errors.CALL_EXCEPTION) {
                     return null;
                 }
-                return null;
+                throw error;
             }
         });
     }
@@ -19248,8 +19256,6 @@ class BaseProvider extends Provider {
         }
         this._maxInternalBlockNumber = -1024;
         this._lastBlockNumber = -2;
-        this._lastFilterBlockNumber = -2;
-        this._lastFilterComplete = true;
         this._maxFilterBlockRange = 10;
         this._pollingInterval = 4000;
         this._fastQueryDate = 0;
@@ -19477,8 +19483,6 @@ class BaseProvider extends Provider {
             // First polling cycle
             if (this._lastBlockNumber === -2) {
                 this._lastBlockNumber = blockNumber - 1;
-                this._lastFilterBlockNumber = blockNumber - 1;
-                this._lastFilterComplete = true;
             }
             // Find all transaction hashes we are waiting on
             this._events.forEach((event) => {
@@ -19498,14 +19502,14 @@ class BaseProvider extends Provider {
                     }
                     case "filter": {
                         // We only allow a single getLogs to be in-flight at a time
-                        if (this._lastFilterComplete) {
-                            this._lastFilterComplete = false;
+                        if (!event._inflight) {
+                            event._inflight = true;
                             // Filter from the last known event; due to load-balancing
                             // and some nodes returning updated block numbers before
                             // indexing events, a logs result with 0 entries cannot be
                             // trusted and we must retry a range which includes it again
                             const filter = event.filter;
-                            filter.fromBlock = this._lastFilterBlockNumber + 1;
+                            filter.fromBlock = event._lastBlockNumber + 1;
                             filter.toBlock = blockNumber;
                             // Prevent fitler ranges from growing too wild
                             if (filter.toBlock - this._maxFilterBlockRange > filter.fromBlock) {
@@ -19513,15 +19517,15 @@ class BaseProvider extends Provider {
                             }
                             const runner = this.getLogs(filter).then((logs) => {
                                 // Allow the next getLogs
-                                this._lastFilterComplete = true;
+                                event._inflight = false;
                                 if (logs.length === 0) {
                                     return;
                                 }
                                 logs.forEach((log) => {
                                     // Only when we get an event for a given block number
                                     // can we trust the events are indexed
-                                    if (log.blockNumber > this._lastFilterBlockNumber) {
-                                        this._lastFilterBlockNumber = log.blockNumber;
+                                    if (log.blockNumber > event._lastBlockNumber) {
+                                        event._lastBlockNumber = log.blockNumber;
                                     }
                                     // Make sure we stall requests to fetch blocks and txs
                                     this._emitted["b:" + log.blockHash] = log.blockNumber;
@@ -19531,7 +19535,7 @@ class BaseProvider extends Provider {
                             }).catch((error) => {
                                 this.emit("error", error);
                                 // Allow another getLogs (the range was not updated)
-                                this._lastFilterComplete = true;
+                                event._inflight = false;
                             });
                             runners.push(runner);
                         }

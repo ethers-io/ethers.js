@@ -20970,6 +20970,8 @@
 	        (0, lib$3.defineReadOnly)(this, "tag", tag);
 	        (0, lib$3.defineReadOnly)(this, "listener", listener);
 	        (0, lib$3.defineReadOnly)(this, "once", once);
+	        this._lastBlockNumber = -2;
+	        this._inflight = false;
 	    }
 	    Object.defineProperty(Event.prototype, "event", {
 	        get: function () {
@@ -21153,6 +21155,7 @@
 	                    case 0:
 	                        tx = {
 	                            to: this.address,
+	                            ccipReadEnabled: true,
 	                            data: (0, lib$1.hexConcat)([selector, (0, lib$9.namehash)(this.name), (parameters || "0x")])
 	                        };
 	                        parseBytes = false;
@@ -21169,6 +21172,11 @@
 	                        return [4 /*yield*/, this.provider.call(tx)];
 	                    case 3:
 	                        result = _a.sent();
+	                        if (((0, lib$1.arrayify)(result).length % 32) === 4) {
+	                            logger.throwError("resolver threw error", lib.Logger.errors.CALL_EXCEPTION, {
+	                                transaction: tx, data: result
+	                            });
+	                        }
 	                        if (parseBytes) {
 	                            result = _parseBytes(result, 0);
 	                        }
@@ -21178,7 +21186,7 @@
 	                        if (error_1.code === lib.Logger.errors.CALL_EXCEPTION) {
 	                            return [2 /*return*/, null];
 	                        }
-	                        return [2 /*return*/, null];
+	                        throw error_1;
 	                    case 5: return [2 /*return*/];
 	                }
 	            });
@@ -21555,8 +21563,6 @@
 	        }
 	        _this._maxInternalBlockNumber = -1024;
 	        _this._lastBlockNumber = -2;
-	        _this._lastFilterBlockNumber = -2;
-	        _this._lastFilterComplete = true;
 	        _this._maxFilterBlockRange = 10;
 	        _this._pollingInterval = 4000;
 	        _this._fastQueryDate = 0;
@@ -21838,8 +21844,6 @@
 	                        // First polling cycle
 	                        if (this._lastBlockNumber === -2) {
 	                            this._lastBlockNumber = blockNumber - 1;
-	                            this._lastFilterBlockNumber = blockNumber - 1;
-	                            this._lastFilterComplete = true;
 	                        }
 	                        // Find all transaction hashes we are waiting on
 	                        this._events.forEach(function (event) {
@@ -21859,14 +21863,14 @@
 	                                }
 	                                case "filter": {
 	                                    // We only allow a single getLogs to be in-flight at a time
-	                                    if (_this._lastFilterComplete) {
-	                                        _this._lastFilterComplete = false;
+	                                    if (!event._inflight) {
+	                                        event._inflight = true;
 	                                        // Filter from the last known event; due to load-balancing
 	                                        // and some nodes returning updated block numbers before
 	                                        // indexing events, a logs result with 0 entries cannot be
 	                                        // trusted and we must retry a range which includes it again
 	                                        var filter_1 = event.filter;
-	                                        filter_1.fromBlock = _this._lastFilterBlockNumber + 1;
+	                                        filter_1.fromBlock = event._lastBlockNumber + 1;
 	                                        filter_1.toBlock = blockNumber;
 	                                        // Prevent fitler ranges from growing too wild
 	                                        if (filter_1.toBlock - _this._maxFilterBlockRange > filter_1.fromBlock) {
@@ -21874,15 +21878,15 @@
 	                                        }
 	                                        var runner = _this.getLogs(filter_1).then(function (logs) {
 	                                            // Allow the next getLogs
-	                                            _this._lastFilterComplete = true;
+	                                            event._inflight = false;
 	                                            if (logs.length === 0) {
 	                                                return;
 	                                            }
 	                                            logs.forEach(function (log) {
 	                                                // Only when we get an event for a given block number
 	                                                // can we trust the events are indexed
-	                                                if (log.blockNumber > _this._lastFilterBlockNumber) {
-	                                                    _this._lastFilterBlockNumber = log.blockNumber;
+	                                                if (log.blockNumber > event._lastBlockNumber) {
+	                                                    event._lastBlockNumber = log.blockNumber;
 	                                                }
 	                                                // Make sure we stall requests to fetch blocks and txs
 	                                                _this._emitted["b:" + log.blockHash] = log.blockNumber;
@@ -21892,7 +21896,7 @@
 	                                        }).catch(function (error) {
 	                                            _this.emit("error", error);
 	                                            // Allow another getLogs (the range was not updated)
-	                                            _this._lastFilterComplete = true;
+	                                            event._inflight = false;
 	                                        });
 	                                        runners.push(runner);
 	                                    }
