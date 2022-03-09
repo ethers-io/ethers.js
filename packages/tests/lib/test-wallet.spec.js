@@ -139,6 +139,48 @@ describe('Test JSON Wallets', function () {
         });
     });
 });
+describe("Test wallet keys", function () {
+    it('Should prefix non-prefixed keys(raw)', function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var key, wallet, privKey;
+            return __generator(this, function (_a) {
+                key = '074cc0bd198d1bc91f668c59b46a1e74fd13215661e5a7bd42ad0d324476295d';
+                wallet = new hethers_1.hethers.Wallet(key);
+                privKey = wallet._signingKey().privateKey;
+                assert_1.default.strictEqual('0x' + key, privKey);
+                return [2 /*return*/];
+            });
+        });
+    });
+    it("Should prefix @hashgraph/sdk generated keys", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var key, wallet, privKey;
+            return __generator(this, function (_a) {
+                key = sdk_1.PrivateKey.generateECDSA().toStringRaw();
+                wallet = new hethers_1.hethers.Wallet(key);
+                privKey = wallet._signingKey().privateKey;
+                assert_1.default.strictEqual('0x' + key, privKey);
+                return [2 /*return*/];
+            });
+        });
+    });
+    it('Should prefix keys when given eoa in constructor', function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var provider, eoa, wallet, privKey;
+            return __generator(this, function (_a) {
+                provider = hethers_1.hethers.providers.getDefaultProvider('testnet');
+                eoa = {
+                    account: '1.1.1',
+                    privateKey: "074cc0bd198d1bc91f668c59b46a1e74fd13215661e5a7bd42ad0d324476295d"
+                };
+                wallet = new hethers_1.hethers.Wallet(eoa, provider);
+                privKey = wallet._signingKey().privateKey;
+                assert_1.default.strictEqual('0x' + eoa.privateKey, privKey);
+                return [2 /*return*/];
+            });
+        });
+    });
+});
 describe('Test Transaction Signing and Parsing', function () {
     // FIXME
     //  unit tests for this functionality is present

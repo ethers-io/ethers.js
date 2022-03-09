@@ -69,7 +69,13 @@ var _version_1 = require("./_version");
 var sdk_1 = require("@hashgraph/sdk");
 var logger = new logger_1.Logger(_version_1.version);
 function isAccount(value) {
-    return value != null && (0, bytes_1.isHexString)(value.privateKey, 32);
+    if (!value || !value.privateKey)
+        return false;
+    var privKeyCopy = value.privateKey;
+    if (!privKeyCopy.startsWith('0x')) {
+        privKeyCopy = '0x' + privKeyCopy;
+    }
+    return (0, bytes_1.isHexString)(privKeyCopy, 32);
 }
 function hasMnemonic(value) {
     var mnemonic = value.mnemonic;
@@ -77,6 +83,12 @@ function hasMnemonic(value) {
 }
 function hasAlias(value) {
     return isAccount(value) && value.alias != null;
+}
+function prepend0x(value) {
+    if (value.match(/^[0-9a-f]*$/i) && value.length === 64) {
+        return "0x" + value;
+    }
+    return value;
 }
 var Wallet = /** @class */ (function (_super) {
     __extends(Wallet, _super);
@@ -86,7 +98,12 @@ var Wallet = /** @class */ (function (_super) {
         logger.checkNew(_newTarget, Wallet);
         _this = _super.call(this) || this;
         if (isAccount(identity) && !signing_key_1.SigningKey.isSigningKey(identity)) {
-            var signingKey_1 = new signing_key_1.SigningKey(identity.privateKey);
+            var privKey = identity.privateKey;
+            // A lot of common tools do not prefix private keys with a 0x (see: #1166)
+            if (typeof (privKey) === "string") {
+                privKey = prepend0x(privKey);
+            }
+            var signingKey_1 = new signing_key_1.SigningKey(privKey);
             (0, properties_1.defineReadOnly)(_this, "_signingKey", function () { return signingKey_1; });
             if (identity.address || identity.account) {
                 (0, properties_1.defineReadOnly)(_this, "address", identity.address ? (0, address_1.getAddress)(identity.address) : (0, address_1.getAddressFromAccount)(identity.account));
@@ -126,9 +143,7 @@ var Wallet = /** @class */ (function (_super) {
             else {
                 // A lot of common tools do not prefix private keys with a 0x (see: #1166)
                 if (typeof (identity) === "string") {
-                    if (identity.match(/^[0-9a-f]*$/i) && identity.length === 64) {
-                        identity = "0x" + identity;
-                    }
+                    identity = prepend0x(identity);
                 }
                 var signingKey_2 = new signing_key_1.SigningKey(identity);
                 (0, properties_1.defineReadOnly)(_this, "_signingKey", function () { return signingKey_2; });

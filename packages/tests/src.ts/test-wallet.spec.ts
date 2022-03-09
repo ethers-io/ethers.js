@@ -10,7 +10,7 @@ import {
     ContractCreateTransaction,
     ContractExecuteTransaction,
     FileAppendTransaction,
-    FileCreateTransaction, PublicKey, Transaction,
+    FileCreateTransaction, PrivateKey, PublicKey, Transaction,
 } from "@hashgraph/sdk";
 import { readFileSync } from "fs";
 
@@ -96,6 +96,35 @@ describe('Test JSON Wallets', function() {
                 });
             });
         });
+    });
+});
+
+describe("Test wallet keys", function () {
+
+    it('Should prefix non-prefixed keys(raw)', async function() {
+        const key = '074cc0bd198d1bc91f668c59b46a1e74fd13215661e5a7bd42ad0d324476295d';
+        const wallet = new hethers.Wallet(key);
+        const privKey = wallet._signingKey().privateKey;
+        assert.strictEqual('0x'+key, privKey);
+    });
+
+    it("Should prefix @hashgraph/sdk generated keys", async function() {
+        const key = PrivateKey.generateECDSA().toStringRaw();
+        const wallet = new hethers.Wallet(key);
+        const privKey = wallet._signingKey().privateKey;
+        assert.strictEqual('0x'+key, privKey);
+    });
+
+    it('Should prefix keys when given eoa in constructor', async function() {
+        const provider = hethers.providers.getDefaultProvider('testnet');
+        const eoa = {
+            account: '1.1.1',
+            privateKey: "074cc0bd198d1bc91f668c59b46a1e74fd13215661e5a7bd42ad0d324476295d"
+        };
+        // @ts-ignore
+        const wallet = new hethers.Wallet(eoa, provider);
+        const privKey = wallet._signingKey().privateKey;
+        assert.strictEqual('0x'+eoa.privateKey, privKey);
     });
 });
 

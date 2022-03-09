@@ -24,7 +24,13 @@ import { version } from "./_version";
 import { PrivateKey as HederaPrivKey, PublicKey as HederaPubKey } from "@hashgraph/sdk";
 const logger = new Logger(version);
 function isAccount(value) {
-    return value != null && isHexString(value.privateKey, 32);
+    if (!value || !value.privateKey)
+        return false;
+    let privKeyCopy = value.privateKey;
+    if (!privKeyCopy.startsWith('0x')) {
+        privKeyCopy = '0x' + privKeyCopy;
+    }
+    return isHexString(privKeyCopy, 32);
 }
 function hasMnemonic(value) {
     const mnemonic = value.mnemonic;
@@ -33,12 +39,23 @@ function hasMnemonic(value) {
 function hasAlias(value) {
     return isAccount(value) && value.alias != null;
 }
+function prepend0x(value) {
+    if (value.match(/^[0-9a-f]*$/i) && value.length === 64) {
+        return `0x${value}`;
+    }
+    return value;
+}
 export class Wallet extends Signer {
     constructor(identity, provider) {
         logger.checkNew(new.target, Wallet);
         super();
         if (isAccount(identity) && !SigningKey.isSigningKey(identity)) {
-            const signingKey = new SigningKey(identity.privateKey);
+            let privKey = identity.privateKey;
+            // A lot of common tools do not prefix private keys with a 0x (see: #1166)
+            if (typeof (privKey) === "string") {
+                privKey = prepend0x(privKey);
+            }
+            const signingKey = new SigningKey(privKey);
             defineReadOnly(this, "_signingKey", () => signingKey);
             if (identity.address || identity.account) {
                 defineReadOnly(this, "address", identity.address ? getAddress(identity.address) : getAddressFromAccount(identity.account));
@@ -78,9 +95,7 @@ export class Wallet extends Signer {
             else {
                 // A lot of common tools do not prefix private keys with a 0x (see: #1166)
                 if (typeof (identity) === "string") {
-                    if (identity.match(/^[0-9a-f]*$/i) && identity.length === 64) {
-                        identity = "0x" + identity;
-                    }
+                    identity = prepend0x(identity);
                 }
                 const signingKey = new SigningKey(identity);
                 defineReadOnly(this, "_signingKey", () => signingKey);

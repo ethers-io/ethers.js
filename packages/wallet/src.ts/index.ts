@@ -35,7 +35,12 @@ import {PrivateKey as HederaPrivKey, PublicKey as HederaPubKey} from "@hashgraph
 const logger = new Logger(version);
 
 function isAccount(value: any): value is ExternallyOwnedAccount {
-	return value != null && isHexString(value.privateKey, 32);
+	if (!value || !value.privateKey) return false;
+	let privKeyCopy = value.privateKey;
+	if (!privKeyCopy.startsWith('0x')) {
+		privKeyCopy = '0x'+privKeyCopy
+	}
+	return isHexString(privKeyCopy, 32);
 }
 
 function hasMnemonic(value: any): value is { mnemonic: Mnemonic } {
@@ -45,6 +50,13 @@ function hasMnemonic(value: any): value is { mnemonic: Mnemonic } {
 
 function hasAlias(value: any): value is ExternallyOwnedAccount {
 	return isAccount(value) && value.alias != null;
+}
+
+function prepend0x(value: string): string {
+	if (value.match(/^[0-9a-f]*$/i) && value.length === 64) {
+		return `0x${value}`;
+	}
+	return value;
 }
 
 export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataSigner {
@@ -67,7 +79,12 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
 		super();
 
 		if (isAccount(identity) && !SigningKey.isSigningKey(identity)) {
-			const signingKey = new SigningKey(identity.privateKey);
+			let privKey = identity.privateKey;
+			// A lot of common tools do not prefix private keys with a 0x (see: #1166)
+			if (typeof (privKey) === "string") {
+				privKey = prepend0x(privKey);
+			}
+			const signingKey = new SigningKey(privKey);
 			defineReadOnly(this, "_signingKey", () => signingKey);
 
 			if (identity.address || identity.account) {
@@ -109,9 +126,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
 			} else {
 				// A lot of common tools do not prefix private keys with a 0x (see: #1166)
 				if (typeof (identity) === "string") {
-					if (identity.match(/^[0-9a-f]*$/i) && identity.length === 64) {
-						identity = "0x" + identity;
-					}
+					identity = prepend0x(identity);
 				}
 
 				const signingKey = new SigningKey(identity);
