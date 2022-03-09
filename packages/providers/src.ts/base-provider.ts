@@ -697,9 +697,9 @@ export class BaseProvider extends Provider implements EnsProvider {
     _fastQueryDate: number;
 
     _maxInternalBlockNumber: number;
-    _internalBlockNumber: {
+    _internalBlockNumberQuery: {
         id: number
-        promise: Promise<void | { blockNumber: number, reqTime: number, respTime: number }>
+        promise: Promise< { blockNumber: number, reqTime: number, respTime: number }>
     };
 
     readonly anyNetwork: boolean;
@@ -879,68 +879,56 @@ export class BaseProvider extends Provider implements EnsProvider {
         if (maxAge > 0) {
 
             // While there are pending internal block requests...
-            while (this._internalBlockNumber) {
+            while (this._internalBlockNumberQuery.promise) {
 
                 // ..."remember" which fetch we started with
-                const startId = this._internalBlockNumber.id;
+                const startId = this._internalBlockNumberQuery.id;
 
                 try {
                     // Check the result is not too stale
-                    const result = await this._internalBlockNumber.promise;
-                    if (result && (getTime() - result.respTime) <= maxAge) {
+                    const result = await this._internalBlockNumberQuery.promise;
+                    if ((getTime() - result.respTime) <= maxAge) {
                         return result.blockNumber;
                     }
+                } catch { }
 
-                    // Too old; fetch a new value
+                // The fetch rejected or had stale data, check if there
+                // was a new attempt, otherwise initiate a new one by
+                // leaving the loop
+                if (this._internalBlockNumberQuery.id == startId) {
                     break;
-
-                } catch(error) {
-
-                    // The fetch rejected; if we are the first to get the
-                    // rejection, drop through so we replace it with a new
-                    // fetch; all others blocked will then get that fetch
-                    // which won't match the one they "remembered" and loop
-                    if (this._internalBlockNumber.id == startId) {
-                        break;
-                    }
                 }
             }
         }
 
         const reqTime = getTime();
-        const reqId = this._internalBlockNumber ? this._internalBlockNumber.id + 1 : 0
+        const reqId = this._internalBlockNumberQuery ? this._internalBlockNumberQuery.id + 1 : 0
 
-        this._internalBlockNumber = {
+        this._internalBlockNumberQuery = {
             id: reqId,
             promise: resolveProperties({
                 blockNumber: this.perform("getBlockNumber", { }),
                 networkError: this.getNetwork().then((network) => (null), (error) => (error))
             }).then(({ blockNumber, networkError }) => {
                 if (networkError) {
-                    // Unremember this bad internal block number
-                    if (this._internalBlockNumber.id == reqId) {
-                        this._internalBlockNumber = null;
+                    // Unremember this bad internal block number query
+                    if (this._internalBlockNumberQuery.id == reqId) {
+                        this._internalBlockNumberQuery.promise = null;
                     }
                     throw networkError;
                 }
     
                 const respTime = getTime();
     
-                blockNumber = BigNumber.from(blockNumber).toNumber();
-                if (blockNumber < this._maxInternalBlockNumber) { blockNumber = this._maxInternalBlockNumber; }
+                blockNumber = Math.max(BigNumber.from(blockNumber).toNumber(), this._maxInternalBlockNumber)
     
                 this._maxInternalBlockNumber = blockNumber;
                 this._setFastBlockNumber(blockNumber); // @TODO: Still need this?
                 return { blockNumber, reqTime, respTime };
-            }, (error) => {
-                // Don't null the dead (rejected) fetch, if it has already been updated
-                if (this._internalBlockNumber.id === reqId) {
-                    this._internalBlockNumber = null;
-                }
             })
         };
 
-        return this._internalBlockNumber.promise.then(block => block ? block. blockNumber : -1)
+        return this._internalBlockNumberQuery.promise.then(block => block.blockNumber)
     }
 
     async poll(): Promise<void> {
@@ -1103,7 +1091,7 @@ export class BaseProvider extends Provider implements EnsProvider {
                 this._fastQueryDate = 0;
                 this._emitted.block = -2;
                 this._maxInternalBlockNumber = -1024;
-                this._internalBlockNumber = null;
+                this._internalBlockNumberQuery = null;
 
                 // The "network" event MUST happen before this method resolves
                 // so any events have a chance to unregister, so we stall an
