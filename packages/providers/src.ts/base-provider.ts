@@ -879,7 +879,7 @@ export class BaseProvider extends Provider implements EnsProvider {
         if (maxAge > 0) {
 
             // While there are pending internal block requests...
-            while (this._internalBlockNumberQuery.promise) {
+            while (this._internalBlockNumberQuery && this._internalBlockNumberQuery.promise) {
 
                 // ..."remember" which fetch we started with
                 const startId = this._internalBlockNumberQuery.id;
