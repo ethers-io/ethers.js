@@ -383,11 +383,16 @@ export class Resolver implements EnsResolver {
 
         try {
             let result = await this.provider.call(tx);
+            if ((arrayify(result).length % 32) === 4) {
+                logger.throwError("resolver threw error", Logger.errors.CALL_EXCEPTION, {
+                    transaction: tx, data: result
+                });
+            }
             if (parseBytes) { result = _parseBytes(result, 0); }
             return result;
         } catch (error) {
             if (error.code === Logger.errors.CALL_EXCEPTION) { return null; }
-            return null;
+            throw error;
         }
     }
 
