@@ -691,6 +691,9 @@ export class BaseProvider extends Provider implements EnsProvider {
     _bootstrapPoll: NodeJS.Timer;
 
     _lastBlockNumber: number;
+    _lastFilterBlockNumber: number;
+    _lastFilterComplete: boolean;
+    _maxFilterBlockRange: number;
 
     _fastBlockNumber: number;
     _fastBlockNumberPromise: Promise<number>;
@@ -757,6 +760,9 @@ export class BaseProvider extends Provider implements EnsProvider {
         this._maxInternalBlockNumber = -1024;
 
         this._lastBlockNumber = -2;
+        this._lastFilterBlockNumber = -2;
+        this._lastFilterComplete = true;
+        this._maxFilterBlockRange = 10;
 
         this._pollingInterval = 4000;
 
@@ -1013,6 +1019,8 @@ export class BaseProvider extends Provider implements EnsProvider {
         // First polling cycle
         if (this._lastBlockNumber === -2) {
             this._lastBlockNumber = blockNumber - 1;
+            this._lastFilterBlockNumber = blockNumber - 1;
+            this._lastFilterComplete = true;
         }
 
         // Find all transaction hashes we are waiting on
@@ -1033,19 +1041,50 @@ export class BaseProvider extends Provider implements EnsProvider {
                 }
 
                 case "filter": {
-                    const filter = event.filter;
-                    filter.fromBlock = this._lastBlockNumber + 1;
-                    filter.toBlock = blockNumber;
+                    // We only allow a single getLogs to be in-flight at a time
+                    if (this._lastFilterComplete) {
+                        this._lastFilterComplete = false;
 
-                    const runner = this.getLogs(filter).then((logs) => {
-                        if (logs.length === 0) { return; }
-                        logs.forEach((log: Log) => {
-                            this._emitted["b:" + log.blockHash] = log.blockNumber;
-                            this._emitted["t:" + log.transactionHash] = log.blockNumber;
-                            this.emit(filter, log);
+                        // Filter from the last known event; due to load-balancing
+                        // and some nodes returning updated block numbers before
+                        // indexing events, a logs result with 0 entries cannot be
+                        // trusted and we must retry a range which includes it again
+                        const filter = event.filter;
+                        filter.fromBlock = this._lastFilterBlockNumber + 1;
+                        filter.toBlock = blockNumber;
+
+                        // Prevent fitler ranges from growing too wild
+                        if (filter.toBlock - this._maxFilterBlockRange > filter.fromBlock) {
+                            filter.fromBlock = filter.toBlock - this._maxFilterBlockRange;
+                        }
+
+                        const runner = this.getLogs(filter).then((logs) => {
+                            // Allow the next getLogs
+                            this._lastFilterComplete = true;
+
+                            if (logs.length === 0) { return; }
+
+                            logs.forEach((log: Log) => {
+                                // Only when we get an event for a given block number
+                                // can we trust the events are indexed
+                                if (log.blockNumber > this._lastFilterBlockNumber) {
+                                    this._lastFilterBlockNumber = log.blockNumber;
+                                }
+
+                                // Make sure we stall requests to fetch blocks and txs
+                                this._emitted["b:" + log.blockHash] = log.blockNumber;
+                                this._emitted["t:" + log.transactionHash] = log.blockNumber;
+
+                                this.emit(filter, log);
+                            });
+                        }).catch((error: Error) => {
+                            this.emit("error", error);
+
+                            // Allow another getLogs (the range was not updated)
+                            this._lastFilterComplete = true;
                         });
-                    }).catch((error: Error) => { this.emit("error", error); });
-                    runners.push(runner);
+                        runners.push(runner);
+                    }
 
                     break;
                 }
