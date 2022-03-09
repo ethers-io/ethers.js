@@ -140,10 +140,16 @@ export class Event {
     readonly once: boolean;
     readonly tag: string;
 
+    _lastBlockNumber: number
+    _inflight: boolean;
+
     constructor(tag: string, listener: Listener, once: boolean) {
         defineReadOnly(this, "tag", tag);
         defineReadOnly(this, "listener", listener);
         defineReadOnly(this, "once", once);
+
+        this._lastBlockNumber = -2;
+        this._inflight = false;
     }
 
     get event(): EventType {
@@ -698,8 +704,6 @@ export class BaseProvider extends Provider implements EnsProvider {
     _bootstrapPoll: NodeJS.Timer;
 
     _lastBlockNumber: number;
-    _lastFilterBlockNumber: number;
-    _lastFilterComplete: boolean;
     _maxFilterBlockRange: number;
 
     _fastBlockNumber: number;
@@ -767,8 +771,6 @@ export class BaseProvider extends Provider implements EnsProvider {
         this._maxInternalBlockNumber = -1024;
 
         this._lastBlockNumber = -2;
-        this._lastFilterBlockNumber = -2;
-        this._lastFilterComplete = true;
         this._maxFilterBlockRange = 10;
 
         this._pollingInterval = 4000;
@@ -1026,10 +1028,7 @@ export class BaseProvider extends Provider implements EnsProvider {
         // First polling cycle
         if (this._lastBlockNumber === -2) {
             this._lastBlockNumber = blockNumber - 1;
-            this._lastFilterBlockNumber = blockNumber - 1;
-            this._lastFilterComplete = true;
         }
-
         // Find all transaction hashes we are waiting on
         this._events.forEach((event) => {
             switch (event.type) {
@@ -1049,15 +1048,15 @@ export class BaseProvider extends Provider implements EnsProvider {
 
                 case "filter": {
                     // We only allow a single getLogs to be in-flight at a time
-                    if (this._lastFilterComplete) {
-                        this._lastFilterComplete = false;
+                    if (!event._inflight) {
+                        event._inflight = true;
 
                         // Filter from the last known event; due to load-balancing
                         // and some nodes returning updated block numbers before
                         // indexing events, a logs result with 0 entries cannot be
                         // trusted and we must retry a range which includes it again
                         const filter = event.filter;
-                        filter.fromBlock = this._lastFilterBlockNumber + 1;
+                        filter.fromBlock = event._lastBlockNumber + 1;
                         filter.toBlock = blockNumber;
 
                         // Prevent fitler ranges from growing too wild
@@ -1067,15 +1066,15 @@ export class BaseProvider extends Provider implements EnsProvider {
 
                         const runner = this.getLogs(filter).then((logs) => {
                             // Allow the next getLogs
-                            this._lastFilterComplete = true;
+                            event._inflight = false;
 
                             if (logs.length === 0) { return; }
 
                             logs.forEach((log: Log) => {
                                 // Only when we get an event for a given block number
                                 // can we trust the events are indexed
-                                if (log.blockNumber > this._lastFilterBlockNumber) {
-                                    this._lastFilterBlockNumber = log.blockNumber;
+                                if (log.blockNumber > event._lastBlockNumber) {
+                                    event._lastBlockNumber = log.blockNumber;
                                 }
 
                                 // Make sure we stall requests to fetch blocks and txs
@@ -1088,7 +1087,7 @@ export class BaseProvider extends Provider implements EnsProvider {
                             this.emit("error", error);
 
                             // Allow another getLogs (the range was not updated)
-                            this._lastFilterComplete = true;
+                            event._inflight = false;
                         });
                         runners.push(runner);
                     }
