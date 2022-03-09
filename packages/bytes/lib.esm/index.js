@@ -269,17 +269,28 @@ export function splitSignature(signature) {
         s: "0x",
         _vs: "0x",
         recoveryParam: 0,
-        v: 0
+        v: 0,
+        yParityAndS: "0x",
+        compact: "0x"
     };
     if (isBytesLike(signature)) {
-        const bytes = arrayify(signature);
-        if (bytes.length !== 65) {
-            logger.throwArgumentError("invalid signature string; must be 65 bytes", "signature", signature);
-        }
+        let bytes = arrayify(signature);
         // Get the r, s and v
-        result.r = hexlify(bytes.slice(0, 32));
-        result.s = hexlify(bytes.slice(32, 64));
-        result.v = bytes[64];
+        if (bytes.length === 64) {
+            // EIP-2098; pull the v from the top bit of s and clear it
+            result.v = 27 + (bytes[32] >> 7);
+            bytes[32] &= 0x7f;
+            result.r = hexlify(bytes.slice(0, 32));
+            result.s = hexlify(bytes.slice(32, 64));
+        }
+        else if (bytes.length === 65) {
+            result.r = hexlify(bytes.slice(0, 32));
+            result.s = hexlify(bytes.slice(32, 64));
+            result.v = bytes[64];
+        }
+        else {
+            logger.throwArgumentError("invalid signature string", "signature", signature);
+        }
         // Allow a recid to be used as the v
         if (result.v < 27) {
             if (result.v === 0 || result.v === 1) {
@@ -383,6 +394,8 @@ export function splitSignature(signature) {
             logger.throwArgumentError("signature _vs mismatch v and s", "signature", signature);
         }
     }
+    result.yParityAndS = result._vs;
+    result.compact = result.r + result.yParityAndS.substring(2);
     return result;
 }
 export function joinSignature(signature) {

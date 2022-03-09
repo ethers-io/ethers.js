@@ -564,8 +564,8 @@ export class JsonRpcProvider extends BaseProvider {
         }
         checkProperties(transaction, allowed);
         const result = {};
-        // Some nodes (INFURA ropsten; INFURA mainnet is fine) do not like leading zeros.
-        ["gasLimit", "gasPrice", "type", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "value"].forEach(function (key) {
+        // JSON-RPC now requires numeric values to be "quantity" values
+        ["chainId", "gasLimit", "gasPrice", "type", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "value"].forEach(function (key) {
             if (transaction[key] == null) {
                 return;
             }

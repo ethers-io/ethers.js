@@ -13,6 +13,7 @@ export interface Overrides {
     type?: number;
     accessList?: AccessListish;
     customData?: Record<string, any>;
+    ccipReadEnabled?: boolean;
 }
 export interface PayableOverrides extends Overrides {
     value?: BigNumberish | Promise<BigNumberish>;
@@ -35,6 +36,7 @@ export interface PopulatedTransaction {
     maxFeePerGas?: BigNumber;
     maxPriorityFeePerGas?: BigNumber;
     customData?: Record<string, any>;
+    ccipReadEnabled?: boolean;
 }
 export declare type EventFilter = {
     address?: string;

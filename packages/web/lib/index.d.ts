@@ -10,6 +10,8 @@ export declare type ConnectionInfo = {
     throttleLimit?: number;
     throttleSlotInterval?: number;
     throttleCallback?: (attempt: number, url: string) => Promise<boolean>;
+    skipFetchSetup?: boolean;
+    errorPassThrough?: boolean;
     timeout?: number;
 };
 export interface OnceBlockable {

@@ -7,8 +7,8 @@
     "./lib/sha2": "./lib/browser-sha2.js"
   },
   "dependencies": {
-    "@ethersproject/bytes": "^5.5.0",
-    "@ethersproject/logger": "^5.5.0",
+    "@ethersproject/bytes": "^5.6.0",
+    "@ethersproject/logger": "^5.6.0",
     "hash.js": "1.1.7"
   },
   "description": "The SHA2 family hash functions and HMAC functions for ethers.",
@@ -43,7 +43,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x07b87d006dce28d562d86a6fa9b1ff89183c48f2f1461d8fa41d67366d0546cc",
+  "tarballHash": "0x4df59b223cfe393eec27c219e89781971ad976c022af4c53df33adc43823bb04",
   "types": "./lib/index.d.ts",
-  "version": "5.5.0"
+  "version": "5.6.0"
 }

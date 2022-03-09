@@ -1541,4 +1541,273 @@ describe("Resolve ENS avatar", function () {
         });
     });
 });
+describe("Test EIP-2544 ENS wildcards", function () {
+    var provider = (providerFunctions[0].create("ropsten"));
+    it("Resolves recursively", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var resolver, _a, _b, _c, _d, _e, _f;
+            return __generator(this, function (_g) {
+                switch (_g.label) {
+                    case 0: return [4 /*yield*/, provider.getResolver("ricmoose.hatch.eth")];
+                    case 1:
+                        resolver = _g.sent();
+                        assert_1.default.equal(resolver.address, "0x8fc4C380c5d539aE631daF3Ca9182b40FB21D1ae", "found the correct resolver");
+                        _b = (_a = assert_1.default).equal;
+                        return [4 /*yield*/, resolver.supportsWildcard()];
+                    case 2:
+                        _b.apply(_a, [_g.sent(), true, "supportsWildcard"]);
+                        _d = (_c = assert_1.default).equal;
+                        return [4 /*yield*/, resolver.getAvatar()];
+                    case 3:
+                        _d.apply(_c, [(_g.sent()).url, "https://static.ricmoo.com/uploads/profile-06cb9c3031c9.jpg", "gets passed-through avatar"]);
+                        _f = (_e = assert_1.default).equal;
+                        return [4 /*yield*/, resolver.getAddress()];
+                    case 4:
+                        _f.apply(_e, [_g.sent(), "0x4FaBE0A3a4DDd9968A7b4565184Ad0eFA7BE5411", "gets resolved address"]);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+});
+describe("Test CCIP execution", function () {
+    var address = "0xAe375B05A08204C809b3cA67C680765661998886";
+    var ABI = [
+        //'error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData)',
+        'function testGet(bytes callData) view returns (bytes32)',
+        'function testGetFail(bytes callData) view returns (bytes32)',
+        'function testGetSenderFail(bytes callData) view returns (bytes32)',
+        'function testGetFallback(bytes callData) view returns (bytes32)',
+        'function testGetMissing(bytes callData) view returns (bytes32)',
+        'function testPost(bytes callData) view returns (bytes32)',
+        'function verifyTest(bytes result, bytes extraData) pure returns (bytes32)'
+    ];
+    var provider = providerFunctions[0].create("ropsten");
+    var contract = new ethers_1.ethers.Contract(address, ABI, provider);
+    // This matches the verify method in the Solidity contract against the
+    // processed data from the endpoint
+    var verify = function (sender, data, result) {
+        var check = ethers_1.ethers.utils.concat([
+            ethers_1.ethers.utils.arrayify(ethers_1.ethers.utils.arrayify(sender).length),
+            sender,
+            ethers_1.ethers.utils.arrayify(ethers_1.ethers.utils.arrayify(data).length),
+            data
+        ]);
+        assert_1.default.equal(result, ethers_1.ethers.utils.keccak256(check), "response is equal");
+    };
+    it("testGet passes under normal operation", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(60000);
+                        data = "0x1234";
+                        return [4 /*yield*/, contract.testGet(data, { ccipReadEnabled: true })];
+                    case 1:
+                        result = _a.sent();
+                        verify(ethers_1.ethers.constants.AddressZero, data, result);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("testGet should fail with CCIP not explicitly enabled by overrides", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, result, error_4;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(60000);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        data = "0x1234";
+                        return [4 /*yield*/, contract.testGet(data)];
+                    case 2:
+                        result = _a.sent();
+                        console.log(result);
+                        assert_1.default.fail("throw-failed");
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_4 = _a.sent();
+                        if (error_4.message === "throw-failed") {
+                            throw error_4;
+                        }
+                        if (error_4.code !== "CALL_EXCEPTION") {
+                            console.log(error_4);
+                            assert_1.default.fail("failed");
+                        }
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("testGet should fail with CCIP explicitly disabled on provider", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var provider, contract, data, result, error_5;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(60000);
+                        provider = providerFunctions[0].create("ropsten");
+                        provider.disableCcipRead = true;
+                        contract = new ethers_1.ethers.Contract(address, ABI, provider);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        data = "0x1234";
+                        return [4 /*yield*/, contract.testGet(data, { ccipReadEnabled: true })];
+                    case 2:
+                        result = _a.sent();
+                        console.log(result);
+                        assert_1.default.fail("throw-failed");
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_5 = _a.sent();
+                        if (error_5.message === "throw-failed") {
+                            throw error_5;
+                        }
+                        if (error_5.code !== "CALL_EXCEPTION") {
+                            console.log(error_5);
+                            assert_1.default.fail("failed");
+                        }
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("testGetFail should fail if all URLs 5xx", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, result, error_6;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(60000);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        data = "0x1234";
+                        return [4 /*yield*/, contract.testGetFail(data, { ccipReadEnabled: true })];
+                    case 2:
+                        result = _a.sent();
+                        console.log(result);
+                        assert_1.default.fail("throw-failed");
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_6 = _a.sent();
+                        if (error_6.message === "throw-failed") {
+                            throw error_6;
+                        }
+                        if (error_6.code !== "SERVER_ERROR" || (error_6.errorMessages || []).pop() !== "hello world") {
+                            console.log(error_6);
+                            assert_1.default.fail("failed");
+                        }
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("testGetSenderFail should fail if sender does not match", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, result, error_7;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(60000);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        data = "0x1234";
+                        return [4 /*yield*/, contract.testGetSenderFail(data, { ccipReadEnabled: true })];
+                    case 2:
+                        result = _a.sent();
+                        console.log(result);
+                        assert_1.default.fail("throw-failed");
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_7 = _a.sent();
+                        if (error_7.message === "throw-failed") {
+                            throw error_7;
+                        }
+                        if (error_7.code !== "CALL_EXCEPTION") {
+                            console.log(error_7);
+                            assert_1.default.fail("failed");
+                        }
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("testGetMissing should fail if early URL 4xx", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, result, error_8;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(60000);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        data = "0x1234";
+                        return [4 /*yield*/, contract.testGetMissing(data, { ccipReadEnabled: true })];
+                    case 2:
+                        result = _a.sent();
+                        console.log(result);
+                        assert_1.default.fail("throw-failed");
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_8 = _a.sent();
+                        if (error_8.message === "throw-failed") {
+                            throw error_8;
+                        }
+                        if (error_8.code !== "SERVER_ERROR" || error_8.errorMessage !== "hello world") {
+                            console.log(error_8);
+                            assert_1.default.fail("failed");
+                        }
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("testGetFallback passes if any URL returns correctly", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(60000);
+                        data = "0x123456";
+                        return [4 /*yield*/, contract.testGetFallback(data, { ccipReadEnabled: true })];
+                    case 1:
+                        result = _a.sent();
+                        verify(ethers_1.ethers.constants.AddressZero, data, result);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("testPost passes under normal operation", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(60000);
+                        data = "0x1234";
+                        return [4 /*yield*/, contract.testPost(data, { ccipReadEnabled: true })];
+                    case 1:
+                        result = _a.sent();
+                        verify(ethers_1.ethers.constants.AddressZero, data, result);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+});
 //# sourceMappingURL=test-providers.js.map

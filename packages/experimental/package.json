@@ -1,8 +1,8 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/web": "^5.5.0",
-    "ethers": "^5.5.0",
+    "@ethersproject/web": "^5.6.0",
+    "ethers": "^5.6.0",
     "scrypt-js": "3.0.1"
   },
   "description": "Experimental libraries for ethers. These should not be considered stable.",
@@ -37,7 +37,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x61feda1a94caf6c9c75c551781cffe17883d6a15621d53b86ee947d8fac5890c",
+  "tarballHash": "0x54697aed27a82c22d52b088ed57c46b5e48b8754e6362771a3d4152dd37544ea",
   "types": "./lib/index.d.ts",
-  "version": "5.5.0"
+  "version": "5.6.0"
 }

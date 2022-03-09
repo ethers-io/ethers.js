@@ -82,6 +82,7 @@ function _fetchData(connection, body, processFunc) {
     var throttleCallback = ((typeof (connection) === "object") ? connection.throttleCallback : null);
     var throttleSlotInterval = ((typeof (connection) === "object" && typeof (connection.throttleSlotInterval) === "number") ? connection.throttleSlotInterval : 100);
     logger.assertArgument((throttleSlotInterval > 0 && (throttleSlotInterval % 1) === 0), "invalid connection throttle slot interval", "connection.throttleSlotInterval", throttleSlotInterval);
+    var errorPassThrough = ((typeof (connection) === "object") ? !!(connection.errorPassThrough) : false);
     var headers = {};
     var url = null;
     // @TODO: Allow ConnectionInfo to override some of these values
@@ -119,6 +120,9 @@ function _fetchData(connection, body, processFunc) {
                 key: "Authorization",
                 value: "Basic " + (0, base64_1.encode)((0, strings_1.toUtf8Bytes)(authorization))
             };
+        }
+        if (connection.skipFetchSetup != null) {
+            options.skipFetchSetup = !!connection.skipFetchSetup;
         }
     }
     var reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
@@ -258,7 +262,7 @@ function _fetchData(connection, body, processFunc) {
                         if (allow304 && response.statusCode === 304) {
                             body_1 = null;
                         }
-                        else if (response.statusCode < 200 || response.statusCode >= 300) {
+                        else if (!errorPassThrough && (response.statusCode < 200 || response.statusCode >= 300)) {
                             runningTimeout.cancel();
                             logger.throwError("bad response", logger_1.Logger.errors.SERVER_ERROR, {
                                 status: response.statusCode,

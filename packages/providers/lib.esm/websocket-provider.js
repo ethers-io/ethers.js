@@ -40,22 +40,32 @@ export class WebSocketProvider extends JsonRpcProvider {
                 operation: "network:any"
             });
         }
-        super(url, network);
+        if (typeof (url) === "string") {
+            super(url, network);
+        }
+        else {
+            super("_websocket", network);
+        }
         this._pollingInterval = -1;
         this._wsReady = false;
-        defineReadOnly(this, "_websocket", new WebSocket(this.connection.url));
+        if (typeof (url) === "string") {
+            defineReadOnly(this, "_websocket", new WebSocket(this.connection.url));
+        }
+        else {
+            defineReadOnly(this, "_websocket", url);
+        }
         defineReadOnly(this, "_requests", {});
         defineReadOnly(this, "_subs", {});
         defineReadOnly(this, "_subIds", {});
         defineReadOnly(this, "_detectNetwork", super.detectNetwork());
         // Stall sending requests until the socket is open...
-        this._websocket.onopen = () => {
+        this.websocket.onopen = () => {
             this._wsReady = true;
             Object.keys(this._requests).forEach((id) => {
-                this._websocket.send(this._requests[id].payload);
+                this.websocket.send(this._requests[id].payload);
             });
         };
-        this._websocket.onmessage = (messageEvent) => {
+        this.websocket.onmessage = (messageEvent) => {
             const data = messageEvent.data;
             const result = JSON.parse(data);
             if (result.id != null) {
@@ -112,6 +122,9 @@ export class WebSocketProvider extends JsonRpcProvider {
             fauxPoll.unref();
         }
     }
+    // Cannot narrow the type of _websocket, as that is not backwards compatible
+    // so we add a getter and let the WebSocket be a public API.
+    get websocket() { return this._websocket; }
     detectNetwork() {
         return this._detectNetwork;
     }
@@ -163,7 +176,7 @@ export class WebSocketProvider extends JsonRpcProvider {
             });
             this._requests[String(rid)] = { callback, payload };
             if (this._wsReady) {
-                this._websocket.send(payload);
+                this.websocket.send(payload);
             }
         });
     }
@@ -267,19 +280,19 @@ export class WebSocketProvider extends JsonRpcProvider {
     destroy() {
         return __awaiter(this, void 0, void 0, function* () {
             // Wait until we have connected before trying to disconnect
-            if (this._websocket.readyState === WebSocket.CONNECTING) {
+            if (this.websocket.readyState === WebSocket.CONNECTING) {
                 yield (new Promise((resolve) => {
-                    this._websocket.onopen = function () {
+                    this.websocket.onopen = function () {
                         resolve(true);
                     };
-                    this._websocket.onerror = function () {
+                    this.websocket.onerror = function () {
                         resolve(false);
                     };
                 }));
             }
             // Hangup
             // See: https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent#Status_codes
-            this._websocket.close(1000);
+            this.websocket.close(1000);
         });
     }
 }

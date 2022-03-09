@@ -18,6 +18,7 @@ export declare type TransactionRequest = {
     maxPriorityFeePerGas?: BigNumberish;
     maxFeePerGas?: BigNumberish;
     customData?: Record<string, any>;
+    ccipReadEnabled?: boolean;
 };
 export interface TransactionResponse extends Transaction {
     hash: string;

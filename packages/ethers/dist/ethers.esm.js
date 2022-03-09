@@ -3490,7 +3490,7 @@ var bn = createCommonjsModule(function (module) {
 })('object' === 'undefined' || module, commonjsGlobal);
 });
 
-const version = "logger/5.5.0";
+const version = "logger/5.6.0";
 
 "use strict";
 let _permanentCensorErrors = false;
@@ -3671,6 +3671,40 @@ class Logger {
         messageDetails.push(`code=${code}`);
         messageDetails.push(`version=${this.version}`);
         const reason = message;
+        let url = "";
+        switch (code) {
+            case ErrorCode.NUMERIC_FAULT: {
+                url = "NUMERIC_FAULT";
+                const fault = message;
+                switch (fault) {
+                    case "overflow":
+                    case "underflow":
+                    case "division-by-zero":
+                        url += "-" + fault;
+                        break;
+                    case "negative-power":
+                    case "negative-width":
+                        url += "-unsupported";
+                        break;
+                    case "unbound-bitwise-result":
+                        url += "-unbound-result";
+                        break;
+                }
+                break;
+            }
+            case ErrorCode.CALL_EXCEPTION:
+            case ErrorCode.INSUFFICIENT_FUNDS:
+            case ErrorCode.MISSING_NEW:
+            case ErrorCode.NONCE_EXPIRED:
+            case ErrorCode.REPLACEMENT_UNDERPRICED:
+            case ErrorCode.TRANSACTION_REPLACED:
+            case ErrorCode.UNPREDICTABLE_GAS_LIMIT:
+                url = code;
+                break;
+        }
+        if (url) {
+            message += " [ See: https:/\/links.ethers.org/v5-errors-" + url + " ]";
+        }
         if (messageDetails.length) {
             message += " (" + messageDetails.join(", ") + ")";
         }
@@ -3807,7 +3841,7 @@ class Logger {
 Logger.errors = ErrorCode;
 Logger.levels = LogLevel;
 
-const version$1 = "bytes/5.5.0";
+const version$1 = "bytes/5.6.0";
 
 "use strict";
 const logger = new Logger(version$1);
@@ -4078,17 +4112,28 @@ function splitSignature(signature) {
         s: "0x",
         _vs: "0x",
         recoveryParam: 0,
-        v: 0
+        v: 0,
+        yParityAndS: "0x",
+        compact: "0x"
     };
     if (isBytesLike(signature)) {
-        const bytes = arrayify(signature);
-        if (bytes.length !== 65) {
-            logger.throwArgumentError("invalid signature string; must be 65 bytes", "signature", signature);
-        }
+        let bytes = arrayify(signature);
         // Get the r, s and v
-        result.r = hexlify(bytes.slice(0, 32));
-        result.s = hexlify(bytes.slice(32, 64));
-        result.v = bytes[64];
+        if (bytes.length === 64) {
+            // EIP-2098; pull the v from the top bit of s and clear it
+            result.v = 27 + (bytes[32] >> 7);
+            bytes[32] &= 0x7f;
+            result.r = hexlify(bytes.slice(0, 32));
+            result.s = hexlify(bytes.slice(32, 64));
+        }
+        else if (bytes.length === 65) {
+            result.r = hexlify(bytes.slice(0, 32));
+            result.s = hexlify(bytes.slice(32, 64));
+            result.v = bytes[64];
+        }
+        else {
+            logger.throwArgumentError("invalid signature string", "signature", signature);
+        }
         // Allow a recid to be used as the v
         if (result.v < 27) {
             if (result.v === 0 || result.v === 1) {
@@ -4192,6 +4237,8 @@ function splitSignature(signature) {
             logger.throwArgumentError("signature _vs mismatch v and s", "signature", signature);
         }
     }
+    result.yParityAndS = result._vs;
+    result.compact = result.r + result.yParityAndS.substring(2);
     return result;
 }
 function joinSignature(signature) {
@@ -4203,7 +4250,7 @@ function joinSignature(signature) {
     ]));
 }
 
-const version$2 = "bignumber/5.5.0";
+const version$2 = "bignumber/5.6.0";
 
 "use strict";
 var BN = bn.BN;
@@ -4253,7 +4300,7 @@ class BigNumber {
     div(other) {
         const o = BigNumber.from(other);
         if (o.isZero()) {
-            throwFault("division by zero", "div");
+            throwFault("division-by-zero", "div");
         }
         return toBigNumber(toBN(this).div(toBN(other)));
     }
@@ -4263,53 +4310,53 @@ class BigNumber {
     mod(other) {
         const value = toBN(other);
         if (value.isNeg()) {
-            throwFault("cannot modulo negative values", "mod");
+            throwFault("division-by-zero", "mod");
         }
         return toBigNumber(toBN(this).umod(value));
     }
     pow(other) {
         const value = toBN(other);
         if (value.isNeg()) {
-            throwFault("cannot raise to negative values", "pow");
+            throwFault("negative-power", "pow");
         }
         return toBigNumber(toBN(this).pow(value));
     }
     and(other) {
         const value = toBN(other);
         if (this.isNegative() || value.isNeg()) {
-            throwFault("cannot 'and' negative values", "and");
+            throwFault("unbound-bitwise-result", "and");
         }
         return toBigNumber(toBN(this).and(value));
     }
     or(other) {
         const value = toBN(other);
         if (this.isNegative() || value.isNeg()) {
-            throwFault("cannot 'or' negative values", "or");
+            throwFault("unbound-bitwise-result", "or");
         }
         return toBigNumber(toBN(this).or(value));
     }
     xor(other) {
         const value = toBN(other);
         if (this.isNegative() || value.isNeg()) {
-            throwFault("cannot 'xor' negative values", "xor");
+            throwFault("unbound-bitwise-result", "xor");
         }
         return toBigNumber(toBN(this).xor(value));
     }
     mask(value) {
         if (this.isNegative() || value < 0) {
-            throwFault("cannot mask negative values", "mask");
+            throwFault("negative-width", "mask");
         }
         return toBigNumber(toBN(this).maskn(value));
     }
     shl(value) {
         if (this.isNegative() || value < 0) {
-            throwFault("cannot shift negative values", "shl");
+            throwFault("negative-width", "shl");
         }
         return toBigNumber(toBN(this).shln(value));
     }
     shr(value) {
         if (this.isNegative() || value < 0) {
-            throwFault("cannot shift negative values", "shr");
+            throwFault("negative-width", "shr");
         }
         return toBigNumber(toBN(this).shrn(value));
     }
@@ -4858,7 +4905,7 @@ class FixedNumber {
 const ONE = FixedNumber.from(1);
 const BUMP = FixedNumber.from("0.5");
 
-const version$3 = "properties/5.5.0";
+const version$3 = "properties/5.6.0";
 
 "use strict";
 var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -4984,7 +5031,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.5.0";
+const version$4 = "abi/5.6.0";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -6643,7 +6690,7 @@ function keccak256(data) {
     return '0x' + sha3.keccak_256(arrayify(data));
 }
 
-const version$5 = "rlp/5.5.0";
+const version$5 = "rlp/5.6.0";
 
 "use strict";
 const logger$6 = new Logger(version$5);
@@ -6767,7 +6814,7 @@ var index = /*#__PURE__*/Object.freeze({
 	decode: decode
 });
 
-const version$6 = "address/5.5.0";
+const version$6 = "address/5.6.0";
 
 "use strict";
 const logger$7 = new Logger(version$6);
@@ -7300,7 +7347,7 @@ class NumberCoder extends Coder {
     }
 }
 
-const version$7 = "strings/5.5.0";
+const version$7 = "strings/5.6.0";
 
 "use strict";
 const logger$9 = new Logger(version$7);
@@ -7921,7 +7968,7 @@ function id(text) {
     return keccak256(toUtf8Bytes(text));
 }
 
-const version$8 = "hash/5.5.0";
+const version$8 = "hash/5.6.0";
 
 const logger$b = new Logger(version$8);
 const Zeros = new Uint8Array(32);
@@ -7957,6 +8004,15 @@ function namehash(name) {
         current = partition[2] || "";
     }
     return hexlify(result);
+}
+function dnsEncode(name) {
+    return hexlify(concat(name.split(".").map((comp) => {
+        // We jam in an _ prefix to fill in with the length later
+        // Note: Nameprep throws if the component is over 63 bytes
+        const bytes = toUtf8Bytes("_" + nameprep(comp));
+        bytes[0] = bytes.length - 1;
+        return bytes;
+    }))) + "00";
 }
 
 const messagePrefix = "\x19Ethereum Signed Message:\n";
@@ -8727,9 +8783,7 @@ class Interface {
                         errorName = error.name;
                         errorSignature = error.format();
                     }
-                    catch (error) {
-                        console.log(error);
-                    }
+                    catch (error) { }
                 }
                 break;
             }
@@ -8996,7 +9050,7 @@ class Interface {
 
 "use strict";
 
-const version$9 = "abstract-provider/5.5.1";
+const version$9 = "abstract-provider/5.6.0";
 
 "use strict";
 var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -9084,7 +9138,7 @@ class Provider {
                 // We may want to compute this more accurately in the future,
                 // using the formula "check if the base fee is correct".
                 // See: https://eips.ethereum.org/EIPS/eip-1559
-                maxPriorityFeePerGas = BigNumber.from("2500000000");
+                maxPriorityFeePerGas = BigNumber.from("1500000000");
                 maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
             }
             return { maxFeePerGas, maxPriorityFeePerGas, gasPrice };
@@ -9103,7 +9157,7 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.5.0";
+const version$a = "abstract-signer/5.6.0";
 
 "use strict";
 var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -9117,7 +9171,7 @@ var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments,
 };
 const logger$f = new Logger(version$a);
 const allowedTransactionKeys = [
-    "accessList", "chainId", "customData", "data", "from", "gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "to", "type", "value"
+    "accessList", "ccipReadEnabled", "chainId", "customData", "data", "from", "gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "to", "type", "value"
 ];
 const forwardErrors = [
     Logger.errors.INSUFFICIENT_FUNDS,
@@ -13210,7 +13264,7 @@ elliptic.eddsa = /*RicMoo:ethers:require(./elliptic/eddsa)*/(null);
 
 var EC$1 = elliptic_1.ec;
 
-const version$b = "signing-key/5.5.0";
+const version$b = "signing-key/5.6.0";
 
 "use strict";
 const logger$g = new Logger(version$b);
@@ -13286,7 +13340,7 @@ function computePublicKey(key, compressed) {
     return logger$g.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$c = "transactions/5.5.0";
+const version$c = "transactions/5.6.0";
 
 "use strict";
 const logger$h = new Logger(version$c);
@@ -13667,7 +13721,7 @@ function parse(rawTransaction) {
     });
 }
 
-const version$d = "contracts/5.5.0";
+const version$d = "contracts/5.6.0";
 
 "use strict";
 var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -13687,7 +13741,8 @@ const allowedTransactionKeys$2 = {
     chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
     type: true, accessList: true,
     maxFeePerGas: true, maxPriorityFeePerGas: true,
-    customData: true
+    customData: true,
+    ccipReadEnabled: true
 };
 function resolveName(resolver, nameOrPromise) {
     return __awaiter$4(this, void 0, void 0, function* () {
@@ -13845,6 +13900,9 @@ function populateTransaction(contract, fragment, args) {
         if (ro.customData) {
             tx.customData = shallowCopy(ro.customData);
         }
+        if (ro.ccipReadEnabled) {
+            tx.ccipReadEnabled = !!ro.ccipReadEnabled;
+        }
         // Remove the overrides
         delete overrides.nonce;
         delete overrides.gasLimit;
@@ -13856,6 +13914,7 @@ function populateTransaction(contract, fragment, args) {
         delete overrides.maxFeePerGas;
         delete overrides.maxPriorityFeePerGas;
         delete overrides.customData;
+        delete overrides.ccipReadEnabled;
         // Make sure there are no stray overrides, which may indicate a
         // typo or using an unsupported key.
         const leftovers = Object.keys(overrides).filter((key) => (overrides[key] != null));
@@ -14201,6 +14260,8 @@ class BaseContract {
                 });
             }
         }
+        // Swallow bad ENS names to prevent Unhandled Exceptions
+        this.resolvedAddress.catch((e) => { });
         const uniqueNames = {};
         const uniqueSignatures = {};
         Object.keys(this.interface.functions).forEach((signature) => {
@@ -14804,7 +14865,7 @@ var SupportedAlgorithm;
 })(SupportedAlgorithm || (SupportedAlgorithm = {}));
 ;
 
-const version$e = "sha2/5.5.0";
+const version$e = "sha2/5.6.0";
 
 "use strict";
 const logger$j = new Logger(version$e);
@@ -14869,7 +14930,7 @@ function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
     return hexlify(DK);
 }
 
-const version$f = "wordlists/5.5.0";
+const version$f = "wordlists/5.6.0";
 
 "use strict";
 // This gets overridden by rollup
@@ -14957,7 +15018,7 @@ const wordlists = {
 
 "use strict";
 
-const version$g = "hdnode/5.5.0";
+const version$g = "hdnode/5.6.0";
 
 "use strict";
 const logger$l = new Logger(version$g);
@@ -15278,7 +15339,7 @@ function getAccountPath(index) {
     return `m/44'/60'/${index}'/0/0`;
 }
 
-const version$h = "random/5.5.1";
+const version$h = "random/5.6.0";
 
 "use strict";
 const logger$m = new Logger(version$h);
@@ -16135,7 +16196,7 @@ var aesJs = createCommonjsModule(function (module, exports) {
 })(commonjsGlobal);
 });
 
-const version$i = "json-wallets/5.5.0";
+const version$i = "json-wallets/5.6.0";
 
 "use strict";
 function looseArrayify(hexString) {
@@ -17105,7 +17166,7 @@ function decryptJsonWalletSync(json, password) {
     throw new Error("invalid JSON wallet");
 }
 
-const version$j = "wallet/5.5.0";
+const version$j = "wallet/5.6.0";
 
 "use strict";
 var __awaiter$6 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -17270,7 +17331,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.5.2";
+const version$k = "networks/5.6.0";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -17284,25 +17345,25 @@ function ethDefaultProvider(network) {
             options = {};
         }
         const providerList = [];
-        if (providers.InfuraProvider) {
+        if (providers.InfuraProvider && options.infura !== "-") {
             try {
                 providerList.push(new providers.InfuraProvider(network, options.infura));
             }
             catch (error) { }
         }
-        if (providers.EtherscanProvider) {
+        if (providers.EtherscanProvider && options.etherscan !== "-") {
             try {
                 providerList.push(new providers.EtherscanProvider(network, options.etherscan));
             }
             catch (error) { }
         }
-        if (providers.AlchemyProvider) {
+        if (providers.AlchemyProvider && options.alchemy !== "-") {
             try {
                 providerList.push(new providers.AlchemyProvider(network, options.alchemy));
             }
             catch (error) { }
         }
-        if (providers.PocketProvider) {
+        if (providers.PocketProvider && options.pocket !== "-") {
             // These networks are currently faulty on Pocket as their
             // network does not handle the Berlin hardfork, which is
             // live on these ones.
@@ -17316,7 +17377,7 @@ function ethDefaultProvider(network) {
             }
             catch (error) { }
         }
-        if (providers.CloudflareProvider) {
+        if (providers.CloudflareProvider && options.cloudflare !== "-") {
             try {
                 providerList.push(new providers.CloudflareProvider(network));
             }
@@ -17520,7 +17581,7 @@ var index$2 = /*#__PURE__*/Object.freeze({
 	encode: encode$1
 });
 
-const version$l = "web/5.5.1";
+const version$l = "web/5.6.0";
 
 "use strict";
 var __awaiter$7 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -17620,6 +17681,7 @@ function _fetchData(connection, body, processFunc) {
     const throttleCallback = ((typeof (connection) === "object") ? connection.throttleCallback : null);
     const throttleSlotInterval = ((typeof (connection) === "object" && typeof (connection.throttleSlotInterval) === "number") ? connection.throttleSlotInterval : 100);
     logger$r.assertArgument((throttleSlotInterval > 0 && (throttleSlotInterval % 1) === 0), "invalid connection throttle slot interval", "connection.throttleSlotInterval", throttleSlotInterval);
+    const errorPassThrough = ((typeof (connection) === "object") ? !!(connection.errorPassThrough) : false);
     const headers = {};
     let url = null;
     // @TODO: Allow ConnectionInfo to override some of these values
@@ -17657,6 +17719,9 @@ function _fetchData(connection, body, processFunc) {
                 key: "Authorization",
                 value: "Basic " + encode$1(toUtf8Bytes(authorization))
             };
+        }
+        if (connection.skipFetchSetup != null) {
+            options.skipFetchSetup = !!connection.skipFetchSetup;
         }
     }
     const reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
@@ -17781,7 +17846,7 @@ function _fetchData(connection, body, processFunc) {
                 if (allow304 && response.statusCode === 304) {
                     body = null;
                 }
-                else if (response.statusCode < 200 || response.statusCode >= 300) {
+                else if (!errorPassThrough && (response.statusCode < 200 || response.statusCode >= 300)) {
                     runningTimeout.cancel();
                     logger$r.throwError("bad response", Logger.errors.SERVER_ERROR, {
                         status: response.statusCode,
@@ -18140,7 +18205,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.5.3";
+const version$m = "providers/5.6.0";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -18228,7 +18293,7 @@ class Formatter {
             type: type
         };
         formats.block = {
-            hash: hash,
+            hash: Formatter.allowNull(hash),
             parentHash: hash,
             number: number,
             timestamp: number,
@@ -18236,7 +18301,7 @@ class Formatter {
             difficulty: this.difficulty.bind(this),
             gasLimit: bigNumber,
             gasUsed: bigNumber,
-            miner: address,
+            miner: Formatter.allowNull(address),
             extraData: data,
             transactions: Formatter.allowNull(Formatter.arrayOf(hash)),
             baseFeePerGas: Formatter.allowNull(bigNumber)
@@ -18588,6 +18653,7 @@ var __awaiter$9 = (window && window.__awaiter) || function (thisArg, _arguments,
     });
 };
 const logger$t = new Logger(version$m);
+const MAX_CCIP_REDIRECTS = 10;
 //////////////////////////////
 // Event Serializeing
 function checkTopic(topic) {
@@ -18752,18 +18818,18 @@ const matchers = [
     matcherIpfs,
     new RegExp("^eip155:[0-9]+/(erc[0-9]+):(.*)$", "i"),
 ];
-function _parseString(result) {
+function _parseString(result, start) {
     try {
-        return toUtf8String(_parseBytes(result));
+        return toUtf8String(_parseBytes(result, start));
     }
     catch (error) { }
     return null;
 }
-function _parseBytes(result) {
+function _parseBytes(result, start) {
     if (result === "0x") {
         return null;
     }
-    const offset = BigNumber.from(hexDataSlice(result, 0, 32)).toNumber();
+    const offset = BigNumber.from(hexDataSlice(result, start, start + 32)).toNumber();
     const length = BigNumber.from(hexDataSlice(result, offset, offset + 32)).toNumber();
     return hexDataSlice(result, offset + 32, offset + 32 + length);
 }
@@ -18780,6 +18846,43 @@ function getIpfsLink(link) {
     }
     return `https:/\/gateway.ipfs.io/ipfs/${link}`;
 }
+function numPad(value) {
+    const result = arrayify(value);
+    if (result.length > 32) {
+        throw new Error("internal; should not happen");
+    }
+    const padded = new Uint8Array(32);
+    padded.set(result, 32 - result.length);
+    return padded;
+}
+function bytesPad(value) {
+    if ((value.length % 32) === 0) {
+        return value;
+    }
+    const result = new Uint8Array(Math.ceil(value.length / 32) * 32);
+    result.set(value);
+    return result;
+}
+// ABI Encodes a series of (bytes, bytes, ...)
+function encodeBytes(datas) {
+    const result = [];
+    let byteCount = 0;
+    // Add place-holders for pointers as we add items
+    for (let i = 0; i < datas.length; i++) {
+        result.push(null);
+        byteCount += 32;
+    }
+    for (let i = 0; i < datas.length; i++) {
+        const data = arrayify(datas[i]);
+        // Update the bytes offset
+        result[i] = numPad(byteCount);
+        // The length and padded value of data
+        result.push(numPad(data.length));
+        result.push(bytesPad(data));
+        byteCount += 32 + Math.ceil(data.length / 32) * 32;
+    }
+    return hexConcat(result);
+}
 class Resolver {
     // The resolvedAddress is only for creating a ReverseLookup resolver
     constructor(provider, address, name, resolvedAddress) {
@@ -18788,15 +18891,45 @@ class Resolver {
         defineReadOnly(this, "address", provider.formatter.address(address));
         defineReadOnly(this, "_resolvedAddress", resolvedAddress);
     }
-    _fetchBytes(selector, parameters) {
+    supportsWildcard() {
+        if (!this._supportsEip2544) {
+            // supportsInterface(bytes4 = selector("resolve(bytes,bytes)"))
+            this._supportsEip2544 = this.provider.call({
+                to: this.address,
+                data: "0x01ffc9a79061b92300000000000000000000000000000000000000000000000000000000"
+            }).then((result) => {
+                return BigNumber.from(result).eq(1);
+            }).catch((error) => {
+                if (error.code === Logger.errors.CALL_EXCEPTION) {
+                    return false;
+                }
+                // Rethrow the error: link is down, etc. Let future attempts retry.
+                this._supportsEip2544 = null;
+                throw error;
+            });
+        }
+        return this._supportsEip2544;
+    }
+    _fetch(selector, parameters) {
         return __awaiter$9(this, void 0, void 0, function* () {
             // e.g. keccak256("addr(bytes32,uint256)")
             const tx = {
                 to: this.address,
                 data: hexConcat([selector, namehash(this.name), (parameters || "0x")])
             };
+            // Wildcard support; use EIP-2544 to resolve the request
+            let parseBytes = false;
+            if (yield this.supportsWildcard()) {
+                parseBytes = true;
+                // selector("resolve(bytes,bytes)")
+                tx.data = hexConcat(["0x9061b923", encodeBytes([dnsEncode(this.name), tx.data])]);
+            }
             try {
-                return _parseBytes(yield this.provider.call(tx));
+                let result = yield this.provider.call(tx);
+                if (parseBytes) {
+                    result = _parseBytes(result, 0);
+                }
+                return result;
             }
             catch (error) {
                 if (error.code === Logger.errors.CALL_EXCEPTION) {
@@ -18804,6 +18937,15 @@ class Resolver {
                 }
                 return null;
             }
+        });
+    }
+    _fetchBytes(selector, parameters) {
+        return __awaiter$9(this, void 0, void 0, function* () {
+            const result = yield this._fetch(selector, parameters);
+            if (result != null) {
+                return _parseBytes(result, 0);
+            }
+            return null;
         });
     }
     _getAddress(coinType, hexBytes) {
@@ -18867,16 +19009,12 @@ class Resolver {
             if (coinType === 60) {
                 try {
                     // keccak256("addr(bytes32)")
-                    const transaction = {
-                        to: this.address,
-                        data: ("0x3b3b57de" + namehash(this.name).substring(2))
-                    };
-                    const hexBytes = yield this.provider.call(transaction);
+                    const result = yield this._fetch("0x3b3b57de");
                     // No address
-                    if (hexBytes === "0x" || hexBytes === HashZero) {
+                    if (result === "0x" || result === HashZero) {
                         return null;
                     }
-                    return this.provider.formatter.callAddress(hexBytes);
+                    return this.provider.formatter.callAddress(result);
                 }
                 catch (error) {
                     if (error.code === Logger.errors.CALL_EXCEPTION) {
@@ -18968,7 +19106,7 @@ class Resolver {
                                 to: this.provider.formatter.address(comps[0]),
                                 data: hexConcat([selector, tokenId])
                             };
-                            let metadataUrl = _parseString(yield this.provider.call(tx));
+                            let metadataUrl = _parseString(yield this.provider.call(tx), 0);
                             if (metadataUrl == null) {
                                 return null;
                             }
@@ -19082,6 +19220,7 @@ class BaseProvider extends Provider {
         // Events being listened to
         this._events = [];
         this._emitted = { block: -2 };
+        this.disableCcipRead = false;
         this.formatter = new.target.getFormatter();
         // If network is any, this Provider allows the underlying
         // network to change dynamically, and we auto-detect the
@@ -19109,6 +19248,9 @@ class BaseProvider extends Provider {
         }
         this._maxInternalBlockNumber = -1024;
         this._lastBlockNumber = -2;
+        this._lastFilterBlockNumber = -2;
+        this._lastFilterComplete = true;
+        this._maxFilterBlockRange = 10;
         this._pollingInterval = 4000;
         this._fastQueryDate = 0;
     }
@@ -19171,6 +19313,40 @@ class BaseProvider extends Provider {
     // @TODO: Remove this and just use getNetwork
     static getNetwork(network) {
         return getNetwork((network == null) ? "homestead" : network);
+    }
+    ccipReadFetch(tx, calldata, urls) {
+        return __awaiter$9(this, void 0, void 0, function* () {
+            if (this.disableCcipRead || urls.length === 0) {
+                return null;
+            }
+            const sender = (tx.from || "0x0000000000000000000000000000000000000000").toLowerCase();
+            const data = calldata.toLowerCase();
+            const errorMessages = [];
+            for (let i = 0; i < urls.length; i++) {
+                const url = urls[i];
+                // URL expansion
+                const href = url.replace("{sender}", sender).replace("{data}", data);
+                // If no {data} is present, use POST; otherwise GET
+                const json = (url.indexOf("{data}") >= 0) ? null : JSON.stringify({ data, sender });
+                const result = yield fetchJson({ url: href, errorPassThrough: true }, json, (value, response) => {
+                    value.status = response.statusCode;
+                    return value;
+                });
+                if (result.data) {
+                    return result.data;
+                }
+                const errorMessage = (result.message || "unknown error");
+                // 4xx indicates the result is not present; stop
+                if (result.status >= 400 && result.status < 500) {
+                    return logger$t.throwError(`response not found during CCIP fetch: ${errorMessage}`, Logger.errors.SERVER_ERROR, { url, errorMessage });
+                }
+                // 5xx indicates server issue; try the next url
+                errorMessages.push(errorMessage);
+            }
+            return logger$t.throwError(`error encountered during CCIP fetch: ${errorMessages.map((m) => JSON.stringify(m)).join(", ")}`, Logger.errors.SERVER_ERROR, {
+                urls, errorMessages
+            });
+        });
     }
     // Fetches the blockNumber, but will reuse any result that is less
     // than maxAge old or has been requested since the last request
@@ -19301,6 +19477,8 @@ class BaseProvider extends Provider {
             // First polling cycle
             if (this._lastBlockNumber === -2) {
                 this._lastBlockNumber = blockNumber - 1;
+                this._lastFilterBlockNumber = blockNumber - 1;
+                this._lastFilterComplete = true;
             }
             // Find all transaction hashes we are waiting on
             this._events.forEach((event) => {
@@ -19319,20 +19497,44 @@ class BaseProvider extends Provider {
                         break;
                     }
                     case "filter": {
-                        const filter = event.filter;
-                        filter.fromBlock = this._lastBlockNumber + 1;
-                        filter.toBlock = blockNumber;
-                        const runner = this.getLogs(filter).then((logs) => {
-                            if (logs.length === 0) {
-                                return;
+                        // We only allow a single getLogs to be in-flight at a time
+                        if (this._lastFilterComplete) {
+                            this._lastFilterComplete = false;
+                            // Filter from the last known event; due to load-balancing
+                            // and some nodes returning updated block numbers before
+                            // indexing events, a logs result with 0 entries cannot be
+                            // trusted and we must retry a range which includes it again
+                            const filter = event.filter;
+                            filter.fromBlock = this._lastFilterBlockNumber + 1;
+                            filter.toBlock = blockNumber;
+                            // Prevent fitler ranges from growing too wild
+                            if (filter.toBlock - this._maxFilterBlockRange > filter.fromBlock) {
+                                filter.fromBlock = filter.toBlock - this._maxFilterBlockRange;
                             }
-                            logs.forEach((log) => {
-                                this._emitted["b:" + log.blockHash] = log.blockNumber;
-                                this._emitted["t:" + log.transactionHash] = log.blockNumber;
-                                this.emit(filter, log);
+                            const runner = this.getLogs(filter).then((logs) => {
+                                // Allow the next getLogs
+                                this._lastFilterComplete = true;
+                                if (logs.length === 0) {
+                                    return;
+                                }
+                                logs.forEach((log) => {
+                                    // Only when we get an event for a given block number
+                                    // can we trust the events are indexed
+                                    if (log.blockNumber > this._lastFilterBlockNumber) {
+                                        this._lastFilterBlockNumber = log.blockNumber;
+                                    }
+                                    // Make sure we stall requests to fetch blocks and txs
+                                    this._emitted["b:" + log.blockHash] = log.blockNumber;
+                                    this._emitted["t:" + log.transactionHash] = log.blockNumber;
+                                    this.emit(filter, log);
+                                });
+                            }).catch((error) => {
+                                this.emit("error", error);
+                                // Allow another getLogs (the range was not updated)
+                                this._lastFilterComplete = true;
                             });
-                        }).catch((error) => { this.emit("error", error); });
-                        runners.push(runner);
+                            runners.push(runner);
+                        }
                         break;
                     }
                 }
@@ -19844,23 +20046,97 @@ class BaseProvider extends Provider {
             return this.formatter.filter(yield resolveProperties(result));
         });
     }
-    call(transaction, blockTag) {
+    _call(transaction, blockTag, attempt) {
         return __awaiter$9(this, void 0, void 0, function* () {
-            yield this.getNetwork();
-            const params = yield resolveProperties({
-                transaction: this._getTransactionRequest(transaction),
-                blockTag: this._getBlockTag(blockTag)
-            });
-            const result = yield this.perform("call", params);
+            if (attempt >= MAX_CCIP_REDIRECTS) {
+                logger$t.throwError("CCIP read exceeded maximum redirections", Logger.errors.SERVER_ERROR, {
+                    redirects: attempt, transaction
+                });
+            }
+            const txSender = transaction.to;
+            const result = yield this.perform("call", { transaction, blockTag });
+            // CCIP Read request via OffchainLookup(address,string[],bytes,bytes4,bytes)
+            if (attempt >= 0 && blockTag === "latest" && txSender != null && result.substring(0, 10) === "0x556f1830" && (hexDataLength(result) % 32 === 4)) {
+                try {
+                    const data = hexDataSlice(result, 4);
+                    // Check the sender of the OffchainLookup matches the transaction
+                    const sender = hexDataSlice(data, 0, 32);
+                    if (!BigNumber.from(sender).eq(txSender)) {
+                        logger$t.throwError("CCIP Read sender did not match", Logger.errors.CALL_EXCEPTION, {
+                            name: "OffchainLookup",
+                            signature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
+                            transaction, data: result
+                        });
+                    }
+                    // Read the URLs from the response
+                    const urls = [];
+                    const urlsOffset = BigNumber.from(hexDataSlice(data, 32, 64)).toNumber();
+                    const urlsLength = BigNumber.from(hexDataSlice(data, urlsOffset, urlsOffset + 32)).toNumber();
+                    const urlsData = hexDataSlice(data, urlsOffset + 32);
+                    for (let u = 0; u < urlsLength; u++) {
+                        const url = _parseString(urlsData, u * 32);
+                        if (url == null) {
+                            logger$t.throwError("CCIP Read contained corrupt URL string", Logger.errors.CALL_EXCEPTION, {
+                                name: "OffchainLookup",
+                                signature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
+                                transaction, data: result
+                            });
+                        }
+                        urls.push(url);
+                    }
+                    // Get the CCIP calldata to forward
+                    const calldata = _parseBytes(data, 64);
+                    // Get the callbackSelector (bytes4)
+                    if (!BigNumber.from(hexDataSlice(data, 100, 128)).isZero()) {
+                        logger$t.throwError("CCIP Read callback selector included junk", Logger.errors.CALL_EXCEPTION, {
+                            name: "OffchainLookup",
+                            signature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
+                            transaction, data: result
+                        });
+                    }
+                    const callbackSelector = hexDataSlice(data, 96, 100);
+                    // Get the extra data to send back to the contract as context
+                    const extraData = _parseBytes(data, 128);
+                    const ccipResult = yield this.ccipReadFetch(transaction, calldata, urls);
+                    if (ccipResult == null) {
+                        logger$t.throwError("CCIP Read disabled or provided no URLs", Logger.errors.CALL_EXCEPTION, {
+                            name: "OffchainLookup",
+                            signature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
+                            transaction, data: result
+                        });
+                    }
+                    const tx = {
+                        to: txSender,
+                        data: hexConcat([callbackSelector, encodeBytes([ccipResult, extraData])])
+                    };
+                    return this._call(tx, blockTag, attempt + 1);
+                }
+                catch (error) {
+                    if (error.code === Logger.errors.SERVER_ERROR) {
+                        throw error;
+                    }
+                }
+            }
             try {
                 return hexlify(result);
             }
             catch (error) {
                 return logger$t.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
                     method: "call",
-                    params, result, error
+                    params: { transaction, blockTag }, result, error
                 });
             }
+        });
+    }
+    call(transaction, blockTag) {
+        return __awaiter$9(this, void 0, void 0, function* () {
+            yield this.getNetwork();
+            const resolved = yield resolveProperties({
+                transaction: this._getTransactionRequest(transaction),
+                blockTag: this._getBlockTag(blockTag),
+                ccipReadEnabled: Promise.resolve(transaction.ccipReadEnabled)
+            });
+            return this._call(resolved.transaction, resolved.blockTag, resolved.ccipReadEnabled ? 0 : -1);
         });
     }
     estimateGas(transaction) {
@@ -20076,43 +20352,54 @@ class BaseProvider extends Provider {
     }
     getResolver(name) {
         return __awaiter$9(this, void 0, void 0, function* () {
-            try {
-                const address = yield this._getResolver(name);
-                if (address == null) {
+            let currentName = name;
+            while (true) {
+                if (currentName === "" || currentName === ".") {
                     return null;
                 }
-                return new Resolver(this, address, name);
-            }
-            catch (error) {
-                if (error.code === Logger.errors.CALL_EXCEPTION) {
+                // Optimization since the eth node cannot change and does
+                // not have a wildcar resolver
+                if (name !== "eth" && currentName === "eth") {
                     return null;
                 }
-                throw error;
+                // Check the current node for a resolver
+                const addr = yield this._getResolver(currentName, "getResolver");
+                // Found a resolver!
+                if (addr != null) {
+                    const resolver = new Resolver(this, addr, name);
+                    // Legacy resolver found, using EIP-2544 so it isn't safe to use
+                    if (currentName !== name && !(yield resolver.supportsWildcard())) {
+                        return null;
+                    }
+                    return resolver;
+                }
+                // Get the parent node
+                currentName = currentName.split(".").slice(1).join(".");
             }
         });
     }
-    _getResolver(name) {
+    _getResolver(name, operation) {
         return __awaiter$9(this, void 0, void 0, function* () {
-            // Get the resolver from the blockchain
+            if (operation == null) {
+                operation = "ENS";
+            }
             const network = yield this.getNetwork();
             // No ENS...
             if (!network.ensAddress) {
-                logger$t.throwError("network does not support ENS", Logger.errors.UNSUPPORTED_OPERATION, { operation: "ENS", network: network.name });
+                logger$t.throwError("network does not support ENS", Logger.errors.UNSUPPORTED_OPERATION, { operation, network: network.name });
             }
-            // keccak256("resolver(bytes32)")
-            const transaction = {
-                to: network.ensAddress,
-                data: ("0x0178b8bf" + namehash(name).substring(2))
-            };
             try {
-                return this.formatter.callAddress(yield this.call(transaction));
+                // keccak256("resolver(bytes32)")
+                const addrData = yield this.call({
+                    to: network.ensAddress,
+                    data: ("0x0178b8bf" + namehash(name).substring(2))
+                });
+                return this.formatter.callAddress(addrData);
             }
             catch (error) {
-                if (error.code === Logger.errors.CALL_EXCEPTION) {
-                    return null;
-                }
-                throw error;
+                // ENS registry cannot throw errors on resolver(bytes32)
             }
+            return null;
         });
     }
     resolveName(name) {
@@ -20143,34 +20430,16 @@ class BaseProvider extends Provider {
         return __awaiter$9(this, void 0, void 0, function* () {
             address = yield address;
             address = this.formatter.address(address);
-            const reverseName = address.substring(2).toLowerCase() + ".addr.reverse";
-            const resolverAddress = yield this._getResolver(reverseName);
-            if (!resolverAddress) {
+            const node = address.substring(2).toLowerCase() + ".addr.reverse";
+            const resolverAddr = yield this._getResolver(node, "lookupAddress");
+            if (resolverAddr == null) {
                 return null;
             }
             // keccak("name(bytes32)")
-            let bytes = arrayify(yield this.call({
-                to: resolverAddress,
-                data: ("0x691f3431" + namehash(reverseName).substring(2))
-            }));
-            // Strip off the dynamic string pointer (0x20)
-            if (bytes.length < 32 || !BigNumber.from(bytes.slice(0, 32)).eq(32)) {
-                return null;
-            }
-            bytes = bytes.slice(32);
-            // Not a length-prefixed string
-            if (bytes.length < 32) {
-                return null;
-            }
-            // Get the length of the string (from the length-prefix)
-            const length = BigNumber.from(bytes.slice(0, 32)).toNumber();
-            bytes = bytes.slice(32);
-            // Length longer than available data
-            if (length > bytes.length) {
-                return null;
-            }
-            const name = toUtf8String(bytes.slice(0, length));
-            // Make sure the reverse record matches the foward record
+            const name = _parseString(yield this.call({
+                to: resolverAddr,
+                data: ("0x691f3431" + namehash(node).substring(2))
+            }), 0);
             const addr = yield this.resolveName(name);
             if (addr != address) {
                 return null;
@@ -20184,15 +20453,42 @@ class BaseProvider extends Provider {
             if (isHexString(nameOrAddress)) {
                 // Address; reverse lookup
                 const address = this.formatter.address(nameOrAddress);
-                const reverseName = address.substring(2).toLowerCase() + ".addr.reverse";
-                const resolverAddress = yield this._getResolver(reverseName);
+                const node = address.substring(2).toLowerCase() + ".addr.reverse";
+                const resolverAddress = yield this._getResolver(node, "getAvatar");
                 if (!resolverAddress) {
                     return null;
                 }
-                resolver = new Resolver(this, resolverAddress, "_", address);
+                // Try resolving the avatar against the addr.reverse resolver
+                resolver = new Resolver(this, resolverAddress, node);
+                try {
+                    const avatar = yield resolver.getAvatar();
+                    if (avatar) {
+                        return avatar.url;
+                    }
+                }
+                catch (error) {
+                    if (error.code !== Logger.errors.CALL_EXCEPTION) {
+                        throw error;
+                    }
+                }
+                // Try getting the name and performing forward lookup; allowing wildcards
+                try {
+                    // keccak("name(bytes32)")
+                    const name = _parseString(yield this.call({
+                        to: resolverAddress,
+                        data: ("0x691f3431" + namehash(node).substring(2))
+                    }), 0);
+                    resolver = yield this.getResolver(name);
+                }
+                catch (error) {
+                    if (error.code !== Logger.errors.CALL_EXCEPTION) {
+                        throw error;
+                    }
+                    return null;
+                }
             }
             else {
-                // ENS name; forward lookup
+                // ENS name; forward lookup with wildcard
                 resolver = yield this.getResolver(nameOrAddress);
                 if (!resolver) {
                     return null;
@@ -20862,8 +21158,8 @@ class JsonRpcProvider extends BaseProvider {
         }
         checkProperties(transaction, allowed);
         const result = {};
-        // Some nodes (INFURA ropsten; INFURA mainnet is fine) do not like leading zeros.
-        ["gasLimit", "gasPrice", "type", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "value"].forEach(function (key) {
+        // JSON-RPC now requires numeric values to be "quantity" values
+        ["chainId", "gasLimit", "gasPrice", "type", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "value"].forEach(function (key) {
             if (transaction[key] == null) {
                 return;
             }
@@ -20939,22 +21235,32 @@ class WebSocketProvider extends JsonRpcProvider {
                 operation: "network:any"
             });
         }
-        super(url, network);
+        if (typeof (url) === "string") {
+            super(url, network);
+        }
+        else {
+            super("_websocket", network);
+        }
         this._pollingInterval = -1;
         this._wsReady = false;
-        defineReadOnly(this, "_websocket", new WS(this.connection.url));
+        if (typeof (url) === "string") {
+            defineReadOnly(this, "_websocket", new WS(this.connection.url));
+        }
+        else {
+            defineReadOnly(this, "_websocket", url);
+        }
         defineReadOnly(this, "_requests", {});
         defineReadOnly(this, "_subs", {});
         defineReadOnly(this, "_subIds", {});
         defineReadOnly(this, "_detectNetwork", super.detectNetwork());
         // Stall sending requests until the socket is open...
-        this._websocket.onopen = () => {
+        this.websocket.onopen = () => {
             this._wsReady = true;
             Object.keys(this._requests).forEach((id) => {
-                this._websocket.send(this._requests[id].payload);
+                this.websocket.send(this._requests[id].payload);
             });
         };
-        this._websocket.onmessage = (messageEvent) => {
+        this.websocket.onmessage = (messageEvent) => {
             const data = messageEvent.data;
             const result = JSON.parse(data);
             if (result.id != null) {
@@ -21011,6 +21317,9 @@ class WebSocketProvider extends JsonRpcProvider {
             fauxPoll.unref();
         }
     }
+    // Cannot narrow the type of _websocket, as that is not backwards compatible
+    // so we add a getter and let the WebSocket be a public API.
+    get websocket() { return this._websocket; }
     detectNetwork() {
         return this._detectNetwork;
     }
@@ -21062,7 +21371,7 @@ class WebSocketProvider extends JsonRpcProvider {
             });
             this._requests[String(rid)] = { callback, payload };
             if (this._wsReady) {
-                this._websocket.send(payload);
+                this.websocket.send(payload);
             }
         });
     }
@@ -21166,19 +21475,19 @@ class WebSocketProvider extends JsonRpcProvider {
     destroy() {
         return __awaiter$b(this, void 0, void 0, function* () {
             // Wait until we have connected before trying to disconnect
-            if (this._websocket.readyState === WS.CONNECTING) {
+            if (this.websocket.readyState === WS.CONNECTING) {
                 yield (new Promise((resolve) => {
-                    this._websocket.onopen = function () {
+                    this.websocket.onopen = function () {
                         resolve(true);
                     };
-                    this._websocket.onerror = function () {
+                    this.websocket.onerror = function () {
                         resolve(false);
                     };
                 }));
             }
             // Hangup
             // See: https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent#Status_codes
-            this._websocket.close(1000);
+            this.websocket.close(1000);
         });
     }
 }
@@ -22924,7 +23233,7 @@ var index$3 = /*#__PURE__*/Object.freeze({
 	Formatter: Formatter
 });
 
-const version$n = "solidity/5.5.0";
+const version$n = "solidity/5.6.0";
 
 "use strict";
 const regexBytes = new RegExp("^bytes([0-9]+)$");
@@ -23010,7 +23319,7 @@ function sha256$2(types, values) {
     return sha256$1(pack$1(types, values));
 }
 
-const version$o = "units/5.5.0";
+const version$o = "units/5.6.0";
 
 "use strict";
 const logger$H = new Logger(version$o);
@@ -23148,6 +23457,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Utf8ErrorFuncs: Utf8ErrorFuncs,
 	formatBytes32String: formatBytes32String,
 	parseBytes32String: parseBytes32String,
+	dnsEncode: dnsEncode,
 	hashMessage: hashMessage,
 	namehash: namehash,
 	isValidName: isValidName,
@@ -23197,7 +23507,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$p = "ethers/5.5.4";
+const version$p = "ethers/5.6.0";
 
 "use strict";
 const logger$I = new Logger(version$p);

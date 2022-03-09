@@ -57,7 +57,7 @@ export class Eip1193Bridge extends EventEmitter {
                 }
                 case "eth_chainId": {
                     const result = yield this.provider.getNetwork();
-                    return result.chainId;
+                    return ethers.utils.hexValue(result.chainId);
                 }
                 case "eth_getBalance": {
                     const result = yield this.provider.getBalance(params[0], params[1]);

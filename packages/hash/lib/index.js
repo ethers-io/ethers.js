@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._TypedDataEncoder = exports.hashMessage = exports.messagePrefix = exports.isValidName = exports.namehash = exports.id = void 0;
+exports._TypedDataEncoder = exports.hashMessage = exports.messagePrefix = exports.isValidName = exports.namehash = exports.dnsEncode = exports.id = void 0;
 var id_1 = require("./id");
 Object.defineProperty(exports, "id", { enumerable: true, get: function () { return id_1.id; } });
 var namehash_1 = require("./namehash");
+Object.defineProperty(exports, "dnsEncode", { enumerable: true, get: function () { return namehash_1.dnsEncode; } });
 Object.defineProperty(exports, "isValidName", { enumerable: true, get: function () { return namehash_1.isValidName; } });
 Object.defineProperty(exports, "namehash", { enumerable: true, get: function () { return namehash_1.namehash; } });
 var message_1 = require("./message");

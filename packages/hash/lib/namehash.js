@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.namehash = exports.isValidName = void 0;
+exports.dnsEncode = exports.namehash = exports.isValidName = void 0;
 var bytes_1 = require("@ethersproject/bytes");
 var strings_1 = require("@ethersproject/strings");
 var keccak256_1 = require("@ethersproject/keccak256");
@@ -43,4 +43,14 @@ function namehash(name) {
     return (0, bytes_1.hexlify)(result);
 }
 exports.namehash = namehash;
+function dnsEncode(name) {
+    return (0, bytes_1.hexlify)((0, bytes_1.concat)(name.split(".").map(function (comp) {
+        // We jam in an _ prefix to fill in with the length later
+        // Note: Nameprep throws if the component is over 63 bytes
+        var bytes = (0, strings_1.toUtf8Bytes)("_" + (0, strings_1.nameprep)(comp));
+        bytes[0] = bytes.length - 1;
+        return bytes;
+    }))) + "00";
+}
+exports.dnsEncode = dnsEncode;
 //# sourceMappingURL=namehash.js.map

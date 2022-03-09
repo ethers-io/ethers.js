@@ -160,7 +160,7 @@ var Provider = /** @class */ (function () {
                             // We may want to compute this more accurately in the future,
                             // using the formula "check if the base fee is correct".
                             // See: https://eips.ethereum.org/EIPS/eip-1559
-                            maxPriorityFeePerGas = bignumber_1.BigNumber.from("2500000000");
+                            maxPriorityFeePerGas = bignumber_1.BigNumber.from("1500000000");
                             maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
                         }
                         return [2 /*return*/, { maxFeePerGas: maxFeePerGas, maxPriorityFeePerGas: maxPriorityFeePerGas, gasPrice: gasPrice }];

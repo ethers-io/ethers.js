@@ -1,8 +1,8 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bytes": "^5.5.0",
-    "@ethersproject/logger": "^5.5.0",
+    "@ethersproject/bytes": "^5.6.0",
+    "@ethersproject/logger": "^5.6.0",
     "bn.js": "^4.11.9"
   },
   "description": "BigNumber library used in ethers.js.",
@@ -38,7 +38,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xc96a25dc52eed1cbc00347b751e5beea569cdc12b2c2df276fc08a7f4d756f72",
+  "tarballHash": "0xffcf139ec01d3c95ed1f8b9274398ce62c61e6db410ae30d23609c7227d94992",
   "types": "./lib/index.d.ts",
-  "version": "5.5.0"
+  "version": "5.6.0"
 }

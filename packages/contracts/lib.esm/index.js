@@ -26,7 +26,8 @@ const allowedTransactionKeys = {
     chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
     type: true, accessList: true,
     maxFeePerGas: true, maxPriorityFeePerGas: true,
-    customData: true
+    customData: true,
+    ccipReadEnabled: true
 };
 function resolveName(resolver, nameOrPromise) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -184,6 +185,9 @@ function populateTransaction(contract, fragment, args) {
         if (ro.customData) {
             tx.customData = shallowCopy(ro.customData);
         }
+        if (ro.ccipReadEnabled) {
+            tx.ccipReadEnabled = !!ro.ccipReadEnabled;
+        }
         // Remove the overrides
         delete overrides.nonce;
         delete overrides.gasLimit;
@@ -195,6 +199,7 @@ function populateTransaction(contract, fragment, args) {
         delete overrides.maxFeePerGas;
         delete overrides.maxPriorityFeePerGas;
         delete overrides.customData;
+        delete overrides.ccipReadEnabled;
         // Make sure there are no stray overrides, which may indicate a
         // typo or using an unsupported key.
         const leftovers = Object.keys(overrides).filter((key) => (overrides[key] != null));
@@ -540,6 +545,8 @@ export class BaseContract {
                 });
             }
         }
+        // Swallow bad ENS names to prevent Unhandled Exceptions
+        this.resolvedAddress.catch((e) => { });
         const uniqueNames = {};
         const uniqueSignatures = {};
         Object.keys(this.interface.functions).forEach((signature) => {

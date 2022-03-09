@@ -4,6 +4,24 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+ethers/v5.6.0 (2022-03-09 02:13)
+--------------------------------
+
+  - Fix missing events on certain network conditions. ([#1798](https://github.com/ethers-io/ethers.js/issues/1798), [#1814](https://github.com/ethers-io/ethers.js/issues/1814), [#1830](https://github.com/ethers-io/ethers.js/issues/1830), [#2274](https://github.com/ethers-io/ethers.js/issues/2274), [#2652](https://github.com/ethers-io/ethers.js/issues/2652); [f67a9a8](https://github.com/ethers-io/ethers.js/commit/f67a9a8569cdfd0ef9ce5fbf09866aab6e4814d4))
+  - Added defaultProvider option to omit specific Providers. ([bae215e](https://github.com/ethers-io/ethers.js/commit/bae215eb7fb3efea8473a544579abac1bebb7ef0))
+  - Add support for pending blocks. ([#2225](https://github.com/ethers-io/ethers.js/issues/2225); [54e6e57](https://github.com/ethers-io/ethers.js/commit/54e6e57fcece4c1718a577ecbeb1af97998e8bdc))
+  - Help URLs for errors. ([#2489](https://github.com/ethers-io/ethers.js/issues/2489); [38e825c](https://github.com/ethers-io/ethers.js/commit/38e825cee624ff935ec6b70023cf288126a6bb85), [c562150](https://github.com/ethers-io/ethers.js/commit/c562150d2678710f50e5ee3ffa88d0e62d6f696f))
+  - Added CCIP support to provider.call. ([#2478](https://github.com/ethers-io/ethers.js/issues/2478); [ae23bb7](https://github.com/ethers-io/ethers.js/commit/ae23bb76a937924bf57baf679e6efd8cdf59bc47))
+  - Adjust default maxPriorityFeePerGas to 1.5 gwei. ([33a029e](https://github.com/ethers-io/ethers.js/commit/33a029e457320a226c68a01f4cfa2d110125a8b8))
+  - Fix contracts when name resolution fails without any checks. ([#2737](https://github.com/ethers-io/ethers.js/issues/2737); [c2a6a01](https://github.com/ethers-io/ethers.js/commit/c2a6a012bf1d8fcd5805e45754cebdfe211c6933))
+  - Preserve explicit chainId in JsonRpcProvider during transaction serialization. ([#2691](https://github.com/ethers-io/ethers.js/issues/2691); [6807a76](https://github.com/ethers-io/ethers.js/commit/6807a76b8ddfdd121f98b21e269de3b195a7673e))
+  - Fixed eth_chainId response for Eip1193Bridge. ([#2711](https://github.com/ethers-io/ethers.js/issues/2711); [5f26fd5](https://github.com/ethers-io/ethers.js/commit/5f26fd55c9d010c00f830a4c83a480a54773858d))
+  - Remove spurious console.log from Interface. ([#2714](https://github.com/ethers-io/ethers.js/issues/2714); [4e8f004](https://github.com/ethers-io/ethers.js/commit/4e8f004e9e42892840663311cafe042c0b24c61e))
+  - Allow raw WebSocket to be passed into WebSocketProvider. ([#2562](https://github.com/ethers-io/ethers.js/issues/2562), [#2644](https://github.com/ethers-io/ethers.js/issues/2644); [9aac785](https://github.com/ethers-io/ethers.js/commit/9aac785395e9b47655477a3ba7baf05df3274de9))
+  - Added Cloudflare Worker support. ([#1886](https://github.com/ethers-io/ethers.js/issues/1886); [2d98b4f](https://github.com/ethers-io/ethers.js/commit/2d98b4fca1eb2544fec728f7c1c7b0d450e0dbee), [1651389](https://github.com/ethers-io/ethers.js/commit/1651389571b5dd16c1c056dcd94729b48a4bdd85))
+  - Add support for EIP-2098 compact signatures. ([#2246](https://github.com/ethers-io/ethers.js/issues/2246); [f26074b](https://github.com/ethers-io/ethers.js/commit/f26074b92b0fc8efd3d85c68e84cc6ff8897e4a8))
+  - Add EIP-2544 Wildcard support. ([#2477](https://github.com/ethers-io/ethers.js/issues/2477), [#2582](https://github.com/ethers-io/ethers.js/issues/2582), [#2583](https://github.com/ethers-io/ethers.js/issues/2583); [83891f9](https://github.com/ethers-io/ethers.js/commit/83891f9258492f9801aa579ac50764b6491b6180))
+
 ethers/v5.5.4 (2022-01-24 16:45)
 --------------------------------
 
