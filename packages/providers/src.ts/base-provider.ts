@@ -364,9 +364,11 @@ export class Resolver implements EnsResolver {
     }
 
     async _fetch(selector: string, parameters?: string): Promise<null | string> {
+
         // e.g. keccak256("addr(bytes32,uint256)")
         const tx = {
             to: this.address,
+            ccipReadEnabled: true,
             data: hexConcat([ selector, namehash(this.name), (parameters || "0x") ])
         };
 
