@@ -154,7 +154,7 @@ logger.info(...)
 
 <a name="migration-v4--interface--functions"></a><h3 class="show-anchors"><div>Functions<div class="anchors"><a class="self" href="/v5/migration/ethers-v4/#migration-v4--interface--functions"></a></div></div></h3>
 <div class="code"><span class="comment">// v4 (example: "transfer(address to, uint amount)")
-</span>interface.functions.transfer.encode(to, amount)
+</span>interface.functions.transfer.encode([ to, amount ])
 interface.functions.transfer.decode(callData)
 
 <span class="comment">// v5
