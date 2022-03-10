@@ -1,6 +1,7 @@
 {
   "browser-old": "./dist/hethers.umd.js",
   "dependencies": {
+    "@ethersproject/solidity": "5.5.0",
     "@hethers/abstract-provider": "1.0.3",
     "@hethers/abstract-signer": "1.0.3",
     "@hethers/address": "1.0.3",
@@ -13,8 +14,7 @@
     "@hethers/providers": "1.0.3",
     "@hethers/transactions": "1.0.3",
     "@hethers/units": "1.0.3",
-    "@hethers/wallet": "1.0.3",
-    "@ethersproject/solidity": "5.5.0"
+    "@hethers/wallet": "1.0.3"
   },
   "description": "Umbrella package for most common Hethers libraries.",
   "devDependencies": {},

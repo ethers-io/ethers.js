@@ -5,6 +5,10 @@ import { keccak_256 } from "js-sha3";
 
 import { getUrl, GetUrlResponse, Options } from "./geturl";
 import { resolve } from "./path";
+import {config} from "./config";
+import {getGitTag} from "./git";
+import { getLatestChange } from "./changelog";
+import {colorify} from "./log";
 
 type GetUrlFunc = (href: string, options?: Options) => Promise<GetUrlResponse>;
 
@@ -30,14 +34,14 @@ async function _fetchGitHub(user: string, password: string, getUrlFunc: GetUrlFu
             headers["if-none-match"] = data.etag;
             items = data.items;
             link = data.link;
-console.log("Loaded", filename);
+            console.log("Loaded", filename);
         } catch (error) {
-console.log("not found", filename);
+            console.log("not found", filename);
             if (error.code !== "ENOENT") { throw error; }
         }
 
         const response = await getUrl(url, { headers, user, password });
-console.log(response.statusCode);
+        console.log(response.statusCode);
         // Cached response is good; use it!
         if (response.statusCode !== 304) {
             items = JSON.parse(Buffer.from(response.body).toString());
@@ -45,7 +49,7 @@ console.log(response.statusCode);
                 link = (response.headers.link || null);
             }
             if (response.headers.etag){
-console.log(response.headers.etag);
+                console.log(response.headers.etag);
                 fs.writeFileSync(filename, zlib.gzipSync(JSON.stringify({
                     timestamp: (new Date()).getTime(),
                     url: url,
@@ -113,7 +117,7 @@ export async function syncIssues(user: string, password: string): Promise<Array<
     return await _getIssues(user, password);
 }
 
-export async function createRelease(user: string, password: string, tagName: string, title: string, body: string, prerelease?: boolean, commit?: string): Promise<string> {
+export async function _createRelease(user: string, password: string, tagName: string, title: string, body: string, prerelease?: boolean, commit?: string): Promise<string> {
     const result = await getUrl(`https://api.github.com/repos/${githubRepo}/releases`, {
         body: Buffer.from(JSON.stringify({
             tag_name: tagName,
@@ -127,7 +131,7 @@ export async function createRelease(user: string, password: string, tagName: str
         method: "POST",
 
         headers: {
-            "User-Agent": "ethers-io"
+            "User-Agent": "hashgraph/hethers"
         },
 
         user: user,
@@ -137,3 +141,92 @@ export async function createRelease(user: string, password: string, tagName: str
     return JSON.parse(Buffer.from(result.body).toString("utf8")).html_url;
 }
 
+async function _getLatestRelease(user: string, password: string): Promise<string> {
+    const result = await getUrl(`https://api.github.com/repos/${githubRepo}/releases`, {
+        method: "GET",
+        user: user,
+        password: password,
+        headers: {
+            "User-Agent": "ethers-io",
+        }
+    });
+
+    return JSON.parse(Buffer.from(result.body).toString("utf8"));
+}
+
+async function _deleteRelease(releaseId: string, user: string, password: string): Promise<any> {
+    return getUrl(`https://api.github.com/repos/${githubRepo}/releases/${releaseId}`, {
+        method: "DELETE",
+        user: user,
+        password: password,
+        headers: {
+            "User-Agent": "ethers-io",
+        }
+    });
+}
+
+function getAutoGitHubCredentials(): any {
+    const username = process.argv[3];
+    const password = process.argv[4];
+
+    return {username, password};
+}
+
+type scriptModes = 'manual' | 'auto';
+
+// @ts-ignore
+async function getCredentials(mode:scriptModes) : any {
+    let username, password;
+    if (mode === 'manual') {
+        // The password above already succeeded
+        username = await config.get("github-user");
+        password = await config.get("github-release");
+    }
+    else {
+        const credentials = getAutoGitHubCredentials();
+        username = credentials.username;
+        password = credentials.password;
+    }
+
+    return {username, password};
+}
+
+export async function createRelease(mode:scriptModes = 'manual') {
+    const change = getLatestChange();
+    // const patchVersion = change.version.substring(1);
+
+    // Publish tagged release on GitHub
+    let {username, password} = await getCredentials(mode);
+
+    // const hash = createHash("sha384").update(fs.readFileSync(resolve("packages/hethers/dist/hethers.umd.min.js"))).digest("base64");
+
+    const gitCommit = await getGitTag(resolve("CHANGELOG.md"));
+
+    let content = change.content.trim();
+    // content += '\n\n----\n\n';
+    // content += '**Embedding UMD with [SRI](https:/\/developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity):**\n';
+    // content += '```html\n';
+    // content += '<script type="text/javascript"\n';
+    // content += `        integrity="sha384-${ hash }"\n`;
+    // content += '        crossorigin="anonymous"\n';
+    // content += `        src="https:/\/cdn-cors.hethers.io/lib/hethers-${ patchVersion }.umd.min.js">\n`;
+    // content += '</script>\n';
+    // content += '```';
+
+    // Publish the release
+    const beta = false;
+
+    const link = await _createRelease(username, password, change.version, change.title, content, beta, gitCommit);
+    console.log(`${ colorify.bold("Published release:") } ${ link }`);
+}
+
+export async function getLatestRelease(mode:scriptModes = 'manual'): Promise<any>  {
+    let {username, password} = await getCredentials(mode);
+    const releases = await _getLatestRelease(username, password);
+    return (releases && releases.length) ? releases[0] : null;
+}
+
+export async function deleteRelease(releaseId: string, mode:scriptModes = 'manual'): Promise<any>  {
+    let {username, password} = await getCredentials(mode);
+    return await _deleteRelease(releaseId, username, password);
+}

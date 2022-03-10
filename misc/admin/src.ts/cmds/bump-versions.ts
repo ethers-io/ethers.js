@@ -72,14 +72,20 @@ import { loadJson, repeat, saveJson } from "../utils";
     progress(1);
 
     if (updated) {
-        const filename = resolve("packages/hethers/package.json")
-        const info = loadJson(filename);
-        Object.keys(info.dependencies).forEach((name) => {
-            const version = latestVersions[name];
-            if (name == null || !version) { return; }
-            info.dependencies[name] = version;
-        });
-        saveJson(filename, info);
+        for (let i = 0; i < dirnames.length; i++) {
+            progress(i / dirnames.length);
+
+            const dirname = dirnames[i];
+
+            const filename = resolve(`packages/${dirname}/package.json`);
+            const info = loadJson(filename);
+            Object.keys(info.dependencies).forEach((name) => {
+                const version = latestVersions[name];
+                if (name == null || !version) { return; }
+                info.dependencies[name] = version;
+            });
+            saveJson(filename, info);
+        }
     }
 
     output.forEach((line) => { console.log(line); });

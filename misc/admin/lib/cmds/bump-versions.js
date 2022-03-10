@@ -87,16 +87,20 @@ const utils_1 = require("../utils");
         }
         progress(1);
         if (updated) {
-            const filename = (0, path_1.resolve)("packages/hethers/package.json");
-            const info = (0, utils_1.loadJson)(filename);
-            Object.keys(info.dependencies).forEach((name) => {
-                const version = latestVersions[name];
-                if (name == null || !version) {
-                    return;
-                }
-                info.dependencies[name] = version;
-            });
-            (0, utils_1.saveJson)(filename, info);
+            for (let i = 0; i < path_1.dirnames.length; i++) {
+                progress(i / path_1.dirnames.length);
+                const dirname = path_1.dirnames[i];
+                const filename = (0, path_1.resolve)(`packages/${dirname}/package.json`);
+                const info = (0, utils_1.loadJson)(filename);
+                Object.keys(info.dependencies).forEach((name) => {
+                    const version = latestVersions[name];
+                    if (name == null || !version) {
+                        return;
+                    }
+                    info.dependencies[name] = version;
+                });
+                (0, utils_1.saveJson)(filename, info);
+            }
         }
         output.forEach((line) => { console.log(line); });
     });

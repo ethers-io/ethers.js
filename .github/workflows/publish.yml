@@ -1,0 +1,60 @@
+name: Publish CI
+
+on:
+  release:
+    types: [prereleased]
+
+env:
+  npm_token: ${{ secrets.NPM_TOKEN }}
+  github_user: ${{ secrets.GITHUB_USER }}
+  github_token: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+
+  publish:
+
+    runs-on: macos-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [ 13.x ]
+
+    steps:
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: 'master'
+
+      - name: Install dependencies (and link per package)
+        run: npm install
+
+      - name: Update minor or major versions
+        run: npm run auto-update-minor-or-major -- blank $github_user $github_token
+
+      - name: Update versions
+        run: npm run update-versions
+
+      - name: Commit Version
+        uses: EndBug/add-and-commit@v8.0.2
+        with:
+          # Additional arguments for the git commit command. The --message argument is already set by the message input.
+          # Default: ''
+          commit: --signoff
+          default_author: user_info
+
+          message: 'Updating version'
+          # The way the action should handle pathspec errors from the add and remove commands. Three options are available:
+          # - ignore -> errors will be logged but the step won't fail
+          # - exitImmediately -> the action will stop right away, and the step will fail
+          # - exitAtEnd -> the action will go on, every pathspec error will be logged at the end, the step will fail.
+          # Default: ignore
+          pathspec_error_handling: ignore
+
+      - name: Publish
+        run: npm run auto-publish-all -- $npm_token $github_user $github_token
