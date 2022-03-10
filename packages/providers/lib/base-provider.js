@@ -429,14 +429,14 @@ var BaseProvider = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    BaseProvider.prototype.waitForTransaction = function (transactionId, timeout) {
+    BaseProvider.prototype.waitForTransaction = function (transactionIdOrTimestamp, timeout) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, this._waitForTransaction(transactionId, timeout)];
+                return [2 /*return*/, this._waitForTransaction(transactionIdOrTimestamp, timeout)];
             });
         });
     };
-    BaseProvider.prototype._waitForTransaction = function (transactionId, timeout) {
+    BaseProvider.prototype._waitForTransaction = function (transactionIdOrTimestamp, timeout) {
         return __awaiter(this, void 0, void 0, function () {
             var remainingTimeout;
             var _this = this;
@@ -449,7 +449,7 @@ var BaseProvider = /** @class */ (function (_super) {
                             switch (_a.label) {
                                 case 0:
                                     if (!(remainingTimeout == null || remainingTimeout > 0)) return [3 /*break*/, 5];
-                                    return [4 /*yield*/, this.getTransaction(transactionId)];
+                                    return [4 /*yield*/, this.getTransaction(transactionIdOrTimestamp)];
                                 case 1:
                                     txResponse = _a.sent();
                                     if (!(txResponse == null)) return [3 /*break*/, 3];

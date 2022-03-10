@@ -97921,17 +97921,17 @@ class BaseProvider extends Provider {
         }
         this._pollingInterval = value;
     }
-    waitForTransaction(transactionId, timeout) {
+    waitForTransaction(transactionIdOrTimestamp, timeout) {
         return __awaiter$7(this, void 0, void 0, function* () {
-            return this._waitForTransaction(transactionId, timeout);
+            return this._waitForTransaction(transactionIdOrTimestamp, timeout);
         });
     }
-    _waitForTransaction(transactionId, timeout) {
+    _waitForTransaction(transactionIdOrTimestamp, timeout) {
         return __awaiter$7(this, void 0, void 0, function* () {
             let remainingTimeout = timeout;
             return new Promise((resolve, reject) => __awaiter$7(this, void 0, void 0, function* () {
                 while (remainingTimeout == null || remainingTimeout > 0) {
-                    const txResponse = yield this.getTransaction(transactionId);
+                    const txResponse = yield this.getTransaction(transactionIdOrTimestamp);
                     if (txResponse == null) {
                         yield new Promise((resolve) => {
                             setTimeout(resolve, this._pollingInterval);

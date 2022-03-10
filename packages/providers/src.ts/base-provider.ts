@@ -378,15 +378,15 @@ export class BaseProvider extends Provider {
         this._pollingInterval = value;
     }
 
-    async waitForTransaction(transactionId: string, timeout?: number): Promise<TransactionReceipt> {
-        return this._waitForTransaction(transactionId, timeout);
+    async waitForTransaction(transactionIdOrTimestamp: string, timeout?: number): Promise<TransactionReceipt> {
+        return this._waitForTransaction(transactionIdOrTimestamp, timeout);
     }
 
-    async _waitForTransaction(transactionId: string, timeout: number): Promise<TransactionReceipt> {
+    async _waitForTransaction(transactionIdOrTimestamp: string, timeout: number): Promise<TransactionReceipt> {
         let remainingTimeout = timeout;
         return new Promise(async (resolve, reject) => {
             while (remainingTimeout == null || remainingTimeout > 0) {
-                const txResponse = await this.getTransaction(transactionId);
+                const txResponse = await this.getTransaction(transactionIdOrTimestamp);
                 if (txResponse == null) {
                     await new Promise((resolve) => {
                         setTimeout(resolve, this._pollingInterval);

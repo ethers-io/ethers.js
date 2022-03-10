@@ -53,8 +53,8 @@ export declare class BaseProvider extends Provider {
     getNetwork(): Promise<Network>;
     get pollingInterval(): number;
     set pollingInterval(value: number);
-    waitForTransaction(transactionId: string, timeout?: number): Promise<TransactionReceipt>;
-    _waitForTransaction(transactionId: string, timeout: number): Promise<TransactionReceipt>;
+    waitForTransaction(transactionIdOrTimestamp: string, timeout?: number): Promise<TransactionReceipt>;
+    _waitForTransaction(transactionIdOrTimestamp: string, timeout: number): Promise<TransactionReceipt>;
     /**
      *  AccountBalance query implementation, using the hashgraph sdk.
      *  It returns the tinybar balance of the given address.

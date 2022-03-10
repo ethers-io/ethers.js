@@ -115,7 +115,7 @@ export declare abstract class Provider {
     abstract removeAllListeners(eventName?: EventType): Provider;
     addListener(eventName: EventType, listener: Listener): Provider;
     removeListener(eventName: EventType, listener: Listener): Provider;
-    abstract waitForTransaction(transactionHash: string, confirmations?: number, timeout?: number): Promise<TransactionReceipt>;
+    abstract waitForTransaction(transactionIdOrTimestamp: string, timeout?: number): Promise<TransactionReceipt>;
     readonly _isProvider: boolean;
     constructor();
     static isProvider(value: any): value is Provider;

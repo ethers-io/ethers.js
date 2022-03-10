@@ -173,7 +173,7 @@ export abstract class Provider {
     }
 
     // @TODO: This *could* be implemented here, but would pull in events...
-    abstract waitForTransaction(transactionHash: string, confirmations?: number, timeout?: number): Promise<TransactionReceipt>;
+    abstract waitForTransaction(transactionIdOrTimestamp: string, timeout?: number): Promise<TransactionReceipt>;
 
     readonly _isProvider: boolean;
 
