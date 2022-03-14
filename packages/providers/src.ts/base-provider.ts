@@ -890,7 +890,9 @@ export class BaseProvider extends Provider implements EnsProvider {
                     if ((getTime() - result.respTime) <= maxAge) {
                         return result.blockNumber;
                     }
-                } catch { }
+                } catch (err) {
+                    logger.debug(`Failed 'eth_blockNumber' query.`, err)
+                 }
 
                 // The fetch rejected or had stale data, check if there
                 // was a new attempt, otherwise initiate a new one by
