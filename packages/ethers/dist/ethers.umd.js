@@ -20331,7 +20331,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.6.0";
+	exports.version = "providers/5.6.1";
 
 	});
 
@@ -21656,7 +21656,7 @@
 	                        if (this.disableCcipRead || urls.length === 0) {
 	                            return [2 /*return*/, null];
 	                        }
-	                        sender = (tx.from || "0x0000000000000000000000000000000000000000").toLowerCase();
+	                        sender = tx.to.toLowerCase();
 	                        data = calldata.toLowerCase();
 	                        errorMessages = [];
 	                        i = 0;
@@ -27276,7 +27276,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.6.0";
+	exports.version = "ethers/5.6.1";
 
 	});
 

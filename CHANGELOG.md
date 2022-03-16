@@ -4,6 +4,11 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+ethers/v5.6.1 (2022-03-15 22:03)
+--------------------------------
+
+  - Fix issue with CCIP Read using wrong sender. ([#2478](https://github.com/ethers-io/ethers.js/issues/2478); [5998fea](https://github.com/ethers-io/ethers.js/commit/5998fea53d5ea26358c2f10939dfdf0bc679936d))
+
 ethers/v5.6.0 (2022-03-09 14:57)
 --------------------------------
 

@@ -18205,7 +18205,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.6.0";
+const version$m = "providers/5.6.1";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -19325,7 +19325,7 @@ class BaseProvider extends Provider {
             if (this.disableCcipRead || urls.length === 0) {
                 return null;
             }
-            const sender = (tx.from || "0x0000000000000000000000000000000000000000").toLowerCase();
+            const sender = tx.to.toLowerCase();
             const data = calldata.toLowerCase();
             const errorMessages = [];
             for (let i = 0; i < urls.length; i++) {
@@ -23511,7 +23511,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$p = "ethers/5.6.0";
+const version$p = "ethers/5.6.1";
 
 "use strict";
 const logger$I = new Logger(version$p);
