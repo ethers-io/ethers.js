@@ -845,7 +845,7 @@ export class BaseProvider extends Provider implements EnsProvider {
     async ccipReadFetch(tx: Transaction, calldata: string, urls: Array<string>): Promise<null | string> {
         if (this.disableCcipRead || urls.length === 0) { return null; }
 
-        const sender = (tx.from || "0x0000000000000000000000000000000000000000").toLowerCase();
+        const sender = tx.to.toLowerCase();
         const data = calldata.toLowerCase();
 
         const errorMessages: Array<string> = [ ];
