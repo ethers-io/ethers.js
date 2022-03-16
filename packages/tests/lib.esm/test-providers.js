@@ -1308,7 +1308,7 @@ describe("Test CCIP execution", function () {
             this.timeout(60000);
             const data = "0x1234";
             const result = yield contract.testGet(data, { ccipReadEnabled: true });
-            verify(ethers.constants.AddressZero, data, result);
+            verify(address, data, result);
         });
     });
     it("testGet should fail with CCIP not explicitly enabled by overrides", function () {
@@ -1419,7 +1419,7 @@ describe("Test CCIP execution", function () {
             this.timeout(60000);
             const data = "0x123456";
             const result = yield contract.testGetFallback(data, { ccipReadEnabled: true });
-            verify(ethers.constants.AddressZero, data, result);
+            verify(address, data, result);
         });
     });
     it("testPost passes under normal operation", function () {
@@ -1427,7 +1427,7 @@ describe("Test CCIP execution", function () {
             this.timeout(60000);
             const data = "0x1234";
             const result = yield contract.testPost(data, { ccipReadEnabled: true });
-            verify(ethers.constants.AddressZero, data, result);
+            verify(address, data, result);
         });
     });
 });

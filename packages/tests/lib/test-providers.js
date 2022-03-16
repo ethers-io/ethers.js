@@ -1606,7 +1606,7 @@ describe("Test CCIP execution", function () {
                         return [4 /*yield*/, contract.testGet(data, { ccipReadEnabled: true })];
                     case 1:
                         result = _a.sent();
-                        verify(ethers_1.ethers.constants.AddressZero, data, result);
+                        verify(address, data, result);
                         return [2 /*return*/];
                 }
             });
@@ -1786,7 +1786,7 @@ describe("Test CCIP execution", function () {
                         return [4 /*yield*/, contract.testGetFallback(data, { ccipReadEnabled: true })];
                     case 1:
                         result = _a.sent();
-                        verify(ethers_1.ethers.constants.AddressZero, data, result);
+                        verify(address, data, result);
                         return [2 /*return*/];
                 }
             });
@@ -1803,7 +1803,7 @@ describe("Test CCIP execution", function () {
                         return [4 /*yield*/, contract.testPost(data, { ccipReadEnabled: true })];
                     case 1:
                         result = _a.sent();
-                        verify(ethers_1.ethers.constants.AddressZero, data, result);
+                        verify(address, data, result);
                         return [2 /*return*/];
                 }
             });
