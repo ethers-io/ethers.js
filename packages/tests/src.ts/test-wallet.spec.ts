@@ -677,15 +677,16 @@ describe("Wallet createAccount", function () {
         let errorCode = null;
 
         try {
-            await acc1Wallet.sendTransaction({
-                value: 1
+            const signedTx = await acc1Wallet.signTransaction({
+                value: 1,
             });
+            await acc1Wallet.provider.sendTransaction(signedTx);
         } catch (e: any) {
             errorCode = e.code;
             exceptionThrown = true;
         }
 
-        assert.strictEqual(errorCode, 'ERR_INVALID_ARG_TYPE');
+        assert.strictEqual(errorCode, 'UNPREDICTABLE_GAS_LIMIT');
         assert.strictEqual(exceptionThrown, true);
     }).timeout(timeout);
 

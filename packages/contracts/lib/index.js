@@ -71,7 +71,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ContractFactory = exports.Contract = exports.BaseContract = void 0;
+exports.ContractFactory = exports.Contract = exports.BaseContract = exports.isAlias = void 0;
 var abi_1 = require("@ethersproject/abi");
 var abstract_provider_1 = require("@hethers/abstract-provider");
 var abstract_signer_1 = require("@hethers/abstract-signer");
@@ -90,6 +90,12 @@ var allowedTransactionKeys = {
     maxFeePerGas: true, maxPriorityFeePerGas: true,
     customData: true, nodeId: true,
 };
+function isAlias(address) {
+    address = address.replace('0x', '');
+    // shard - 4 zeroes, realm - 8 zeroes, num - typically no zeroes
+    return !address.startsWith('000000000000');
+}
+exports.isAlias = isAlias;
 function populateTransaction(contract, fragment, args) {
     return __awaiter(this, void 0, void 0, function () {
         var overrides, resolved, data, tx, ro, intrinsic, contractCreationExtraGasCost, bytes, i, txGas, roValue, leftovers;
@@ -136,7 +142,10 @@ function populateTransaction(contract, fragment, args) {
                     data = contract.interface.encodeFunctionData(fragment, resolved.args);
                     tx = {
                         data: data,
-                        to: resolved.address
+                        to: resolved.address,
+                        customData: {
+                            usingContractAlias: isAlias(contract.address),
+                        }
                     };
                     ro = resolved.overrides;
                     // Populate simple overrides

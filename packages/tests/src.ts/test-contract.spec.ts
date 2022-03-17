@@ -5,14 +5,13 @@ import assert from "assert";
 import { BigNumber, hethers } from "@hashgraph/hethers";
 
 import fs, {readFileSync} from "fs";
-import { arrayify } from "@ethersproject/bytes";
 import {Logger} from "@hethers/logger";
-
 
 const abiToken = JSON.parse(readFileSync('packages/tests/contracts/Token.json').toString());
 const abiTokenWithArgs = JSON.parse(readFileSync('packages/tests/contracts/TokenWithArgs.json').toString());
 const bytecodeToken = fs.readFileSync('packages/tests/contracts/Token.bin').toString();
 const bytecodeTokenWithArgs = readFileSync('packages/tests/contracts/TokenWithArgs.bin').toString();
+const iUniswapV2PairAbi = JSON.parse(fs.readFileSync('packages/tests/contracts/IUniswapV2Pair.abi.json').toString());
 
 const TIMEOUT_PERIOD = 120000;
 const hederaEoa = {
@@ -21,119 +20,11 @@ const hederaEoa = {
 };
 
 describe("Test Contract Transaction Population", function() {
-
-    const testAddress = "0xdeadbeef00deadbeef01deadbeef02deadbeef03"
-    const testAddressCheck = "0xDEAdbeeF00deAdbeEF01DeAdBEEF02DeADBEEF03";
-    const fireflyAddress = "0x8ba1f109551bD432803012645Ac136ddd64DBA72";
-
-    const contract = new hethers.Contract(null, abiToken);
-
-    xit("standard population", async function() {
-        const tx = await contract.populateTransaction.balanceOf(testAddress);
-        //console.log(tx);
-        assert.equal(Object.keys(tx).length, 2, "correct number of keys");
-        assert.equal(tx.data, "0x70a08231000000000000000000000000deadbeef00deadbeef01deadbeef02deadbeef03", "data matches");
-        assert.equal(tx.to, testAddressCheck, "to address matches");
-    });
-
-    xit("allows 'from' overrides", async function() {
-        const tx = await contract.populateTransaction.balanceOf(testAddress, {
-            from: testAddress
-        });
-        //console.log(tx);
-
-        assert.equal(Object.keys(tx).length, 3, "correct number of keys");
-        assert.equal(tx.data, "0x70a08231000000000000000000000000deadbeef00deadbeef01deadbeef02deadbeef03", "data matches");
-        assert.equal(tx.to, testAddressCheck, "to address matches");
-        assert.equal((<any>tx).from, testAddressCheck, "from address matches");
-    });
-
-    xit("allows send overrides", async function() {
-        const tx = await contract.populateTransaction.mint({
-            gasLimit: 150000,
-            value: 1234,
-            from: testAddress
-        });
-
-        assert.equal(Object.keys(tx).length, 7, "correct number of keys");
-        assert.equal(tx.data, "0x1249c58b", "data matches");
-        assert.equal(tx.to, testAddressCheck, "to address matches");
-        assert.equal(tx.gasLimit.toString(), "150000", "gasLimit matches");
-        assert.equal(tx.value.toString(), "1234", "value matches");
-        assert.equal(tx.from, testAddressCheck, "from address matches");
-    });
-
-    xit("allows zero 'value' to non-payable", async function() {
-        const tx = await contract.populateTransaction.unstake({
-            from: testAddress,
-            value: 0
-        });
-        //console.log(tx);
-
-        assert.equal(Object.keys(tx).length, 3, "correct number of keys");
-        assert.equal(tx.data, "0x2def6620", "data matches");
-        assert.equal(tx.to, testAddressCheck, "to address matches");
-        assert.equal(tx.from, testAddressCheck, "from address matches");
-    });
-
-    // @TODO: Add test cases to check for fault cases
-    // - cannot send non-zero value to non-payable
-    // - using the wrong from for a Signer-connected contract
-    xit("forbids non-zero 'value' to non-payable", async function() {
-        try {
-            const tx = await contract.populateTransaction.unstake({
-                value: 1
-            });
-            console.log("Tx", tx);
-            assert.ok(false, "throws on non-zero value to non-payable");
-        } catch(error) {
-            assert.ok(error.operation === "overrides.value");
-        }
-    });
-
-    xit("allows overriding same 'from' with a Signer", async function() {
-        const contractSigner = contract.connect(testAddress);
-        const tx = await contractSigner.populateTransaction.unstake({
-            from: testAddress
-        });
-        //console.log(tx);
-
-        assert.equal(Object.keys(tx).length, 3, "correct number of keys");
-        assert.equal(tx.data, "0x2def6620", "data matches");
-        assert.equal(tx.to, testAddressCheck, "to address matches");
-        assert.equal(tx.from, testAddressCheck, "from address matches");
-    });
-
-    xit("forbids overriding 'from' with a Signer", async function() {
-        const contractSigner = contract.connect(testAddress);
-        try {
-            const tx = await contractSigner.populateTransaction.unstake({
-                from: fireflyAddress
-            });
-            console.log("Tx", tx);
-            assert.ok(false, "throws on non-zero value to non-payable");
-        } catch(error) {
-            assert.ok(error.operation === "overrides.from");
-        }
-    });
-
-    xit("allows overriding with invalid, but nullish values", async function() {
-        const contractSigner = contract.connect(testAddress);
-        const tx = await contractSigner.populateTransaction.unstake({
-            from: null
-        });
-        //console.log("Tx", tx);
-        assert.equal(Object.keys(tx).length, 3, "correct number of keys");
-        assert.equal(tx.data, "0x2def6620", "data matches");
-        assert.equal(tx.to, testAddressCheck, "to address matches");
-        assert.equal(tx.from, testAddressCheck.toLowerCase(), "from address matches");
-    });
+    const provider = hethers.providers.getDefaultProvider('testnet');
+    // @ts-ignore
+    const wallet = new hethers.Wallet(hederaEoa, provider);
 
     it("should return an array of transactions on getDeployTransaction call", async function () {
-        const provider = hethers.providers.getDefaultProvider('testnet');
-        // @ts-ignore
-        const wallet = new hethers.Wallet(hederaEoa, provider);
-
         const contractFactory = new hethers.ContractFactory(abiTokenWithArgs, bytecodeTokenWithArgs, wallet);
         const transaction = contractFactory.getDeployTransaction(hethers.BigNumber.from("1000000"), {
             gasLimit: 300000
@@ -145,46 +36,29 @@ describe("Test Contract Transaction Population", function() {
     });
 
     it("should be able to deploy a contract", async function() {
-        const provider = hethers.providers.getDefaultProvider('testnet');
-        // @ts-ignore
-        const wallet = new hethers.Wallet(hederaEoa, provider);
-        const bytecode = fs.readFileSync('packages/tests/contracts/Token.bin').toString();
-        const contractFactory = new hethers.ContractFactory(abiToken, bytecode, wallet);
-        const contract = await contractFactory.deploy( { gasLimit: 300000 });
+        const contractFactory = new hethers.ContractFactory(abiTokenWithArgs, bytecodeTokenWithArgs, wallet);
+        const contract = await contractFactory.deploy(hethers.BigNumber.from("10000"), { gasLimit: 300000 });
         assert.notStrictEqual(contract, null, "nullified contract");
         assert.notStrictEqual(contract.deployTransaction, "missing deploy transaction");
         assert.notStrictEqual(contract.address, null, 'missing address');
-        const params = contract.interface.encodeFunctionData('balanceOf', [
-            wallet.address
-        ])
-        const balance = await wallet.call({
-            from: wallet.address,
-            to: contract.address,
-            data: arrayify(params),
-            gasLimit: 300000
-        });
+        const balance = await contract.balanceOf(wallet.address, {gasLimit: 300000});
         assert.strictEqual(BigNumber.from(balance).toNumber(), 10000, 'balance mismatch');
-    }).timeout(60000);
+    }).timeout(300000);
 
     it("should be able to call contract methods", async function () {
-        // configs
-        const providerTestnet = hethers.providers.getDefaultProvider('testnet');
-        // contract init
-        // @ts-ignore
-        const contractWallet = new hethers.Wallet(hederaEoa, providerTestnet);
-        const contractFactory = new hethers.ContractFactory(abiTokenWithArgs, bytecodeTokenWithArgs, contractWallet);
+        const contractFactory = new hethers.ContractFactory(abiTokenWithArgs, bytecodeTokenWithArgs, wallet);
         const contract = await contractFactory.deploy(hethers.BigNumber.from('10000'), {gasLimit: 3000000});
         await contract.deployed();
 
         // client wallet init
         let clientWallet = hethers.Wallet.createRandom();
-        const clientAccountId = (await contractWallet.createAccount(clientWallet._signingKey().compressedPublicKey)).customData.accountId;
-        clientWallet = clientWallet.connect(providerTestnet).connectAccount(clientAccountId.toString());
+        const clientAccountId = (await wallet.createAccount(clientWallet._signingKey().compressedPublicKey)).customData.accountId;
+        clientWallet = clientWallet.connect(provider).connectAccount(clientAccountId.toString());
 
         // test sending hbars to the contract
-        await contractWallet.sendTransaction({
+        await wallet.sendTransaction({
             to: contract.address,
-            from: contractWallet.address,
+            from: wallet.address,
             value: 30,
             gasLimit: 300000
         });
@@ -198,8 +72,8 @@ describe("Test Contract Transaction Population", function() {
 
         // test sending hbars via populateTransaction.transfer
         const populatedTx = await contract.populateTransaction.transfer(clientWallet.address, 10, {gasLimit: 300000});
-        const signedTransaction = await contractWallet.signTransaction(populatedTx);
-        const tx = await contractWallet.provider.sendTransaction(signedTransaction);
+        const signedTransaction = await wallet.signTransaction(populatedTx);
+        const tx = await wallet.provider.sendTransaction(signedTransaction);
         await tx.wait();
         assert.strictEqual((await contract.balanceOf(clientWallet.address, {gasLimit: 300000})).toString(), '10');
 
@@ -210,9 +84,6 @@ describe("Test Contract Transaction Population", function() {
     }).timeout(300000);
 
     it('should have a .wait function', async function() {
-       const provider = hethers.providers.getDefaultProvider('testnet');
-       // @ts-ignore
-       const wallet = new hethers.Wallet(hederaEoa, provider);
        const contractFactory = new hethers.ContractFactory(abiToken, bytecodeToken, wallet);
        const contract = await contractFactory.deploy( { gasLimit: 300000 });
 
@@ -278,7 +149,7 @@ describe("Test Contract Transaction Population", function() {
            assert.strictEqual(eventRc, receipt, "getTransactionReceipt returns the same receipt");
 
        }
-   }).timeout(60000);
+   }).timeout(300000);
 });
 
 describe('Contract Events', function () {
@@ -345,14 +216,44 @@ describe('Contract Events', function () {
             ]
         };
         const noop = () => {};
+        const capturedErrors :any[] = [];
         provider.on(filter, noop);
         provider.on('error', (error) => {
             assert.notStrictEqual(error, null);
-            assert.strictEqual(error.code, Logger.errors.INVALID_ARGUMENT);
+            capturedErrors.push(error);
         });
-        await sleep(10000);
+        await sleep(20000);
+        const filtered = capturedErrors.filter(e => e.code === Logger.errors.INVALID_ARGUMENT);
+        assert.strictEqual(filtered.length > 0, true, "expected atleast 1 INVALID_AGRUMENT error");
         provider.removeAllListeners();
     }).timeout(TIMEOUT_PERIOD);
+});
+
+describe('Contract Aliases', async function () {
+    it('Should detect contract aliases', async function() {
+        const provider = hethers.providers.getDefaultProvider('testnet');
+        // @ts-ignore
+        const wallet = new hethers.Wallet(hederaEoa, provider);
+
+        const contractAlias = '0xbd438E8416b13e962781eBAfE344d45DC0DBBc0c';
+
+        const c1 = hethers.ContractFactory.getContract(contractAlias, iUniswapV2PairAbi.abi, wallet);
+        const token0 = await c1.token0({gasLimit: 300000});
+        assert.notStrictEqual(token0, "");
+        assert.notStrictEqual(token0, null);
+        console.log('token0 address', token0);
+
+        const token1 = await c1.token1({gasLimit: 300000});
+        assert.notStrictEqual(token1, "");
+        assert.notStrictEqual(token1, null);
+        console.log('token2 address', token1);
+
+        const symbol = await c1.symbol({gasLimit: 300000});
+        assert.notStrictEqual(symbol, "");
+        assert.notStrictEqual(symbol, null);
+        console.log('pair symbol', symbol);
+
+    }).timeout(300000);
 });
 
 describe("contract.deployed", function() {
@@ -376,7 +277,6 @@ describe("contract.deployed", function() {
     it("should work if contract is just now deployed", async function() {
         const contractFactory = new hethers.ContractFactory(abiToken, bytecodeToken, wallet);
         const contract = await contractFactory.deploy( { gasLimit: 300000 });
-
         assert.notStrictEqual(contract, null, "nullified contract");
         assert.notStrictEqual(contract.deployTransaction, "missing deploy transaction");
         assert.notStrictEqual(contract.address, null, 'missing address');

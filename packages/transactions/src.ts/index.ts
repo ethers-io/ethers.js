@@ -1,6 +1,13 @@
 "use strict";
 
-import {AccountLike, getAccountFromAddress, getAddress, getAddressFromAccount, isAddress} from "@hethers/address";
+import {
+    AccountLike,
+    asAccountString,
+    getAccountFromAddress,
+    getAddress,
+    getAddressFromAccount,
+    isAddress
+} from "@hethers/address";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import {
     arrayify,
@@ -168,15 +175,19 @@ export function serializeHederaTransaction(transaction: UnsignedTransaction, pub
     const gas = numberify(transaction.gasLimit ? transaction.gasLimit : 0);
     if (transaction.customData.isCryptoTransfer) {
         tx = new TransferTransaction()
-            .addHbarTransfer(transaction.from.toString(), new Hbar(transaction.value.toString(), HbarUnit.Tinybar).negated())
-            .addHbarTransfer(transaction.to.toString(), new Hbar(transaction.value.toString(), HbarUnit.Tinybar));
+            .addHbarTransfer(asAccountString(transaction.from), new Hbar(transaction.value.toString(), HbarUnit.Tinybar).negated())
+            .addHbarTransfer(asAccountString(transaction.to), new Hbar(transaction.value.toString(), HbarUnit.Tinybar));
     } else if (transaction.to) {
         tx = new ContractExecuteTransaction()
-            .setContractId(ContractId.fromSolidityAddress(getAddressFromAccount(transaction.to)))
             .setFunctionParameters(arrayifiedData)
             .setGas(gas);
         if (transaction.value) {
             (tx as ContractExecuteTransaction).setPayableAmount(transaction.value?.toString())
+        }
+        if(transaction.customData.usingContractAlias) {
+            (tx as ContractExecuteTransaction).setContractId(ContractId.fromEvmAddress(0,0, transaction.to.toString()));
+        } else {
+            (tx as ContractExecuteTransaction).setContractId(asAccountString(transaction.to));
         }
     } else {
         if (transaction.customData.bytecodeFileId) {

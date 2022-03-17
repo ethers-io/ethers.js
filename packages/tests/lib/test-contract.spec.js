@@ -70,207 +70,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var assert_1 = __importDefault(require("assert"));
 var hethers_1 = require("@hashgraph/hethers");
 var fs_1 = __importStar(require("fs"));
-var bytes_1 = require("@ethersproject/bytes");
 var logger_1 = require("@hethers/logger");
 var abiToken = JSON.parse((0, fs_1.readFileSync)('packages/tests/contracts/Token.json').toString());
 var abiTokenWithArgs = JSON.parse((0, fs_1.readFileSync)('packages/tests/contracts/TokenWithArgs.json').toString());
 var bytecodeToken = fs_1.default.readFileSync('packages/tests/contracts/Token.bin').toString();
 var bytecodeTokenWithArgs = (0, fs_1.readFileSync)('packages/tests/contracts/TokenWithArgs.bin').toString();
+var iUniswapV2PairAbi = JSON.parse(fs_1.default.readFileSync('packages/tests/contracts/IUniswapV2Pair.abi.json').toString());
 var TIMEOUT_PERIOD = 120000;
 var hederaEoa = {
     account: '0.0.29562194',
     privateKey: '0x3b6cd41ded6986add931390d5d3efa0bb2b311a8415cfe66716cac0234de035d'
 };
 describe("Test Contract Transaction Population", function () {
-    var testAddress = "0xdeadbeef00deadbeef01deadbeef02deadbeef03";
-    var testAddressCheck = "0xDEAdbeeF00deAdbeEF01DeAdBEEF02DeADBEEF03";
-    var fireflyAddress = "0x8ba1f109551bD432803012645Ac136ddd64DBA72";
-    var contract = new hethers_1.hethers.Contract(null, abiToken);
-    xit("standard population", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var tx;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, contract.populateTransaction.balanceOf(testAddress)];
-                    case 1:
-                        tx = _a.sent();
-                        //console.log(tx);
-                        assert_1.default.equal(Object.keys(tx).length, 2, "correct number of keys");
-                        assert_1.default.equal(tx.data, "0x70a08231000000000000000000000000deadbeef00deadbeef01deadbeef02deadbeef03", "data matches");
-                        assert_1.default.equal(tx.to, testAddressCheck, "to address matches");
-                        return [2 /*return*/];
-                }
-            });
-        });
-    });
-    xit("allows 'from' overrides", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var tx;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, contract.populateTransaction.balanceOf(testAddress, {
-                            from: testAddress
-                        })];
-                    case 1:
-                        tx = _a.sent();
-                        //console.log(tx);
-                        assert_1.default.equal(Object.keys(tx).length, 3, "correct number of keys");
-                        assert_1.default.equal(tx.data, "0x70a08231000000000000000000000000deadbeef00deadbeef01deadbeef02deadbeef03", "data matches");
-                        assert_1.default.equal(tx.to, testAddressCheck, "to address matches");
-                        assert_1.default.equal(tx.from, testAddressCheck, "from address matches");
-                        return [2 /*return*/];
-                }
-            });
-        });
-    });
-    xit("allows send overrides", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var tx;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, contract.populateTransaction.mint({
-                            gasLimit: 150000,
-                            value: 1234,
-                            from: testAddress
-                        })];
-                    case 1:
-                        tx = _a.sent();
-                        assert_1.default.equal(Object.keys(tx).length, 7, "correct number of keys");
-                        assert_1.default.equal(tx.data, "0x1249c58b", "data matches");
-                        assert_1.default.equal(tx.to, testAddressCheck, "to address matches");
-                        assert_1.default.equal(tx.gasLimit.toString(), "150000", "gasLimit matches");
-                        assert_1.default.equal(tx.value.toString(), "1234", "value matches");
-                        assert_1.default.equal(tx.from, testAddressCheck, "from address matches");
-                        return [2 /*return*/];
-                }
-            });
-        });
-    });
-    xit("allows zero 'value' to non-payable", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var tx;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, contract.populateTransaction.unstake({
-                            from: testAddress,
-                            value: 0
-                        })];
-                    case 1:
-                        tx = _a.sent();
-                        //console.log(tx);
-                        assert_1.default.equal(Object.keys(tx).length, 3, "correct number of keys");
-                        assert_1.default.equal(tx.data, "0x2def6620", "data matches");
-                        assert_1.default.equal(tx.to, testAddressCheck, "to address matches");
-                        assert_1.default.equal(tx.from, testAddressCheck, "from address matches");
-                        return [2 /*return*/];
-                }
-            });
-        });
-    });
-    // @TODO: Add test cases to check for fault cases
-    // - cannot send non-zero value to non-payable
-    // - using the wrong from for a Signer-connected contract
-    xit("forbids non-zero 'value' to non-payable", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var tx, error_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, contract.populateTransaction.unstake({
-                                value: 1
-                            })];
-                    case 1:
-                        tx = _a.sent();
-                        console.log("Tx", tx);
-                        assert_1.default.ok(false, "throws on non-zero value to non-payable");
-                        return [3 /*break*/, 3];
-                    case 2:
-                        error_1 = _a.sent();
-                        assert_1.default.ok(error_1.operation === "overrides.value");
-                        return [3 /*break*/, 3];
-                    case 3: return [2 /*return*/];
-                }
-            });
-        });
-    });
-    xit("allows overriding same 'from' with a Signer", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var contractSigner, tx;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        contractSigner = contract.connect(testAddress);
-                        return [4 /*yield*/, contractSigner.populateTransaction.unstake({
-                                from: testAddress
-                            })];
-                    case 1:
-                        tx = _a.sent();
-                        //console.log(tx);
-                        assert_1.default.equal(Object.keys(tx).length, 3, "correct number of keys");
-                        assert_1.default.equal(tx.data, "0x2def6620", "data matches");
-                        assert_1.default.equal(tx.to, testAddressCheck, "to address matches");
-                        assert_1.default.equal(tx.from, testAddressCheck, "from address matches");
-                        return [2 /*return*/];
-                }
-            });
-        });
-    });
-    xit("forbids overriding 'from' with a Signer", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var contractSigner, tx, error_2;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        contractSigner = contract.connect(testAddress);
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, contractSigner.populateTransaction.unstake({
-                                from: fireflyAddress
-                            })];
-                    case 2:
-                        tx = _a.sent();
-                        console.log("Tx", tx);
-                        assert_1.default.ok(false, "throws on non-zero value to non-payable");
-                        return [3 /*break*/, 4];
-                    case 3:
-                        error_2 = _a.sent();
-                        assert_1.default.ok(error_2.operation === "overrides.from");
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
-                }
-            });
-        });
-    });
-    xit("allows overriding with invalid, but nullish values", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var contractSigner, tx;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        contractSigner = contract.connect(testAddress);
-                        return [4 /*yield*/, contractSigner.populateTransaction.unstake({
-                                from: null
-                            })];
-                    case 1:
-                        tx = _a.sent();
-                        //console.log("Tx", tx);
-                        assert_1.default.equal(Object.keys(tx).length, 3, "correct number of keys");
-                        assert_1.default.equal(tx.data, "0x2def6620", "data matches");
-                        assert_1.default.equal(tx.to, testAddressCheck, "to address matches");
-                        assert_1.default.equal(tx.from, testAddressCheck.toLowerCase(), "from address matches");
-                        return [2 /*return*/];
-                }
-            });
-        });
-    });
+    var provider = hethers_1.hethers.providers.getDefaultProvider('testnet');
+    // @ts-ignore
+    var wallet = new hethers_1.hethers.Wallet(hederaEoa, provider);
     it("should return an array of transactions on getDeployTransaction call", function () {
         return __awaiter(this, void 0, void 0, function () {
-            var provider, wallet, contractFactory, transaction;
+            var contractFactory, transaction;
             return __generator(this, function (_a) {
-                provider = hethers_1.hethers.providers.getDefaultProvider('testnet');
-                wallet = new hethers_1.hethers.Wallet(hederaEoa, provider);
                 contractFactory = new hethers_1.hethers.ContractFactory(abiTokenWithArgs, bytecodeTokenWithArgs, wallet);
                 transaction = contractFactory.getDeployTransaction(hethers_1.hethers.BigNumber.from("1000000"), {
                     gasLimit: 300000
@@ -285,29 +103,18 @@ describe("Test Contract Transaction Population", function () {
     });
     it("should be able to deploy a contract", function () {
         return __awaiter(this, void 0, void 0, function () {
-            var provider, wallet, bytecode, contractFactory, contract, params, balance;
+            var contractFactory, contract, balance;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        provider = hethers_1.hethers.providers.getDefaultProvider('testnet');
-                        wallet = new hethers_1.hethers.Wallet(hederaEoa, provider);
-                        bytecode = fs_1.default.readFileSync('packages/tests/contracts/Token.bin').toString();
-                        contractFactory = new hethers_1.hethers.ContractFactory(abiToken, bytecode, wallet);
-                        return [4 /*yield*/, contractFactory.deploy({ gasLimit: 300000 })];
+                        contractFactory = new hethers_1.hethers.ContractFactory(abiTokenWithArgs, bytecodeTokenWithArgs, wallet);
+                        return [4 /*yield*/, contractFactory.deploy(hethers_1.hethers.BigNumber.from("10000"), { gasLimit: 300000 })];
                     case 1:
                         contract = _a.sent();
                         assert_1.default.notStrictEqual(contract, null, "nullified contract");
                         assert_1.default.notStrictEqual(contract.deployTransaction, "missing deploy transaction");
                         assert_1.default.notStrictEqual(contract.address, null, 'missing address');
-                        params = contract.interface.encodeFunctionData('balanceOf', [
-                            wallet.address
-                        ]);
-                        return [4 /*yield*/, wallet.call({
-                                from: wallet.address,
-                                to: contract.address,
-                                data: (0, bytes_1.arrayify)(params),
-                                gasLimit: 300000
-                            })];
+                        return [4 /*yield*/, contract.balanceOf(wallet.address, { gasLimit: 300000 })];
                     case 2:
                         balance = _a.sent();
                         assert_1.default.strictEqual(hethers_1.BigNumber.from(balance).toNumber(), 10000, 'balance mismatch');
@@ -315,16 +122,14 @@ describe("Test Contract Transaction Population", function () {
                 }
             });
         });
-    }).timeout(60000);
+    }).timeout(300000);
     it("should be able to call contract methods", function () {
         return __awaiter(this, void 0, void 0, function () {
-            var providerTestnet, contractWallet, contractFactory, contract, clientWallet, clientAccountId, _a, _b, viewMethodCall, populatedTx, signedTransaction, tx, _c, _d, transferMethodCall, _e, _f;
+            var contractFactory, contract, clientWallet, clientAccountId, _a, _b, viewMethodCall, populatedTx, signedTransaction, tx, _c, _d, transferMethodCall, _e, _f;
             return __generator(this, function (_g) {
                 switch (_g.label) {
                     case 0:
-                        providerTestnet = hethers_1.hethers.providers.getDefaultProvider('testnet');
-                        contractWallet = new hethers_1.hethers.Wallet(hederaEoa, providerTestnet);
-                        contractFactory = new hethers_1.hethers.ContractFactory(abiTokenWithArgs, bytecodeTokenWithArgs, contractWallet);
+                        contractFactory = new hethers_1.hethers.ContractFactory(abiTokenWithArgs, bytecodeTokenWithArgs, wallet);
                         return [4 /*yield*/, contractFactory.deploy(hethers_1.hethers.BigNumber.from('10000'), { gasLimit: 3000000 })];
                     case 1:
                         contract = _g.sent();
@@ -332,14 +137,14 @@ describe("Test Contract Transaction Population", function () {
                     case 2:
                         _g.sent();
                         clientWallet = hethers_1.hethers.Wallet.createRandom();
-                        return [4 /*yield*/, contractWallet.createAccount(clientWallet._signingKey().compressedPublicKey)];
+                        return [4 /*yield*/, wallet.createAccount(clientWallet._signingKey().compressedPublicKey)];
                     case 3:
                         clientAccountId = (_g.sent()).customData.accountId;
-                        clientWallet = clientWallet.connect(providerTestnet).connectAccount(clientAccountId.toString());
+                        clientWallet = clientWallet.connect(provider).connectAccount(clientAccountId.toString());
                         // test sending hbars to the contract
-                        return [4 /*yield*/, contractWallet.sendTransaction({
+                        return [4 /*yield*/, wallet.sendTransaction({
                                 to: contract.address,
-                                from: contractWallet.address,
+                                from: wallet.address,
                                 value: 30,
                                 gasLimit: 300000
                             })];
@@ -359,10 +164,10 @@ describe("Test Contract Transaction Population", function () {
                         return [4 /*yield*/, contract.populateTransaction.transfer(clientWallet.address, 10, { gasLimit: 300000 })];
                     case 7:
                         populatedTx = _g.sent();
-                        return [4 /*yield*/, contractWallet.signTransaction(populatedTx)];
+                        return [4 /*yield*/, wallet.signTransaction(populatedTx)];
                     case 8:
                         signedTransaction = _g.sent();
-                        return [4 /*yield*/, contractWallet.provider.sendTransaction(signedTransaction)];
+                        return [4 /*yield*/, wallet.provider.sendTransaction(signedTransaction)];
                     case 9:
                         tx = _g.sent();
                         return [4 /*yield*/, tx.wait()];
@@ -389,12 +194,10 @@ describe("Test Contract Transaction Population", function () {
     }).timeout(300000);
     it('should have a .wait function', function () {
         return __awaiter(this, void 0, void 0, function () {
-            var provider, wallet, contractFactory, contract, err_1, deployTx, receipt, events, i, log, event_1, eventTx, eventRc;
+            var contractFactory, contract, err_1, deployTx, receipt, events, i, log, event_1, eventTx, eventRc;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        provider = hethers_1.hethers.providers.getDefaultProvider('testnet');
-                        wallet = new hethers_1.hethers.Wallet(hederaEoa, provider);
                         contractFactory = new hethers_1.hethers.ContractFactory(abiToken, bytecodeToken, wallet);
                         return [4 /*yield*/, contractFactory.deploy({ gasLimit: 300000 })];
                     case 1:
@@ -470,7 +273,7 @@ describe("Test Contract Transaction Population", function () {
                 }
             });
         });
-    }).timeout(60000);
+    }).timeout(300000);
 });
 describe('Contract Events', function () {
     var _this = this;
@@ -574,7 +377,7 @@ describe('Contract Events', function () {
     }).timeout(TIMEOUT_PERIOD * 3);
     it('should throw on OR topics filter', function () {
         return __awaiter(this, void 0, void 0, function () {
-            var filter, noop;
+            var filter, noop, capturedErrors, filtered;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -587,20 +390,63 @@ describe('Contract Events', function () {
                             ]
                         };
                         noop = function () { };
+                        capturedErrors = [];
                         provider.on(filter, noop);
                         provider.on('error', function (error) {
                             assert_1.default.notStrictEqual(error, null);
-                            assert_1.default.strictEqual(error.code, logger_1.Logger.errors.INVALID_ARGUMENT);
+                            capturedErrors.push(error);
                         });
-                        return [4 /*yield*/, sleep(10000)];
+                        return [4 /*yield*/, sleep(20000)];
                     case 1:
                         _a.sent();
+                        filtered = capturedErrors.filter(function (e) { return e.code === logger_1.Logger.errors.INVALID_ARGUMENT; });
+                        assert_1.default.strictEqual(filtered.length > 0, true, "expected atleast 1 INVALID_AGRUMENT error");
                         provider.removeAllListeners();
                         return [2 /*return*/];
                 }
             });
         });
     }).timeout(TIMEOUT_PERIOD);
+});
+describe('Contract Aliases', function () {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            it('Should detect contract aliases', function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    var provider, wallet, contractAlias, c1, token0, token1, symbol;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                provider = hethers_1.hethers.providers.getDefaultProvider('testnet');
+                                wallet = new hethers_1.hethers.Wallet(hederaEoa, provider);
+                                contractAlias = '0xbd438E8416b13e962781eBAfE344d45DC0DBBc0c';
+                                c1 = hethers_1.hethers.ContractFactory.getContract(contractAlias, iUniswapV2PairAbi.abi, wallet);
+                                return [4 /*yield*/, c1.token0({ gasLimit: 300000 })];
+                            case 1:
+                                token0 = _a.sent();
+                                assert_1.default.notStrictEqual(token0, "");
+                                assert_1.default.notStrictEqual(token0, null);
+                                console.log('token0 address', token0);
+                                return [4 /*yield*/, c1.token1({ gasLimit: 300000 })];
+                            case 2:
+                                token1 = _a.sent();
+                                assert_1.default.notStrictEqual(token1, "");
+                                assert_1.default.notStrictEqual(token1, null);
+                                console.log('token2 address', token1);
+                                return [4 /*yield*/, c1.symbol({ gasLimit: 300000 })];
+                            case 3:
+                                symbol = _a.sent();
+                                assert_1.default.notStrictEqual(symbol, "");
+                                assert_1.default.notStrictEqual(symbol, null);
+                                console.log('pair symbol', symbol);
+                                return [2 /*return*/];
+                        }
+                    });
+                });
+            }).timeout(300000);
+            return [2 /*return*/];
+        });
+    });
 });
 describe("contract.deployed", function () {
     var hederaEoa = {

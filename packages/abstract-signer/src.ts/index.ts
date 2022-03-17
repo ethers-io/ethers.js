@@ -2,7 +2,7 @@
 
 import { Provider, TransactionRequest, TransactionResponse } from "@hethers/abstract-provider";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
-import { arrayify, Bytes, BytesLike, hexlify } from "@ethersproject/bytes";
+import {arrayify, Bytes, BytesLike, hexlify} from "@ethersproject/bytes";
 import { Deferrable, defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { Logger } from "@hethers/logger";
 import { version } from "./_version";
@@ -15,7 +15,7 @@ import {
 import { SigningKey } from "@ethersproject/signing-key";
 import {
     AccountId,
-    ContractCallQuery,
+    ContractCallQuery, ContractId,
     Hbar,
     PrivateKey,
     PublicKey as HederaPubKey,
@@ -176,11 +176,16 @@ export abstract class Signer {
         const paymentTxId = TransactionId.generate(from);
 
         const hederaTx = new ContractCallQuery()
-            .setContractId(to)
             .setFunctionParameters(arrayify(tx.data))
             .setNodeAccountIds([nodeID])
             .setGas(BigNumber.from(tx.gasLimit).toNumber())
             .setPaymentTransactionId(paymentTxId);
+
+        if(tx.customData.usingContractAlias) {
+            hederaTx.setContractId(ContractId.fromEvmAddress(0, 0, tx.to.toString()));
+        } else {
+            hederaTx.setContractId(to);
+        }
 
         // TODO: the exact amount here will be computed using getCost when it's implemented
         const cost = 3;
@@ -214,7 +219,7 @@ export abstract class Signer {
 
         const walletKey = PrivateKey.fromStringECDSA(this._signingKey().privateKey);
         const signature = walletKey.sign(signed.bodyBytes);
-        signed.sigMap ={
+        signed.sigMap = {
             sigPair: [walletKey.publicKey._toProtobufSignature(signature)]
         }
 
@@ -227,7 +232,7 @@ export abstract class Signer {
             const response = await hederaTx.execute(this.provider.getHederaClient());
             return hexlify(response.bytes);
         } catch (error) {
-            return checkError('call', error, txRequest);
+            return checkError('call', error, tx);
         }
     }
 
@@ -242,7 +247,7 @@ export abstract class Signer {
             return await this.provider.sendTransaction(signed);
         } else {
             const contractByteCode = tx.data;
-            let chunks = splitInChunks(Buffer.from(contractByteCode).toString(), 4096);
+            let chunks = splitInChunks(Buffer.from(contractByteCode.toString()).toString(), 4096);
             const fileCreate = {
                 customData: {
                     fileChunk: chunks[0],

@@ -193,11 +193,16 @@ var Signer = /** @class */ (function () {
                         nodeID = sdk_1.AccountId.fromString((0, address_1.asAccountString)(tx.nodeId));
                         paymentTxId = sdk_1.TransactionId.generate(from);
                         hederaTx = new sdk_1.ContractCallQuery()
-                            .setContractId(to)
                             .setFunctionParameters((0, bytes_1.arrayify)(tx.data))
                             .setNodeAccountIds([nodeID])
                             .setGas(bignumber_1.BigNumber.from(tx.gasLimit).toNumber())
                             .setPaymentTransactionId(paymentTxId);
+                        if (tx.customData.usingContractAlias) {
+                            hederaTx.setContractId(sdk_1.ContractId.fromEvmAddress(0, 0, tx.to.toString()));
+                        }
+                        else {
+                            hederaTx.setContractId(to);
+                        }
                         cost = 3;
                         paymentBody = {
                             transactionID: paymentTxId._toProtobuf(),
@@ -243,7 +248,7 @@ var Signer = /** @class */ (function () {
                         return [2 /*return*/, (0, bytes_1.hexlify)(response.bytes)];
                     case 5:
                         error_1 = _b.sent();
-                        return [2 /*return*/, checkError('call', error_1, txRequest)];
+                        return [2 /*return*/, checkError('call', error_1, tx)];
                     case 6: return [2 /*return*/];
                 }
             });
@@ -269,7 +274,7 @@ var Signer = /** @class */ (function () {
                     case 3: return [2 /*return*/, _b.sent()];
                     case 4:
                         contractByteCode = tx.data;
-                        chunks = splitInChunks(Buffer.from(contractByteCode).toString(), 4096);
+                        chunks = splitInChunks(Buffer.from(contractByteCode.toString()).toString(), 4096);
                         fileCreate = {
                             customData: {
                                 fileChunk: chunks[0],

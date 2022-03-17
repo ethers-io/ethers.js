@@ -26,9 +26,13 @@ const allowedTransactionKeys = {
     maxFeePerGas: true, maxPriorityFeePerGas: true,
     customData: true, nodeId: true,
 };
+export function isAlias(address) {
+    address = address.replace('0x', '');
+    // shard - 4 zeroes, realm - 8 zeroes, num - typically no zeroes
+    return !address.startsWith('000000000000');
+}
 function populateTransaction(contract, fragment, args) {
     return __awaiter(this, void 0, void 0, function* () {
-        // If an extra argument is given, it is overrides
         let overrides = {};
         if (args.length === fragment.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
             overrides = shallowCopy(args.pop());
@@ -66,7 +70,10 @@ function populateTransaction(contract, fragment, args) {
         const data = contract.interface.encodeFunctionData(fragment, resolved.args);
         const tx = {
             data: data,
-            to: resolved.address
+            to: resolved.address,
+            customData: {
+                usingContractAlias: isAlias(contract.address),
+            }
         };
         // Resolved Overrides
         const ro = resolved.overrides;

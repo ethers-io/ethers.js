@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { getAccountFromAddress, getAddress, getAddressFromAccount, isAddress } from "@hethers/address";
+import { asAccountString, getAccountFromAddress, getAddress, getAddressFromAccount, isAddress } from "@hethers/address";
 import { BigNumber } from "@ethersproject/bignumber";
 import { arrayify, hexDataLength, hexlify, } from "@ethersproject/bytes";
 import { Zero } from "@hethers/constants";
@@ -92,16 +92,21 @@ export function serializeHederaTransaction(transaction, pubKey) {
     const gas = numberify(transaction.gasLimit ? transaction.gasLimit : 0);
     if (transaction.customData.isCryptoTransfer) {
         tx = new TransferTransaction()
-            .addHbarTransfer(transaction.from.toString(), new Hbar(transaction.value.toString(), HbarUnit.Tinybar).negated())
-            .addHbarTransfer(transaction.to.toString(), new Hbar(transaction.value.toString(), HbarUnit.Tinybar));
+            .addHbarTransfer(asAccountString(transaction.from), new Hbar(transaction.value.toString(), HbarUnit.Tinybar).negated())
+            .addHbarTransfer(asAccountString(transaction.to), new Hbar(transaction.value.toString(), HbarUnit.Tinybar));
     }
     else if (transaction.to) {
         tx = new ContractExecuteTransaction()
-            .setContractId(ContractId.fromSolidityAddress(getAddressFromAccount(transaction.to)))
             .setFunctionParameters(arrayifiedData)
             .setGas(gas);
         if (transaction.value) {
             tx.setPayableAmount((_a = transaction.value) === null || _a === void 0 ? void 0 : _a.toString());
+        }
+        if (transaction.customData.usingContractAlias) {
+            tx.setContractId(ContractId.fromEvmAddress(0, 0, transaction.to.toString()));
+        }
+        else {
+            tx.setContractId(asAccountString(transaction.to));
         }
     }
     else {

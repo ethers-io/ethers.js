@@ -55,6 +55,7 @@ export interface ContractReceipt extends TransactionReceipt {
 export interface ContractTransaction extends TransactionResponse {
     wait(confirmations?: number): Promise<ContractReceipt>;
 }
+export declare function isAlias(address: string): boolean;
 declare class RunningEvent {
     readonly tag: string;
     readonly filter: EventFilter;

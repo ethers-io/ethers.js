@@ -14,7 +14,7 @@ import { defineReadOnly, resolveProperties, shallowCopy } from "@ethersproject/p
 import { Logger } from "@hethers/logger";
 import { version } from "./_version";
 import { asAccountString, getAddressFromAccount, getChecksumAddress } from "@hethers/address";
-import { AccountId, ContractCallQuery, Hbar, PrivateKey, PublicKey as HederaPubKey, TransactionId } from "@hashgraph/sdk";
+import { AccountId, ContractCallQuery, ContractId, Hbar, PrivateKey, PublicKey as HederaPubKey, TransactionId } from "@hashgraph/sdk";
 import * as Long from "long";
 import { SignedTransaction, TransactionBody } from "@hashgraph/proto";
 const logger = new Logger(version);
@@ -87,11 +87,16 @@ export class Signer {
             const nodeID = AccountId.fromString(asAccountString(tx.nodeId));
             const paymentTxId = TransactionId.generate(from);
             const hederaTx = new ContractCallQuery()
-                .setContractId(to)
                 .setFunctionParameters(arrayify(tx.data))
                 .setNodeAccountIds([nodeID])
                 .setGas(BigNumber.from(tx.gasLimit).toNumber())
                 .setPaymentTransactionId(paymentTxId);
+            if (tx.customData.usingContractAlias) {
+                hederaTx.setContractId(ContractId.fromEvmAddress(0, 0, tx.to.toString()));
+            }
+            else {
+                hederaTx.setContractId(to);
+            }
             // TODO: the exact amount here will be computed using getCost when it's implemented
             const cost = 3;
             const paymentBody = {
@@ -134,7 +139,7 @@ export class Signer {
                 return hexlify(response.bytes);
             }
             catch (error) {
-                return checkError('call', error, txRequest);
+                return checkError('call', error, tx);
             }
         });
     }
@@ -151,7 +156,7 @@ export class Signer {
             }
             else {
                 const contractByteCode = tx.data;
-                let chunks = splitInChunks(Buffer.from(contractByteCode).toString(), 4096);
+                let chunks = splitInChunks(Buffer.from(contractByteCode.toString()).toString(), 4096);
                 const fileCreate = {
                     customData: {
                         fileChunk: chunks[0],

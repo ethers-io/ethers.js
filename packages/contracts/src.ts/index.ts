@@ -21,7 +21,7 @@ import {
     TransactionResponse
 } from "@hethers/abstract-provider";
 import { Signer, VoidSigner } from "@hethers/abstract-signer";
-import { AccountLike, getAddress, getAddressFromAccount } from "@hethers/address";
+import {AccountLike, getAddress, getAddressFromAccount} from "@hethers/address";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { arrayify, BytesLike, concat, hexlify, isBytes, isHexString } from "@ethersproject/bytes";
 import {
@@ -32,7 +32,7 @@ import {
     resolveProperties,
     shallowCopy
 } from "@ethersproject/properties";
-import { AccessList, accessListify, AccessListish} from "@hethers/transactions";
+import {AccessList, accessListify, AccessListish} from "@hethers/transactions";
 
 import { Logger } from "@hethers/logger";
 import { version } from "./_version";
@@ -129,8 +129,15 @@ const allowedTransactionKeys: { [ key: string ]: boolean } = {
     customData: true, nodeId: true,
 }
 
-async function populateTransaction(contract: Contract, fragment: FunctionFragment, args: Array<any>): Promise<PopulatedTransaction> {
-    // If an extra argument is given, it is overrides
+
+export function isAlias(address:string):boolean {
+    address = address.replace('0x', '');
+    // shard - 4 zeroes, realm - 8 zeroes, num - typically no zeroes
+    return !address.startsWith('000000000000');
+
+}
+
+async function populateTransaction(contract: Contract, fragment: FunctionFragment, args: Array<any>): Promise<PopulatedTransaction> {// If an extra argument is given, it is overrides
     let overrides: CallOverrides = { };
     if (args.length === fragment.inputs.length + 1 && typeof(args[args.length - 1]) === "object") {
         overrides = shallowCopy(args.pop());
@@ -174,7 +181,10 @@ async function populateTransaction(contract: Contract, fragment: FunctionFragmen
     const data = contract.interface.encodeFunctionData(fragment, resolved.args);
     const tx: PopulatedTransaction = {
         data: data,
-        to: resolved.address
+        to: resolved.address,
+        customData:{
+            usingContractAlias: isAlias(contract.address),
+        }
     };
 
     // Resolved Overrides
