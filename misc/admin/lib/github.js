@@ -132,57 +132,65 @@ function syncIssues(user, password) {
     });
 }
 exports.syncIssues = syncIssues;
+function addAuthOptions(reqOptions, user, password) {
+    if (user) {
+        reqOptions.user = user;
+        reqOptions.password = password;
+    }
+    else {
+        if (!reqOptions.headers)
+            reqOptions.headers = {};
+        reqOptions.headers.authorization = `Bearer ${password}`;
+    }
+    return reqOptions;
+}
 function _createRelease(user, password, tagName, title, body, prerelease, commit) {
     return __awaiter(this, void 0, void 0, function* () {
-        const result = yield (0, geturl_1.getUrl)(`https://api.github.com/repos/${githubRepo}/releases`, {
+        let reqOptions = addAuthOptions({
             body: Buffer.from(JSON.stringify({
                 tag_name: tagName,
                 target_commitish: (commit || "master"),
                 name: title,
                 body: body,
-                draft: true,
-                // draft: false,
+                draft: false,
                 prerelease: !!prerelease
             })),
             method: "POST",
             headers: {
                 "User-Agent": "hashgraph/hethers"
-            },
-            user: user,
-            password: password
-        });
+            }
+        }, user, password);
+        const result = yield (0, geturl_1.getUrl)(`https://api.github.com/repos/${githubRepo}/releases`, reqOptions);
         return JSON.parse(Buffer.from(result.body).toString("utf8")).html_url;
     });
 }
 exports._createRelease = _createRelease;
 function _getLatestRelease(user, password) {
     return __awaiter(this, void 0, void 0, function* () {
-        const result = yield (0, geturl_1.getUrl)(`https://api.github.com/repos/${githubRepo}/releases`, {
+        let reqOptions = addAuthOptions({
             method: "GET",
-            user: user,
-            password: password,
             headers: {
                 "User-Agent": "ethers-io",
             }
-        });
+        }, user, password);
+        const result = yield (0, geturl_1.getUrl)(`https://api.github.com/repos/${githubRepo}/releases`, reqOptions);
         return JSON.parse(Buffer.from(result.body).toString("utf8"));
     });
 }
 function _deleteRelease(releaseId, user, password) {
     return __awaiter(this, void 0, void 0, function* () {
-        return (0, geturl_1.getUrl)(`https://api.github.com/repos/${githubRepo}/releases/${releaseId}`, {
+        let reqOptions = addAuthOptions({
             method: "DELETE",
-            user: user,
-            password: password,
             headers: {
                 "User-Agent": "ethers-io",
             }
-        });
+        }, user, password);
+        return (0, geturl_1.getUrl)(`https://api.github.com/repos/${githubRepo}/releases/${releaseId}`, reqOptions);
     });
 }
 function getAutoGitHubCredentials() {
-    const username = process.argv[3];
-    const password = process.argv[4];
+    const username = '';
+    const password = process.env['GITHUB_TOKEN'];
     return { username, password };
 }
 // @ts-ignore

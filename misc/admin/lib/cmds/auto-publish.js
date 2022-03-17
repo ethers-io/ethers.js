@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const github_1 = require("../github");
 const npm_1 = require("../npm");
+const child_process_1 = require("child_process");
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
         const { publishNames } = yield (0, npm_1.getPublishOptions)();
@@ -19,6 +20,12 @@ const npm_1 = require("../npm");
             let latestRelease = yield (0, github_1.getLatestRelease)('auto');
             if (latestRelease && latestRelease.prerelease) {
                 yield (0, github_1.deleteRelease)(latestRelease.id.toString(), 'auto');
+                const { tag_name } = latestRelease;
+                // Delete the tag:
+                yield (0, child_process_1.exec)(`git push --delete origin ${tag_name}`);
+                // Recreate the tag:
+                yield (0, child_process_1.exec)(`git tag ${tag_name}`);
+                yield (0, child_process_1.exec)(`git push origin --tags`);
             }
             yield (0, github_1.createRelease)('auto');
         }

@@ -1,5 +1,6 @@
 import {getLatestRelease, deleteRelease, createRelease} from "../github";
 import { publishAll, getPublishOptions } from "../npm";
+import {exec} from "child_process";
 
 (async function() {
     const {publishNames} = await getPublishOptions();
@@ -9,6 +10,15 @@ import { publishAll, getPublishOptions } from "../npm";
 
         if (latestRelease && latestRelease.prerelease) {
             await deleteRelease(latestRelease.id.toString(), 'auto');
+
+            const { tag_name } = latestRelease;
+
+            // Delete the tag:
+            await exec(`git push --delete origin ${tag_name}`);
+
+            // Recreate the tag:
+            await exec(`git tag ${tag_name}`);
+            await exec(`git push origin --tags`);
         }
 
         await createRelease('auto');

@@ -117,57 +117,68 @@ export async function syncIssues(user: string, password: string): Promise<Array<
     return await _getIssues(user, password);
 }
 
+function addAuthOptions(reqOptions: any, user: string, password: string): any {
+    if (user) {
+        reqOptions.user = user;
+        reqOptions.password = password;
+    }
+    else {
+        if (!reqOptions.headers) reqOptions.headers = {};
+        reqOptions.headers.authorization = `Bearer ${password}`;
+    }
+
+    return reqOptions;
+}
+
 export async function _createRelease(user: string, password: string, tagName: string, title: string, body: string, prerelease?: boolean, commit?: string): Promise<string> {
-    const result = await getUrl(`https://api.github.com/repos/${githubRepo}/releases`, {
+    let reqOptions = addAuthOptions({
         body: Buffer.from(JSON.stringify({
             tag_name: tagName,
             target_commitish: (commit || "master"),
             name: title,
             body: body,
-            draft: true,
-            // draft: false,
+            draft: false,
             prerelease: !!prerelease
         })),
         method: "POST",
 
         headers: {
             "User-Agent": "hashgraph/hethers"
-        },
+        }
+    }, user, password);
 
-        user: user,
-        password: password
-    });
+    const result = await getUrl(`https://api.github.com/repos/${githubRepo}/releases`, reqOptions);
 
     return JSON.parse(Buffer.from(result.body).toString("utf8")).html_url;
 }
 
 async function _getLatestRelease(user: string, password: string): Promise<string> {
-    const result = await getUrl(`https://api.github.com/repos/${githubRepo}/releases`, {
+    let reqOptions = addAuthOptions({
         method: "GET",
-        user: user,
-        password: password,
         headers: {
             "User-Agent": "ethers-io",
         }
-    });
+    }, user, password);
+
+    const result = await getUrl(`https://api.github.com/repos/${githubRepo}/releases`, reqOptions);
 
     return JSON.parse(Buffer.from(result.body).toString("utf8"));
 }
 
 async function _deleteRelease(releaseId: string, user: string, password: string): Promise<any> {
-    return getUrl(`https://api.github.com/repos/${githubRepo}/releases/${releaseId}`, {
+    let reqOptions = addAuthOptions({
         method: "DELETE",
-        user: user,
-        password: password,
         headers: {
             "User-Agent": "ethers-io",
         }
-    });
+    }, user, password);
+
+    return getUrl(`https://api.github.com/repos/${githubRepo}/releases/${releaseId}`, reqOptions);
 }
 
 function getAutoGitHubCredentials(): any {
-    const username = process.argv[3];
-    const password = process.argv[4];
+    const username = '';
+    const password = process.env['GITHUB_TOKEN'];
 
     return {username, password};
 }

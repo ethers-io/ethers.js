@@ -6,7 +6,6 @@ on:
 
 env:
   npm_token: ${{ secrets.NPM_TOKEN }}
-  github_user: ${{ secrets.GITHUB_USER }}
   github_token: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
@@ -35,7 +34,7 @@ jobs:
         run: npm install
 
       - name: Update minor or major versions
-        run: npm run auto-update-minor-or-major -- blank $github_user $github_token
+        run: GITHUB_TOKEN=$github_token npm run auto-update-minor-or-major
 
       - name: Update versions
         run: npm run update-versions
@@ -57,4 +56,4 @@ jobs:
           pathspec_error_handling: ignore
 
       - name: Publish
-        run: npm run auto-publish-all -- $npm_token $github_user $github_token
+        run: GITHUB_TOKEN=$github_token NPM_TOKEN=$npm_token npm run auto-publish-all

@@ -165,7 +165,7 @@ export async function publishAll(mode:PublishScriptModes = 'manual'): Promise<vo
         }
     }
     else {
-        options['token'] = process.argv[2];
+        options['token'] = process.env['NPM_TOKEN'];
     }
 
     console.log(colorify.bold("Publishing:"));
