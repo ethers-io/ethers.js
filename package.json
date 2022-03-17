@@ -39,7 +39,7 @@
     "_build-dist-nodesafe": "node ./misc/admin/lib/cmds/echo 'Building dist files...' && npm run build-dist-libs",
     "build-dist": "node ./misc/admin/lib/cmds/npm-skip-node8.js || npm run _build-dist-nodesafe",
     "build-all": "npm run build-libs && npm run build-dist",
-    "update-versions": "npm run clean && npm install && npm run spell-check && npm run build-all && node ./misc/admin/lib/cmds/bump-versions && npm run build-all && node ./misc/admin/lib/cmds/update-hashes && node ./misc/admin/lib/cmds/update-changelog",
+    "update-versions": "npm run clean && npm install && npm run build-all && node ./misc/admin/lib/cmds/bump-versions && npm run build-all && node ./misc/admin/lib/cmds/update-hashes && node ./misc/admin/lib/cmds/update-changelog",
     "auto-update-minor-or-major": "node ./misc/admin/lib/cmds/auto-update-minor-or-major",
     "publish-all": "node ./misc/admin/lib/cmds/publish",
     "auto-publish-all": "node ./misc/admin/lib/cmds/auto-publish",
