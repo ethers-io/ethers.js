@@ -678,10 +678,9 @@ describe("Wallet createAccount", function () {
         let errorCode = null;
 
         try {
-            const signedTx = await acc1Wallet.signTransaction({
+            await acc1Wallet.signTransaction({
                 value: 1,
             });
-            await acc1Wallet.provider.sendTransaction(signedTx);
         } catch (e: any) {
             errorCode = e.code;
             exceptionThrown = true;

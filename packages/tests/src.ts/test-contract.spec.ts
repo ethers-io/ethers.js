@@ -6,6 +6,7 @@ import { BigNumber, hethers } from "@hashgraph/hethers";
 
 import fs, {readFileSync} from "fs";
 import {Logger} from "@hethers/logger";
+import {hexlify} from "@ethersproject/bytes";
 
 const abiToken = JSON.parse(readFileSync('packages/tests/contracts/Token.json').toString());
 const abiTokenWithArgs = JSON.parse(readFileSync('packages/tests/contracts/TokenWithArgs.json').toString());
@@ -230,30 +231,55 @@ describe('Contract Events', function () {
 });
 
 describe('Contract Aliases', async function () {
+    const provider = hethers.providers.getDefaultProvider('testnet');
+    // @ts-ignore
+    const wallet = new hethers.Wallet(hederaEoa, provider);
     it('Should detect contract aliases', async function() {
-        const provider = hethers.providers.getDefaultProvider('testnet');
-        // @ts-ignore
-        const wallet = new hethers.Wallet(hederaEoa, provider);
-
         const contractAlias = '0xbd438E8416b13e962781eBAfE344d45DC0DBBc0c';
 
         const c1 = hethers.ContractFactory.getContract(contractAlias, iUniswapV2PairAbi.abi, wallet);
         const token0 = await c1.token0({gasLimit: 300000});
         assert.notStrictEqual(token0, "");
         assert.notStrictEqual(token0, null);
-        console.log('token0 address', token0);
 
         const token1 = await c1.token1({gasLimit: 300000});
         assert.notStrictEqual(token1, "");
         assert.notStrictEqual(token1, null);
-        console.log('token2 address', token1);
 
         const symbol = await c1.symbol({gasLimit: 300000});
         assert.notStrictEqual(symbol, "");
         assert.notStrictEqual(symbol, null);
-        console.log('pair symbol', symbol);
 
     }).timeout(300000);
+
+    it('create2 tests', async function() {
+        this.timeout(300000);
+        const factoryBytecode = fs.readFileSync('packages/tests/contracts/Factory.bin').toString();
+        const accBytecode = fs.readFileSync('packages/tests/contracts/Account.bin').toString();
+        const factoryAbi = JSON.parse(fs.readFileSync('packages/tests/contracts/Factory.abi.json').toString());
+        const accAbi = JSON.parse(fs.readFileSync('packages/tests/contracts/Account.abi.json').toString());
+        const salt = 1111;
+
+        const factoryCFactory = new hethers.ContractFactory(factoryAbi, factoryBytecode, wallet);
+        const _factory = await factoryCFactory.deploy({gasLimit: 300000});
+        const factory = hethers.ContractFactory.getContract(_factory.address, factoryAbi, wallet);
+        // the second argument is the salt we have used, and we can skip it as we defined it above
+        factory.on('Deployed', async (addr:string, _:any) => {
+            const account = hethers.ContractFactory.getContract(addr, accAbi, wallet);
+            let owner = await account.getOwner({gasLimit: 300000});
+            assert.strictEqual(owner, hethers.constants.AddressZero);
+            const resp = await account.setOwner(wallet.address, {gasLimit: 300000});
+            assert.notStrictEqual(resp, null, 'expected a defined tx response');
+
+            owner = await account.getOwner({gasLimit: 300000});
+            assert.strictEqual(owner, wallet.address, "expected owner to be changed after `setOwner` call");
+            factory.removeAllListeners();
+        });
+        const deployArgs = hexlify(`0x${accBytecode}`);
+        const deployTx = await factory.deploy(deployArgs, salt, {gasLimit: 300000});
+        await deployTx.wait();
+        await new Promise((resolve => setTimeout(resolve, 10000)));
+    });
 });
 
 describe("contract.deployed", function() {

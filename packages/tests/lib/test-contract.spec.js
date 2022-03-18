@@ -71,6 +71,7 @@ var assert_1 = __importDefault(require("assert"));
 var hethers_1 = require("@hashgraph/hethers");
 var fs_1 = __importStar(require("fs"));
 var logger_1 = require("@hethers/logger");
+var bytes_1 = require("@ethersproject/bytes");
 var abiToken = JSON.parse((0, fs_1.readFileSync)('packages/tests/contracts/Token.json').toString());
 var abiTokenWithArgs = JSON.parse((0, fs_1.readFileSync)('packages/tests/contracts/TokenWithArgs.json').toString());
 var bytecodeToken = fs_1.default.readFileSync('packages/tests/contracts/Token.bin').toString();
@@ -410,15 +411,16 @@ describe('Contract Events', function () {
 });
 describe('Contract Aliases', function () {
     return __awaiter(this, void 0, void 0, function () {
+        var provider, wallet;
         return __generator(this, function (_a) {
+            provider = hethers_1.hethers.providers.getDefaultProvider('testnet');
+            wallet = new hethers_1.hethers.Wallet(hederaEoa, provider);
             it('Should detect contract aliases', function () {
                 return __awaiter(this, void 0, void 0, function () {
-                    var provider, wallet, contractAlias, c1, token0, token1, symbol;
+                    var contractAlias, c1, token0, token1, symbol;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
-                                provider = hethers_1.hethers.providers.getDefaultProvider('testnet');
-                                wallet = new hethers_1.hethers.Wallet(hederaEoa, provider);
                                 contractAlias = '0xbd438E8416b13e962781eBAfE344d45DC0DBBc0c';
                                 c1 = hethers_1.hethers.ContractFactory.getContract(contractAlias, iUniswapV2PairAbi.abi, wallet);
                                 return [4 /*yield*/, c1.token0({ gasLimit: 300000 })];
@@ -426,24 +428,78 @@ describe('Contract Aliases', function () {
                                 token0 = _a.sent();
                                 assert_1.default.notStrictEqual(token0, "");
                                 assert_1.default.notStrictEqual(token0, null);
-                                console.log('token0 address', token0);
                                 return [4 /*yield*/, c1.token1({ gasLimit: 300000 })];
                             case 2:
                                 token1 = _a.sent();
                                 assert_1.default.notStrictEqual(token1, "");
                                 assert_1.default.notStrictEqual(token1, null);
-                                console.log('token2 address', token1);
                                 return [4 /*yield*/, c1.symbol({ gasLimit: 300000 })];
                             case 3:
                                 symbol = _a.sent();
                                 assert_1.default.notStrictEqual(symbol, "");
                                 assert_1.default.notStrictEqual(symbol, null);
-                                console.log('pair symbol', symbol);
                                 return [2 /*return*/];
                         }
                     });
                 });
             }).timeout(300000);
+            it('create2 tests', function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    var factoryBytecode, accBytecode, factoryAbi, accAbi, salt, factoryCFactory, _factory, factory, deployArgs, deployTx;
+                    var _this = this;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                this.timeout(300000);
+                                factoryBytecode = fs_1.default.readFileSync('packages/tests/contracts/Factory.bin').toString();
+                                accBytecode = fs_1.default.readFileSync('packages/tests/contracts/Account.bin').toString();
+                                factoryAbi = JSON.parse(fs_1.default.readFileSync('packages/tests/contracts/Factory.abi.json').toString());
+                                accAbi = JSON.parse(fs_1.default.readFileSync('packages/tests/contracts/Account.abi.json').toString());
+                                salt = 1111;
+                                factoryCFactory = new hethers_1.hethers.ContractFactory(factoryAbi, factoryBytecode, wallet);
+                                return [4 /*yield*/, factoryCFactory.deploy({ gasLimit: 300000 })];
+                            case 1:
+                                _factory = _a.sent();
+                                factory = hethers_1.hethers.ContractFactory.getContract(_factory.address, factoryAbi, wallet);
+                                // the second argument is the salt we have used, and we can skip it as we defined it above
+                                factory.on('Deployed', function (addr, _) { return __awaiter(_this, void 0, void 0, function () {
+                                    var account, owner, resp;
+                                    return __generator(this, function (_a) {
+                                        switch (_a.label) {
+                                            case 0:
+                                                account = hethers_1.hethers.ContractFactory.getContract(addr, accAbi, wallet);
+                                                return [4 /*yield*/, account.getOwner({ gasLimit: 300000 })];
+                                            case 1:
+                                                owner = _a.sent();
+                                                assert_1.default.strictEqual(owner, hethers_1.hethers.constants.AddressZero);
+                                                return [4 /*yield*/, account.setOwner(wallet.address, { gasLimit: 300000 })];
+                                            case 2:
+                                                resp = _a.sent();
+                                                assert_1.default.notStrictEqual(resp, null, 'expected a defined tx response');
+                                                return [4 /*yield*/, account.getOwner({ gasLimit: 300000 })];
+                                            case 3:
+                                                owner = _a.sent();
+                                                assert_1.default.strictEqual(owner, wallet.address, "expected owner to be changed after `setOwner` call");
+                                                factory.removeAllListeners();
+                                                return [2 /*return*/];
+                                        }
+                                    });
+                                }); });
+                                deployArgs = (0, bytes_1.hexlify)("0x" + accBytecode);
+                                return [4 /*yield*/, factory.deploy(deployArgs, salt, { gasLimit: 300000 })];
+                            case 2:
+                                deployTx = _a.sent();
+                                return [4 /*yield*/, deployTx.wait()];
+                            case 3:
+                                _a.sent();
+                                return [4 /*yield*/, new Promise((function (resolve) { return setTimeout(resolve, 10000); }))];
+                            case 4:
+                                _a.sent();
+                                return [2 /*return*/];
+                        }
+                    });
+                });
+            });
             return [2 /*return*/];
         });
     });

@@ -644,10 +644,9 @@ describe("Wallet createAccount", function () {
             let exceptionThrown = false;
             let errorCode = null;
             try {
-                const signedTx = yield acc1Wallet.signTransaction({
+                yield acc1Wallet.signTransaction({
                     value: 1,
                 });
-                yield acc1Wallet.provider.sendTransaction(signedTx);
             }
             catch (e) {
                 errorCode = e.code;

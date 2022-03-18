@@ -12,6 +12,7 @@ import assert from "assert";
 import { BigNumber, hethers } from "@hashgraph/hethers";
 import fs, { readFileSync } from "fs";
 import { Logger } from "@hethers/logger";
+import { hexlify } from "@ethersproject/bytes";
 const abiToken = JSON.parse(readFileSync('packages/tests/contracts/Token.json').toString());
 const abiTokenWithArgs = JSON.parse(readFileSync('packages/tests/contracts/TokenWithArgs.json').toString());
 const bytecodeToken = fs.readFileSync('packages/tests/contracts/Token.bin').toString();
@@ -214,27 +215,52 @@ describe('Contract Events', function () {
 });
 describe('Contract Aliases', function () {
     return __awaiter(this, void 0, void 0, function* () {
+        const provider = hethers.providers.getDefaultProvider('testnet');
+        // @ts-ignore
+        const wallet = new hethers.Wallet(hederaEoa, provider);
         it('Should detect contract aliases', function () {
             return __awaiter(this, void 0, void 0, function* () {
-                const provider = hethers.providers.getDefaultProvider('testnet');
-                // @ts-ignore
-                const wallet = new hethers.Wallet(hederaEoa, provider);
                 const contractAlias = '0xbd438E8416b13e962781eBAfE344d45DC0DBBc0c';
                 const c1 = hethers.ContractFactory.getContract(contractAlias, iUniswapV2PairAbi.abi, wallet);
                 const token0 = yield c1.token0({ gasLimit: 300000 });
                 assert.notStrictEqual(token0, "");
                 assert.notStrictEqual(token0, null);
-                console.log('token0 address', token0);
                 const token1 = yield c1.token1({ gasLimit: 300000 });
                 assert.notStrictEqual(token1, "");
                 assert.notStrictEqual(token1, null);
-                console.log('token2 address', token1);
                 const symbol = yield c1.symbol({ gasLimit: 300000 });
                 assert.notStrictEqual(symbol, "");
                 assert.notStrictEqual(symbol, null);
-                console.log('pair symbol', symbol);
             });
         }).timeout(300000);
+        it('create2 tests', function () {
+            return __awaiter(this, void 0, void 0, function* () {
+                this.timeout(300000);
+                const factoryBytecode = fs.readFileSync('packages/tests/contracts/Factory.bin').toString();
+                const accBytecode = fs.readFileSync('packages/tests/contracts/Account.bin').toString();
+                const factoryAbi = JSON.parse(fs.readFileSync('packages/tests/contracts/Factory.abi.json').toString());
+                const accAbi = JSON.parse(fs.readFileSync('packages/tests/contracts/Account.abi.json').toString());
+                const salt = 1111;
+                const factoryCFactory = new hethers.ContractFactory(factoryAbi, factoryBytecode, wallet);
+                const _factory = yield factoryCFactory.deploy({ gasLimit: 300000 });
+                const factory = hethers.ContractFactory.getContract(_factory.address, factoryAbi, wallet);
+                // the second argument is the salt we have used, and we can skip it as we defined it above
+                factory.on('Deployed', (addr, _) => __awaiter(this, void 0, void 0, function* () {
+                    const account = hethers.ContractFactory.getContract(addr, accAbi, wallet);
+                    let owner = yield account.getOwner({ gasLimit: 300000 });
+                    assert.strictEqual(owner, hethers.constants.AddressZero);
+                    const resp = yield account.setOwner(wallet.address, { gasLimit: 300000 });
+                    assert.notStrictEqual(resp, null, 'expected a defined tx response');
+                    owner = yield account.getOwner({ gasLimit: 300000 });
+                    assert.strictEqual(owner, wallet.address, "expected owner to be changed after `setOwner` call");
+                    factory.removeAllListeners();
+                }));
+                const deployArgs = hexlify(`0x${accBytecode}`);
+                const deployTx = yield factory.deploy(deployArgs, salt, { gasLimit: 300000 });
+                yield deployTx.wait();
+                yield new Promise((resolve => setTimeout(resolve, 10000)));
+            });
+        });
     });
 });
 describe("contract.deployed", function () {

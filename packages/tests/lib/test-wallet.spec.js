@@ -893,7 +893,7 @@ describe("Wallet createAccount", function () {
     }).timeout(timeout);
     it("Should throw an error for crypto transfer with missing to field", function () {
         return __awaiter(this, void 0, void 0, function () {
-            var exceptionThrown, errorCode, signedTx, e_3;
+            var exceptionThrown, errorCode, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -901,22 +901,19 @@ describe("Wallet createAccount", function () {
                         errorCode = null;
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 4, , 5]);
+                        _a.trys.push([1, 3, , 4]);
                         return [4 /*yield*/, acc1Wallet.signTransaction({
                                 value: 1,
                             })];
                     case 2:
-                        signedTx = _a.sent();
-                        return [4 /*yield*/, acc1Wallet.provider.sendTransaction(signedTx)];
-                    case 3:
                         _a.sent();
-                        return [3 /*break*/, 5];
-                    case 4:
+                        return [3 /*break*/, 4];
+                    case 3:
                         e_3 = _a.sent();
                         errorCode = e_3.code;
                         exceptionThrown = true;
-                        return [3 /*break*/, 5];
-                    case 5:
+                        return [3 /*break*/, 4];
+                    case 4:
                         assert_1.default.strictEqual(errorCode, 'UNPREDICTABLE_GAS_LIMIT');
                         assert_1.default.strictEqual(exceptionThrown, true);
                         return [2 /*return*/];
