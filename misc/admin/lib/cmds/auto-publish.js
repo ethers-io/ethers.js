@@ -12,6 +12,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const github_1 = require("../github");
 const npm_1 = require("../npm");
 const child_process_1 = require("child_process");
+const sleep = (ms) => __awaiter(void 0, void 0, void 0, function* () {
+    return new Promise(resolve => setTimeout(resolve, ms));
+});
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
         const { publishNames } = yield (0, npm_1.getPublishOptions)();
@@ -27,6 +30,7 @@ const child_process_1 = require("child_process");
                 yield (0, child_process_1.exec)(`git tag ${tag_name}`);
                 yield (0, child_process_1.exec)(`git push origin --tags`);
             }
+            yield sleep(5000);
             yield (0, github_1.createRelease)('auto');
         }
     });

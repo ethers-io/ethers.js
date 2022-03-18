@@ -2,6 +2,10 @@ import {getLatestRelease, deleteRelease, createRelease} from "../github";
 import { publishAll, getPublishOptions } from "../npm";
 import {exec} from "child_process";
 
+const sleep = async (ms: number) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 (async function() {
     const {publishNames} = await getPublishOptions();
     await publishAll('auto');
@@ -21,6 +25,7 @@ import {exec} from "child_process";
             await exec(`git push origin --tags`);
         }
 
+        await sleep(5000);
         await createRelease('auto');
     }
 })();

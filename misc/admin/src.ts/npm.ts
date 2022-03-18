@@ -8,8 +8,7 @@ import {colorify, getProgressBar, getPrompt} from "./log";
 import {getOrdered} from "./depgraph";
 import {resolve} from "./path";
 import {getGitTag} from "./git";
-// import {loadJson, repeat} from "./utils";
-import {repeat} from "./utils";
+import {loadJson, repeat} from "./utils";
 import {config} from "./config";
 
 
@@ -171,16 +170,16 @@ export async function publishAll(mode:PublishScriptModes = 'manual'): Promise<vo
     console.log(colorify.bold("Publishing:"));
     for (let i = 0; i < publishNames.length; i++) {
         const dirname = publishNames[i];
-        // const path = resolve("packages", dirname);
+        const path = resolve("packages", dirname);
         const pathJson = resolve("packages", dirname, "package.json");
 
         const { gitHead, name, newVersion } = publishPackages[dirname];
         console.log(`  ${ colorify.blue(name) } @ ${ colorify.green(newVersion) }`);
 
         local.updateJson(pathJson, { gitHead: gitHead }, true);
-        // const info = loadJson(pathJson);
+        const info = loadJson(pathJson);
 
-        // await _publish(path, info, options);
+        await _publish(path, info, options);
         local.updateJson(pathJson, { gitHead: undefined }, true);
     }
 

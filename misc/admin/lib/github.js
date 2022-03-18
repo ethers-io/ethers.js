@@ -157,10 +157,11 @@ function _createRelease(user, password, tagName, title, body, prerelease, commit
             })),
             method: "POST",
             headers: {
-                "User-Agent": "hashgraph/hethers"
+                "User-Agent": "ethers-io"
             }
         }, user, password);
         const result = yield (0, geturl_1.getUrl)(`https://api.github.com/repos/${githubRepo}/releases`, reqOptions);
+        console.log(JSON.parse(Buffer.from(result.body).toString("utf8")));
         return JSON.parse(Buffer.from(result.body).toString("utf8")).html_url;
     });
 }

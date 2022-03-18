@@ -40,7 +40,6 @@ const log_1 = require("./log");
 const depgraph_1 = require("./depgraph");
 const path_1 = require("./path");
 const git_1 = require("./git");
-// import {loadJson, repeat} from "./utils";
 const utils_1 = require("./utils");
 const config_1 = require("./config");
 const cache = {};
@@ -191,13 +190,13 @@ function publishAll(mode = 'manual') {
         console.log(log_1.colorify.bold("Publishing:"));
         for (let i = 0; i < publishNames.length; i++) {
             const dirname = publishNames[i];
-            // const path = resolve("packages", dirname);
+            const path = (0, path_1.resolve)("packages", dirname);
             const pathJson = (0, path_1.resolve)("packages", dirname, "package.json");
             const { gitHead, name, newVersion } = publishPackages[dirname];
             console.log(`  ${log_1.colorify.blue(name)} @ ${log_1.colorify.green(newVersion)}`);
             local.updateJson(pathJson, { gitHead: gitHead }, true);
-            // const info = loadJson(pathJson);
-            // await _publish(path, info, options);
+            const info = (0, utils_1.loadJson)(pathJson);
+            yield _publish(path, info, options);
             local.updateJson(pathJson, { gitHead: undefined }, true);
         }
     });

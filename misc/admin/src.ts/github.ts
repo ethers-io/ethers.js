@@ -143,11 +143,13 @@ export async function _createRelease(user: string, password: string, tagName: st
         method: "POST",
 
         headers: {
-            "User-Agent": "hashgraph/hethers"
+            "User-Agent": "ethers-io"
         }
     }, user, password);
 
     const result = await getUrl(`https://api.github.com/repos/${githubRepo}/releases`, reqOptions);
+
+    console.log(JSON.parse(Buffer.from(result.body).toString("utf8")));
 
     return JSON.parse(Buffer.from(result.body).toString("utf8")).html_url;
 }
