@@ -61,7 +61,12 @@ The nonce used as part of the proof-of-work to mine this block.
 This property is generally of little interest to developers.
 
 
-#### *block* . **difficulty** => *number*
+#### *block* . **difficulty** => *null*
+
+Because the difficulty had reached the limit of IEEE754 numbers, this attribute is deprecated.
+
+
+#### *block* . **_difficulty** => *[BigNumber](/v5/api/utils/bignumber/)*
 
 The difficulty target required to be met by the miner of the block.
 
