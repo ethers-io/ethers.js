@@ -63,7 +63,7 @@ This property is generally of little interest to developers.
 
 #### *block* . **difficulty** => *null*
 
-Because the difficulty had reached the limit of IEEE754 numbers, this attribute is deprecated.
+Because the difficulty had reached the limit of IEEE754 numbers, this property is temporarily deprecated at v5. It will be available again at v6.
 
 
 #### *block* . **_difficulty** => *[BigNumber](/v5/api/utils/bignumber/)*
