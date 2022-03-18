@@ -9,9 +9,9 @@
     "@ethersproject/signing-key": "5.5.0",
     "@ethersproject/strings": "5.5.0",
     "@ethersproject/wordlists": "5.5.0",
-    "@hethers/abstract-signer": "1.0.2",
-    "@hethers/logger": "1.0.2",
-    "@hethers/transactions": "1.0.2"
+    "@hethers/abstract-signer": "1.1.0",
+    "@hethers/logger": "1.1.0",
+    "@hethers/transactions": "1.1.0"
   },
   "description": "BIP32 Hierarchal Deterministic Node operations.",
   "keywords": [
@@ -37,7 +37,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x6fe2065e51fbb8de489248b32b9627403297167167e4c4872a58cb49529b81cb",
+  "tarballHash": "0x215357ff538bb6329a44db2d97adb6454da1d8a30baf19be59173edd6209fd74",
   "types": "./lib/index.d.ts",
-  "version": "1.0.3"
+  "version": "1.1.0"
 }

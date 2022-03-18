@@ -590,10 +590,11 @@ describe("Wallet createAccount", function () {
         return __awaiter(this, void 0, void 0, function* () {
             const acc1BalanceBefore = (yield acc1Wallet.getBalance()).toNumber();
             const acc2BalanceBefore = (yield acc2Wallet.getBalance()).toNumber();
-            yield acc1Wallet.sendTransaction({
+            const tx = yield acc1Wallet.sendTransaction({
                 to: acc2Wallet.account,
                 value: 1000,
             });
+            yield tx.wait();
             const acc1BalanceAfter = (yield acc1Wallet.getBalance()).toNumber();
             const acc2BalanceAfter = (yield acc2Wallet.getBalance()).toNumber();
             assert.strictEqual(acc1BalanceBefore > acc1BalanceAfter, true);

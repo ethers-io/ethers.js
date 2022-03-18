@@ -798,7 +798,7 @@ describe("Wallet createAccount", function () {
     }).timeout(timeout);
     it("Should transfer funds between accounts", function () {
         return __awaiter(this, void 0, void 0, function () {
-            var acc1BalanceBefore, acc2BalanceBefore, acc1BalanceAfter, acc2BalanceAfter;
+            var acc1BalanceBefore, acc2BalanceBefore, tx, acc1BalanceAfter, acc2BalanceAfter;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, acc1Wallet.getBalance()];
@@ -812,12 +812,15 @@ describe("Wallet createAccount", function () {
                                 value: 1000,
                             })];
                     case 3:
+                        tx = _a.sent();
+                        return [4 /*yield*/, tx.wait()];
+                    case 4:
                         _a.sent();
                         return [4 /*yield*/, acc1Wallet.getBalance()];
-                    case 4:
+                    case 5:
                         acc1BalanceAfter = (_a.sent()).toNumber();
                         return [4 /*yield*/, acc2Wallet.getBalance()];
-                    case 5:
+                    case 6:
                         acc2BalanceAfter = (_a.sent()).toNumber();
                         assert_1.default.strictEqual(acc1BalanceBefore > acc1BalanceAfter, true);
                         assert_1.default.strictEqual(acc2BalanceBefore < acc2BalanceAfter, true);

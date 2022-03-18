@@ -4,9 +4,9 @@
     "@ethersproject/bytes": "5.5.0",
     "@ethersproject/properties": "5.5.0",
     "@ethersproject/web": "5.5.0",
-    "@hethers/logger": "1.0.2",
-    "@hethers/networks": "1.0.2",
-    "@hethers/transactions": "1.0.2"
+    "@hethers/logger": "1.1.0",
+    "@hethers/networks": "1.1.0",
+    "@hethers/transactions": "1.1.0"
   },
   "description": "An Abstract Class for describing an Hedera Hashgraph Provider for hethers.",
   "keywords": [
@@ -32,7 +32,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x8e991c5740e649898e7c7e86afe1e44636d56630600295c5809985fee3e83db9",
+  "tarballHash": "0x170828824e5f837963f71e46f1185caf0097e847049b475bef0a3af38f735405",
   "types": "./lib/index.d.ts",
-  "version": "1.0.3"
+  "version": "1.1.0"
 }

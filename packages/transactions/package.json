@@ -7,9 +7,9 @@
     "@ethersproject/properties": "5.5.0",
     "@ethersproject/signing-key": "5.5.0",
     "@hashgraph/sdk": "2.11.0-beta.1",
-    "@hethers/address": "1.0.2",
-    "@hethers/constants": "1.0.2",
-    "@hethers/logger": "1.0.2"
+    "@hethers/address": "1.1.0",
+    "@hethers/constants": "1.1.0",
+    "@hethers/logger": "1.1.0"
   },
   "description": "Utilities for decoding and encoding Hedera Hashgraph transactions for hethers.",
   "keywords": [
@@ -35,7 +35,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xd0e600cc85d63c5843c1f2874e71ced208a50ed779f4d33ec55031e91f376ec8",
+  "tarballHash": "0x5705db213d923e83474e707e0ecb7d36b84f064673cba97f662d7e8331ebc1f6",
   "types": "./lib/index.d.ts",
-  "version": "1.0.3"
+  "version": "1.1.0"
 }
