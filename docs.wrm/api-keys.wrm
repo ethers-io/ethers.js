@@ -74,6 +74,23 @@ with debugging.
 - access to advanced token balance and metadata APIs
 - access to advanced debugging trace and revert reason APIs
 
+_subsection: Chainstack @<api-keys--chainstack>
+
+The Chainstack service has been around a few years and is also very robust
+and reliable.
+
+They offer a standard JSON-RPC interface and a WebSocket interface, as well archive nodes and advanced APIs to assist
+with debugging.
+
+[Sign up for a free API key on Chainstack](link-chainstack-signup)
+
+**Benefits:**
+
+- 3M requests a month on the free Developer subscription
+- usage metrics
+- access to advanced debugging trace APIs (requires paid upgrade)
+- access to archive data (requires paid upgrade)
+
 _subsection: Pocket Gateway@<api-keys--pocket-gateway>
 
 
