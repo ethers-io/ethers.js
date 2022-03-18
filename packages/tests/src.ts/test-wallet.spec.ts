@@ -621,10 +621,11 @@ describe("Wallet createAccount", function () {
     it("Should transfer funds between accounts", async function() {
         const acc1BalanceBefore = (await acc1Wallet.getBalance()).toNumber();
         const acc2BalanceBefore = (await acc2Wallet.getBalance()).toNumber();
-        await acc1Wallet.sendTransaction({
+        const tx = await acc1Wallet.sendTransaction({
             to: acc2Wallet.account,
             value: 1000,
         });
+        await tx.wait();
         const acc1BalanceAfter = (await acc1Wallet.getBalance()).toNumber();
         const acc2BalanceAfter = (await acc2Wallet.getBalance()).toNumber();
 
