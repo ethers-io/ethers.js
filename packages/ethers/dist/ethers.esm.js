@@ -17331,7 +17331,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.6.0";
+const version$k = "networks/5.6.1";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -17380,6 +17380,12 @@ function ethDefaultProvider(network) {
         if (providers.CloudflareProvider && options.cloudflare !== "-") {
             try {
                 providerList.push(new providers.CloudflareProvider(network));
+            }
+            catch (error) { }
+        }
+        if (providers.AnkrProvider && options.ankr !== "-") {
+            try {
+                providerList.push(new providers.AnkrProvider(network, options.ankr));
             }
             catch (error) { }
         }
@@ -18205,7 +18211,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.6.1";
+const version$m = "providers/5.6.2";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -21671,6 +21677,51 @@ class AlchemyProvider extends UrlJsonRpcProvider {
     }
 }
 
+const logger$y = new Logger(version$m);
+const defaultApiKey$1 = "9f7d929b018cdffb338517efa06f58359e86ff1ffd350bc889738523659e7972";
+function getHost(name) {
+    switch (name) {
+        case "homestead":
+            return "rpc.ankr.com/eth/";
+        case "matic":
+            return "rpc.ankr.com/polygon/";
+        case "arbitrum":
+            return "rpc.ankr.com/arbitrum/";
+    }
+    return logger$y.throwArgumentError("unsupported network", "name", name);
+}
+class AnkrProvider extends UrlJsonRpcProvider {
+    isCommunityResource() {
+        return (this.apiKey === defaultApiKey$1);
+    }
+    static getApiKey(apiKey) {
+        if (apiKey == null) {
+            return defaultApiKey$1;
+        }
+        return apiKey;
+    }
+    static getUrl(network, apiKey) {
+        if (apiKey == null) {
+            apiKey = defaultApiKey$1;
+        }
+        const connection = {
+            allowGzip: true,
+            url: ("https:/\/" + getHost(network.name) + apiKey),
+            throttleCallback: (attempt, url) => {
+                if (apiKey.apiKey === defaultApiKey$1) {
+                    showThrottleMessage();
+                }
+                return Promise.resolve(true);
+            }
+        };
+        if (apiKey.projectSecret != null) {
+            connection.user = "";
+            connection.password = apiKey.projectSecret;
+        }
+        return connection;
+    }
+}
+
 "use strict";
 var __awaiter$d = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -21681,11 +21732,11 @@ var __awaiter$d = (window && window.__awaiter) || function (thisArg, _arguments,
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const logger$y = new Logger(version$m);
+const logger$z = new Logger(version$m);
 class CloudflareProvider extends UrlJsonRpcProvider {
     static getApiKey(apiKey) {
         if (apiKey != null) {
-            logger$y.throwArgumentError("apiKey not supported for cloudflare", "apiKey", apiKey);
+            logger$z.throwArgumentError("apiKey not supported for cloudflare", "apiKey", apiKey);
         }
         return null;
     }
@@ -21696,7 +21747,7 @@ class CloudflareProvider extends UrlJsonRpcProvider {
                 host = "https://cloudflare-eth.com/";
                 break;
             default:
-                logger$y.throwArgumentError("unsupported network", "network", arguments[0]);
+                logger$z.throwArgumentError("unsupported network", "network", arguments[0]);
         }
         return host;
     }
@@ -21726,7 +21777,7 @@ var __awaiter$e = (window && window.__awaiter) || function (thisArg, _arguments,
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const logger$z = new Logger(version$m);
+const logger$A = new Logger(version$m);
 // The transaction has already been sanitized by the calls in Provider
 function getTransactionPostData(transaction) {
     const result = {};
@@ -21806,7 +21857,7 @@ function checkLogTag(blockTag) {
     }
     return parseInt(blockTag.substring(2), 16);
 }
-const defaultApiKey$1 = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
+const defaultApiKey$2 = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 function checkError$1(method, error, transaction) {
     // Undo the "convenience" some nodes are attempting to prevent backwards
     // incompatibility; maybe for v6 consider forwarding reverts as errors
@@ -21822,7 +21873,7 @@ function checkError$1(method, error, transaction) {
             if (isHexString(data)) {
                 return data;
             }
-            logger$z.throwError("missing revert data in call exception", Logger.errors.CALL_EXCEPTION, {
+            logger$A.throwError("missing revert data in call exception", Logger.errors.CALL_EXCEPTION, {
                 error, data: "0x"
             });
         }
@@ -21843,24 +21894,24 @@ function checkError$1(method, error, transaction) {
     message = (message || "").toLowerCase();
     // "Insufficient funds. The account you tried to send transaction from does not have enough funds. Required 21464000000000 and got: 0"
     if (message.match(/insufficient funds/)) {
-        logger$z.throwError("insufficient funds for intrinsic transaction cost", Logger.errors.INSUFFICIENT_FUNDS, {
+        logger$A.throwError("insufficient funds for intrinsic transaction cost", Logger.errors.INSUFFICIENT_FUNDS, {
             error, method, transaction
         });
     }
     // "Transaction with the same hash was already imported."
     if (message.match(/same hash was already imported|transaction nonce is too low|nonce too low/)) {
-        logger$z.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {
+        logger$A.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {
             error, method, transaction
         });
     }
     // "Transaction gas price is too low. There is another transaction with same nonce in the queue. Try increasing the gas price or incrementing the nonce."
     if (message.match(/another transaction with same nonce/)) {
-        logger$z.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {
+        logger$A.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {
             error, method, transaction
         });
     }
     if (message.match(/execution failed due to an exception|execution reverted/)) {
-        logger$z.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+        logger$A.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
             error, method, transaction
         });
     }
@@ -21868,10 +21919,10 @@ function checkError$1(method, error, transaction) {
 }
 class EtherscanProvider extends BaseProvider {
     constructor(network, apiKey) {
-        logger$z.checkNew(new.target, EtherscanProvider);
+        logger$A.checkNew(new.target, EtherscanProvider);
         super(network);
         defineReadOnly(this, "baseUrl", this.getBaseUrl());
-        defineReadOnly(this, "apiKey", apiKey || defaultApiKey$1);
+        defineReadOnly(this, "apiKey", apiKey || defaultApiKey$2);
     }
     getBaseUrl() {
         switch (this.network ? this.network.name : "invalid") {
@@ -21887,7 +21938,7 @@ class EtherscanProvider extends BaseProvider {
                 return "https:/\/api-goerli.etherscan.io";
             default:
         }
-        return logger$z.throwArgumentError("unsupported network", "network", name);
+        return logger$A.throwArgumentError("unsupported network", "network", name);
     }
     getUrl(module, params) {
         const query = Object.keys(params).reduce((accum, key) => {
@@ -22051,12 +22102,12 @@ class EtherscanProvider extends BaseProvider {
                     // @TODO: We can handle slightly more complicated logs using the logs API
                     if (params.filter.topics && params.filter.topics.length > 0) {
                         if (params.filter.topics.length > 1) {
-                            logger$z.throwError("unsupported topic count", Logger.errors.UNSUPPORTED_OPERATION, { topics: params.filter.topics });
+                            logger$A.throwError("unsupported topic count", Logger.errors.UNSUPPORTED_OPERATION, { topics: params.filter.topics });
                         }
                         if (params.filter.topics.length === 1) {
                             const topic0 = params.filter.topics[0];
                             if (typeof (topic0) !== "string" || topic0.length !== 66) {
-                                logger$z.throwError("unsupported topic format", Logger.errors.UNSUPPORTED_OPERATION, { topic0: topic0 });
+                                logger$A.throwError("unsupported topic format", Logger.errors.UNSUPPORTED_OPERATION, { topic0: topic0 });
                             }
                             args.topic0 = topic0;
                         }
@@ -22123,7 +22174,7 @@ class EtherscanProvider extends BaseProvider {
         });
     }
     isCommunityResource() {
-        return (this.apiKey === defaultApiKey$1);
+        return (this.apiKey === defaultApiKey$2);
     }
 }
 
@@ -22137,7 +22188,7 @@ var __awaiter$f = (window && window.__awaiter) || function (thisArg, _arguments,
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const logger$A = new Logger(version$m);
+const logger$B = new Logger(version$m);
 function now() { return (new Date()).getTime(); }
 // Returns to network as long as all agree, or null if any is null.
 // Throws an error if any two networks do not match.
@@ -22153,7 +22204,7 @@ function checkNetworks(networks) {
             // Make sure the network matches the previous networks
             if (!(result.name === network.name && result.chainId === network.chainId &&
                 ((result.ensAddress === network.ensAddress) || (result.ensAddress == null && network.ensAddress == null)))) {
-                logger$A.throwArgumentError("provider mismatch", "networks", networks);
+                logger$B.throwArgumentError("provider mismatch", "networks", networks);
             }
         }
         else {
@@ -22460,7 +22511,7 @@ function getRunner(config, currentBlockNumber, method, params) {
                 return provider.getLogs(filter);
             }
         }
-        return logger$A.throwError("unknown method error", Logger.errors.UNKNOWN_ERROR, {
+        return logger$B.throwError("unknown method error", Logger.errors.UNKNOWN_ERROR, {
             method: method,
             params: params
         });
@@ -22468,9 +22519,9 @@ function getRunner(config, currentBlockNumber, method, params) {
 }
 class FallbackProvider extends BaseProvider {
     constructor(providers, quorum) {
-        logger$A.checkNew(new.target, FallbackProvider);
+        logger$B.checkNew(new.target, FallbackProvider);
         if (providers.length === 0) {
-            logger$A.throwArgumentError("missing providers", "providers", providers);
+            logger$B.throwArgumentError("missing providers", "providers", providers);
         }
         const providerConfigs = providers.map((configOrProvider, index) => {
             if (Provider.isProvider(configOrProvider)) {
@@ -22490,7 +22541,7 @@ class FallbackProvider extends BaseProvider {
             }
             const weight = config.weight;
             if (weight % 1 || weight > 512 || weight < 1) {
-                logger$A.throwArgumentError("invalid weight; must be integer in [1, 512]", `providers[${index}].weight`, weight);
+                logger$B.throwArgumentError("invalid weight; must be integer in [1, 512]", `providers[${index}].weight`, weight);
             }
             return Object.freeze(config);
         });
@@ -22499,7 +22550,7 @@ class FallbackProvider extends BaseProvider {
             quorum = total / 2;
         }
         else if (quorum > total) {
-            logger$A.throwArgumentError("quorum will always fail; larger than total weight", "quorum", quorum);
+            logger$B.throwArgumentError("quorum will always fail; larger than total weight", "quorum", quorum);
         }
         // Are all providers' networks are known
         let networkOrReady = checkNetworks(providerConfigs.map((c) => (c.provider).network));
@@ -22673,7 +22724,7 @@ class FallbackProvider extends BaseProvider {
                         }
                         props[name] = e[name];
                     });
-                    logger$A.throwError(e.reason || e.message, errorCode, props);
+                    logger$B.throwError(e.reason || e.message, errorCode, props);
                 });
                 // All configs have run to completion; we will never get more data
                 if (configs.filter((c) => !c.done).length === 0) {
@@ -22687,7 +22738,7 @@ class FallbackProvider extends BaseProvider {
                 }
                 c.cancelled = true;
             });
-            return logger$A.throwError("failed to meet quorum", Logger.errors.SERVER_ERROR, {
+            return logger$B.throwError("failed to meet quorum", Logger.errors.SERVER_ERROR, {
                 method: method,
                 params: params,
                 //results: configs.map((c) => c.result),
@@ -22703,14 +22754,14 @@ class FallbackProvider extends BaseProvider {
 const IpcProvider = null;
 
 "use strict";
-const logger$B = new Logger(version$m);
+const logger$C = new Logger(version$m);
 const defaultProjectId = "84842078b09946638c03157f83405213";
 class InfuraWebSocketProvider extends WebSocketProvider {
     constructor(network, apiKey) {
         const provider = new InfuraProvider(network, apiKey);
         const connection = provider.connection;
         if (connection.password) {
-            logger$B.throwError("INFURA WebSocket project secrets unsupported", Logger.errors.UNSUPPORTED_OPERATION, {
+            logger$C.throwError("INFURA WebSocket project secrets unsupported", Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "InfuraProvider.getWebSocketProvider()"
             });
         }
@@ -22741,8 +22792,8 @@ class InfuraProvider extends UrlJsonRpcProvider {
             apiKeyObj.projectId = apiKey;
         }
         else if (apiKey.projectSecret != null) {
-            logger$B.assertArgument((typeof (apiKey.projectId) === "string"), "projectSecret requires a projectId", "projectId", apiKey.projectId);
-            logger$B.assertArgument((typeof (apiKey.projectSecret) === "string"), "invalid projectSecret", "projectSecret", "[REDACTED]");
+            logger$C.assertArgument((typeof (apiKey.projectId) === "string"), "projectSecret requires a projectId", "projectId", apiKey.projectId);
+            logger$C.assertArgument((typeof (apiKey.projectSecret) === "string"), "invalid projectSecret", "projectSecret", "[REDACTED]");
             apiKeyObj.projectId = apiKey.projectId;
             apiKeyObj.projectSecret = apiKey.projectSecret;
         }
@@ -22789,7 +22840,7 @@ class InfuraProvider extends UrlJsonRpcProvider {
                 host = "arbitrum-rinkeby.infura.io";
                 break;
             default:
-                logger$B.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
+                logger$C.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
                     argument: "network",
                     value: network
                 });
@@ -22888,18 +22939,18 @@ class JsonRpcBatchProvider extends JsonRpcProvider {
 
 /* istanbul ignore file */
 "use strict";
-const logger$C = new Logger(version$m);
+const logger$D = new Logger(version$m);
 // Special API key provided by Nodesmith for ethers.js
-const defaultApiKey$2 = "ETHERS_JS_SHARED";
+const defaultApiKey$3 = "ETHERS_JS_SHARED";
 class NodesmithProvider extends UrlJsonRpcProvider {
     static getApiKey(apiKey) {
         if (apiKey && typeof (apiKey) !== "string") {
-            logger$C.throwArgumentError("invalid apiKey", "apiKey", apiKey);
+            logger$D.throwArgumentError("invalid apiKey", "apiKey", apiKey);
         }
-        return apiKey || defaultApiKey$2;
+        return apiKey || defaultApiKey$3;
     }
     static getUrl(network, apiKey) {
-        logger$C.warn("NodeSmith will be discontinued on 2019-12-20; please migrate to another platform.");
+        logger$D.warn("NodeSmith will be discontinued on 2019-12-20; please migrate to another platform.");
         let host = null;
         switch (network.name) {
             case "homestead":
@@ -22918,14 +22969,14 @@ class NodesmithProvider extends UrlJsonRpcProvider {
                 host = "https://ethereum.api.nodesmith.io/v1/kovan/jsonrpc";
                 break;
             default:
-                logger$C.throwArgumentError("unsupported network", "network", arguments[0]);
+                logger$D.throwArgumentError("unsupported network", "network", arguments[0]);
         }
         return (host + "?apiKey=" + apiKey);
     }
 }
 
 "use strict";
-const logger$D = new Logger(version$m);
+const logger$E = new Logger(version$m);
 // These are load-balancer-based application IDs
 const defaultApplicationIds = {
     homestead: "6004bcd10040261633ade990",
@@ -22950,7 +23001,7 @@ class PocketProvider extends UrlJsonRpcProvider {
             }
             // If there was any issue above, we don't know this network
             if (apiKey == null) {
-                logger$D.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
+                logger$E.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
                     argument: "network",
                     value: network
                 });
@@ -22963,7 +23014,7 @@ class PocketProvider extends UrlJsonRpcProvider {
         // Pocket requires the network to decide the default provider, so we
         // rely on hijacking the constructor to add a sensible default for us
         if (apiKey == null) {
-            logger$D.throwArgumentError("PocketProvider.getApiKey does not support null apiKey", "apiKey", apiKey);
+            logger$E.throwArgumentError("PocketProvider.getApiKey does not support null apiKey", "apiKey", apiKey);
         }
         const apiKeyObj = {
             applicationId: null,
@@ -22975,19 +23026,19 @@ class PocketProvider extends UrlJsonRpcProvider {
             apiKeyObj.applicationId = apiKey;
         }
         else if (apiKey.applicationSecretKey != null) {
-            logger$D.assertArgument((typeof (apiKey.applicationId) === "string"), "applicationSecretKey requires an applicationId", "applicationId", apiKey.applicationId);
-            logger$D.assertArgument((typeof (apiKey.applicationSecretKey) === "string"), "invalid applicationSecretKey", "applicationSecretKey", "[REDACTED]");
+            logger$E.assertArgument((typeof (apiKey.applicationId) === "string"), "applicationSecretKey requires an applicationId", "applicationId", apiKey.applicationId);
+            logger$E.assertArgument((typeof (apiKey.applicationSecretKey) === "string"), "invalid applicationSecretKey", "applicationSecretKey", "[REDACTED]");
             apiKeyObj.applicationId = apiKey.applicationId;
             apiKeyObj.applicationSecretKey = apiKey.applicationSecretKey;
             apiKeyObj.loadBalancer = !!apiKey.loadBalancer;
         }
         else if (apiKey.applicationId) {
-            logger$D.assertArgument((typeof (apiKey.applicationId) === "string"), "apiKey.applicationId must be a string", "apiKey.applicationId", apiKey.applicationId);
+            logger$E.assertArgument((typeof (apiKey.applicationId) === "string"), "apiKey.applicationId must be a string", "apiKey.applicationId", apiKey.applicationId);
             apiKeyObj.applicationId = apiKey.applicationId;
             apiKeyObj.loadBalancer = !!apiKey.loadBalancer;
         }
         else {
-            logger$D.throwArgumentError("unsupported PocketProvider apiKey", "apiKey", apiKey);
+            logger$E.throwArgumentError("unsupported PocketProvider apiKey", "apiKey", apiKey);
         }
         return apiKeyObj;
     }
@@ -23007,7 +23058,7 @@ class PocketProvider extends UrlJsonRpcProvider {
                 host = "eth-goerli.gateway.pokt.network";
                 break;
             default:
-                logger$D.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
+                logger$E.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
                     argument: "network",
                     value: network
                 });
@@ -23035,7 +23086,7 @@ class PocketProvider extends UrlJsonRpcProvider {
 }
 
 "use strict";
-const logger$E = new Logger(version$m);
+const logger$F = new Logger(version$m);
 let _nextId = 1;
 function buildWeb3LegacyFetcher(provider, sendFunc) {
     const fetcher = "Web3LegacyFetcher";
@@ -23117,9 +23168,9 @@ function buildEip1193Fetcher(provider) {
 }
 class Web3Provider extends JsonRpcProvider {
     constructor(provider, network) {
-        logger$E.checkNew(new.target, Web3Provider);
+        logger$F.checkNew(new.target, Web3Provider);
         if (provider == null) {
-            logger$E.throwArgumentError("missing provider", "provider", provider);
+            logger$F.throwArgumentError("missing provider", "provider", provider);
         }
         let path = null;
         let jsonRpcFetchFunc = null;
@@ -23147,7 +23198,7 @@ class Web3Provider extends JsonRpcProvider {
                 jsonRpcFetchFunc = buildWeb3LegacyFetcher(provider, provider.send.bind(provider));
             }
             else {
-                logger$E.throwArgumentError("unsupported provider", "provider", provider);
+                logger$F.throwArgumentError("unsupported provider", "provider", provider);
             }
             if (!path) {
                 path = "unknown:";
@@ -23163,7 +23214,7 @@ class Web3Provider extends JsonRpcProvider {
 }
 
 "use strict";
-const logger$F = new Logger(version$m);
+const logger$G = new Logger(version$m);
 ////////////////////////
 // Helper Functions
 function getDefaultProvider(network, options) {
@@ -23182,13 +23233,13 @@ function getDefaultProvider(network, options) {
                 case "ws":
                     return new WebSocketProvider(network);
                 default:
-                    logger$F.throwArgumentError("unsupported URL scheme", "network", network);
+                    logger$G.throwArgumentError("unsupported URL scheme", "network", network);
             }
         }
     }
     const n = getNetwork(network);
     if (!n || !n._defaultProvider) {
-        logger$F.throwError("unsupported getDefaultProvider network", Logger.errors.NETWORK_ERROR, {
+        logger$G.throwError("unsupported getDefaultProvider network", Logger.errors.NETWORK_ERROR, {
             operation: "getDefaultProvider",
             network: network
         });
@@ -23196,6 +23247,7 @@ function getDefaultProvider(network, options) {
     return n._defaultProvider({
         FallbackProvider,
         AlchemyProvider,
+        AnkrProvider,
         CloudflareProvider,
         EtherscanProvider,
         InfuraProvider,
@@ -23216,6 +23268,7 @@ var index$3 = /*#__PURE__*/Object.freeze({
 	FallbackProvider: FallbackProvider,
 	AlchemyProvider: AlchemyProvider,
 	AlchemyWebSocketProvider: AlchemyWebSocketProvider,
+	AnkrProvider: AnkrProvider,
 	CloudflareProvider: CloudflareProvider,
 	EtherscanProvider: EtherscanProvider,
 	InfuraProvider: InfuraProvider,
@@ -23244,7 +23297,7 @@ const regexBytes = new RegExp("^bytes([0-9]+)$");
 const regexNumber = new RegExp("^(u?int)([0-9]*)$");
 const regexArray = new RegExp("^(.*)\\[([0-9]*)\\]$");
 const Zeros$1 = "0000000000000000000000000000000000000000000000000000000000000000";
-const logger$G = new Logger(version$n);
+const logger$H = new Logger(version$n);
 function _pack(type, value, isArray) {
     switch (type) {
         case "address":
@@ -23268,7 +23321,7 @@ function _pack(type, value, isArray) {
         //let signed = (match[1] === "int")
         let size = parseInt(match[2] || "256");
         if ((match[2] && String(size) !== match[2]) || (size % 8 !== 0) || size === 0 || size > 256) {
-            logger$G.throwArgumentError("invalid number type", "type", type);
+            logger$H.throwArgumentError("invalid number type", "type", type);
         }
         if (isArray) {
             size = 256;
@@ -23280,10 +23333,10 @@ function _pack(type, value, isArray) {
     if (match) {
         const size = parseInt(match[1]);
         if (String(size) !== match[1] || size === 0 || size > 32) {
-            logger$G.throwArgumentError("invalid bytes type", "type", type);
+            logger$H.throwArgumentError("invalid bytes type", "type", type);
         }
         if (arrayify(value).byteLength !== size) {
-            logger$G.throwArgumentError(`invalid value for ${type}`, "value", value);
+            logger$H.throwArgumentError(`invalid value for ${type}`, "value", value);
         }
         if (isArray) {
             return arrayify((value + Zeros$1).substring(0, 66));
@@ -23295,7 +23348,7 @@ function _pack(type, value, isArray) {
         const baseType = match[1];
         const count = parseInt(match[2] || String(value.length));
         if (count != value.length) {
-            logger$G.throwArgumentError(`invalid array length for ${type}`, "value", value);
+            logger$H.throwArgumentError(`invalid array length for ${type}`, "value", value);
         }
         const result = [];
         value.forEach(function (value) {
@@ -23303,12 +23356,12 @@ function _pack(type, value, isArray) {
         });
         return concat(result);
     }
-    return logger$G.throwArgumentError("invalid type", "type", type);
+    return logger$H.throwArgumentError("invalid type", "type", type);
 }
 // @TODO: Array Enum
 function pack$1(types, values) {
     if (types.length != values.length) {
-        logger$G.throwArgumentError("wrong number of values; expected ${ types.length }", "values", values);
+        logger$H.throwArgumentError("wrong number of values; expected ${ types.length }", "values", values);
     }
     const tight = [];
     types.forEach(function (type, index) {
@@ -23326,7 +23379,7 @@ function sha256$2(types, values) {
 const version$o = "units/5.6.0";
 
 "use strict";
-const logger$H = new Logger(version$o);
+const logger$I = new Logger(version$o);
 const names = [
     "wei",
     "kwei",
@@ -23341,7 +23394,7 @@ const names = [
 function commify(value) {
     const comps = String(value).split(".");
     if (comps.length > 2 || !comps[0].match(/^-?[0-9]*$/) || (comps[1] && !comps[1].match(/^[0-9]*$/)) || value === "." || value === "-.") {
-        logger$H.throwArgumentError("invalid value", "value", value);
+        logger$I.throwArgumentError("invalid value", "value", value);
     }
     // Make sure we have at least one whole digit (0 if none)
     let whole = comps[0];
@@ -23389,7 +23442,7 @@ function formatUnits(value, unitName) {
 }
 function parseUnits(value, unitName) {
     if (typeof (value) !== "string") {
-        logger$H.throwArgumentError("value must be a string", "value", value);
+        logger$I.throwArgumentError("value must be a string", "value", value);
     }
     if (typeof (unitName) === "string") {
         const index = names.indexOf(unitName);
@@ -23511,10 +23564,10 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$p = "ethers/5.6.1";
+const version$p = "ethers/5.6.2";
 
 "use strict";
-const logger$I = new Logger(version$p);
+const logger$J = new Logger(version$p);
 
 var ethers = /*#__PURE__*/Object.freeze({
 	__proto__: null,
@@ -23530,7 +23583,7 @@ var ethers = /*#__PURE__*/Object.freeze({
 	FixedNumber: FixedNumber,
 	constants: index$1,
 	get errors () { return ErrorCode; },
-	logger: logger$I,
+	logger: logger$J,
 	utils: utils$1,
 	wordlists: wordlists,
 	version: version$p,
@@ -23546,5 +23599,5 @@ try {
 }
 catch (error) { }
 
-export { BaseContract, BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, Wordlist, index$1 as constants, ErrorCode as errors, ethers, getDefaultProvider, logger$I as logger, index$3 as providers, utils$1 as utils, version$p as version, wordlists };
+export { BaseContract, BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, Wordlist, index$1 as constants, ErrorCode as errors, ethers, getDefaultProvider, logger$J as logger, index$3 as providers, utils$1 as utils, version$p as version, wordlists };
 //# sourceMappingURL=ethers.esm.js.map

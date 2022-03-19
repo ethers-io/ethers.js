@@ -580,6 +580,16 @@ var providerFunctions = [
             return new ethers_1.ethers.providers.AlchemyProvider(network, getApiKeys(network).alchemy);
         }
     },
+    {
+        name: "AnkrProvider",
+        networks: ["default", "homestead"],
+        create: function (network) {
+            if (network == "default") {
+                return new ethers_1.ethers.providers.AnkrProvider(null);
+            }
+            return new ethers_1.ethers.providers.AnkrProvider(network);
+        }
+    },
     /*
     {
         name: "CloudflareProvider",

@@ -19300,7 +19300,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "networks/5.6.0";
+	exports.version = "networks/5.6.1";
 
 	});
 
@@ -19358,6 +19358,12 @@
 	        if (providers.CloudflareProvider && options.cloudflare !== "-") {
 	            try {
 	                providerList.push(new providers.CloudflareProvider(network));
+	            }
+	            catch (error) { }
+	        }
+	        if (providers.AnkrProvider && options.ankr !== "-") {
+	            try {
+	                providerList.push(new providers.AnkrProvider(network, options.ankr));
 	            }
 	            catch (error) { }
 	        }
@@ -20331,7 +20337,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.6.1";
+	exports.version = "providers/5.6.2";
 
 	});
 
@@ -24829,6 +24835,84 @@
 
 	var alchemyProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(alchemyProvider);
 
+	var ankrProvider = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
+	    var extendStatics = function (d, b) {
+	        extendStatics = Object.setPrototypeOf ||
+	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+	        return extendStatics(d, b);
+	    };
+	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.AnkrProvider = void 0;
+
+
+
+
+	var logger = new lib.Logger(_version$I.version);
+	var defaultApiKey = "9f7d929b018cdffb338517efa06f58359e86ff1ffd350bc889738523659e7972";
+	function getHost(name) {
+	    switch (name) {
+	        case "homestead":
+	            return "rpc.ankr.com/eth/";
+	        case "matic":
+	            return "rpc.ankr.com/polygon/";
+	        case "arbitrum":
+	            return "rpc.ankr.com/arbitrum/";
+	    }
+	    return logger.throwArgumentError("unsupported network", "name", name);
+	}
+	var AnkrProvider = /** @class */ (function (_super) {
+	    __extends(AnkrProvider, _super);
+	    function AnkrProvider() {
+	        return _super !== null && _super.apply(this, arguments) || this;
+	    }
+	    AnkrProvider.prototype.isCommunityResource = function () {
+	        return (this.apiKey === defaultApiKey);
+	    };
+	    AnkrProvider.getApiKey = function (apiKey) {
+	        if (apiKey == null) {
+	            return defaultApiKey;
+	        }
+	        return apiKey;
+	    };
+	    AnkrProvider.getUrl = function (network, apiKey) {
+	        if (apiKey == null) {
+	            apiKey = defaultApiKey;
+	        }
+	        var connection = {
+	            allowGzip: true,
+	            url: ("https:/\/" + getHost(network.name) + apiKey),
+	            throttleCallback: function (attempt, url) {
+	                if (apiKey.apiKey === defaultApiKey) {
+	                    (0, formatter.showThrottleMessage)();
+	                }
+	                return Promise.resolve(true);
+	            }
+	        };
+	        if (apiKey.projectSecret != null) {
+	            connection.user = "";
+	            connection.password = apiKey.projectSecret;
+	        }
+	        return connection;
+	    };
+	    return AnkrProvider;
+	}(urlJsonRpcProvider.UrlJsonRpcProvider));
+	exports.AnkrProvider = AnkrProvider;
+
+	});
+
+	var ankrProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(ankrProvider);
+
 	var cloudflareProvider = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
@@ -26808,7 +26892,7 @@
 	var lib$r = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcBatchProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
+	exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcBatchProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
 
 	Object.defineProperty(exports, "Provider", { enumerable: true, get: function () { return lib$b.Provider; } });
 
@@ -26819,6 +26903,8 @@
 
 	Object.defineProperty(exports, "AlchemyProvider", { enumerable: true, get: function () { return alchemyProvider.AlchemyProvider; } });
 	Object.defineProperty(exports, "AlchemyWebSocketProvider", { enumerable: true, get: function () { return alchemyProvider.AlchemyWebSocketProvider; } });
+
+	Object.defineProperty(exports, "AnkrProvider", { enumerable: true, get: function () { return ankrProvider.AnkrProvider; } });
 
 	Object.defineProperty(exports, "CloudflareProvider", { enumerable: true, get: function () { return cloudflareProvider.CloudflareProvider; } });
 
@@ -26886,6 +26972,7 @@
 	    return n._defaultProvider({
 	        FallbackProvider: fallbackProvider.FallbackProvider,
 	        AlchemyProvider: alchemyProvider.AlchemyProvider,
+	        AnkrProvider: ankrProvider.AnkrProvider,
 	        CloudflareProvider: cloudflareProvider.CloudflareProvider,
 	        EtherscanProvider: etherscanProvider.EtherscanProvider,
 	        InfuraProvider: infuraProvider.InfuraProvider,
@@ -27276,7 +27363,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.6.1";
+	exports.version = "ethers/5.6.2";
 
 	});
 
