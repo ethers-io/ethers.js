@@ -25,7 +25,7 @@ free tier, which (depending on the service) includes many advantages:
 - useful **metric tracking** for performance tuning and to analyze your customer behaviour
 - more **advanced APIs**, such as archive data or advanced log queries
 
-_subsection: Etherscan @<api-keys--etherscan>
+_subsection: Etherscan @NOTE<(see the [[EtherscanProvider]])> @<api-keys--etherscan>
 
 Etherscan is an Ethereum block explorer, which is possibly the most useful
 developer tool for building and debugging Ethereum applications.
@@ -40,7 +40,11 @@ operations required to interact with the Ethereum Blockchain.
 - higher rate limit (since you are not using the [shared rate limit](link-etherscan-ratelimit))
 - customer usage metrics
 
-_subsection: INFURA @<api-keys--infura>
+_definition: **Networks:**
+``homestead``, ``ropsten``, ``rinkeby``, ``goerli`` and ``kovan``.
+
+
+_subsection: INFURA @NOTE<(see the [[InfuraProvider]])> @<api-keys--infura>
 
 The INFURA service has been around for quite some time and is very robust
 and reliable and highly recommended.
@@ -56,7 +60,13 @@ interaction with standard tools versatile, simple and straightforward.
 - customer usage metrics
 - access to archive data (requires paid upgrade)
 
-_subsection: Alchemy @<api-keys--alchemy>
+_definition: **Networks:**
+``homestead``, ``ropsten``, ``rinkeby``, ``goerli``, ``kovan``, ``matic``,
+``maticmum``, ``optimism``, ``optimism-kovan``, ``arbitrum`` and
+``arbitrum-rinkeby``.
+
+
+_subsection: Alchemy @NOTE<(see the [[AlchemyProvider]])> @<api-keys--alchemy>
 
 The Alchemy service has been around a few years and is also very robust
 and reliable.
@@ -74,8 +84,16 @@ with debugging.
 - access to advanced token balance and metadata APIs
 - access to advanced debugging trace and revert reason APIs
 
-_subsection: Pocket Gateway@<api-keys--pocket-gateway>
+_definition: **Networks:**
+``homestead``, ``ropsten``, ``rinkeby``, ``goerli``, ``kovan``, ``matic``,
+``maticmum``, ``optimism``, ``optimism-kovan``, ``arbitrum`` and
+``arbitrum-rinkeby``.
 
+
+_subsection: Pocket Gateway @NOTE<(see the [[PocketProvider]])> @<api-keys--pocket-gateway>
+
+They offer a standard JSON-RPC interface using either a load-balanced
+network or non-load-balanced fleet.
 
 [Sign up for a free API key on Pocket](link-pocket-signup)
 
@@ -85,6 +103,26 @@ _subsection: Pocket Gateway@<api-keys--pocket-gateway>
 - decentralized Access to Blockchain Infrastructure
 - Stake as opposed to paying a monthly fee
 - Highly redundant global set of nodes incentivized by cryptoeconomic incentives
+
+_definition: **Networks:**
+``homestead``
+
+
+_subsection: Ankr @NOTE<(see the [[AnkrProvider]])> @<api-keys--ankr>
+
+They offer a standard JSON-RPC interface and have fairly high capacity without
+the need for an API key early on in the development cycle.
+
+[See their free tier features on Ankr](link-ankr-public)
+
+**Benefits:**
+
+- higher rate limit
+- customer usage metrics
+- access to archive data (requires paid upgrade)
+
+_definition: **Networks:**
+``homestead``, ``matic`` and ``arbitrum``
 
 
 _subsection: Creating a Default Provider @<api-keys--getDefaultProvider>
@@ -99,6 +137,8 @@ using the default API key for that service.
 
 It is **highly recommended** that you provide an API for each service, to
 maximize your applications performance.
+
+If the API key ``"-"`` is used, the corresponding Provider will be omitted.
 
 _code: Passing API Keys into getDefaultProvider @lang<script>
 
@@ -122,5 +162,6 @@ const provider = ethers.getDefaultProvider(network, {
     // pocket: {
     //   applicationId: ,
     //   applicationSecretKey:
-    // }
+    // },
+    ankr: YOUR_ANKR_API_KEY
 });
