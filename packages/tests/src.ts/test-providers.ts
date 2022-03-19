@@ -583,6 +583,16 @@ const providerFunctions: Array<ProviderDescription> = [
             return new ethers.providers.AlchemyProvider(network, getApiKeys(network).alchemy);
         }
     },
+    {
+        name: "AnkrProvider",
+        networks: [ "default", "homestead" ],
+        create: (network: string) => {
+            if (network == "default") {
+                return new ethers.providers.AnkrProvider(null);
+            }
+            return new ethers.providers.AnkrProvider(network);
+        }
+    },
     /*
     {
         name: "CloudflareProvider",

@@ -64,6 +64,12 @@ function ethDefaultProvider(network: string | Network): Renetworkable {
             } catch(error) { }
         }
 
+        if (providers.AnkrProvider && options.ankr !== "-") {
+            try {
+                providerList.push(new providers.AnkrProvider(network, options.ankr));
+            } catch(error) { }
+        }
+
         if (providerList.length === 0) { return null; }
 
         if (providers.FallbackProvider) {
