@@ -7,11 +7,9 @@ body:
       value: |
         **READ THIS FIRST**
 
-        This form should almost **NEVER** be used. Consider closely why your
-        issue does not fit into one of the [other categories](https://github.com/ethers-io/ethers.js/issues/new/choose).
+        This form should almost **NEVER** be used. Consider closely why your issue does not fit into one of the [other categories](https://github.com/ethers-io/ethers.js/issues/new/choose).
         
-        You almost certainly wish to use [the discussions](https://github.com/ethers-io/ethers.js/discussions)
-        instead, to ask a question or seek further guidance.
+        You almost certainly wish to use [the discussions](https://github.com/ethers-io/ethers.js/discussions) instead, to ask a question or seek further guidance.
   - type: textarea
     id: about
     attributes:

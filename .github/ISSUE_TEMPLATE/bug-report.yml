@@ -10,13 +10,9 @@ body:
       value: |
         **READ THIS FIRST** and follow all instructions, please. `:)`
 
-        Thank you for taking the time to report an issue. This form is for
-        reporting **bugs within ethers**.
+        Thank you for taking the time to report an issue. This form is for reporting **bugs within ethers**.
 
-        If you are **new to ethers** or *uncertain* whether this is a bug
-        in ethers, a bug in another framework or a bug in your own code,
-        please start a [discussion first](https://github.com/ethers-io/ethers.js/discussions)
-        first.
+        If you are **new to ethers** or *uncertain* whether this is a bug in ethers, a bug in another framework or a bug in your own code, please start a [discussion first](https://github.com/ethers-io/ethers.js/discussions) first.
   - type: input
     id: version
     attributes:

@@ -6,8 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please include anything about the [documentation](https://docs.ethers.io)
-        you would like to see improved.
+        Please include anything about the [documentation](https://docs.ethers.io) you would like to see improved.
 
           - Missing information or details?
           - Spelling or Grammar mistakes?
