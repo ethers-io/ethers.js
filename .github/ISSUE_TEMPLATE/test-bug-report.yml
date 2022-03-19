@@ -60,7 +60,7 @@ body:
     id: environment
     attributes:
       label: Environment
-      decsription: What environment or frameworks are you using?
+      description: What environment or frameworks are you using?
       options:
         - label: node.js (v12 or newer)
         - label: node.js (older than v12)
