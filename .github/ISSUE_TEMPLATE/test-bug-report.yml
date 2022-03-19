@@ -60,7 +60,7 @@ body:
       description: If there is an error, please include the **entire error** (redacting any sensitive information).
       placeholder: "Error: invalid name (code='INVALID_ARGUMENT, ...)"
       render: shell
-  - type: dropdowns
+  - type: dropdown
     id: environment
     attributes:
       label: Environment
