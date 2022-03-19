@@ -1,6 +1,6 @@
 name: Other
 description: Open a general issue
-title: [ Title Here ]
+title: Other Issue Title
 body:
   - type: markdown
     attributes:
