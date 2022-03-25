@@ -1,7 +1,7 @@
 name: Feature Request
 description: Suggest a new feature or addition to Ethers
 title: "Feature Request Title"
-labels: [ ]
+labels: [ "enhancement" ]
 body:
   - type: markdown
     attributes:
