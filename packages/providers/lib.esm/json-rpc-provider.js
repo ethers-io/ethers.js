@@ -21,18 +21,46 @@ import { version } from "./_version";
 const logger = new Logger(version);
 import { BaseProvider } from "./base-provider";
 const errorGas = ["call", "estimateGas"];
+function spelunk(value) {
+    if (value == null) {
+        return null;
+    }
+    // These *are* the droids we're looking for.
+    if (typeof (value.message) === "string" && value.message.match("reverted") && isHexString(value.data)) {
+        return { message: value.message, data: value.data };
+    }
+    // Spelunk further...
+    if (typeof (value) === "object") {
+        for (const key in value) {
+            const result = spelunk(value[key]);
+            if (result) {
+                return result;
+            }
+        }
+        return null;
+    }
+    // Might be a JSON string we can further descend...
+    if (typeof (value) === "string") {
+        try {
+            return spelunk(JSON.parse(value));
+        }
+        catch (error) { }
+    }
+    return null;
+}
 function checkError(method, error, params) {
     // Undo the "convenience" some nodes are attempting to prevent backwards
     // incompatibility; maybe for v6 consider forwarding reverts as errors
-    if (method === "call" && error.code === Logger.errors.SERVER_ERROR) {
-        const e = error.error;
-        if (e && e.message.match("reverted") && isHexString(e.data)) {
-            return e.data;
+    if (method === "call") {
+        const result = spelunk(error);
+        if (result) {
+            return result.data;
         }
         logger.throwError("missing revert data in call exception", Logger.errors.CALL_EXCEPTION, {
             error, data: "0x"
         });
     }
+    // @TODO: Should we spelunk for message too?
     let message = error.message;
     if (error.code === Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
         message = error.error.message;

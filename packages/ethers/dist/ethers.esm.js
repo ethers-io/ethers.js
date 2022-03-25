@@ -3841,7 +3841,7 @@ class Logger {
 Logger.errors = ErrorCode;
 Logger.levels = LogLevel;
 
-const version$1 = "bytes/5.6.0";
+const version$1 = "bytes/5.6.1";
 
 "use strict";
 const logger = new Logger(version$1);
@@ -3912,7 +3912,7 @@ function arrayify(value, options) {
         let hex = value.substring(2);
         if (hex.length % 2) {
             if (options.hexPad === "left") {
-                hex = "0x0" + hex.substring(2);
+                hex = "0" + hex;
             }
             else if (options.hexPad === "right") {
                 hex += "0";
@@ -20633,18 +20633,46 @@ var __awaiter$a = (window && window.__awaiter) || function (thisArg, _arguments,
 };
 const logger$u = new Logger(version$m);
 const errorGas = ["call", "estimateGas"];
+function spelunk(value) {
+    if (value == null) {
+        return null;
+    }
+    // These *are* the droids we're looking for.
+    if (typeof (value.message) === "string" && value.message.match("reverted") && isHexString(value.data)) {
+        return { message: value.message, data: value.data };
+    }
+    // Spelunk further...
+    if (typeof (value) === "object") {
+        for (const key in value) {
+            const result = spelunk(value[key]);
+            if (result) {
+                return result;
+            }
+        }
+        return null;
+    }
+    // Might be a JSON string we can further descend...
+    if (typeof (value) === "string") {
+        try {
+            return spelunk(JSON.parse(value));
+        }
+        catch (error) { }
+    }
+    return null;
+}
 function checkError(method, error, params) {
     // Undo the "convenience" some nodes are attempting to prevent backwards
     // incompatibility; maybe for v6 consider forwarding reverts as errors
-    if (method === "call" && error.code === Logger.errors.SERVER_ERROR) {
-        const e = error.error;
-        if (e && e.message.match("reverted") && isHexString(e.data)) {
-            return e.data;
+    if (method === "call") {
+        const result = spelunk(error);
+        if (result) {
+            return result.data;
         }
         logger$u.throwError("missing revert data in call exception", Logger.errors.CALL_EXCEPTION, {
             error, data: "0x"
         });
     }
+    // @TODO: Should we spelunk for message too?
     let message = error.message;
     if (error.code === Logger.errors.SERVER_ERROR && error.error && typeof (error.error.message) === "string") {
         message = error.error.message;
