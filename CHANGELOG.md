@@ -4,6 +4,12 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+ethers/v5.6.2 (2022-03-25 04:06)
+--------------------------------
+
+  - Added IPNS support for ENS contenthash. ([e70f3fe](https://github.com/ethers-io/ethers.js/commit/e70f3fe26f3b0dfd44fdbc163e2cc6c8eb9433f8))
+  - Added AnkrProvider and added Ankr to the default provider.([96de581](https://github.com/ethers-io/ethers.js/commit/96de58122af57be761e431e9268958eeaa352480))
+
 ethers/v5.6.1 (2022-03-16 01:25)
 --------------------------------
 

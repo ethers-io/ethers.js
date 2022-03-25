@@ -91,11 +91,11 @@ the documentation.
 
 A special thanks to these services for providing community resources:
 
+- [Ankr](https://www.ankr.com/)
 - [Etherscan](https://etherscan.io/)
 - [INFURA](https://infura.io/)
 - [Alchemy](https://dashboard.alchemyapi.io/signup?referral=55a35117-028e-4b7c-9e47-e275ad0acc6d)
 - [Pocket](https://pokt.network/pocket-gateway-ethereum-mainnet/)
-- [Ankr](https://www.ankr.com/)
 
 
 Ancillary Packages

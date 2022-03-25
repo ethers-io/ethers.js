@@ -19184,6 +19184,14 @@ class Resolver {
                     return "ipfs:/\/" + Base58.encode("0x" + ipfs[1]);
                 }
             }
+            // IPNS (CID: 1, Type: libp2p-key)
+            const ipns = hexBytes.match(/^0xe5010172(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
+            if (ipns) {
+                const length = parseInt(ipns[3], 16);
+                if (ipns[4].length === length * 2) {
+                    return "ipns:/\/" + Base58.encode("0x" + ipns[1]);
+                }
+            }
             // Swarm (CID: 1, Type: swarm-manifest; hash/length hard-coded to keccak256/32)
             const swarm = hexBytes.match(/^0xe40101fa011b20([0-9a-f]*)$/);
             if (swarm) {

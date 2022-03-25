@@ -21461,7 +21461,7 @@
 	    };
 	    Resolver.prototype.getContentHash = function () {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var hexBytes, ipfs, length_4, swarm;
+	            var hexBytes, ipfs, length_4, ipns, length_5, swarm;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0: return [4 /*yield*/, this._fetchBytes("0xbc1c58d1")];
@@ -21476,6 +21476,13 @@
 	                            length_4 = parseInt(ipfs[3], 16);
 	                            if (ipfs[4].length === length_4 * 2) {
 	                                return [2 /*return*/, "ipfs:/\/" + lib$g.Base58.encode("0x" + ipfs[1])];
+	                            }
+	                        }
+	                        ipns = hexBytes.match(/^0xe5010172(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
+	                        if (ipns) {
+	                            length_5 = parseInt(ipns[3], 16);
+	                            if (ipns[4].length === length_5 * 2) {
+	                                return [2 /*return*/, "ipns:/\/" + lib$g.Base58.encode("0x" + ipns[1])];
 	                            }
 	                        }
 	                        swarm = hexBytes.match(/^0xe40101fa011b20([0-9a-f]*)$/);
