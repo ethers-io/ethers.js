@@ -57,6 +57,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseProvider = exports.Resolver = exports.Event = void 0;
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
 var basex_1 = require("@ethersproject/basex");
+var base64_1 = require("@ethersproject/base64");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
 var constants_1 = require("@ethersproject/constants");
@@ -66,7 +67,6 @@ var properties_1 = require("@ethersproject/properties");
 var sha2_1 = require("@ethersproject/sha2");
 var strings_1 = require("@ethersproject/strings");
 var web_1 = require("@ethersproject/web");
-var js_base64_1 = __importDefault(require("js-base64"));
 var bech32_1 = __importDefault(require("bech32"));
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
@@ -692,7 +692,12 @@ var Resolver = /** @class */ (function () {
                         if (skynet) {
                             if (skynet[1].length === (34 * 2)) {
                                 buf = Buffer.from(skynet[1], 'hex');
-                                skylink = js_base64_1.default.fromUint8Array(new Uint8Array(buf), true);
+                                skylink = (0, base64_1.encode)(buf);
+                                // Skylinks have to be encoded using a URI safe alphabet
+                                // see https://datatracker.ietf.org/doc/html/rfc4648#section-5
+                                skylink = skylink
+                                    .replace(/=/g, '')
+                                    .replace(/[+\/]/g, function (m0) { return m0 == '+' ? '-' : '_'; });
                                 return [2 /*return*/, "sia:/\/" + skylink];
                             }
                         }
