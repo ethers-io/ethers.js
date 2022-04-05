@@ -5,6 +5,7 @@ import {
     Listener, Log, Provider, TransactionReceipt, TransactionRequest, TransactionResponse
 } from "@ethersproject/abstract-provider";
 import { Base58 } from "@ethersproject/basex";
+import { encode as base64Encode } from "@ethersproject/base64";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { arrayify, BytesLike, concat, hexConcat, hexDataLength, hexDataSlice, hexlify, hexValue, hexZeroPad, isHexString } from "@ethersproject/bytes";
 import { HashZero } from "@ethersproject/constants";
@@ -657,6 +658,24 @@ export class Resolver implements EnsResolver {
             }
         }
 
+        // Skynet (34 bytes that are base64-encoded)
+        const skynet = hexBytes.match(/^0x90b2c605([0-9a-f]*)$/)
+        if (skynet) {
+            if (skynet[1].length === (34 * 2)) { 
+                const buf = Buffer.from(skynet[1], 'hex')
+                let skylink = base64Encode(buf)
+
+                // Skylinks have to be encoded using a URI safe alphabet
+                // see https://datatracker.ietf.org/doc/html/rfc4648#section-5
+                skylink = skylink
+                    .replace(/=/g, '')
+                    .replace(/[+\/]/g, (m0) => { return m0 == '+' ? '-' : '_'; }
+                );
+
+                return "sia:/\/" + skylink
+            }
+        }
+        
         return logger.throwError(`invalid or unsupported content hash data`, Logger.errors.UNSUPPORTED_OPERATION, {
             operation: "getContentHash()",
             data: hexBytes
