@@ -35,7 +35,7 @@ npm install --save @hashgraph/hethers
 Documentation
 -------------
 
-Browse the [documentation](https://docs.hethers.com/) online:
+Browse the [documentation](https://docs.hedera.com/hethers) online:
 
 - [Getting Started](https://docs.hedera.com/hethers/getting-started)
 - [Full API Documentation](https://docs.hedera.com/hethers/application-programming-interface)
