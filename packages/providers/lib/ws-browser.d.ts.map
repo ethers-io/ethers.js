@@ -1,0 +1,1 @@
+{"version":3,"file":"ws-browser.d.ts","sourceRoot":"","sources":["../src.ts/ws-browser.ts"],"names":[],"mappings":"AACA,OAAO,CAAC,MAAM,CAAC;IACX,UAAU,MAAM;KAAI;IACpB,MAAM,MAAM,EAAE,MAAM,CAAC;IACrB,MAAM,IAAI,EAAE,MAAM,CAAC;CACtB;AASD,QAAA,MAAM,UAAU,KAAwB,CAAC;AAEzC,OAAO,EAAE,UAAU,IAAI,SAAS,EAAE,CAAC"}

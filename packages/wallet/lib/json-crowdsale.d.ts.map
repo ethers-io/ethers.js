@@ -1,0 +1,1 @@
+{"version":3,"file":"json-crowdsale.d.ts","sourceRoot":"","sources":["../src.ts/json-crowdsale.ts"],"names":[],"mappings":"AAUA,MAAM,WAAW,gBAAgB;IAC7B,UAAU,EAAE,MAAM,CAAC;IACnB,OAAO,EAAE,MAAM,CAAC;CACnB;AAED,wBAAgB,eAAe,CAAC,IAAI,EAAE,MAAM,GAAG,OAAO,CAMrD;AAGD,wBAAgB,oBAAoB,CAAC,IAAI,EAAE,MAAM,EAAE,SAAS,EAAE,MAAM,GAAG,UAAU,GAAG,gBAAgB,CA6BnG"}

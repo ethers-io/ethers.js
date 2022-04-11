@@ -2007,10 +2007,10 @@ const version$d = "@ethersproject/bytes@6.0.0-beta.1";
 const logger$c = new Logger(version$d);
 
 let BN_8 = null;
-let BN_255$1 = null;
+let BN_255 = null;
 try {
     BN_8 = BigInt("8");
-    BN_255$1 = BigInt("255");
+    BN_255 = BigInt("255");
 }
 catch (error) {
     console.log("Unsupported bigint", error);
@@ -2037,7 +2037,7 @@ function arrayify(data) {
     if (BN_8 && typeof (data) === "bigint") {
         const result = [];
         while (data) {
-            result.unshift(Number(data & BN_255$1));
+            result.unshift(Number(data & BN_255));
             data >>= BN_8;
         }
         if (result.length === 0) {
@@ -6897,7 +6897,7 @@ class FetchRequest {
         const current = this.url.split(":")[0].toLowerCase();
         const target = location.split(":")[0].toLowerCase();
         if (this.method !== "GET" || (current === "https" && target === "http") ||
-            !location.match(/^https?:$/)) {
+            !location.match(/^https?:/)) {
             return logger$6.throwError(`unsupported redirect`, "UNSUPPORTED_OPERATION", {
                 operation: `redirect(${this.method} ${JSON.stringify(this.url)} => ${JSON.stringify(location)})`
             });
@@ -7463,6 +7463,7 @@ class EnsResolver {
                         // Get the token metadata
                         let metadata = {};
                         const response = await fetchData(metadataUrl);
+                        response.assertOk();
                         try {
                             metadata = response.bodyJson;
                         }
@@ -7554,7 +7555,7 @@ _a$1 = EnsResolver, _EnsResolver_supports2544 = new WeakMap(), _EnsResolver_getR
         // keccak256("resolver(bytes32)")
         const addrData = await provider.call({
             to: ensPlugin.address,
-            data: concat(["0x0178b8bf" + namehash(name)]),
+            data: concat(["0x0178b8bf", namehash(name)]),
             enableCcipRead: true
         });
         const addr = network.formatter.callAddress(addrData);
@@ -7594,8 +7595,6 @@ const BN_2$2 = BigInt(2);
 const BN_27 = BigInt(27);
 const BN_28 = BigInt(28);
 const BN_35 = BigInt(35);
-const BN_255 = BigInt(255);
-const BN_MASK_255 = (BN_1$1 << BN_255) - BN_1$1;
 const _guard$2 = {};
 const Zero = "0x0000000000000000000000000000000000000000000000000000000000000000";
 class Signature$1 {
@@ -7637,14 +7636,6 @@ class Signature$1 {
         }
         return Signature$1.getChainId(v);
     }
-    get vs() {
-        // The EIP-2098 compact representation
-        const vs = arrayify(this.s);
-        if (this.yParity) {
-            vs[0] |= 0x80;
-        }
-        return hexlify(vs);
-    }
     get yParity() {
         if (this.v === 27) {
             return 0;
@@ -7658,6 +7649,17 @@ class Signature$1 {
         // Otherwise, odd (e.g. 27) is 0 and even (e.g. 28) is 1
         return this.v.and(1).isZero() ? 1: 0;
         */
+    }
+    get yParityAndS() {
+        // The EIP-2098 compact representation
+        const yParityAndS = arrayify(this.s);
+        if (this.yParity) {
+            yParityAndS[0] |= 0x80;
+        }
+        return hexlify(yParityAndS);
+    }
+    get compactSerialized() {
+        return concat([this.r, this.yParityAndS]);
     }
     get serialized() {
         return concat([this.r, this.s, (this.yParity ? "0x1c" : "0x1b")]);
@@ -7732,20 +7734,29 @@ class Signature$1 {
             return logger$4.throwArgumentError(message, "signature", sig);
         };
         if (typeof (sig) === "string") {
+            const bytes = logger$4.getBytes(sig, "signature");
+            if (bytes.length === 64) {
+                const r = hexlify(bytes.slice(0, 32));
+                const s = bytes.slice(32, 64);
+                const v = (s[0] & 0x80) ? 28 : 27;
+                s[0] &= 0x7f;
+                return new Signature$1(_guard$2, r, hexlify(s), v);
+            }
             if (dataLength(sig) !== 65) {
-                throwError("invlaid raw signature length");
+                const r = hexlify(sig.slice(0, 32));
+                const s = bytes.slice(32, 64);
+                if (s[0] & 0x80) {
+                    throwError("non-canonical s");
+                }
+                const v = Signature$1.getNormalizedV(bytes[64]);
+                return new Signature$1(_guard$2, r, hexlify(s), v);
             }
-            const r = dataSlice(sig, 0, 32);
-            const s = dataSlice(sig, 32, 64);
-            if (BigInt(s) >> BN_255) {
-                throwError("non-canonical s");
-            }
-            const v = Signature$1.getNormalizedV(dataSlice(sig, 64, 65));
-            return new Signature$1(_guard$2, r, s, v);
+            return throwError("invlaid raw signature length");
         }
         if (sig instanceof Signature$1) {
             return sig.clone();
         }
+        // Get r
         const r = sig.r;
         if (r == null) {
             throwError("missing r");
@@ -7753,33 +7764,37 @@ class Signature$1 {
         if (!isHexString(r, 32)) {
             throwError("invalid r");
         }
-        const s = (function (s, vs) {
+        // Get s; by any means necessary (we check consistency below)
+        const s = (function (s, yParityAndS) {
             if (s) {
                 if (!isHexString(s, 32)) {
                     throwError("invalid s");
                 }
                 return s;
             }
-            if (vs) {
-                if (!isHexString(vs, 32)) {
-                    throwError("invalid vs");
+            if (yParityAndS) {
+                if (!isHexString(yParityAndS, 32)) {
+                    throwError("invalid yParityAndS");
                 }
-                return toHex(BigInt(vs) & BN_MASK_255, 32);
+                const bytes = arrayify(yParityAndS);
+                bytes[0] &= 0x7f;
+                return hexlify(bytes);
             }
             return throwError("missing s");
-        })(sig.s, sig.vs);
-        if (BigInt(s) >> BN_255) {
+        })(sig.s, sig.yParityAndS);
+        if (arrayify(s)[0] & 0x80) {
             throwError("non-canonical s");
         }
-        const v = (function (v, vs, yParity) {
+        // Get v; by any means necessary (we check consistency below)
+        const v = (function (v, yParityAndS, yParity) {
             if (v) {
                 return Signature$1.getNormalizedV(v);
             }
-            if (vs) {
-                if (!isHexString(vs, 32)) {
-                    throwError("invalid vs");
+            if (yParityAndS) {
+                if (!isHexString(yParityAndS, 32)) {
+                    throwError("invalid yParityAndS");
                 }
-                return ((arrayify(vs)[0] & 0x80) ? 28 : 27);
+                return ((arrayify(yParityAndS)[0] & 0x80) ? 28 : 27);
             }
             if (yParity) {
                 switch (yParity) {
@@ -7790,11 +7805,16 @@ class Signature$1 {
             }
             //if (chainId) { return BigNumber.from(chainId).and(1).sub(27); } // @TODO: check this
             return throwError("missing v");
-        })(sig.v, sig.vs, sig.yParity);
-        // @TODO: check vs, chainId, yParity
+        })(sig.v, sig.yParityAndS, sig.yParity);
+        // @TODO: add chainId support
         const result = new Signature$1(_guard$2, r, s, v);
-        if (sig.yParity && sig.yParity !== result.yParity) ;
-        if (sig.vs && sig.vs !== result.vs) ;
+        // If multiple of v, yParity, yParityAndS we given, check they match
+        if ("yParity" in sig && sig.yParity !== result.yParity) {
+            throwError("yParity mismatch");
+        }
+        else if ("yParityAndS" in sig && sig.yParityAndS !== result.yParityAndS) {
+            throwError("yParityAndS mismatch");
+        }
         //if (sig.chainId && sig.chainId !== result.chainId) {
         //}
         return result;
@@ -12384,7 +12404,9 @@ class JsonRpcProvider extends JsonRpcApiProvider {
         const connection = Object.assign({}, __classPrivateFieldGet$d(this, _JsonRpcProvider_connect, "f"));
         connection.request = connection.request.clone();
         connection.request.body = this.prepareRequest(method, params);
-        const result = (await fetchData(connection)).bodyJson;
+        const response = await fetchData(connection);
+        response.assertOk();
+        const result = response.bodyJson;
         if ("error" in result) {
             return logger$5.throwError("error from JSON-RPC", "UNKNOWN_ERROR", {
                 result
@@ -12703,6 +12725,7 @@ class EtherscanProvider extends AbstractProvider {
             request.body = Object.keys(payload).map((k) => `${k}=${payload[k]}`).join("&");
         }
         const response = await fetchData(connection);
+        response.assertOk();
         if (!response.hasBody()) {
             throw new Error();
         }
@@ -13771,6 +13794,92 @@ class WebSocketProvider extends SocketProvider {
     }
 }
 _WebSocketProvider_websocket = new WeakMap();
+
+function isWebSocketLike(value) {
+    return (value && typeof (value.send) === "function" &&
+        typeof (value.close) === "function");
+}
+function getDefaultProvider(network, options) {
+    if (options == null) {
+        options = {};
+    }
+    if (typeof (network) === "string" && network.match(/^https?:/)) {
+        return new JsonRpcProvider(network);
+    }
+    if (typeof (network) === "string" && network.match(/^wss?:/) || isWebSocketLike(network)) {
+        return new WebSocketProvider(network);
+    }
+    const providers = [];
+    if (options.alchemy !== "-") {
+        try {
+            providers.push(new AlchemyProvider(network, options.alchemy));
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
+    if (options.ankr !== "-") {
+        try {
+            providers.push(new AnkrProvider(network, options.ankr));
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
+    if (options.cloudflare !== "-") {
+        try {
+            providers.push(new CloudflareProvider(network));
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
+    if (options.etherscan !== "-") {
+        try {
+            providers.push(new EtherscanProvider(network, options.etherscan));
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
+    if (options.infura !== "-") {
+        try {
+            let projectId = options.infura;
+            let projectSecret = undefined;
+            if (typeof (projectId) === "object") {
+                projectSecret = projectId.projectSecret;
+                projectId = projectId.projectId;
+            }
+            providers.push(new InfuraProvider(network, projectId, projectSecret));
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
+    if (options.pocket !== "-") {
+        try {
+            let appId = options.pocket;
+            let secretKey = undefined;
+            let loadBalancer = undefined;
+            if (typeof (appId) === "object") {
+                loadBalancer = !!appId.loadBalancer;
+                secretKey = appId.secretKey;
+                appId = appId.appId;
+            }
+            providers.push(new PocketProvider(network, appId, secretKey, loadBalancer));
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
+    if (providers.length === 0) {
+        throw new Error("TODO");
+    }
+    if (providers.length === 1) {
+        return providers[0];
+    }
+    return new FallbackProvider(providers);
+}
 
 // See: https://chainlist.org
 function injectCommonNetworks(Network) {
@@ -16077,6 +16186,7 @@ var ethers = /*#__PURE__*/Object.freeze({
     resolveProperties: resolveProperties,
     getStore: getStore,
     setStore: setStore,
+    getDefaultProvider: getDefaultProvider,
     AbstractProvider: AbstractProvider,
     UnmanagedSubscriber: UnmanagedSubscriber,
     AbstractSigner: AbstractSigner,
@@ -16142,5 +16252,5 @@ var ethers = /*#__PURE__*/Object.freeze({
     version: version
 });
 
-export { AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, Block, CloudflareProvider, Contract, ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, EnsPlugin, EnsResolver, EtherscanProvider, EventLog, FallbackProvider, FeeData, FetchRequest, FetchResponse, FixedFormat, FixedNumber, Formatter, GasCostPlugin, HDNodeVoidWallet, HDNodeWallet, HDNodeWalletManager, InfuraProvider, Interface, IpcSocketProvider, JsonRpcProvider, JsonRpcSigner, Log, MaxPriorityFeePlugin, Mnemonic, Network, NetworkPlugin, PocketProvider, Signature$1 as Signature, SigningKey, SocketProvider, StaticJsonRpcProvider, Transaction, TransactionReceipt, TransactionResponse, TypedDataEncoder, UnicodeNormalizationForm, UnmanagedSubscriber, Utf8ErrorFuncs, Utf8ErrorReason, VoidSigner, Wallet, WebSocketProvider, Wordlist, WordlistOwl, WordlistOwlA, WrappedSigner, _toEscapedUtf8String, arrayify, computeAddress, computeHmac, concat, dataLength, dataSlice, decodeBase58, decodeBase64, decodeRlp, defaultPath$1 as defaultPath, defineProperties, dnsEncode, dummyProvider, encodeBase58, encodeBase64, encodeRlp, ethers, fetchData, formatBytes32String, formatFixed, fromTwos, getAccountPath, getAddress, getCreate2Address, getCreateAddress, getIcapAddress, getStore, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isHexString, isValidName, keccak256, lock, mask, messagePrefix, namehash, nameprep, parseBytes32String, parseFixed, pbkdf2, quantity, randomBytes, resolveAddress, resolveProperties, ripemd160, scrypt, scryptSync, setStore, sha256, sha512, showThrottleMessage, stripZerosLeft, toArray, toBigInt, toHex, toNumber, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, version, wordlists, zeroPadLeft, zeroPadRight };
+export { AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, Block, CloudflareProvider, Contract, ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, EnsPlugin, EnsResolver, EtherscanProvider, EventLog, FallbackProvider, FeeData, FetchRequest, FetchResponse, FixedFormat, FixedNumber, Formatter, GasCostPlugin, HDNodeVoidWallet, HDNodeWallet, HDNodeWalletManager, InfuraProvider, Interface, IpcSocketProvider, JsonRpcProvider, JsonRpcSigner, Log, MaxPriorityFeePlugin, Mnemonic, Network, NetworkPlugin, PocketProvider, Signature$1 as Signature, SigningKey, SocketProvider, StaticJsonRpcProvider, Transaction, TransactionReceipt, TransactionResponse, TypedDataEncoder, UnicodeNormalizationForm, UnmanagedSubscriber, Utf8ErrorFuncs, Utf8ErrorReason, VoidSigner, Wallet, WebSocketProvider, Wordlist, WordlistOwl, WordlistOwlA, WrappedSigner, _toEscapedUtf8String, arrayify, computeAddress, computeHmac, concat, dataLength, dataSlice, decodeBase58, decodeBase64, decodeRlp, defaultPath$1 as defaultPath, defineProperties, dnsEncode, dummyProvider, encodeBase58, encodeBase64, encodeRlp, ethers, fetchData, formatBytes32String, formatFixed, fromTwos, getAccountPath, getAddress, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getStore, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isHexString, isValidName, keccak256, lock, mask, messagePrefix, namehash, nameprep, parseBytes32String, parseFixed, pbkdf2, quantity, randomBytes, resolveAddress, resolveProperties, ripemd160, scrypt, scryptSync, setStore, sha256, sha512, showThrottleMessage, stripZerosLeft, toArray, toBigInt, toHex, toNumber, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, version, wordlists, zeroPadLeft, zeroPadRight };
 //# sourceMappingURL=ethers.js.map
