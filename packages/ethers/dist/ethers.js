@@ -16121,7 +16121,7 @@ class Wallet extends BaseWallet {
 }
 _Wallet_mnemonic = new WeakMap();
 
-const version = "ethers@6.0.0-beta.1";
+const version = "ethers@6.0.0-beta.2";
 
 var ethers = /*#__PURE__*/Object.freeze({
     __proto__: null,
