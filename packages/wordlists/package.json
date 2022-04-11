@@ -1,0 +1,38 @@
+{
+  "author": "Richard Moore <me@ricmoo.com>",
+  "dependencies": {
+    "@ethersproject/bytes": "^6.0.0-beta.1",
+    "@ethersproject/logger": "^6.0.0-beta.1",
+    "@ethersproject/properties": "^6.0.0-beta.1",
+    "@ethersproject/strings": "^6.0.0-beta.1"
+  },
+  "description": "BIP-39 Wordlists for ethers.",
+  "engines" : { "node" : ">=12.17.0" },
+  "ethereum": "donations.ethers.eth",
+  "__exports": {
+    "./": "./lib/"
+  },
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "license": "MIT",
+  "main": "./lib/index.js",
+  "name": "@ethersproject/wordlists",
+  "publishConfig": {
+    "access": "public",
+    "tag": "beta"
+  },
+  "repository": {
+    "directory": "packages/wordlists",
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "types": "./lib/index.d.ts",
+  "version": "6.0.0-beta.1"
+}

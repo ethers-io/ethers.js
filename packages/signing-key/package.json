@@ -1,0 +1,40 @@
+{
+  "author": "Richard Moore <me@ricmoo.com>",
+  "dependencies": {
+    "@ethersproject/bytes": "^6.0.0-beta.1",
+    "@ethersproject/crypto": "^6.0.0-beta.1",
+    "@ethersproject/logger": "^6.0.0-beta.1",
+    "@ethersproject/math": "^6.0.0-beta.1",
+    "@ethersproject/properties": "^6.0.0-beta.1",
+    "@noble/secp256k1": "1.5.5"
+  },
+  "dummy": {
+    "hash.js": "1.1.7"
+  },
+  "description": "Elliptic curve library functions for the secp256k1 curve.",
+  "engines" : { "node" : ">=12.17.0" },
+  "ethereum": "donations.ethers.eth",
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "license": "MIT",
+  "main": "./lib/index.js",
+  "name": "@ethersproject/signing-key",
+  "publishConfig": {
+    "access": "public",
+    "tag": "beta"
+  },
+  "repository": {
+    "directory": "packages/signing-key",
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "types": "./lib/index.d.ts",
+  "version": "6.0.0-beta.1"
+}

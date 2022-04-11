@@ -1,0 +1,69 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "es2015",
+      "es5",
+      "dom"
+    ],
+    "preserveWatchOutput": true,
+    "pretty": false,
+    "target": "es2016"
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./packages/logger"
+    },
+    {
+      "path": "./packages/bytes"
+    },
+    {
+      "path": "./packages/crypto"
+    },
+    {
+      "path": "./packages/math"
+    },
+    {
+      "path": "./packages/properties"
+    },
+    {
+      "path": "./packages/rlp"
+    },
+    {
+      "path": "./packages/address"
+    },
+    {
+      "path": "./packages/signing-key"
+    },
+    {
+      "path": "./packages/strings"
+    },
+    {
+      "path": "./packages/hash"
+    },
+    {
+      "path": "./packages/abi"
+    },
+    {
+      "path": "./packages/transactions"
+    },
+    {
+      "path": "./packages/web"
+    },
+    {
+      "path": "./packages/providers"
+    },
+    {
+      "path": "./packages/contract"
+    },
+    {
+      "path": "./packages/wordlists"
+    },
+    {
+      "path": "./packages/wallet"
+    },
+    {
+      "path": "./packages/ethers"
+    }
+  ]
+}

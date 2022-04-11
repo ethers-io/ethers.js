@@ -1,0 +1,3 @@
+/src.ts/tests/**
+/lib/tests/**
+tsconfig.tsbuildinfo

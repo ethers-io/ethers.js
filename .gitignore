@@ -1,0 +1,27 @@
+# Normal things to ignore; temporary files, libs, monorepo goop
+node_modules/
+packages/*/node_modules
+.package_node_modules/
+.DS_Store
+.tmp/
+**/*.swp
+*~
+
+# A random stash folder I use for code I'm not quite willing
+# to part ways with yet
+obsolete/
+
+# Intermediate files tsc generates for references (sometimes)
+**/src.ts/*.js
+
+# TypeScript build caches
+packages/*/tsconfig.tsbuildinfo
+
+# Coverage and Testing output
+output/**
+
+# Issue tests
+misc/testing/**
+
+# Temp
+#packages/*/lib/

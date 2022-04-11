@@ -1,0 +1,42 @@
+{
+  "author": "Richard Moore <me@ricmoo.com>",
+  "dependencies": {
+    "@ethersproject/address": "^6.0.0-beta.1",
+    "@ethersproject/crypto": "^6.0.0-beta.1",
+    "@ethersproject/hash": "^6.0.0-beta.1",
+    "@ethersproject/logger": "^6.0.0-beta.1",
+    "@ethersproject/providers": "^6.0.0-beta.1",
+    "@ethersproject/properties": "^6.0.0-beta.1",
+    "@ethersproject/strings": "^6.0.0-beta.1",
+    "@ethersproject/signing-key": "^6.0.0-beta.1",
+    "@ethersproject/transactions": "^6.0.0-beta.1",
+    "@ethersproject/wordlists": "^6.0.0-beta.1",
+    "aes-js": "4.0.0-beta.2"
+  },
+  "description": "Manage, encrypt and decrypt Ethereum Wallets.",
+  "engines" : { "node" : ">=12.17.0" },
+  "ethereum": "donations.ethers.eth",
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "license": "MIT",
+  "main": "./lib/index.js",
+  "name": "@ethersproject/wallet",
+  "publishConfig": {
+    "access": "public",
+    "tag": "beta"
+  },
+  "repository": {
+    "directory": "packages/wallet",
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "types": "./lib/index.d.ts",
+  "version": "6.0.0-beta.1"
+}

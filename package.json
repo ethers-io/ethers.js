@@ -1,0 +1,52 @@
+{
+  "author": "Richard Moore <me@ricmoo.com>",
+  "dependencies": {
+    "@noble/hashes": "1.0.0",
+    "@noble/secp256k1": "1.5.5",
+    "aes-js": "4.0.0-beta.2",
+    "ws": "8.5.0"
+  },
+  "description": "Root monorepo pacakge for ethers core",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^13.1.3",
+    "@rollup/plugin-replace": "^4.0.0",
+    "@types/mocha": "^9.1.0",
+    "@types/node": "^14.14.25",
+    "@types/ws": "^8.5.3",
+    "c8": "^7.11.0",
+    "mocha": "^9.2.1",
+    "reticulate": "^0.0.9",
+    "rollup": "^2.70.1",
+    "rollup-plugin-replace": "^2.2.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "typescript": "4.6.3",
+    "uglify-js": "^3.15.3"
+  },
+  "license": "MIT",
+  "name": "ethers-monorepo",
+  "private": true,
+  "reticulate": {
+    "packages": "packages",
+    "root": "ethers",
+    "spelling": {
+      "dicts": [
+        "/usr/share/dict/words",
+        "./misc/dict"
+      ]
+    }
+  },
+  "scripts": {
+    "__build-dist": "npx rollup -c && uglifyjs ./packages/ethers/dist/ethers.js -o ./packages/ethers/dist/ethers.min.js && uglifyjs ./packages/ethers/dist/ethers-wordlists.js -o ./packages/ethers/dist/ethers-wordlists.min.js && npm run _build-dist-stats",
+    "_build-dist-stats": "gzip -k9f -S '.gz' packages/ethers/dist/ethers-wordlists.min.js && gzip -k9f -S '.gz' packages/ethers/dist/ethers.min.js && du -hs packages/ethers/dist/*",
+    "auto-build": "npm run build -- -w",
+    "build": "tsc --build tsconfig.project.json",
+    "build-dist": "npx rollup -c && npm run _build-dist-stats",
+    "clean": "rm -rf packages/*/tsconfig.tsbuildinfo packages/*/lib package-lock.json .package_node_modules/ node_modules/",
+    "postinstall": "reticulate ratsnest",
+    "preinstall": "node ./bootstrap-hoist",
+    "serve-coverage": "python3 -m http.server -d output/lcov-report 8080",
+    "test": "mocha packages/*/lib/tests/test-*.js",
+    "test-coverage": "c8 -o output -r lcov -r text mocha packages/*/lib/tests/test-*.js | tee output/summary.txt"
+  },
+  "version": "0.0.0"
+}

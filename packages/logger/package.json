@@ -1,0 +1,36 @@
+{
+  "author": "Richard Moore <me@ricmoo.com>",
+  "dependencies": {},
+  "description": "Logger utility functions for ethers.",
+  "engines" : { "node" : ">=12.17.0" },
+  "ethereum": "donations.ethers.eth",
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "license": "MIT",
+  "main": "./lib/index.js",
+  "name": "@ethersproject/logger",
+  "publishConfig": {
+    "access": "public",
+    "tag": "beta"
+  },
+  "repository": {
+    "directory": "packages/logger",
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "reticulate": {
+    "typeDependencies": {
+      "@ethersproject/providers": "~6.0.0-beta.1",
+      "@ethersproject/transactions": "~6.0.0-beta.1"
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "types": "./lib/index.d.ts",
+  "version": "6.0.0-beta.1"
+}

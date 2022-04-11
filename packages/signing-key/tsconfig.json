@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "outDir": "./lib/",
+    "rootDir": "./src.ts"
+  },
+  "exclude": [],
+  "extends": "../../tsconfig.common.json",
+  "include": [
+    "./src.ts/**/*.ts"
+  ]
+}
