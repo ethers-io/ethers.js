@@ -141,7 +141,7 @@ Interface
 
 ```
 // v4 (example: "transfer(address to, uint amount)")
-interface.functions.transfer.encode(to, amount)
+interface.functions.transfer.encode([ to, amount ])
 interface.functions.transfer.decode(callData)
 
 // v5
