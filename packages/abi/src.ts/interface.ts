@@ -390,6 +390,7 @@ export class Interface {
         let bytes = arrayify(data);
 
         let reason: string = null;
+        let message = "";
         let errorArgs: Result = null;
         let errorName: string = null;
         let errorSignature: string = null;
@@ -408,6 +409,11 @@ export class Interface {
                     errorName = builtin.name;
                     errorSignature = builtin.signature;
                     if (builtin.reason) { reason = errorArgs[0]; }
+                    if (errorName === "Error") {
+                        message = `; VM Exception while processing transaction: reverted with reason string ${ JSON.stringify(errorArgs[0]) }`;
+                    } else if (errorName === "Panic") {
+                        message = `; VM Exception while processing transaction: reverted with panic code ${ errorArgs[0] }`;
+                    }
                 } else {
                     try {
                         const error = this.getError(selector);
@@ -420,9 +426,9 @@ export class Interface {
             }
         }
 
-        return logger.throwError("call revert exception", Logger.errors.CALL_EXCEPTION, {
+        return logger.throwError("call revert exception" + message, Logger.errors.CALL_EXCEPTION, {
             method: functionFragment.format(),
-            errorArgs, errorName, errorSignature, reason
+            data: hexlify(data), errorArgs, errorName, errorSignature, reason
         });
     }
 

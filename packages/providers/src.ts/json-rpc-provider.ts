@@ -57,7 +57,7 @@ function checkError(method: string, error: any, params: any): any {
         const result = spelunk(error);
         if (result) { return result.data; }
 
-        logger.throwError("missing revert data in call exception", Logger.errors.CALL_EXCEPTION, {
+        logger.throwError("missing revert data in call exception; Transaction reverted without a reason string", Logger.errors.CALL_EXCEPTION, {
             error, data: "0x"
         });
     }
