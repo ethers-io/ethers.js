@@ -100,7 +100,7 @@ function checkError(method, error, params) {
         if (result) {
             return result.data;
         }
-        logger.throwError("missing revert data in call exception", logger_1.Logger.errors.CALL_EXCEPTION, {
+        logger.throwError("missing revert data in call exception; Transaction reverted without a reason string", logger_1.Logger.errors.CALL_EXCEPTION, {
             error: error,
             data: "0x"
         });

@@ -4,6 +4,12 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+ethers/v5.6.3 (2022-04-13 00:23)
+--------------------------------
+
+  - Mimic Hardhard error strings in CALL_EXCEPTION for popular matchers. ([#2849](https://github.com/ethers-io/ethers.js/issues/2849), [#2862](https://github.com/ethers-io/ethers.js/issues/2862); [dab6ede](https://github.com/ethers-io/ethers.js/commit/dab6ede226e572706655e2865d4c953e37741a5c))
+  - Fix pocket API key not being passed in for default provider. ([#2890](https://github.com/ethers-io/ethers.js/issues/2890); [056d7c8](https://github.com/ethers-io/ethers.js/commit/056d7c8bfc5896759c383d7cfae8ed0ec5c5eefb))
+
 ethers/v5.6.2 (2022-03-25 17:56)
 --------------------------------
 

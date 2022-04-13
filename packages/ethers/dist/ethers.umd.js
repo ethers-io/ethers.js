@@ -5237,7 +5237,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abi/5.6.0";
+	exports.version = "abi/5.6.1";
 
 	});
 
@@ -9738,6 +9738,7 @@
 	        }
 	        var bytes = (0, lib$1.arrayify)(data);
 	        var reason = null;
+	        var message = "";
 	        var errorArgs = null;
 	        var errorName = null;
 	        var errorSignature = null;
@@ -9758,6 +9759,12 @@
 	                    if (builtin.reason) {
 	                        reason = errorArgs[0];
 	                    }
+	                    if (errorName === "Error") {
+	                        message = "; VM Exception while processing transaction: reverted with reason string " + JSON.stringify(errorArgs[0]);
+	                    }
+	                    else if (errorName === "Panic") {
+	                        message = "; VM Exception while processing transaction: reverted with panic code " + errorArgs[0];
+	                    }
 	                }
 	                else {
 	                    try {
@@ -9771,8 +9778,9 @@
 	                break;
 	            }
 	        }
-	        return logger.throwError("call revert exception", lib.Logger.errors.CALL_EXCEPTION, {
+	        return logger.throwError("call revert exception" + message, lib.Logger.errors.CALL_EXCEPTION, {
 	            method: functionFragment.format(),
+	            data: (0, lib$1.hexlify)(data),
 	            errorArgs: errorArgs,
 	            errorName: errorName,
 	            errorSignature: errorSignature,
@@ -19300,7 +19308,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "networks/5.6.1";
+	exports.version = "networks/5.6.2";
 
 	});
 
@@ -19348,7 +19356,7 @@
 	            // @TODO: This goes away once Pocket has upgraded their nodes
 	            var skip = ["goerli", "ropsten", "rinkeby"];
 	            try {
-	                var provider = new providers.PocketProvider(network);
+	                var provider = new providers.PocketProvider(network, options.pocket);
 	                if (provider.network && skip.indexOf(provider.network.name) === -1) {
 	                    providerList.push(provider);
 	                }
@@ -20337,7 +20345,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.6.2";
+	exports.version = "providers/5.6.3";
 
 	});
 
@@ -23477,7 +23485,7 @@
 	        if (result) {
 	            return result.data;
 	        }
-	        logger.throwError("missing revert data in call exception", lib.Logger.errors.CALL_EXCEPTION, {
+	        logger.throwError("missing revert data in call exception; Transaction reverted without a reason string", lib.Logger.errors.CALL_EXCEPTION, {
 	            error: error,
 	            data: "0x"
 	        });
@@ -27398,7 +27406,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.6.2";
+	exports.version = "ethers/5.6.3";
 
 	});
 

@@ -39,7 +39,7 @@ function ethDefaultProvider(network) {
             // @TODO: This goes away once Pocket has upgraded their nodes
             var skip = ["goerli", "ropsten", "rinkeby"];
             try {
-                var provider = new providers.PocketProvider(network);
+                var provider = new providers.PocketProvider(network, options.pocket);
                 if (provider.network && skip.indexOf(provider.network.name) === -1) {
                     providerList.push(provider);
                 }

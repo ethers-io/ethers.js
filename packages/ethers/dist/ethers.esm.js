@@ -5031,7 +5031,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.6.0";
+const version$4 = "abi/5.6.1";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -8755,6 +8755,7 @@ class Interface {
         }
         let bytes = arrayify(data);
         let reason = null;
+        let message = "";
         let errorArgs = null;
         let errorName = null;
         let errorSignature = null;
@@ -8775,6 +8776,12 @@ class Interface {
                     if (builtin.reason) {
                         reason = errorArgs[0];
                     }
+                    if (errorName === "Error") {
+                        message = `; VM Exception while processing transaction: reverted with reason string ${JSON.stringify(errorArgs[0])}`;
+                    }
+                    else if (errorName === "Panic") {
+                        message = `; VM Exception while processing transaction: reverted with panic code ${errorArgs[0]}`;
+                    }
                 }
                 else {
                     try {
@@ -8788,9 +8795,9 @@ class Interface {
                 break;
             }
         }
-        return logger$d.throwError("call revert exception", Logger.errors.CALL_EXCEPTION, {
+        return logger$d.throwError("call revert exception" + message, Logger.errors.CALL_EXCEPTION, {
             method: functionFragment.format(),
-            errorArgs, errorName, errorSignature, reason
+            data: hexlify(data), errorArgs, errorName, errorSignature, reason
         });
     }
     // Encode the result for a function call (e.g. for eth_call)
@@ -17331,7 +17338,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.6.1";
+const version$k = "networks/5.6.2";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -17370,7 +17377,7 @@ function ethDefaultProvider(network) {
             // @TODO: This goes away once Pocket has upgraded their nodes
             const skip = ["goerli", "ropsten", "rinkeby"];
             try {
-                const provider = new providers.PocketProvider(network);
+                const provider = new providers.PocketProvider(network, options.pocket);
                 if (provider.network && skip.indexOf(provider.network.name) === -1) {
                     providerList.push(provider);
                 }
@@ -18211,7 +18218,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.6.2";
+const version$m = "providers/5.6.3";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -20668,7 +20675,7 @@ function checkError(method, error, params) {
         if (result) {
             return result.data;
         }
-        logger$u.throwError("missing revert data in call exception", Logger.errors.CALL_EXCEPTION, {
+        logger$u.throwError("missing revert data in call exception; Transaction reverted without a reason string", Logger.errors.CALL_EXCEPTION, {
             error, data: "0x"
         });
     }
@@ -23600,7 +23607,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$p = "ethers/5.6.2";
+const version$p = "ethers/5.6.3";
 
 "use strict";
 const logger$J = new Logger(version$p);
