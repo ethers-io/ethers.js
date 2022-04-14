@@ -48,13 +48,13 @@ export class PollingBlockSubscriber {
             throw new Error("subscriber already running");
         }
         __classPrivateFieldGet(this, _PollingBlockSubscriber_instances, "m", _PollingBlockSubscriber_poll).call(this);
-        __classPrivateFieldSet(this, _PollingBlockSubscriber_poller, setTimeout(__classPrivateFieldGet(this, _PollingBlockSubscriber_instances, "m", _PollingBlockSubscriber_poll).bind(this), __classPrivateFieldGet(this, _PollingBlockSubscriber_interval, "f")), "f");
+        __classPrivateFieldSet(this, _PollingBlockSubscriber_poller, __classPrivateFieldGet(this, _PollingBlockSubscriber_provider, "f")._setTimeout(__classPrivateFieldGet(this, _PollingBlockSubscriber_instances, "m", _PollingBlockSubscriber_poll).bind(this), __classPrivateFieldGet(this, _PollingBlockSubscriber_interval, "f")), "f");
     }
     stop() {
         if (!__classPrivateFieldGet(this, _PollingBlockSubscriber_poller, "f")) {
             throw new Error("subscriber not running");
         }
-        clearTimeout(__classPrivateFieldGet(this, _PollingBlockSubscriber_poller, "f"));
+        __classPrivateFieldGet(this, _PollingBlockSubscriber_provider, "f")._clearTimeout(__classPrivateFieldGet(this, _PollingBlockSubscriber_poller, "f"));
         __classPrivateFieldSet(this, _PollingBlockSubscriber_poller, null, "f");
     }
     pause(dropWhilePaused) {
@@ -80,7 +80,7 @@ _PollingBlockSubscriber_provider = new WeakMap(), _PollingBlockSubscriber_poller
         }
         __classPrivateFieldSet(this, _PollingBlockSubscriber_blockNumber, blockNumber, "f");
     }
-    __classPrivateFieldSet(this, _PollingBlockSubscriber_poller, setTimeout(__classPrivateFieldGet(this, _PollingBlockSubscriber_instances, "m", _PollingBlockSubscriber_poll).bind(this), __classPrivateFieldGet(this, _PollingBlockSubscriber_interval, "f")), "f");
+    __classPrivateFieldSet(this, _PollingBlockSubscriber_poller, __classPrivateFieldGet(this, _PollingBlockSubscriber_provider, "f")._setTimeout(__classPrivateFieldGet(this, _PollingBlockSubscriber_instances, "m", _PollingBlockSubscriber_poll).bind(this), __classPrivateFieldGet(this, _PollingBlockSubscriber_interval, "f")), "f");
 };
 export class OnBlockSubscriber {
     constructor(provider) {
@@ -112,8 +112,8 @@ export class PollingOrphanSubscriber extends OnBlockSubscriber {
         __classPrivateFieldSet(this, _PollingOrphanSubscriber_filter, copy(filter), "f");
     }
     async _poll(blockNumber, provider) {
-        console.log(__classPrivateFieldGet(this, _PollingOrphanSubscriber_filter, "f"));
         throw new Error("@TODO");
+        console.log(__classPrivateFieldGet(this, _PollingOrphanSubscriber_filter, "f"));
     }
 }
 _PollingOrphanSubscriber_filter = new WeakMap();
@@ -174,8 +174,16 @@ _PollingEventSubscriber_provider = new WeakMap(), _PollingEventSubscriber_filter
     const filter = copy(__classPrivateFieldGet(this, _PollingEventSubscriber_filter, "f"));
     filter.fromBlock = __classPrivateFieldGet(this, _PollingEventSubscriber_blockNumber, "f") + 1;
     filter.toBlock = blockNumber;
-    __classPrivateFieldSet(this, _PollingEventSubscriber_blockNumber, blockNumber, "f");
     const logs = await __classPrivateFieldGet(this, _PollingEventSubscriber_provider, "f").getLogs(filter);
+    // No logs could just mean the node has not indexed them yet,
+    // so we keep a sliding window of 60 blocks to keep scanning
+    if (logs.length === 0) {
+        if (__classPrivateFieldGet(this, _PollingEventSubscriber_blockNumber, "f") < blockNumber - 60) {
+            __classPrivateFieldSet(this, _PollingEventSubscriber_blockNumber, blockNumber - 60, "f");
+        }
+        return;
+    }
+    __classPrivateFieldSet(this, _PollingEventSubscriber_blockNumber, blockNumber, "f");
     for (const log of logs) {
         __classPrivateFieldGet(this, _PollingEventSubscriber_provider, "f").emit(__classPrivateFieldGet(this, _PollingEventSubscriber_filter, "f"), log);
     }

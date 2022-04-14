@@ -20,6 +20,7 @@ export declare class BaseContract implements Addressable, EventEmitterable<Contr
     deploymentTransaction(): null | ContractTransactionResponse;
     getFunction<T extends ContractMethod = ContractMethod>(key: string | FunctionFragment): T;
     getEvent(key: string | EventFragment): ContractEvent;
+    queryTransaction(hash: string): Promise<Array<EventLog>>;
     queryFilter(event: ContractEventName, fromBlock?: BlockTag, toBlock?: BlockTag): Promise<Array<EventLog>>;
     on(event: ContractEventName, listener: Listener): Promise<this>;
     once(event: ContractEventName, listener: Listener): Promise<this>;

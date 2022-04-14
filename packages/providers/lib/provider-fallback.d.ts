@@ -1,6 +1,6 @@
 import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
-import type { PerformActionRequest, Subscriber, Subscription } from "./abstract-provider.js";
+import type { PerformActionRequest } from "./abstract-provider.js";
 import type { Networkish } from "./network.js";
 export interface FallbackProviderConfig {
     provider: AbstractProvider;
@@ -29,6 +29,7 @@ export declare class FallbackProvider extends AbstractProvider {
     readonly eventQuorum: number;
     readonly eventWorkers: number;
     constructor(providers: Array<AbstractProvider | FallbackProviderConfig>, network?: Networkish);
+    get providerConfigs(): Array<FallbackProviderState>;
     _detectNetwork(): Promise<Readonly<{
         toJSON: () => any;
         name: string;
@@ -43,7 +44,6 @@ export declare class FallbackProvider extends AbstractProvider {
         isFrozen: () => boolean;
         computeIntrinsicGas: (tx: import("@ethersproject/transactions").TransactionLike<string>) => number;
     }>>;
-    _getSubscriber(sub: Subscription): Subscriber;
     _perform<T = any>(req: PerformActionRequest): Promise<T>;
 }
 //# sourceMappingURL=provider-fallback.d.ts.map

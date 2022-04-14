@@ -35,7 +35,10 @@ function getMultiplier(decimals) {
     }
     return BigInt("1" + zeros.substring(0, decimals));
 }
-export function formatFixed(_value, _decimals = 0) {
+export function formatFixed(_value, _decimals) {
+    if (_decimals == null) {
+        _decimals = 18;
+    }
     let value = logger.getBigInt(_value, "value");
     const decimals = logger.getNumber(_decimals, "decimals");
     const multiplier = getMultiplier(decimals);
@@ -62,7 +65,10 @@ export function formatFixed(_value, _decimals = 0) {
     }
     return result;
 }
-export function parseFixed(value, _decimals = 0) {
+export function parseFixed(value, _decimals) {
+    if (_decimals == null) {
+        _decimals = 18;
+    }
     const decimals = logger.getNumber(_decimals, "decimals");
     const multiplier = getMultiplier(decimals);
     if (typeof (value) !== "string" || !value.match(/^-?[0-9.]+$/)) {

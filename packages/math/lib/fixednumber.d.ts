@@ -1,6 +1,6 @@
 import type { BigNumberish, BytesLike, Numeric } from "@ethersproject/logger";
-export declare function formatFixed(_value: BigNumberish, _decimals?: number): string;
-export declare function parseFixed(value: string, _decimals?: Numeric): bigint;
+export declare function formatFixed(_value: BigNumberish, _decimals?: Numeric): string;
+export declare function parseFixed(value: string, _decimals: Numeric): bigint;
 export declare class FixedFormat {
     readonly signed: boolean;
     readonly width: number;

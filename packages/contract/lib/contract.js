@@ -355,7 +355,10 @@ async function _emit(contract, event, args, payload) {
         if (payload) {
             passArgs.push(new ContractEventPayload(contract, (once ? null : listener), event, payload.fragment, payload.log));
         }
-        setTimeout(() => { listener.call(contract, ...passArgs); }, 0);
+        try {
+            listener.call(contract, ...passArgs);
+        }
+        catch (error) { }
         return !once;
     });
     return (count > 0);
@@ -466,6 +469,10 @@ export class BaseContract {
             key = key.format();
         }
         return (new WrappedEvent(this, key));
+    }
+    async queryTransaction(hash) {
+        // Is this useful?
+        throw new Error("@TODO");
     }
     async queryFilter(event, fromBlock = 0, toBlock = "latest") {
         const { addr, addrPromise } = getInternal(this);

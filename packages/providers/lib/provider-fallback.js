@@ -9,7 +9,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _FallbackProvider_instances, _FallbackProvider_configs, _FallbackProvider_initialSyncPromise, _FallbackProvider_getNextConfig, _FallbackProvider_addRunner, _FallbackProvider_initialSync, _FallbackProvider_checkQuorum, _FallbackProvider_waitForQuorum;
+var _FallbackProvider_instances, _FallbackProvider_configs, _FallbackProvider_height, _FallbackProvider_initialSyncPromise, _FallbackProvider_getNextConfig, _FallbackProvider_addRunner, _FallbackProvider_initialSync, _FallbackProvider_checkQuorum, _FallbackProvider_waitForQuorum;
 import { hexlify } from "@ethersproject/bytes";
 import { AbstractProvider } from "./abstract-provider.js";
 import { logger } from "./logger.js";
@@ -119,11 +119,41 @@ function getMedian(results) {
     // Even length; take the ceiling of the mean of the center two values
     return (values[mid - 1] + values[mid] + BN_1) / BN_2;
 }
+function getFuzzyMode(quorum, results) {
+    if (quorum === 1) {
+        return logger.getNumber(getMedian(results), "%internal");
+    }
+    const tally = new Map();
+    const add = (result, weight) => {
+        const t = tally.get(result) || { result, weight: 0 };
+        t.weight += weight;
+        tally.set(result, t);
+    };
+    for (const { weight, result } of results) {
+        const r = logger.getNumber(result);
+        add(r - 1, weight);
+        add(r, weight);
+        add(r + 1, weight);
+    }
+    let bestWeight = 0;
+    let bestResult = undefined;
+    for (const { weight, result } of tally.values()) {
+        // Use this result, if this result meets quorum and has either:
+        // - a better weight
+        // - or equal weight, but the result is larger
+        if (weight >= quorum && (weight > bestWeight || (bestResult != null && weight === bestWeight && result > bestResult))) {
+            bestWeight = weight;
+            bestResult = result;
+        }
+    }
+    return bestResult;
+}
 export class FallbackProvider extends AbstractProvider {
     constructor(providers, network) {
         super(network);
         _FallbackProvider_instances.add(this);
         _FallbackProvider_configs.set(this, void 0);
+        _FallbackProvider_height.set(this, void 0);
         _FallbackProvider_initialSyncPromise.set(this, void 0);
         __classPrivateFieldSet(this, _FallbackProvider_configs, providers.map((p) => {
             if (p instanceof AbstractProvider) {
@@ -133,6 +163,7 @@ export class FallbackProvider extends AbstractProvider {
                 return Object.assign({}, defaultConfig, p, defaultState);
             }
         }), "f");
+        __classPrivateFieldSet(this, _FallbackProvider_height, -2, "f");
         __classPrivateFieldSet(this, _FallbackProvider_initialSyncPromise, null, "f");
         this.quorum = 2; //Math.ceil(providers.length /  2);
         this.eventQuorum = 1;
@@ -141,11 +172,12 @@ export class FallbackProvider extends AbstractProvider {
             logger.throwArgumentError("quorum exceed provider wieght", "quorum", this.quorum);
         }
     }
+    // @TOOD: Copy these and only return public values
+    get providerConfigs() {
+        return __classPrivateFieldGet(this, _FallbackProvider_configs, "f").slice();
+    }
     async _detectNetwork() {
         return Network.from(logger.getBigInt(await this._perform({ method: "chainId" }))).freeze();
-    }
-    _getSubscriber(sub) {
-        throw new Error("@TODO");
     }
     async _perform(req) {
         await __classPrivateFieldGet(this, _FallbackProvider_instances, "m", _FallbackProvider_initialSync).call(this);
@@ -161,7 +193,7 @@ export class FallbackProvider extends AbstractProvider {
         return result;
     }
 }
-_FallbackProvider_configs = new WeakMap(), _FallbackProvider_initialSyncPromise = new WeakMap(), _FallbackProvider_instances = new WeakSet(), _FallbackProvider_getNextConfig = function _FallbackProvider_getNextConfig(configs) {
+_FallbackProvider_configs = new WeakMap(), _FallbackProvider_height = new WeakMap(), _FallbackProvider_initialSyncPromise = new WeakMap(), _FallbackProvider_instances = new WeakSet(), _FallbackProvider_getNextConfig = function _FallbackProvider_getNextConfig(configs) {
     // Shuffle the states, sorted by priority
     const allConfigs = __classPrivateFieldGet(this, _FallbackProvider_configs, "f").slice();
     shuffle(allConfigs);
@@ -257,7 +289,23 @@ async function _FallbackProvider_initialSync() {
     }
     switch (req.method) {
         case "getBlockNumber": {
-            throw new Error("TODO");
+            // We need to get the bootstrap block height
+            if (__classPrivateFieldGet(this, _FallbackProvider_height, "f") === -2) {
+                const height = Math.ceil(logger.getNumber(getMedian(__classPrivateFieldGet(this, _FallbackProvider_configs, "f").map((c) => ({
+                    result: c.blockNumber,
+                    normal: logger.getNumber(c.blockNumber).toString(),
+                    weight: c.weight
+                }))), "%internal"));
+                __classPrivateFieldSet(this, _FallbackProvider_height, height, "f");
+            }
+            const mode = getFuzzyMode(this.quorum, results);
+            if (mode === undefined) {
+                return undefined;
+            }
+            if (mode > __classPrivateFieldGet(this, _FallbackProvider_height, "f")) {
+                __classPrivateFieldSet(this, _FallbackProvider_height, mode, "f");
+            }
+            return __classPrivateFieldGet(this, _FallbackProvider_height, "f");
         }
         case "getGasPrice":
         case "estimateGas":

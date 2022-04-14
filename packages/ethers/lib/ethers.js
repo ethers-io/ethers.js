@@ -4,7 +4,7 @@ export { arrayify, decodeBase64, encodeBase64, isHexString, isBytesLike, concat,
 export { BaseContract, Contract, ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, EventLog } from "@ethersproject/contract";
 export { computeHmac, keccak256, ripemd160, sha256, sha512, pbkdf2, scrypt, scryptSync, randomBytes, lock, } from "@ethersproject/crypto";
 export { id, isValidName, namehash, dnsEncode, messagePrefix, hashMessage, TypedDataEncoder } from "@ethersproject/hash";
-export { FixedFormat, FixedNumber, formatFixed, parseFixed, fromTwos, toTwos, mask, toArray, toBigInt, toHex, toNumber, decodeBase58, encodeBase58 } from "@ethersproject/math";
+export { FixedFormat, FixedNumber, formatFixed, parseFixed, fromTwos, toTwos, mask, toArray, toBigInt, toHex, toNumber, decodeBase58, encodeBase58, formatEther, parseEther, formatUnits, parseUnits } from "@ethersproject/math";
 export { defineProperties, resolveProperties, getStore, setStore } from "@ethersproject/properties";
 export { getDefaultProvider, AbstractProvider, UnmanagedSubscriber, AbstractSigner, VoidSigner, WrappedSigner, showThrottleMessage, EnsResolver, Formatter, NetworkPlugin, GasCostPlugin, EnsPlugin, 
 //LayerOneConnectionPlugin,

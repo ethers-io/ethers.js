@@ -1,9 +1,9 @@
-import type { Subscriber } from "./abstract-provider.js";
-import type { EventFilter, OrphanFilter, Provider, ProviderEvent } from "./provider.js";
-export declare function getPollingSubscriber(provider: Provider, event: ProviderEvent): Subscriber;
+import type { AbstractProvider, Subscriber } from "./abstract-provider.js";
+import type { EventFilter, OrphanFilter, ProviderEvent } from "./provider.js";
+export declare function getPollingSubscriber(provider: AbstractProvider, event: ProviderEvent): Subscriber;
 export declare class PollingBlockSubscriber implements Subscriber {
     #private;
-    constructor(provider: Provider);
+    constructor(provider: AbstractProvider);
     get pollingInterval(): number;
     set pollingInterval(value: number);
     start(): void;
@@ -13,8 +13,8 @@ export declare class PollingBlockSubscriber implements Subscriber {
 }
 export declare class OnBlockSubscriber implements Subscriber {
     #private;
-    constructor(provider: Provider);
-    _poll(blockNumber: number, provider: Provider): Promise<void>;
+    constructor(provider: AbstractProvider);
+    _poll(blockNumber: number, provider: AbstractProvider): Promise<void>;
     start(): void;
     stop(): void;
     pause(dropWhilePaused?: boolean): void;
@@ -22,17 +22,17 @@ export declare class OnBlockSubscriber implements Subscriber {
 }
 export declare class PollingOrphanSubscriber extends OnBlockSubscriber {
     #private;
-    constructor(provider: Provider, filter: OrphanFilter);
-    _poll(blockNumber: number, provider: Provider): Promise<void>;
+    constructor(provider: AbstractProvider, filter: OrphanFilter);
+    _poll(blockNumber: number, provider: AbstractProvider): Promise<void>;
 }
 export declare class PollingTransactionSubscriber extends OnBlockSubscriber {
     #private;
-    constructor(provider: Provider, hash: string);
-    _poll(blockNumber: number, provider: Provider): Promise<void>;
+    constructor(provider: AbstractProvider, hash: string);
+    _poll(blockNumber: number, provider: AbstractProvider): Promise<void>;
 }
 export declare class PollingEventSubscriber implements Subscriber {
     #private;
-    constructor(provider: Provider, filter: EventFilter);
+    constructor(provider: AbstractProvider, filter: EventFilter);
     start(): void;
     stop(): void;
     pause(dropWhilePaused?: boolean): void;

@@ -452,7 +452,19 @@ export class AbstractProvider {
         return format.receipt(receipt, this);
     }
     async _getFilter(filter) {
+        // Create a canonical representation of the topics
+        const topics = (filter.topics || []).map((t) => {
+            if (t == null) {
+                return null;
+            }
+            if (Array.isArray(t)) {
+                return concisify(t.map((t) => t.toLowerCase()));
+            }
+            return t.toLowerCase();
+        });
+        const blockHash = ("blockHash" in filter) ? filter.blockHash : undefined;
         const lookup = {};
+        // Addresses could be async (ENS names or Addressables)
         if (filter.address) {
             if (Array.isArray(filter.address)) {
                 lookup.address = Promise.all(filter.address.map((a) => resolveAddress(a, this)));
@@ -461,6 +473,7 @@ export class AbstractProvider {
                 lookup.address = resolveAddress(filter.address, this);
             }
         }
+        // Block Tags could be async (i.e. relative)
         const addBlockTag = (key) => {
             if (filter[key] == null) {
                 return;
@@ -469,15 +482,18 @@ export class AbstractProvider {
         };
         addBlockTag("fromBlock");
         addBlockTag("toBlock");
+        // Wait for all properties to resolve
         const result = await resolveProperties(lookup);
+        // Make sure things are canonical
         if (Array.isArray(result.address)) {
             result.address.sort();
         }
-        if (filter.blockHash) {
+        result.topics = topics;
+        if (blockHash) {
             if (filter.fromBlock || filter.toBlock) {
                 throw new Error("invalid filter");
             }
-            result.blockHash = filter.blockHash;
+            result.blockHash = blockHash;
         }
         return result;
     }
@@ -669,7 +685,10 @@ export class AbstractProvider {
         const count = sub.listeners.length;
         sub.listeners = sub.listeners.filter(({ listener, once }) => {
             const payload = new EventPayload(this, (once ? null : listener), event);
-            setTimeout(() => { listener.call(this, ...args, payload); }, 0);
+            try {
+                listener.call(this, ...args, payload);
+            }
+            catch (error) { }
             return !once;
         });
         return (count > 0);

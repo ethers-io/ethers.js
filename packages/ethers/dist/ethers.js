@@ -1493,7 +1493,7 @@ class StructFragment extends NamedFragment {
     }
 }
 
-const version$e = "@ethersproject/math@6.0.0-beta.1";
+const version$e = "@ethersproject/math@6.0.0-beta.2";
 
 const logger$d = new Logger(version$e);
 
@@ -1628,7 +1628,10 @@ function getMultiplier(decimals) {
     }
     return BigInt("1" + zeros$1.substring(0, decimals));
 }
-function formatFixed(_value, _decimals = 0) {
+function formatFixed(_value, _decimals) {
+    if (_decimals == null) {
+        _decimals = 18;
+    }
     let value = logger$d.getBigInt(_value, "value");
     const decimals = logger$d.getNumber(_decimals, "decimals");
     const multiplier = getMultiplier(decimals);
@@ -1655,7 +1658,10 @@ function formatFixed(_value, _decimals = 0) {
     }
     return result;
 }
-function parseFixed(value, _decimals = 0) {
+function parseFixed(value, _decimals) {
+    if (_decimals == null) {
+        _decimals = 18;
+    }
     const decimals = logger$d.getNumber(_decimals, "decimals");
     const multiplier = getMultiplier(decimals);
     if (typeof (value) !== "string" || !value.match(/^-?[0-9.]+$/)) {
@@ -1964,6 +1970,45 @@ function decodeBase58(value) {
         result += getAlpha(value[i]);
     }
     return toHex(result);
+}
+
+const names = [
+    "wei",
+    "kwei",
+    "mwei",
+    "gwei",
+    "szabo",
+    "finney",
+    "ether",
+];
+function formatUnits(value, unit) {
+    if (typeof (unit) === "string") {
+        const index = names.indexOf(unit);
+        if (index === -1) {
+            logger$d.throwArgumentError("invalid unit", "unit", unit);
+        }
+        unit = 3 * index;
+    }
+    return formatFixed(value, (unit != null) ? unit : 18);
+}
+function parseUnits(value, unit) {
+    if (typeof (value) !== "string") {
+        logger$d.throwArgumentError("value must be a string", "value", value);
+    }
+    if (typeof (unit) === "string") {
+        const index = names.indexOf(unit);
+        if (index === -1) {
+            logger$d.throwArgumentError("invalid unit", "unit", unit);
+        }
+        unit = 3 * index;
+    }
+    return parseFixed(value, (unit != null) ? unit : 18);
+}
+function formatEther(wei) {
+    return formatUnits(wei, 18);
+}
+function parseEther(ether) {
+    return parseUnits(ether, 18);
 }
 
 function isHexString(value, length) {
@@ -5311,7 +5356,7 @@ function id(value) {
     return keccak256(toUtf8Bytes(value));
 }
 
-const version$8 = "@ethersproject/hash@6.0.0-beta.1";
+const version$8 = "@ethersproject/hash@6.0.0-beta.2";
 
 const logger$7 = new Logger(version$8);
 
@@ -7108,7 +7153,7 @@ fetchData.setArGateway = function (gateway) {
     }
 };
 
-const version$6 = "@ethersproject/providers@6.0.0-beta.1";
+const version$6 = "@ethersproject/providers@6.0.0-beta.2";
 
 const logger$5 = new Logger(version$6);
 
@@ -10480,13 +10525,13 @@ class PollingBlockSubscriber {
             throw new Error("subscriber already running");
         }
         __classPrivateFieldGet$h(this, _PollingBlockSubscriber_instances, "m", _PollingBlockSubscriber_poll).call(this);
-        __classPrivateFieldSet$h(this, _PollingBlockSubscriber_poller, setTimeout(__classPrivateFieldGet$h(this, _PollingBlockSubscriber_instances, "m", _PollingBlockSubscriber_poll).bind(this), __classPrivateFieldGet$h(this, _PollingBlockSubscriber_interval, "f")), "f");
+        __classPrivateFieldSet$h(this, _PollingBlockSubscriber_poller, __classPrivateFieldGet$h(this, _PollingBlockSubscriber_provider, "f")._setTimeout(__classPrivateFieldGet$h(this, _PollingBlockSubscriber_instances, "m", _PollingBlockSubscriber_poll).bind(this), __classPrivateFieldGet$h(this, _PollingBlockSubscriber_interval, "f")), "f");
     }
     stop() {
         if (!__classPrivateFieldGet$h(this, _PollingBlockSubscriber_poller, "f")) {
             throw new Error("subscriber not running");
         }
-        clearTimeout(__classPrivateFieldGet$h(this, _PollingBlockSubscriber_poller, "f"));
+        __classPrivateFieldGet$h(this, _PollingBlockSubscriber_provider, "f")._clearTimeout(__classPrivateFieldGet$h(this, _PollingBlockSubscriber_poller, "f"));
         __classPrivateFieldSet$h(this, _PollingBlockSubscriber_poller, null, "f");
     }
     pause(dropWhilePaused) {
@@ -10512,7 +10557,7 @@ _PollingBlockSubscriber_provider = new WeakMap(), _PollingBlockSubscriber_poller
         }
         __classPrivateFieldSet$h(this, _PollingBlockSubscriber_blockNumber, blockNumber, "f");
     }
-    __classPrivateFieldSet$h(this, _PollingBlockSubscriber_poller, setTimeout(__classPrivateFieldGet$h(this, _PollingBlockSubscriber_instances, "m", _PollingBlockSubscriber_poll).bind(this), __classPrivateFieldGet$h(this, _PollingBlockSubscriber_interval, "f")), "f");
+    __classPrivateFieldSet$h(this, _PollingBlockSubscriber_poller, __classPrivateFieldGet$h(this, _PollingBlockSubscriber_provider, "f")._setTimeout(__classPrivateFieldGet$h(this, _PollingBlockSubscriber_instances, "m", _PollingBlockSubscriber_poll).bind(this), __classPrivateFieldGet$h(this, _PollingBlockSubscriber_interval, "f")), "f");
 };
 class OnBlockSubscriber {
     constructor(provider) {
@@ -10544,7 +10589,6 @@ class PollingOrphanSubscriber extends OnBlockSubscriber {
         __classPrivateFieldSet$h(this, _PollingOrphanSubscriber_filter, copy$3(filter), "f");
     }
     async _poll(blockNumber, provider) {
-        console.log(__classPrivateFieldGet$h(this, _PollingOrphanSubscriber_filter, "f"));
         throw new Error("@TODO");
     }
 }
@@ -10606,8 +10650,16 @@ _PollingEventSubscriber_provider = new WeakMap(), _PollingEventSubscriber_filter
     const filter = copy$3(__classPrivateFieldGet$h(this, _PollingEventSubscriber_filter, "f"));
     filter.fromBlock = __classPrivateFieldGet$h(this, _PollingEventSubscriber_blockNumber, "f") + 1;
     filter.toBlock = blockNumber;
-    __classPrivateFieldSet$h(this, _PollingEventSubscriber_blockNumber, blockNumber, "f");
     const logs = await __classPrivateFieldGet$h(this, _PollingEventSubscriber_provider, "f").getLogs(filter);
+    // No logs could just mean the node has not indexed them yet,
+    // so we keep a sliding window of 60 blocks to keep scanning
+    if (logs.length === 0) {
+        if (__classPrivateFieldGet$h(this, _PollingEventSubscriber_blockNumber, "f") < blockNumber - 60) {
+            __classPrivateFieldSet$h(this, _PollingEventSubscriber_blockNumber, blockNumber - 60, "f");
+        }
+        return;
+    }
+    __classPrivateFieldSet$h(this, _PollingEventSubscriber_blockNumber, blockNumber, "f");
     for (const log of logs) {
         __classPrivateFieldGet$h(this, _PollingEventSubscriber_provider, "f").emit(__classPrivateFieldGet$h(this, _PollingEventSubscriber_filter, "f"), log);
     }
@@ -11054,7 +11106,19 @@ class AbstractProvider {
         return format.receipt(receipt, this);
     }
     async _getFilter(filter) {
+        // Create a canonical representation of the topics
+        const topics = (filter.topics || []).map((t) => {
+            if (t == null) {
+                return null;
+            }
+            if (Array.isArray(t)) {
+                return concisify$1(t.map((t) => t.toLowerCase()));
+            }
+            return t.toLowerCase();
+        });
+        const blockHash = ("blockHash" in filter) ? filter.blockHash : undefined;
         const lookup = {};
+        // Addresses could be async (ENS names or Addressables)
         if (filter.address) {
             if (Array.isArray(filter.address)) {
                 lookup.address = Promise.all(filter.address.map((a) => resolveAddress(a, this)));
@@ -11063,6 +11127,7 @@ class AbstractProvider {
                 lookup.address = resolveAddress(filter.address, this);
             }
         }
+        // Block Tags could be async (i.e. relative)
         const addBlockTag = (key) => {
             if (filter[key] == null) {
                 return;
@@ -11071,15 +11136,18 @@ class AbstractProvider {
         };
         addBlockTag("fromBlock");
         addBlockTag("toBlock");
+        // Wait for all properties to resolve
         const result = await resolveProperties(lookup);
+        // Make sure things are canonical
         if (Array.isArray(result.address)) {
             result.address.sort();
         }
-        if (filter.blockHash) {
+        result.topics = topics;
+        if (blockHash) {
             if (filter.fromBlock || filter.toBlock) {
                 throw new Error("invalid filter");
             }
-            result.blockHash = filter.blockHash;
+            result.blockHash = blockHash;
         }
         return result;
     }
@@ -11270,7 +11338,10 @@ class AbstractProvider {
         const count = sub.listeners.length;
         sub.listeners = sub.listeners.filter(({ listener, once }) => {
             const payload = new EventPayload(this, (once ? null : listener), event);
-            setTimeout(() => { listener.call(this, ...args, payload); }, 0);
+            try {
+                listener.call(this, ...args, payload);
+            }
+            catch (error) { }
             return !once;
         });
         return (count > 0);
@@ -12048,7 +12119,8 @@ class JsonRpcSigner {
         // for a response, and we need the actual transaction, so we poll
         // for it; it should show up very quickly
         return await (new Promise((resolve, reject) => {
-            const checkTx = async (duration) => {
+            const timeouts = [1000, 100];
+            const checkTx = async () => {
                 // Try getting the transaction
                 const tx = await this.provider.getTransaction(hash);
                 if (tx != null) {
@@ -12056,9 +12128,9 @@ class JsonRpcSigner {
                     return;
                 }
                 // Wait another 4 seconds
-                this.provider._setTimeout(() => { checkTx(4000); }, duration);
+                this.provider._setTimeout(() => { checkTx(); }, timeouts.pop() || 4000);
             };
-            checkTx(1000);
+            checkTx();
         }));
     }
     async signTransaction(_tx) {
@@ -13178,7 +13250,7 @@ var __classPrivateFieldGet$c = (window && window.__classPrivateFieldGet) || func
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _FallbackProvider_instances, _FallbackProvider_configs, _FallbackProvider_initialSyncPromise, _FallbackProvider_getNextConfig, _FallbackProvider_addRunner, _FallbackProvider_initialSync, _FallbackProvider_checkQuorum, _FallbackProvider_waitForQuorum;
+var _FallbackProvider_instances, _FallbackProvider_configs, _FallbackProvider_height, _FallbackProvider_initialSyncPromise, _FallbackProvider_getNextConfig, _FallbackProvider_addRunner, _FallbackProvider_initialSync, _FallbackProvider_checkQuorum, _FallbackProvider_waitForQuorum;
 //const BN_0 = BigInt("0");
 const BN_1 = BigInt("1");
 const BN_2 = BigInt("2");
@@ -13282,11 +13354,41 @@ function getMedian(results) {
     // Even length; take the ceiling of the mean of the center two values
     return (values[mid - 1] + values[mid] + BN_1) / BN_2;
 }
+function getFuzzyMode(quorum, results) {
+    if (quorum === 1) {
+        return logger$5.getNumber(getMedian(results), "%internal");
+    }
+    const tally = new Map();
+    const add = (result, weight) => {
+        const t = tally.get(result) || { result, weight: 0 };
+        t.weight += weight;
+        tally.set(result, t);
+    };
+    for (const { weight, result } of results) {
+        const r = logger$5.getNumber(result);
+        add(r - 1, weight);
+        add(r, weight);
+        add(r + 1, weight);
+    }
+    let bestWeight = 0;
+    let bestResult = undefined;
+    for (const { weight, result } of tally.values()) {
+        // Use this result, if this result meets quorum and has either:
+        // - a better weight
+        // - or equal weight, but the result is larger
+        if (weight >= quorum && (weight > bestWeight || (bestResult != null && weight === bestWeight && result > bestResult))) {
+            bestWeight = weight;
+            bestResult = result;
+        }
+    }
+    return bestResult;
+}
 class FallbackProvider extends AbstractProvider {
     constructor(providers, network) {
         super(network);
         _FallbackProvider_instances.add(this);
         _FallbackProvider_configs.set(this, void 0);
+        _FallbackProvider_height.set(this, void 0);
         _FallbackProvider_initialSyncPromise.set(this, void 0);
         __classPrivateFieldSet$c(this, _FallbackProvider_configs, providers.map((p) => {
             if (p instanceof AbstractProvider) {
@@ -13296,6 +13398,7 @@ class FallbackProvider extends AbstractProvider {
                 return Object.assign({}, defaultConfig, p, defaultState);
             }
         }), "f");
+        __classPrivateFieldSet$c(this, _FallbackProvider_height, -2, "f");
         __classPrivateFieldSet$c(this, _FallbackProvider_initialSyncPromise, null, "f");
         this.quorum = 2; //Math.ceil(providers.length /  2);
         this.eventQuorum = 1;
@@ -13304,11 +13407,12 @@ class FallbackProvider extends AbstractProvider {
             logger$5.throwArgumentError("quorum exceed provider wieght", "quorum", this.quorum);
         }
     }
+    // @TOOD: Copy these and only return public values
+    get providerConfigs() {
+        return __classPrivateFieldGet$c(this, _FallbackProvider_configs, "f").slice();
+    }
     async _detectNetwork() {
         return Network$1.from(logger$5.getBigInt(await this._perform({ method: "chainId" }))).freeze();
-    }
-    _getSubscriber(sub) {
-        throw new Error("@TODO");
     }
     async _perform(req) {
         await __classPrivateFieldGet$c(this, _FallbackProvider_instances, "m", _FallbackProvider_initialSync).call(this);
@@ -13324,7 +13428,7 @@ class FallbackProvider extends AbstractProvider {
         return result;
     }
 }
-_FallbackProvider_configs = new WeakMap(), _FallbackProvider_initialSyncPromise = new WeakMap(), _FallbackProvider_instances = new WeakSet(), _FallbackProvider_getNextConfig = function _FallbackProvider_getNextConfig(configs) {
+_FallbackProvider_configs = new WeakMap(), _FallbackProvider_height = new WeakMap(), _FallbackProvider_initialSyncPromise = new WeakMap(), _FallbackProvider_instances = new WeakSet(), _FallbackProvider_getNextConfig = function _FallbackProvider_getNextConfig(configs) {
     // Shuffle the states, sorted by priority
     const allConfigs = __classPrivateFieldGet$c(this, _FallbackProvider_configs, "f").slice();
     shuffle(allConfigs);
@@ -13420,7 +13524,23 @@ async function _FallbackProvider_initialSync() {
     }
     switch (req.method) {
         case "getBlockNumber": {
-            throw new Error("TODO");
+            // We need to get the bootstrap block height
+            if (__classPrivateFieldGet$c(this, _FallbackProvider_height, "f") === -2) {
+                const height = Math.ceil(logger$5.getNumber(getMedian(__classPrivateFieldGet$c(this, _FallbackProvider_configs, "f").map((c) => ({
+                    result: c.blockNumber,
+                    normal: logger$5.getNumber(c.blockNumber).toString(),
+                    weight: c.weight
+                }))), "%internal"));
+                __classPrivateFieldSet$c(this, _FallbackProvider_height, height, "f");
+            }
+            const mode = getFuzzyMode(this.quorum, results);
+            if (mode === undefined) {
+                return undefined;
+            }
+            if (mode > __classPrivateFieldGet$c(this, _FallbackProvider_height, "f")) {
+                __classPrivateFieldSet$c(this, _FallbackProvider_height, mode, "f");
+            }
+            return __classPrivateFieldGet$c(this, _FallbackProvider_height, "f");
         }
         case "getGasPrice":
         case "estimateGas":
@@ -14032,7 +14152,7 @@ class ContractEventPayload extends EventPayload {
     }
 }
 
-const version$3 = "@ethersproject/contract@6.0.0-beta.1";
+const version$3 = "@ethersproject/contract@6.0.0-beta.2";
 
 const logger$2 = new Logger(version$3);
 
@@ -14384,7 +14504,10 @@ async function _emit(contract, event, args, payload) {
         if (payload) {
             passArgs.push(new ContractEventPayload(contract, (once ? null : listener), event, payload.fragment, payload.log));
         }
-        setTimeout(() => { listener.call(contract, ...passArgs); }, 0);
+        try {
+            listener.call(contract, ...passArgs);
+        }
+        catch (error) { }
         return !once;
     });
     return (count > 0);
@@ -14495,6 +14618,10 @@ class BaseContract {
             key = key.format();
         }
         return (new WrappedEvent(this, key));
+    }
+    async queryTransaction(hash) {
+        // Is this useful?
+        throw new Error("@TODO");
     }
     async queryFilter(event, fromBlock = 0, toBlock = "latest") {
         const { addr, addrPromise } = getInternal(this);
@@ -14752,7 +14879,7 @@ class LangEn extends WordlistOwl {
 }
 const langEn = new LangEn();
 
-const version$1 = "@ethersproject/wallet@6.0.0-beta.1";
+const version$1 = "@ethersproject/wallet@6.0.0-beta.2";
 
 const logger = new Logger(version$1);
 
@@ -16121,7 +16248,7 @@ class Wallet extends BaseWallet {
 }
 _Wallet_mnemonic = new WeakMap();
 
-const version = "ethers@6.0.0-beta.2";
+const version = "ethers@6.0.0-beta.3";
 
 var ethers = /*#__PURE__*/Object.freeze({
     __proto__: null,
@@ -16182,6 +16309,10 @@ var ethers = /*#__PURE__*/Object.freeze({
     toNumber: toNumber,
     decodeBase58: decodeBase58,
     encodeBase58: encodeBase58,
+    formatEther: formatEther,
+    parseEther: parseEther,
+    formatUnits: formatUnits,
+    parseUnits: parseUnits,
     defineProperties: defineProperties,
     resolveProperties: resolveProperties,
     getStore: getStore,
@@ -16252,5 +16383,5 @@ var ethers = /*#__PURE__*/Object.freeze({
     version: version
 });
 
-export { AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, Block, CloudflareProvider, Contract, ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, EnsPlugin, EnsResolver, EtherscanProvider, EventLog, FallbackProvider, FeeData, FetchRequest, FetchResponse, FixedFormat, FixedNumber, Formatter, GasCostPlugin, HDNodeVoidWallet, HDNodeWallet, HDNodeWalletManager, InfuraProvider, Interface, IpcSocketProvider, JsonRpcProvider, JsonRpcSigner, Log, MaxPriorityFeePlugin, Mnemonic, Network, NetworkPlugin, PocketProvider, Signature$1 as Signature, SigningKey, SocketProvider, StaticJsonRpcProvider, Transaction, TransactionReceipt, TransactionResponse, TypedDataEncoder, UnicodeNormalizationForm, UnmanagedSubscriber, Utf8ErrorFuncs, Utf8ErrorReason, VoidSigner, Wallet, WebSocketProvider, Wordlist, WordlistOwl, WordlistOwlA, WrappedSigner, _toEscapedUtf8String, arrayify, computeAddress, computeHmac, concat, dataLength, dataSlice, decodeBase58, decodeBase64, decodeRlp, defaultPath$1 as defaultPath, defineProperties, dnsEncode, dummyProvider, encodeBase58, encodeBase64, encodeRlp, ethers, fetchData, formatBytes32String, formatFixed, fromTwos, getAccountPath, getAddress, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getStore, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isHexString, isValidName, keccak256, lock, mask, messagePrefix, namehash, nameprep, parseBytes32String, parseFixed, pbkdf2, quantity, randomBytes, resolveAddress, resolveProperties, ripemd160, scrypt, scryptSync, setStore, sha256, sha512, showThrottleMessage, stripZerosLeft, toArray, toBigInt, toHex, toNumber, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, version, wordlists, zeroPadLeft, zeroPadRight };
+export { AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, Block, CloudflareProvider, Contract, ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, EnsPlugin, EnsResolver, EtherscanProvider, EventLog, FallbackProvider, FeeData, FetchRequest, FetchResponse, FixedFormat, FixedNumber, Formatter, GasCostPlugin, HDNodeVoidWallet, HDNodeWallet, HDNodeWalletManager, InfuraProvider, Interface, IpcSocketProvider, JsonRpcProvider, JsonRpcSigner, Log, MaxPriorityFeePlugin, Mnemonic, Network, NetworkPlugin, PocketProvider, Signature$1 as Signature, SigningKey, SocketProvider, StaticJsonRpcProvider, Transaction, TransactionReceipt, TransactionResponse, TypedDataEncoder, UnicodeNormalizationForm, UnmanagedSubscriber, Utf8ErrorFuncs, Utf8ErrorReason, VoidSigner, Wallet, WebSocketProvider, Wordlist, WordlistOwl, WordlistOwlA, WrappedSigner, _toEscapedUtf8String, arrayify, computeAddress, computeHmac, concat, dataLength, dataSlice, decodeBase58, decodeBase64, decodeRlp, defaultPath$1 as defaultPath, defineProperties, dnsEncode, dummyProvider, encodeBase58, encodeBase64, encodeRlp, ethers, fetchData, formatBytes32String, formatEther, formatFixed, formatUnits, fromTwos, getAccountPath, getAddress, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getStore, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isHexString, isValidName, keccak256, lock, mask, messagePrefix, namehash, nameprep, parseBytes32String, parseEther, parseFixed, parseUnits, pbkdf2, quantity, randomBytes, resolveAddress, resolveProperties, ripemd160, scrypt, scryptSync, setStore, sha256, sha512, showThrottleMessage, stripZerosLeft, toArray, toBigInt, toHex, toNumber, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, version, wordlists, zeroPadLeft, zeroPadRight };
 //# sourceMappingURL=ethers.js.map
