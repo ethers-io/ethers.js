@@ -18218,7 +18218,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.6.3";
+const version$m = "providers/5.6.4";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -20699,7 +20699,7 @@ function checkError(method, error, params) {
         });
     }
     // "nonce too low"
-    if (message.match(/nonce too low/)) {
+    if (message.match(/nonce (is )?too low/)) {
         logger$u.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {
             error, method, transaction
         });
@@ -23607,7 +23607,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$p = "ethers/5.6.3";
+const version$p = "ethers/5.6.4";
 
 "use strict";
 const logger$J = new Logger(version$p);

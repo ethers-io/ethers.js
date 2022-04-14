@@ -20345,7 +20345,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.6.3";
+	exports.version = "providers/5.6.4";
 
 	});
 
@@ -23512,7 +23512,7 @@
 	        });
 	    }
 	    // "nonce too low"
-	    if (message.match(/nonce too low/)) {
+	    if (message.match(/nonce (is )?too low/)) {
 	        logger.throwError("nonce has already been used", lib.Logger.errors.NONCE_EXPIRED, {
 	            error: error,
 	            method: method,
@@ -27406,7 +27406,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.6.3";
+	exports.version = "ethers/5.6.4";
 
 	});
 

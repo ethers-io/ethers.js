@@ -80,7 +80,7 @@ function checkError(method, error, params) {
         });
     }
     // "nonce too low"
-    if (message.match(/nonce too low/)) {
+    if (message.match(/nonce (is )?too low/)) {
         logger.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {
             error, method, transaction
         });

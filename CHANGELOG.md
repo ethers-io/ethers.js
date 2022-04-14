@@ -4,6 +4,11 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+ethers/v5.6.4 (2022-04-13 16:56)
+--------------------------------
+
+  - Support new OpenEthereum NONCE_EXPIRED string. ([#2845](https://github.com/ethers-io/ethers.js/issues/2845), [#2846](https://github.com/ethers-io/ethers.js/issues/2846); [0855d6e](https://github.com/ethers-io/ethers.js/commit/0855d6e9f593515b639c10a3f65bad712c68221c))
+
 ethers/v5.6.3 (2022-04-13 00:23)
 --------------------------------
 
