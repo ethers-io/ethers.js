@@ -460,7 +460,9 @@ async function _emit(contract: BaseContract, event: ContractEventName, args: Arr
             passArgs.push(new ContractEventPayload(contract, (once ? null: listener),
                 event, payload.fragment, payload.log));
         }
-        setTimeout(() => { listener.call(contract, ...passArgs); }, 0);
+        try {
+            listener.call(contract, ...passArgs);
+        } catch (error) { }
         return !once;
     });
     return (count > 0);
@@ -586,6 +588,11 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
     getEvent(key: string | EventFragment): ContractEvent {
         if (typeof(key) !== "string") { key = key.format(); }
         return <ContractEvent><unknown>(new WrappedEvent(this, key));
+    }
+
+    async queryTransaction(hash: string): Promise<Array<EventLog>> {
+        // Is this useful?
+        throw new Error("@TODO");
     }
 
     async queryFilter(event: ContractEventName, fromBlock: BlockTag = 0, toBlock: BlockTag = "latest"): Promise<Array<EventLog>> {

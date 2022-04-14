@@ -1005,7 +1005,9 @@ export class AbstractProvider implements Provider {
         const count = sub.listeners.length;
         sub.listeners = sub.listeners.filter(({ listener, once }) => {
             const payload = new EventPayload(this, (once ? null: listener), event);
-            setTimeout(() => { listener.call(this, ...args, payload); }, 0);
+            try {
+                listener.call(this, ...args, payload);
+            } catch(error) { }
             return !once;
         });
 
