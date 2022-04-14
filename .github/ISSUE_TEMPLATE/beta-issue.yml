@@ -8,26 +8,19 @@ body:
   - type: markdown
     attributes:
       value: |
-        This form is **only** for issues in the **v6 beta**, which you
-        can access using either the `v6-beta` tag in the repository or
-        install using `ethers@beta` with `npm`.
+        This form is **only** for issues in the **v6 beta**, which you can access using either the `v6-beta` tag in the repository or install using `ethers@beta` with `npm`.
 
-        The v6 branch will be very lively, undergoing a lot of changes,
-        including backwards compatible changes between beta versions.
+        The v6 branch will be very lively, undergoing a lot of changes, including backwards compatible changes between beta versions.
 
-        Before opening an issue, please make sure you have
-        **fully updated to the latest version** by removing the
-        `node_modules/` and `package-lock.json` and then running a
-        fresh `npm install`. Otherwise you may end up with incompatible
-        versions which may conflict with each other.
+        Before opening an issue, please make sure you have **fully updated to the latest version** by removing the `node_modules/` and `package-lock.json` and then running a fresh `npm install`. Otherwise you may end up with incompatible versions which may conflict with each other.
 
         Thanks for trying out the v6 beta! Cheers!
   - type: input
     id: version
     attributes:
-      label: Ethers Version
+      label: Ethers Beta Version
       description: What version of ethers are you using? Before opening an issue, please make sure you are using the latest beta.
-      placeholder: x.y.z
+      placeholder: x.y.z-beta.N
     validations:
       required: true
   - type: textarea
