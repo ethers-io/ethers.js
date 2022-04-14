@@ -238,7 +238,8 @@ export class JsonRpcSigner implements Signer {
         // for a response, and we need the actual transaction, so we poll
         // for it; it should show up very quickly
         return await (new Promise((resolve, reject) => {
-            const checkTx = async (duration: number) => {
+            const timeouts = [ 1000, 100 ];
+            const checkTx = async () => {
                 // Try getting the transaction
                 const tx = await this.provider.getTransaction(hash);
                 if (tx != null) {
@@ -247,9 +248,9 @@ export class JsonRpcSigner implements Signer {
                 }
 
                 // Wait another 4 seconds
-                this.provider._setTimeout(() => { checkTx(4000); }, duration);
+                this.provider._setTimeout(() => { checkTx(); }, timeouts.pop() || 4000);
             };
-            checkTx(1000);
+            checkTx();
         }));
     }
 
