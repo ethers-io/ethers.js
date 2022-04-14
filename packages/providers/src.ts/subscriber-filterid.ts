@@ -2,9 +2,9 @@ import { PollingEventSubscriber } from "./subscriber-polling.js";
 
 import type { Frozen } from "@ethersproject/properties";
 
-import type { Subscriber } from "./abstract-provider.js";
+import type { AbstractProvider, Subscriber } from "./abstract-provider.js";
 import type { Network } from "./network.js";
-import type { EventFilter, Provider } from "./provider.js";
+import type { EventFilter } from "./provider.js";
 import type { JsonRpcApiProvider } from "./provider-jsonrpc.js";
 
 
@@ -33,11 +33,11 @@ export class FilterIdSubscriber implements Subscriber {
         throw new Error("subclasses must override this");
     }
 
-    _emitResults(provider: Provider, result: Array<any>): Promise<void> {
+    _emitResults(provider: AbstractProvider, result: Array<any>): Promise<void> {
         throw new Error("subclasses must override this");
     }
 
-    _recover(provider: Provider): Subscriber {
+    _recover(provider: AbstractProvider): Subscriber {
         throw new Error("subclasses must override this");
     }
 
@@ -100,7 +100,7 @@ export class FilterIdEventSubscriber extends FilterIdSubscriber {
         this.#event = copy(filter);
     }
 
-    _recover(provider: Provider): Subscriber {
+    _recover(provider: AbstractProvider): Subscriber {
         return new PollingEventSubscriber(provider, this.#event);
     }
 
