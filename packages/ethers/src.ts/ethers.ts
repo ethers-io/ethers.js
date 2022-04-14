@@ -49,16 +49,14 @@ export {
     FixedFormat, FixedNumber, formatFixed, parseFixed,
     fromTwos, toTwos, mask,
     toArray, toBigInt, toHex, toNumber,
-    decodeBase58, encodeBase58
+    decodeBase58, encodeBase58,
+    formatEther, parseEther, formatUnits, parseUnits
 } from "@ethersproject/math";
 
 export {
     defineProperties, resolveProperties,
     getStore, setStore
 } from "@ethersproject/properties";
-
-
-
 
 
 export {

@@ -31,7 +31,9 @@ function getMultiplier(decimals: number): bigint {
     return BigInt("1" + zeros.substring(0, decimals));
 }
 
-export function formatFixed(_value: BigNumberish, _decimals = 0): string {
+export function formatFixed(_value: BigNumberish, _decimals?: Numeric): string {
+    if (_decimals == null) { _decimals = 18; }
+
     let value = logger.getBigInt(_value, "value");
     const decimals = logger.getNumber(_decimals, "decimals");
 
@@ -59,7 +61,8 @@ export function formatFixed(_value: BigNumberish, _decimals = 0): string {
     return result;
 }
 
-export function parseFixed(value: string, _decimals: Numeric = 0): bigint {
+export function parseFixed(value: string, _decimals: Numeric): bigint {
+    if (_decimals == null) { _decimals = 18; }
     const decimals = logger.getNumber(_decimals, "decimals");
 
     const multiplier = getMultiplier(decimals);
