@@ -120,8 +120,8 @@ export class PollingOrphanSubscriber extends OnBlockSubscriber {
     }
 
     async _poll(blockNumber: number, provider: Provider): Promise<void> {
-        console.log(this.#filter);
         throw new Error("@TODO");
+        console.log(this.#filter);
     }
 }
 
@@ -162,9 +162,18 @@ export class PollingEventSubscriber implements Subscriber {
         const filter = copy(this.#filter);
         filter.fromBlock = this.#blockNumber + 1;
         filter.toBlock = blockNumber;
+        const logs = await this.#provider.getLogs(filter);
+
+        // No logs could just mean the node has not indexed them yet,
+        // so we keep a sliding window of 60 blocks to keep scanning
+        if (logs.length === 0) {
+            if (this.#blockNumber < blockNumber - 60) {
+                this.#blockNumber = blockNumber - 60;
+            }
+            return;
+        }
 
         this.#blockNumber = blockNumber;
-        const logs = await this.#provider.getLogs(filter);
 
         for (const log of logs) {
             this.#provider.emit(this.#filter, log);
