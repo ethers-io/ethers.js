@@ -747,8 +747,20 @@ export class AbstractProvider implements Provider {
     }
 
     async _getFilter(filter: Filter | FilterByBlockHash): Promise<PerformActionFilter> {
+        // Create a canonical representation of the topics
+        const topics = (filter.topics || [ ]).map((t) => {
+            if (t == null) { return null; }
+            if (Array.isArray(t)) {
+                return concisify(t.map((t) => t.toLowerCase()));
+            }
+            return t.toLowerCase();
+        });
+
+        const blockHash = ("blockHash" in filter) ? filter.blockHash: undefined;
+
         const lookup: { [K in keyof PerformActionFilter]: Promise<PerformActionFilter[K]> } = { };
 
+        // Addresses could be async (ENS names or Addressables)
         if (filter.address) {
             if (Array.isArray(filter.address)) {
                 lookup.address = <any>Promise.all(filter.address.map((a) => resolveAddress(a, this)));
@@ -757,6 +769,7 @@ export class AbstractProvider implements Provider {
             }
         }
 
+        // Block Tags could be async (i.e. relative)
         const addBlockTag = (key: "fromBlock" | "toBlock") => {
             if ((<Filter>filter)[key] == null) { return; }
             lookup[key] = this._getBlockTag((<Filter>filter)[key]);
@@ -764,14 +777,19 @@ export class AbstractProvider implements Provider {
         addBlockTag("fromBlock");
         addBlockTag("toBlock");
 
+        // Wait for all properties to resolve
         const result = await resolveProperties(lookup);
+
+        // Make sure things are canonical
         if (Array.isArray(result.address)) { result.address.sort(); }
 
-        if ((<FilterByBlockHash>filter).blockHash) {
+        result.topics = topics;
+
+        if (blockHash) {
             if ((<Filter>filter).fromBlock || (<Filter>filter).toBlock) {
                 throw new Error("invalid filter");
             }
-            result.blockHash = (<FilterByBlockHash>filter).blockHash;
+            result.blockHash = blockHash;
         }
 
         return result;
