@@ -8,7 +8,7 @@ import { shuffle } from "./shuffle.js";
 
 import type { Frozen } from "@ethersproject/properties";
 
-import type { PerformActionRequest, Subscriber, Subscription } from "./abstract-provider.js";
+import type { PerformActionRequest } from "./abstract-provider.js";
 import type { Networkish } from "./network.js"
 
 //const BN_0 = BigInt("0");
@@ -211,6 +211,39 @@ function getMedian(results: Array<TallyResult>): bigint {
     return (values[mid - 1] + values[mid] + BN_1) / BN_2;
 }
 
+function getFuzzyMode(quorum: number, results: Array<TallyResult>): undefined | number {
+    if (quorum === 1) { return logger.getNumber(getMedian(results), "%internal"); }
+
+    const tally: Map<number, { result: number, weight: number }> = new Map();
+    const add = (result: number, weight: number) => {
+        const t = tally.get(result) || { result, weight: 0 };
+        t.weight += weight;
+        tally.set(result, t);
+    };
+
+    for (const { weight, result } of results) {
+        const r = logger.getNumber(result);
+        add(r - 1, weight);
+        add(r, weight);
+        add(r + 1, weight);
+    }
+
+    let bestWeight = 0;
+    let bestResult = undefined;
+
+    for (const { weight, result } of tally.values()) {
+        // Use this result, if this result meets quorum and has either:
+        // - a better weight
+        // - or equal weight, but the result is larger
+        if (weight >= quorum && (weight > bestWeight || (bestResult != null && weight === bestWeight && result > bestResult))) {
+            bestWeight = weight;
+            bestResult = result;
+        }
+    }
+
+    return bestResult;
+}
+
 export class FallbackProvider extends AbstractProvider {
     //readonly providerConfigs!: ReadonlyArray<Required<Readonly<ProviderConfig>>>;
 
@@ -220,6 +253,7 @@ export class FallbackProvider extends AbstractProvider {
 
     readonly #configs: Array<Config>;
 
+    #height: number;
     #initialSyncPromise: null | Promise<void>;
 
     constructor(providers: Array<AbstractProvider | FallbackProviderConfig>, network?: Networkish) {
@@ -231,6 +265,8 @@ export class FallbackProvider extends AbstractProvider {
                 return Object.assign({ }, defaultConfig, p, defaultState );
             }
         });
+
+        this.#height = -2;
         this.#initialSyncPromise = null;
 
         this.quorum = 2; //Math.ceil(providers.length /  2);
@@ -242,13 +278,19 @@ export class FallbackProvider extends AbstractProvider {
         }
     }
 
+    // @TOOD: Copy these and only return public values
+    get providerConfigs(): Array<FallbackProviderState> {
+        return this.#configs.slice();
+    }
+
     async _detectNetwork() {
         return Network.from(logger.getBigInt(await this._perform({ method: "chainId" }))).freeze();
     }
 
-    _getSubscriber(sub: Subscription): Subscriber {
-        throw new Error("@TODO");
-    }
+    // @TODO: Add support to select providers to be the event subscriber
+    //_getSubscriber(sub: Subscription): Subscriber {
+    //    throw new Error("@TODO");
+    //}
 
     // Grab the next (random) config that is not already part of configs
     #getNextConfig(configs: Array<Config>): null | Config {
@@ -365,7 +407,20 @@ export class FallbackProvider extends AbstractProvider {
 
         switch (req.method) {
             case "getBlockNumber": {
-                throw new Error("TODO");
+                // We need to get the bootstrap block height
+                if (this.#height === -2) {
+                    const height = Math.ceil(logger.getNumber(getMedian(this.#configs.map((c) => ({
+                        result: c.blockNumber,
+                        normal: logger.getNumber(c.blockNumber).toString(),
+                        weight: c.weight
+                    }))), "%internal"));
+                    this.#height = height;
+                }
+
+                const mode = getFuzzyMode(this.quorum, results);
+                if (mode === undefined) { return undefined; }
+                if (mode > this.#height) { this.#height = mode; }
+                return this.#height;
             }
 
             case "getGasPrice":
