@@ -3,7 +3,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _Logger_instances, _Logger_assertIntRange, _Logger_getBytes, _Logger_log;
+var _Logger_instances, _Logger_getBytes, _Logger_log;
 import { version } from "./_version.js";
 export var LogLevel;
 (function (LogLevel) {
@@ -45,14 +45,6 @@ function defineReadOnly(object, name, value) {
         enumerable: true, writable: false, value,
     });
 }
-/*
-enum Censor {
-    OFF = 0,
-    ON = 1,
-    PERMANENT = 2
-};
-let _censor = Censor.OFF;
-*/
 // IEEE 754 support 53-bits of mantissa
 const maxValue = 0x1fffffffffffff;
 // The type of error to use for various error codes
@@ -180,15 +172,6 @@ export class Logger {
             expectedCount: expectedCount
         });
     }
-    assertInt53(value, operation) {
-        __classPrivateFieldGet(this, _Logger_instances, "m", _Logger_assertIntRange).call(this, "Int53", value, operation || "unknown", -maxValue);
-    }
-    assertUint53(value, operation) {
-        __classPrivateFieldGet(this, _Logger_instances, "m", _Logger_assertIntRange).call(this, "Int53", value, operation || "unknown", 0);
-    }
-    assertInteger(value, operation = "unknown", min = 0, max = maxValue) {
-        //this.#assertIntRange("Int53", value, operation || "unknown", 0);
-    }
     getBytes(value, name) {
         return __classPrivateFieldGet(this, _Logger_instances, "m", _Logger_getBytes).call(this, value, name, false);
     }
@@ -265,30 +248,7 @@ export class Logger {
         _logLevel = level;
     }
 }
-_Logger_instances = new WeakSet(), _Logger_assertIntRange = function _Logger_assertIntRange(name, value, operation, minValue) {
-    if (typeof (value) !== "number" || isNaN(value)) {
-        this.throwArgumentError(`invalid ${name}`, "INVALID_ARGUMENT", {
-            name: "value", value
-        });
-    }
-    let message = `invalid ${name} value`;
-    let fault = null;
-    if (isNaN(value)) {
-        fault = "not-a-number";
-    }
-    else if (value < minValue || value > maxValue) {
-        message = `unsafe ${name} value`;
-        fault = "overflow";
-    }
-    else if (Math.floor(value) !== value) {
-        fault = "underflow";
-    }
-    if (fault) {
-        this.throwError(message, "NUMERIC_FAULT", {
-            operation, fault, value
-        });
-    }
-}, _Logger_getBytes = function _Logger_getBytes(value, name, copy) {
+_Logger_instances = new WeakSet(), _Logger_getBytes = function _Logger_getBytes(value, name, copy) {
     if (value instanceof Uint8Array) {
         if (copy) {
             return new Uint8Array(value);
@@ -317,10 +277,4 @@ _Logger_instances = new WeakSet(), _Logger_assertIntRange = function _Logger_ass
 };
 //static readonly Errors = ErrorCode;
 Logger.LogLevels = LogLevel;
-//const l = new Logger();
-//l.makeError("foo", Logger.Errors.NUMERIC_FAULT, { fault: "foo", operation: "bar", value: 3 });
-//l.makeError("foo", Logger.Errors.UNPREDICTABLE_GAS_LIMIT, { transaction: <any>null });
-//l.makeError<NumericFaultError>("foo", ErrorCode.NUMERIC_FAULT, { fault: "foo", operation: "bar" });
-//l.makeError<EthersError>("foo", ErrorCode.NUMERIC_FAULT, { fault: "foo", operation: "bar", gii: "5" });
-//console.log(LogLevel);
 //# sourceMappingURL=logger.js.map

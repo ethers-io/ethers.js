@@ -10,7 +10,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
 var _Interface_instances, _Interface_errors, _Interface_events, _Interface_functions, _Interface_abiCoder, _Interface_getFunction, _Interface_getEvent;
-import { arrayify, concat, dataSlice, hexlify, zeroPadLeft, isHexString } from "@ethersproject/bytes";
+import { arrayify, concat, dataSlice, hexlify, zeroPadValue, isHexString } from "@ethersproject/bytes";
 import { keccak256 } from "@ethersproject/crypto";
 import { id } from "@ethersproject/hash";
 import { defineProperties } from "@ethersproject/properties";
@@ -432,7 +432,7 @@ export class Interface {
             if (param.type === "address") {
                 __classPrivateFieldGet(this, _Interface_abiCoder, "f").encode(["address"], [value]);
             }
-            return zeroPadLeft(hexlify(value), 32);
+            return zeroPadValue(hexlify(value), 32);
             //@TOOD should probably be return toHex(value, 32)
         };
         values.forEach((value, index) => {

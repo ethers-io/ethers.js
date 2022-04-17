@@ -20,10 +20,10 @@ function zeroPad(data, length, left) {
     }
     return hexlify(result);
 }
-export function zeroPadLeft(data, length) {
+export function zeroPadValue(data, length) {
     return zeroPad(data, length, true);
 }
-export function zeroPadRight(data, length) {
+export function zeroPadBytes(data, length) {
     return zeroPad(data, length, false);
 }
 //# sourceMappingURL=pad.js.map

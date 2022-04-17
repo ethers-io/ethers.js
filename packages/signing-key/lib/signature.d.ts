@@ -1,5 +1,5 @@
-import type { Freezable, Frozen } from "@ethersproject/properties";
 import type { BytesLike } from "@ethersproject/bytes";
+import type { Freezable, Frozen } from "@ethersproject/properties";
 import type { BigNumberish } from "@ethersproject/logger";
 export declare type SignatureLike = Signature | string | {
     r: string;
@@ -43,7 +43,6 @@ export declare class Signature implements Freezable<Signature> {
     static getChainId(v: BigNumberish): bigint;
     static getChainIdV(chainId: BigNumberish, v: 27 | 28): bigint;
     static getNormalizedV(v: BigNumberish): 27 | 28;
-    static fromTransaction(r: string, s: string, _v: BigNumberish): Frozen<Signature>;
     static from(sig: SignatureLike): Signature;
 }
 //# sourceMappingURL=signature.d.ts.map

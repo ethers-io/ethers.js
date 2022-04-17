@@ -10,8 +10,8 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
 var _Signature_props;
+import { concat, dataLength, hexlify, isHexString } from "@ethersproject/bytes";
 import { getStore, setStore } from "@ethersproject/properties";
-import { arrayify, concat, dataLength, hexlify, isHexString } from "@ethersproject/bytes";
 import { logger } from "./logger.js";
 // Constants
 const BN_0 = BigInt(0);
@@ -40,7 +40,7 @@ export class Signature {
         if (dataLength(value) !== 32) {
             logger.throwArgumentError("invalid r", "value", value);
         }
-        else if (arrayify(value)[0] & 0x80) {
+        else if (logger.getBytes(value)[0] & 0x80) {
             logger.throwArgumentError("non-canonical s", "value", value);
         }
         setStore(__classPrivateFieldGet(this, _Signature_props, "f"), "s", hexlify(value));
@@ -77,7 +77,7 @@ export class Signature {
     }
     get yParityAndS() {
         // The EIP-2098 compact representation
-        const yParityAndS = arrayify(this.s);
+        const yParityAndS = logger.getBytes(this.s);
         if (this.yParity) {
             yParityAndS[0] |= 0x80;
         }
@@ -93,13 +93,11 @@ export class Signature {
         return `Signature { r: "${this.r}", s: "${this.s}", yParity: ${this.yParity}, networkV: ${this.networkV} }`;
     }
     clone() {
-        if (getStore(__classPrivateFieldGet(this, _Signature_props, "f"), "networkV")) {
-            logger.throwError("cannot clone EIP-155 signatures", "UNSUPPORTED_OPERATION", {
-                operation: "clone"
-            });
+        const clone = new Signature(_guard, this.r, this.s, this.v);
+        if (this.networkV) {
+            setStore(__classPrivateFieldGet(clone, _Signature_props, "f"), "networkV", this.networkV);
         }
-        const { r, s, v } = __classPrivateFieldGet(this, _Signature_props, "f");
-        return new Signature(_guard, r, s, v);
+        return clone;
     }
     freeze() {
         Object.freeze(__classPrivateFieldGet(this, _Signature_props, "f"));
@@ -109,11 +107,11 @@ export class Signature {
         return Object.isFrozen(__classPrivateFieldGet(this, _Signature_props, "f"));
     }
     toJSON() {
-        const { r, s, v, networkV } = this;
+        const networkV = this.networkV;
         return {
             _type: "signature",
             networkV: ((networkV != null) ? networkV.toString() : null),
-            r, s, v,
+            r: this.r, s: this.s, v: this.v,
         };
     }
     static create() {
@@ -147,12 +145,6 @@ export class Signature {
         }
         // Otherwise, EIP-155 v means odd is 27 and even is 28
         return (bv & BN_1) ? 27 : 28;
-    }
-    static fromTransaction(r, s, _v) {
-        const v = logger.getBigInt(_v, "v");
-        const sig = Signature.from({ r, s, v });
-        setStore(__classPrivateFieldGet(sig, _Signature_props, "f"), "networkV", v);
-        return sig.freeze();
     }
     static from(sig) {
         const throwError = (message) => {
@@ -191,48 +183,53 @@ export class Signature {
         }
         // Get s; by any means necessary (we check consistency below)
         const s = (function (s, yParityAndS) {
-            if (s) {
+            if (s != null) {
                 if (!isHexString(s, 32)) {
                     throwError("invalid s");
                 }
                 return s;
             }
-            if (yParityAndS) {
+            if (yParityAndS != null) {
                 if (!isHexString(yParityAndS, 32)) {
                     throwError("invalid yParityAndS");
                 }
-                const bytes = arrayify(yParityAndS);
+                const bytes = logger.getBytes(yParityAndS);
                 bytes[0] &= 0x7f;
                 return hexlify(bytes);
             }
             return throwError("missing s");
         })(sig.s, sig.yParityAndS);
-        if (arrayify(s)[0] & 0x80) {
+        if (logger.getBytes(s)[0] & 0x80) {
             throwError("non-canonical s");
         }
         // Get v; by any means necessary (we check consistency below)
-        const v = (function (v, yParityAndS, yParity) {
-            if (v) {
-                return Signature.getNormalizedV(v);
+        const { networkV, v } = (function (_v, yParityAndS, yParity) {
+            if (_v != null) {
+                const v = logger.getBigInt(_v);
+                return {
+                    networkV: ((v >= BN_35) ? v : undefined),
+                    v: Signature.getNormalizedV(v)
+                };
             }
-            if (yParityAndS) {
+            if (yParityAndS != null) {
                 if (!isHexString(yParityAndS, 32)) {
                     throwError("invalid yParityAndS");
                 }
-                return ((arrayify(yParityAndS)[0] & 0x80) ? 28 : 27);
+                return { v: ((logger.getBytes(yParityAndS)[0] & 0x80) ? 28 : 27) };
             }
-            if (yParity) {
+            if (yParity != null) {
                 switch (yParity) {
-                    case 0: return 27;
-                    case 1: return 28;
+                    case 0: return { v: 27 };
+                    case 1: return { v: 28 };
                 }
                 return throwError("invalid yParity");
             }
-            //if (chainId) { return BigNumber.from(chainId).and(1).sub(27); } // @TODO: check this
             return throwError("missing v");
         })(sig.v, sig.yParityAndS, sig.yParity);
-        // @TODO: add chainId support
         const result = new Signature(_guard, r, s, v);
+        if (networkV) {
+            setStore(__classPrivateFieldGet(result, _Signature_props, "f"), "networkV", networkV);
+        }
         // If multiple of v, yParity, yParityAndS we given, check they match
         if ("yParity" in sig && sig.yParity !== result.yParity) {
             throwError("yParity mismatch");
@@ -240,8 +237,6 @@ export class Signature {
         else if ("yParityAndS" in sig && sig.yParityAndS !== result.yParityAndS) {
             throwError("yParityAndS mismatch");
         }
-        //if (sig.chainId && sig.chainId !== result.chainId) {
-        //}
         return result;
     }
 }

@@ -260,14 +260,14 @@ export function isContractCallException(error: any): error is ContractCallExcept
 }
 */
 
-const version$g = "@ethersproject/logger@6.0.0-beta.1";
+const version$g = "@ethersproject/logger@6.0.0-beta.2";
 
 var __classPrivateFieldGet$y = (window && window.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _Logger_instances, _Logger_assertIntRange, _Logger_getBytes, _Logger_log;
+var _Logger_instances, _Logger_getBytes, _Logger_log;
 var LogLevel;
 (function (LogLevel) {
     LogLevel["DEBUG"] = "DEBUG";
@@ -307,14 +307,6 @@ function defineReadOnly(object, name, value) {
         enumerable: true, writable: false, value,
     });
 }
-/*
-enum Censor {
-    OFF = 0,
-    ON = 1,
-    PERMANENT = 2
-};
-let _censor = Censor.OFF;
-*/
 // IEEE 754 support 53-bits of mantissa
 const maxValue$1 = 0x1fffffffffffff;
 // The type of error to use for various error codes
@@ -442,15 +434,6 @@ class Logger {
             expectedCount: expectedCount
         });
     }
-    assertInt53(value, operation) {
-        __classPrivateFieldGet$y(this, _Logger_instances, "m", _Logger_assertIntRange).call(this, "Int53", value, operation || "unknown", -maxValue$1);
-    }
-    assertUint53(value, operation) {
-        __classPrivateFieldGet$y(this, _Logger_instances, "m", _Logger_assertIntRange).call(this, "Int53", value, operation || "unknown", 0);
-    }
-    assertInteger(value, operation = "unknown", min = 0, max = maxValue$1) {
-        //this.#assertIntRange("Int53", value, operation || "unknown", 0);
-    }
     getBytes(value, name) {
         return __classPrivateFieldGet$y(this, _Logger_instances, "m", _Logger_getBytes).call(this, value, name, false);
     }
@@ -527,30 +510,7 @@ class Logger {
         _logLevel = level;
     }
 }
-_Logger_instances = new WeakSet(), _Logger_assertIntRange = function _Logger_assertIntRange(name, value, operation, minValue) {
-    if (typeof (value) !== "number" || isNaN(value)) {
-        this.throwArgumentError(`invalid ${name}`, "INVALID_ARGUMENT", {
-            name: "value", value
-        });
-    }
-    let message = `invalid ${name} value`;
-    let fault = null;
-    if (isNaN(value)) {
-        fault = "not-a-number";
-    }
-    else if (value < minValue || value > maxValue$1) {
-        message = `unsafe ${name} value`;
-        fault = "overflow";
-    }
-    else if (Math.floor(value) !== value) {
-        fault = "underflow";
-    }
-    if (fault) {
-        this.throwError(message, "NUMERIC_FAULT", {
-            operation, fault, value
-        });
-    }
-}, _Logger_getBytes = function _Logger_getBytes(value, name, copy) {
+_Logger_instances = new WeakSet(), _Logger_getBytes = function _Logger_getBytes(value, name, copy) {
     if (value instanceof Uint8Array) {
         if (copy) {
             return new Uint8Array(value);
@@ -579,14 +539,8 @@ _Logger_instances = new WeakSet(), _Logger_assertIntRange = function _Logger_ass
 };
 //static readonly Errors = ErrorCode;
 Logger.LogLevels = LogLevel;
-//const l = new Logger();
-//l.makeError("foo", Logger.Errors.NUMERIC_FAULT, { fault: "foo", operation: "bar", value: 3 });
-//l.makeError("foo", Logger.Errors.UNPREDICTABLE_GAS_LIMIT, { transaction: <any>null });
-//l.makeError<NumericFaultError>("foo", ErrorCode.NUMERIC_FAULT, { fault: "foo", operation: "bar" });
-//l.makeError<EthersError>("foo", ErrorCode.NUMERIC_FAULT, { fault: "foo", operation: "bar", gii: "5" });
-//console.log(LogLevel);
 
-const version$f = "@ethersproject/abi@6.0.0-beta.1";
+const version$f = "@ethersproject/abi@6.0.0-beta.2";
 
 const logger$e = new Logger(version$f);
 
@@ -1493,7 +1447,7 @@ class StructFragment extends NamedFragment {
     }
 }
 
-const version$e = "@ethersproject/math@6.0.0-beta.2";
+const version$e = "@ethersproject/math@6.0.0-beta.3";
 
 const logger$d = new Logger(version$e);
 
@@ -2047,7 +2001,7 @@ function isBytesLike(value) {
     return (isHexString(value, true) || (value instanceof Uint8Array));
 }
 
-const version$d = "@ethersproject/bytes@6.0.0-beta.1";
+const version$d = "@ethersproject/bytes@6.0.0-beta.2";
 
 const logger$c = new Logger(version$d);
 
@@ -2068,11 +2022,11 @@ function arrayify(data) {
         logger$c.throwArgumentError("cannot arrayify nullish", "data", data);
     }
     if (typeof (data) === "number") {
-        logger$c.assertUint53(data);
+        let v = logger$c.getNumber(data, "data");
         const result = [];
-        while (data) {
-            result.unshift(data & 0xff);
-            data = parseInt(String(data / 256));
+        while (v) {
+            result.unshift(v & 0xff);
+            v = parseInt(String(v / 256));
         }
         if (result.length === 0) {
             result.push(0);
@@ -2195,10 +2149,10 @@ function zeroPad(data, length, left) {
     }
     return hexlify(result);
 }
-function zeroPadLeft(data, length) {
+function zeroPadValue(data, length) {
     return zeroPad(data, length, true);
 }
-function zeroPadRight(data, length) {
+function zeroPadBytes(data, length) {
     return zeroPad(data, length, false);
 }
 
@@ -3138,7 +3092,7 @@ const sha512$1 = wrapConstructor(() => new SHA512());
 wrapConstructor(() => new SHA512_256());
 wrapConstructor(() => new SHA384());
 
-const version$c = "@ethersproject/crypto@6.0.0-beta.1";
+const version$c = "@ethersproject/crypto@6.0.0-beta.2";
 
 const logger$b = new Logger(version$c);
 
@@ -3895,7 +3849,7 @@ function lock() {
     sha512.lock();
 }
 
-const version$b = "@ethersproject/address@6.0.0-beta.1";
+const version$b = "@ethersproject/address@6.0.0-beta.2";
 
 const logger$a = new Logger(version$b);
 
@@ -4004,7 +3958,7 @@ function getIcapAddress(address) {
     return "XE" + ibanChecksum("XE00" + base36) + base36;
 }
 
-const version$a = "@ethersproject/rlp@6.0.0-beta.1";
+const version$a = "@ethersproject/rlp@6.0.0-beta.2";
 
 const logger$9 = new Logger(version$a);
 
@@ -4751,7 +4705,7 @@ class NumberCoder extends Coder {
     }
 }
 
-const version$9 = "@ethersproject/strings@6.0.0-beta.1";
+const version$9 = "@ethersproject/strings@6.0.0-beta.2";
 
 const logger$8 = new Logger(version$9);
 
@@ -5002,7 +4956,7 @@ function formatBytes32String(text) {
         throw new Error("bytes32 string must be less than 32 bytes");
     }
     // Zero-pad (implicitly null-terminates)
-    return zeroPadRight(bytes, 32);
+    return zeroPadBytes(bytes, 32);
 }
 function parseBytes32String(_bytes) {
     const data = logger$8.getBytes(_bytes, "bytes");
@@ -5356,7 +5310,7 @@ function id(value) {
     return keccak256(toUtf8Bytes(value));
 }
 
-const version$8 = "@ethersproject/hash@6.0.0-beta.2";
+const version$8 = "@ethersproject/hash@6.0.0-beta.3";
 
 const logger$7 = new Logger(version$8);
 
@@ -5532,7 +5486,7 @@ function getBaseEncoder(type) {
     }
     switch (type) {
         case "address": return function (value) {
-            return zeroPadLeft(getAddress(value), 32);
+            return zeroPadValue(getAddress(value), 32);
         };
         case "bool": return function (value) {
             return ((!value) ? hexFalse : hexTrue);
@@ -6282,7 +6236,7 @@ class Interface {
             if (param.type === "address") {
                 __classPrivateFieldGet$r(this, _Interface_abiCoder, "f").encode(["address"], [value]);
             }
-            return zeroPadLeft(hexlify(value), 32);
+            return zeroPadValue(hexlify(value), 32);
             //@TOOD should probably be return toHex(value, 32)
         };
         values.forEach((value, index) => {
@@ -6613,7 +6567,7 @@ _Interface_errors = new WeakMap(), _Interface_events = new WeakMap(), _Interface
     return logger$e.throwArgumentError("no matching event", "signature", key);
 };
 
-const version$7 = "@ethersproject/web@6.0.0-beta.1";
+const version$7 = "@ethersproject/web@6.0.0-beta.2";
 
 const logger$6 = new Logger(version$7);
 
@@ -7153,7 +7107,7 @@ fetchData.setArGateway = function (gateway) {
     }
 };
 
-const version$6 = "@ethersproject/providers@6.0.0-beta.2";
+const version$6 = "@ethersproject/providers@6.0.0-beta.3";
 
 const logger$5 = new Logger(version$6);
 
@@ -7476,7 +7430,7 @@ class EnsResolver {
                         else if (scheme === "erc1155") {
                             // balanceOf(address owner, uint256 tokenId)
                             const balance = logger$5.getBigInt(await this.provider.call({
-                                to: addr, data: concat(["0x00fdd58e", zeroPadLeft(owner, 32), tokenId])
+                                to: addr, data: concat(["0x00fdd58e", zeroPadValue(owner, 32), tokenId])
                             }));
                             if (!balance) {
                                 linkage.push({ type: "!balance", value: "0" });
@@ -7617,7 +7571,7 @@ _a$1 = EnsResolver, _EnsResolver_supports2544 = new WeakMap(), _EnsResolver_getR
     return null;
 };
 
-const version$5 = "@ethersproject/signing-key@6.0.0-beta.1";
+const version$5 = "@ethersproject/signing-key@6.0.0-beta.2";
 
 const logger$4 = new Logger(version$5);
 
@@ -7636,10 +7590,10 @@ var _Signature_props;
 // Constants
 const BN_0$1 = BigInt(0);
 const BN_1$1 = BigInt(1);
-const BN_2$2 = BigInt(2);
-const BN_27 = BigInt(27);
-const BN_28 = BigInt(28);
-const BN_35 = BigInt(35);
+const BN_2$3 = BigInt(2);
+const BN_27$1 = BigInt(27);
+const BN_28$1 = BigInt(28);
+const BN_35$1 = BigInt(35);
 const _guard$2 = {};
 const Zero = "0x0000000000000000000000000000000000000000000000000000000000000000";
 class Signature$1 {
@@ -7660,7 +7614,7 @@ class Signature$1 {
         if (dataLength(value) !== 32) {
             logger$4.throwArgumentError("invalid r", "value", value);
         }
-        else if (arrayify(value)[0] & 0x80) {
+        else if (logger$4.getBytes(value)[0] & 0x80) {
             logger$4.throwArgumentError("non-canonical s", "value", value);
         }
         setStore(__classPrivateFieldGet$n(this, _Signature_props, "f"), "s", hexlify(value));
@@ -7697,7 +7651,7 @@ class Signature$1 {
     }
     get yParityAndS() {
         // The EIP-2098 compact representation
-        const yParityAndS = arrayify(this.s);
+        const yParityAndS = logger$4.getBytes(this.s);
         if (this.yParity) {
             yParityAndS[0] |= 0x80;
         }
@@ -7713,13 +7667,11 @@ class Signature$1 {
         return `Signature { r: "${this.r}", s: "${this.s}", yParity: ${this.yParity}, networkV: ${this.networkV} }`;
     }
     clone() {
-        if (getStore(__classPrivateFieldGet$n(this, _Signature_props, "f"), "networkV")) {
-            logger$4.throwError("cannot clone EIP-155 signatures", "UNSUPPORTED_OPERATION", {
-                operation: "clone"
-            });
+        const clone = new Signature$1(_guard$2, this.r, this.s, this.v);
+        if (this.networkV) {
+            setStore(__classPrivateFieldGet$n(clone, _Signature_props, "f"), "networkV", this.networkV);
         }
-        const { r, s, v } = __classPrivateFieldGet$n(this, _Signature_props, "f");
-        return new Signature$1(_guard$2, r, s, v);
+        return clone;
     }
     freeze() {
         Object.freeze(__classPrivateFieldGet$n(this, _Signature_props, "f"));
@@ -7729,11 +7681,11 @@ class Signature$1 {
         return Object.isFrozen(__classPrivateFieldGet$n(this, _Signature_props, "f"));
     }
     toJSON() {
-        const { r, s, v, networkV } = this;
+        const networkV = this.networkV;
         return {
             _type: "signature",
             networkV: ((networkV != null) ? networkV.toString() : null),
-            r, s, v,
+            r: this.r, s: this.s, v: this.v,
         };
     }
     static create() {
@@ -7743,18 +7695,18 @@ class Signature$1 {
     static getChainId(v) {
         const bv = logger$4.getBigInt(v, "v");
         // The v is not an EIP-155 v, so it is the unspecified chain ID
-        if ((bv == BN_27) || (bv == BN_28)) {
+        if ((bv == BN_27$1) || (bv == BN_28$1)) {
             return BN_0$1;
         }
         // Bad value for an EIP-155 v
-        if (bv < BN_35) {
+        if (bv < BN_35$1) {
             logger$4.throwArgumentError("invalid EIP-155 v", "v", v);
         }
-        return (bv - BN_35) / BN_2$2;
+        return (bv - BN_35$1) / BN_2$3;
     }
     // Get the EIP-155 v transformed for a given chainId
     static getChainIdV(chainId, v) {
-        return (logger$4.getBigInt(chainId) * BN_2$2) + BigInt(35 + v - 27);
+        return (logger$4.getBigInt(chainId) * BN_2$3) + BigInt(35 + v - 27);
     }
     // Convert an EIP-155 v into a normalized v
     static getNormalizedV(v) {
@@ -7767,12 +7719,6 @@ class Signature$1 {
         }
         // Otherwise, EIP-155 v means odd is 27 and even is 28
         return (bv & BN_1$1) ? 27 : 28;
-    }
-    static fromTransaction(r, s, _v) {
-        const v = logger$4.getBigInt(_v, "v");
-        const sig = Signature$1.from({ r, s, v });
-        setStore(__classPrivateFieldGet$n(sig, _Signature_props, "f"), "networkV", v);
-        return sig.freeze();
     }
     static from(sig) {
         const throwError = (message) => {
@@ -7811,48 +7757,53 @@ class Signature$1 {
         }
         // Get s; by any means necessary (we check consistency below)
         const s = (function (s, yParityAndS) {
-            if (s) {
+            if (s != null) {
                 if (!isHexString(s, 32)) {
                     throwError("invalid s");
                 }
                 return s;
             }
-            if (yParityAndS) {
+            if (yParityAndS != null) {
                 if (!isHexString(yParityAndS, 32)) {
                     throwError("invalid yParityAndS");
                 }
-                const bytes = arrayify(yParityAndS);
+                const bytes = logger$4.getBytes(yParityAndS);
                 bytes[0] &= 0x7f;
                 return hexlify(bytes);
             }
             return throwError("missing s");
         })(sig.s, sig.yParityAndS);
-        if (arrayify(s)[0] & 0x80) {
+        if (logger$4.getBytes(s)[0] & 0x80) {
             throwError("non-canonical s");
         }
         // Get v; by any means necessary (we check consistency below)
-        const v = (function (v, yParityAndS, yParity) {
-            if (v) {
-                return Signature$1.getNormalizedV(v);
+        const { networkV, v } = (function (_v, yParityAndS, yParity) {
+            if (_v != null) {
+                const v = logger$4.getBigInt(_v);
+                return {
+                    networkV: ((v >= BN_35$1) ? v : undefined),
+                    v: Signature$1.getNormalizedV(v)
+                };
             }
-            if (yParityAndS) {
+            if (yParityAndS != null) {
                 if (!isHexString(yParityAndS, 32)) {
                     throwError("invalid yParityAndS");
                 }
-                return ((arrayify(yParityAndS)[0] & 0x80) ? 28 : 27);
+                return { v: ((logger$4.getBytes(yParityAndS)[0] & 0x80) ? 28 : 27) };
             }
-            if (yParity) {
+            if (yParity != null) {
                 switch (yParity) {
-                    case 0: return 27;
-                    case 1: return 28;
+                    case 0: return { v: 27 };
+                    case 1: return { v: 28 };
                 }
                 return throwError("invalid yParity");
             }
-            //if (chainId) { return BigNumber.from(chainId).and(1).sub(27); } // @TODO: check this
             return throwError("missing v");
         })(sig.v, sig.yParityAndS, sig.yParity);
-        // @TODO: add chainId support
         const result = new Signature$1(_guard$2, r, s, v);
+        if (networkV) {
+            setStore(__classPrivateFieldGet$n(result, _Signature_props, "f"), "networkV", networkV);
+        }
         // If multiple of v, yParity, yParityAndS we given, check they match
         if ("yParity" in sig && sig.yParity !== result.yParity) {
             throwError("yParity mismatch");
@@ -7860,8 +7811,6 @@ class Signature$1 {
         else if ("yParityAndS" in sig && sig.yParityAndS !== result.yParityAndS) {
             throwError("yParityAndS mismatch");
         }
-        //if (sig.chainId && sig.chainId !== result.chainId) {
-        //}
         return result;
     }
 }
@@ -8926,7 +8875,15 @@ function accessListify(value) {
     return result;
 }
 
-const version$4 = "@ethersproject/transactions@6.0.0-beta.1";
+function computeAddress(key) {
+    const publicKey = SigningKey.computePublicKey(key, false);
+    return getAddress(keccak256("0x" + publicKey.substring(4)).substring(26));
+}
+function recoverAddress(digest, signature) {
+    return computeAddress(SigningKey.recoverPublicKey(digest, signature));
+}
+
+const version$4 = "@ethersproject/transactions@6.0.0-beta.2";
 
 const logger$3 = new Logger(version$4);
 
@@ -8943,6 +8900,49 @@ var __classPrivateFieldGet$l = (window && window.__classPrivateFieldGet) || func
 };
 var _Transaction_props;
 const BN_0 = BigInt(0);
+const BN_2$2 = BigInt(2);
+const BN_27 = BigInt(27);
+const BN_28 = BigInt(28);
+const BN_35 = BigInt(35);
+const BN_MAX_UINT = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+function handleAddress(value) {
+    if (value === "0x") {
+        return null;
+    }
+    return getAddress(value);
+}
+function handleData(value, param) {
+    try {
+        return hexlify(value);
+    }
+    catch (error) {
+        return logger$3.throwArgumentError("invalid data", param, value);
+    }
+}
+function handleAccessList(value, param) {
+    try {
+        return accessListify(value);
+    }
+    catch (error) {
+        return logger$3.throwArgumentError("invalid accessList", param, value);
+    }
+}
+function handleNumber(_value, param) {
+    if (_value === "0x") {
+        return 0;
+    }
+    return logger$3.getNumber(_value, param);
+}
+function handleUint(_value, param) {
+    if (_value === "0x") {
+        return BN_0;
+    }
+    const value = logger$3.getBigInt(_value, param);
+    if (value > BN_MAX_UINT) {
+        logger$3.throwArgumentError("value exceeds uint size", param, value);
+    }
+    return value;
+}
 function formatNumber(_value, name) {
     const value = logger$3.getBigInt(_value, "value");
     const result = toArray(value);
@@ -8955,7 +8955,50 @@ function formatAccessList(value) {
     return accessListify(value).map((set) => [set.address, set.storageKeys]);
 }
 function _parseLegacy(data) {
-    return {};
+    const fields = decodeRlp(data);
+    if (!Array.isArray(fields) || (fields.length !== 9 && fields.length !== 6)) {
+        return logger$3.throwArgumentError("invalid field count for legacy transaction", "data", data);
+    }
+    const tx = {
+        type: 0,
+        nonce: handleNumber(fields[0], "nonce"),
+        gasPrice: handleUint(fields[1], "gasPrice"),
+        gasLimit: handleUint(fields[2], "gasLimit"),
+        to: handleAddress(fields[3]),
+        value: handleUint(fields[4], "value"),
+        data: handleData(fields[5], "dta"),
+        chainId: BN_0
+    };
+    // Legacy unsigned transaction
+    if (fields.length === 6) {
+        return tx;
+    }
+    const v = handleUint(fields[6], "v");
+    const r = handleUint(fields[7], "r");
+    const s = handleUint(fields[8], "s");
+    if (r === BN_0 && s === BN_0) {
+        // EIP-155 unsigned transaction
+        tx.chainId = v;
+    }
+    else {
+        // Compute the EIP-155 chain ID (or 0 for legacy)
+        let chainId = (v - BN_35) / BN_2$2;
+        if (chainId < BN_0) {
+            chainId = BN_0;
+        }
+        tx.chainId = chainId;
+        // Signed Legacy Transaction
+        if (chainId === BN_0 && (v < BN_27 || v > BN_28)) {
+            logger$3.throwArgumentError("non-canonical legacy v", "v", fields[6]);
+        }
+        tx.signature = Signature$1.from({
+            r: zeroPadValue(fields[7], 32),
+            s: zeroPadValue(fields[8], 32),
+            v
+        });
+        tx.hash = keccak256(data);
+    }
+    return tx;
 }
 function _serializeLegacy(tx, sig) {
     const fields = [
@@ -9006,18 +9049,51 @@ function _serializeLegacy(tx, sig) {
     fields.push(toArray(sig.s));
     return encodeRlp(fields);
 }
+function _parseEipSignature(tx, fields, serialize) {
+    let yParity;
+    try {
+        yParity = handleNumber(fields[0], "yParity");
+        if (yParity !== 0 && yParity !== 1) {
+            throw new Error("bad yParity");
+        }
+    }
+    catch (error) {
+        return logger$3.throwArgumentError("invalid yParity", "yParity", fields[0]);
+    }
+    const r = zeroPadValue(fields[1], 32);
+    const s = zeroPadValue(fields[2], 32);
+    const signature = Signature$1.from({ r, s, yParity });
+    tx.signature = signature;
+}
 function _parseEip1559(data) {
-    throw new Error("@TODO");
+    const fields = decodeRlp(logger$3.getBytes(data).slice(1));
+    if (!Array.isArray(fields) || (fields.length !== 9 && fields.length !== 12)) {
+        logger$3.throwArgumentError("invalid field count for transaction type: 2", "data", hexlify(data));
+    }
+    const maxPriorityFeePerGas = handleUint(fields[2], "maxPriorityFeePerGas");
+    const maxFeePerGas = handleUint(fields[3], "maxFeePerGas");
+    const tx = {
+        type: 2,
+        chainId: handleUint(fields[0], "chainId"),
+        nonce: handleNumber(fields[1], "nonce"),
+        maxPriorityFeePerGas: maxPriorityFeePerGas,
+        maxFeePerGas: maxFeePerGas,
+        gasPrice: null,
+        gasLimit: handleUint(fields[4], "gasLimit"),
+        to: handleAddress(fields[5]),
+        value: handleUint(fields[6], "value"),
+        data: handleData(fields[7], "data"),
+        accessList: handleAccessList(fields[8], "accessList"),
+    };
+    // Unsigned EIP-1559 Transaction
+    if (fields.length === 9) {
+        return tx;
+    }
+    tx.hash = keccak256(data);
+    _parseEipSignature(tx, fields.slice(9));
+    return tx;
 }
 function _serializeEip1559(tx, sig) {
-    // If there is an explicit gasPrice, make sure it matches the
-    // EIP-1559 fees; otherwise they may not understand what they
-    // think they are setting in terms of fee.
-    //if (tx.gasPrice != null) {
-    //    if (tx.gasPrice !== (tx.maxFeePerGas || BN_0)) {
-    //        logger.throwArgumentError("mismatch EIP-1559 gasPrice != maxFeePerGas", "tx", tx);
-    //    }
-    //}
     const fields = [
         formatNumber(tx.chainId || 0, "chainId"),
         formatNumber(tx.nonce || 0, "nonce"),
@@ -9037,7 +9113,28 @@ function _serializeEip1559(tx, sig) {
     return concat(["0x02", encodeRlp(fields)]);
 }
 function _parseEip2930(data) {
-    throw new Error("@TODO");
+    const fields = decodeRlp(logger$3.getBytes(data).slice(1));
+    if (!Array.isArray(fields) || (fields.length !== 8 && fields.length !== 11)) {
+        logger$3.throwArgumentError("invalid field count for transaction type: 1", "data", hexlify(data));
+    }
+    const tx = {
+        type: 1,
+        chainId: handleUint(fields[0], "chainId"),
+        nonce: handleNumber(fields[1], "nonce"),
+        gasPrice: handleUint(fields[2], "gasPrice"),
+        gasLimit: handleUint(fields[3], "gasLimit"),
+        to: handleAddress(fields[4]),
+        value: handleUint(fields[5], "value"),
+        data: handleData(fields[6], "data"),
+        accessList: handleAccessList(fields[7], "accessList")
+    };
+    // Unsigned EIP-2930 Transaction
+    if (fields.length === 8) {
+        return tx;
+    }
+    tx.hash = keccak256(data);
+    _parseEipSignature(tx, fields.slice(8));
+    return tx;
 }
 function _serializeEip2930(tx, sig) {
     const fields = [
@@ -9108,23 +9205,6 @@ class Transaction {
                 throw new Error(`unsupported transaction type`);
         }
     }
-    /*
-    detectType(): number {
-        const hasFee = (this.maxFeePerGas != null) || (this.maxPriorityFeePerGas != null);
-        const hasAccessList = (this.accessList != null);
-        const hasLegacy = (this.gasPrice != null);
-
-        if (hasLegacy) {
-            if (hasFee) {
-                throw new Error("cannot mix legacy and london properties");
-            }
-            if (hasAccessList) { return 1; }
-            return 0;
-        }
-
-        return 2;
-    }
-    */
     get to() { return getStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "to"); }
     set to(value) {
         setStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "to", (value == null) ? null : getAddress(value));
@@ -9133,23 +9213,41 @@ class Transaction {
     set nonce(value) { setStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "nonce", logger$3.getNumber(value, "value")); }
     get gasLimit() { return getStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "gasLimit"); }
     set gasLimit(value) { setStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "gasLimit", logger$3.getBigInt(value)); }
-    get gasPrice() { return getStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "gasPrice"); }
+    get gasPrice() {
+        const value = getStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "gasPrice");
+        if (value == null && (this.type === 0 || this.type === 1)) {
+            return BN_0;
+        }
+        return value;
+    }
     set gasPrice(value) {
-        setStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "gasPrice", (value == null) ? null : logger$3.getBigInt(value));
+        setStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "gasPrice", (value == null) ? null : logger$3.getBigInt(value, "gasPrice"));
     }
-    get maxPriorityFeePerGas() { return getStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "maxPriorityFeePerGas"); }
+    get maxPriorityFeePerGas() {
+        const value = getStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "maxPriorityFeePerGas");
+        if (value == null && this.type === 2) {
+            return BN_0;
+        }
+        return value;
+    }
     set maxPriorityFeePerGas(value) {
-        setStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "maxPriorityFeePerGas", (value == null) ? null : logger$3.getBigInt(value));
+        setStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "maxPriorityFeePerGas", (value == null) ? null : logger$3.getBigInt(value, "maxPriorityFeePerGas"));
     }
-    get maxFeePerGas() { return getStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "maxFeePerGas"); }
+    get maxFeePerGas() {
+        const value = getStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "maxFeePerGas");
+        if (value == null && this.type === 2) {
+            return BN_0;
+        }
+        return value;
+    }
     set maxFeePerGas(value) {
-        setStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "maxFeePerGas", (value == null) ? null : logger$3.getBigInt(value));
+        setStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "maxFeePerGas", (value == null) ? null : logger$3.getBigInt(value, "maxFeePerGas"));
     }
     get data() { return getStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "data"); }
     set data(value) { setStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "data", hexlify(value)); }
     get value() { return getStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "value"); }
     set value(value) {
-        setStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "value", logger$3.getBigInt(value));
+        setStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "value", logger$3.getBigInt(value, "value"));
     }
     get chainId() { return getStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "chainId"); }
     set chainId(value) { setStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "chainId", logger$3.getBigInt(value)); }
@@ -9157,7 +9255,13 @@ class Transaction {
     set signature(value) {
         setStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "sig", (value == null) ? null : Signature$1.from(value));
     }
-    get accessList() { return getStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "accessList") || null; }
+    get accessList() {
+        const value = getStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "accessList") || null;
+        if (value == null && (this.type === 1 || this.type === 2)) {
+            return [];
+        }
+        return value;
+    }
     set accessList(value) {
         setStore(__classPrivateFieldGet$l(this, _Transaction_props, "f"), "accessList", (value == null) ? null : accessListify(value));
     }
@@ -9174,8 +9278,7 @@ class Transaction {
         if (this.signature == null) {
             return null;
         }
-        // use ecomputeAddress(this.fromPublicKey);
-        return "";
+        return recoverAddress(this.unsignedSerialized, this.signature);
     }
     get fromPublicKey() {
         if (this.signature == null) {
@@ -9206,9 +9309,6 @@ class Transaction {
         throw new Error("unsupported type");
     }
     get unsignedSerialized() {
-        if (this.signature != null) {
-            throw new Error("cannot serialize unsigned transaction; maybe you meant .unsignedSerialized");
-        }
         const types = this.inferTypes();
         if (types.length !== 1) {
             throw new Error("cannot determine transaction type; specify type manually");
@@ -9232,7 +9332,7 @@ class Transaction {
         //if (hasGasPrice && hasFee) {
         //    throw new Error("transaction cannot have gasPrice and maxFeePerGas");
         //}
-        if (!!this.maxFeePerGas && !!this.maxPriorityFeePerGas) {
+        if (this.maxFeePerGas != null && this.maxPriorityFeePerGas != null) {
             if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
                 throw new Error("priorityFee cannot be more than maxFee");
             }
@@ -9274,6 +9374,9 @@ class Transaction {
         types.sort();
         return types;
     }
+    isLegacy() { return (this.type === 0); }
+    isBerlin() { return (this.type === 1); }
+    isLondon() { return (this.type === 2); }
     clone() {
         return Transaction.from(this);
     }
@@ -9297,11 +9400,11 @@ class Transaction {
         if (typeof (tx) === "string") {
             const payload = arrayify(tx);
             if (payload[0] >= 0x7f) { // @TODO: > vs >= ??
-                return Transaction.from(_parseLegacy());
+                return Transaction.from(_parseLegacy(payload));
             }
             switch (payload[0]) {
-                case 1: return Transaction.from(_parseEip2930(payload.slice(1)));
-                case 2: return Transaction.from(_parseEip1559(payload.slice(1)));
+                case 1: return Transaction.from(_parseEip2930(payload));
+                case 2: return Transaction.from(_parseEip1559(payload));
             }
             throw new Error("unsupported transaction type");
         }
@@ -9342,9 +9445,26 @@ class Transaction {
         if (tx.accessList != null) {
             result.accessList = tx.accessList;
         }
-        // Should these be checked?? Should from be allowed if there is no signature?
-        // from?: null | A;
-        // hash?: null | string;
+        if ("hash" in tx) {
+            if (result.isSigned()) {
+                if (result.hash !== tx.hash) {
+                    throw new Error("hash mismatch");
+                }
+            }
+            else {
+                throw new Error("unsigned transaction cannot have a hashs");
+            }
+        }
+        if ("from" in tx) {
+            if (result.isSigned()) {
+                if (result.from.toLowerCase() !== (tx.from || "").toLowerCase()) {
+                    throw new Error("from mismatch");
+                }
+            }
+            else {
+                throw new Error("unsigned transaction cannot have a from");
+            }
+        }
         return result;
     }
 }
@@ -10005,7 +10125,7 @@ class Formatter {
             value.gasLimit = value.gas;
         }
         value = __classPrivateFieldGet$j(this, _Formatter_format, "f").transactionResponse(value);
-        const sig = Signature$1.fromTransaction(value.r, value.s, value.v);
+        const sig = Signature$1.from({ r: value.r, s: value.s, v: value.v });
         value.signature = sig;
         if (value.chainId == null) {
             value.chainId = sig.legacyChainId;
@@ -14152,7 +14272,7 @@ class ContractEventPayload extends EventPayload {
     }
 }
 
-const version$3 = "@ethersproject/contract@6.0.0-beta.2";
+const version$3 = "@ethersproject/contract@6.0.0-beta.3";
 
 const logger$2 = new Logger(version$3);
 
@@ -14746,11 +14866,6 @@ function _ContractBase() {
 class Contract extends _ContractBase() {
 }
 
-function computeAddress(key) {
-    const publicKey = SigningKey.computePublicKey(key, false);
-    return getAddress(keccak256("0x" + publicKey.substring(4)).substring(26));
-}
-
 const subsChrs = " !#$%&'()*+,-./<=>?@[]^_`{|}~";
 const Word = /^[a-z]*$/i;
 function unfold(words, sep) {
@@ -14799,7 +14914,7 @@ function decodeOwl(data) {
     return decode(data.substring(1 + 2 * subsChrs.length), data.substring(1, 1 + 2 * subsChrs.length));
 }
 
-const version$2 = "@ethersproject/wordlists@6.0.0-beta.1";
+const version$2 = "@ethersproject/wordlists@6.0.0-beta.2";
 
 const logger$1 = new Logger(version$2);
 
@@ -14879,7 +14994,7 @@ class LangEn extends WordlistOwl {
 }
 const langEn = new LangEn();
 
-const version$1 = "@ethersproject/wallet@6.0.0-beta.2";
+const version$1 = "@ethersproject/wallet@6.0.0-beta.3";
 
 const logger = new Logger(version$1);
 
@@ -16248,7 +16363,7 @@ class Wallet extends BaseWallet {
 }
 _Wallet_mnemonic = new WeakMap();
 
-const version = "ethers@6.0.0-beta.3";
+const version = "ethers@6.0.0-beta.4";
 
 var ethers = /*#__PURE__*/Object.freeze({
     __proto__: null,
@@ -16271,8 +16386,8 @@ var ethers = /*#__PURE__*/Object.freeze({
     stripZerosLeft: stripZerosLeft,
     hexlify: hexlify,
     quantity: quantity,
-    zeroPadLeft: zeroPadLeft,
-    zeroPadRight: zeroPadRight,
+    zeroPadBytes: zeroPadBytes,
+    zeroPadValue: zeroPadValue,
     BaseContract: BaseContract,
     Contract: Contract,
     ContractEventPayload: ContractEventPayload,
@@ -16364,8 +16479,10 @@ var ethers = /*#__PURE__*/Object.freeze({
     get UnicodeNormalizationForm () { return UnicodeNormalizationForm; },
     Utf8ErrorFuncs: Utf8ErrorFuncs,
     get Utf8ErrorReason () { return Utf8ErrorReason; },
-    Transaction: Transaction,
+    accessListify: accessListify,
     computeAddress: computeAddress,
+    recoverAddress: recoverAddress,
+    Transaction: Transaction,
     defaultPath: defaultPath$1,
     getAccountPath: getAccountPath,
     HDNodeWallet: HDNodeWallet,
@@ -16383,5 +16500,5 @@ var ethers = /*#__PURE__*/Object.freeze({
     version: version
 });
 
-export { AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, Block, CloudflareProvider, Contract, ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, EnsPlugin, EnsResolver, EtherscanProvider, EventLog, FallbackProvider, FeeData, FetchRequest, FetchResponse, FixedFormat, FixedNumber, Formatter, GasCostPlugin, HDNodeVoidWallet, HDNodeWallet, HDNodeWalletManager, InfuraProvider, Interface, IpcSocketProvider, JsonRpcProvider, JsonRpcSigner, Log, MaxPriorityFeePlugin, Mnemonic, Network, NetworkPlugin, PocketProvider, Signature$1 as Signature, SigningKey, SocketProvider, StaticJsonRpcProvider, Transaction, TransactionReceipt, TransactionResponse, TypedDataEncoder, UnicodeNormalizationForm, UnmanagedSubscriber, Utf8ErrorFuncs, Utf8ErrorReason, VoidSigner, Wallet, WebSocketProvider, Wordlist, WordlistOwl, WordlistOwlA, WrappedSigner, _toEscapedUtf8String, arrayify, computeAddress, computeHmac, concat, dataLength, dataSlice, decodeBase58, decodeBase64, decodeRlp, defaultPath$1 as defaultPath, defineProperties, dnsEncode, dummyProvider, encodeBase58, encodeBase64, encodeRlp, ethers, fetchData, formatBytes32String, formatEther, formatFixed, formatUnits, fromTwos, getAccountPath, getAddress, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getStore, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isHexString, isValidName, keccak256, lock, mask, messagePrefix, namehash, nameprep, parseBytes32String, parseEther, parseFixed, parseUnits, pbkdf2, quantity, randomBytes, resolveAddress, resolveProperties, ripemd160, scrypt, scryptSync, setStore, sha256, sha512, showThrottleMessage, stripZerosLeft, toArray, toBigInt, toHex, toNumber, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, version, wordlists, zeroPadLeft, zeroPadRight };
+export { AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, Block, CloudflareProvider, Contract, ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, EnsPlugin, EnsResolver, EtherscanProvider, EventLog, FallbackProvider, FeeData, FetchRequest, FetchResponse, FixedFormat, FixedNumber, Formatter, GasCostPlugin, HDNodeVoidWallet, HDNodeWallet, HDNodeWalletManager, InfuraProvider, Interface, IpcSocketProvider, JsonRpcProvider, JsonRpcSigner, Log, MaxPriorityFeePlugin, Mnemonic, Network, NetworkPlugin, PocketProvider, Signature$1 as Signature, SigningKey, SocketProvider, StaticJsonRpcProvider, Transaction, TransactionReceipt, TransactionResponse, TypedDataEncoder, UnicodeNormalizationForm, UnmanagedSubscriber, Utf8ErrorFuncs, Utf8ErrorReason, VoidSigner, Wallet, WebSocketProvider, Wordlist, WordlistOwl, WordlistOwlA, WrappedSigner, _toEscapedUtf8String, accessListify, arrayify, computeAddress, computeHmac, concat, dataLength, dataSlice, decodeBase58, decodeBase64, decodeRlp, defaultPath$1 as defaultPath, defineProperties, dnsEncode, dummyProvider, encodeBase58, encodeBase64, encodeRlp, ethers, fetchData, formatBytes32String, formatEther, formatFixed, formatUnits, fromTwos, getAccountPath, getAddress, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getStore, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isHexString, isValidName, keccak256, lock, mask, messagePrefix, namehash, nameprep, parseBytes32String, parseEther, parseFixed, parseUnits, pbkdf2, quantity, randomBytes, recoverAddress, resolveAddress, resolveProperties, ripemd160, scrypt, scryptSync, setStore, sha256, sha512, showThrottleMessage, stripZerosLeft, toArray, toBigInt, toHex, toNumber, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, version, wordlists, zeroPadBytes, zeroPadValue };
 //# sourceMappingURL=ethers.js.map

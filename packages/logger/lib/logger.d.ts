@@ -26,9 +26,6 @@ export declare class Logger {
     assertNormalize(form: string): void;
     assertPrivate(givenGuard: any, guard: any, className?: string): void;
     assertArgumentCount(count: number, expectedCount: number, message?: string): void;
-    assertInt53(value: number, operation?: string): void;
-    assertUint53(value: number, operation?: string): void;
-    assertInteger(value: number, operation?: string, min?: number, max?: number): void;
     getBytes(value: BytesLike, name?: string): Uint8Array;
     getBytesCopy(value: BytesLike, name?: string): Uint8Array;
     getNumber(value: BigNumberish, name?: string): number;

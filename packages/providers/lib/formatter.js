@@ -182,7 +182,7 @@ export class Formatter {
             value.gasLimit = value.gas;
         }
         value = __classPrivateFieldGet(this, _Formatter_format, "f").transactionResponse(value);
-        const sig = Signature.fromTransaction(value.r, value.s, value.v);
+        const sig = Signature.from({ r: value.r, s: value.s, v: value.v });
         value.signature = sig;
         if (value.chainId == null) {
             value.chainId = sig.legacyChainId;

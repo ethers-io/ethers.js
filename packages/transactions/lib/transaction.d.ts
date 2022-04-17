@@ -1,7 +1,7 @@
-import { BytesLike } from "@ethersproject/bytes";
-import { Signature, SignatureLike } from "@ethersproject/signing-key";
-import type { BigNumberish } from "@ethersproject/logger";
+import { Signature } from "@ethersproject/signing-key";
+import type { BigNumberish, BytesLike } from "@ethersproject/logger";
 import type { Freezable, Frozen } from "@ethersproject/properties";
+import type { SignatureLike } from "@ethersproject/signing-key";
 import type { AccessList, AccessListish } from "./accesslist.js";
 export interface TransactionLike<A = string> {
     type?: null | number;
@@ -22,7 +22,23 @@ export interface TransactionLike<A = string> {
 export interface SignedTransaction extends Transaction {
     type: number;
     typeName: string;
+    from: string;
     signature: Signature;
+}
+export interface LegacyTransaction extends Transaction {
+    type: 0;
+    gasPrice: bigint;
+}
+export interface BerlinTransaction extends Transaction {
+    type: 1;
+    gasPrice: bigint;
+    accessList: AccessList;
+}
+export interface LondonTransaction extends Transaction {
+    type: 2;
+    maxFeePerGas: bigint;
+    maxPriorityFeePerGas: bigint;
+    accessList: AccessList;
 }
 export declare class Transaction implements Freezable<Transaction>, TransactionLike<string> {
     #private;
@@ -60,6 +76,9 @@ export declare class Transaction implements Freezable<Transaction>, TransactionL
     get serialized(): string;
     get unsignedSerialized(): string;
     inferTypes(): Array<number>;
+    isLegacy(): this is LegacyTransaction;
+    isBerlin(): this is BerlinTransaction;
+    isLondon(): this is LondonTransaction;
     clone(): Transaction;
     freeze(): Frozen<Transaction>;
     isFrozen(): boolean;

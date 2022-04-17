@@ -11,7 +11,9 @@
     "@ethersproject/transactions": "^6.0.0-beta.1"
   },
   "description": "Contract meta-class for ethers.",
-  "engines" : { "node" : ">=12.17.0" },
+  "engines": {
+    "node": ">=12.17.0"
+  },
   "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
@@ -35,5 +37,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./lib/index.d.ts",
-  "version": "6.0.0-beta.2"
+  "version": "6.0.0-beta.3"
 }

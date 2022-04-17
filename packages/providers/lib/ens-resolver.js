@@ -10,7 +10,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
 var _a, _EnsResolver_supports2544, _EnsResolver_getResolver;
-import { concat, dataSlice, hexlify, zeroPadLeft } from "@ethersproject/bytes";
+import { concat, dataSlice, hexlify, zeroPadValue } from "@ethersproject/bytes";
 import { dnsEncode, namehash } from "@ethersproject/hash";
 import { defineProperties } from "@ethersproject/properties";
 import { encodeBase58, toArray, toNumber } from "@ethersproject/math";
@@ -332,7 +332,7 @@ export class EnsResolver {
                         else if (scheme === "erc1155") {
                             // balanceOf(address owner, uint256 tokenId)
                             const balance = logger.getBigInt(await this.provider.call({
-                                to: addr, data: concat(["0x00fdd58e", zeroPadLeft(owner, 32), tokenId])
+                                to: addr, data: concat(["0x00fdd58e", zeroPadValue(owner, 32), tokenId])
                             }));
                             if (!balance) {
                                 linkage.push({ type: "!balance", value: "0" });

@@ -17,11 +17,11 @@ export function arrayify(data) {
         logger.throwArgumentError("cannot arrayify nullish", "data", data);
     }
     if (typeof (data) === "number") {
-        logger.assertUint53(data);
+        let v = logger.getNumber(data, "data");
         const result = [];
-        while (data) {
-            result.unshift(data & 0xff);
-            data = parseInt(String(data / 256));
+        while (v) {
+            result.unshift(v & 0xff);
+            v = parseInt(String(v / 256));
         }
         if (result.length === 0) {
             result.push(0);

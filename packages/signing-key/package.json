@@ -8,11 +8,13 @@
     "@ethersproject/properties": "^6.0.0-beta.1",
     "@noble/secp256k1": "1.5.5"
   },
+  "description": "Elliptic curve library functions for the secp256k1 curve.",
   "dummy": {
     "hash.js": "1.1.7"
   },
-  "description": "Elliptic curve library functions for the secp256k1 curve.",
-  "engines" : { "node" : ">=12.17.0" },
+  "engines": {
+    "node": ">=12.17.0"
+  },
   "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
@@ -36,5 +38,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./lib/index.d.ts",
-  "version": "6.0.0-beta.1"
+  "version": "6.0.0-beta.2"
 }

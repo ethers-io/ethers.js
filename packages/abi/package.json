@@ -8,11 +8,13 @@
     "@ethersproject/logger": "^6.0.0-beta.1",
     "@ethersproject/math": "^6.0.0-beta.1",
     "@ethersproject/properties": "^6.0.0-beta.1",
-    "@ethersproject/strings": "^6.0.0-beta.1",
-    "@ethersproject/rlp": "^6.0.0-beta.1"
+    "@ethersproject/rlp": "^6.0.0-beta.1",
+    "@ethersproject/strings": "^6.0.0-beta.1"
   },
   "description": "ABI coding for the EVM.",
-  "engines" : { "node" : ">=12.17.0" },
+  "engines": {
+    "node": ">=12.17.0"
+  },
   "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
@@ -36,5 +38,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./lib/index.d.ts",
-  "version": "6.0.0-beta.1"
+  "version": "6.0.0-beta.2"
 }

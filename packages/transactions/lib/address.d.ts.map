@@ -1,0 +1,1 @@
+{"version":3,"file":"address.d.ts","sourceRoot":"","sources":["../src.ts/address.ts"],"names":[],"mappings":"AAIA,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,uBAAuB,CAAC;AACvD,OAAO,KAAK,EAAE,aAAa,EAAE,MAAM,4BAA4B,CAAC;AAEhE,wBAAgB,cAAc,CAAC,GAAG,EAAE,MAAM,GAAG,MAAM,CAGlD;AAED,wBAAgB,cAAc,CAAC,MAAM,EAAE,SAAS,EAAE,SAAS,EAAE,aAAa,GAAG,MAAM,CAElF"}

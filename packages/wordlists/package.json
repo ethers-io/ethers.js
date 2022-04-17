@@ -1,4 +1,7 @@
 {
+  "__exports": {
+    "./": "./lib/"
+  },
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
     "@ethersproject/bytes": "^6.0.0-beta.1",
@@ -7,11 +10,10 @@
     "@ethersproject/strings": "^6.0.0-beta.1"
   },
   "description": "BIP-39 Wordlists for ethers.",
-  "engines" : { "node" : ">=12.17.0" },
-  "ethereum": "donations.ethers.eth",
-  "__exports": {
-    "./": "./lib/"
+  "engines": {
+    "node": ">=12.17.0"
   },
+  "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
     "ethers"
@@ -34,5 +36,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./lib/index.d.ts",
-  "version": "6.0.0-beta.1"
+  "version": "6.0.0-beta.2"
 }

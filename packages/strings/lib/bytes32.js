@@ -1,4 +1,4 @@
-import { zeroPadRight } from "@ethersproject/bytes";
+import { zeroPadBytes } from "@ethersproject/bytes";
 import { logger } from "./logger.js";
 import { toUtf8Bytes, toUtf8String } from "./utf8.js";
 export function formatBytes32String(text) {
@@ -9,7 +9,7 @@ export function formatBytes32String(text) {
         throw new Error("bytes32 string must be less than 32 bytes");
     }
     // Zero-pad (implicitly null-terminates)
-    return zeroPadRight(bytes, 32);
+    return zeroPadBytes(bytes, 32);
 }
 export function parseBytes32String(_bytes) {
     const data = logger.getBytes(_bytes, "bytes");

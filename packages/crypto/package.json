@@ -6,7 +6,9 @@
     "@noble/hashes": "1.0.0"
   },
   "description": "Basic crypto algorithms used for Ethereum.",
-  "engines" : { "node" : ">=12.17.0" },
+  "engines": {
+    "node": ">=12.17.0"
+  },
   "ethereum": "donations.ethers.eth",
   "keywords": [
     "Ethereum",
@@ -30,5 +32,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./lib/index.d.ts",
-  "version": "6.0.0-beta.1"
+  "version": "6.0.0-beta.2"
 }

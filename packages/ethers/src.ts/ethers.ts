@@ -147,11 +147,13 @@ export {
     Utf8ErrorFuncs, Utf8ErrorReason
 } from "@ethersproject/strings";
 
-export { Transaction } from "@ethersproject/transactions";
+export {
+    accessListify, computeAddress, recoverAddress,
+
+    Transaction
+} from "@ethersproject/transactions";
 
 export {
-    computeAddress,
-
     defaultPath,
 
     getAccountPath,

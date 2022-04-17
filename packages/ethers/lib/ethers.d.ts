@@ -1,6 +1,6 @@
 export { Interface } from "@ethersproject/abi";
 export { getAddress, getIcapAddress, getCreateAddress, getCreate2Address, isAddressable, isAddress, resolveAddress } from "@ethersproject/address";
-export { arrayify, decodeBase64, encodeBase64, isHexString, isBytesLike, concat, dataLength, dataSlice, stripZerosLeft, hexlify, quantity, zeroPadLeft, zeroPadRight } from "@ethersproject/bytes";
+export { arrayify, decodeBase64, encodeBase64, isHexString, isBytesLike, concat, dataLength, dataSlice, stripZerosLeft, hexlify, quantity, zeroPadBytes, zeroPadValue } from "@ethersproject/bytes";
 export { BaseContract, Contract, ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, EventLog } from "@ethersproject/contract";
 export { computeHmac, keccak256, ripemd160, sha256, sha512, pbkdf2, scrypt, scryptSync, randomBytes, lock, } from "@ethersproject/crypto";
 export { id, isValidName, namehash, dnsEncode, messagePrefix, hashMessage, TypedDataEncoder } from "@ethersproject/hash";
@@ -11,8 +11,8 @@ export type { ProviderPlugin, Subscriber, Subscription, CommunityResourcable, Av
 export { encodeRlp, decodeRlp } from "@ethersproject/rlp";
 export { Signature, SigningKey } from "@ethersproject/signing-key";
 export { formatBytes32String, parseBytes32String, nameprep, _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String, UnicodeNormalizationForm, Utf8ErrorFuncs, Utf8ErrorReason } from "@ethersproject/strings";
-export { Transaction } from "@ethersproject/transactions";
-export { computeAddress, defaultPath, getAccountPath, HDNodeWallet, HDNodeVoidWallet, HDNodeWalletManager, Mnemonic, Wallet } from "@ethersproject/wallet";
+export { accessListify, computeAddress, recoverAddress, Transaction } from "@ethersproject/transactions";
+export { defaultPath, getAccountPath, HDNodeWallet, HDNodeVoidWallet, HDNodeWalletManager, Mnemonic, Wallet } from "@ethersproject/wallet";
 export { fetchData, FetchRequest, FetchResponse } from "@ethersproject/web";
 export { Wordlist, WordlistOwl, WordlistOwlA, wordlists } from "@ethersproject/wordlists";
 export { version } from "./_version.js";

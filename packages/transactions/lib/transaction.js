@@ -11,15 +11,59 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 };
 var _Transaction_props;
 import { getAddress } from "@ethersproject/address";
-import { arrayify, concat, hexlify } from "@ethersproject/bytes";
+import { arrayify, concat, hexlify, zeroPadValue } from "@ethersproject/bytes";
 import { keccak256 } from "@ethersproject/crypto";
 import { toArray } from "@ethersproject/math";
 import { getStore, setStore } from "@ethersproject/properties";
-import { encodeRlp } from "@ethersproject/rlp";
+import { decodeRlp, encodeRlp } from "@ethersproject/rlp";
 import { Signature } from "@ethersproject/signing-key";
 import { accessListify } from "./accesslist.js";
+import { recoverAddress } from "./address.js";
 import { logger } from "./logger.js";
 const BN_0 = BigInt(0);
+const BN_2 = BigInt(2);
+const BN_27 = BigInt(27);
+const BN_28 = BigInt(28);
+const BN_35 = BigInt(35);
+const BN_MAX_UINT = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+function handleAddress(value) {
+    if (value === "0x") {
+        return null;
+    }
+    return getAddress(value);
+}
+function handleData(value, param) {
+    try {
+        return hexlify(value);
+    }
+    catch (error) {
+        return logger.throwArgumentError("invalid data", param, value);
+    }
+}
+function handleAccessList(value, param) {
+    try {
+        return accessListify(value);
+    }
+    catch (error) {
+        return logger.throwArgumentError("invalid accessList", param, value);
+    }
+}
+function handleNumber(_value, param) {
+    if (_value === "0x") {
+        return 0;
+    }
+    return logger.getNumber(_value, param);
+}
+function handleUint(_value, param) {
+    if (_value === "0x") {
+        return BN_0;
+    }
+    const value = logger.getBigInt(_value, param);
+    if (value > BN_MAX_UINT) {
+        logger.throwArgumentError("value exceeds uint size", param, value);
+    }
+    return value;
+}
 function formatNumber(_value, name) {
     const value = logger.getBigInt(_value, "value");
     const result = toArray(value);
@@ -32,7 +76,50 @@ function formatAccessList(value) {
     return accessListify(value).map((set) => [set.address, set.storageKeys]);
 }
 function _parseLegacy(data) {
-    return {};
+    const fields = decodeRlp(data);
+    if (!Array.isArray(fields) || (fields.length !== 9 && fields.length !== 6)) {
+        return logger.throwArgumentError("invalid field count for legacy transaction", "data", data);
+    }
+    const tx = {
+        type: 0,
+        nonce: handleNumber(fields[0], "nonce"),
+        gasPrice: handleUint(fields[1], "gasPrice"),
+        gasLimit: handleUint(fields[2], "gasLimit"),
+        to: handleAddress(fields[3]),
+        value: handleUint(fields[4], "value"),
+        data: handleData(fields[5], "dta"),
+        chainId: BN_0
+    };
+    // Legacy unsigned transaction
+    if (fields.length === 6) {
+        return tx;
+    }
+    const v = handleUint(fields[6], "v");
+    const r = handleUint(fields[7], "r");
+    const s = handleUint(fields[8], "s");
+    if (r === BN_0 && s === BN_0) {
+        // EIP-155 unsigned transaction
+        tx.chainId = v;
+    }
+    else {
+        // Compute the EIP-155 chain ID (or 0 for legacy)
+        let chainId = (v - BN_35) / BN_2;
+        if (chainId < BN_0) {
+            chainId = BN_0;
+        }
+        tx.chainId = chainId;
+        // Signed Legacy Transaction
+        if (chainId === BN_0 && (v < BN_27 || v > BN_28)) {
+            logger.throwArgumentError("non-canonical legacy v", "v", fields[6]);
+        }
+        tx.signature = Signature.from({
+            r: zeroPadValue(fields[7], 32),
+            s: zeroPadValue(fields[8], 32),
+            v
+        });
+        tx.hash = keccak256(data);
+    }
+    return tx;
 }
 function _serializeLegacy(tx, sig) {
     const fields = [
@@ -83,18 +170,51 @@ function _serializeLegacy(tx, sig) {
     fields.push(toArray(sig.s));
     return encodeRlp(fields);
 }
+function _parseEipSignature(tx, fields, serialize) {
+    let yParity;
+    try {
+        yParity = handleNumber(fields[0], "yParity");
+        if (yParity !== 0 && yParity !== 1) {
+            throw new Error("bad yParity");
+        }
+    }
+    catch (error) {
+        return logger.throwArgumentError("invalid yParity", "yParity", fields[0]);
+    }
+    const r = zeroPadValue(fields[1], 32);
+    const s = zeroPadValue(fields[2], 32);
+    const signature = Signature.from({ r, s, yParity });
+    tx.signature = signature;
+}
 function _parseEip1559(data) {
-    throw new Error("@TODO");
+    const fields = decodeRlp(logger.getBytes(data).slice(1));
+    if (!Array.isArray(fields) || (fields.length !== 9 && fields.length !== 12)) {
+        logger.throwArgumentError("invalid field count for transaction type: 2", "data", hexlify(data));
+    }
+    const maxPriorityFeePerGas = handleUint(fields[2], "maxPriorityFeePerGas");
+    const maxFeePerGas = handleUint(fields[3], "maxFeePerGas");
+    const tx = {
+        type: 2,
+        chainId: handleUint(fields[0], "chainId"),
+        nonce: handleNumber(fields[1], "nonce"),
+        maxPriorityFeePerGas: maxPriorityFeePerGas,
+        maxFeePerGas: maxFeePerGas,
+        gasPrice: null,
+        gasLimit: handleUint(fields[4], "gasLimit"),
+        to: handleAddress(fields[5]),
+        value: handleUint(fields[6], "value"),
+        data: handleData(fields[7], "data"),
+        accessList: handleAccessList(fields[8], "accessList"),
+    };
+    // Unsigned EIP-1559 Transaction
+    if (fields.length === 9) {
+        return tx;
+    }
+    tx.hash = keccak256(data);
+    _parseEipSignature(tx, fields.slice(9), _serializeEip1559);
+    return tx;
 }
 function _serializeEip1559(tx, sig) {
-    // If there is an explicit gasPrice, make sure it matches the
-    // EIP-1559 fees; otherwise they may not understand what they
-    // think they are setting in terms of fee.
-    //if (tx.gasPrice != null) {
-    //    if (tx.gasPrice !== (tx.maxFeePerGas || BN_0)) {
-    //        logger.throwArgumentError("mismatch EIP-1559 gasPrice != maxFeePerGas", "tx", tx);
-    //    }
-    //}
     const fields = [
         formatNumber(tx.chainId || 0, "chainId"),
         formatNumber(tx.nonce || 0, "nonce"),
@@ -114,7 +234,28 @@ function _serializeEip1559(tx, sig) {
     return concat(["0x02", encodeRlp(fields)]);
 }
 function _parseEip2930(data) {
-    throw new Error("@TODO");
+    const fields = decodeRlp(logger.getBytes(data).slice(1));
+    if (!Array.isArray(fields) || (fields.length !== 8 && fields.length !== 11)) {
+        logger.throwArgumentError("invalid field count for transaction type: 1", "data", hexlify(data));
+    }
+    const tx = {
+        type: 1,
+        chainId: handleUint(fields[0], "chainId"),
+        nonce: handleNumber(fields[1], "nonce"),
+        gasPrice: handleUint(fields[2], "gasPrice"),
+        gasLimit: handleUint(fields[3], "gasLimit"),
+        to: handleAddress(fields[4]),
+        value: handleUint(fields[5], "value"),
+        data: handleData(fields[6], "data"),
+        accessList: handleAccessList(fields[7], "accessList")
+    };
+    // Unsigned EIP-2930 Transaction
+    if (fields.length === 8) {
+        return tx;
+    }
+    tx.hash = keccak256(data);
+    _parseEipSignature(tx, fields.slice(8), _serializeEip2930);
+    return tx;
 }
 function _serializeEip2930(tx, sig) {
     const fields = [
@@ -185,23 +326,6 @@ export class Transaction {
                 throw new Error(`unsupported transaction type`);
         }
     }
-    /*
-    detectType(): number {
-        const hasFee = (this.maxFeePerGas != null) || (this.maxPriorityFeePerGas != null);
-        const hasAccessList = (this.accessList != null);
-        const hasLegacy = (this.gasPrice != null);
-
-        if (hasLegacy) {
-            if (hasFee) {
-                throw new Error("cannot mix legacy and london properties");
-            }
-            if (hasAccessList) { return 1; }
-            return 0;
-        }
-
-        return 2;
-    }
-    */
     get to() { return getStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "to"); }
     set to(value) {
         setStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "to", (value == null) ? null : getAddress(value));
@@ -210,23 +334,41 @@ export class Transaction {
     set nonce(value) { setStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "nonce", logger.getNumber(value, "value")); }
     get gasLimit() { return getStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "gasLimit"); }
     set gasLimit(value) { setStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "gasLimit", logger.getBigInt(value)); }
-    get gasPrice() { return getStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "gasPrice"); }
+    get gasPrice() {
+        const value = getStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "gasPrice");
+        if (value == null && (this.type === 0 || this.type === 1)) {
+            return BN_0;
+        }
+        return value;
+    }
     set gasPrice(value) {
-        setStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "gasPrice", (value == null) ? null : logger.getBigInt(value));
+        setStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "gasPrice", (value == null) ? null : logger.getBigInt(value, "gasPrice"));
     }
-    get maxPriorityFeePerGas() { return getStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "maxPriorityFeePerGas"); }
+    get maxPriorityFeePerGas() {
+        const value = getStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "maxPriorityFeePerGas");
+        if (value == null && this.type === 2) {
+            return BN_0;
+        }
+        return value;
+    }
     set maxPriorityFeePerGas(value) {
-        setStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "maxPriorityFeePerGas", (value == null) ? null : logger.getBigInt(value));
+        setStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "maxPriorityFeePerGas", (value == null) ? null : logger.getBigInt(value, "maxPriorityFeePerGas"));
     }
-    get maxFeePerGas() { return getStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "maxFeePerGas"); }
+    get maxFeePerGas() {
+        const value = getStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "maxFeePerGas");
+        if (value == null && this.type === 2) {
+            return BN_0;
+        }
+        return value;
+    }
     set maxFeePerGas(value) {
-        setStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "maxFeePerGas", (value == null) ? null : logger.getBigInt(value));
+        setStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "maxFeePerGas", (value == null) ? null : logger.getBigInt(value, "maxFeePerGas"));
     }
     get data() { return getStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "data"); }
     set data(value) { setStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "data", hexlify(value)); }
     get value() { return getStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "value"); }
     set value(value) {
-        setStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "value", logger.getBigInt(value));
+        setStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "value", logger.getBigInt(value, "value"));
     }
     get chainId() { return getStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "chainId"); }
     set chainId(value) { setStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "chainId", logger.getBigInt(value)); }
@@ -234,7 +376,13 @@ export class Transaction {
     set signature(value) {
         setStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "sig", (value == null) ? null : Signature.from(value));
     }
-    get accessList() { return getStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "accessList") || null; }
+    get accessList() {
+        const value = getStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "accessList") || null;
+        if (value == null && (this.type === 1 || this.type === 2)) {
+            return [];
+        }
+        return value;
+    }
     set accessList(value) {
         setStore(__classPrivateFieldGet(this, _Transaction_props, "f"), "accessList", (value == null) ? null : accessListify(value));
     }
@@ -251,8 +399,7 @@ export class Transaction {
         if (this.signature == null) {
             return null;
         }
-        // use ecomputeAddress(this.fromPublicKey);
-        return "";
+        return recoverAddress(this.unsignedSerialized, this.signature);
     }
     get fromPublicKey() {
         if (this.signature == null) {
@@ -283,9 +430,6 @@ export class Transaction {
         throw new Error("unsupported type");
     }
     get unsignedSerialized() {
-        if (this.signature != null) {
-            throw new Error("cannot serialize unsigned transaction; maybe you meant .unsignedSerialized");
-        }
         const types = this.inferTypes();
         if (types.length !== 1) {
             throw new Error("cannot determine transaction type; specify type manually");
@@ -309,7 +453,7 @@ export class Transaction {
         //if (hasGasPrice && hasFee) {
         //    throw new Error("transaction cannot have gasPrice and maxFeePerGas");
         //}
-        if (!!this.maxFeePerGas && !!this.maxPriorityFeePerGas) {
+        if (this.maxFeePerGas != null && this.maxPriorityFeePerGas != null) {
             if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
                 throw new Error("priorityFee cannot be more than maxFee");
             }
@@ -351,6 +495,9 @@ export class Transaction {
         types.sort();
         return types;
     }
+    isLegacy() { return (this.type === 0); }
+    isBerlin() { return (this.type === 1); }
+    isLondon() { return (this.type === 2); }
     clone() {
         return Transaction.from(this);
     }
@@ -377,8 +524,8 @@ export class Transaction {
                 return Transaction.from(_parseLegacy(payload));
             }
             switch (payload[0]) {
-                case 1: return Transaction.from(_parseEip2930(payload.slice(1)));
-                case 2: return Transaction.from(_parseEip1559(payload.slice(1)));
+                case 1: return Transaction.from(_parseEip2930(payload));
+                case 2: return Transaction.from(_parseEip1559(payload));
             }
             throw new Error("unsupported transaction type");
         }
@@ -419,9 +566,26 @@ export class Transaction {
         if (tx.accessList != null) {
             result.accessList = tx.accessList;
         }
-        // Should these be checked?? Should from be allowed if there is no signature?
-        // from?: null | A;
-        // hash?: null | string;
+        if ("hash" in tx) {
+            if (result.isSigned()) {
+                if (result.hash !== tx.hash) {
+                    throw new Error("hash mismatch");
+                }
+            }
+            else {
+                throw new Error("unsigned transaction cannot have a hashs");
+            }
+        }
+        if ("from" in tx) {
+            if (result.isSigned()) {
+                if (result.from.toLowerCase() !== (tx.from || "").toLowerCase()) {
+                    throw new Error("from mismatch");
+                }
+            }
+            else {
+                throw new Error("unsigned transaction cannot have a from");
+            }
+        }
         return result;
     }
 }
