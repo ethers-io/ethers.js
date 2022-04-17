@@ -29,7 +29,7 @@ import { getAddress, getCreateAddress } from "@ethersproject/address";
 import { dataLength, dataSlice, isHexString, quantity } from "@ethersproject/bytes";
 import { toHex } from "@ethersproject/math";
 import { Signature } from "@ethersproject/signing-key";
-import { accessListify } from "@ethersproject/transactions";
+import { accessListify } from "@ethersproject/transaction";
 import { Block, Log, TransactionReceipt, TransactionResponse } from "./provider.js";
 import { logger } from "./logger.js";
 const BN_MAX_UINT256 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");

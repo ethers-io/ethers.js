@@ -2,7 +2,7 @@ import { CTR } from "aes-js";
 import { getAddress } from "@ethersproject/address";
 import { arrayify, concat, hexlify } from "@ethersproject/bytes";
 import { keccak256, pbkdf2, randomBytes, scrypt, scryptSync } from "@ethersproject/crypto";
-import { computeAddress } from "@ethersproject/transactions";
+import { computeAddress } from "@ethersproject/transaction";
 import { logger } from "./logger.js";
 import { getPassword, spelunk, uuidV4, zpad } from "./utils.js";
 import { version } from "./_version.js";

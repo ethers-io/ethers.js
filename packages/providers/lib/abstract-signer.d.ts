@@ -1,6 +1,6 @@
 import type { Addressable } from "@ethersproject/address";
 import type { TypedDataDomain, TypedDataField } from "@ethersproject/hash";
-import type { TransactionLike } from "@ethersproject/transactions";
+import type { TransactionLike } from "@ethersproject/transaction";
 import type { BlockTag, CallRequest, Provider, TransactionRequest, TransactionResponse } from "./provider.js";
 import type { Signer } from "./signer.js";
 export declare abstract class AbstractSigner implements Signer {

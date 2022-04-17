@@ -1,7 +1,7 @@
 import { Formatter } from "./formatter.js";
 import type { BigNumberish } from "@ethersproject/logger";
 import type { Freezable, Frozen } from "@ethersproject/properties";
-import type { TransactionLike } from "@ethersproject/transactions";
+import type { TransactionLike } from "@ethersproject/transaction";
 import type { NetworkPlugin } from "./plugins-network.js";
 export declare type Networkish = Network | number | bigint | string | {
     name?: string;

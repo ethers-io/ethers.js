@@ -18,7 +18,7 @@ import { hexlify, isHexString, quantity } from "@ethersproject/bytes";
 import { defineProperties } from "@ethersproject/properties";
 import { TypedDataEncoder } from "@ethersproject/hash";
 import { toUtf8Bytes } from "@ethersproject/strings";
-import { accessListify } from "@ethersproject/transactions";
+import { accessListify } from "@ethersproject/transaction";
 import { fetchData, FetchRequest } from "@ethersproject/web";
 import { AbstractProvider, UnmanagedSubscriber } from "./abstract-provider.js";
 import { Network } from "./network.js";

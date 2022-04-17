@@ -22,17 +22,11 @@
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
-  "reticulate": {
-    "typeDependencies": {
-      "@ethersproject/providers": "~6.0.0-beta.1",
-      "@ethersproject/transactions": "~6.0.0-beta.1"
-    }
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
   "type": "module",
   "types": "./lib/index.d.ts",
-  "version": "6.0.0-beta.2"
+  "version": "6.0.0-beta.3"
 }

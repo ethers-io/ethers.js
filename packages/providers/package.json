@@ -8,26 +8,11 @@
     "@ethersproject/math": "^6.0.0-beta.1",
     "@ethersproject/properties": "^6.0.0-beta.1",
     "@ethersproject/signing-key": "^6.0.0-beta.1",
-    "@ethersproject/transactions": "^6.0.0-beta.1",
+    "@ethersproject/transaction": "^6.0.0-beta.1",
     "@ethersproject/web": "^6.0.0-beta.1",
     "ws": "8.5.0"
   },
   "description": "Ethereum Providers for ethers.",
-  "dummy": {
-    "@ethersproject/abstract-provider": "^6.0.0-beta.1",
-    "@ethersproject/abstract-signer": "^6.0.0-beta.1",
-    "@ethersproject/basex": "^6.0.0-beta.1",
-    "@ethersproject/constants": "^6.0.0-beta.1",
-    "@ethersproject/hash": "^6.0.0-beta.1",
-    "@ethersproject/networks": "^6.0.0-beta.1",
-    "@ethersproject/properties": "^6.0.0-beta.1",
-    "@ethersproject/random": "^6.0.0-beta.1",
-    "@ethersproject/rlp": "^6.0.0-beta.1",
-    "@ethersproject/sha2": "^6.0.0-beta.1",
-    "@ethersproject/strings": "^6.0.0-beta.1",
-    "@ethersproject/transactions": "^6.0.0-beta.1",
-    "@ethersproject/web": "^5.4.0"
-  },
   "engines": {
     "node": ">=12.17.0"
   },
@@ -54,5 +39,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./lib/index.d.ts",
-  "version": "6.0.0-beta.3"
+  "version": "6.0.0-beta.4"
 }

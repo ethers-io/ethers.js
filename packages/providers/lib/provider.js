@@ -13,7 +13,7 @@ var _Block_transactions, _TransactionReceipt_logs;
 //import { resolveAddress } from "@ethersproject/address";
 import { hexlify } from "@ethersproject/bytes";
 import { defineProperties } from "@ethersproject/properties";
-import { accessListify } from "@ethersproject/transactions";
+import { accessListify } from "@ethersproject/transaction";
 import { logger } from "./logger.js";
 // -----------------------
 function getValue(value) {

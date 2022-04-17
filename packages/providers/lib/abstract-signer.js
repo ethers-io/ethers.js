@@ -11,7 +11,7 @@ var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (
 };
 var _AbstractSigner_instances, _AbstractSigner_checkProvider, _AbstractSigner_fromify, _VoidSigner_instances, _VoidSigner_throwUnsupported, _WrappedSigner_signer;
 import { defineProperties, resolveProperties } from "@ethersproject/properties";
-import { Transaction } from "@ethersproject/transactions";
+import { Transaction } from "@ethersproject/transaction";
 import { logger } from "./logger.js";
 export class AbstractSigner {
     constructor(provider) {

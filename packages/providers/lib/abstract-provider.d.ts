@@ -4,7 +4,7 @@ import { Block, FeeData, Log, TransactionReceipt, TransactionResponse } from "./
 import type { Addressable } from "@ethersproject/address";
 import type { BigNumberish } from "@ethersproject/logger";
 import type { Frozen, Listener } from "@ethersproject/properties";
-import type { AccessList } from "@ethersproject/transactions";
+import type { AccessList } from "@ethersproject/transaction";
 import type { Networkish } from "./network.js";
 import type { BlockTag, CallRequest, EventFilter, Filter, FilterByBlockHash, OrphanFilter, Provider, ProviderEvent, TransactionRequest } from "./provider.js";
 export declare type Subscription = {

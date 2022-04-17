@@ -42,7 +42,7 @@ export declare class FallbackProvider extends AbstractProvider {
         clone: () => Network;
         freeze: () => Readonly<any>;
         isFrozen: () => boolean;
-        computeIntrinsicGas: (tx: import("@ethersproject/transactions").TransactionLike<string>) => number;
+        computeIntrinsicGas: (tx: import("@ethersproject/transaction").TransactionLike<string>) => number;
     }>>;
     _perform<T = any>(req: PerformActionRequest): Promise<T>;
 }

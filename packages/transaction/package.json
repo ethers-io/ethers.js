@@ -21,13 +21,13 @@
   ],
   "license": "MIT",
   "main": "./lib/index.js",
-  "name": "@ethersproject/transactions",
+  "name": "@ethersproject/transaction",
   "publishConfig": {
     "access": "public",
     "tag": "beta"
   },
   "repository": {
-    "directory": "packages/providers",
+    "directory": "packages/transaction",
     "type": "git",
     "url": "git://github.com/ethers-io/ethers.js.git"
   },

@@ -45,7 +45,7 @@
       "path": "./packages/abi"
     },
     {
-      "path": "./packages/transactions"
+      "path": "./packages/transaction"
     },
     {
       "path": "./packages/web"

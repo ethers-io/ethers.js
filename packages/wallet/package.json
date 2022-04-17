@@ -9,7 +9,7 @@
     "@ethersproject/providers": "^6.0.0-beta.1",
     "@ethersproject/signing-key": "^6.0.0-beta.1",
     "@ethersproject/strings": "^6.0.0-beta.1",
-    "@ethersproject/transactions": "^6.0.0-beta.1",
+    "@ethersproject/transaction": "^6.0.0-beta.1",
     "@ethersproject/wordlists": "^6.0.0-beta.1",
     "aes-js": "4.0.0-beta.2"
   },
@@ -40,5 +40,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./lib/index.d.ts",
-  "version": "6.0.0-beta.3"
+  "version": "6.0.0-beta.4"
 }

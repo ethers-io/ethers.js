@@ -11,7 +11,7 @@ export type { ProviderPlugin, Subscriber, Subscription, CommunityResourcable, Av
 export { encodeRlp, decodeRlp } from "@ethersproject/rlp";
 export { Signature, SigningKey } from "@ethersproject/signing-key";
 export { formatBytes32String, parseBytes32String, nameprep, _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String, UnicodeNormalizationForm, Utf8ErrorFuncs, Utf8ErrorReason } from "@ethersproject/strings";
-export { accessListify, computeAddress, recoverAddress, Transaction } from "@ethersproject/transactions";
+export { accessListify, computeAddress, recoverAddress, Transaction } from "@ethersproject/transaction";
 export { defaultPath, getAccountPath, HDNodeWallet, HDNodeVoidWallet, HDNodeWalletManager, Mnemonic, Wallet } from "@ethersproject/wallet";
 export { fetchData, FetchRequest, FetchResponse } from "@ethersproject/web";
 export { Wordlist, WordlistOwl, WordlistOwlA, wordlists } from "@ethersproject/wordlists";
@@ -25,6 +25,6 @@ export type { EventEmitterable, Listener, Frozen, Freezable } from "@ethersproje
 export type { RlpStructuredData } from "@ethersproject/rlp";
 export type { SignatureLike } from "@ethersproject/signing-key";
 export type { Utf8ErrorFunc } from "@ethersproject/strings";
-export type { AccessList, AccessListish, SignedTransaction, TransactionLike } from "@ethersproject/transactions";
+export type { AccessList, AccessListish, SignedTransaction, TransactionLike } from "@ethersproject/transaction";
 export type { ConnectionInfo, PreflightRequestFunc, ProcessResponseFunc, ThrottleRetryFunc } from "@ethersproject/web";
 //# sourceMappingURL=ethers.d.ts.map

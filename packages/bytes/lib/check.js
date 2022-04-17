@@ -10,26 +10,6 @@ export function isHexString(value, length) {
     }
     return true;
 }
-/*
-function _isByte(value: number): boolean {
-    return (typeof(value) === "number" && value >= 0 && value < 256 && Math.floor(value) === value);
-}
-export function isBytes(value: any): value is Bytes {
-    if (value == null) { return false; }
-
-    if (value instanceof Uint8Array) { return true; }
-    if (typeof(value) === "string") { return false; }
-
-    if (Array.isArray(value)) {
-        for (let i = 0; i < value.length; i++) {
-            if (!_isByte(value[i])) { return false; }
-        }
-        return true;
-    }
-
-    return false;
-}
-*/
 export function isBytesLike(value) {
     return (isHexString(value, true) || (value instanceof Uint8Array));
 }

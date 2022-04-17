@@ -13,7 +13,7 @@ var _Wallet_mnemonic;
 import { isHexString } from "@ethersproject/bytes";
 import { randomBytes } from "@ethersproject/crypto";
 import { SigningKey } from "@ethersproject/signing-key";
-import { computeAddress } from "@ethersproject/transactions";
+import { computeAddress } from "@ethersproject/transaction";
 import { BaseWallet } from "./base-wallet.js";
 import { HDNodeWallet } from "./hdwallet.js";
 import { decryptCrowdsaleJson, isCrowdsaleJson } from "./json-crowdsale.js";

@@ -1,5 +1,5 @@
 import { Block, Log, TransactionReceipt, TransactionResponse } from "./provider.js";
-import type { AccessList } from "@ethersproject/transactions";
+import type { AccessList } from "@ethersproject/transaction";
 import type { PerformActionTransaction } from "./abstract-provider.js";
 import type { Filter, Provider } from "./provider.js";
 export declare type FormatFunc = (value: any) => any;
