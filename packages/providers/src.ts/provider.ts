@@ -1,7 +1,7 @@
 //import { resolveAddress } from "@ethersproject/address";
 import { hexlify } from "@ethersproject/bytes";
 import { defineProperties } from "@ethersproject/properties";
-import { accessListify } from "@ethersproject/transactions";
+import { accessListify } from "@ethersproject/transaction";
 
 import { logger } from "./logger.js";
 
@@ -9,7 +9,7 @@ import type { Addressable, NameResolver } from "@ethersproject/address";
 import type { BigNumberish } from "@ethersproject/logger";
 import type { EventEmitterable, Frozen, Listener } from "@ethersproject/properties";
 import type { Signature } from "@ethersproject/signing-key";
-import type { AccessList, AccessListish, TransactionLike } from "@ethersproject/transactions";
+import type { AccessList, AccessListish, TransactionLike } from "@ethersproject/transaction";
 
 import type { Network } from "./network.js";
 

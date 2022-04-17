@@ -19,12 +19,12 @@ import { getAddress, getCreateAddress } from "@ethersproject/address";
 import { dataLength, dataSlice, isHexString, quantity } from "@ethersproject/bytes";
 import { toHex } from "@ethersproject/math";
 import { Signature } from "@ethersproject/signing-key";
-import { accessListify } from "@ethersproject/transactions";
+import { accessListify } from "@ethersproject/transaction";
 
 import { Block, Log, TransactionReceipt, TransactionResponse } from "./provider.js";
 import { logger } from "./logger.js";
 
-import type { AccessList } from "@ethersproject/transactions";
+import type { AccessList } from "@ethersproject/transaction";
 
 import type { PerformActionTransaction } from "./abstract-provider.js";
 import type { Filter, Provider } from "./provider.js";

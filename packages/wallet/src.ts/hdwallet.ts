@@ -4,7 +4,7 @@ import { decodeBase58, encodeBase58, toBigInt, toHex } from "@ethersproject/math
 import { defineProperties } from "@ethersproject/properties";
 import { VoidSigner } from "@ethersproject/providers";
 import { SigningKey } from "@ethersproject/signing-key";
-import { computeAddress } from "@ethersproject/transactions";
+import { computeAddress } from "@ethersproject/transaction";
 import { langEn } from "@ethersproject/wordlists/lib/lang-en.js";
 
 import { logger } from "./logger.js";

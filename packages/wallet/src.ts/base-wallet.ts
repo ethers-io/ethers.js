@@ -2,14 +2,14 @@ import { getAddress, resolveAddress } from "@ethersproject/address";
 import { hashMessage, TypedDataEncoder } from "@ethersproject/hash";
 import { defineProperties, resolveProperties } from "@ethersproject/properties";
 import { AbstractSigner } from "@ethersproject/providers";
-import { computeAddress, Transaction } from "@ethersproject/transactions";
+import { computeAddress, Transaction } from "@ethersproject/transaction";
 
 import { logger } from "./logger.js";
 
 import type { TypedDataDomain, TypedDataField } from "@ethersproject/hash";
 import type { Provider, TransactionRequest } from "@ethersproject/providers";
 import type { SigningKey } from "@ethersproject/signing-key";
-import type { TransactionLike } from "@ethersproject/transactions";
+import type { TransactionLike } from "@ethersproject/transaction";
 
 
 export class BaseWallet extends AbstractSigner {

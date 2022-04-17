@@ -1,9 +1,9 @@
 import { defineProperties, resolveProperties } from "@ethersproject/properties";
-import { Transaction } from "@ethersproject/transactions";
+import { Transaction } from "@ethersproject/transaction";
 
 import type { Addressable } from "@ethersproject/address";
 import type { TypedDataDomain, TypedDataField } from "@ethersproject/hash";
-import type { TransactionLike } from "@ethersproject/transactions";
+import type { TransactionLike } from "@ethersproject/transaction";
 
 import type {
     BlockTag, CallRequest, Provider, TransactionRequest, TransactionResponse

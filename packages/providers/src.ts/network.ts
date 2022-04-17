@@ -6,7 +6,7 @@ import { EnsPlugin, GasCostPlugin } from "./plugins-network.js";
 
 import type { BigNumberish } from "@ethersproject/logger";
 import type { Freezable, Frozen } from "@ethersproject/properties";
-import type { TransactionLike } from "@ethersproject/transactions";
+import type { TransactionLike } from "@ethersproject/transaction";
 
 import type { NetworkPlugin } from "./plugins-network.js";
 

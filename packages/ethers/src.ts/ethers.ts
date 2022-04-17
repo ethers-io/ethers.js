@@ -151,7 +151,7 @@ export {
     accessListify, computeAddress, recoverAddress,
 
     Transaction
-} from "@ethersproject/transactions";
+} from "@ethersproject/transaction";
 
 export {
     defaultPath,
@@ -196,7 +196,7 @@ export type { Utf8ErrorFunc } from "@ethersproject/strings";
 export type {
     AccessList, AccessListish,
     SignedTransaction, TransactionLike
-} from "@ethersproject/transactions";
+} from "@ethersproject/transaction";
 export type {
     ConnectionInfo,
     PreflightRequestFunc, ProcessResponseFunc,
