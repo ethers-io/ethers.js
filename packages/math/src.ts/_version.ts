@@ -1,1 +1,1 @@
-export const version = "@ethersproject/math@6.0.0-beta.2";
+export const version = "@ethersproject/math@6.0.0-beta.3";
