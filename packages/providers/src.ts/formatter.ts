@@ -223,7 +223,7 @@ export class Formatter {
 
         value = this.#format.transactionResponse(value);
 
-        const sig = Signature.fromTransaction(value.r, value.s, value.v);
+        const sig = Signature.from({ r: value.r, s: value.s, v: value.v });
         value.signature = sig;
         if (value.chainId == null) { value.chainId = sig.legacyChainId; }
 
