@@ -1,4 +1,3 @@
-export { computeAddress } from "./address.js";
 export {
     defaultPath,
 

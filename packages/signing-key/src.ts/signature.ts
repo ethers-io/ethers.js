@@ -1,15 +1,11 @@
+import { concat, dataLength, hexlify, isHexString } from "@ethersproject/bytes";
 import { getStore, setStore } from "@ethersproject/properties";
 
-//import type { BigNumberish } from "@ethersproject/bignumber";
-import type { Freezable, Frozen } from "@ethersproject/properties";
-
-import { arrayify, concat, dataLength, hexlify, isHexString } from "@ethersproject/bytes";
+import { logger } from "./logger.js";
 
 import type { BytesLike } from "@ethersproject/bytes";
-
+import type { Freezable, Frozen } from "@ethersproject/properties";
 import type { BigNumberish } from "@ethersproject/logger";
-
-import { logger } from "./logger.js";
 
 
 // Constants
@@ -25,20 +21,11 @@ export type SignatureLike = Signature | string | {
     r: string;
     s: string;
     v: BigNumberish;
-    //chainId?: BigNumberish;
     yParity?: 0 | 1;
     yParityAndS?: string;
-//} | {
-//    r: string;
-//    s: string;
-//    //chainId: BigNumberish;
-//    v?: BigNumberish;
-//    yParity?: 0 | 1
-//    yParityAndS?: string;
 } | {
     r: string;
     yParityAndS: string;
-    //chainId?: BigNumberish;
     yParity?: 0 | 1;
     s?: string;
     v?: number;
@@ -46,7 +33,6 @@ export type SignatureLike = Signature | string | {
     r: string;
     s: string;
     yParity: 0 | 1;
-    //chainId?: BigNumberish;
     v?: BigNumberish;
     yParityAndS?: string;
 };
@@ -71,7 +57,7 @@ export class Signature implements Freezable<Signature> {
     set s(value: BytesLike) {
         if (dataLength(value) !== 32) {
             logger.throwArgumentError("invalid r", "value", value);
-        } else if (arrayify(value)[0] & 0x80) {
+        } else if (logger.getBytes(value)[0] & 0x80) {
             logger.throwArgumentError("non-canonical s", "value", value);
         }
         setStore(this.#props, "s", hexlify(value));
@@ -106,7 +92,7 @@ export class Signature implements Freezable<Signature> {
 
     get yParityAndS(): string {
         // The EIP-2098 compact representation
-        const yParityAndS = arrayify(this.s);
+        const yParityAndS = logger.getBytes(this.s);
         if (this.yParity) { yParityAndS[0] |= 0x80; }
         return hexlify(yParityAndS);
     }
@@ -129,13 +115,9 @@ export class Signature implements Freezable<Signature> {
     }
 
     clone(): Signature {
-        if (getStore(this.#props, "networkV")) {
-            logger.throwError("cannot clone EIP-155 signatures", "UNSUPPORTED_OPERATION", {
-                operation: "clone"
-            });
-        }
-        const { r, s, v } = this.#props;
-        return new Signature(_guard, r, s, v);
+        const clone = new Signature(_guard, this.r, this.s, this.v);
+        if (this.networkV) { setStore(clone.#props, "networkV", this.networkV); }
+        return clone;
     }
 
     freeze(): Frozen<Signature> {
@@ -148,11 +130,11 @@ export class Signature implements Freezable<Signature> {
     }
 
     toJSON(): any {
-        const { r, s, v, networkV } = this;
+        const networkV = this.networkV;
         return {
             _type: "signature",
             networkV: ((networkV != null) ? networkV.toString(): null),
-            r, s, v,
+            r: this.r, s: this.s, v: this.v,
         };
     }
 
@@ -189,13 +171,6 @@ export class Signature implements Freezable<Signature> {
         return (bv & BN_1) ? 27: 28;
     }
 
-    static fromTransaction(r: string, s: string, _v: BigNumberish): Frozen<Signature> {
-        const v = logger.getBigInt(_v, "v");
-        const sig = Signature.from({ r, s, v });
-        setStore(sig.#props, "networkV", v);
-        return sig.freeze();
-    }
-
     static from(sig: SignatureLike): Signature {
         const throwError = (message: string) => {
             return logger.throwArgumentError(message, "signature", sig);
@@ -211,7 +186,7 @@ export class Signature implements Freezable<Signature> {
                 return new Signature(_guard, r, hexlify(s), v);
             }
 
-            if (dataLength(sig) !== 65) { 
+            if (dataLength(sig) !== 65) {
                 const r = hexlify(sig.slice(0, 32));
                 const s = bytes.slice(32, 64);
                 if (s[0] & 0x80) { throwError("non-canonical s"); }
@@ -231,41 +206,50 @@ export class Signature implements Freezable<Signature> {
 
         // Get s; by any means necessary (we check consistency below)
         const s = (function(s?: string, yParityAndS?: string) {
-            if (s) {
+            if (s != null) {
                 if (!isHexString(s, 32)) { throwError("invalid s"); }
                 return s;
             }
-            if (yParityAndS) {
+
+            if (yParityAndS != null) {
                 if (!isHexString(yParityAndS, 32)) { throwError("invalid yParityAndS"); }
-                const bytes = arrayify(yParityAndS);
+                const bytes = logger.getBytes(yParityAndS);
                 bytes[0] &= 0x7f;
                 return hexlify(bytes);
             }
+
             return throwError("missing s");
         })(sig.s, sig.yParityAndS);
-        if (arrayify(s)[0] & 0x80) { throwError("non-canonical s"); }
+        if (logger.getBytes(s)[0] & 0x80) { throwError("non-canonical s"); }
 
         // Get v; by any means necessary (we check consistency below)
-        const v = (function(v?: BigNumberish, yParityAndS?: string, yParity?: number) {
-            if (v) { return Signature.getNormalizedV(v); }
-            if (yParityAndS) {
-                if (!isHexString(yParityAndS, 32)) { throwError("invalid yParityAndS"); }
-                return ((arrayify(yParityAndS)[0] & 0x80) ? 28: 27);
+        const { networkV, v } = (function(_v?: BigNumberish, yParityAndS?: string, yParity?: number): { networkV?: bigint, v: 27 | 28 } {
+            if (_v != null) {
+                const v = logger.getBigInt(_v);
+                return {
+                    networkV: ((v >= BN_35) ? v: undefined),
+                    v: Signature.getNormalizedV(v)
+                };
             }
-            if (yParity) {
+
+            if (yParityAndS != null) {
+                if (!isHexString(yParityAndS, 32)) { throwError("invalid yParityAndS"); }
+                return { v: ((logger.getBytes(yParityAndS)[0] & 0x80) ? 28: 27) };
+            }
+
+            if (yParity != null) {
                 switch (yParity) {
-                    case 0: return 27;
-                    case 1: return 28;
+                    case 0: return { v: 27 };
+                    case 1: return { v: 28 };
                 }
                 return throwError("invalid yParity");
             }
-            //if (chainId) { return BigNumber.from(chainId).and(1).sub(27); } // @TODO: check this
+
             return throwError("missing v");
         })(sig.v, sig.yParityAndS, sig.yParity);
 
-        // @TODO: add chainId support
-
         const result = new Signature(_guard, r, s, v);
+        if (networkV) { setStore(result.#props, "networkV", networkV); }
 
         // If multiple of v, yParity, yParityAndS we given, check they match
         if ("yParity" in sig && sig.yParity !== result.yParity) {
@@ -273,9 +257,6 @@ export class Signature implements Freezable<Signature> {
         } else if ("yParityAndS" in sig && sig.yParityAndS !== result.yParityAndS) {
             throwError("yParityAndS mismatch");
         }
-
-        //if (sig.chainId && sig.chainId !== result.chainId) {
-        //}
 
         return result;
     }

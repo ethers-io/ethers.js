@@ -15,6 +15,12 @@ export interface TestCaseTransactionTx {
     chainId?: string;
 }
 
+export interface TestCaseTransactionSig {
+    r: string;
+    s: string;
+    v: string;
+}
+
 export interface TestCaseTransaction {
     name: string;
     transaction: TestCaseTransactionTx;
@@ -28,4 +34,9 @@ export interface TestCaseTransaction {
     signedBerlin: string;
     unsignedLondon: string;
     signedLondon: string;
+
+    signatureLegacy: TestCaseTransactionSig;
+    signatureEip155: TestCaseTransactionSig;
+    signatureBerlin: TestCaseTransactionSig;
+    signatureLondon: TestCaseTransactionSig;
 }

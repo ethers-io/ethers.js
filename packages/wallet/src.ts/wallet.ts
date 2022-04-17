@@ -1,8 +1,8 @@
 import { isHexString } from "@ethersproject/bytes";
 import { randomBytes } from "@ethersproject/crypto";
 import { SigningKey } from "@ethersproject/signing-key";
+import { computeAddress } from "@ethersproject/transactions";
 
-import { computeAddress } from "./address.js";
 import { BaseWallet } from "./base-wallet.js";
 import { HDNodeWallet } from "./hdwallet.js";
 import { decryptCrowdsaleJson, isCrowdsaleJson  } from "./json-crowdsale.js";
