@@ -50,14 +50,6 @@ function defineReadOnly<T, P extends keyof T>(object: T, name: P, value: T[P]): 
         enumerable: true, writable: false, value,
     });
 }
-/*
-enum Censor {
-    OFF = 0,
-    ON = 1,
-    PERMANENT = 2
-};
-let _censor = Censor.OFF;
-*/
 
 // IEEE 754 support 53-bits of mantissa
 const maxValue = 0x1fffffffffffff;
@@ -202,62 +194,6 @@ export class Logger {
             expectedCount: expectedCount
         });
     }
-/*
-    See: #2860
-    assertNew(target: any, kind: any): void {
-        this.assert((target !== Object && target != null), "cannot use constructor as function; use new operator", "UNSUPPORTED_OPERATION", {
-            operation: `${ JSON.stringify(kind.name) }(...)`
-        });
-    }
-*/
-    /*
-    assertAbstract(target: any, kind: any): void {
-        this.assert((target !== kind), `cannot instantiate abstract class ${ JSON.stringify(kind.name) } directly; use ${ JSON.stringify(target.name) } `, ErrorCode.UNSUPPORTED_OPERATION, {
-            operation: "new"
-        });
-
-        this.assert(target !== Object && target != null, "missing new", ErrorCode.MISSING_NEW, {
-            name: kind.name
-        });
-    }
-    */
-    #assertIntRange(name: string, value: number, operation: string, minValue: number): void {
-        if (typeof(value) !== "number" || isNaN(value)) {
-            this.throwArgumentError(`invalid ${ name }`, "INVALID_ARGUMENT", {
-                name: "value", value
-            });
-        }
-
-        let message: string = `invalid ${ name } value`;
-        let fault: null | string = null;
-
-        if (isNaN(value)) {
-            fault = "not-a-number";
-        } else if (value < minValue || value > maxValue) {
-            message = `unsafe ${ name } value`;
-            fault = "overflow";
-        } else if (Math.floor(value) !== value) {
-            fault = "underflow";
-        }
-
-        if (fault) {
-            this.throwError(message, "NUMERIC_FAULT", {
-                operation, fault, value
-            });
-        }
-    }
-
-    assertInt53(value: number, operation?: string): void {
-        this.#assertIntRange("Int53", value, operation || "unknown", -maxValue);
-    }
-
-    assertUint53(value: number, operation?: string): void {
-        this.#assertIntRange("Int53", value, operation || "unknown", 0);
-    }
-
-    assertInteger(value: number, operation: string = "unknown", min: number = 0, max: number = maxValue): void {
-        //this.#assertIntRange("Int53", value, operation || "unknown", 0);
-    }
 
     #getBytes(value: BytesLike, name?: string, copy?: boolean): Uint8Array {
         if (value instanceof Uint8Array) {
@@ -364,37 +300,4 @@ export class Logger {
         }
         _logLevel = level;
     }
-    /*
-    // @TODO: Should I get rid of censorship?
-    static setCensorship(censorship: boolean, permanent?: boolean): void {
-        // Do not allow permanently disabling censorship
-        Logger.globalLogger().assert((censorship || !permanent), "cannot permanently disable censorship", ErrorCode.UNSUPPORTED_OPERATION, {
-            operation: "setCensorship"
-        });
-
-        // New target censorship
-        let censor = Censor.OFF;
-        if (censorship) {
-            censor = (permanent ? Censor.PERMANENT: Censor.ON);
-        }
-
-        // No change, no need to do anything
-        if (censor === _censor) { return; }
-
-        // Do not allow changing state is permanent is set
-        this.globalLogger().assert(_censor !== Censor.PERMANENT, "error censorship is permanently enabled", ErrorCode.UNSUPPORTED_OPERATION, {
-            operation: "setCensorship"
-        });
-
-        _censor = censor
-    }
-    */
 }
-
-//const l = new Logger();
-//l.makeError("foo", Logger.Errors.NUMERIC_FAULT, { fault: "foo", operation: "bar", value: 3 });
-//l.makeError("foo", Logger.Errors.UNPREDICTABLE_GAS_LIMIT, { transaction: <any>null });
-//l.makeError<NumericFaultError>("foo", ErrorCode.NUMERIC_FAULT, { fault: "foo", operation: "bar" });
-//l.makeError<EthersError>("foo", ErrorCode.NUMERIC_FAULT, { fault: "foo", operation: "bar", gii: "5" });
-
-//console.log(LogLevel);

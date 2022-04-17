@@ -27,10 +27,10 @@ function zeroPad(data: BytesLike, length: number, left: boolean): string {
     return hexlify(result);
 }
 
-export function zeroPadLeft(data: BytesLike, length: number): string {
+export function zeroPadValue(data: BytesLike, length: number): string {
     return zeroPad(data, length, true);
 }
 
-export function zeroPadRight(data: BytesLike, length: number): string {
+export function zeroPadBytes(data: BytesLike, length: number): string {
     return zeroPad(data, length, false);
 }

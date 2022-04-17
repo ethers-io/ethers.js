@@ -15,7 +15,7 @@ export {
     isHexString, isBytesLike,
     concat, dataLength, dataSlice, stripZerosLeft,
     hexlify, quantity,
-    zeroPadLeft, zeroPadRight
+    zeroPadBytes, zeroPadValue
 } from "@ethersproject/bytes";
 
 export {

@@ -1,4 +1,4 @@
-import { arrayify, concat, dataSlice, hexlify, zeroPadLeft, isHexString } from "@ethersproject/bytes";
+import { arrayify, concat, dataSlice, hexlify, zeroPadValue, isHexString } from "@ethersproject/bytes";
 import { keccak256 } from "@ethersproject/crypto"
 import { id } from "@ethersproject/hash"
 import { defineProperties } from "@ethersproject/properties";
@@ -674,7 +674,7 @@ export class Interface {
 
             // Check addresses are valid
             if (param.type === "address") { this.#abiCoder.encode( [ "address" ], [ value ]); }
-            return zeroPadLeft(hexlify(value), 32);
+            return zeroPadValue(hexlify(value), 32);
             //@TOOD should probably be return toHex(value, 32)
         };
 

@@ -1,6 +1,6 @@
 //import { TypedDataDomain, TypedDataField } from "@ethersproject/providerabstract-signer";
 import { getAddress } from "@ethersproject/address";
-import { arrayify, concat, hexlify, zeroPadLeft, isHexString } from "@ethersproject/bytes";
+import { arrayify, concat, hexlify, zeroPadValue, isHexString } from "@ethersproject/bytes";
 import { keccak256 } from "@ethersproject/crypto";
 import { defineProperties } from "@ethersproject/properties";
 import { mask, toHex, toTwos } from "@ethersproject/math";
@@ -134,7 +134,7 @@ function getBaseEncoder(type: string): null | ((value: any) => string) {
 
     switch (type) {
         case "address": return function(value: string) {
-            return zeroPadLeft(getAddress(value), 32);
+            return zeroPadValue(getAddress(value), 32);
         };
         case "bool": return function(value: boolean) {
             return ((!value) ? hexFalse: hexTrue);
