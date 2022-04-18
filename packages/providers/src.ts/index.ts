@@ -63,6 +63,8 @@ export type {
     ProviderPlugin, Subscriber, Subscription
 } from "./abstract-provider.js"
 
+export type { ContractRunner } from "./contracts.js";
+
 export type {
     CommunityResourcable
 } from "./community.js";

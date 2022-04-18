@@ -340,6 +340,8 @@ export class AbstractProvider implements Provider {
         this.#disableCcipRead = false;
     }
 
+    get provider(): this { return this; }
+
     get plugins(): Array<ProviderPlugin> {
         return Array.from(this.#plugins.values());
     }

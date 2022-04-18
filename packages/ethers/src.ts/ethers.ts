@@ -113,6 +113,8 @@ export {
 export type {
     ProviderPlugin, Subscriber, Subscription,
 
+    ContractRunner,
+
     CommunityResourcable,
 
     AvatarLinkageType, AvatarLinkage, AvatarResult,
@@ -181,7 +183,7 @@ export type { Addressable, NameResolver } from "@ethersproject/address"
 export type { BytesLike, Hexable } from "@ethersproject/bytes";
 export type {
     ConstantContractMethod, ContractEvent, ContractEventArgs, ContractEventName,
-    ContractInterface, ContractMethod, ContractMethodArgs, ContractRunner,
+    ContractInterface, ContractMethod, ContractMethodArgs,
     ContractTransaction, DeferredTopicFilter, Overrides
 } from "@ethersproject/contract";
 export type { ProgressCallback } from "@ethersproject/crypto";

@@ -16,7 +16,7 @@ import type { EventFragment, FunctionFragment, InterfaceAbi, ParamType, Result }
 import type { Addressable } from "@ethersproject/address";
 import type { EventEmitterable, Listener } from "@ethersproject/properties";
 import type {
-    BlockTag, EventFilter, Filter, Provider, TransactionRequest, TopicFilter
+    BlockTag, ContractRunner, Provider, TransactionRequest, TopicFilter
 } from "@ethersproject/providers";
 
 import type {
@@ -28,16 +28,15 @@ import type {
     ContractEventArgs,
     ContractEvent,
     ContractTransaction,
-    DeferredTopicFilter,
-    ContractRunner
+    DeferredTopicFilter
 } from "./types.js";
-
-interface ContractRunnerEstimater extends ContractRunner {
-    estimateGas: (tx: TransactionRequest) => Promise<bigint>;
-}
 
 interface ContractRunnerCaller extends ContractRunner {
     call: (tx: TransactionRequest) => Promise<string>;
+}
+
+interface ContractRunnerEstimater extends ContractRunner {
+    estimateGas: (tx: TransactionRequest) => Promise<bigint>;
 }
 
 interface ContractRunnerSender extends ContractRunner {
@@ -48,37 +47,20 @@ interface ContractRunnerResolver extends ContractRunner {
     resolveName: (name: string | Addressable) => Promise<null | string>;
 }
 
-interface ContractRunnerQuerier extends ContractRunner {
-    getLogs: (filter: Filter) => Promise<Array<Log>>;
-}
-
-interface ContractRunnerSubscriber extends ContractRunner {
-    on: (event: EventFilter, listener: Listener) => Promise<this>;
-    off: (event: EventFilter, listener: Listener) => Promise<this>;
+function canCall(value: any): value is ContractRunnerCaller {
+    return (value && typeof(value.call) === "function");
 }
 
 function canEstimate(value: any): value is ContractRunnerEstimater {
     return (value && typeof(value.estimateGas) === "function");
 }
 
-function canCall(value: any): value is ContractRunnerCaller {
-    return (value && typeof(value.call) === "function");
-}
-
-function canSend(value: any): value is ContractRunnerSender {
-    return (value && typeof(value.sendTransaction) === "function");
-}
-
 function canResolve(value: any): value is ContractRunnerResolver {
     return (value && typeof(value.resolveName) === "function");
 }
 
-function canQuery(value: any): value is ContractRunnerQuerier {
-    return (value && typeof(value.getLogs) === "function");
-}
-
-function canSubscribe(value: any): value is ContractRunnerSubscriber {
-    return (value && typeof(value.on) === "function" && typeof(value.off) === "function");
+function canSend(value: any): value is ContractRunnerSender {
+    return (value && typeof(value.sendTransaction) === "function");
 }
 
 function concisify(items: Array<string>): Array<string> {
@@ -136,6 +118,11 @@ function getRunner<T extends ContractRunner>(value: any, feature: keyof Contract
         return value.provider;
     }
     return null;
+}
+
+function getProvider(value: null | ContractRunner): null | Provider {
+    if (value == null) { return null; }
+    return value.provider || null;
 }
 
 export async function copyOverrides(arg: any): Promise<Omit<ContractTransaction, "data" | "to">> {
@@ -235,15 +222,15 @@ class WrappedMethod<A extends Array<any> = Array<any>, R = any, D extends R | Co
     }
 
     async send(...args: ContractMethodArgs<A>): Promise<ContractTransactionResponse> {
-        const runner = getRunner(this._contract.runner, "sendTransaction");
+        const runner = this._contract.runner;
         if (!canSend(runner)) {
             return logger.throwError("contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
                 operation: "sendTransaction"
             });
         }
         const tx = await runner.sendTransaction(await this.populateTransaction(...args));
-        const provider = getRunner(this._contract.runner, "getLogs");
-        return new ContractTransactionResponse(this._contract.interface, <Provider>provider, tx);
+        const provider = getProvider(this._contract.runner);
+        return new ContractTransactionResponse(this._contract.interface, provider, tx);
     }
 
     async estimateGas(...args: ContractMethodArgs<A>): Promise<bigint> {
@@ -409,9 +396,8 @@ async function hasSub(contract: BaseContract, event: ContractEventName): Promise
 
 async function getSub(contract: BaseContract, event: ContractEventName): Promise<Sub> {
     // Make sure our runner can actually subscribe to events
-    const runner = getRunner(contract.runner, "on");
-    const runnerOff = getRunner(contract.runner, "off");
-    if (!runner || runner !== runnerOff || !canSubscribe(runner)) {
+    const provider = getProvider(contract.runner);
+    if (!provider) {
         return logger.throwError("contract runner does not support subscribing", "UNSUPPORTED_OPERATION", {
             operation: "on"
         });
@@ -433,12 +419,12 @@ async function getSub(contract: BaseContract, event: ContractEventName): Promise
         let started = false;
         const start = () => {
             if (started) { return; }
-            (runner as ContractRunnerSubscriber).on(filter, listener);
+            provider.on(filter, listener);
             started = true;
         };
         const stop = () => {
             if (!started) { return; }
-            (runner as ContractRunnerSubscriber).off(filter, listener);
+            provider.off(filter, listener);
             started = false;
         };
         sub = { tag, listeners: [ ], start, stop };
@@ -503,8 +489,8 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
 
         let deployTx: null | ContractTransactionResponse = null;
         if (_deployTx) {
-            const provider = getRunner(runner, "getLogs");
-            deployTx = new ContractTransactionResponse(this.interface, <Provider>provider, _deployTx);
+            const provider = getProvider(runner);
+            deployTx = new ContractTransactionResponse(this.interface, provider, _deployTx);
         }
         let subs = new Map();
 
@@ -576,6 +562,53 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
 
     async getAddress(): Promise<string> { return await getInternal(this).addrPromise; }
 
+    async getDeployedCode(): Promise<null | string> {
+        const provider = getProvider(this.runner);
+        if (!provider) {
+            return logger.throwError("runner does not support .provider", "UNSUPPORTED_OPERATION", {
+                operation: "getDeployedCode"
+            });
+        }
+
+        const code = await provider.getCode(await this.getAddress());
+        if (code === "0x") { return null; }
+        return code;
+    }
+
+    async waitForDeployment(): Promise<this> {
+        // We have the deployement transaction; just use that (throws if deployement fails)
+        const deployTx = this.deploymentTransaction();
+        if (deployTx) {
+            await deployTx.wait();
+            return this;
+        }
+
+        // Check for code
+        const code = await this.getDeployedCode();
+        if (code != null) { return this; }
+
+        // Make sure we can subscribe to a provider event
+        const provider = getProvider(this.runner);
+        if (provider == null) {
+            return logger.throwError("contract runner does not support .provider", "UNSUPPORTED_OPERATION", {
+                operation: "waitForDeployment"
+            });
+        }
+
+        return new Promise((resolve, reject) => {
+            const checkCode = async () => {
+                try {
+                    const code = await this.getDeployedCode();
+                    if (code != null) { return resolve(this); }
+                    provider.once("block", checkCode);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            checkCode();
+        });
+    }
+
     deploymentTransaction(): null | ContractTransactionResponse {
         return getInternal(this).deployTx;
     }
@@ -600,20 +633,26 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
         const address = (addr ? addr: (await addrPromise));
         const { fragment, topics } = await getSubTag(this, event);
         const filter = { address, topics, fromBlock, toBlock };
-        const runner = getRunner(this.runner, "getLogs");
 
-        if (!canQuery(runner)) {
-            return logger.throwError("contract runner does not support querying", "UNSUPPORTED_OPERATION", {
-                operation: "getLogs"
+        const provider = getProvider(this.runner);
+        if (!provider) {
+            return logger.throwError("contract runner does not have a provider", "UNSUPPORTED_OPERATION", {
+                operation: "queryFilter"
             });
         }
 
-        return (await runner.getLogs(filter)).map((log) => {
+        return (await provider.getLogs(filter)).map((log) => {
             return new EventLog(log, this.interface, fragment);
         });
     }
 
-
+    async canSubscribe(event: ContractEventName): Promise<boolean> {
+        try {
+            getSubTag(this, event);
+            return true;
+        } catch (error) { console.log("EE2", error); }
+        return false;
+    }
 
     async on(event: ContractEventName, listener: Listener): Promise<this> {
         const sub = await getSub(this, event);

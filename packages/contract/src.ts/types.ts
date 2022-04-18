@@ -1,43 +1,15 @@
 import type {
     EventFragment, FunctionFragment, Result, Typed
 } from "@ethersproject/abi";
-import type { Addressable } from "@ethersproject/address";
 import type {
-    CallRequest, EventFilter, Filter, Log, PreparedRequest, Provider,
-    TopicFilter, TransactionRequest, TransactionResponse
+    CallRequest, PreparedRequest, TopicFilter
 } from "@ethersproject/providers";
-import type { Listener } from "@ethersproject/properties";
 
 import type { ContractTransactionResponse } from "./wrappers.js";
 
 
 // The types of events a Contract can listen for
 export type ContractEventName = string | ContractEvent | TopicFilter;
-
-// The object that will be used to run Contracts. The Signer and Provider
-// both adhere to this, but other types of objects may wish to as well.
-export interface ContractRunner {
-    provider?: Provider;
-
-    // Required to estimate gas
-    estimateGas?: (tx: TransactionRequest) => Promise<bigint>;
-
-    // Required for pure, view or static calls to contracts
-    call?: (tx: TransactionRequest) => Promise<string>;
-
-    // Required to support ENS names
-    resolveName?: (name: string | Addressable) => Promise<null | string>;
-
-    // Required for mutating calls
-    sendTransaction?: (tx: TransactionRequest) => Promise<TransactionResponse>;
-
-    // Required for queryFilter
-    getLogs?: (filter: Filter) => Promise<Array<Log>>;
-
-    // Both are required for a contract to support events
-    on?: (event: EventFilter, listener: Listener) => Promise<this>;
-    off?: (event: EventFilter, listener: Listener) => Promise<this>;
-}
 
 export interface ContractInterface {
     [ name: string ]: BaseContractMethod;

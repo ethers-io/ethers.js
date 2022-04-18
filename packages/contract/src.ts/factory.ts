@@ -9,9 +9,10 @@ import { logger } from "./logger.js";
 
 import type { InterfaceAbi } from "@ethersproject/abi";
 import type { BytesLike } from "@ethersproject/logger";
+import type { ContractRunner } from "@ethersproject/providers";
 
 import type {
-    ContractInterface, ContractMethodArgs, ContractRunner, ContractDeployTransaction,
+    ContractInterface, ContractMethodArgs, ContractDeployTransaction,
 } from "./types.js";
 import type { ContractTransactionResponse } from "./wrappers.js";
 
@@ -23,7 +24,7 @@ export class ContractFactory<A extends Array<any> = Array<any>, I = BaseContract
     readonly bytecode!: string;
     readonly runner!: null | ContractRunner;
 
-    constructor(abi: Interface | InterfaceAbi, bytecode: BytesLike | { object: string }, runner?: ContractRunner) {
+    constructor(abi: Interface | InterfaceAbi, bytecode: BytesLike | { object: string }, runner?: null | ContractRunner) {
         const iface = Interface.from(abi);
 
         // Dereference Solidity bytecode objects and allow a missing `0x`-prefix
@@ -73,7 +74,7 @@ export class ContractFactory<A extends Array<any> = Array<any>, I = BaseContract
         return new (<any>BaseContract)(address, this.interface, this.runner, sentTx);
     }
 
-    connect(runner: ContractRunner): ContractFactory<A, I> {
+    connect(runner: null | ContractRunner): ContractFactory<A, I> {
         return new ContractFactory(this.interface, this.bytecode, runner);
     }
 

@@ -11,6 +11,7 @@ import type { EventEmitterable, Frozen, Listener } from "@ethersproject/properti
 import type { Signature } from "@ethersproject/signing-key";
 import type { AccessList, AccessListish, TransactionLike } from "@ethersproject/transaction";
 
+import type { ContractRunner } from "./contracts.js";
 import type { Network } from "./network.js";
 
 
@@ -879,7 +880,8 @@ export type ProviderEvent = string | Array<string | Array<string>> | EventFilter
 //////////////////////
 // Provider
 
-export interface Provider extends EventEmitterable<ProviderEvent>, NameResolver {
+export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent>, NameResolver {
+    provider: this;
 
     // State
     getBlockNumber(): Promise<number>;
@@ -922,6 +924,8 @@ function fail<T>(): T {
 }
 
 class DummyProvider implements Provider {
+    get provider(): this { return this; }
+
     async getNetwork() { return fail<Frozen<Network>>(); }
     async getFeeData() { return fail<FeeData>(); }
 

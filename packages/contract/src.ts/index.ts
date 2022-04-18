@@ -14,6 +14,6 @@ export {
 
 export type {
     ConstantContractMethod, ContractEvent, ContractEventArgs, ContractEventName,
-    ContractInterface, ContractMethod, ContractMethodArgs, ContractRunner,
-    ContractTransaction, DeferredTopicFilter, Overrides
+    ContractInterface, ContractMethod, ContractMethodArgs, ContractTransaction,
+    DeferredTopicFilter, Overrides
 } from "./types.js";
