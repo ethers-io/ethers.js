@@ -136,7 +136,7 @@ export async function fetchData(connection: string | FetchRequest | ConnectionIn
 
         const remainingTime = getTime() - t0;
         if (remainingTime < 0) {
-            return logger.throwError("timeout", "TIMEOUT", { operation: "request", request });
+            return logger.throwError("timeout", "TIMEOUT", { operation: "request", reason: "timeout", request });
         }
 
         response = await getUrl(request, remainingTime);
