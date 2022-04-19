@@ -3,6 +3,7 @@ import type { BigNumberish } from "@ethersproject/logger";
 import type { EventEmitterable, Frozen } from "@ethersproject/properties";
 import type { Signature } from "@ethersproject/signing-key";
 import type { AccessList, AccessListish, TransactionLike } from "@ethersproject/transaction";
+import type { ContractRunner } from "./contracts.js";
 import type { Network } from "./network.js";
 export declare type BlockTag = number | string;
 export declare class FeeData {
@@ -307,7 +308,8 @@ export interface FilterByBlockHash extends EventFilter {
     blockHash?: string;
 }
 export declare type ProviderEvent = string | Array<string | Array<string>> | EventFilter | OrphanFilter;
-export interface Provider extends EventEmitterable<ProviderEvent>, NameResolver {
+export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent>, NameResolver {
+    provider: this;
     getBlockNumber(): Promise<number>;
     getNetwork(): Promise<Frozen<Network>>;
     getFeeData(): Promise<FeeData>;

@@ -20,6 +20,7 @@ export { IpcSocketProvider };
 export { SocketProvider } from "./provider-socket.js";
 export { WebSocketProvider } from "./provider-websocket.js";
 export type { ProviderPlugin, Subscriber, Subscription } from "./abstract-provider.js";
+export type { ContractRunner } from "./contracts.js";
 export type { CommunityResourcable } from "./community.js";
 export type { AvatarLinkageType, AvatarLinkage, AvatarResult } from "./ens-resolver.js";
 export type { FormatFunc } from "./formatter.js";

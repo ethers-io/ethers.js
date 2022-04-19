@@ -22,7 +22,7 @@ export class BytesCoder extends DynamicBytesCoder {
         super("bytes", localName);
     }
     decode(reader) {
-        return reader.coerce(this.name, hexlify(super.decode(reader)));
+        return hexlify(super.decode(reader));
     }
 }
 //# sourceMappingURL=bytes.js.map

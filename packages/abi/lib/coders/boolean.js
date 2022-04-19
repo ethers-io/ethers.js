@@ -12,7 +12,7 @@ export class BooleanCoder extends Coder {
         return writer.writeValue(value ? 1 : 0);
     }
     decode(reader) {
-        return reader.coerce(this.type, !reader.readValue());
+        return !!reader.readValue();
     }
 }
 //# sourceMappingURL=boolean.js.map

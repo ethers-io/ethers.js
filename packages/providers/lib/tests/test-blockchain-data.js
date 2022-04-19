@@ -51,7 +51,20 @@ function checkTransaction(actual, test) {
     assert.equal(actual.creates, test.creates, "creates");
     assert.equal(actual.signature.r, test.signature.r, "signature.r");
     assert.equal(actual.signature.s, test.signature.s, "signature.s");
-    assert.equal(actual.signature.networkV, test.signature.v, "signature.v");
+    if (test.type === 1 || test.type === 2) {
+        // EIP-2930; v is the yParity
+        assert.equal(actual.signature.yParity, test.signature.v, "signature.v (EIP-2930)");
+    }
+    else if (test.signature.v > 28) {
+        // EIP-155; v is a the encoded chainId
+        assert.equal(actual.signature.networkV, test.signature.v, "signature.networkV (EIP-155)");
+        assert.equal(actual.signature.yParity, 1 - (test.signature.v % 2), "signature.yParity (EIP-155)");
+    }
+    else {
+        // Pre-EIP-155 legacy; canonical v
+        assert.equal(actual.signature.v, test.signature.v, "signature.v (Legacy)");
+        assert.equal(actual.signature.networkV, null, "signature.netwrokV:!null (Legacy)");
+    }
 }
 function checkLog(actual, test) {
     assert.equal(actual.address, test.address, "address");
@@ -109,6 +122,7 @@ describe("Test Provider Methods", function () {
     });
     // Etherscan does not support this
     const skipGetBlockByBlockHash = ["EtherscanProvider"];
+    const testSets = [];
     for (const providerName of providerNames) {
         for (const network in BlockchainData) {
             const provider = getProvider(providerName, network);
@@ -117,62 +131,92 @@ describe("Test Provider Methods", function () {
                 continue;
             }
             const tests = BlockchainData[network];
-            for (const test of tests.addresses) {
-                const address = test.address;
-                if (test.balance != null) {
-                    retryIt(`fetches address balance: ${providerName}.${network}.${sumhash(address)}`, async function () {
-                        assert.equal(await provider.getBalanceOf(address), test.balance, "balance");
-                    });
-                }
-                if (test.code != null) {
-                    retryIt(`fetches address code: ${providerName}.${network}.${sumhash(address)}`, async function () {
-                        assert.equal(await provider.getCode(address), test.code, "code");
-                    });
-                }
-                if (test.name != null) {
-                    retryIt(`fetches address reverse record: ${providerName}.${network}.${sumhash(address)}`, async function () {
-                        this.skip();
-                        assert.equal(await provider.lookupAddress(address), test.name, "name");
-                    });
-                }
-                if (test.storage != null) {
-                    retryIt(`fetches address storage: ${providerName}.${network}.${sumhash(address)}`, async function () {
-                        for (const slot in test.storage) {
-                            const value = test.storage[slot];
-                            assert.equal(await provider.getStorageAt(address, slot), value, `storage:${slot}`);
-                        }
-                    });
-                }
+            testSets.push({ providerName, provider, network, tests });
+        }
+    }
+    for (const { providerName, network, provider, tests } of testSets) {
+        for (const test of tests.addresses) {
+            if (test.balance == null) {
+                continue;
             }
-            for (const test of tests.blocks) {
-                retryIt(`fetches block by number: ${providerName}.${network}.${test.number}`, async function () {
-                    checkBlock(await provider.getBlock(test.number), test);
+            retryIt(`fetches address balance: ${providerName}.${network}.${sumhash(test.address)}`, async function () {
+                assert.equal(await provider.getBalanceOf(test.address), test.balance, "balance");
+            });
+        }
+    }
+    for (const { providerName, network, provider, tests } of testSets) {
+        for (const test of tests.addresses) {
+            if (test.code == null) {
+                continue;
+            }
+            retryIt(`fetches address code: ${providerName}.${network}.${sumhash(test.address)}`, async function () {
+                assert.equal(await provider.getCode(test.address), test.code, "code");
+            });
+        }
+    }
+    for (const { providerName, network, provider, tests } of testSets) {
+        for (const test of tests.addresses) {
+            if (test.name == null) {
+                continue;
+            }
+            retryIt(`fetches address reverse record: ${providerName}.${network}.${sumhash(test.address)}`, async function () {
+                this.skip();
+                assert.equal(await provider.lookupAddress(test.address), test.name, "name");
+            });
+        }
+    }
+    for (const { providerName, network, provider, tests } of testSets) {
+        for (const test of tests.addresses) {
+            if (test.storage == null) {
+                continue;
+            }
+            retryIt(`fetches address storage: ${providerName}.${network}.${sumhash(test.address)}`, async function () {
+                for (const slot in test.storage) {
+                    const value = test.storage[slot];
+                    assert.equal(await provider.getStorageAt(test.address, slot), value, `storage:${slot}`);
+                }
+            });
+        }
+    }
+    for (const { providerName, network, provider, tests } of testSets) {
+        for (const test of tests.blocks) {
+            retryIt(`fetches block by number: ${providerName}.${network}.${test.number}`, async function () {
+                checkBlock(await provider.getBlock(test.number), test);
+            });
+        }
+    }
+    for (const { providerName, network, provider, tests } of testSets) {
+        for (const test of tests.blocks) {
+            if (skipGetBlockByBlockHash.indexOf(providerName) === -1) {
+                retryIt(`fetches block by hash: ${providerName}.${network}.${sumhash(test.hash)}`, async function () {
+                    checkBlock(await provider.getBlock(test.hash), test);
                 });
-                if (skipGetBlockByBlockHash.indexOf(providerName) === -1) {
-                    retryIt(`fetches block by hash: ${providerName}.${network}.${sumhash(test.hash)}`, async function () {
-                        checkBlock(await provider.getBlock(test.hash), test);
-                    });
-                }
-                else {
-                    retryIt(`throws unsupported operation for fetching block by hash: ${providerName}.${network}.${sumhash(test.hash)}`, async function () {
-                        await assert.rejects(provider.getBlock(test.hash), (error) => {
-                            return (error.code === "UNSUPPORTED_OPERATION" &&
-                                error.operation === "getBlock(blockHash)");
-                        });
-                    });
-                }
             }
-            for (const test of tests.transactions) {
-                retryIt(`fetches transaction: ${providerName}.${network}.${sumhash(test.hash)}`, async function () {
-                    checkTransaction(await provider.getTransaction(test.hash), test);
-                });
-            }
-            for (const test of tests.receipts) {
-                retryIt(`fetches transaction receipt: ${providerName}.${network}.${sumhash(test.hash)}`, async function () {
-                    checkTransactionReceipt(await provider.getTransactionReceipt(test.hash), test);
+            else {
+                retryIt(`throws unsupported operation for fetching block by hash: ${providerName}.${network}.${sumhash(test.hash)}`, async function () {
+                    await assert.rejects(provider.getBlock(test.hash), (error) => {
+                        return (error.code === "UNSUPPORTED_OPERATION" &&
+                            error.operation === "getBlock(blockHash)");
+                    });
                 });
             }
         }
+    }
+    for (const { providerName, network, provider, tests } of testSets) {
+        for (const test of tests.transactions) {
+            retryIt(`fetches transaction: ${providerName}.${network}.${sumhash(test.hash)}`, async function () {
+                checkTransaction(await provider.getTransaction(test.hash), test);
+            });
+        }
+    }
+    for (const { providerName, network, provider, tests } of testSets) {
+        for (const test of tests.receipts) {
+            retryIt(`fetches transaction receipt: ${providerName}.${network}.${sumhash(test.hash)}`, async function () {
+                checkTransactionReceipt(await provider.getTransactionReceipt(test.hash), test);
+            });
+        }
+    }
+    for (const providerName of providerNames) {
         it(`fetches a pending block: ${providerName}`, async function () {
             this.timeout(15000);
             const provider = getProvider(providerName, "homestead");

@@ -566,7 +566,7 @@ export class Transaction {
         if (tx.accessList != null) {
             result.accessList = tx.accessList;
         }
-        if ("hash" in tx) {
+        if (tx.hash != null) {
             if (result.isSigned()) {
                 if (result.hash !== tx.hash) {
                     throw new Error("hash mismatch");
@@ -576,7 +576,7 @@ export class Transaction {
                 throw new Error("unsigned transaction cannot have a hashs");
             }
         }
-        if ("from" in tx) {
+        if (tx.from != null) {
             if (result.isSigned()) {
                 if (result.from.toLowerCase() !== (tx.from || "").toLowerCase()) {
                     throw new Error("from mismatch");

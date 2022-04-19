@@ -18,23 +18,17 @@ import { defineProperties, resolveProperties } from "@ethersproject/properties";
 import { copyRequest } from "@ethersproject/providers";
 import { ContractEventPayload, ContractTransactionResponse, EventLog } from "./wrappers.js";
 import { logger } from "./logger.js";
-function canEstimate(value) {
-    return (value && typeof (value.estimateGas) === "function");
-}
 function canCall(value) {
     return (value && typeof (value.call) === "function");
 }
-function canSend(value) {
-    return (value && typeof (value.sendTransaction) === "function");
+function canEstimate(value) {
+    return (value && typeof (value.estimateGas) === "function");
 }
 function canResolve(value) {
     return (value && typeof (value.resolveName) === "function");
 }
-function canQuery(value) {
-    return (value && typeof (value.getLogs) === "function");
-}
-function canSubscribe(value) {
-    return (value && typeof (value.on) === "function" && typeof (value.off) === "function");
+function canSend(value) {
+    return (value && typeof (value.sendTransaction) === "function");
 }
 function concisify(items) {
     items = Array.from((new Set(items)).values());
@@ -88,6 +82,12 @@ function getRunner(value, feature) {
         return value.provider;
     }
     return null;
+}
+function getProvider(value) {
+    if (value == null) {
+        return null;
+    }
+    return value.provider || null;
 }
 export async function copyOverrides(arg) {
     // Create a shallow copy (we'll deep-ify anything needed during normalizing)
@@ -169,14 +169,14 @@ class WrappedMethod extends _WrappedMethodBase() {
         return result;
     }
     async send(...args) {
-        const runner = getRunner(this._contract.runner, "sendTransaction");
+        const runner = this._contract.runner;
         if (!canSend(runner)) {
             return logger.throwError("contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
                 operation: "sendTransaction"
             });
         }
         const tx = await runner.sendTransaction(await this.populateTransaction(...args));
-        const provider = getRunner(this._contract.runner, "getLogs");
+        const provider = getProvider(this._contract.runner);
         return new ContractTransactionResponse(this._contract.interface, provider, tx);
     }
     async estimateGas(...args) {
@@ -306,9 +306,8 @@ async function hasSub(contract, event) {
 }
 async function getSub(contract, event) {
     // Make sure our runner can actually subscribe to events
-    const runner = getRunner(contract.runner, "on");
-    const runnerOff = getRunner(contract.runner, "off");
-    if (!runner || runner !== runnerOff || !canSubscribe(runner)) {
+    const provider = getProvider(contract.runner);
+    if (!provider) {
         return logger.throwError("contract runner does not support subscribing", "UNSUPPORTED_OPERATION", {
             operation: "on"
         });
@@ -328,14 +327,14 @@ async function getSub(contract, event) {
             if (started) {
                 return;
             }
-            runner.on(filter, listener);
+            provider.on(filter, listener);
             started = true;
         };
         const stop = () => {
             if (!started) {
                 return;
             }
-            runner.off(filter, listener);
+            provider.off(filter, listener);
             started = false;
         };
         sub = { tag, listeners: [], start, stop };
@@ -386,7 +385,7 @@ export class BaseContract {
         let addr = null;
         let deployTx = null;
         if (_deployTx) {
-            const provider = getRunner(runner, "getLogs");
+            const provider = getProvider(runner);
             deployTx = new ContractTransactionResponse(this.interface, provider, _deployTx);
         }
         let subs = new Map();
@@ -455,6 +454,54 @@ export class BaseContract {
         });
     }
     async getAddress() { return await getInternal(this).addrPromise; }
+    async getDeployedCode() {
+        const provider = getProvider(this.runner);
+        if (!provider) {
+            return logger.throwError("runner does not support .provider", "UNSUPPORTED_OPERATION", {
+                operation: "getDeployedCode"
+            });
+        }
+        const code = await provider.getCode(await this.getAddress());
+        if (code === "0x") {
+            return null;
+        }
+        return code;
+    }
+    async waitForDeployment() {
+        // We have the deployement transaction; just use that (throws if deployement fails)
+        const deployTx = this.deploymentTransaction();
+        if (deployTx) {
+            await deployTx.wait();
+            return this;
+        }
+        // Check for code
+        const code = await this.getDeployedCode();
+        if (code != null) {
+            return this;
+        }
+        // Make sure we can subscribe to a provider event
+        const provider = getProvider(this.runner);
+        if (provider == null) {
+            return logger.throwError("contract runner does not support .provider", "UNSUPPORTED_OPERATION", {
+                operation: "waitForDeployment"
+            });
+        }
+        return new Promise((resolve, reject) => {
+            const checkCode = async () => {
+                try {
+                    const code = await this.getDeployedCode();
+                    if (code != null) {
+                        return resolve(this);
+                    }
+                    provider.once("block", checkCode);
+                }
+                catch (error) {
+                    reject(error);
+                }
+            };
+            checkCode();
+        });
+    }
     deploymentTransaction() {
         return getInternal(this).deployTx;
     }
@@ -479,13 +526,13 @@ export class BaseContract {
         const address = (addr ? addr : (await addrPromise));
         const { fragment, topics } = await getSubTag(this, event);
         const filter = { address, topics, fromBlock, toBlock };
-        const runner = getRunner(this.runner, "getLogs");
-        if (!canQuery(runner)) {
-            return logger.throwError("contract runner does not support querying", "UNSUPPORTED_OPERATION", {
-                operation: "getLogs"
+        const provider = getProvider(this.runner);
+        if (!provider) {
+            return logger.throwError("contract runner does not have a provider", "UNSUPPORTED_OPERATION", {
+                operation: "queryFilter"
             });
         }
-        return (await runner.getLogs(filter)).map((log) => {
+        return (await provider.getLogs(filter)).map((log) => {
             return new EventLog(log, this.interface, fragment);
         });
     }

@@ -39,7 +39,7 @@ export class NumberCoder extends Coder {
         if (this.signed) {
             value = fromTwos(value, this.size * 8);
         }
-        return reader.coerce(this.name, value);
+        return value;
     }
 }
 //# sourceMappingURL=number.js.map

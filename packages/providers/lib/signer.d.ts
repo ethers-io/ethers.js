@@ -1,7 +1,8 @@
 import type { Addressable, NameResolver } from "@ethersproject/address";
 import type { TypedDataDomain, TypedDataField } from "@ethersproject/hash";
+import type { ContractRunner } from "./contracts.js";
 import type { CallRequest, Provider, TransactionRequest, TransactionResponse } from "./provider.js";
-export interface Signer extends Addressable, NameResolver {
+export interface Signer extends Addressable, ContractRunner, NameResolver {
     provider: null | Provider;
     connect(provider: null | Provider): Signer;
     estimateGas(tx: CallRequest): Promise<bigint>;

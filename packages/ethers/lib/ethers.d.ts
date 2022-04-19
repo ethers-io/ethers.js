@@ -7,7 +7,7 @@ export { id, isValidName, namehash, dnsEncode, messagePrefix, hashMessage, Typed
 export { FixedFormat, FixedNumber, formatFixed, parseFixed, fromTwos, toTwos, mask, toArray, toBigInt, toHex, toNumber, decodeBase58, encodeBase58, formatEther, parseEther, formatUnits, parseUnits } from "@ethersproject/math";
 export { defineProperties, resolveProperties, getStore, setStore } from "@ethersproject/properties";
 export { getDefaultProvider, AbstractProvider, UnmanagedSubscriber, AbstractSigner, VoidSigner, WrappedSigner, showThrottleMessage, EnsResolver, Formatter, NetworkPlugin, GasCostPlugin, EnsPlugin, MaxPriorityFeePlugin, Network, Block, FeeData, Log, TransactionReceipt, TransactionResponse, dummyProvider, FallbackProvider, JsonRpcProvider, JsonRpcSigner, StaticJsonRpcProvider, AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, PocketProvider, IpcSocketProvider, SocketProvider, WebSocketProvider, } from "@ethersproject/providers";
-export type { ProviderPlugin, Subscriber, Subscription, CommunityResourcable, AvatarLinkageType, AvatarLinkage, AvatarResult, FormatFunc, Networkish, GasCostParameters, BlockTag, CallRequest, TransactionRequest, PreparedRequest, EventFilter, Filter, FilterByBlockHash, OrphanFilter, ProviderEvent, Provider, Signer, } from "@ethersproject/providers";
+export type { ProviderPlugin, Subscriber, Subscription, ContractRunner, CommunityResourcable, AvatarLinkageType, AvatarLinkage, AvatarResult, FormatFunc, Networkish, GasCostParameters, BlockTag, CallRequest, TransactionRequest, PreparedRequest, EventFilter, Filter, FilterByBlockHash, OrphanFilter, ProviderEvent, Provider, Signer, } from "@ethersproject/providers";
 export { encodeRlp, decodeRlp } from "@ethersproject/rlp";
 export { Signature, SigningKey } from "@ethersproject/signing-key";
 export { formatBytes32String, parseBytes32String, nameprep, _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String, UnicodeNormalizationForm, Utf8ErrorFuncs, Utf8ErrorReason } from "@ethersproject/strings";
@@ -18,7 +18,7 @@ export { Wordlist, WordlistOwl, WordlistOwlA, wordlists } from "@ethersproject/w
 export { version } from "./_version.js";
 export type { Addressable, NameResolver } from "@ethersproject/address";
 export type { BytesLike, Hexable } from "@ethersproject/bytes";
-export type { ConstantContractMethod, ContractEvent, ContractEventArgs, ContractEventName, ContractInterface, ContractMethod, ContractMethodArgs, ContractRunner, ContractTransaction, DeferredTopicFilter, Overrides } from "@ethersproject/contract";
+export type { ConstantContractMethod, ContractEvent, ContractEventArgs, ContractEventName, ContractInterface, ContractMethod, ContractMethodArgs, ContractTransaction, DeferredTopicFilter, Overrides } from "@ethersproject/contract";
 export type { ProgressCallback } from "@ethersproject/crypto";
 export type { TypedDataDomain, TypedDataField } from "@ethersproject/hash";
 export type { EventEmitterable, Listener, Frozen, Freezable } from "@ethersproject/properties";

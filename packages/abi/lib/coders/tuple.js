@@ -53,7 +53,7 @@ export class TupleCoder extends Coder {
         return pack(writer, this.coders, value);
     }
     decode(reader) {
-        return reader.coerce(this.name, unpack(reader, this.coders));
+        return unpack(reader, this.coders);
     }
 }
 //# sourceMappingURL=tuple.js.map

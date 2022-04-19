@@ -118,6 +118,7 @@ export declare type PerformActionRequest = {
 export declare class AbstractProvider implements Provider {
     #private;
     constructor(_network?: "any" | Networkish);
+    get provider(): this;
     get plugins(): Array<ProviderPlugin>;
     attachPlugin(plugin: ProviderPlugin): this;
     getPlugin<T extends ProviderPlugin = ProviderPlugin>(name: string): null | T;

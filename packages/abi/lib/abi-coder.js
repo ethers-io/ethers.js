@@ -1,12 +1,10 @@
+// See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
 var _AbiCoder_instances, _AbiCoder_getCoder;
-// See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
-//import { arrayify } from "@ethersproject/bytes";
-import { defineProperties } from "@ethersproject/properties";
 import { logger } from "./logger.js";
 import { Reader, Writer } from "./coders/abstract-coder.js";
 import { AddressCoder } from "./coders/address.js";
@@ -22,9 +20,8 @@ import { ParamType } from "./fragments.js";
 const paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 export class AbiCoder {
-    constructor(coerceFunc) {
+    constructor() {
         _AbiCoder_instances.add(this);
-        defineProperties(this, { coerceFunc }, {}, { coerceFunc: null });
     }
     getDefaultValue(types) {
         const coders = types.map((type) => __classPrivateFieldGet(this, _AbiCoder_instances, "m", _AbiCoder_getCoder).call(this, ParamType.from(type)));
@@ -42,7 +39,7 @@ export class AbiCoder {
     decode(types, data, loose) {
         const coders = types.map((type) => __classPrivateFieldGet(this, _AbiCoder_instances, "m", _AbiCoder_getCoder).call(this, ParamType.from(type)));
         const coder = new TupleCoder(coders, "_");
-        return coder.decode(new Reader(data, this.coerceFunc, loose));
+        return coder.decode(new Reader(data, loose));
     }
 }
 _AbiCoder_instances = new WeakSet(), _AbiCoder_getCoder = function _AbiCoder_getCoder(param) {

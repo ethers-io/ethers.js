@@ -19,7 +19,7 @@ export class FixedBytesCoder extends Coder {
         return writer.writeBytes(data);
     }
     decode(reader) {
-        return reader.coerce(this.name, hexlify(reader.readBytes(this.size)));
+        return hexlify(reader.readBytes(this.size));
     }
 }
 //# sourceMappingURL=fixed-bytes.js.map

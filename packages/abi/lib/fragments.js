@@ -52,7 +52,7 @@ const SimpleTokens = {
 const regexWhitespace = new RegExp("^(\\s*)");
 const regexNumber = new RegExp("^([0-9]+)");
 const regexIdentifier = new RegExp("^([a-zA-Z$_][a-zA-Z0-9$_]*)");
-const regexType = new RegExp("^(address|bool|bytes(0-9*)|string|u?int([0-9]*))");
+const regexType = new RegExp("^(address|bool|bytes([0-9]*)|string|u?int([0-9]*))");
 export class TokenString {
     constructor(tokens) {
         _TokenString_instances.add(this);

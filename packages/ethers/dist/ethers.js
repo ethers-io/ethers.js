@@ -260,7 +260,7 @@ export function isContractCallException(error: any): error is ContractCallExcept
 }
 */
 
-const version$g = "@ethersproject/logger@6.0.0-beta.2";
+const version$g = "@ethersproject/logger@6.0.0-beta.3";
 
 var __classPrivateFieldGet$y = (window && window.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
@@ -540,7 +540,7 @@ _Logger_instances = new WeakSet(), _Logger_getBytes = function _Logger_getBytes(
 //static readonly Errors = ErrorCode;
 Logger.LogLevels = LogLevel;
 
-const version$f = "@ethersproject/abi@6.0.0-beta.2";
+const version$f = "@ethersproject/abi@6.0.0-beta.3";
 
 const logger$e = new Logger(version$f);
 
@@ -594,7 +594,7 @@ const SimpleTokens = {
 const regexWhitespace = new RegExp("^(\\s*)");
 const regexNumber = new RegExp("^([0-9]+)");
 const regexIdentifier = new RegExp("^([a-zA-Z$_][a-zA-Z0-9$_]*)");
-const regexType = new RegExp("^(address|bool|bytes(0-9*)|string|u?int([0-9]*))");
+const regexType = new RegExp("^(address|bool|bytes([0-9]*)|string|u?int([0-9]*))");
 class TokenString {
     constructor(tokens) {
         _TokenString_instances.add(this);
@@ -1977,31 +1977,11 @@ function isHexString(value, length) {
     }
     return true;
 }
-/*
-function _isByte(value: number): boolean {
-    return (typeof(value) === "number" && value >= 0 && value < 256 && Math.floor(value) === value);
-}
-export function isBytes(value: any): value is Bytes {
-    if (value == null) { return false; }
-
-    if (value instanceof Uint8Array) { return true; }
-    if (typeof(value) === "string") { return false; }
-
-    if (Array.isArray(value)) {
-        for (let i = 0; i < value.length; i++) {
-            if (!_isByte(value[i])) { return false; }
-        }
-        return true;
-    }
-
-    return false;
-}
-*/
 function isBytesLike(value) {
     return (isHexString(value, true) || (value instanceof Uint8Array));
 }
 
-const version$d = "@ethersproject/bytes@6.0.0-beta.2";
+const version$d = "@ethersproject/bytes@6.0.0-beta.3";
 
 const logger$c = new Logger(version$d);
 
@@ -2167,7 +2147,7 @@ var __classPrivateFieldGet$v = (window && window.__classPrivateFieldGet) || func
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _Result_instances, _Result_indices, _Result_throwError, _Writer_instances, _Writer_data, _Writer_dataLength, _Writer_writeData, _Reader_instances, _Reader_data, _Reader_offset, _Reader_coerceFunc, _Reader_peekBytes;
+var _Result_instances, _Result_indices, _Result_throwError, _Writer_instances, _Writer_data, _Writer_dataLength, _Writer_writeData, _Reader_instances, _Reader_data, _Reader_offset, _Reader_peekBytes;
 const WordSize = 32;
 const Padding = new Uint8Array(WordSize);
 // Properties used to immediate pass through to the underlying object
@@ -2272,7 +2252,7 @@ function getValue$1(value) {
             offset: bytes.length
         });
     }
-    if (bytes.length % WordSize) {
+    if (bytes.length !== WordSize) {
         bytes = arrayify(concat([Padding.slice(bytes.length % WordSize), bytes]));
     }
     return bytes;
@@ -2333,34 +2313,21 @@ _Writer_data = new WeakMap(), _Writer_dataLength = new WeakMap(), _Writer_instan
     return data.length;
 };
 class Reader {
-    constructor(data, coerceFunc, allowLoose) {
+    constructor(data, allowLoose) {
         _Reader_instances.add(this);
         _Reader_data.set(this, void 0);
         _Reader_offset.set(this, void 0);
-        _Reader_coerceFunc.set(this, void 0);
         defineProperties(this, { allowLoose: !!allowLoose });
         __classPrivateFieldSet$u(this, _Reader_data, arrayify(data), "f");
-        __classPrivateFieldSet$u(this, _Reader_coerceFunc, coerceFunc || Reader.coerce, "f");
         __classPrivateFieldSet$u(this, _Reader_offset, 0, "f");
     }
     get data() { return hexlify(__classPrivateFieldGet$v(this, _Reader_data, "f")); }
     get dataLength() { return __classPrivateFieldGet$v(this, _Reader_data, "f").length; }
     get consumed() { return __classPrivateFieldGet$v(this, _Reader_offset, "f"); }
     get bytes() { return new Uint8Array(__classPrivateFieldGet$v(this, _Reader_data, "f")); }
-    // The default Coerce function
-    static coerce(type, value) {
-        let match = type.match("^u?int([0-9]+)$");
-        if (match && parseInt(match[1]) <= 48) {
-            value = value.toNumber();
-        }
-        return value;
-    }
-    coerce(type, value) {
-        return __classPrivateFieldGet$v(this, _Reader_coerceFunc, "f").call(this, type, value);
-    }
     // Create a sub-reader with the same underlying data, but offset
     subReader(offset) {
-        return new Reader(__classPrivateFieldGet$v(this, _Reader_data, "f").slice(__classPrivateFieldGet$v(this, _Reader_offset, "f") + offset), __classPrivateFieldGet$v(this, _Reader_coerceFunc, "f"), this.allowLoose);
+        return new Reader(__classPrivateFieldGet$v(this, _Reader_data, "f").slice(__classPrivateFieldGet$v(this, _Reader_offset, "f") + offset), this.allowLoose);
     }
     // Read bytes
     readBytes(length, loose) {
@@ -2377,7 +2344,7 @@ class Reader {
         return toNumber(this.readBytes(WordSize));
     }
 }
-_Reader_data = new WeakMap(), _Reader_offset = new WeakMap(), _Reader_coerceFunc = new WeakMap(), _Reader_instances = new WeakSet(), _Reader_peekBytes = function _Reader_peekBytes(offset, length, loose) {
+_Reader_data = new WeakMap(), _Reader_offset = new WeakMap(), _Reader_instances = new WeakSet(), _Reader_peekBytes = function _Reader_peekBytes(offset, length, loose) {
     let alignedLength = Math.ceil(length / WordSize) * WordSize;
     if (__classPrivateFieldGet$v(this, _Reader_offset, "f") + alignedLength > __classPrivateFieldGet$v(this, _Reader_data, "f").length) {
         if (this.allowLoose && loose && __classPrivateFieldGet$v(this, _Reader_offset, "f") + length <= __classPrivateFieldGet$v(this, _Reader_data, "f").length) {
@@ -4578,7 +4545,7 @@ class ArrayCoder extends Coder {
         for (let i = 0; i < count; i++) {
             coders.push(new AnonymousCoder(this.coder));
         }
-        return reader.coerce(this.name, unpack(reader, coders));
+        return unpack(reader, coders);
     }
 }
 
@@ -4594,7 +4561,7 @@ class BooleanCoder extends Coder {
         return writer.writeValue(value ? 1 : 0);
     }
     decode(reader) {
-        return reader.coerce(this.type, !reader.readValue());
+        return !!reader.readValue();
     }
 }
 
@@ -4620,7 +4587,7 @@ class BytesCoder extends DynamicBytesCoder {
         super("bytes", localName);
     }
     decode(reader) {
-        return reader.coerce(this.name, hexlify(super.decode(reader)));
+        return hexlify(super.decode(reader));
     }
 }
 
@@ -4641,7 +4608,7 @@ class FixedBytesCoder extends Coder {
         return writer.writeBytes(data);
     }
     decode(reader) {
-        return reader.coerce(this.name, hexlify(reader.readBytes(this.size)));
+        return hexlify(reader.readBytes(this.size));
     }
 }
 
@@ -4661,7 +4628,7 @@ class NullCoder extends Coder {
     }
     decode(reader) {
         reader.readBytes(0);
-        return reader.coerce(this.name, null);
+        return null;
     }
 }
 
@@ -4701,7 +4668,7 @@ class NumberCoder extends Coder {
         if (this.signed) {
             value = fromTwos(value, this.size * 8);
         }
-        return reader.coerce(this.name, value);
+        return value;
     }
 }
 
@@ -5229,10 +5196,11 @@ class TupleCoder extends Coder {
         return pack(writer, this.coders, value);
     }
     decode(reader) {
-        return reader.coerce(this.name, unpack(reader, this.coders));
+        return unpack(reader, this.coders);
     }
 }
 
+// See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 var __classPrivateFieldGet$t = (window && window.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
@@ -5242,9 +5210,8 @@ var _AbiCoder_instances, _AbiCoder_getCoder;
 const paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 class AbiCoder {
-    constructor(coerceFunc) {
+    constructor() {
         _AbiCoder_instances.add(this);
-        defineProperties(this, { coerceFunc }, {}, { coerceFunc: null });
     }
     getDefaultValue(types) {
         const coders = types.map((type) => __classPrivateFieldGet$t(this, _AbiCoder_instances, "m", _AbiCoder_getCoder).call(this, ParamType.from(type)));
@@ -5262,7 +5229,7 @@ class AbiCoder {
     decode(types, data, loose) {
         const coders = types.map((type) => __classPrivateFieldGet$t(this, _AbiCoder_instances, "m", _AbiCoder_getCoder).call(this, ParamType.from(type)));
         const coder = new TupleCoder(coders, "_");
-        return coder.decode(new Reader(data, this.coerceFunc, loose));
+        return coder.decode(new Reader(data, loose));
     }
 }
 _AbiCoder_instances = new WeakSet(), _AbiCoder_getCoder = function _AbiCoder_getCoder(param) {
@@ -7107,7 +7074,7 @@ fetchData.setArGateway = function (gateway) {
     }
 };
 
-const version$6 = "@ethersproject/providers@6.0.0-beta.3";
+const version$6 = "@ethersproject/providers@6.0.0-beta.4";
 
 const logger$5 = new Logger(version$6);
 
@@ -8883,7 +8850,7 @@ function recoverAddress(digest, signature) {
     return computeAddress(SigningKey.recoverPublicKey(digest, signature));
 }
 
-const version$4 = "@ethersproject/transactions@6.0.0-beta.2";
+const version$4 = "@ethersproject/transaction@6.0.0-beta.2";
 
 const logger$3 = new Logger(version$4);
 
@@ -9445,7 +9412,7 @@ class Transaction {
         if (tx.accessList != null) {
             result.accessList = tx.accessList;
         }
-        if ("hash" in tx) {
+        if (tx.hash != null) {
             if (result.isSigned()) {
                 if (result.hash !== tx.hash) {
                     throw new Error("hash mismatch");
@@ -9455,7 +9422,7 @@ class Transaction {
                 throw new Error("unsigned transaction cannot have a hashs");
             }
         }
-        if ("from" in tx) {
+        if (tx.from != null) {
             if (result.isSigned()) {
                 if (result.from.toLowerCase() !== (tx.from || "").toLowerCase()) {
                     throw new Error("from mismatch");
@@ -9897,6 +9864,7 @@ function fail() {
     throw new Error("this provider should not be used");
 }
 class DummyProvider {
+    get provider() { return this; }
     async getNetwork() { return fail(); }
     async getFeeData() { return fail(); }
     async estimateGas(tx) { return fail(); }
@@ -10958,6 +10926,7 @@ class AbstractProvider {
         __classPrivateFieldSet$g(this, _AbstractProvider_timers, new Map(), "f");
         __classPrivateFieldSet$g(this, _AbstractProvider_disableCcipRead, false, "f");
     }
+    get provider() { return this; }
     get plugins() {
         return Array.from(__classPrivateFieldGet$g(this, _AbstractProvider_plugins, "f").values());
     }
@@ -14272,7 +14241,7 @@ class ContractEventPayload extends EventPayload {
     }
 }
 
-const version$3 = "@ethersproject/contract@6.0.0-beta.3";
+const version$3 = "@ethersproject/contract@6.0.0-beta.4";
 
 const logger$2 = new Logger(version$3);
 
@@ -14288,23 +14257,17 @@ var __classPrivateFieldGet$8 = (window && window.__classPrivateFieldGet) || func
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
 var _PreparedTopicFilter_filter;
-function canEstimate(value) {
-    return (value && typeof (value.estimateGas) === "function");
-}
 function canCall(value) {
     return (value && typeof (value.call) === "function");
 }
-function canSend(value) {
-    return (value && typeof (value.sendTransaction) === "function");
+function canEstimate(value) {
+    return (value && typeof (value.estimateGas) === "function");
 }
 function canResolve(value) {
     return (value && typeof (value.resolveName) === "function");
 }
-function canQuery(value) {
-    return (value && typeof (value.getLogs) === "function");
-}
-function canSubscribe(value) {
-    return (value && typeof (value.on) === "function" && typeof (value.off) === "function");
+function canSend(value) {
+    return (value && typeof (value.sendTransaction) === "function");
 }
 function concisify(items) {
     items = Array.from((new Set(items)).values());
@@ -14358,6 +14321,12 @@ function getRunner(value, feature) {
         return value.provider;
     }
     return null;
+}
+function getProvider(value) {
+    if (value == null) {
+        return null;
+    }
+    return value.provider || null;
 }
 async function copyOverrides(arg) {
     // Create a shallow copy (we'll deep-ify anything needed during normalizing)
@@ -14439,14 +14408,14 @@ class WrappedMethod extends _WrappedMethodBase() {
         return result;
     }
     async send(...args) {
-        const runner = getRunner(this._contract.runner, "sendTransaction");
+        const runner = this._contract.runner;
         if (!canSend(runner)) {
             return logger$2.throwError("contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
                 operation: "sendTransaction"
             });
         }
         const tx = await runner.sendTransaction(await this.populateTransaction(...args));
-        const provider = getRunner(this._contract.runner, "getLogs");
+        const provider = getProvider(this._contract.runner);
         return new ContractTransactionResponse(this._contract.interface, provider, tx);
     }
     async estimateGas(...args) {
@@ -14575,9 +14544,8 @@ async function hasSub(contract, event) {
 }
 async function getSub(contract, event) {
     // Make sure our runner can actually subscribe to events
-    const runner = getRunner(contract.runner, "on");
-    const runnerOff = getRunner(contract.runner, "off");
-    if (!runner || runner !== runnerOff || !canSubscribe(runner)) {
+    const provider = getProvider(contract.runner);
+    if (!provider) {
         return logger$2.throwError("contract runner does not support subscribing", "UNSUPPORTED_OPERATION", {
             operation: "on"
         });
@@ -14597,14 +14565,14 @@ async function getSub(contract, event) {
             if (started) {
                 return;
             }
-            runner.on(filter, listener);
+            provider.on(filter, listener);
             started = true;
         };
         const stop = () => {
             if (!started) {
                 return;
             }
-            runner.off(filter, listener);
+            provider.off(filter, listener);
             started = false;
         };
         sub = { tag, listeners: [], start, stop };
@@ -14655,7 +14623,7 @@ class BaseContract {
         let addr = null;
         let deployTx = null;
         if (_deployTx) {
-            const provider = getRunner(runner, "getLogs");
+            const provider = getProvider(runner);
             deployTx = new ContractTransactionResponse(this.interface, provider, _deployTx);
         }
         let subs = new Map();
@@ -14724,6 +14692,54 @@ class BaseContract {
         });
     }
     async getAddress() { return await getInternal(this).addrPromise; }
+    async getDeployedCode() {
+        const provider = getProvider(this.runner);
+        if (!provider) {
+            return logger$2.throwError("runner does not support .provider", "UNSUPPORTED_OPERATION", {
+                operation: "getDeployedCode"
+            });
+        }
+        const code = await provider.getCode(await this.getAddress());
+        if (code === "0x") {
+            return null;
+        }
+        return code;
+    }
+    async waitForDeployment() {
+        // We have the deployement transaction; just use that (throws if deployement fails)
+        const deployTx = this.deploymentTransaction();
+        if (deployTx) {
+            await deployTx.wait();
+            return this;
+        }
+        // Check for code
+        const code = await this.getDeployedCode();
+        if (code != null) {
+            return this;
+        }
+        // Make sure we can subscribe to a provider event
+        const provider = getProvider(this.runner);
+        if (provider == null) {
+            return logger$2.throwError("contract runner does not support .provider", "UNSUPPORTED_OPERATION", {
+                operation: "waitForDeployment"
+            });
+        }
+        return new Promise((resolve, reject) => {
+            const checkCode = async () => {
+                try {
+                    const code = await this.getDeployedCode();
+                    if (code != null) {
+                        return resolve(this);
+                    }
+                    provider.once("block", checkCode);
+                }
+                catch (error) {
+                    reject(error);
+                }
+            };
+            checkCode();
+        });
+    }
     deploymentTransaction() {
         return getInternal(this).deployTx;
     }
@@ -14748,15 +14764,25 @@ class BaseContract {
         const address = (addr ? addr : (await addrPromise));
         const { fragment, topics } = await getSubTag(this, event);
         const filter = { address, topics, fromBlock, toBlock };
-        const runner = getRunner(this.runner, "getLogs");
-        if (!canQuery(runner)) {
-            return logger$2.throwError("contract runner does not support querying", "UNSUPPORTED_OPERATION", {
-                operation: "getLogs"
+        const provider = getProvider(this.runner);
+        if (!provider) {
+            return logger$2.throwError("contract runner does not have a provider", "UNSUPPORTED_OPERATION", {
+                operation: "queryFilter"
             });
         }
-        return (await runner.getLogs(filter)).map((log) => {
+        return (await provider.getLogs(filter)).map((log) => {
             return new EventLog(log, this.interface, fragment);
         });
+    }
+    async canSubscribe(event) {
+        try {
+            getSubTag(this, event);
+            return true;
+        }
+        catch (error) {
+            console.log("EE2", error);
+        }
+        return false;
     }
     async on(event, listener) {
         const sub = await getSub(this, event);
@@ -14994,7 +15020,7 @@ class LangEn extends WordlistOwl {
 }
 const langEn = new LangEn();
 
-const version$1 = "@ethersproject/wallet@6.0.0-beta.3";
+const version$1 = "@ethersproject/wallet@6.0.0-beta.4";
 
 const logger = new Logger(version$1);
 
@@ -16363,7 +16389,7 @@ class Wallet extends BaseWallet {
 }
 _Wallet_mnemonic = new WeakMap();
 
-const version = "ethers@6.0.0-beta.4";
+const version = "ethers@6.0.0-beta.5";
 
 var ethers = /*#__PURE__*/Object.freeze({
     __proto__: null,

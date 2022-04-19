@@ -9,7 +9,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _Result_instances, _Result_indices, _Result_throwError, _Writer_instances, _Writer_data, _Writer_dataLength, _Writer_writeData, _Reader_instances, _Reader_data, _Reader_offset, _Reader_coerceFunc, _Reader_peekBytes;
+var _Result_instances, _Result_indices, _Result_throwError, _Writer_instances, _Writer_data, _Writer_dataLength, _Writer_writeData, _Reader_instances, _Reader_data, _Reader_offset, _Reader_peekBytes;
 import { toArray, toBigInt, toNumber } from "@ethersproject/math";
 import { arrayify, concat, hexlify } from "@ethersproject/bytes";
 import { defineProperties } from "@ethersproject/properties";
@@ -139,7 +139,7 @@ function getValue(value) {
             offset: bytes.length
         });
     }
-    if (bytes.length % WordSize) {
+    if (bytes.length !== WordSize) {
         bytes = arrayify(concat([Padding.slice(bytes.length % WordSize), bytes]));
     }
     return bytes;
@@ -200,34 +200,21 @@ _Writer_data = new WeakMap(), _Writer_dataLength = new WeakMap(), _Writer_instan
     return data.length;
 };
 export class Reader {
-    constructor(data, coerceFunc, allowLoose) {
+    constructor(data, allowLoose) {
         _Reader_instances.add(this);
         _Reader_data.set(this, void 0);
         _Reader_offset.set(this, void 0);
-        _Reader_coerceFunc.set(this, void 0);
         defineProperties(this, { allowLoose: !!allowLoose });
         __classPrivateFieldSet(this, _Reader_data, arrayify(data), "f");
-        __classPrivateFieldSet(this, _Reader_coerceFunc, coerceFunc || Reader.coerce, "f");
         __classPrivateFieldSet(this, _Reader_offset, 0, "f");
     }
     get data() { return hexlify(__classPrivateFieldGet(this, _Reader_data, "f")); }
     get dataLength() { return __classPrivateFieldGet(this, _Reader_data, "f").length; }
     get consumed() { return __classPrivateFieldGet(this, _Reader_offset, "f"); }
     get bytes() { return new Uint8Array(__classPrivateFieldGet(this, _Reader_data, "f")); }
-    // The default Coerce function
-    static coerce(type, value) {
-        let match = type.match("^u?int([0-9]+)$");
-        if (match && parseInt(match[1]) <= 48) {
-            value = value.toNumber();
-        }
-        return value;
-    }
-    coerce(type, value) {
-        return __classPrivateFieldGet(this, _Reader_coerceFunc, "f").call(this, type, value);
-    }
     // Create a sub-reader with the same underlying data, but offset
     subReader(offset) {
-        return new Reader(__classPrivateFieldGet(this, _Reader_data, "f").slice(__classPrivateFieldGet(this, _Reader_offset, "f") + offset), __classPrivateFieldGet(this, _Reader_coerceFunc, "f"), this.allowLoose);
+        return new Reader(__classPrivateFieldGet(this, _Reader_data, "f").slice(__classPrivateFieldGet(this, _Reader_offset, "f") + offset), this.allowLoose);
     }
     // Read bytes
     readBytes(length, loose) {
@@ -244,7 +231,7 @@ export class Reader {
         return toNumber(this.readBytes(WordSize));
     }
 }
-_Reader_data = new WeakMap(), _Reader_offset = new WeakMap(), _Reader_coerceFunc = new WeakMap(), _Reader_instances = new WeakSet(), _Reader_peekBytes = function _Reader_peekBytes(offset, length, loose) {
+_Reader_data = new WeakMap(), _Reader_offset = new WeakMap(), _Reader_instances = new WeakSet(), _Reader_peekBytes = function _Reader_peekBytes(offset, length, loose) {
     let alignedLength = Math.ceil(length / WordSize) * WordSize;
     if (__classPrivateFieldGet(this, _Reader_offset, "f") + alignedLength > __classPrivateFieldGet(this, _Reader_data, "f").length) {
         if (this.allowLoose && loose && __classPrivateFieldGet(this, _Reader_offset, "f") + length <= __classPrivateFieldGet(this, _Reader_data, "f").length) {

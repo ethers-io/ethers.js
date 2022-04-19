@@ -1,19 +1,7 @@
 import type { EventFragment, FunctionFragment, Result, Typed } from "@ethersproject/abi";
-import type { Addressable } from "@ethersproject/address";
-import type { CallRequest, EventFilter, Filter, Log, PreparedRequest, Provider, TopicFilter, TransactionRequest, TransactionResponse } from "@ethersproject/providers";
-import type { Listener } from "@ethersproject/properties";
+import type { CallRequest, PreparedRequest, TopicFilter } from "@ethersproject/providers";
 import type { ContractTransactionResponse } from "./wrappers.js";
 export declare type ContractEventName = string | ContractEvent | TopicFilter;
-export interface ContractRunner {
-    provider?: Provider;
-    estimateGas?: (tx: TransactionRequest) => Promise<bigint>;
-    call?: (tx: TransactionRequest) => Promise<string>;
-    resolveName?: (name: string | Addressable) => Promise<null | string>;
-    sendTransaction?: (tx: TransactionRequest) => Promise<TransactionResponse>;
-    getLogs?: (filter: Filter) => Promise<Array<Log>>;
-    on?: (event: EventFilter, listener: Listener) => Promise<this>;
-    off?: (event: EventFilter, listener: Listener) => Promise<this>;
-}
 export interface ContractInterface {
     [name: string]: BaseContractMethod;
 }

@@ -1,7 +1,7 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/abi": "6.0.0-beta.2",
+    "@ethersproject/abi": "6.0.0-beta.3",
     "@ethersproject/address": "6.0.0-beta.2",
     "@ethersproject/bytes": "6.0.0-beta.3",
     "@ethersproject/contract": "6.0.0-beta.4",

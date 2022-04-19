@@ -15,7 +15,7 @@ export class NullCoder extends Coder {
     }
     decode(reader) {
         reader.readBytes(0);
-        return reader.coerce(this.name, null);
+        return null;
     }
 }
 //# sourceMappingURL=null.js.map

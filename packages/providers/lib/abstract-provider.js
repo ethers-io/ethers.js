@@ -183,6 +183,7 @@ export class AbstractProvider {
         __classPrivateFieldSet(this, _AbstractProvider_timers, new Map(), "f");
         __classPrivateFieldSet(this, _AbstractProvider_disableCcipRead, false, "f");
     }
+    get provider() { return this; }
     get plugins() {
         return Array.from(__classPrivateFieldGet(this, _AbstractProvider_plugins, "f").values());
     }

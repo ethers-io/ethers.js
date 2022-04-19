@@ -434,6 +434,7 @@ function fail() {
     throw new Error("this provider should not be used");
 }
 class DummyProvider {
+    get provider() { return this; }
     async getNetwork() { return fail(); }
     async getFeeData() { return fail(); }
     async estimateGas(tx) { return fail(); }

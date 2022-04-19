@@ -13,7 +13,6 @@ export declare function checkResultErrors(result: Result): Array<{
     path: Array<string | number>;
     error: Error;
 }>;
-export declare type CoerceFunc = (type: string, value: any) => any;
 export declare abstract class Coder {
     readonly name: string;
     readonly type: string;
@@ -38,13 +37,11 @@ export declare class Writer {
 export declare class Reader {
     #private;
     readonly allowLoose: boolean;
-    constructor(data: BytesLike, coerceFunc?: null | CoerceFunc, allowLoose?: boolean);
+    constructor(data: BytesLike, allowLoose?: boolean);
     get data(): string;
     get dataLength(): number;
     get consumed(): number;
     get bytes(): Uint8Array;
-    static coerce(type: string, value: any): any;
-    coerce(type: string, value: any): any;
     subReader(offset: number): Reader;
     readBytes(length: number, loose?: boolean): Uint8Array;
     readValue(): bigint;
