@@ -656,7 +656,7 @@ export class Transaction implements Freezable<Transaction>, TransactionLike<stri
         if (tx.signature != null) { result.signature = Signature.from(tx.signature); }
         if (tx.accessList != null) { result.accessList = tx.accessList; }
 
-        if ("hash" in tx) {
+        if (tx.hash != null) {
             if (result.isSigned()) {
                 if (result.hash !== tx.hash) { throw new Error("hash mismatch"); }
             } else {
@@ -664,7 +664,7 @@ export class Transaction implements Freezable<Transaction>, TransactionLike<stri
             }
         }
 
-        if ("from" in tx) {
+        if (tx.from != null) {
             if (result.isSigned()) {
                 if (result.from.toLowerCase() !== (tx.from || "").toLowerCase()) { throw new Error("from mismatch"); }
             } else {
