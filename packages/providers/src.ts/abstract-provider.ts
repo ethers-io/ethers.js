@@ -326,8 +326,6 @@ export class AbstractProvider implements Provider {
             this.#networkPromise = null;
         }
 
-        //this.#approxNumber = -2;
-        //this.#approxNumberT0 = 0;
         this.#performCache = new Map();
 
         this.#subs = new Map();
@@ -452,7 +450,7 @@ export class AbstractProvider implements Provider {
     }
 
     // State
-    async getBlockNumber() {
+    async getBlockNumber(): Promise<number> {
         return logger.getNumber(await this.#perform({ method: "getBlockNumber" }), "%response");
     }
 
@@ -876,7 +874,7 @@ export class AbstractProvider implements Provider {
                     if (timer == null) { return; }
                     timer = null;
                     this.off("block", listener);
-                    reject(logger.makeError("timeout", "TIMEOUT", { }));
+                    reject(logger.makeError("timeout", "TIMEOUT", { reason: "timeout" }));
                 }, timeout);
             }
 
