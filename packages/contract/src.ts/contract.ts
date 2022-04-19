@@ -646,14 +646,6 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
         });
     }
 
-    async canSubscribe(event: ContractEventName): Promise<boolean> {
-        try {
-            getSubTag(this, event);
-            return true;
-        } catch (error) { console.log("EE2", error); }
-        return false;
-    }
-
     async on(event: ContractEventName, listener: Listener): Promise<this> {
         const sub = await getSub(this, event);
         sub.listeners.push({ listener, once: false });
