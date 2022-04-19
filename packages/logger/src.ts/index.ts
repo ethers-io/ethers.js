@@ -11,31 +11,34 @@ export { Logger } from "./logger.js";
 // Types
 
 export type {
-  EthersError,
-  UnknownError,
-  NotImplementedError,
-  UnsupportedOperationError,
-  NetworkError,
-  ServerError,
-  TimeoutError,
+  EthersError, CodedEthersError,
+
+  BadDataError,
   BufferOverrunError,
-  NumericFaultError,
+  CallExceptionError,
+  InsufficientFundsError,
   InvalidArgumentError,
   MissingArgumentError,
-  UnexpectedArgumentError,
-  CallExceptionError,
-  //ContractCallExceptionError,
-  InsufficientFundsError,
+  NetworkError,
   NonceExpiredError,
+  NotImplementedError,
+  NumericFaultError,
+  OffchainFaultError,
   ReplacementUnderpricedError,
+  ServerError,
   TransactionReplacedError,
+  TimeoutError,
   UnconfiguredNameError,
+  UnexpectedArgumentError,
+  UnknownError,
   UnpredictableGasLimitError,
-  CodedEthersError
+  UnsupportedOperationError,
+
 } from "./errors.js";
 
 export type {
   BytesLike,
   BigNumberish,
+  ErrorInfo,
   Numeric
 } from "./logger.js";

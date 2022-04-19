@@ -63,7 +63,6 @@ ErrorConstructors.BUFFER_OVERRUN = RangeError;
 export class Logger {
     readonly version!: string;
 
-    //static readonly Errors = ErrorCode;
     static readonly LogLevels = LogLevel;
 
     constructor(version?: string) {
@@ -71,11 +70,6 @@ export class Logger {
     }
 
     makeError<K extends ErrorCode, T extends CodedEthersError<K>>(message: string, code: K, info?: ErrorInfo<T>): T {
-        // Errors are being censored
-        //if (_censor === Censor.ON || _censor === Censor.PERMANENT) {
-        //    return this.makeError("censored error", code, <any>{ });
-        //}
-
         {
             const details: Array<string> = [];
             if (info) {
