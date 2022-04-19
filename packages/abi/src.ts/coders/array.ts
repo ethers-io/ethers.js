@@ -202,7 +202,7 @@ export class ArrayCoder extends Coder {
         let coders = [];
         for (let i = 0; i < count; i++) { coders.push(new AnonymousCoder(this.coder)); }
 
-        return reader.coerce(this.name, unpack(reader, coders));
+        return unpack(reader, coders);
     }
 }
 

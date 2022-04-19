@@ -30,6 +30,6 @@ export class FixedBytesCoder extends Coder {
     }
 
     decode(reader: Reader): any {
-        return reader.coerce(this.name, hexlify(reader.readBytes(this.size)));
+        return hexlify(reader.readBytes(this.size));
     }
 }

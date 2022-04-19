@@ -32,6 +32,6 @@ export class BytesCoder extends DynamicBytesCoder {
     }
 
     decode(reader: Reader): any {
-        return reader.coerce(this.name, hexlify(super.decode(reader)));
+        return hexlify(super.decode(reader));
     }
 }

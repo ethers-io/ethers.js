@@ -20,6 +20,6 @@ export class NullCoder extends Coder {
 
     decode(reader: Reader): any {
         reader.readBytes(0);
-        return reader.coerce(this.name, null);
+        return null;
     }
 }

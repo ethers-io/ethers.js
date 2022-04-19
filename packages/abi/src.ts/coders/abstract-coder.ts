@@ -148,15 +148,13 @@ function getValue(value: BigNumberish): Uint8Array {
         });
     }
 
-    if (bytes.length % WordSize) {
+    if (bytes.length !== WordSize) {
         bytes = arrayify(concat([ Padding.slice(bytes.length % WordSize), bytes ]));
     }
 
     return bytes;
 }
 
-
-export type CoerceFunc = (type: string, value: any) => any;
 
 export abstract class Coder {
 
@@ -255,13 +253,10 @@ export class Reader {
     readonly #data: Uint8Array;
     #offset: number;
 
-    readonly #coerceFunc: CoerceFunc;
-
-    constructor(data: BytesLike, coerceFunc?: null | CoerceFunc, allowLoose?: boolean) {
+    constructor(data: BytesLike, allowLoose?: boolean) {
         defineProperties<Reader>(this, { allowLoose: !!allowLoose });
 
         this.#data = arrayify(data);
-        this.#coerceFunc = coerceFunc || Reader.coerce;
 
         this.#offset = 0;
     }
@@ -270,17 +265,6 @@ export class Reader {
     get dataLength(): number { return this.#data.length; }
     get consumed(): number { return this.#offset; }
     get bytes(): Uint8Array { return new Uint8Array(this.#data); }
-
-    // The default Coerce function
-    static coerce(type: string, value: any): any {
-        let match = type.match("^u?int([0-9]+)$");
-        if (match && parseInt(match[1]) <= 48) { value =  value.toNumber(); }
-        return value;
-    }
-
-    coerce(type: string, value: any): any {
-        return this.#coerceFunc(type, value);
-    }
 
     #peekBytes(offset: number, length: number, loose?: boolean): Uint8Array {
         let alignedLength = Math.ceil(length / WordSize) * WordSize;
@@ -300,7 +284,7 @@ export class Reader {
 
     // Create a sub-reader with the same underlying data, but offset
     subReader(offset: number): Reader {
-        return new Reader(this.#data.slice(this.#offset + offset), this.#coerceFunc, this.allowLoose);
+        return new Reader(this.#data.slice(this.#offset + offset), this.allowLoose);
     }
 
     // Read bytes

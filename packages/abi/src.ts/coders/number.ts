@@ -59,7 +59,7 @@ export class NumberCoder extends Coder {
             value = fromTwos(value, this.size * 8);
         }
 
-        return reader.coerce(this.name, value);
+        return value;
     }
 }
 

@@ -1,6 +1,4 @@
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
-//import { arrayify } from "@ethersproject/bytes";
-import { defineProperties } from "@ethersproject/properties";
 
 import { logger } from "./logger.js";
 import { Coder, Reader, Result, Writer } from "./coders/abstract-coder.js";
@@ -21,14 +19,7 @@ import type { BytesLike } from "@ethersproject/bytes";
 const paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 
-export type CoerceFunc = (type: string, value: any) => any;
-
 export class AbiCoder {
-    readonly coerceFunc!: null | CoerceFunc;
-
-    constructor(coerceFunc?: CoerceFunc) {
-        defineProperties<AbiCoder>(this, { coerceFunc }, { }, { coerceFunc: null });
-    }
 
     #getCoder(param: ParamType): Coder {
         if (param.isArray()) {
@@ -95,7 +86,7 @@ export class AbiCoder {
     decode(types: ReadonlyArray<string | ParamType>, data: BytesLike, loose?: boolean): Result {
         const coders: Array<Coder> = types.map((type) => this.#getCoder(ParamType.from(type)));
         const coder = new TupleCoder(coders, "_");
-        return coder.decode(new Reader(data, this.coerceFunc, loose));
+        return coder.decode(new Reader(data, loose));
     }
 }
 

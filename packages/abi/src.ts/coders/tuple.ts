@@ -60,7 +60,7 @@ export class TupleCoder extends Coder {
     }
 
     decode(reader: Reader): any {
-        return reader.coerce(this.name, unpack(reader, this.coders));
+        return unpack(reader, this.coders);
     }
 }
 

@@ -20,6 +20,6 @@ export class BooleanCoder extends Coder {
     }
 
     decode(reader: Reader): any {
-        return reader.coerce(this.type, !reader.readValue());
+        return !!reader.readValue();
     }
 }
