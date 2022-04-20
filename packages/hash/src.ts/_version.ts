@@ -1,1 +1,1 @@
-export const version = "@ethersproject/hash@6.0.0-beta.5";
+export const version = "@ethersproject/hash@6.0.0-beta.7";
