@@ -288,7 +288,7 @@ function _serialize(transaction: UnsignedTransaction, signature?: SignatureLike)
         v += chainId * 2 + 8;
 
         // If an EIP-155 v (directly or indirectly; maybe _vs) was provided, check it!
-        if (sig.v > 28 && sig.v !== v) {
+        if (sig.v > 28 && sig.v !== v % 256) {
              logger.throwArgumentError("transaction.chainId/signature.v mismatch", "signature", signature);
         }
     } else if (sig.v !== v) {
