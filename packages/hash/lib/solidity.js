@@ -1,6 +1,6 @@
 import { concat, dataLength, hexlify, zeroPadBytes, zeroPadValue } from "@ethersproject/bytes";
 import { keccak256 as _keccak256, sha256 as _sha256 } from "@ethersproject/crypto";
-import { toTwos } from "@ethersproject/math";
+import { toArray, toTwos } from "@ethersproject/math";
 import { toUtf8Bytes } from "@ethersproject/strings";
 import { logger } from "./logger.js";
 const regexBytes = new RegExp("^bytes([0-9]+)$");
@@ -34,7 +34,7 @@ function _pack(type, value, isArray) {
             size = 256;
         }
         value = toTwos(value, size);
-        return logger.getBytes(zeroPadValue(value, size / 8));
+        return logger.getBytes(zeroPadValue(toArray(value), size / 8));
     }
     match = type.match(regexBytes);
     if (match) {
