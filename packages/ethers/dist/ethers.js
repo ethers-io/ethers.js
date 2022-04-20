@@ -255,7 +255,7 @@ function isCallException(error) {
     return isError(error, "CALL_EXCEPTION");
 }
 
-const version$g = "@ethersproject/logger@6.0.0-beta.5";
+const version$g = "@ethersproject/logger@6.0.0-beta.7";
 
 var __classPrivateFieldGet$y = (window && window.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
@@ -5267,7 +5267,7 @@ function id(value) {
     return keccak256(toUtf8Bytes(value));
 }
 
-const version$8 = "@ethersproject/hash@6.0.0-beta.5";
+const version$8 = "@ethersproject/hash@6.0.0-beta.7";
 
 const logger$7 = new Logger(version$8);
 
@@ -6604,7 +6604,7 @@ _Interface_errors = new WeakMap(), _Interface_events = new WeakMap(), _Interface
     return logger$e.throwArgumentError("no matching event", "signature", key);
 };
 
-const version$7 = "@ethersproject/web@6.0.0-beta.4";
+const version$7 = "@ethersproject/web@6.0.0-beta.6";
 
 const logger$6 = new Logger(version$7);
 
@@ -7144,7 +7144,7 @@ fetchData.setArGateway = function (gateway) {
     }
 };
 
-const version$6 = "@ethersproject/providers@6.0.0-beta.6";
+const version$6 = "@ethersproject/providers@6.0.0-beta.8";
 
 const logger$5 = new Logger(version$6);
 
@@ -14998,7 +14998,7 @@ class LangEn extends WordlistOwl {
 }
 const langEn = new LangEn();
 
-const version$1 = "@ethersproject/wallet@6.0.0-beta.6";
+const version$1 = "@ethersproject/wallet@6.0.0-beta.8";
 
 const logger = new Logger(version$1);
 
@@ -16367,7 +16367,7 @@ class Wallet extends BaseWallet {
 }
 _Wallet_mnemonic = new WeakMap();
 
-const version = "ethers@6.0.0-beta.7";
+const version = "ethers@6.0.0-beta.9";
 
 var ethers = /*#__PURE__*/Object.freeze({
     __proto__: null,
