@@ -1,8 +1,13 @@
 
+/**
+ *  Exports the same Network as "./network.js" except with common
+ *  networks injected registered.
+ */
+
 import { EnsPlugin, GasCostPlugin, MaxPriorityFeePlugin } from "./plugins-network.js";
 import { EtherscanPlugin } from "./provider-etherscan.js";
 
-import { Network as _Network } from "./network.js";
+import { Network } from "./network.js";
 
 type Options = {
     ensNetwork?: number;
@@ -12,7 +17,7 @@ type Options = {
 };
 
 // See: https://chainlist.org
-function injectCommonNetworks(Network: typeof _Network): typeof _Network {
+export function injectCommonNetworks(): void {
 
     /// Register popular Ethereum networks
     function registerEth(name: string, chainId: number, options: Options): void {
@@ -90,9 +95,8 @@ function injectCommonNetworks(Network: typeof _Network): typeof _Network {
             url: "http:/\/api-testnet.bscscan.com"
         }
     });
-
-    return Network;
 }
 
-const Network = injectCommonNetworks(_Network);
-export { Network }
+injectCommonNetworks();
+
+export { Network };
