@@ -173,8 +173,6 @@ export class AbstractProvider {
             __classPrivateFieldSet(this, _AbstractProvider_anyNetwork, false, "f");
             __classPrivateFieldSet(this, _AbstractProvider_networkPromise, null, "f");
         }
-        //this.#approxNumber = -2;
-        //this.#approxNumberT0 = 0;
         __classPrivateFieldSet(this, _AbstractProvider_performCache, new Map(), "f");
         __classPrivateFieldSet(this, _AbstractProvider_subs, new Map(), "f");
         __classPrivateFieldSet(this, _AbstractProvider_plugins, new Map(), "f");
@@ -577,7 +575,7 @@ export class AbstractProvider {
                     }
                     timer = null;
                     this.off("block", listener);
-                    reject(logger.makeError("timeout", "TIMEOUT", {}));
+                    reject(logger.makeError("timeout", "TIMEOUT", { reason: "timeout" }));
                 }, timeout);
             }
             listener(await this.getBlockNumber());

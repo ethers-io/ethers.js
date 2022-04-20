@@ -6,17 +6,17 @@
     "@ethersproject/bytes": "6.0.0-beta.3",
     "@ethersproject/contract": "6.0.0-beta.4",
     "@ethersproject/crypto": "6.0.0-beta.2",
-    "@ethersproject/hash": "6.0.0-beta.3",
-    "@ethersproject/logger": "6.0.0-beta.3",
+    "@ethersproject/hash": "6.0.0-beta.4",
+    "@ethersproject/logger": "6.0.0-beta.4",
     "@ethersproject/math": "6.0.0-beta.3",
-    "@ethersproject/properties": "6.0.0-beta.2",
-    "@ethersproject/providers": "6.0.0-beta.4",
+    "@ethersproject/properties": "6.0.0-beta.3",
+    "@ethersproject/providers": "6.0.0-beta.5",
     "@ethersproject/rlp": "6.0.0-beta.2",
     "@ethersproject/signing-key": "6.0.0-beta.2",
     "@ethersproject/strings": "6.0.0-beta.2",
     "@ethersproject/transaction": "6.0.0-beta.2",
-    "@ethersproject/wallet": "6.0.0-beta.4",
-    "@ethersproject/web": "6.0.0-beta.2",
+    "@ethersproject/wallet": "6.0.0-beta.5",
+    "@ethersproject/web": "6.0.0-beta.3",
     "@ethersproject/wordlists": "6.0.0-beta.2"
   },
   "description": "Ethereum Providers for ethers.",
@@ -67,5 +67,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./lib/index.d.ts",
-  "version": "6.0.0-beta.5"
+  "version": "6.0.0-beta.6"
 }

@@ -254,11 +254,6 @@ function isError(error, code) {
 function isCallException(error) {
     return isError(error, "CALL_EXCEPTION");
 }
-/*
-export function isContractCallException(error: any): error is ContractCallExceptionError {
-    return isError(error, "CALL_EXCEPTION") && (<any>error).method;
-}
-*/
 
 const version$g = "@ethersproject/logger@6.0.0-beta.3";
 
@@ -320,10 +315,6 @@ class Logger {
         defineReadOnly(this, "version", version || "_");
     }
     makeError(message, code, info) {
-        // Errors are being censored
-        //if (_censor === Censor.ON || _censor === Censor.PERMANENT) {
-        //    return this.makeError("censored error", code, <any>{ });
-        //}
         {
             const details = [];
             if (info) {
@@ -537,7 +528,6 @@ _Logger_instances = new WeakSet(), _Logger_getBytes = function _Logger_getBytes(
     }
     console.log.apply(console, args);
 };
-//static readonly Errors = ErrorCode;
 Logger.LogLevels = LogLevel;
 
 const version$f = "@ethersproject/abi@6.0.0-beta.3";
@@ -592,7 +582,7 @@ const SimpleTokens = {
 };
 // Parser regexes to consume the next token
 const regexWhitespace = new RegExp("^(\\s*)");
-const regexNumber = new RegExp("^([0-9]+)");
+const regexNumber$1 = new RegExp("^([0-9]+)");
 const regexIdentifier = new RegExp("^([a-zA-Z$_][a-zA-Z0-9$_]*)");
 const regexType = new RegExp("^(address|bool|bytes([0-9]*)|string|u?int([0-9]*))");
 class TokenString {
@@ -768,7 +758,7 @@ function lex(text) {
             token.type = "ID";
             continue;
         }
-        match = cur.match(regexNumber);
+        match = cur.match(regexNumber$1);
         if (match) {
             token.text = match[1];
             token.type = "NUMBER";
@@ -5346,6 +5336,86 @@ function hashMessage(message) {
     ]));
 }
 
+const regexBytes = new RegExp("^bytes([0-9]+)$");
+const regexNumber = new RegExp("^(u?int)([0-9]*)$");
+const regexArray = new RegExp("^(.*)\\[([0-9]*)\\]$");
+function _pack(type, value, isArray) {
+    switch (type) {
+        case "address":
+            if (isArray) {
+                return logger$7.getBytes(zeroPadValue(value, 32));
+            }
+            return logger$7.getBytes(value);
+        case "string":
+            return toUtf8Bytes(value);
+        case "bytes":
+            return logger$7.getBytes(value);
+        case "bool":
+            value = (!!value ? "0x01" : "0x00");
+            if (isArray) {
+                return logger$7.getBytes(zeroPadValue(value, 32));
+            }
+            return logger$7.getBytes(value);
+    }
+    let match = type.match(regexNumber);
+    if (match) {
+        let size = parseInt(match[2] || "256");
+        if ((match[2] && String(size) !== match[2]) || (size % 8 !== 0) || size === 0 || size > 256) {
+            return logger$7.throwArgumentError("invalid number type", "type", type);
+        }
+        if (isArray) {
+            size = 256;
+        }
+        value = toTwos(value, size);
+        return logger$7.getBytes(zeroPadValue(value, size / 8));
+    }
+    match = type.match(regexBytes);
+    if (match) {
+        const size = parseInt(match[1]);
+        if (String(size) !== match[1] || size === 0 || size > 32) {
+            return logger$7.throwArgumentError("invalid bytes type", "type", type);
+        }
+        if (dataLength(value) !== size) {
+            return logger$7.throwArgumentError(`invalid value for ${type}`, "value", value);
+        }
+        if (isArray) {
+            return logger$7.getBytes(zeroPadBytes(value, 32));
+        }
+        return value;
+    }
+    match = type.match(regexArray);
+    if (match && Array.isArray(value)) {
+        const baseType = match[1];
+        const count = parseInt(match[2] || String(value.length));
+        if (count != value.length) {
+            logger$7.throwArgumentError(`invalid array length for ${type}`, "value", value);
+        }
+        const result = [];
+        value.forEach(function (value) {
+            result.push(_pack(baseType, value, true));
+        });
+        return logger$7.getBytes(concat(result));
+    }
+    return logger$7.throwArgumentError("invalid type", "type", type);
+}
+// @TODO: Array Enum
+function solidityPacked(types, values) {
+    if (types.length != values.length) {
+        logger$7.throwArgumentError("wrong number of values; expected ${ types.length }", "values", values);
+    }
+    const tight = [];
+    types.forEach(function (type, index) {
+        tight.push(_pack(type, values[index]));
+    });
+    return hexlify(concat(tight));
+}
+function solidityPackedKeccak256(types, values) {
+    return keccak256(solidityPacked(types, values));
+}
+function solidityPackedSha256(types, values) {
+    return sha256(solidityPacked(types, values));
+}
+
 var __classPrivateFieldSet$s = (window && window.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
@@ -6998,7 +7068,7 @@ async function fetchData(connection) {
         }
         const remainingTime = getTime$2() - t0;
         if (remainingTime < 0) {
-            return logger$6.throwError("timeout", "TIMEOUT", { operation: "request", request });
+            return logger$6.throwError("timeout", "TIMEOUT", { operation: "request", reason: "timeout", request });
         }
         response = await getUrl(request);
         // Retry logic (server forced)
@@ -10916,8 +10986,6 @@ class AbstractProvider {
             __classPrivateFieldSet$g(this, _AbstractProvider_anyNetwork, false, "f");
             __classPrivateFieldSet$g(this, _AbstractProvider_networkPromise, null, "f");
         }
-        //this.#approxNumber = -2;
-        //this.#approxNumberT0 = 0;
         __classPrivateFieldSet$g(this, _AbstractProvider_performCache, new Map(), "f");
         __classPrivateFieldSet$g(this, _AbstractProvider_subs, new Map(), "f");
         __classPrivateFieldSet$g(this, _AbstractProvider_plugins, new Map(), "f");
@@ -11319,7 +11387,7 @@ class AbstractProvider {
                     }
                     timer = null;
                     this.off("block", listener);
-                    reject(logger$5.makeError("timeout", "TIMEOUT", {}));
+                    reject(logger$5.makeError("timeout", "TIMEOUT", { reason: "timeout" }));
                 }, timeout);
             }
             listener(await this.getBlockNumber());
@@ -14774,16 +14842,6 @@ class BaseContract {
             return new EventLog(log, this.interface, fragment);
         });
     }
-    async canSubscribe(event) {
-        try {
-            getSubTag(this, event);
-            return true;
-        }
-        catch (error) {
-            console.log("EE2", error);
-        }
-        return false;
-    }
     async on(event, listener) {
         const sub = await getSub(this, event);
         sub.listeners.push({ listener, once: false });
@@ -16430,15 +16488,19 @@ var ethers = /*#__PURE__*/Object.freeze({
     scryptSync: scryptSync,
     randomBytes: randomBytes,
     lock: lock,
+    messagePrefix: messagePrefix,
     id: id,
+    hashMessage: hashMessage,
     isValidName: isValidName,
     namehash: namehash,
     dnsEncode: dnsEncode,
-    messagePrefix: messagePrefix,
-    hashMessage: hashMessage,
+    solidityPacked: solidityPacked,
+    solidityPackedKeccak256: solidityPackedKeccak256,
+    solidityPackedSha256: solidityPackedSha256,
     TypedDataEncoder: TypedDataEncoder,
-    FixedFormat: FixedFormat,
-    FixedNumber: FixedNumber,
+    isError: isError,
+    isCallException: isCallException,
+    Logger: Logger,
     formatFixed: formatFixed,
     parseFixed: parseFixed,
     fromTwos: fromTwos,
@@ -16454,17 +16516,20 @@ var ethers = /*#__PURE__*/Object.freeze({
     parseEther: parseEther,
     formatUnits: formatUnits,
     parseUnits: parseUnits,
+    FixedFormat: FixedFormat,
+    FixedNumber: FixedNumber,
     defineProperties: defineProperties,
     resolveProperties: resolveProperties,
     getStore: getStore,
     setStore: setStore,
+    dummyProvider: dummyProvider,
     getDefaultProvider: getDefaultProvider,
+    showThrottleMessage: showThrottleMessage,
     AbstractProvider: AbstractProvider,
     UnmanagedSubscriber: UnmanagedSubscriber,
     AbstractSigner: AbstractSigner,
     VoidSigner: VoidSigner,
     WrappedSigner: WrappedSigner,
-    showThrottleMessage: showThrottleMessage,
     EnsResolver: EnsResolver,
     Formatter: Formatter,
     NetworkPlugin: NetworkPlugin,
@@ -16477,7 +16542,6 @@ var ethers = /*#__PURE__*/Object.freeze({
     Log: Log,
     TransactionReceipt: TransactionReceipt,
     TransactionResponse: TransactionResponse,
-    dummyProvider: dummyProvider,
     FallbackProvider: FallbackProvider,
     JsonRpcProvider: JsonRpcProvider,
     JsonRpcSigner: JsonRpcSigner,
@@ -16519,12 +16583,12 @@ var ethers = /*#__PURE__*/Object.freeze({
     fetchData: fetchData,
     FetchRequest: FetchRequest,
     FetchResponse: FetchResponse,
+    wordlists: wordlists,
     Wordlist: Wordlist,
     WordlistOwl: WordlistOwl,
     WordlistOwlA: WordlistOwlA,
-    wordlists: wordlists,
     version: version
 });
 
-export { AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, Block, CloudflareProvider, Contract, ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, EnsPlugin, EnsResolver, EtherscanProvider, EventLog, FallbackProvider, FeeData, FetchRequest, FetchResponse, FixedFormat, FixedNumber, Formatter, GasCostPlugin, HDNodeVoidWallet, HDNodeWallet, HDNodeWalletManager, InfuraProvider, Interface, IpcSocketProvider, JsonRpcProvider, JsonRpcSigner, Log, MaxPriorityFeePlugin, Mnemonic, Network, NetworkPlugin, PocketProvider, Signature$1 as Signature, SigningKey, SocketProvider, StaticJsonRpcProvider, Transaction, TransactionReceipt, TransactionResponse, TypedDataEncoder, UnicodeNormalizationForm, UnmanagedSubscriber, Utf8ErrorFuncs, Utf8ErrorReason, VoidSigner, Wallet, WebSocketProvider, Wordlist, WordlistOwl, WordlistOwlA, WrappedSigner, _toEscapedUtf8String, accessListify, arrayify, computeAddress, computeHmac, concat, dataLength, dataSlice, decodeBase58, decodeBase64, decodeRlp, defaultPath$1 as defaultPath, defineProperties, dnsEncode, dummyProvider, encodeBase58, encodeBase64, encodeRlp, ethers, fetchData, formatBytes32String, formatEther, formatFixed, formatUnits, fromTwos, getAccountPath, getAddress, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getStore, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isHexString, isValidName, keccak256, lock, mask, messagePrefix, namehash, nameprep, parseBytes32String, parseEther, parseFixed, parseUnits, pbkdf2, quantity, randomBytes, recoverAddress, resolveAddress, resolveProperties, ripemd160, scrypt, scryptSync, setStore, sha256, sha512, showThrottleMessage, stripZerosLeft, toArray, toBigInt, toHex, toNumber, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, version, wordlists, zeroPadBytes, zeroPadValue };
+export { AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, Block, CloudflareProvider, Contract, ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, EnsPlugin, EnsResolver, EtherscanProvider, EventLog, FallbackProvider, FeeData, FetchRequest, FetchResponse, FixedFormat, FixedNumber, Formatter, GasCostPlugin, HDNodeVoidWallet, HDNodeWallet, HDNodeWalletManager, InfuraProvider, Interface, IpcSocketProvider, JsonRpcProvider, JsonRpcSigner, Log, Logger, MaxPriorityFeePlugin, Mnemonic, Network, NetworkPlugin, PocketProvider, Signature$1 as Signature, SigningKey, SocketProvider, StaticJsonRpcProvider, Transaction, TransactionReceipt, TransactionResponse, TypedDataEncoder, UnicodeNormalizationForm, UnmanagedSubscriber, Utf8ErrorFuncs, Utf8ErrorReason, VoidSigner, Wallet, WebSocketProvider, Wordlist, WordlistOwl, WordlistOwlA, WrappedSigner, _toEscapedUtf8String, accessListify, arrayify, computeAddress, computeHmac, concat, dataLength, dataSlice, decodeBase58, decodeBase64, decodeRlp, defaultPath$1 as defaultPath, defineProperties, dnsEncode, dummyProvider, encodeBase58, encodeBase64, encodeRlp, ethers, fetchData, formatBytes32String, formatEther, formatFixed, formatUnits, fromTwos, getAccountPath, getAddress, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getStore, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isCallException, isError, isHexString, isValidName, keccak256, lock, mask, messagePrefix, namehash, nameprep, parseBytes32String, parseEther, parseFixed, parseUnits, pbkdf2, quantity, randomBytes, recoverAddress, resolveAddress, resolveProperties, ripemd160, scrypt, scryptSync, setStore, sha256, sha512, showThrottleMessage, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, toArray, toBigInt, toHex, toNumber, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, version, wordlists, zeroPadBytes, zeroPadValue };
 //# sourceMappingURL=ethers.js.map

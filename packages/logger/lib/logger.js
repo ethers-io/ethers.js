@@ -58,10 +58,6 @@ export class Logger {
         defineReadOnly(this, "version", version || "_");
     }
     makeError(message, code, info) {
-        // Errors are being censored
-        //if (_censor === Censor.ON || _censor === Censor.PERMANENT) {
-        //    return this.makeError("censored error", code, <any>{ });
-        //}
         {
             const details = [];
             if (info) {
@@ -275,6 +271,5 @@ _Logger_instances = new WeakSet(), _Logger_getBytes = function _Logger_getBytes(
     }
     console.log.apply(console, args);
 };
-//static readonly Errors = ErrorCode;
 Logger.LogLevels = LogLevel;
 //# sourceMappingURL=logger.js.map

@@ -54,7 +54,8 @@ export interface ServerError extends EthersError<"SERVER_ERROR"> {
 }
 export interface TimeoutError extends EthersError<"TIMEOUT"> {
     operation: string;
-    request: ErrorFetchRequest;
+    reason: string;
+    request?: ErrorFetchRequest;
 }
 export interface BadDataError extends EthersError<"BAD_DATA"> {
     value: any;
