@@ -1,1 +1,1 @@
-export const version = "@ethersproject/wallet@6.0.0-beta.4";
+export const version = "@ethersproject/wallet@6.0.0-beta.5";

@@ -255,7 +255,7 @@ function isCallException(error) {
     return isError(error, "CALL_EXCEPTION");
 }
 
-const version$g = "@ethersproject/logger@6.0.0-beta.3";
+const version$g = "@ethersproject/logger@6.0.0-beta.4";
 
 var __classPrivateFieldGet$y = (window && window.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
@@ -5267,7 +5267,7 @@ function id(value) {
     return keccak256(toUtf8Bytes(value));
 }
 
-const version$8 = "@ethersproject/hash@6.0.0-beta.3";
+const version$8 = "@ethersproject/hash@6.0.0-beta.4";
 
 const logger$7 = new Logger(version$8);
 
@@ -6604,7 +6604,7 @@ _Interface_errors = new WeakMap(), _Interface_events = new WeakMap(), _Interface
     return logger$e.throwArgumentError("no matching event", "signature", key);
 };
 
-const version$7 = "@ethersproject/web@6.0.0-beta.2";
+const version$7 = "@ethersproject/web@6.0.0-beta.3";
 
 const logger$6 = new Logger(version$7);
 
@@ -7144,7 +7144,7 @@ fetchData.setArGateway = function (gateway) {
     }
 };
 
-const version$6 = "@ethersproject/providers@6.0.0-beta.4";
+const version$6 = "@ethersproject/providers@6.0.0-beta.5";
 
 const logger$5 = new Logger(version$6);
 
@@ -10514,7 +10514,7 @@ export class CcipPreflightPlugin extends NetworkPlugin {
 */
 const Networks = new Map();
 const defaultFormatter = new Formatter();
-class Network$1 {
+class Network {
     constructor(name, _chainId, formatter) {
         _Network_props.set(this, void 0);
         const chainId = logger$5.getBigInt(_chainId);
@@ -10554,7 +10554,7 @@ class Network$1 {
         return (this.plugins.filter((p) => (p.name.split("#")[0] === basename)));
     }
     clone() {
-        const clone = new Network$1(this.name, this.chainId, this.formatter);
+        const clone = new Network(this.name, this.chainId, this.formatter);
         this.plugins.forEach((plugin) => {
             clone.attachPlugin(plugin.clone());
         });
@@ -10594,7 +10594,7 @@ class Network$1 {
     static from(network) {
         // Default network
         if (network == null) {
-            return Network$1.from("homestead");
+            return Network.from("homestead");
         }
         // Canonical name or chain ID
         if (typeof (network) === "number") {
@@ -10606,7 +10606,7 @@ class Network$1 {
                 return networkFunc();
             }
             if (typeof (network) === "bigint") {
-                return new Network$1("unknown", network);
+                return new Network("unknown", network);
             }
             logger$5.throwArgumentError("unknown network", "network", network);
         }
@@ -10622,7 +10622,7 @@ class Network$1 {
             if (typeof (network.name) !== "string" || typeof (network.chainId) !== "number") {
                 logger$5.throwArgumentError("invalid network object name or chainId", "network", network);
             }
-            const custom = new Network$1((network.name), (network.chainId));
+            const custom = new Network((network.name), (network.chainId));
             if (network.ensAddress || network.ensNetwork != null) {
                 custom.attachPlugin(new EnsPlugin(network.ensAddress, network.ensNetwork));
             }
@@ -10977,7 +10977,7 @@ class AbstractProvider {
             __classPrivateFieldSet$g(this, _AbstractProvider_networkPromise, null, "f");
         }
         else if (_network) {
-            const network = Network$1.from(_network);
+            const network = Network.from(_network);
             __classPrivateFieldSet$g(this, _AbstractProvider_anyNetwork, false, "f");
             __classPrivateFieldSet$g(this, _AbstractProvider_networkPromise, Promise.resolve(network), "f");
             setTimeout(() => { this.emit("network", network, null); }, 0);
@@ -12402,7 +12402,7 @@ class JsonRpcApiProvider extends AbstractProvider {
     // Sub-classes can override this; it detects the *actual* network we
     // are connected to
     async _detectNetwork() {
-        return Network$1.from(logger$5.getBigInt(await this._perform({ method: "chainId" })));
+        return Network.from(logger$5.getBigInt(await this._perform({ method: "chainId" })));
     }
     _getSubscriber(sub) {
         // Pending Filters aren't availble via polling
@@ -12739,7 +12739,7 @@ function getHost$3(name) {
 }
 class AnkrProvider extends StaticJsonRpcProvider {
     constructor(_network = "homestead", apiKey) {
-        const network = Network$1.from(_network);
+        const network = Network.from(_network);
         if (apiKey == null) {
             apiKey = defaultApiKey$2;
         }
@@ -12805,7 +12805,7 @@ function getHost$2(name) {
 }
 class AlchemyProvider extends StaticJsonRpcProvider {
     constructor(_network = "homestead", apiKey) {
-        const network = Network$1.from(_network);
+        const network = Network.from(_network);
         if (apiKey == null) {
             apiKey = defaultApiKey$1;
         }
@@ -12840,7 +12840,7 @@ class AlchemyProvider extends StaticJsonRpcProvider {
 
 class CloudflareProvider extends StaticJsonRpcProvider {
     constructor(_network = "homestead") {
-        const network = Network$1.from(_network);
+        const network = Network.from(_network);
         if (network.name !== "homestead") {
             return logger$5.throwArgumentError("unsupported network", "network", _network);
         }
@@ -12850,20 +12850,10 @@ class CloudflareProvider extends StaticJsonRpcProvider {
 
 const defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 const EtherscanPluginId = "org.ethers.plugins.etherscan";
-class EtherscanPlugin extends NetworkPlugin {
-    constructor(baseUrl, communityApiKey) {
-        super(EtherscanPluginId);
-        //if (communityApiKey == null) { communityApiKey = null; }
-        defineProperties(this, { baseUrl, communityApiKey });
-    }
-    clone() {
-        return new EtherscanPlugin(this.baseUrl, this.communityApiKey);
-    }
-}
 class EtherscanProvider extends AbstractProvider {
     constructor(_network, apiKey) {
         super();
-        const network = Network$1.from(_network);
+        const network = Network.from(_network);
         if (apiKey == null) {
             const plugin = network.getPlugin(EtherscanPluginId);
             if (plugin) {
@@ -13270,7 +13260,7 @@ function getHost$1(name) {
 }
 class InfuraProvider extends StaticJsonRpcProvider {
     constructor(_network = "homestead", projectId, projectSecret) {
-        const network = Network$1.from(_network);
+        const network = Network.from(_network);
         if (projectId == null) {
             projectId = defaultProjectId;
         }
@@ -13356,7 +13346,7 @@ function normalizeApiKey(network, _appId, applicationSecretKey, loadBalancer) {
 }
 class PocketProvider extends StaticJsonRpcProvider {
     constructor(_network = "homestead", _appId, _secretKey, _loadBalancer) {
-        const network = Network$1.from(_network);
+        const network = Network.from(_network);
         const { applicationId, applicationSecretKey, loadBalancer } = normalizeApiKey(network, _appId, _secretKey, _loadBalancer);
         const connection = PocketProvider.getConnection(network, applicationId, applicationSecretKey, loadBalancer);
         super(connection, network);
@@ -13569,7 +13559,7 @@ class FallbackProvider extends AbstractProvider {
         return __classPrivateFieldGet$c(this, _FallbackProvider_configs, "f").slice();
     }
     async _detectNetwork() {
-        return Network$1.from(logger$5.getBigInt(await this._perform({ method: "chainId" }))).freeze();
+        return Network.from(logger$5.getBigInt(await this._perform({ method: "chainId" }))).freeze();
     }
     async _perform(req) {
         await __classPrivateFieldGet$c(this, _FallbackProvider_instances, "m", _FallbackProvider_initialSync).call(this);
@@ -14157,76 +14147,6 @@ function getDefaultProvider(network, options) {
     }
     return new FallbackProvider(providers);
 }
-
-// See: https://chainlist.org
-function injectCommonNetworks(Network) {
-    /// Register popular Ethereum networks
-    function registerEth(name, chainId, options) {
-        const func = function () {
-            const network = new Network(name, chainId);
-            // We use 0 to disable ENS
-            if (options.ensNetwork != null) {
-                network.attachPlugin(new EnsPlugin(null, options.ensNetwork));
-            }
-            if (options.priorityFee) {
-                network.attachPlugin(new MaxPriorityFeePlugin(options.priorityFee));
-            }
-            if (options.etherscan) {
-                const { url, apiKey } = options.etherscan;
-                network.attachPlugin(new EtherscanPlugin(url, apiKey));
-            }
-            network.attachPlugin(new GasCostPlugin());
-            return network;
-        };
-        // Register the network by name and chain ID
-        Network.register(name, func);
-        Network.register(chainId, func);
-        if (options.altNames) {
-            options.altNames.forEach((name) => {
-                Network.register(name, func);
-            });
-        }
-    }
-    registerEth("homestead", 1, { ensNetwork: 1, altNames: ["mainnet"] });
-    registerEth("ropsten", 3, { ensNetwork: 3 });
-    registerEth("rinkeby", 4, { ensNetwork: 4 });
-    registerEth("goerli", 5, { ensNetwork: 5 });
-    registerEth("kovan", 42, { ensNetwork: 42 });
-    registerEth("classic", 61, {});
-    registerEth("classicKotti", 6, {});
-    registerEth("xdai", 100, { ensNetwork: 1 });
-    // Polygon has a 35 gwei maxPriorityFee requirement
-    registerEth("matic", 137, {
-        ensNetwork: 1,
-        priorityFee: 35000000000,
-        etherscan: {
-            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
-            url: "https:/\/api.polygonscan.com/"
-        }
-    });
-    registerEth("maticMumbai", 80001, {
-        priorityFee: 35000000000,
-        etherscan: {
-            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
-            url: "https:/\/api-testnet.polygonscan.com/"
-        }
-    });
-    registerEth("bnb", 56, {
-        ensNetwork: 1,
-        etherscan: {
-            apiKey: "EVTS3CU31AATZV72YQ55TPGXGMVIFUQ9M9",
-            url: "http:/\/api.bscscan.com"
-        }
-    });
-    registerEth("bnbt", 97, {
-        etherscan: {
-            apiKey: "EVTS3CU31AATZV72YQ55TPGXGMVIFUQ9M9",
-            url: "http:/\/api-testnet.bscscan.com"
-        }
-    });
-    return Network;
-}
-const Network = injectCommonNetworks(Network$1);
 
 const IpcSocketProvider = undefined;
 
@@ -15078,7 +14998,7 @@ class LangEn extends WordlistOwl {
 }
 const langEn = new LangEn();
 
-const version$1 = "@ethersproject/wallet@6.0.0-beta.4";
+const version$1 = "@ethersproject/wallet@6.0.0-beta.5";
 
 const logger = new Logger(version$1);
 
@@ -16447,7 +16367,7 @@ class Wallet extends BaseWallet {
 }
 _Wallet_mnemonic = new WeakMap();
 
-const version = "ethers@6.0.0-beta.5";
+const version = "ethers@6.0.0-beta.6";
 
 var ethers = /*#__PURE__*/Object.freeze({
     __proto__: null,
