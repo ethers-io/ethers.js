@@ -26,31 +26,36 @@ export {
 
 export {
     computeHmac,
-
-    keccak256,
-    ripemd160,
-    sha256, sha512,
-
-    pbkdf2,
-    scrypt, scryptSync,
-
+    keccak256, ripemd160, sha256, sha512,
+    pbkdf2, scrypt, scryptSync,
     randomBytes,
     lock,
 } from "@ethersproject/crypto";
 
 export {
-    id,
+    messagePrefix,
+
+    id, hashMessage,
     isValidName, namehash, dnsEncode,
-    messagePrefix, hashMessage,
-    TypedDataEncoder
+    solidityPacked, solidityPackedKeccak256, solidityPackedSha256,
+
+    TypedDataEncoder,
 } from "@ethersproject/hash";
 
 export {
-    FixedFormat, FixedNumber, formatFixed, parseFixed,
+    isError, isCallException,
+
+    Logger,
+} from "@ethersproject/logger";
+
+export {
+    formatFixed, parseFixed,
     fromTwos, toTwos, mask,
     toArray, toBigInt, toHex, toNumber,
     decodeBase58, encodeBase58,
-    formatEther, parseEther, formatUnits, parseUnits
+    formatEther, parseEther, formatUnits, parseUnits,
+
+    FixedFormat, FixedNumber,
 } from "@ethersproject/math";
 
 export {
@@ -58,80 +63,25 @@ export {
     getStore, setStore
 } from "@ethersproject/properties";
 
-
 export {
-    getDefaultProvider,
-
-    AbstractProvider, UnmanagedSubscriber,
-
-    AbstractSigner,
-    VoidSigner,
-    WrappedSigner,
-
-    showThrottleMessage,
-
-    EnsResolver,
-
-    Formatter,
-
-    NetworkPlugin,
-    GasCostPlugin,
-    EnsPlugin,
-    //LayerOneConnectionPlugin,
-    MaxPriorityFeePlugin,
-    //PriceOraclePlugin,
-
-    Network,
-
-    Block,
-    FeeData,
-    Log,
-    TransactionReceipt,
-    TransactionResponse,
-
     dummyProvider,
 
+    getDefaultProvider,
+    showThrottleMessage,
+
+    AbstractProvider, UnmanagedSubscriber,
+    AbstractSigner, VoidSigner, WrappedSigner,
+    EnsResolver,
+    Formatter,
+    NetworkPlugin, GasCostPlugin, EnsPlugin, MaxPriorityFeePlugin,
+    Network,
+    Block, FeeData, Log, TransactionReceipt, TransactionResponse,
     FallbackProvider,
-
-    JsonRpcProvider,
-    JsonRpcSigner,
-    StaticJsonRpcProvider,
-
-    AlchemyProvider,
-    AnkrProvider,
-    CloudflareProvider,
-    EtherscanProvider,
-    InfuraProvider,
-    PocketProvider,
-
-    IpcSocketProvider,
-    SocketProvider,
-    WebSocketProvider,
-
+    JsonRpcProvider, JsonRpcSigner, StaticJsonRpcProvider,
+    AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider,
+    InfuraProvider, PocketProvider,
+    IpcSocketProvider, SocketProvider, WebSocketProvider,
 } from "@ethersproject/providers";
-
-export type {
-    ProviderPlugin, Subscriber, Subscription,
-
-    ContractRunner,
-
-    CommunityResourcable,
-
-    AvatarLinkageType, AvatarLinkage, AvatarResult,
-
-    FormatFunc,
-
-    Networkish,
-    GasCostParameters,
-
-    BlockTag,
-    CallRequest, TransactionRequest, PreparedRequest,
-    EventFilter, Filter, FilterByBlockHash, OrphanFilter, ProviderEvent,
-    Provider,
-
-    Signer,
-} from "@ethersproject/providers";
-
 
 export { encodeRlp, decodeRlp } from "@ethersproject/rlp";
 
@@ -162,43 +112,105 @@ export {
 
     HDNodeWallet, HDNodeVoidWallet,
     HDNodeWalletManager,
-
     Mnemonic,
-
     Wallet
 } from "@ethersproject/wallet";
 
 export { fetchData, FetchRequest, FetchResponse } from "@ethersproject/web";
 
 export {
-    Wordlist, WordlistOwl, WordlistOwlA,
+    wordlists,
 
-    wordlists
+    Wordlist, WordlistOwl, WordlistOwlA,
 } from "@ethersproject/wordlists";
 
 export { version } from "./_version.js";
 
 
+///////////////////
+// Types
+
 export type { Addressable, NameResolver } from "@ethersproject/address"
-export type { BytesLike, Hexable } from "@ethersproject/bytes";
+
+export type { Hexable } from "@ethersproject/bytes";
+
 export type {
     ConstantContractMethod, ContractEvent, ContractEventArgs, ContractEventName,
     ContractInterface, ContractMethod, ContractMethodArgs,
     ContractTransaction, DeferredTopicFilter, Overrides
 } from "@ethersproject/contract";
+
 export type { ProgressCallback } from "@ethersproject/crypto";
+
 export type { TypedDataDomain, TypedDataField } from "@ethersproject/hash";
+
+export {
+    BigNumberish, BytesLike, Numeric,
+
+    ErrorCode, ErrorInfo, CodedEthersError,
+
+    EthersError,
+
+    BadDataError,
+    BufferOverrunError,
+    CallExceptionError,
+    InsufficientFundsError,
+    InvalidArgumentError,
+    MissingArgumentError,
+    NetworkError,
+    NonceExpiredError,
+    NotImplementedError,
+    NumericFaultError,
+    OffchainFaultError,
+    ReplacementUnderpricedError,
+    ServerError,
+    TimeoutError,
+    TransactionReplacedError,
+    UnconfiguredNameError,
+    UnexpectedArgumentError,
+    UnknownError,
+    UnpredictableGasLimitError,
+    UnsupportedOperationError
+} from "@ethersproject/logger";
+
+export type {
+    ProviderPlugin, Subscriber, Subscription,
+
+    ContractRunner,
+
+    CommunityResourcable,
+
+    AvatarLinkageType, AvatarLinkage, AvatarResult,
+
+    FormatFunc,
+
+    Networkish,
+    GasCostParameters,
+
+    BlockTag,
+    CallRequest, TransactionRequest, PreparedRequest,
+    EventFilter, Filter, FilterByBlockHash, OrphanFilter, ProviderEvent,
+    Provider,
+
+    Signer,
+} from "@ethersproject/providers";
+
 export type {
     EventEmitterable, Listener,
     Frozen, Freezable
 } from "@ethersproject/properties";
+
 export type { RlpStructuredData } from "@ethersproject/rlp";
+
 export type { SignatureLike } from "@ethersproject/signing-key";
+
 export type { Utf8ErrorFunc } from "@ethersproject/strings";
+
 export type {
     AccessList, AccessListish,
     SignedTransaction, TransactionLike
 } from "@ethersproject/transaction";
+
 export type {
     ConnectionInfo,
     PreflightRequestFunc, ProcessResponseFunc,
