@@ -3,7 +3,7 @@ name: Node.js CI
 on:
   push:
     branches:
-      - master
+      - v6-beta
 
 jobs:
   test-node:
