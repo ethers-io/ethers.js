@@ -14,7 +14,10 @@ const {
 
 
 // See: https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color
-const disableColor = !(process.stdout.isTTY);
+let disableColor = false; //!(process.stdout.isTTY);
+process.argv.forEach((arg) => {
+    if (arg === "--no-color") { disableColor = true; }
+});
 
 const Colors = {
     "blue":     "\x1b[0;34m",
@@ -36,8 +39,9 @@ const Colors = {
 };
 
 function colorify(text) {
-    if (disableColor) { return text; }
     return unescapeColor(text.replace(/(<([a-z+]+)>)/g, (all, _, color) => {
+        if (disableColor) { return ""; }
+
         const seq = Colors[color];
         if (seq == null) {
             console.log("UNKNOWN COLOR:", color);

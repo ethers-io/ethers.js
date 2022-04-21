@@ -47,7 +47,7 @@
     "preinstall": "node ./bootstrap-hoist",
     "serve-coverage": "python3 -m http.server -d output/lcov-report 8080",
     "test": "mocha --reporter ./reporter packages/*/lib/tests/test-*.js",
-    "test-coverage": "c8 -o output -r lcov -r text mocha --reporter ./reporter packages/*/lib/tests/test-*.js | tee output/summary.txt"
+    "test-coverage": "c8 -o output -r lcov -r text mocha --no-color --reporter ./reporter packages/*/lib/tests/test-*.js | tee output/summary.txt"
   },
   "version": "0.0.0"
 }
