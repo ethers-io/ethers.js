@@ -55,7 +55,7 @@ jobs:
         run: npm ci
 
       - name: Build JavaScript (from TypeScript)
-        run: npm run build-all
+        run: npm run build && npm run build-dist
 
       - name: Run tests with coverage output
         run: npm run test-coverage
