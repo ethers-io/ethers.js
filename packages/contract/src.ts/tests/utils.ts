@@ -23,3 +23,10 @@ export function loadTests<T>(tag: string): Array<T> {
    return JSON.parse(zlib.gunzipSync(fs.readFileSync(filename)).toString());
 }
 
+export function log(context: any, text: string): void {
+    if (context && context.test && typeof(context.test._ethersLog) === "function") {
+        context.test._ethersLog(text);
+    } else {
+        console.log(text);
+    }
+}

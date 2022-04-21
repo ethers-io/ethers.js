@@ -23,6 +23,14 @@ export function loadTests<T>(tag: string): Array<T> {
    return JSON.parse(zlib.gunzipSync(fs.readFileSync(filename)).toString());
 }
 
+export function log(context: any, text: string): void {
+    if (context && context.test && typeof(context.test._ethersLog) === "function") {
+        context.test._ethersLog(text);
+    } else {
+        console.log(text);
+    }
+}
+
 async function stall(duration: number): Promise<void> {
     return new Promise((resolve) => { setTimeout(resolve, duration); });
 }
@@ -100,13 +108,17 @@ export class Stats {
         this.#stats.push({ name, retries: [ ] });
     }
 
-    end(): void {
+    end(context?: any): void {
+        let log = console.log.bind(console);
+        if (context && typeof(context._ethersLog) === "function") {
+            log = context._ethersLog;
+        }
         const { name, retries } = this.#currentStats();
         if (retries.length === 0) { return; }
-        console.log(`Warning: The following tests required retries (${ name })`);
+        log(`Warning: The following tests required retries (${ name })`);
         retries.forEach(({ error, message }) => {
-            console.log("  " + message);
-            if (error) { console.log(error); }
+            log("  " + message);
+            if (error) { log(error); }
         });
     }
 }

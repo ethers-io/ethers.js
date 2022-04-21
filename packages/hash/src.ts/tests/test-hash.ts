@@ -5,7 +5,6 @@ import type { TestCaseNamehash } from "./types.js";
 
 import { dnsEncode, isValidName, namehash } from "../index.js";
 
-
 describe("Tests Namehash", function() {
     const tests = loadTests<TestCaseNamehash>("namehash");
     for (const test of tests) {

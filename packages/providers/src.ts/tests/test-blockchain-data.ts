@@ -149,7 +149,7 @@ type TestSet = {
 };
 
 describe("Test Provider Methods", function() {
-    before(function() {
+    before(() => {
         stats.start("Test Provider Methods");
     });
 
@@ -159,8 +159,8 @@ describe("Test Provider Methods", function() {
         await stall(1000);
     });
 
-    after(function() {
-        stats.end();
+    after(() => {
+        stats.end(this);
     });
 
     // Etherscan does not support this
@@ -171,7 +171,7 @@ describe("Test Provider Methods", function() {
         for (const network in BlockchainData) {
             const provider = getProvider(providerName, network);
             if (provider == null || providerName === "CloudflareProvider") {
-                console.log(`Skipping ${providerName}:${ network }...`);
+                //log(`Skipping ${providerName}:${ network }...`);
                 continue;
             }
 
