@@ -4,7 +4,7 @@ import { getAddress, getIcapAddress, getCreateAddress, getCreate2Address } from 
 describe("computes checksum address", function () {
     const tests = loadTests("accounts");
     for (const test of tests) {
-        it(`computes the checksum address for ${test.name}`, function () {
+        it(`computes the checksum address: ${test.name}`, function () {
             assert.equal(getAddress(test.address), test.address);
             assert.equal(getAddress(test.icap), test.address);
             assert.equal(getAddress(test.address.substring(2)), test.address);
@@ -57,7 +57,7 @@ describe("computes checksum address", function () {
 describe("computes ICAP address", function () {
     const tests = loadTests("accounts");
     for (const test of tests) {
-        it(`computes the ICAP address for ${test.name}`, function () {
+        it(`computes the ICAP address: ${test.name}`, function () {
             assert.equal(getIcapAddress(test.address), test.icap);
             assert.equal(getAddress(test.address.toLowerCase()), test.address);
             assert.equal(getAddress("0x" + test.address.substring(2).toUpperCase()), test.address);
@@ -68,7 +68,7 @@ describe("computes create address", function () {
     const tests = loadTests("create");
     for (const { sender, creates } of tests) {
         for (const { name, nonce, address } of creates) {
-            it(`computes the create address for ${name}`, function () {
+            it(`computes the create address: ${name}`, function () {
                 assert.equal(getCreateAddress({ from: sender, nonce }), address);
             });
         }
@@ -78,7 +78,7 @@ describe("computes create2 address", function () {
     const tests = loadTests("create2");
     for (const { sender, creates } of tests) {
         for (const { name, salt, initCodeHash, address } of creates) {
-            it(`computes the create2 address for ${name}`, function () {
+            it(`computes the create2 address: ${name}`, function () {
                 assert.equal(getCreate2Address(sender, salt, initCodeHash), address);
             });
         }

@@ -4,12 +4,12 @@ import { decodeRlp, encodeRlp } from "../index.js";
 describe("Test RLP Coder", function () {
     const tests = loadTests("rlp");
     tests.forEach(({ name, encoded, decoded }) => {
-        it(`encodes ${name}`, function () {
+        it(`encodes RLP: ${name}`, function () {
             assert.equal(encodeRlp(decoded), encoded);
         });
     });
     tests.forEach(({ name, encoded, decoded }) => {
-        it(`decodes ${name}`, function () {
+        it(`decodes RLP: ${name}`, function () {
             assert.deepStrictEqual(decodeRlp(encoded), decoded);
         });
     });

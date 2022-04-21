@@ -1,8 +1,7 @@
 import assert from "assert";
 import { wordlists } from "@ethersproject/wordlists/lib/wordlists.js";
 import { loadTests } from "./utils.js";
-import { HDNodeWallet, HDNodeVoidWallet } from "../hdwallet.js";
-import { Mnemonic } from "../mnemonic.js";
+import { HDNodeWallet, HDNodeVoidWallet, Mnemonic } from "../index.js";
 const decoder = new TextDecoder();
 function fromHex(hex) {
     const data = Buffer.from(hex.substring(2), "hex");
@@ -26,6 +25,7 @@ describe("Test HDWallets", function () {
         }
     }
     const tests = loadTests("mnemonics");
+    const checks = [];
     tests.forEach((test) => {
         // The phrase and password are stored in the test as hex so they
         // are safe as ascii7 values for viewing, printing, etc.
@@ -46,6 +46,11 @@ describe("Test HDWallets", function () {
             assert.equal(actual.entropy, mnemonic.entropy, "entropy");
             assert.equal(actual.computeSeed(), mnemonic.computeSeed(), "seed");
         }
+        checks.push({
+            phrase, password, wordlist, mnemonic, checkMnemonic, test
+        });
+    });
+    for (const { test, checkMnemonic, phrase, password, wordlist } of checks) {
         it(`computes the HD keys by mnemonic: ${test.name}`, function () {
             for (const subtest of test.nodes) {
                 const w = HDNodeWallet.fromPhrase(phrase, password, subtest.path, wordlist);
@@ -56,6 +61,8 @@ describe("Test HDWallets", function () {
                 checkMnemonic(w.mnemonic);
             }
         });
+    }
+    for (const { test } of checks) {
         it(`computes the HD keys by entropy: ${test.name}`, function () {
             const seedRoot = HDNodeWallet.fromSeed(test.seed);
             for (const subtest of test.nodes) {
@@ -66,6 +73,8 @@ describe("Test HDWallets", function () {
                 assert.equal(w.mnemonic, null);
             }
         });
+    }
+    for (const { test } of checks) {
         it(`computes the HD keys by enxtended private key: ${test.name}`, function () {
             for (const subtest of test.nodes) {
                 const w = HDNodeWallet.fromExtendedKey(subtest.xpriv);
@@ -74,6 +83,8 @@ describe("Test HDWallets", function () {
                 assert.equal(w.mnemonic, null);
             }
         });
+    }
+    for (const { test, phrase, password, wordlist } of checks) {
         it(`computes the neutered HD keys by paths: ${test.name}`, function () {
             const root = HDNodeWallet.fromPhrase(phrase, password, "m", wordlist).neuter();
             for (const subtest of test.nodes) {
@@ -95,6 +106,8 @@ describe("Test HDWallets", function () {
                 }
             }
         });
+    }
+    for (const { test } of checks) {
         it(`computes the neutered HD keys by enxtended public key: ${test.name}`, function () {
             for (const subtest of test.nodes) {
                 const w = HDNodeWallet.fromExtendedKey(subtest.xpub);
@@ -102,6 +115,6 @@ describe("Test HDWallets", function () {
                 checkWallet(w, subtest);
             }
         });
-    });
+    }
 });
 //# sourceMappingURL=test-hdwallet.js.map
