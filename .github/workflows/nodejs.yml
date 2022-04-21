@@ -1,0 +1,76 @@
+name: Node.js CI
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  test-node:
+
+    name: Run All Tests (node.js)
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [ 14.x, 16.x, 18.x ]
+
+    steps:
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies (and link per package)
+        run: npm ci
+
+      - name: Build JavaScript (from TypeScript)
+        run: npm run build && npm run build-dist
+
+      - name: Run tests
+        run: npm run test
+
+  coverage:
+
+    name: Generate Coverage Report
+
+    runs-on: ubuntu-latest
+
+    continue-on-error: true
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies (and link per package)
+        run: npm ci
+
+      - name: Build JavaScript (from TypeScript)
+        run: npm run build-all
+
+      - name: Run tests with coverage output
+        run: npm run test-coverage
+
+      - name: Upload coverage summary
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-summary
+          path: ./output/summary.txt
+
+      - name: Tarball files
+        run: tar -cvf ./output/coverage.tar ./output/lcov-report/
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-complete
+          path: ./output/coverage.tar
