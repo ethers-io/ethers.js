@@ -1,4 +1,5 @@
 export declare function loadTests<T>(tag: string): Array<T>;
+export declare function log(context: any, text: string): void;
 export interface MochaRunnable {
     timeout: (value: number) => void;
     skip: () => void;
@@ -16,7 +17,7 @@ export declare class Stats {
     constructor(guard: any);
     pushRetry(attempt: number, line: string, error: null | Error): void;
     start(name: string): void;
-    end(): void;
+    end(context?: any): void;
 }
 export declare const stats: Stats;
 //# sourceMappingURL=utils.d.ts.map

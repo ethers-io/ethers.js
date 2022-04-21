@@ -33,6 +33,14 @@ export function loadTests(tag) {
     const filename = path.resolve(root, "testcases", tag + '.json.gz');
     return JSON.parse(zlib.gunzipSync(fs.readFileSync(filename)).toString());
 }
+export function log(context, text) {
+    if (context && context.test && typeof (context.test._ethersLog) === "function") {
+        context.test._ethersLog(text);
+    }
+    else {
+        console.log(text);
+    }
+}
 async function stall(duration) {
     return new Promise((resolve) => { setTimeout(resolve, duration); });
 }
@@ -94,16 +102,20 @@ export class Stats {
     start(name) {
         __classPrivateFieldGet(this, _Stats_stats, "f").push({ name, retries: [] });
     }
-    end() {
+    end(context) {
+        let log = console.log.bind(console);
+        if (context && typeof (context._ethersLog) === "function") {
+            log = context._ethersLog;
+        }
         const { name, retries } = __classPrivateFieldGet(this, _Stats_instances, "m", _Stats_currentStats).call(this);
         if (retries.length === 0) {
             return;
         }
-        console.log(`Warning: The following tests required retries (${name})`);
+        log(`Warning: The following tests required retries (${name})`);
         retries.forEach(({ error, message }) => {
-            console.log("  " + message);
+            log("  " + message);
             if (error) {
-                console.log(error);
+                log(error);
             }
         });
     }

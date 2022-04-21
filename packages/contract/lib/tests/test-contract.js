@@ -1,6 +1,7 @@
 import { Typed } from "@ethersproject/abi";
 import * as providers from "@ethersproject/providers";
 import { Contract } from "../index.js";
+import { log } from "./utils.js";
 //import type { Addressable } from "@ethersproject/address";
 //import type { BigNumberish } from "@ethersproject/logger";
 /*
@@ -83,7 +84,7 @@ describe("Test Contract Calls", function () {
         const contract = new Contract("0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72", [
             "function balanceOf(address owner) view returns (uint)",
         ], provider);
-        console.log("balance:", await contract.balanceOf("0x5555763613a12D8F3e73be831DFf8598089d3dCa"));
+        log(this, `balance: ${await contract.balanceOf("0x5555763613a12D8F3e73be831DFf8598089d3dCa")}`);
     });
 });
 //# sourceMappingURL=test-contract.js.map

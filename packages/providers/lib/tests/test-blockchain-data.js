@@ -109,7 +109,7 @@ function stall(duration) {
     });
 }
 describe("Test Provider Methods", function () {
-    before(function () {
+    before(() => {
         stats.start("Test Provider Methods");
     });
     // Wait before each testcase so the backends don't throttle
@@ -117,8 +117,8 @@ describe("Test Provider Methods", function () {
     beforeEach(async function () {
         await stall(1000);
     });
-    after(function () {
-        stats.end();
+    after(() => {
+        stats.end(this);
     });
     // Etherscan does not support this
     const skipGetBlockByBlockHash = ["EtherscanProvider"];
@@ -127,7 +127,7 @@ describe("Test Provider Methods", function () {
         for (const network in BlockchainData) {
             const provider = getProvider(providerName, network);
             if (provider == null || providerName === "CloudflareProvider") {
-                console.log(`Skipping ${providerName}:${network}...`);
+                //log(`Skipping ${providerName}:${ network }...`);
                 continue;
             }
             const tests = BlockchainData[network];

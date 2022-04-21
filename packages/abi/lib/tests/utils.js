@@ -21,4 +21,12 @@ export function loadTests(tag) {
     const filename = path.resolve(root, "testcases", tag + '.json.gz');
     return JSON.parse(zlib.gunzipSync(fs.readFileSync(filename)).toString());
 }
+export function log(context, text) {
+    if (context && context.test && typeof (context.test._ethersLog) === "function") {
+        context.test._ethersLog(text);
+    }
+    else {
+        console.log(text);
+    }
+}
 //# sourceMappingURL=utils.js.map
