@@ -1801,7 +1801,7 @@ export class BaseProvider extends Provider {
             if (typeof (name) !== "string") {
                 logger.throwArgumentError("invalid ENS name", "name", name);
             }
-            // Get the addr from the resovler
+            // Get the addr from the resolver
             const resolver = yield this.getResolver(name);
             if (!resolver) {
                 return null;
