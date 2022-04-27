@@ -22240,9 +22240,8 @@ function checkNetworks(networks) {
     for (let i = 0; i < networks.length; i++) {
         const network = networks[i];
         // Null! We do not know our network; bail.
-        if (network == null) {
-            return null;
-        }
+        if (network == null)
+            continue;
         if (result) {
             // Make sure the network matches the previous networks
             if (!(result.name === network.name && result.chainId === network.chainId &&
@@ -22613,7 +22612,14 @@ class FallbackProvider extends BaseProvider {
     }
     detectNetwork() {
         return __awaiter$f(this, void 0, void 0, function* () {
-            const networks = yield Promise.all(this.providerConfigs.map((c) => c.provider.getNetwork()));
+            const networks = yield Promise.all(this.providerConfigs.map((c) => __awaiter$f(this, void 0, void 0, function* () {
+                try {
+                    return c.provider.getNetwork();
+                }
+                catch (error) {
+                    return null;
+                }
+            })));
             return checkNetworks(networks);
         });
     }

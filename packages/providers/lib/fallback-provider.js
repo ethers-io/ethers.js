@@ -71,9 +71,8 @@ function checkNetworks(networks) {
     for (var i = 0; i < networks.length; i++) {
         var network = networks[i];
         // Null! We do not know our network; bail.
-        if (network == null) {
-            return null;
-        }
+        if (network == null)
+            continue;
         if (result) {
             // Make sure the network matches the previous networks
             if (!(result.name === network.name && result.chainId === network.chainId &&
@@ -475,9 +474,20 @@ var FallbackProvider = /** @class */ (function (_super) {
     FallbackProvider.prototype.detectNetwork = function () {
         return __awaiter(this, void 0, void 0, function () {
             var networks;
+            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, Promise.all(this.providerConfigs.map(function (c) { return c.provider.getNetwork(); }))];
+                    case 0: return [4 /*yield*/, Promise.all(this.providerConfigs.map(function (c) { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                try {
+                                    return [2 /*return*/, c.provider.getNetwork()];
+                                }
+                                catch (error) {
+                                    return [2 /*return*/, null];
+                                }
+                                return [2 /*return*/];
+                            });
+                        }); }))];
                     case 1:
                         networks = _a.sent();
                         return [2 /*return*/, checkNetworks(networks)];
