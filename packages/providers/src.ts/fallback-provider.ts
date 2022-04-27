@@ -26,7 +26,7 @@ function checkNetworks(networks: Array<Network>): Network {
         const network = networks[i];
 
         // Null! We do not know our network; bail.
-        if (network == null) { return null; }
+        if (network == null) continue;
 
         if (result) {
             // Make sure the network matches the previous networks
@@ -469,8 +469,16 @@ export class FallbackProvider extends BaseProvider {
     }
 
     async detectNetwork(): Promise<Network> {
-        const networks = await Promise.all(this.providerConfigs.map((c) => c.provider.getNetwork()));
-        return checkNetworks(networks);
+        const networks = await Promise.all(
+            this.providerConfigs.map(async (c) => {
+                try {
+                    return c.provider.getNetwork();
+                } catch (error) {
+                    return null;
+                }
+            }),
+        );
+        return checkNetworks(networks as Array<Network>);
     }
 
     async perform(method: string, params: { [name: string]: any }): Promise<any> {
