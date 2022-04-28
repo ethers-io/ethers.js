@@ -28,7 +28,7 @@ _property: connection.allowInsecureAuthentication => boolean
 Allow [[link-wiki-basicauth]] over non-secure HTTP. The default is false.
 
 _property: connection.timeout => number
-How long to wait before rejecting with a //timeout// error.
+How long to wait before rejecting with a //timeout// error. The default is 120,000 ms.
 
 _property: connection.headers => { [ key: string]: string }
 Additional headers to include in the connection.
@@ -40,10 +40,25 @@ platforms. On some services, such as Cloudflare Workers, specifying any
 value (inclluding the default values) will cause failure. Setting this
 to true will prevent any values being passed to the underlying API.
 
+_property: connection.errorPassThrough => boolean
+Whether to ignore bad errors from server.
+
+_property: connection.allowGzip => boolean
+Allow Gzip responses. The default is false.
+
+_property: connection.throttleLimit => boolean
+How many times to retry in the event of a 429 status code.
+
+_property: connection.throttleSlotInterval => boolean
+How much delay before reattempting first throttle. This increases exponentially by attempts.
+
+_property: connection.throttleCallback => boolean
+Callback while scheduling reattempts when 429 status code is received.
+
 _heading: PollOptions @<PollOptions>
 
 _property: options.timeout => number
-The amount of time allowed to elapse before triggering a timeout
+The amount of time in milliseconds allowed to elapse before triggering a timeout
 error.
 
 _property: options.floor => number
