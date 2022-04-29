@@ -80,7 +80,7 @@ which will always return a value, but as a [[BigNumber]].
 
 This property is generally of little interest to developers.
 
-_property: block._difficulty => [[BigNumnber]]
+_property: block._difficulty => [[BigNumber]]
 The difficulty target required to be met by the miner of the block,
 as a [[BigNumber]].
 
