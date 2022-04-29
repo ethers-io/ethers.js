@@ -77,28 +77,28 @@ function checkError(method: string, error: any, params: any): any {
     const transaction = params.transaction || params.signedTransaction;
 
     // "insufficient funds for gas * price + value + cost(data)"
-    if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
+    if (message.match(/insufficient funds|base fee exceeds gas limit/i)) {
         logger.throwError("insufficient funds for intrinsic transaction cost", Logger.errors.INSUFFICIENT_FUNDS, {
             error, method, transaction
         });
     }
 
     // "nonce too low"
-    if (message.match(/nonce (is )?too low/)) {
+    if (message.match(/nonce (is )?too low/i)) {
         logger.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {
             error, method, transaction
         });
     }
 
     // "replacement transaction underpriced"
-    if (message.match(/replacement transaction underpriced/)) {
+    if (message.match(/replacement transaction underpriced|transaction gas price.*too low/i)) {
         logger.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {
             error, method, transaction
         });
     }
 
     // "replacement transaction underpriced"
-    if (message.match(/only replay-protected/)) {
+    if (message.match(/only replay-protected/i)) {
         logger.throwError("legacy pre-eip-155 transactions not supported", Logger.errors.UNSUPPORTED_OPERATION, {
             error, method, transaction
         });
