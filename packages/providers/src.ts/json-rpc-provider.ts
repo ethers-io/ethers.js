@@ -671,7 +671,7 @@ export class JsonRpcProvider extends BaseProvider {
         // JSON-RPC now requires numeric values to be "quantity" values
         ["chainId", "gasLimit", "gasPrice", "type", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "value"].forEach(function(key) {
             if ((<any>transaction)[key] == null) { return; }
-            const value = hexValue((<any>transaction)[key]);
+            const value = hexValue(BigNumber.from((<any>transaction)[key]));
             if (key === "gasLimit") { key = "gas"; }
             result[key] = value;
         });
