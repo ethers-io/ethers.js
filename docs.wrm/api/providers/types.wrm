@@ -73,6 +73,21 @@ This property is generally of little interest to developers.
 _property: block.difficulty => number
 The difficulty target required to be met by the miner of the block.
 
+Recently the difficulty frequently exceeds the size that a JavaScript
+number can safely store (53-bits), so in that case this property may
+be null. It is recommended to use the `_difficulty` property below,
+which will always return a value, but as a [[BigNumber]].
+
+This property is generally of little interest to developers.
+
+_property: block._difficulty => [[BigNumnber]]
+The difficulty target required to be met by the miner of the block,
+as a [[BigNumber]].
+
+Recently the difficulty frequently exceeds the size that a JavaScript
+number can safely store (53-bits), so this property was added to
+safely encode the value for applications that require it.
+
 This property is generally of little interest to developers.
 
 _property: block.gasLimit => [[BigNumber]]
