@@ -566,7 +566,7 @@ export class JsonRpcProvider extends BaseProvider {
         if (method === "call" || method === "estimateGas") {
             const tx = params.transaction;
             if (tx && tx.type != null && BigNumber.from(tx.type).isZero()) {
-                // If there are no EIP-1559 properties, it might be non-EIP-a559
+                // If there are no EIP-1559 properties, it might be non-EIP-1559
                 if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
                     const feeData = await this.getFeeData();
                     if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
