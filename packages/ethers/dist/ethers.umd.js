@@ -24907,6 +24907,12 @@
 	    switch (name) {
 	        case "homestead":
 	            return "rpc.ankr.com/eth/";
+	        case "ropsten":
+	            return "rpc.ankr.com/eth_ropsten/";
+	        case "rinkeby":
+	            return "rpc.ankr.com/eth_rinkeby/";
+	        case "goerli":
+	            return "rpc.ankr.com/eth_goerli/";
 	        case "matic":
 	            return "rpc.ankr.com/polygon/";
 	        case "arbitrum":
