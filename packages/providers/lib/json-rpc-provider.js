@@ -119,7 +119,7 @@ function checkError(method, error, params) {
     message = (message || "").toLowerCase();
     var transaction = params.transaction || params.signedTransaction;
     // "insufficient funds for gas * price + value + cost(data)"
-    if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
+    if (message.match(/insufficient funds|base fee exceeds gas limit/i)) {
         logger.throwError("insufficient funds for intrinsic transaction cost", logger_1.Logger.errors.INSUFFICIENT_FUNDS, {
             error: error,
             method: method,
@@ -127,7 +127,7 @@ function checkError(method, error, params) {
         });
     }
     // "nonce too low"
-    if (message.match(/nonce (is )?too low/)) {
+    if (message.match(/nonce (is )?too low/i)) {
         logger.throwError("nonce has already been used", logger_1.Logger.errors.NONCE_EXPIRED, {
             error: error,
             method: method,
@@ -135,7 +135,7 @@ function checkError(method, error, params) {
         });
     }
     // "replacement transaction underpriced"
-    if (message.match(/replacement transaction underpriced/)) {
+    if (message.match(/replacement transaction underpriced|transaction gas price.*too low/i)) {
         logger.throwError("replacement fee too low", logger_1.Logger.errors.REPLACEMENT_UNDERPRICED, {
             error: error,
             method: method,
@@ -143,7 +143,7 @@ function checkError(method, error, params) {
         });
     }
     // "replacement transaction underpriced"
-    if (message.match(/only replay-protected/)) {
+    if (message.match(/only replay-protected/i)) {
         logger.throwError("legacy pre-eip-155 transactions not supported", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
             error: error,
             method: method,
@@ -768,7 +768,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
             if (transaction[key] == null) {
                 return;
             }
-            var value = (0, bytes_1.hexValue)(transaction[key]);
+            var value = (0, bytes_1.hexValue)(bignumber_1.BigNumber.from(transaction[key]));
             if (key === "gasLimit") {
                 key = "gas";
             }

@@ -14458,7 +14458,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "signing-key/5.6.0";
+	exports.version = "signing-key/5.6.1";
 
 	});
 
@@ -14485,6 +14485,9 @@
 	    function SigningKey(privateKey) {
 	        (0, lib$3.defineReadOnly)(this, "curve", "secp256k1");
 	        (0, lib$3.defineReadOnly)(this, "privateKey", (0, lib$1.hexlify)(privateKey));
+	        if ((0, lib$1.hexDataLength)(this.privateKey) !== 32) {
+	            logger.throwArgumentError("invalid private key", "privateKey", "[[ REDACTED ]]");
+	        }
 	        var keyPair = getCurve().keyFromPrivate((0, lib$1.arrayify)(this.privateKey));
 	        (0, lib$3.defineReadOnly)(this, "publicKey", "0x" + keyPair.getPublic(false, "hex"));
 	        (0, lib$3.defineReadOnly)(this, "compressedPublicKey", "0x" + keyPair.getPublic(true, "hex"));
@@ -20345,7 +20348,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.6.4";
+	exports.version = "providers/5.6.5";
 
 	});
 
@@ -23063,7 +23066,7 @@
 	                            return [2 /*return*/, null];
 	                        }
 	                        // Optimization since the eth node cannot change and does
-	                        // not have a wildcar resolver
+	                        // not have a wildcard resolver
 	                        if (name !== "eth" && currentName === "eth") {
 	                            return [2 /*return*/, null];
 	                        }
@@ -23504,7 +23507,7 @@
 	    message = (message || "").toLowerCase();
 	    var transaction = params.transaction || params.signedTransaction;
 	    // "insufficient funds for gas * price + value + cost(data)"
-	    if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
+	    if (message.match(/insufficient funds|base fee exceeds gas limit/i)) {
 	        logger.throwError("insufficient funds for intrinsic transaction cost", lib.Logger.errors.INSUFFICIENT_FUNDS, {
 	            error: error,
 	            method: method,
@@ -23512,7 +23515,7 @@
 	        });
 	    }
 	    // "nonce too low"
-	    if (message.match(/nonce (is )?too low/)) {
+	    if (message.match(/nonce (is )?too low/i)) {
 	        logger.throwError("nonce has already been used", lib.Logger.errors.NONCE_EXPIRED, {
 	            error: error,
 	            method: method,
@@ -23520,7 +23523,7 @@
 	        });
 	    }
 	    // "replacement transaction underpriced"
-	    if (message.match(/replacement transaction underpriced/)) {
+	    if (message.match(/replacement transaction underpriced|transaction gas price.*too low/i)) {
 	        logger.throwError("replacement fee too low", lib.Logger.errors.REPLACEMENT_UNDERPRICED, {
 	            error: error,
 	            method: method,
@@ -23528,7 +23531,7 @@
 	        });
 	    }
 	    // "replacement transaction underpriced"
-	    if (message.match(/only replay-protected/)) {
+	    if (message.match(/only replay-protected/i)) {
 	        logger.throwError("legacy pre-eip-155 transactions not supported", lib.Logger.errors.UNSUPPORTED_OPERATION, {
 	            error: error,
 	            method: method,
@@ -24153,7 +24156,7 @@
 	            if (transaction[key] == null) {
 	                return;
 	            }
-	            var value = (0, lib$1.hexValue)(transaction[key]);
+	            var value = (0, lib$1.hexValue)(lib$2.BigNumber.from(transaction[key]));
 	            if (key === "gasLimit") {
 	                key = "gas";
 	            }
@@ -24907,6 +24910,12 @@
 	    switch (name) {
 	        case "homestead":
 	            return "rpc.ankr.com/eth/";
+	        case "ropsten":
+	            return "rpc.ankr.com/eth_ropsten/";
+	        case "rinkeby":
+	            return "rpc.ankr.com/eth_rinkeby/";
+	        case "goerli":
+	            return "rpc.ankr.com/eth_goerli/";
 	        case "matic":
 	            return "rpc.ankr.com/polygon/";
 	        case "arbitrum":
@@ -27406,7 +27415,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.6.4";
+	exports.version = "ethers/5.6.5";
 
 	});
 

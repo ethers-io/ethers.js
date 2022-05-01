@@ -13271,7 +13271,7 @@ elliptic.eddsa = /*RicMoo:ethers:require(./elliptic/eddsa)*/(null);
 
 var EC$1 = elliptic_1.ec;
 
-const version$b = "signing-key/5.6.0";
+const version$b = "signing-key/5.6.1";
 
 "use strict";
 const logger$g = new Logger(version$b);
@@ -13286,6 +13286,9 @@ class SigningKey {
     constructor(privateKey) {
         defineReadOnly(this, "curve", "secp256k1");
         defineReadOnly(this, "privateKey", hexlify(privateKey));
+        if (hexDataLength(this.privateKey) !== 32) {
+            logger$g.throwArgumentError("invalid private key", "privateKey", "[[ REDACTED ]]");
+        }
         const keyPair = getCurve().keyFromPrivate(arrayify(this.privateKey));
         defineReadOnly(this, "publicKey", "0x" + keyPair.getPublic(false, "hex"));
         defineReadOnly(this, "compressedPublicKey", "0x" + keyPair.getPublic(true, "hex"));
@@ -18218,7 +18221,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.6.4";
+const version$m = "providers/5.6.5";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -20383,7 +20386,7 @@ class BaseProvider extends Provider {
                     return null;
                 }
                 // Optimization since the eth node cannot change and does
-                // not have a wildcar resolver
+                // not have a wildcard resolver
                 if (name !== "eth" && currentName === "eth") {
                     return null;
                 }
@@ -20443,7 +20446,7 @@ class BaseProvider extends Provider {
             if (typeof (name) !== "string") {
                 logger$t.throwArgumentError("invalid ENS name", "name", name);
             }
-            // Get the addr from the resovler
+            // Get the addr from the resolver
             const resolver = yield this.getResolver(name);
             if (!resolver) {
                 return null;
@@ -20693,25 +20696,25 @@ function checkError(method, error, params) {
     message = (message || "").toLowerCase();
     const transaction = params.transaction || params.signedTransaction;
     // "insufficient funds for gas * price + value + cost(data)"
-    if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
+    if (message.match(/insufficient funds|base fee exceeds gas limit/i)) {
         logger$u.throwError("insufficient funds for intrinsic transaction cost", Logger.errors.INSUFFICIENT_FUNDS, {
             error, method, transaction
         });
     }
     // "nonce too low"
-    if (message.match(/nonce (is )?too low/)) {
+    if (message.match(/nonce (is )?too low/i)) {
         logger$u.throwError("nonce has already been used", Logger.errors.NONCE_EXPIRED, {
             error, method, transaction
         });
     }
     // "replacement transaction underpriced"
-    if (message.match(/replacement transaction underpriced/)) {
+    if (message.match(/replacement transaction underpriced|transaction gas price.*too low/i)) {
         logger$u.throwError("replacement fee too low", Logger.errors.REPLACEMENT_UNDERPRICED, {
             error, method, transaction
         });
     }
     // "replacement transaction underpriced"
-    if (message.match(/only replay-protected/)) {
+    if (message.match(/only replay-protected/i)) {
         logger$u.throwError("legacy pre-eip-155 transactions not supported", Logger.errors.UNSUPPORTED_OPERATION, {
             error, method, transaction
         });
@@ -21114,7 +21117,7 @@ class JsonRpcProvider extends BaseProvider {
             if (method === "call" || method === "estimateGas") {
                 const tx = params.transaction;
                 if (tx && tx.type != null && BigNumber.from(tx.type).isZero()) {
-                    // If there are no EIP-1559 properties, it might be non-EIP-a559
+                    // If there are no EIP-1559 properties, it might be non-EIP-1559
                     if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
                         const feeData = yield this.getFeeData();
                         if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
@@ -21216,7 +21219,7 @@ class JsonRpcProvider extends BaseProvider {
             if (transaction[key] == null) {
                 return;
             }
-            const value = hexValue(transaction[key]);
+            const value = hexValue(BigNumber.from(transaction[key]));
             if (key === "gasLimit") {
                 key = "gas";
             }
@@ -21726,6 +21729,12 @@ function getHost(name) {
     switch (name) {
         case "homestead":
             return "rpc.ankr.com/eth/";
+        case "ropsten":
+            return "rpc.ankr.com/eth_ropsten/";
+        case "rinkeby":
+            return "rpc.ankr.com/eth_rinkeby/";
+        case "goerli":
+            return "rpc.ankr.com/eth_goerli/";
         case "matic":
             return "rpc.ankr.com/polygon/";
         case "arbitrum":
@@ -23607,7 +23616,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$p = "ethers/5.6.4";
+const version$p = "ethers/5.6.5";
 
 "use strict";
 const logger$J = new Logger(version$p);

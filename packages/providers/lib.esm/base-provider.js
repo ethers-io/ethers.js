@@ -1741,7 +1741,7 @@ export class BaseProvider extends Provider {
                     return null;
                 }
                 // Optimization since the eth node cannot change and does
-                // not have a wildcar resolver
+                // not have a wildcard resolver
                 if (name !== "eth" && currentName === "eth") {
                     return null;
                 }
@@ -1801,7 +1801,7 @@ export class BaseProvider extends Provider {
             if (typeof (name) !== "string") {
                 logger.throwArgumentError("invalid ENS name", "name", name);
             }
-            // Get the addr from the resovler
+            // Get the addr from the resolver
             const resolver = yield this.getResolver(name);
             if (!resolver) {
                 return null;

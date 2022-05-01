@@ -4,6 +4,14 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+ethers/v5.6.5 (2022-05-01 02:10)
+--------------------------------
+
+  - Added testnets for AnkrProvider. ([#2949](https://github.com/ethers-io/ethers.js/issues/2949), [#2950](https://github.com/ethers-io/ethers.js/issues/2950); [d9f45b3](https://github.com/ethers-io/ethers.js/commit/d9f45b3b9db92c72f9c606bab8315d0eb02fec70))
+  - Better error coalescing for OpenEthereum nodes. ([#2846](https://github.com/ethers-io/ethers.js/issues/2846); [bebd669](https://github.com/ethers-io/ethers.js/commit/bebd6698c6c3193f0bdb96b54c5daa5ee5d0692c))
+  - Enforce 32-byte private key length (2926). ([7b299dd](https://github.com/ethers-io/ethers.js/commit/7b299dd9c97571b12916e3ae529540f3f2e5a367))
+  - Fixed decimal strings as value-type properties for JsonRpcSigner. ([#2948](https://github.com/ethers-io/ethers.js/issues/2948); [9bf17fa](https://github.com/ethers-io/ethers.js/commit/9bf17fa07c6149a02ef217f2b89f1bfd990b1a6c))
+
 ethers/v5.6.4 (2022-04-13 16:56)
 --------------------------------
 
