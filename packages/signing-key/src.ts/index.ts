@@ -2,7 +2,7 @@
 
 import { EC } from "./elliptic";
 
-import { arrayify, BytesLike, hexlify, hexZeroPad, Signature, SignatureLike, splitSignature } from "@ethersproject/bytes";
+import { arrayify, BytesLike, hexDataLength, hexlify, hexZeroPad, Signature, SignatureLike, splitSignature } from "@ethersproject/bytes";
 import { defineReadOnly } from "@ethersproject/properties";
 
 import { Logger } from "@ethersproject/logger";
@@ -33,6 +33,9 @@ export class SigningKey {
         defineReadOnly(this, "curve", "secp256k1");
 
         defineReadOnly(this, "privateKey", hexlify(privateKey));
+        if (hexDataLength(this.privateKey) !== 32) {
+            logger.throwArgumentError("invalid private key", "privateKey", "[[ REDACTED ]]");
+        }
 
         const keyPair = getCurve().keyFromPrivate(arrayify(this.privateKey));
 

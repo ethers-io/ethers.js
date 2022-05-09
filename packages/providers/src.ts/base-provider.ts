@@ -1959,7 +1959,7 @@ export class BaseProvider extends Provider implements EnsProvider {
             if (currentName === "" || currentName === ".") { return null; }
 
             // Optimization since the eth node cannot change and does
-            // not have a wildcar resolver
+            // not have a wildcard resolver
             if (name !== "eth" && currentName === "eth") { return null; }
 
             // Check the current node for a resolver
@@ -2024,7 +2024,7 @@ export class BaseProvider extends Provider implements EnsProvider {
             logger.throwArgumentError("invalid ENS name", "name", name);
         }
 
-        // Get the addr from the resovler
+        // Get the addr from the resolver
         const resolver = await this.getResolver(name);
         if (!resolver) { return null; }
 

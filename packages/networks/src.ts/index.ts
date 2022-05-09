@@ -51,7 +51,7 @@ function ethDefaultProvider(network: string | Network): Renetworkable {
             // @TODO: This goes away once Pocket has upgraded their nodes
             const skip = [ "goerli", "ropsten", "rinkeby" ];
             try {
-                const provider = new providers.PocketProvider(network);
+                const provider = new providers.PocketProvider(network, options.pocket);
                 if (provider.network && skip.indexOf(provider.network.name) === -1) {
                     providerList.push(provider);
                 }

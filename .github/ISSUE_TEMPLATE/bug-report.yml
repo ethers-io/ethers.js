@@ -63,6 +63,8 @@ body:
       description: What environment, platforms or frameworks are you using? Select all that apply.
       multiple: true
       options:
+        - Ethereum (mainnet/ropsten/rinkeby/goerli)
+        - Altcoin - Please specify (e.g. Polygon)
         - node.js (v12 or newer)
         - node.js (older than v12)
         - Browser (Chrome, Safari, etc)

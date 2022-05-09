@@ -47,7 +47,11 @@ function getPackage(name, version) {
         if (version == null) {
             const versions = Object.keys(infos.versions);
             versions.sort(semver_1.default.compare);
-            version = versions.pop();
+            // HACK: So v5 continues working while v6 is managed by reticulate
+            version = "6.0.0";
+            while (version.indexOf("beta") >= 0 || semver_1.default.gte(version, "6.0.0")) {
+                version = versions.pop();
+            }
         }
         const info = infos.versions[version];
         return {

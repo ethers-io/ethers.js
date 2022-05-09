@@ -1,1 +1,1 @@
-export const version = "networks/5.6.1";
+export const version = "networks/5.6.2";

@@ -326,7 +326,7 @@ TypedDataEncoder.hashDomain(domain)
 
 _subsection: Solidity Hashing Algorithms @<utils--solidity-hashing>
 
-When using the Solidity ``abi.packEncoded(...)`` function, a non-standard
+When using the Solidity ``abi.encodePacked(...)`` function, a non-standard
 //tightly packed// version of encoding is used. These functions implement
 the tightly packing algorithm.
 

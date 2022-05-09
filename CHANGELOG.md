@@ -4,6 +4,25 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+ethers/v5.6.5 (2022-05-01 02:10)
+--------------------------------
+
+  - Added testnets for AnkrProvider. ([#2949](https://github.com/ethers-io/ethers.js/issues/2949), [#2950](https://github.com/ethers-io/ethers.js/issues/2950); [d9f45b3](https://github.com/ethers-io/ethers.js/commit/d9f45b3b9db92c72f9c606bab8315d0eb02fec70))
+  - Better error coalescing for OpenEthereum nodes. ([#2846](https://github.com/ethers-io/ethers.js/issues/2846); [bebd669](https://github.com/ethers-io/ethers.js/commit/bebd6698c6c3193f0bdb96b54c5daa5ee5d0692c))
+  - Enforce 32-byte private key length (2926). ([7b299dd](https://github.com/ethers-io/ethers.js/commit/7b299dd9c97571b12916e3ae529540f3f2e5a367))
+  - Fixed decimal strings as value-type properties for JsonRpcSigner. ([#2948](https://github.com/ethers-io/ethers.js/issues/2948); [9bf17fa](https://github.com/ethers-io/ethers.js/commit/9bf17fa07c6149a02ef217f2b89f1bfd990b1a6c))
+
+ethers/v5.6.4 (2022-04-13 16:56)
+--------------------------------
+
+  - Support new OpenEthereum NONCE_EXPIRED string. ([#2845](https://github.com/ethers-io/ethers.js/issues/2845), [#2846](https://github.com/ethers-io/ethers.js/issues/2846); [0855d6e](https://github.com/ethers-io/ethers.js/commit/0855d6e9f593515b639c10a3f65bad712c68221c))
+
+ethers/v5.6.3 (2022-04-13 00:23)
+--------------------------------
+
+  - Mimic Hardhard error strings in CALL_EXCEPTION for popular matchers. ([#2849](https://github.com/ethers-io/ethers.js/issues/2849), [#2862](https://github.com/ethers-io/ethers.js/issues/2862); [dab6ede](https://github.com/ethers-io/ethers.js/commit/dab6ede226e572706655e2865d4c953e37741a5c))
+  - Fix pocket API key not being passed in for default provider. ([#2890](https://github.com/ethers-io/ethers.js/issues/2890); [056d7c8](https://github.com/ethers-io/ethers.js/commit/056d7c8bfc5896759c383d7cfae8ed0ec5c5eefb))
+
 ethers/v5.6.2 (2022-03-25 17:56)
 --------------------------------
 

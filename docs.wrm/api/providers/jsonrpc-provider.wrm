@@ -11,7 +11,7 @@ connected to the //networkish// network.
 
 If //urlOrConnectionInfo// is not specified, the default (i.e. ``http:/\/localhost:8545``)
 is used and if no network is specified, it will be determined automatically by querying the
-node using ``eth_chaindId`` and falling back on ``eth_networkId``.
+node using ``eth_chainId`` and falling back on ``eth_networkId``.
 
 _note: Note: Connecting to a Local Node
 Each node implementation is slightly different and may require specific
