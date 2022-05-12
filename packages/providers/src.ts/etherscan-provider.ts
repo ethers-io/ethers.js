@@ -181,10 +181,12 @@ export class EtherscanProvider extends BaseProvider{
                 return "https:/\/api-kovan.etherscan.io";
             case "goerli":
                 return "https:/\/api-goerli.etherscan.io";
+            case "optimism":
+                return "https:/\/api-optimistic.etherscan.io";
             default:
         }
 
-        return logger.throwArgumentError("unsupported network", "network", name);
+        return logger.throwArgumentError("unsupported network", "network", this.network.name);
     }
 
     getUrl(module: string, params: Record<string, string>): string {
