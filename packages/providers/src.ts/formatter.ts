@@ -31,7 +31,6 @@ export class Formatter {
     readonly formats: Formats;
 
     constructor() {
-        logger.checkNew(new.target, Formatter);
         this.formats = this.getDefaultFormats();
     }
 

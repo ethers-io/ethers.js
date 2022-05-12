@@ -144,8 +144,6 @@ export class JsonRpcSigner extends Signer implements TypedDataSigner {
     _address: string;
 
     constructor(constructorGuard: any, provider: JsonRpcProvider, addressOrIndex?: string | number) {
-        logger.checkNew(new.target, JsonRpcSigner);
-
         super();
 
         if (constructorGuard !== _constructorGuard) {
@@ -354,8 +352,6 @@ export class JsonRpcProvider extends BaseProvider {
     }
 
     constructor(url?: ConnectionInfo | string, network?: Networkish) {
-        logger.checkNew(new.target, JsonRpcProvider);
-
         let networkOrReady: Networkish | Promise<Network> = network;
 
         // The network is unknown, query the JSON-RPC for it

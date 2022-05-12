@@ -90,8 +90,6 @@ export class Interface {
     readonly _isInterface: boolean;
 
     constructor(fragments: string | ReadonlyArray<Fragment | JsonFragment | string>) {
-        logger.checkNew(new.target, Interface);
-
         let abi: ReadonlyArray<Fragment | JsonFragment | string> = [ ];
         if (typeof(fragments) === "string") {
             abi = JSON.parse(fragments);

@@ -163,8 +163,6 @@ export class EtherscanProvider extends BaseProvider{
     readonly apiKey: string;
 
     constructor(network?: Networkish, apiKey?: string) {
-        logger.checkNew(new.target, EtherscanProvider);
-
         super(network);
 
         defineReadOnly(this, "baseUrl", this.getBaseUrl());

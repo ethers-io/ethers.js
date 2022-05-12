@@ -123,8 +123,6 @@ export class Web3Provider extends JsonRpcProvider {
     readonly jsonRpcFetchFunc: JsonRpcFetchFunc;
 
     constructor(provider: ExternalProvider | JsonRpcFetchFunc, network?: Networkish) {
-        logger.checkNew(new.target, Web3Provider);
-
         if (provider == null) {
             logger.throwArgumentError("missing provider", "provider", provider);
         }
