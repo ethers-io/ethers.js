@@ -22,8 +22,6 @@ var paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 var paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 var AbiCoder = /** @class */ (function () {
     function AbiCoder(coerceFunc) {
-        var _newTarget = this.constructor;
-        logger.checkNew(_newTarget, AbiCoder);
         (0, properties_1.defineReadOnly)(this, "coerceFunc", coerceFunc || null);
     }
     AbiCoder.prototype._getCoder = function (param) {

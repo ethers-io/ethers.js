@@ -349,7 +349,6 @@ function getRunner(config, currentBlockNumber, method, params) {
 }
 export class FallbackProvider extends BaseProvider {
     constructor(providers, quorum) {
-        logger.checkNew(new.target, FallbackProvider);
         if (providers.length === 0) {
             logger.throwArgumentError("missing providers", "providers", providers);
         }

@@ -65,18 +65,21 @@ var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var base_provider_1 = require("./base-provider");
 var errorGas = ["call", "estimateGas"];
-function spelunk(value) {
+function spelunk(value, requireData) {
     if (value == null) {
         return null;
     }
     // These *are* the droids we're looking for.
-    if (typeof (value.message) === "string" && value.message.match("reverted") && (0, bytes_1.isHexString)(value.data)) {
-        return { message: value.message, data: value.data };
+    if (typeof (value.message) === "string" && value.message.match("reverted")) {
+        var data = (0, bytes_1.isHexString)(value.data) ? value.data : null;
+        if (!requireData || data) {
+            return { message: value.message, data: data };
+        }
     }
     // Spelunk further...
     if (typeof (value) === "object") {
         for (var key in value) {
-            var result = spelunk(value[key]);
+            var result = spelunk(value[key], requireData);
             if (result) {
                 return result;
             }
@@ -86,24 +89,43 @@ function spelunk(value) {
     // Might be a JSON string we can further descend...
     if (typeof (value) === "string") {
         try {
-            return spelunk(JSON.parse(value));
+            return spelunk(JSON.parse(value), requireData);
         }
         catch (error) { }
     }
     return null;
 }
 function checkError(method, error, params) {
+    var transaction = params.transaction || params.signedTransaction;
     // Undo the "convenience" some nodes are attempting to prevent backwards
     // incompatibility; maybe for v6 consider forwarding reverts as errors
     if (method === "call") {
-        var result = spelunk(error);
+        var result = spelunk(error, true);
         if (result) {
             return result.data;
         }
+        // Nothing descriptive..
         logger.throwError("missing revert data in call exception; Transaction reverted without a reason string", logger_1.Logger.errors.CALL_EXCEPTION, {
-            error: error,
-            data: "0x"
+            data: "0x",
+            transaction: transaction,
+            error: error
         });
+    }
+    if (method === "estimateGas") {
+        // Try to find something, with a preference on SERVER_ERROR body
+        var result = spelunk(error.body, false);
+        if (result == null) {
+            result = spelunk(error, false);
+        }
+        // Found "reverted", this is a CALL_EXCEPTION
+        if (result) {
+            logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+                reason: result.message,
+                method: method,
+                transaction: transaction,
+                error: error
+            });
+        }
     }
     // @TODO: Should we spelunk for message too?
     var message = error.message;
@@ -117,7 +139,6 @@ function checkError(method, error, params) {
         message = error.responseText;
     }
     message = (message || "").toLowerCase();
-    var transaction = params.transaction || params.signedTransaction;
     // "insufficient funds for gas * price + value + cost(data)"
     if (message.match(/insufficient funds|base fee exceeds gas limit/i)) {
         logger.throwError("insufficient funds for intrinsic transaction cost", logger_1.Logger.errors.INSUFFICIENT_FUNDS, {
@@ -184,10 +205,7 @@ var _constructorGuard = {};
 var JsonRpcSigner = /** @class */ (function (_super) {
     __extends(JsonRpcSigner, _super);
     function JsonRpcSigner(constructorGuard, provider, addressOrIndex) {
-        var _newTarget = this.constructor;
-        var _this = this;
-        logger.checkNew(_newTarget, JsonRpcSigner);
-        _this = _super.call(this) || this;
+        var _this = _super.call(this) || this;
         if (constructorGuard !== _constructorGuard) {
             throw new Error("do not call the JsonRpcSigner constructor directly; use provider.getSigner");
         }
@@ -443,9 +461,7 @@ var allowedTransactionKeys = {
 var JsonRpcProvider = /** @class */ (function (_super) {
     __extends(JsonRpcProvider, _super);
     function JsonRpcProvider(url, network) {
-        var _newTarget = this.constructor;
         var _this = this;
-        logger.checkNew(_newTarget, JsonRpcProvider);
         var networkOrReady = network;
         // The network is unknown, query the JSON-RPC for it
         if (networkOrReady == null) {

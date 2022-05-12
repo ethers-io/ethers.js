@@ -17,17 +17,12 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NonceManager = void 0;
 var ethers_1 = require("ethers");
-var _version_1 = require("./_version");
-var logger = new ethers_1.ethers.utils.Logger(_version_1.version);
 // @TODO: Keep a per-NonceManager pool of sent but unmined transactions for
 //        rebroadcasting, in case we overrun the transaction pool
 var NonceManager = /** @class */ (function (_super) {
     __extends(NonceManager, _super);
     function NonceManager(signer) {
-        var _newTarget = this.constructor;
-        var _this = this;
-        logger.checkNew(_newTarget, NonceManager);
-        _this = _super.call(this) || this;
+        var _this = _super.call(this) || this;
         _this._deltaCount = 0;
         ethers_1.ethers.utils.defineReadOnly(_this, "signer", signer);
         ethers_1.ethers.utils.defineReadOnly(_this, "provider", signer.provider || null);

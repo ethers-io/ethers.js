@@ -406,10 +406,7 @@ exports.Signer = Signer;
 var VoidSigner = /** @class */ (function (_super) {
     __extends(VoidSigner, _super);
     function VoidSigner(address, provider) {
-        var _newTarget = this.constructor;
-        var _this = this;
-        logger.checkNew(_newTarget, VoidSigner);
-        _this = _super.call(this) || this;
+        var _this = _super.call(this) || this;
         (0, properties_1.defineReadOnly)(_this, "address", address);
         (0, properties_1.defineReadOnly)(_this, "provider", provider || null);
         return _this;

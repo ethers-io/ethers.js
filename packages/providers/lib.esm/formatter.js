@@ -10,7 +10,6 @@ import { version } from "./_version";
 const logger = new Logger(version);
 export class Formatter {
     constructor() {
-        logger.checkNew(new.target, Formatter);
         this.formats = this.getDefaultFormats();
     }
     getDefaultFormats() {

@@ -90,7 +90,6 @@ var Interface = /** @class */ (function () {
     function Interface(fragments) {
         var _newTarget = this.constructor;
         var _this = this;
-        logger.checkNew(_newTarget, Interface);
         var abi = [];
         if (typeof (fragments) === "string") {
             abi = JSON.parse(fragments);

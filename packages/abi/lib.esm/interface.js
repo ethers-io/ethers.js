@@ -47,7 +47,6 @@ function checkNames(fragment: Fragment, type: "input" | "output", params: Array<
 */
 export class Interface {
     constructor(fragments) {
-        logger.checkNew(new.target, Interface);
         let abi = [];
         if (typeof (fragments) === "string") {
             abi = JSON.parse(fragments);

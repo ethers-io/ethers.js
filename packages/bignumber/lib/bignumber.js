@@ -32,8 +32,6 @@ exports.isBigNumberish = isBigNumberish;
 var _warnedToStringRadix = false;
 var BigNumber = /** @class */ (function () {
     function BigNumber(constructorGuard, hex) {
-        var _newTarget = this.constructor;
-        logger.checkNew(_newTarget, BigNumber);
         if (constructorGuard !== _constructorGuard) {
             logger.throwError("cannot call constructor directly; use BigNumber.from", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "new (BigNumber)"

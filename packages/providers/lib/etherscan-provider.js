@@ -212,10 +212,7 @@ function checkError(method, error, transaction) {
 var EtherscanProvider = /** @class */ (function (_super) {
     __extends(EtherscanProvider, _super);
     function EtherscanProvider(network, apiKey) {
-        var _newTarget = this.constructor;
-        var _this = this;
-        logger.checkNew(_newTarget, EtherscanProvider);
-        _this = _super.call(this, network) || this;
+        var _this = _super.call(this, network) || this;
         (0, properties_1.defineReadOnly)(_this, "baseUrl", _this.getBaseUrl());
         (0, properties_1.defineReadOnly)(_this, "apiKey", apiKey || defaultApiKey);
         return _this;
@@ -232,9 +229,11 @@ var EtherscanProvider = /** @class */ (function (_super) {
                 return "https:/\/api-kovan.etherscan.io";
             case "goerli":
                 return "https:/\/api-goerli.etherscan.io";
+            case "optimism":
+                return "https:/\/api-optimistic.etherscan.io";
             default:
         }
-        return logger.throwArgumentError("unsupported network", "network", name);
+        return logger.throwArgumentError("unsupported network", "network", this.network.name);
     };
     EtherscanProvider.prototype.getUrl = function (module, params) {
         var query = Object.keys(params).reduce(function (accum, key) {

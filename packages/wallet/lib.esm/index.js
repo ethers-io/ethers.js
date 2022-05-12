@@ -32,7 +32,6 @@ function hasMnemonic(value) {
 }
 export class Wallet extends Signer {
     constructor(privateKey, provider) {
-        logger.checkNew(new.target, Wallet);
         super();
         if (isAccount(privateKey)) {
             const signingKey = new SigningKey(privateKey.privateKey);

@@ -4250,7 +4250,7 @@ function joinSignature(signature) {
     ]));
 }
 
-const version$2 = "bignumber/5.6.0";
+const version$2 = "bignumber/5.6.1";
 
 "use strict";
 var BN = bn.BN;
@@ -4269,7 +4269,6 @@ function isBigNumberish(value) {
 let _warnedToStringRadix = false;
 class BigNumber {
     constructor(constructorGuard, hex) {
-        logger$1.checkNew(new.target, BigNumber);
         if (constructorGuard !== _constructorGuard) {
             logger$1.throwError("cannot call constructor directly; use BigNumber.from", Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "new (BigNumber)"
@@ -4724,7 +4723,6 @@ class FixedFormat {
 }
 class FixedNumber {
     constructor(constructorGuard, hex, value, format) {
-        logger$2.checkNew(new.target, FixedNumber);
         if (constructorGuard !== _constructorGuard$1) {
             logger$2.throwError("cannot use FixedNumber constructor; use FixedNumber.from", Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "new FixedFormat"
@@ -5031,7 +5029,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.6.1";
+const version$4 = "abi/5.6.2";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -7889,7 +7887,6 @@ const paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 class AbiCoder {
     constructor(coerceFunc) {
-        logger$a.checkNew(new.target, AbiCoder);
         defineReadOnly(this, "coerceFunc", coerceFunc || null);
     }
     _getCoder(param) {
@@ -8499,7 +8496,6 @@ function checkNames(fragment: Fragment, type: "input" | "output", params: Array<
 */
 class Interface {
     constructor(fragments) {
-        logger$d.checkNew(new.target, Interface);
         let abi = [];
         if (typeof (fragments) === "string") {
             abi = JSON.parse(fragments);
@@ -9164,7 +9160,7 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.6.0";
+const version$a = "abstract-signer/5.6.1";
 
 "use strict";
 var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -9440,7 +9436,6 @@ class Signer {
 }
 class VoidSigner extends Signer {
     constructor(address, provider) {
-        logger$f.checkNew(new.target, VoidSigner);
         super();
         defineReadOnly(this, "address", address);
         defineReadOnly(this, "provider", provider || null);
@@ -13731,7 +13726,7 @@ function parse(rawTransaction) {
     });
 }
 
-const version$d = "contracts/5.6.0";
+const version$d = "contracts/5.6.1";
 
 "use strict";
 var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -14201,7 +14196,6 @@ class WildcardRunningEvent extends RunningEvent {
 }
 class BaseContract {
     constructor(addressOrName, contractInterface, signerOrProvider) {
-        logger$i.checkNew(new.target, Contract);
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
         defineReadOnly(this, "interface", getStatic(new.target, "getInterface")(contractInterface));
@@ -15028,7 +15022,7 @@ const wordlists = {
 
 "use strict";
 
-const version$g = "hdnode/5.6.0";
+const version$g = "hdnode/5.6.1";
 
 "use strict";
 const logger$l = new Logger(version$g);
@@ -15075,7 +15069,6 @@ class HDNode {
      *   - fromSeed
      */
     constructor(constructorGuard, privateKey, publicKey, parentFingerprint, chainCode, index, depth, mnemonicOrPath) {
-        logger$l.checkNew(new.target, HDNode);
         /* istanbul ignore if */
         if (constructorGuard !== _constructorGuard$3) {
             throw new Error("HDNode constructor cannot be called directly");
@@ -17176,7 +17169,7 @@ function decryptJsonWalletSync(json, password) {
     throw new Error("invalid JSON wallet");
 }
 
-const version$j = "wallet/5.6.0";
+const version$j = "wallet/5.6.1";
 
 "use strict";
 var __awaiter$6 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -17198,7 +17191,6 @@ function hasMnemonic$1(value) {
 }
 class Wallet extends Signer {
     constructor(privateKey, provider) {
-        logger$p.checkNew(new.target, Wallet);
         super();
         if (isAccount(privateKey)) {
             const signingKey = new SigningKey(privateKey.privateKey);
@@ -18221,13 +18213,12 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.6.5";
+const version$m = "providers/5.6.6";
 
 "use strict";
 const logger$s = new Logger(version$m);
 class Formatter {
     constructor() {
-        logger$s.checkNew(new.target, Formatter);
         this.formats = this.getDefaultFormats();
     }
     getDefaultFormats() {
@@ -19247,7 +19238,6 @@ class BaseProvider extends Provider {
      *
      */
     constructor(network) {
-        logger$t.checkNew(new.target, Provider);
         super();
         // Events being listened to
         this._events = [];
@@ -20643,18 +20633,21 @@ var __awaiter$a = (window && window.__awaiter) || function (thisArg, _arguments,
 };
 const logger$u = new Logger(version$m);
 const errorGas = ["call", "estimateGas"];
-function spelunk(value) {
+function spelunk(value, requireData) {
     if (value == null) {
         return null;
     }
     // These *are* the droids we're looking for.
-    if (typeof (value.message) === "string" && value.message.match("reverted") && isHexString(value.data)) {
-        return { message: value.message, data: value.data };
+    if (typeof (value.message) === "string" && value.message.match("reverted")) {
+        const data = isHexString(value.data) ? value.data : null;
+        if (!requireData || data) {
+            return { message: value.message, data };
+        }
     }
     // Spelunk further...
     if (typeof (value) === "object") {
         for (const key in value) {
-            const result = spelunk(value[key]);
+            const result = spelunk(value[key], requireData);
             if (result) {
                 return result;
             }
@@ -20664,23 +20657,38 @@ function spelunk(value) {
     // Might be a JSON string we can further descend...
     if (typeof (value) === "string") {
         try {
-            return spelunk(JSON.parse(value));
+            return spelunk(JSON.parse(value), requireData);
         }
         catch (error) { }
     }
     return null;
 }
 function checkError(method, error, params) {
+    const transaction = params.transaction || params.signedTransaction;
     // Undo the "convenience" some nodes are attempting to prevent backwards
     // incompatibility; maybe for v6 consider forwarding reverts as errors
     if (method === "call") {
-        const result = spelunk(error);
+        const result = spelunk(error, true);
         if (result) {
             return result.data;
         }
+        // Nothing descriptive..
         logger$u.throwError("missing revert data in call exception; Transaction reverted without a reason string", Logger.errors.CALL_EXCEPTION, {
-            error, data: "0x"
+            data: "0x", transaction, error
         });
+    }
+    if (method === "estimateGas") {
+        // Try to find something, with a preference on SERVER_ERROR body
+        let result = spelunk(error.body, false);
+        if (result == null) {
+            result = spelunk(error, false);
+        }
+        // Found "reverted", this is a CALL_EXCEPTION
+        if (result) {
+            logger$u.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+                reason: result.message, method, transaction, error
+            });
+        }
     }
     // @TODO: Should we spelunk for message too?
     let message = error.message;
@@ -20694,7 +20702,6 @@ function checkError(method, error, params) {
         message = error.responseText;
     }
     message = (message || "").toLowerCase();
-    const transaction = params.transaction || params.signedTransaction;
     // "insufficient funds for gas * price + value + cost(data)"
     if (message.match(/insufficient funds|base fee exceeds gas limit/i)) {
         logger$u.throwError("insufficient funds for intrinsic transaction cost", Logger.errors.INSUFFICIENT_FUNDS, {
@@ -20750,7 +20757,6 @@ function getLowerCase(value) {
 const _constructorGuard$4 = {};
 class JsonRpcSigner extends Signer {
     constructor(constructorGuard, provider, addressOrIndex) {
-        logger$u.checkNew(new.target, JsonRpcSigner);
         super();
         if (constructorGuard !== _constructorGuard$4) {
             throw new Error("do not call the JsonRpcSigner constructor directly; use provider.getSigner");
@@ -20930,7 +20936,6 @@ const allowedTransactionKeys$3 = {
 };
 class JsonRpcProvider extends BaseProvider {
     constructor(url, network) {
-        logger$u.checkNew(new.target, JsonRpcProvider);
         let networkOrReady = network;
         // The network is unknown, query the JSON-RPC for it
         if (networkOrReady == null) {
@@ -21971,7 +21976,6 @@ function checkError$1(method, error, transaction) {
 }
 class EtherscanProvider extends BaseProvider {
     constructor(network, apiKey) {
-        logger$A.checkNew(new.target, EtherscanProvider);
         super(network);
         defineReadOnly(this, "baseUrl", this.getBaseUrl());
         defineReadOnly(this, "apiKey", apiKey || defaultApiKey$2);
@@ -21988,9 +21992,11 @@ class EtherscanProvider extends BaseProvider {
                 return "https:/\/api-kovan.etherscan.io";
             case "goerli":
                 return "https:/\/api-goerli.etherscan.io";
+            case "optimism":
+                return "https:/\/api-optimistic.etherscan.io";
             default:
         }
-        return logger$A.throwArgumentError("unsupported network", "network", name);
+        return logger$A.throwArgumentError("unsupported network", "network", this.network.name);
     }
     getUrl(module, params) {
         const query = Object.keys(params).reduce((accum, key) => {
@@ -22571,7 +22577,6 @@ function getRunner(config, currentBlockNumber, method, params) {
 }
 class FallbackProvider extends BaseProvider {
     constructor(providers, quorum) {
-        logger$B.checkNew(new.target, FallbackProvider);
         if (providers.length === 0) {
             logger$B.throwArgumentError("missing providers", "providers", providers);
         }
@@ -23220,7 +23225,6 @@ function buildEip1193Fetcher(provider) {
 }
 class Web3Provider extends JsonRpcProvider {
     constructor(provider, network) {
-        logger$F.checkNew(new.target, Web3Provider);
         if (provider == null) {
             logger$F.throwArgumentError("missing provider", "provider", provider);
         }
@@ -23616,7 +23620,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$p = "ethers/5.6.5";
+const version$p = "ethers/5.6.6";
 
 "use strict";
 const logger$J = new Logger(version$p);

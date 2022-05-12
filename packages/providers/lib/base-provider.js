@@ -738,9 +738,7 @@ var BaseProvider = /** @class */ (function (_super) {
      */
     function BaseProvider(network) {
         var _newTarget = this.constructor;
-        var _this = this;
-        logger.checkNew(_newTarget, abstract_provider_1.Provider);
-        _this = _super.call(this) || this;
+        var _this = _super.call(this) || this;
         // Events being listened to
         _this._events = [];
         _this._emitted = { block: -2 };

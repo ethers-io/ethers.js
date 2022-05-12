@@ -26,7 +26,6 @@ export function isBigNumberish(value) {
 let _warnedToStringRadix = false;
 export class BigNumber {
     constructor(constructorGuard, hex) {
-        logger.checkNew(new.target, BigNumber);
         if (constructorGuard !== _constructorGuard) {
             logger.throwError("cannot call constructor directly; use BigNumber.from", Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "new (BigNumber)"

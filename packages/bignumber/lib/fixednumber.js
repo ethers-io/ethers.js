@@ -185,8 +185,6 @@ var FixedFormat = /** @class */ (function () {
 exports.FixedFormat = FixedFormat;
 var FixedNumber = /** @class */ (function () {
     function FixedNumber(constructorGuard, hex, value, format) {
-        var _newTarget = this.constructor;
-        logger.checkNew(_newTarget, FixedNumber);
         if (constructorGuard !== _constructorGuard) {
             logger.throwError("cannot use FixedNumber constructor; use FixedNumber.from", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "new FixedFormat"

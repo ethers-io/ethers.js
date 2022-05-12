@@ -105,9 +105,7 @@ function buildEip1193Fetcher(provider) {
 var Web3Provider = /** @class */ (function (_super) {
     __extends(Web3Provider, _super);
     function Web3Provider(provider, network) {
-        var _newTarget = this.constructor;
         var _this = this;
-        logger.checkNew(_newTarget, Web3Provider);
         if (provider == null) {
             logger.throwArgumentError("missing provider", "provider", provider);
         }

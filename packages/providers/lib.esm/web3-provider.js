@@ -85,7 +85,6 @@ function buildEip1193Fetcher(provider) {
 }
 export class Web3Provider extends JsonRpcProvider {
     constructor(provider, network) {
-        logger.checkNew(new.target, Web3Provider);
         if (provider == null) {
             logger.throwArgumentError("missing provider", "provider", provider);
         }
