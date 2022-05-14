@@ -29,7 +29,7 @@ function link(existing: string, path: string): void {
 
     const nodeModulesBase = resolve(dirs.root, ".package_node_modules");
 
-    // Make a symlink in the ROOT/node_mpdules to each package in this repo
+    // Make a symlink in the ROOT/node_modules to each package in this repo
     packages.forEach((name) => {
 
         // e.g. /node_modules/@ethersproject/abi => /packages/abi

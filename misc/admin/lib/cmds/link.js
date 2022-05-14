@@ -41,7 +41,7 @@ function link(existing, path) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(log_1.colorify.bold(`Linking ${path_2.packages.length} package node_modules rat nests...`));
         const nodeModulesBase = (0, path_1.resolve)(path_2.dirs.root, ".package_node_modules");
-        // Make a symlink in the ROOT/node_mpdules to each package in this repo
+        // Make a symlink in the ROOT/node_modules to each package in this repo
         path_2.packages.forEach((name) => {
             // e.g. /node_modules/@ethersproject/abi => /packages/abi
             link((0, path_2.getPackagePath)(name), (0, path_1.resolve)(path_2.dirs.root, "node_modules", name));
