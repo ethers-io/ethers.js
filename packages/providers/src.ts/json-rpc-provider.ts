@@ -5,7 +5,7 @@
 import { Provider, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { Signer, TypedDataDomain, TypedDataField, TypedDataSigner } from "@ethersproject/abstract-signer";
 import { BigNumber } from "@ethersproject/bignumber";
-import { Bytes, hexlify, hexValue, isHexString } from "@ethersproject/bytes";
+import { Bytes, hexlify, hexValue, hexZeroPad, isHexString } from "@ethersproject/bytes";
 import { _TypedDataEncoder } from "@ethersproject/hash";
 import { Network, Networkish } from "@ethersproject/networks";
 import { checkProperties, deepCopy, Deferrable, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
@@ -531,7 +531,7 @@ export class JsonRpcProvider extends BaseProvider {
                 return [ "eth_getCode", [ getLowerCase(params.address), params.blockTag ] ];
 
             case "getStorageAt":
-                return [ "eth_getStorageAt", [ getLowerCase(params.address), params.position, params.blockTag ] ];
+                return [ "eth_getStorageAt", [ getLowerCase(params.address), hexZeroPad(params.position, 32), params.blockTag ] ];
 
             case "sendTransaction":
                 return [ "eth_sendRawTransaction", [ params.signedTransaction ] ]
