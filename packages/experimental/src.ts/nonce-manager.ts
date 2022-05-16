@@ -2,10 +2,6 @@
 
 import { ethers } from "ethers";
 
-import { version } from "./_version";
-
-const logger = new ethers.utils.Logger(version);
-
 // @TODO: Keep a per-NonceManager pool of sent but unmined transactions for
 //        rebroadcasting, in case we overrun the transaction pool
 
@@ -16,7 +12,6 @@ export class NonceManager extends ethers.Signer {
     _deltaCount: number;
 
     constructor(signer: ethers.Signer) {
-        logger.checkNew(new.target, NonceManager);
         super();
         this._deltaCount = 0;
         ethers.utils.defineReadOnly(this, "signer", signer);

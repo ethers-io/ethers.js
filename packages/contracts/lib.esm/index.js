@@ -476,7 +476,6 @@ class WildcardRunningEvent extends RunningEvent {
 }
 export class BaseContract {
     constructor(addressOrName, contractInterface, signerOrProvider) {
-        logger.checkNew(new.target, Contract);
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
         defineReadOnly(this, "interface", getStatic(new.target, "getInterface")(contractInterface));

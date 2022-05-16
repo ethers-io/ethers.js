@@ -54,10 +54,10 @@ function getDefaultProvider(network?: Networkish, options?: any): BaseProvider {
         // Handle http and ws (and their secure variants)
         const match = network.match(/^(ws|http)s?:/i);
         if (match) {
-            switch (match[1]) {
-                case "http":
+            switch (match[1].toLowerCase()) {
+                case "http": case "https":
                     return new JsonRpcProvider(network);
-                case "ws":
+                case "ws": case "wss":
                     return new WebSocketProvider(network);
                 default:
                     logger.throwArgumentError("unsupported URL scheme", "network", network);

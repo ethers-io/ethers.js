@@ -33,7 +33,6 @@ export class AbiCoder {
     readonly coerceFunc: CoerceFunc;
 
     constructor(coerceFunc?: CoerceFunc) {
-        logger.checkNew(new.target, AbiCoder);
         defineReadOnly(this, "coerceFunc", coerceFunc || null);
     }
 

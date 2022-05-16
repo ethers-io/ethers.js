@@ -420,9 +420,7 @@ function getRunner(config, currentBlockNumber, method, params) {
 var FallbackProvider = /** @class */ (function (_super) {
     __extends(FallbackProvider, _super);
     function FallbackProvider(providers, quorum) {
-        var _newTarget = this.constructor;
         var _this = this;
-        logger.checkNew(_newTarget, FallbackProvider);
         if (providers.length === 0) {
             logger.throwArgumentError("missing providers", "providers", providers);
         }

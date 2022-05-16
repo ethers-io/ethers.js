@@ -5,7 +5,7 @@
 import { Provider, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
 import { Signer, TypedDataDomain, TypedDataField, TypedDataSigner } from "@ethersproject/abstract-signer";
 import { BigNumber } from "@ethersproject/bignumber";
-import { Bytes, hexlify, hexValue, isHexString } from "@ethersproject/bytes";
+import { Bytes, hexlify, hexValue, hexZeroPad, isHexString } from "@ethersproject/bytes";
 import { _TypedDataEncoder } from "@ethersproject/hash";
 import { Network, Networkish } from "@ethersproject/networks";
 import { checkProperties, deepCopy, Deferrable, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
@@ -22,18 +22,21 @@ import { BaseProvider, Event } from "./base-provider";
 
 const errorGas = [ "call", "estimateGas" ];
 
-function spelunk(value: any): null | { message: string, data: string } {
+function spelunk(value: any, requireData: boolean): null | { message: string, data: null | string } {
     if (value == null) { return null; }
 
     // These *are* the droids we're looking for.
-    if (typeof(value.message) === "string" && value.message.match("reverted") && isHexString(value.data)) {
-        return { message: value.message, data: value.data };
+    if (typeof(value.message) === "string" && value.message.match("reverted")) {
+        const data = isHexString(value.data) ? value.data: null;
+        if (!requireData || data) {
+            return { message: value.message, data };
+        }
     }
 
     // Spelunk further...
     if (typeof(value) === "object") {
         for (const key in value) {
-            const result = spelunk(value[key]);
+            const result = spelunk(value[key], requireData);
             if (result) { return result; }
         }
         return null;
@@ -42,7 +45,7 @@ function spelunk(value: any): null | { message: string, data: string } {
     // Might be a JSON string we can further descend...
     if (typeof(value) === "string") {
         try {
-            return spelunk(JSON.parse(value));
+            return spelunk(JSON.parse(value), requireData);
         } catch (error) { }
     }
 
@@ -51,15 +54,31 @@ function spelunk(value: any): null | { message: string, data: string } {
 
 function checkError(method: string, error: any, params: any): any {
 
+    const transaction = params.transaction || params.signedTransaction;
+
     // Undo the "convenience" some nodes are attempting to prevent backwards
     // incompatibility; maybe for v6 consider forwarding reverts as errors
     if (method === "call") {
-        const result = spelunk(error);
+        const result = spelunk(error, true);
         if (result) { return result.data; }
 
+        // Nothing descriptive..
         logger.throwError("missing revert data in call exception; Transaction reverted without a reason string", Logger.errors.CALL_EXCEPTION, {
-            error, data: "0x"
+            data: "0x", transaction, error
         });
+    }
+
+    if (method === "estimateGas") {
+        // Try to find something, with a preference on SERVER_ERROR body
+        let result = spelunk(error.body, false);
+        if (result == null) { result = spelunk(error, false); }
+
+        // Found "reverted", this is a CALL_EXCEPTION
+        if (result) {
+            logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+                reason: result.message, method, transaction, error
+            });
+        }
     }
 
     // @TODO: Should we spelunk for message too?
@@ -73,8 +92,6 @@ function checkError(method: string, error: any, params: any): any {
         message = error.responseText;
     }
     message = (message || "").toLowerCase();
-
-    const transaction = params.transaction || params.signedTransaction;
 
     // "insufficient funds for gas * price + value + cost(data)"
     if (message.match(/insufficient funds|base fee exceeds gas limit/i)) {
@@ -144,8 +161,6 @@ export class JsonRpcSigner extends Signer implements TypedDataSigner {
     _address: string;
 
     constructor(constructorGuard: any, provider: JsonRpcProvider, addressOrIndex?: string | number) {
-        logger.checkNew(new.target, JsonRpcSigner);
-
         super();
 
         if (constructorGuard !== _constructorGuard) {
@@ -354,8 +369,6 @@ export class JsonRpcProvider extends BaseProvider {
     }
 
     constructor(url?: ConnectionInfo | string, network?: Networkish) {
-        logger.checkNew(new.target, JsonRpcProvider);
-
         let networkOrReady: Networkish | Promise<Network> = network;
 
         // The network is unknown, query the JSON-RPC for it
@@ -518,7 +531,7 @@ export class JsonRpcProvider extends BaseProvider {
                 return [ "eth_getCode", [ getLowerCase(params.address), params.blockTag ] ];
 
             case "getStorageAt":
-                return [ "eth_getStorageAt", [ getLowerCase(params.address), params.position, params.blockTag ] ];
+                return [ "eth_getStorageAt", [ getLowerCase(params.address), hexZeroPad(params.position, 32), params.blockTag ] ];
 
             case "sendTransaction":
                 return [ "eth_sendRawTransaction", [ params.signedTransaction ] ]

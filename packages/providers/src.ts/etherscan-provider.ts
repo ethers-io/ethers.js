@@ -163,8 +163,6 @@ export class EtherscanProvider extends BaseProvider{
     readonly apiKey: string;
 
     constructor(network?: Networkish, apiKey?: string) {
-        logger.checkNew(new.target, EtherscanProvider);
-
         super(network);
 
         defineReadOnly(this, "baseUrl", this.getBaseUrl());
@@ -183,10 +181,12 @@ export class EtherscanProvider extends BaseProvider{
                 return "https:/\/api-kovan.etherscan.io";
             case "goerli":
                 return "https:/\/api-goerli.etherscan.io";
+            case "optimism":
+                return "https:/\/api-optimistic.etherscan.io";
             default:
         }
 
-        return logger.throwArgumentError("unsupported network", "network", name);
+        return logger.throwArgumentError("unsupported network", "network", this.network.name);
     }
 
     getUrl(module: string, params: Record<string, string>): string {

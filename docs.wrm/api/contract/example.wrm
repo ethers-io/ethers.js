@@ -5,7 +5,7 @@ over a short example.
 
 A meta-class is a class which is defined at run-time. A Contract
 is specified by an //Application Binary Interface// (ABI), which describes
-the methods and events it has. This description is passed the the
+the methods and events it has. This description is passed to the
 [[Contract]] object at run-time, and it creates a new Class, adding
 all the methods defined in the ABI at run-time.
 

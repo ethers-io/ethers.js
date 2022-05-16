@@ -179,7 +179,6 @@ export class FixedFormat {
 }
 export class FixedNumber {
     constructor(constructorGuard, hex, value, format) {
-        logger.checkNew(new.target, FixedNumber);
         if (constructorGuard !== _constructorGuard) {
             logger.throwError("cannot use FixedNumber constructor; use FixedNumber.from", Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "new FixedFormat"

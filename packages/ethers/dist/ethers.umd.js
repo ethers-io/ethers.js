@@ -4323,7 +4323,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "bignumber/5.6.0";
+	exports.version = "bignumber/5.6.1";
 
 	});
 
@@ -4364,8 +4364,6 @@
 	var _warnedToStringRadix = false;
 	var BigNumber = /** @class */ (function () {
 	    function BigNumber(constructorGuard, hex) {
-	        var _newTarget = this.constructor;
-	        logger.checkNew(_newTarget, BigNumber);
 	        if (constructorGuard !== _constructorGuard) {
 	            logger.throwError("cannot call constructor directly; use BigNumber.from", lib.Logger.errors.UNSUPPORTED_OPERATION, {
 	                operation: "new (BigNumber)"
@@ -4839,8 +4837,6 @@
 	exports.FixedFormat = FixedFormat;
 	var FixedNumber = /** @class */ (function () {
 	    function FixedNumber(constructorGuard, hex, value, format) {
-	        var _newTarget = this.constructor;
-	        logger.checkNew(_newTarget, FixedNumber);
 	        if (constructorGuard !== _constructorGuard) {
 	            logger.throwError("cannot use FixedNumber constructor; use FixedNumber.from", lib.Logger.errors.UNSUPPORTED_OPERATION, {
 	                operation: "new FixedFormat"
@@ -5237,7 +5233,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abi/5.6.1";
+	exports.version = "abi/5.6.2";
 
 	});
 
@@ -8667,8 +8663,6 @@
 	var paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 	var AbiCoder = /** @class */ (function () {
 	    function AbiCoder(coerceFunc) {
-	        var _newTarget = this.constructor;
-	        logger.checkNew(_newTarget, AbiCoder);
 	        (0, lib$3.defineReadOnly)(this, "coerceFunc", coerceFunc || null);
 	    }
 	    AbiCoder.prototype._getCoder = function (param) {
@@ -9482,7 +9476,6 @@
 	    function Interface(fragments$1) {
 	        var _newTarget = this.constructor;
 	        var _this = this;
-	        logger.checkNew(_newTarget, Interface);
 	        var abi = [];
 	        if (typeof (fragments$1) === "string") {
 	            abi = JSON.parse(fragments$1);
@@ -10283,7 +10276,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abstract-signer/5.6.0";
+	exports.version = "abstract-signer/5.6.1";
 
 	});
 
@@ -10698,10 +10691,7 @@
 	var VoidSigner = /** @class */ (function (_super) {
 	    __extends(VoidSigner, _super);
 	    function VoidSigner(address, provider) {
-	        var _newTarget = this.constructor;
-	        var _this = this;
-	        logger.checkNew(_newTarget, VoidSigner);
-	        _this = _super.call(this) || this;
+	        var _this = _super.call(this) || this;
 	        (0, lib$3.defineReadOnly)(_this, "address", address);
 	        (0, lib$3.defineReadOnly)(_this, "provider", provider || null);
 	        return _this;
@@ -14992,7 +14982,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "contracts/5.6.0";
+	exports.version = "contracts/5.6.1";
 
 	});
 
@@ -15612,7 +15602,6 @@
 	    function BaseContract(addressOrName, contractInterface, signerOrProvider) {
 	        var _newTarget = this.constructor;
 	        var _this = this;
-	        logger.checkNew(_newTarget, Contract);
 	        // @TODO: Maybe still check the addressOrName looks like a valid address or name?
 	        //address = getAddress(address);
 	        (0, lib$3.defineReadOnly)(this, "interface", (0, lib$3.getStatic)(_newTarget, "getInterface")(contractInterface));
@@ -16644,7 +16633,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "hdnode/5.6.0";
+	exports.version = "hdnode/5.6.1";
 
 	});
 
@@ -16710,8 +16699,6 @@
 	     *   - fromSeed
 	     */
 	    function HDNode(constructorGuard, privateKey, publicKey, parentFingerprint, chainCode, index, depth, mnemonicOrPath) {
-	        var _newTarget = this.constructor;
-	        logger.checkNew(_newTarget, HDNode);
 	        /* istanbul ignore if */
 	        if (constructorGuard !== _constructorGuard) {
 	            throw new Error("HDNode constructor cannot be called directly");
@@ -19045,7 +19032,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "wallet/5.6.0";
+	exports.version = "wallet/5.6.1";
 
 	});
 
@@ -19131,10 +19118,7 @@
 	var Wallet = /** @class */ (function (_super) {
 	    __extends(Wallet, _super);
 	    function Wallet(privateKey, provider) {
-	        var _newTarget = this.constructor;
-	        var _this = this;
-	        logger.checkNew(_newTarget, Wallet);
-	        _this = _super.call(this) || this;
+	        var _this = _super.call(this) || this;
 	        if (isAccount(privateKey)) {
 	            var signingKey_1 = new lib$d.SigningKey(privateKey.privateKey);
 	            (0, lib$3.defineReadOnly)(_this, "_signingKey", function () { return signingKey_1; });
@@ -20348,7 +20332,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.6.5";
+	exports.version = "providers/5.6.6";
 
 	});
 
@@ -20369,8 +20353,6 @@
 	var logger = new lib.Logger(_version$I.version);
 	var Formatter = /** @class */ (function () {
 	    function Formatter() {
-	        var _newTarget = this.constructor;
-	        logger.checkNew(_newTarget, Formatter);
 	        this.formats = this.getDefaultFormats();
 	    }
 	    Formatter.prototype.getDefaultFormats = function () {
@@ -21553,9 +21535,7 @@
 	     */
 	    function BaseProvider(network) {
 	        var _newTarget = this.constructor;
-	        var _this = this;
-	        logger.checkNew(_newTarget, lib$b.Provider);
-	        _this = _super.call(this) || this;
+	        var _this = _super.call(this) || this;
 	        // Events being listened to
 	        _this._events = [];
 	        _this._emitted = { block: -2 };
@@ -23453,18 +23433,21 @@
 	var logger = new lib.Logger(_version$I.version);
 
 	var errorGas = ["call", "estimateGas"];
-	function spelunk(value) {
+	function spelunk(value, requireData) {
 	    if (value == null) {
 	        return null;
 	    }
 	    // These *are* the droids we're looking for.
-	    if (typeof (value.message) === "string" && value.message.match("reverted") && (0, lib$1.isHexString)(value.data)) {
-	        return { message: value.message, data: value.data };
+	    if (typeof (value.message) === "string" && value.message.match("reverted")) {
+	        var data = (0, lib$1.isHexString)(value.data) ? value.data : null;
+	        if (!requireData || data) {
+	            return { message: value.message, data: data };
+	        }
 	    }
 	    // Spelunk further...
 	    if (typeof (value) === "object") {
 	        for (var key in value) {
-	            var result = spelunk(value[key]);
+	            var result = spelunk(value[key], requireData);
 	            if (result) {
 	                return result;
 	            }
@@ -23474,24 +23457,43 @@
 	    // Might be a JSON string we can further descend...
 	    if (typeof (value) === "string") {
 	        try {
-	            return spelunk(JSON.parse(value));
+	            return spelunk(JSON.parse(value), requireData);
 	        }
 	        catch (error) { }
 	    }
 	    return null;
 	}
 	function checkError(method, error, params) {
+	    var transaction = params.transaction || params.signedTransaction;
 	    // Undo the "convenience" some nodes are attempting to prevent backwards
 	    // incompatibility; maybe for v6 consider forwarding reverts as errors
 	    if (method === "call") {
-	        var result = spelunk(error);
+	        var result = spelunk(error, true);
 	        if (result) {
 	            return result.data;
 	        }
+	        // Nothing descriptive..
 	        logger.throwError("missing revert data in call exception; Transaction reverted without a reason string", lib.Logger.errors.CALL_EXCEPTION, {
-	            error: error,
-	            data: "0x"
+	            data: "0x",
+	            transaction: transaction,
+	            error: error
 	        });
+	    }
+	    if (method === "estimateGas") {
+	        // Try to find something, with a preference on SERVER_ERROR body
+	        var result = spelunk(error.body, false);
+	        if (result == null) {
+	            result = spelunk(error, false);
+	        }
+	        // Found "reverted", this is a CALL_EXCEPTION
+	        if (result) {
+	            logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", lib.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
+	                reason: result.message,
+	                method: method,
+	                transaction: transaction,
+	                error: error
+	            });
+	        }
 	    }
 	    // @TODO: Should we spelunk for message too?
 	    var message = error.message;
@@ -23505,7 +23507,6 @@
 	        message = error.responseText;
 	    }
 	    message = (message || "").toLowerCase();
-	    var transaction = params.transaction || params.signedTransaction;
 	    // "insufficient funds for gas * price + value + cost(data)"
 	    if (message.match(/insufficient funds|base fee exceeds gas limit/i)) {
 	        logger.throwError("insufficient funds for intrinsic transaction cost", lib.Logger.errors.INSUFFICIENT_FUNDS, {
@@ -23572,10 +23573,7 @@
 	var JsonRpcSigner = /** @class */ (function (_super) {
 	    __extends(JsonRpcSigner, _super);
 	    function JsonRpcSigner(constructorGuard, provider, addressOrIndex) {
-	        var _newTarget = this.constructor;
-	        var _this = this;
-	        logger.checkNew(_newTarget, JsonRpcSigner);
-	        _this = _super.call(this) || this;
+	        var _this = _super.call(this) || this;
 	        if (constructorGuard !== _constructorGuard) {
 	            throw new Error("do not call the JsonRpcSigner constructor directly; use provider.getSigner");
 	        }
@@ -23831,9 +23829,7 @@
 	var JsonRpcProvider = /** @class */ (function (_super) {
 	    __extends(JsonRpcProvider, _super);
 	    function JsonRpcProvider(url, network) {
-	        var _newTarget = this.constructor;
 	        var _this = this;
-	        logger.checkNew(_newTarget, JsonRpcProvider);
 	        var networkOrReady = network;
 	        // The network is unknown, query the JSON-RPC for it
 	        if (networkOrReady == null) {
@@ -25285,10 +25281,7 @@
 	var EtherscanProvider = /** @class */ (function (_super) {
 	    __extends(EtherscanProvider, _super);
 	    function EtherscanProvider(network, apiKey) {
-	        var _newTarget = this.constructor;
-	        var _this = this;
-	        logger.checkNew(_newTarget, EtherscanProvider);
-	        _this = _super.call(this, network) || this;
+	        var _this = _super.call(this, network) || this;
 	        (0, lib$3.defineReadOnly)(_this, "baseUrl", _this.getBaseUrl());
 	        (0, lib$3.defineReadOnly)(_this, "apiKey", apiKey || defaultApiKey);
 	        return _this;
@@ -25305,9 +25298,11 @@
 	                return "https:/\/api-kovan.etherscan.io";
 	            case "goerli":
 	                return "https:/\/api-goerli.etherscan.io";
+	            case "optimism":
+	                return "https:/\/api-optimistic.etherscan.io";
 	            default:
 	        }
-	        return logger.throwArgumentError("unsupported network", "network", name);
+	        return logger.throwArgumentError("unsupported network", "network", this.network.name);
 	    };
 	    EtherscanProvider.prototype.getUrl = function (module, params) {
 	        var query = Object.keys(params).reduce(function (accum, key) {
@@ -26022,9 +26017,7 @@
 	var FallbackProvider = /** @class */ (function (_super) {
 	    __extends(FallbackProvider, _super);
 	    function FallbackProvider(providers, quorum) {
-	        var _newTarget = this.constructor;
 	        var _this = this;
-	        logger.checkNew(_newTarget, FallbackProvider);
 	        if (providers.length === 0) {
 	            logger.throwArgumentError("missing providers", "providers", providers);
 	        }
@@ -26887,9 +26880,7 @@
 	var Web3Provider = /** @class */ (function (_super) {
 	    __extends(Web3Provider, _super);
 	    function Web3Provider(provider, network) {
-	        var _newTarget = this.constructor;
 	        var _this = this;
-	        logger.checkNew(_newTarget, Web3Provider);
 	        if (provider == null) {
 	            logger.throwArgumentError("missing provider", "provider", provider);
 	        }
@@ -27415,7 +27406,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.6.5";
+	exports.version = "ethers/5.6.6";
 
 	});
 

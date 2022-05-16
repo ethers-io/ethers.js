@@ -602,7 +602,6 @@ export class BaseProvider extends Provider {
      *
      */
     constructor(network) {
-        logger.checkNew(new.target, Provider);
         super();
         // Events being listened to
         this._events = [];

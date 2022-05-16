@@ -275,7 +275,6 @@ export class Signer {
 }
 export class VoidSigner extends Signer {
     constructor(address, provider) {
-        logger.checkNew(new.target, VoidSigner);
         super();
         defineReadOnly(this, "address", address);
         defineReadOnly(this, "provider", provider || null);

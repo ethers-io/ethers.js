@@ -97,8 +97,6 @@ export class HDNode implements ExternallyOwnedAccount {
      *   - fromSeed
      */
     constructor(constructorGuard: any, privateKey: string, publicKey: string, parentFingerprint: string, chainCode: string, index: number, depth: number, mnemonicOrPath: Mnemonic | string) {
-        logger.checkNew(new.target, HDNode);
-
         /* istanbul ignore if */
         if (constructorGuard !== _constructorGuard) {
             throw new Error("HDNode constructor cannot be called directly");

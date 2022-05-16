@@ -657,8 +657,6 @@ export class BaseContract {
     _wrappedEmits: { [ eventTag: string ]: (...args: Array<any>) => void };
 
     constructor(addressOrName: string, contractInterface: ContractInterface, signerOrProvider?: Signer | Provider) {
-        logger.checkNew(new.target, Contract);
-
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
         defineReadOnly(this, "interface", getStatic<InterfaceFunc>(new.target, "getInterface")(contractInterface));

@@ -410,8 +410,6 @@ export class FallbackProvider extends BaseProvider {
     _highestBlockNumber: number;
 
     constructor(providers: Array<Provider | FallbackProviderConfig>, quorum?: number) {
-        logger.checkNew(new.target, FallbackProvider);
-
         if (providers.length === 0) {
             logger.throwArgumentError("missing providers", "providers", providers);
         }

@@ -4,6 +4,13 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+ethers/v5.6.6 (2022-05-12 17:29)
+--------------------------------
+
+  - Ensure gas estimate errors are not call exceptions in disguise. ([#2954](https://github.com/ethers-io/ethers.js/issues/2954); [2c3dae0](https://github.com/ethers-io/ethers.js/commit/2c3dae08745530b8c3ea3ab6c8f03e8fa8ac1e5c))
+  - Added optimism to EtherscanProvider. ([#2968](https://github.com/ethers-io/ethers.js/issues/2968); [c6eebf9](https://github.com/ethers-io/ethers.js/commit/c6eebf9928597cab305b663fa409d30e3122e7d0))
+  - Remove pedantic check for new keyword which broke some platforms for inheritance. ([#2860](https://github.com/ethers-io/ethers.js/issues/2860), [#2861](https://github.com/ethers-io/ethers.js/issues/2861); [32b7373](https://github.com/ethers-io/ethers.js/commit/32b7373456972e0fbd47e7edaf056ed130adf1da))
+
 ethers/v5.6.5 (2022-05-01 02:10)
 --------------------------------
 
