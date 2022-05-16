@@ -93,7 +93,7 @@ BigNumber.from(42n)
 
 // Numbers outside the safe range fail:
 //_throws:
-BigNumber.from(Number.MAX_SAFE_INTEGER);
+BigNumber.from(Number.MAX_SAFE_INTEGER + 1);
 //_log:
 
 

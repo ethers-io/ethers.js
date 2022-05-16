@@ -84,8 +84,8 @@ BigNumber.from(42n)
 // { BigNumber: "42" }
 
 // Numbers outside the safe range fail:
-BigNumber.from(Number.MAX_SAFE_INTEGER);
-// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740991, code=NUMERIC_FAULT, version=bignumber/5.0.14)
+BigNumber.from(Number.MAX_SAFE_INTEGER + 1);
+// Error: overflow (fault="overflow", operation="BigNumber.from", value=9007199254740992, code=NUMERIC_FAULT, version=bignumber/5.0.14)
 ```
 
 Methods
