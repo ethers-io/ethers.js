@@ -1036,6 +1036,8 @@ var BaseProvider = /** @class */ (function (_super) {
                             var from = _this._previousPollingTimestamps[event.tag];
                             // ensure we don't get from == to
                             from = from.plusNanos(1);
+                            if (from > now)
+                                break;
                             filter_1.fromTimestamp = formatTimestamp(from.toString());
                             filter_1.toTimestamp = formatTimestamp(now.toString());
                             var runner = _this.getLogs(filter_1).then(function (logs) {

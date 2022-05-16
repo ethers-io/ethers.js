@@ -894,6 +894,7 @@ export class BaseProvider extends Provider {
                     let from = this._previousPollingTimestamps[event.tag];
                     // ensure we don't get from == to
                     from = from.plusNanos(1);
+                    if (from > now) break;
                     filter.fromTimestamp = formatTimestamp(from.toString());
                     filter.toTimestamp = formatTimestamp(now.toString());
                     const runner = this.getLogs(filter).then((logs) => {
