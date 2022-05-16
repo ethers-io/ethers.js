@@ -60,10 +60,12 @@ function getDefaultProvider(network, options) {
         // Handle http and ws (and their secure variants)
         var match = network.match(/^(ws|http)s?:/i);
         if (match) {
-            switch (match[1]) {
+            switch (match[1].toLowerCase()) {
                 case "http":
+                case "https":
                     return new json_rpc_provider_1.JsonRpcProvider(network);
                 case "ws":
+                case "wss":
                     return new websocket_provider_1.WebSocketProvider(network);
                 default:
                     logger.throwArgumentError("unsupported URL scheme", "network", network);
