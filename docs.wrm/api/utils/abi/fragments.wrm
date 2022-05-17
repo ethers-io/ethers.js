@@ -14,7 +14,7 @@ of Objects, where each Object has various properties describing the [[Fragment]]
 The deserialized JSON string (which is a normal JavaScript Object) may
 also be passed into any function which accepts a JSON String ABI.
 
-_heading: Humanb-Readable ABI @<human-readable-abi>
+_heading: Human-Readable ABI @<human-readable-abi>
 The Human-Readable ABI was introduced by ethers in [this article](link-ricmoo-humanreadableabi)
 and has since gained wider adoption.
 

@@ -12,7 +12,7 @@ Formats
 
 ### JSON String ABI (Solidity Output JSON)
 
-### Humanb-Readable ABI
+### Human-Readable ABI
 
 ### Output Formats
 
