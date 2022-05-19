@@ -6,10 +6,12 @@
     "@ethersproject/keccak256": "5.5.0",
     "@ethersproject/properties": "5.5.0",
     "@ethersproject/signing-key": "5.5.0",
-    "@hashgraph/sdk": "2.11.0-beta.1",
     "@hethers/address": "1.1.0",
     "@hethers/constants": "1.1.0",
     "@hethers/logger": "1.1.0"
+  },
+  "peerDependencies": {
+    "@hashgraph/sdk": "2.11.0-beta.1"
   },
   "description": "Utilities for decoding and encoding Hedera Hashgraph transactions for hethers.",
   "keywords": [
