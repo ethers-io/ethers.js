@@ -231,6 +231,7 @@ export function serializeHederaTransaction(transaction: UnsignedTransaction, pub
                 tx = new FileAppendTransaction()
                     .setContents(transaction.customData.fileChunk)
                     .setFileId(transaction.customData.fileId)
+                    .setChunkSize(4096);
             } else if (!transaction.customData.fileId && transaction.customData.fileChunk) {
                 // only a chunk, thus the first one
                 tx = new FileCreateTransaction()

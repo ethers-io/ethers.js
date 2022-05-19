@@ -1136,24 +1136,30 @@ describe("Test Hedera Provider", function () {
             assert.strictEqual(logs2[1].logIndex, logsResponse[1].index);
             assert.strictEqual(logs2[1].transactionIndex, logsResponse[1].index);
         }).timeout(timeout * 4);
-    
+
+        // The hardcoded max limit per query in the mirror node rest api is 100,
+        // so `size limit exceeded` error is impossible to be tested right now.
         it('Should throw query result size limit exceeded', async function () {
             const address = "0x000000000000000000000000000000000186fb1a";
             const filterParams = {
                 address: address,
             }
-    
-            await assert.rejects(
-                async () => {
-                    await provider.getLogs(filterParams);
-                },
-                (err) => {
-                    assert.strictEqual(err.name, 'Error');
-                    assert.strict(err.reason.includes('query returned more than 100 results'));
-                    assert.strictEqual(err.code, 'SERVER_ERROR');
-                    return true;
-                }
-            );
+
+            const logs = await provider.getLogs(filterParams);
+
+            assert.strictEqual(100, logs.length);
+
+            // await assert.rejects(
+            //     async () => {
+            //
+            //     },
+            //     (err) => {
+            //         assert.strictEqual(err.name, 'Error');
+            //         assert.strict(err.reason.includes('query returned more than 100 results'));
+            //         assert.strictEqual(err.code, 'SERVER_ERROR');
+            //         return true;
+            //     }
+            // );
         }).timeout(timeout * 4);
     
         it('Should return default value', async function () {

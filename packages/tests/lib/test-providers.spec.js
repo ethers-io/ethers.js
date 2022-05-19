@@ -1114,10 +1114,11 @@ describe("Test Hedera Provider", function () {
                 });
             });
         }).timeout(timeout * 4);
+        // The hardcoded max limit per query in the mirror node rest api is 100,
+        // so `size limit exceeded` error is impossible to be tested right now.
         it('Should throw query result size limit exceeded', function () {
             return __awaiter(this, void 0, void 0, function () {
-                var address, filterParams;
-                var _this = this;
+                var address, filterParams, logs;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -1125,23 +1126,10 @@ describe("Test Hedera Provider", function () {
                             filterParams = {
                                 address: address,
                             };
-                            return [4 /*yield*/, assert_1.default.rejects(function () { return __awaiter(_this, void 0, void 0, function () {
-                                    return __generator(this, function (_a) {
-                                        switch (_a.label) {
-                                            case 0: return [4 /*yield*/, provider.getLogs(filterParams)];
-                                            case 1:
-                                                _a.sent();
-                                                return [2 /*return*/];
-                                        }
-                                    });
-                                }); }, function (err) {
-                                    assert_1.default.strictEqual(err.name, 'Error');
-                                    assert_1.default.strict(err.reason.includes('query returned more than 100 results'));
-                                    assert_1.default.strictEqual(err.code, 'SERVER_ERROR');
-                                    return true;
-                                })];
+                            return [4 /*yield*/, provider.getLogs(filterParams)];
                         case 1:
-                            _a.sent();
+                            logs = _a.sent();
+                            assert_1.default.strictEqual(100, logs.length);
                             return [2 /*return*/];
                     }
                 });

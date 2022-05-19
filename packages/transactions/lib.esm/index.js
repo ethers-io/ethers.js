@@ -152,7 +152,8 @@ export function serializeHederaTransaction(transaction, pubKey) {
             if (transaction.customData.fileChunk && transaction.customData.fileId) {
                 tx = new FileAppendTransaction()
                     .setContents(transaction.customData.fileChunk)
-                    .setFileId(transaction.customData.fileId);
+                    .setFileId(transaction.customData.fileId)
+                    .setChunkSize(4096);
             }
             else if (!transaction.customData.fileId && transaction.customData.fileChunk) {
                 // only a chunk, thus the first one

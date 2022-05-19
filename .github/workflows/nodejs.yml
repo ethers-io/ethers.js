@@ -9,7 +9,7 @@ jobs:
 
   test-node:
 
-#    runs-on: ubuntu-latest
+    #    runs-on: ubuntu-latest
     runs-on: macos-latest
 
     strategy:
@@ -26,8 +26,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-#      - name: Install node-hid requirements
-#        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
+      #      - name: Install node-hid requirements
+      #        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
       - name: Install dependencies (and link per package)
         run: npm ci
 
@@ -38,70 +38,70 @@ jobs:
         run: npm run test-node
 
 
-#  test-browser:
-#
-##    runs-on: ubuntu-latest
-#    runs-on: macos-latest
-#
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        module: [ 'esm', 'umd' ]
-#
-#    steps:
-#      - uses: actions/setup-node@v1
-#        with:
-#          node-version: 12.x
-#
-#      - name: Checkout repository
-#        uses: actions/checkout@v2
-#
-##      - name: Install node-hid requirements
-##        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
-#
-#      - name: Install dependencies (and link per package)
-#        run: npm ci
-#
-#      - name: Build CommonJS and ESM (from TypeScript)
-#        run: npm run build-all
-#
-#      - name: Run tests
-#        run: npm run test-browser-${{ matrix.module }}
-#
-#  test-react-native:
-#
-#    runs-on: macos-latest
-#
-#    # Temporary for testing CI
-#    continue-on-error: true
-#
-#    strategy:
-#      fail-fast: false
-#
-#    steps:
-#      - name: Use Node.js 12.x
-#        uses: actions/setup-node@v1
-#        with:
-#          node-version: 12.x
-#
-#      - name: Checkout repository
-#        uses: actions/checkout@v2
-#
-#      - name: Install dependencies (and link per package)
-#        run: npm ci
-#
-#      - name: Build CommonJS and ESM (from TypeScript)
-#        run: npm run build-all
-#
-#      - name: Run tests
-#        run: npm run test-react
+  #  test-browser:
+  #
+  ##    runs-on: ubuntu-latest
+  #    runs-on: macos-latest
+  #
+  #    strategy:
+  #      fail-fast: false
+  #      matrix:
+  #        module: [ 'esm', 'umd' ]
+  #
+  #    steps:
+  #      - uses: actions/setup-node@v1
+  #        with:
+  #          node-version: 12.x
+  #
+  #      - name: Checkout repository
+  #        uses: actions/checkout@v2
+  #
+  ##      - name: Install node-hid requirements
+  ##        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
+  #
+  #      - name: Install dependencies (and link per package)
+  #        run: npm ci
+  #
+  #      - name: Build CommonJS and ESM (from TypeScript)
+  #        run: npm run build-all
+  #
+  #      - name: Run tests
+  #        run: npm run test-browser-${{ matrix.module }}
+  #
+  #  test-react-native:
+  #
+  #    runs-on: macos-latest
+  #
+  #    # Temporary for testing CI
+  #    continue-on-error: true
+  #
+  #    strategy:
+  #      fail-fast: false
+  #
+  #    steps:
+  #      - name: Use Node.js 12.x
+  #        uses: actions/setup-node@v1
+  #        with:
+  #          node-version: 12.x
+  #
+  #      - name: Checkout repository
+  #        uses: actions/checkout@v2
+  #
+  #      - name: Install dependencies (and link per package)
+  #        run: npm ci
+  #
+  #      - name: Build CommonJS and ESM (from TypeScript)
+  #        run: npm run build-all
+  #
+  #      - name: Run tests
+  #        run: npm run test-react
 
 
   coverage:
 
     name: Coverage
 
-#    runs-on: ubuntu-latest
+    #    runs-on: ubuntu-latest
     runs-on: macos-latest
 
     continue-on-error: true
@@ -114,8 +114,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-#      - name: Install node-hid requirements
-#        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
+      #      - name: Install node-hid requirements
+      #        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
 
       - name: Install dependencies (and link per package)
         run: npm ci
