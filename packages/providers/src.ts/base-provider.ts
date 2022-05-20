@@ -4,6 +4,7 @@ import {
     Block, BlockTag, BlockWithTransactions, EventType, Filter, FilterByBlockHash, ForkEvent,
     Listener, Log, Provider, TransactionReceipt, TransactionRequest, TransactionResponse
 } from "@ethersproject/abstract-provider";
+import { encode as base64Encode } from "@ethersproject/base64";
 import { Base58 } from "@ethersproject/basex";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { arrayify, BytesLike, concat, hexConcat, hexDataLength, hexDataSlice, hexlify, hexValue, hexZeroPad, isHexString } from "@ethersproject/bytes";
@@ -654,6 +655,16 @@ export class Resolver implements EnsResolver {
         if (swarm) {
             if (swarm[1].length === (32 * 2)) {
                 return "bzz:/\/" + swarm[1]
+            }
+        }
+
+        const skynet = hexBytes.match(/^0x90b2c605([0-9a-f]*)$/);
+        if (skynet) {
+            if (skynet[1].length === (34 * 2)) {
+                // URL Safe base64; https://datatracker.ietf.org/doc/html/rfc4648#section-5
+                const urlSafe: Record<string, string> = { "=": "", "+": "-", "/": "_" };
+                const hash = base64Encode("0x" + skynet[1]).replace(/[=+\/]/g, (a) => (urlSafe[a]));
+                return "sia:/\/" + hash;
             }
         }
 

@@ -1405,6 +1405,22 @@ describe("Resolve ENS avatar", function() {
     });
 });
 
+describe("Resolve ENS content hash", function() {
+    [
+        { title: "skynet", name: "skynet-ens.eth", value: "sia:/\/AQCRuTdTPzCyyU6I82eV7VDFVLPW82LJS9mH-chmjDlKUQ" },
+        { title: "ipns", name: "stderr.eth", value: "ipns://12D3KooWB8Z5zTNUJM1U98SjAwuCSaEwx65cHkFcMu1SJSvGmMJT" },
+        { title: "ipfs", name: "ricmoo.eth", value: "ipfs://QmdTPkMMBWQvL8t7yXogo7jq5pAcWg8J7RkLrDsWZHT82y" },
+    ].forEach((test) => {
+        it(`Resolves avatar for ${ test.title }`, async function() {
+            this.timeout(60000);
+            const provider = ethers.getDefaultProvider("homestead", getApiKeys("homestead"));
+            const resolver = await provider.getResolver(test.name);
+            const contentHash = await resolver.getContentHash();
+            assert.equal(contentHash, test.value, "content hash");
+        });
+    });
+});
+
 describe("Test EIP-2544 ENS wildcards", function() {
     const provider = <ethers.providers.BaseProvider>(providerFunctions[0].create("ropsten"));
 
