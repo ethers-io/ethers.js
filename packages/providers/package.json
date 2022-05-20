@@ -25,7 +25,7 @@
     "@ethersproject/web": "5.5.0",
     "@hashgraph/proto": "2.1.5",
     "@hashgraph/sdk": "2.11.0-beta.1",
-    "@hethers/abstract-provider": "1.1.0",
+    "@hethers/abstract-provider": "1.1.1",
     "@hethers/abstract-signer": "1.1.1",
     "@hethers/address": "1.1.0",
     "@hethers/constants": "1.1.0",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x96b4e0993da64bb43f922e2d6cde79901c605613cce579460af0d724e8c7ce00",
+  "tarballHash": "0xc83d8aa8b7c6203c727f6b42c6bbcf885b810c55635858631ca7c4b03bed3467",
   "types": "./lib/index.d.ts",
   "version": "1.1.1"
 }

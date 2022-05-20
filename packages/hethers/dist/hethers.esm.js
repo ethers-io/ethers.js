@@ -11869,7 +11869,7 @@ class Logger$1 {
 Logger$1.errors = ErrorCode$1;
 Logger$1.levels = LogLevel$1;
 
-const version$f = "abstract-provider/1.1.0";
+const version$f = "abstract-provider/1.1.1";
 
 "use strict";
 const logger$l = new Logger$1(version$f);
@@ -95754,7 +95754,7 @@ function numberify(num) {
     return BigNumber.from(num).toNumber();
 }
 
-const version$m = "contracts/1.1.0";
+const version$m = "contracts/1.1.1";
 
 "use strict";
 var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
