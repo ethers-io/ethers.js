@@ -93,7 +93,7 @@ export async function getPublishOptions() {
 
             // No change in version, no need to publish
             if (npmInfo && info.version === npmInfo.version) {
-                // continue;
+                continue;
             }
 
             if (dirname === "testcases" || dirname === "tests") {
