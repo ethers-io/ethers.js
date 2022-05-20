@@ -26,12 +26,12 @@
     "@hashgraph/proto": "2.1.5",
     "@hashgraph/sdk": "2.11.0-beta.1",
     "@hethers/abstract-provider": "1.1.0",
-    "@hethers/abstract-signer": "1.1.0",
+    "@hethers/abstract-signer": "1.1.1",
     "@hethers/address": "1.1.0",
     "@hethers/constants": "1.1.0",
     "@hethers/logger": "1.1.0",
     "@hethers/networks": "1.1.0",
-    "@hethers/transactions": "1.1.0",
+    "@hethers/transactions": "1.1.1",
     "@types/axios": "^0.14.0",
     "axios": "^0.24.0",
     "bech32": "1.1.4",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xd69899c40f6b79c5e4b69f89bb5ffcbe2293abde6110407abb8c51c9e1aed037",
+  "tarballHash": "0x96b4e0993da64bb43f922e2d6cde79901c605613cce579460af0d724e8c7ce00",
   "types": "./lib/index.d.ts",
-  "version": "1.1.0"
+  "version": "1.1.1"
 }
