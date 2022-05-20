@@ -96,6 +96,11 @@ var allowedTransactionKeys = [
     "accessList", "chainId", "customData", "data", "from", "gasLimit", "maxFeePerGas", "maxPriorityFeePerGas", "to", "type", "value",
     "nodeId"
 ];
+// oversize cost for 1 gas in ContractCallQuery
+var CALL_GAS_PRICE_TINYBARS = 100;
+// the average default cost of a signed hedera ContractCallQuery
+var DEFAULT_HEDERA_CALL_TX_FEE = 143083413;
+var TX_FEE_BUFFER_MULTIPLIER = 10;
 ;
 ;
 function checkError(method, error, txRequest) {
@@ -177,7 +182,7 @@ var Signer = /** @class */ (function () {
     // super classes should override this for now
     Signer.prototype.call = function (txRequest) {
         return __awaiter(this, void 0, void 0, function () {
-            var tx, to, from, _a, nodeID, paymentTxId, hederaTx, cost, paymentBody, signed, walletKey, signature, transferSignedTransactionBytes, response, error_1;
+            var tx, to, from, _a, nodeID, paymentTxId, hederaTx, gasLimit, baseCost, cost, paymentBody, signed, walletKey, signature, transferSignedTransactionBytes, response, error_1;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -203,11 +208,13 @@ var Signer = /** @class */ (function () {
                         else {
                             hederaTx.setContractId(to);
                         }
-                        cost = 3;
+                        gasLimit = bignumber_1.BigNumber.from(tx.gasLimit).toNumber();
+                        baseCost = DEFAULT_HEDERA_CALL_TX_FEE * TX_FEE_BUFFER_MULTIPLIER;
+                        cost = baseCost + gasLimit * CALL_GAS_PRICE_TINYBARS;
                         paymentBody = {
                             transactionID: paymentTxId._toProtobuf(),
                             nodeAccountID: nodeID._toProtobuf(),
-                            transactionFee: new sdk_1.Hbar(0.005).toTinybars(),
+                            transactionFee: sdk_1.Hbar.fromTinybars(baseCost).toTinybars(),
                             transactionValidDuration: {
                                 seconds: Long.fromInt(120),
                             },
@@ -216,11 +223,11 @@ var Signer = /** @class */ (function () {
                                     accountAmounts: [
                                         {
                                             accountID: sdk_1.AccountId.fromString(from)._toProtobuf(),
-                                            amount: new sdk_1.Hbar(cost).negated().toTinybars()
+                                            amount: sdk_1.Hbar.fromTinybars(cost).negated().toTinybars()
                                         },
                                         {
                                             accountID: nodeID._toProtobuf(),
-                                            amount: new sdk_1.Hbar(cost).toTinybars()
+                                            amount: sdk_1.Hbar.fromTinybars(cost).toTinybars()
                                         }
                                     ],
                                 },

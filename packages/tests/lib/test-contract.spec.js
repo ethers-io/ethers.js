@@ -130,6 +130,7 @@ describe("Test Contract Transaction Population", function () {
             return __generator(this, function (_g) {
                 switch (_g.label) {
                     case 0:
+                        this.timeout(3000000);
                         contractFactory = new hethers_1.hethers.ContractFactory(abiTokenWithArgs, bytecodeTokenWithArgs, wallet);
                         return [4 /*yield*/, contractFactory.deploy(hethers_1.hethers.BigNumber.from('10000'), { gasLimit: 3000000 })];
                     case 1:
@@ -154,15 +155,15 @@ describe("Test Contract Transaction Population", function () {
                         _g.sent();
                         // test if initial balance of the client is zero
                         _b = (_a = assert_1.default).strictEqual;
-                        return [4 /*yield*/, contract.balanceOf(clientWallet.address, { gasLimit: 300000 })];
+                        return [4 /*yield*/, contract.balanceOf(clientWallet.address, { gasLimit: 3000000 })];
                     case 5:
                         // test if initial balance of the client is zero
                         _b.apply(_a, [(_g.sent()).toString(), '0']);
-                        return [4 /*yield*/, contract.getInternalCounter({ gasLimit: 300000 })];
+                        return [4 /*yield*/, contract.getInternalCounter({ gasLimit: 3000000 })];
                     case 6:
                         viewMethodCall = _g.sent();
                         assert_1.default.strictEqual(viewMethodCall.toString(), '29');
-                        return [4 /*yield*/, contract.populateTransaction.transfer(clientWallet.address, 10, { gasLimit: 300000 })];
+                        return [4 /*yield*/, contract.populateTransaction.transfer(clientWallet.address, 10, { gasLimit: 3000000 })];
                     case 7:
                         populatedTx = _g.sent();
                         return [4 /*yield*/, wallet.signTransaction(populatedTx)];
@@ -175,24 +176,24 @@ describe("Test Contract Transaction Population", function () {
                     case 10:
                         _g.sent();
                         _d = (_c = assert_1.default).strictEqual;
-                        return [4 /*yield*/, contract.balanceOf(clientWallet.address, { gasLimit: 300000 })];
+                        return [4 /*yield*/, contract.balanceOf(clientWallet.address, { gasLimit: 3000000 })];
                     case 11:
                         _d.apply(_c, [(_g.sent()).toString(), '10']);
-                        return [4 /*yield*/, contract.transfer(clientWallet.address, 10, { gasLimit: 300000 })];
+                        return [4 /*yield*/, contract.transfer(clientWallet.address, 10, { gasLimit: 3000000 })];
                     case 12:
                         transferMethodCall = _g.sent();
                         return [4 /*yield*/, transferMethodCall.wait()];
                     case 13:
                         _g.sent();
                         _f = (_e = assert_1.default).strictEqual;
-                        return [4 /*yield*/, contract.balanceOf(clientWallet.address, { gasLimit: 300000 })];
+                        return [4 /*yield*/, contract.balanceOf(clientWallet.address, { gasLimit: 3000000 })];
                     case 14:
                         _f.apply(_e, [(_g.sent()).toString(), '20']);
                         return [2 /*return*/];
                 }
             });
         });
-    }).timeout(300000);
+    });
     it('should have a .wait function', function () {
         return __awaiter(this, void 0, void 0, function () {
             var contractFactory, contract, err_1, deployTx, receipt, events, i, log, event_1, eventTx, eventRc;
@@ -278,6 +279,7 @@ describe("Test Contract Transaction Population", function () {
 });
 describe('Contract Events', function () {
     var _this = this;
+    this.retries(3);
     var provider = hethers_1.hethers.providers.getDefaultProvider('testnet');
     // @ts-ignore
     var wallet = new hethers_1.hethers.Wallet(hederaEoa, provider);
@@ -411,9 +413,10 @@ describe('Contract Events', function () {
 });
 describe('Contract Aliases', function () {
     return __awaiter(this, void 0, void 0, function () {
-        var provider, wallet;
+        var provider, gasLimit, wallet;
         return __generator(this, function (_a) {
             provider = hethers_1.hethers.providers.getDefaultProvider('testnet');
+            gasLimit = 3000000;
             wallet = new hethers_1.hethers.Wallet(hederaEoa, provider);
             it('Should detect contract aliases', function () {
                 return __awaiter(this, void 0, void 0, function () {
@@ -423,17 +426,17 @@ describe('Contract Aliases', function () {
                             case 0:
                                 contractAlias = '0xbd438E8416b13e962781eBAfE344d45DC0DBBc0c';
                                 c1 = hethers_1.hethers.ContractFactory.getContract(contractAlias, iUniswapV2PairAbi.abi, wallet);
-                                return [4 /*yield*/, c1.token0({ gasLimit: 300000 })];
+                                return [4 /*yield*/, c1.token0({ gasLimit: gasLimit })];
                             case 1:
                                 token0 = _a.sent();
                                 assert_1.default.notStrictEqual(token0, "");
                                 assert_1.default.notStrictEqual(token0, null);
-                                return [4 /*yield*/, c1.token1({ gasLimit: 300000 })];
+                                return [4 /*yield*/, c1.token1({ gasLimit: gasLimit })];
                             case 2:
                                 token1 = _a.sent();
                                 assert_1.default.notStrictEqual(token1, "");
                                 assert_1.default.notStrictEqual(token1, null);
-                                return [4 /*yield*/, c1.symbol({ gasLimit: 300000 })];
+                                return [4 /*yield*/, c1.symbol({ gasLimit: gasLimit })];
                             case 3:
                                 symbol = _a.sent();
                                 assert_1.default.notStrictEqual(symbol, "");
@@ -457,7 +460,7 @@ describe('Contract Aliases', function () {
                                 accAbi = JSON.parse(fs_1.default.readFileSync('packages/tests/contracts/Account.abi.json').toString());
                                 salt = 1111;
                                 factoryCFactory = new hethers_1.hethers.ContractFactory(factoryAbi, factoryBytecode, wallet);
-                                return [4 /*yield*/, factoryCFactory.deploy({ gasLimit: 300000 })];
+                                return [4 /*yield*/, factoryCFactory.deploy({ gasLimit: 3000000 })];
                             case 1:
                                 _factory = _a.sent();
                                 factory = hethers_1.hethers.ContractFactory.getContract(_factory.address, factoryAbi, wallet);
@@ -468,15 +471,15 @@ describe('Contract Aliases', function () {
                                         switch (_a.label) {
                                             case 0:
                                                 account = hethers_1.hethers.ContractFactory.getContract(addr, accAbi, wallet);
-                                                return [4 /*yield*/, account.getOwner({ gasLimit: 300000 })];
+                                                return [4 /*yield*/, account.getOwner({ gasLimit: 3000000 })];
                                             case 1:
                                                 owner = _a.sent();
                                                 assert_1.default.strictEqual(owner, hethers_1.hethers.constants.AddressZero);
-                                                return [4 /*yield*/, account.setOwner(wallet.address, { gasLimit: 300000 })];
+                                                return [4 /*yield*/, account.setOwner(wallet.address, { gasLimit: 3000000 })];
                                             case 2:
                                                 resp = _a.sent();
                                                 assert_1.default.notStrictEqual(resp, null, 'expected a defined tx response');
-                                                return [4 /*yield*/, account.getOwner({ gasLimit: 300000 })];
+                                                return [4 /*yield*/, account.getOwner({ gasLimit: 3000000 })];
                                             case 3:
                                                 owner = _a.sent();
                                                 assert_1.default.strictEqual(owner, wallet.address, "expected owner to be changed after `setOwner` call");
@@ -486,7 +489,7 @@ describe('Contract Aliases', function () {
                                     });
                                 }); });
                                 deployArgs = (0, bytes_1.hexlify)("0x" + accBytecode);
-                                return [4 /*yield*/, factory.deploy(deployArgs, salt, { gasLimit: 300000 })];
+                                return [4 /*yield*/, factory.deploy(deployArgs, salt, { gasLimit: 3000000 })];
                             case 2:
                                 deployTx = _a.sent();
                                 return [4 /*yield*/, deployTx.wait()];

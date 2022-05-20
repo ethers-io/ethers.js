@@ -31,9 +31,12 @@ const allowedTransactionKeys: Array<string> = [
     "nodeId"
 ];
 
-// const forwardErrors = [
-//     Logger.errors.INSUFFICIENT_FUNDS,
-// ];
+// oversize cost for 1 gas in ContractCallQuery
+const CALL_GAS_PRICE_TINYBARS = 100;
+// the average default cost of a signed hedera ContractCallQuery
+const DEFAULT_HEDERA_CALL_TX_FEE = 143083413;
+
+const TX_FEE_BUFFER_MULTIPLIER = 10;
 
 // EIP-712 Typed Data
 // See: https://eips.ethereum.org/EIPS/eip-712
@@ -186,13 +189,13 @@ export abstract class Signer {
         } else {
             hederaTx.setContractId(to);
         }
-
-        // TODO: the exact amount here will be computed using getCost when it's implemented
-        const cost = 3;
+        const gasLimit = BigNumber.from(tx.gasLimit).toNumber();
+        const baseCost = DEFAULT_HEDERA_CALL_TX_FEE * TX_FEE_BUFFER_MULTIPLIER;
+        const cost = baseCost + gasLimit * CALL_GAS_PRICE_TINYBARS;
         const paymentBody = {
             transactionID: paymentTxId._toProtobuf(),
             nodeAccountID: nodeID._toProtobuf(),
-            transactionFee: new Hbar(0.005).toTinybars(),
+            transactionFee: Hbar.fromTinybars(baseCost).toTinybars(),
             transactionValidDuration: {
                 seconds: Long.fromInt(120),
             },
@@ -201,11 +204,11 @@ export abstract class Signer {
                     accountAmounts:[
                         {
                             accountID: AccountId.fromString(from)._toProtobuf(),
-                            amount: new Hbar(cost).negated().toTinybars()
+                            amount: Hbar.fromTinybars(cost).negated().toTinybars()
                         },
                         {
                             accountID: nodeID._toProtobuf(),
-                            amount: new Hbar(cost).toTinybars()
+                            amount: Hbar.fromTinybars(cost).toTinybars()
                         }
                     ],
                 },

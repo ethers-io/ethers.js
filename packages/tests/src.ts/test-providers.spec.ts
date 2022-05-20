@@ -1008,35 +1008,6 @@ describe("Test Basic Authentication", function() {
     })
 });
 
-// describe("Test Events", function() {
-//     this.retries(3);
-//
-//     async function testBlockEvent(provider: hethers.providers.Provider) {
-//         return new Promise((resolve, reject) => {
-//             let firstBlockNumber: number = null;
-//             const handler = (blockNumber: number) => {
-//                 if (firstBlockNumber == null) {
-//                     firstBlockNumber = blockNumber;
-//                     return;
-//                 }
-//                 provider.removeListener("block", handler);
-//                 if (firstBlockNumber + 1 === blockNumber) {
-//                     resolve(true);
-//                 } else {
-//                     reject(new Error("blockNumber fail"));
-//                 }
-//             };
-//             provider.on("block", handler);
-//         });
-//     }
-//
-//     it("InfuraProvider", async function() {
-//         this.timeout(60000);
-//         const provider = new hethers.providers.InfuraProvider("rinkeby");
-//         await testBlockEvent(provider);
-//     });
-// });
-
 describe("Test Hedera Provider", function () {
     const provider = new DefaultHederaProvider(HederaNetworks.TESTNET);
     const accountConfig = { shard : BigInt(0), realm: BigInt(0), num: BigInt(98)};

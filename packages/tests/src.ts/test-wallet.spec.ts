@@ -558,11 +558,11 @@ describe("Wallet local calls", async function () {
 });
 
 describe("Wallet createAccount", function () {
-
+    this.retries(3);
     let wallet: hethers.Wallet, newAccount: hethers.Wallet, newAccountPublicKey: BytesLike,
         provider: hethers.providers.BaseProvider, acc1Wallet: hethers.Wallet, acc2Wallet: hethers.Wallet,
         acc1Eoa: any, acc2Eoa: any;
-    const timeout = 90000;
+    const timeout = 120000;
 
     before( async function() {
         this.timeout(timeout);
