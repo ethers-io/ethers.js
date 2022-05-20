@@ -277,9 +277,7 @@ function _parseEipSignature(tx, fields, serialize) {
         var digest = (0, keccak256_1.keccak256)(serialize(tx));
         tx.from = recoverAddress(digest, { r: tx.r, s: tx.s, recoveryParam: tx.v });
     }
-    catch (error) {
-        console.log(error);
-    }
+    catch (error) { }
 }
 function _parseEip1559(payload) {
     var transaction = RLP.decode(payload.slice(1));
@@ -356,7 +354,7 @@ function _parse(rawTransaction) {
         tx.v = bignumber_1.BigNumber.from(transaction[6]).toNumber();
     }
     catch (error) {
-        console.log(error);
+        // @TODO: What makes snese to do? The v is too big
         return tx;
     }
     tx.r = (0, bytes_1.hexZeroPad)(transaction[7], 32);
@@ -384,9 +382,7 @@ function _parse(rawTransaction) {
         try {
             tx.from = recoverAddress(digest, { r: (0, bytes_1.hexlify)(tx.r), s: (0, bytes_1.hexlify)(tx.s), recoveryParam: recoveryParam });
         }
-        catch (error) {
-            console.log(error);
-        }
+        catch (error) { }
         tx.hash = (0, keccak256_1.keccak256)(rawTransaction);
     }
     tx.type = null;

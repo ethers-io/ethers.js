@@ -17,17 +17,17 @@
     "@ethersproject/json-wallets": "5.6.0",
     "@ethersproject/keccak256": "5.6.0",
     "@ethersproject/logger": "5.6.0",
-    "@ethersproject/networks": "5.6.2",
+    "@ethersproject/networks": "5.6.3",
     "@ethersproject/pbkdf2": "5.6.0",
     "@ethersproject/properties": "5.6.0",
-    "@ethersproject/providers": "5.6.6",
+    "@ethersproject/providers": "5.6.7",
     "@ethersproject/random": "5.6.0",
     "@ethersproject/rlp": "5.6.0",
     "@ethersproject/sha2": "5.6.0",
     "@ethersproject/signing-key": "5.6.1",
     "@ethersproject/solidity": "5.6.0",
     "@ethersproject/strings": "5.6.0",
-    "@ethersproject/transactions": "5.6.0",
+    "@ethersproject/transactions": "5.6.1",
     "@ethersproject/units": "5.6.0",
     "@ethersproject/wallet": "5.6.1",
     "@ethersproject/web": "5.6.0",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x1e2b7fc66b3065af21d945308dac49e5ba26fba97bea722a69ae54e38d665f81",
+  "tarballHash": "0xe07b6b5f50095a627aea90b82e02d62522cce53107a471903df83f7b1c66ea32",
   "types": "./lib/index.d.ts",
-  "version": "5.6.6"
+  "version": "5.6.7"
 }

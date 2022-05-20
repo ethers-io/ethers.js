@@ -14551,7 +14551,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "transactions/5.6.0";
+	exports.version = "transactions/5.6.1";
 
 	});
 
@@ -14837,9 +14837,7 @@
 	        var digest = (0, lib$4.keccak256)(serialize(tx));
 	        tx.from = recoverAddress(digest, { r: tx.r, s: tx.s, recoveryParam: tx.v });
 	    }
-	    catch (error) {
-	        console.log(error);
-	    }
+	    catch (error) { }
 	}
 	function _parseEip1559(payload) {
 	    var transaction = RLP.decode(payload.slice(1));
@@ -14916,7 +14914,7 @@
 	        tx.v = lib$2.BigNumber.from(transaction[6]).toNumber();
 	    }
 	    catch (error) {
-	        console.log(error);
+	        // @TODO: What makes snese to do? The v is too big
 	        return tx;
 	    }
 	    tx.r = (0, lib$1.hexZeroPad)(transaction[7], 32);
@@ -14944,9 +14942,7 @@
 	        try {
 	            tx.from = recoverAddress(digest, { r: (0, lib$1.hexlify)(tx.r), s: (0, lib$1.hexlify)(tx.s), recoveryParam: recoveryParam });
 	        }
-	        catch (error) {
-	            console.log(error);
-	        }
+	        catch (error) { }
 	        tx.hash = (0, lib$4.keccak256)(rawTransaction);
 	    }
 	    tx.type = null;
@@ -19295,7 +19291,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "networks/5.6.2";
+	exports.version = "networks/5.6.3";
 
 	});
 
@@ -19452,9 +19448,17 @@
 	        _defaultProvider: etcDefaultProvider("https:/\/www.ethercluster.com/kotti", "classicKotti")
 	    },
 	    xdai: { chainId: 100, name: "xdai" },
-	    matic: { chainId: 137, name: "matic" },
+	    matic: {
+	        chainId: 137,
+	        name: "matic",
+	        _defaultProvider: ethDefaultProvider("matic")
+	    },
 	    maticmum: { chainId: 80001, name: "maticmum" },
-	    optimism: { chainId: 10, name: "optimism" },
+	    optimism: {
+	        chainId: 10,
+	        name: "optimism",
+	        _defaultProvider: ethDefaultProvider("optimism")
+	    },
 	    "optimism-kovan": { chainId: 69, name: "optimism-kovan" },
 	    "optimism-goerli": { chainId: 420, name: "optimism-goerli" },
 	    arbitrum: { chainId: 42161, name: "arbitrum" },
@@ -20332,7 +20336,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.6.6";
+	exports.version = "providers/5.6.7";
 
 	});
 
@@ -20852,6 +20856,7 @@
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.BaseProvider = exports.Resolver = exports.Event = void 0;
+
 
 
 
@@ -21454,7 +21459,7 @@
 	    };
 	    Resolver.prototype.getContentHash = function () {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var hexBytes, ipfs, length_4, ipns, length_5, swarm;
+	            var hexBytes, ipfs, length_4, ipns, length_5, swarm, skynet, urlSafe_1, hash;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0: return [4 /*yield*/, this._fetchBytes("0xbc1c58d1")];
@@ -21482,6 +21487,14 @@
 	                        if (swarm) {
 	                            if (swarm[1].length === (32 * 2)) {
 	                                return [2 /*return*/, "bzz:/\/" + swarm[1]];
+	                            }
+	                        }
+	                        skynet = hexBytes.match(/^0x90b2c605([0-9a-f]*)$/);
+	                        if (skynet) {
+	                            if (skynet[1].length === (34 * 2)) {
+	                                urlSafe_1 = { "=": "", "+": "-", "/": "_" };
+	                                hash = (0, lib$p.encode)("0x" + skynet[1]).replace(/[=+\/]/g, function (a) { return (urlSafe_1[a]); });
+	                                return [2 /*return*/, "sia:/\/" + hash];
 	                            }
 	                        }
 	                        return [2 /*return*/, logger.throwError("invalid or unsupported content hash data", lib.Logger.errors.UNSUPPORTED_OPERATION, {
@@ -24003,7 +24016,7 @@
 	            case "getCode":
 	                return ["eth_getCode", [getLowerCase(params.address), params.blockTag]];
 	            case "getStorageAt":
-	                return ["eth_getStorageAt", [getLowerCase(params.address), params.position, params.blockTag]];
+	                return ["eth_getStorageAt", [getLowerCase(params.address), (0, lib$1.hexZeroPad)(params.position, 32), params.blockTag]];
 	            case "sendTransaction":
 	                return ["eth_sendRawTransaction", [params.signedTransaction]];
 	            case "getBlock":
@@ -26995,10 +27008,12 @@
 	        // Handle http and ws (and their secure variants)
 	        var match = network.match(/^(ws|http)s?:/i);
 	        if (match) {
-	            switch (match[1]) {
+	            switch (match[1].toLowerCase()) {
 	                case "http":
+	                case "https":
 	                    return new jsonRpcProvider.JsonRpcProvider(network);
 	                case "ws":
+	                case "wss":
 	                    return new websocketProvider.WebSocketProvider(network);
 	                default:
 	                    logger.throwArgumentError("unsupported URL scheme", "network", network);
@@ -27406,7 +27421,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.6.6";
+	exports.version = "ethers/5.6.7";
 
 	});
 

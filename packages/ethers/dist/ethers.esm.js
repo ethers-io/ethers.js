@@ -4906,7 +4906,7 @@ const BUMP = FixedNumber.from("0.5");
 const version$3 = "properties/5.6.0";
 
 "use strict";
-var __awaiter = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8024,7 +8024,7 @@ function hashMessage(message) {
     ]));
 }
 
-var __awaiter$1 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$1 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -9056,7 +9056,7 @@ class Interface {
 const version$9 = "abstract-provider/5.6.0";
 
 "use strict";
-var __awaiter$2 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$2 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -9163,7 +9163,7 @@ class Provider {
 const version$a = "abstract-signer/5.6.1";
 
 "use strict";
-var __awaiter$3 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$3 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -13345,7 +13345,7 @@ function computePublicKey(key, compressed) {
     return logger$g.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$c = "transactions/5.6.0";
+const version$c = "transactions/5.6.1";
 
 "use strict";
 const logger$h = new Logger(version$c);
@@ -13590,9 +13590,7 @@ function _parseEipSignature(tx, fields, serialize) {
         const digest = keccak256(serialize(tx));
         tx.from = recoverAddress(digest, { r: tx.r, s: tx.s, recoveryParam: tx.v });
     }
-    catch (error) {
-        console.log(error);
-    }
+    catch (error) { }
 }
 function _parseEip1559(payload) {
     const transaction = decode(payload.slice(1));
@@ -13669,7 +13667,7 @@ function _parse(rawTransaction) {
         tx.v = BigNumber.from(transaction[6]).toNumber();
     }
     catch (error) {
-        console.log(error);
+        // @TODO: What makes snese to do? The v is too big
         return tx;
     }
     tx.r = hexZeroPad(transaction[7], 32);
@@ -13697,9 +13695,7 @@ function _parse(rawTransaction) {
         try {
             tx.from = recoverAddress(digest, { r: hexlify(tx.r), s: hexlify(tx.s), recoveryParam: recoveryParam });
         }
-        catch (error) {
-            console.log(error);
-        }
+        catch (error) { }
         tx.hash = keccak256(rawTransaction);
     }
     tx.type = null;
@@ -13729,7 +13725,7 @@ function parse(rawTransaction) {
 const version$d = "contracts/5.6.1";
 
 "use strict";
-var __awaiter$4 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$4 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -16840,7 +16836,7 @@ var scrypt = createCommonjsModule(function (module, exports) {
 });
 
 "use strict";
-var __awaiter$5 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$5 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17172,7 +17168,7 @@ function decryptJsonWalletSync(json, password) {
 const version$j = "wallet/5.6.1";
 
 "use strict";
-var __awaiter$6 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$6 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17333,7 +17329,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.6.2";
+const version$k = "networks/5.6.3";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -17481,9 +17477,17 @@ const networks = {
         _defaultProvider: etcDefaultProvider("https:/\/www.ethercluster.com/kotti", "classicKotti")
     },
     xdai: { chainId: 100, name: "xdai" },
-    matic: { chainId: 137, name: "matic" },
+    matic: {
+        chainId: 137,
+        name: "matic",
+        _defaultProvider: ethDefaultProvider("matic")
+    },
     maticmum: { chainId: 80001, name: "maticmum" },
-    optimism: { chainId: 10, name: "optimism" },
+    optimism: {
+        chainId: 10,
+        name: "optimism",
+        _defaultProvider: ethDefaultProvider("optimism")
+    },
     "optimism-kovan": { chainId: 69, name: "optimism-kovan" },
     "optimism-goerli": { chainId: 420, name: "optimism-goerli" },
     arbitrum: { chainId: 42161, name: "arbitrum" },
@@ -17592,7 +17596,7 @@ var index$2 = /*#__PURE__*/Object.freeze({
 const version$l = "web/5.6.0";
 
 "use strict";
-var __awaiter$7 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$7 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17642,7 +17646,7 @@ function getUrl(href, options) {
 }
 
 "use strict";
-var __awaiter$8 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$8 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -18213,7 +18217,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.6.6";
+const version$m = "providers/5.6.7";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -18650,7 +18654,7 @@ function showThrottleMessage() {
 }
 
 "use strict";
-var __awaiter$9 = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$9 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -19198,6 +19202,15 @@ class Resolver {
             if (swarm) {
                 if (swarm[1].length === (32 * 2)) {
                     return "bzz:/\/" + swarm[1];
+                }
+            }
+            const skynet = hexBytes.match(/^0x90b2c605([0-9a-f]*)$/);
+            if (skynet) {
+                if (skynet[1].length === (34 * 2)) {
+                    // URL Safe base64; https://datatracker.ietf.org/doc/html/rfc4648#section-5
+                    const urlSafe = { "=": "", "+": "-", "/": "_" };
+                    const hash = encode$1("0x" + skynet[1]).replace(/[=+\/]/g, (a) => (urlSafe[a]));
+                    return "sia:/\/" + hash;
                 }
             }
             return logger$t.throwError(`invalid or unsupported content hash data`, Logger.errors.UNSUPPORTED_OPERATION, {
@@ -20622,7 +20635,7 @@ class BaseProvider extends Provider {
 }
 
 "use strict";
-var __awaiter$a = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$a = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -21082,7 +21095,7 @@ class JsonRpcProvider extends BaseProvider {
             case "getCode":
                 return ["eth_getCode", [getLowerCase(params.address), params.blockTag]];
             case "getStorageAt":
-                return ["eth_getStorageAt", [getLowerCase(params.address), params.position, params.blockTag]];
+                return ["eth_getStorageAt", [getLowerCase(params.address), hexZeroPad(params.position, 32), params.blockTag]];
             case "sendTransaction":
                 return ["eth_sendRawTransaction", [params.signedTransaction]];
             case "getBlock":
@@ -21261,7 +21274,7 @@ catch (error) {
 }
 
 "use strict";
-var __awaiter$b = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$b = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -21554,7 +21567,7 @@ class WebSocketProvider extends JsonRpcProvider {
 }
 
 "use strict";
-var __awaiter$c = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$c = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -21780,7 +21793,7 @@ class AnkrProvider extends UrlJsonRpcProvider {
 }
 
 "use strict";
-var __awaiter$d = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$d = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -21825,7 +21838,7 @@ class CloudflareProvider extends UrlJsonRpcProvider {
 }
 
 "use strict";
-var __awaiter$e = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$e = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -22237,7 +22250,7 @@ class EtherscanProvider extends BaseProvider {
 }
 
 "use strict";
-var __awaiter$f = (window && window.__awaiter) || function (thisArg, _arguments, P, generator) {
+var __awaiter$f = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -23283,10 +23296,12 @@ function getDefaultProvider(network, options) {
         // Handle http and ws (and their secure variants)
         const match = network.match(/^(ws|http)s?:/i);
         if (match) {
-            switch (match[1]) {
+            switch (match[1].toLowerCase()) {
                 case "http":
+                case "https":
                     return new JsonRpcProvider(network);
                 case "ws":
+                case "wss":
                     return new WebSocketProvider(network);
                 default:
                     logger$G.throwArgumentError("unsupported URL scheme", "network", network);
@@ -23620,7 +23635,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$p = "ethers/5.6.6";
+const version$p = "ethers/5.6.7";
 
 "use strict";
 const logger$J = new Logger(version$p);

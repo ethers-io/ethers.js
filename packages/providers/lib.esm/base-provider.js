@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { ForkEvent, Provider } from "@ethersproject/abstract-provider";
+import { encode as base64Encode } from "@ethersproject/base64";
 import { Base58 } from "@ethersproject/basex";
 import { BigNumber } from "@ethersproject/bignumber";
 import { arrayify, concat, hexConcat, hexDataLength, hexDataSlice, hexlify, hexValue, hexZeroPad, isHexString } from "@ethersproject/bytes";
@@ -562,6 +563,15 @@ export class Resolver {
             if (swarm) {
                 if (swarm[1].length === (32 * 2)) {
                     return "bzz:/\/" + swarm[1];
+                }
+            }
+            const skynet = hexBytes.match(/^0x90b2c605([0-9a-f]*)$/);
+            if (skynet) {
+                if (skynet[1].length === (34 * 2)) {
+                    // URL Safe base64; https://datatracker.ietf.org/doc/html/rfc4648#section-5
+                    const urlSafe = { "=": "", "+": "-", "/": "_" };
+                    const hash = base64Encode("0x" + skynet[1]).replace(/[=+\/]/g, (a) => (urlSafe[a]));
+                    return "sia:/\/" + hash;
                 }
             }
             return logger.throwError(`invalid or unsupported content hash data`, Logger.errors.UNSUPPORTED_OPERATION, {

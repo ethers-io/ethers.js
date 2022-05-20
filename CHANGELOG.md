@@ -4,6 +4,16 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+ethers/v5.6.7 (2022-05-20 19:11)
+--------------------------------
+
+  - Add Skynet support. ([#2853](https://github.com/ethers-io/ethers.js/issues/2853), [#2866](https://github.com/ethers-io/ethers.js/issues/2866); [13dd42c](https://github.com/ethers-io/ethers.js/commit/13dd42c6c38d6977645555cdf7ab60354b0e2725))
+  - Fix WebWorker support in rollup files. ([#2976](https://github.com/ethers-io/ethers.js/issues/2976); [d06aa26](https://github.com/ethers-io/ethers.js/commit/d06aa26d74eecd06149f908ce25dbaf867754c0e))
+  - Remove superfluous logging. ([#2995](https://github.com/ethers-io/ethers.js/issues/2995); [ed7e6a5](https://github.com/ethers-io/ethers.js/commit/ed7e6a500e6087efcace8a5ff98997fbce2c6d6d))
+  - Add matic and optimism support to default provider. ([a301297](https://github.com/ethers-io/ethers.js/commit/a3012977b1b10110ea15625754e8fc117e1ea147))
+  - Use case-insensitive schemes for getDefaultProvider. ([#2320](https://github.com/ethers-io/ethers.js/issues/2320); [8b62aef](https://github.com/ethers-io/ethers.js/commit/8b62aeff9cce44cbd16ff41f8fc01ebb101f8265))
+  - Pad position in JSON-RPC getStorageAt calls. ([#2982](https://github.com/ethers-io/ethers.js/issues/2982); [d5815cc](https://github.com/ethers-io/ethers.js/commit/d5815cc4f1c13e5265c748d8afc4c085a97b1945))
+
 ethers/v5.6.6 (2022-05-12 17:29)
 --------------------------------
 
@@ -109,7 +119,7 @@ ethers/v5.5.0 (2021-10-19 00:01)
   - Adding customData support to transactions to assist L2 chains. ([#1761](https://github.com/ethers-io/ethers.js/issues/1761); [68095a4](https://github.com/ethers-io/ethers.js/commit/68095a48ae19ed06cbcf2f415f1fcbda90d4b2ae))
   - Added some explicit null results to previously implicit null results for ENS. ([#1850](https://github.com/ethers-io/ethers.js/issues/1850); [0e5419e](https://github.com/ethers-io/ethers.js/commit/0e5419ec79cb18d82bab8c47bfa3ab4a21cfd293))
   - Added BigNumber _difficulty to Block results. ([#2001](https://github.com/ethers-io/ethers.js/issues/2001), [#2036](https://github.com/ethers-io/ethers.js/issues/2036); [a48552a](https://github.com/ethers-io/ethers.js/commit/a48552a4fb85a08178d07437a3934db98b7d0736))
-  - Removed redundant call to normalizing blockTag (1838). ([d5b41ce](https://github.com/ethers-io/ethers.js/commit/d5b41ce210c0f22dd795749810f6ce798f71a00f))
+  - Removed redundant call to normalizing blockTag (#1838). ([d5b41ce](https://github.com/ethers-io/ethers.js/commit/d5b41ce210c0f22dd795749810f6ce798f71a00f))
   - Fixed isBytes check for invalid length or elements. ([#1964](https://github.com/ethers-io/ethers.js/issues/1964); [7a404fb](https://github.com/ethers-io/ethers.js/commit/7a404fb8ed95a99baab8f3b384f438b697fa5d76))
   - Fixed randomBytes not rejecting NaN as a length. ([#1977](https://github.com/ethers-io/ethers.js/issues/1977); [f8adf82](https://github.com/ethers-io/ethers.js/commit/f8adf82e16aaad1a7c1750e7f2e3a9f8073b73e1))
   - Allow any Networkish for getDefaultProvider. ([#2031](https://github.com/ethers-io/ethers.js/issues/2031); [cc250b2](https://github.com/ethers-io/ethers.js/commit/cc250b2060451e0ee6b1cf3edb6b005f9eee9c61))

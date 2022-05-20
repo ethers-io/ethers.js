@@ -56,6 +56,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseProvider = exports.Resolver = exports.Event = void 0;
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
+var base64_1 = require("@ethersproject/base64");
 var basex_1 = require("@ethersproject/basex");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
@@ -657,7 +658,7 @@ var Resolver = /** @class */ (function () {
     };
     Resolver.prototype.getContentHash = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var hexBytes, ipfs, length_4, ipns, length_5, swarm;
+            var hexBytes, ipfs, length_4, ipns, length_5, swarm, skynet, urlSafe_1, hash;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this._fetchBytes("0xbc1c58d1")];
@@ -685,6 +686,14 @@ var Resolver = /** @class */ (function () {
                         if (swarm) {
                             if (swarm[1].length === (32 * 2)) {
                                 return [2 /*return*/, "bzz:/\/" + swarm[1]];
+                            }
+                        }
+                        skynet = hexBytes.match(/^0x90b2c605([0-9a-f]*)$/);
+                        if (skynet) {
+                            if (skynet[1].length === (34 * 2)) {
+                                urlSafe_1 = { "=": "", "+": "-", "/": "_" };
+                                hash = (0, base64_1.encode)("0x" + skynet[1]).replace(/[=+\/]/g, function (a) { return (urlSafe_1[a]); });
+                                return [2 /*return*/, "sia:/\/" + hash];
                             }
                         }
                         return [2 /*return*/, logger.throwError("invalid or unsupported content hash data", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
