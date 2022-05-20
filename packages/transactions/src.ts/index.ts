@@ -15,11 +15,11 @@ import {
     hexDataLength,
     hexlify,
 } from "@ethersproject/bytes";
-import {Zero} from "@hethers/constants";
-import {computePublicKey} from "@ethersproject/signing-key";
+import { Zero } from "@hethers/constants";
+import { computePublicKey } from "@hethers/signing-key";
 
-import {Logger} from "@hethers/logger";
-import {version} from "./_version";
+import { Logger } from "@hethers/logger";
+import { version } from "./_version";
 import * as base64 from "@ethersproject/base64";
 import {
     AccountCreateTransaction,
@@ -36,7 +36,7 @@ import {
     TransactionId,
     TransferTransaction
 } from "@hashgraph/sdk";
-import {IKey, Key} from "@hashgraph/proto";
+import { IKey, Key } from "@hashgraph/proto";
 import Long from "long";
 
 const logger = new Logger(version);
@@ -48,8 +48,8 @@ export type AccessList = Array<{ address: string, storageKeys: Array<string> }>;
 
 // Input allows flexibility in describing an access list
 export type AccessListish = AccessList |
-                            Array<[ string, Array<string> ]> |
-                            Record<string, Array<string>>;
+    Array<[string, Array<string>]> |
+    Record<string, Array<string>>;
 
 export enum TransactionTypes {
     legacy = 0,
@@ -110,8 +110,8 @@ function handleNumber(value: string): BigNumber {
     return BigNumber.from(value);
 }
 
-export function computeAlias(key: BytesLike | string): string {
-    const publicKey = computePublicKey(key);
+export function computeAlias(key: BytesLike | string, isED25519Type?: boolean): string {
+    const publicKey = computePublicKey(key, false, isED25519Type);
     return computeAliasFromPubKey(publicKey);
 }
 
@@ -119,12 +119,12 @@ export function computeAliasFromPubKey(pubKey: string): string {
     return `0.0.${base64.encode(pubKey)}`;
 }
 
-function accessSetify(addr: string, storageKeys: Array<string>): { address: string,storageKeys: Array<string> } {
+function accessSetify(addr: string, storageKeys: Array<string>): { address: string, storageKeys: Array<string> } {
     return {
         address: getAddress(addr),
         storageKeys: (storageKeys || []).map((storageKey, index) => {
             if (hexDataLength(storageKey) !== 32) {
-                logger.throwArgumentError("invalid access list storageKey", `accessList[${ addr }:${ index }]`, storageKey)
+                logger.throwArgumentError("invalid access list storageKey", `accessList[${addr}:${index}]`, storageKey)
             }
             return storageKey.toLowerCase();
         })
@@ -133,10 +133,10 @@ function accessSetify(addr: string, storageKeys: Array<string>): { address: stri
 
 export function accessListify(value: AccessListish): AccessList {
     if (Array.isArray(value)) {
-        return (<Array<[ string, Array<string>] | { address: string, storageKeys: Array<string>}>>value).map((set, index) => {
+        return (<Array<[string, Array<string>] | { address: string, storageKeys: Array<string> }>>value).map((set, index) => {
             if (Array.isArray(set)) {
                 if (set.length > 2) {
-                    logger.throwArgumentError("access list expected to be [ address, storageKeys[] ]", `value[${ index }]`, set);
+                    logger.throwArgumentError("access list expected to be [ address, storageKeys[] ]", `value[${index}]`, set);
                 }
                 return accessSetify(set[0], set[1])
             }
@@ -148,7 +148,7 @@ export function accessListify(value: AccessListish): AccessList {
         const storageKeys: Record<string, true> = value[addr].reduce((accum, storageKey) => {
             accum[storageKey] = true;
             return accum;
-        }, <Record<string, true>>{ });
+        }, <Record<string, true>>{});
         return accessSetify(addr, Object.keys(storageKeys).sort())
     });
     result.sort((a, b) => (a.address.localeCompare(b.address)));
@@ -157,7 +157,7 @@ export function accessListify(value: AccessListish): AccessList {
 
 function isAccountLike(str: any) {
     str = str.toString();
-    const m = str.split('.').map((e:string) => parseInt(e)).filter((e: number) => e>=0).length;
+    const m = str.split('.').map((e: string) => parseInt(e)).filter((e: number) => e >= 0).length;
     return m == 3;
 }
 
@@ -169,7 +169,7 @@ function validateMemo(memo: string, memoType: string) {
     }
 }
 
-export function serializeHederaTransaction(transaction: UnsignedTransaction, pubKey?: HederaPubKey) : HederaTransaction {
+export function serializeHederaTransaction(transaction: UnsignedTransaction, pubKey?: HederaPubKey): HederaTransaction {
     let tx: HederaTransaction;
     const arrayifiedData = transaction.data ? arrayify(transaction.data) : new Uint8Array();
     const gas = numberify(transaction.gasLimit ? transaction.gasLimit : 0);
@@ -184,8 +184,8 @@ export function serializeHederaTransaction(transaction: UnsignedTransaction, pub
         if (transaction.value) {
             (tx as ContractExecuteTransaction).setPayableAmount(transaction.value?.toString())
         }
-        if(transaction.customData.usingContractAlias) {
-            (tx as ContractExecuteTransaction).setContractId(ContractId.fromEvmAddress(0,0, transaction.to.toString()));
+        if (transaction.customData.usingContractAlias) {
+            (tx as ContractExecuteTransaction).setContractId(ContractId.fromEvmAddress(0, 0, transaction.to.toString()));
         } else {
             (tx as ContractExecuteTransaction).setContractId(asAccountString(transaction.to));
         }
@@ -198,9 +198,9 @@ export function serializeHederaTransaction(transaction: UnsignedTransaction, pub
                 .setGas(gas);
             if (transaction.customData.contractAdminKey) {
                 const inputKey = transaction.customData.contractAdminKey;
-                const keyInitializer :IKey = {};
+                const keyInitializer: IKey = {};
                 if (inputKey.toString().startsWith('0x')) {
-                    if(isAddress(inputKey)) {
+                    if (isAddress(inputKey)) {
                         const account = getAccountFromAddress(inputKey);
                         keyInitializer.contractID = {
                             shardNum: new Long(numberify(account.shard)),
@@ -211,8 +211,8 @@ export function serializeHederaTransaction(transaction: UnsignedTransaction, pub
                         keyInitializer.ECDSASecp256k1 = arrayify(inputKey);
                     }
                 }
-                if(isAccountLike(inputKey)) {
-                    const account = inputKey.split('.').map((e:string) => parseInt(e));
+                if (isAccountLike(inputKey)) {
+                    const account = inputKey.split('.').map((e: string) => parseInt(e));
                     keyInitializer.contractID = {
                         shardNum: new Long(account[0]),
                         realmNum: new Long(account[1]),
@@ -222,7 +222,7 @@ export function serializeHederaTransaction(transaction: UnsignedTransaction, pub
                 const key = HederaPubKey._fromProtobufKey(Key.create(keyInitializer));
                 (tx as ContractCreateTransaction).setAdminKey(key);
             }
-            if(transaction.customData.contractMemo) {
+            if (transaction.customData.contractMemo) {
                 validateMemo(transaction.customData.contractMemo, 'contract');
                 (tx as ContractCreateTransaction).setContractMemo(transaction.customData.contractMemo);
             }
@@ -241,7 +241,7 @@ export function serializeHederaTransaction(transaction: UnsignedTransaction, pub
                         pubKey
                     ]);
             } else if (transaction.customData.publicKey) {
-                const {publicKey, initialBalance} = transaction.customData;
+                const { publicKey, initialBalance } = transaction.customData;
                 tx = new AccountCreateTransaction()
                     .setKey(HederaPubKey.fromString(publicKey.toString()))
                     .setInitialBalance(Hbar.fromTinybars(initialBalance.toString()));
@@ -265,8 +265,8 @@ export function serializeHederaTransaction(transaction: UnsignedTransaction, pub
             realm: numberify(account.realm),
             num: numberify(account.num)
         })))
-    .setNodeAccountIds([AccountId.fromString(transaction.nodeId.toString())])
-    .freeze();
+        .setNodeAccountIds([AccountId.fromString(transaction.nodeId.toString())])
+        .freeze();
     return tx;
 }
 
@@ -317,7 +317,7 @@ export async function parse(rawTransaction: BytesLike): Promise<Transaction> {
         contents.value = parsed.initialBalance ?
             handleNumber(parsed.initialBalance.toBigNumber().toString()) : handleNumber('0');
     } else {
-        return logger.throwError(`unsupported transaction`, Logger.errors.UNSUPPORTED_OPERATION, {operation: "parse"});
+        return logger.throwError(`unsupported transaction`, Logger.errors.UNSUPPORTED_OPERATION, { operation: "parse" });
     }
 
     // TODO populate r, s ,v

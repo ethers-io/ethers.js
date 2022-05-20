@@ -11,13 +11,13 @@ import { BigNumber } from "@ethersproject/bignumber";
 import { toUtf8Bytes, UnicodeNormalizationForm } from "@ethersproject/strings";
 import { pbkdf2 } from "@ethersproject/pbkdf2";
 import { defineReadOnly } from "@ethersproject/properties";
-import { SigningKey } from "@ethersproject/signing-key";
+import { SigningKey, SigningKeyED } from "@hethers/signing-key";
 import { computeHmac, ripemd160, sha256, SupportedAlgorithm } from "@ethersproject/sha2";
 import { Wordlist, wordlists } from "@ethersproject/wordlists";
 
 import { Logger } from "@hethers/logger";
 import { version } from "./_version";
-import {computeAlias} from "@hethers/transactions";
+import { computeAlias } from "@hethers/transactions";
 const logger = new Logger(version);
 
 const N = BigNumber.from("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
@@ -30,12 +30,12 @@ const HardenedBit = 0x80000000;
 
 // Returns a byte with the MSB bits set
 function getUpperMask(bits: number): number {
-   return ((1 << bits) - 1) << (8 - bits);
+    return ((1 << bits) - 1) << (8 - bits);
 }
 
 // Returns a byte with the LSB bits set
 function getLowerMask(bits: number): number {
-   return (1 << bits) - 1;
+    return (1 << bits) - 1;
 }
 
 function bytes32(value: BigNumber | Uint8Array): string {
@@ -43,7 +43,7 @@ function bytes32(value: BigNumber | Uint8Array): string {
 }
 
 function base58check(data: Uint8Array): string {
-    return Base58.encode(concat([ data, hexDataSlice(sha256(sha256(data)), 0, 4) ]));
+    return Base58.encode(concat([data, hexDataSlice(sha256(sha256(data)), 0, 4)]));
 }
 
 function getWordlist(wordlist: string | Wordlist): Wordlist {
@@ -51,7 +51,7 @@ function getWordlist(wordlist: string | Wordlist): Wordlist {
         return wordlists["en"];
     }
 
-    if (typeof(wordlist) === "string") {
+    if (typeof (wordlist) === "string") {
         const words = wordlists[wordlist];
         if (words == null) {
             logger.throwArgumentError("unknown locale", "wordlist", wordlist);
@@ -83,6 +83,7 @@ export class HDNode implements ExternallyOwnedAccount {
 
     readonly mnemonic?: Mnemonic;
     readonly path: string;
+    readonly isED25519Type?: boolean;
 
     readonly chainCode: string;
 
@@ -96,7 +97,7 @@ export class HDNode implements ExternallyOwnedAccount {
      *   - fromMnemonic
      *   - fromSeed
      */
-    constructor(constructorGuard: any, privateKey: string, publicKey: string, parentFingerprint: string, chainCode: string, index: number, depth: number, mnemonicOrPath: Mnemonic | string) {
+    constructor(constructorGuard: any, privateKey: string, publicKey: string, parentFingerprint: string, chainCode: string, index: number, depth: number, mnemonicOrPath: Mnemonic | string, isED25519Type?: boolean) {
         logger.checkNew(new.target, HDNode);
 
         /* istanbul ignore if */
@@ -104,11 +105,13 @@ export class HDNode implements ExternallyOwnedAccount {
             throw new Error("HDNode constructor cannot be called directly");
         }
 
+        defineReadOnly(this, "isED25519Type", !!isED25519Type);
+
         if (privateKey) {
-            const signingKey = new SigningKey(privateKey);
+            const signingKey = initializeSigningKey(privateKey, this.isED25519Type);
             defineReadOnly(this, "privateKey", signingKey.privateKey);
             defineReadOnly(this, "publicKey", signingKey.compressedPublicKey);
-            defineReadOnly(this, "alias", computeAlias(this.privateKey));
+            defineReadOnly(this, "alias", computeAlias(this.privateKey, this.isED25519Type));
         } else {
             defineReadOnly(this, "privateKey", null);
             defineReadOnly(this, "alias", null);
@@ -127,7 +130,7 @@ export class HDNode implements ExternallyOwnedAccount {
             defineReadOnly(this, "mnemonic", null);
             defineReadOnly(this, "path", null);
 
-        } else if (typeof(mnemonicOrPath) === "string") {
+        } else if (typeof (mnemonicOrPath) === "string") {
             // From a source that does not preserve the mnemonic (e.g. neutered)
             defineReadOnly(this, "mnemonic", null);
             defineReadOnly(this, "path", mnemonicOrPath);
@@ -149,12 +152,12 @@ export class HDNode implements ExternallyOwnedAccount {
         if (this.depth >= 256) { throw new Error("Depth too large!"); }
 
         return base58check(concat([
-            ((this.privateKey != null) ? "0x0488ADE4": "0x0488B21E"),
+            ((this.privateKey != null) ? "0x0488ADE4" : "0x0488B21E"),
             hexlify(this.depth),
             this.parentFingerprint,
             hexZeroPad(hexlify(this.index), 4),
             this.chainCode,
-            ((this.privateKey != null) ? concat([ "0x00", this.privateKey ]): this.publicKey),
+            ((this.privateKey != null) ? concat(["0x00", this.privateKey]) : this.publicKey),
         ]));
     }
 
@@ -203,13 +206,13 @@ export class HDNode implements ExternallyOwnedAccount {
         if (this.privateKey) {
             ki = bytes32(BigNumber.from(IL).add(this.privateKey).mod(N));
         } else {
-            const ek = new SigningKey(hexlify(IL));
+            const ek = initializeSigningKey(hexlify(IL), this.isED25519Type);
             Ki = ek._addPoint(this.publicKey);
         }
 
         let mnemonicOrPath: Mnemonic | string = path;
 
-        const srcMnemonic =  this.mnemonic;
+        const srcMnemonic = this.mnemonic;
         if (srcMnemonic) {
             mnemonicOrPath = Object.freeze({
                 phrase: srcMnemonic.phrase,
@@ -218,7 +221,7 @@ export class HDNode implements ExternallyOwnedAccount {
             });
         }
 
-        return new HDNode(_constructorGuard, ki, Ki, this.fingerprint, bytes32(IR), index, this.depth + 1, mnemonicOrPath);
+        return new HDNode(_constructorGuard, ki, Ki, this.fingerprint, bytes32(IR), index, this.depth + 1, mnemonicOrPath, this.isED25519Type);
     }
 
     derivePath(path: string): HDNode {
@@ -250,16 +253,16 @@ export class HDNode implements ExternallyOwnedAccount {
     }
 
 
-    static _fromSeed(seed: BytesLike, mnemonic: Mnemonic): HDNode {
+    static _fromSeed(seed: BytesLike, mnemonic: Mnemonic, isED25519Type?: boolean): HDNode {
         const seedArray: Uint8Array = arrayify(seed);
         if (seedArray.length < 16 || seedArray.length > 64) { throw new Error("invalid seed"); }
 
         const I: Uint8Array = arrayify(computeHmac(SupportedAlgorithm.sha512, MasterSecret, seedArray));
 
-        return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic);
+        return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic, isED25519Type);
     }
 
-    static fromMnemonic(mnemonic: string, password?: string, wordlist?: string | Wordlist): HDNode {
+    static fromMnemonic(mnemonic: string, password?: string, wordlist?: string | Wordlist, isED25519Type?: boolean): HDNode {
 
         // If a locale name was passed in, find the associated wordlist
         wordlist = getWordlist(wordlist);
@@ -271,11 +274,11 @@ export class HDNode implements ExternallyOwnedAccount {
             phrase: mnemonic,
             path: "m",
             locale: wordlist.locale
-        });
+        }, isED25519Type);
     }
 
-    static fromSeed(seed: BytesLike): HDNode {
-        return HDNode._fromSeed(seed, null);
+    static fromSeed(seed: BytesLike, isED25519Type?: boolean): HDNode {
+        return HDNode._fromSeed(seed, null, isED25519Type);
     }
 
     static fromExtendedKey(extendedKey: string): HDNode {
@@ -360,7 +363,7 @@ export function entropyToMnemonic(entropy: BytesLike, wordlist?: string | Wordli
         throw new Error("invalid entropy");
     }
 
-    const indices: Array<number> = [ 0 ];
+    const indices: Array<number> = [0];
 
     let remainingBits = 11;
     for (let i = 0; i < entropy.length; i++) {
@@ -372,7 +375,7 @@ export function entropyToMnemonic(entropy: BytesLike, wordlist?: string | Wordli
 
             remainingBits -= 8;
 
-        // This byte will complete an 11-bit index
+            // This byte will complete an 11-bit index
         } else {
             indices[indices.length - 1] <<= remainingBits;
             indices[indices.length - 1] |= entropy[i] >> (8 - remainingBits);
@@ -404,8 +407,16 @@ export function isValidMnemonic(mnemonic: string, wordlist?: Wordlist): boolean 
 }
 
 export function getAccountPath(index: number): string {
-    if (typeof(index) !== "number" || index < 0 || index >= HardenedBit || index % 1) {
+    if (typeof (index) !== "number" || index < 0 || index >= HardenedBit || index % 1) {
         logger.throwArgumentError("invalid account index", "index", index);
     }
-    return `m/44'/60'/${ index }'/0/0`;
+    return `m/44'/60'/${index}'/0/0`;
+}
+
+export function initializeSigningKey(privateKey: BytesLike, isED25519Type: boolean): SigningKey | SigningKeyED {
+    if (isED25519Type) {
+        return new SigningKeyED(privateKey);
+    }
+
+    return new SigningKey(privateKey);
 }

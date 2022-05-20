@@ -3,7 +3,7 @@ import { Provider, TransactionRequest, TransactionResponse } from "@hethers/abst
 import { ExternallyOwnedAccount, Signer, TypedDataDomain, TypedDataField, TypedDataSigner } from "@hethers/abstract-signer";
 import { Bytes, BytesLike, SignatureLike } from "@ethersproject/bytes";
 import { Mnemonic } from "@hethers/hdnode";
-import { SigningKey } from "@ethersproject/signing-key";
+import { SigningKey } from "@hethers/signing-key";
 import { ProgressCallback } from "@hethers/json-wallets";
 import { Wordlist } from "@ethersproject/wordlists";
 export declare class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataSigner {
@@ -11,6 +11,7 @@ export declare class Wallet extends Signer implements ExternallyOwnedAccount, Ty
     readonly account?: Account;
     readonly alias?: string;
     readonly provider: Provider;
+    readonly isED25519Type?: boolean;
     readonly _signingKey: () => SigningKey;
     readonly _mnemonic: () => Mnemonic;
     constructor(identity: BytesLike | ExternallyOwnedAccount | SigningKey, provider?: Provider);
@@ -40,8 +41,8 @@ export declare class Wallet extends Signer implements ExternallyOwnedAccount, Ty
     createAccount(pubKey: BytesLike, initialBalance?: BigInt): Promise<TransactionResponse>;
     static fromEncryptedJson(json: string, password: Bytes | string, progressCallback?: ProgressCallback): Promise<Wallet>;
     static fromEncryptedJsonSync(json: string, password: Bytes | string): Wallet;
-    static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet;
+    static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist, isED25519Type?: boolean): Wallet;
     _checkAddress(operation?: string): void;
 }
-export declare function verifyMessage(message: Bytes | string, signature: SignatureLike): string;
+export declare function verifyMessage(message: Bytes | string, signature: SignatureLike, isED25519Type?: boolean): string;
 //# sourceMappingURL=index.d.ts.map

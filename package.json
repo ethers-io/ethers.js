@@ -88,7 +88,6 @@
     "@ethersproject/properties": "5.5.0",
     "@ethersproject/random": "5.5.0",
     "@ethersproject/sha2": "5.5.0",
-    "@ethersproject/signing-key": "5.5.0",
     "@ethersproject/solidity": "5.5.0",
     "@ethersproject/strings": "5.5.0",
     "@ethersproject/web": "5.5.0",
@@ -100,6 +99,9 @@
     "aes-js": "3.0.0",
     "axios": "^0.24.0",
     "bech32": "1.1.4",
+    "bn.js": "^4.11.9",
+    "elliptic": "6.5.4",
+    "hash.js": "1.1.7",
     "scrypt-js": "3.0.1",
     "tiny-inflate": "1.0.3",
     "ws": "7.4.6"

@@ -1,4 +1,15 @@
 'use strict';
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -119,9 +130,10 @@ describe('Test JSON Wallets', function () {
         });
     });
     // A few extra test cases to test encrypting/decrypting
-    ['one', 'two', 'three'].forEach(function (i) {
+    ['one', 'two', 'three', "ed25519"].forEach(function (i) {
+        var isED25519Type = i === "ed25519";
         var password = 'foobar' + i;
-        var wallet = hethers_1.hethers.Wallet.createRandom({ path: "m/56'/82", extraEntropy: utils.randomHexString('test-' + i, 32) });
+        var wallet = hethers_1.hethers.Wallet.createRandom({ path: "m/56'/82", extraEntropy: utils.randomHexString('test-' + i, 32), isED25519Type: isED25519Type });
         wallet = wallet.connectAccount("0.0.1001");
         it('encrypts and decrypts a random wallet - ' + i, function () {
             this.timeout(1200000);
@@ -130,11 +142,87 @@ describe('Test JSON Wallets', function () {
                     assert_1.default.strictEqual(decryptedWallet.address, wallet.address, 'decrypted wallet - ' + wallet.privateKey);
                     assert_1.default.strictEqual(decryptedWallet.mnemonic.phrase, wallet.mnemonic.phrase, "decrypted wallet mnemonic - " + wallet.privateKey);
                     assert_1.default.strictEqual(decryptedWallet.mnemonic.path, wallet.mnemonic.path, "decrypted wallet path - " + wallet.privateKey);
+                    assert_1.default.strictEqual(decryptedWallet.isED25519Type, isED25519Type);
                     return decryptedWallet.encrypt(password).then(function (encryptedWallet) {
                         var parsedWallet = JSON.parse(encryptedWallet);
                         assert_1.default.strictEqual(decryptedWallet.address.toLowerCase().substring(2), parsedWallet.address, 're-encrypted wallet - ' + wallet.privateKey);
                     });
                 });
+            });
+        });
+    });
+});
+describe("Test wallet(ED25519) keys", function () {
+    var accountEoa = {
+        account: "0.0.34100425",
+        alias: "0.0.QsxEYZU82YPvQqrZ8DAfOktZjmbcfjaPwVATlsaJCCM=",
+        privateKey: "06bd0453347618988f1e1c60bd3e57892a4b8603969827d65b1a87d13b463d70",
+        isED25519Type: true
+    };
+    it("Should use curve ed25519", function () {
+        var wallet = new hethers_1.hethers.Wallet(accountEoa);
+        assert_1.default.strictEqual(wallet._signingKey().curve, "ed25519");
+    });
+    it("Should verify alias", function () {
+        var wallet = new hethers_1.hethers.Wallet(accountEoa);
+        assert_1.default.strictEqual(wallet.alias, accountEoa.alias);
+    });
+    it("Should throw error for invalid alias", function () {
+        var exceptionThrown = false;
+        var errorCode = null;
+        try {
+            new hethers_1.hethers.Wallet(__assign(__assign({}, accountEoa), { alias: "invalid alias" }));
+        }
+        catch (e) {
+            errorCode = e.code;
+            exceptionThrown = true;
+        }
+        assert_1.default.strictEqual(errorCode, "INVALID_ARGUMENT");
+        assert_1.default.strictEqual(exceptionThrown, true);
+    });
+    it("Should work with signing key", function () {
+        var wallet = new hethers_1.hethers.Wallet(accountEoa);
+        var sk = new hethers_1.hethers.Wallet(wallet._signingKey());
+        assert_1.default.strictEqual(sk._signingKey().privateKey, "0x" + sdk_1.PrivateKey.fromString(accountEoa.privateKey).toStringRaw());
+        assert_1.default.strictEqual(sk.isED25519Type, true);
+    });
+    it("Should work with DER header", function () {
+        var wallet = new hethers_1.hethers.Wallet(__assign(__assign({}, accountEoa), { privateKey: "302e020100300506032b65700422042006bd0453347618988f1e1c60bd3e57892a4b8603969827d65b1a87d13b463d70" }));
+        assert_1.default.strictEqual(wallet._signingKey().privateKey, "0x" + sdk_1.PrivateKey.fromString(accountEoa.privateKey).toStringRaw());
+    });
+    it('Should prefix non-prefixed keys(raw)', function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var key, wallet, privKey;
+            return __generator(this, function (_a) {
+                key = 'a1eb7d5c7ef5e47026b262c973b60fa9d6317c27854eeb25aa82b67d8abc73a2';
+                wallet = new hethers_1.hethers.Wallet(key);
+                privKey = wallet._signingKey().privateKey;
+                assert_1.default.strictEqual('0x' + key, privKey);
+                return [2 /*return*/];
+            });
+        });
+    });
+    it("Should prefix @hashgraph/sdk generated keys", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var key, wallet, privKey;
+            return __generator(this, function (_a) {
+                key = sdk_1.PrivateKey.generateED25519().toStringRaw();
+                wallet = new hethers_1.hethers.Wallet(key);
+                privKey = wallet._signingKey().privateKey;
+                assert_1.default.strictEqual('0x' + key, privKey);
+                return [2 /*return*/];
+            });
+        });
+    });
+    it('Should prefix keys when given eoa in constructor', function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var provider, wallet, privKey;
+            return __generator(this, function (_a) {
+                provider = hethers_1.hethers.providers.getDefaultProvider('testnet');
+                wallet = new hethers_1.hethers.Wallet(accountEoa, provider);
+                privKey = wallet._signingKey().privateKey;
+                assert_1.default.strictEqual('0x' + accountEoa.privateKey, privKey);
+                return [2 /*return*/];
             });
         });
     });
@@ -313,6 +401,59 @@ describe('Test Transaction Signing and Parsing', function () {
         });
     });
 });
+describe("Test Signing Messages(ED25519)", function () {
+    it("sign a message should throw unsupported operation", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var exceptionThrown, errorCode, wallet, e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        exceptionThrown = false;
+                        errorCode = null;
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        wallet = new hethers_1.hethers.Wallet({
+                            privateKey: "0xa1eb7d5c7ef5e47026b262c973b60fa9d6317c27854eeb25aa82b67d8abc73a2",
+                            isED25519Type: true,
+                        });
+                        return [4 /*yield*/, wallet.signMessage("some msg")];
+                    case 2:
+                        _a.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_1 = _a.sent();
+                        errorCode = e_1.code;
+                        exceptionThrown = true;
+                        return [3 /*break*/, 4];
+                    case 4:
+                        assert_1.default.strictEqual(errorCode, 'UNSUPPORTED_OPERATION');
+                        assert_1.default.strictEqual(exceptionThrown, true);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("verify a message should throw unsupported operation", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var exceptionThrown, errorCode;
+            return __generator(this, function (_a) {
+                exceptionThrown = false;
+                errorCode = null;
+                try {
+                    hethers_1.hethers.utils.verifyMessage("some msg", "signature", true);
+                }
+                catch (e) {
+                    errorCode = e.code;
+                    exceptionThrown = true;
+                }
+                assert_1.default.strictEqual(errorCode, 'UNSUPPORTED_OPERATION');
+                assert_1.default.strictEqual(exceptionThrown, true);
+                return [2 /*return*/];
+            });
+        });
+    });
+});
 describe('Test Signing Messages', function () {
     var tests = [
         // See: https://etherscan.io/verifySig/57
@@ -368,6 +509,36 @@ describe('Test Signing Messages', function () {
         });
     });
 });
+describe("Wallet(ED25519) Errors", function () {
+    it("fails on privateKey/address mismatch", function () {
+        assert_1.default.throws(function () {
+            var wallet = new hethers_1.hethers.Wallet({
+                account: "0.0.34100425",
+                privateKey: "06bd0453347618988f1e1c60bd3e57892a4b8603969827d65b1a87d13b463d70",
+                isED25519Type: true,
+                alias: ""
+            });
+            console.log(wallet);
+        }, function (error) {
+            return error.reason === "privateKey/alias mismatch";
+        });
+    });
+    it("fails on mnemonic/address mismatch", function () {
+        assert_1.default.throws(function () {
+            var wallet = new hethers_1.hethers.Wallet({
+                account: "0.0.34100425",
+                privateKey: "06bd0453347618988f1e1c60bd3e57892a4b8603969827d65b1a87d13b463d70",
+                isED25519Type: true,
+                mnemonic: {
+                    phrase: "pact grief smile usage kind pledge river excess garbage mixed olive receive"
+                }
+            });
+            console.log(wallet);
+        }, function (error) {
+            return error.reason === "mnemonic/privateKey mismatch";
+        });
+    });
+});
 describe("Wallet Errors", function () {
     it("fails on privateKey/address mismatch", function () {
         assert_1.default.throws(function () {
@@ -410,6 +581,158 @@ describe("Wallet Errors", function () {
     //         reject(new Error("assert failed; did not throw"));
     //     });
     // });
+});
+describe("Wallet(ED25519) tx signing", function () {
+    var hederaEoaED = {
+        account: "0.0.34100425",
+        privateKey: "06bd0453347618988f1e1c60bd3e57892a4b8603969827d65b1a87d13b463d70",
+        isED25519Type: true,
+    };
+    var hederaEoaEC = {
+        privateKey: "0xb4dcc0874133bede5d88ce1f30dad6016fbed30bc070936e9ff115b177da9cf3",
+        account: "0.0.34201607",
+        isED25519Type: false
+    };
+    var provider = hethers_1.hethers.providers.getDefaultProvider('testnet');
+    var walletED = new hethers_1.hethers.Wallet(hederaEoaED, provider);
+    var walletEC = new hethers_1.hethers.Wallet(hederaEoaEC, provider);
+    it("Should transfer funds between accounts", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var edBalanceBefore, ecBalanceBefore, tx, edBalanceAfter, ecBalanceAfter;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, walletED.getBalance()];
+                    case 1:
+                        edBalanceBefore = (_a.sent()).toNumber();
+                        return [4 /*yield*/, walletEC.getBalance()];
+                    case 2:
+                        ecBalanceBefore = (_a.sent()).toNumber();
+                        return [4 /*yield*/, walletED.sendTransaction({
+                                to: walletEC.account,
+                                value: 1000,
+                            })];
+                    case 3:
+                        tx = _a.sent();
+                        return [4 /*yield*/, tx.wait()];
+                    case 4:
+                        _a.sent();
+                        return [4 /*yield*/, walletED.getBalance()];
+                    case 5:
+                        edBalanceAfter = (_a.sent()).toNumber();
+                        return [4 /*yield*/, walletEC.getBalance()];
+                    case 6:
+                        ecBalanceAfter = (_a.sent()).toNumber();
+                        assert_1.default.strictEqual(edBalanceBefore > edBalanceAfter, true);
+                        assert_1.default.strictEqual(ecBalanceBefore < ecBalanceAfter, true);
+                        assert_1.default.strictEqual(ecBalanceAfter - ecBalanceBefore, 1000);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    }).timeout(90000);
+    it("Should sign ContractCall", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, tx, signed, fromBytes, cc;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        data = Buffer.from("\"abi\":{},\"values\":{}").toString('hex');
+                        tx = {
+                            to: hethers_1.hethers.utils.getAddressFromAccount("0.0.98"),
+                            from: walletED.address,
+                            data: '0x' + data,
+                            gasLimit: 100000
+                        };
+                        return [4 /*yield*/, walletED.signTransaction(tx)];
+                    case 1:
+                        signed = _a.sent();
+                        assert_1.default.ok(signed !== "", "Unexpected nil signed tx");
+                        fromBytes = sdk_1.Transaction.fromBytes(hethers_1.hethers.utils.arrayify(signed));
+                        cc = fromBytes;
+                        assert_1.default.ok(cc.gas.toNumber() === tx.gasLimit, "Gas mismatch");
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("Should sign ContractCreate", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var tx, signed, fromBytes, cc;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        tx = {
+                            from: walletED.address,
+                            gasLimit: 10000,
+                            customData: {
+                                bytecodeFileId: "0.0.122121"
+                            }
+                        };
+                        return [4 /*yield*/, walletED.signTransaction(tx)];
+                    case 1:
+                        signed = _a.sent();
+                        assert_1.default.ok(signed !== "", "Unexpected nil signed tx");
+                        fromBytes = sdk_1.Transaction.fromBytes(hethers_1.hethers.utils.arrayify(signed));
+                        cc = fromBytes;
+                        assert_1.default.ok(cc.gas.toNumber() === tx.gasLimit, "Gas mismatch");
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("Should sign FileCreate", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var tx, signed, fromBytes, fc;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        tx = {
+                            from: walletED.address,
+                            gasLimit: 10000,
+                            customData: {
+                                fileChunk: "Hello world! I will definitely break your smart contract experience",
+                                fileKey: sdk_1.PublicKey.fromString("302a300506032b6570032100cd1c5cd43b103bc5b30dd38d421a6a32386377b99d0d1b438359a72dc525bde1")
+                            }
+                        };
+                        return [4 /*yield*/, walletED.signTransaction(tx)];
+                    case 1:
+                        signed = _a.sent();
+                        assert_1.default.ok(signed !== "", "Unexpected nil signed tx");
+                        fromBytes = sdk_1.Transaction.fromBytes(hethers_1.hethers.utils.arrayify(signed));
+                        fc = fromBytes;
+                        assert_1.default.ok(Buffer.from(fc.contents).toString() == tx.customData.fileChunk, "Contents mismatch");
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("Should sign FileAppend", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var tx, signed, fromBytes, fa;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        tx = {
+                            from: walletED.address,
+                            gasLimit: 10000,
+                            customData: {
+                                fileChunk: "Hello world! I will definitely break your smart contract experience",
+                                fileId: "0.0.12212"
+                            }
+                        };
+                        return [4 /*yield*/, walletED.signTransaction(tx)];
+                    case 1:
+                        signed = _a.sent();
+                        assert_1.default.ok(signed !== "", "Unexpected nil signed tx");
+                        fromBytes = sdk_1.Transaction.fromBytes(hethers_1.hethers.utils.arrayify(signed));
+                        fa = fromBytes;
+                        assert_1.default.ok(Buffer.from(fa.contents).toString() == tx.customData.fileChunk, "Contents mismatch");
+                        assert_1.default.ok(fa.fileId.toString() == tx.customData.fileId, "FileId mismatch");
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
 });
 describe("Wallet tx signing", function () {
     var hederaEoa = {
@@ -703,6 +1026,216 @@ describe("Wallet local calls", function () {
         });
     });
 });
+describe("Wallet createAccount(ED25519)", function () {
+    var _this = this;
+    var wallet, newAccount, newAccountPublicKey, provider;
+    var timeout = 90000;
+    before(function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var hederaEoaED;
+            return __generator(this, function (_a) {
+                this.timeout(timeout);
+                hederaEoaED = {
+                    account: "0.0.34100425",
+                    privateKey: "06bd0453347618988f1e1c60bd3e57892a4b8603969827d65b1a87d13b463d70",
+                    isED25519Type: true,
+                };
+                provider = hethers_1.hethers.providers.getDefaultProvider('testnet');
+                // @ts-ignore
+                wallet = new hethers_1.hethers.Wallet(hederaEoaED, provider);
+                return [2 /*return*/];
+            });
+        });
+    });
+    beforeEach(function () { return __awaiter(_this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            newAccount = hethers_1.hethers.Wallet.createRandom({ isED25519Type: true });
+            newAccountPublicKey = newAccount._signingKey().compressedPublicKey;
+            return [2 /*return*/];
+        });
+    }); });
+    it("Should create an account", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var tx;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, wallet.createAccount(newAccountPublicKey)];
+                    case 1:
+                        tx = _a.sent();
+                        assert_1.default.ok(tx, 'tx exists');
+                        assert_1.default.ok(tx.customData, 'tx.customData exists');
+                        assert_1.default.ok(tx.customData.accountId, 'accountId exists');
+                        assert_1.default.strictEqual(newAccount.isED25519Type, true);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    }).timeout(timeout);
+    it("Should add initial balance if provided", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var tx, newAccountAddress, newAccBalance;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, wallet.createAccount(newAccountPublicKey, BigInt(123))];
+                    case 1:
+                        tx = _a.sent();
+                        assert_1.default.ok(tx, 'tx exists');
+                        assert_1.default.ok(tx.customData, 'tx.customData exists');
+                        assert_1.default.ok(tx.customData.accountId, 'accountId exists');
+                        newAccountAddress = hethers_1.hethers.utils.getAddressFromAccount(tx.customData.accountId.toString());
+                        return [4 /*yield*/, provider.getBalance(newAccountAddress)];
+                    case 2:
+                        newAccBalance = _a.sent();
+                        assert_1.default.strictEqual(BigInt(123).toString(), newAccBalance.toString(), 'The initial balance is correct');
+                        return [2 /*return*/];
+                }
+            });
+        });
+    }).timeout(timeout);
+    it("Transaction receipt contains the account address", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var tx, receipt;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, wallet.createAccount(newAccountPublicKey, BigInt(123))];
+                    case 1:
+                        tx = _a.sent();
+                        assert_1.default.notStrictEqual(tx, null, 'tx exists');
+                        assert_1.default.notStrictEqual(tx.customData, null, 'tx.customData exists');
+                        assert_1.default.notStrictEqual(tx.customData.accountId, null, 'accountId exists');
+                        assert_1.default.strictEqual(tx.value.toString(), BigInt(123).toString(), 'InitialBalance is the same as tx.value');
+                        return [4 /*yield*/, tx.wait()];
+                    case 2:
+                        receipt = _a.sent();
+                        assert_1.default.notStrictEqual(receipt.accountAddress, null, "accountAddress exists");
+                        assert_1.default.notStrictEqual(receipt.transactionId, null, "transactionId exists");
+                        assert_1.default.ok(receipt.accountAddress.match(new RegExp(/^0x/)), "accountAddress has the correct format");
+                        return [2 /*return*/];
+                }
+            });
+        });
+    }).timeout(timeout);
+    it("Should transfer funds to new account", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var clientAccountId, newWallet, newWalletBalanceBefore, oldWalletBalanceBefore, tx, newWalletBalanceAfter, oldWalletBalanceAfter;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, wallet.createAccount(newAccountPublicKey)];
+                    case 1:
+                        clientAccountId = (_a.sent()).customData.accountId;
+                        newWallet = newAccount.connect(provider).connectAccount(clientAccountId.toString());
+                        return [4 /*yield*/, newWallet.getBalance()];
+                    case 2:
+                        newWalletBalanceBefore = (_a.sent()).toNumber();
+                        return [4 /*yield*/, wallet.getBalance()];
+                    case 3:
+                        oldWalletBalanceBefore = (_a.sent()).toNumber();
+                        return [4 /*yield*/, wallet.sendTransaction({
+                                to: newWallet.account,
+                                value: 1000,
+                            })];
+                    case 4:
+                        tx = _a.sent();
+                        return [4 /*yield*/, tx.wait()];
+                    case 5:
+                        _a.sent();
+                        return [4 /*yield*/, newWallet.getBalance()];
+                    case 6:
+                        newWalletBalanceAfter = (_a.sent()).toNumber();
+                        return [4 /*yield*/, wallet.getBalance()];
+                    case 7:
+                        oldWalletBalanceAfter = (_a.sent()).toNumber();
+                        assert_1.default.strictEqual(newWalletBalanceBefore < newWalletBalanceAfter, true);
+                        assert_1.default.strictEqual(oldWalletBalanceBefore > oldWalletBalanceAfter, true);
+                        assert_1.default.strictEqual(newWalletBalanceAfter - newWalletBalanceBefore, 1000);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    }).timeout(timeout);
+    it("Should transfer funds from newly created account", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var clientAccountId, newWallet, tx1, newWalletBalanceBefore, oldWalletBalanceBefore, tx2, newWalletBalanceAfter, oldWalletBalanceAfter;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, wallet.createAccount(newAccountPublicKey)];
+                    case 1:
+                        clientAccountId = (_a.sent()).customData.accountId;
+                        newWallet = newAccount.connect(provider).connectAccount(clientAccountId.toString());
+                        return [4 /*yield*/, wallet.sendTransaction({
+                                to: newWallet.account,
+                                value: 1000000,
+                            })];
+                    case 2:
+                        tx1 = _a.sent();
+                        return [4 /*yield*/, tx1.wait()];
+                    case 3:
+                        _a.sent();
+                        return [4 /*yield*/, newWallet.getBalance()];
+                    case 4:
+                        newWalletBalanceBefore = (_a.sent()).toNumber();
+                        return [4 /*yield*/, wallet.getBalance()];
+                    case 5:
+                        oldWalletBalanceBefore = (_a.sent()).toNumber();
+                        return [4 /*yield*/, newWallet.sendTransaction({
+                                to: wallet.account,
+                                value: 1000,
+                            })];
+                    case 6:
+                        tx2 = _a.sent();
+                        return [4 /*yield*/, tx2.wait()];
+                    case 7:
+                        _a.sent();
+                        return [4 /*yield*/, newWallet.getBalance()];
+                    case 8:
+                        newWalletBalanceAfter = (_a.sent()).toNumber();
+                        return [4 /*yield*/, wallet.getBalance()];
+                    case 9:
+                        oldWalletBalanceAfter = (_a.sent()).toNumber();
+                        assert_1.default.strictEqual(newWalletBalanceBefore > newWalletBalanceAfter, true);
+                        assert_1.default.strictEqual(oldWalletBalanceBefore < oldWalletBalanceAfter, true);
+                        assert_1.default.strictEqual(oldWalletBalanceAfter - oldWalletBalanceBefore, 1000);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    }).timeout(timeout);
+    it("Should throw an exception if provider is not set", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var exceptionThrown, errorReason, clientAccountId, newWallet, e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        exceptionThrown = false;
+                        errorReason = null;
+                        return [4 /*yield*/, wallet.createAccount(newAccountPublicKey)];
+                    case 1:
+                        clientAccountId = (_a.sent()).customData.accountId;
+                        newWallet = newAccount.connectAccount(clientAccountId.toString());
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 5]);
+                        return [4 /*yield*/, newWallet.sendTransaction({
+                                to: wallet.account,
+                                value: 1
+                            })];
+                    case 3:
+                        _a.sent();
+                        return [3 /*break*/, 5];
+                    case 4:
+                        e_2 = _a.sent();
+                        errorReason = e_2.reason;
+                        exceptionThrown = true;
+                        return [3 /*break*/, 5];
+                    case 5:
+                        assert_1.default.strictEqual(errorReason, 'missing provider');
+                        assert_1.default.strictEqual(exceptionThrown, true);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    }).timeout(timeout);
+});
 describe("Wallet createAccount", function () {
     var _this = this;
     this.retries(3);
@@ -833,7 +1366,7 @@ describe("Wallet createAccount", function () {
     }).timeout(timeout);
     it("Should throw an error for crypto transfer with data field", function () {
         return __awaiter(this, void 0, void 0, function () {
-            var exceptionThrown, errorReason, e_1;
+            var exceptionThrown, errorReason, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -851,8 +1384,8 @@ describe("Wallet createAccount", function () {
                         _a.sent();
                         return [3 /*break*/, 4];
                     case 3:
-                        e_1 = _a.sent();
-                        errorReason = e_1.reason;
+                        e_3 = _a.sent();
+                        errorReason = e_3.reason;
                         exceptionThrown = true;
                         return [3 /*break*/, 4];
                     case 4:
@@ -865,7 +1398,7 @@ describe("Wallet createAccount", function () {
     }).timeout(timeout);
     it("Should throw an error for crypto transfer with gasLimit field", function () {
         return __awaiter(this, void 0, void 0, function () {
-            var exceptionThrown, errorReason, e_2;
+            var exceptionThrown, errorReason, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -883,8 +1416,8 @@ describe("Wallet createAccount", function () {
                         _a.sent();
                         return [3 /*break*/, 4];
                     case 3:
-                        e_2 = _a.sent();
-                        errorReason = e_2.reason;
+                        e_4 = _a.sent();
+                        errorReason = e_4.reason;
                         exceptionThrown = true;
                         return [3 /*break*/, 4];
                     case 4:
@@ -897,7 +1430,7 @@ describe("Wallet createAccount", function () {
     }).timeout(timeout);
     it("Should throw an error for crypto transfer with missing to field", function () {
         return __awaiter(this, void 0, void 0, function () {
-            var exceptionThrown, errorCode, e_3;
+            var exceptionThrown, errorCode, e_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -913,8 +1446,8 @@ describe("Wallet createAccount", function () {
                         _a.sent();
                         return [3 /*break*/, 4];
                     case 3:
-                        e_3 = _a.sent();
-                        errorCode = e_3.code;
+                        e_5 = _a.sent();
+                        errorCode = e_5.code;
                         exceptionThrown = true;
                         return [3 /*break*/, 4];
                     case 4:
@@ -927,7 +1460,7 @@ describe("Wallet createAccount", function () {
     }).timeout(timeout);
     it("Should make a contract call with 'to' and 'value' with provided contract address as 'to'", function () {
         return __awaiter(this, void 0, void 0, function () {
-            var bytecodeTokenWithArgs, contractFactory, contract, exceptionThrown, e_4;
+            var bytecodeTokenWithArgs, contractFactory, contract, exceptionThrown, e_6;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -951,7 +1484,7 @@ describe("Wallet createAccount", function () {
                         _a.sent();
                         return [3 /*break*/, 6];
                     case 5:
-                        e_4 = _a.sent();
+                        e_6 = _a.sent();
                         exceptionThrown = true;
                         return [3 /*break*/, 6];
                     case 6:
@@ -963,7 +1496,7 @@ describe("Wallet createAccount", function () {
     }).timeout(180000);
     it("Should throw an exception if provider is not set", function () {
         return __awaiter(this, void 0, void 0, function () {
-            var exceptionThrown, errorReason, acc1WalletWithoutProvider, e_5;
+            var exceptionThrown, errorReason, acc1WalletWithoutProvider, e_7;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -981,8 +1514,8 @@ describe("Wallet createAccount", function () {
                         _a.sent();
                         return [3 /*break*/, 4];
                     case 3:
-                        e_5 = _a.sent();
-                        errorReason = e_5.reason;
+                        e_7 = _a.sent();
+                        errorReason = e_7.reason;
                         exceptionThrown = true;
                         return [3 /*break*/, 4];
                     case 4:

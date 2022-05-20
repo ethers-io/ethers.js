@@ -237,7 +237,9 @@ var Signer = /** @class */ (function () {
                             bodyBytes: proto_1.TransactionBody.encode(paymentBody).finish(),
                             sigMap: {}
                         };
-                        walletKey = sdk_1.PrivateKey.fromStringECDSA(this._signingKey().privateKey);
+                        walletKey = this.isED25519Type
+                            ? sdk_1.PrivateKey.fromStringED25519(this._signingKey().privateKey)
+                            : sdk_1.PrivateKey.fromStringECDSA(this._signingKey().privateKey);
                         signature = walletKey.sign(signed.bodyBytes);
                         signed.sigMap = {
                             sigPair: [walletKey.publicKey._toProtobufSignature(signature)]

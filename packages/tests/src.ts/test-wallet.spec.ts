@@ -72,12 +72,13 @@ describe('Test JSON Wallets', function() {
     });
 
     // A few extra test cases to test encrypting/decrypting
-    ['one', 'two', 'three'].forEach(function(i) {
+    ['one', 'two', 'three', "ed25519"].forEach(function (i) {
+        let isED25519Type = i === "ed25519";
         let password = 'foobar' + i;
-        let wallet = hethers.Wallet.createRandom({ path: "m/56'/82", extraEntropy: utils.randomHexString('test-' + i, 32) });
+        let wallet = hethers.Wallet.createRandom({ path: "m/56'/82", extraEntropy: utils.randomHexString('test-' + i, 32), isED25519Type });
         wallet = wallet.connectAccount("0.0.1001");
 
-        it('encrypts and decrypts a random wallet - ' + i, function() {
+        it('encrypts and decrypts a random wallet - ' + i, function () {
             this.timeout(1200000);
 
             return wallet.encrypt(password).then((json: string) => {
@@ -88,6 +89,7 @@ describe('Test JSON Wallets', function() {
                         "decrypted wallet mnemonic - " + wallet.privateKey);
                     assert.strictEqual(decryptedWallet.mnemonic.path, wallet.mnemonic.path,
                         "decrypted wallet path - " + wallet.privateKey);
+                    assert.strictEqual(decryptedWallet.isED25519Type, isED25519Type);
                     return decryptedWallet.encrypt(password).then((encryptedWallet) => {
                         let parsedWallet = JSON.parse(encryptedWallet);
                         assert.strictEqual(decryptedWallet.address.toLowerCase().substring(2), parsedWallet.address,
@@ -96,6 +98,83 @@ describe('Test JSON Wallets', function() {
                 });
             });
         });
+    });
+});
+
+
+describe("Test wallet(ED25519) keys", function () {
+    const accountEoa: any = {
+        account: "0.0.34100425",
+        alias: "0.0.QsxEYZU82YPvQqrZ8DAfOktZjmbcfjaPwVATlsaJCCM=",
+        privateKey: "06bd0453347618988f1e1c60bd3e57892a4b8603969827d65b1a87d13b463d70",
+        isED25519Type: true
+    };
+
+    it("Should use curve ed25519", function () {
+        const wallet = new hethers.Wallet(accountEoa);
+        assert.strictEqual(wallet._signingKey().curve, "ed25519");
+    });
+
+    it("Should verify alias", function () {
+        const wallet = new hethers.Wallet(accountEoa);
+        assert.strictEqual(wallet.alias, accountEoa.alias);
+    });
+
+    it("Should throw error for invalid alias", function () {
+
+        let exceptionThrown = false;
+        let errorCode = null;
+
+        try {
+            new hethers.Wallet({
+                ...accountEoa,
+                alias: "invalid alias"
+            });
+
+        } catch (e: any) {
+            errorCode = e.code;
+            exceptionThrown = true;
+        }
+        assert.strictEqual(errorCode, "INVALID_ARGUMENT");
+        assert.strictEqual(exceptionThrown, true);
+    });
+
+    it("Should work with signing key", function () {
+        const wallet = new hethers.Wallet(accountEoa);
+        const sk = new hethers.Wallet(wallet._signingKey());
+
+        assert.strictEqual(sk._signingKey().privateKey, "0x" + PrivateKey.fromString(accountEoa.privateKey).toStringRaw());
+        assert.strictEqual(sk.isED25519Type, true);
+    });
+
+    it("Should work with DER header", function () {
+        const wallet = new hethers.Wallet({
+            ...accountEoa,
+            privateKey: "302e020100300506032b65700422042006bd0453347618988f1e1c60bd3e57892a4b8603969827d65b1a87d13b463d70"
+        });
+
+        assert.strictEqual(wallet._signingKey().privateKey, "0x" + PrivateKey.fromString(accountEoa.privateKey).toStringRaw());
+    });
+
+    it('Should prefix non-prefixed keys(raw)', async function () {
+        const key = 'a1eb7d5c7ef5e47026b262c973b60fa9d6317c27854eeb25aa82b67d8abc73a2';
+        const wallet = new hethers.Wallet(key);
+        const privKey = wallet._signingKey().privateKey;
+        assert.strictEqual('0x' + key, privKey);
+    });
+
+    it("Should prefix @hashgraph/sdk generated keys", async function () {
+        const key = PrivateKey.generateED25519().toStringRaw();
+        const wallet = new hethers.Wallet(key);
+        const privKey = wallet._signingKey().privateKey;
+        assert.strictEqual('0x' + key, privKey);
+    });
+
+    it('Should prefix keys when given eoa in constructor', async function () {
+        const provider = hethers.providers.getDefaultProvider('testnet');
+        const wallet = new hethers.Wallet(accountEoa, provider);
+        const privKey = wallet._signingKey().privateKey;
+        assert.strictEqual('0x' + accountEoa.privateKey, privKey);
     });
 });
 
@@ -274,6 +353,43 @@ describe('Test Transaction Signing and Parsing', function() {
     });
 });
 
+
+describe("Test Signing Messages(ED25519)", function () {
+    it("sign a message should throw unsupported operation", async function () {
+        let exceptionThrown = false;
+        let errorCode = null;
+
+        try {
+            const wallet = new hethers.Wallet(<any>{
+                privateKey: "0xa1eb7d5c7ef5e47026b262c973b60fa9d6317c27854eeb25aa82b67d8abc73a2",
+                isED25519Type: true,
+            });
+            await wallet.signMessage("some msg");
+        } catch (e: any) {
+            errorCode = e.code;
+            exceptionThrown = true;
+        }
+
+        assert.strictEqual(errorCode, 'UNSUPPORTED_OPERATION');
+        assert.strictEqual(exceptionThrown, true);
+    })
+    it("verify a message should throw unsupported operation", async function () {
+        let exceptionThrown = false;
+        let errorCode = null;
+
+        try {
+            hethers.utils.verifyMessage("some msg", "signature", true);
+        } catch (e: any) {
+            errorCode = e.code;
+            exceptionThrown = true;
+        }
+
+        assert.strictEqual(errorCode, 'UNSUPPORTED_OPERATION');
+        assert.strictEqual(exceptionThrown, true);
+    })
+
+});
+
 describe('Test Signing Messages', function() {
     type TestCase = {
         address: string;
@@ -344,6 +460,38 @@ describe('Test Signing Messages', function() {
     });
 });
 
+describe("Wallet(ED25519) Errors", function () {
+    it("fails on privateKey/address mismatch", function () {
+        assert.throws(() => {
+            const wallet = new hethers.Wallet(<any>{
+                account: "0.0.34100425",
+                privateKey: "06bd0453347618988f1e1c60bd3e57892a4b8603969827d65b1a87d13b463d70",
+                isED25519Type: true,
+                alias: ""
+            });
+            console.log(wallet);
+        }, (error: any) => {
+            return error.reason === "privateKey/alias mismatch";
+        });
+    });
+
+    it("fails on mnemonic/address mismatch", function () {
+        assert.throws(() => {
+            const wallet = new hethers.Wallet(<any>{
+                account: "0.0.34100425",
+                privateKey: "06bd0453347618988f1e1c60bd3e57892a4b8603969827d65b1a87d13b463d70",
+                isED25519Type: true,
+                mnemonic: {
+                    phrase: "pact grief smile usage kind pledge river excess garbage mixed olive receive"
+                }
+            });
+            console.log(wallet);
+        }, (error: any) => {
+            return error.reason === "mnemonic/privateKey mismatch";
+        });
+    });
+});
+
 describe("Wallet Errors", function() {
     it("fails on privateKey/address mismatch", function() {
         assert.throws(() => {
@@ -388,6 +536,103 @@ describe("Wallet Errors", function() {
     //         reject(new Error("assert failed; did not throw"));
     //     });
     // });
+});
+
+describe("Wallet(ED25519) tx signing", function () {
+
+    const hederaEoaED: any = {
+        account: "0.0.34100425",
+        privateKey: "06bd0453347618988f1e1c60bd3e57892a4b8603969827d65b1a87d13b463d70",
+        isED25519Type: true,
+    };
+    const hederaEoaEC: any = {
+        privateKey: "0xb4dcc0874133bede5d88ce1f30dad6016fbed30bc070936e9ff115b177da9cf3",
+        account: "0.0.34201607",
+        isED25519Type: false
+    };
+    const provider = hethers.providers.getDefaultProvider('testnet');
+    const walletED = new hethers.Wallet(hederaEoaED, provider);
+    const walletEC = new hethers.Wallet(hederaEoaEC, provider);
+
+    it("Should transfer funds between accounts", async function () {
+        const edBalanceBefore = (await walletED.getBalance()).toNumber();
+        const ecBalanceBefore = (await walletEC.getBalance()).toNumber();
+        const tx = await walletED.sendTransaction({
+            to: walletEC.account,
+            value: 1000,
+        });
+        await tx.wait();
+        const edBalanceAfter = (await walletED.getBalance()).toNumber();
+        const ecBalanceAfter = (await walletEC.getBalance()).toNumber();
+
+        assert.strictEqual(edBalanceBefore > edBalanceAfter, true);
+        assert.strictEqual(ecBalanceBefore < ecBalanceAfter, true);
+        assert.strictEqual(ecBalanceAfter - ecBalanceBefore, 1000);
+    }).timeout(90000);
+
+    it("Should sign ContractCall", async function () {
+        const data = Buffer.from(`"abi":{},"values":{}`).toString('hex');
+        const tx = {
+            to: hethers.utils.getAddressFromAccount("0.0.98"),
+            from: walletED.address,
+            data: '0x' + data,
+            gasLimit: 100000
+
+        };
+        const signed = await walletED.signTransaction(tx);
+        assert.ok(signed !== "", "Unexpected nil signed tx");
+        const fromBytes = Transaction.fromBytes(hethers.utils.arrayify(signed));
+        const cc = fromBytes as ContractExecuteTransaction;
+        assert.ok(cc.gas.toNumber() === tx.gasLimit, "Gas mismatch");
+    });
+
+    it("Should sign ContractCreate", async function () {
+        const tx = {
+            from: walletED.address,
+            gasLimit: 10000,
+            customData: {
+                bytecodeFileId: "0.0.122121"
+            }
+        };
+        const signed = await walletED.signTransaction(tx);
+        assert.ok(signed !== "", "Unexpected nil signed tx");
+        const fromBytes = Transaction.fromBytes(hethers.utils.arrayify(signed));
+        const cc = fromBytes as ContractCreateTransaction;
+        assert.ok(cc.gas.toNumber() === tx.gasLimit, "Gas mismatch");
+    });
+
+    it("Should sign FileCreate", async function () {
+        const tx = {
+            from: walletED.address,
+            gasLimit: 10000,
+            customData: {
+                fileChunk: "Hello world! I will definitely break your smart contract experience",
+                fileKey: PublicKey.fromString("302a300506032b6570032100cd1c5cd43b103bc5b30dd38d421a6a32386377b99d0d1b438359a72dc525bde1")
+            }
+        };
+        const signed = await walletED.signTransaction(tx);
+        assert.ok(signed !== "", "Unexpected nil signed tx");
+        const fromBytes = Transaction.fromBytes(hethers.utils.arrayify(signed));
+        const fc = fromBytes as FileCreateTransaction;
+        assert.ok(Buffer.from(fc.contents).toString() == tx.customData.fileChunk, "Contents mismatch");
+    });
+
+    it("Should sign FileAppend", async function () {
+        const tx = {
+            from: walletED.address,
+            gasLimit: 10000,
+            customData: {
+                fileChunk: "Hello world! I will definitely break your smart contract experience",
+                fileId: "0.0.12212"
+            }
+        };
+        const signed = await walletED.signTransaction(tx);
+        assert.ok(signed !== "", "Unexpected nil signed tx");
+        const fromBytes = Transaction.fromBytes(hethers.utils.arrayify(signed));
+        const fa = fromBytes as FileAppendTransaction;
+        assert.ok(Buffer.from(fa.contents).toString() == tx.customData.fileChunk, "Contents mismatch");
+        assert.ok(fa.fileId.toString() == tx.customData.fileId, "FileId mismatch");
+    });
 });
 
 describe("Wallet tx signing", function () {
@@ -555,6 +800,132 @@ describe("Wallet local calls", async function () {
             assert.strictEqual(err.code, hethers.utils.Logger.errors.INVALID_ARGUMENT)
         }
     });
+});
+
+
+describe("Wallet createAccount(ED25519)", function () {
+
+    let wallet: hethers.Wallet, newAccount: hethers.Wallet, newAccountPublicKey: BytesLike,
+        provider: hethers.providers.BaseProvider;
+    const timeout = 90000;
+
+    before(async function () {
+        this.timeout(timeout);
+        const hederaEoaED: any = {
+            account: "0.0.34100425",
+            privateKey: "06bd0453347618988f1e1c60bd3e57892a4b8603969827d65b1a87d13b463d70",
+            isED25519Type: true,
+        };
+        provider = hethers.providers.getDefaultProvider('testnet');
+        // @ts-ignore
+        wallet = new hethers.Wallet(hederaEoaED, provider);
+    });
+
+    beforeEach(async () => {
+        newAccount = hethers.Wallet.createRandom({ isED25519Type: true });
+        newAccountPublicKey = newAccount._signingKey().compressedPublicKey;
+
+    });
+
+    it("Should create an account", async function () {
+        const tx = await wallet.createAccount(newAccountPublicKey);
+        assert.ok(tx, 'tx exists');
+        assert.ok(tx.customData, 'tx.customData exists');
+        assert.ok(tx.customData.accountId, 'accountId exists');
+        assert.strictEqual(newAccount.isED25519Type, true);
+    }).timeout(timeout);
+
+    it("Should add initial balance if provided", async function () {
+        const tx = await wallet.createAccount(newAccountPublicKey, BigInt(123));
+        assert.ok(tx, 'tx exists');
+        assert.ok(tx.customData, 'tx.customData exists');
+        assert.ok(tx.customData.accountId, 'accountId exists');
+
+        const newAccountAddress = hethers.utils.getAddressFromAccount(tx.customData.accountId.toString());
+        const newAccBalance = await provider.getBalance(newAccountAddress);
+        assert.strictEqual(BigInt(123).toString(), newAccBalance.toString(), 'The initial balance is correct');
+    }).timeout(timeout);
+
+    it("Transaction receipt contains the account address", async function () {
+        const tx = await wallet.createAccount(newAccountPublicKey, BigInt(123));
+        assert.notStrictEqual(tx, null, 'tx exists');
+        assert.notStrictEqual(tx.customData, null, 'tx.customData exists');
+        assert.notStrictEqual(tx.customData.accountId, null, 'accountId exists');
+        assert.strictEqual(tx.value.toString(), BigInt(123).toString(), 'InitialBalance is the same as tx.value');
+
+        const receipt = await tx.wait();
+
+        assert.notStrictEqual(receipt.accountAddress, null, "accountAddress exists");
+        assert.notStrictEqual(receipt.transactionId, null, "transactionId exists");
+        assert.ok(receipt.accountAddress.match(new RegExp(/^0x/)), "accountAddress has the correct format");
+    }).timeout(timeout);
+
+    it("Should transfer funds to new account", async function () {
+        const clientAccountId = (await wallet.createAccount(newAccountPublicKey)).customData.accountId;
+        const newWallet = newAccount.connect(provider).connectAccount(clientAccountId.toString());
+
+        const newWalletBalanceBefore = (await newWallet.getBalance()).toNumber();
+        const oldWalletBalanceBefore = (await wallet.getBalance()).toNumber();
+        const tx = await wallet.sendTransaction({
+            to: newWallet.account,
+            value: 1000,
+        });
+        await tx.wait();
+        const newWalletBalanceAfter = (await newWallet.getBalance()).toNumber();
+        const oldWalletBalanceAfter = (await wallet.getBalance()).toNumber();
+
+        assert.strictEqual(newWalletBalanceBefore < newWalletBalanceAfter, true);
+        assert.strictEqual(oldWalletBalanceBefore > oldWalletBalanceAfter, true);
+        assert.strictEqual(newWalletBalanceAfter - newWalletBalanceBefore, 1000);
+    }).timeout(timeout);
+
+    it("Should transfer funds from newly created account", async function () {
+        const clientAccountId = (await wallet.createAccount(newAccountPublicKey)).customData.accountId;
+        const newWallet = newAccount.connect(provider).connectAccount(clientAccountId.toString());
+
+        const tx1 = await wallet.sendTransaction({
+            to: newWallet.account,
+            value: 1000000,
+        });
+        await tx1.wait();
+
+        const newWalletBalanceBefore = (await newWallet.getBalance()).toNumber();
+        const oldWalletBalanceBefore = (await wallet.getBalance()).toNumber();
+
+        const tx2 = await newWallet.sendTransaction({
+            to: wallet.account,
+            value: 1000,
+        });
+        await tx2.wait();
+
+        const newWalletBalanceAfter = (await newWallet.getBalance()).toNumber();
+        const oldWalletBalanceAfter = (await wallet.getBalance()).toNumber();
+
+        assert.strictEqual(newWalletBalanceBefore > newWalletBalanceAfter, true);
+        assert.strictEqual(oldWalletBalanceBefore < oldWalletBalanceAfter, true);
+        assert.strictEqual(oldWalletBalanceAfter - oldWalletBalanceBefore, 1000);
+    }).timeout(timeout);
+
+    it("Should throw an exception if provider is not set", async function () {
+        let exceptionThrown = false;
+        let errorReason = null;
+
+        // @ts-ignore
+        const clientAccountId = (await wallet.createAccount(newAccountPublicKey)).customData.accountId;
+        const newWallet = newAccount.connectAccount(clientAccountId.toString());
+        try {
+            await newWallet.sendTransaction({
+                to: wallet.account,
+                value: 1
+            });
+        } catch (e: any) {
+            errorReason = e.reason;
+            exceptionThrown = true;
+        }
+
+        assert.strictEqual(errorReason, 'missing provider');
+        assert.strictEqual(exceptionThrown, true);
+    }).timeout(timeout);
 });
 
 describe("Wallet createAccount", function () {

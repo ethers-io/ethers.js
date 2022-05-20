@@ -74,7 +74,7 @@ var address_1 = require("@hethers/address");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
 var constants_1 = require("@hethers/constants");
-var signing_key_1 = require("@ethersproject/signing-key");
+var signing_key_1 = require("@hethers/signing-key");
 var logger_1 = require("@hethers/logger");
 var _version_1 = require("./_version");
 var base64 = __importStar(require("@ethersproject/base64"));
@@ -95,8 +95,8 @@ function handleNumber(value) {
     }
     return bignumber_1.BigNumber.from(value);
 }
-function computeAlias(key) {
-    var publicKey = (0, signing_key_1.computePublicKey)(key);
+function computeAlias(key, isED25519Type) {
+    var publicKey = (0, signing_key_1.computePublicKey)(key, false, isED25519Type);
     return computeAliasFromPubKey(publicKey);
 }
 exports.computeAlias = computeAlias;

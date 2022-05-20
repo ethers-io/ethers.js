@@ -12,11 +12,11 @@ import { Provider } from "@hethers/abstract-provider";
 import { Signer } from "@hethers/abstract-signer";
 import { arrayify, concat, hexDataSlice, hexlify, isHexString, joinSignature } from "@ethersproject/bytes";
 import { hashMessage } from "@ethersproject/hash";
-import { defaultPath, entropyToMnemonic, HDNode } from "@hethers/hdnode";
+import { defaultPath, entropyToMnemonic, initializeSigningKey, HDNode } from "@hethers/hdnode";
 import { keccak256 } from "@ethersproject/keccak256";
 import { defineReadOnly } from "@ethersproject/properties";
 import { randomBytes } from "@ethersproject/random";
-import { recoverPublicKey, SigningKey } from "@ethersproject/signing-key";
+import { recoverPublicKey, SigningKey } from "@hethers/signing-key";
 import { decryptJsonWallet, decryptJsonWalletSync, encryptKeystore } from "@hethers/json-wallets";
 import { computeAlias, serializeHederaTransaction } from "@hethers/transactions";
 import { Logger } from "@hethers/logger";
@@ -26,7 +26,7 @@ const logger = new Logger(version);
 function isAccount(value) {
     if (!value || !value.privateKey)
         return false;
-    let privKeyCopy = value.privateKey;
+    let privKeyCopy = HederaPrivKey.fromString(value.privateKey).toStringRaw();
     if (!privKeyCopy.startsWith('0x')) {
         privKeyCopy = '0x' + privKeyCopy;
     }
@@ -50,12 +50,14 @@ export class Wallet extends Signer {
         logger.checkNew(new.target, Wallet);
         super();
         if (isAccount(identity) && !SigningKey.isSigningKey(identity)) {
-            let privKey = identity.privateKey;
+            defineReadOnly(this, "isED25519Type", !!identity.isED25519Type);
+            // removes DER header if presented in the private key
+            let privKey = HederaPrivKey.fromString(identity.privateKey).toStringRaw();
             // A lot of common tools do not prefix private keys with a 0x (see: #1166)
             if (typeof (privKey) === "string") {
                 privKey = prepend0x(privKey);
             }
-            const signingKey = new SigningKey(privKey);
+            const signingKey = initializeSigningKey(privKey, this.isED25519Type);
             defineReadOnly(this, "_signingKey", () => signingKey);
             if (identity.address || identity.account) {
                 defineReadOnly(this, "address", identity.address ? getAddress(identity.address) : getAddressFromAccount(identity.account));
@@ -63,7 +65,7 @@ export class Wallet extends Signer {
             }
             if (hasAlias(identity)) {
                 defineReadOnly(this, "alias", identity.alias);
-                if (this.alias !== computeAlias(signingKey.privateKey)) {
+                if (this.alias !== computeAlias(signingKey.privateKey, this.isED25519Type)) {
                     logger.throwArgumentError("privateKey/alias mismatch", "privateKey", "[REDACTED]");
                 }
             }
@@ -75,7 +77,7 @@ export class Wallet extends Signer {
                     locale: srcMnemonic.locale || "en"
                 }));
                 const mnemonic = this.mnemonic;
-                const node = HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
+                const node = HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale, this.isED25519Type).derivePath(mnemonic.path);
                 if (node.privateKey !== this._signingKey().privateKey) {
                     logger.throwArgumentError("mnemonic/privateKey mismatch", "privateKey", "[REDACTED]");
                 }
@@ -87,18 +89,20 @@ export class Wallet extends Signer {
         else {
             if (SigningKey.isSigningKey(identity)) {
                 /* istanbul ignore if */
-                if (identity.curve !== "secp256k1") {
-                    logger.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
+                if (identity.curve !== "secp256k1" && identity.curve !== "ed25519") {
+                    logger.throwArgumentError("unsupported curve; must be secp256k1 or ed25519", "privateKey", "[REDACTED]");
                 }
                 defineReadOnly(this, "_signingKey", () => identity);
+                defineReadOnly(this, "isED25519Type", identity.curve === "ed25519");
             }
             else {
                 // A lot of common tools do not prefix private keys with a 0x (see: #1166)
                 if (typeof (identity) === "string") {
-                    identity = prepend0x(identity);
+                    identity = prepend0x(HederaPrivKey.fromString(identity).toStringRaw());
                 }
                 const signingKey = new SigningKey(identity);
                 defineReadOnly(this, "_signingKey", () => signingKey);
+                defineReadOnly(this, "isED25519Type", false);
             }
             defineReadOnly(this, "_mnemonic", () => null);
             defineReadOnly(this, "alias", computeAlias(this._signingKey().privateKey));
@@ -135,6 +139,7 @@ export class Wallet extends Signer {
             privateKey: this._signingKey().privateKey,
             address: getAddressFromAccount(accountLike),
             alias: this.alias,
+            isED25519Type: this.isED25519Type,
             mnemonic: this._mnemonic()
         };
         return new Wallet(eoa, this.provider);
@@ -145,7 +150,9 @@ export class Wallet extends Signer {
         return this.populateTransaction(tx).then((readyTx) => __awaiter(this, void 0, void 0, function* () {
             const pubKey = HederaPubKey.fromString(this._signingKey().compressedPublicKey);
             const tx = serializeHederaTransaction(readyTx, pubKey);
-            const privKey = HederaPrivKey.fromStringECDSA(this._signingKey().privateKey);
+            const privKey = this.isED25519Type
+                ? HederaPrivKey.fromStringED25519(this._signingKey().privateKey)
+                : HederaPrivKey.fromStringECDSA(this._signingKey().privateKey);
             const signed = yield tx.sign(privKey);
             return hexlify(signed.toBytes());
         }));
@@ -194,7 +201,7 @@ export class Wallet extends Signer {
             entropy = arrayify(hexDataSlice(keccak256(concat([entropy, options.extraEntropy])), 0, 16));
         }
         const mnemonic = entropyToMnemonic(entropy, options.locale);
-        return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
+        return Wallet.fromMnemonic(mnemonic, options.path, options.locale, options.isED25519Type);
     }
     createAccount(pubKey, initialBalance) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -218,11 +225,11 @@ export class Wallet extends Signer {
     static fromEncryptedJsonSync(json, password) {
         return new Wallet(decryptJsonWalletSync(json, password));
     }
-    static fromMnemonic(mnemonic, path, wordlist) {
+    static fromMnemonic(mnemonic, path, wordlist, isED25519Type) {
         if (!path) {
             path = defaultPath;
         }
-        return new Wallet(HDNode.fromMnemonic(mnemonic, null, wordlist).derivePath(path));
+        return new Wallet(HDNode.fromMnemonic(mnemonic, null, wordlist, isED25519Type).derivePath(path));
     }
     _checkAddress(operation) {
         if (!this.address) {
@@ -232,7 +239,7 @@ export class Wallet extends Signer {
         }
     }
 }
-export function verifyMessage(message, signature) {
-    return recoverPublicKey(arrayify(hashMessage(message)), signature);
+export function verifyMessage(message, signature, isED25519Type) {
+    return recoverPublicKey(arrayify(hashMessage(message)), signature, isED25519Type);
 }
 //# sourceMappingURL=index.js.map

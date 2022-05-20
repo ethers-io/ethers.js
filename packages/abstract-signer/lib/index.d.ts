@@ -3,7 +3,7 @@ import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { Bytes, BytesLike } from "@ethersproject/bytes";
 import { Deferrable } from "@ethersproject/properties";
 import { Account } from "@hethers/address";
-import { SigningKey } from "@ethersproject/signing-key";
+import { SigningKey } from "@hethers/signing-key";
 export interface TypedDataDomain {
     name?: string;
     version?: string;
@@ -20,6 +20,7 @@ export interface ExternallyOwnedAccount {
     readonly account?: Account;
     readonly alias?: string;
     readonly privateKey: string;
+    readonly isED25519Type?: boolean;
 }
 export interface TypedDataSigner {
     _signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
@@ -27,6 +28,7 @@ export interface TypedDataSigner {
 export declare abstract class Signer {
     readonly provider?: Provider;
     readonly _signingKey: () => SigningKey;
+    readonly isED25519Type?: boolean;
     abstract getAddress(): Promise<string>;
     abstract signMessage(message: Bytes | string): Promise<string>;
     /**

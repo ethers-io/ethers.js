@@ -6,7 +6,7 @@
     "@ethersproject/keccak256": "5.5.0",
     "@ethersproject/properties": "5.5.0",
     "@ethersproject/random": "5.5.0",
-    "@ethersproject/signing-key": "5.5.0",
+    "@hethers/signing-key": "1.1.0",
     "@ethersproject/wordlists": "5.5.0",
     "@hashgraph/sdk": "2.11.0-beta.1",
     "@hethers/abstract-provider": "1.1.0",

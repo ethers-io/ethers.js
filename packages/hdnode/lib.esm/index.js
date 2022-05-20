@@ -5,7 +5,7 @@ import { BigNumber } from "@ethersproject/bignumber";
 import { toUtf8Bytes, UnicodeNormalizationForm } from "@ethersproject/strings";
 import { pbkdf2 } from "@ethersproject/pbkdf2";
 import { defineReadOnly } from "@ethersproject/properties";
-import { SigningKey } from "@ethersproject/signing-key";
+import { SigningKey, SigningKeyED } from "@hethers/signing-key";
 import { computeHmac, ripemd160, sha256, SupportedAlgorithm } from "@ethersproject/sha2";
 import { wordlists } from "@ethersproject/wordlists";
 import { Logger } from "@hethers/logger";
@@ -53,17 +53,18 @@ export class HDNode {
      *   - fromMnemonic
      *   - fromSeed
      */
-    constructor(constructorGuard, privateKey, publicKey, parentFingerprint, chainCode, index, depth, mnemonicOrPath) {
+    constructor(constructorGuard, privateKey, publicKey, parentFingerprint, chainCode, index, depth, mnemonicOrPath, isED25519Type) {
         logger.checkNew(new.target, HDNode);
         /* istanbul ignore if */
         if (constructorGuard !== _constructorGuard) {
             throw new Error("HDNode constructor cannot be called directly");
         }
+        defineReadOnly(this, "isED25519Type", !!isED25519Type);
         if (privateKey) {
-            const signingKey = new SigningKey(privateKey);
+            const signingKey = initializeSigningKey(privateKey, this.isED25519Type);
             defineReadOnly(this, "privateKey", signingKey.privateKey);
             defineReadOnly(this, "publicKey", signingKey.compressedPublicKey);
-            defineReadOnly(this, "alias", computeAlias(this.privateKey));
+            defineReadOnly(this, "alias", computeAlias(this.privateKey, this.isED25519Type));
         }
         else {
             defineReadOnly(this, "privateKey", null);
@@ -152,7 +153,7 @@ export class HDNode {
             ki = bytes32(BigNumber.from(IL).add(this.privateKey).mod(N));
         }
         else {
-            const ek = new SigningKey(hexlify(IL));
+            const ek = initializeSigningKey(hexlify(IL), this.isED25519Type);
             Ki = ek._addPoint(this.publicKey);
         }
         let mnemonicOrPath = path;
@@ -164,7 +165,7 @@ export class HDNode {
                 locale: (srcMnemonic.locale || "en")
             });
         }
-        return new HDNode(_constructorGuard, ki, Ki, this.fingerprint, bytes32(IR), index, this.depth + 1, mnemonicOrPath);
+        return new HDNode(_constructorGuard, ki, Ki, this.fingerprint, bytes32(IR), index, this.depth + 1, mnemonicOrPath, this.isED25519Type);
     }
     derivePath(path) {
         const components = path.split("/");
@@ -197,15 +198,15 @@ export class HDNode {
         }
         return result;
     }
-    static _fromSeed(seed, mnemonic) {
+    static _fromSeed(seed, mnemonic, isED25519Type) {
         const seedArray = arrayify(seed);
         if (seedArray.length < 16 || seedArray.length > 64) {
             throw new Error("invalid seed");
         }
         const I = arrayify(computeHmac(SupportedAlgorithm.sha512, MasterSecret, seedArray));
-        return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic);
+        return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic, isED25519Type);
     }
-    static fromMnemonic(mnemonic, password, wordlist) {
+    static fromMnemonic(mnemonic, password, wordlist, isED25519Type) {
         // If a locale name was passed in, find the associated wordlist
         wordlist = getWordlist(wordlist);
         // Normalize the case and spacing in the mnemonic (throws if the mnemonic is invalid)
@@ -214,10 +215,10 @@ export class HDNode {
             phrase: mnemonic,
             path: "m",
             locale: wordlist.locale
-        });
+        }, isED25519Type);
     }
-    static fromSeed(seed) {
-        return HDNode._fromSeed(seed, null);
+    static fromSeed(seed, isED25519Type) {
+        return HDNode._fromSeed(seed, null, isED25519Type);
     }
     static fromExtendedKey(extendedKey) {
         const bytes = Base58.decode(extendedKey);
@@ -327,5 +328,11 @@ export function getAccountPath(index) {
         logger.throwArgumentError("invalid account index", "index", index);
     }
     return `m/44'/60'/${index}'/0/0`;
+}
+export function initializeSigningKey(privateKey, isED25519Type) {
+    if (isED25519Type) {
+        return new SigningKeyED(privateKey);
+    }
+    return new SigningKey(privateKey);
 }
 //# sourceMappingURL=index.js.map

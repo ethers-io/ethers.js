@@ -6,6 +6,7 @@ export interface _KeystoreAccount {
     address?: string;
     privateKey: string;
     mnemonic?: Mnemonic;
+    isED25519Type?: boolean;
     _isKeystoreAccount: boolean;
 }
 export declare class KeystoreAccount extends Description<_KeystoreAccount> implements ExternallyOwnedAccount {

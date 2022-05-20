@@ -14,7 +14,7 @@ import { computeHmac, ripemd160, sha256, sha512 } from "@ethersproject/sha2";
 import { keccak256 as solidityKeccak256, pack as solidityPack, sha256 as soliditySha256 } from "@ethersproject/solidity";
 import { randomBytes, shuffled } from "@ethersproject/random";
 import { checkProperties, deepCopy, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
-import { computePublicKey, recoverPublicKey, SigningKey } from "@ethersproject/signing-key";
+import { computePublicKey, recoverPublicKey, SigningKey, SigningKeyED } from "@hethers/signing-key";
 import { formatBytes32String, nameprep, parseBytes32String, _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String, Utf8ErrorFuncs } from "@ethersproject/strings";
 import { accessListify, computeAlias, parse as parseTransaction, TransactionTypes } from "@hethers/transactions";
 import { commify, formatHbar, parseHbar, formatUnits, parseUnits } from "@hethers/units";
@@ -82,6 +82,7 @@ export {
     defaultPath,
     HDNode,
     SigningKey,
+    SigningKeyED,
 
     Interface,
 

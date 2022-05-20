@@ -1,5 +1,5 @@
-import {Account, AccountLike, getAccountFromAddress, getAddress, getAddressFromAccount} from "@hethers/address";
-import {Provider, TransactionRequest, TransactionResponse} from "@hethers/abstract-provider";
+import { Account, AccountLike, getAccountFromAddress, getAddress, getAddressFromAccount } from "@hethers/address";
+import { Provider, TransactionRequest, TransactionResponse } from "@hethers/abstract-provider";
 import {
 	ExternallyOwnedAccount,
 	Signer,
@@ -18,27 +18,27 @@ import {
 	joinSignature,
 	SignatureLike
 } from "@ethersproject/bytes";
-import {hashMessage} from "@ethersproject/hash";
-import {defaultPath, entropyToMnemonic, HDNode, Mnemonic} from "@hethers/hdnode";
-import {keccak256} from "@ethersproject/keccak256";
-import {defineReadOnly} from "@ethersproject/properties";
-import {randomBytes} from "@ethersproject/random";
-import {recoverPublicKey, SigningKey} from "@ethersproject/signing-key";
-import {decryptJsonWallet, decryptJsonWalletSync, encryptKeystore, ProgressCallback} from "@hethers/json-wallets";
-import {computeAlias, serializeHederaTransaction, UnsignedTransaction} from "@hethers/transactions";
-import {Wordlist} from "@ethersproject/wordlists";
+import { hashMessage } from "@ethersproject/hash";
+import { defaultPath, entropyToMnemonic, initializeSigningKey, HDNode, Mnemonic } from "@hethers/hdnode";
+import { keccak256 } from "@ethersproject/keccak256";
+import { defineReadOnly } from "@ethersproject/properties";
+import { randomBytes } from "@ethersproject/random";
+import { recoverPublicKey, SigningKey, SigningKeyED } from "@hethers/signing-key";
+import { decryptJsonWallet, decryptJsonWalletSync, encryptKeystore, ProgressCallback } from "@hethers/json-wallets";
+import { computeAlias, serializeHederaTransaction, UnsignedTransaction } from "@hethers/transactions";
+import { Wordlist } from "@ethersproject/wordlists";
 
-import {Logger} from "@hethers/logger";
-import {version} from "./_version";
-import {PrivateKey as HederaPrivKey, PublicKey as HederaPubKey} from "@hashgraph/sdk";
+import { Logger } from "@hethers/logger";
+import { version } from "./_version";
+import { PrivateKey as HederaPrivKey, PublicKey as HederaPubKey } from "@hashgraph/sdk";
 
 const logger = new Logger(version);
 
 function isAccount(value: any): value is ExternallyOwnedAccount {
 	if (!value || !value.privateKey) return false;
-	let privKeyCopy = value.privateKey;
+	let privKeyCopy = HederaPrivKey.fromString(value.privateKey).toStringRaw();
 	if (!privKeyCopy.startsWith('0x')) {
-		privKeyCopy = '0x'+privKeyCopy
+		privKeyCopy = '0x' + privKeyCopy
 	}
 	return isHexString(privKeyCopy, 32);
 }
@@ -68,6 +68,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
 	// Hedera alias
 	readonly alias?: string;
 	readonly provider: Provider;
+	readonly isED25519Type?: boolean;
 
 	// Wrapping the _signingKey and _mnemonic in a getter function prevents
 	// leaking the private key in console.log; still, be careful! :)
@@ -79,12 +80,15 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
 		super();
 
 		if (isAccount(identity) && !SigningKey.isSigningKey(identity)) {
-			let privKey = identity.privateKey;
+			defineReadOnly(this, "isED25519Type", !!identity.isED25519Type);
+
+			// removes DER header if presented in the private key
+			let privKey = HederaPrivKey.fromString(identity.privateKey).toStringRaw();
 			// A lot of common tools do not prefix private keys with a 0x (see: #1166)
 			if (typeof (privKey) === "string") {
 				privKey = prepend0x(privKey);
 			}
-			const signingKey = new SigningKey(privKey);
+			const signingKey = initializeSigningKey(privKey, this.isED25519Type);
 			defineReadOnly(this, "_signingKey", () => signingKey);
 
 			if (identity.address || identity.account) {
@@ -94,7 +98,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
 
 			if (hasAlias(identity)) {
 				defineReadOnly(this, "alias", identity.alias);
-				if (this.alias !== computeAlias(signingKey.privateKey)) {
+				if (this.alias !== computeAlias(signingKey.privateKey, this.isED25519Type)) {
 					logger.throwArgumentError("privateKey/alias mismatch", "privateKey", "[REDACTED]");
 				}
 			}
@@ -109,7 +113,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
 					}
 				));
 				const mnemonic = this.mnemonic;
-				const node = HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
+				const node = HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale, this.isED25519Type).derivePath(mnemonic.path);
 				if (node.privateKey !== this._signingKey().privateKey) {
 					logger.throwArgumentError("mnemonic/privateKey mismatch", "privateKey", "[REDACTED]");
 				}
@@ -119,18 +123,20 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
 		} else {
 			if (SigningKey.isSigningKey(identity)) {
 				/* istanbul ignore if */
-				if (identity.curve !== "secp256k1") {
-					logger.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
+				if (identity.curve !== "secp256k1" && identity.curve !== "ed25519") {
+					logger.throwArgumentError("unsupported curve; must be secp256k1 or ed25519", "privateKey", "[REDACTED]");
 				}
-				defineReadOnly(this, "_signingKey", () => (<SigningKey>identity));
+				defineReadOnly(this, "_signingKey", () => (<SigningKey | SigningKeyED>identity));
+				defineReadOnly(this, "isED25519Type", identity.curve === "ed25519");
 			} else {
 				// A lot of common tools do not prefix private keys with a 0x (see: #1166)
 				if (typeof (identity) === "string") {
-					identity = prepend0x(identity);
+					identity = prepend0x(HederaPrivKey.fromString(identity).toStringRaw());
 				}
 
 				const signingKey = new SigningKey(identity);
 				defineReadOnly(this, "_signingKey", () => signingKey);
+				defineReadOnly(this, "isED25519Type", false);
 			}
 
 			defineReadOnly(this, "_mnemonic", (): Mnemonic => null);
@@ -177,6 +183,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
 			privateKey: this._signingKey().privateKey,
 			address: getAddressFromAccount(accountLike),
 			alias: this.alias,
+			isED25519Type: this.isED25519Type,
 			mnemonic: this._mnemonic()
 		};
 		return new Wallet(eoa, this.provider);
@@ -188,7 +195,10 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
 		return this.populateTransaction(tx).then(async readyTx => {
 			const pubKey = HederaPubKey.fromString(this._signingKey().compressedPublicKey);
 			const tx = serializeHederaTransaction(<UnsignedTransaction>readyTx, pubKey);
-			const privKey = HederaPrivKey.fromStringECDSA(this._signingKey().privateKey);
+			const privKey = this.isED25519Type
+				? HederaPrivKey.fromStringED25519(this._signingKey().privateKey)
+				: HederaPrivKey.fromStringECDSA(this._signingKey().privateKey);
+
 			const signed = await tx.sign(privKey);
 			return hexlify(signed.toBytes());
 		});
@@ -244,7 +254,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
 		}
 
 		const mnemonic = entropyToMnemonic(entropy, options.locale);
-		return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
+		return Wallet.fromMnemonic(mnemonic, options.path, options.locale, options.isED25519Type);
 	}
 
 	async createAccount(pubKey: BytesLike, initialBalance?: BigInt): Promise<TransactionResponse> {
@@ -269,11 +279,11 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
 		return new Wallet(decryptJsonWalletSync(json, password));
 	}
 
-	static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet {
+	static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist, isED25519Type?: boolean): Wallet {
 		if (!path) {
 			path = defaultPath;
 		}
-		return new Wallet(HDNode.fromMnemonic(mnemonic, null, wordlist).derivePath(path));
+		return new Wallet(HDNode.fromMnemonic(mnemonic, null, wordlist, isED25519Type).derivePath(path));
 	}
 
 	_checkAddress(operation?: string): void {
@@ -285,6 +295,6 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
 	}
 }
 
-export function verifyMessage(message: Bytes | string, signature: SignatureLike): string {
-	return recoverPublicKey(arrayify(hashMessage(message)), signature);
+export function verifyMessage(message: Bytes | string, signature: SignatureLike, isED25519Type?: boolean): string {
+	return recoverPublicKey(arrayify(hashMessage(message)), signature, isED25519Type);
 }

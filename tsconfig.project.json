@@ -26,6 +26,9 @@
       "path": "./packages/networks"
     },
     {
+      "path": "./packages/signing-key"
+    },
+    {
       "path": "./packages/transactions"
     },
     {

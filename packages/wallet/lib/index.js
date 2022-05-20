@@ -61,7 +61,7 @@ var hdnode_1 = require("@hethers/hdnode");
 var keccak256_1 = require("@ethersproject/keccak256");
 var properties_1 = require("@ethersproject/properties");
 var random_1 = require("@ethersproject/random");
-var signing_key_1 = require("@ethersproject/signing-key");
+var signing_key_1 = require("@hethers/signing-key");
 var json_wallets_1 = require("@hethers/json-wallets");
 var transactions_1 = require("@hethers/transactions");
 var logger_1 = require("@hethers/logger");
@@ -71,7 +71,7 @@ var logger = new logger_1.Logger(_version_1.version);
 function isAccount(value) {
     if (!value || !value.privateKey)
         return false;
-    var privKeyCopy = value.privateKey;
+    var privKeyCopy = sdk_1.PrivateKey.fromString(value.privateKey).toStringRaw();
     if (!privKeyCopy.startsWith('0x')) {
         privKeyCopy = '0x' + privKeyCopy;
     }
@@ -98,12 +98,14 @@ var Wallet = /** @class */ (function (_super) {
         logger.checkNew(_newTarget, Wallet);
         _this = _super.call(this) || this;
         if (isAccount(identity) && !signing_key_1.SigningKey.isSigningKey(identity)) {
-            var privKey = identity.privateKey;
+            (0, properties_1.defineReadOnly)(_this, "isED25519Type", !!identity.isED25519Type);
+            // removes DER header if presented in the private key
+            var privKey = sdk_1.PrivateKey.fromString(identity.privateKey).toStringRaw();
             // A lot of common tools do not prefix private keys with a 0x (see: #1166)
             if (typeof (privKey) === "string") {
                 privKey = prepend0x(privKey);
             }
-            var signingKey_1 = new signing_key_1.SigningKey(privKey);
+            var signingKey_1 = (0, hdnode_1.initializeSigningKey)(privKey, _this.isED25519Type);
             (0, properties_1.defineReadOnly)(_this, "_signingKey", function () { return signingKey_1; });
             if (identity.address || identity.account) {
                 (0, properties_1.defineReadOnly)(_this, "address", identity.address ? (0, address_1.getAddress)(identity.address) : (0, address_1.getAddressFromAccount)(identity.account));
@@ -111,7 +113,7 @@ var Wallet = /** @class */ (function (_super) {
             }
             if (hasAlias(identity)) {
                 (0, properties_1.defineReadOnly)(_this, "alias", identity.alias);
-                if (_this.alias !== (0, transactions_1.computeAlias)(signingKey_1.privateKey)) {
+                if (_this.alias !== (0, transactions_1.computeAlias)(signingKey_1.privateKey, _this.isED25519Type)) {
                     logger.throwArgumentError("privateKey/alias mismatch", "privateKey", "[REDACTED]");
                 }
             }
@@ -123,7 +125,7 @@ var Wallet = /** @class */ (function (_super) {
                     locale: srcMnemonic_1.locale || "en"
                 }); });
                 var mnemonic = _this.mnemonic;
-                var node = hdnode_1.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
+                var node = hdnode_1.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale, _this.isED25519Type).derivePath(mnemonic.path);
                 if (node.privateKey !== _this._signingKey().privateKey) {
                     logger.throwArgumentError("mnemonic/privateKey mismatch", "privateKey", "[REDACTED]");
                 }
@@ -135,18 +137,20 @@ var Wallet = /** @class */ (function (_super) {
         else {
             if (signing_key_1.SigningKey.isSigningKey(identity)) {
                 /* istanbul ignore if */
-                if (identity.curve !== "secp256k1") {
-                    logger.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
+                if (identity.curve !== "secp256k1" && identity.curve !== "ed25519") {
+                    logger.throwArgumentError("unsupported curve; must be secp256k1 or ed25519", "privateKey", "[REDACTED]");
                 }
                 (0, properties_1.defineReadOnly)(_this, "_signingKey", function () { return identity; });
+                (0, properties_1.defineReadOnly)(_this, "isED25519Type", identity.curve === "ed25519");
             }
             else {
                 // A lot of common tools do not prefix private keys with a 0x (see: #1166)
                 if (typeof (identity) === "string") {
-                    identity = prepend0x(identity);
+                    identity = prepend0x(sdk_1.PrivateKey.fromString(identity).toStringRaw());
                 }
                 var signingKey_2 = new signing_key_1.SigningKey(identity);
                 (0, properties_1.defineReadOnly)(_this, "_signingKey", function () { return signingKey_2; });
+                (0, properties_1.defineReadOnly)(_this, "isED25519Type", false);
             }
             (0, properties_1.defineReadOnly)(_this, "_mnemonic", function () { return null; });
             (0, properties_1.defineReadOnly)(_this, "alias", (0, transactions_1.computeAlias)(_this._signingKey().privateKey));
@@ -196,6 +200,7 @@ var Wallet = /** @class */ (function (_super) {
             privateKey: this._signingKey().privateKey,
             address: (0, address_1.getAddressFromAccount)(accountLike),
             alias: this.alias,
+            isED25519Type: this.isED25519Type,
             mnemonic: this._mnemonic()
         };
         return new Wallet(eoa, this.provider);
@@ -211,7 +216,9 @@ var Wallet = /** @class */ (function (_super) {
                     case 0:
                         pubKey = sdk_1.PublicKey.fromString(this._signingKey().compressedPublicKey);
                         tx = (0, transactions_1.serializeHederaTransaction)(readyTx, pubKey);
-                        privKey = sdk_1.PrivateKey.fromStringECDSA(this._signingKey().privateKey);
+                        privKey = this.isED25519Type
+                            ? sdk_1.PrivateKey.fromStringED25519(this._signingKey().privateKey)
+                            : sdk_1.PrivateKey.fromStringECDSA(this._signingKey().privateKey);
                         return [4 /*yield*/, tx.sign(privKey)];
                     case 1:
                         signed = _a.sent();
@@ -268,7 +275,7 @@ var Wallet = /** @class */ (function (_super) {
             entropy = (0, bytes_1.arrayify)((0, bytes_1.hexDataSlice)((0, keccak256_1.keccak256)((0, bytes_1.concat)([entropy, options.extraEntropy])), 0, 16));
         }
         var mnemonic = (0, hdnode_1.entropyToMnemonic)(entropy, options.locale);
-        return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
+        return Wallet.fromMnemonic(mnemonic, options.path, options.locale, options.isED25519Type);
     };
     Wallet.prototype.createAccount = function (pubKey, initialBalance) {
         return __awaiter(this, void 0, void 0, function () {
@@ -300,11 +307,11 @@ var Wallet = /** @class */ (function (_super) {
     Wallet.fromEncryptedJsonSync = function (json, password) {
         return new Wallet((0, json_wallets_1.decryptJsonWalletSync)(json, password));
     };
-    Wallet.fromMnemonic = function (mnemonic, path, wordlist) {
+    Wallet.fromMnemonic = function (mnemonic, path, wordlist, isED25519Type) {
         if (!path) {
             path = hdnode_1.defaultPath;
         }
-        return new Wallet(hdnode_1.HDNode.fromMnemonic(mnemonic, null, wordlist).derivePath(path));
+        return new Wallet(hdnode_1.HDNode.fromMnemonic(mnemonic, null, wordlist, isED25519Type).derivePath(path));
     };
     Wallet.prototype._checkAddress = function (operation) {
         if (!this.address) {
@@ -316,8 +323,8 @@ var Wallet = /** @class */ (function (_super) {
     return Wallet;
 }(abstract_signer_1.Signer));
 exports.Wallet = Wallet;
-function verifyMessage(message, signature) {
-    return (0, signing_key_1.recoverPublicKey)((0, bytes_1.arrayify)((0, hash_1.hashMessage)(message)), signature);
+function verifyMessage(message, signature, isED25519Type) {
+    return (0, signing_key_1.recoverPublicKey)((0, bytes_1.arrayify)((0, hash_1.hashMessage)(message)), signature, isED25519Type);
 }
 exports.verifyMessage = verifyMessage;
 //# sourceMappingURL=index.js.map

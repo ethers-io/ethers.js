@@ -40,7 +40,7 @@ export interface Transaction {
     v?: number;
     accessList?: AccessList;
 }
-export declare function computeAlias(key: BytesLike | string): string;
+export declare function computeAlias(key: BytesLike | string, isED25519Type?: boolean): string;
 export declare function computeAliasFromPubKey(pubKey: string): string;
 export declare function accessListify(value: AccessListish): AccessList;
 export declare function serializeHederaTransaction(transaction: UnsignedTransaction, pubKey?: HederaPubKey): HederaTransaction;

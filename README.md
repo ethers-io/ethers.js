@@ -14,7 +14,7 @@ The library is a modified fork of the [ethers](https://github.com/ethers-io/ethe
 - Import and export BIP 39 **mnemonic phrases** (12 word backup phrases) and **HD Wallets** (English as well as Czech, French, Italian, Japanese, Korean, Simplified Chinese, Spanish, Traditional Chinese)
 - Meta-classes create JavaScript objects from any contract ABI, including **ABIv2** and **Human-Readable ABI**
 - Connect to the Hedera Network over both Consensus and Mirror nodes.
-- **Modular** packages; include only what you need
+- **Modular** packages; include only what you need.
 - Extensive [documentation](https://docs.hedera.com/hethers/)
 - Large collection of **test cases** which are maintained and added to
 - Fully **TypeScript** ready, with definition files and full TypeScript source

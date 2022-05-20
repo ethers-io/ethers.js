@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAccountPath = exports.isValidMnemonic = exports.entropyToMnemonic = exports.mnemonicToEntropy = exports.mnemonicToSeed = exports.HDNode = exports.defaultPath = void 0;
+exports.initializeSigningKey = exports.getAccountPath = exports.isValidMnemonic = exports.entropyToMnemonic = exports.mnemonicToEntropy = exports.mnemonicToSeed = exports.HDNode = exports.defaultPath = void 0;
 var basex_1 = require("@ethersproject/basex");
 var bytes_1 = require("@ethersproject/bytes");
 var bignumber_1 = require("@ethersproject/bignumber");
 var strings_1 = require("@ethersproject/strings");
 var pbkdf2_1 = require("@ethersproject/pbkdf2");
 var properties_1 = require("@ethersproject/properties");
-var signing_key_1 = require("@ethersproject/signing-key");
+var signing_key_1 = require("@hethers/signing-key");
 var sha2_1 = require("@ethersproject/sha2");
 var wordlists_1 = require("@ethersproject/wordlists");
 var logger_1 = require("@hethers/logger");
@@ -55,18 +55,19 @@ var HDNode = /** @class */ (function () {
      *   - fromMnemonic
      *   - fromSeed
      */
-    function HDNode(constructorGuard, privateKey, publicKey, parentFingerprint, chainCode, index, depth, mnemonicOrPath) {
+    function HDNode(constructorGuard, privateKey, publicKey, parentFingerprint, chainCode, index, depth, mnemonicOrPath, isED25519Type) {
         var _newTarget = this.constructor;
         logger.checkNew(_newTarget, HDNode);
         /* istanbul ignore if */
         if (constructorGuard !== _constructorGuard) {
             throw new Error("HDNode constructor cannot be called directly");
         }
+        (0, properties_1.defineReadOnly)(this, "isED25519Type", !!isED25519Type);
         if (privateKey) {
-            var signingKey = new signing_key_1.SigningKey(privateKey);
+            var signingKey = initializeSigningKey(privateKey, this.isED25519Type);
             (0, properties_1.defineReadOnly)(this, "privateKey", signingKey.privateKey);
             (0, properties_1.defineReadOnly)(this, "publicKey", signingKey.compressedPublicKey);
-            (0, properties_1.defineReadOnly)(this, "alias", (0, transactions_1.computeAlias)(this.privateKey));
+            (0, properties_1.defineReadOnly)(this, "alias", (0, transactions_1.computeAlias)(this.privateKey, this.isED25519Type));
         }
         else {
             (0, properties_1.defineReadOnly)(this, "privateKey", null);
@@ -159,7 +160,7 @@ var HDNode = /** @class */ (function () {
             ki = bytes32(bignumber_1.BigNumber.from(IL).add(this.privateKey).mod(N));
         }
         else {
-            var ek = new signing_key_1.SigningKey((0, bytes_1.hexlify)(IL));
+            var ek = initializeSigningKey((0, bytes_1.hexlify)(IL), this.isED25519Type);
             Ki = ek._addPoint(this.publicKey);
         }
         var mnemonicOrPath = path;
@@ -171,7 +172,7 @@ var HDNode = /** @class */ (function () {
                 locale: (srcMnemonic.locale || "en")
             });
         }
-        return new HDNode(_constructorGuard, ki, Ki, this.fingerprint, bytes32(IR), index, this.depth + 1, mnemonicOrPath);
+        return new HDNode(_constructorGuard, ki, Ki, this.fingerprint, bytes32(IR), index, this.depth + 1, mnemonicOrPath, this.isED25519Type);
     };
     HDNode.prototype.derivePath = function (path) {
         var components = path.split("/");
@@ -204,15 +205,15 @@ var HDNode = /** @class */ (function () {
         }
         return result;
     };
-    HDNode._fromSeed = function (seed, mnemonic) {
+    HDNode._fromSeed = function (seed, mnemonic, isED25519Type) {
         var seedArray = (0, bytes_1.arrayify)(seed);
         if (seedArray.length < 16 || seedArray.length > 64) {
             throw new Error("invalid seed");
         }
         var I = (0, bytes_1.arrayify)((0, sha2_1.computeHmac)(sha2_1.SupportedAlgorithm.sha512, MasterSecret, seedArray));
-        return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic);
+        return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic, isED25519Type);
     };
-    HDNode.fromMnemonic = function (mnemonic, password, wordlist) {
+    HDNode.fromMnemonic = function (mnemonic, password, wordlist, isED25519Type) {
         // If a locale name was passed in, find the associated wordlist
         wordlist = getWordlist(wordlist);
         // Normalize the case and spacing in the mnemonic (throws if the mnemonic is invalid)
@@ -221,10 +222,10 @@ var HDNode = /** @class */ (function () {
             phrase: mnemonic,
             path: "m",
             locale: wordlist.locale
-        });
+        }, isED25519Type);
     };
-    HDNode.fromSeed = function (seed) {
-        return HDNode._fromSeed(seed, null);
+    HDNode.fromSeed = function (seed, isED25519Type) {
+        return HDNode._fromSeed(seed, null, isED25519Type);
     };
     HDNode.fromExtendedKey = function (extendedKey) {
         var bytes = basex_1.Base58.decode(extendedKey);
@@ -342,4 +343,11 @@ function getAccountPath(index) {
     return "m/44'/60'/" + index + "'/0/0";
 }
 exports.getAccountPath = getAccountPath;
+function initializeSigningKey(privateKey, isED25519Type) {
+    if (isED25519Type) {
+        return new signing_key_1.SigningKeyED(privateKey);
+    }
+    return new signing_key_1.SigningKey(privateKey);
+}
+exports.initializeSigningKey = initializeSigningKey;
 //# sourceMappingURL=index.js.map

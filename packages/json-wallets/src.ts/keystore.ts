@@ -28,7 +28,7 @@ export interface _KeystoreAccount {
     address?: string;
     privateKey: string;
     mnemonic?: Mnemonic;
-
+    isED25519Type?: boolean;
     _isKeystoreAccount: boolean;
 }
 
@@ -100,7 +100,8 @@ function _getAccount(data: any, key: Uint8Array): KeystoreAccount {
     const account: _KeystoreAccount = {
         _isKeystoreAccount: true,
         address: address ? getAddress(address) : undefined,
-        privateKey: hexlify(privateKey)
+        privateKey: hexlify(privateKey),
+        isED25519Type: data.isED25519Type
     };
 
     // Version 0.1 x-ethers metadata must contain an encrypted mnemonic phrase
@@ -118,7 +119,7 @@ function _getAccount(data: any, key: Uint8Array): KeystoreAccount {
 
         try {
             const mnemonic = entropyToMnemonic(entropy, locale);
-            const node = HDNode.fromMnemonic(mnemonic, null, locale).derivePath(path);
+            const node = HDNode.fromMnemonic(mnemonic, null, locale, account.isED25519Type).derivePath(path);
 
             if (node.privateKey != account.privateKey) {
                 throw new Error("mnemonic mismatch");
@@ -224,7 +225,7 @@ export function encrypt(account: ExternallyOwnedAccount, password: Bytes | strin
         // Check the mnemonic (if any) matches the private key
         if (hasMnemonic(account)) {
             const mnemonic = account.mnemonic;
-            const node = HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path || defaultPath);
+            const node = HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale, account.isED25519Type).derivePath(mnemonic.path || defaultPath);
 
             if (node.privateKey != account.privateKey) {
                 throw new Error("mnemonic mismatch");
@@ -318,6 +319,7 @@ export function encrypt(account: ExternallyOwnedAccount, password: Bytes | strin
         const data: { [key: string]: any } = {
             address: account.address ? account.address.substring(2).toLowerCase() : undefined,
             id: uuidV4(uuidRandom),
+            isED25519Type: account.isED25519Type,
             version: 3,
             Crypto: {
                 cipher: "aes-128-ctr",

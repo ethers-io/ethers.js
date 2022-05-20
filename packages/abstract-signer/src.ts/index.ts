@@ -12,7 +12,7 @@ import {
     getAddressFromAccount,
     getChecksumAddress
 } from "@hethers/address";
-import { SigningKey } from "@ethersproject/signing-key";
+import { SigningKey } from "@hethers/signing-key";
 import {
     AccountId,
     ContractCallQuery, ContractId,
@@ -61,6 +61,7 @@ export interface ExternallyOwnedAccount {
     readonly account?: Account;
     readonly alias?: string;
     readonly privateKey: string;
+    readonly isED25519Type?: boolean;
 }
 
 // Sub-Class Notes:
@@ -104,6 +105,7 @@ function checkError(method: string, error: any, txRequest: Deferrable<Transactio
 export abstract class Signer {
     readonly provider?: Provider;
     readonly _signingKey: () => SigningKey;
+    readonly isED25519Type?: boolean;
     ///////////////////
     // Sub-classes MUST implement these
 
@@ -220,7 +222,9 @@ export abstract class Signer {
             sigMap: {}
         };
 
-        const walletKey = PrivateKey.fromStringECDSA(this._signingKey().privateKey);
+        const walletKey = this.isED25519Type 
+            ? PrivateKey.fromStringED25519(this._signingKey().privateKey)
+            : PrivateKey.fromStringECDSA(this._signingKey().privateKey);
         const signature = walletKey.sign(signed.bodyBytes);
         signed.sigMap = {
             sigPair: [walletKey.publicKey._toProtobufSignature(signature)]

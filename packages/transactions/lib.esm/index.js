@@ -12,7 +12,7 @@ import { asAccountString, getAccountFromAddress, getAddress, getAddressFromAccou
 import { BigNumber } from "@ethersproject/bignumber";
 import { arrayify, hexDataLength, hexlify, } from "@ethersproject/bytes";
 import { Zero } from "@hethers/constants";
-import { computePublicKey } from "@ethersproject/signing-key";
+import { computePublicKey } from "@hethers/signing-key";
 import { Logger } from "@hethers/logger";
 import { version } from "./_version";
 import * as base64 from "@ethersproject/base64";
@@ -33,8 +33,8 @@ function handleNumber(value) {
     }
     return BigNumber.from(value);
 }
-export function computeAlias(key) {
-    const publicKey = computePublicKey(key);
+export function computeAlias(key, isED25519Type) {
+    const publicKey = computePublicKey(key, false, isED25519Type);
     return computeAliasFromPubKey(publicKey);
 }
 export function computeAliasFromPubKey(pubKey) {

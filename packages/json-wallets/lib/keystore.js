@@ -116,7 +116,8 @@ function _getAccount(data, key) {
     var account = {
         _isKeystoreAccount: true,
         address: address ? (0, address_1.getAddress)(address) : undefined,
-        privateKey: (0, bytes_1.hexlify)(privateKey)
+        privateKey: (0, bytes_1.hexlify)(privateKey),
+        isED25519Type: data.isED25519Type
     };
     // Version 0.1 x-ethers metadata must contain an encrypted mnemonic phrase
     if ((0, utils_1.searchPath)(data, "x-ethers/version") === "0.1") {
@@ -129,7 +130,7 @@ function _getAccount(data, key) {
         var entropy = (0, bytes_1.arrayify)(mnemonicAesCtr.decrypt(mnemonicCiphertext));
         try {
             var mnemonic = (0, hdnode_1.entropyToMnemonic)(entropy, locale);
-            var node = hdnode_1.HDNode.fromMnemonic(mnemonic, null, locale).derivePath(path);
+            var node = hdnode_1.HDNode.fromMnemonic(mnemonic, null, locale, account.isED25519Type).derivePath(path);
             if (node.privateKey != account.privateKey) {
                 throw new Error("mnemonic mismatch");
             }
@@ -228,7 +229,7 @@ function encrypt(account, password, options, progressCallback) {
         // Check the mnemonic (if any) matches the private key
         if (hasMnemonic(account)) {
             var mnemonic = account.mnemonic;
-            var node = hdnode_1.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path || hdnode_1.defaultPath);
+            var node = hdnode_1.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale, account.isED25519Type).derivePath(mnemonic.path || hdnode_1.defaultPath);
             if (node.privateKey != account.privateKey) {
                 throw new Error("mnemonic mismatch");
             }
@@ -325,6 +326,7 @@ function encrypt(account, password, options, progressCallback) {
         var data = {
             address: account.address ? account.address.substring(2).toLowerCase() : undefined,
             id: (0, utils_1.uuidV4)(uuidRandom),
+            isED25519Type: account.isED25519Type,
             version: 3,
             Crypto: {
                 cipher: "aes-128-ctr",

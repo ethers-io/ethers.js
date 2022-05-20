@@ -10,6 +10,7 @@
     "@hethers/hdnode": "1.1.0",
     "@hethers/json-wallets": "1.1.0",
     "@hethers/logger": "1.1.0",
+    "@hethers/signing-key": "1.1.0",
     "@hethers/networks": "1.1.0",
     "@hethers/providers": "1.1.0",
     "@hethers/transactions": "1.1.0",
