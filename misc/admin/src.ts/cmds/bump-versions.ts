@@ -32,7 +32,10 @@ import { loadJson, repeat, saveJson } from "../utils";
         local.updateJson(packageJsonPath, common, true);
 
         const pLocal = local.getPackage(dirname);
-        const pNpm = await npm.getPackage(dirname);
+        const pNpm = await npm.getPackage(dirname) || {
+            version: '0.0.0',
+            tarballHash: ""
+        };
 
         const tarballHash = local.computeTarballHash(dirname);
 
