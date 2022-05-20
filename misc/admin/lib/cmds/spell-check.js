@@ -62,9 +62,9 @@ contenthash ctr ctrl debug dd dklen eexist encseed eof eq erc ethaddr
 ethseed ethers eval exec filename func gz gzip hid http https hw iv
 info init ipc json kdf kdfparams labelhash lang lib metadata mm multihash nfc
 nfkc nfd nfkd nodehash notok nowait nullish offchain oob opcode org pbkdf pc plugin
-pragma pre prf recid repl rpc sighash topichash solc stdin stdout subclasses
+pragma pre prf recid repl rpc sighash topichash solc stderr stdin stdout subclasses
 subnode timeout todo txt typeof ufixed utc utf util url urlencoded uuid vm
-vs websocket wikipedia wildcard wildcards www wx xe xpriv xpub xx yyyy zlib
+vs websocket wikipedia wildcard wildcards wss www wx xe xpriv xpub xx yyyy zlib
 
 // AbiV2
 abiv
@@ -75,7 +75,7 @@ apikey asc endblock startblock
 alchemyapi ankr arbitrum Cloudflare com Etherscan INFURA IPFS IPNS MetaMask Nodesmith
 Trezor ledgerhq axic bitcoinjs browserify easyseed ethereumjs
 goerli homestead kotti kovan mainnet morden mordor rinkeby kintsugi
-ropsten testnet lb maticmum
+ropsten skynet testnet lb maticmum
 
 // Demo words
 args foo eth foo foobar ll localhost passwd ricmoo tx xxx yna
