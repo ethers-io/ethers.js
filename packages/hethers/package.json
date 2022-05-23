@@ -3,7 +3,7 @@
   "dependencies": {
     "@ethersproject/solidity": "5.5.0",
     "@hethers/abstract-provider": "1.1.1",
-    "@hethers/abstract-signer": "1.1.1",
+    "@hethers/abstract-signer": "1.1.2",
     "@hethers/address": "1.1.0",
     "@hethers/constants": "1.1.0",
     "@hethers/contracts": "1.1.1",
@@ -39,7 +39,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x16c7fdec484ed1550cc71acf95496ef11429ffed2ac656671fe142b5cd2064b0",
+  "tarballHash": "0x20cc7039154a0390b05e1106a05e04d40b9a8f937e7205915baa990216b87ea7",
   "types": "./lib/index.d.ts",
-  "version": "1.1.1"
+  "version": "1.1.2"
 }

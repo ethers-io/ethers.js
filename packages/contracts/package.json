@@ -5,7 +5,7 @@
     "@ethersproject/bytes": "5.5.0",
     "@ethersproject/properties": "5.5.0",
     "@hethers/abstract-provider": "1.1.1",
-    "@hethers/abstract-signer": "1.1.1",
+    "@hethers/abstract-signer": "1.1.2",
     "@hethers/address": "1.1.0",
     "@hethers/logger": "1.1.0",
     "@hethers/providers": "1.1.1",
@@ -35,7 +35,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x5f0bfd801c987bab2efb06ab17e95efd74b81ffb4e2e5f37539d3eb24aeb26ee",
+  "tarballHash": "0x12b86dced5a6df33df5c15e6d9b8c469cfe46abc42d5dd070b16081ac480a5d4",
   "types": "./lib/index.d.ts",
   "version": "1.1.1"
 }
