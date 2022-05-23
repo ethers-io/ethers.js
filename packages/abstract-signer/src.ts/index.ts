@@ -276,6 +276,7 @@ export abstract class Signer {
 
             const contractCreate = {
                 gasLimit: tx.gasLimit,
+                value:tx.value||0,
                 customData: {
                     bytecodeFileId: resp.customData.fileId.toString()
                 }
