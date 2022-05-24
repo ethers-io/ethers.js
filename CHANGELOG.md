@@ -4,6 +4,11 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+ethers/v5.6.8 (2022-05-24 11:50)
+--------------------------------
+
+  - Update BN.js for hexstring bug fix. ([#3017](https://github.com/ethers-io/ethers.js/issues/3017); [30b716b](https://github.com/ethers-io/ethers.js/commit/30b716bf2cfd67ca38f76e344a26c0c2d5b75935), [a27ef82](https://github.com/ethers-io/ethers.js/commit/a27ef825772f72071439c51e51180b6fcc64f03c))
+
 ethers/v5.6.7 (2022-05-20 19:11)
 --------------------------------
 

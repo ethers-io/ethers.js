@@ -1,2 +1,2 @@
-export const version = "hardware-wallets/5.6.0";
+export const version = "hardware-wallets/5.6.1";
 //# sourceMappingURL=_version.js.map

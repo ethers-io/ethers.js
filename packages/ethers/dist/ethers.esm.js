@@ -160,7 +160,7 @@ var bn = createCommonjsModule(function (module) {
       number = -number;
     }
     if (number < 0x4000000) {
-      this.words = [ number & 0x3ffffff ];
+      this.words = [number & 0x3ffffff];
       this.length = 1;
     } else if (number < 0x10000000000000) {
       this.words = [
@@ -188,7 +188,7 @@ var bn = createCommonjsModule(function (module) {
     // Perhaps a Uint8Array
     assert(typeof number.length === 'number');
     if (number.length <= 0) {
-      this.words = [ 0 ];
+      this.words = [0];
       this.length = 1;
       return this;
     }
@@ -224,20 +224,22 @@ var bn = createCommonjsModule(function (module) {
         }
       }
     }
-    return this.strip();
+    return this._strip();
   };
 
   function parseHex4Bits (string, index) {
     var c = string.charCodeAt(index);
+    // '0' - '9'
+    if (c >= 48 && c <= 57) {
+      return c - 48;
     // 'A' - 'F'
-    if (c >= 65 && c <= 70) {
+    } else if (c >= 65 && c <= 70) {
       return c - 55;
     // 'a' - 'f'
     } else if (c >= 97 && c <= 102) {
       return c - 87;
-    // '0' - '9'
     } else {
-      return (c - 48) & 0xf;
+      assert(false, 'Invalid character in ' + string);
     }
   }
 
@@ -289,11 +291,12 @@ var bn = createCommonjsModule(function (module) {
       }
     }
 
-    this.strip();
+    this._strip();
   };
 
   function parseBase (str, start, end, mul) {
     var r = 0;
+    var b = 0;
     var len = Math.min(str.length, end);
     for (var i = start; i < len; i++) {
       var c = str.charCodeAt(i) - 48;
@@ -302,23 +305,25 @@ var bn = createCommonjsModule(function (module) {
 
       // 'a'
       if (c >= 49) {
-        r += c - 49 + 0xa;
+        b = c - 49 + 0xa;
 
       // 'A'
       } else if (c >= 17) {
-        r += c - 17 + 0xa;
+        b = c - 17 + 0xa;
 
       // '0' - '9'
       } else {
-        r += c;
+        b = c;
       }
+      assert(c >= 0 && b < mul, 'Invalid character');
+      r += b;
     }
     return r;
   }
 
   BN.prototype._parseBase = function _parseBase (number, base, start) {
     // Initialize as zero
-    this.words = [ 0 ];
+    this.words = [0];
     this.length = 1;
 
     // Find length of limb in base
@@ -360,7 +365,7 @@ var bn = createCommonjsModule(function (module) {
       }
     }
 
-    this.strip();
+    this._strip();
   };
 
   BN.prototype.copy = function copy (dest) {
@@ -371,6 +376,17 @@ var bn = createCommonjsModule(function (module) {
     dest.length = this.length;
     dest.negative = this.negative;
     dest.red = this.red;
+  };
+
+  function move (dest, src) {
+    dest.words = src.words;
+    dest.length = src.length;
+    dest.negative = src.negative;
+    dest.red = src.red;
+  }
+
+  BN.prototype._move = function _move (dest) {
+    move(dest, this);
   };
 
   BN.prototype.clone = function clone () {
@@ -387,7 +403,7 @@ var bn = createCommonjsModule(function (module) {
   };
 
   // Remove leading `0` from `this`
-  BN.prototype.strip = function strip () {
+  BN.prototype._strip = function strip () {
     while (this.length > 1 && this.words[this.length - 1] === 0) {
       this.length--;
     }
@@ -402,9 +418,21 @@ var bn = createCommonjsModule(function (module) {
     return this;
   };
 
-  BN.prototype.inspect = function inspect () {
+  // Check Symbol.for because not everywhere where Symbol defined
+  // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#Browser_compatibility
+  if (typeof Symbol !== 'undefined' && typeof Symbol.for === 'function') {
+    try {
+      BN.prototype[Symbol.for('nodejs.util.inspect.custom')] = inspect;
+    } catch (e) {
+      BN.prototype.inspect = inspect;
+    }
+  } else {
+    BN.prototype.inspect = inspect;
+  }
+
+  function inspect () {
     return (this.red ? '<BN-R: ' : '<BN: ') + this.toString(16) + '>';
-  };
+  }
 
   /*
 
@@ -496,15 +524,15 @@ var bn = createCommonjsModule(function (module) {
         var w = this.words[i];
         var word = (((w << off) | carry) & 0xffffff).toString(16);
         carry = (w >>> (24 - off)) & 0xffffff;
-        if (carry !== 0 || i !== this.length - 1) {
-          out = zeros[6 - word.length] + word + out;
-        } else {
-          out = word + out;
-        }
         off += 2;
         if (off >= 26) {
           off -= 26;
           i--;
+        }
+        if (carry !== 0 || i !== this.length - 1) {
+          out = zeros[6 - word.length] + word + out;
+        } else {
+          out = word + out;
         }
       }
       if (carry !== 0) {
@@ -528,7 +556,7 @@ var bn = createCommonjsModule(function (module) {
       var c = this.clone();
       c.negative = 0;
       while (!c.isZero()) {
-        var r = c.modn(groupBase).toString(base);
+        var r = c.modrn(groupBase).toString(base);
         c = c.idivn(groupBase);
 
         if (!c.isZero()) {
@@ -566,56 +594,110 @@ var bn = createCommonjsModule(function (module) {
   };
 
   BN.prototype.toJSON = function toJSON () {
-    return this.toString(16);
+    return this.toString(16, 2);
   };
 
-  BN.prototype.toBuffer = function toBuffer (endian, length) {
-    assert(typeof Buffer !== 'undefined');
-    return this.toArrayLike(Buffer, endian, length);
-  };
+  if (Buffer) {
+    BN.prototype.toBuffer = function toBuffer (endian, length) {
+      return this.toArrayLike(Buffer, endian, length);
+    };
+  }
 
   BN.prototype.toArray = function toArray (endian, length) {
     return this.toArrayLike(Array, endian, length);
   };
 
+  var allocate = function allocate (ArrayType, size) {
+    if (ArrayType.allocUnsafe) {
+      return ArrayType.allocUnsafe(size);
+    }
+    return new ArrayType(size);
+  };
+
   BN.prototype.toArrayLike = function toArrayLike (ArrayType, endian, length) {
+    this._strip();
+
     var byteLength = this.byteLength();
     var reqLength = length || Math.max(1, byteLength);
     assert(byteLength <= reqLength, 'byte array longer than desired length');
     assert(reqLength > 0, 'Requested array length <= 0');
 
-    this.strip();
-    var littleEndian = endian === 'le';
-    var res = new ArrayType(reqLength);
+    var res = allocate(ArrayType, reqLength);
+    var postfix = endian === 'le' ? 'LE' : 'BE';
+    this['_toArrayLike' + postfix](res, byteLength);
+    return res;
+  };
 
-    var b, i;
-    var q = this.clone();
-    if (!littleEndian) {
-      // Assume big-endian
-      for (i = 0; i < reqLength - byteLength; i++) {
-        res[i] = 0;
+  BN.prototype._toArrayLikeLE = function _toArrayLikeLE (res, byteLength) {
+    var position = 0;
+    var carry = 0;
+
+    for (var i = 0, shift = 0; i < this.length; i++) {
+      var word = (this.words[i] << shift) | carry;
+
+      res[position++] = word & 0xff;
+      if (position < res.length) {
+        res[position++] = (word >> 8) & 0xff;
+      }
+      if (position < res.length) {
+        res[position++] = (word >> 16) & 0xff;
       }
 
-      for (i = 0; !q.isZero(); i++) {
-        b = q.andln(0xff);
-        q.iushrn(8);
-
-        res[reqLength - i - 1] = b;
-      }
-    } else {
-      for (i = 0; !q.isZero(); i++) {
-        b = q.andln(0xff);
-        q.iushrn(8);
-
-        res[i] = b;
-      }
-
-      for (; i < reqLength; i++) {
-        res[i] = 0;
+      if (shift === 6) {
+        if (position < res.length) {
+          res[position++] = (word >> 24) & 0xff;
+        }
+        carry = 0;
+        shift = 0;
+      } else {
+        carry = word >>> 24;
+        shift += 2;
       }
     }
 
-    return res;
+    if (position < res.length) {
+      res[position++] = carry;
+
+      while (position < res.length) {
+        res[position++] = 0;
+      }
+    }
+  };
+
+  BN.prototype._toArrayLikeBE = function _toArrayLikeBE (res, byteLength) {
+    var position = res.length - 1;
+    var carry = 0;
+
+    for (var i = 0, shift = 0; i < this.length; i++) {
+      var word = (this.words[i] << shift) | carry;
+
+      res[position--] = word & 0xff;
+      if (position >= 0) {
+        res[position--] = (word >> 8) & 0xff;
+      }
+      if (position >= 0) {
+        res[position--] = (word >> 16) & 0xff;
+      }
+
+      if (shift === 6) {
+        if (position >= 0) {
+          res[position--] = (word >> 24) & 0xff;
+        }
+        carry = 0;
+        shift = 0;
+      } else {
+        carry = word >>> 24;
+        shift += 2;
+      }
+    }
+
+    if (position >= 0) {
+      res[position--] = carry;
+
+      while (position >= 0) {
+        res[position--] = 0;
+      }
+    }
   };
 
   if (Math.clz32) {
@@ -688,7 +770,7 @@ var bn = createCommonjsModule(function (module) {
       var off = (bit / 26) | 0;
       var wbit = bit % 26;
 
-      w[bit] = (num.words[off] & (1 << wbit)) >>> wbit;
+      w[bit] = (num.words[off] >>> wbit) & 0x01;
     }
 
     return w;
@@ -752,7 +834,7 @@ var bn = createCommonjsModule(function (module) {
       this.words[i] = this.words[i] | num.words[i];
     }
 
-    return this.strip();
+    return this._strip();
   };
 
   BN.prototype.ior = function ior (num) {
@@ -787,7 +869,7 @@ var bn = createCommonjsModule(function (module) {
 
     this.length = b.length;
 
-    return this.strip();
+    return this._strip();
   };
 
   BN.prototype.iand = function iand (num) {
@@ -831,7 +913,7 @@ var bn = createCommonjsModule(function (module) {
 
     this.length = a.length;
 
-    return this.strip();
+    return this._strip();
   };
 
   BN.prototype.ixor = function ixor (num) {
@@ -875,7 +957,7 @@ var bn = createCommonjsModule(function (module) {
     }
 
     // And remove leading zeroes
-    return this.strip();
+    return this._strip();
   };
 
   BN.prototype.notn = function notn (width) {
@@ -897,7 +979,7 @@ var bn = createCommonjsModule(function (module) {
       this.words[off] = this.words[off] & ~(1 << wbit);
     }
 
-    return this.strip();
+    return this._strip();
   };
 
   // Add `num` to `this` in-place
@@ -1038,7 +1120,7 @@ var bn = createCommonjsModule(function (module) {
       this.negative = 1;
     }
 
-    return this.strip();
+    return this._strip();
   };
 
   // Subtract `num` from `this`
@@ -1084,7 +1166,7 @@ var bn = createCommonjsModule(function (module) {
       out.length--;
     }
 
-    return out.strip();
+    return out._strip();
   }
 
   // TODO(indutny): it may be reasonable to omit it for users who don't need
@@ -1706,12 +1788,14 @@ var bn = createCommonjsModule(function (module) {
       out.length--;
     }
 
-    return out.strip();
+    return out._strip();
   }
 
   function jumboMulTo (self, num, out) {
-    var fftm = new FFTM();
-    return fftm.mulp(self, num, out);
+    // Temporary disable, see https://github.com/indutny/bn.js/issues/211
+    // var fftm = new FFTM();
+    // return fftm.mulp(self, num, out);
+    return bigMulTo(self, num, out);
   }
 
   BN.prototype.mulTo = function mulTo (num, out) {
@@ -1923,7 +2007,7 @@ var bn = createCommonjsModule(function (module) {
 
     out.negative = x.negative ^ y.negative;
     out.length = x.length + y.length;
-    return out.strip();
+    return out._strip();
   };
 
   // Multiply `this` by `num`
@@ -1946,6 +2030,9 @@ var bn = createCommonjsModule(function (module) {
   };
 
   BN.prototype.imuln = function imuln (num) {
+    var isNegNum = num < 0;
+    if (isNegNum) num = -num;
+
     assert(typeof num === 'number');
     assert(num < 0x4000000);
 
@@ -1966,7 +2053,7 @@ var bn = createCommonjsModule(function (module) {
       this.length++;
     }
 
-    return this;
+    return isNegNum ? this.ineg() : this;
   };
 
   BN.prototype.muln = function muln (num) {
@@ -2041,7 +2128,7 @@ var bn = createCommonjsModule(function (module) {
       this.length += s;
     }
 
-    return this.strip();
+    return this._strip();
   };
 
   BN.prototype.ishln = function ishln (bits) {
@@ -2107,7 +2194,7 @@ var bn = createCommonjsModule(function (module) {
       this.length = 1;
     }
 
-    return this.strip();
+    return this._strip();
   };
 
   BN.prototype.ishrn = function ishrn (bits, hint, extended) {
@@ -2172,7 +2259,7 @@ var bn = createCommonjsModule(function (module) {
       this.words[this.length - 1] &= mask;
     }
 
-    return this.strip();
+    return this._strip();
   };
 
   // Return only lowers bits of number
@@ -2188,7 +2275,7 @@ var bn = createCommonjsModule(function (module) {
 
     // Possible sign change
     if (this.negative !== 0) {
-      if (this.length === 1 && (this.words[0] | 0) < num) {
+      if (this.length === 1 && (this.words[0] | 0) <= num) {
         this.words[0] = num - (this.words[0] | 0);
         this.negative = 0;
         return this;
@@ -2247,7 +2334,7 @@ var bn = createCommonjsModule(function (module) {
       }
     }
 
-    return this.strip();
+    return this._strip();
   };
 
   BN.prototype.addn = function addn (num) {
@@ -2289,7 +2376,7 @@ var bn = createCommonjsModule(function (module) {
       this.words[i + shift] = w & 0x3ffffff;
     }
 
-    if (carry === 0) return this.strip();
+    if (carry === 0) return this._strip();
 
     // Subtraction overflow
     assert(carry === -1);
@@ -2301,7 +2388,7 @@ var bn = createCommonjsModule(function (module) {
     }
     this.negative = 1;
 
-    return this.strip();
+    return this._strip();
   };
 
   BN.prototype._wordDiv = function _wordDiv (num, mode) {
@@ -2363,9 +2450,9 @@ var bn = createCommonjsModule(function (module) {
       }
     }
     if (q) {
-      q.strip();
+      q._strip();
     }
-    a.strip();
+    a._strip();
 
     // Denormalize
     if (mode !== 'div' && shift !== 0) {
@@ -2464,13 +2551,13 @@ var bn = createCommonjsModule(function (module) {
       if (mode === 'mod') {
         return {
           div: null,
-          mod: new BN(this.modn(num.words[0]))
+          mod: new BN(this.modrn(num.words[0]))
         };
       }
 
       return {
         div: this.divn(num.words[0]),
-        mod: new BN(this.modn(num.words[0]))
+        mod: new BN(this.modrn(num.words[0]))
       };
     }
 
@@ -2505,13 +2592,16 @@ var bn = createCommonjsModule(function (module) {
     var cmp = mod.cmp(half);
 
     // Round down
-    if (cmp < 0 || r2 === 1 && cmp === 0) return dm.div;
+    if (cmp < 0 || (r2 === 1 && cmp === 0)) return dm.div;
 
     // Round up
     return dm.div.negative !== 0 ? dm.div.isubn(1) : dm.div.iaddn(1);
   };
 
-  BN.prototype.modn = function modn (num) {
+  BN.prototype.modrn = function modrn (num) {
+    var isNegNum = num < 0;
+    if (isNegNum) num = -num;
+
     assert(num <= 0x3ffffff);
     var p = (1 << 26) % num;
 
@@ -2520,11 +2610,19 @@ var bn = createCommonjsModule(function (module) {
       acc = (p * acc + (this.words[i] | 0)) % num;
     }
 
-    return acc;
+    return isNegNum ? -acc : acc;
+  };
+
+  // WARNING: DEPRECATED
+  BN.prototype.modn = function modn (num) {
+    return this.modrn(num);
   };
 
   // In-place division by number
   BN.prototype.idivn = function idivn (num) {
+    var isNegNum = num < 0;
+    if (isNegNum) num = -num;
+
     assert(num <= 0x3ffffff);
 
     var carry = 0;
@@ -2534,7 +2632,8 @@ var bn = createCommonjsModule(function (module) {
       carry = w % num;
     }
 
-    return this.strip();
+    this._strip();
+    return isNegNum ? this.ineg() : this;
   };
 
   BN.prototype.divn = function divn (num) {
@@ -2786,7 +2885,7 @@ var bn = createCommonjsModule(function (module) {
     if (this.negative !== 0 && !negative) return -1;
     if (this.negative === 0 && negative) return 1;
 
-    this.strip();
+    this._strip();
 
     var res;
     if (this.length > 1) {
@@ -3030,10 +3129,10 @@ var bn = createCommonjsModule(function (module) {
       r.isub(this.p);
     } else {
       if (r.strip !== undefined) {
-        // r is BN v4 instance
+        // r is a BN v4 instance
         r.strip();
       } else {
-        // r is BN v5 instance
+        // r is a BN v5 instance
         r._strip();
       }
     }
@@ -3208,7 +3307,9 @@ var bn = createCommonjsModule(function (module) {
 
   Red.prototype.imod = function imod (a) {
     if (this.prime) return this.prime.ireduce(a)._forceRed(this);
-    return a.umod(this.m)._forceRed(this);
+
+    move(a, a.umod(this.m)._forceRed(this));
+    return a;
   };
 
   Red.prototype.neg = function neg (a) {
@@ -4250,7 +4351,7 @@ function joinSignature(signature) {
     ]));
 }
 
-const version$2 = "bignumber/5.6.1";
+const version$2 = "bignumber/5.6.2";
 
 "use strict";
 var BN = bn.BN;
@@ -5029,7 +5130,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.6.2";
+const version$4 = "abi/5.6.3";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -6688,7 +6789,7 @@ function keccak256(data) {
     return '0x' + sha3.keccak_256(arrayify(data));
 }
 
-const version$5 = "rlp/5.6.0";
+const version$5 = "rlp/5.6.1";
 
 "use strict";
 const logger$6 = new Logger(version$5);
@@ -6812,7 +6913,7 @@ var index = /*#__PURE__*/Object.freeze({
 	decode: decode
 });
 
-const version$6 = "address/5.6.0";
+const version$6 = "address/5.6.1";
 
 "use strict";
 const logger$7 = new Logger(version$6);
@@ -7345,7 +7446,7 @@ class NumberCoder extends Coder {
     }
 }
 
-const version$7 = "strings/5.6.0";
+const version$7 = "strings/5.6.1";
 
 "use strict";
 const logger$9 = new Logger(version$7);
@@ -7965,7 +8066,7 @@ function id(text) {
     return keccak256(toUtf8Bytes(text));
 }
 
-const version$8 = "hash/5.6.0";
+const version$8 = "hash/5.6.1";
 
 const logger$b = new Logger(version$8);
 const Zeros = new Uint8Array(32);
@@ -9053,7 +9154,7 @@ class Interface {
 
 "use strict";
 
-const version$9 = "abstract-provider/5.6.0";
+const version$9 = "abstract-provider/5.6.1";
 
 "use strict";
 var __awaiter$2 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -9160,7 +9261,7 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.6.1";
+const version$a = "abstract-signer/5.6.2";
 
 "use strict";
 var __awaiter$3 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -13266,7 +13367,7 @@ elliptic.eddsa = /*RicMoo:ethers:require(./elliptic/eddsa)*/(null);
 
 var EC$1 = elliptic_1.ec;
 
-const version$b = "signing-key/5.6.1";
+const version$b = "signing-key/5.6.2";
 
 "use strict";
 const logger$g = new Logger(version$b);
@@ -13345,7 +13446,7 @@ function computePublicKey(key, compressed) {
     return logger$g.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$c = "transactions/5.6.1";
+const version$c = "transactions/5.6.2";
 
 "use strict";
 const logger$h = new Logger(version$c);
@@ -13722,7 +13823,7 @@ function parse(rawTransaction) {
     });
 }
 
-const version$d = "contracts/5.6.1";
+const version$d = "contracts/5.6.2";
 
 "use strict";
 var __awaiter$4 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -14865,7 +14966,7 @@ var SupportedAlgorithm;
 })(SupportedAlgorithm || (SupportedAlgorithm = {}));
 ;
 
-const version$e = "sha2/5.6.0";
+const version$e = "sha2/5.6.1";
 
 "use strict";
 const logger$j = new Logger(version$e);
@@ -14930,7 +15031,7 @@ function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
     return hexlify(DK);
 }
 
-const version$f = "wordlists/5.6.0";
+const version$f = "wordlists/5.6.1";
 
 "use strict";
 // This gets overridden by rollup
@@ -15018,7 +15119,7 @@ const wordlists = {
 
 "use strict";
 
-const version$g = "hdnode/5.6.1";
+const version$g = "hdnode/5.6.2";
 
 "use strict";
 const logger$l = new Logger(version$g);
@@ -15338,7 +15439,7 @@ function getAccountPath(index) {
     return `m/44'/60'/${index}'/0/0`;
 }
 
-const version$h = "random/5.6.0";
+const version$h = "random/5.6.1";
 
 "use strict";
 const logger$m = new Logger(version$h);
@@ -16195,7 +16296,7 @@ var aesJs = createCommonjsModule(function (module, exports) {
 })(commonjsGlobal);
 });
 
-const version$i = "json-wallets/5.6.0";
+const version$i = "json-wallets/5.6.1";
 
 "use strict";
 function looseArrayify(hexString) {
@@ -17165,7 +17266,7 @@ function decryptJsonWalletSync(json, password) {
     throw new Error("invalid JSON wallet");
 }
 
-const version$j = "wallet/5.6.1";
+const version$j = "wallet/5.6.2";
 
 "use strict";
 var __awaiter$6 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -17593,7 +17694,7 @@ var index$2 = /*#__PURE__*/Object.freeze({
 	encode: encode$1
 });
 
-const version$l = "web/5.6.0";
+const version$l = "web/5.6.1";
 
 "use strict";
 var __awaiter$7 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -18217,7 +18318,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.6.7";
+const version$m = "providers/5.6.8";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -23361,7 +23462,7 @@ var index$3 = /*#__PURE__*/Object.freeze({
 	Formatter: Formatter
 });
 
-const version$n = "solidity/5.6.0";
+const version$n = "solidity/5.6.1";
 
 "use strict";
 const regexBytes = new RegExp("^bytes([0-9]+)$");
@@ -23447,7 +23548,7 @@ function sha256$2(types, values) {
     return sha256$1(pack$1(types, values));
 }
 
-const version$o = "units/5.6.0";
+const version$o = "units/5.6.1";
 
 "use strict";
 const logger$I = new Logger(version$o);
@@ -23635,7 +23736,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$p = "ethers/5.6.7";
+const version$p = "ethers/5.6.8";
 
 "use strict";
 const logger$J = new Logger(version$p);
