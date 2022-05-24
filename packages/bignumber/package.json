@@ -1,7 +1,7 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bytes": "^5.6.0",
+    "@ethersproject/bytes": "^5.6.1",
     "@ethersproject/logger": "^5.6.0",
     "bn.js": "^5.2.1"
   },

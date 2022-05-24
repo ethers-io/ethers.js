@@ -1,11 +1,11 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bignumber": "^5.6.0",
-    "@ethersproject/bytes": "^5.6.0",
-    "@ethersproject/keccak256": "^5.6.0",
+    "@ethersproject/bignumber": "^5.6.2",
+    "@ethersproject/bytes": "^5.6.1",
+    "@ethersproject/keccak256": "^5.6.1",
     "@ethersproject/logger": "^5.6.0",
-    "@ethersproject/rlp": "^5.6.0"
+    "@ethersproject/rlp": "^5.6.1"
   },
   "description": "Utilities for handling Ethereum Addresses for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -39,7 +39,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x57eb9b8a268690eb5990a85ad9ae1ad0cb547c2741cfb5214ad03719acd27031",
+  "tarballHash": "0x74659cdbe2073e760b0538ae0bf3f61e5e7f237026f59a8c72af0f9b91c0b980",
   "types": "./lib/index.d.ts",
-  "version": "5.6.0"
+  "version": "5.6.1"
 }

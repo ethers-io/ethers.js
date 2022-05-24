@@ -1,16 +1,16 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/abi": "^5.6.0",
-    "@ethersproject/abstract-provider": "^5.6.0",
-    "@ethersproject/abstract-signer": "^5.6.0",
-    "@ethersproject/address": "^5.6.0",
-    "@ethersproject/bignumber": "^5.6.0",
-    "@ethersproject/bytes": "^5.6.0",
-    "@ethersproject/constants": "^5.6.0",
+    "@ethersproject/abi": "^5.6.3",
+    "@ethersproject/abstract-provider": "^5.6.1",
+    "@ethersproject/abstract-signer": "^5.6.2",
+    "@ethersproject/address": "^5.6.1",
+    "@ethersproject/bignumber": "^5.6.2",
+    "@ethersproject/bytes": "^5.6.1",
+    "@ethersproject/constants": "^5.6.1",
     "@ethersproject/logger": "^5.6.0",
     "@ethersproject/properties": "^5.6.0",
-    "@ethersproject/transactions": "^5.6.0"
+    "@ethersproject/transactions": "^5.6.2"
   },
   "description": "Contract abstraction meta-class for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -44,7 +44,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x9b97e7b7c8b97ef1590087f674c0e7511047257eb0d05a57a041616299538a20",
+  "tarballHash": "0xa141196d71274d975ae2f1b70a5a1bb6bc48bdfa01f101b85d046f61a66465c6",
   "types": "./lib/index.d.ts",
-  "version": "5.6.1"
+  "version": "5.6.2"
 }

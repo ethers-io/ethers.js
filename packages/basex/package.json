@@ -1,7 +1,7 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bytes": "^5.6.0",
+    "@ethersproject/bytes": "^5.6.1",
     "@ethersproject/properties": "^5.6.0"
   },
   "description": "Base-X without Buffer.",
@@ -36,7 +36,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xbf7b3bbf0b60b03db8b9d8d92d0e18d4c9f2bb265472fa693a8eac16850f3f37",
+  "tarballHash": "0xafcf7836e13be607f7eb12a0f9159d3189610ca9c77e8e10c87ffaeb0976a953",
   "types": "./lib/index.d.ts",
-  "version": "5.6.0"
+  "version": "5.6.1"
 }

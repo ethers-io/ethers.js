@@ -1,7 +1,7 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bytes": "^5.6.0",
+    "@ethersproject/bytes": "^5.6.1",
     "@ethersproject/logger": "^5.6.0"
   },
   "description": "Recursive-Length Prefix (RLP) coder.",
@@ -37,7 +37,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xfb6b03ac40a056e6874c7208726479000ccb916e34c4377103567b66a24c7f36",
+  "tarballHash": "0xecb370191f6195bf5046497de45a44e5674c71b2e2e3fe2e6d0084b55f36b389",
   "types": "./lib/index.d.ts",
-  "version": "5.6.0"
+  "version": "5.6.1"
 }
