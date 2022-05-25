@@ -17583,7 +17583,11 @@ const networks = {
         name: "matic",
         _defaultProvider: ethDefaultProvider("matic")
     },
-    maticmum: { chainId: 80001, name: "maticmum" },
+    maticmum: {
+        chainId: 80001,
+        name: "maticmum",
+        _defaultProvider: ethDefaultProvider("maticmum")
+    },
     optimism: {
         chainId: 10,
         name: "optimism",
