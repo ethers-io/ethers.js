@@ -232,7 +232,7 @@ _subsection: UNPREDICTABLE_GAS_LIMIT @<help-UNPREDICTABLE_GAS_LIMIT>
 During gas estimation it is possible that a transaction would actually
 fail (and hence has no reasonable estimate of gas requirements) or that
 the transaction is complex in a way that does not permit a node to
-estiamte the gas requirements, in which case this error is thrown.
+estimate the gas requirements, in which case this error is thrown.
 
 In almost all cases, this will unfortunately require you specify an
 explicit ``gasLimit`` for your transaction, which will disable ether's
