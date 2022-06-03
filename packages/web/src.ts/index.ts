@@ -10,6 +10,7 @@ import { version } from "./_version";
 const logger = new Logger(version);
 
 import { getUrl, GetUrlResponse, Options } from "./geturl";
+import { HttpProviderAgent } from "./types";
 
 function staller(duration: number): Promise<void> {
     return new Promise((resolve) => {
@@ -53,6 +54,7 @@ export type ConnectionInfo = {
     errorPassThrough?: boolean;
 
     timeout?: number,
+    agent?: HttpProviderAgent,
 };
 
 export interface OnceBlockable {
@@ -157,6 +159,10 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
 
         if (connection.skipFetchSetup != null) {
             options.skipFetchSetup = !!connection.skipFetchSetup;
+        }
+
+        if (connection.agent != null) {
+            options.agent = connection.agent;
         }
     }
     const reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
@@ -463,4 +469,3 @@ export function poll<T>(func: () => Promise<T>, options?: PollOptions): Promise<
         check();
     });
 }
-
