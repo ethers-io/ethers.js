@@ -1,8 +1,8 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@noble/hashes": "1.0.0",
-    "@noble/secp256k1": "1.5.5",
+    "@noble/hashes": "1.1.1",
+    "@noble/secp256k1": "1.6.0",
     "aes-js": "4.0.0-beta.2",
     "ws": "8.5.0"
   },
