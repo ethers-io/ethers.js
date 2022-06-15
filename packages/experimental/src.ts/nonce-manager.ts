@@ -63,7 +63,7 @@ export class NonceManager extends ethers.Signer {
             transaction.nonce = this.getTransactionCount("pending");
             this.incrementTransactionCount();
         } else {
-            this.setTransactionCount(transaction.nonce);
+            this.setTransactionCount(transaction.nonce + 1);
         }
 
         return this.signer.sendTransaction(transaction).then((tx) => {
