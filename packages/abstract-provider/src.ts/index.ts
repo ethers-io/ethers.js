@@ -269,7 +269,7 @@ export abstract class Provider implements OnceBlockable {
     abstract getBlock(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block>;
     abstract getBlockWithTransactions(blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<BlockWithTransactions>;
     abstract getTransaction(transactionHash: string): Promise<TransactionResponse>;
-    abstract getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt>;
+    abstract getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt | null>;
 
     // Bloom-filter Queries
     abstract getLogs(filter: Filter): Promise<Array<Log>>;
