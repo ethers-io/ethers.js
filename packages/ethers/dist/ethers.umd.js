@@ -5334,7 +5334,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abi/5.6.3";
+	exports.version = "abi/5.6.4";
 
 	});
 
@@ -9910,6 +9910,12 @@
 	            }
 	            else if (param.type === "bytes") {
 	                return (0, lib$4.keccak256)((0, lib$1.hexlify)(value));
+	            }
+	            if (param.type === "bool" && typeof (value) === "boolean") {
+	                value = (value ? "0x01" : "0x00");
+	            }
+	            if (param.type.match(/^u?int/)) {
+	                value = lib$2.BigNumber.from(value).toHexString();
 	            }
 	            // Check addresses are valid
 	            if (param.type === "address") {
@@ -30971,7 +30977,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.6.8";
+	exports.version = "ethers/5.6.9";
 
 	});
 

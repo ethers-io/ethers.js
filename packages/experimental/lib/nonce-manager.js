@@ -51,7 +51,7 @@ var NonceManager = /** @class */ (function (_super) {
         this._deltaCount = 0;
     };
     NonceManager.prototype.incrementTransactionCount = function (count) {
-        this._deltaCount += (count ? count : 1);
+        this._deltaCount += ((count == null) ? 1 : count);
     };
     NonceManager.prototype.signMessage = function (message) {
         return this.signer.signMessage(message);
@@ -68,6 +68,7 @@ var NonceManager = /** @class */ (function (_super) {
         }
         else {
             this.setTransactionCount(transaction.nonce);
+            this._deltaCount++;
         }
         return this.signer.sendTransaction(transaction).then(function (tx) {
             return tx;

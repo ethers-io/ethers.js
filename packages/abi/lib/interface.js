@@ -424,6 +424,12 @@ var Interface = /** @class */ (function () {
             else if (param.type === "bytes") {
                 return (0, keccak256_1.keccak256)((0, bytes_1.hexlify)(value));
             }
+            if (param.type === "bool" && typeof (value) === "boolean") {
+                value = (value ? "0x01" : "0x00");
+            }
+            if (param.type.match(/^u?int/)) {
+                value = bignumber_1.BigNumber.from(value).toHexString();
+            }
             // Check addresses are valid
             if (param.type === "address") {
                 _this._abiCoder.encode(["address"], [value]);

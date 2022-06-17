@@ -32,7 +32,7 @@ export class NonceManager extends ethers.Signer {
         this._deltaCount = 0;
     }
     incrementTransactionCount(count) {
-        this._deltaCount += (count ? count : 1);
+        this._deltaCount += ((count == null) ? 1 : count);
     }
     signMessage(message) {
         return this.signer.signMessage(message);
@@ -49,6 +49,7 @@ export class NonceManager extends ethers.Signer {
         }
         else {
             this.setTransactionCount(transaction.nonce);
+            this._deltaCount++;
         }
         return this.signer.sendTransaction(transaction).then((tx) => {
             return tx;

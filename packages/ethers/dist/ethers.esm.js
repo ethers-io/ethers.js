@@ -5130,7 +5130,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.6.3";
+const version$4 = "abi/5.6.4";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -8925,6 +8925,12 @@ class Interface {
             }
             else if (param.type === "bytes") {
                 return keccak256(hexlify(value));
+            }
+            if (param.type === "bool" && typeof (value) === "boolean") {
+                value = (value ? "0x01" : "0x00");
+            }
+            if (param.type.match(/^u?int/)) {
+                value = BigNumber.from(value).toHexString();
             }
             // Check addresses are valid
             if (param.type === "address") {
@@ -23736,7 +23742,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$p = "ethers/5.6.8";
+const version$p = "ethers/5.6.9";
 
 "use strict";
 const logger$J = new Logger(version$p);
