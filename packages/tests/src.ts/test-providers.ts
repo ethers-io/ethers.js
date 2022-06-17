@@ -858,7 +858,8 @@ testFunctions.push({
     timeout: 900,                  // 15 minutes
     networks: [ "ropsten" ],       // Only test on Ropsten
     checkSkip: (provider: string, network: string, test: TestDescription) => {
-        return false;
+        // This isn't working right now on Ankr
+        return (provider === "AnkrProvider");
     },
     execute: async (provider: ethers.providers.Provider) => {
         const gasPrice = (await provider.getGasPrice()).mul(10);
@@ -894,7 +895,8 @@ testFunctions.push({
     timeout: 900,                  // 15 minutes
     networks: [ "ropsten" ],       // Only test on Ropsten
     checkSkip: (provider: string, network: string, test: TestDescription) => {
-        return false;
+        // This isn't working right now on Ankr
+        return (provider === "AnkrProvider");
     },
     execute: async (provider: ethers.providers.Provider) => {
         const gasPrice = (await provider.getGasPrice()).mul(10);
@@ -937,7 +939,8 @@ testFunctions.push({
     networks: [ "ropsten" ],       // Only test on Ropsten
     checkSkip: (provider: string, network: string, test: TestDescription) => {
         // These don't support EIP-1559 yet for sending
-        return (provider === "AlchemyProvider");
+        //return (provider === "AlchemyProvider" );
+        return (provider === "AnkrProvider" );
     },
     execute: async (provider: ethers.providers.Provider) => {
         const wallet = fundWallet.connect(provider);
