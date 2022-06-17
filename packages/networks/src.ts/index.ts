@@ -66,7 +66,11 @@ function ethDefaultProvider(network: string | Network): Renetworkable {
 
         if (providers.AnkrProvider && options.ankr !== "-") {
             try {
-                providerList.push(new providers.AnkrProvider(network, options.ankr));
+                const skip = [ "ropsten" ];
+                const provider = new providers.AnkrProvider(network, options.ankr);
+                if (provider.network && skip.indexOf(provider.network.name) === -1) {
+                    providerList.push(provider);
+                }
             } catch(error) { }
         }
 
