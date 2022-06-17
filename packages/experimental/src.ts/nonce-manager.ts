@@ -46,7 +46,7 @@ export class NonceManager extends ethers.Signer {
     }
 
     incrementTransactionCount(count?: number): void {
-        this._deltaCount += (count ? count: 1);
+        this._deltaCount += ((count == null) ? 1: count);
     }
 
     signMessage(message: ethers.Bytes | string): Promise<string> {
@@ -64,6 +64,7 @@ export class NonceManager extends ethers.Signer {
             this.incrementTransactionCount();
         } else {
             this.setTransactionCount(transaction.nonce);
+            this._deltaCount++;
         }
 
         return this.signer.sendTransaction(transaction).then((tx) => {
