@@ -17436,7 +17436,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.6.3";
+const version$k = "networks/5.6.4";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -17490,7 +17490,11 @@ function ethDefaultProvider(network) {
         }
         if (providers.AnkrProvider && options.ankr !== "-") {
             try {
-                providerList.push(new providers.AnkrProvider(network, options.ankr));
+                const skip = ["ropsten"];
+                const provider = new providers.AnkrProvider(network, options.ankr);
+                if (provider.network && skip.indexOf(provider.network.name) === -1) {
+                    providerList.push(provider);
+                }
             }
             catch (error) { }
         }

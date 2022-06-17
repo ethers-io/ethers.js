@@ -22847,7 +22847,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "networks/5.6.3";
+	exports.version = "networks/5.6.4";
 
 	});
 
@@ -22910,7 +22910,11 @@
 	        }
 	        if (providers.AnkrProvider && options.ankr !== "-") {
 	            try {
-	                providerList.push(new providers.AnkrProvider(network, options.ankr));
+	                var skip = ["ropsten"];
+	                var provider = new providers.AnkrProvider(network, options.ankr);
+	                if (provider.network && skip.indexOf(provider.network.name) === -1) {
+	                    providerList.push(provider);
+	                }
 	            }
 	            catch (error) { }
 	        }

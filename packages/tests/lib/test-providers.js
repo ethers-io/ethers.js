@@ -884,7 +884,8 @@ testFunctions.push({
     timeout: 900,
     networks: ["ropsten"],
     checkSkip: function (provider, network, test) {
-        return false;
+        // This isn't working right now on Ankr
+        return (provider === "AnkrProvider");
     },
     execute: function (provider) { return __awaiter(void 0, void 0, void 0, function () {
         var gasPrice, wallet, addr, b0, tx, b1;
@@ -931,7 +932,8 @@ testFunctions.push({
     timeout: 900,
     networks: ["ropsten"],
     checkSkip: function (provider, network, test) {
-        return false;
+        // This isn't working right now on Ankr
+        return (provider === "AnkrProvider");
     },
     execute: function (provider) { return __awaiter(void 0, void 0, void 0, function () {
         var gasPrice, wallet, addr, b0, tx, b1;
@@ -985,7 +987,8 @@ testFunctions.push({
     networks: ["ropsten"],
     checkSkip: function (provider, network, test) {
         // These don't support EIP-1559 yet for sending
-        return (provider === "AlchemyProvider");
+        //return (provider === "AlchemyProvider" );
+        return (provider === "AnkrProvider");
     },
     execute: function (provider) { return __awaiter(void 0, void 0, void 0, function () {
         var wallet, addr, b0, tx, b1;

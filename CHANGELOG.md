@@ -4,9 +4,10 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
-ethers/v5.6.9 (2022-06-17 01:59)
+ethers/v5.6.9 (2022-06-17 14:44)
 --------------------------------
 
+  - Removed Ankr for Ropsten default provider; the merge seems to have broke it. ([3790671](https://github.com/ethers-io/ethers.js/commit/3790671b424bfcfaaf27bab9f964c3ca407e8fea))
   - Fix NonceManager for increment 0 and provided nonce. ([#3062](https://github.com/ethers-io/ethers.js/issues/3062), [#3085](https://github.com/ethers-io/ethers.js/issues/3085); [0a28679](https://github.com/ethers-io/ethers.js/commit/0a28679994c844cef514f9e800c6cd8e1a21aa30))
   - Fixed topic filters for numeric types with string values. ([#3013](https://github.com/ethers-io/ethers.js/issues/3013); [0078e02](https://github.com/ethers-io/ethers.js/commit/0078e026f1b438dd0976200ee16c38ec5a7788f6))
 
