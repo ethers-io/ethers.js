@@ -365,7 +365,7 @@ with the optional //topics//.
 
 If //topics// is not specified, placeholders will be inserted into the result.
 
-Most develoeprs will find the [parsing methods](Interface--parsing) more
+Most developers will find the [parsing methods](Interface--parsing) more
 convenient for decoding event data, as they will automatically detect the
 matching event.
 
@@ -392,7 +392,7 @@ Returns the decoded values from transaction data for
 Most developers will not need this method, but may be useful for debugging
 or inspecting transactions.
 
-Most develoeprs will also find the [parsing methods](Interface--parsing) more
+Most developers will also find the [parsing methods](Interface--parsing) more
 convenient for decoding transation data, as they will automatically detect the
 matching function.
 
