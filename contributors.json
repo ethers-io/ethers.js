@@ -353,6 +353,23 @@
     ],
     "message": "Only error on duplicate signatures in Contract ABI (#499)."
   },
+  "0a28679994c844cef514f9e800c6cd8e1a21aa30": {
+    "authors": [
+      {
+        "link": "https://github.com/olehmisar",
+        "login": "olehmisar"
+      },
+      {
+        "link": "https://github.com/valentinmatter",
+        "login": "valentinmatter"
+      }
+    ],
+    "issues": [
+      3062,
+      3085
+    ],
+    "message": "Fix NonceManager for increment 0 and provided nonce (#3062, #3085)."
+  },
   "0a8be37b087470d9354f387d7c439cb0166eaf4d": {
     "authors": [
       {
@@ -671,6 +688,18 @@
       405
     ],
     "message": "Support for xpub and xpriv derivation and generating extended keys; no fromExtendedKey yet (#405)."
+  },
+  "1934ad3b48115cafb89142c8605f4187b2b60a22": {
+    "authors": [
+      {
+        "link": "https://github.com/zemse",
+        "login": "zemse"
+      }
+    ],
+    "issues": [
+      2940
+    ],
+    "message": "docs: added ConnectionInfo details (#2940)."
   },
   "19587eea3f3fadc301ff4d949646b700ebb4a85b": {
     "authors": [
@@ -1660,6 +1689,19 @@
     ],
     "message": "Added support for null entries in EventFilter (#1499)."
   },
+  "3c760d014b71931392cf429ed543b955b953c162": {
+    "authors": [
+      {
+        "email": "me@egorfine.com",
+        "link": "https://github.com/egorFiNE",
+        "login": "egorFiNE"
+      }
+    ],
+    "issues": [
+      2997
+    ],
+    "message": "docs: fixed type (#2997)."
+  },
   "3cb21dd6c7964aab99cfbbdde9be5c9d8e5a3337": {
     "authors": [
       {
@@ -1914,6 +1956,23 @@
       1172
     ],
     "message": "Fix BigNumber when passed something with a length property (#1172)."
+  },
+  "45d3fea4014897ac4136b85e0be11ab973b62e3a": {
+    "authors": [
+      {
+        "link": "https://github.com/AlecGard",
+        "login": "AlecGard"
+      },
+      {
+        "link": "https://github.com/bobanm",
+        "login": "bobanm"
+      }
+    ],
+    "issues": [
+      3087,
+      3036
+    ],
+    "message": "docs: fixed typos (#3087)."
   },
   "45f367512d1d5dccfd06fad9cc8688e4d0cccdb8": {
     "authors": [
@@ -2723,6 +2782,18 @@
       959
     ],
     "message": "Fixed ENS overrides for the default provider (#959)."
+  },
+  "64744990ffb13c86af6cb34fb745f3b10277cf98": {
+    "authors": [
+      {
+        "link": "https://github.com/QaidVoid",
+        "login": "QaidVoid"
+      }
+    ],
+    "issues": [
+      2991
+    ],
+    "message": "docs: fixed typo in constant defaults (#2991)."
   },
   "647fbd8cbfa0f94f72db6faadd528e61c49b1dd6": {
     "authors": [
@@ -4045,10 +4116,16 @@
       {
         "link": "https://github.com/adassoul",
         "login": "adassoul"
+      },
+      {
+        "email": "andrei.stefan.work@gmail.com",
+        "link": "https://github.com/andreistefanwork",
+        "login": "andreistefanwork"
       }
     ],
     "issues": [
-      2989
+      2989,
+      2998
     ],
     "message": "docs: fixed typo (#2989)."
   },
@@ -5123,6 +5200,18 @@
       191
     ],
     "message": "Added French and Spanish BIP-39 wordlists (#191)."
+  },
+  "c3b5a6e47e67c37b46f4ae58b4355c84e5f653f8": {
+    "authors": [
+      {
+        "link": "https://github.com/dwardu",
+        "login": "dwardu"
+      }
+    ],
+    "issues": [
+      3061
+    ],
+    "message": "docs: fixed typo in example (#3061)."
   },
   "c47d2eba4dc741eb5cb754c3ef5064b8ea7ac7cc": {
     "authors": [
