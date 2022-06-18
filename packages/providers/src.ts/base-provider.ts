@@ -1099,7 +1099,10 @@ export class BaseProvider extends Provider implements EnsProvider {
                                 this._emitted["b:" + log.blockHash] = log.blockNumber;
                                 this._emitted["t:" + log.transactionHash] = log.blockNumber;
 
-                                this.emit(filter, log);
+                                // don't emit events from old blocks
+                                if(event._lastBlockNumber >= blockNumber){
+                                    this.emit(filter, log);
+                                }
                             });
                         }).catch((error: Error) => {
                             this.emit("error", error);
