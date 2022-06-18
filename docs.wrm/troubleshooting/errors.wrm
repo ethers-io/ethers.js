@@ -140,7 +140,7 @@ utils.parseEther("1.0")
 
 _heading: Numeric Underflow @<help-NUMERIC_FAULT-underflow>
 
-Numeric underflow sbould not be confused with overflow.
+Numeric underflow should not be confused with overflow.
 
 Numeric underflow occurs when the precission of a value cannot be
 safely represented in the current data type.
@@ -150,7 +150,7 @@ safely represented in the current data type.
 - Using values with fractional componets (e.g. ``BigNumber.from(1.2)``).
   If you require fractions, you must use the [[FixedNumber]] class.
 - Parsing string values that have more decimals than the unit supports
-  (e.g. ``parseUints("1.33", 1)``).
+  (e.g. ``parseUnits("1.33", 1)``).
 
 _code: Examples @lang<javascript>
 
@@ -232,7 +232,7 @@ _subsection: UNPREDICTABLE_GAS_LIMIT @<help-UNPREDICTABLE_GAS_LIMIT>
 During gas estimation it is possible that a transaction would actually
 fail (and hence has no reasonable estimate of gas requirements) or that
 the transaction is complex in a way that does not permit a node to
-estiamte the gas requirements, in which case this error is thrown.
+estimate the gas requirements, in which case this error is thrown.
 
 In almost all cases, this will unfortunately require you specify an
 explicit ``gasLimit`` for your transaction, which will disable ether's
