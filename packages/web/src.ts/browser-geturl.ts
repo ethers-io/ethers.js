@@ -1,5 +1,6 @@
 "use strict";
 
+import { isArrowFunctionExpression } from "@babel/types";
 import { arrayify } from "@ethersproject/bytes";
 
 import type { GetUrlResponse, Options } from "./types";
@@ -18,7 +19,7 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
     if (options.skipFetchSetup !== true) {
         request.mode = <RequestMode>"cors";              // no-cors, cors, *same-origin
         request.cache = <RequestCache>"no-cache";        // *default, no-cache, reload, force-cache, only-if-cached
-        request.credentials = <RequestCredentials>"same-origin";  // include, *same-origin, omit
+        request.credentials = <RequestCredentials>"include";  // include, *same-origin, omit
         request.redirect = <RequestRedirect>"follow";    // manual, *follow, error
         request.referrer = "client";                     // no-referrer, *client
     };
