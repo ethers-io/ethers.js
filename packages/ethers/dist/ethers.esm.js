@@ -17729,7 +17729,7 @@ function getUrl(href, options) {
         if (options.skipFetchSetup !== true) {
             request.mode = "cors"; // no-cors, cors, *same-origin
             request.cache = "no-cache"; // *default, no-cache, reload, force-cache, only-if-cached
-            request.credentials = "same-origin"; // include, *same-origin, omit
+            request.credentials = "include"; // include, *same-origin, omit
             request.redirect = "follow"; // manual, *follow, error
             request.referrer = "client"; // no-referrer, *client
         }
