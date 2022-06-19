@@ -1,5 +1,13 @@
 "use strict";
 
+import type { Agent as HTTPAgent } from 'http';
+import type { Agent as HTTPSAgent } from 'https';
+
+export interface HttpProviderAgent {
+    http?: HTTPAgent;
+    https?: HTTPSAgent;
+}
+
 export type GetUrlResponse = {
     statusCode: number;
     statusMessage: string;
@@ -13,5 +21,5 @@ export type Options = {
     body?: Uint8Array;
     headers?: { [ key: string] : string };
     skipFetchSetup?: boolean;
+    agent?: HttpProviderAgent;
 };
-

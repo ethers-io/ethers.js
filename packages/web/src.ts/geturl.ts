@@ -72,6 +72,7 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
     //        directly into request and skip adding the components
     //        to this request object
     const url = parse(href);
+    const agent = options.agent.https || options.agent.http;
 
     const request = {
         protocol: nonnull(url.protocol),
@@ -81,6 +82,7 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
 
         method: (options.method || "GET"),
         headers: shallowCopy(options.headers || { }),
+        agent,
     };
 
     if (options.allowGzip) {
@@ -111,4 +113,3 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
     const response = await getResponse(req);
     return response;
 }
-
