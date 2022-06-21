@@ -12,7 +12,7 @@ _heading: Dependencies
 Adding a dependency is non-trivial and will require fairly convincing
 arguments.
 
-Further, **ALL** dependencies for ethers, **must** be MIT licensed or
+Further, **ALL** dependencies for ethers **must** be MIT licensed or
 public domain (CC0).
 
 All contributions to ethers are then included under the MIT license.
@@ -23,7 +23,7 @@ _heading: Printable ASCII (7-bit) Characters
 All source and documentation files should ONLY use the printable ASCII
 set.
 
-This is for several reasons, bu...
+This is for several reasons, bu... [TYPO!]
 
 - Transmission over certain HTTP servers and proxies can mangle
   UTF-8 data
@@ -43,9 +43,7 @@ MIT...
 _heading: Other Considerations
 
 A common argument to Pull Requests is that they are simple, backwards compatible
-and 
-
-It is important to remember that a small change is something that
+and it is important to remember that a small change is something that
 we are required to support in perpetuity.
 
 For example, adding support for an obscure platform, such as adding a dot-file
