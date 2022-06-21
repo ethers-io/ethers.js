@@ -152,7 +152,7 @@ _heading: Writing to the Blockchain @<getting-started--sending>
 
 _code: Sending Ether @lang<script>
 
-// Send 1 ether to an ens name.
+// Send 1 ether to an ENS name
 const tx = signer.sendTransaction({
     to: "ricmoo.firefly.eth",
     value: ethers.utils.parseEther("1.0")
@@ -166,7 +166,7 @@ Ethereum blockchain.
 
 The [[Contract]] object makes it easier to use an on-chain
 Contract as a normal JavaScript object, with the methods
-mapped to encoding and decoding data for you.
+mapped to encode and decode data for you.
 
 If you are familiar with Databases, this is similar to an //Object Relational Mapper// (ORM).
 
@@ -184,7 +184,7 @@ any methods you don't need or use, providing a smaller subset of the ABI to
 the contract.
 
 An ABI often comes from the Solidity or Vyper compiler, but you can use the
-Human-Readable ABI in code, which the following examples use.
+Human-Readable ABI in your code, which the following examples use.
 
 _code: Connecting to the DAI Contract @lang<javascript>
 
@@ -326,9 +326,9 @@ _code: Signing Messages @lang<javascript>
 
 //_hide: const signer = ethers.Wallet.createRandom();
 
-// To sign a simple string, which are used for
+// To sign a simple string, which is used for
 // logging into a service, such as CryptoKitties,
-// pass the string in.
+// pass the string in
 signature = await signer.signMessage("Hello World");
 //_log: signature
 
