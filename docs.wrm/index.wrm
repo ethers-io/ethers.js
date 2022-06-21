@@ -25,8 +25,8 @@ _subsection: Features @<features>
 - **Tiny** (~88kb compressed; 284kb uncompressed)
 - **Complete** functionality for all your Ethereum needs
 - Extensive [documentation](link-ethers-docs)
-- Large collection of **test cases** which are maintained and added to
-- Fully **TypeScript** ready, with definition files and full
+- Large collection of **test cases** which are maintained and added to [TYPO!]
+- Fully **TypeScript**-ready, with definition files and full
   TypeScript source
 - **MIT License** (including //ALL// dependencies); completely open
   source to do with as you please
