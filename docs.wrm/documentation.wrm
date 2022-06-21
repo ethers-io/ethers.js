@@ -220,7 +220,7 @@ for displaying code samples.
 _heading: JavaScript Evaluation @<flatworm--code-eval>
 
 For JavaScript files, the file is transpiled and executed in a VM,
-allowiung output (or exceptions) of blocks to be included in the
+allowing output (or exceptions) of blocks to be included in the
 fragment output.
 
 The entire **code fragment** source is included in an async IIFE,
@@ -240,7 +240,7 @@ to log, then ``_`` is assumed. If an error occurs, generation fails.
 
 A ``/\/_throws:`` will begin a block, which is expected to throw assigning
 the error to ``_``. The block can be ended with a ``/\/_log:`` or ``/\/_null:``,
-if no value is given to log, then ``_`` is assumed. If an error do not occur,
+if no value is given to log, then ``_`` is assumed. If an error does not occur,
 generation fails.
 
 _code: Code Evaluation Example @lang<text>
@@ -432,7 +432,7 @@ _subsection: Configuration @<flatworm-config>
 
 Configuration is optional (but highly recommended) and may be either
 a simple JSON file (config.json) or a JS file (config.js) placed in
-the top  of the source folder.
+the top of the source folder.
 
 TODO:  example JSON and example JS
 
