@@ -170,7 +170,7 @@ _definition: **Supported Networks**
 - ``homestead`` - Homestead (Mainnet)
 - ``ropsten`` - Ropsten (proof-of-work testnet)
 - ``rinkeby`` - Rinkeby (proof-of-authority testnet)
-- ``goerli`` - G&ouml;rli (clique testnet)
+- ``goerli`` - Goerli (clique testnet)
 - ``kovan`` - Kovan (proof-of-authority testnet)
 - ``matic`` - Polygon
 - ``maticmum`` - Polygon Mumbai Testnet
@@ -305,7 +305,7 @@ _code: Ankr Examples @lang<javascript>
 // Connect to mainnet (homestead)
 provider = new AnkrProvider();
 
-// Connect to polygont
+// Connect to polygon
 // (see EtherscanProvider above for other network examples)
 provider = new AnkrProvider("matic");
 
