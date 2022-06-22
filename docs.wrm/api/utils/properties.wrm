@@ -32,7 +32,7 @@ a static method will also search ancestors.
 
 _property: ethers.utils.resolveProperties(anObject) => Promise<any> @<utils-resolveproperties> @SRC<properties>
 
-Retruns a Promise which resolves all child values on //anObject//.
+Returns a Promise which resolves all child values on //anObject//.
 
 _property: ethers.utils.shallowCopy(anObject) => any
 
