@@ -104,7 +104,7 @@ abiCoder.decode([ "uint", "string" ], data);
 abiCoder.decode([ "uint[]", "string" ], data);
 //_log:
 
-// Decoding complex structs; unnamed parameters allows ONLY
+// Decoding complex structs; unnamed parameters allow ONLY
 // positional access to values
 //_hide: data = _page.example3;
 //_verbatim: `data = ${ JSON.stringify(data) };`
@@ -112,7 +112,7 @@ abiCoder.decode([ "uint[]", "string" ], data);
 abiCoder.decode([ "uint", "tuple(uint256, string)" ], data);
 //_log:
 
-// Decoding complex structs; named parameters allows positional
+// Decoding complex structs; named parameters allow positional
 // or keyword access to values
 //_result:
 abiCoder.decode([ "uint a", "tuple(uint256 b, string c) d" ], data);
