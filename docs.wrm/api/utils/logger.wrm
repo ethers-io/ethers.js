@@ -52,7 +52,7 @@ Throw an [INVALID_ARGUMENT](errors--invalid-argument) Error with //name// and //
 
 _heading: Usage Validation
 
-There can be used to ensure various properties and actions are safe.
+These can be used to ensure various properties and actions are safe.
 
 _property: logger.checkAbstract(target, kind) => void @<Logger-checkAbstract> @SRC<logger>
 If //target// is //kind//, throws a [UNSUPPORTED_OPERATION](errors--unsupported-operation) error
@@ -111,8 +111,8 @@ This may occur for a number of reasons, for example:
 - a [CORS](link-cors) issue; this is quite often the problem and also the
   hardest to diagnose and fix, so it is very beneficial to familiarize
   yourself with CORS; some backends allow you configure your CORS, such as
-  the geth command-line or conifguration files or the INFURA and Alchemy
-  dashboards by specifing allowed Origins, methods, etc.
+  the geth command-line or configuration files or the INFURA and Alchemy
+  dashboards by specifying allowed Origins, methods, etc.
 - an SSL issue; for example, if you are trying to connect to a local node via
   HTTP but are serving the content from a secure HTTPS website
 - a link issue; a firewall is preventing the traffic from reaching the server
@@ -232,7 +232,7 @@ This error will have the additional properties, ``cancelled``, ``hash``, ``reaso
 
 See the [[providers-TransactionResponse]] for the ``wait`` method for more details.
 
-_property: Logger.errors.UNPREDICTABLE_GAS_LIMIT @<errors--unpredicatable-gas-limit>
+_property: Logger.errors.UNPREDICTABLE_GAS_LIMIT @<errors--unpredictable-gas-limit>
 When estimating the required amount of gas for a transaction, a node is queried for
 its best guess.
 
