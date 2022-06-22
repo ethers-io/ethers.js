@@ -69,7 +69,7 @@ to be installed.
 
 Therefore it is important that embedded code uses jumps relative to itself,
 not the entire program it is embedded in, which also means that a jump
-can **only** target its own scope, no parent or child scopes. This is
+can **only** target its own scope, no parent or child scope. This is
 enforced by the assembler.
 
 A scope may access the offset of any child [[asm-dialect-datasegment]] or
@@ -108,7 +108,7 @@ literal.
 
 _subsection: Stack Placeholders @<asm-dialect-placeholder>
 
-@TODO: exampl
+@TODO: example
 
 
 _subsection: Evaluation and Execution @<asm-dialect-scripting>
