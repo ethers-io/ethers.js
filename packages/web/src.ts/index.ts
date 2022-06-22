@@ -55,6 +55,8 @@ export type ConnectionInfo = {
     timeout?: number,
 };
 
+export { Options };
+
 export interface OnceBlockable {
     once(eventName: "block", handler: () => void): void;
 }
