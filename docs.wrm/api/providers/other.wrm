@@ -6,7 +6,7 @@ The **FallbackProvider** is the most advanced [[Provider]] available in
 ethers.
 
 It uses a quorum and connects to multiple [Providers](Provider) as backends,
-each configured with a //priority// and a //weight// .
+each configured with a //priority// and a //weight//.
 
 When a request is made, the request is dispatched to multiple backends, randomly
 chosen (lower-value priority backends are always selected first) and the results from
@@ -70,7 +70,7 @@ The path this [[Provider]] is connected to.
 
 _subsection: JsonRpcBatchProvider  @<JsonRpcBatchProvider> @INHERIT<[[JsonRpcProvider]]> @SRC<providers:class.JsonRpcBatchProvider>
 
-The **JsonRpcBatchProvider** operated identically to any other Provider,
+The **JsonRpcBatchProvider** operates identically to any other Provider,
 except the calls are implicly batched during an event-loop and sent using
 the JSON-RPC batch protocol to the backend.
 
@@ -151,8 +151,8 @@ The //callback// should use the error-first calling semantics, so
 _property: externalProvider.send(request, callback) => void
 
 This is identical to ``sendAsync``. Historically, this used a synchronous
-web request, but no current browsers support this, so its use this way
-was deprecated quite a long time ago
+web request, but no current browser supports this, so its use this way
+was deprecated quite a long time ago.
 
 
 _subsection: WebSocketProvider @<WebSocketProvider> @INHERIT<[[JsonRpcProvider]]> @SRC<providers:class.WebSocketProvider>
