@@ -393,7 +393,7 @@ Most developers will not need this method, but may be useful for debugging
 or inspecting transactions.
 
 Most developers will also find the [parsing methods](Interface--parsing) more
-convenient for decoding transation data, as they will automatically detect the
+convenient for decoding transaction data, as they will automatically detect the
 matching function.
 
 _code: @lang<javascript>
@@ -438,12 +438,12 @@ result = iface.decodeFunctionResult("getUser", resultData);
 //_log:
 
 // Access positionally:
-// The 0th output parameter, the 0th proerty of the structure
+// The 0th output parameter, the 0th property of the structure
 //_result:
 result[0][0];
 //_log:
 
-// Access by name: (only avilable because parameters were named)
+// Access by name: (only available because parameters were named)
 //_result:
 result.user.name
 //_log:
