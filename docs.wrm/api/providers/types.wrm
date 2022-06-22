@@ -133,7 +133,7 @@ _subsection: Events and Logs
 _heading: EventFilter @<providers-EventFilter>
 
 _property: filter.address => string<[[address]]>
-The address to filter by, or ``null`` to match any address.
+The address to filter by or ``null`` to match any address.
 
 _property: filter.topics => Array<string<[Data](DataHexString)<32>> | Array<string<[Data](DataHexString)<32>>>>
 The topics to filter by or ``null`` to match any topics.
@@ -206,7 +206,7 @@ All fields are optional and may be a promise which resolves
 to the required type.
 
 _property: transactionRequest.to => string | Promise<string>
-The address (or ENS name) this transaction it to.
+The address (or ENS name) this transaction is to.
 
 _property: transactionRequest.from => string<[[address]]> | Promise<string<[[address]]>>
 The address this transaction is from.
@@ -226,7 +226,7 @@ The maximum amount of gas this transaction is permitted to use.
 
 If left unspecified, ethers will use ``estimateGas`` to determine the value
 to use. For transactions with unpredicatable gas estimates, this may be required
-to specify explicitly.
+to be specified explicitly.
 
 _property: transactionRequest.gasPrice => [[BigNumber]] | Promise<[[BigNumber]]>
 The price (in wei) per unit of gas this transaction will pay.
@@ -269,7 +269,7 @@ on recent versions of Geth and require configuration to enable.
 _property: transactionRequest.type => null | number
 
 The [[link-eip-2718]] type of this transaction envelope, or ``null``
-for to use the network default. To force using a lagacy transaction
+for to use the network default. To force using a legacy transaction
 without an envelope, use type ``0``.
 
 _property: transactionRequest.accessList => [[providers-AccessListish]]
@@ -429,7 +429,7 @@ have this property.
 
 _subsection: Access Lists
 
-An Access List is optional an includes a list of addresses and storage
+An Access List is optional and includes a list of addresses and storage
 slots for that address which should be //warmed// or pre-fetched for
 use within the execution of this transaction. A //warmed// value has an
 additional upfront cost to access, but is discounted throughout the code
@@ -496,7 +496,7 @@ _heading: AccessList @<providers-AccessList>
 
 An [[link-eip-2930]] transaction allows an optional **AccessList**
 which causes a transaction to //warm// (i.e. pre-cache) another
-addresses state and the specified storage keys.
+address's state and the specified storage keys.
 
 This incurs an increased intrinsic cost for the transaction, but provides
 discounts for storage and state access throughout the execution of the
