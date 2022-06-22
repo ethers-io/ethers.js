@@ -122,7 +122,7 @@ sequence with.
 
 _property: ethers.utils.Utf8ErrorReason.MISSING_CONTINUE
 A UTF-8 sequence was begun, but did not have enough continuation
-bytes for the sequence. For this error the //ofset// is the index
+bytes for the sequence. For this error the //offset// is the index
 at which a continuation byte was expected.
 
 _property: ethers.utils.Utf8ErrorReason.OUT_OF_RANGE
