@@ -5,7 +5,7 @@ An **Application Binary Interface** (ABI) is a collection of
 various components of a Contract.
 
 An [[Interface]] helps organize Fragments by type as well
-as provides the functionality required to encode, decode and
+as provide the functionality required to encode, decode and
 work with each component.
 
 Most developers will not require this low-level access to encoding
