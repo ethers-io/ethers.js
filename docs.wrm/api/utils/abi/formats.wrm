@@ -1,7 +1,7 @@
 _section: ABI Formats @<abi-formats>
 
 There are several formats available to specify an ABI for
-a Smart Contract, which specifies to the under-lying library
+a Smart Contract, which specifies to the underlying library
 what methods, events and errors exist so that encoding and
 decoding the data from and to the network can be handled by
 the library.
@@ -24,7 +24,7 @@ all the properties the ABI requires:
 - name
 - type (constructor, event, function)
 - inputs (types, nested structures and optionally names)
-- outputs (types nested structures and optionally names)
+- outputs (types, nested structures and optionally names)
 - state mutability (for constructors and methods)
 - payability (for constructors and methods)
 - whether inputs are indexed (for events)
@@ -43,7 +43,7 @@ may be omitted) or fully specified (i.e. with all property names) and
 whitespace is ignored.
 
 Several modifiers available in Solidity are dropped internally, as they
-are not required for the ABI and used old by Solidity's semantic checking
+are not required for the ABI and used by Solidity's old [CHECK!] semantic checking
 system, such as input parameter data location like ``"calldata"``
 and ``"memory"``. As such, they can be safely dropped in the ABI as well.
 
