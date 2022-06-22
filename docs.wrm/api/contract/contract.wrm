@@ -73,7 +73,7 @@ _property: contract.listeners(event) => Array<Listener>  @<Contract-listeners> @
 Return a list of listeners that are subscribed to //event//.
 
 _property: contract.off(event, listener) => this  @<Contract-off> @SRC<contracts>
-Unsubscribe //listener// to //event//.
+Unsubscribe //listener// from //event//.
 
 _property: contract.on(event, listener) => this  @<Contract-on> @SRC<contracts>
 Subscribe to //event// calling //listener// when the event occurs.
@@ -103,7 +103,7 @@ is read-only and evaluates a small amount of EVM code against the
 current blockchain state and can be computed by asking a single
 node, which can return a result. It is therefore free and does
 not require any ether, but **cannot make changes** to the
-blockchain state..
+blockchain state.
 
 _property: contract.METHOD_NAME(...args [, overrides ]) => Promise<any>  @<Contract-functionsCall>
 The type of the result depends on the ABI. If the method returns a single
@@ -201,7 +201,7 @@ is called, there will be additional properties on the receipt:
   log topics and data (this was used to compute ``args``)
 - ``receipt.events[n].event`` - the name of the event
 - ``receipt.events[n].eventSignature`` - the full signature of the event
-- ``receipt.removeListener()`` - a method to remove the listener that trigger
+- ``receipt.removeListener()`` - a method to remove the listener that triggered
   this event
 - ``receipt.getBlock()`` - a method to return the [Block](providers-Block) this event occurred in
 - ``receipt.getTransaction()`` - a method to return the
@@ -216,7 +216,7 @@ There are several options to analyze properties and results of a
 write method without actually executing it.
 
 _property: contract.estimateGas.METHOD_NAME(...args [ , overrides ]) => Promise<[[BigNumber]]>  @<contract-estimateGas>
-Returns the estimate units of gas that would be required to
+Returns the estimated units of gas that would be required to
 execute the //METHOD_NAME// with //args// and //overrides//.
 
 The //overrides// are identical to the overrides above for read-only
