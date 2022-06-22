@@ -5,7 +5,7 @@ import { hexlify, hexValue, isHexString } from "@ethersproject/bytes";
 import { Network, Networkish } from "@ethersproject/networks";
 import { deepCopy, defineReadOnly } from "@ethersproject/properties";
 import { accessListify } from "@ethersproject/transactions";
-import { ConnectionInfo, fetchJson } from "@ethersproject/web";
+import { ConnectionInfo, fetchJson, Options } from "@ethersproject/web";
 
 import { showThrottleMessage } from "./formatter";
 
@@ -161,12 +161,14 @@ function checkError(method: string, error: any, transaction: any): any {
 export class EtherscanProvider extends BaseProvider{
     readonly baseUrl: string;
     readonly apiKey: string;
+    readonly baseOptions: Options;
 
-    constructor(network?: Networkish, apiKey?: string) {
+    constructor(network?: Networkish, apiKey?: string, options?: Options) {
         super(network);
 
         defineReadOnly(this, "baseUrl", this.getBaseUrl());
         defineReadOnly(this, "apiKey", apiKey || defaultApiKey);
+        defineReadOnly(this, "baseOptions", deepCopy(options || {}));
     }
 
     getBaseUrl(): string {
@@ -223,6 +225,7 @@ export class EtherscanProvider extends BaseProvider{
         });
 
         const connection: ConnectionInfo = {
+            ...this.baseOptions,
             url: url,
             throttleSlotInterval: 1000,
             throttleCallback: (attempt: number, url: string) => {
