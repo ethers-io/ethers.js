@@ -1,6 +1,6 @@
 _section: Display Logic and Input @<display-logic>
 
-When creating an Application, it is useful to convert between
+When creating an application, it is useful to convert between
 user-friendly strings (usually displaying **ether**) and the
 machine-readable values that contracts and maths depend on
 (usually in **wei**).
