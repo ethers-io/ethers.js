@@ -21,7 +21,7 @@ It is **HIGHLY RECOMMENDED** you check out the [security section](cookbook-react
 below for instructions on installing packages which can affect the security
 of your application.
 
-After installing packages, you may need to restart your packager and company.
+After installing packages, you may need to restart your packager and company. [CHECK!]
 
 _code: Installing @lang<shell>
 
