@@ -123,7 +123,7 @@ await contract.functions.single()
 // 123
 
 
-// v5 (notice the change in the .function variant)
+// v5 (notice the change in the .functions variant)
 await contract.single()
 // 123
 await contract.functions.single()
