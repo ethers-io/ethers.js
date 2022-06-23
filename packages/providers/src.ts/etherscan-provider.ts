@@ -426,7 +426,7 @@ export class EtherscanProvider extends BaseProvider{
             address: (await this.resolveName(addressOrName)),
             startblock: ((startBlock == null) ? 0: startBlock),
             endblock: ((endBlock == null) ? 99999999: endBlock),
-            sort: "asc"
+            sort: "desc"
         };
 
         const result = await this.fetch("account", params);
