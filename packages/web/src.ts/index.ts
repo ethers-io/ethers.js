@@ -241,10 +241,11 @@ export function _fetchData<T = Uint8Array>(connection: string | ConnectionInfo, 
                 response = await getUrl(url, options);
 
                 if (attempt < attemptLimit) {
-                    if (response.statusCode === 301 || response.statusCode === 302) {
+                    if (response.statusCode === 301 || response.statusCode === 302 ||
+			response.statusCode === 307 || response.statusCode === 308) {
                         // Redirection; for now we only support absolute locataions
                         const location = response.headers.location || "";
-                        if (options.method === "GET" && location.match(/^https:/)) {
+                        if ((options.method === "GET" || options.method === "POST") && location.match(/^https:/)) {
                             url = response.headers.location;
                             continue;
                         }

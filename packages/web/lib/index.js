@@ -212,9 +212,10 @@ function _fetchData(connection, body, processFunc) {
                     case 3:
                         response = _a.sent();
                         if (!(attempt < attemptLimit)) return [3 /*break*/, 8];
-                        if (!(response.statusCode === 301 || response.statusCode === 302)) return [3 /*break*/, 4];
+                        if (!(response.statusCode === 301 || response.statusCode === 302 ||
+                            response.statusCode === 307 || response.statusCode === 308)) return [3 /*break*/, 4];
                         location_1 = response.headers.location || "";
-                        if (options.method === "GET" && location_1.match(/^https:/)) {
+                        if ((options.method === "GET" || options.method === "POST") && location_1.match(/^https:/)) {
                             url = response.headers.location;
                             return [3 /*break*/, 19];
                         }
