@@ -85,7 +85,7 @@ is lower than next required ``nonce``.
 
 Each Ethereum transaction requires a ``nonce`` property equal to the index
 of that transaction for that account for all time. So, if an account has
-send four transactions over its lifetime, that means the nonces 0 though 3
+sent four transactions over its lifetime, that means the nonces 0 through 3
 (inclusive) have been used. The next transaction must use a nonce of 4.
 Attempting to re-use a nonce less than 4 will result in this error.
 
@@ -113,7 +113,7 @@ As a result, any attempt to use a number which is outside the safe
 range, which would result in incorrect values, an error is thrown.
 
 In general, numbers should be kept as strings, [[BigNumber]] instances or
-using ES2020 bigints, which all can safely be used without loss of precission.
+using ES2020 bigints, which all can safely be used without loss of precision.
 
 _code: Examples @lang<javascript>
 
@@ -142,12 +142,12 @@ _heading: Numeric Underflow @<help-NUMERIC_FAULT-underflow>
 
 Numeric underflow should not be confused with overflow.
 
-Numeric underflow occurs when the precission of a value cannot be
+Numeric underflow occurs when the precision of a value cannot be
 safely represented in the current data type.
 
 **Common Causes**
 
-- Using values with fractional componets (e.g. ``BigNumber.from(1.2)``).
+- Using values with fractional components (e.g. ``BigNumber.from(1.2)``).
   If you require fractions, you must use the [[FixedNumber]] class.
 - Parsing string values that have more decimals than the unit supports
   (e.g. ``parseUnits("1.33", 1)``).
@@ -209,7 +209,7 @@ is correct and the fee seems reasonable.
 Once a transaction is in the memory pool though, to prevent an account from
 flooding the network with many different transactions with the same nonce (each
 of which satisfies the above criteria), to replace an existing transaction
-an additional committment of a fee must be made by increasing the promised fee.
+an additional commitment of a fee must be made by increasing the promised fee.
 
 When replacing a legacy non-EIP1559 transaction, the ``gasPrice`` must be
 increased. When replacing a modern, EIP-1559 transaction, the ``maxPriorityFeePerGas``
