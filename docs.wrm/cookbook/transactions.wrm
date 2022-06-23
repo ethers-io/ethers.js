@@ -14,7 +14,7 @@ function getRawTransaction(tx) {
   const txFields = "accessList chainId data gasPrice gasLimit maxFeePerGas maxPriorityFeePerGas nonce to type value".split(" ");
   const sigFields = "v r s".split(" ");
 
-  // Seriailze the signed transaction
+  // Seriailize the signed transaction
   const raw = utils.serializeTransaction(txFields.reduce(addKey, { }), sigFields.reduce(addKey, { }));
 
   // Double check things went well
