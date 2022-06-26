@@ -22,7 +22,7 @@ function decryptJsonWallet(json: string, password: Bytes | string, progressCallb
     return Promise.reject(new Error("invalid JSON wallet"));
 }
 
-function decryptJsonWalletSync(json: string, password: Bytes | string): ExternallyOwnedAccount {
+function decryptJsonWalletSync(json: string | object, password: Bytes | string): ExternallyOwnedAccount {
     if (isCrowdsaleWallet(json)) {
         return decryptCrowdsale(json, password)
     }

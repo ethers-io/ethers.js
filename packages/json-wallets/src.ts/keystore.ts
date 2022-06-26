@@ -209,15 +209,15 @@ function _computeKdfKey<T>(data: any, password: Bytes | string, pbkdf2Func: Pbkd
 }
 
 
-export function decryptSync(json: string, password: Bytes | string): KeystoreAccount {
-    const data = JSON.parse(json);
+export function decryptSync(json: string | object, password: Bytes | string): KeystoreAccount {
+    const data = typeof json === 'object' ? json : JSON.parse(json);
 
     const key = _computeKdfKey(data, password, pbkdf2Sync, scrypt.syncScrypt);
     return _getAccount(data, key);
 }
 
-export async function decrypt(json: string, password: Bytes | string, progressCallback?: ProgressCallback): Promise<KeystoreAccount> {
-    const data = JSON.parse(json);
+export async function decrypt(json: string | object, password: Bytes | string, progressCallback?: ProgressCallback): Promise<KeystoreAccount> {
+    const data = typeof json === 'object' ? json : JSON.parse(json);
 
     const key = await _computeKdfKey(data, password, pbkdf2, scrypt.scrypt, progressCallback);
     return _getAccount(data, key);

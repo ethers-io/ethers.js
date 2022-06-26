@@ -3,19 +3,19 @@
 import { getAddress } from "@ethersproject/address";
 
 
-export function isCrowdsaleWallet(json: string): boolean {
+export function isCrowdsaleWallet(json: string | object): boolean {
     let data: any = null;
     try {
-        data = JSON.parse(json);
+        data = typeof json === 'object' ? json : JSON.parse(json);
     } catch (error) { return false; }
 
     return (data.encseed && data.ethaddr);
 }
 
-export function isKeystoreWallet(json: string): boolean {
+export function isKeystoreWallet(json: string | object): boolean {
     let data: any = null;
     try {
-        data = JSON.parse(json);
+        data = typeof json === 'object' ? json : JSON.parse(json);
     } catch (error) { return false; }
 
     if (!data.version || parseInt(data.version) !== data.version || parseInt(data.version) !== 3) {
@@ -30,16 +30,16 @@ export function isKeystoreWallet(json: string): boolean {
 //    return (isSecretStorageWallet(json) || isCrowdsaleWallet(json));
 //}
 
-export function getJsonWalletAddress(json: string): string {
+export function getJsonWalletAddress(json: string | object): string {
     if (isCrowdsaleWallet(json)) {
         try {
-            return getAddress(JSON.parse(json).ethaddr);
+            return getAddress(json.ethaddr ?? JSON.parse(json).ethaddr);
         } catch (error) { return null; }
     }
 
     if (isKeystoreWallet(json)) {
         try {
-            return getAddress(JSON.parse(json).address);
+            return getAddress(json.address ?? JSON.parse(json).address);
         } catch (error) { return null; }
     }
 
