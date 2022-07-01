@@ -1,6 +1,5 @@
 "use strict";
 
-import { isArrowFunctionExpression } from "@babel/types";
 import { arrayify } from "@ethersproject/bytes";
 
 import type { GetUrlResponse, Options } from "./types";
