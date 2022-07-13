@@ -9,6 +9,7 @@ dist/types/shims/
 shims/*.d.ts
 **/*.swp
 *~
+.idea
 
 # Weird intermediate files tsc generates for references
 **/src.ts/*.js
