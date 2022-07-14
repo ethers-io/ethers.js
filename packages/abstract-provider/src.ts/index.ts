@@ -241,7 +241,8 @@ export abstract class Provider implements OnceBlockable {
             })
         });
 
-        let maxFeePerGas = null, maxPriorityFeePerGas = null;
+        let maxFeePerGas: BigNumber | null = null;
+        let maxPriorityFeePerGas: BigNumber | null = null;
 
         if (block && block.baseFeePerGas) {
             // We may want to compute this more accurately in the future,
