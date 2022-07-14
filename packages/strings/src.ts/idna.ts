@@ -202,11 +202,6 @@ export function nameprep(value: string): string {
         throw new Error("invalid hyphen");
     }
 
-    // IDNA: 4.2.4
-    if (name.length > 63) { throw new Error("too long"); }
-
-
-
     return name;
 }
 
