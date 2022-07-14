@@ -381,6 +381,9 @@ async function getRunner(config: RunningConfig, currentBlockNumber: number, meth
             if (params.blockTag && isHexString(params.blockTag)) {
                 provider = await waitForSync(config, currentBlockNumber)
             }
+            if (method === "call" && params.blockTag) {
+                return provider[method](params.transaction, params.blockTag);
+            }
             return provider[method](params.transaction);
         case "getTransaction":
         case "getTransactionReceipt":
