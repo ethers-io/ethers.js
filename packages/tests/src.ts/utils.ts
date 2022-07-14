@@ -152,3 +152,24 @@ export {
     getProviders,
     getWallets
 }
+
+
+// const wallet = new hethers.Wallet({
+//     account: '0.0.2',
+//     privateKey: '302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137',
+//     isED25519Type: true
+// } as any);
+// const provider = hethers.providers.getDefaultProvider('local');
+// const newAccount = hethers.Wallet.createRandom({ isED25519Type: true });
+// const newAccountPublicKey = newAccount._signingKey().compressedPublicKey;
+// const clientAccountId = (await wallet.createAccount(newAccountPublicKey)).customData.accountId;
+// const newWallet = newAccount.connect(provider).connectAccount(clientAccountId.toString());
+
+// const tx1 = await wallet.sendTransaction({
+//     to: newWallet.account,
+//     value: 1000000000,
+// });
+// await tx1.wait();
+
+
+// console.log(newWallet.privateKey, newWallet.account)

@@ -672,7 +672,7 @@ export class BaseProvider extends Provider {
      * @param filter The parameters to filter logs by.
      */
     async getLogs(filter: Filter | Promise<Filter>): Promise<Array<Log>> {
-
+        
         this._checkMirrorNode();
         const params = await resolveProperties({ filter: this._getFilter(filter) });
         // set default values
