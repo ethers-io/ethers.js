@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Formatter = exports.getNetwork = exports.getDefaultProvider = exports.HederaProvider = exports.DefaultHederaProvider = exports.BaseProvider = exports.Provider = void 0;
+exports.HederaNetworks = exports.Formatter = exports.getNetwork = exports.getDefaultProvider = exports.HederaProvider = exports.DefaultHederaProvider = exports.BaseProvider = exports.Provider = void 0;
 var abstract_provider_1 = require("@hethers/abstract-provider");
 Object.defineProperty(exports, "Provider", { enumerable: true, get: function () { return abstract_provider_1.Provider; } });
 var networks_1 = require("@hethers/networks");
@@ -12,6 +12,7 @@ var base_provider_1 = require("./base-provider");
 Object.defineProperty(exports, "BaseProvider", { enumerable: true, get: function () { return base_provider_1.BaseProvider; } });
 var default_hedera_provider_1 = require("./default-hedera-provider");
 Object.defineProperty(exports, "DefaultHederaProvider", { enumerable: true, get: function () { return default_hedera_provider_1.DefaultHederaProvider; } });
+Object.defineProperty(exports, "HederaNetworks", { enumerable: true, get: function () { return default_hedera_provider_1.HederaNetworks; } });
 var formatter_1 = require("./formatter");
 Object.defineProperty(exports, "Formatter", { enumerable: true, get: function () { return formatter_1.Formatter; } });
 var logger_1 = require("@hethers/logger");

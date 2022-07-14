@@ -23,14 +23,16 @@ function checkWordlist(content, wordlist) {
         assert.deepStrictEqual(phrase2, phrase, "re-joined words");
     });
 }
-describe('Check Wordlists', function () {
-    let tests = loadTests("wordlists");
-    tests.forEach((test) => {
-        let wordlist = (hethers.wordlists)[test.locale];
-        if (wordlist == null) {
-            return;
-        }
-        checkWordlist(test.content, wordlist);
+describe('Wordlists.spec', () => {
+    describe('Check Wordlists', function () {
+        let tests = loadTests("wordlists");
+        tests.forEach((test) => {
+            let wordlist = (hethers.wordlists)[test.locale];
+            if (wordlist == null) {
+                return;
+            }
+            checkWordlist(test.content, wordlist);
+        });
     });
 });
 //# sourceMappingURL=test-wordlists.spec.js.map

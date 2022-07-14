@@ -3,7 +3,7 @@ import { BaseProvider } from "./base-provider";
  * Provides support for connecting to custom network by specifying consensus and mirror node url.
  */
 export default class HederaProvider extends BaseProvider {
-    constructor(nodeId, consensusNodeUrl, mirrorNodeUrl) {
+    constructor(nodeId, consensusNodeUrl, mirrorNodeUrl, options) {
         const props = {
             network: {}
         };
@@ -11,7 +11,7 @@ export default class HederaProvider extends BaseProvider {
         super({
             network: props.network,
             mirrorNodeUrl,
-        });
+        }, options);
     }
 }
 //# sourceMappingURL=hedera-provider.js.map

@@ -2,7 +2,7 @@
 import { Provider } from "@hethers/abstract-provider";
 import { getNetwork } from "@hethers/networks";
 import { BaseProvider } from "./base-provider";
-import { DefaultHederaProvider } from "./default-hedera-provider";
+import { DefaultHederaProvider, HederaNetworks } from "./default-hedera-provider";
 import { Formatter } from "./formatter";
 import { Logger } from "@hethers/logger";
 import { version } from "./_version";
@@ -49,5 +49,5 @@ DefaultHederaProvider, HederaProvider,
 getDefaultProvider, getNetwork, 
 ///////////////////////
 // Objects
-Formatter };
+Formatter, HederaNetworks };
 //# sourceMappingURL=index.js.map

@@ -21,7 +21,7 @@ var base_provider_1 = require("./base-provider");
  */
 var HederaProvider = /** @class */ (function (_super) {
     __extends(HederaProvider, _super);
-    function HederaProvider(nodeId, consensusNodeUrl, mirrorNodeUrl) {
+    function HederaProvider(nodeId, consensusNodeUrl, mirrorNodeUrl, options) {
         var _this = this;
         var props = {
             network: {}
@@ -30,7 +30,7 @@ var HederaProvider = /** @class */ (function (_super) {
         _this = _super.call(this, {
             network: props.network,
             mirrorNodeUrl: mirrorNodeUrl,
-        }) || this;
+        }, options) || this;
         return _this;
     }
     return HederaProvider;

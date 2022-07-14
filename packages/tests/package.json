@@ -2,7 +2,8 @@
   "dependencies": {
     "@hashgraph/hethers": "1.1.2",
     "@hethers/testcases": "1.0.0",
-    "@types/mocha": "^5.2.0"
+    "@types/mocha": "^5.2.0",
+    "shelljs": "^0.8.5"
   },
   "description": "Testing package for hethers.",
   "keywords": [

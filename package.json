@@ -23,8 +23,8 @@
     "_test-browser-esm": "karma start --single-run --browsers HeadlessLittleLiar karma-esm.conf.js",
     "test-browser-umd": "npm run _test-dist && npm run _test-browser-umd",
     "test-browser-esm": "npm run _test-dist && npm run _test-browser-esm",
-    "test-coverage": "nyc --report-dir=output --reporter=lcov --reporter=text mocha --reporter ./packages/tests/reporter-keepalive ./packages/tests/lib/*spec.js | tee output/summary.txt",
-    "test-node": "mocha --no-colors --reporter ./packages/tests/reporter ./packages/tests/lib/*.spec.js",
+    "test-coverage": "nyc --report-dir=output --reporter=lcov --reporter=text mocha --exit --reporter ./packages/tests/reporter-keepalive ./packages/tests/lib/index.spec.js | tee output/summary.txt",
+    "test-node": "mocha --no-colors --reporter ./packages/tests/reporter ./packages/tests/lib/index.spec.js",
     "test-react": "npm run _test-dist && pushd misc/ReactNativeTestApp && ./run-tests.sh && popd",
     "test": "npm run build-all && npm run test-node",
     "build-docs": "flatworm docs.wrm docs",
@@ -55,6 +55,7 @@
     "@types/mocha": "^5.2.0",
     "@types/node": "^12.20.37",
     "@types/semver": "^7.3.4",
+    "@types/shelljs": "^0.8.11",
     "aes-js": "3.0.0",
     "aws-sdk": "^2.1095.0",
     "diff": "4.0.1",
@@ -103,11 +104,12 @@
     "elliptic": "6.5.4",
     "hash.js": "1.1.7",
     "scrypt-js": "3.0.1",
+    "shelljs": "^0.8.5",
     "tiny-inflate": "1.0.3",
     "ws": "7.4.6"
   },
   "peerDependencies": {
-    "@hashgraph/sdk": "2.11.0-beta.1",
-    "@hashgraph/proto": "2.1.5"
+    "@hashgraph/proto": "2.1.5",
+    "@hashgraph/sdk": "2.11.0-beta.1"
   }
 }

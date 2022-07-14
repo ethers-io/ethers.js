@@ -248,11 +248,12 @@ function formatTimestamp(s) {
 }
 var BaseProvider = /** @class */ (function (_super) {
     __extends(BaseProvider, _super);
-    function BaseProvider(network) {
+    function BaseProvider(network, options) {
         var _newTarget = this.constructor;
         var _this = this;
         logger.checkNew(_newTarget, abstract_provider_1.Provider);
         _this = _super.call(this) || this;
+        _this._options = options || {};
         _this._events = [];
         _this._emittedEvents = {};
         _this._previousPollingTimestamps = {};
@@ -287,7 +288,8 @@ var BaseProvider = /** @class */ (function (_super) {
                 else {
                     logger.throwArgumentError("invalid network", "network", network);
                 }
-                _this.hederaClient = sdk_2.Client.forName(mapNetworkToHederaNetworkName(asDefaultNetwork));
+                var hederaNetwork = mapNetworkToHederaNetworkName(asDefaultNetwork);
+                _this.hederaClient = typeof hederaNetwork === 'string' ? sdk_2.Client.forName(hederaNetwork) : sdk_2.Client.forNetwork(hederaNetwork);
                 _this._mirrorNodeUrl = resolveMirrorNetworkUrl(_this._network);
             }
             else {
@@ -304,6 +306,9 @@ var BaseProvider = /** @class */ (function (_super) {
         _this._pollingInterval = 3000;
         return _this;
     }
+    BaseProvider.prototype._makeRequest = function (uri) {
+        return axios_1.default.get(this._mirrorNodeUrl + uri, { headers: this._options.headers });
+    };
     BaseProvider.prototype._ready = function () {
         return __awaiter(this, void 0, void 0, function () {
             var network, error_1;
@@ -495,7 +500,7 @@ var BaseProvider = /** @class */ (function (_super) {
                                 .execute(this.hederaClient)];
                     case 3:
                         balance = _a.sent();
-                        return [2 /*return*/, bignumber_1.BigNumber.from(balance.hbars.toTinybars().toNumber())];
+                        return [2 /*return*/, bignumber_1.BigNumber.from(balance.hbars.toTinybars().toString())];
                     case 4:
                         error_2 = _a.sent();
                         return [2 /*return*/, logger.throwError("bad result from backend", logger_1.Logger.errors.SERVER_ERROR, {
@@ -529,7 +534,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         _a.label = 2;
                     case 2:
                         _a.trys.push([2, 4, , 5]);
-                        return [4 /*yield*/, axios_1.default.get(this._mirrorNodeUrl + MIRROR_NODE_CONTRACTS_ENDPOINT + account)];
+                        return [4 /*yield*/, this._makeRequest(MIRROR_NODE_CONTRACTS_ENDPOINT + account)];
                     case 3:
                         data = (_a.sent()).data;
                         return [2 /*return*/, data.bytecode ? (0, bytes_1.hexlify)(data.bytecode) : "0x"];
@@ -699,7 +704,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         _a.label = 2;
                     case 2:
                         _a.trys.push([2, 9, , 10]);
-                        return [4 /*yield*/, axios_1.default.get(this._mirrorNodeUrl + transactionsEndpoint)];
+                        return [4 /*yield*/, this._makeRequest(transactionsEndpoint)];
                     case 3:
                         data = (_a.sent()).data;
                         if (!data) return [3 /*break*/, 8];
@@ -746,7 +751,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         return [3 /*break*/, 7];
                     case 5:
                         contractsEndpoint = MIRROR_NODE_CONTRACTS_RESULTS_ENDPOINT + filtered_1[0].transaction_id;
-                        return [4 /*yield*/, axios_1.default.get(this._mirrorNodeUrl + contractsEndpoint)];
+                        return [4 /*yield*/, this._makeRequest(contractsEndpoint)];
                     case 6:
                         dataWithLogs = _a.sent();
                         record_1 = Object.assign({}, record_1, __assign({}, dataWithLogs.data));
@@ -832,11 +837,11 @@ var BaseProvider = /** @class */ (function (_super) {
                                 }
                             }
                         }
-                        requestUrl = this._mirrorNodeUrl + epContractsLogs + toTimestampFilter + fromTimestampFilter;
+                        requestUrl = epContractsLogs + toTimestampFilter + fromTimestampFilter;
                         _a.label = 2;
                     case 2:
                         _a.trys.push([2, 4, , 5]);
-                        return [4 /*yield*/, axios_1.default.get(requestUrl)];
+                        return [4 /*yield*/, this._makeRequest(requestUrl)];
                     case 3:
                         data = (_a.sent()).data;
                         if (data) {
@@ -1098,6 +1103,8 @@ function mapNetworkToHederaNetworkName(net) {
             return sdk_2.NetworkName.Previewnet;
         case 'testnet':
             return sdk_2.NetworkName.Testnet;
+        case 'local':
+            return { '127.0.0.1:50211': '0.0.3' };
         default:
             logger.throwArgumentError("Invalid network name", "network", net);
             return null;
@@ -1112,6 +1119,8 @@ function resolveMirrorNetworkUrl(net) {
             return 'https://previewnet.mirrornode.hedera.com';
         case 'testnet':
             return 'https://testnet.mirrornode.hedera.com';
+        case 'local':
+            return 'http://127.0.0.1:5551';
         default:
             logger.throwArgumentError("Invalid network name", "network", net);
             return null;

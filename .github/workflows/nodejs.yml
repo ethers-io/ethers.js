@@ -5,12 +5,15 @@ on:
     branches: [master, develop]
   pull_request:
 
+env:
+  PLATFORM_JAVA_OPTS: ""
+
 jobs:
 
   test-node:
 
-    #    runs-on: ubuntu-latest
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
+    # runs-on: macos-latest
 
     strategy:
       fail-fast: false
@@ -30,6 +33,9 @@ jobs:
       #        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
       - name: Install dependencies (and link per package)
         run: npm ci
+
+      - name: Install hedera-local node globally
+        run: npm install -g https://github.com/hashgraph/hedera-local-node.git
 
       - name: Build CommonJS and ESM (from TypeScript)
         run: npm run build-all
@@ -101,8 +107,8 @@ jobs:
 
     name: Coverage
 
-    #    runs-on: ubuntu-latest
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
+    # runs-on: macos-latest
 
     continue-on-error: true
 
@@ -119,6 +125,9 @@ jobs:
 
       - name: Install dependencies (and link per package)
         run: npm ci
+
+      - name: Install hedera-local node globally
+        run: npm install -g https://github.com/hashgraph/hedera-local-node.git
 
       - name: Build CommonJS and ESM (from TypeScript)
         run: npm run build-all

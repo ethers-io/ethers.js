@@ -26,6 +26,9 @@ export interface Avatar {
         content: string;
     }>;
 }
+export interface ProviderOptions {
+    headers?: Record<string, string>;
+}
 export declare class BaseProvider extends Provider {
     _networkPromise: Promise<Network>;
     _network: Network;
@@ -40,10 +43,12 @@ export declare class BaseProvider extends Provider {
     _previousPollingTimestamps: {
         [key: string]: Timestamp;
     };
+    _options: ProviderOptions;
     readonly anyNetwork: boolean;
     private readonly hederaClient;
     private readonly _mirrorNodeUrl;
-    constructor(network: Networkish | Promise<Network> | HederaNetworkConfigLike);
+    constructor(network: Networkish | Promise<Network> | HederaNetworkConfigLike, options?: ProviderOptions);
+    private _makeRequest;
     _ready(): Promise<Network>;
     static getFormatter(): Formatter;
     static getNetwork(network: Networkish): Network;

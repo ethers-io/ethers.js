@@ -1,4 +1,23 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -46,13 +65,8 @@ var bignumber_1 = require("@ethersproject/bignumber");
 var providers_1 = require("@hethers/providers");
 var default_hedera_provider_1 = require("@hethers/providers/lib/default-hedera-provider");
 var sdk_1 = require("@hashgraph/sdk");
+var utils = __importStar(require("./utils"));
 var bnify = hethers_1.hethers.BigNumber.from;
-var hederaTestnetOperableAccount = {
-    "operator": {
-        "accountId": "0.0.19041642",
-        "privateKey": "302e020100300506032b6570042204207ef3437273a5146e4e504a6e22c5caedf07cb0821f01bc05d18e8e716f77f66c"
-    },
-};
 var blockchainData = {
     homestead: {
         addresses: [
@@ -547,41 +561,45 @@ function waiter(duration) {
         }
     });
 }
-var allNetworks = ["default", "homestead", "ropsten", "rinkeby", "kovan", "goerli"];
-// We use separate API keys because otherwise the testcases sometimes
-// fail during CI because our default keys are pretty heavily used
-var _ApiKeys = {
-    alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
-    etherscan: "FPFGK6JSW2UHJJ2666FG93KP7WC999MNW7",
-    infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",
-};
-var _ApiKeysPocket = {
-    homestead: "6004bcd10040261633ade990",
-    ropsten: "6004bd4d0040261633ade991",
-    rinkeby: "6004bda20040261633ade994",
-    goerli: "6004bd860040261633ade992",
-};
-function getApiKeys(network) {
-    if (network === "default" || network == null) {
-        network = "homestead";
-    }
-    var apiKeys = hethers_1.hethers.utils.shallowCopy(_ApiKeys);
-    apiKeys.pocket = _ApiKeysPocket[network];
-    return apiKeys;
-}
+// const allNetworks = [ "default", "homestead", "ropsten", "rinkeby", "kovan", "goerli" ];
+// // We use separate API keys because otherwise the testcases sometimes
+// // fail during CI because our default keys are pretty heavily used
+// const _ApiKeys: Record<string, string> = {
+//     alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
+//     etherscan: "FPFGK6JSW2UHJJ2666FG93KP7WC999MNW7",
+//     infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",
+// };
+// const _ApiKeysPocket: Record<string, string> = {
+//     homestead: "6004bcd10040261633ade990",
+//     ropsten: "6004bd4d0040261633ade991",
+//     rinkeby: "6004bda20040261633ade994",
+//     goerli: "6004bd860040261633ade992",
+// };
+// type ApiKeySet = {
+//     alchemy: string;
+//     etherscan: string;
+//     infura: string;
+//     pocket: string;
+// };
+// function getApiKeys(network: string): ApiKeySet {
+//     if (network === "default" || network == null) { network = "homestead"; }
+//     const apiKeys = hethers.utils.shallowCopy(_ApiKeys);
+//     apiKeys.pocket = _ApiKeysPocket[network];
+//     return <ApiKeySet>apiKeys;
+// }
 // @ts-ignore
-var providerFunctions = [
-    {
-        name: "getDefaultProvider",
-        networks: allNetworks,
-        create: function (network) {
-            if (network == "default") {
-                return hethers_1.hethers.getDefaultProvider("homestead", getApiKeys(network));
-            }
-            return hethers_1.hethers.getDefaultProvider(network, getApiKeys(network));
-        }
-    },
-];
+// const providerFunctions: Array<ProviderDescription> = [
+//     {
+//         name: "getDefaultProvider",
+//         networks: allNetworks,
+//         create: (network: string) => {
+//             if (network == "default") {
+//                 return hethers.getDefaultProvider("homestead", getApiKeys(network));
+//             }
+//             return hethers.getDefaultProvider(network, getApiKeys(network));
+//         }
+//     },
+// ];
 // This wallet can be funded and used for various test cases
 var fundWallet = hethers_1.hethers.Wallet.createRandom();
 var testFunctions = [];
@@ -938,299 +956,434 @@ testFunctions.push({
 //     });
 //
 // });
-describe("Test Basic Authentication", function () {
-    //this.retries(3);
-    function test(name, url) {
-        it("tests " + name, function () {
+describe('Providers.spec', function () {
+    var localProvider = utils.getProviders().local[0];
+    var testnetProvider = utils.getProviders().testnet[0];
+    // @ts-ignore
+    var testnetWalletECDSA = utils.getWallets().testnet.ecdsa[0];
+    // @ts-ignore
+    var localWalletECDSA = utils.getWallets().local.ecdsa[0];
+    // @ts-ignore
+    var localWalletED25519 = utils.getWallets().local.ed25519[1];
+    var hederaTestnetOperableAccount = utils.getAccounts().testnet.ed25519[1];
+    describe("Test Basic Authentication", function () {
+        //this.retries(3);
+        function test(name, url) {
+            it("tests " + name, function () {
+                this.timeout(60000);
+                return hethers_1.hethers.utils.fetchJson(url).then(function (data) {
+                    assert_1.default.equal(data.authenticated, true, "authenticates user");
+                });
+            });
+        }
+        var secure = {
+            url: "https://httpbin.org/basic-auth/user/passwd",
+            user: "user",
+            password: "passwd"
+        };
+        var insecure = {
+            url: "http://httpbin.org/basic-auth/user/passwd",
+            user: "user",
+            password: "passwd"
+        };
+        var insecureForced = {
+            url: "http://httpbin.org/basic-auth/user/passwd",
+            user: "user",
+            password: "passwd",
+            allowInsecureAuthentication: true
+        };
+        test("secure url", secure);
+        test("insecure url", insecureForced);
+        it("tests insecure connections fail", function () {
             this.timeout(60000);
-            return hethers_1.hethers.utils.fetchJson(url).then(function (data) {
-                assert_1.default.equal(data.authenticated, true, "authenticates user");
-            });
+            assert_1.default.throws(function () {
+                return hethers_1.hethers.utils.fetchJson(insecure);
+            }, function (error) {
+                return (error.reason === "basic authentication requires a secure https url");
+            }, "throws an exception for insecure connections");
         });
-    }
-    var secure = {
-        url: "https://httpbin.org/basic-auth/user/passwd",
-        user: "user",
-        password: "passwd"
-    };
-    var insecure = {
-        url: "http://httpbin.org/basic-auth/user/passwd",
-        user: "user",
-        password: "passwd"
-    };
-    var insecureForced = {
-        url: "http://httpbin.org/basic-auth/user/passwd",
-        user: "user",
-        password: "passwd",
-        allowInsecureAuthentication: true
-    };
-    test("secure url", secure);
-    test("insecure url", insecureForced);
-    it("tests insecure connections fail", function () {
-        this.timeout(60000);
-        assert_1.default.throws(function () {
-            return hethers_1.hethers.utils.fetchJson(insecure);
-        }, function (error) {
-            return (error.reason === "basic authentication requires a secure https url");
-        }, "throws an exception for insecure connections");
     });
-});
-describe("Test Hedera Provider", function () {
-    var provider = new providers_1.DefaultHederaProvider(default_hedera_provider_1.HederaNetworks.TESTNET);
-    var accountConfig = { shard: BigInt(0), realm: BigInt(0), num: BigInt(98) };
-    var solAddr = hethers_1.hethers.utils.getAddressFromAccount(accountConfig);
-    var nonExistingAddress = "0x0000000000000000000000000000000000000000";
-    var timeout = 15000;
-    it('Gets the balance', function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var balance;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, provider.getBalance(solAddr)];
-                    case 1:
-                        balance = _a.sent();
-                        // the balance of 0.0.98 cannot be negative
-                        assert_1.default.strictEqual(true, balance.gte(0));
-                        return [2 /*return*/];
-                }
-            });
+    describe("Test Hedera Provider Options", function () {
+        var options = { headers: { testHeader: '123' } };
+        it("DefaultHederaProvider", function () {
+            var provider = new providers_1.DefaultHederaProvider(default_hedera_provider_1.HederaNetworks.LOCAL, options);
+            assert_1.default.deepStrictEqual(provider._options, options);
         });
-    }).timeout(timeout);
-    describe("Filter Contract Logs", function () {
-        it('Should filter logs by timestamp and address', function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var fromTimestamp, toTimestamp, address, account, filterParams, logsResponse, logs, filterParamsAccount, logs2;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            fromTimestamp = "1642065156.264170833";
-                            toTimestamp = "1642080642.176149864";
-                            address = "0x000000000000000000000000000000000186fb1A";
-                            account = "0.0.25623322";
-                            filterParams = {
-                                address: address,
-                                fromTimestamp: fromTimestamp,
-                                toTimestamp: toTimestamp
-                            };
-                            logsResponse = [
-                                {
-                                    "address": "0x000000000000000000000000000000000186fb1a",
-                                    "contract_id": "0.0.25623322",
-                                    "data": "0x00000000000000000000000000000000000000000000003635c9adc5dea00000",
-                                    "index": 0,
-                                    "topics": [
-                                        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                                        "0x0000000000000000000000000000000000000000000000000000000000000000",
-                                        "0x0000000000000000000000000000000000000000000000000000000000179977"
-                                    ],
-                                    "root_contract_id": "0.0.25623322",
-                                    "timestamp": "1642080642.176149864"
-                                },
-                                {
-                                    "address": "0x000000000000000000000000000000000186fb1a",
-                                    "contract_id": "0.0.25623322",
-                                    "data": "0x00000000000000000000000000000000000000000000003635c9adc5dea00000",
-                                    "index": 0,
-                                    "topics": [
-                                        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                                        "0x0000000000000000000000000000000000000000000000000000000000000000",
-                                        "0x0000000000000000000000000000000000000000000000000000000000179977"
-                                    ],
-                                    "root_contract_id": "0.0.25623322",
-                                    "timestamp": "1642065156.264170833"
-                                }
-                            ];
-                            return [4 /*yield*/, provider.getLogs(filterParams)];
-                        case 1:
-                            logs = _a.sent();
-                            assert_1.default.strictEqual(logs.length, 2);
-                            assert_1.default.strictEqual(logs[0].timestamp, logsResponse[0].timestamp);
-                            assert_1.default.strictEqual(logs[0].address.toLowerCase(), logsResponse[0].address.toLowerCase());
-                            assert_1.default.strictEqual(logs[0].data, logsResponse[0].data);
-                            assert_1.default.deepStrictEqual(logs[0].topics, logsResponse[0].topics);
-                            assert_1.default.strictEqual(logs[0].transactionHash, undefined);
-                            assert_1.default.strictEqual(logs[0].logIndex, logsResponse[0].index);
-                            assert_1.default.strictEqual(logs[0].transactionIndex, logsResponse[0].index);
-                            assert_1.default.strictEqual(logs[1].timestamp, logsResponse[1].timestamp);
-                            assert_1.default.strictEqual(logs[1].address.toLowerCase(), logsResponse[1].address.toLowerCase());
-                            assert_1.default.strictEqual(logs[1].data, logsResponse[1].data);
-                            assert_1.default.deepStrictEqual(logs[1].topics, logsResponse[1].topics);
-                            assert_1.default.strictEqual(logs[1].transactionHash, undefined);
-                            assert_1.default.strictEqual(logs[1].logIndex, logsResponse[1].index);
-                            assert_1.default.strictEqual(logs[1].transactionIndex, logsResponse[1].index);
-                            filterParamsAccount = {
-                                address: account,
-                                fromTimestamp: fromTimestamp,
-                                toTimestamp: toTimestamp
-                            };
-                            return [4 /*yield*/, provider.getLogs(filterParamsAccount)];
-                        case 2:
-                            logs2 = _a.sent();
-                            assert_1.default.strictEqual(logs2.length, 2);
-                            assert_1.default.strictEqual(logs2[0].timestamp, logsResponse[0].timestamp);
-                            assert_1.default.strictEqual(logs2[0].address.toLowerCase(), logsResponse[0].address.toLowerCase());
-                            assert_1.default.strictEqual(logs2[0].data, logsResponse[0].data);
-                            assert_1.default.deepStrictEqual(logs2[0].topics, logsResponse[0].topics);
-                            assert_1.default.strictEqual(logs2[0].transactionHash, undefined);
-                            assert_1.default.strictEqual(logs2[0].logIndex, logsResponse[0].index);
-                            assert_1.default.strictEqual(logs2[0].transactionIndex, logsResponse[0].index);
-                            assert_1.default.strictEqual(logs2[1].timestamp, logsResponse[1].timestamp);
-                            assert_1.default.strictEqual(logs2[1].address.toLowerCase(), logsResponse[1].address.toLowerCase());
-                            assert_1.default.strictEqual(logs2[1].data, logsResponse[1].data);
-                            assert_1.default.deepStrictEqual(logs2[1].topics, logsResponse[1].topics);
-                            assert_1.default.strictEqual(logs2[1].transactionHash, undefined);
-                            assert_1.default.strictEqual(logs2[1].logIndex, logsResponse[1].index);
-                            assert_1.default.strictEqual(logs2[1].transactionIndex, logsResponse[1].index);
-                            return [2 /*return*/];
-                    }
-                });
-            });
-        }).timeout(timeout * 4);
-        // The hardcoded max limit per query in the mirror node rest api is 100,
-        // so `size limit exceeded` error is impossible to be tested right now.
-        it('Should throw query result size limit exceeded', function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var address, filterParams, logs;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            address = "0x000000000000000000000000000000000186fb1a";
-                            filterParams = {
-                                address: address,
-                            };
-                            return [4 /*yield*/, provider.getLogs(filterParams)];
-                        case 1:
-                            logs = _a.sent();
-                            assert_1.default.strictEqual(100, logs.length);
-                            return [2 /*return*/];
-                    }
-                });
-            });
-        }).timeout(timeout * 4);
-        it('Should return default value', function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var address, filterParams, logs;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            address = "0x000000000000000000000000000000000186fb1b";
-                            filterParams = {
-                                address: address,
-                            };
-                            return [4 /*yield*/, provider.getLogs(filterParams)];
-                        case 1:
-                            logs = _a.sent();
-                            assert_1.default.notStrictEqual(logs, null);
-                            assert_1.default.strictEqual(logs.length, 0);
-                            return [2 /*return*/];
-                    }
-                });
-            });
-        }).timeout(timeout * 4);
+        it("getDefaultProvider", function () {
+            var provider = hethers_1.hethers.providers.getDefaultProvider('local', options);
+            assert_1.default.deepStrictEqual(provider._options, options);
+        });
+        it("HederaProvider", function () {
+            var consensusNodeId = '0.0.3';
+            var consensusNodeUrl = '127.0.0.1:50211';
+            var mirrorNodeUrl = 'http://127.0.0.1:5551';
+            var provider = new hethers_1.hethers.providers.HederaProvider(consensusNodeId, consensusNodeUrl, mirrorNodeUrl, options);
+            assert_1.default.deepStrictEqual(provider._options, options);
+        });
     });
-    describe("Sign & Send Transacton, Wait for receipt", function () {
-        var _this = this;
-        var signedTx;
-        beforeEach(function () { return __awaiter(_this, void 0, void 0, function () {
-            var privateKey, txID, tx, txBytes;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        privateKey = sdk_1.PrivateKey.fromString(hederaTestnetOperableAccount.operator.privateKey);
-                        txID = sdk_1.TransactionId.generate(hederaTestnetOperableAccount.operator.accountId);
-                        return [4 /*yield*/, new sdk_1.ContractCreateTransaction()
-                                .setGas(300000)
-                                .setBytecodeFileId("0.0.26562254")
-                                .setNodeAccountIds([new sdk_1.AccountId(0, 0, 3)])
-                                .setConstructorParameters(new sdk_1.ContractFunctionParameters().addUint256(100))
-                                .setTransactionId(txID)
-                                .freeze()
-                                .sign(privateKey)];
-                    case 1:
-                        tx = _a.sent();
-                        txBytes = tx.toBytes();
-                        signedTx = hethers_1.hethers.utils.hexlify(txBytes);
-                        return [2 /*return*/];
-                }
-            });
-        }); });
-        it("Should populate transaction receipt", function () {
+    describe("Test Hedera Provider", function () {
+        // const provider = new DefaultHederaProvider(HederaNetworks.TESTNET);
+        var accountConfig = { shard: BigInt(0), realm: BigInt(0), num: BigInt(98) };
+        var solAddr = hethers_1.hethers.utils.getAddressFromAccount(accountConfig);
+        var nonExistingAddress = "0x0000000000000000000000000000000000000000";
+        var timeout = 15000;
+        it('Gets the balance', function () {
             return __awaiter(this, void 0, void 0, function () {
-                var sendTransactionResponse, _a, _b, receipt;
-                return __generator(this, function (_c) {
-                    switch (_c.label) {
-                        case 0:
-                            _b = (_a = provider).sendTransaction;
-                            return [4 /*yield*/, signedTx];
-                        case 1: return [4 /*yield*/, _b.apply(_a, [_c.sent()])];
-                        case 2:
-                            sendTransactionResponse = _c.sent();
-                            return [4 /*yield*/, sendTransactionResponse.wait()];
-                        case 3:
-                            receipt = _c.sent();
-                            // assert.strict(receipt.logs.length > 0);
-                            assert_1.default.strictEqual(receipt.to, null);
-                            assert_1.default.strictEqual(receipt.contractAddress, '0x' + sendTransactionResponse.customData.contractId);
-                            assert_1.default.strictEqual(receipt.from, hethers_1.hethers.utils.getAddressFromAccount(hederaTestnetOperableAccount.operator.accountId));
-                            assert_1.default.strictEqual(receipt.transactionHash, sendTransactionResponse.hash);
+                var balance;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, localProvider.getBalance(solAddr)];
+                        case 1:
+                            balance = _a.sent();
+                            // the balance of 0.0.98 cannot be negative
+                            assert_1.default.strictEqual(true, balance.gte(0));
                             return [2 /*return*/];
                     }
                 });
             });
-        }).timeout(timeout * 8);
-        it("Should populate transaction receipt with timeout", function () {
-            return __awaiter(this, void 0, void 0, function () {
-                var sendTransactionResponse, _a, _b, receipt;
-                return __generator(this, function (_c) {
-                    switch (_c.label) {
+        }).timeout(timeout);
+        describe("Filter Contract Logs", function () {
+            it('Should filter logs by timestamp and address', function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    var fromTimestamp, toTimestamp, address, account, filterParams, logsResponse, logs, filterParamsAccount, logs2;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                fromTimestamp = "1642065156.264170833";
+                                toTimestamp = "1642080642.176149864";
+                                address = "0x000000000000000000000000000000000186fb1A";
+                                account = "0.0.25623322";
+                                filterParams = {
+                                    address: address,
+                                    fromTimestamp: fromTimestamp,
+                                    toTimestamp: toTimestamp
+                                };
+                                logsResponse = [
+                                    {
+                                        "address": "0x000000000000000000000000000000000186fb1a",
+                                        "contract_id": "0.0.25623322",
+                                        "data": "0x00000000000000000000000000000000000000000000003635c9adc5dea00000",
+                                        "index": 0,
+                                        "topics": [
+                                            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                                            "0x0000000000000000000000000000000000000000000000000000000000000000",
+                                            "0x0000000000000000000000000000000000000000000000000000000000179977"
+                                        ],
+                                        "root_contract_id": "0.0.25623322",
+                                        "timestamp": "1642080642.176149864"
+                                    },
+                                    {
+                                        "address": "0x000000000000000000000000000000000186fb1a",
+                                        "contract_id": "0.0.25623322",
+                                        "data": "0x00000000000000000000000000000000000000000000003635c9adc5dea00000",
+                                        "index": 0,
+                                        "topics": [
+                                            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                                            "0x0000000000000000000000000000000000000000000000000000000000000000",
+                                            "0x0000000000000000000000000000000000000000000000000000000000179977"
+                                        ],
+                                        "root_contract_id": "0.0.25623322",
+                                        "timestamp": "1642065156.264170833"
+                                    }
+                                ];
+                                return [4 /*yield*/, testnetProvider.getLogs(filterParams)];
+                            case 1:
+                                logs = _a.sent();
+                                assert_1.default.strictEqual(logs.length, 2);
+                                assert_1.default.strictEqual(logs[0].timestamp, logsResponse[0].timestamp);
+                                assert_1.default.strictEqual(logs[0].address.toLowerCase(), logsResponse[0].address.toLowerCase());
+                                assert_1.default.strictEqual(logs[0].data, logsResponse[0].data);
+                                assert_1.default.deepStrictEqual(logs[0].topics, logsResponse[0].topics);
+                                assert_1.default.strictEqual(logs[0].transactionHash, undefined);
+                                assert_1.default.strictEqual(logs[0].logIndex, logsResponse[0].index);
+                                assert_1.default.strictEqual(logs[0].transactionIndex, logsResponse[0].index);
+                                assert_1.default.strictEqual(logs[1].timestamp, logsResponse[1].timestamp);
+                                assert_1.default.strictEqual(logs[1].address.toLowerCase(), logsResponse[1].address.toLowerCase());
+                                assert_1.default.strictEqual(logs[1].data, logsResponse[1].data);
+                                assert_1.default.deepStrictEqual(logs[1].topics, logsResponse[1].topics);
+                                assert_1.default.strictEqual(logs[1].transactionHash, undefined);
+                                assert_1.default.strictEqual(logs[1].logIndex, logsResponse[1].index);
+                                assert_1.default.strictEqual(logs[1].transactionIndex, logsResponse[1].index);
+                                filterParamsAccount = {
+                                    address: account,
+                                    fromTimestamp: fromTimestamp,
+                                    toTimestamp: toTimestamp
+                                };
+                                return [4 /*yield*/, testnetProvider.getLogs(filterParamsAccount)];
+                            case 2:
+                                logs2 = _a.sent();
+                                assert_1.default.strictEqual(logs2.length, 2);
+                                assert_1.default.strictEqual(logs2[0].timestamp, logsResponse[0].timestamp);
+                                assert_1.default.strictEqual(logs2[0].address.toLowerCase(), logsResponse[0].address.toLowerCase());
+                                assert_1.default.strictEqual(logs2[0].data, logsResponse[0].data);
+                                assert_1.default.deepStrictEqual(logs2[0].topics, logsResponse[0].topics);
+                                assert_1.default.strictEqual(logs2[0].transactionHash, undefined);
+                                assert_1.default.strictEqual(logs2[0].logIndex, logsResponse[0].index);
+                                assert_1.default.strictEqual(logs2[0].transactionIndex, logsResponse[0].index);
+                                assert_1.default.strictEqual(logs2[1].timestamp, logsResponse[1].timestamp);
+                                assert_1.default.strictEqual(logs2[1].address.toLowerCase(), logsResponse[1].address.toLowerCase());
+                                assert_1.default.strictEqual(logs2[1].data, logsResponse[1].data);
+                                assert_1.default.deepStrictEqual(logs2[1].topics, logsResponse[1].topics);
+                                assert_1.default.strictEqual(logs2[1].transactionHash, undefined);
+                                assert_1.default.strictEqual(logs2[1].logIndex, logsResponse[1].index);
+                                assert_1.default.strictEqual(logs2[1].transactionIndex, logsResponse[1].index);
+                                return [2 /*return*/];
+                        }
+                    });
+                });
+            }).timeout(timeout * 4);
+            // The hardcoded max limit per query in the mirror node rest api is 100,
+            // so `size limit exceeded` error is impossible to be tested right now.
+            it('Should throw query result size limit exceeded', function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    var address, filterParams, logs;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                address = "0x000000000000000000000000000000000186fb1a";
+                                filterParams = {
+                                    address: address,
+                                };
+                                return [4 /*yield*/, testnetProvider.getLogs(filterParams)];
+                            case 1:
+                                logs = _a.sent();
+                                assert_1.default.strictEqual(100, logs.length);
+                                return [2 /*return*/];
+                        }
+                    });
+                });
+            }).timeout(timeout * 4);
+            it('Should return default value', function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    var address, filterParams, logs;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                address = "0x000000000000000000000000000000000186fb1b";
+                                filterParams = {
+                                    address: address,
+                                };
+                                return [4 /*yield*/, testnetProvider.getLogs(filterParams)];
+                            case 1:
+                                logs = _a.sent();
+                                assert_1.default.notStrictEqual(logs, null);
+                                assert_1.default.strictEqual(logs.length, 0);
+                                return [2 /*return*/];
+                        }
+                    });
+                });
+            }).timeout(timeout * 4);
+        });
+        describe("Sign & Send Transacton, Wait for receipt", function () {
+            var _this = this;
+            var signedTx;
+            beforeEach(function () { return __awaiter(_this, void 0, void 0, function () {
+                var privateKey, txID, tx, txBytes;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
                         case 0:
-                            _b = (_a = provider).sendTransaction;
-                            return [4 /*yield*/, signedTx];
-                        case 1: return [4 /*yield*/, _b.apply(_a, [_c.sent()])];
+                            privateKey = sdk_1.PrivateKey.fromString(hederaTestnetOperableAccount.privateKey);
+                            txID = sdk_1.TransactionId.generate(hederaTestnetOperableAccount.account);
+                            return [4 /*yield*/, new sdk_1.ContractCreateTransaction()
+                                    .setGas(300000)
+                                    .setBytecodeFileId("0.0.26562254")
+                                    .setNodeAccountIds([new sdk_1.AccountId(0, 0, 3)])
+                                    .setConstructorParameters(new sdk_1.ContractFunctionParameters().addUint256(100))
+                                    .setTransactionId(txID)
+                                    .freeze()
+                                    .sign(privateKey)];
+                        case 1:
+                            tx = _a.sent();
+                            txBytes = tx.toBytes();
+                            signedTx = hethers_1.hethers.utils.hexlify(txBytes);
+                            return [2 /*return*/];
+                    }
+                });
+            }); });
+            it("Should populate transaction receipt", function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    var sendTransactionResponse, _a, _b, receipt;
+                    return __generator(this, function (_c) {
+                        switch (_c.label) {
+                            case 0:
+                                _b = (_a = testnetProvider).sendTransaction;
+                                return [4 /*yield*/, signedTx];
+                            case 1: return [4 /*yield*/, _b.apply(_a, [_c.sent()])];
+                            case 2:
+                                sendTransactionResponse = _c.sent();
+                                return [4 /*yield*/, sendTransactionResponse.wait()];
+                            case 3:
+                                receipt = _c.sent();
+                                // assert.strict(receipt.logs.length > 0);
+                                assert_1.default.strictEqual(receipt.to, null);
+                                assert_1.default.strictEqual(receipt.contractAddress, '0x' + sendTransactionResponse.customData.contractId);
+                                assert_1.default.strictEqual(receipt.from, hethers_1.hethers.utils.getAddressFromAccount(hederaTestnetOperableAccount.account));
+                                assert_1.default.strictEqual(receipt.transactionHash, sendTransactionResponse.hash);
+                                return [2 /*return*/];
+                        }
+                    });
+                });
+            }).timeout(timeout * 8);
+            it("Should populate transaction receipt with timeout", function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    var sendTransactionResponse, _a, _b, receipt;
+                    return __generator(this, function (_c) {
+                        switch (_c.label) {
+                            case 0:
+                                _b = (_a = testnetProvider).sendTransaction;
+                                return [4 /*yield*/, signedTx];
+                            case 1: return [4 /*yield*/, _b.apply(_a, [_c.sent()])];
+                            case 2:
+                                sendTransactionResponse = _c.sent();
+                                return [4 /*yield*/, sendTransactionResponse.wait(timeout * 2)];
+                            case 3:
+                                receipt = _c.sent();
+                                // assert.strict(receipt.logs.length > 0);
+                                assert_1.default.strictEqual(receipt.to, null);
+                                assert_1.default.strictEqual(receipt.contractAddress, '0x' + sendTransactionResponse.customData.contractId);
+                                assert_1.default.strictEqual(receipt.from, hethers_1.hethers.utils.getAddressFromAccount(hederaTestnetOperableAccount.account));
+                                assert_1.default.strictEqual(receipt.transactionHash, sendTransactionResponse.hash);
+                                return [2 /*return*/];
+                        }
+                    });
+                });
+            }).timeout(timeout * 10);
+            it("Should throw timeout exceeded", function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    var insufficientTimeout;
+                    var _this = this;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                insufficientTimeout = 500;
+                                return [4 /*yield*/, assert_1.default.rejects(function () { return __awaiter(_this, void 0, void 0, function () {
+                                        var sendTransactionResponse, _a, _b;
+                                        return __generator(this, function (_c) {
+                                            switch (_c.label) {
+                                                case 0:
+                                                    _b = (_a = testnetProvider).sendTransaction;
+                                                    return [4 /*yield*/, signedTx];
+                                                case 1: return [4 /*yield*/, _b.apply(_a, [_c.sent()])];
+                                                case 2:
+                                                    sendTransactionResponse = _c.sent();
+                                                    return [4 /*yield*/, sendTransactionResponse.wait(insufficientTimeout)];
+                                                case 3:
+                                                    _c.sent();
+                                                    return [2 /*return*/];
+                                            }
+                                        });
+                                    }); }, function (err) {
+                                        assert_1.default.strictEqual(err.name, 'Error');
+                                        assert_1.default.strictEqual(err.reason, 'timeout exceeded');
+                                        assert_1.default.strictEqual(err.code, 'TIMEOUT');
+                                        assert_1.default.strictEqual(err.timeout, insufficientTimeout);
+                                        return true;
+                                    })];
+                            case 1:
+                                _a.sent();
+                                return [2 /*return*/];
+                        }
+                    });
+                });
+            }).timeout(timeout * 4);
+        });
+        it("Should populate tx record by transactionId", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var existingId, record, network;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            existingId = "0.0.1546615-1641987871-235099329";
+                            return [4 /*yield*/, testnetProvider.getTransaction(existingId)];
+                        case 1:
+                            record = _a.sent();
+                            return [4 /*yield*/, testnetProvider.getNetwork()];
                         case 2:
-                            sendTransactionResponse = _c.sent();
-                            return [4 /*yield*/, sendTransactionResponse.wait(timeout * 2)];
-                        case 3:
-                            receipt = _c.sent();
-                            // assert.strict(receipt.logs.length > 0);
-                            assert_1.default.strictEqual(receipt.to, null);
-                            assert_1.default.strictEqual(receipt.contractAddress, '0x' + sendTransactionResponse.customData.contractId);
-                            assert_1.default.strictEqual(receipt.from, hethers_1.hethers.utils.getAddressFromAccount(hederaTestnetOperableAccount.operator.accountId));
-                            assert_1.default.strictEqual(receipt.transactionHash, sendTransactionResponse.hash);
+                            network = _a.sent();
+                            assert_1.default.notStrictEqual(record, null);
+                            assert_1.default.strictEqual(record.transactionId, existingId);
+                            assert_1.default.strictEqual(record.chainId, network.chainId);
                             return [2 /*return*/];
                     }
                 });
             });
-        }).timeout(timeout * 10);
-        it("Should throw timeout exceeded", function () {
+        }).timeout(timeout * 4);
+        it("Should populate tx record by consensus timestamp", function () {
             return __awaiter(this, void 0, void 0, function () {
-                var insufficientTimeout;
+                var timestamp, record, network;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            timestamp = "1641987884.097680000";
+                            return [4 /*yield*/, testnetProvider.getTransaction(timestamp)];
+                        case 1:
+                            record = _a.sent();
+                            return [4 /*yield*/, testnetProvider.getNetwork()];
+                        case 2:
+                            network = _a.sent();
+                            assert_1.default.notStrictEqual(record, null);
+                            assert_1.default.strictEqual(record.timestamp, timestamp);
+                            assert_1.default.strictEqual(record.chainId, network.chainId);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        }).timeout(timeout * 4);
+        it("Should return null on record not found by transactionId", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var fakeTransactionId, record;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            fakeTransactionId = "0.0.0-0000000000-000000000";
+                            return [4 /*yield*/, testnetProvider.getTransaction(fakeTransactionId)];
+                        case 1:
+                            record = _a.sent();
+                            assert_1.default.strictEqual(record, null);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        }).timeout(timeout * 4);
+        it("Should return null on record not found by timestamp", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var fakeTimestamp, record;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            fakeTimestamp = "0000000000.000000000";
+                            return [4 /*yield*/, testnetProvider.getTransaction(fakeTimestamp)];
+                        case 1:
+                            record = _a.sent();
+                            assert_1.default.strictEqual(record, null);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        }).timeout(timeout * 4);
+        it("Should throw backend error", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var badRequestId;
                 var _this = this;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            insufficientTimeout = 500;
+                            badRequestId = "0.0.0";
                             return [4 /*yield*/, assert_1.default.rejects(function () { return __awaiter(_this, void 0, void 0, function () {
-                                    var sendTransactionResponse, _a, _b;
-                                    return __generator(this, function (_c) {
-                                        switch (_c.label) {
-                                            case 0:
-                                                _b = (_a = provider).sendTransaction;
-                                                return [4 /*yield*/, signedTx];
-                                            case 1: return [4 /*yield*/, _b.apply(_a, [_c.sent()])];
-                                            case 2:
-                                                sendTransactionResponse = _c.sent();
-                                                return [4 /*yield*/, sendTransactionResponse.wait(insufficientTimeout)];
-                                            case 3:
-                                                _c.sent();
+                                    return __generator(this, function (_a) {
+                                        switch (_a.label) {
+                                            case 0: return [4 /*yield*/, testnetProvider.getTransaction(badRequestId)];
+                                            case 1:
+                                                _a.sent();
                                                 return [2 /*return*/];
                                         }
                                     });
                                 }); }, function (err) {
                                     assert_1.default.strictEqual(err.name, 'Error');
-                                    assert_1.default.strictEqual(err.reason, 'timeout exceeded');
-                                    assert_1.default.strictEqual(err.code, 'TIMEOUT');
-                                    assert_1.default.strictEqual(err.timeout, insufficientTimeout);
+                                    assert_1.default.strictEqual(err.reason, 'bad result from backend');
+                                    assert_1.default.strictEqual(err.method, 'TransactionResponseQuery');
+                                    assert_1.default.strictEqual(err.error.response.status, 400);
+                                    assert_1.default.strictEqual(err.error.response.statusText, 'Bad Request');
                                     return true;
                                 })];
                         case 1:
@@ -1240,93 +1393,199 @@ describe("Test Hedera Provider", function () {
                 });
             });
         }).timeout(timeout * 4);
-    });
-    it("Should populate tx record by transactionId", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var existingId, record, network;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        existingId = "0.0.1546615-1641987871-235099329";
-                        return [4 /*yield*/, provider.getTransaction(existingId)];
-                    case 1:
-                        record = _a.sent();
-                        return [4 /*yield*/, provider.getNetwork()];
-                    case 2:
-                        network = _a.sent();
-                        assert_1.default.notStrictEqual(record, null);
-                        assert_1.default.strictEqual(record.transactionId, existingId);
-                        assert_1.default.strictEqual(record.chainId, network.chainId);
-                        return [2 /*return*/];
-                }
+        it("Is able to get hedera provider `testnet` as default", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var defaultProvider, chainIDDerivedProvider, balance;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            defaultProvider = hethers_1.hethers.providers.getDefaultProvider(default_hedera_provider_1.HederaNetworks.TESTNET);
+                            assert_1.default.notStrictEqual(defaultProvider, null);
+                            chainIDDerivedProvider = hethers_1.hethers.providers.getDefaultProvider(291);
+                            assert_1.default.notStrictEqual(chainIDDerivedProvider, null);
+                            return [4 /*yield*/, defaultProvider.getBalance(solAddr)];
+                        case 1:
+                            balance = _a.sent();
+                            assert_1.default.strictEqual(true, balance.gte(0));
+                            return [4 /*yield*/, chainIDDerivedProvider.getBalance(solAddr)];
+                        case 2:
+                            balance = _a.sent();
+                            assert_1.default.strictEqual(true, balance.gte(0));
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        }).timeout(timeout * 4);
+        it("Is able to get hedera provider `local` as default", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var account, solAddr, chainIDDerivedProvider, balance;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            account = utils.getAccounts().local.ecdsa[0].account.split('.');
+                            solAddr = hethers_1.hethers.utils.getAddressFromAccount({ shard: BigInt(account[0]), realm: BigInt(account[1]), num: BigInt(account[2]) });
+                            assert_1.default.notStrictEqual(localProvider, null);
+                            chainIDDerivedProvider = hethers_1.hethers.providers.getDefaultProvider(298);
+                            assert_1.default.notStrictEqual(chainIDDerivedProvider, null);
+                            return [4 /*yield*/, localProvider.getBalance(solAddr)];
+                        case 1:
+                            balance = _a.sent();
+                            assert_1.default.strictEqual(true, balance.gte(0));
+                            return [4 /*yield*/, chainIDDerivedProvider.getBalance(solAddr)];
+                        case 2:
+                            balance = _a.sent();
+                            assert_1.default.strictEqual(true, balance.gte(0));
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        }).timeout(timeout * 4);
+        it("Defaults the provider to hedera mainnet", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var defaultMainnetProvider, balance;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            defaultMainnetProvider = hethers_1.hethers.providers.getDefaultProvider();
+                            assert_1.default.notStrictEqual(defaultMainnetProvider, null);
+                            return [4 /*yield*/, defaultMainnetProvider.getBalance(solAddr)];
+                        case 1:
+                            balance = _a.sent();
+                            assert_1.default.strictEqual(true, balance.gte(0));
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        }).timeout(timeout * 4);
+        it('should submit signed transaction', function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var privateKey, txID, tx, txBytes, signedTx, provider, txResponse;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            privateKey = sdk_1.PrivateKey.fromString(hederaTestnetOperableAccount.privateKey);
+                            txID = sdk_1.TransactionId.generate(hederaTestnetOperableAccount.account);
+                            return [4 /*yield*/, new sdk_1.ContractCreateTransaction()
+                                    .setContractMemo("memo")
+                                    .setGas(300000)
+                                    // .setInitialBalance(1000)
+                                    .setBytecodeFileId("0.0.26562254")
+                                    .setNodeAccountIds([new sdk_1.AccountId(0, 0, 3)])
+                                    .setConstructorParameters(new sdk_1.ContractFunctionParameters().addUint256(100))
+                                    .setTransactionId(txID)
+                                    .freeze()
+                                    .sign(privateKey)];
+                        case 1:
+                            tx = _a.sent();
+                            txBytes = tx.toBytes();
+                            signedTx = hethers_1.hethers.utils.hexlify(txBytes);
+                            provider = hethers_1.hethers.providers.getDefaultProvider('testnet');
+                            return [4 /*yield*/, provider.sendTransaction(signedTx)];
+                        case 2:
+                            txResponse = _a.sent();
+                            assert_1.default.strictEqual(txResponse.gasLimit.toNumber(), 300000);
+                            assert_1.default.strictEqual(txResponse.from, hethers_1.hethers.utils.getAddressFromAccount(hederaTestnetOperableAccount.account));
+                            assert_1.default.strictEqual(txResponse.to, undefined); // contract create TX should not be addressed to anything
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        }).timeout(timeout * 4);
+        /* This test is skipped because the local network won't be started in the CI */
+        xit("Should be able to query local network", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var genesis, prov, bal;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            genesis = {
+                                operator: {
+                                    // genesis is the operator
+                                    accountId: "0.0.2",
+                                    privateKey: "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137",
+                                    publicKey: "302a300506032b65700321000aa8e21064c61eab86e2a9c164565b4e7a9a4146106e0a6cd03a8c395a110e92"
+                                },
+                                network: {
+                                    "127.0.0.1:50211": "0.0.3",
+                                    "127.0.0.1:50212": "0.0.4",
+                                    "127.0.0.1:50213": "0.0.5"
+                                }
+                            };
+                            prov = new hethers_1.hethers.providers.HederaProvider(genesis.network["127.0.0.1:50211"], "127.0.0.1:50211", "");
+                            return [4 /*yield*/, prov.getBalance(solAddr)];
+                        case 1:
+                            bal = _a.sent();
+                            assert_1.default.strictEqual(true, bal.gte(0));
+                            return [2 /*return*/];
+                    }
+                });
             });
         });
-    }).timeout(timeout * 4);
-    it("Should populate tx record by consensus timestamp", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var timestamp, record, network;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        timestamp = "1641987884.097680000";
-                        return [4 /*yield*/, provider.getTransaction(timestamp)];
-                    case 1:
-                        record = _a.sent();
-                        return [4 /*yield*/, provider.getNetwork()];
-                    case 2:
-                        network = _a.sent();
-                        assert_1.default.notStrictEqual(record, null);
-                        assert_1.default.strictEqual(record.timestamp, timestamp);
-                        assert_1.default.strictEqual(record.chainId, network.chainId);
-                        return [2 /*return*/];
-                }
+        it("Should be able to query testnet with custom urls", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var provider2, balance2, txId, record2;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            provider2 = new hethers_1.hethers.providers.HederaProvider("0.0.3", "0.testnet.hedera.com:50211", "https://testnet.mirrornode.hedera.com");
+                            return [4 /*yield*/, provider2.getBalance(solAddr)];
+                        case 1:
+                            balance2 = _a.sent();
+                            assert_1.default.strictEqual(true, balance2.gte(0));
+                            txId = "0.0.1546615-1641987871-235099329";
+                            return [4 /*yield*/, provider2.getTransaction(txId)];
+                        case 2:
+                            record2 = _a.sent();
+                            assert_1.default.notStrictEqual(record2, null, "Record is null");
+                            return [2 /*return*/];
+                    }
+                });
             });
-        });
-    }).timeout(timeout * 4);
-    it("Should return null on record not found by transactionId", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var fakeTransactionId, record;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        fakeTransactionId = "0.0.0-0000000000-000000000";
-                        return [4 /*yield*/, provider.getTransaction(fakeTransactionId)];
-                    case 1:
-                        record = _a.sent();
-                        assert_1.default.strictEqual(record, null);
-                        return [2 /*return*/];
-                }
+        }).timeout(timeout * 4);
+        it("Should get bytecode of contract", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var contractAccountConfig, contractAddress, result;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            contractAccountConfig = { shard: BigInt(0), realm: BigInt(0), num: BigInt(16645669) };
+                            contractAddress = hethers_1.hethers.utils.getAddressFromAccount(contractAccountConfig);
+                            return [4 /*yield*/, testnetProvider.getCode(contractAddress)];
+                        case 1:
+                            result = _a.sent();
+                            assert_1.default.strict((typeof result === "string" && result != "0x"), "returns bytecode of contract - " + contractAddress);
+                            return [2 /*return*/];
+                    }
+                });
             });
-        });
-    }).timeout(timeout * 4);
-    it("Should return null on record not found by timestamp", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var fakeTimestamp, record;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        fakeTimestamp = "0000000000.000000000";
-                        return [4 /*yield*/, provider.getTransaction(fakeTimestamp)];
-                    case 1:
-                        record = _a.sent();
-                        assert_1.default.strictEqual(record, null);
-                        return [2 /*return*/];
-                }
+        }).timeout(timeout * 4);
+        it("Should return 0x of non-existing contract", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var result;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, localProvider.getCode(solAddr)];
+                        case 1:
+                            result = _a.sent();
+                            assert_1.default.strictEqual(result, "0x", "returns 0x of account - " + solAddr);
+                            return [4 /*yield*/, localProvider.getCode(nonExistingAddress)];
+                        case 2:
+                            result = _a.sent();
+                            assert_1.default.strictEqual(result, "0x", "returns 0x of non-existing account/contract - " + nonExistingAddress);
+                            return [2 /*return*/];
+                    }
+                });
             });
-        });
-    }).timeout(timeout * 4);
-    it("Should throw backend error", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var badRequestId;
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        badRequestId = "0.0.0";
-                        return [4 /*yield*/, assert_1.default.rejects(function () { return __awaiter(_this, void 0, void 0, function () {
+        }).timeout(timeout * 4);
+        it("Should throw with optional parameter", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var _this = this;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, assert_1.default.rejects(function () { return __awaiter(_this, void 0, void 0, function () {
                                 return __generator(this, function (_a) {
                                     switch (_a.label) {
-                                        case 0: return [4 /*yield*/, provider.getTransaction(badRequestId)];
+                                        case 0: return [4 /*yield*/, localProvider.getCode(nonExistingAddress, true)];
                                         case 1:
                                             _a.sent();
                                             return [2 /*return*/];
@@ -1335,307 +1594,43 @@ describe("Test Hedera Provider", function () {
                             }); }, function (err) {
                                 assert_1.default.strictEqual(err.name, 'Error');
                                 assert_1.default.strictEqual(err.reason, 'bad result from backend');
-                                assert_1.default.strictEqual(err.method, 'TransactionResponseQuery');
-                                assert_1.default.strictEqual(err.error.response.status, 400);
-                                assert_1.default.strictEqual(err.error.response.statusText, 'Bad Request');
+                                assert_1.default.strictEqual(err.method, 'ContractByteCodeQuery');
+                                assert_1.default.strictEqual(err.error.response.status, 404);
+                                assert_1.default.strictEqual(err.error.response.statusText, 'Not Found');
                                 return true;
                             })];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/];
-                }
+                        case 1:
+                            _a.sent();
+                            return [2 /*return*/];
+                    }
+                });
             });
-        });
-    }).timeout(timeout * 4);
-    it("Is able to get hedera provider as default", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var defaultProvider, chainIDDerivedProvider, balance;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        defaultProvider = hethers_1.hethers.providers.getDefaultProvider(default_hedera_provider_1.HederaNetworks.TESTNET);
-                        assert_1.default.notStrictEqual(defaultProvider, null);
-                        chainIDDerivedProvider = hethers_1.hethers.providers.getDefaultProvider(291);
-                        assert_1.default.notStrictEqual(chainIDDerivedProvider, null);
-                        return [4 /*yield*/, defaultProvider.getBalance(solAddr)];
-                    case 1:
-                        balance = _a.sent();
-                        assert_1.default.strictEqual(true, balance.gte(0));
-                        return [4 /*yield*/, chainIDDerivedProvider.getBalance(solAddr)];
-                    case 2:
-                        balance = _a.sent();
-                        assert_1.default.strictEqual(true, balance.gte(0));
-                        return [2 /*return*/];
-                }
-            });
-        });
-    }).timeout(timeout * 4);
-    it("Defaults the provider to hedera mainnet", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var defaultMainnetProvider, balance;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        defaultMainnetProvider = hethers_1.hethers.providers.getDefaultProvider();
-                        assert_1.default.notStrictEqual(defaultMainnetProvider, null);
-                        return [4 /*yield*/, defaultMainnetProvider.getBalance(solAddr)];
-                    case 1:
-                        balance = _a.sent();
-                        assert_1.default.strictEqual(true, balance.gte(0));
-                        return [2 /*return*/];
-                }
-            });
-        });
-    }).timeout(timeout * 4);
-    it('should submit signed transaction', function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var privateKey, txID, tx, txBytes, signedTx, provider, txResponse;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        privateKey = sdk_1.PrivateKey.fromString(hederaTestnetOperableAccount.operator.privateKey);
-                        txID = sdk_1.TransactionId.generate(hederaTestnetOperableAccount.operator.accountId);
-                        return [4 /*yield*/, new sdk_1.ContractCreateTransaction()
-                                .setContractMemo("memo")
-                                .setGas(300000)
-                                // .setInitialBalance(1000)
-                                .setBytecodeFileId("0.0.26562254")
-                                .setNodeAccountIds([new sdk_1.AccountId(0, 0, 3)])
-                                .setConstructorParameters(new sdk_1.ContractFunctionParameters().addUint256(100))
-                                .setTransactionId(txID)
-                                .freeze()
-                                .sign(privateKey)];
-                    case 1:
-                        tx = _a.sent();
-                        txBytes = tx.toBytes();
-                        signedTx = hethers_1.hethers.utils.hexlify(txBytes);
-                        provider = hethers_1.hethers.providers.getDefaultProvider('testnet');
-                        return [4 /*yield*/, provider.sendTransaction(signedTx)];
-                    case 2:
-                        txResponse = _a.sent();
-                        assert_1.default.strictEqual(txResponse.gasLimit.toNumber(), 300000);
-                        assert_1.default.strictEqual(txResponse.from, hethers_1.hethers.utils.getAddressFromAccount(hederaTestnetOperableAccount.operator.accountId));
-                        assert_1.default.strictEqual(txResponse.to, undefined); // contract create TX should not be addressed to anything
-                        return [2 /*return*/];
-                }
-            });
-        });
-    }).timeout(timeout * 4);
-    /* This test is skipped because the local network won't be started in the CI */
-    xit("Should be able to query local network", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var genesis, prov, bal;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        genesis = {
-                            operator: {
-                                // genesis is the operator
-                                accountId: "0.0.2",
-                                privateKey: "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137",
-                                publicKey: "302a300506032b65700321000aa8e21064c61eab86e2a9c164565b4e7a9a4146106e0a6cd03a8c395a110e92"
-                            },
-                            network: {
-                                "127.0.0.1:50211": "0.0.3",
-                                "127.0.0.1:50212": "0.0.4",
-                                "127.0.0.1:50213": "0.0.5"
-                            }
-                        };
-                        prov = new hethers_1.hethers.providers.HederaProvider(genesis.network["127.0.0.1:50211"], "127.0.0.1:50211", "");
-                        return [4 /*yield*/, prov.getBalance(solAddr)];
-                    case 1:
-                        bal = _a.sent();
-                        assert_1.default.strictEqual(true, bal.gte(0));
-                        return [2 /*return*/];
-                }
-            });
-        });
+        }).timeout(timeout * 4);
     });
-    it("Should be able to query testnet with custom urls", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var provider2, balance2, txId, record2;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        provider2 = new hethers_1.hethers.providers.HederaProvider("0.0.3", "0.testnet.hedera.com:50211", "https://testnet.mirrornode.hedera.com");
-                        return [4 /*yield*/, provider2.getBalance(solAddr)];
-                    case 1:
-                        balance2 = _a.sent();
-                        assert_1.default.strictEqual(true, balance2.gte(0));
-                        txId = "0.0.1546615-1641987871-235099329";
-                        return [4 /*yield*/, provider2.getTransaction(txId)];
-                    case 2:
-                        record2 = _a.sent();
-                        assert_1.default.notStrictEqual(record2, null, "Record is null");
-                        return [2 /*return*/];
-                }
-            });
-        });
-    }).timeout(timeout * 4);
-    it("Should get bytecode of contract", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var contractAccountConfig, contractAddress, result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        contractAccountConfig = { shard: BigInt(0), realm: BigInt(0), num: BigInt(16645669) };
-                        contractAddress = hethers_1.hethers.utils.getAddressFromAccount(contractAccountConfig);
-                        return [4 /*yield*/, provider.getCode(contractAddress)];
-                    case 1:
-                        result = _a.sent();
-                        assert_1.default.strict((typeof result === "string" && result != "0x"), "returns bytecode of contract - " + contractAddress);
-                        return [2 /*return*/];
-                }
-            });
-        });
-    }).timeout(timeout * 4);
-    it("Should return 0x of non-existing contract", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, provider.getCode(solAddr)];
-                    case 1:
-                        result = _a.sent();
-                        assert_1.default.strictEqual(result, "0x", "returns 0x of account - " + solAddr);
-                        return [4 /*yield*/, provider.getCode(nonExistingAddress)];
-                    case 2:
-                        result = _a.sent();
-                        assert_1.default.strictEqual(result, "0x", "returns 0x of non-existing account/contract - " + nonExistingAddress);
-                        return [2 /*return*/];
-                }
-            });
-        });
-    }).timeout(timeout * 4);
-    it("Should throw with optional parameter", function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, assert_1.default.rejects(function () { return __awaiter(_this, void 0, void 0, function () {
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0: return [4 /*yield*/, provider.getCode(nonExistingAddress, true)];
-                                    case 1:
-                                        _a.sent();
-                                        return [2 /*return*/];
-                                }
-                            });
-                        }); }, function (err) {
-                            assert_1.default.strictEqual(err.name, 'Error');
-                            assert_1.default.strictEqual(err.reason, 'bad result from backend');
-                            assert_1.default.strictEqual(err.method, 'ContractByteCodeQuery');
-                            assert_1.default.strictEqual(err.error.response.status, 404);
-                            assert_1.default.strictEqual(err.error.response.statusText, 'Not Found');
-                            return true;
-                        })];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/];
-                }
-            });
-        });
-    }).timeout(timeout * 4);
-});
-describe("Test Hedera Provider Formatters", function () {
-    var timeout = 15000;
-    var provider = new providers_1.DefaultHederaProvider(default_hedera_provider_1.HederaNetworks.TESTNET);
-    it('Should parse hedera record to hethers response', function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var hederaTransactionRecord, transactionResponse;
-            return __generator(this, function (_a) {
-                hederaTransactionRecord = {
-                    chainId: 291,
-                    transactionId: "0.0.28540924-1642692847-203890635",
-                    result: "SUCCESS",
-                    amount: 1000000,
-                    call_result: "0x608060405234801561001057600080fd5b50600436106100b45760003560e01c806370a082311161007157806370a082311461014157806395d89b411461016a578063a0712d6814610172578063a457c2d714610187578063a9059cbb1461019a578063dd62ed3e146101ad57600080fd5b806306fdde03146100b9578063095ea7b3146100d757806318160ddd146100fa57806323b872dd1461010c578063313ce5671461011f578063395093511461012e575b600080fd5b6100c16101e6565b6040516100ce9190610936565b60405180910390f35b6100ea6100e53660046108f3565b610278565b60405190151581526020016100ce565b6002545b6040519081526020016100ce565b6100ea61011a3660046108b7565b61028e565b604051601281526020016100ce565b6100ea61013c3660046108f3565b61033d565b6100fe61014f366004610862565b6001600160a01b031660009081526020819052604090205490565b6100c1610379565b61018561018036600461091d565b610388565b005b6100ea6101953660046108f3565b6103ce565b6100ea6101a83660046108f3565b610467565b6100fe6101bb366004610884565b6001600160a01b03918216600090815260016020908152604080832093909416825291909152205490565b6060600380546101f5906109b1565b80601f0160208091040260200160405190810160405280929190818152602001828054610221906109b1565b801561026e5780601f106102435761010080835404028352916020019161026e565b820191906000526020600020905b81548152906001019060200180831161025157829003601f168201915b5050505050905090565b6000610285338484610474565b50600192915050565b600061029b848484610598565b6001600160a01b0384166000908152600160209081526040808320338452909152902054828110156103255760405162461bcd60e51b815260206004820152602860248201527f45524332303a207472616e7366657220616d6f756e74206578636565647320616044820152676c6c6f77616e636560c01b60648201526084015b60405180910390fd5b6103328533858403610474565b506001949350505050565b3360008181526001602090815260408083206001600160a01b0387168452909152812054909161028591859061037490869061098b565b610474565b6060600480546101f5906109b1565b60408051338152602081018390527f0f6798a560793a54c3bcfe86a93cde1e73087d944c0ea20544137d4121396885910160405180910390a16103cb3382610767565b50565b3360009081526001602090815260408083206001600160a01b0386168452909152812054828110156104505760405162461bcd60e51b815260206004820152602560248201527f45524332303a2064656372656173656420616c6c6f77616e63652062656c6f77604482015264207a65726f60d81b606482015260840161031c565b61045d3385858403610474565b5060019392505050565b6000610285338484610598565b6001600160a01b0383166104d65760405162461bcd60e51b8152602060048201526024808201527f45524332303a20617070726f76652066726f6d20746865207a65726f206164646044820152637265737360e01b606482015260840161031c565b6001600160a01b0382166105375760405162461bcd60e51b815260206004820152602260248201527f45524332303a20617070726f766520746f20746865207a65726f206164647265604482015261737360f01b606482015260840161031c565b6001600160a01b0383811660008181526001602090815260408083209487168084529482529182902085905590518481527f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925910160405180910390a3505050565b6001600160a01b0383166105fc5760405162461bcd60e51b815260206004820152602560248201527f45524332303a207472616e736665722066726f6d20746865207a65726f206164604482015264647265737360d81b606482015260840161031c565b6001600160a01b03821661065e5760405162461bcd60e51b815260206004820152602360248201527f45524332303a207472616e7366657220746f20746865207a65726f206164647260448201526265737360e81b606482015260840161031c565b6001600160a01b038316600090815260208190526040902054818110156106d65760405162461bcd60e51b815260206004820152602660248201527f45524332303a207472616e7366657220616d6f756e7420657863656564732062604482015265616c616e636560d01b606482015260840161031c565b6001600160a01b0380851660009081526020819052604080822085850390559185168152908120805484929061070d90849061098b565b92505081905550826001600160a01b0316846001600160a01b03167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef8460405161075991815260200190565b60405180910390a350505050565b6001600160a01b0382166107bd5760405162461bcd60e51b815260206004820152601f60248201527f45524332303a206d696e7420746f20746865207a65726f206164647265737300604482015260640161031c565b80600260008282546107cf919061098b565b90915550506001600160a01b038216600090815260208190526040812080548392906107fc90849061098b565b90915550506040518181526001600160a01b038316906000907fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef9060200160405180910390a35050565b80356001600160a01b038116811461085d57600080fd5b919050565b60006020828403121561087457600080fd5b61087d82610846565b9392505050565b6000806040838503121561089757600080fd5b6108a083610846565b91506108ae60208401610846565b90509250929050565b6000806000606084860312156108cc57600080fd5b6108d584610846565b92506108e360208501610846565b9150604084013590509250925092565b6000806040838503121561090657600080fd5b61090f83610846565b946020939093013593505050565b60006020828403121561092f57600080fd5b5035919050565b600060208083528351808285015260005b8181101561096357858101830151858201604001528201610947565b81811115610975576000604083870101525b50601f01601f1916929092016040019392505050565b600082198211156109ac57634e487b7160e01b600052601160045260246000fd5b500190565b600181811c908216806109c557607f821691505b602082108114156109e657634e487b7160e01b600052602260045260246000fd5b5091905056fea2646970667358221220a89138010396e5c52a2e58663294560a5b37fe1fb303e2dc2199cfbb5765afec64736f6c63430008070033",
-                    contract_id: "0.0.28540926",
-                    created_contract_ids: ["0.0.28540926"],
-                    error_message: "",
-                    from: "0x0000000000000000000000000000000001b37ffc",
-                    function_parameters: "0x",
-                    gas_limit: 300000,
-                    gas_used: 93420,
-                    timestamp: "1642692857.235742000",
-                    to: "0x0000000000000000000000000000000001b37ffe",
-                    block_hash: '',
-                    block_number: 0,
-                    hash: "0x525e387986062f406fae028c164f98dff64aef97dc6e042506026d7931a02402b8feaa13e77eb6dd3efc70f9b1a4633e",
-                    logs: [
-                        {
-                            address: "0x0000000000000000000000000000000001b37ffe",
-                            contract_id: "0.0.28540926",
-                            data: "0x0000000000000000000000000000000000000000000000000000000001b37ffc0000000000000000000000000000000000000000000000000000000000002710",
-                            index: 0,
-                            topics: [
-                                "0x0f6798a560793a54c3bcfe86a93cde1e73087d944c0ea20544137d4121396885"
-                            ]
-                        },
-                        {
-                            address: "0x0000000000000000000000000000000001b37ffe",
-                            contract_id: "0.0.28540926",
-                            data: "0x0000000000000000000000000000000000000000000000000000000000002710",
-                            index: 1,
-                            topics: [
-                                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                                "0x0000000000000000000000000000000000000000000000000000000000000000",
-                                "0x0000000000000000000000000000000000000000000000000000000001b37ffc"
-                            ]
-                        }
-                    ]
-                };
-                transactionResponse = {
-                    accessList: null,
-                    chainId: 0,
-                    data: null,
-                    from: null,
-                    gasLimit: null,
-                    hash: null,
-                    transactionId: null,
-                    timestamp: null,
-                    to: null,
-                    value: null,
-                    customData: {
-                        gas_used: 0,
-                        logs: {},
-                        result: null
-                    },
-                    wait: null
-                };
-                transactionResponse = provider.formatter.responseFromRecord(hederaTransactionRecord);
-                assert_1.default.strictEqual(transactionResponse.chainId, hederaTransactionRecord.chainId);
-                assert_1.default.strictEqual(transactionResponse.hash, hederaTransactionRecord.hash);
-                assert_1.default.strictEqual(transactionResponse.timestamp, hederaTransactionRecord.timestamp);
-                assert_1.default.strictEqual(transactionResponse.transactionId, hederaTransactionRecord.transactionId);
-                assert_1.default.strictEqual(transactionResponse.from, hederaTransactionRecord.from);
-                assert_1.default.strictEqual(transactionResponse.to, hederaTransactionRecord.to);
-                assert_1.default.strictEqual(transactionResponse.data, hederaTransactionRecord.call_result);
-                assert_1.default.strictEqual(transactionResponse.gasLimit.toNumber(), hederaTransactionRecord.gas_limit);
-                assert_1.default.strictEqual(transactionResponse.value.toNumber(), hederaTransactionRecord.amount);
-                assert_1.default.strictEqual(transactionResponse.customData.gas_used, hederaTransactionRecord.gas_used);
-                assert_1.default.deepStrictEqual(transactionResponse.customData.logs, hederaTransactionRecord.logs);
-                assert_1.default.strictEqual(transactionResponse.customData.result, hederaTransactionRecord.result);
-                return [2 /*return*/];
-            });
-        });
-    }).timeout(timeout * 4);
-    it('Should parse hethers response to hethers receipt', function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var transactionResponse, receipt;
-            return __generator(this, function (_a) {
-                transactionResponse = {
-                    chainId: 1,
-                    data: "0x608060405234801561001057600080fd5b50600436106100b45760003560e01c806370a082311161007157806370a082311461014157806395d89b411461016a578063a0712d6814610172578063a457c2d714610187578063a9059cbb1461019a578063dd62ed3e146101ad57600080fd5b806306fdde03146100b9578063095ea7b3146100d757806318160ddd146100fa57806323b872dd1461010c578063313ce5671461011f578063395093511461012e575b600080fd5b6100c16101e6565b6040516100ce9190610936565b60405180910390f35b6100ea6100e53660046108f3565b610278565b60405190151581526020016100ce565b6002545b6040519081526020016100ce565b6100ea61011a3660046108b7565b61028e565b604051601281526020016100ce565b6100ea61013c3660046108f3565b61033d565b6100fe61014f366004610862565b6001600160a01b031660009081526020819052604090205490565b6100c1610379565b61018561018036600461091d565b610388565b005b6100ea6101953660046108f3565b6103ce565b6100ea6101a83660046108f3565b610467565b6100fe6101bb366004610884565b6001600160a01b03918216600090815260016020908152604080832093909416825291909152205490565b6060600380546101f5906109b1565b80601f0160208091040260200160405190810160405280929190818152602001828054610221906109b1565b801561026e5780601f106102435761010080835404028352916020019161026e565b820191906000526020600020905b81548152906001019060200180831161025157829003601f168201915b5050505050905090565b6000610285338484610474565b50600192915050565b600061029b848484610598565b6001600160a01b0384166000908152600160209081526040808320338452909152902054828110156103255760405162461bcd60e51b815260206004820152602860248201527f45524332303a207472616e7366657220616d6f756e74206578636565647320616044820152676c6c6f77616e636560c01b60648201526084015b60405180910390fd5b6103328533858403610474565b506001949350505050565b3360008181526001602090815260408083206001600160a01b0387168452909152812054909161028591859061037490869061098b565b610474565b6060600480546101f5906109b1565b60408051338152602081018390527f0f6798a560793a54c3bcfe86a93cde1e73087d944c0ea20544137d4121396885910160405180910390a16103cb3382610767565b50565b3360009081526001602090815260408083206001600160a01b0386168452909152812054828110156104505760405162461bcd60e51b815260206004820152602560248201527f45524332303a2064656372656173656420616c6c6f77616e63652062656c6f77604482015264207a65726f60d81b606482015260840161031c565b61045d3385858403610474565b5060019392505050565b6000610285338484610598565b6001600160a01b0383166104d65760405162461bcd60e51b8152602060048201526024808201527f45524332303a20617070726f76652066726f6d20746865207a65726f206164646044820152637265737360e01b606482015260840161031c565b6001600160a01b0382166105375760405162461bcd60e51b815260206004820152602260248201527f45524332303a20617070726f766520746f20746865207a65726f206164647265604482015261737360f01b606482015260840161031c565b6001600160a01b0383811660008181526001602090815260408083209487168084529482529182902085905590518481527f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925910160405180910390a3505050565b6001600160a01b0383166105fc5760405162461bcd60e51b815260206004820152602560248201527f45524332303a207472616e736665722066726f6d20746865207a65726f206164604482015264647265737360d81b606482015260840161031c565b6001600160a01b03821661065e5760405162461bcd60e51b815260206004820152602360248201527f45524332303a207472616e7366657220746f20746865207a65726f206164647260448201526265737360e81b606482015260840161031c565b6001600160a01b038316600090815260208190526040902054818110156106d65760405162461bcd60e51b815260206004820152602660248201527f45524332303a207472616e7366657220616d6f756e7420657863656564732062604482015265616c616e636560d01b606482015260840161031c565b6001600160a01b0380851660009081526020819052604080822085850390559185168152908120805484929061070d90849061098b565b92505081905550826001600160a01b0316846001600160a01b03167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef8460405161075991815260200190565b60405180910390a350505050565b6001600160a01b0382166107bd5760405162461bcd60e51b815260206004820152601f60248201527f45524332303a206d696e7420746f20746865207a65726f206164647265737300604482015260640161031c565b80600260008282546107cf919061098b565b90915550506001600160a01b038216600090815260208190526040812080548392906107fc90849061098b565b90915550506040518181526001600160a01b038316906000907fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef9060200160405180910390a35050565b80356001600160a01b038116811461085d57600080fd5b919050565b60006020828403121561087457600080fd5b61087d82610846565b9392505050565b6000806040838503121561089757600080fd5b6108a083610846565b91506108ae60208401610846565b90509250929050565b6000806000606084860312156108cc57600080fd5b6108d584610846565b92506108e360208501610846565b9150604084013590509250925092565b6000806040838503121561090657600080fd5b61090f83610846565b946020939093013593505050565b60006020828403121561092f57600080fd5b5035919050565b600060208083528351808285015260005b8181101561096357858101830151858201604001528201610947565b81811115610975576000604083870101525b50601f01601f1916929092016040019392505050565b600082198211156109ac57634e487b7160e01b600052601160045260246000fd5b500190565b600181811c908216806109c557607f821691505b602082108114156109e657634e487b7160e01b600052602260045260246000fd5b5091905056fea2646970667358221220a89138010396e5c52a2e58663294560a5b37fe1fb303e2dc2199cfbb5765afec64736f6c63430008070033",
-                    from: "0x0000000000000000000000000000000001b37ffc",
-                    gasLimit: bignumber_1.BigNumber.from(300000),
-                    hash: "0x525e387986062f406fae028c164f98dff64aef97dc6e042506026d7931a02402b8feaa13e77eb6dd3efc70f9b1a4633e",
-                    timestamp: "1642692857.235742000",
-                    transactionId: "0.0.28540924-1642692847-203890635",
-                    to: null,
-                    value: bignumber_1.BigNumber.from(0),
-                    customData: {
+    describe("Test Hedera Provider Formatters", function () {
+        var timeout = 15000;
+        it('Should parse hedera record to hethers response', function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var hederaTransactionRecord, transactionResponse;
+                return __generator(this, function (_a) {
+                    hederaTransactionRecord = {
+                        chainId: 291,
+                        transactionId: "0.0.28540924-1642692847-203890635",
+                        result: "SUCCESS",
+                        amount: 1000000,
+                        call_result: "0x608060405234801561001057600080fd5b50600436106100b45760003560e01c806370a082311161007157806370a082311461014157806395d89b411461016a578063a0712d6814610172578063a457c2d714610187578063a9059cbb1461019a578063dd62ed3e146101ad57600080fd5b806306fdde03146100b9578063095ea7b3146100d757806318160ddd146100fa57806323b872dd1461010c578063313ce5671461011f578063395093511461012e575b600080fd5b6100c16101e6565b6040516100ce9190610936565b60405180910390f35b6100ea6100e53660046108f3565b610278565b60405190151581526020016100ce565b6002545b6040519081526020016100ce565b6100ea61011a3660046108b7565b61028e565b604051601281526020016100ce565b6100ea61013c3660046108f3565b61033d565b6100fe61014f366004610862565b6001600160a01b031660009081526020819052604090205490565b6100c1610379565b61018561018036600461091d565b610388565b005b6100ea6101953660046108f3565b6103ce565b6100ea6101a83660046108f3565b610467565b6100fe6101bb366004610884565b6001600160a01b03918216600090815260016020908152604080832093909416825291909152205490565b6060600380546101f5906109b1565b80601f0160208091040260200160405190810160405280929190818152602001828054610221906109b1565b801561026e5780601f106102435761010080835404028352916020019161026e565b820191906000526020600020905b81548152906001019060200180831161025157829003601f168201915b5050505050905090565b6000610285338484610474565b50600192915050565b600061029b848484610598565b6001600160a01b0384166000908152600160209081526040808320338452909152902054828110156103255760405162461bcd60e51b815260206004820152602860248201527f45524332303a207472616e7366657220616d6f756e74206578636565647320616044820152676c6c6f77616e636560c01b60648201526084015b60405180910390fd5b6103328533858403610474565b506001949350505050565b3360008181526001602090815260408083206001600160a01b0387168452909152812054909161028591859061037490869061098b565b610474565b6060600480546101f5906109b1565b60408051338152602081018390527f0f6798a560793a54c3bcfe86a93cde1e73087d944c0ea20544137d4121396885910160405180910390a16103cb3382610767565b50565b3360009081526001602090815260408083206001600160a01b0386168452909152812054828110156104505760405162461bcd60e51b815260206004820152602560248201527f45524332303a2064656372656173656420616c6c6f77616e63652062656c6f77604482015264207a65726f60d81b606482015260840161031c565b61045d3385858403610474565b5060019392505050565b6000610285338484610598565b6001600160a01b0383166104d65760405162461bcd60e51b8152602060048201526024808201527f45524332303a20617070726f76652066726f6d20746865207a65726f206164646044820152637265737360e01b606482015260840161031c565b6001600160a01b0382166105375760405162461bcd60e51b815260206004820152602260248201527f45524332303a20617070726f766520746f20746865207a65726f206164647265604482015261737360f01b606482015260840161031c565b6001600160a01b0383811660008181526001602090815260408083209487168084529482529182902085905590518481527f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925910160405180910390a3505050565b6001600160a01b0383166105fc5760405162461bcd60e51b815260206004820152602560248201527f45524332303a207472616e736665722066726f6d20746865207a65726f206164604482015264647265737360d81b606482015260840161031c565b6001600160a01b03821661065e5760405162461bcd60e51b815260206004820152602360248201527f45524332303a207472616e7366657220746f20746865207a65726f206164647260448201526265737360e81b606482015260840161031c565b6001600160a01b038316600090815260208190526040902054818110156106d65760405162461bcd60e51b815260206004820152602660248201527f45524332303a207472616e7366657220616d6f756e7420657863656564732062604482015265616c616e636560d01b606482015260840161031c565b6001600160a01b0380851660009081526020819052604080822085850390559185168152908120805484929061070d90849061098b565b92505081905550826001600160a01b0316846001600160a01b03167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef8460405161075991815260200190565b60405180910390a350505050565b6001600160a01b0382166107bd5760405162461bcd60e51b815260206004820152601f60248201527f45524332303a206d696e7420746f20746865207a65726f206164647265737300604482015260640161031c565b80600260008282546107cf919061098b565b90915550506001600160a01b038216600090815260208190526040812080548392906107fc90849061098b565b90915550506040518181526001600160a01b038316906000907fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef9060200160405180910390a35050565b80356001600160a01b038116811461085d57600080fd5b919050565b60006020828403121561087457600080fd5b61087d82610846565b9392505050565b6000806040838503121561089757600080fd5b6108a083610846565b91506108ae60208401610846565b90509250929050565b6000806000606084860312156108cc57600080fd5b6108d584610846565b92506108e360208501610846565b9150604084013590509250925092565b6000806040838503121561090657600080fd5b61090f83610846565b946020939093013593505050565b60006020828403121561092f57600080fd5b5035919050565b600060208083528351808285015260005b8181101561096357858101830151858201604001528201610947565b81811115610975576000604083870101525b50601f01601f1916929092016040019392505050565b600082198211156109ac57634e487b7160e01b600052601160045260246000fd5b500190565b600181811c908216806109c557607f821691505b602082108114156109e657634e487b7160e01b600052602260045260246000fd5b5091905056fea2646970667358221220a89138010396e5c52a2e58663294560a5b37fe1fb303e2dc2199cfbb5765afec64736f6c63430008070033",
+                        contract_id: "0.0.28540926",
+                        created_contract_ids: ["0.0.28540926"],
+                        error_message: "",
+                        from: "0x0000000000000000000000000000000001b37ffc",
+                        function_parameters: "0x",
+                        gas_limit: 300000,
                         gas_used: 93420,
+                        timestamp: "1642692857.235742000",
+                        to: "0x0000000000000000000000000000000001b37ffe",
+                        block_hash: '',
+                        block_number: 0,
+                        hash: "0x525e387986062f406fae028c164f98dff64aef97dc6e042506026d7931a02402b8feaa13e77eb6dd3efc70f9b1a4633e",
                         logs: [
                             {
                                 address: "0x0000000000000000000000000000000001b37ffe",
@@ -1657,64 +1652,139 @@ describe("Test Hedera Provider Formatters", function () {
                                     "0x0000000000000000000000000000000000000000000000000000000001b37ffc"
                                 ]
                             }
-                        ],
-                        result: "SUCCESS"
-                    },
-                    wait: null
-                };
-                receipt = {
-                    to: null,
-                    from: null,
-                    timestamp: null,
-                    contractAddress: null,
-                    gasUsed: null,
-                    logsBloom: null,
-                    transactionId: null,
-                    transactionHash: null,
-                    logs: [
-                        {
-                            timestamp: null,
-                            address: null,
-                            data: null,
-                            topics: [],
-                            transactionHash: null,
-                            logIndex: 0,
-                            transactionIndex: 0
-                        }
-                    ],
-                    cumulativeGasUsed: null,
-                    byzantium: true,
-                    type: 0,
-                    status: 0
-                };
-                receipt = provider.formatter.receiptFromResponse(transactionResponse);
-                assert_1.default.strictEqual(receipt.to, transactionResponse.to);
-                assert_1.default.strictEqual(receipt.from, transactionResponse.from);
-                assert_1.default.strictEqual(receipt.timestamp, transactionResponse.timestamp);
-                assert_1.default.strictEqual(receipt.contractAddress, null);
-                assert_1.default.strictEqual(receipt.transactionId, transactionResponse.transactionId);
-                assert_1.default.strictEqual(receipt.transactionHash, transactionResponse.hash);
-                assert_1.default.strictEqual(receipt.cumulativeGasUsed, transactionResponse.customData.gas_used);
-                assert_1.default.strictEqual(receipt.gasUsed, transactionResponse.customData.gas_used);
-                assert_1.default.strictEqual(receipt.status, 1);
-                assert_1.default.strictEqual(receipt.logs.length, 2);
-                assert_1.default.strictEqual(receipt.logs[0].timestamp, transactionResponse.timestamp);
-                assert_1.default.strictEqual(receipt.logs[0].address, transactionResponse.customData.logs[0].address);
-                assert_1.default.strictEqual(receipt.logs[0].data, transactionResponse.customData.logs[0].data);
-                assert_1.default.deepStrictEqual(receipt.logs[0].topics, transactionResponse.customData.logs[0].topics);
-                assert_1.default.strictEqual(receipt.logs[0].transactionHash, transactionResponse.hash);
-                assert_1.default.strictEqual(receipt.logs[0].logIndex, transactionResponse.customData.logs[0].index);
-                assert_1.default.strictEqual(receipt.logs[0].transactionIndex, transactionResponse.customData.logs[0].index);
-                assert_1.default.strictEqual(receipt.logs[1].timestamp, transactionResponse.timestamp);
-                assert_1.default.strictEqual(receipt.logs[1].address, transactionResponse.customData.logs[1].address);
-                assert_1.default.strictEqual(receipt.logs[1].data, transactionResponse.customData.logs[1].data);
-                assert_1.default.deepStrictEqual(receipt.logs[1].topics, transactionResponse.customData.logs[1].topics);
-                assert_1.default.strictEqual(receipt.logs[1].transactionHash, transactionResponse.hash);
-                assert_1.default.strictEqual(receipt.logs[1].logIndex, transactionResponse.customData.logs[1].index);
-                assert_1.default.strictEqual(receipt.logs[1].transactionIndex, transactionResponse.customData.logs[1].index);
-                return [2 /*return*/];
+                        ]
+                    };
+                    transactionResponse = {
+                        accessList: null,
+                        chainId: 0,
+                        data: null,
+                        from: null,
+                        gasLimit: null,
+                        hash: null,
+                        transactionId: null,
+                        timestamp: null,
+                        to: null,
+                        value: null,
+                        customData: {
+                            gas_used: 0,
+                            logs: {},
+                            result: null
+                        },
+                        wait: null
+                    };
+                    transactionResponse = localProvider.formatter.responseFromRecord(hederaTransactionRecord);
+                    assert_1.default.strictEqual(transactionResponse.chainId, hederaTransactionRecord.chainId);
+                    assert_1.default.strictEqual(transactionResponse.hash, hederaTransactionRecord.hash);
+                    assert_1.default.strictEqual(transactionResponse.timestamp, hederaTransactionRecord.timestamp);
+                    assert_1.default.strictEqual(transactionResponse.transactionId, hederaTransactionRecord.transactionId);
+                    assert_1.default.strictEqual(transactionResponse.from, hederaTransactionRecord.from);
+                    assert_1.default.strictEqual(transactionResponse.to, hederaTransactionRecord.to);
+                    assert_1.default.strictEqual(transactionResponse.data, hederaTransactionRecord.call_result);
+                    assert_1.default.strictEqual(transactionResponse.gasLimit.toNumber(), hederaTransactionRecord.gas_limit);
+                    assert_1.default.strictEqual(transactionResponse.value.toNumber(), hederaTransactionRecord.amount);
+                    assert_1.default.strictEqual(transactionResponse.customData.gas_used, hederaTransactionRecord.gas_used);
+                    assert_1.default.deepStrictEqual(transactionResponse.customData.logs, hederaTransactionRecord.logs);
+                    assert_1.default.strictEqual(transactionResponse.customData.result, hederaTransactionRecord.result);
+                    return [2 /*return*/];
+                });
             });
-        });
-    }).timeout(timeout * 4);
+        }).timeout(timeout * 4);
+        it('Should parse hethers response to hethers receipt', function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var transactionResponse, receipt;
+                return __generator(this, function (_a) {
+                    transactionResponse = {
+                        chainId: 1,
+                        data: "0x608060405234801561001057600080fd5b50600436106100b45760003560e01c806370a082311161007157806370a082311461014157806395d89b411461016a578063a0712d6814610172578063a457c2d714610187578063a9059cbb1461019a578063dd62ed3e146101ad57600080fd5b806306fdde03146100b9578063095ea7b3146100d757806318160ddd146100fa57806323b872dd1461010c578063313ce5671461011f578063395093511461012e575b600080fd5b6100c16101e6565b6040516100ce9190610936565b60405180910390f35b6100ea6100e53660046108f3565b610278565b60405190151581526020016100ce565b6002545b6040519081526020016100ce565b6100ea61011a3660046108b7565b61028e565b604051601281526020016100ce565b6100ea61013c3660046108f3565b61033d565b6100fe61014f366004610862565b6001600160a01b031660009081526020819052604090205490565b6100c1610379565b61018561018036600461091d565b610388565b005b6100ea6101953660046108f3565b6103ce565b6100ea6101a83660046108f3565b610467565b6100fe6101bb366004610884565b6001600160a01b03918216600090815260016020908152604080832093909416825291909152205490565b6060600380546101f5906109b1565b80601f0160208091040260200160405190810160405280929190818152602001828054610221906109b1565b801561026e5780601f106102435761010080835404028352916020019161026e565b820191906000526020600020905b81548152906001019060200180831161025157829003601f168201915b5050505050905090565b6000610285338484610474565b50600192915050565b600061029b848484610598565b6001600160a01b0384166000908152600160209081526040808320338452909152902054828110156103255760405162461bcd60e51b815260206004820152602860248201527f45524332303a207472616e7366657220616d6f756e74206578636565647320616044820152676c6c6f77616e636560c01b60648201526084015b60405180910390fd5b6103328533858403610474565b506001949350505050565b3360008181526001602090815260408083206001600160a01b0387168452909152812054909161028591859061037490869061098b565b610474565b6060600480546101f5906109b1565b60408051338152602081018390527f0f6798a560793a54c3bcfe86a93cde1e73087d944c0ea20544137d4121396885910160405180910390a16103cb3382610767565b50565b3360009081526001602090815260408083206001600160a01b0386168452909152812054828110156104505760405162461bcd60e51b815260206004820152602560248201527f45524332303a2064656372656173656420616c6c6f77616e63652062656c6f77604482015264207a65726f60d81b606482015260840161031c565b61045d3385858403610474565b5060019392505050565b6000610285338484610598565b6001600160a01b0383166104d65760405162461bcd60e51b8152602060048201526024808201527f45524332303a20617070726f76652066726f6d20746865207a65726f206164646044820152637265737360e01b606482015260840161031c565b6001600160a01b0382166105375760405162461bcd60e51b815260206004820152602260248201527f45524332303a20617070726f766520746f20746865207a65726f206164647265604482015261737360f01b606482015260840161031c565b6001600160a01b0383811660008181526001602090815260408083209487168084529482529182902085905590518481527f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925910160405180910390a3505050565b6001600160a01b0383166105fc5760405162461bcd60e51b815260206004820152602560248201527f45524332303a207472616e736665722066726f6d20746865207a65726f206164604482015264647265737360d81b606482015260840161031c565b6001600160a01b03821661065e5760405162461bcd60e51b815260206004820152602360248201527f45524332303a207472616e7366657220746f20746865207a65726f206164647260448201526265737360e81b606482015260840161031c565b6001600160a01b038316600090815260208190526040902054818110156106d65760405162461bcd60e51b815260206004820152602660248201527f45524332303a207472616e7366657220616d6f756e7420657863656564732062604482015265616c616e636560d01b606482015260840161031c565b6001600160a01b0380851660009081526020819052604080822085850390559185168152908120805484929061070d90849061098b565b92505081905550826001600160a01b0316846001600160a01b03167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef8460405161075991815260200190565b60405180910390a350505050565b6001600160a01b0382166107bd5760405162461bcd60e51b815260206004820152601f60248201527f45524332303a206d696e7420746f20746865207a65726f206164647265737300604482015260640161031c565b80600260008282546107cf919061098b565b90915550506001600160a01b038216600090815260208190526040812080548392906107fc90849061098b565b90915550506040518181526001600160a01b038316906000907fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef9060200160405180910390a35050565b80356001600160a01b038116811461085d57600080fd5b919050565b60006020828403121561087457600080fd5b61087d82610846565b9392505050565b6000806040838503121561089757600080fd5b6108a083610846565b91506108ae60208401610846565b90509250929050565b6000806000606084860312156108cc57600080fd5b6108d584610846565b92506108e360208501610846565b9150604084013590509250925092565b6000806040838503121561090657600080fd5b61090f83610846565b946020939093013593505050565b60006020828403121561092f57600080fd5b5035919050565b600060208083528351808285015260005b8181101561096357858101830151858201604001528201610947565b81811115610975576000604083870101525b50601f01601f1916929092016040019392505050565b600082198211156109ac57634e487b7160e01b600052601160045260246000fd5b500190565b600181811c908216806109c557607f821691505b602082108114156109e657634e487b7160e01b600052602260045260246000fd5b5091905056fea2646970667358221220a89138010396e5c52a2e58663294560a5b37fe1fb303e2dc2199cfbb5765afec64736f6c63430008070033",
+                        from: "0x0000000000000000000000000000000001b37ffc",
+                        gasLimit: bignumber_1.BigNumber.from(300000),
+                        hash: "0x525e387986062f406fae028c164f98dff64aef97dc6e042506026d7931a02402b8feaa13e77eb6dd3efc70f9b1a4633e",
+                        timestamp: "1642692857.235742000",
+                        transactionId: "0.0.28540924-1642692847-203890635",
+                        to: null,
+                        value: bignumber_1.BigNumber.from(0),
+                        customData: {
+                            gas_used: 93420,
+                            logs: [
+                                {
+                                    address: "0x0000000000000000000000000000000001b37ffe",
+                                    contract_id: "0.0.28540926",
+                                    data: "0x0000000000000000000000000000000000000000000000000000000001b37ffc0000000000000000000000000000000000000000000000000000000000002710",
+                                    index: 0,
+                                    topics: [
+                                        "0x0f6798a560793a54c3bcfe86a93cde1e73087d944c0ea20544137d4121396885"
+                                    ]
+                                },
+                                {
+                                    address: "0x0000000000000000000000000000000001b37ffe",
+                                    contract_id: "0.0.28540926",
+                                    data: "0x0000000000000000000000000000000000000000000000000000000000002710",
+                                    index: 1,
+                                    topics: [
+                                        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                                        "0x0000000000000000000000000000000000000000000000000000000000000000",
+                                        "0x0000000000000000000000000000000000000000000000000000000001b37ffc"
+                                    ]
+                                }
+                            ],
+                            result: "SUCCESS"
+                        },
+                        wait: null
+                    };
+                    receipt = {
+                        to: null,
+                        from: null,
+                        timestamp: null,
+                        contractAddress: null,
+                        gasUsed: null,
+                        logsBloom: null,
+                        transactionId: null,
+                        transactionHash: null,
+                        logs: [
+                            {
+                                timestamp: null,
+                                address: null,
+                                data: null,
+                                topics: [],
+                                transactionHash: null,
+                                logIndex: 0,
+                                transactionIndex: 0
+                            }
+                        ],
+                        cumulativeGasUsed: null,
+                        byzantium: true,
+                        type: 0,
+                        status: 0
+                    };
+                    receipt = localProvider.formatter.receiptFromResponse(transactionResponse);
+                    assert_1.default.strictEqual(receipt.to, transactionResponse.to);
+                    assert_1.default.strictEqual(receipt.from, transactionResponse.from);
+                    assert_1.default.strictEqual(receipt.timestamp, transactionResponse.timestamp);
+                    assert_1.default.strictEqual(receipt.contractAddress, null);
+                    assert_1.default.strictEqual(receipt.transactionId, transactionResponse.transactionId);
+                    assert_1.default.strictEqual(receipt.transactionHash, transactionResponse.hash);
+                    assert_1.default.strictEqual(receipt.cumulativeGasUsed, transactionResponse.customData.gas_used);
+                    assert_1.default.strictEqual(receipt.gasUsed, transactionResponse.customData.gas_used);
+                    assert_1.default.strictEqual(receipt.status, 1);
+                    assert_1.default.strictEqual(receipt.logs.length, 2);
+                    assert_1.default.strictEqual(receipt.logs[0].timestamp, transactionResponse.timestamp);
+                    assert_1.default.strictEqual(receipt.logs[0].address, transactionResponse.customData.logs[0].address);
+                    assert_1.default.strictEqual(receipt.logs[0].data, transactionResponse.customData.logs[0].data);
+                    assert_1.default.deepStrictEqual(receipt.logs[0].topics, transactionResponse.customData.logs[0].topics);
+                    assert_1.default.strictEqual(receipt.logs[0].transactionHash, transactionResponse.hash);
+                    assert_1.default.strictEqual(receipt.logs[0].logIndex, transactionResponse.customData.logs[0].index);
+                    assert_1.default.strictEqual(receipt.logs[0].transactionIndex, transactionResponse.customData.logs[0].index);
+                    assert_1.default.strictEqual(receipt.logs[1].timestamp, transactionResponse.timestamp);
+                    assert_1.default.strictEqual(receipt.logs[1].address, transactionResponse.customData.logs[1].address);
+                    assert_1.default.strictEqual(receipt.logs[1].data, transactionResponse.customData.logs[1].data);
+                    assert_1.default.deepStrictEqual(receipt.logs[1].topics, transactionResponse.customData.logs[1].topics);
+                    assert_1.default.strictEqual(receipt.logs[1].transactionHash, transactionResponse.hash);
+                    assert_1.default.strictEqual(receipt.logs[1].logIndex, transactionResponse.customData.logs[1].index);
+                    assert_1.default.strictEqual(receipt.logs[1].transactionIndex, transactionResponse.customData.logs[1].index);
+                    return [2 /*return*/];
+                });
+            });
+        }).timeout(timeout * 4);
+    });
 });
 //# sourceMappingURL=test-providers.spec.js.map

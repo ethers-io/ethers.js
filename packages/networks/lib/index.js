@@ -15,7 +15,7 @@ function hederaDefaultProvider(network) {
         var providerList = [];
         // TODO: JSON RPC provider, FallbackProvider for hedera
         if (providers.DefaultHederaProvider) {
-            providerList.push(new providers.DefaultHederaProvider(network));
+            providerList.push(new providers.DefaultHederaProvider(network, options));
         }
         if (providerList.length === 0) {
             return null;
@@ -43,6 +43,11 @@ var networks = {
         chainId: 292,
         name: 'previewnet',
         _defaultProvider: hederaDefaultProvider("previewnet")
+    },
+    local: {
+        chainId: 298,
+        name: 'local',
+        _defaultProvider: hederaDefaultProvider("local")
     }
 };
 /**

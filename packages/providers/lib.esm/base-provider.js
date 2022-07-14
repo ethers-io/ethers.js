@@ -152,9 +152,10 @@ function formatTimestamp(s) {
     return `${sec.padEnd(10, "0")}.${nano.padEnd(9, "0")}`;
 }
 export class BaseProvider extends Provider {
-    constructor(network) {
+    constructor(network, options) {
         logger.checkNew(new.target, Provider);
         super();
+        this._options = options || {};
         this._events = [];
         this._emittedEvents = {};
         this._previousPollingTimestamps = {};
@@ -189,7 +190,8 @@ export class BaseProvider extends Provider {
                 else {
                     logger.throwArgumentError("invalid network", "network", network);
                 }
-                this.hederaClient = Client.forName(mapNetworkToHederaNetworkName(asDefaultNetwork));
+                const hederaNetwork = mapNetworkToHederaNetworkName(asDefaultNetwork);
+                this.hederaClient = typeof hederaNetwork === 'string' ? Client.forName(hederaNetwork) : Client.forNetwork(hederaNetwork);
                 this._mirrorNodeUrl = resolveMirrorNetworkUrl(this._network);
             }
             else {
@@ -204,6 +206,9 @@ export class BaseProvider extends Provider {
             }
         }
         this._pollingInterval = 3000;
+    }
+    _makeRequest(uri) {
+        return axios.get(this._mirrorNodeUrl + uri, { headers: this._options.headers });
     }
     _ready() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -342,7 +347,7 @@ export class BaseProvider extends Provider {
                 const balance = yield new AccountBalanceQuery()
                     .setAccountId(AccountId.fromString(account))
                     .execute(this.hederaClient);
-                return BigNumber.from(balance.hbars.toTinybars().toNumber());
+                return BigNumber.from(balance.hbars.toTinybars().toString());
             }
             catch (error) {
                 return logger.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
@@ -366,7 +371,7 @@ export class BaseProvider extends Provider {
             accountLike = yield accountLike;
             const account = asAccountString(accountLike);
             try {
-                let { data } = yield axios.get(this._mirrorNodeUrl + MIRROR_NODE_CONTRACTS_ENDPOINT + account);
+                let { data } = yield this._makeRequest(MIRROR_NODE_CONTRACTS_ENDPOINT + account);
                 return data.bytecode ? hexlify(data.bytecode) : `0x`;
             }
             catch (error) {
@@ -489,7 +494,7 @@ export class BaseProvider extends Provider {
             let transactionsEndpoint = MIRROR_NODE_TRANSACTIONS_ENDPOINT;
             !transactionIdOrTimestamp.includes("-") ? transactionsEndpoint += ('?timestamp=' + transactionIdOrTimestamp) : transactionsEndpoint += transactionIdOrTimestamp;
             try {
-                let { data } = yield axios.get(this._mirrorNodeUrl + transactionsEndpoint);
+                let { data } = yield this._makeRequest(transactionsEndpoint);
                 if (data) {
                     const filtered = data.transactions.filter((e) => e.result != 'DUPLICATE_TRANSACTION');
                     if (filtered.length > 0) {
@@ -534,7 +539,7 @@ export class BaseProvider extends Provider {
                         }
                         else {
                             const contractsEndpoint = MIRROR_NODE_CONTRACTS_RESULTS_ENDPOINT + filtered[0].transaction_id;
-                            const dataWithLogs = yield axios.get(this._mirrorNodeUrl + contractsEndpoint);
+                            const dataWithLogs = yield this._makeRequest(contractsEndpoint);
                             record = Object.assign({}, record, Object.assign({}, dataWithLogs.data));
                         }
                         return this.formatter.responseFromRecord(record);
@@ -608,9 +613,9 @@ export class BaseProvider extends Provider {
                     }
                 }
             }
-            const requestUrl = this._mirrorNodeUrl + epContractsLogs + toTimestampFilter + fromTimestampFilter;
+            const requestUrl = epContractsLogs + toTimestampFilter + fromTimestampFilter;
             try {
-                let { data } = yield axios.get(requestUrl);
+                let { data } = yield this._makeRequest(requestUrl);
                 if (data) {
                     const mappedLogs = this.formatter.logsMapper(data.logs);
                     if (mappedLogs.length == oversizeResponseLength) {
@@ -849,6 +854,8 @@ function mapNetworkToHederaNetworkName(net) {
             return NetworkName.Previewnet;
         case 'testnet':
             return NetworkName.Testnet;
+        case 'local':
+            return { '127.0.0.1:50211': '0.0.3' };
         default:
             logger.throwArgumentError("Invalid network name", "network", net);
             return null;
@@ -863,6 +870,8 @@ function resolveMirrorNetworkUrl(net) {
             return 'https://previewnet.mirrornode.hedera.com';
         case 'testnet':
             return 'https://testnet.mirrornode.hedera.com';
+        case 'local':
+            return 'http://127.0.0.1:5551';
         default:
             logger.throwArgumentError("Invalid network name", "network", net);
             return null;

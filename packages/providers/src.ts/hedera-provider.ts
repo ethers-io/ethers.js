@@ -1,12 +1,12 @@
 import {  HederaNetworkConfigLike } from "@hethers/networks";
-import { BaseProvider } from "./base-provider";
+import { BaseProvider, ProviderOptions } from "./base-provider";
 import { AccountLike } from "@hethers/address";
 
 /**
  * Provides support for connecting to custom network by specifying consensus and mirror node url.
  */
 export default class HederaProvider extends BaseProvider {
-    constructor(nodeId: AccountLike, consensusNodeUrl: string, mirrorNodeUrl: string) {
+    constructor(nodeId: AccountLike, consensusNodeUrl: string, mirrorNodeUrl: string, options?: ProviderOptions) {
         const props :HederaNetworkConfigLike = {
             network:{}
         };
@@ -14,6 +14,6 @@ export default class HederaProvider extends BaseProvider {
         super({
             network:(props as HederaNetworkConfigLike).network,
             mirrorNodeUrl,
-        });
+        }, options);
     }
 }

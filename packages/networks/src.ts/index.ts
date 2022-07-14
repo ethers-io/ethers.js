@@ -1,6 +1,7 @@
 "use strict";
 
 import { Logger } from "@hethers/logger";
+import {ProviderOptions} from '@hethers/providers';
 import { version } from "./_version";
 const logger = new Logger(version);
 
@@ -25,7 +26,7 @@ function isRenetworkable(value: any): value is Renetworkable {
 }
 
 function hederaDefaultProvider(network: string | Network): Renetworkable {
-    const func = function (providers: any, options?: any): any {
+    const func = function (providers: any, options?: ProviderOptions): any {
         if (options == null) {
             options = {};
         }
@@ -33,7 +34,7 @@ function hederaDefaultProvider(network: string | Network): Renetworkable {
 
         // TODO: JSON RPC provider, FallbackProvider for hedera
         if (providers.DefaultHederaProvider) {
-            providerList.push(new providers.DefaultHederaProvider(network));
+            providerList.push(new providers.DefaultHederaProvider(network, options));
         }
         if (providerList.length === 0) {
             return null;
@@ -65,6 +66,11 @@ const networks: { [name: string]: Network } = {
         chainId: 292,
         name: 'previewnet',
         _defaultProvider: hederaDefaultProvider("previewnet")
+    },
+    local: {
+        chainId: 298,
+        name: 'local',
+        _defaultProvider: hederaDefaultProvider("local")
     }
 }
 

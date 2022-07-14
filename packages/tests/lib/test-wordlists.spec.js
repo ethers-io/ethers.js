@@ -27,14 +27,16 @@ function checkWordlist(content, wordlist) {
         assert_1.default.deepStrictEqual(phrase2, phrase, "re-joined words");
     });
 }
-describe('Check Wordlists', function () {
-    var tests = (0, testcases_1.loadTests)("wordlists");
-    tests.forEach(function (test) {
-        var wordlist = (hethers_1.hethers.wordlists)[test.locale];
-        if (wordlist == null) {
-            return;
-        }
-        checkWordlist(test.content, wordlist);
+describe('Wordlists.spec', function () {
+    describe('Check Wordlists', function () {
+        var tests = (0, testcases_1.loadTests)("wordlists");
+        tests.forEach(function (test) {
+            var wordlist = (hethers_1.hethers.wordlists)[test.locale];
+            if (wordlist == null) {
+                return;
+            }
+            checkWordlist(test.content, wordlist);
+        });
     });
 });
 //# sourceMappingURL=test-wordlists.spec.js.map

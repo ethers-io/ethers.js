@@ -33,7 +33,8 @@ const {
     TransactionRequest,
     TransactionResponse,
     Network,
-    Networkish
+    Networkish,
+    ProviderOptions
 } = require("@hethers/providers");
 ```
 
