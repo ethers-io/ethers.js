@@ -30,7 +30,7 @@
     "@hethers/address": "1.1.0",
     "@hethers/constants": "1.1.0",
     "@hethers/logger": "1.1.0",
-    "@hethers/networks": "1.1.0",
+    "@hethers/networks": "1.1.1",
     "@hethers/transactions": "1.1.1",
     "@types/axios": "^0.14.0",
     "axios": "^0.24.0",
@@ -62,7 +62,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xdbf96d85fef0448835571d07407c4c9a8903cd7300b5eceb3ff459978333216d",
+  "tarballHash": "0x72489049a1a9dfd3915481f9b77707749f4c20d21483d0bedf1808671f4af8b7",
   "types": "./lib/index.d.ts",
-  "version": "1.1.1"
+  "version": "1.1.2"
 }

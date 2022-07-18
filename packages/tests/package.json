@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@hashgraph/hethers": "1.1.2",
+    "@hashgraph/hethers": "1.1.3",
     "@hethers/testcases": "1.0.0",
     "@types/mocha": "^5.2.0",
     "shelljs": "^0.8.5"
@@ -28,7 +28,7 @@
   "scripts": {
     "test": "exit 1"
   },
-  "tarballHash": "0x7c81b087d3c4247af1dafa1bf62c5b5cafecdd73c24b2fc58ba159e44ae9ea22",
+  "tarballHash": "0x6bbc9b7dad0402e18e3cda0054ce42fffefdd3586dae70225fce9f974c33bb74",
   "types": "./lib/index.d.ts",
   "version": "1.0.0"
 }
