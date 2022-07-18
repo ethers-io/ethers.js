@@ -1,7 +1,6 @@
 "use strict";
 
 import { Logger } from "@hethers/logger";
-import {ProviderOptions} from '@hethers/providers';
 import { version } from "./_version";
 const logger = new Logger(version);
 
@@ -26,7 +25,7 @@ function isRenetworkable(value: any): value is Renetworkable {
 }
 
 function hederaDefaultProvider(network: string | Network): Renetworkable {
-    const func = function (providers: any, options?: ProviderOptions): any {
+    const func = function (providers: any, options?: any): any {
         if (options == null) {
             options = {};
         }
