@@ -146,7 +146,7 @@ _subsection: Hashing Helpers @<utils--hashing-helpers>
 
 _property: ethers.utils.hashMessage(message) => string<[[DataHexString]]<32>>  @<utils-hashMessage> @SRC<hash>
 Computes the [[link-eip-191]] personal message digest of //message//. Personal messages are
-converted to UTF-8 bytes and prefixed with ``\\x19Ethereum Signed Message:``
+converted to UTF-8 bytes and prefixed with ``\\x19Ethereum Signed Message:\\n``
 and the length of //message//.
 
 _code: Hashing Messages  @lang<javascript>
