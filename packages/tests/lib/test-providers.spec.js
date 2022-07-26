@@ -1401,7 +1401,7 @@ describe('Providers.spec', function () {
                         case 0:
                             defaultProvider = hethers_1.hethers.providers.getDefaultProvider(default_hedera_provider_1.HederaNetworks.TESTNET);
                             assert_1.default.notStrictEqual(defaultProvider, null);
-                            chainIDDerivedProvider = hethers_1.hethers.providers.getDefaultProvider(291);
+                            chainIDDerivedProvider = hethers_1.hethers.providers.getDefaultProvider(296);
                             assert_1.default.notStrictEqual(chainIDDerivedProvider, null);
                             return [4 /*yield*/, defaultProvider.getBalance(solAddr)];
                         case 1:

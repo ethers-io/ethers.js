@@ -698,20 +698,20 @@ describe('Wallet.spec', () => {
             const provider = hethers.providers.getDefaultProvider("mainnet");
             const wallet = hethers.Wallet.createRandom().connect(provider);
             const chainId = await wallet.getChainId();
-            assert.strictEqual(chainId, 290);
+            assert.strictEqual(chainId, 295);
         });
         it("Should get proper testnet chainId", async function () {
             const provider = hethers.providers.getDefaultProvider("testnet");
             const wallet = hethers.Wallet.createRandom().connect(provider);
             const chainId = await wallet.getChainId();
-            assert.strictEqual(chainId, 291)
+            assert.strictEqual(chainId, 296);
         });
 
         it("Should get proper previewnet chainId", async function () {
             const provider = hethers.providers.getDefaultProvider("previewnet");
             const wallet = hethers.Wallet.createRandom().connect(provider);
             const chainId = await wallet.getChainId();
-            assert.strictEqual(chainId, 292);
+            assert.strictEqual(chainId, 297);
         });
 
         it("Should get proper local chainId", async function () {

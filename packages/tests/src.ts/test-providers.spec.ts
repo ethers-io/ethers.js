@@ -1283,7 +1283,7 @@ describe('Providers.spec', () => {
             let defaultProvider = hethers.providers.getDefaultProvider(HederaNetworks.TESTNET);
             assert.notStrictEqual(defaultProvider, null);
 
-            const chainIDDerivedProvider = hethers.providers.getDefaultProvider(291);
+            const chainIDDerivedProvider = hethers.providers.getDefaultProvider(296);
             assert.notStrictEqual(chainIDDerivedProvider, null);
 
             // ensure providers are usable

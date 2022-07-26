@@ -28,17 +28,17 @@ function hederaDefaultProvider(network) {
 const networks = {
     // hedera networks
     mainnet: {
-        chainId: 290,
+        chainId: 295,
         name: 'mainnet',
         _defaultProvider: hederaDefaultProvider("mainnet")
     },
     testnet: {
-        chainId: 291,
+        chainId: 296,
         name: 'testnet',
         _defaultProvider: hederaDefaultProvider("testnet")
     },
     previewnet: {
-        chainId: 292,
+        chainId: 297,
         name: 'previewnet',
         _defaultProvider: hederaDefaultProvider("previewnet")
     },

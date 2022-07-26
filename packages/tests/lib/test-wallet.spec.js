@@ -845,7 +845,7 @@ describe('Wallet.spec', function () {
                             return [4 /*yield*/, wallet.getChainId()];
                         case 1:
                             chainId = _a.sent();
-                            assert_1.default.strictEqual(chainId, 290);
+                            assert_1.default.strictEqual(chainId, 295);
                             return [2 /*return*/];
                     }
                 });
@@ -862,7 +862,7 @@ describe('Wallet.spec', function () {
                             return [4 /*yield*/, wallet.getChainId()];
                         case 1:
                             chainId = _a.sent();
-                            assert_1.default.strictEqual(chainId, 291);
+                            assert_1.default.strictEqual(chainId, 296);
                             return [2 /*return*/];
                     }
                 });
@@ -879,7 +879,7 @@ describe('Wallet.spec', function () {
                             return [4 /*yield*/, wallet.getChainId()];
                         case 1:
                             chainId = _a.sent();
-                            assert_1.default.strictEqual(chainId, 292);
+                            assert_1.default.strictEqual(chainId, 297);
                             return [2 /*return*/];
                     }
                 });
