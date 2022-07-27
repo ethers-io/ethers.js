@@ -19,13 +19,14 @@ import { accessListify, computeAlias, parse as parseTransaction, TransactionType
 import { commify, formatHbar, parseHbar, formatUnits, parseUnits } from "@hethers/units";
 import { verifyMessage } from "@hethers/wallet";
 import { _fetchData, fetchJson, poll } from "@ethersproject/web";
+import { computeAddress } from "@ethersproject/transactions";
 ////////////////////////
 // Enums
 import { SupportedAlgorithm } from "@ethersproject/sha2";
 import { UnicodeNormalizationForm, Utf8ErrorReason } from "@ethersproject/strings";
 ////////////////////////
 // Exports
-export { AbiCoder, defaultAbiCoder, Fragment, ConstructorFragment, ErrorFragment, EventFragment, FunctionFragment, ParamType, FormatTypes, checkResultErrors, Logger, _fetchData, fetchJson, poll, checkProperties, deepCopy, defineReadOnly, getStatic, resolveProperties, shallowCopy, arrayify, concat, stripZeros, zeroPad, isBytes, isBytesLike, defaultPath, HDNode, SigningKey, SigningKeyED, Interface, LogDescription, TransactionDescription, base58, base64, hexlify, isHexString, hexConcat, hexStripZeros, hexValue, hexZeroPad, hexDataLength, hexDataSlice, nameprep, _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String, Utf8ErrorFuncs, formatBytes32String, parseBytes32String, hashMessage, id, _TypedDataEncoder, getAddress, getChecksumAddress, getIcapAddress, getCreate2Address, isAddress, formatHbar, parseHbar, formatUnits, parseUnits, commify, computeHmac, keccak256, ripemd160, sha256, sha512, randomBytes, shuffled, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, accessListify, parseTransaction, TransactionTypes, getJsonWalletAddress, computeAlias, computePublicKey, recoverPublicKey, verifyMessage, getAccountPath, mnemonicToEntropy, entropyToMnemonic, isValidMnemonic, mnemonicToSeed, 
+export { AbiCoder, defaultAbiCoder, Fragment, ConstructorFragment, ErrorFragment, EventFragment, FunctionFragment, ParamType, FormatTypes, checkResultErrors, Logger, _fetchData, fetchJson, poll, checkProperties, deepCopy, defineReadOnly, getStatic, resolveProperties, shallowCopy, arrayify, concat, stripZeros, zeroPad, isBytes, isBytesLike, defaultPath, HDNode, SigningKey, SigningKeyED, Interface, LogDescription, TransactionDescription, base58, base64, hexlify, isHexString, hexConcat, hexStripZeros, hexValue, hexZeroPad, hexDataLength, hexDataSlice, nameprep, _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String, Utf8ErrorFuncs, formatBytes32String, parseBytes32String, hashMessage, id, _TypedDataEncoder, getAddress, getChecksumAddress, getIcapAddress, getCreate2Address, isAddress, formatHbar, parseHbar, formatUnits, parseUnits, commify, computeHmac, keccak256, ripemd160, sha256, sha512, randomBytes, shuffled, solidityPack, solidityKeccak256, soliditySha256, splitSignature, joinSignature, accessListify, parseTransaction, TransactionTypes, getJsonWalletAddress, computeAlias, computeAddress, computePublicKey, recoverPublicKey, verifyMessage, getAccountPath, mnemonicToEntropy, entropyToMnemonic, isValidMnemonic, mnemonicToSeed, 
 ////////////////////////
 // Enums
 SupportedAlgorithm, UnicodeNormalizationForm, Utf8ErrorReason, Indexed, 

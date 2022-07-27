@@ -20,6 +20,7 @@ import { accessListify, computeAlias, parse as parseTransaction, TransactionType
 import { commify, formatHbar, parseHbar, formatUnits, parseUnits } from "@hethers/units";
 import { verifyMessage } from "@hethers/wallet";
 import { _fetchData, fetchJson, poll } from "@ethersproject/web";
+import { computeAddress } from "@ethersproject/transactions";
 
 ////////////////////////
 // Enums
@@ -153,6 +154,7 @@ export {
     getJsonWalletAddress,
 
     computeAlias,
+    computeAddress,
 
     computePublicKey,
     recoverPublicKey,
