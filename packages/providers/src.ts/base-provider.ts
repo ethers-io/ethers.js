@@ -539,6 +539,7 @@ export class Resolver implements EnsResolver {
 
                     case "erc721":
                     case "erc1155": {
+                        let isNftOwner = false;
                         // Depending on the ERC type, use tokenURI(uint256) or url(uint256)
                         const selector = (scheme === "erc721") ? "0xc87b56dd": "0x0e89341c";
                         linkage.push({ type: scheme, content: avatar });
@@ -558,7 +559,7 @@ export class Resolver implements EnsResolver {
                             const tokenOwner = this.provider.formatter.callAddress(await this.provider.call({
                                 to: addr, data: hexConcat([ "0x6352211e", tokenId ])
                             }));
-                            if (owner !== tokenOwner) { return null; }
+                            if (owner === tokenOwner) { isNftOwner = true; }
                             linkage.push({ type: "owner", content: tokenOwner });
 
                         } else if (scheme === "erc1155") {
@@ -566,7 +567,7 @@ export class Resolver implements EnsResolver {
                             const balance = BigNumber.from(await this.provider.call({
                                 to: addr, data: hexConcat([ "0x00fdd58e", hexZeroPad(owner, 32), tokenId ])
                             }));
-                            if (balance.isZero()) { return null; }
+                            if (balance.gt(0)) { isNftOwner = true; }
                             linkage.push({ type: "balance", content: balance.toString() });
                         }
 
@@ -614,6 +615,7 @@ export class Resolver implements EnsResolver {
                         }
 
                         linkage.push({ type: "url", content: imageUrl });
+                        linkage.push({ type: "isNftOwner", content: isNftOwner.toString() });
 
                         return { linkage, url: imageUrl };
                     }
