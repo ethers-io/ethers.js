@@ -86,7 +86,7 @@ function validateMemo(memo, memoType) {
     }
 }
 export function serializeHederaTransaction(transaction, pubKey) {
-    var _a, _b;
+    var _a, _b, _c, _d;
     let tx;
     const arrayifiedData = transaction.data ? arrayify(transaction.data) : new Uint8Array();
     const gas = numberify(transaction.gasLimit ? transaction.gasLimit : 0);
@@ -115,6 +115,7 @@ export function serializeHederaTransaction(transaction, pubKey) {
                 .setBytecodeFileId(transaction.customData.bytecodeFileId)
                 .setConstructorParameters(arrayifiedData)
                 .setInitialBalance((_b = transaction.value) === null || _b === void 0 ? void 0 : _b.toString())
+                .setMaxAutomaticTokenAssociations((_d = (_c = transaction.customData) === null || _c === void 0 ? void 0 : _c.maxAutomaticTokenAssociations) !== null && _d !== void 0 ? _d : 0)
                 .setGas(gas);
             if (transaction.customData.contractAdminKey) {
                 const inputKey = transaction.customData.contractAdminKey;

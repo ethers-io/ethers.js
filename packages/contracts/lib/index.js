@@ -1021,6 +1021,7 @@ var ContractFactory = /** @class */ (function () {
         (0, properties_1.defineReadOnly)(this, "signer", signer || null);
     }
     ContractFactory.prototype.getDeployTransaction = function () {
+        var _a;
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
@@ -1036,7 +1037,7 @@ var ContractFactory = /** @class */ (function () {
         }
         // Allow only these to be overwritten in a deployment transaction
         Object.keys(contractCreateTx).forEach(function (key) {
-            if (["gasLimit", "value"].indexOf(key) > -1) {
+            if (["gasLimit", "value", "customData"].indexOf(key) > -1) {
                 return;
             }
             logger.throwError("cannot override " + key, logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
@@ -1055,7 +1056,7 @@ var ContractFactory = /** @class */ (function () {
         contractCreateTx = __assign(__assign({}, contractCreateTx), { data: (0, bytes_1.hexlify)((0, bytes_1.concat)([
                 this.bytecode,
                 this.interface.encodeDeploy(args)
-            ])), customData: {} });
+            ])), customData: (_a = contractCreateTx.customData) !== null && _a !== void 0 ? _a : {} });
         return contractCreateTx;
     };
     ContractFactory.prototype.deploy = function () {

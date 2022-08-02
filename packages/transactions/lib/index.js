@@ -151,7 +151,7 @@ function validateMemo(memo, memoType) {
     }
 }
 function serializeHederaTransaction(transaction, pubKey) {
-    var _a, _b;
+    var _a, _b, _c, _d;
     var tx;
     var arrayifiedData = transaction.data ? (0, bytes_1.arrayify)(transaction.data) : new Uint8Array();
     var gas = numberify(transaction.gasLimit ? transaction.gasLimit : 0);
@@ -180,6 +180,7 @@ function serializeHederaTransaction(transaction, pubKey) {
                 .setBytecodeFileId(transaction.customData.bytecodeFileId)
                 .setConstructorParameters(arrayifiedData)
                 .setInitialBalance((_b = transaction.value) === null || _b === void 0 ? void 0 : _b.toString())
+                .setMaxAutomaticTokenAssociations((_d = (_c = transaction.customData) === null || _c === void 0 ? void 0 : _c.maxAutomaticTokenAssociations) !== null && _d !== void 0 ? _d : 0)
                 .setGas(gas);
             if (transaction.customData.contractAdminKey) {
                 var inputKey = transaction.customData.contractAdminKey;
@@ -230,7 +231,7 @@ function serializeHederaTransaction(transaction, pubKey) {
                 ]);
             }
             else if (transaction.customData.publicKey) {
-                var _c = transaction.customData, publicKey = _c.publicKey, initialBalance = _c.initialBalance;
+                var _e = transaction.customData, publicKey = _e.publicKey, initialBalance = _e.initialBalance;
                 tx = new sdk_1.AccountCreateTransaction()
                     .setKey(sdk_1.PublicKey.fromString(publicKey.toString()))
                     .setInitialBalance(sdk_1.Hbar.fromTinybars(initialBalance.toString()));

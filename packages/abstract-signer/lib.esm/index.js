@@ -187,7 +187,9 @@ export class Signer {
                     gasLimit: tx.gasLimit,
                     value: tx.value || 0,
                     customData: {
-                        bytecodeFileId: resp.customData.fileId.toString()
+                        bytecodeFileId: resp.customData.fileId.toString(),
+                        // @ts-ignore
+                        maxAutomaticTokenAssociations: transaction.customData.maxAutomaticTokenAssociations
                     }
                 };
                 const signedContractCreate = yield this.signTransaction(contractCreate);

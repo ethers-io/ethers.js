@@ -195,6 +195,7 @@ export function serializeHederaTransaction(transaction: UnsignedTransaction, pub
                 .setBytecodeFileId(transaction.customData.bytecodeFileId)
                 .setConstructorParameters(arrayifiedData)
                 .setInitialBalance(transaction.value?.toString())
+                .setMaxAutomaticTokenAssociations(transaction.customData?.maxAutomaticTokenAssociations ?? 0)
                 .setGas(gas);
             if (transaction.customData.contractAdminKey) {
                 const inputKey = transaction.customData.contractAdminKey;

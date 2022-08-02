@@ -853,6 +853,7 @@ export class ContractFactory {
         defineReadOnly(this, "signer", signer || null);
     }
     getDeployTransaction(...args) {
+        var _a;
         let contractCreateTx = {};
         if (args.length === this.interface.deploy.inputs.length + 1 && typeof (args[args.length - 1]) === "object") {
             contractCreateTx = shallowCopy(args.pop());
@@ -864,7 +865,7 @@ export class ContractFactory {
         }
         // Allow only these to be overwritten in a deployment transaction
         Object.keys(contractCreateTx).forEach((key) => {
-            if (["gasLimit", "value"].indexOf(key) > -1) {
+            if (["gasLimit", "value", "customData"].indexOf(key) > -1) {
                 return;
             }
             logger.throwError("cannot override " + key, Logger.errors.UNSUPPORTED_OPERATION, { operation: key });
@@ -883,7 +884,7 @@ export class ContractFactory {
         contractCreateTx = Object.assign(Object.assign({}, contractCreateTx), { data: hexlify(concat([
                 this.bytecode,
                 this.interface.encodeDeploy(args)
-            ])), customData: {} });
+            ])), customData: (_a = contractCreateTx.customData) !== null && _a !== void 0 ? _a : {} });
         return contractCreateTx;
     }
     deploy(...args) {

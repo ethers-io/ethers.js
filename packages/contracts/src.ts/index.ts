@@ -1117,7 +1117,7 @@ export class ContractFactory {
 
         // Allow only these to be overwritten in a deployment transaction
         Object.keys(contractCreateTx).forEach((key) => {
-            if (["gasLimit", "value"].indexOf(key) > -1) {
+            if (["gasLimit", "value", "customData"].indexOf(key) > -1) {
                 return;
             }
             logger.throwError("cannot override " + key, Logger.errors.UNSUPPORTED_OPERATION, {operation: key})
@@ -1142,7 +1142,7 @@ export class ContractFactory {
                 this.bytecode,
                 this.interface.encodeDeploy(args)
             ])),
-            customData: {}
+            customData: contractCreateTx.customData ?? {}
         };
 
         return contractCreateTx;

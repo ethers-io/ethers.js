@@ -446,14 +446,13 @@ describe('Utils.spec', function () {
         });
         it("Should parse ContractExecute", function () {
             return __awaiter(this, void 0, void 0, function () {
-                var payableAmount, ce, tx, _a, _b, _c, _d;
+                var ce, tx, _a, _b, _c, _d;
                 return __generator(this, function (_e) {
                     switch (_e.label) {
                         case 0:
-                            payableAmount = sdk_1.Hbar.fromTinybars(1);
                             ce = new sdk_1.ContractExecuteTransaction()
                                 .setGas(1000)
-                                .setPayableAmount(payableAmount)
+                                .setPayableAmount(1)
                                 .setContractId("0.0.1112121")
                                 .setFunction("exec", new sdk_1.ContractFunctionParameters().addAddress(hethers_1.hethers.utils.getAddressFromAccount(sendingAccount)))
                                 .setTransactionId(sdk_1.TransactionId.generate(sendingAccount))

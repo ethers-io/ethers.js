@@ -322,7 +322,9 @@ var Signer = /** @class */ (function () {
                             gasLimit: tx.gasLimit,
                             value: tx.value || 0,
                             customData: {
-                                bytecodeFileId: resp.customData.fileId.toString()
+                                bytecodeFileId: resp.customData.fileId.toString(),
+                                // @ts-ignore
+                                maxAutomaticTokenAssociations: transaction.customData.maxAutomaticTokenAssociations
                             }
                         };
                         return [4 /*yield*/, this.signTransaction(contractCreate)];
