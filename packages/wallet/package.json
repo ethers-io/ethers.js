@@ -11,8 +11,8 @@
     "@hethers/abstract-provider": "1.1.2",
     "@hethers/abstract-signer": "1.1.3",
     "@hethers/address": "1.1.0",
-    "@hethers/hdnode": "1.1.2",
-    "@hethers/json-wallets": "1.1.2",
+    "@hethers/hdnode": "1.1.3",
+    "@hethers/json-wallets": "1.1.3",
     "@hethers/logger": "1.1.0",
     "@hethers/signing-key": "1.1.0",
     "@hethers/transactions": "1.1.2"
@@ -41,7 +41,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x7557828de539c4f57d1e317335f26a2ec70e27fa6749f5faf5a72980bfa49877",
+  "tarballHash": "0x2132e43961d2becd5645bb0778b90164fcca58a4bffbd8d905ea4087ccc57e39",
   "types": "./lib/index.d.ts",
   "version": "1.1.3"
 }

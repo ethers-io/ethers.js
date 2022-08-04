@@ -8,7 +8,7 @@
     "@ethersproject/strings": "5.5.0",
     "@hethers/abstract-signer": "1.1.3",
     "@hethers/address": "1.1.0",
-    "@hethers/hdnode": "1.1.2",
+    "@hethers/hdnode": "1.1.3",
     "@hethers/logger": "1.1.0",
     "@hethers/transactions": "1.1.2",
     "aes-js": "3.0.0",
@@ -38,7 +38,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xe49fd66b5fd2389bb5c00253538fd566832ccaaa4a422fa7213f411960f31a4b",
+  "tarballHash": "0x4da81ab78b03d786e9438e3b331f9785dfeb42fb97a85b69846b37ab95555d63",
   "types": "./lib/index.d.ts",
-  "version": "1.1.2"
+  "version": "1.1.3"
 }
