@@ -1077,6 +1077,19 @@ describe("Extra tests", function() {
         });
         assert.ok(!!value);
     });
+
+    it('tests that providing the address for USDT returns the ABI from etherscan, creates a contract instance and the name field is returned correctly', async function() {
+      this.timeout(10000);
+      const provider = new ethers.providers.EtherscanProvider();
+  
+      const usdtAddress = "0xdac17f958d2ee523a2206206994597c13d831ec7";
+  
+      const contract = await provider.getContract(usdtAddress);
+  
+      const name = await contract.name();
+  
+      assert.equal(name, "Tether USD");
+    });
 });
 
 /*

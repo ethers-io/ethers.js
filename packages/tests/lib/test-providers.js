@@ -1190,6 +1190,27 @@ describe("Extra tests", function () {
             });
         });
     });
+    it('tests that providing the address for USDT returns the ABI from etherscan, creates a contract instance and the name field is returned correctly', function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var provider, usdtAddress, contract, name;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(10000);
+                        provider = new ethers_1.ethers.providers.EtherscanProvider();
+                        usdtAddress = "0xdac17f958d2ee523a2206206994597c13d831ec7";
+                        return [4 /*yield*/, provider.getContract(usdtAddress)];
+                    case 1:
+                        contract = _a.sent();
+                        return [4 /*yield*/, contract.name()];
+                    case 2:
+                        name = _a.sent();
+                        assert_1.default.equal(name, "Tether USD");
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
 });
 /*
 describe("Test extra Etherscan operations", function() {

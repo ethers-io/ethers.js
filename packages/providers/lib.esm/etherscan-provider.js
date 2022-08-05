@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { hexlify, hexValue, isHexString } from "@ethersproject/bytes";
+import { Contract } from "@ethersproject/contracts";
 import { deepCopy, defineReadOnly } from "@ethersproject/properties";
 import { accessListify } from "@ethersproject/transactions";
 import { fetchJson } from "@ethersproject/web";
@@ -411,6 +412,12 @@ export class EtherscanProvider extends BaseProvider {
                 }
                 return item;
             });
+        });
+    }
+    getContract(address, signer = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.fetch("contract", { action: "getabi", address });
+            return new Contract(address, JSON.parse(response), signer !== null && signer !== void 0 ? signer : this);
         });
     }
     isCommunityResource() {

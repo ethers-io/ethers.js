@@ -22355,6 +22355,12 @@ class EtherscanProvider extends BaseProvider {
             });
         });
     }
+    getContract(address, signer = null) {
+        return __awaiter$e(this, void 0, void 0, function* () {
+            const response = yield this.fetch("contract", { action: "getabi", address });
+            return new Contract(address, JSON.parse(response), signer !== null && signer !== void 0 ? signer : this);
+        });
+    }
     isCommunityResource() {
         return (this.apiKey === defaultApiKey$2);
     }

@@ -28701,6 +28701,7 @@
 
 
 
+
 	var logger = new lib.Logger(_version$I.version);
 
 	// The transaction has already been sanitized by the calls in Provider
@@ -29152,6 +29153,20 @@
 	                                }
 	                                return item;
 	                            })];
+	                }
+	            });
+	        });
+	    };
+	    EtherscanProvider.prototype.getContract = function (address, signer) {
+	        if (signer === void 0) { signer = null; }
+	        return __awaiter(this, void 0, void 0, function () {
+	            var response;
+	            return __generator(this, function (_a) {
+	                switch (_a.label) {
+	                    case 0: return [4 /*yield*/, this.fetch("contract", { action: "getabi", address: address })];
+	                    case 1:
+	                        response = _a.sent();
+	                        return [2 /*return*/, new lib$f.Contract(address, JSON.parse(response), signer !== null && signer !== void 0 ? signer : this)];
 	                }
 	            });
 	        });

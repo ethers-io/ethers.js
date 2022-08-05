@@ -1,7 +1,9 @@
 "use strict";
 
 import { BlockTag, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
+import { Signer } from "@ethersproject/abstract-signer";
 import { hexlify, hexValue, isHexString } from "@ethersproject/bytes";
+import { Contract } from "@ethersproject/contracts";
 import { Network, Networkish } from "@ethersproject/networks";
 import { deepCopy, defineReadOnly } from "@ethersproject/properties";
 import { accessListify } from "@ethersproject/transactions";
@@ -442,6 +444,12 @@ export class EtherscanProvider extends BaseProvider{
             if (tx.timeStamp) { item.timestamp = parseInt(tx.timeStamp); }
             return item;
         });
+    }
+
+    async getContract(address: string, signer: Signer = null): Promise<Contract> {
+      const response = await this.fetch("contract", { action: "getabi", address });
+
+      return new Contract(address, JSON.parse(response), signer ?? this);
     }
 
     isCommunityResource(): boolean {

@@ -53,6 +53,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EtherscanProvider = void 0;
 var bytes_1 = require("@ethersproject/bytes");
+var contracts_1 = require("@ethersproject/contracts");
 var properties_1 = require("@ethersproject/properties");
 var transactions_1 = require("@ethersproject/transactions");
 var web_1 = require("@ethersproject/web");
@@ -510,6 +511,20 @@ var EtherscanProvider = /** @class */ (function (_super) {
                                 }
                                 return item;
                             })];
+                }
+            });
+        });
+    };
+    EtherscanProvider.prototype.getContract = function (address, signer) {
+        if (signer === void 0) { signer = null; }
+        return __awaiter(this, void 0, void 0, function () {
+            var response;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.fetch("contract", { action: "getabi", address: address })];
+                    case 1:
+                        response = _a.sent();
+                        return [2 /*return*/, new contracts_1.Contract(address, JSON.parse(response), signer !== null && signer !== void 0 ? signer : this)];
                 }
             });
         });
