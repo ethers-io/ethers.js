@@ -26,9 +26,9 @@ function checkNetworks(networks) {
     let result = null;
     for (let i = 0; i < networks.length; i++) {
         const network = networks[i];
-        // Null! We do not know our network; bail.
+        // make other providers continue checking network
         if (network == null) {
-            return null;
+            continue;
         }
         if (result) {
             // Make sure the network matches the previous networks
@@ -399,8 +399,30 @@ export class FallbackProvider extends BaseProvider {
     }
     detectNetwork() {
         return __awaiter(this, void 0, void 0, function* () {
-            const networks = yield Promise.all(this.providerConfigs.map((c) => c.provider.getNetwork()));
-            return checkNetworks(networks);
+            const startTime = Date.now();
+            // promise race to make response return faster
+            const network = yield Promise.race(this.providerConfigs.map((c) => __awaiter(this, void 0, void 0, function* () {
+                return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                    try {
+                        const network = yield c.provider.getNetwork();
+                        resolve(network);
+                    }
+                    catch (error) {
+                        const now = Date.now();
+                        const elapsed = now - startTime;
+                        // will force reject if no provider returns within 15000 milli seconds
+                        if (elapsed < 15000) {
+                            setTimeout(reject, 15000 - elapsed, error);
+                        }
+                        else {
+                            reject(error);
+                        }
+                    }
+                }));
+            }))).catch((err) => {
+                logger.throwError('unable to detect network', err.message);
+            });
+            return network;
         });
     }
     perform(method, params) {
@@ -553,7 +575,8 @@ export class FallbackProvider extends BaseProvider {
                         }
                         props[name] = e[name];
                     });
-                    logger.throwError(e.reason || e.message, errorCode, props);
+                    // e.message contains more useful message than e.reason
+                    logger.throwError(e.message || e.reason, errorCode, props);
                 });
                 // All configs have run to completion; we will never get more data
                 if (configs.filter((c) => !c.done).length === 0) {
