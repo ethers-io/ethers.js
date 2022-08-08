@@ -70,9 +70,9 @@ function checkNetworks(networks) {
     var result = null;
     for (var i = 0; i < networks.length; i++) {
         var network = networks[i];
-        // Null! We do not know our network; bail.
+        // make other providers continue checking network
         if (network == null) {
-            return null;
+            continue;
         }
         if (result) {
             // Make sure the network matches the previous networks
@@ -472,13 +472,49 @@ var FallbackProvider = /** @class */ (function (_super) {
     }
     FallbackProvider.prototype.detectNetwork = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var networks;
+            var startTime, network;
+            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, Promise.all(this.providerConfigs.map(function (c) { return c.provider.getNetwork(); }))];
+                    case 0:
+                        startTime = Date.now();
+                        return [4 /*yield*/, Promise.race(this.providerConfigs.map(function (c) { return __awaiter(_this, void 0, void 0, function () {
+                                var _this = this;
+                                return __generator(this, function (_a) {
+                                    return [2 /*return*/, new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+                                            var network_1, error_1, now_1, elapsed;
+                                            return __generator(this, function (_a) {
+                                                switch (_a.label) {
+                                                    case 0:
+                                                        _a.trys.push([0, 2, , 3]);
+                                                        return [4 /*yield*/, c.provider.getNetwork()];
+                                                    case 1:
+                                                        network_1 = _a.sent();
+                                                        resolve(network_1);
+                                                        return [3 /*break*/, 3];
+                                                    case 2:
+                                                        error_1 = _a.sent();
+                                                        now_1 = Date.now();
+                                                        elapsed = now_1 - startTime;
+                                                        // will force reject if no provider returns within 15000 milli seconds
+                                                        if (elapsed < 15000) {
+                                                            setTimeout(reject, 15000 - elapsed, error_1);
+                                                        }
+                                                        else {
+                                                            reject(error_1);
+                                                        }
+                                                        return [3 /*break*/, 3];
+                                                    case 3: return [2 /*return*/];
+                                                }
+                                            });
+                                        }); })];
+                                });
+                            }); })).catch(function (err) {
+                                logger.throwError('unable to detect network', err.message);
+                            })];
                     case 1:
-                        networks = _a.sent();
-                        return [2 /*return*/, checkNetworks(networks)];
+                        network = _a.sent();
+                        return [2 /*return*/, network];
                 }
             });
         });
@@ -647,7 +683,8 @@ var FallbackProvider = /** @class */ (function (_super) {
                                                 }
                                                 props[name] = e[name];
                                             });
-                                            logger.throwError(e.reason || e.message, errorCode, props);
+                                            // e.message contains more useful message than e.reason
+                                            logger.throwError(e.message || e.reason, errorCode, props);
                                         });
                                         // All configs have run to completion; we will never get more data
                                         if (configs.filter(function (c) { return !c.done; }).length === 0) {

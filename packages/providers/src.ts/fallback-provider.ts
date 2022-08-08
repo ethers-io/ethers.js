@@ -25,8 +25,8 @@ function checkNetworks(networks: Array<Network>): Network {
     for (let i = 0; i < networks.length; i++) {
         const network = networks[i];
 
-        // Null! We do not know our network; bail.
-        if (network == null) { return null; }
+        // make other providers continue checking network
+        if (network == null) { continue; }
 
         if (result) {
             // Make sure the network matches the previous networks
@@ -467,8 +467,30 @@ export class FallbackProvider extends BaseProvider {
     }
 
     async detectNetwork(): Promise<Network> {
-        const networks = await Promise.all(this.providerConfigs.map((c) => c.provider.getNetwork()));
-        return checkNetworks(networks);
+        const startTime = Date.now();
+        // promise race to make response return faster
+        const network = await Promise.race(
+            this.providerConfigs.map(async (c) => {
+                return new Promise(async (resolve, reject) => {
+                try {
+                    const network: Network = await c.provider.getNetwork();
+                    resolve(network);
+                } catch (error) {
+                    const now = Date.now();
+                    const elapsed = now - startTime;
+                    // will force reject if no provider returns within 15000 milli seconds
+                    if (elapsed < 15000) {
+                        setTimeout(reject, 15000 - elapsed, error);
+                    } else {
+                        reject(error);
+                    }
+                }
+                });
+            }),
+        ).catch((err) => {
+            logger.throwError('unable to detect network', err.message);
+        });
+        return network as Network;
     }
 
     async perform(method: string, params: { [name: string]: any }): Promise<any> {
@@ -626,7 +648,8 @@ export class FallbackProvider extends BaseProvider {
                     props[name] = e[name];
                 });
 
-                logger.throwError(e.reason || e.message, <any>errorCode, props);
+                // e.message contains more useful message than e.reason
+                logger.throwError(e.message || e.reason, <any>errorCode, props);
             });
 
             // All configs have run to completion; we will never get more data
