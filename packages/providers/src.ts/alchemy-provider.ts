@@ -88,6 +88,9 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
             case "optimism-kovan":
                 host = "opt-kovan.g.alchemy.com/v2/";
                 break;
+            case "optimism-goerli":
+                host = "opt-goerli.g.alchemy.com/v2/"
+                break;
             default:
                logger.throwArgumentError("unsupported network", "network", arguments[0]);
         }
