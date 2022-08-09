@@ -810,7 +810,7 @@ var BaseProvider = /** @class */ (function (_super) {
      */
     BaseProvider.prototype.getLogs = function (filter) {
         return __awaiter(this, void 0, void 0, function () {
-            var params, fromTimestampFilter, toTimestampFilter, limit, oversizeResponseLength, epContractsLogs, i, topic, requestUrl, data, mappedLogs, error_6, errorParams;
+            var params, fromTimestampFilter, toTimestampFilter, limit, epContractsLogs, i, topic, requestUrl, data, mappedLogs, nextLink, data_1, error_6, errorParams;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -824,8 +824,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         fromTimestampFilter = '&timestamp=gte%3A' + params.filter.fromTimestamp;
                         toTimestampFilter = '&timestamp=lte%3A' + params.filter.toTimestamp;
                         limit = 100;
-                        oversizeResponseLength = limit + 1;
-                        epContractsLogs = '/api/v1/contracts/' + params.filter.address + '/results/logs?limit=' + oversizeResponseLength;
+                        epContractsLogs = '/api/v1/contracts/' + params.filter.address + '/results/logs?limit=' + limit;
                         if (params.filter.topics && params.filter.topics.length > 0) {
                             for (i = 0; i < params.filter.topics.length; i++) {
                                 topic = params.filter.topics[i];
@@ -840,27 +839,35 @@ var BaseProvider = /** @class */ (function (_super) {
                         requestUrl = epContractsLogs + toTimestampFilter + fromTimestampFilter;
                         _a.label = 2;
                     case 2:
-                        _a.trys.push([2, 4, , 5]);
+                        _a.trys.push([2, 8, , 9]);
                         return [4 /*yield*/, this._makeRequest(requestUrl)];
                     case 3:
                         data = (_a.sent()).data;
-                        if (data) {
-                            mappedLogs = this.formatter.logsMapper(data.logs);
-                            if (mappedLogs.length == oversizeResponseLength) {
-                                logger.throwError("query returned more than " + limit + " results", logger_1.Logger.errors.SERVER_ERROR);
-                            }
-                            return [2 /*return*/, formatter_1.Formatter.arrayOf(this.formatter.filterLog.bind(this.formatter))(mappedLogs)];
-                        }
-                        return [3 /*break*/, 5];
+                        if (!data) return [3 /*break*/, 7];
+                        mappedLogs = this.formatter.logsMapper(data.logs);
+                        nextLink = data.links.next;
+                        _a.label = 4;
                     case 4:
+                        if (!nextLink) return [3 /*break*/, 6];
+                        return [4 /*yield*/, this._makeRequest(nextLink)];
+                    case 5:
+                        data_1 = (_a.sent()).data;
+                        if (!data_1)
+                            return [3 /*break*/, 6];
+                        mappedLogs.concat(this.formatter.logsMapper(data_1.logs));
+                        nextLink = data_1.links.next;
+                        return [3 /*break*/, 4];
+                    case 6: return [2 /*return*/, formatter_1.Formatter.arrayOf(this.formatter.filterLog.bind(this.formatter))(mappedLogs)];
+                    case 7: return [3 /*break*/, 9];
+                    case 8:
                         error_6 = _a.sent();
                         errorParams = { method: "ContractLogsQuery", error: error_6 };
                         if (error_6.response && error_6.response.status != 404) {
                             logger.throwError("bad result from backend", logger_1.Logger.errors.SERVER_ERROR, errorParams);
                         }
                         logger.throwError(error_6.message, error_6.code, errorParams);
-                        return [3 /*break*/, 5];
-                    case 5: return [2 /*return*/, []];
+                        return [3 /*break*/, 9];
+                    case 9: return [2 /*return*/, []];
                 }
             });
         });
