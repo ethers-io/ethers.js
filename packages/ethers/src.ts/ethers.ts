@@ -21,6 +21,7 @@ import { ErrorCode as errors, Logger } from "@ethersproject/logger";
 ////////////////////////
 // Types
 
+import type { TypedDataDomain, TypedDataField } from "@ethersproject/abstract-signer";
 import { BigNumberish } from "@ethersproject/bignumber";
 import { Bytes, BytesLike, Signature } from "@ethersproject/bytes";
 import { Transaction, UnsignedTransaction } from "@ethersproject/transactions";
@@ -106,6 +107,9 @@ export {
     PopulatedTransaction,
 
     ContractInterface,
+
+    TypedDataDomain,
+    TypedDataField,
 
     BigNumberish,
 
