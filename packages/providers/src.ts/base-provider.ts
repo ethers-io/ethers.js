@@ -979,7 +979,7 @@ function mapNetworkToHederaNetworkName(net: Network | string | number | Promise<
 function resolveMirrorNetworkUrl(net: Network): string {
     switch (net.name) {
         case 'mainnet':
-            return 'https://mainnet.mirrornode.hedera.com';
+            return 'https://mainnet-public.mirrornode.hedera.com';
         case 'previewnet':
             return 'https://previewnet.mirrornode.hedera.com';
         case 'testnet':
