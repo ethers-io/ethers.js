@@ -142,6 +142,11 @@ export class Event {
         return (this.tag.indexOf(":") >= 0 || PollableEvents.indexOf(this.tag) >= 0);
     }
 }
+export const DEFAULT_RETRY_OPTIONS = {
+    maxAttempts: 3,
+    waitTime: 2,
+    errorCodes: [400, 408, 429, 500, 502, 503, 504, 511]
+};
 let defaultFormatter = null;
 const MIRROR_NODE_TRANSACTIONS_ENDPOINT = '/api/v1/transactions/';
 const MIRROR_NODE_CONTRACTS_RESULTS_ENDPOINT = '/api/v1/contracts/results/';
@@ -155,7 +160,6 @@ export class BaseProvider extends Provider {
     constructor(network, options) {
         logger.checkNew(new.target, Provider);
         super();
-        this._options = options || {};
         this._events = [];
         this._emittedEvents = {};
         this._previousPollingTimestamps = {};
@@ -163,6 +167,12 @@ export class BaseProvider extends Provider {
         // If network is any, this Provider allows the underlying
         // network to change dynamically, and we auto-detect the
         // current network
+        if (options !== undefined && options !== null) {
+            this._options = Object.keys(options).length !== 0 ? options : { headers: {}, retry: DEFAULT_RETRY_OPTIONS };
+        }
+        else {
+            this._options = { headers: {}, retry: DEFAULT_RETRY_OPTIONS };
+        }
         defineReadOnly(this, "anyNetwork", (network === "any"));
         if (this.anyNetwork) {
             network = this.detectNetwork();
@@ -206,7 +216,44 @@ export class BaseProvider extends Provider {
             }
         }
         this._pollingInterval = 3000;
+        this._configureAxiosInterceptor(this._options);
     }
+    _configureAxiosInterceptor(options) {
+        axios.interceptors.request.use(function (config) {
+            if (!config._retriedRequest) {
+                config._retry = true;
+                config._attempts = 0;
+                config._waitTime = options.retry.waitTime;
+            }
+            return config;
+        }, function (error) {
+            return Promise.reject(error);
+        });
+        axios.interceptors.response.use(response => {
+            return response;
+        }, error => {
+            const { config } = error;
+            const originalRequest = config;
+            if (error.response) {
+                if (this._options.retry.errorCodes.includes(error.response.status) && originalRequest._retry) {
+                    originalRequest._retriedRequest = true;
+                    originalRequest._attempts += 1;
+                    originalRequest._waitTime = originalRequest._waitTime * originalRequest._attempts;
+                    if (originalRequest._attempts === this._options.retry.maxAttempts) {
+                        originalRequest._retry = false;
+                    }
+                    return this._retryRequest(originalRequest._waitTime, originalRequest);
+                }
+            }
+            return Promise.reject(error);
+        });
+    }
+    _retryRequest(seconds, originalRequest) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => resolve(axios(originalRequest)), seconds * 1000);
+        });
+    }
+    ;
     _makeRequest(uri) {
         return axios.get(this._mirrorNodeUrl + uri, { headers: this._options.headers });
     }

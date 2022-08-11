@@ -8,6 +8,14 @@ import { Timestamp, TransactionReceipt as HederaTransactionReceipt } from '@hash
 import { Formatter } from "./formatter";
 import { AccountLike } from "@hethers/address";
 import { AccountId, Client } from "@hashgraph/sdk";
+declare module "axios" {
+    interface AxiosRequestConfig {
+        _retry?: boolean;
+        _retriedRequest?: boolean;
+        _attempts?: number;
+        _waitTime?: number;
+    }
+}
 export declare class Event {
     readonly listener: Listener;
     readonly once: boolean;
@@ -27,7 +35,13 @@ export interface Avatar {
     }>;
 }
 export interface ProviderOptions {
-    headers?: Record<string, string>;
+    headers: Record<string, string>;
+    retry: RetryOptions;
+}
+interface RetryOptions {
+    maxAttempts: number;
+    waitTime: number;
+    errorCodes: Array<number>;
 }
 export declare class BaseProvider extends Provider {
     _networkPromise: Promise<Network>;
@@ -48,6 +62,9 @@ export declare class BaseProvider extends Provider {
     private readonly hederaClient;
     private readonly _mirrorNodeUrl;
     constructor(network: Networkish | Promise<Network> | HederaNetworkConfigLike, options?: ProviderOptions);
+    private _getOptions;
+    private _configureAxiosInterceptor;
+    private _retryRequest;
     private _makeRequest;
     _ready(): Promise<Network>;
     static getFormatter(): Formatter;
@@ -118,4 +135,5 @@ export declare class BaseProvider extends Provider {
     poll(): Promise<void>;
     purgeOldEvents(): void;
 }
+export {};
 //# sourceMappingURL=base-provider.d.ts.map

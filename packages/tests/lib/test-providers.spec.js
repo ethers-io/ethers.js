@@ -872,7 +872,14 @@ describe('Providers.spec', function () {
         });
     });
     describe("Test Hedera Provider Options", function () {
-        var options = { headers: { testHeader: '123' } };
+        var options = {
+            headers: { testHeader: '123' },
+            retry: {
+                maxAttempts: 1,
+                waitTime: 5,
+                errorCodes: [304]
+            }
+        };
         it("DefaultHederaProvider", function () {
             var provider = new providers_1.DefaultHederaProvider(default_hedera_provider_1.HederaNetworks.LOCAL, options);
             assert_1.default.deepStrictEqual(provider._options, options);

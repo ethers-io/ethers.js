@@ -29,6 +29,15 @@ import * as base64 from "@ethersproject/base64";
 
 const ZERO_HEDERA_TIMESTAMP = "1000000000.000000000";
 
+declare module "axios" {
+    export interface AxiosRequestConfig {
+        _retry?: boolean;
+        _retriedRequest?: boolean;
+        _attempts?: number;
+        _waitTime?: number;
+    }
+  }
+
 //////////////////////////////
 // Event Serializeing
 // @ts-ignore
@@ -186,8 +195,21 @@ export interface Avatar {
 }
 
 export interface ProviderOptions {
-    headers?: Record<string, string>
+    headers: Record<string, string>
+    retry: RetryOptions
 }
+
+interface RetryOptions {
+    maxAttempts: number,
+    waitTime: number,
+    errorCodes: Array<number>
+}
+
+const DEFAULT_RETRY_OPTIONS = {
+    maxAttempts: 3,
+    waitTime: 2,
+    errorCodes: [400, 408, 429, 500, 502, 503, 504, 511]
+  };
 
 let defaultFormatter: Formatter = null;
 const MIRROR_NODE_TRANSACTIONS_ENDPOINT = '/api/v1/transactions/';
@@ -218,7 +240,6 @@ export class BaseProvider extends Provider {
     _previousPollingTimestamps: { [key: string]: Timestamp }
 
     _options: ProviderOptions;
-
     readonly anyNetwork: boolean;
     private readonly hederaClient: Client;
     private readonly _mirrorNodeUrl: string; // initial mirror node URL, which is resolved from the provider's network
@@ -226,10 +247,9 @@ export class BaseProvider extends Provider {
     constructor(network: Networkish | Promise<Network> | HederaNetworkConfigLike, options?: ProviderOptions) {
         logger.checkNew(new.target, Provider);
         super();
-
-        this._options = options || {};
         this._events = [];
         this._emittedEvents = {};
+        this._options = this._getOptions(options);
         this._previousPollingTimestamps = {};
         this.formatter = new.target.getFormatter();
         // If network is any, this Provider allows the underlying
@@ -239,7 +259,6 @@ export class BaseProvider extends Provider {
         if (this.anyNetwork) {
             network = this.detectNetwork();
         }
-
         if (network instanceof Promise) {
             this._networkPromise = network;
             // Squash any "unhandled promise" errors; that do not need to be handled
@@ -278,7 +297,58 @@ export class BaseProvider extends Provider {
         }
 
         this._pollingInterval = 3000;
+        this._configureAxiosInterceptor(this._options);
     }
+
+    private _getOptions(options: ProviderOptions){
+        let tmpOptions = (typeof options === 'object' && Object.keys(options).length) 
+        ? options 
+        : { headers : {}, retry: DEFAULT_RETRY_OPTIONS };
+        
+        tmpOptions.retry = (typeof options === 'object' && Object.keys(options).length === 3) 
+        ? tmpOptions.retry 
+        : DEFAULT_RETRY_OPTIONS;
+        
+        return tmpOptions;
+    }
+
+    private _configureAxiosInterceptor(options: ProviderOptions){
+        axios.interceptors.request.use(function (config) {
+            if(!config._retriedRequest){
+                config._retry = true;
+                config._attempts = 0;
+                config._waitTime = options.retry.waitTime ;
+            }
+            return config;
+          }, function (error) {
+            return Promise.reject(error);
+          });
+
+        axios.interceptors.response.use(response => {
+            return response;
+        }, error => {
+            const { config} = error;
+            const originalRequest = config;
+            if (error.response) {
+                if (this._options.retry.errorCodes.includes(error.response.status) && originalRequest._retry) {
+                    originalRequest._retriedRequest = true;
+                    originalRequest._attempts += 1;
+                    originalRequest._waitTime = originalRequest._waitTime * originalRequest._attempts;
+                    if(originalRequest._attempts >= this._options.retry.maxAttempts){
+                        originalRequest._retry = false;
+                    }
+                    return this._retryRequest(originalRequest._waitTime, originalRequest);
+                }
+            }
+            return Promise.reject(error);
+        });
+    }
+
+    private _retryRequest(seconds: number, originalRequest: any){
+        return new Promise((resolve, reject) => {
+            setTimeout(() => resolve(axios(originalRequest)), seconds * 1000);
+        });
+    };
 
     private _makeRequest(uri: string): Promise<AxiosResponse<any, any>> {
         return axios.get(this._mirrorNodeUrl + uri, { headers: this._options.headers });
