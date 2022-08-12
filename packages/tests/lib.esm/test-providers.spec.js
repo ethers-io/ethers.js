@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import assert from "assert";
-// import Web3HttpProvider from "web3-providers-http";
 import { hethers } from "@hashgraph/hethers";
 import { BigNumber } from "@ethersproject/bignumber";
 import { DefaultHederaProvider } from "@hethers/providers";
@@ -511,45 +510,6 @@ function waiter(duration) {
         }
     });
 }
-// const allNetworks = [ "default", "homestead", "ropsten", "rinkeby", "kovan", "goerli" ];
-// // We use separate API keys because otherwise the testcases sometimes
-// // fail during CI because our default keys are pretty heavily used
-// const _ApiKeys: Record<string, string> = {
-//     alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
-//     etherscan: "FPFGK6JSW2UHJJ2666FG93KP7WC999MNW7",
-//     infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",
-// };
-// const _ApiKeysPocket: Record<string, string> = {
-//     homestead: "6004bcd10040261633ade990",
-//     ropsten: "6004bd4d0040261633ade991",
-//     rinkeby: "6004bda20040261633ade994",
-//     goerli: "6004bd860040261633ade992",
-// };
-// type ApiKeySet = {
-//     alchemy: string;
-//     etherscan: string;
-//     infura: string;
-//     pocket: string;
-// };
-// function getApiKeys(network: string): ApiKeySet {
-//     if (network === "default" || network == null) { network = "homestead"; }
-//     const apiKeys = hethers.utils.shallowCopy(_ApiKeys);
-//     apiKeys.pocket = _ApiKeysPocket[network];
-//     return <ApiKeySet>apiKeys;
-// }
-// @ts-ignore
-// const providerFunctions: Array<ProviderDescription> = [
-//     {
-//         name: "getDefaultProvider",
-//         networks: allNetworks,
-//         create: (network: string) => {
-//             if (network == "default") {
-//                 return hethers.getDefaultProvider("homestead", getApiKeys(network));
-//             }
-//             return hethers.getDefaultProvider(network, getApiKeys(network));
-//         }
-//     },
-// ];
 // This wallet can be funded and used for various test cases
 const fundWallet = hethers.Wallet.createRandom();
 const testFunctions = [];
@@ -687,30 +647,6 @@ testFunctions.push({
         return false;
     },
     execute: (provider) => __awaiter(void 0, void 0, void 0, function* () {
-        // const gasPrice = (await provider.getGasPrice()).mul(10);
-        //
-        // const wallet = fundWallet.connect(provider);
-        //
-        // const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
-        //
-        // await waiter(3000);
-        //
-        // const b0 = await provider.getBalance(wallet.address);
-        // assert.ok(b0.gt(hethers.constants.Zero), "balance is non-zero");
-        //
-        // const tx = await wallet.sendTransaction({
-        //     type: 0,
-        //     to: addr,
-        //     value: 123,
-        //     gasPrice: gasPrice
-        // });
-        //
-        // await tx.wait();
-        //
-        // await waiter(3000);
-        //
-        // const b1 = await provider.getBalance(wallet.address);
-        // assert.ok(b0.gt(b1), "balance is decreased");
     })
 });
 testFunctions.push({
@@ -722,36 +658,6 @@ testFunctions.push({
         return false;
     },
     execute: (provider) => __awaiter(void 0, void 0, void 0, function* () {
-        // const gasPrice = (await provider.getGasPrice()).mul(10);
-        //
-        // const wallet = fundWallet.connect(provider);
-        //
-        // const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
-        //
-        // await waiter(3000);
-        //
-        // const b0 = await provider.getBalance(wallet.address);
-        // assert.ok(b0.gt(hethers.constants.Zero), "balance is non-zero");
-        //
-        // const tx = await wallet.sendTransaction({
-        //     type: 1,
-        //     accessList: {
-        //         "0x8ba1f109551bD432803012645Ac136ddd64DBA72": [
-        //             "0x0000000000000000000000000000000000000000000000000000000000000000",
-        //             "0x0000000000000000000000000000000000000000000000000000000000000042",
-        //         ]
-        //     },
-        //     to: addr,
-        //     value: 123,
-        //     gasPrice: gasPrice
-        // });
-        //
-        // await tx.wait();
-        //
-        // await waiter(3000);
-        //
-        // const b1 = await provider.getBalance(wallet.address);
-        // assert.ok(b0.gt(b1), "balance is decreased");
     })
 });
 testFunctions.push({
@@ -786,98 +692,6 @@ testFunctions.push({
         assert.ok(b0.gt(b1), "balance is decreased");
     })
 });
-// TODO: methods here should be tested when they are ready
-// describe("Test Provider Methods", function() {
-//     let fundReceipt: Promise<hethers.providers.TransactionReceipt> = null;
-//     const faucet = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
-//
-//     before(async function() {
-//         this.timeout(300000);
-//
-//         // Get some ether from the faucet
-//         const provider = new hethers.providers.InfuraProvider("ropsten", getApiKeys("ropsten").infura);
-//         const funder = await hethers.utils.fetchJson(`https:/\/api.hethers.io/api/v1/?action=fundAccount&address=${ fundWallet.address.toLowerCase() }`);
-//         fundReceipt = provider.waitForTransaction(funder.hash);
-//         fundReceipt.then((receipt) => {
-//             console.log(`*** Funded: ${ fundWallet.address }`);
-//         });
-//     });
-//
-//     after(async function() {
-//         this.timeout(300000);
-//
-//         // Wait until the funding is complete
-//         await fundReceipt;
-//
-//         // Refund all unused ether to the faucet
-//         const provider = new hethers.providers.InfuraProvider("ropsten", getApiKeys("ropsten").infura);
-//         const gasPrice = await provider.getGasPrice();
-//         const balance = await provider.getBalance(fundWallet.address);
-//         const tx = await fundWallet.connect(provider).sendTransaction({
-//             to: faucet,
-//             gasLimit: 21000,
-//             gasPrice: gasPrice,
-//             value: balance.sub(gasPrice.mul(21000))
-//         });
-//
-//         console.log(`*** Sweep Transaction:`, tx.hash);
-//     });
-//
-//     providerFunctions.forEach(({ name, networks, create}) => {
-//
-//         networks.forEach((network) => {
-//             const provider = create(network);
-//
-//             testFunctions.forEach((test) => {
-//
-//                 // Skip tests not supported on this network
-//                 if (test.networks.indexOf(network) === -1) { return; }
-//                 if (test.checkSkip && test.checkSkip(name, network, test)) {
-//                     return;
-//                 }
-//
-//                 // How many attempts to try?
-//                 const attempts = (test.attempts != null) ? test.attempts: 3;
-//                 const timeout = (test.timeout != null) ? test.timeout: 60;
-//                 const extras = (test.extras || []).reduce((accum, key) => {
-//                     accum[key] = true;
-//                     return accum;
-//                 }, <Record<string, boolean>>{ });
-//
-//                 xit(`${ name }.${ network ? network: "default" } ${ test.name}`, async function() {
-//                     // Multiply by 2 to make sure this never happens; we want our
-//                     // timeout logic to success, not allow a done() called multiple
-//                     // times because our logic returns after the timeout has occurred.
-//                     this.timeout(2 * (1000 + timeout * 1000 * attempts));
-//                     // Wait for the funding transaction to be mined
-//                     if (extras.funding) { await fundReceipt; }
-//
-//                     // We wait at least 1 seconds between tests
-//                     if (!extras.nowait) { await waiter(1000); }
-//
-//                     let error: Error = null;
-//                     for (let attempt = 0; attempt < attempts; attempt++) {
-//                         try {
-//                             const result = await Promise.race([
-//                                 test.execute(provider),
-//                                 waiter(timeout * 1000).then((result) => { throw new Error("timeout"); })
-//                             ]);
-//                             return result;
-//                         } catch (attemptError) {
-//                             console.log(`*** Failed attempt ${ attempt + 1 }: ${ attemptError.message }`);
-//                             error = attemptError;
-//
-//                             // On failure, wait 5s
-//                             await waiter(5000);
-//                         }
-//                     }
-//                     throw error;
-//                 });
-//             });
-//         });
-//     });
-//
-// });
 describe('Providers.spec', () => {
     const localProvider = utils.getProviders().local[0];
     const testnetProvider = utils.getProviders().testnet[0];
@@ -1035,27 +849,61 @@ describe('Providers.spec', () => {
                     assert.strictEqual(logs2[1].transactionIndex, logsResponse[1].index);
                 });
             }).timeout(timeout * 4);
-            // The hardcoded max limit per query in the mirror node rest api is 100,
-            // so `size limit exceeded` error is impossible to be tested right now.
-            it('Should throw query result size limit exceeded', function () {
+            it('Should filter log with length more than 100', function () {
                 return __awaiter(this, void 0, void 0, function* () {
-                    const address = "0x000000000000000000000000000000000186fb1a";
+                    const fromTimestamp = "1442065156.264170833";
+                    const toTimestamp = "1642080642.176149864";
+                    const address = "0x000000000000000000000000000000000186fb1A";
                     const filterParams = {
                         address: address,
+                        fromTimestamp: fromTimestamp,
+                        toTimestamp: toTimestamp
                     };
                     const logs = yield testnetProvider.getLogs(filterParams);
-                    assert.strictEqual(100, logs.length);
-                    // await assert.rejects(
-                    //     async () => {
-                    //
-                    //     },
-                    //     (err) => {
-                    //         assert.strictEqual(err.name, 'Error');
-                    //         assert.strict(err.reason.includes('query returned more than 100 results'));
-                    //         assert.strictEqual(err.code, 'SERVER_ERROR');
-                    //         return true;
-                    //     }
-                    // );
+                    const logsLength = logs.length;
+                    const logsResponse = [
+                        {
+                            "address": "0x000000000000000000000000000000000186fb1a",
+                            "contract_id": "0.0.25623322",
+                            "data": "0x00000000000000000000000000000000000000000000003635c9adc5dea00000",
+                            "index": 0,
+                            "topics": [
+                                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                                "0x0000000000000000000000000000000000000000000000000000000000000000",
+                                "0x0000000000000000000000000000000000000000000000000000000000179977"
+                            ],
+                            "root_contract_id": "0.0.25623322",
+                            "timestamp": "1640183634.611982000"
+                        },
+                        {
+                            "address": "0x000000000000000000000000000000000186fb1a",
+                            "contract_id": "0.0.25623322",
+                            "data": "0x000000000000000000000000000000000000000000000000000000003b9aca00",
+                            "index": 0,
+                            "topics": [
+                                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                                "0x0000000000000000000000000000000000000000000000000000000000000000",
+                                "0x0000000000000000000000000000000000000000000000000000000000179977"
+                            ],
+                            "root_contract_id": "0.0.25623322",
+                            "timestamp": "1640075394.182370923"
+                        }
+                    ];
+                    assert.strictEqual(logsLength, 211);
+                    assert.strictEqual(logs[logsLength - 2].timestamp, logsResponse[0].timestamp);
+                    assert.strictEqual(logs[logsLength - 2].address.toLowerCase(), logsResponse[0].address.toLowerCase());
+                    assert.strictEqual(logs[logsLength - 2].data, logsResponse[0].data);
+                    assert.deepStrictEqual(logs[logsLength - 2].topics, logsResponse[0].topics);
+                    assert.strictEqual(logs[logsLength - 2].transactionHash, undefined);
+                    assert.strictEqual(logs[logsLength - 2].logIndex, logsResponse[0].index);
+                    assert.strictEqual(logs[logsLength - 2].transactionIndex, logsResponse[0].index);
+                    assert.strictEqual(logs[logsLength - 1].timestamp, logsResponse[1].timestamp);
+                    assert.strictEqual(logs[logsLength - 1].address.toLowerCase(), logsResponse[1].address.toLowerCase());
+                    assert.strictEqual(logs[logsLength - 1].data, logsResponse[1].data);
+                    assert.deepStrictEqual(logs[logsLength - 1].topics, logsResponse[1].topics);
+                    assert.strictEqual(logs[logsLength - 1].transactionHash, undefined);
+                    assert.strictEqual(logs[logsLength - 1].logIndex, logsResponse[1].index);
+                    assert.strictEqual(logs[logsLength - 1].transactionIndex, logsResponse[1].index);
                 });
             }).timeout(timeout * 4);
             it('Should return default value', function () {

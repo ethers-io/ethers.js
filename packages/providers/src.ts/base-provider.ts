@@ -695,14 +695,14 @@ export class BaseProvider extends Provider {
         const requestUrl = epContractsLogs + toTimestampFilter + fromTimestampFilter;
         try {
             let { data } = await this._makeRequest(requestUrl);
-            
+
             if (data) {
-                const mappedLogs = this.formatter.logsMapper(data.logs);
+                let mappedLogs = this.formatter.logsMapper(data.logs);
                 let nextLink = data.links.next;
                 while (nextLink) {
                     let { data } = await this._makeRequest(nextLink);
                     if(!data) break;
-                    mappedLogs.concat(this.formatter.logsMapper(data.logs));
+                    mappedLogs = mappedLogs.concat(this.formatter.logsMapper(data.logs));
                     nextLink = data.links.next;
                 }
                 return Formatter.arrayOf(this.formatter.filterLog.bind(this.formatter))(mappedLogs);

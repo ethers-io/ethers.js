@@ -854,7 +854,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         data_1 = (_a.sent()).data;
                         if (!data_1)
                             return [3 /*break*/, 6];
-                        mappedLogs.concat(this.formatter.logsMapper(data_1.logs));
+                        mappedLogs = mappedLogs.concat(this.formatter.logsMapper(data_1.logs));
                         nextLink = data_1.links.next;
                         return [3 /*break*/, 4];
                     case 6: return [2 /*return*/, formatter_1.Formatter.arrayOf(this.formatter.filterLog.bind(this.formatter))(mappedLogs)];
