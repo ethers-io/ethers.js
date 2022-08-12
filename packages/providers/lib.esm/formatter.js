@@ -100,7 +100,7 @@ export class Formatter {
             gasLimit: bigNumber,
             gasUsed: bigNumber,
             miner: Formatter.allowNull(address),
-            extraData: data,
+            extraData: Formatter.allowNull(data),
             transactions: Formatter.allowNull(Formatter.arrayOf(hash)),
             baseFeePerGas: Formatter.allowNull(bigNumber)
         };

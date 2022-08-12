@@ -141,7 +141,7 @@ export class Formatter {
             gasUsed: bigNumber,
 
             miner: Formatter.allowNull(address),
-            extraData: data,
+            extraData: Formatter.allowNull(data),
 
             transactions: Formatter.allowNull(Formatter.arrayOf(hash)),
 
