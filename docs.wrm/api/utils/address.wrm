@@ -96,8 +96,8 @@ getIcapAddress("0x8ba1f109551bd432803012645ac136ddd64dba72");
 getIcapAddress("XE65GB6LDNXYOFTX0NSV3FUWKOWIXAMJK36");
 //_log:
 
-_property: ethers.utils.isAddress(address) => boolean  @<utils-isAddress> @SRC<address>
-Returns true if //address// is valid (in any supported format).
+_property: ethers.utils.isAddress(address) => string<[[address]]> | false @<utils-isAddress> @SRC<address>
+Returns //address// as a Checksum Address if //address// is valid (in any supported format), else returns //false//.
 
 _code: @lang<javascript>
 
