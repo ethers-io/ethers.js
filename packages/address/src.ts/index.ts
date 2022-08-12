@@ -112,11 +112,12 @@ export function getAddress(address: string): string {
     return result;
 }
 
-export function isAddress(address: string): boolean {
-    try {
-        getAddress(address);
-        return true;
-    } catch (error) { }
+export function isAddress(address: unknown): string | false {
+    if (typeof address === 'string') {
+        try {
+            return getAddress(address);
+        } catch (error) { }
+    }
     return false;
 }
 
