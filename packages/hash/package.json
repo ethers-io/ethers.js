@@ -3,6 +3,7 @@
   "dependencies": {
     "@ethersproject/abstract-signer": "^5.6.2",
     "@ethersproject/address": "^5.6.1",
+    "@ethersproject/base64": "^5.6.2",
     "@ethersproject/bignumber": "^5.6.2",
     "@ethersproject/bytes": "^5.6.1",
     "@ethersproject/keccak256": "^5.6.1",

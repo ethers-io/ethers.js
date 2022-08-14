@@ -6,6 +6,7 @@
   "exclude": [],
   "extends": "../../tsconfig.package.json",
   "include": [
-    "./src.ts/*"
+    "./src.ts/*",
+    "./src.ts/ens-normalize/*"
   ]
 }
