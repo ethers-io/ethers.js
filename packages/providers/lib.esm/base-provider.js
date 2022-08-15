@@ -600,8 +600,7 @@ export class BaseProvider extends Provider {
             const fromTimestampFilter = '&timestamp=gte%3A' + params.filter.fromTimestamp;
             const toTimestampFilter = '&timestamp=lte%3A' + params.filter.toTimestamp;
             const limit = 100;
-            const oversizeResponseLength = limit + 1;
-            let epContractsLogs = '/api/v1/contracts/' + params.filter.address + '/results/logs?limit=' + oversizeResponseLength;
+            let epContractsLogs = '/api/v1/contracts/' + params.filter.address + '/results/logs?limit=' + limit;
             if (params.filter.topics && params.filter.topics.length > 0) {
                 for (let i = 0; i < params.filter.topics.length; i++) {
                     const topic = params.filter.topics[i];
@@ -617,9 +616,14 @@ export class BaseProvider extends Provider {
             try {
                 let { data } = yield this._makeRequest(requestUrl);
                 if (data) {
-                    const mappedLogs = this.formatter.logsMapper(data.logs);
-                    if (mappedLogs.length == oversizeResponseLength) {
-                        logger.throwError(`query returned more than ${limit} results`, Logger.errors.SERVER_ERROR);
+                    let mappedLogs = this.formatter.logsMapper(data.logs);
+                    let nextLink = data.links.next;
+                    while (nextLink) {
+                        let { data } = yield this._makeRequest(nextLink);
+                        if (!data)
+                            break;
+                        mappedLogs = mappedLogs.concat(this.formatter.logsMapper(data.logs));
+                        nextLink = data.links.next;
                     }
                     return Formatter.arrayOf(this.formatter.filterLog.bind(this.formatter))(mappedLogs);
                 }
