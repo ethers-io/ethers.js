@@ -142,7 +142,7 @@ export class Event {
         return (this.tag.indexOf(":") >= 0 || PollableEvents.indexOf(this.tag) >= 0);
     }
 }
-export const DEFAULT_RETRY_OPTIONS = {
+const DEFAULT_RETRY_OPTIONS = {
     maxAttempts: 3,
     waitTime: 2,
     errorCodes: [400, 408, 429, 500, 502, 503, 504, 511]
@@ -162,17 +162,12 @@ export class BaseProvider extends Provider {
         super();
         this._events = [];
         this._emittedEvents = {};
+        this._options = this._getOptions(options);
         this._previousPollingTimestamps = {};
         this.formatter = new.target.getFormatter();
         // If network is any, this Provider allows the underlying
         // network to change dynamically, and we auto-detect the
         // current network
-        if (options !== undefined && options !== null) {
-            this._options = Object.keys(options).length !== 0 ? options : { headers: {}, retry: DEFAULT_RETRY_OPTIONS };
-        }
-        else {
-            this._options = { headers: {}, retry: DEFAULT_RETRY_OPTIONS };
-        }
         defineReadOnly(this, "anyNetwork", (network === "any"));
         if (this.anyNetwork) {
             network = this.detectNetwork();
@@ -218,6 +213,15 @@ export class BaseProvider extends Provider {
         this._pollingInterval = 3000;
         this._configureAxiosInterceptor(this._options);
     }
+    _getOptions(options) {
+        let tmpOptions = (typeof options === 'object' && Object.keys(options).length)
+            ? options
+            : { headers: {}, retry: DEFAULT_RETRY_OPTIONS };
+        tmpOptions.retry = (typeof options === 'object' && Object.keys(options).length === 3)
+            ? tmpOptions.retry
+            : DEFAULT_RETRY_OPTIONS;
+        return tmpOptions;
+    }
     _configureAxiosInterceptor(options) {
         axios.interceptors.request.use(function (config) {
             if (!config._retriedRequest) {
@@ -239,7 +243,7 @@ export class BaseProvider extends Provider {
                     originalRequest._retriedRequest = true;
                     originalRequest._attempts += 1;
                     originalRequest._waitTime = originalRequest._waitTime * originalRequest._attempts;
-                    if (originalRequest._attempts === this._options.retry.maxAttempts) {
+                    if (originalRequest._attempts >= this._options.retry.maxAttempts) {
                         originalRequest._retry = false;
                     }
                     return this._retryRequest(originalRequest._waitTime, originalRequest);

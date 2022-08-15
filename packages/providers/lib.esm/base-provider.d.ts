@@ -38,16 +38,11 @@ export interface ProviderOptions {
     headers: Record<string, string>;
     retry: RetryOptions;
 }
-export interface RetryOptions {
+interface RetryOptions {
     maxAttempts: number;
     waitTime: number;
     errorCodes: Array<number>;
 }
-export declare const DEFAULT_RETRY_OPTIONS: {
-    maxAttempts: number;
-    waitTime: number;
-    errorCodes: number[];
-};
 export declare class BaseProvider extends Provider {
     _networkPromise: Promise<Network>;
     _network: Network;
@@ -67,6 +62,7 @@ export declare class BaseProvider extends Provider {
     private readonly hederaClient;
     private readonly _mirrorNodeUrl;
     constructor(network: Networkish | Promise<Network> | HederaNetworkConfigLike, options?: ProviderOptions);
+    private _getOptions;
     private _configureAxiosInterceptor;
     private _retryRequest;
     private _makeRequest;
@@ -139,4 +135,5 @@ export declare class BaseProvider extends Provider {
     poll(): Promise<void>;
     purgeOldEvents(): void;
 }
+export {};
 //# sourceMappingURL=base-provider.d.ts.map
