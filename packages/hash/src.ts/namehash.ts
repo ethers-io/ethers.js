@@ -14,7 +14,7 @@ Zeros.fill(0);
 function checkComponent(comp: Uint8Array): Uint8Array {
     if (comp.length === 0) { throw new Error("invalid ENS name; empty component"); }
     let nonUnder = false;
-    let last = -1;
+    let allAscii = true;
     for (let i = 0; i < comp.length; i++) {
         const c = comp[i];
 
@@ -22,14 +22,19 @@ function checkComponent(comp: Uint8Array): Uint8Array {
         if (c === 0x5f) {
             if (nonUnder) { throw new Error("invalid ENS name; non-prefix underscore"); }
         } else {
-            // A hyphen (i.e. "-"); only allows a single in a row
-            if (c === 0x2d && last === c) {
-                throw new Error("invalid ENS name; double-hyphen");
-            }
+            // Non-ASCII byte
+            if (c & 0x80) { allAscii = false; }
+
+            // Non-underscore found
             nonUnder = true;
         }
-        last = c;
     }
+
+    // Prevent punycode-looking components
+    if (allAscii && comp[2] === 0x2d && comp[3] === 0x2d) {
+        throw new Error("invalid ENS name; punycode conflict");
+    }
+
     return comp;
 }
 
@@ -98,4 +103,3 @@ export function dnsEncode(name: string): string {
 
     }))) + "00";
 }
-
