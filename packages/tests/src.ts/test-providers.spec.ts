@@ -815,7 +815,13 @@ describe('Providers.spec', () => {
     });
 
     describe("Test Hedera Provider Options", function () {
-        const options = { headers: { testHeader: '123' } };
+        const options = { 
+            headers: { testHeader: '123' }, 
+            retry: { 
+                maxAttempts: 1,
+                waitTime: 5,
+                errorCodes: [304]} 
+            };
 
         it("DefaultHederaProvider", () => {
             const provider = new DefaultHederaProvider(HederaNetworks.LOCAL, options);

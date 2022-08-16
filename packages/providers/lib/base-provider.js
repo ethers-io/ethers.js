@@ -237,6 +237,11 @@ var Event = /** @class */ (function () {
     return Event;
 }());
 exports.Event = Event;
+var DEFAULT_RETRY_OPTIONS = {
+    maxAttempts: 3,
+    waitTime: 2,
+    errorCodes: [400, 408, 429, 500, 502, 503, 504, 511]
+};
 var defaultFormatter = null;
 var MIRROR_NODE_TRANSACTIONS_ENDPOINT = '/api/v1/transactions/';
 var MIRROR_NODE_CONTRACTS_RESULTS_ENDPOINT = '/api/v1/contracts/results/';
@@ -253,9 +258,9 @@ var BaseProvider = /** @class */ (function (_super) {
         var _this = this;
         logger.checkNew(_newTarget, abstract_provider_1.Provider);
         _this = _super.call(this) || this;
-        _this._options = options || {};
         _this._events = [];
         _this._emittedEvents = {};
+        _this._options = _this._getOptions(options);
         _this._previousPollingTimestamps = {};
         _this.formatter = _newTarget.getFormatter();
         // If network is any, this Provider allows the underlying
@@ -304,8 +309,55 @@ var BaseProvider = /** @class */ (function (_super) {
             }
         }
         _this._pollingInterval = 3000;
+        _this._configureAxiosInterceptor(_this._options);
         return _this;
     }
+    BaseProvider.prototype._getOptions = function (options) {
+        var tmpOptions = (typeof options === 'object' && Object.keys(options).length)
+            ? options
+            : { headers: {}, retry: DEFAULT_RETRY_OPTIONS };
+        tmpOptions.retry = (typeof options === 'object' && Object.keys(options).length === 3)
+            ? tmpOptions.retry
+            : DEFAULT_RETRY_OPTIONS;
+        return tmpOptions;
+    };
+    BaseProvider.prototype._configureAxiosInterceptor = function (options) {
+        var _this = this;
+        axios_1.default.interceptors.request.use(function (config) {
+            if (!config._retriedRequest) {
+                config._retry = true;
+                config._attempts = 0;
+                config._waitTime = options.retry.waitTime;
+            }
+            return config;
+        }, function (error) {
+            return Promise.reject(error);
+        });
+        axios_1.default.interceptors.response.use(function (response) {
+            return response;
+        }, function (error) {
+            var config = error.config;
+            var originalRequest = config;
+            if (error.response) {
+                if (_this._options.retry.errorCodes.includes(error.response.status) && originalRequest._retry) {
+                    originalRequest._retriedRequest = true;
+                    originalRequest._attempts += 1;
+                    originalRequest._waitTime = originalRequest._waitTime * originalRequest._attempts;
+                    if (originalRequest._attempts >= _this._options.retry.maxAttempts) {
+                        originalRequest._retry = false;
+                    }
+                    return _this._retryRequest(originalRequest._waitTime, originalRequest);
+                }
+            }
+            return Promise.reject(error);
+        });
+    };
+    BaseProvider.prototype._retryRequest = function (seconds, originalRequest) {
+        return new Promise(function (resolve, reject) {
+            setTimeout(function () { return resolve((0, axios_1.default)(originalRequest)); }, seconds * 1000);
+        });
+    };
+    ;
     BaseProvider.prototype._makeRequest = function (uri) {
         return axios_1.default.get(this._mirrorNodeUrl + uri, { headers: this._options.headers });
     };
