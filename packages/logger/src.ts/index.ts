@@ -146,6 +146,14 @@ export enum ErrorCode {
     //   - replacement: the full TransactionsResponse for the replacement
     //   - receipt: the receipt of the replacement
     TRANSACTION_REPLACED = "TRANSACTION_REPLACED",
+
+
+    ///////////////////
+    // Interaction Errors
+
+    // The user rejected the action, such as signing a message or sending
+    // a transaction
+    ACTION_REJECTED = "ACTION_REJECTED",
 };
 
 const HEX = "0123456789abcdef";

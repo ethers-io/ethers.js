@@ -255,6 +255,13 @@ export class JsonRpcSigner extends Signer implements TypedDataSigner {
             return this.provider.send("eth_sendTransaction", [ hexTx ]).then((hash) => {
                 return hash;
             }, (error) => {
+                if (typeof(error.message) === "string" && error.message.match(/user denied/i)) {
+                    logger.throwError("user rejected transaction", Logger.errors.ACTION_REJECTED, {
+                        action: "sendTransaction",
+                        transaction: tx
+                    });
+                }
+
                 return checkError("sendTransaction", error, hexTx);
             });
         });
@@ -292,15 +299,38 @@ export class JsonRpcSigner extends Signer implements TypedDataSigner {
         const data = ((typeof(message) === "string") ? toUtf8Bytes(message): message);
         const address = await this.getAddress();
 
-        return await this.provider.send("personal_sign", [ hexlify(data), address.toLowerCase() ]);
+
+        try {
+            return await this.provider.send("personal_sign", [ hexlify(data), address.toLowerCase() ]);
+        } catch (error) {
+            if (typeof(error.message) === "string" && error.message.match(/user denied/i)) {
+                logger.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
+                    action: "signMessage",
+                    from: address,
+                    message: data
+                });
+            }
+            throw error;
+        }
     }
 
     async _legacySignMessage(message: Bytes | string): Promise<string> {
         const data = ((typeof(message) === "string") ? toUtf8Bytes(message): message);
         const address = await this.getAddress();
 
-        // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
-        return await this.provider.send("eth_sign", [ address.toLowerCase(), hexlify(data) ]);
+        try {
+            // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
+            return await this.provider.send("eth_sign", [ address.toLowerCase(), hexlify(data) ]);
+        } catch (error) {
+            if (typeof(error.message) === "string" && error.message.match(/user denied/i)) {
+                logger.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
+                    action: "_legacySignMessage",
+                    from: address,
+                    message: data
+                });
+            }
+            throw error;
+        }
     }
 
     async _signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string> {
@@ -311,10 +341,21 @@ export class JsonRpcSigner extends Signer implements TypedDataSigner {
 
         const address = await this.getAddress();
 
-        return await this.provider.send("eth_signTypedData_v4", [
-            address.toLowerCase(),
-            JSON.stringify(_TypedDataEncoder.getPayload(populated.domain, types, populated.value))
-        ]);
+        try {
+            return await this.provider.send("eth_signTypedData_v4", [
+                address.toLowerCase(),
+                JSON.stringify(_TypedDataEncoder.getPayload(populated.domain, types, populated.value))
+            ]);
+        } catch (error) {
+            if (typeof(error.message) === "string" && error.message.match(/user denied/i)) {
+                logger.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
+                    action: "_signTypedData",
+                    from: address,
+                    message: { domain: populated.domain, types, value: populated.value }
+                });
+            }
+            throw error;
+        }
     }
 
     async unlock(password: string): Promise<boolean> {
