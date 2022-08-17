@@ -234,7 +234,7 @@ var Signer = /** @class */ (function () {
                             },
                         };
                         signed = {
-                            bodyBytes: proto_1.TransactionBody.encode(paymentBody).finish(),
+                            bodyBytes: proto_1.proto.TransactionBody.encode(paymentBody).finish(),
                             sigMap: {}
                         };
                         walletKey = this.isED25519Type
@@ -244,7 +244,7 @@ var Signer = /** @class */ (function () {
                         signed.sigMap = {
                             sigPair: [walletKey.publicKey._toProtobufSignature(signature)]
                         };
-                        transferSignedTransactionBytes = proto_1.SignedTransaction.encode(signed).finish();
+                        transferSignedTransactionBytes = proto_1.proto.SignedTransaction.encode(signed).finish();
                         hederaTx._paymentTransactions.push({
                             signedTransactionBytes: transferSignedTransactionBytes
                         });

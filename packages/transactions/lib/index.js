@@ -206,7 +206,7 @@ function serializeHederaTransaction(transaction, pubKey) {
                         contractNum: new long_1.default(account_2[2])
                     };
                 }
-                var key = sdk_1.PublicKey._fromProtobufKey(proto_1.Key.create(keyInitializer));
+                var key = sdk_1.PublicKey._fromProtobufKey(proto_1.proto.Key.create(keyInitializer));
                 tx.setAdminKey(key);
             }
             if (transaction.customData.contractMemo) {

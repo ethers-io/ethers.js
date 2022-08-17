@@ -17,7 +17,7 @@ import { Logger } from "@hethers/logger";
 import { version } from "./_version";
 import * as base64 from "@ethersproject/base64";
 import { AccountCreateTransaction, AccountId, ContractCreateTransaction, ContractExecuteTransaction, ContractId, FileAppendTransaction, FileCreateTransaction, Hbar, HbarUnit, PublicKey as HederaPubKey, Transaction as HederaTransaction, TransactionId, TransferTransaction } from "@hashgraph/sdk";
-import { Key } from "@hashgraph/proto";
+import { proto } from "@hashgraph/proto";
 import Long from "long";
 const logger = new Logger(version);
 export var TransactionTypes;
@@ -141,7 +141,7 @@ export function serializeHederaTransaction(transaction, pubKey) {
                         contractNum: new Long(account[2])
                     };
                 }
-                const key = HederaPubKey._fromProtobufKey(Key.create(keyInitializer));
+                const key = HederaPubKey._fromProtobufKey(proto.Key.create(keyInitializer));
                 tx.setAdminKey(key);
             }
             if (transaction.customData.contractMemo) {

@@ -16,7 +16,7 @@ import { version } from "./_version";
 import { asAccountString, getAddressFromAccount, getChecksumAddress } from "@hethers/address";
 import { AccountId, ContractCallQuery, ContractId, Hbar, PrivateKey, PublicKey as HederaPubKey, TransactionId } from "@hashgraph/sdk";
 import * as Long from "long";
-import { SignedTransaction, TransactionBody } from "@hashgraph/proto";
+import { proto } from "@hashgraph/proto";
 const logger = new Logger(version);
 const allowedTransactionKeys = [
     "accessList", "chainId", "customData", "data", "from", "gasLimit", "maxFeePerGas", "maxPriorityFeePerGas", "to", "type", "value",
@@ -128,7 +128,7 @@ export class Signer {
                 },
             };
             const signed = {
-                bodyBytes: TransactionBody.encode(paymentBody).finish(),
+                bodyBytes: proto.TransactionBody.encode(paymentBody).finish(),
                 sigMap: {}
             };
             const walletKey = this.isED25519Type
@@ -138,7 +138,7 @@ export class Signer {
             signed.sigMap = {
                 sigPair: [walletKey.publicKey._toProtobufSignature(signature)]
             };
-            const transferSignedTransactionBytes = SignedTransaction.encode(signed).finish();
+            const transferSignedTransactionBytes = proto.SignedTransaction.encode(signed).finish();
             hederaTx._paymentTransactions.push({
                 signedTransactionBytes: transferSignedTransactionBytes
             });
