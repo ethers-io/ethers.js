@@ -288,7 +288,7 @@ describe('Test Namehash', function () {
                 var namehash = ethers_1.ethers.utils.namehash(name);
                 console.log(name, namehash);
             }, function (error) {
-                return !!error.message.match(/invalid ENS address/);
+                return !!error.message.match(/invalid ENS name; empty component/);
             });
         });
     });
