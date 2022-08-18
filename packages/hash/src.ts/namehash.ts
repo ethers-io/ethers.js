@@ -13,28 +13,6 @@ Zeros.fill(0);
 
 function checkComponent(comp: Uint8Array): Uint8Array {
     if (comp.length === 0) { throw new Error("invalid ENS name; empty component"); }
-    let nonUnder = false;
-    let allAscii = true;
-    for (let i = 0; i < comp.length; i++) {
-        const c = comp[i];
-
-        // An underscore (i.e. "_"); only allows at the beginning
-        if (c === 0x5f) {
-            if (nonUnder) { throw new Error("invalid ENS name; non-prefix underscore"); }
-        } else {
-            // Non-ASCII byte
-            if (c & 0x80) { allAscii = false; }
-
-            // Non-underscore found
-            nonUnder = true;
-        }
-    }
-
-    // Prevent punycode-looking components
-    if (allAscii && comp[2] === 0x2d && comp[3] === 0x2d) {
-        throw new Error("invalid ENS name; punycode conflict");
-    }
-
     return comp;
 }
 

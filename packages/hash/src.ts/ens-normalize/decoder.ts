@@ -216,10 +216,10 @@ export function read_zero_terminated_array(next: NextFunc): Array<number> {
 	return v;
 }
 
-function read_transposed(n: number, w: number, next: NextFunc, lookup?: NextFunc): Array<Array<number>> {
+function read_transposed(n: number, w: number, next: NextFunc): Array<Array<number>> {
     let m = Array(n).fill(undefined).map(() => []);
     for (let i = 0; i < w; i++) {
-        read_deltas(n, next).forEach((x, j) => m[j].push(lookup ? lookup(x) : x));
+        read_deltas(n, next).forEach((x, j) => m[j].push(x));
     }
     return m;
 }
@@ -254,7 +254,7 @@ export type Branch = {
 
 export type Node = {
     branches: Array<Branch>;
-    valid: boolean;
+    valid: number;
     fe0f: boolean;
     save: boolean;
     check: boolean;
@@ -266,18 +266,18 @@ export function read_emoji_trie(next: NextFunc): Node {
 	function read(): Node {
 		let branches = [];
 		while (true) {
-			let keys = read_member_array(next);
+			let keys = read_member_array(next, sorted);
 			if (keys.length == 0) break;
-			branches.push({set: new Set(keys.map(i => sorted[i])), node: read()});
+			branches.push({set: new Set(keys), node: read()});
 		}
-		branches.sort((a, b) => b.set.size - a.set.size);
-		let flag = next();
-		return {
-			branches,
-			valid: (flag & 1) != 0, 
-			fe0f: (flag & 2) != 0, 
-			save: (flag & 4) != 0, 
-			check: (flag & 8) != 0,
-		};
+    branches.sort((a, b) => b.set.size - a.set.size); // sort by likelihood
+ 		let temp = next();
+ 		let valid = temp % 3;
+ 		temp = (temp / 3)|0;
+ 		let fe0f = !!(temp & 1);
+ 		temp >>= 1;
+ 		let save = temp == 1;
+ 		let check = temp == 2;
+ 		return {branches, valid, fe0f, save, check};
 	}
 }
