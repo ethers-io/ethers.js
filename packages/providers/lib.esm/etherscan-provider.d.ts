@@ -3,7 +3,7 @@ import { Network, Networkish } from "@ethersproject/networks";
 import { BaseProvider } from "./base-provider";
 export declare class EtherscanProvider extends BaseProvider {
     readonly baseUrl: string;
-    readonly apiKey: string;
+    readonly apiKey: string | null;
     constructor(network?: Networkish, apiKey?: string);
     getBaseUrl(): string;
     getUrl(module: string, params: Record<string, string>): string;

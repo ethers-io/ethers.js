@@ -179,10 +179,6 @@ export function nameprep(value) {
     if (name.substring(0, 1) === "-" || name.substring(2, 4) === "--" || name.substring(name.length - 1) === "-") {
         throw new Error("invalid hyphen");
     }
-    // IDNA: 4.2.4
-    if (name.length > 63) {
-        throw new Error("too long");
-    }
     return name;
 }
 //# sourceMappingURL=idna.js.map

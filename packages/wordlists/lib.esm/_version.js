@@ -1,2 +1,2 @@
-export const version = "wordlists/5.6.1";
+export const version = "wordlists/5.7.0";
 //# sourceMappingURL=_version.js.map

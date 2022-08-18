@@ -1081,16 +1081,26 @@ var BaseProvider = /** @class */ (function (_super) {
                                     // We only allow a single getLogs to be in-flight at a time
                                     if (!event._inflight) {
                                         event._inflight = true;
-                                        // Filter from the last known event; due to load-balancing
+                                        // This is the first filter for this event, so we want to
+                                        // restrict events to events that happened no earlier than now
+                                        if (event._lastBlockNumber === -2) {
+                                            event._lastBlockNumber = blockNumber - 1;
+                                        }
+                                        // Filter from the last *known* event; due to load-balancing
                                         // and some nodes returning updated block numbers before
                                         // indexing events, a logs result with 0 entries cannot be
                                         // trusted and we must retry a range which includes it again
                                         var filter_1 = event.filter;
                                         filter_1.fromBlock = event._lastBlockNumber + 1;
                                         filter_1.toBlock = blockNumber;
-                                        // Prevent fitler ranges from growing too wild
-                                        if (filter_1.toBlock - _this._maxFilterBlockRange > filter_1.fromBlock) {
-                                            filter_1.fromBlock = filter_1.toBlock - _this._maxFilterBlockRange;
+                                        // Prevent fitler ranges from growing too wild, since it is quite
+                                        // likely there just haven't been any events to move the lastBlockNumber.
+                                        var minFromBlock = filter_1.toBlock - _this._maxFilterBlockRange;
+                                        if (minFromBlock > filter_1.fromBlock) {
+                                            filter_1.fromBlock = minFromBlock;
+                                        }
+                                        if (filter_1.fromBlock < 0) {
+                                            filter_1.fromBlock = 0;
                                         }
                                         var runner = _this.getLogs(filter_1).then(function (logs) {
                                             // Allow the next getLogs

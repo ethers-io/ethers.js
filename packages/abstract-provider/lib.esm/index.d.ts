@@ -82,6 +82,7 @@ export interface TransactionReceipt {
     status?: number;
 }
 export interface FeeData {
+    lastBaseFeePerGas: null | BigNumber;
     maxFeePerGas: null | BigNumber;
     maxPriorityFeePerGas: null | BigNumber;
     gasPrice: null | BigNumber;

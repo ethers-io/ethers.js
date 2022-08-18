@@ -3601,7 +3601,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "logger/5.6.0";
+	exports.version = "logger/5.7.0";
 
 	});
 
@@ -3726,6 +3726,11 @@
 	    //   - replacement: the full TransactionsResponse for the replacement
 	    //   - receipt: the receipt of the replacement
 	    ErrorCode["TRANSACTION_REPLACED"] = "TRANSACTION_REPLACED";
+	    ///////////////////
+	    // Interaction Errors
+	    // The user rejected the action, such as signing a message or sending
+	    // a transaction
+	    ErrorCode["ACTION_REJECTED"] = "ACTION_REJECTED";
 	})(ErrorCode = exports.ErrorCode || (exports.ErrorCode = {}));
 	;
 	var HEX = "0123456789abcdef";
@@ -3982,7 +3987,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "bytes/5.6.1";
+	exports.version = "bytes/5.7.0";
 
 	});
 
@@ -4424,7 +4429,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "bignumber/5.6.2";
+	exports.version = "bignumber/5.7.0";
 
 	});
 
@@ -5148,7 +5153,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "properties/5.6.0";
+	exports.version = "properties/5.7.0";
 
 	});
 
@@ -5334,7 +5339,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abi/5.6.4";
+	exports.version = "abi/5.7.0";
 
 	});
 
@@ -7104,7 +7109,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "rlp/5.6.1";
+	exports.version = "rlp/5.7.0";
 
 	});
 
@@ -7243,7 +7248,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "address/5.6.1";
+	exports.version = "address/5.7.0";
 
 	});
 
@@ -8082,7 +8087,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "strings/5.6.1";
+	exports.version = "strings/5.7.0";
 
 	});
 
@@ -8578,10 +8583,6 @@
 	    if (name.substring(0, 1) === "-" || name.substring(2, 4) === "--" || name.substring(name.length - 1) === "-") {
 	        throw new Error("invalid hyphen");
 	    }
-	    // IDNA: 4.2.4
-	    if (name.length > 63) {
-	        throw new Error("too long");
-	    }
 	    return name;
 	}
 	exports.nameprep = nameprep;
@@ -8867,34 +8868,567 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "hash/5.6.1";
+	exports.version = "hash/5.7.0";
 
 	});
 
 	var _version$h = /*@__PURE__*/getDefaultExportFromCjs(_version$g);
 
+	var browserBase64 = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.encode = exports.decode = void 0;
+
+	function decode(textData) {
+	    textData = atob(textData);
+	    var data = [];
+	    for (var i = 0; i < textData.length; i++) {
+	        data.push(textData.charCodeAt(i));
+	    }
+	    return (0, lib$1.arrayify)(data);
+	}
+	exports.decode = decode;
+	function encode(data) {
+	    data = (0, lib$1.arrayify)(data);
+	    var textData = "";
+	    for (var i = 0; i < data.length; i++) {
+	        textData += String.fromCharCode(data[i]);
+	    }
+	    return btoa(textData);
+	}
+	exports.encode = encode;
+
+	});
+
+	var browserBase64$1 = /*@__PURE__*/getDefaultExportFromCjs(browserBase64);
+
+	var lib$9 = createCommonjsModule(function (module, exports) {
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.encode = exports.decode = void 0;
+
+	Object.defineProperty(exports, "decode", { enumerable: true, get: function () { return browserBase64.decode; } });
+	Object.defineProperty(exports, "encode", { enumerable: true, get: function () { return browserBase64.encode; } });
+
+	});
+
+	var index$9 = /*@__PURE__*/getDefaultExportFromCjs(lib$9);
+
+	var decoder = createCommonjsModule(function (module, exports) {
+	"use strict";
+	/**
+	 * MIT License
+	 *
+	 * Copyright (c) 2021 Andrew Raffensperger
+	 *
+	 * Permission is hereby granted, free of charge, to any person obtaining a copy
+	 * of this software and associated documentation files (the "Software"), to deal
+	 * in the Software without restriction, including without limitation the rights
+	 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	 * copies of the Software, and to permit persons to whom the Software is
+	 * furnished to do so, subject to the following conditions:
+	 *
+	 * The above copyright notice and this permission notice shall be included in all
+	 * copies or substantial portions of the Software.
+	 *
+	 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	 * SOFTWARE.
+	 *
+	 * This is a near carbon-copy of the original source (link below) with the
+	 * TypeScript typings added and a few tweaks to make it ES3-compatible.
+	 *
+	 * See: https://github.com/adraffy/ens-normalize.js
+	 */
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.read_emoji_trie = exports.read_zero_terminated_array = exports.read_mapped_map = exports.read_member_array = exports.signed = exports.read_compressed_payload = exports.read_payload = exports.decode_arithmetic = void 0;
+	// https://github.com/behnammodi/polyfill/blob/master/array.polyfill.js
+	function flat(array, depth) {
+	    if (depth == null) {
+	        depth = 1;
+	    }
+	    var result = [];
+	    var forEach = result.forEach;
+	    var flatDeep = function (arr, depth) {
+	        forEach.call(arr, function (val) {
+	            if (depth > 0 && Array.isArray(val)) {
+	                flatDeep(val, depth - 1);
+	            }
+	            else {
+	                result.push(val);
+	            }
+	        });
+	    };
+	    flatDeep(array, depth);
+	    return result;
+	}
+	function fromEntries(array) {
+	    var result = {};
+	    for (var i = 0; i < array.length; i++) {
+	        var value = array[i];
+	        result[value[0]] = value[1];
+	    }
+	    return result;
+	}
+	function decode_arithmetic(bytes) {
+	    var pos = 0;
+	    function u16() { return (bytes[pos++] << 8) | bytes[pos++]; }
+	    // decode the frequency table
+	    var symbol_count = u16();
+	    var total = 1;
+	    var acc = [0, 1]; // first symbol has frequency 1
+	    for (var i = 1; i < symbol_count; i++) {
+	        acc.push(total += u16());
+	    }
+	    // skip the sized-payload that the last 3 symbols index into
+	    var skip = u16();
+	    var pos_payload = pos;
+	    pos += skip;
+	    var read_width = 0;
+	    var read_buffer = 0;
+	    function read_bit() {
+	        if (read_width == 0) {
+	            // this will read beyond end of buffer
+	            // but (undefined|0) => zero pad
+	            read_buffer = (read_buffer << 8) | bytes[pos++];
+	            read_width = 8;
+	        }
+	        return (read_buffer >> --read_width) & 1;
+	    }
+	    var N = 31;
+	    var FULL = Math.pow(2, N);
+	    var HALF = FULL >>> 1;
+	    var QRTR = HALF >> 1;
+	    var MASK = FULL - 1;
+	    // fill register
+	    var register = 0;
+	    for (var i = 0; i < N; i++)
+	        register = (register << 1) | read_bit();
+	    var symbols = [];
+	    var low = 0;
+	    var range = FULL; // treat like a float
+	    while (true) {
+	        var value = Math.floor((((register - low + 1) * total) - 1) / range);
+	        var start = 0;
+	        var end = symbol_count;
+	        while (end - start > 1) { // binary search
+	            var mid = (start + end) >>> 1;
+	            if (value < acc[mid]) {
+	                end = mid;
+	            }
+	            else {
+	                start = mid;
+	            }
+	        }
+	        if (start == 0)
+	            break; // first symbol is end mark
+	        symbols.push(start);
+	        var a = low + Math.floor(range * acc[start] / total);
+	        var b = low + Math.floor(range * acc[start + 1] / total) - 1;
+	        while (((a ^ b) & HALF) == 0) {
+	            register = (register << 1) & MASK | read_bit();
+	            a = (a << 1) & MASK;
+	            b = (b << 1) & MASK | 1;
+	        }
+	        while (a & ~b & QRTR) {
+	            register = (register & HALF) | ((register << 1) & (MASK >>> 1)) | read_bit();
+	            a = (a << 1) ^ HALF;
+	            b = ((b ^ HALF) << 1) | HALF | 1;
+	        }
+	        low = a;
+	        range = 1 + b - a;
+	    }
+	    var offset = symbol_count - 4;
+	    return symbols.map(function (x) {
+	        switch (x - offset) {
+	            case 3: return offset + 0x10100 + ((bytes[pos_payload++] << 16) | (bytes[pos_payload++] << 8) | bytes[pos_payload++]);
+	            case 2: return offset + 0x100 + ((bytes[pos_payload++] << 8) | bytes[pos_payload++]);
+	            case 1: return offset + bytes[pos_payload++];
+	            default: return x - 1;
+	        }
+	    });
+	}
+	exports.decode_arithmetic = decode_arithmetic;
+	// returns an iterator which returns the next symbol
+	function read_payload(v) {
+	    var pos = 0;
+	    return function () { return v[pos++]; };
+	}
+	exports.read_payload = read_payload;
+	function read_compressed_payload(bytes) {
+	    return read_payload(decode_arithmetic(bytes));
+	}
+	exports.read_compressed_payload = read_compressed_payload;
+	// eg. [0,1,2,3...] => [0,-1,1,-2,...]
+	function signed(i) {
+	    return (i & 1) ? (~i >> 1) : (i >> 1);
+	}
+	exports.signed = signed;
+	function read_counts(n, next) {
+	    var v = Array(n);
+	    for (var i = 0; i < n; i++)
+	        v[i] = 1 + next();
+	    return v;
+	}
+	function read_ascending(n, next) {
+	    var v = Array(n);
+	    for (var i = 0, x = -1; i < n; i++)
+	        v[i] = x += 1 + next();
+	    return v;
+	}
+	function read_deltas(n, next) {
+	    var v = Array(n);
+	    for (var i = 0, x = 0; i < n; i++)
+	        v[i] = x += signed(next());
+	    return v;
+	}
+	function read_member_array(next, lookup) {
+	    var v = read_ascending(next(), next);
+	    var n = next();
+	    var vX = read_ascending(n, next);
+	    var vN = read_counts(n, next);
+	    for (var i = 0; i < n; i++) {
+	        for (var j = 0; j < vN[i]; j++) {
+	            v.push(vX[i] + j);
+	        }
+	    }
+	    return lookup ? v.map(function (x) { return lookup[x]; }) : v;
+	}
+	exports.read_member_array = read_member_array;
+	// returns array of 
+	// [x, ys] => single replacement rule
+	// [x, ys, n, dx, dx] => linear map
+	function read_mapped_map(next) {
+	    var ret = [];
+	    while (true) {
+	        var w = next();
+	        if (w == 0)
+	            break;
+	        ret.push(read_linear_table(w, next));
+	    }
+	    while (true) {
+	        var w = next() - 1;
+	        if (w < 0)
+	            break;
+	        ret.push(read_replacement_table(w, next));
+	    }
+	    return fromEntries(flat(ret));
+	}
+	exports.read_mapped_map = read_mapped_map;
+	function read_zero_terminated_array(next) {
+	    var v = [];
+	    while (true) {
+	        var i = next();
+	        if (i == 0)
+	            break;
+	        v.push(i);
+	    }
+	    return v;
+	}
+	exports.read_zero_terminated_array = read_zero_terminated_array;
+	function read_transposed(n, w, next) {
+	    var m = Array(n).fill(undefined).map(function () { return []; });
+	    for (var i = 0; i < w; i++) {
+	        read_deltas(n, next).forEach(function (x, j) { return m[j].push(x); });
+	    }
+	    return m;
+	}
+	function read_linear_table(w, next) {
+	    var dx = 1 + next();
+	    var dy = next();
+	    var vN = read_zero_terminated_array(next);
+	    var m = read_transposed(vN.length, 1 + w, next);
+	    return flat(m.map(function (v, i) {
+	        var x = v[0], ys = v.slice(1);
+	        //let [x, ...ys] = v;
+	        //return Array(vN[i]).fill().map((_, j) => {
+	        return Array(vN[i]).fill(undefined).map(function (_, j) {
+	            var j_dy = j * dy;
+	            return [x + j * dx, ys.map(function (y) { return y + j_dy; })];
+	        });
+	    }));
+	}
+	function read_replacement_table(w, next) {
+	    var n = 1 + next();
+	    var m = read_transposed(n, 1 + w, next);
+	    return m.map(function (v) { return [v[0], v.slice(1)]; });
+	}
+	function read_emoji_trie(next) {
+	    var sorted = read_member_array(next).sort(function (a, b) { return a - b; });
+	    return read();
+	    function read() {
+	        var branches = [];
+	        while (true) {
+	            var keys = read_member_array(next, sorted);
+	            if (keys.length == 0)
+	                break;
+	            branches.push({ set: new Set(keys), node: read() });
+	        }
+	        branches.sort(function (a, b) { return b.set.size - a.set.size; }); // sort by likelihood
+	        var temp = next();
+	        var valid = temp % 3;
+	        temp = (temp / 3) | 0;
+	        var fe0f = !!(temp & 1);
+	        temp >>= 1;
+	        var save = temp == 1;
+	        var check = temp == 2;
+	        return { branches: branches, valid: valid, fe0f: fe0f, save: save, check: check };
+	    }
+	}
+	exports.read_emoji_trie = read_emoji_trie;
+
+	});
+
+	var decoder$1 = /*@__PURE__*/getDefaultExportFromCjs(decoder);
+
+	var include = createCommonjsModule(function (module, exports) {
+	"use strict";
+	/**
+	 * MIT License
+	 *
+	 * Copyright (c) 2021 Andrew Raffensperger
+	 *
+	 * Permission is hereby granted, free of charge, to any person obtaining a copy
+	 * of this software and associated documentation files (the "Software"), to deal
+	 * in the Software without restriction, including without limitation the rights
+	 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	 * copies of the Software, and to permit persons to whom the Software is
+	 * furnished to do so, subject to the following conditions:
+	 *
+	 * The above copyright notice and this permission notice shall be included in all
+	 * copies or substantial portions of the Software.
+	 *
+	 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	 * SOFTWARE.
+	 *
+	 * This is a near carbon-copy of the original source (link below) with the
+	 * TypeScript typings added and a few tweaks to make it ES3-compatible.
+	 *
+	 * See: https://github.com/adraffy/ens-normalize.js
+	 */
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.getData = void 0;
+
+
+	function getData() {
+	    return (0, decoder.read_compressed_payload)((0, lib$9.decode)('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'));
+	}
+	exports.getData = getData;
+
+	});
+
+	var include$1 = /*@__PURE__*/getDefaultExportFromCjs(include);
+
+	var lib$a = createCommonjsModule(function (module, exports) {
+	"use strict";
+	/**
+	 * MIT License
+	 *
+	 * Copyright (c) 2021 Andrew Raffensperger
+	 *
+	 * Permission is hereby granted, free of charge, to any person obtaining a copy
+	 * of this software and associated documentation files (the "Software"), to deal
+	 * in the Software without restriction, including without limitation the rights
+	 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	 * copies of the Software, and to permit persons to whom the Software is
+	 * furnished to do so, subject to the following conditions:
+	 *
+	 * The above copyright notice and this permission notice shall be included in all
+	 * copies or substantial portions of the Software.
+	 *
+	 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	 * SOFTWARE.
+	 *
+	 * This is a near carbon-copy of the original source (link below) with the
+	 * TypeScript typings added and a few tweaks to make it ES3-compatible.
+	 *
+	 * See: https://github.com/adraffy/ens-normalize.js
+	 */
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.ens_normalize = exports.ens_normalize_post_check = void 0;
+
+
+	var r = (0, include.getData)();
+
+	// @TODO: This should be lazily loaded
+	var VALID = new Set((0, decoder.read_member_array)(r));
+	var IGNORED = new Set((0, decoder.read_member_array)(r));
+	var MAPPED = (0, decoder.read_mapped_map)(r);
+	var EMOJI_ROOT = (0, decoder.read_emoji_trie)(r);
+	//const NFC_CHECK = new Set(read_member_array(r, Array.from(VALID.values()).sort((a, b) => a - b)));
+	//const STOP = 0x2E;
+	var HYPHEN = 0x2D;
+	var UNDERSCORE = 0x5F;
+	function explode_cp(name) {
+	    return (0, lib$8.toUtf8CodePoints)(name);
+	}
+	function filter_fe0f(cps) {
+	    return cps.filter(function (cp) { return cp != 0xFE0F; });
+	}
+	function ens_normalize_post_check(name) {
+	    for (var _i = 0, _a = name.split('.'); _i < _a.length; _i++) {
+	        var label = _a[_i];
+	        var cps = explode_cp(label);
+	        try {
+	            for (var i = cps.lastIndexOf(UNDERSCORE) - 1; i >= 0; i--) {
+	                if (cps[i] !== UNDERSCORE) {
+	                    throw new Error("underscore only allowed at start");
+	                }
+	            }
+	            if (cps.length >= 4 && cps.every(function (cp) { return cp < 0x80; }) && cps[2] === HYPHEN && cps[3] === HYPHEN) {
+	                throw new Error("invalid label extension");
+	            }
+	        }
+	        catch (err) {
+	            throw new Error("Invalid label \"" + label + "\": " + err.message);
+	        }
+	    }
+	    return name;
+	}
+	exports.ens_normalize_post_check = ens_normalize_post_check;
+	function ens_normalize(name) {
+	    return ens_normalize_post_check(normalize(name, filter_fe0f));
+	}
+	exports.ens_normalize = ens_normalize;
+	function normalize(name, emoji_filter) {
+	    var input = explode_cp(name).reverse(); // flip for pop
+	    var output = [];
+	    while (input.length) {
+	        var emoji = consume_emoji_reversed(input);
+	        if (emoji) {
+	            output.push.apply(output, emoji_filter(emoji));
+	            continue;
+	        }
+	        var cp = input.pop();
+	        if (VALID.has(cp)) {
+	            output.push(cp);
+	            continue;
+	        }
+	        if (IGNORED.has(cp)) {
+	            continue;
+	        }
+	        var cps = MAPPED[cp];
+	        if (cps) {
+	            output.push.apply(output, cps);
+	            continue;
+	        }
+	        throw new Error("Disallowed codepoint: 0x" + cp.toString(16).toUpperCase());
+	    }
+	    return ens_normalize_post_check(nfc(String.fromCodePoint.apply(String, output)));
+	}
+	function nfc(s) {
+	    return s.normalize('NFC');
+	}
+	function consume_emoji_reversed(cps, eaten) {
+	    var _a;
+	    var node = EMOJI_ROOT;
+	    var emoji;
+	    var saved;
+	    var stack = [];
+	    var pos = cps.length;
+	    if (eaten)
+	        eaten.length = 0; // clear input buffer (if needed)
+	    var _loop_1 = function () {
+	        var cp = cps[--pos];
+	        node = (_a = node.branches.find(function (x) { return x.set.has(cp); })) === null || _a === void 0 ? void 0 : _a.node;
+	        if (!node)
+	            return "break";
+	        if (node.save) { // remember
+	            saved = cp;
+	        }
+	        else if (node.check) { // check exclusion
+	            if (cp === saved)
+	                return "break";
+	        }
+	        stack.push(cp);
+	        if (node.fe0f) {
+	            stack.push(0xFE0F);
+	            if (pos > 0 && cps[pos - 1] == 0xFE0F)
+	                pos--; // consume optional FE0F
+	        }
+	        if (node.valid) { // this is a valid emoji (so far)
+	            emoji = stack.slice(); // copy stack
+	            if (node.valid == 2)
+	                emoji.splice(1, 1); // delete FE0F at position 1 (RGI ZWJ don't follow spec!)
+	            if (eaten)
+	                eaten.push.apply(eaten, cps.slice(pos).reverse()); // copy input (if needed)
+	            cps.length = pos; // truncate
+	        }
+	    };
+	    while (pos) {
+	        var state_1 = _loop_1();
+	        if (state_1 === "break")
+	            break;
+	    }
+	    return emoji;
+	}
+
+	});
+
+	var lib$b = /*@__PURE__*/getDefaultExportFromCjs(lib$a);
+
 	var namehash_1 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.dnsEncode = exports.namehash = exports.isValidName = void 0;
+	exports.dnsEncode = exports.namehash = exports.isValidName = exports.ensNormalize = void 0;
 
 
 
 
 
 	var logger = new lib.Logger(_version$g.version);
+
 	var Zeros = new Uint8Array(32);
 	Zeros.fill(0);
-	var Partition = new RegExp("^((.*)\\.)?([^.]+)$");
+	function checkComponent(comp) {
+	    if (comp.length === 0) {
+	        throw new Error("invalid ENS name; empty component");
+	    }
+	    return comp;
+	}
+	function ensNameSplit(name) {
+	    var bytes = (0, lib$8.toUtf8Bytes)((0, lib$a.ens_normalize)(name));
+	    var comps = [];
+	    if (name.length === 0) {
+	        return comps;
+	    }
+	    var last = 0;
+	    for (var i = 0; i < bytes.length; i++) {
+	        var d = bytes[i];
+	        // A separator (i.e. "."); copy this component
+	        if (d === 0x2e) {
+	            comps.push(checkComponent(bytes.slice(last, i)));
+	            last = i + 1;
+	        }
+	    }
+	    // There was a stray separator at the end of the name
+	    if (last >= bytes.length) {
+	        throw new Error("invalid ENS name; empty component");
+	    }
+	    comps.push(checkComponent(bytes.slice(last)));
+	    return comps;
+	}
+	function ensNormalize(name) {
+	    return ensNameSplit(name).map(function (comp) { return (0, lib$8.toUtf8String)(comp); }).join(".");
+	}
+	exports.ensNormalize = ensNormalize;
 	function isValidName(name) {
 	    try {
-	        var comps = name.split(".");
-	        for (var i = 0; i < comps.length; i++) {
-	            if ((0, lib$8.nameprep)(comps[i]).length === 0) {
-	                throw new Error("empty");
-	            }
-	        }
-	        return true;
+	        return (ensNameSplit(name).length !== 0);
 	    }
 	    catch (error) { }
 	    return false;
@@ -8905,25 +9439,22 @@
 	    if (typeof (name) !== "string") {
 	        logger.throwArgumentError("invalid ENS name; not a string", "name", name);
 	    }
-	    var current = name;
 	    var result = Zeros;
-	    while (current.length) {
-	        var partition = current.match(Partition);
-	        if (partition == null || partition[2] === "") {
-	            logger.throwArgumentError("invalid ENS address; missing component", "name", name);
-	        }
-	        var label = (0, lib$8.toUtf8Bytes)((0, lib$8.nameprep)(partition[3]));
-	        result = (0, lib$4.keccak256)((0, lib$1.concat)([result, (0, lib$4.keccak256)(label)]));
-	        current = partition[2] || "";
+	    var comps = ensNameSplit(name);
+	    while (comps.length) {
+	        result = (0, lib$4.keccak256)((0, lib$1.concat)([result, (0, lib$4.keccak256)(comps.pop())]));
 	    }
 	    return (0, lib$1.hexlify)(result);
 	}
 	exports.namehash = namehash;
 	function dnsEncode(name) {
-	    return (0, lib$1.hexlify)((0, lib$1.concat)(name.split(".").map(function (comp) {
-	        // We jam in an _ prefix to fill in with the length later
-	        // Note: Nameprep throws if the component is over 63 bytes
-	        var bytes = (0, lib$8.toUtf8Bytes)("_" + (0, lib$8.nameprep)(comp));
+	    return (0, lib$1.hexlify)((0, lib$1.concat)(ensNameSplit(name).map(function (comp) {
+	        // DNS does not allow components over 63 bytes in length
+	        if (comp.length > 63) {
+	            throw new Error("invalid DNS encoded entry; length exceeds 63 bytes");
+	        }
+	        var bytes = new Uint8Array(comp.length + 1);
+	        bytes.set(comp, 1);
 	        bytes[0] = bytes.length - 1;
 	        return bytes;
 	    }))) + "00";
@@ -9464,10 +9995,10 @@
 
 	var typedData$1 = /*@__PURE__*/getDefaultExportFromCjs(typedData);
 
-	var lib$9 = createCommonjsModule(function (module, exports) {
+	var lib$c = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports._TypedDataEncoder = exports.hashMessage = exports.messagePrefix = exports.isValidName = exports.namehash = exports.dnsEncode = exports.id = void 0;
+	exports._TypedDataEncoder = exports.hashMessage = exports.messagePrefix = exports.ensNormalize = exports.isValidName = exports.namehash = exports.dnsEncode = exports.id = void 0;
 
 	Object.defineProperty(exports, "id", { enumerable: true, get: function () { return id_1.id; } });
 
@@ -9477,12 +10008,14 @@
 
 	Object.defineProperty(exports, "hashMessage", { enumerable: true, get: function () { return message.hashMessage; } });
 	Object.defineProperty(exports, "messagePrefix", { enumerable: true, get: function () { return message.messagePrefix; } });
+	var namehash_2 = namehash_1;
+	Object.defineProperty(exports, "ensNormalize", { enumerable: true, get: function () { return namehash_2.ensNormalize; } });
 
 	Object.defineProperty(exports, "_TypedDataEncoder", { enumerable: true, get: function () { return typedData.TypedDataEncoder; } });
 
 	});
 
-	var index$9 = /*@__PURE__*/getDefaultExportFromCjs(lib$9);
+	var index$a = /*@__PURE__*/getDefaultExportFromCjs(lib$c);
 
 	var _interface = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -9657,10 +10190,10 @@
 	        return (0, lib$6.getAddress)(address);
 	    };
 	    Interface.getSighash = function (fragment) {
-	        return (0, lib$1.hexDataSlice)((0, lib$9.id)(fragment.format()), 0, 4);
+	        return (0, lib$1.hexDataSlice)((0, lib$c.id)(fragment.format()), 0, 4);
 	    };
 	    Interface.getEventTopic = function (eventFragment) {
-	        return (0, lib$9.id)(eventFragment.format());
+	        return (0, lib$c.id)(eventFragment.format());
 	    };
 	    // Find a function definition by any means necessary (unless it is ambiguous)
 	    Interface.prototype.getFunction = function (nameOrSignatureOrSighash) {
@@ -9906,7 +10439,7 @@
 	        }
 	        var encodeTopic = function (param, value) {
 	            if (param.type === "string") {
-	                return (0, lib$9.id)(value);
+	                return (0, lib$c.id)(value);
 	            }
 	            else if (param.type === "bytes") {
 	                return (0, lib$4.keccak256)((0, lib$1.hexlify)(value));
@@ -9968,7 +10501,7 @@
 	            var value = values[index];
 	            if (param.indexed) {
 	                if (param.type === "string") {
-	                    topics.push((0, lib$9.id)(value));
+	                    topics.push((0, lib$c.id)(value));
 	                }
 	                else if (param.type === "bytes") {
 	                    topics.push((0, lib$4.keccak256)(value));
@@ -10153,7 +10686,7 @@
 
 	var _interface$1 = /*@__PURE__*/getDefaultExportFromCjs(_interface);
 
-	var lib$a = createCommonjsModule(function (module, exports) {
+	var lib$d = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.TransactionDescription = exports.LogDescription = exports.checkResultErrors = exports.Indexed = exports.Interface = exports.defaultAbiCoder = exports.AbiCoder = exports.FormatTypes = exports.ParamType = exports.FunctionFragment = exports.Fragment = exports.EventFragment = exports.ErrorFragment = exports.ConstructorFragment = void 0;
@@ -10177,19 +10710,19 @@
 
 	});
 
-	var index$a = /*@__PURE__*/getDefaultExportFromCjs(lib$a);
+	var index$b = /*@__PURE__*/getDefaultExportFromCjs(lib$d);
 
 	var _version$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abstract-provider/5.6.1";
+	exports.version = "abstract-provider/5.7.0";
 
 	});
 
 	var _version$j = /*@__PURE__*/getDefaultExportFromCjs(_version$i);
 
-	var lib$b = createCommonjsModule(function (module, exports) {
+	var lib$e = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
 	    var extendStatics = function (d, b) {
@@ -10334,7 +10867,7 @@
 	    }
 	    Provider.prototype.getFeeData = function () {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var _a, block, gasPrice, maxFeePerGas, maxPriorityFeePerGas;
+	            var _a, block, gasPrice, lastBaseFeePerGas, maxFeePerGas, maxPriorityFeePerGas;
 	            return __generator(this, function (_b) {
 	                switch (_b.label) {
 	                    case 0: return [4 /*yield*/, (0, lib$3.resolveProperties)({
@@ -10347,15 +10880,16 @@
 	                        })];
 	                    case 1:
 	                        _a = _b.sent(), block = _a.block, gasPrice = _a.gasPrice;
-	                        maxFeePerGas = null, maxPriorityFeePerGas = null;
+	                        lastBaseFeePerGas = null, maxFeePerGas = null, maxPriorityFeePerGas = null;
 	                        if (block && block.baseFeePerGas) {
 	                            // We may want to compute this more accurately in the future,
 	                            // using the formula "check if the base fee is correct".
 	                            // See: https://eips.ethereum.org/EIPS/eip-1559
+	                            lastBaseFeePerGas = block.baseFeePerGas;
 	                            maxPriorityFeePerGas = lib$2.BigNumber.from("1500000000");
 	                            maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
 	                        }
-	                        return [2 /*return*/, { maxFeePerGas: maxFeePerGas, maxPriorityFeePerGas: maxPriorityFeePerGas, gasPrice: gasPrice }];
+	                        return [2 /*return*/, { lastBaseFeePerGas: lastBaseFeePerGas, maxFeePerGas: maxFeePerGas, maxPriorityFeePerGas: maxPriorityFeePerGas, gasPrice: gasPrice }];
 	                }
 	            });
 	        });
@@ -10377,19 +10911,19 @@
 
 	});
 
-	var index$b = /*@__PURE__*/getDefaultExportFromCjs(lib$b);
+	var index$c = /*@__PURE__*/getDefaultExportFromCjs(lib$e);
 
 	var _version$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abstract-signer/5.6.2";
+	exports.version = "abstract-signer/5.7.0";
 
 	});
 
 	var _version$l = /*@__PURE__*/getDefaultExportFromCjs(_version$k);
 
-	var lib$c = createCommonjsModule(function (module, exports) {
+	var lib$f = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
 	    var extendStatics = function (d, b) {
@@ -10829,7 +11363,7 @@
 
 	});
 
-	var index$c = /*@__PURE__*/getDefaultExportFromCjs(lib$c);
+	var index$d = /*@__PURE__*/getDefaultExportFromCjs(lib$f);
 
 	var bn$1 = createCommonjsModule(function (module) {
 	(function (module, exports) {
@@ -18004,13 +18538,13 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "signing-key/5.6.2";
+	exports.version = "signing-key/5.7.0";
 
 	});
 
 	var _version$n = /*@__PURE__*/getDefaultExportFromCjs(_version$m);
 
-	var lib$d = createCommonjsModule(function (module, exports) {
+	var lib$g = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.computePublicKey = exports.recoverPublicKey = exports.SigningKey = void 0;
@@ -18101,19 +18635,19 @@
 
 	});
 
-	var index$d = /*@__PURE__*/getDefaultExportFromCjs(lib$d);
+	var index$e = /*@__PURE__*/getDefaultExportFromCjs(lib$g);
 
 	var _version$o = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "transactions/5.6.2";
+	exports.version = "transactions/5.7.0";
 
 	});
 
 	var _version$p = /*@__PURE__*/getDefaultExportFromCjs(_version$o);
 
-	var lib$e = createCommonjsModule(function (module, exports) {
+	var lib$h = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __createBinding = (commonjsGlobal && commonjsGlobal.__createBinding) || (Object.create ? (function(o, m, k, k2) {
 	    if (k2 === undefined) k2 = k;
@@ -18180,12 +18714,12 @@
 	    chainId: true, data: true, gasLimit: true, gasPrice: true, nonce: true, to: true, type: true, value: true
 	};
 	function computeAddress(key) {
-	    var publicKey = (0, lib$d.computePublicKey)(key);
+	    var publicKey = (0, lib$g.computePublicKey)(key);
 	    return (0, lib$6.getAddress)((0, lib$1.hexDataSlice)((0, lib$4.keccak256)((0, lib$1.hexDataSlice)(publicKey, 1)), 12));
 	}
 	exports.computeAddress = computeAddress;
 	function recoverAddress(digest, signature) {
-	    return computeAddress((0, lib$d.recoverPublicKey)((0, lib$1.arrayify)(digest), signature));
+	    return computeAddress((0, lib$g.recoverPublicKey)((0, lib$1.arrayify)(digest), signature));
 	}
 	exports.recoverAddress = recoverAddress;
 	function formatNumber(value, name) {
@@ -18528,19 +19062,19 @@
 
 	});
 
-	var index$e = /*@__PURE__*/getDefaultExportFromCjs(lib$e);
+	var index$f = /*@__PURE__*/getDefaultExportFromCjs(lib$h);
 
 	var _version$q = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "contracts/5.6.2";
+	exports.version = "contracts/5.7.0";
 
 	});
 
 	var _version$r = /*@__PURE__*/getDefaultExportFromCjs(_version$q);
 
-	var lib$f = createCommonjsModule(function (module, exports) {
+	var lib$i = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
 	    var extendStatics = function (d, b) {
@@ -18770,7 +19304,7 @@
 	                        tx.type = ro.type;
 	                    }
 	                    if (ro.accessList != null) {
-	                        tx.accessList = (0, lib$e.accessListify)(ro.accessList);
+	                        tx.accessList = (0, lib$h.accessListify)(ro.accessList);
 	                    }
 	                    // If there was no "gasLimit" override, but the ABI specifies a default, use it
 	                    if (tx.gasLimit == null && fragment.gas != null) {
@@ -19109,7 +19643,7 @@
 	        }
 	    };
 	    FragmentRunningEvent.prototype.getEmit = function (event) {
-	        var errors = (0, lib$a.checkResultErrors)(event.args);
+	        var errors = (0, lib$d.checkResultErrors)(event.args);
 	        if (errors.length) {
 	            throw errors[0].error;
 	        }
@@ -19161,11 +19695,11 @@
 	            (0, lib$3.defineReadOnly)(this, "provider", null);
 	            (0, lib$3.defineReadOnly)(this, "signer", null);
 	        }
-	        else if (lib$c.Signer.isSigner(signerOrProvider)) {
+	        else if (lib$f.Signer.isSigner(signerOrProvider)) {
 	            (0, lib$3.defineReadOnly)(this, "provider", signerOrProvider.provider || null);
 	            (0, lib$3.defineReadOnly)(this, "signer", signerOrProvider);
 	        }
-	        else if (lib$b.Provider.isProvider(signerOrProvider)) {
+	        else if (lib$e.Provider.isProvider(signerOrProvider)) {
 	            (0, lib$3.defineReadOnly)(this, "provider", signerOrProvider);
 	            (0, lib$3.defineReadOnly)(this, "signer", null);
 	        }
@@ -19301,10 +19835,10 @@
 	        return (0, lib$6.getContractAddress)(transaction);
 	    };
 	    BaseContract.getInterface = function (contractInterface) {
-	        if (lib$a.Interface.isInterface(contractInterface)) {
+	        if (lib$d.Interface.isInterface(contractInterface)) {
 	            return contractInterface;
 	        }
-	        return new lib$a.Interface(contractInterface);
+	        return new lib$d.Interface(contractInterface);
 	    };
 	    // @TODO: Allow timeout?
 	    BaseContract.prototype.deployed = function () {
@@ -19360,7 +19894,7 @@
 	    // Reconnect to a different signer or provider
 	    BaseContract.prototype.connect = function (signerOrProvider) {
 	        if (typeof (signerOrProvider) === "string") {
-	            signerOrProvider = new lib$c.VoidSigner(signerOrProvider, this.provider);
+	            signerOrProvider = new lib$f.VoidSigner(signerOrProvider, this.provider);
 	        }
 	        var contract = new (this.constructor)(this.address, this.interface, signerOrProvider);
 	        if (this.deployTransaction) {
@@ -19373,7 +19907,7 @@
 	        return new (this.constructor)(addressOrName, this.interface, this.signer || this.provider);
 	    };
 	    BaseContract.isIndexed = function (value) {
-	        return lib$a.Indexed.isIndexed(value);
+	        return lib$d.Indexed.isIndexed(value);
 	    };
 	    BaseContract.prototype._normalizeRunningEvent = function (runningEvent) {
 	        // Already have an instance of this event running; we can re-use it
@@ -19625,7 +20159,7 @@
 	            logger.throwArgumentError("invalid bytecode", "bytecode", bytecode);
 	        }
 	        // If we have a signer, make sure it is valid
-	        if (signer && !lib$c.Signer.isSigner(signer)) {
+	        if (signer && !lib$f.Signer.isSigner(signer)) {
 	            logger.throwArgumentError("invalid signer", "signer", signer);
 	        }
 	        (0, lib$3.defineReadOnly)(this, "bytecode", bytecodeHex);
@@ -19746,9 +20280,9 @@
 
 	});
 
-	var index$f = /*@__PURE__*/getDefaultExportFromCjs(lib$f);
+	var index$g = /*@__PURE__*/getDefaultExportFromCjs(lib$i);
 
-	var lib$g = createCommonjsModule(function (module, exports) {
+	var lib$j = createCommonjsModule(function (module, exports) {
 	"use strict";
 	/**
 	 * var basex = require("base-x");
@@ -19876,7 +20410,7 @@
 
 	});
 
-	var index$g = /*@__PURE__*/getDefaultExportFromCjs(lib$g);
+	var index$h = /*@__PURE__*/getDefaultExportFromCjs(lib$j);
 
 	var types = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -19897,7 +20431,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "sha2/5.6.1";
+	exports.version = "sha2/5.7.0";
 
 	});
 
@@ -19944,7 +20478,7 @@
 
 	var browserSha2$1 = /*@__PURE__*/getDefaultExportFromCjs(browserSha2);
 
-	var lib$h = createCommonjsModule(function (module, exports) {
+	var lib$k = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.SupportedAlgorithm = exports.sha512 = exports.sha256 = exports.ripemd160 = exports.computeHmac = void 0;
@@ -19958,7 +20492,7 @@
 
 	});
 
-	var index$h = /*@__PURE__*/getDefaultExportFromCjs(lib$h);
+	var index$i = /*@__PURE__*/getDefaultExportFromCjs(lib$k);
 
 	var browserPbkdf2 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -19984,7 +20518,7 @@
 	        block1[salt.length + 2] = (i >> 8) & 0xff;
 	        block1[salt.length + 3] = i & 0xff;
 	        //let U = createHmac(password).update(block1).digest();
-	        var U = (0, lib$1.arrayify)((0, lib$h.computeHmac)(hashAlgorithm, password, block1));
+	        var U = (0, lib$1.arrayify)((0, lib$k.computeHmac)(hashAlgorithm, password, block1));
 	        if (!hLen) {
 	            hLen = U.length;
 	            T = new Uint8Array(hLen);
@@ -19995,7 +20529,7 @@
 	        T.set(U);
 	        for (var j = 1; j < iterations; j++) {
 	            //U = createHmac(password).update(U).digest();
-	            U = (0, lib$1.arrayify)((0, lib$h.computeHmac)(hashAlgorithm, password, U));
+	            U = (0, lib$1.arrayify)((0, lib$k.computeHmac)(hashAlgorithm, password, U));
 	            for (var k = 0; k < hLen; k++)
 	                T[k] ^= U[k];
 	        }
@@ -20012,7 +20546,7 @@
 
 	var browserPbkdf2$1 = /*@__PURE__*/getDefaultExportFromCjs(browserPbkdf2);
 
-	var lib$i = createCommonjsModule(function (module, exports) {
+	var lib$l = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.pbkdf2 = void 0;
@@ -20021,13 +20555,13 @@
 
 	});
 
-	var index$i = /*@__PURE__*/getDefaultExportFromCjs(lib$i);
+	var index$j = /*@__PURE__*/getDefaultExportFromCjs(lib$l);
 
 	var _version$u = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "wordlists/5.6.1";
+	exports.version = "wordlists/5.7.0";
 
 	});
 
@@ -20068,7 +20602,7 @@
 	            }
 	            words.push(word);
 	        }
-	        return (0, lib$9.id)(words.join("\n") + "\n");
+	        return (0, lib$c.id)(words.join("\n") + "\n");
 	    };
 	    Wordlist.register = function (lang, name) {
 	        if (!name) {
@@ -20165,7 +20699,7 @@
 
 	var browserWordlists$1 = /*@__PURE__*/getDefaultExportFromCjs(browserWordlists);
 
-	var lib$j = createCommonjsModule(function (module, exports) {
+	var lib$m = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.wordlists = exports.Wordlist = exports.logger = void 0;
@@ -20179,19 +20713,19 @@
 
 	});
 
-	var index$j = /*@__PURE__*/getDefaultExportFromCjs(lib$j);
+	var index$k = /*@__PURE__*/getDefaultExportFromCjs(lib$m);
 
 	var _version$w = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "hdnode/5.6.2";
+	exports.version = "hdnode/5.7.0";
 
 	});
 
 	var _version$x = /*@__PURE__*/getDefaultExportFromCjs(_version$w);
 
-	var lib$k = createCommonjsModule(function (module, exports) {
+	var lib$n = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.getAccountPath = exports.isValidMnemonic = exports.entropyToMnemonic = exports.mnemonicToEntropy = exports.mnemonicToSeed = exports.HDNode = exports.defaultPath = void 0;
@@ -20224,14 +20758,14 @@
 	    return (0, lib$1.hexZeroPad)((0, lib$1.hexlify)(value), 32);
 	}
 	function base58check(data) {
-	    return lib$g.Base58.encode((0, lib$1.concat)([data, (0, lib$1.hexDataSlice)((0, lib$h.sha256)((0, lib$h.sha256)(data)), 0, 4)]));
+	    return lib$j.Base58.encode((0, lib$1.concat)([data, (0, lib$1.hexDataSlice)((0, lib$k.sha256)((0, lib$k.sha256)(data)), 0, 4)]));
 	}
 	function getWordlist(wordlist) {
 	    if (wordlist == null) {
-	        return lib$j.wordlists["en"];
+	        return lib$m.wordlists["en"];
 	    }
 	    if (typeof (wordlist) === "string") {
-	        var words = lib$j.wordlists[wordlist];
+	        var words = lib$m.wordlists[wordlist];
 	        if (words == null) {
 	            logger.throwArgumentError("unknown locale", "wordlist", wordlist);
 	        }
@@ -20256,7 +20790,7 @@
 	            throw new Error("HDNode constructor cannot be called directly");
 	        }
 	        if (privateKey) {
-	            var signingKey = new lib$d.SigningKey(privateKey);
+	            var signingKey = new lib$g.SigningKey(privateKey);
 	            (0, lib$3.defineReadOnly)(this, "privateKey", signingKey.privateKey);
 	            (0, lib$3.defineReadOnly)(this, "publicKey", signingKey.compressedPublicKey);
 	        }
@@ -20265,8 +20799,8 @@
 	            (0, lib$3.defineReadOnly)(this, "publicKey", (0, lib$1.hexlify)(publicKey));
 	        }
 	        (0, lib$3.defineReadOnly)(this, "parentFingerprint", parentFingerprint);
-	        (0, lib$3.defineReadOnly)(this, "fingerprint", (0, lib$1.hexDataSlice)((0, lib$h.ripemd160)((0, lib$h.sha256)(this.publicKey)), 0, 4));
-	        (0, lib$3.defineReadOnly)(this, "address", (0, lib$e.computeAddress)(this.publicKey));
+	        (0, lib$3.defineReadOnly)(this, "fingerprint", (0, lib$1.hexDataSlice)((0, lib$k.ripemd160)((0, lib$k.sha256)(this.publicKey)), 0, 4));
+	        (0, lib$3.defineReadOnly)(this, "address", (0, lib$h.computeAddress)(this.publicKey));
 	        (0, lib$3.defineReadOnly)(this, "chainCode", chainCode);
 	        (0, lib$3.defineReadOnly)(this, "index", index);
 	        (0, lib$3.defineReadOnly)(this, "depth", depth);
@@ -20340,7 +20874,7 @@
 	        for (var i = 24; i >= 0; i -= 8) {
 	            data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff);
 	        }
-	        var I = (0, lib$1.arrayify)((0, lib$h.computeHmac)(lib$h.SupportedAlgorithm.sha512, this.chainCode, data));
+	        var I = (0, lib$1.arrayify)((0, lib$k.computeHmac)(lib$k.SupportedAlgorithm.sha512, this.chainCode, data));
 	        var IL = I.slice(0, 32);
 	        var IR = I.slice(32);
 	        // The private key
@@ -20351,7 +20885,7 @@
 	            ki = bytes32(lib$2.BigNumber.from(IL).add(this.privateKey).mod(N));
 	        }
 	        else {
-	            var ek = new lib$d.SigningKey((0, lib$1.hexlify)(IL));
+	            var ek = new lib$g.SigningKey((0, lib$1.hexlify)(IL));
 	            Ki = ek._addPoint(this.publicKey);
 	        }
 	        var mnemonicOrPath = path;
@@ -20401,7 +20935,7 @@
 	        if (seedArray.length < 16 || seedArray.length > 64) {
 	            throw new Error("invalid seed");
 	        }
-	        var I = (0, lib$1.arrayify)((0, lib$h.computeHmac)(lib$h.SupportedAlgorithm.sha512, MasterSecret, seedArray));
+	        var I = (0, lib$1.arrayify)((0, lib$k.computeHmac)(lib$k.SupportedAlgorithm.sha512, MasterSecret, seedArray));
 	        return new HDNode(_constructorGuard, bytes32(I.slice(0, 32)), null, "0x00000000", bytes32(I.slice(32)), 0, 0, mnemonic);
 	    };
 	    HDNode.fromMnemonic = function (mnemonic, password, wordlist) {
@@ -20419,7 +20953,7 @@
 	        return HDNode._fromSeed(seed, null);
 	    };
 	    HDNode.fromExtendedKey = function (extendedKey) {
-	        var bytes = lib$g.Base58.decode(extendedKey);
+	        var bytes = lib$j.Base58.decode(extendedKey);
 	        if (bytes.length !== 82 || base58check(bytes.slice(0, 78)) !== extendedKey) {
 	            logger.throwArgumentError("invalid extended key", "extendedKey", "[REDACTED]");
 	        }
@@ -20451,7 +20985,7 @@
 	        password = "";
 	    }
 	    var salt = (0, lib$8.toUtf8Bytes)("mnemonic" + password, lib$8.UnicodeNormalizationForm.NFKD);
-	    return (0, lib$i.pbkdf2)((0, lib$8.toUtf8Bytes)(mnemonic, lib$8.UnicodeNormalizationForm.NFKD), salt, 2048, 64, "sha512");
+	    return (0, lib$l.pbkdf2)((0, lib$8.toUtf8Bytes)(mnemonic, lib$8.UnicodeNormalizationForm.NFKD), salt, 2048, 64, "sha512");
 	}
 	exports.mnemonicToSeed = mnemonicToSeed;
 	function mnemonicToEntropy(mnemonic, wordlist) {
@@ -20478,7 +21012,7 @@
 	    var entropyBits = 32 * words.length / 3;
 	    var checksumBits = words.length / 3;
 	    var checksumMask = getUpperMask(checksumBits);
-	    var checksum = (0, lib$1.arrayify)((0, lib$h.sha256)(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
+	    var checksum = (0, lib$1.arrayify)((0, lib$k.sha256)(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
 	    if (checksum !== (entropy[entropy.length - 1] & checksumMask)) {
 	        throw new Error("invalid checksum");
 	    }
@@ -20511,7 +21045,7 @@
 	    }
 	    // Compute the checksum bits
 	    var checksumBits = entropy.length / 4;
-	    var checksum = (0, lib$1.arrayify)((0, lib$h.sha256)(entropy))[0] & getUpperMask(checksumBits);
+	    var checksum = (0, lib$1.arrayify)((0, lib$k.sha256)(entropy))[0] & getUpperMask(checksumBits);
 	    // Shift the checksum into the word indices
 	    indices[indices.length - 1] <<= checksumBits;
 	    indices[indices.length - 1] |= (checksum >> (8 - checksumBits));
@@ -20537,13 +21071,13 @@
 
 	});
 
-	var index$k = /*@__PURE__*/getDefaultExportFromCjs(lib$k);
+	var index$l = /*@__PURE__*/getDefaultExportFromCjs(lib$n);
 
 	var _version$y = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "random/5.6.1";
+	exports.version = "random/5.7.0";
 
 	});
 
@@ -20620,7 +21154,7 @@
 
 	var shuffle$1 = /*@__PURE__*/getDefaultExportFromCjs(shuffle);
 
-	var lib$l = createCommonjsModule(function (module, exports) {
+	var lib$o = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.shuffled = exports.randomBytes = void 0;
@@ -20631,7 +21165,7 @@
 
 	});
 
-	var index$l = /*@__PURE__*/getDefaultExportFromCjs(lib$l);
+	var index$m = /*@__PURE__*/getDefaultExportFromCjs(lib$o);
 
 	var aesJs = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -21438,7 +21972,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "json-wallets/5.6.1";
+	exports.version = "json-wallets/5.7.0";
 
 	});
 
@@ -21574,7 +22108,7 @@
 	    if (!encseed || (encseed.length % 16) !== 0) {
 	        logger.throwArgumentError("invalid encseed", "json", json);
 	    }
-	    var key = (0, lib$1.arrayify)((0, lib$i.pbkdf2)(password, password, 2000, 32, "sha256")).slice(0, 16);
+	    var key = (0, lib$1.arrayify)((0, lib$l.pbkdf2)(password, password, 2000, 32, "sha256")).slice(0, 16);
 	    var iv = encseed.slice(0, 16);
 	    var encryptedSeed = encseed.slice(16);
 	    // Decrypt the seed
@@ -22259,7 +22793,7 @@
 	        });
 	    }
 	    var mnemonicKey = key.slice(32, 64);
-	    var address = (0, lib$e.computeAddress)(privateKey);
+	    var address = (0, lib$h.computeAddress)(privateKey);
 	    if (data.address) {
 	        var check = data.address.toLowerCase();
 	        if (check.substring(0, 2) !== "0x") {
@@ -22280,12 +22814,12 @@
 	        var mnemonicIv = (0, utils$1.looseArrayify)((0, utils$1.searchPath)(data, "x-ethers/mnemonicCounter"));
 	        var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
 	        var mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
-	        var path = (0, utils$1.searchPath)(data, "x-ethers/path") || lib$k.defaultPath;
+	        var path = (0, utils$1.searchPath)(data, "x-ethers/path") || lib$n.defaultPath;
 	        var locale = (0, utils$1.searchPath)(data, "x-ethers/locale") || "en";
 	        var entropy = (0, lib$1.arrayify)(mnemonicAesCtr.decrypt(mnemonicCiphertext));
 	        try {
-	            var mnemonic = (0, lib$k.entropyToMnemonic)(entropy, locale);
-	            var node = lib$k.HDNode.fromMnemonic(mnemonic, null, locale).derivePath(path);
+	            var mnemonic = (0, lib$n.entropyToMnemonic)(entropy, locale);
+	            var node = lib$n.HDNode.fromMnemonic(mnemonic, null, locale).derivePath(path);
 	            if (node.privateKey != account.privateKey) {
 	                throw new Error("mnemonic mismatch");
 	            }
@@ -22303,7 +22837,7 @@
 	    return new KeystoreAccount(account);
 	}
 	function pbkdf2Sync(passwordBytes, salt, count, dkLen, prfFunc) {
-	    return (0, lib$1.arrayify)((0, lib$i.pbkdf2)(passwordBytes, salt, count, dkLen, prfFunc));
+	    return (0, lib$1.arrayify)((0, lib$l.pbkdf2)(passwordBytes, salt, count, dkLen, prfFunc));
 	}
 	function pbkdf2(passwordBytes, salt, count, dkLen, prfFunc) {
 	    return Promise.resolve(pbkdf2Sync(passwordBytes, salt, count, dkLen, prfFunc));
@@ -22382,13 +22916,13 @@
 	function encrypt(account, password, options, progressCallback) {
 	    try {
 	        // Check the address matches the private key
-	        if ((0, lib$6.getAddress)(account.address) !== (0, lib$e.computeAddress)(account.privateKey)) {
+	        if ((0, lib$6.getAddress)(account.address) !== (0, lib$h.computeAddress)(account.privateKey)) {
 	            throw new Error("address/privateKey mismatch");
 	        }
 	        // Check the mnemonic (if any) matches the private key
 	        if (hasMnemonic(account)) {
 	            var mnemonic = account.mnemonic;
-	            var node = lib$k.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path || lib$k.defaultPath);
+	            var node = lib$n.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path || lib$n.defaultPath);
 	            if (node.privateKey != account.privateKey) {
 	                throw new Error("mnemonic mismatch");
 	            }
@@ -22412,8 +22946,8 @@
 	    var locale = null;
 	    if (hasMnemonic(account)) {
 	        var srcMnemonic = account.mnemonic;
-	        entropy = (0, lib$1.arrayify)((0, lib$k.mnemonicToEntropy)(srcMnemonic.phrase, srcMnemonic.locale || "en"));
-	        path = srcMnemonic.path || lib$k.defaultPath;
+	        entropy = (0, lib$1.arrayify)((0, lib$n.mnemonicToEntropy)(srcMnemonic.phrase, srcMnemonic.locale || "en"));
+	        path = srcMnemonic.path || lib$n.defaultPath;
 	        locale = srcMnemonic.locale || "en";
 	    }
 	    var client = options.client;
@@ -22426,7 +22960,7 @@
 	        salt = (0, lib$1.arrayify)(options.salt);
 	    }
 	    else {
-	        salt = (0, lib$l.randomBytes)(32);
+	        salt = (0, lib$o.randomBytes)(32);
 	        ;
 	    }
 	    // Override initialization vector
@@ -22438,7 +22972,7 @@
 	        }
 	    }
 	    else {
-	        iv = (0, lib$l.randomBytes)(16);
+	        iv = (0, lib$o.randomBytes)(16);
 	    }
 	    // Override the uuid
 	    var uuidRandom = null;
@@ -22449,7 +22983,7 @@
 	        }
 	    }
 	    else {
-	        uuidRandom = (0, lib$l.randomBytes)(16);
+	        uuidRandom = (0, lib$o.randomBytes)(16);
 	    }
 	    // Override the scrypt password-based key derivation function parameters
 	    var N = (1 << 17), r = 8, p = 1;
@@ -22485,7 +23019,7 @@
 	            address: account.address.substring(2).toLowerCase(),
 	            id: (0, utils$1.uuidV4)(uuidRandom),
 	            version: 3,
-	            Crypto: {
+	            crypto: {
 	                cipher: "aes-128-ctr",
 	                cipherparams: {
 	                    iv: (0, lib$1.hexlify)(iv).substring(2),
@@ -22504,7 +23038,7 @@
 	        };
 	        // If we have a mnemonic, encrypt it into the JSON wallet
 	        if (entropy) {
-	            var mnemonicIv = (0, lib$l.randomBytes)(16);
+	            var mnemonicIv = (0, lib$o.randomBytes)(16);
 	            var mnemonicCounter = new aes_js_1.default.Counter(mnemonicIv);
 	            var mnemonicAesCtr = new aes_js_1.default.ModeOfOperation.ctr(mnemonicKey, mnemonicCounter);
 	            var mnemonicCiphertext = (0, lib$1.arrayify)(mnemonicAesCtr.encrypt(entropy));
@@ -22534,7 +23068,7 @@
 
 	var keystore$1 = /*@__PURE__*/getDefaultExportFromCjs(keystore);
 
-	var lib$m = createCommonjsModule(function (module, exports) {
+	var lib$p = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.decryptJsonWalletSync = exports.decryptJsonWallet = exports.getJsonWalletAddress = exports.isKeystoreWallet = exports.isCrowdsaleWallet = exports.encryptKeystore = exports.decryptKeystoreSync = exports.decryptKeystore = exports.decryptCrowdsale = void 0;
@@ -22578,19 +23112,19 @@
 
 	});
 
-	var index$m = /*@__PURE__*/getDefaultExportFromCjs(lib$m);
+	var index$n = /*@__PURE__*/getDefaultExportFromCjs(lib$p);
 
 	var _version$C = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "wallet/5.6.2";
+	exports.version = "wallet/5.7.0";
 
 	});
 
 	var _version$D = /*@__PURE__*/getDefaultExportFromCjs(_version$C);
 
-	var lib$n = createCommonjsModule(function (module, exports) {
+	var lib$q = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
 	    var extendStatics = function (d, b) {
@@ -22672,9 +23206,9 @@
 	    function Wallet(privateKey, provider) {
 	        var _this = _super.call(this) || this;
 	        if (isAccount(privateKey)) {
-	            var signingKey_1 = new lib$d.SigningKey(privateKey.privateKey);
+	            var signingKey_1 = new lib$g.SigningKey(privateKey.privateKey);
 	            (0, lib$3.defineReadOnly)(_this, "_signingKey", function () { return signingKey_1; });
-	            (0, lib$3.defineReadOnly)(_this, "address", (0, lib$e.computeAddress)(_this.publicKey));
+	            (0, lib$3.defineReadOnly)(_this, "address", (0, lib$h.computeAddress)(_this.publicKey));
 	            if (_this.address !== (0, lib$6.getAddress)(privateKey.address)) {
 	                logger.throwArgumentError("privateKey/address mismatch", "privateKey", "[REDACTED]");
 	            }
@@ -22682,12 +23216,12 @@
 	                var srcMnemonic_1 = privateKey.mnemonic;
 	                (0, lib$3.defineReadOnly)(_this, "_mnemonic", function () { return ({
 	                    phrase: srcMnemonic_1.phrase,
-	                    path: srcMnemonic_1.path || lib$k.defaultPath,
+	                    path: srcMnemonic_1.path || lib$n.defaultPath,
 	                    locale: srcMnemonic_1.locale || "en"
 	                }); });
 	                var mnemonic = _this.mnemonic;
-	                var node = lib$k.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
-	                if ((0, lib$e.computeAddress)(node.privateKey) !== _this.address) {
+	                var node = lib$n.HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path);
+	                if ((0, lib$h.computeAddress)(node.privateKey) !== _this.address) {
 	                    logger.throwArgumentError("mnemonic/address mismatch", "privateKey", "[REDACTED]");
 	                }
 	            }
@@ -22696,7 +23230,7 @@
 	            }
 	        }
 	        else {
-	            if (lib$d.SigningKey.isSigningKey(privateKey)) {
+	            if (lib$g.SigningKey.isSigningKey(privateKey)) {
 	                /* istanbul ignore if */
 	                if (privateKey.curve !== "secp256k1") {
 	                    logger.throwArgumentError("unsupported curve; must be secp256k1", "privateKey", "[REDACTED]");
@@ -22710,14 +23244,14 @@
 	                        privateKey = "0x" + privateKey;
 	                    }
 	                }
-	                var signingKey_2 = new lib$d.SigningKey(privateKey);
+	                var signingKey_2 = new lib$g.SigningKey(privateKey);
 	                (0, lib$3.defineReadOnly)(_this, "_signingKey", function () { return signingKey_2; });
 	            }
 	            (0, lib$3.defineReadOnly)(_this, "_mnemonic", function () { return null; });
-	            (0, lib$3.defineReadOnly)(_this, "address", (0, lib$e.computeAddress)(_this.publicKey));
+	            (0, lib$3.defineReadOnly)(_this, "address", (0, lib$h.computeAddress)(_this.publicKey));
 	        }
 	        /* istanbul ignore if */
-	        if (provider && !lib$b.Provider.isProvider(provider)) {
+	        if (provider && !lib$e.Provider.isProvider(provider)) {
 	            logger.throwArgumentError("invalid provider", "provider", provider);
 	        }
 	        (0, lib$3.defineReadOnly)(_this, "provider", provider || null);
@@ -22753,14 +23287,14 @@
 	                }
 	                delete tx.from;
 	            }
-	            var signature = _this._signingKey().signDigest((0, lib$4.keccak256)((0, lib$e.serialize)(tx)));
-	            return (0, lib$e.serialize)(tx, signature);
+	            var signature = _this._signingKey().signDigest((0, lib$4.keccak256)((0, lib$h.serialize)(tx)));
+	            return (0, lib$h.serialize)(tx, signature);
 	        });
 	    };
 	    Wallet.prototype.signMessage = function (message) {
 	        return __awaiter(this, void 0, void 0, function () {
 	            return __generator(this, function (_a) {
-	                return [2 /*return*/, (0, lib$1.joinSignature)(this._signingKey().signDigest((0, lib$9.hashMessage)(message)))];
+	                return [2 /*return*/, (0, lib$1.joinSignature)(this._signingKey().signDigest((0, lib$c.hashMessage)(message)))];
 	            });
 	        });
 	    };
@@ -22770,7 +23304,7 @@
 	            var _this = this;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, lib$9._TypedDataEncoder.resolveNames(domain, types, value, function (name) {
+	                    case 0: return [4 /*yield*/, lib$c._TypedDataEncoder.resolveNames(domain, types, value, function (name) {
 	                            if (_this.provider == null) {
 	                                logger.throwError("cannot resolve ENS names without a provider", lib.Logger.errors.UNSUPPORTED_OPERATION, {
 	                                    operation: "resolveName",
@@ -22781,7 +23315,7 @@
 	                        })];
 	                    case 1:
 	                        populated = _a.sent();
-	                        return [2 /*return*/, (0, lib$1.joinSignature)(this._signingKey().signDigest(lib$9._TypedDataEncoder.hash(populated.domain, types, populated.value)))];
+	                        return [2 /*return*/, (0, lib$1.joinSignature)(this._signingKey().signDigest(lib$c._TypedDataEncoder.hash(populated.domain, types, populated.value)))];
 	                }
 	            });
 	        });
@@ -22797,63 +23331,63 @@
 	        if (!options) {
 	            options = {};
 	        }
-	        return (0, lib$m.encryptKeystore)(this, password, options, progressCallback);
+	        return (0, lib$p.encryptKeystore)(this, password, options, progressCallback);
 	    };
 	    /**
 	     *  Static methods to create Wallet instances.
 	     */
 	    Wallet.createRandom = function (options) {
-	        var entropy = (0, lib$l.randomBytes)(16);
+	        var entropy = (0, lib$o.randomBytes)(16);
 	        if (!options) {
 	            options = {};
 	        }
 	        if (options.extraEntropy) {
 	            entropy = (0, lib$1.arrayify)((0, lib$1.hexDataSlice)((0, lib$4.keccak256)((0, lib$1.concat)([entropy, options.extraEntropy])), 0, 16));
 	        }
-	        var mnemonic = (0, lib$k.entropyToMnemonic)(entropy, options.locale);
+	        var mnemonic = (0, lib$n.entropyToMnemonic)(entropy, options.locale);
 	        return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
 	    };
 	    Wallet.fromEncryptedJson = function (json, password, progressCallback) {
-	        return (0, lib$m.decryptJsonWallet)(json, password, progressCallback).then(function (account) {
+	        return (0, lib$p.decryptJsonWallet)(json, password, progressCallback).then(function (account) {
 	            return new Wallet(account);
 	        });
 	    };
 	    Wallet.fromEncryptedJsonSync = function (json, password) {
-	        return new Wallet((0, lib$m.decryptJsonWalletSync)(json, password));
+	        return new Wallet((0, lib$p.decryptJsonWalletSync)(json, password));
 	    };
 	    Wallet.fromMnemonic = function (mnemonic, path, wordlist) {
 	        if (!path) {
-	            path = lib$k.defaultPath;
+	            path = lib$n.defaultPath;
 	        }
-	        return new Wallet(lib$k.HDNode.fromMnemonic(mnemonic, null, wordlist).derivePath(path));
+	        return new Wallet(lib$n.HDNode.fromMnemonic(mnemonic, null, wordlist).derivePath(path));
 	    };
 	    return Wallet;
-	}(lib$c.Signer));
+	}(lib$f.Signer));
 	exports.Wallet = Wallet;
 	function verifyMessage(message, signature) {
-	    return (0, lib$e.recoverAddress)((0, lib$9.hashMessage)(message), signature);
+	    return (0, lib$h.recoverAddress)((0, lib$c.hashMessage)(message), signature);
 	}
 	exports.verifyMessage = verifyMessage;
 	function verifyTypedData(domain, types, value, signature) {
-	    return (0, lib$e.recoverAddress)(lib$9._TypedDataEncoder.hash(domain, types, value), signature);
+	    return (0, lib$h.recoverAddress)(lib$c._TypedDataEncoder.hash(domain, types, value), signature);
 	}
 	exports.verifyTypedData = verifyTypedData;
 
 	});
 
-	var index$n = /*@__PURE__*/getDefaultExportFromCjs(lib$n);
+	var index$o = /*@__PURE__*/getDefaultExportFromCjs(lib$q);
 
 	var _version$E = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "networks/5.6.4";
+	exports.version = "networks/5.7.0";
 
 	});
 
 	var _version$F = /*@__PURE__*/getDefaultExportFromCjs(_version$E);
 
-	var lib$o = createCommonjsModule(function (module, exports) {
+	var lib$r = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.getNetwork = void 0;
@@ -23023,6 +23557,7 @@
 	    "optimism-goerli": { chainId: 420, name: "optimism-goerli" },
 	    arbitrum: { chainId: 42161, name: "arbitrum" },
 	    "arbitrum-rinkeby": { chainId: 421611, name: "arbitrum-rinkeby" },
+	    "arbitrum-goerli": { chainId: 421613, name: "arbitrum-goerli" },
 	    bnb: { chainId: 56, name: "bnb" },
 	    bnbt: { chainId: 97, name: "bnbt" },
 	};
@@ -23101,53 +23636,13 @@
 
 	});
 
-	var index$o = /*@__PURE__*/getDefaultExportFromCjs(lib$o);
-
-	var browserBase64 = createCommonjsModule(function (module, exports) {
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.encode = exports.decode = void 0;
-
-	function decode(textData) {
-	    textData = atob(textData);
-	    var data = [];
-	    for (var i = 0; i < textData.length; i++) {
-	        data.push(textData.charCodeAt(i));
-	    }
-	    return (0, lib$1.arrayify)(data);
-	}
-	exports.decode = decode;
-	function encode(data) {
-	    data = (0, lib$1.arrayify)(data);
-	    var textData = "";
-	    for (var i = 0; i < data.length; i++) {
-	        textData += String.fromCharCode(data[i]);
-	    }
-	    return btoa(textData);
-	}
-	exports.encode = encode;
-
-	});
-
-	var browserBase64$1 = /*@__PURE__*/getDefaultExportFromCjs(browserBase64);
-
-	var lib$p = createCommonjsModule(function (module, exports) {
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.encode = exports.decode = void 0;
-
-	Object.defineProperty(exports, "decode", { enumerable: true, get: function () { return browserBase64.decode; } });
-	Object.defineProperty(exports, "encode", { enumerable: true, get: function () { return browserBase64.encode; } });
-
-	});
-
-	var index$p = /*@__PURE__*/getDefaultExportFromCjs(lib$p);
+	var index$p = /*@__PURE__*/getDefaultExportFromCjs(lib$r);
 
 	var _version$G = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "web/5.6.1";
+	exports.version = "web/5.7.0";
 
 	});
 
@@ -23196,7 +23691,7 @@
 
 	function getUrl(href, options) {
 	    return __awaiter(this, void 0, void 0, function () {
-	        var request, response, body, headers;
+	        var request, opts, response, body, headers;
 	        return __generator(this, function (_a) {
 	            switch (_a.label) {
 	                case 0:
@@ -23216,6 +23711,24 @@
 	                        request.referrer = "client"; // no-referrer, *client
 	                    }
 	                    ;
+	                    if (options.fetchOptions != null) {
+	                        opts = options.fetchOptions;
+	                        if (opts.mode) {
+	                            request.mode = (opts.mode);
+	                        }
+	                        if (opts.cache) {
+	                            request.cache = (opts.cache);
+	                        }
+	                        if (opts.credentials) {
+	                            request.credentials = (opts.credentials);
+	                        }
+	                        if (opts.redirect) {
+	                            request.redirect = (opts.redirect);
+	                        }
+	                        if (opts.referrer) {
+	                            request.referrer = opts.referrer;
+	                        }
+	                    }
 	                    return [4 /*yield*/, fetch(href, request)];
 	                case 1:
 	                    response = _a.sent();
@@ -23249,7 +23762,7 @@
 
 	var browserGeturl$1 = /*@__PURE__*/getDefaultExportFromCjs(browserGeturl);
 
-	var lib$q = createCommonjsModule(function (module, exports) {
+	var lib$s = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
 	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -23370,11 +23883,14 @@
 	            var authorization = connection.user + ":" + connection.password;
 	            headers["authorization"] = {
 	                key: "Authorization",
-	                value: "Basic " + (0, lib$p.encode)((0, lib$8.toUtf8Bytes)(authorization))
+	                value: "Basic " + (0, lib$9.encode)((0, lib$8.toUtf8Bytes)(authorization))
 	            };
 	        }
 	        if (connection.skipFetchSetup != null) {
 	            options.skipFetchSetup = !!connection.skipFetchSetup;
+	        }
+	        if (connection.fetchOptions != null) {
+	            options.fetchOptions = (0, lib$3.shallowCopy)(connection.fetchOptions);
 	        }
 	    }
 	    var reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
@@ -23385,7 +23901,7 @@
 	                statusCode: 200,
 	                statusMessage: "OK",
 	                headers: { "content-type": dataMatch[1] },
-	                body: (0, lib$p.decode)(dataMatch[2])
+	                body: (0, lib$9.decode)(dataMatch[2])
 	            };
 	            var result = response.body;
 	            if (processFunc) {
@@ -23707,7 +24223,7 @@
 
 	});
 
-	var index$q = /*@__PURE__*/getDefaultExportFromCjs(lib$q);
+	var index$q = /*@__PURE__*/getDefaultExportFromCjs(lib$s);
 
 	'use strict';
 	var ALPHABET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
@@ -23896,7 +24412,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.6.8";
+	exports.version = "providers/5.7.0";
 
 	});
 
@@ -24035,7 +24551,7 @@
 	        return formats;
 	    };
 	    Formatter.prototype.accessList = function (accessList) {
-	        return (0, lib$e.accessListify)(accessList || []);
+	        return (0, lib$h.accessListify)(accessList || []);
 	    };
 	    // Requires a BigNumberish that is within the IEEE754 safe integer range; returns a number
 	    // Strict! Used on input.
@@ -24112,8 +24628,13 @@
 	        if (blockTag === "earliest") {
 	            return "0x0";
 	        }
-	        if (blockTag === "latest" || blockTag === "pending") {
-	            return blockTag;
+	        switch (blockTag) {
+	            case "earliest": return "0x0";
+	            case "latest":
+	            case "pending":
+	            case "safe":
+	            case "finalized":
+	                return blockTag;
 	        }
 	        if (typeof (blockTag) === "number" || (0, lib$1.isHexString)(blockTag)) {
 	            return (0, lib$1.hexValue)(blockTag);
@@ -24223,7 +24744,7 @@
 	        return result;
 	    };
 	    Formatter.prototype.transaction = function (value) {
-	        return (0, lib$e.parse)(value);
+	        return (0, lib$h.parse)(value);
 	    };
 	    Formatter.prototype.receiptLog = function (value) {
 	        return Formatter.check(this.formats.receiptLog, value);
@@ -24495,7 +25016,7 @@
 	    else if (Array.isArray(eventName)) {
 	        return "filter:*:" + serializeTopics(eventName);
 	    }
-	    else if (lib$b.ForkEvent.isForkEvent(eventName)) {
+	    else if (lib$e.ForkEvent.isForkEvent(eventName)) {
 	        logger.warn("not implemented");
 	        throw new Error("not implemented");
 	    }
@@ -24609,7 +25130,7 @@
 	}
 	// Compute the Base58Check encoded data (checksum is first 4 bytes of sha256d)
 	function base58Encode(data) {
-	    return lib$g.Base58.encode((0, lib$1.concat)([data, (0, lib$1.hexDataSlice)((0, lib$h.sha256)((0, lib$h.sha256)(data)), 0, 4)]));
+	    return lib$j.Base58.encode((0, lib$1.concat)([data, (0, lib$1.hexDataSlice)((0, lib$k.sha256)((0, lib$k.sha256)(data)), 0, 4)]));
 	}
 	var matcherIpfs = new RegExp("^(ipfs):/\/(.*)$", "i");
 	var matchers = [
@@ -24720,7 +25241,7 @@
 	                        tx = {
 	                            to: this.address,
 	                            ccipReadEnabled: true,
-	                            data: (0, lib$1.hexConcat)([selector, (0, lib$9.namehash)(this.name), (parameters || "0x")])
+	                            data: (0, lib$1.hexConcat)([selector, (0, lib$c.namehash)(this.name), (parameters || "0x")])
 	                        };
 	                        parseBytes = false;
 	                        return [4 /*yield*/, this.supportsWildcard()];
@@ -24728,7 +25249,7 @@
 	                        if (_a.sent()) {
 	                            parseBytes = true;
 	                            // selector("resolve(bytes,bytes)")
-	                            tx.data = (0, lib$1.hexConcat)(["0x9061b923", encodeBytes([(0, lib$9.dnsEncode)(this.name), tx.data])]);
+	                            tx.data = (0, lib$1.hexConcat)(["0x9061b923", encodeBytes([(0, lib$c.dnsEncode)(this.name), tx.data])]);
 	                        }
 	                        _a.label = 2;
 	                    case 2:
@@ -24981,7 +25502,7 @@
 	                            metadataUrl = getIpfsLink(metadataUrl);
 	                        }
 	                        linkage.push({ type: "metadata-url", content: metadataUrl });
-	                        return [4 /*yield*/, (0, lib$q.fetchJson)(metadataUrl)];
+	                        return [4 /*yield*/, (0, lib$s.fetchJson)(metadataUrl)];
 	                    case 16:
 	                        metadata = _h.sent();
 	                        if (!metadata) {
@@ -25033,14 +25554,14 @@
 	                        if (ipfs) {
 	                            length_4 = parseInt(ipfs[3], 16);
 	                            if (ipfs[4].length === length_4 * 2) {
-	                                return [2 /*return*/, "ipfs:/\/" + lib$g.Base58.encode("0x" + ipfs[1])];
+	                                return [2 /*return*/, "ipfs:/\/" + lib$j.Base58.encode("0x" + ipfs[1])];
 	                            }
 	                        }
 	                        ipns = hexBytes.match(/^0xe5010172(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
 	                        if (ipns) {
 	                            length_5 = parseInt(ipns[3], 16);
 	                            if (ipns[4].length === length_5 * 2) {
-	                                return [2 /*return*/, "ipns:/\/" + lib$g.Base58.encode("0x" + ipns[1])];
+	                                return [2 /*return*/, "ipns:/\/" + lib$j.Base58.encode("0x" + ipns[1])];
 	                            }
 	                        }
 	                        swarm = hexBytes.match(/^0xe40101fa011b20([0-9a-f]*)$/);
@@ -25053,7 +25574,7 @@
 	                        if (skynet) {
 	                            if (skynet[1].length === (34 * 2)) {
 	                                urlSafe_1 = { "=": "", "+": "-", "/": "_" };
-	                                hash = (0, lib$p.encode)("0x" + skynet[1]).replace(/[=+\/]/g, function (a) { return (urlSafe_1[a]); });
+	                                hash = (0, lib$9.encode)("0x" + skynet[1]).replace(/[=+\/]/g, function (a) { return (urlSafe_1[a]); });
 	                                return [2 /*return*/, "sia:/\/" + hash];
 	                            }
 	                        }
@@ -25198,7 +25719,7 @@
 	        // any change is reflected); otherwise this cannot change
 	        get: function () {
 	            var _this = this;
-	            return (0, lib$q.poll)(function () {
+	            return (0, lib$s.poll)(function () {
 	                return _this._ready().then(function (network) {
 	                    return network;
 	                }, function (error) {
@@ -25222,7 +25743,7 @@
 	    };
 	    // @TODO: Remove this and just use getNetwork
 	    BaseProvider.getNetwork = function (network) {
-	        return (0, lib$o.getNetwork)((network == null) ? "homestead" : network);
+	        return (0, lib$r.getNetwork)((network == null) ? "homestead" : network);
 	    };
 	    BaseProvider.prototype.ccipReadFetch = function (tx, calldata, urls) {
 	        return __awaiter(this, void 0, void 0, function () {
@@ -25243,7 +25764,7 @@
 	                        url = urls[i];
 	                        href = url.replace("{sender}", sender).replace("{data}", data);
 	                        json = (url.indexOf("{data}") >= 0) ? null : JSON.stringify({ data: data, sender: sender });
-	                        return [4 /*yield*/, (0, lib$q.fetchJson)({ url: href, errorPassThrough: true }, json, function (value, response) {
+	                        return [4 /*yield*/, (0, lib$s.fetchJson)({ url: href, errorPassThrough: true }, json, function (value, response) {
 	                                value.status = response.statusCode;
 	                                return value;
 	                            })];
@@ -25442,16 +25963,26 @@
 	                                    // We only allow a single getLogs to be in-flight at a time
 	                                    if (!event._inflight) {
 	                                        event._inflight = true;
-	                                        // Filter from the last known event; due to load-balancing
+	                                        // This is the first filter for this event, so we want to
+	                                        // restrict events to events that happened no earlier than now
+	                                        if (event._lastBlockNumber === -2) {
+	                                            event._lastBlockNumber = blockNumber - 1;
+	                                        }
+	                                        // Filter from the last *known* event; due to load-balancing
 	                                        // and some nodes returning updated block numbers before
 	                                        // indexing events, a logs result with 0 entries cannot be
 	                                        // trusted and we must retry a range which includes it again
 	                                        var filter_1 = event.filter;
 	                                        filter_1.fromBlock = event._lastBlockNumber + 1;
 	                                        filter_1.toBlock = blockNumber;
-	                                        // Prevent fitler ranges from growing too wild
-	                                        if (filter_1.toBlock - _this._maxFilterBlockRange > filter_1.fromBlock) {
-	                                            filter_1.fromBlock = filter_1.toBlock - _this._maxFilterBlockRange;
+	                                        // Prevent fitler ranges from growing too wild, since it is quite
+	                                        // likely there just haven't been any events to move the lastBlockNumber.
+	                                        var minFromBlock = filter_1.toBlock - _this._maxFilterBlockRange;
+	                                        if (minFromBlock > filter_1.fromBlock) {
+	                                            filter_1.fromBlock = minFromBlock;
+	                                        }
+	                                        if (filter_1.fromBlock < 0) {
+	                                            filter_1.fromBlock = 0;
 	                                        }
 	                                        var runner = _this.getLogs(filter_1).then(function (logs) {
 	                                            // Allow the next getLogs
@@ -26370,7 +26901,7 @@
 	                        error_9 = _b.sent();
 	                        logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
 	                        return [3 /*break*/, 6];
-	                    case 6: return [2 /*return*/, (0, lib$q.poll)(function () { return __awaiter(_this, void 0, void 0, function () {
+	                    case 6: return [2 /*return*/, (0, lib$s.poll)(function () { return __awaiter(_this, void 0, void 0, function () {
 	                            var block, blockNumber_1, i, tx, confirmations, blockWithTxs;
 	                            var _this = this;
 	                            return __generator(this, function (_a) {
@@ -26455,7 +26986,7 @@
 	                    case 2:
 	                        transactionHash = _a.sent();
 	                        params = { transactionHash: this.formatter.hash(transactionHash, true) };
-	                        return [2 /*return*/, (0, lib$q.poll)(function () { return __awaiter(_this, void 0, void 0, function () {
+	                        return [2 /*return*/, (0, lib$s.poll)(function () { return __awaiter(_this, void 0, void 0, function () {
 	                                var result, tx, blockNumber, confirmations;
 	                                return __generator(this, function (_a) {
 	                                    switch (_a.label) {
@@ -26504,7 +27035,7 @@
 	                    case 2:
 	                        transactionHash = _a.sent();
 	                        params = { transactionHash: this.formatter.hash(transactionHash, true) };
-	                        return [2 /*return*/, (0, lib$q.poll)(function () { return __awaiter(_this, void 0, void 0, function () {
+	                        return [2 /*return*/, (0, lib$s.poll)(function () { return __awaiter(_this, void 0, void 0, function () {
 	                                var result, receipt, blockNumber, confirmations;
 	                                return __generator(this, function (_a) {
 	                                    switch (_a.label) {
@@ -26670,7 +27201,7 @@
 	                        _a.trys.push([2, 4, , 5]);
 	                        return [4 /*yield*/, this.call({
 	                                to: network.ensAddress,
-	                                data: ("0x0178b8bf" + (0, lib$9.namehash)(name).substring(2))
+	                                data: ("0x0178b8bf" + (0, lib$c.namehash)(name).substring(2))
 	                            })];
 	                    case 3:
 	                        addrData = _a.sent();
@@ -26735,7 +27266,7 @@
 	                        _a = _parseString;
 	                        return [4 /*yield*/, this.call({
 	                                to: resolverAddr,
-	                                data: ("0x691f3431" + (0, lib$9.namehash)(node).substring(2))
+	                                data: ("0x691f3431" + (0, lib$c.namehash)(node).substring(2))
 	                            })];
 	                    case 3:
 	                        name = _a.apply(void 0, [_b.sent(), 0]);
@@ -26789,7 +27320,7 @@
 	                        _a = _parseString;
 	                        return [4 /*yield*/, this.call({
 	                                to: resolverAddress,
-	                                data: ("0x691f3431" + (0, lib$9.namehash)(node).substring(2))
+	                                data: ("0x691f3431" + (0, lib$c.namehash)(node).substring(2))
 	                            })];
 	                    case 6:
 	                        name_1 = _a.apply(void 0, [_b.sent(), 0]);
@@ -26931,7 +27462,7 @@
 	        return this;
 	    };
 	    return BaseProvider;
-	}(lib$b.Provider));
+	}(lib$e.Provider));
 	exports.BaseProvider = BaseProvider;
 
 	});
@@ -27243,6 +27774,12 @@
 	            return _this.provider.send("eth_sendTransaction", [hexTx]).then(function (hash) {
 	                return hash;
 	            }, function (error) {
+	                if (typeof (error.message) === "string" && error.message.match(/user denied/i)) {
+	                    logger.throwError("user rejected transaction", lib.Logger.errors.ACTION_REJECTED, {
+	                        action: "sendTransaction",
+	                        transaction: tx
+	                    });
+	                }
 	                return checkError("sendTransaction", error, hexTx);
 	            });
 	        });
@@ -27267,7 +27804,7 @@
 	                        _a.label = 3;
 	                    case 3:
 	                        _a.trys.push([3, 5, , 6]);
-	                        return [4 /*yield*/, (0, lib$q.poll)(function () { return __awaiter(_this, void 0, void 0, function () {
+	                        return [4 /*yield*/, (0, lib$s.poll)(function () { return __awaiter(_this, void 0, void 0, function () {
 	                                var tx;
 	                                return __generator(this, function (_a) {
 	                                    switch (_a.label) {
@@ -27297,7 +27834,7 @@
 	    };
 	    JsonRpcSigner.prototype.signMessage = function (message) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var data, address;
+	            var data, address, error_2;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
@@ -27305,15 +27842,29 @@
 	                        return [4 /*yield*/, this.getAddress()];
 	                    case 1:
 	                        address = _a.sent();
+	                        _a.label = 2;
+	                    case 2:
+	                        _a.trys.push([2, 4, , 5]);
 	                        return [4 /*yield*/, this.provider.send("personal_sign", [(0, lib$1.hexlify)(data), address.toLowerCase()])];
-	                    case 2: return [2 /*return*/, _a.sent()];
+	                    case 3: return [2 /*return*/, _a.sent()];
+	                    case 4:
+	                        error_2 = _a.sent();
+	                        if (typeof (error_2.message) === "string" && error_2.message.match(/user denied/i)) {
+	                            logger.throwError("user rejected signing", lib.Logger.errors.ACTION_REJECTED, {
+	                                action: "signMessage",
+	                                from: address,
+	                                message: data
+	                            });
+	                        }
+	                        throw error_2;
+	                    case 5: return [2 /*return*/];
 	                }
 	            });
 	        });
 	    };
 	    JsonRpcSigner.prototype._legacySignMessage = function (message) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var data, address;
+	            var data, address, error_3;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
@@ -27321,21 +27872,35 @@
 	                        return [4 /*yield*/, this.getAddress()];
 	                    case 1:
 	                        address = _a.sent();
+	                        _a.label = 2;
+	                    case 2:
+	                        _a.trys.push([2, 4, , 5]);
 	                        return [4 /*yield*/, this.provider.send("eth_sign", [address.toLowerCase(), (0, lib$1.hexlify)(data)])];
-	                    case 2: 
+	                    case 3: 
 	                    // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
 	                    return [2 /*return*/, _a.sent()];
+	                    case 4:
+	                        error_3 = _a.sent();
+	                        if (typeof (error_3.message) === "string" && error_3.message.match(/user denied/i)) {
+	                            logger.throwError("user rejected signing", lib.Logger.errors.ACTION_REJECTED, {
+	                                action: "_legacySignMessage",
+	                                from: address,
+	                                message: data
+	                            });
+	                        }
+	                        throw error_3;
+	                    case 5: return [2 /*return*/];
 	                }
 	            });
 	        });
 	    };
 	    JsonRpcSigner.prototype._signTypedData = function (domain, types, value) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var populated, address;
+	            var populated, address, error_4;
 	            var _this = this;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, lib$9._TypedDataEncoder.resolveNames(domain, types, value, function (name) {
+	                    case 0: return [4 /*yield*/, lib$c._TypedDataEncoder.resolveNames(domain, types, value, function (name) {
 	                            return _this.provider.resolveName(name);
 	                        })];
 	                    case 1:
@@ -27343,11 +27908,25 @@
 	                        return [4 /*yield*/, this.getAddress()];
 	                    case 2:
 	                        address = _a.sent();
+	                        _a.label = 3;
+	                    case 3:
+	                        _a.trys.push([3, 5, , 6]);
 	                        return [4 /*yield*/, this.provider.send("eth_signTypedData_v4", [
 	                                address.toLowerCase(),
-	                                JSON.stringify(lib$9._TypedDataEncoder.getPayload(populated.domain, types, populated.value))
+	                                JSON.stringify(lib$c._TypedDataEncoder.getPayload(populated.domain, types, populated.value))
 	                            ])];
-	                    case 3: return [2 /*return*/, _a.sent()];
+	                    case 4: return [2 /*return*/, _a.sent()];
+	                    case 5:
+	                        error_4 = _a.sent();
+	                        if (typeof (error_4.message) === "string" && error_4.message.match(/user denied/i)) {
+	                            logger.throwError("user rejected signing", lib.Logger.errors.ACTION_REJECTED, {
+	                                action: "_signTypedData",
+	                                from: address,
+	                                message: { domain: populated.domain, types: types, value: populated.value }
+	                            });
+	                        }
+	                        throw error_4;
+	                    case 6: return [2 /*return*/];
 	                }
 	            });
 	        });
@@ -27368,7 +27947,7 @@
 	        });
 	    };
 	    return JsonRpcSigner;
-	}(lib$c.Signer));
+	}(lib$f.Signer));
 	exports.JsonRpcSigner = JsonRpcSigner;
 	var UncheckedJsonRpcSigner = /** @class */ (function (_super) {
 	    __extends(UncheckedJsonRpcSigner, _super);
@@ -27458,7 +28037,7 @@
 	    };
 	    JsonRpcProvider.prototype._uncachedDetectNetwork = function () {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var chainId, error_2, error_3, getNetwork;
+	            var chainId, error_5, error_6, getNetwork;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0: return [4 /*yield*/, timer(0)];
@@ -27473,7 +28052,7 @@
 	                        chainId = _a.sent();
 	                        return [3 /*break*/, 9];
 	                    case 4:
-	                        error_2 = _a.sent();
+	                        error_5 = _a.sent();
 	                        _a.label = 5;
 	                    case 5:
 	                        _a.trys.push([5, 7, , 8]);
@@ -27482,7 +28061,7 @@
 	                        chainId = _a.sent();
 	                        return [3 /*break*/, 8];
 	                    case 7:
-	                        error_3 = _a.sent();
+	                        error_6 = _a.sent();
 	                        return [3 /*break*/, 8];
 	                    case 8: return [3 /*break*/, 9];
 	                    case 9:
@@ -27537,7 +28116,7 @@
 	        if (cache && this._cache[method]) {
 	            return this._cache[method];
 	        }
-	        var result = (0, lib$q.fetchJson)(this.connection, JSON.stringify(request), getResult).then(function (result) {
+	        var result = (0, lib$s.fetchJson)(this.connection, JSON.stringify(request), getResult).then(function (result) {
 	            _this.emit("debug", {
 	                action: "response",
 	                request: request,
@@ -27611,7 +28190,7 @@
 	    };
 	    JsonRpcProvider.prototype.perform = function (method, params) {
 	        return __awaiter(this, void 0, void 0, function () {
-	            var tx, feeData, args, error_4;
+	            var tx, feeData, args, error_7;
 	            return __generator(this, function (_a) {
 	                switch (_a.label) {
 	                    case 0:
@@ -27640,8 +28219,8 @@
 	                        return [4 /*yield*/, this.send(args[0], args[1])];
 	                    case 4: return [2 /*return*/, _a.sent()];
 	                    case 5:
-	                        error_4 = _a.sent();
-	                        return [2 /*return*/, checkError(method, error_4, params)];
+	                        error_7 = _a.sent();
+	                        return [2 /*return*/, checkError(method, error_7, params)];
 	                    case 6: return [2 /*return*/];
 	                }
 	            });
@@ -27738,7 +28317,7 @@
 	            result[key] = (0, lib$1.hexlify)(transaction[key]);
 	        });
 	        if (transaction.accessList) {
-	            result["accessList"] = (0, lib$e.accessListify)(transaction.accessList);
+	            result["accessList"] = (0, lib$h.accessListify)(transaction.accessList);
 	        }
 	        return result;
 	    };
@@ -28419,11 +28998,17 @@
 	            case "arbitrum-rinkeby":
 	                host = "arb-rinkeby.g.alchemy.com/v2/";
 	                break;
+	            case "arbitrum-goerli":
+	                host = "arb-goerli.g.alchemy.com/v2/";
+	                break;
 	            case "optimism":
 	                host = "opt-mainnet.g.alchemy.com/v2/";
 	                break;
 	            case "optimism-kovan":
 	                host = "opt-kovan.g.alchemy.com/v2/";
+	                break;
+	            case "optimism-goerli":
+	                host = "opt-goerli.g.alchemy.com/v2/";
 	                break;
 	            default:
 	                logger.throwArgumentError("unsupported network", "network", arguments[0]);
@@ -28719,7 +29304,7 @@
 	            value = (0, lib$1.hexValue)((0, lib$1.hexlify)(value));
 	        }
 	        else if (key === "accessList") {
-	            value = "[" + (0, lib$e.accessListify)(value).map(function (set) {
+	            value = "[" + (0, lib$h.accessListify)(value).map(function (set) {
 	                return "{address:\"" + set.address + "\",storageKeys:[\"" + set.storageKeys.join('","') + "\"]}";
 	            }).join(",") + "]";
 	        }
@@ -28735,7 +29320,7 @@
 	    if (result.status == 0 && (result.message === "No records found" || result.message === "No transactions found")) {
 	        return result.result;
 	    }
-	    if (result.status != 1 || result.message != "OK") {
+	    if (result.status != 1 || typeof (result.message) !== "string" || !result.message.match(/^OK/)) {
 	        var error = new Error("invalid response");
 	        error.result = JSON.stringify(result);
 	        if ((result.result || "").toLowerCase().indexOf("rate limit") >= 0) {
@@ -28782,7 +29367,6 @@
 	    }
 	    return parseInt(blockTag.substring(2), 16);
 	}
-	var defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 	function checkError(method, error, transaction) {
 	    // Undo the "convenience" some nodes are attempting to prevent backwards
 	    // incompatibility; maybe for v6 consider forwarding reverts as errors
@@ -28856,7 +29440,7 @@
 	    function EtherscanProvider(network, apiKey) {
 	        var _this = _super.call(this, network) || this;
 	        (0, lib$3.defineReadOnly)(_this, "baseUrl", _this.getBaseUrl());
-	        (0, lib$3.defineReadOnly)(_this, "apiKey", apiKey || defaultApiKey);
+	        (0, lib$3.defineReadOnly)(_this, "apiKey", apiKey || null);
 	        return _this;
 	    }
 	    EtherscanProvider.prototype.getBaseUrl = function () {
@@ -28873,6 +29457,8 @@
 	                return "https:/\/api-goerli.etherscan.io";
 	            case "optimism":
 	                return "https:/\/api-optimistic.etherscan.io";
+	            case "optimism-kovan":
+	                return "https:/\/api-kovan-optimistic.etherscan.io";
 	            default:
 	        }
 	        return logger.throwArgumentError("unsupported network", "network", this.network.name);
@@ -28928,7 +29514,7 @@
 	                                return key + "=" + payload[key];
 	                            }).join("&");
 	                        }
-	                        return [4 /*yield*/, (0, lib$q.fetchJson)(connection, payloadStr, procFunc || getJsonResult)];
+	                        return [4 /*yield*/, (0, lib$s.fetchJson)(connection, payloadStr, procFunc || getJsonResult)];
 	                    case 1:
 	                        result = _a.sent();
 	                        this.emit("debug", {
@@ -29157,7 +29743,7 @@
 	        });
 	    };
 	    EtherscanProvider.prototype.isCommunityResource = function () {
-	        return (this.apiKey === defaultApiKey);
+	        return (this.apiKey == null);
 	    };
 	    return EtherscanProvider;
 	}(baseProvider.BaseProvider));
@@ -29493,7 +30079,7 @@
 	            if ((provider.blockNumber != null && provider.blockNumber >= blockNumber) || blockNumber === -1) {
 	                return [2 /*return*/, provider];
 	            }
-	            return [2 /*return*/, (0, lib$q.poll)(function () {
+	            return [2 /*return*/, (0, lib$s.poll)(function () {
 	                    return new Promise(function (resolve, reject) {
 	                        setTimeout(function () {
 	                            // We are synced
@@ -29569,7 +30155,11 @@
 	                case 13:
 	                    provider = _b.sent();
 	                    _b.label = 14;
-	                case 14: return [2 /*return*/, provider[method](params.transaction)];
+	                case 14:
+	                    if (method === "call" && params.blockTag) {
+	                        return [2 /*return*/, provider[method](params.transaction, params.blockTag)];
+	                    }
+	                    return [2 /*return*/, provider[method](params.transaction)];
 	                case 15: return [2 /*return*/, provider[method](params.transactionHash)];
 	                case 16:
 	                    filter = params.filter;
@@ -29595,7 +30185,7 @@
 	            logger.throwArgumentError("missing providers", "providers", providers);
 	        }
 	        var providerConfigs = providers.map(function (configOrProvider, index) {
-	            if (lib$b.Provider.isProvider(configOrProvider)) {
+	            if (lib$e.Provider.isProvider(configOrProvider)) {
 	                var stallTimeout = (0, formatter.isCommunityResource)(configOrProvider) ? 2000 : 750;
 	                var priority = 1;
 	                return Object.freeze({ provider: configOrProvider, weight: 1, stallTimeout: stallTimeout, priority: priority });
@@ -29687,7 +30277,7 @@
 	                        _a.label = 4;
 	                    case 4:
 	                        processFunc = getProcessFunc(this, method, params);
-	                        configs = (0, lib$l.shuffled)(this.providerConfigs.map(lib$3.shallowCopy));
+	                        configs = (0, lib$o.shuffled)(this.providerConfigs.map(lib$3.shallowCopy));
 	                        configs.sort(function (a, b) { return (a.priority - b.priority); });
 	                        currentBlockNumber = this._highestBlockNumber;
 	                        i = 0;
@@ -30090,7 +30680,7 @@
 	                    request: (0, lib$3.deepCopy)(request),
 	                    provider: _this
 	                });
-	                return (0, lib$q.fetchJson)(_this.connection, JSON.stringify(request)).then(function (result) {
+	                return (0, lib$s.fetchJson)(_this.connection, JSON.stringify(request)).then(function (result) {
 	                    _this.emit("debug", {
 	                        action: "response",
 	                        request: request,
@@ -30224,72 +30814,33 @@
 	exports.PocketProvider = void 0;
 
 
-
 	var logger = new lib.Logger(_version$I.version);
 
-	// These are load-balancer-based application IDs
-	var defaultApplicationIds = {
-	    homestead: "6004bcd10040261633ade990",
-	    ropsten: "6004bd4d0040261633ade991",
-	    rinkeby: "6004bda20040261633ade994",
-	    goerli: "6004bd860040261633ade992",
-	};
+	var defaultApplicationId = "62e1ad51b37b8e00394bda3b";
 	var PocketProvider = /** @class */ (function (_super) {
 	    __extends(PocketProvider, _super);
-	    function PocketProvider(network, apiKey) {
-	        // We need a bit of creativity in the constructor because
-	        // Pocket uses different default API keys based on the network
-	        var _newTarget = this.constructor;
-	        var _this = this;
-	        if (apiKey == null) {
-	            var n = (0, lib$3.getStatic)(_newTarget, "getNetwork")(network);
-	            if (n) {
-	                var applicationId = defaultApplicationIds[n.name];
-	                if (applicationId) {
-	                    apiKey = {
-	                        applicationId: applicationId,
-	                        loadBalancer: true
-	                    };
-	                }
-	            }
-	            // If there was any issue above, we don't know this network
-	            if (apiKey == null) {
-	                logger.throwError("unsupported network", lib.Logger.errors.INVALID_ARGUMENT, {
-	                    argument: "network",
-	                    value: network
-	                });
-	            }
-	        }
-	        _this = _super.call(this, network, apiKey) || this;
-	        return _this;
+	    function PocketProvider() {
+	        return _super !== null && _super.apply(this, arguments) || this;
 	    }
 	    PocketProvider.getApiKey = function (apiKey) {
-	        // Most API Providers allow null to get the default configuration, but
-	        // Pocket requires the network to decide the default provider, so we
-	        // rely on hijacking the constructor to add a sensible default for us
-	        if (apiKey == null) {
-	            logger.throwArgumentError("PocketProvider.getApiKey does not support null apiKey", "apiKey", apiKey);
-	        }
 	        var apiKeyObj = {
 	            applicationId: null,
-	            loadBalancer: false,
+	            loadBalancer: true,
 	            applicationSecretKey: null
 	        };
 	        // Parse applicationId and applicationSecretKey
-	        if (typeof (apiKey) === "string") {
+	        if (apiKey == null) {
+	            apiKeyObj.applicationId = defaultApplicationId;
+	        }
+	        else if (typeof (apiKey) === "string") {
 	            apiKeyObj.applicationId = apiKey;
 	        }
 	        else if (apiKey.applicationSecretKey != null) {
-	            logger.assertArgument((typeof (apiKey.applicationId) === "string"), "applicationSecretKey requires an applicationId", "applicationId", apiKey.applicationId);
-	            logger.assertArgument((typeof (apiKey.applicationSecretKey) === "string"), "invalid applicationSecretKey", "applicationSecretKey", "[REDACTED]");
 	            apiKeyObj.applicationId = apiKey.applicationId;
 	            apiKeyObj.applicationSecretKey = apiKey.applicationSecretKey;
-	            apiKeyObj.loadBalancer = !!apiKey.loadBalancer;
 	        }
 	        else if (apiKey.applicationId) {
-	            logger.assertArgument((typeof (apiKey.applicationId) === "string"), "apiKey.applicationId must be a string", "apiKey.applicationId", apiKey.applicationId);
 	            apiKeyObj.applicationId = apiKey.applicationId;
-	            apiKeyObj.loadBalancer = !!apiKey.loadBalancer;
 	        }
 	        else {
 	            logger.throwArgumentError("unsupported PocketProvider apiKey", "apiKey", apiKey);
@@ -30299,17 +30850,26 @@
 	    PocketProvider.getUrl = function (network, apiKey) {
 	        var host = null;
 	        switch (network ? network.name : "unknown") {
+	            case "goerli":
+	                host = "eth-goerli.gateway.pokt.network";
+	                break;
 	            case "homestead":
 	                host = "eth-mainnet.gateway.pokt.network";
 	                break;
-	            case "ropsten":
-	                host = "eth-ropsten.gateway.pokt.network";
+	            case "kovan":
+	                host = "poa-kovan.gateway.pokt.network";
+	                break;
+	            case "matic":
+	                host = "poly-mainnet.gateway.pokt.network";
+	                break;
+	            case "maticmum":
+	                host = "polygon-mumbai-rpc.gateway.pokt.network";
 	                break;
 	            case "rinkeby":
 	                host = "eth-rinkeby.gateway.pokt.network";
 	                break;
-	            case "goerli":
-	                host = "eth-goerli.gateway.pokt.network";
+	            case "ropsten":
+	                host = "eth-ropsten.gateway.pokt.network";
 	                break;
 	            default:
 	                logger.throwError("unsupported network", lib.Logger.errors.INVALID_ARGUMENT, {
@@ -30317,17 +30877,8 @@
 	                    value: network
 	                });
 	        }
-	        var url = null;
-	        if (apiKey.loadBalancer) {
-	            url = "https://" + host + "/v1/lb/" + apiKey.applicationId;
-	        }
-	        else {
-	            url = "https://" + host + "/v1/" + apiKey.applicationId;
-	        }
-	        var connection = { url: url };
-	        // Initialize empty headers
-	        connection.headers = {};
-	        // Apply application secret key
+	        var url = "https://" + host + "/v1/lb/" + apiKey.applicationId;
+	        var connection = { headers: {}, url: url };
 	        if (apiKey.applicationSecretKey != null) {
 	            connection.user = "";
 	            connection.password = apiKey.applicationSecretKey;
@@ -30335,7 +30886,7 @@
 	        return connection;
 	    };
 	    PocketProvider.prototype.isCommunityResource = function () {
-	        return (this.applicationId === defaultApplicationIds[this.network.name]);
+	        return (this.applicationId === defaultApplicationId);
 	    };
 	    return PocketProvider;
 	}(urlJsonRpcProvider.UrlJsonRpcProvider));
@@ -30505,14 +31056,14 @@
 
 	var web3Provider$1 = /*@__PURE__*/getDefaultExportFromCjs(web3Provider);
 
-	var lib$r = createCommonjsModule(function (module, exports) {
+	var lib$t = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcBatchProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
 
-	Object.defineProperty(exports, "Provider", { enumerable: true, get: function () { return lib$b.Provider; } });
+	Object.defineProperty(exports, "Provider", { enumerable: true, get: function () { return lib$e.Provider; } });
 
-	Object.defineProperty(exports, "getNetwork", { enumerable: true, get: function () { return lib$o.getNetwork; } });
+	Object.defineProperty(exports, "getNetwork", { enumerable: true, get: function () { return lib$r.getNetwork; } });
 
 	Object.defineProperty(exports, "BaseProvider", { enumerable: true, get: function () { return baseProvider.BaseProvider; } });
 	Object.defineProperty(exports, "Resolver", { enumerable: true, get: function () { return baseProvider.Resolver; } });
@@ -30580,7 +31131,7 @@
 	            }
 	        }
 	    }
-	    var n = (0, lib$o.getNetwork)(network);
+	    var n = (0, lib$r.getNetwork)(network);
 	    if (!n || !n._defaultProvider) {
 	        logger.throwError("unsupported getDefaultProvider network", lib.Logger.errors.NETWORK_ERROR, {
 	            operation: "getDefaultProvider",
@@ -30605,19 +31156,19 @@
 
 	});
 
-	var index$r = /*@__PURE__*/getDefaultExportFromCjs(lib$r);
+	var index$r = /*@__PURE__*/getDefaultExportFromCjs(lib$t);
 
 	var _version$K = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "solidity/5.6.1";
+	exports.version = "solidity/5.7.0";
 
 	});
 
 	var _version$L = /*@__PURE__*/getDefaultExportFromCjs(_version$K);
 
-	var lib$s = createCommonjsModule(function (module, exports) {
+	var lib$u = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.sha256 = exports.keccak256 = exports.pack = void 0;
@@ -30710,25 +31261,25 @@
 	}
 	exports.keccak256 = keccak256;
 	function sha256(types, values) {
-	    return (0, lib$h.sha256)(pack(types, values));
+	    return (0, lib$k.sha256)(pack(types, values));
 	}
 	exports.sha256 = sha256;
 
 	});
 
-	var index$s = /*@__PURE__*/getDefaultExportFromCjs(lib$s);
+	var index$s = /*@__PURE__*/getDefaultExportFromCjs(lib$u);
 
 	var _version$M = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "units/5.6.1";
+	exports.version = "units/5.7.0";
 
 	});
 
 	var _version$N = /*@__PURE__*/getDefaultExportFromCjs(_version$M);
 
-	var lib$t = createCommonjsModule(function (module, exports) {
+	var lib$v = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.parseEther = exports.formatEther = exports.parseUnits = exports.formatUnits = exports.commify = void 0;
@@ -30822,7 +31373,7 @@
 
 	});
 
-	var index$t = /*@__PURE__*/getDefaultExportFromCjs(lib$t);
+	var index$t = /*@__PURE__*/getDefaultExportFromCjs(lib$v);
 
 	var utils$3 = createCommonjsModule(function (module, exports) {
 	"use strict";
@@ -30849,30 +31400,30 @@
 	exports.formatBytes32String = exports.Utf8ErrorFuncs = exports.toUtf8String = exports.toUtf8CodePoints = exports.toUtf8Bytes = exports._toEscapedUtf8String = exports.nameprep = exports.hexDataSlice = exports.hexDataLength = exports.hexZeroPad = exports.hexValue = exports.hexStripZeros = exports.hexConcat = exports.isHexString = exports.hexlify = exports.base64 = exports.base58 = exports.TransactionDescription = exports.LogDescription = exports.Interface = exports.SigningKey = exports.HDNode = exports.defaultPath = exports.isBytesLike = exports.isBytes = exports.zeroPad = exports.stripZeros = exports.concat = exports.arrayify = exports.shallowCopy = exports.resolveProperties = exports.getStatic = exports.defineReadOnly = exports.deepCopy = exports.checkProperties = exports.poll = exports.fetchJson = exports._fetchData = exports.RLP = exports.Logger = exports.checkResultErrors = exports.FormatTypes = exports.ParamType = exports.FunctionFragment = exports.EventFragment = exports.ErrorFragment = exports.ConstructorFragment = exports.Fragment = exports.defaultAbiCoder = exports.AbiCoder = void 0;
 	exports.Indexed = exports.Utf8ErrorReason = exports.UnicodeNormalizationForm = exports.SupportedAlgorithm = exports.mnemonicToSeed = exports.isValidMnemonic = exports.entropyToMnemonic = exports.mnemonicToEntropy = exports.getAccountPath = exports.verifyTypedData = exports.verifyMessage = exports.recoverPublicKey = exports.computePublicKey = exports.recoverAddress = exports.computeAddress = exports.getJsonWalletAddress = exports.TransactionTypes = exports.serializeTransaction = exports.parseTransaction = exports.accessListify = exports.joinSignature = exports.splitSignature = exports.soliditySha256 = exports.solidityKeccak256 = exports.solidityPack = exports.shuffled = exports.randomBytes = exports.sha512 = exports.sha256 = exports.ripemd160 = exports.keccak256 = exports.computeHmac = exports.commify = exports.parseUnits = exports.formatUnits = exports.parseEther = exports.formatEther = exports.isAddress = exports.getCreate2Address = exports.getContractAddress = exports.getIcapAddress = exports.getAddress = exports._TypedDataEncoder = exports.id = exports.isValidName = exports.namehash = exports.hashMessage = exports.dnsEncode = exports.parseBytes32String = void 0;
 
-	Object.defineProperty(exports, "AbiCoder", { enumerable: true, get: function () { return lib$a.AbiCoder; } });
-	Object.defineProperty(exports, "checkResultErrors", { enumerable: true, get: function () { return lib$a.checkResultErrors; } });
-	Object.defineProperty(exports, "ConstructorFragment", { enumerable: true, get: function () { return lib$a.ConstructorFragment; } });
-	Object.defineProperty(exports, "defaultAbiCoder", { enumerable: true, get: function () { return lib$a.defaultAbiCoder; } });
-	Object.defineProperty(exports, "ErrorFragment", { enumerable: true, get: function () { return lib$a.ErrorFragment; } });
-	Object.defineProperty(exports, "EventFragment", { enumerable: true, get: function () { return lib$a.EventFragment; } });
-	Object.defineProperty(exports, "FormatTypes", { enumerable: true, get: function () { return lib$a.FormatTypes; } });
-	Object.defineProperty(exports, "Fragment", { enumerable: true, get: function () { return lib$a.Fragment; } });
-	Object.defineProperty(exports, "FunctionFragment", { enumerable: true, get: function () { return lib$a.FunctionFragment; } });
-	Object.defineProperty(exports, "Indexed", { enumerable: true, get: function () { return lib$a.Indexed; } });
-	Object.defineProperty(exports, "Interface", { enumerable: true, get: function () { return lib$a.Interface; } });
-	Object.defineProperty(exports, "LogDescription", { enumerable: true, get: function () { return lib$a.LogDescription; } });
-	Object.defineProperty(exports, "ParamType", { enumerable: true, get: function () { return lib$a.ParamType; } });
-	Object.defineProperty(exports, "TransactionDescription", { enumerable: true, get: function () { return lib$a.TransactionDescription; } });
+	Object.defineProperty(exports, "AbiCoder", { enumerable: true, get: function () { return lib$d.AbiCoder; } });
+	Object.defineProperty(exports, "checkResultErrors", { enumerable: true, get: function () { return lib$d.checkResultErrors; } });
+	Object.defineProperty(exports, "ConstructorFragment", { enumerable: true, get: function () { return lib$d.ConstructorFragment; } });
+	Object.defineProperty(exports, "defaultAbiCoder", { enumerable: true, get: function () { return lib$d.defaultAbiCoder; } });
+	Object.defineProperty(exports, "ErrorFragment", { enumerable: true, get: function () { return lib$d.ErrorFragment; } });
+	Object.defineProperty(exports, "EventFragment", { enumerable: true, get: function () { return lib$d.EventFragment; } });
+	Object.defineProperty(exports, "FormatTypes", { enumerable: true, get: function () { return lib$d.FormatTypes; } });
+	Object.defineProperty(exports, "Fragment", { enumerable: true, get: function () { return lib$d.Fragment; } });
+	Object.defineProperty(exports, "FunctionFragment", { enumerable: true, get: function () { return lib$d.FunctionFragment; } });
+	Object.defineProperty(exports, "Indexed", { enumerable: true, get: function () { return lib$d.Indexed; } });
+	Object.defineProperty(exports, "Interface", { enumerable: true, get: function () { return lib$d.Interface; } });
+	Object.defineProperty(exports, "LogDescription", { enumerable: true, get: function () { return lib$d.LogDescription; } });
+	Object.defineProperty(exports, "ParamType", { enumerable: true, get: function () { return lib$d.ParamType; } });
+	Object.defineProperty(exports, "TransactionDescription", { enumerable: true, get: function () { return lib$d.TransactionDescription; } });
 
 	Object.defineProperty(exports, "getAddress", { enumerable: true, get: function () { return lib$6.getAddress; } });
 	Object.defineProperty(exports, "getCreate2Address", { enumerable: true, get: function () { return lib$6.getCreate2Address; } });
 	Object.defineProperty(exports, "getContractAddress", { enumerable: true, get: function () { return lib$6.getContractAddress; } });
 	Object.defineProperty(exports, "getIcapAddress", { enumerable: true, get: function () { return lib$6.getIcapAddress; } });
 	Object.defineProperty(exports, "isAddress", { enumerable: true, get: function () { return lib$6.isAddress; } });
-	var base64 = __importStar(lib$p);
+	var base64 = __importStar(lib$9);
 	exports.base64 = base64;
 
-	Object.defineProperty(exports, "base58", { enumerable: true, get: function () { return lib$g.Base58; } });
+	Object.defineProperty(exports, "base58", { enumerable: true, get: function () { return lib$j.Base58; } });
 
 	Object.defineProperty(exports, "arrayify", { enumerable: true, get: function () { return lib$1.arrayify; } });
 	Object.defineProperty(exports, "concat", { enumerable: true, get: function () { return lib$1.concat; } });
@@ -30891,38 +31442,38 @@
 	Object.defineProperty(exports, "splitSignature", { enumerable: true, get: function () { return lib$1.splitSignature; } });
 	Object.defineProperty(exports, "stripZeros", { enumerable: true, get: function () { return lib$1.stripZeros; } });
 
-	Object.defineProperty(exports, "_TypedDataEncoder", { enumerable: true, get: function () { return lib$9._TypedDataEncoder; } });
-	Object.defineProperty(exports, "dnsEncode", { enumerable: true, get: function () { return lib$9.dnsEncode; } });
-	Object.defineProperty(exports, "hashMessage", { enumerable: true, get: function () { return lib$9.hashMessage; } });
-	Object.defineProperty(exports, "id", { enumerable: true, get: function () { return lib$9.id; } });
-	Object.defineProperty(exports, "isValidName", { enumerable: true, get: function () { return lib$9.isValidName; } });
-	Object.defineProperty(exports, "namehash", { enumerable: true, get: function () { return lib$9.namehash; } });
+	Object.defineProperty(exports, "_TypedDataEncoder", { enumerable: true, get: function () { return lib$c._TypedDataEncoder; } });
+	Object.defineProperty(exports, "dnsEncode", { enumerable: true, get: function () { return lib$c.dnsEncode; } });
+	Object.defineProperty(exports, "hashMessage", { enumerable: true, get: function () { return lib$c.hashMessage; } });
+	Object.defineProperty(exports, "id", { enumerable: true, get: function () { return lib$c.id; } });
+	Object.defineProperty(exports, "isValidName", { enumerable: true, get: function () { return lib$c.isValidName; } });
+	Object.defineProperty(exports, "namehash", { enumerable: true, get: function () { return lib$c.namehash; } });
 
-	Object.defineProperty(exports, "defaultPath", { enumerable: true, get: function () { return lib$k.defaultPath; } });
-	Object.defineProperty(exports, "entropyToMnemonic", { enumerable: true, get: function () { return lib$k.entropyToMnemonic; } });
-	Object.defineProperty(exports, "getAccountPath", { enumerable: true, get: function () { return lib$k.getAccountPath; } });
-	Object.defineProperty(exports, "HDNode", { enumerable: true, get: function () { return lib$k.HDNode; } });
-	Object.defineProperty(exports, "isValidMnemonic", { enumerable: true, get: function () { return lib$k.isValidMnemonic; } });
-	Object.defineProperty(exports, "mnemonicToEntropy", { enumerable: true, get: function () { return lib$k.mnemonicToEntropy; } });
-	Object.defineProperty(exports, "mnemonicToSeed", { enumerable: true, get: function () { return lib$k.mnemonicToSeed; } });
+	Object.defineProperty(exports, "defaultPath", { enumerable: true, get: function () { return lib$n.defaultPath; } });
+	Object.defineProperty(exports, "entropyToMnemonic", { enumerable: true, get: function () { return lib$n.entropyToMnemonic; } });
+	Object.defineProperty(exports, "getAccountPath", { enumerable: true, get: function () { return lib$n.getAccountPath; } });
+	Object.defineProperty(exports, "HDNode", { enumerable: true, get: function () { return lib$n.HDNode; } });
+	Object.defineProperty(exports, "isValidMnemonic", { enumerable: true, get: function () { return lib$n.isValidMnemonic; } });
+	Object.defineProperty(exports, "mnemonicToEntropy", { enumerable: true, get: function () { return lib$n.mnemonicToEntropy; } });
+	Object.defineProperty(exports, "mnemonicToSeed", { enumerable: true, get: function () { return lib$n.mnemonicToSeed; } });
 
-	Object.defineProperty(exports, "getJsonWalletAddress", { enumerable: true, get: function () { return lib$m.getJsonWalletAddress; } });
+	Object.defineProperty(exports, "getJsonWalletAddress", { enumerable: true, get: function () { return lib$p.getJsonWalletAddress; } });
 
 	Object.defineProperty(exports, "keccak256", { enumerable: true, get: function () { return lib$4.keccak256; } });
 
 	Object.defineProperty(exports, "Logger", { enumerable: true, get: function () { return lib.Logger; } });
 
-	Object.defineProperty(exports, "computeHmac", { enumerable: true, get: function () { return lib$h.computeHmac; } });
-	Object.defineProperty(exports, "ripemd160", { enumerable: true, get: function () { return lib$h.ripemd160; } });
-	Object.defineProperty(exports, "sha256", { enumerable: true, get: function () { return lib$h.sha256; } });
-	Object.defineProperty(exports, "sha512", { enumerable: true, get: function () { return lib$h.sha512; } });
+	Object.defineProperty(exports, "computeHmac", { enumerable: true, get: function () { return lib$k.computeHmac; } });
+	Object.defineProperty(exports, "ripemd160", { enumerable: true, get: function () { return lib$k.ripemd160; } });
+	Object.defineProperty(exports, "sha256", { enumerable: true, get: function () { return lib$k.sha256; } });
+	Object.defineProperty(exports, "sha512", { enumerable: true, get: function () { return lib$k.sha512; } });
 
-	Object.defineProperty(exports, "solidityKeccak256", { enumerable: true, get: function () { return lib$s.keccak256; } });
-	Object.defineProperty(exports, "solidityPack", { enumerable: true, get: function () { return lib$s.pack; } });
-	Object.defineProperty(exports, "soliditySha256", { enumerable: true, get: function () { return lib$s.sha256; } });
+	Object.defineProperty(exports, "solidityKeccak256", { enumerable: true, get: function () { return lib$u.keccak256; } });
+	Object.defineProperty(exports, "solidityPack", { enumerable: true, get: function () { return lib$u.pack; } });
+	Object.defineProperty(exports, "soliditySha256", { enumerable: true, get: function () { return lib$u.sha256; } });
 
-	Object.defineProperty(exports, "randomBytes", { enumerable: true, get: function () { return lib$l.randomBytes; } });
-	Object.defineProperty(exports, "shuffled", { enumerable: true, get: function () { return lib$l.shuffled; } });
+	Object.defineProperty(exports, "randomBytes", { enumerable: true, get: function () { return lib$o.randomBytes; } });
+	Object.defineProperty(exports, "shuffled", { enumerable: true, get: function () { return lib$o.shuffled; } });
 
 	Object.defineProperty(exports, "checkProperties", { enumerable: true, get: function () { return lib$3.checkProperties; } });
 	Object.defineProperty(exports, "deepCopy", { enumerable: true, get: function () { return lib$3.deepCopy; } });
@@ -30933,9 +31484,9 @@
 	var RLP = __importStar(lib$5);
 	exports.RLP = RLP;
 
-	Object.defineProperty(exports, "computePublicKey", { enumerable: true, get: function () { return lib$d.computePublicKey; } });
-	Object.defineProperty(exports, "recoverPublicKey", { enumerable: true, get: function () { return lib$d.recoverPublicKey; } });
-	Object.defineProperty(exports, "SigningKey", { enumerable: true, get: function () { return lib$d.SigningKey; } });
+	Object.defineProperty(exports, "computePublicKey", { enumerable: true, get: function () { return lib$g.computePublicKey; } });
+	Object.defineProperty(exports, "recoverPublicKey", { enumerable: true, get: function () { return lib$g.recoverPublicKey; } });
+	Object.defineProperty(exports, "SigningKey", { enumerable: true, get: function () { return lib$g.SigningKey; } });
 
 	Object.defineProperty(exports, "formatBytes32String", { enumerable: true, get: function () { return lib$8.formatBytes32String; } });
 	Object.defineProperty(exports, "nameprep", { enumerable: true, get: function () { return lib$8.nameprep; } });
@@ -30946,28 +31497,28 @@
 	Object.defineProperty(exports, "toUtf8String", { enumerable: true, get: function () { return lib$8.toUtf8String; } });
 	Object.defineProperty(exports, "Utf8ErrorFuncs", { enumerable: true, get: function () { return lib$8.Utf8ErrorFuncs; } });
 
-	Object.defineProperty(exports, "accessListify", { enumerable: true, get: function () { return lib$e.accessListify; } });
-	Object.defineProperty(exports, "computeAddress", { enumerable: true, get: function () { return lib$e.computeAddress; } });
-	Object.defineProperty(exports, "parseTransaction", { enumerable: true, get: function () { return lib$e.parse; } });
-	Object.defineProperty(exports, "recoverAddress", { enumerable: true, get: function () { return lib$e.recoverAddress; } });
-	Object.defineProperty(exports, "serializeTransaction", { enumerable: true, get: function () { return lib$e.serialize; } });
-	Object.defineProperty(exports, "TransactionTypes", { enumerable: true, get: function () { return lib$e.TransactionTypes; } });
+	Object.defineProperty(exports, "accessListify", { enumerable: true, get: function () { return lib$h.accessListify; } });
+	Object.defineProperty(exports, "computeAddress", { enumerable: true, get: function () { return lib$h.computeAddress; } });
+	Object.defineProperty(exports, "parseTransaction", { enumerable: true, get: function () { return lib$h.parse; } });
+	Object.defineProperty(exports, "recoverAddress", { enumerable: true, get: function () { return lib$h.recoverAddress; } });
+	Object.defineProperty(exports, "serializeTransaction", { enumerable: true, get: function () { return lib$h.serialize; } });
+	Object.defineProperty(exports, "TransactionTypes", { enumerable: true, get: function () { return lib$h.TransactionTypes; } });
 
-	Object.defineProperty(exports, "commify", { enumerable: true, get: function () { return lib$t.commify; } });
-	Object.defineProperty(exports, "formatEther", { enumerable: true, get: function () { return lib$t.formatEther; } });
-	Object.defineProperty(exports, "parseEther", { enumerable: true, get: function () { return lib$t.parseEther; } });
-	Object.defineProperty(exports, "formatUnits", { enumerable: true, get: function () { return lib$t.formatUnits; } });
-	Object.defineProperty(exports, "parseUnits", { enumerable: true, get: function () { return lib$t.parseUnits; } });
+	Object.defineProperty(exports, "commify", { enumerable: true, get: function () { return lib$v.commify; } });
+	Object.defineProperty(exports, "formatEther", { enumerable: true, get: function () { return lib$v.formatEther; } });
+	Object.defineProperty(exports, "parseEther", { enumerable: true, get: function () { return lib$v.parseEther; } });
+	Object.defineProperty(exports, "formatUnits", { enumerable: true, get: function () { return lib$v.formatUnits; } });
+	Object.defineProperty(exports, "parseUnits", { enumerable: true, get: function () { return lib$v.parseUnits; } });
 
-	Object.defineProperty(exports, "verifyMessage", { enumerable: true, get: function () { return lib$n.verifyMessage; } });
-	Object.defineProperty(exports, "verifyTypedData", { enumerable: true, get: function () { return lib$n.verifyTypedData; } });
+	Object.defineProperty(exports, "verifyMessage", { enumerable: true, get: function () { return lib$q.verifyMessage; } });
+	Object.defineProperty(exports, "verifyTypedData", { enumerable: true, get: function () { return lib$q.verifyTypedData; } });
 
-	Object.defineProperty(exports, "_fetchData", { enumerable: true, get: function () { return lib$q._fetchData; } });
-	Object.defineProperty(exports, "fetchJson", { enumerable: true, get: function () { return lib$q.fetchJson; } });
-	Object.defineProperty(exports, "poll", { enumerable: true, get: function () { return lib$q.poll; } });
+	Object.defineProperty(exports, "_fetchData", { enumerable: true, get: function () { return lib$s._fetchData; } });
+	Object.defineProperty(exports, "fetchJson", { enumerable: true, get: function () { return lib$s.fetchJson; } });
+	Object.defineProperty(exports, "poll", { enumerable: true, get: function () { return lib$s.poll; } });
 	////////////////////////
 	// Enums
-	var sha2_2 = lib$h;
+	var sha2_2 = lib$k;
 	Object.defineProperty(exports, "SupportedAlgorithm", { enumerable: true, get: function () { return sha2_2.SupportedAlgorithm; } });
 	var strings_2 = lib$8;
 	Object.defineProperty(exports, "UnicodeNormalizationForm", { enumerable: true, get: function () { return strings_2.UnicodeNormalizationForm; } });
@@ -30981,7 +31532,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.6.9";
+	exports.version = "ethers/5.7.0";
 
 	});
 
@@ -31011,26 +31562,26 @@
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Wordlist = exports.version = exports.wordlists = exports.utils = exports.logger = exports.errors = exports.constants = exports.FixedNumber = exports.BigNumber = exports.ContractFactory = exports.Contract = exports.BaseContract = exports.providers = exports.getDefaultProvider = exports.VoidSigner = exports.Wallet = exports.Signer = void 0;
 
-	Object.defineProperty(exports, "BaseContract", { enumerable: true, get: function () { return lib$f.BaseContract; } });
-	Object.defineProperty(exports, "Contract", { enumerable: true, get: function () { return lib$f.Contract; } });
-	Object.defineProperty(exports, "ContractFactory", { enumerable: true, get: function () { return lib$f.ContractFactory; } });
+	Object.defineProperty(exports, "BaseContract", { enumerable: true, get: function () { return lib$i.BaseContract; } });
+	Object.defineProperty(exports, "Contract", { enumerable: true, get: function () { return lib$i.Contract; } });
+	Object.defineProperty(exports, "ContractFactory", { enumerable: true, get: function () { return lib$i.ContractFactory; } });
 
 	Object.defineProperty(exports, "BigNumber", { enumerable: true, get: function () { return lib$2.BigNumber; } });
 	Object.defineProperty(exports, "FixedNumber", { enumerable: true, get: function () { return lib$2.FixedNumber; } });
 
-	Object.defineProperty(exports, "Signer", { enumerable: true, get: function () { return lib$c.Signer; } });
-	Object.defineProperty(exports, "VoidSigner", { enumerable: true, get: function () { return lib$c.VoidSigner; } });
+	Object.defineProperty(exports, "Signer", { enumerable: true, get: function () { return lib$f.Signer; } });
+	Object.defineProperty(exports, "VoidSigner", { enumerable: true, get: function () { return lib$f.VoidSigner; } });
 
-	Object.defineProperty(exports, "Wallet", { enumerable: true, get: function () { return lib$n.Wallet; } });
+	Object.defineProperty(exports, "Wallet", { enumerable: true, get: function () { return lib$q.Wallet; } });
 	var constants = __importStar(lib$7);
 	exports.constants = constants;
-	var providers = __importStar(lib$r);
+	var providers = __importStar(lib$t);
 	exports.providers = providers;
-	var providers_1 = lib$r;
+	var providers_1 = lib$t;
 	Object.defineProperty(exports, "getDefaultProvider", { enumerable: true, get: function () { return providers_1.getDefaultProvider; } });
 
-	Object.defineProperty(exports, "Wordlist", { enumerable: true, get: function () { return lib$j.Wordlist; } });
-	Object.defineProperty(exports, "wordlists", { enumerable: true, get: function () { return lib$j.wordlists; } });
+	Object.defineProperty(exports, "Wordlist", { enumerable: true, get: function () { return lib$m.Wordlist; } });
+	Object.defineProperty(exports, "wordlists", { enumerable: true, get: function () { return lib$m.wordlists; } });
 	var utils = __importStar(utils$3);
 	exports.utils = utils;
 
@@ -31047,7 +31598,7 @@
 
 	var ethers$1 = /*@__PURE__*/getDefaultExportFromCjs(ethers);
 
-	var lib$u = createCommonjsModule(function (module, exports) {
+	var lib$w = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __createBinding = (commonjsGlobal && commonjsGlobal.__createBinding) || (Object.create ? (function(o, m, k, k2) {
 	    if (k2 === undefined) k2 = k;
@@ -31103,7 +31654,7 @@
 
 	});
 
-	var index$u = /*@__PURE__*/getDefaultExportFromCjs(lib$u);
+	var index$u = /*@__PURE__*/getDefaultExportFromCjs(lib$w);
 
 	return index$u;
 

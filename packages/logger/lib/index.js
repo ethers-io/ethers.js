@@ -116,6 +116,11 @@ var ErrorCode;
     //   - replacement: the full TransactionsResponse for the replacement
     //   - receipt: the receipt of the replacement
     ErrorCode["TRANSACTION_REPLACED"] = "TRANSACTION_REPLACED";
+    ///////////////////
+    // Interaction Errors
+    // The user rejected the action, such as signing a message or sending
+    // a transaction
+    ErrorCode["ACTION_REJECTED"] = "ACTION_REJECTED";
 })(ErrorCode = exports.ErrorCode || (exports.ErrorCode = {}));
 ;
 var HEX = "0123456789abcdef";

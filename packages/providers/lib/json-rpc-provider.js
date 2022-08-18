@@ -302,6 +302,12 @@ var JsonRpcSigner = /** @class */ (function (_super) {
             return _this.provider.send("eth_sendTransaction", [hexTx]).then(function (hash) {
                 return hash;
             }, function (error) {
+                if (typeof (error.message) === "string" && error.message.match(/user denied/i)) {
+                    logger.throwError("user rejected transaction", logger_1.Logger.errors.ACTION_REJECTED, {
+                        action: "sendTransaction",
+                        transaction: tx
+                    });
+                }
                 return checkError("sendTransaction", error, hexTx);
             });
         });
@@ -356,7 +362,7 @@ var JsonRpcSigner = /** @class */ (function (_super) {
     };
     JsonRpcSigner.prototype.signMessage = function (message) {
         return __awaiter(this, void 0, void 0, function () {
-            var data, address;
+            var data, address, error_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -364,15 +370,29 @@ var JsonRpcSigner = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.getAddress()];
                     case 1:
                         address = _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 5]);
                         return [4 /*yield*/, this.provider.send("personal_sign", [(0, bytes_1.hexlify)(data), address.toLowerCase()])];
-                    case 2: return [2 /*return*/, _a.sent()];
+                    case 3: return [2 /*return*/, _a.sent()];
+                    case 4:
+                        error_2 = _a.sent();
+                        if (typeof (error_2.message) === "string" && error_2.message.match(/user denied/i)) {
+                            logger.throwError("user rejected signing", logger_1.Logger.errors.ACTION_REJECTED, {
+                                action: "signMessage",
+                                from: address,
+                                message: data
+                            });
+                        }
+                        throw error_2;
+                    case 5: return [2 /*return*/];
                 }
             });
         });
     };
     JsonRpcSigner.prototype._legacySignMessage = function (message) {
         return __awaiter(this, void 0, void 0, function () {
-            var data, address;
+            var data, address, error_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -380,17 +400,31 @@ var JsonRpcSigner = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.getAddress()];
                     case 1:
                         address = _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 5]);
                         return [4 /*yield*/, this.provider.send("eth_sign", [address.toLowerCase(), (0, bytes_1.hexlify)(data)])];
-                    case 2: 
+                    case 3: 
                     // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
                     return [2 /*return*/, _a.sent()];
+                    case 4:
+                        error_3 = _a.sent();
+                        if (typeof (error_3.message) === "string" && error_3.message.match(/user denied/i)) {
+                            logger.throwError("user rejected signing", logger_1.Logger.errors.ACTION_REJECTED, {
+                                action: "_legacySignMessage",
+                                from: address,
+                                message: data
+                            });
+                        }
+                        throw error_3;
+                    case 5: return [2 /*return*/];
                 }
             });
         });
     };
     JsonRpcSigner.prototype._signTypedData = function (domain, types, value) {
         return __awaiter(this, void 0, void 0, function () {
-            var populated, address;
+            var populated, address, error_4;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -402,11 +436,25 @@ var JsonRpcSigner = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.getAddress()];
                     case 2:
                         address = _a.sent();
+                        _a.label = 3;
+                    case 3:
+                        _a.trys.push([3, 5, , 6]);
                         return [4 /*yield*/, this.provider.send("eth_signTypedData_v4", [
                                 address.toLowerCase(),
                                 JSON.stringify(hash_1._TypedDataEncoder.getPayload(populated.domain, types, populated.value))
                             ])];
-                    case 3: return [2 /*return*/, _a.sent()];
+                    case 4: return [2 /*return*/, _a.sent()];
+                    case 5:
+                        error_4 = _a.sent();
+                        if (typeof (error_4.message) === "string" && error_4.message.match(/user denied/i)) {
+                            logger.throwError("user rejected signing", logger_1.Logger.errors.ACTION_REJECTED, {
+                                action: "_signTypedData",
+                                from: address,
+                                message: { domain: populated.domain, types: types, value: populated.value }
+                            });
+                        }
+                        throw error_4;
+                    case 6: return [2 /*return*/];
                 }
             });
         });
@@ -517,7 +565,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
     };
     JsonRpcProvider.prototype._uncachedDetectNetwork = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var chainId, error_2, error_3, getNetwork;
+            var chainId, error_5, error_6, getNetwork;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, timer(0)];
@@ -532,7 +580,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                         chainId = _a.sent();
                         return [3 /*break*/, 9];
                     case 4:
-                        error_2 = _a.sent();
+                        error_5 = _a.sent();
                         _a.label = 5;
                     case 5:
                         _a.trys.push([5, 7, , 8]);
@@ -541,7 +589,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                         chainId = _a.sent();
                         return [3 /*break*/, 8];
                     case 7:
-                        error_3 = _a.sent();
+                        error_6 = _a.sent();
                         return [3 /*break*/, 8];
                     case 8: return [3 /*break*/, 9];
                     case 9:
@@ -670,7 +718,7 @@ var JsonRpcProvider = /** @class */ (function (_super) {
     };
     JsonRpcProvider.prototype.perform = function (method, params) {
         return __awaiter(this, void 0, void 0, function () {
-            var tx, feeData, args, error_4;
+            var tx, feeData, args, error_7;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -699,8 +747,8 @@ var JsonRpcProvider = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.send(args[0], args[1])];
                     case 4: return [2 /*return*/, _a.sent()];
                     case 5:
-                        error_4 = _a.sent();
-                        return [2 /*return*/, checkError(method, error_4, params)];
+                        error_7 = _a.sent();
+                        return [2 /*return*/, checkError(method, error_7, params)];
                     case 6: return [2 /*return*/];
                 }
             });

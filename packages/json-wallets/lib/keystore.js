@@ -333,7 +333,7 @@ function encrypt(account, password, options, progressCallback) {
             address: account.address.substring(2).toLowerCase(),
             id: (0, utils_1.uuidV4)(uuidRandom),
             version: 3,
-            Crypto: {
+            crypto: {
                 cipher: "aes-128-ctr",
                 cipherparams: {
                     iv: (0, bytes_1.hexlify)(iv).substring(2),

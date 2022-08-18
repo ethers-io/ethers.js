@@ -95,6 +95,9 @@ export function _fetchData(connection, body, processFunc) {
         if (connection.skipFetchSetup != null) {
             options.skipFetchSetup = !!connection.skipFetchSetup;
         }
+        if (connection.fetchOptions != null) {
+            options.fetchOptions = shallowCopy(connection.fetchOptions);
+        }
     }
     const reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
     const dataMatch = ((url) ? url.match(reData) : null);

@@ -11,6 +11,7 @@ export declare type ConnectionInfo = {
     throttleSlotInterval?: number;
     throttleCallback?: (attempt: number, url: string) => Promise<boolean>;
     skipFetchSetup?: boolean;
+    fetchOptions?: Record<string, string>;
     errorPassThrough?: boolean;
     timeout?: number;
 };

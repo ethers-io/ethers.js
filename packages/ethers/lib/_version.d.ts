@@ -1,2 +1,2 @@
-export declare const version = "ethers/5.6.9";
+export declare const version = "ethers/5.7.0";
 //# sourceMappingURL=_version.d.ts.map

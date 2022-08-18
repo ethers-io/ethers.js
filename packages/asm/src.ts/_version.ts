@@ -1,1 +1,1 @@
-export const version = "asm/5.6.1";
+export const version = "asm/5.7.0";

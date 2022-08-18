@@ -16,74 +16,35 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PocketProvider = void 0;
-var properties_1 = require("@ethersproject/properties");
 var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var url_json_rpc_provider_1 = require("./url-json-rpc-provider");
-// These are load-balancer-based application IDs
-var defaultApplicationIds = {
-    homestead: "6004bcd10040261633ade990",
-    ropsten: "6004bd4d0040261633ade991",
-    rinkeby: "6004bda20040261633ade994",
-    goerli: "6004bd860040261633ade992",
-};
+var defaultApplicationId = "62e1ad51b37b8e00394bda3b";
 var PocketProvider = /** @class */ (function (_super) {
     __extends(PocketProvider, _super);
-    function PocketProvider(network, apiKey) {
-        // We need a bit of creativity in the constructor because
-        // Pocket uses different default API keys based on the network
-        var _newTarget = this.constructor;
-        var _this = this;
-        if (apiKey == null) {
-            var n = (0, properties_1.getStatic)(_newTarget, "getNetwork")(network);
-            if (n) {
-                var applicationId = defaultApplicationIds[n.name];
-                if (applicationId) {
-                    apiKey = {
-                        applicationId: applicationId,
-                        loadBalancer: true
-                    };
-                }
-            }
-            // If there was any issue above, we don't know this network
-            if (apiKey == null) {
-                logger.throwError("unsupported network", logger_1.Logger.errors.INVALID_ARGUMENT, {
-                    argument: "network",
-                    value: network
-                });
-            }
-        }
-        _this = _super.call(this, network, apiKey) || this;
-        return _this;
+    function PocketProvider() {
+        return _super !== null && _super.apply(this, arguments) || this;
     }
     PocketProvider.getApiKey = function (apiKey) {
-        // Most API Providers allow null to get the default configuration, but
-        // Pocket requires the network to decide the default provider, so we
-        // rely on hijacking the constructor to add a sensible default for us
-        if (apiKey == null) {
-            logger.throwArgumentError("PocketProvider.getApiKey does not support null apiKey", "apiKey", apiKey);
-        }
         var apiKeyObj = {
             applicationId: null,
-            loadBalancer: false,
+            loadBalancer: true,
             applicationSecretKey: null
         };
         // Parse applicationId and applicationSecretKey
-        if (typeof (apiKey) === "string") {
+        if (apiKey == null) {
+            apiKeyObj.applicationId = defaultApplicationId;
+        }
+        else if (typeof (apiKey) === "string") {
             apiKeyObj.applicationId = apiKey;
         }
         else if (apiKey.applicationSecretKey != null) {
-            logger.assertArgument((typeof (apiKey.applicationId) === "string"), "applicationSecretKey requires an applicationId", "applicationId", apiKey.applicationId);
-            logger.assertArgument((typeof (apiKey.applicationSecretKey) === "string"), "invalid applicationSecretKey", "applicationSecretKey", "[REDACTED]");
             apiKeyObj.applicationId = apiKey.applicationId;
             apiKeyObj.applicationSecretKey = apiKey.applicationSecretKey;
-            apiKeyObj.loadBalancer = !!apiKey.loadBalancer;
         }
         else if (apiKey.applicationId) {
-            logger.assertArgument((typeof (apiKey.applicationId) === "string"), "apiKey.applicationId must be a string", "apiKey.applicationId", apiKey.applicationId);
             apiKeyObj.applicationId = apiKey.applicationId;
-            apiKeyObj.loadBalancer = !!apiKey.loadBalancer;
         }
         else {
             logger.throwArgumentError("unsupported PocketProvider apiKey", "apiKey", apiKey);
@@ -93,17 +54,26 @@ var PocketProvider = /** @class */ (function (_super) {
     PocketProvider.getUrl = function (network, apiKey) {
         var host = null;
         switch (network ? network.name : "unknown") {
+            case "goerli":
+                host = "eth-goerli.gateway.pokt.network";
+                break;
             case "homestead":
                 host = "eth-mainnet.gateway.pokt.network";
                 break;
-            case "ropsten":
-                host = "eth-ropsten.gateway.pokt.network";
+            case "kovan":
+                host = "poa-kovan.gateway.pokt.network";
+                break;
+            case "matic":
+                host = "poly-mainnet.gateway.pokt.network";
+                break;
+            case "maticmum":
+                host = "polygon-mumbai-rpc.gateway.pokt.network";
                 break;
             case "rinkeby":
                 host = "eth-rinkeby.gateway.pokt.network";
                 break;
-            case "goerli":
-                host = "eth-goerli.gateway.pokt.network";
+            case "ropsten":
+                host = "eth-ropsten.gateway.pokt.network";
                 break;
             default:
                 logger.throwError("unsupported network", logger_1.Logger.errors.INVALID_ARGUMENT, {
@@ -111,17 +81,8 @@ var PocketProvider = /** @class */ (function (_super) {
                     value: network
                 });
         }
-        var url = null;
-        if (apiKey.loadBalancer) {
-            url = "https://" + host + "/v1/lb/" + apiKey.applicationId;
-        }
-        else {
-            url = "https://" + host + "/v1/" + apiKey.applicationId;
-        }
-        var connection = { url: url };
-        // Initialize empty headers
-        connection.headers = {};
-        // Apply application secret key
+        var url = "https://" + host + "/v1/lb/" + apiKey.applicationId;
+        var connection = { headers: {}, url: url };
         if (apiKey.applicationSecretKey != null) {
             connection.user = "";
             connection.password = apiKey.applicationSecretKey;
@@ -129,7 +90,7 @@ var PocketProvider = /** @class */ (function (_super) {
         return connection;
     };
     PocketProvider.prototype.isCommunityResource = function () {
-        return (this.applicationId === defaultApplicationIds[this.network.name]);
+        return (this.applicationId === defaultApplicationId);
     };
     return PocketProvider;
 }(url_json_rpc_provider_1.UrlJsonRpcProvider));

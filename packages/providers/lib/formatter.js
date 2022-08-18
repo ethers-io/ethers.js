@@ -207,8 +207,13 @@ var Formatter = /** @class */ (function () {
         if (blockTag === "earliest") {
             return "0x0";
         }
-        if (blockTag === "latest" || blockTag === "pending") {
-            return blockTag;
+        switch (blockTag) {
+            case "earliest": return "0x0";
+            case "latest":
+            case "pending":
+            case "safe":
+            case "finalized":
+                return blockTag;
         }
         if (typeof (blockTag) === "number" || (0, bytes_1.isHexString)(blockTag)) {
             return (0, bytes_1.hexValue)(blockTag);

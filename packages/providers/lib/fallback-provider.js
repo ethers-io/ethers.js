@@ -399,7 +399,11 @@ function getRunner(config, currentBlockNumber, method, params) {
                 case 13:
                     provider = _b.sent();
                     _b.label = 14;
-                case 14: return [2 /*return*/, provider[method](params.transaction)];
+                case 14:
+                    if (method === "call" && params.blockTag) {
+                        return [2 /*return*/, provider[method](params.transaction, params.blockTag)];
+                    }
+                    return [2 /*return*/, provider[method](params.transaction)];
                 case 15: return [2 /*return*/, provider[method](params.transactionHash)];
                 case 16:
                     filter = params.filter;

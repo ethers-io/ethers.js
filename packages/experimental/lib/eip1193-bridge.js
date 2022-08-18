@@ -164,7 +164,7 @@ var Eip1193Bridge = /** @class */ (function (_super) {
                     case 16:
                         result = _b.sent();
                         return [2 /*return*/, ethers_1.ethers.utils.hexValue(result.transactions.length)];
-                    case 17: return [4 /*yield*/, this.provider.getBlock(params[0])];
+                    case 17: return [4 /*yield*/, this.provider.getCode(params[0], params[1])];
                     case 18:
                         result = _b.sent();
                         return [2 /*return*/, result];

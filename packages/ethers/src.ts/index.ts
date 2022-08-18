@@ -63,6 +63,9 @@ export {
 
     ContractInterface,
 
+    TypedDataDomain,
+    TypedDataField,
+
     BigNumberish,
 
     Bytes,

@@ -230,6 +230,12 @@ export class JsonRpcSigner extends Signer {
             return this.provider.send("eth_sendTransaction", [hexTx]).then((hash) => {
                 return hash;
             }, (error) => {
+                if (typeof (error.message) === "string" && error.message.match(/user denied/i)) {
+                    logger.throwError("user rejected transaction", Logger.errors.ACTION_REJECTED, {
+                        action: "sendTransaction",
+                        transaction: tx
+                    });
+                }
                 return checkError("sendTransaction", error, hexTx);
             });
         });
@@ -267,15 +273,39 @@ export class JsonRpcSigner extends Signer {
         return __awaiter(this, void 0, void 0, function* () {
             const data = ((typeof (message) === "string") ? toUtf8Bytes(message) : message);
             const address = yield this.getAddress();
-            return yield this.provider.send("personal_sign", [hexlify(data), address.toLowerCase()]);
+            try {
+                return yield this.provider.send("personal_sign", [hexlify(data), address.toLowerCase()]);
+            }
+            catch (error) {
+                if (typeof (error.message) === "string" && error.message.match(/user denied/i)) {
+                    logger.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
+                        action: "signMessage",
+                        from: address,
+                        message: data
+                    });
+                }
+                throw error;
+            }
         });
     }
     _legacySignMessage(message) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = ((typeof (message) === "string") ? toUtf8Bytes(message) : message);
             const address = yield this.getAddress();
-            // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
-            return yield this.provider.send("eth_sign", [address.toLowerCase(), hexlify(data)]);
+            try {
+                // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
+                return yield this.provider.send("eth_sign", [address.toLowerCase(), hexlify(data)]);
+            }
+            catch (error) {
+                if (typeof (error.message) === "string" && error.message.match(/user denied/i)) {
+                    logger.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
+                        action: "_legacySignMessage",
+                        from: address,
+                        message: data
+                    });
+                }
+                throw error;
+            }
         });
     }
     _signTypedData(domain, types, value) {
@@ -285,10 +315,22 @@ export class JsonRpcSigner extends Signer {
                 return this.provider.resolveName(name);
             });
             const address = yield this.getAddress();
-            return yield this.provider.send("eth_signTypedData_v4", [
-                address.toLowerCase(),
-                JSON.stringify(_TypedDataEncoder.getPayload(populated.domain, types, populated.value))
-            ]);
+            try {
+                return yield this.provider.send("eth_signTypedData_v4", [
+                    address.toLowerCase(),
+                    JSON.stringify(_TypedDataEncoder.getPayload(populated.domain, types, populated.value))
+                ]);
+            }
+            catch (error) {
+                if (typeof (error.message) === "string" && error.message.match(/user denied/i)) {
+                    logger.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
+                        action: "_signTypedData",
+                        from: address,
+                        message: { domain: populated.domain, types, value: populated.value }
+                    });
+                }
+                throw error;
+            }
         });
     }
     unlock(password) {

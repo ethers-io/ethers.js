@@ -1,12 +1,12 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bignumber": "^5.6.2",
-    "@ethersproject/bytes": "^5.6.1",
-    "@ethersproject/keccak256": "^5.6.1",
-    "@ethersproject/logger": "^5.6.0",
-    "@ethersproject/sha2": "^5.6.1",
-    "@ethersproject/strings": "^5.6.1"
+    "@ethersproject/bignumber": "^5.7.0",
+    "@ethersproject/bytes": "^5.7.0",
+    "@ethersproject/keccak256": "^5.7.0",
+    "@ethersproject/logger": "^5.7.0",
+    "@ethersproject/sha2": "^5.7.0",
+    "@ethersproject/strings": "^5.7.0"
   },
   "description": "Solidity coder for non-standard (tight) packing.",
   "ethereum": "donations.ethers.eth",
@@ -40,7 +40,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x709588a13307c126d48fb2808b414ef5cdeb0b8fc27f655062033e8756cef00c",
+  "tarballHash": "0x75a79894ba701f9d0f631c861579808118e58b2127b0256100c2e2da169ea759",
   "types": "./lib/index.d.ts",
-  "version": "5.6.1"
+  "version": "5.7.0"
 }
