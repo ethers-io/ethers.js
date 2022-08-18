@@ -1321,43 +1321,24 @@ describe("Test API Key Formatting", function () {
         assert_1.default.equal(apiKeyObject2.applicationId, applicationId);
         assert_1.default.equal(apiKeyObject2.applicationSecretKey, applicationSecretKey);
         // Test complex API key with loadBalancer
-        [true, false].forEach(function (loadBalancer) {
-            var apiKeyObject = ethers_1.ethers.providers.PocketProvider.getApiKey({
+        {
+            var loadBalancer = true;
+            var apiKeyObject_1 = ethers_1.ethers.providers.PocketProvider.getApiKey({
                 applicationId: applicationId,
                 loadBalancer: loadBalancer
             });
-            assert_1.default.equal(apiKeyObject.applicationId, applicationId);
-            assert_1.default.equal(apiKeyObject.loadBalancer, loadBalancer);
-            assert_1.default.ok(apiKeyObject.applicationSecretKey == null);
-            var apiKeyObject2 = ethers_1.ethers.providers.PocketProvider.getApiKey({
+            assert_1.default.equal(apiKeyObject_1.applicationId, applicationId);
+            assert_1.default.equal(apiKeyObject_1.loadBalancer, loadBalancer);
+            assert_1.default.ok(apiKeyObject_1.applicationSecretKey == null);
+            var apiKeyObject2_1 = ethers_1.ethers.providers.PocketProvider.getApiKey({
                 applicationId: applicationId,
                 applicationSecretKey: applicationSecretKey,
                 loadBalancer: loadBalancer
             });
-            assert_1.default.equal(apiKeyObject2.applicationId, applicationId);
-            assert_1.default.equal(apiKeyObject2.applicationSecretKey, applicationSecretKey);
-            assert_1.default.equal(apiKeyObject2.loadBalancer, loadBalancer);
-        });
-        // Fails on invalid applicationId type
-        assert_1.default.throws(function () {
-            var apiKey = ethers_1.ethers.providers.PocketProvider.getApiKey({
-                applicationId: 1234,
-                applicationSecretKey: applicationSecretKey
-            });
-            console.log(apiKey);
-        }, function (error) {
-            return (error.argument === "applicationId" && error.reason === "applicationSecretKey requires an applicationId");
-        });
-        // Fails on invalid projectSecret type
-        assert_1.default.throws(function () {
-            var apiKey = ethers_1.ethers.providers.PocketProvider.getApiKey({
-                applicationId: applicationId,
-                applicationSecretKey: 1234
-            });
-            console.log(apiKey);
-        }, function (error) {
-            return (error.argument === "applicationSecretKey" && error.reason === "invalid applicationSecretKey");
-        });
+            assert_1.default.equal(apiKeyObject2_1.applicationId, applicationId);
+            assert_1.default.equal(apiKeyObject2_1.applicationSecretKey, applicationSecretKey);
+            assert_1.default.equal(apiKeyObject2_1.loadBalancer, loadBalancer);
+        }
         {
             var provider = new ethers_1.ethers.providers.PocketProvider("homestead", {
                 applicationId: applicationId,

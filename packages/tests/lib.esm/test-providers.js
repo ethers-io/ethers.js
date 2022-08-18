@@ -1115,7 +1115,8 @@ describe("Test API Key Formatting", function () {
         assert.equal(apiKeyObject2.applicationId, applicationId);
         assert.equal(apiKeyObject2.applicationSecretKey, applicationSecretKey);
         // Test complex API key with loadBalancer
-        [true, false].forEach((loadBalancer) => {
+        {
+            const loadBalancer = true;
             const apiKeyObject = ethers.providers.PocketProvider.getApiKey({
                 applicationId, loadBalancer
             });
@@ -1128,27 +1129,7 @@ describe("Test API Key Formatting", function () {
             assert.equal(apiKeyObject2.applicationId, applicationId);
             assert.equal(apiKeyObject2.applicationSecretKey, applicationSecretKey);
             assert.equal(apiKeyObject2.loadBalancer, loadBalancer);
-        });
-        // Fails on invalid applicationId type
-        assert.throws(() => {
-            const apiKey = ethers.providers.PocketProvider.getApiKey({
-                applicationId: 1234,
-                applicationSecretKey: applicationSecretKey
-            });
-            console.log(apiKey);
-        }, (error) => {
-            return (error.argument === "applicationId" && error.reason === "applicationSecretKey requires an applicationId");
-        });
-        // Fails on invalid projectSecret type
-        assert.throws(() => {
-            const apiKey = ethers.providers.PocketProvider.getApiKey({
-                applicationId: applicationId,
-                applicationSecretKey: 1234
-            });
-            console.log(apiKey);
-        }, (error) => {
-            return (error.argument === "applicationSecretKey" && error.reason === "invalid applicationSecretKey");
-        });
+        }
         {
             const provider = new ethers.providers.PocketProvider("homestead", {
                 applicationId: applicationId,

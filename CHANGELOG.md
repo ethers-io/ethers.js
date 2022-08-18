@@ -4,7 +4,7 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
-ethers/v5.7.0 (2022-08-18 15:38)
+ethers/v5.7.0 (2022-08-18 16:17)
 --------------------------------
 
   - Update PocketProvider to newer URL format. ([#2980](https://github.com/ethers-io/ethers.js/issues/2980); [10d07ca](https://github.com/ethers-io/ethers.js/commit/10d07ca6ec0622fb5a58b7e61b089166ebe8ea15))
