@@ -531,7 +531,7 @@ type TestDescription = {
 };
 
 
-const allNetworks = [ "default", "homestead", "ropsten", "rinkeby", "kovan", "goerli" ];
+const allNetworks = [ "default", "homestead", "ropsten", "rinkeby", "goerli" ];
 
 // We use separate API keys because otherwise the testcases sometimes
 // fail during CI because our default keys are pretty heavily used
@@ -539,13 +539,7 @@ const _ApiKeys: Record<string, string> = {
     alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
     etherscan: "FPFGK6JSW2UHJJ2666FG93KP7WC999MNW7",
     infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",
-};
-
-const _ApiKeysPocket: Record<string, string> = {
-    homestead: "6004bcd10040261633ade990",
-    ropsten: "6004bd4d0040261633ade991",
-    rinkeby: "6004bda20040261633ade994",
-    goerli: "6004bd860040261633ade992",
+    pocket: "62fd9de24b068e0039c16996"
 };
 
 type ApiKeySet = {
@@ -558,7 +552,7 @@ type ApiKeySet = {
 function getApiKeys(network: string): ApiKeySet {
     if (network === "default" || network == null) { network = "homestead"; }
     const apiKeys = ethers.utils.shallowCopy(_ApiKeys);
-    apiKeys.pocket = _ApiKeysPocket[network];
+    //apiKeys.pocket = _ApiKeysPocket[network];
     return <ApiKeySet>apiKeys;
 }
 
@@ -631,11 +625,7 @@ const providerFunctions: Array<ProviderDescription> = [
     },
     {
         name: "PocketProvider",
-        // note: sans-kovan
-        // @TODO: Pocket is being incredibly unreliable right now; removing it so
-        // we can pass the CI
-        //networks: [ "default", "homestead", "ropsten", "rinkeby", "goerli" ],
-        networks: [ "default", "homestead" ],
+        networks: [ "default", "homestead", "goerli" ],
         create: (network: string) => {
             if (network == "default") {
                 return new ethers.providers.PocketProvider(null, {
