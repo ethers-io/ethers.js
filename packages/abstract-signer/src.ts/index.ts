@@ -22,7 +22,7 @@ import {
     TransactionId
 } from "@hashgraph/sdk";
 import * as Long from "long";
-import { SignedTransaction, TransactionBody } from "@hashgraph/proto";
+import { proto } from "@hashgraph/proto";
 
 const logger = new Logger(version);
 
@@ -218,7 +218,7 @@ export abstract class Signer {
         };
 
         const signed = {
-            bodyBytes: TransactionBody.encode(paymentBody).finish(),
+            bodyBytes: proto.TransactionBody.encode(paymentBody).finish(),
             sigMap: {}
         };
 
@@ -230,7 +230,7 @@ export abstract class Signer {
             sigPair: [walletKey.publicKey._toProtobufSignature(signature)]
         }
 
-        const transferSignedTransactionBytes =  SignedTransaction.encode(signed).finish();
+        const transferSignedTransactionBytes =  proto.SignedTransaction.encode(signed).finish();
         hederaTx._paymentTransactions.push({
             signedTransactionBytes: transferSignedTransactionBytes
         });

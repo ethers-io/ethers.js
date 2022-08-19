@@ -36,7 +36,7 @@ import {
     TransactionId,
     TransferTransaction
 } from "@hashgraph/sdk";
-import { IKey, Key } from "@hashgraph/proto";
+import { proto } from "@hashgraph/proto";
 import Long from "long";
 
 const logger = new Logger(version);
@@ -199,7 +199,7 @@ export function serializeHederaTransaction(transaction: UnsignedTransaction, pub
                 .setGas(gas);
             if (transaction.customData.contractAdminKey) {
                 const inputKey = transaction.customData.contractAdminKey;
-                const keyInitializer: IKey = {};
+                const keyInitializer: proto.IKey = {};
                 if (inputKey.toString().startsWith('0x')) {
                     if (isAddress(inputKey)) {
                         const account = getAccountFromAddress(inputKey);
@@ -220,7 +220,7 @@ export function serializeHederaTransaction(transaction: UnsignedTransaction, pub
                         contractNum: new Long(account[2])
                     }
                 }
-                const key = HederaPubKey._fromProtobufKey(Key.create(keyInitializer));
+                const key = HederaPubKey._fromProtobufKey(proto.Key.create(keyInitializer));
                 (tx as ContractCreateTransaction).setAdminKey(key);
             }
             if (transaction.customData.contractMemo) {

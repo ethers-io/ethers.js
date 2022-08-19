@@ -28,9 +28,9 @@ describe('Hethers Tests', function () {
         }
 
         // set env variables for docker images until local-node is updated
-        process.env['NETWORK_NODE_IMAGE_TAG'] = '0.26.3';
-        process.env['HAVEGED_IMAGE_TAG'] = '0.26.3';
-        process.env['MIRROR_IMAGE_TAG'] = '0.59.0-rc1';
+        process.env['NETWORK_NODE_IMAGE_TAG'] = '0.29.0-alpha.1';
+        process.env['HAVEGED_IMAGE_TAG'] = '0.29.0-alpha.1';
+        process.env['MIRROR_IMAGE_TAG'] = '0.62.0-rc1';
         console.log(`Docker container versions, services: ${process.env['NETWORK_NODE_IMAGE_TAG']}, mirror: ${process.env['MIRROR_IMAGE_TAG']}`);
 
         // start local-node

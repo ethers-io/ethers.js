@@ -9,16 +9,14 @@ env:
   PLATFORM_JAVA_OPTS: ""
 
 jobs:
-
   test-node:
-
     runs-on: ubuntu-latest
     # runs-on: macos-latest
 
     strategy:
       fail-fast: false
       matrix:
-        node-version: [ 12.x, 13.x ]
+        node-version: [12.x, 13.x]
 
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
@@ -35,14 +33,13 @@ jobs:
         run: npm ci
 
       - name: Install hedera-local node globally
-        run: npm install -g https://github.com/hashgraph/hedera-local-node.git
+        run: npm install -g https://github.com/hashgraph/hedera-local-node.git#v.1.1.0
 
       - name: Build CommonJS and ESM (from TypeScript)
         run: npm run build-all
 
       - name: Run tests
         run: npm run test-node
-
 
   #  test-browser:
   #
@@ -102,9 +99,7 @@ jobs:
   #      - name: Run tests
   #        run: npm run test-react
 
-
   coverage:
-
     name: Coverage
 
     runs-on: ubuntu-latest
@@ -127,7 +122,7 @@ jobs:
         run: npm ci
 
       - name: Install hedera-local node globally
-        run: npm install -g https://github.com/hashgraph/hedera-local-node.git
+        run: npm install -g https://github.com/hashgraph/hedera-local-node.git#v.1.1.0
 
       - name: Build CommonJS and ESM (from TypeScript)
         run: npm run build-all
