@@ -54,7 +54,7 @@
   "license": "MIT",
   "main": "./lib/index.js",
   "module": "./lib.esm/index.js",
-  "name": "@ethersproject/providers",
+  "name": "@saiakhil2012/providers",
   "publishConfig": {
     "access": "public"
   },
@@ -69,5 +69,5 @@
   "sideEffects": false,
   "tarballHash": "0x8df0b6cea00f4f33602ccb5a15b39682d4e9eac0a162e1e6c0a8801bb7525ee1",
   "types": "./lib/index.d.ts",
-  "version": "5.6.8"
+  "version": "5.6.36"
 }
