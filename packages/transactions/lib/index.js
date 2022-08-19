@@ -79,7 +79,7 @@ var logger_1 = require("@hethers/logger");
 var _version_1 = require("./_version");
 var base64 = __importStar(require("@ethersproject/base64"));
 var sdk_1 = require("@hashgraph/sdk");
-var proto_1 = require("@hashgraph/proto");
+var proto = __importStar(require("@hashgraph/proto"));
 var long_1 = __importDefault(require("long"));
 var logger = new logger_1.Logger(_version_1.version);
 var TransactionTypes;
@@ -206,7 +206,7 @@ function serializeHederaTransaction(transaction, pubKey) {
                         contractNum: new long_1.default(account_2[2])
                     };
                 }
-                var key = sdk_1.PublicKey._fromProtobufKey(proto_1.proto.Key.create(keyInitializer));
+                var key = sdk_1.PublicKey._fromProtobufKey(proto.Key.create(keyInitializer));
                 tx.setAdminKey(key);
             }
             if (transaction.customData.contractMemo) {

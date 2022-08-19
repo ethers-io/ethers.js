@@ -22,7 +22,7 @@ import {
     TransactionId
 } from "@hashgraph/sdk";
 import * as Long from "long";
-import { proto } from "@hashgraph/proto";
+import * as proto from "@hashgraph/proto";
 
 const logger = new Logger(version);
 

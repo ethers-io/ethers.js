@@ -17,7 +17,7 @@ import { Logger } from "@hethers/logger";
 import { version } from "./_version";
 import * as base64 from "@ethersproject/base64";
 import { AccountCreateTransaction, AccountId, ContractCreateTransaction, ContractExecuteTransaction, ContractId, FileAppendTransaction, FileCreateTransaction, Hbar, HbarUnit, PublicKey as HederaPubKey, Transaction as HederaTransaction, TransactionId, TransferTransaction } from "@hashgraph/sdk";
-import { proto } from "@hashgraph/proto";
+import * as proto from "@hashgraph/proto";
 import Long from "long";
 const logger = new Logger(version);
 export var TransactionTypes;

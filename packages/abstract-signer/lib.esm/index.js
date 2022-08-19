@@ -16,7 +16,7 @@ import { version } from "./_version";
 import { asAccountString, getAddressFromAccount, getChecksumAddress } from "@hethers/address";
 import { AccountId, ContractCallQuery, ContractId, Hbar, PrivateKey, PublicKey as HederaPubKey, TransactionId } from "@hashgraph/sdk";
 import * as Long from "long";
-import { proto } from "@hashgraph/proto";
+import * as proto from "@hashgraph/proto";
 const logger = new Logger(version);
 const allowedTransactionKeys = [
     "accessList", "chainId", "customData", "data", "from", "gasLimit", "maxFeePerGas", "maxPriorityFeePerGas", "to", "type", "value",

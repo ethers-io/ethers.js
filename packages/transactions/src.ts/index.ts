@@ -36,7 +36,7 @@ import {
     TransactionId,
     TransferTransaction
 } from "@hashgraph/sdk";
-import { proto } from "@hashgraph/proto";
+import * as proto from "@hashgraph/proto";
 import Long from "long";
 
 const logger = new Logger(version);

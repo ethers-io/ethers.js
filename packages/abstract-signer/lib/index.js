@@ -90,7 +90,7 @@ var _version_1 = require("./_version");
 var address_1 = require("@hethers/address");
 var sdk_1 = require("@hashgraph/sdk");
 var Long = __importStar(require("long"));
-var proto_1 = require("@hashgraph/proto");
+var proto = __importStar(require("@hashgraph/proto"));
 var logger = new logger_1.Logger(_version_1.version);
 var allowedTransactionKeys = [
     "accessList", "chainId", "customData", "data", "from", "gasLimit", "maxFeePerGas", "maxPriorityFeePerGas", "to", "type", "value",
@@ -234,7 +234,7 @@ var Signer = /** @class */ (function () {
                             },
                         };
                         signed = {
-                            bodyBytes: proto_1.proto.TransactionBody.encode(paymentBody).finish(),
+                            bodyBytes: proto.TransactionBody.encode(paymentBody).finish(),
                             sigMap: {}
                         };
                         walletKey = this.isED25519Type
@@ -244,7 +244,7 @@ var Signer = /** @class */ (function () {
                         signed.sigMap = {
                             sigPair: [walletKey.publicKey._toProtobufSignature(signature)]
                         };
-                        transferSignedTransactionBytes = proto_1.proto.SignedTransaction.encode(signed).finish();
+                        transferSignedTransactionBytes = proto.SignedTransaction.encode(signed).finish();
                         hederaTx._paymentTransactions.push({
                             signedTransactionBytes: transferSignedTransactionBytes
                         });
