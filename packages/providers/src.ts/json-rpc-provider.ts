@@ -22,12 +22,19 @@ import { BaseProvider, Event } from "./base-provider";
 
 const errorGas = [ "call", "estimateGas" ];
 
+const revertReasonStringRe = /^[^:]*: reverted with reason string '(.*)'$/;
+
 function spelunk(value: any, requireData: boolean): null | { message: string, data: null | string } {
     if (value == null) { return null; }
 
+    const message = value.message;
     // These *are* the droids we're looking for.
-    if (typeof(value.message) === "string" && value.message.match("reverted")) {
-        const data = isHexString(value.data) ? value.data: null;
+    if (typeof(message) === "string" && message.match("reverted")) {
+        let data = isHexString(value.data) ? value.data: null;
+        let m;
+        if (data === null && (m = message.match(revertReasonStringRe))) {
+            data = toUtf8Bytes(m[1]);
+        }
         if (!requireData || data) {
             return { message: value.message, data };
         }
