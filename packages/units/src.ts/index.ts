@@ -46,7 +46,7 @@ export function commify(value: string | number): string {
         suffix = suffix.substring(0, suffix.length - 1);
     }
 
-    const formatted = [];
+    const formatted:string[] = [];
     while (whole.length) {
         if (whole.length <= 3) {
             formatted.unshift(whole);
