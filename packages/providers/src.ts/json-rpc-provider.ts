@@ -36,6 +36,21 @@ function spelunk(value: any, requireData: boolean): null | { message: string, da
     // Spelunk further...
     if (typeof(value) === "object") {
         for (const key in value) {
+            if (value instanceof Error && key === "stackTrace") {
+                /*
+                 * When an Error object is precessed, `stackTrace` property will
+                 * contain references to objects that represent files and
+                 * functions and is an internally cyclical data structure.
+                 * `spelunk` will loop though it until it will exceed all the
+                 * stack space.
+                 *
+                 * In any case, `stackTrace` does not contain an explanation as
+                 * to why the transaction was reverted, so it does not make
+                 * sense to look in there regardless of if it is cyclical or
+                 * not.
+                 */
+                continue;
+            }
             const result = spelunk(value[key], requireData);
             if (result) { return result; }
         }
