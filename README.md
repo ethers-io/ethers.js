@@ -80,9 +80,9 @@ These built-in keys mean you can use `ethers.getDefaultProvider()` and
 start developing right away.
 
 However, the API keys provided to ethers are also shared and are
-intentionally throttled to encourage developers to eventually get
+intentionally throttled to encourage developers to get eventually
 their own keys, which unlock many other features, such as faster
-responses, more capacity, analytics and other features like archival
+responses, more capacity, analytics, and other features like archival
 data.
 
 When you are ready to sign up and start using for your own keys, please
@@ -101,10 +101,10 @@ A special thanks to these services for providing community resources:
 Ancillary Packages
 ------------------
 
-These are a number of packages not included in the umbrella `ethers` npm package, and
+These are several packages not included in the umbrella `ethers` npm package, and
 additional packages are always being added. Often these packages are for specific
 use-cases, so rather than adding them to the umbrella package, they are added as
-ancillary packages, which can be included by those who need them, while not bloating
+ancillary packages, which can be included by those who need them while not bloating
 everyone else with packages they do not need.
 
 We will keep a list of useful packages here.
