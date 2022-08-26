@@ -12,41 +12,51 @@ function ethDefaultProvider(network) {
             options = {};
         }
         const providerList = [];
-        if (providers.InfuraProvider) {
+        if (providers.InfuraProvider && options.infura !== "-") {
             try {
                 providerList.push(new providers.InfuraProvider(network, options.infura));
             }
             catch (error) { }
         }
-        if (providers.EtherscanProvider) {
+        if (providers.EtherscanProvider && options.etherscan !== "-") {
             try {
                 providerList.push(new providers.EtherscanProvider(network, options.etherscan));
             }
             catch (error) { }
         }
-        if (providers.AlchemyProvider) {
+        if (providers.AlchemyProvider && options.alchemy !== "-") {
             try {
                 providerList.push(new providers.AlchemyProvider(network, options.alchemy));
             }
             catch (error) { }
         }
-        if (providers.PocketProvider) {
+        if (providers.PocketProvider && options.pocket !== "-") {
             // These networks are currently faulty on Pocket as their
             // network does not handle the Berlin hardfork, which is
             // live on these ones.
             // @TODO: This goes away once Pocket has upgraded their nodes
             const skip = ["goerli", "ropsten", "rinkeby"];
             try {
-                const provider = new providers.PocketProvider(network);
+                const provider = new providers.PocketProvider(network, options.pocket);
                 if (provider.network && skip.indexOf(provider.network.name) === -1) {
                     providerList.push(provider);
                 }
             }
             catch (error) { }
         }
-        if (providers.CloudflareProvider) {
+        if (providers.CloudflareProvider && options.cloudflare !== "-") {
             try {
                 providerList.push(new providers.CloudflareProvider(network));
+            }
+            catch (error) { }
+        }
+        if (providers.AnkrProvider && options.ankr !== "-") {
+            try {
+                const skip = ["ropsten"];
+                const provider = new providers.AnkrProvider(network, options.ankr);
+                if (provider.network && skip.indexOf(provider.network.name) === -1) {
+                    providerList.push(provider);
+                }
             }
             catch (error) { }
         }
@@ -140,13 +150,22 @@ const networks = {
         _defaultProvider: etcDefaultProvider("https:/\/www.ethercluster.com/kotti", "classicKotti")
     },
     xdai: { chainId: 100, name: "xdai" },
-    matic: { chainId: 137, name: "matic" },
+    matic: {
+        chainId: 137,
+        name: "matic",
+        _defaultProvider: ethDefaultProvider("matic")
+    },
     maticmum: { chainId: 80001, name: "maticmum" },
-    optimism: { chainId: 10, name: "optimism" },
+    optimism: {
+        chainId: 10,
+        name: "optimism",
+        _defaultProvider: ethDefaultProvider("optimism")
+    },
     "optimism-kovan": { chainId: 69, name: "optimism-kovan" },
     "optimism-goerli": { chainId: 420, name: "optimism-goerli" },
     arbitrum: { chainId: 42161, name: "arbitrum" },
     "arbitrum-rinkeby": { chainId: 421611, name: "arbitrum-rinkeby" },
+    "arbitrum-goerli": { chainId: 421613, name: "arbitrum-goerli" },
     bnb: { chainId: 56, name: "bnb" },
     bnbt: { chainId: 97, name: "bnbt" },
 };

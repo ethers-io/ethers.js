@@ -2,6 +2,8 @@
 
 import { createHash, createHmac } from "crypto";
 
+import hash from "hash.js";
+
 import { arrayify, BytesLike } from "@ethersproject/bytes";
 
 import { SupportedAlgorithm } from "./types";
@@ -11,7 +13,7 @@ import { version } from "./_version";
 const logger = new Logger(version);
 
 export function ripemd160(data: BytesLike): string {
-    return "0x" + createHash("ripemd160").update(Buffer.from(arrayify(data))).digest("hex")
+    return "0x" + (hash.ripemd160().update(arrayify(data)).digest("hex"));
 }
 
 export function sha256(data: BytesLike): string {

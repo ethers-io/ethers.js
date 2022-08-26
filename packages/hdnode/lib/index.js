@@ -57,8 +57,6 @@ var HDNode = /** @class */ (function () {
      *   - fromSeed
      */
     function HDNode(constructorGuard, privateKey, publicKey, parentFingerprint, chainCode, index, depth, mnemonicOrPath) {
-        var _newTarget = this.constructor;
-        logger.checkNew(_newTarget, HDNode);
         /* istanbul ignore if */
         if (constructorGuard !== _constructorGuard) {
             throw new Error("HDNode constructor cannot be called directly");

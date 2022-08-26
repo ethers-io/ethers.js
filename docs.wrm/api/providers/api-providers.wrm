@@ -217,3 +217,98 @@ _code: Cloudflare Examples @lang<javascript>
 
 // Connect to mainnet (homestead)
 provider = new CloudflareProvider();
+
+
+_subsection: PocketProvider @<PocketProvider> @inherit<[[UrlJsonRpcProvider]]> @src<providers:class.PocketProvider>
+
+The **PocketProvider** is backed by [Pocket](link-pocket).
+
+_property: new ethers.providers.PocketProvider([ network = "homestead", [ apiKey ] ])
+Create a new **PocketProvider** connected to //network// with
+the optional //apiKey//.
+
+The //network// may be specified as a **string** for a common
+network name, a **number** for a common chain ID or a
+[Network Object](providers-Network).
+
+_note: Note: Default API keys
+If no //apiKey// is provided, a shared API key will be used,
+which may result in reduced performance and throttled requests.
+
+It is highly recommended for production, you register with
+[Pocket](link-pocket) for your own API key.
+
+_definition: **Supported Networks**
+
+- ``homestead`` - Homestead (Mainnet)
+- ``ropsten`` - Ropsten (proof-of-work testnet)
+- ``rinkeby`` - Rinkeby (proof-of-authority testnet)
+- ``goerli`` - G&ouml;rli (clique testnet)
+
+_code: Pocket Examples @lang<javascript>
+
+//_hide: const PocketProvider = ethers.providers.PocketProvider;
+//_hide: const applicationId = "...";
+//_hide: const applicationSecretKey = "...";
+//_hide: const loadBalancer = true;
+
+// Connect to mainnet (homestead)
+provider = new PocketProvider();
+
+// Connect to the ropsten testnet
+// (see EtherscanProvider above for other network examples)
+provider = new PocketProvider("ropsten");
+
+// Connect to mainnet with an Application ID (these are equivalent)
+provider = new PocketProvider(null, applicationId);
+provider = new PocketProvider("homestead", applicationId);
+
+// Connect to mainnet with an application ID, application secret
+// and specify whether to use the load balances
+provider = new PocketProvider("homestead", {
+    applicationId: applicationId,
+    applicationSecretKey: applicationSecretKey,
+    loadBalancer: loadBalancer     // true or false
+});
+
+
+_subsection: AnkrProvider @<AnkrProvider> @inherit<[[UrlJsonRpcProvider]]> @src<providers:class.AnkrProvider>
+
+The **AnkrProvider** is backed by [Ankr](link-ankr).
+
+_property: new ethers.providers.AnkrProvider([ network = "homestead", [ apiKey ] ])
+Create a new **AnkrProvider** connected to //network// with
+the optional //apiKey//.
+
+The //network// may be specified as a **string** for a common
+network name, a **number** for a common chain ID or a
+[Network Object](providers-Network).
+
+_note: Note: Default API keys
+If no //apiKey// is provided, a shared API key will be used,
+which may result in reduced performance and throttled requests.
+
+It is highly recommended for production, you register with
+[Ankr](link-ankr) for your own API key.
+
+_definition: **Supported Networks**
+
+- ``homestead`` - Homestead (Mainnet)
+- ``matic`` - Polygon
+- ``arbitrum`` - Arbitrum (L2; optimistic roll-up)
+
+_code: Ankr Examples @lang<javascript>
+
+//_hide: const AnkrProvider = ethers.providers.AnkrProvider;
+//_hide: const apiKey = "...";
+
+// Connect to mainnet (homestead)
+provider = new AnkrProvider();
+
+// Connect to polygont
+// (see EtherscanProvider above for other network examples)
+provider = new AnkrProvider("matic");
+
+// Connect to mainnet with an API Key (these are equivalent)
+provider = new AnkrProvider(null, apiKey);
+provider = new AnkrProvider("homestead", apiKey);

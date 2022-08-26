@@ -114,6 +114,11 @@ export var ErrorCode;
     //   - replacement: the full TransactionsResponse for the replacement
     //   - receipt: the receipt of the replacement
     ErrorCode["TRANSACTION_REPLACED"] = "TRANSACTION_REPLACED";
+    ///////////////////
+    // Interaction Errors
+    // The user rejected the action, such as signing a message or sending
+    // a transaction
+    ErrorCode["ACTION_REJECTED"] = "ACTION_REJECTED";
 })(ErrorCode || (ErrorCode = {}));
 ;
 const HEX = "0123456789abcdef";
@@ -178,6 +183,40 @@ export class Logger {
         messageDetails.push(`code=${code}`);
         messageDetails.push(`version=${this.version}`);
         const reason = message;
+        let url = "";
+        switch (code) {
+            case ErrorCode.NUMERIC_FAULT: {
+                url = "NUMERIC_FAULT";
+                const fault = message;
+                switch (fault) {
+                    case "overflow":
+                    case "underflow":
+                    case "division-by-zero":
+                        url += "-" + fault;
+                        break;
+                    case "negative-power":
+                    case "negative-width":
+                        url += "-unsupported";
+                        break;
+                    case "unbound-bitwise-result":
+                        url += "-unbound-result";
+                        break;
+                }
+                break;
+            }
+            case ErrorCode.CALL_EXCEPTION:
+            case ErrorCode.INSUFFICIENT_FUNDS:
+            case ErrorCode.MISSING_NEW:
+            case ErrorCode.NONCE_EXPIRED:
+            case ErrorCode.REPLACEMENT_UNDERPRICED:
+            case ErrorCode.TRANSACTION_REPLACED:
+            case ErrorCode.UNPREDICTABLE_GAS_LIMIT:
+                url = code;
+                break;
+        }
+        if (url) {
+            message += " [ See: https:/\/links.ethers.org/v5-errors-" + url + " ]";
+        }
         if (messageDetails.length) {
             message += " (" + messageDetails.join(", ") + ")";
         }

@@ -128,5 +128,5 @@ The name of the //fixedFormat//, which can be used to recreate the format
 and is the string that the Solidity language uses to represent this format.
 
 _definition: **//"fixed"//**
-A shorthand for ``fixed128x80``.
+A shorthand for ``fixed128x18``.
 

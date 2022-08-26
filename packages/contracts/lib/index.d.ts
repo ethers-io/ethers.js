@@ -13,6 +13,7 @@ export interface Overrides {
     type?: number;
     accessList?: AccessListish;
     customData?: Record<string, any>;
+    ccipReadEnabled?: boolean;
 }
 export interface PayableOverrides extends Overrides {
     value?: BigNumberish | Promise<BigNumberish>;
@@ -35,6 +36,7 @@ export interface PopulatedTransaction {
     maxFeePerGas?: BigNumber;
     maxPriorityFeePerGas?: BigNumber;
     customData?: Record<string, any>;
+    ccipReadEnabled?: boolean;
 }
 export declare type EventFilter = {
     address?: string;
@@ -119,7 +121,7 @@ export declare class BaseContract {
     _checkRunningEvents(runningEvent: RunningEvent): void;
     _wrapEvent(runningEvent: RunningEvent, log: Log, listener: Listener): Event;
     private _addEventListener;
-    queryFilter(event: EventFilter, fromBlockOrBlockhash?: BlockTag | string, toBlock?: BlockTag): Promise<Array<Event>>;
+    queryFilter(event: EventFilter | string, fromBlockOrBlockhash?: BlockTag | string, toBlock?: BlockTag): Promise<Array<Event>>;
     on(event: EventFilter | string, listener: Listener): this;
     once(event: EventFilter | string, listener: Listener): this;
     emit(eventName: EventFilter | string, ...args: Array<any>): boolean;

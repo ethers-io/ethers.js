@@ -90,7 +90,6 @@ var Interface = /** @class */ (function () {
     function Interface(fragments) {
         var _newTarget = this.constructor;
         var _this = this;
-        logger.checkNew(_newTarget, Interface);
         var abi = [];
         if (typeof (fragments) === "string") {
             abi = JSON.parse(fragments);
@@ -346,6 +345,7 @@ var Interface = /** @class */ (function () {
         }
         var bytes = (0, bytes_1.arrayify)(data);
         var reason = null;
+        var message = "";
         var errorArgs = null;
         var errorName = null;
         var errorSignature = null;
@@ -366,6 +366,12 @@ var Interface = /** @class */ (function () {
                     if (builtin.reason) {
                         reason = errorArgs[0];
                     }
+                    if (errorName === "Error") {
+                        message = "; VM Exception while processing transaction: reverted with reason string " + JSON.stringify(errorArgs[0]);
+                    }
+                    else if (errorName === "Panic") {
+                        message = "; VM Exception while processing transaction: reverted with panic code " + errorArgs[0];
+                    }
                 }
                 else {
                     try {
@@ -374,15 +380,14 @@ var Interface = /** @class */ (function () {
                         errorName = error.name;
                         errorSignature = error.format();
                     }
-                    catch (error) {
-                        console.log(error);
-                    }
+                    catch (error) { }
                 }
                 break;
             }
         }
-        return logger.throwError("call revert exception", logger_1.Logger.errors.CALL_EXCEPTION, {
+        return logger.throwError("call revert exception" + message, logger_1.Logger.errors.CALL_EXCEPTION, {
             method: functionFragment.format(),
+            data: (0, bytes_1.hexlify)(data),
             errorArgs: errorArgs,
             errorName: errorName,
             errorSignature: errorSignature,
@@ -418,6 +423,12 @@ var Interface = /** @class */ (function () {
             }
             else if (param.type === "bytes") {
                 return (0, keccak256_1.keccak256)((0, bytes_1.hexlify)(value));
+            }
+            if (param.type === "bool" && typeof (value) === "boolean") {
+                value = (value ? "0x01" : "0x00");
+            }
+            if (param.type.match(/^u?int/)) {
+                value = bignumber_1.BigNumber.from(value).toHexString();
             }
             // Check addresses are valid
             if (param.type === "address") {

@@ -341,7 +341,6 @@ export class VoidSigner extends Signer implements TypedDataSigner {
     readonly address: string;
 
     constructor(address: string, provider?: Provider) {
-        logger.checkNew(new.target, VoidSigner);
         super();
         defineReadOnly(this, "address", address);
         defineReadOnly(this, "provider", provider || null);

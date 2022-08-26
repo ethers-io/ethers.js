@@ -56,6 +56,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseProvider = exports.Resolver = exports.Event = void 0;
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
+var base64_1 = require("@ethersproject/base64");
 var basex_1 = require("@ethersproject/basex");
 var bignumber_1 = require("@ethersproject/bignumber");
 var bytes_1 = require("@ethersproject/bytes");
@@ -71,6 +72,7 @@ var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var formatter_1 = require("./formatter");
+var MAX_CCIP_REDIRECTS = 10;
 //////////////////////////////
 // Event Serializeing
 function checkTopic(topic) {
@@ -171,6 +173,8 @@ var Event = /** @class */ (function () {
         (0, properties_1.defineReadOnly)(this, "tag", tag);
         (0, properties_1.defineReadOnly)(this, "listener", listener);
         (0, properties_1.defineReadOnly)(this, "once", once);
+        this._lastBlockNumber = -2;
+        this._inflight = false;
     }
     Object.defineProperty(Event.prototype, "event", {
         get: function () {
@@ -253,18 +257,18 @@ var matchers = [
     matcherIpfs,
     new RegExp("^eip155:[0-9]+/(erc[0-9]+):(.*)$", "i"),
 ];
-function _parseString(result) {
+function _parseString(result, start) {
     try {
-        return (0, strings_1.toUtf8String)(_parseBytes(result));
+        return (0, strings_1.toUtf8String)(_parseBytes(result, start));
     }
     catch (error) { }
     return null;
 }
-function _parseBytes(result) {
+function _parseBytes(result, start) {
     if (result === "0x") {
         return null;
     }
-    var offset = bignumber_1.BigNumber.from((0, bytes_1.hexDataSlice)(result, 0, 32)).toNumber();
+    var offset = bignumber_1.BigNumber.from((0, bytes_1.hexDataSlice)(result, start, start + 32)).toNumber();
     var length = bignumber_1.BigNumber.from((0, bytes_1.hexDataSlice)(result, offset, offset + 32)).toNumber();
     return (0, bytes_1.hexDataSlice)(result, offset + 32, offset + 32 + length);
 }
@@ -281,6 +285,43 @@ function getIpfsLink(link) {
     }
     return "https://gateway.ipfs.io/ipfs/" + link;
 }
+function numPad(value) {
+    var result = (0, bytes_1.arrayify)(value);
+    if (result.length > 32) {
+        throw new Error("internal; should not happen");
+    }
+    var padded = new Uint8Array(32);
+    padded.set(result, 32 - result.length);
+    return padded;
+}
+function bytesPad(value) {
+    if ((value.length % 32) === 0) {
+        return value;
+    }
+    var result = new Uint8Array(Math.ceil(value.length / 32) * 32);
+    result.set(value);
+    return result;
+}
+// ABI Encodes a series of (bytes, bytes, ...)
+function encodeBytes(datas) {
+    var result = [];
+    var byteCount = 0;
+    // Add place-holders for pointers as we add items
+    for (var i = 0; i < datas.length; i++) {
+        result.push(null);
+        byteCount += 32;
+    }
+    for (var i = 0; i < datas.length; i++) {
+        var data = (0, bytes_1.arrayify)(datas[i]);
+        // Update the bytes offset
+        result[i] = numPad(byteCount);
+        // The length and padded value of data
+        result.push(numPad(data.length));
+        result.push(bytesPad(data));
+        byteCount += 32 + Math.ceil(data.length / 32) * 32;
+    }
+    return (0, bytes_1.hexConcat)(result);
+}
 var Resolver = /** @class */ (function () {
     // The resolvedAddress is only for creating a ReverseLookup resolver
     function Resolver(provider, address, name, resolvedAddress) {
@@ -289,29 +330,83 @@ var Resolver = /** @class */ (function () {
         (0, properties_1.defineReadOnly)(this, "address", provider.formatter.address(address));
         (0, properties_1.defineReadOnly)(this, "_resolvedAddress", resolvedAddress);
     }
-    Resolver.prototype._fetchBytes = function (selector, parameters) {
+    Resolver.prototype.supportsWildcard = function () {
+        var _this = this;
+        if (!this._supportsEip2544) {
+            // supportsInterface(bytes4 = selector("resolve(bytes,bytes)"))
+            this._supportsEip2544 = this.provider.call({
+                to: this.address,
+                data: "0x01ffc9a79061b92300000000000000000000000000000000000000000000000000000000"
+            }).then(function (result) {
+                return bignumber_1.BigNumber.from(result).eq(1);
+            }).catch(function (error) {
+                if (error.code === logger_1.Logger.errors.CALL_EXCEPTION) {
+                    return false;
+                }
+                // Rethrow the error: link is down, etc. Let future attempts retry.
+                _this._supportsEip2544 = null;
+                throw error;
+            });
+        }
+        return this._supportsEip2544;
+    };
+    Resolver.prototype._fetch = function (selector, parameters) {
         return __awaiter(this, void 0, void 0, function () {
-            var tx, _a, error_1;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var tx, parseBytes, result, error_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         tx = {
                             to: this.address,
+                            ccipReadEnabled: true,
                             data: (0, bytes_1.hexConcat)([selector, (0, hash_1.namehash)(this.name), (parameters || "0x")])
                         };
-                        _b.label = 1;
+                        parseBytes = false;
+                        return [4 /*yield*/, this.supportsWildcard()];
                     case 1:
-                        _b.trys.push([1, 3, , 4]);
-                        _a = _parseBytes;
+                        if (_a.sent()) {
+                            parseBytes = true;
+                            // selector("resolve(bytes,bytes)")
+                            tx.data = (0, bytes_1.hexConcat)(["0x9061b923", encodeBytes([(0, hash_1.dnsEncode)(this.name), tx.data])]);
+                        }
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 5]);
                         return [4 /*yield*/, this.provider.call(tx)];
-                    case 2: return [2 /*return*/, _a.apply(void 0, [_b.sent()])];
                     case 3:
-                        error_1 = _b.sent();
+                        result = _a.sent();
+                        if (((0, bytes_1.arrayify)(result).length % 32) === 4) {
+                            logger.throwError("resolver threw error", logger_1.Logger.errors.CALL_EXCEPTION, {
+                                transaction: tx, data: result
+                            });
+                        }
+                        if (parseBytes) {
+                            result = _parseBytes(result, 0);
+                        }
+                        return [2 /*return*/, result];
+                    case 4:
+                        error_1 = _a.sent();
                         if (error_1.code === logger_1.Logger.errors.CALL_EXCEPTION) {
                             return [2 /*return*/, null];
                         }
+                        throw error_1;
+                    case 5: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Resolver.prototype._fetchBytes = function (selector, parameters) {
+        return __awaiter(this, void 0, void 0, function () {
+            var result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this._fetch(selector, parameters)];
+                    case 1:
+                        result = _a.sent();
+                        if (result != null) {
+                            return [2 /*return*/, _parseBytes(result, 0)];
+                        }
                         return [2 /*return*/, null];
-                    case 4: return [2 /*return*/];
                 }
             });
         });
@@ -370,7 +465,7 @@ var Resolver = /** @class */ (function () {
     };
     Resolver.prototype.getAddress = function (coinType) {
         return __awaiter(this, void 0, void 0, function () {
-            var transaction, hexBytes_1, error_2, hexBytes, address;
+            var result, error_2, hexBytes, address;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -381,18 +476,14 @@ var Resolver = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        transaction = {
-                            to: this.address,
-                            data: ("0x3b3b57de" + (0, hash_1.namehash)(this.name).substring(2))
-                        };
-                        return [4 /*yield*/, this.provider.call(transaction)];
+                        return [4 /*yield*/, this._fetch("0x3b3b57de")];
                     case 2:
-                        hexBytes_1 = _a.sent();
+                        result = _a.sent();
                         // No address
-                        if (hexBytes_1 === "0x" || hexBytes_1 === constants_1.HashZero) {
+                        if (result === "0x" || result === constants_1.HashZero) {
                             return [2 /*return*/, null];
                         }
-                        return [2 /*return*/, this.provider.formatter.callAddress(hexBytes_1)];
+                        return [2 /*return*/, this.provider.formatter.callAddress(result)];
                     case 3:
                         error_2 = _a.sent();
                         if (error_2.code === logger_1.Logger.errors.CALL_EXCEPTION) {
@@ -514,7 +605,7 @@ var Resolver = /** @class */ (function () {
                         _g = _parseString;
                         return [4 /*yield*/, this.provider.call(tx)];
                     case 15:
-                        metadataUrl = _g.apply(void 0, [_h.sent()]);
+                        metadataUrl = _g.apply(void 0, [_h.sent(), 0]);
                         if (metadataUrl == null) {
                             return [2 /*return*/, null];
                         }
@@ -567,7 +658,7 @@ var Resolver = /** @class */ (function () {
     };
     Resolver.prototype.getContentHash = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var hexBytes, ipfs, length_4, swarm;
+            var hexBytes, ipfs, length_4, ipns, length_5, swarm, skynet, urlSafe_1, hash;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this._fetchBytes("0xbc1c58d1")];
@@ -584,10 +675,25 @@ var Resolver = /** @class */ (function () {
                                 return [2 /*return*/, "ipfs:/\/" + basex_1.Base58.encode("0x" + ipfs[1])];
                             }
                         }
+                        ipns = hexBytes.match(/^0xe5010172(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
+                        if (ipns) {
+                            length_5 = parseInt(ipns[3], 16);
+                            if (ipns[4].length === length_5 * 2) {
+                                return [2 /*return*/, "ipns:/\/" + basex_1.Base58.encode("0x" + ipns[1])];
+                            }
+                        }
                         swarm = hexBytes.match(/^0xe40101fa011b20([0-9a-f]*)$/);
                         if (swarm) {
                             if (swarm[1].length === (32 * 2)) {
                                 return [2 /*return*/, "bzz:/\/" + swarm[1]];
+                            }
+                        }
+                        skynet = hexBytes.match(/^0x90b2c605([0-9a-f]*)$/);
+                        if (skynet) {
+                            if (skynet[1].length === (34 * 2)) {
+                                urlSafe_1 = { "=": "", "+": "-", "/": "_" };
+                                hash = (0, base64_1.encode)("0x" + skynet[1]).replace(/[=+\/]/g, function (a) { return (urlSafe_1[a]); });
+                                return [2 /*return*/, "sia:/\/" + hash];
                             }
                         }
                         return [2 /*return*/, logger.throwError("invalid or unsupported content hash data", logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
@@ -641,12 +747,11 @@ var BaseProvider = /** @class */ (function (_super) {
      */
     function BaseProvider(network) {
         var _newTarget = this.constructor;
-        var _this = this;
-        logger.checkNew(_newTarget, abstract_provider_1.Provider);
-        _this = _super.call(this) || this;
+        var _this = _super.call(this) || this;
         // Events being listened to
         _this._events = [];
         _this._emitted = { block: -2 };
+        _this.disableCcipRead = false;
         _this.formatter = _newTarget.getFormatter();
         // If network is any, this Provider allows the underlying
         // network to change dynamically, and we auto-detect the
@@ -674,6 +779,7 @@ var BaseProvider = /** @class */ (function (_super) {
         }
         _this._maxInternalBlockNumber = -1024;
         _this._lastBlockNumber = -2;
+        _this._maxFilterBlockRange = 10;
         _this._pollingInterval = 4000;
         _this._fastQueryDate = 0;
         return _this;
@@ -756,6 +862,53 @@ var BaseProvider = /** @class */ (function (_super) {
     // @TODO: Remove this and just use getNetwork
     BaseProvider.getNetwork = function (network) {
         return (0, networks_1.getNetwork)((network == null) ? "homestead" : network);
+    };
+    BaseProvider.prototype.ccipReadFetch = function (tx, calldata, urls) {
+        return __awaiter(this, void 0, void 0, function () {
+            var sender, data, errorMessages, i, url, href, json, result, errorMessage;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (this.disableCcipRead || urls.length === 0) {
+                            return [2 /*return*/, null];
+                        }
+                        sender = tx.to.toLowerCase();
+                        data = calldata.toLowerCase();
+                        errorMessages = [];
+                        i = 0;
+                        _a.label = 1;
+                    case 1:
+                        if (!(i < urls.length)) return [3 /*break*/, 4];
+                        url = urls[i];
+                        href = url.replace("{sender}", sender).replace("{data}", data);
+                        json = (url.indexOf("{data}") >= 0) ? null : JSON.stringify({ data: data, sender: sender });
+                        return [4 /*yield*/, (0, web_1.fetchJson)({ url: href, errorPassThrough: true }, json, function (value, response) {
+                                value.status = response.statusCode;
+                                return value;
+                            })];
+                    case 2:
+                        result = _a.sent();
+                        if (result.data) {
+                            return [2 /*return*/, result.data];
+                        }
+                        errorMessage = (result.message || "unknown error");
+                        // 4xx indicates the result is not present; stop
+                        if (result.status >= 400 && result.status < 500) {
+                            return [2 /*return*/, logger.throwError("response not found during CCIP fetch: " + errorMessage, logger_1.Logger.errors.SERVER_ERROR, { url: url, errorMessage: errorMessage })];
+                        }
+                        // 5xx indicates server issue; try the next url
+                        errorMessages.push(errorMessage);
+                        _a.label = 3;
+                    case 3:
+                        i++;
+                        return [3 /*break*/, 1];
+                    case 4: return [2 /*return*/, logger.throwError("error encountered during CCIP fetch: " + errorMessages.map(function (m) { return JSON.stringify(m); }).join(", "), logger_1.Logger.errors.SERVER_ERROR, {
+                            urls: urls,
+                            errorMessages: errorMessages
+                        })];
+                }
+            });
+        });
     };
     // Fetches the blockNumber, but will reuse any result that is less
     // than maxAge old or has been requested since the last request
@@ -925,20 +1078,54 @@ var BaseProvider = /** @class */ (function (_super) {
                                     break;
                                 }
                                 case "filter": {
-                                    var filter_1 = event.filter;
-                                    filter_1.fromBlock = _this._lastBlockNumber + 1;
-                                    filter_1.toBlock = blockNumber;
-                                    var runner = _this.getLogs(filter_1).then(function (logs) {
-                                        if (logs.length === 0) {
-                                            return;
+                                    // We only allow a single getLogs to be in-flight at a time
+                                    if (!event._inflight) {
+                                        event._inflight = true;
+                                        // This is the first filter for this event, so we want to
+                                        // restrict events to events that happened no earlier than now
+                                        if (event._lastBlockNumber === -2) {
+                                            event._lastBlockNumber = blockNumber - 1;
                                         }
-                                        logs.forEach(function (log) {
-                                            _this._emitted["b:" + log.blockHash] = log.blockNumber;
-                                            _this._emitted["t:" + log.transactionHash] = log.blockNumber;
-                                            _this.emit(filter_1, log);
+                                        // Filter from the last *known* event; due to load-balancing
+                                        // and some nodes returning updated block numbers before
+                                        // indexing events, a logs result with 0 entries cannot be
+                                        // trusted and we must retry a range which includes it again
+                                        var filter_1 = event.filter;
+                                        filter_1.fromBlock = event._lastBlockNumber + 1;
+                                        filter_1.toBlock = blockNumber;
+                                        // Prevent fitler ranges from growing too wild, since it is quite
+                                        // likely there just haven't been any events to move the lastBlockNumber.
+                                        var minFromBlock = filter_1.toBlock - _this._maxFilterBlockRange;
+                                        if (minFromBlock > filter_1.fromBlock) {
+                                            filter_1.fromBlock = minFromBlock;
+                                        }
+                                        if (filter_1.fromBlock < 0) {
+                                            filter_1.fromBlock = 0;
+                                        }
+                                        var runner = _this.getLogs(filter_1).then(function (logs) {
+                                            // Allow the next getLogs
+                                            event._inflight = false;
+                                            if (logs.length === 0) {
+                                                return;
+                                            }
+                                            logs.forEach(function (log) {
+                                                // Only when we get an event for a given block number
+                                                // can we trust the events are indexed
+                                                if (log.blockNumber > event._lastBlockNumber) {
+                                                    event._lastBlockNumber = log.blockNumber;
+                                                }
+                                                // Make sure we stall requests to fetch blocks and txs
+                                                _this._emitted["b:" + log.blockHash] = log.blockNumber;
+                                                _this._emitted["t:" + log.transactionHash] = log.blockNumber;
+                                                _this.emit(filter_1, log);
+                                            });
+                                        }).catch(function (error) {
+                                            _this.emit("error", error);
+                                            // Allow another getLogs (the range was not updated)
+                                            event._inflight = false;
                                         });
-                                    }).catch(function (error) { _this.emit("error", error); });
-                                    runners.push(runner);
+                                        runners.push(runner);
+                                    }
                                     break;
                                 }
                             }
@@ -1626,9 +1813,106 @@ var BaseProvider = /** @class */ (function (_super) {
             });
         });
     };
+    BaseProvider.prototype._call = function (transaction, blockTag, attempt) {
+        return __awaiter(this, void 0, void 0, function () {
+            var txSender, result, data, sender, urls, urlsOffset, urlsLength, urlsData, u, url, calldata, callbackSelector, extraData, ccipResult, tx, error_8;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (attempt >= MAX_CCIP_REDIRECTS) {
+                            logger.throwError("CCIP read exceeded maximum redirections", logger_1.Logger.errors.SERVER_ERROR, {
+                                redirects: attempt,
+                                transaction: transaction
+                            });
+                        }
+                        txSender = transaction.to;
+                        return [4 /*yield*/, this.perform("call", { transaction: transaction, blockTag: blockTag })];
+                    case 1:
+                        result = _a.sent();
+                        if (!(attempt >= 0 && blockTag === "latest" && txSender != null && result.substring(0, 10) === "0x556f1830" && ((0, bytes_1.hexDataLength)(result) % 32 === 4))) return [3 /*break*/, 5];
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 5]);
+                        data = (0, bytes_1.hexDataSlice)(result, 4);
+                        sender = (0, bytes_1.hexDataSlice)(data, 0, 32);
+                        if (!bignumber_1.BigNumber.from(sender).eq(txSender)) {
+                            logger.throwError("CCIP Read sender did not match", logger_1.Logger.errors.CALL_EXCEPTION, {
+                                name: "OffchainLookup",
+                                signature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
+                                transaction: transaction,
+                                data: result
+                            });
+                        }
+                        urls = [];
+                        urlsOffset = bignumber_1.BigNumber.from((0, bytes_1.hexDataSlice)(data, 32, 64)).toNumber();
+                        urlsLength = bignumber_1.BigNumber.from((0, bytes_1.hexDataSlice)(data, urlsOffset, urlsOffset + 32)).toNumber();
+                        urlsData = (0, bytes_1.hexDataSlice)(data, urlsOffset + 32);
+                        for (u = 0; u < urlsLength; u++) {
+                            url = _parseString(urlsData, u * 32);
+                            if (url == null) {
+                                logger.throwError("CCIP Read contained corrupt URL string", logger_1.Logger.errors.CALL_EXCEPTION, {
+                                    name: "OffchainLookup",
+                                    signature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
+                                    transaction: transaction,
+                                    data: result
+                                });
+                            }
+                            urls.push(url);
+                        }
+                        calldata = _parseBytes(data, 64);
+                        // Get the callbackSelector (bytes4)
+                        if (!bignumber_1.BigNumber.from((0, bytes_1.hexDataSlice)(data, 100, 128)).isZero()) {
+                            logger.throwError("CCIP Read callback selector included junk", logger_1.Logger.errors.CALL_EXCEPTION, {
+                                name: "OffchainLookup",
+                                signature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
+                                transaction: transaction,
+                                data: result
+                            });
+                        }
+                        callbackSelector = (0, bytes_1.hexDataSlice)(data, 96, 100);
+                        extraData = _parseBytes(data, 128);
+                        return [4 /*yield*/, this.ccipReadFetch(transaction, calldata, urls)];
+                    case 3:
+                        ccipResult = _a.sent();
+                        if (ccipResult == null) {
+                            logger.throwError("CCIP Read disabled or provided no URLs", logger_1.Logger.errors.CALL_EXCEPTION, {
+                                name: "OffchainLookup",
+                                signature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
+                                transaction: transaction,
+                                data: result
+                            });
+                        }
+                        tx = {
+                            to: txSender,
+                            data: (0, bytes_1.hexConcat)([callbackSelector, encodeBytes([ccipResult, extraData])])
+                        };
+                        return [2 /*return*/, this._call(tx, blockTag, attempt + 1)];
+                    case 4:
+                        error_8 = _a.sent();
+                        if (error_8.code === logger_1.Logger.errors.SERVER_ERROR) {
+                            throw error_8;
+                        }
+                        return [3 /*break*/, 5];
+                    case 5:
+                        try {
+                            return [2 /*return*/, (0, bytes_1.hexlify)(result)];
+                        }
+                        catch (error) {
+                            return [2 /*return*/, logger.throwError("bad result from backend", logger_1.Logger.errors.SERVER_ERROR, {
+                                    method: "call",
+                                    params: { transaction: transaction, blockTag: blockTag },
+                                    result: result,
+                                    error: error
+                                })];
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     BaseProvider.prototype.call = function (transaction, blockTag) {
         return __awaiter(this, void 0, void 0, function () {
-            var params, result;
+            var resolved;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.getNetwork()];
@@ -1636,25 +1920,12 @@ var BaseProvider = /** @class */ (function (_super) {
                         _a.sent();
                         return [4 /*yield*/, (0, properties_1.resolveProperties)({
                                 transaction: this._getTransactionRequest(transaction),
-                                blockTag: this._getBlockTag(blockTag)
+                                blockTag: this._getBlockTag(blockTag),
+                                ccipReadEnabled: Promise.resolve(transaction.ccipReadEnabled)
                             })];
                     case 2:
-                        params = _a.sent();
-                        return [4 /*yield*/, this.perform("call", params)];
-                    case 3:
-                        result = _a.sent();
-                        try {
-                            return [2 /*return*/, (0, bytes_1.hexlify)(result)];
-                        }
-                        catch (error) {
-                            return [2 /*return*/, logger.throwError("bad result from backend", logger_1.Logger.errors.SERVER_ERROR, {
-                                    method: "call",
-                                    params: params,
-                                    result: result,
-                                    error: error
-                                })];
-                        }
-                        return [2 /*return*/];
+                        resolved = _a.sent();
+                        return [2 /*return*/, this._call(resolved.transaction, resolved.blockTag, resolved.ccipReadEnabled ? 0 : -1)];
                 }
             });
         });
@@ -1717,7 +1988,7 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype._getBlock = function (blockHashOrBlockTag, includeTransactions) {
         return __awaiter(this, void 0, void 0, function () {
-            var blockNumber, params, _a, error_8;
+            var blockNumber, params, _a, error_9;
             var _this = this;
             return __generator(this, function (_b) {
                 switch (_b.label) {
@@ -1745,7 +2016,7 @@ var BaseProvider = /** @class */ (function (_super) {
                         }
                         return [3 /*break*/, 6];
                     case 5:
-                        error_8 = _b.sent();
+                        error_9 = _b.sent();
                         logger.throwArgumentError("invalid block hash or block tag", "blockHashOrBlockTag", blockHashOrBlockTag);
                         return [3 /*break*/, 6];
                     case 6: return [2 /*return*/, (0, web_1.poll)(function () { return __awaiter(_this, void 0, void 0, function () {
@@ -1985,58 +2256,78 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype.getResolver = function (name) {
         return __awaiter(this, void 0, void 0, function () {
-            var address, error_9;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var currentName, addr, resolver, _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this._getResolver(name)];
+                        currentName = name;
+                        _b.label = 1;
                     case 1:
-                        address = _a.sent();
-                        if (address == null) {
+                        if (!true) return [3 /*break*/, 6];
+                        if (currentName === "" || currentName === ".") {
                             return [2 /*return*/, null];
                         }
-                        return [2 /*return*/, new Resolver(this, address, name)];
+                        // Optimization since the eth node cannot change and does
+                        // not have a wildcard resolver
+                        if (name !== "eth" && currentName === "eth") {
+                            return [2 /*return*/, null];
+                        }
+                        return [4 /*yield*/, this._getResolver(currentName, "getResolver")];
                     case 2:
-                        error_9 = _a.sent();
-                        if (error_9.code === logger_1.Logger.errors.CALL_EXCEPTION) {
+                        addr = _b.sent();
+                        if (!(addr != null)) return [3 /*break*/, 5];
+                        resolver = new Resolver(this, addr, name);
+                        _a = currentName !== name;
+                        if (!_a) return [3 /*break*/, 4];
+                        return [4 /*yield*/, resolver.supportsWildcard()];
+                    case 3:
+                        _a = !(_b.sent());
+                        _b.label = 4;
+                    case 4:
+                        // Legacy resolver found, using EIP-2544 so it isn't safe to use
+                        if (_a) {
                             return [2 /*return*/, null];
                         }
-                        throw error_9;
-                    case 3: return [2 /*return*/];
+                        return [2 /*return*/, resolver];
+                    case 5:
+                        // Get the parent node
+                        currentName = currentName.split(".").slice(1).join(".");
+                        return [3 /*break*/, 1];
+                    case 6: return [2 /*return*/];
                 }
             });
         });
     };
-    BaseProvider.prototype._getResolver = function (name) {
+    BaseProvider.prototype._getResolver = function (name, operation) {
         return __awaiter(this, void 0, void 0, function () {
-            var network, transaction, _a, _b, error_10;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0: return [4 /*yield*/, this.getNetwork()];
+            var network, addrData, error_10;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (operation == null) {
+                            operation = "ENS";
+                        }
+                        return [4 /*yield*/, this.getNetwork()];
                     case 1:
-                        network = _c.sent();
+                        network = _a.sent();
                         // No ENS...
                         if (!network.ensAddress) {
-                            logger.throwError("network does not support ENS", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "ENS", network: network.name });
+                            logger.throwError("network does not support ENS", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: operation, network: network.name });
                         }
-                        transaction = {
-                            to: network.ensAddress,
-                            data: ("0x0178b8bf" + (0, hash_1.namehash)(name).substring(2))
-                        };
-                        _c.label = 2;
+                        _a.label = 2;
                     case 2:
-                        _c.trys.push([2, 4, , 5]);
-                        _b = (_a = this.formatter).callAddress;
-                        return [4 /*yield*/, this.call(transaction)];
-                    case 3: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+                        _a.trys.push([2, 4, , 5]);
+                        return [4 /*yield*/, this.call({
+                                to: network.ensAddress,
+                                data: ("0x0178b8bf" + (0, hash_1.namehash)(name).substring(2))
+                            })];
+                    case 3:
+                        addrData = _a.sent();
+                        return [2 /*return*/, this.formatter.callAddress(addrData)];
                     case 4:
-                        error_10 = _c.sent();
-                        if (error_10.code === logger_1.Logger.errors.CALL_EXCEPTION) {
-                            return [2 /*return*/, null];
-                        }
-                        throw error_10;
-                    case 5: return [2 /*return*/];
+                        error_10 = _a.sent();
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/, null];
                 }
             });
         });
@@ -2076,43 +2367,27 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype.lookupAddress = function (address) {
         return __awaiter(this, void 0, void 0, function () {
-            var reverseName, resolverAddress, bytes, _a, length, name, addr;
+            var node, resolverAddr, name, _a, addr;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0: return [4 /*yield*/, address];
                     case 1:
                         address = _b.sent();
                         address = this.formatter.address(address);
-                        reverseName = address.substring(2).toLowerCase() + ".addr.reverse";
-                        return [4 /*yield*/, this._getResolver(reverseName)];
+                        node = address.substring(2).toLowerCase() + ".addr.reverse";
+                        return [4 /*yield*/, this._getResolver(node, "lookupAddress")];
                     case 2:
-                        resolverAddress = _b.sent();
-                        if (!resolverAddress) {
+                        resolverAddr = _b.sent();
+                        if (resolverAddr == null) {
                             return [2 /*return*/, null];
                         }
-                        _a = bytes_1.arrayify;
+                        _a = _parseString;
                         return [4 /*yield*/, this.call({
-                                to: resolverAddress,
-                                data: ("0x691f3431" + (0, hash_1.namehash)(reverseName).substring(2))
+                                to: resolverAddr,
+                                data: ("0x691f3431" + (0, hash_1.namehash)(node).substring(2))
                             })];
                     case 3:
-                        bytes = _a.apply(void 0, [_b.sent()]);
-                        // Strip off the dynamic string pointer (0x20)
-                        if (bytes.length < 32 || !bignumber_1.BigNumber.from(bytes.slice(0, 32)).eq(32)) {
-                            return [2 /*return*/, null];
-                        }
-                        bytes = bytes.slice(32);
-                        // Not a length-prefixed string
-                        if (bytes.length < 32) {
-                            return [2 /*return*/, null];
-                        }
-                        length = bignumber_1.BigNumber.from(bytes.slice(0, 32)).toNumber();
-                        bytes = bytes.slice(32);
-                        // Length longer than available data
-                        if (length > bytes.length) {
-                            return [2 /*return*/, null];
-                        }
-                        name = (0, strings_1.toUtf8String)(bytes.slice(0, length));
+                        name = _a.apply(void 0, [_b.sent(), 0]);
                         return [4 /*yield*/, this.resolveName(name)];
                     case 4:
                         addr = _b.sent();
@@ -2126,33 +2401,69 @@ var BaseProvider = /** @class */ (function (_super) {
     };
     BaseProvider.prototype.getAvatar = function (nameOrAddress) {
         return __awaiter(this, void 0, void 0, function () {
-            var resolver, address, reverseName, resolverAddress, avatar;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var resolver, address, node, resolverAddress, avatar_1, error_11, name_1, _a, error_12, avatar;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         resolver = null;
-                        if (!(0, bytes_1.isHexString)(nameOrAddress)) return [3 /*break*/, 2];
+                        if (!(0, bytes_1.isHexString)(nameOrAddress)) return [3 /*break*/, 10];
                         address = this.formatter.address(nameOrAddress);
-                        reverseName = address.substring(2).toLowerCase() + ".addr.reverse";
-                        return [4 /*yield*/, this._getResolver(reverseName)];
+                        node = address.substring(2).toLowerCase() + ".addr.reverse";
+                        return [4 /*yield*/, this._getResolver(node, "getAvatar")];
                     case 1:
-                        resolverAddress = _a.sent();
+                        resolverAddress = _b.sent();
                         if (!resolverAddress) {
                             return [2 /*return*/, null];
                         }
-                        resolver = new Resolver(this, resolverAddress, "_", address);
-                        return [3 /*break*/, 4];
-                    case 2: return [4 /*yield*/, this.getResolver(nameOrAddress)];
+                        // Try resolving the avatar against the addr.reverse resolver
+                        resolver = new Resolver(this, resolverAddress, node);
+                        _b.label = 2;
+                    case 2:
+                        _b.trys.push([2, 4, , 5]);
+                        return [4 /*yield*/, resolver.getAvatar()];
                     case 3:
-                        // ENS name; forward lookup
-                        resolver = _a.sent();
+                        avatar_1 = _b.sent();
+                        if (avatar_1) {
+                            return [2 /*return*/, avatar_1.url];
+                        }
+                        return [3 /*break*/, 5];
+                    case 4:
+                        error_11 = _b.sent();
+                        if (error_11.code !== logger_1.Logger.errors.CALL_EXCEPTION) {
+                            throw error_11;
+                        }
+                        return [3 /*break*/, 5];
+                    case 5:
+                        _b.trys.push([5, 8, , 9]);
+                        _a = _parseString;
+                        return [4 /*yield*/, this.call({
+                                to: resolverAddress,
+                                data: ("0x691f3431" + (0, hash_1.namehash)(node).substring(2))
+                            })];
+                    case 6:
+                        name_1 = _a.apply(void 0, [_b.sent(), 0]);
+                        return [4 /*yield*/, this.getResolver(name_1)];
+                    case 7:
+                        resolver = _b.sent();
+                        return [3 /*break*/, 9];
+                    case 8:
+                        error_12 = _b.sent();
+                        if (error_12.code !== logger_1.Logger.errors.CALL_EXCEPTION) {
+                            throw error_12;
+                        }
+                        return [2 /*return*/, null];
+                    case 9: return [3 /*break*/, 12];
+                    case 10: return [4 /*yield*/, this.getResolver(nameOrAddress)];
+                    case 11:
+                        // ENS name; forward lookup with wildcard
+                        resolver = _b.sent();
                         if (!resolver) {
                             return [2 /*return*/, null];
                         }
-                        _a.label = 4;
-                    case 4: return [4 /*yield*/, resolver.getAvatar()];
-                    case 5:
-                        avatar = _a.sent();
+                        _b.label = 12;
+                    case 12: return [4 /*yield*/, resolver.getAvatar()];
+                    case 13:
+                        avatar = _b.sent();
                         if (avatar == null) {
                             return [2 /*return*/, null];
                         }

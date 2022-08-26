@@ -40,9 +40,9 @@ export type Subscription = {
 };
 
 export interface WebSocketLike {
-    onopen: (...args: Array<any>) => any;
-    onmessage: (...args: Array<any>) => any;
-    onerror: (...args: Array<any>) => any;
+    onopen: ((...args: Array<any>) => any) | null;
+    onmessage: ((...args: Array<any>) => any) | null;
+    onerror: ((...args: Array<any>) => any) | null;
 
     readyState: number;
 

@@ -1,0 +1,62 @@
+_section: Getting Help @<troubleshooting-issues>
+
+@TODO
+
+_subsection: Starting a discussion
+
+Before opening an issue
+
+
+_subsection: Opening an Issue
+
+Keep in mind that opening an issue should be a last resort, as it
+requires time and energy by the library developers to look at that
+could otherwise be spent on improving the library, documentation
+and tools.
+
+Before opening an issue, please make sure you have searched any
+public information, such as:
+
+- Documentation
+- GitHub Discussions
+- GitHub Issues (including closed issues)
+
+There are several types of issues tracked by ethers. Using the correct
+one helps you receive feedback quicker and helps us keep the right
+person 
+
+_heading: Feature Requests
+
+
+
+_heading: Bugs
+
+This type of issue is for anything you you believe to be a bug in ethers.
+
+Keep in mind that ethers is used extensively by thousands of people every
+day, so while chances are possible you found a bug, please make sure to
+do your due diligence to rule out user error.
+
+If you are new to ethers, or are doing a fairly common operation, it is
+quite likely what you are experiencing is a misunderstanding of how to
+use a function, method or class. You should consider opening a discussion first.
+
+
+Please make sure you include as much information as is useful:
+
+- Are you using a third-party library, like Hardhat or Truffle?
+- What platform are you on, a web browser, React Native, node, etc.?
+- What network are you on, such as Ethereum mainnet, Optimism, etc.?
+- What backend are you using, such as Geth, INFURA, Provider Engine, etc.?
+
+
+_heading: Docuementation
+
+If you have found a typo in the documentation, a feature which isn't
+documented (or documented well) or just find something described in
+the documentation confusing, please feel free to create an issue and
+we will try to improve it.
+
+_heading: Other
+
+This should never be used.

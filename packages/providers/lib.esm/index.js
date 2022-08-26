@@ -3,6 +3,7 @@ import { Provider } from "@ethersproject/abstract-provider";
 import { getNetwork } from "@ethersproject/networks";
 import { BaseProvider, Resolver } from "./base-provider";
 import { AlchemyProvider, AlchemyWebSocketProvider } from "./alchemy-provider";
+import { AnkrProvider } from "./ankr-provider";
 import { CloudflareProvider } from "./cloudflare-provider";
 import { EtherscanProvider } from "./etherscan-provider";
 import { FallbackProvider } from "./fallback-provider";
@@ -31,10 +32,12 @@ function getDefaultProvider(network, options) {
         // Handle http and ws (and their secure variants)
         const match = network.match(/^(ws|http)s?:/i);
         if (match) {
-            switch (match[1]) {
+            switch (match[1].toLowerCase()) {
                 case "http":
+                case "https":
                     return new JsonRpcProvider(network);
                 case "ws":
+                case "wss":
                     return new WebSocketProvider(network);
                 default:
                     logger.throwArgumentError("unsupported URL scheme", "network", network);
@@ -51,6 +54,7 @@ function getDefaultProvider(network, options) {
     return n._defaultProvider({
         FallbackProvider,
         AlchemyProvider,
+        AnkrProvider,
         CloudflareProvider,
         EtherscanProvider,
         InfuraProvider,
@@ -68,7 +72,7 @@ export {
 Provider, BaseProvider, Resolver, UrlJsonRpcProvider, 
 ///////////////////////
 // Concrete Providers
-FallbackProvider, AlchemyProvider, AlchemyWebSocketProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, InfuraWebSocketProvider, JsonRpcProvider, JsonRpcBatchProvider, NodesmithProvider, PocketProvider, StaticJsonRpcProvider, Web3Provider, WebSocketProvider, IpcProvider, 
+FallbackProvider, AlchemyProvider, AlchemyWebSocketProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, InfuraWebSocketProvider, JsonRpcProvider, JsonRpcBatchProvider, NodesmithProvider, PocketProvider, StaticJsonRpcProvider, Web3Provider, WebSocketProvider, IpcProvider, 
 ///////////////////////
 // Signer
 JsonRpcSigner, 

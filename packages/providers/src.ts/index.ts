@@ -20,6 +20,7 @@ import { Network, Networkish } from "@ethersproject/networks";
 import { BaseProvider, EnsProvider, EnsResolver, Resolver } from "./base-provider";
 
 import { AlchemyProvider, AlchemyWebSocketProvider } from "./alchemy-provider";
+import { AnkrProvider } from "./ankr-provider";
 import { CloudflareProvider } from "./cloudflare-provider";
 import { EtherscanProvider } from "./etherscan-provider";
 import { FallbackProvider, FallbackProviderConfig } from "./fallback-provider";
@@ -53,10 +54,10 @@ function getDefaultProvider(network?: Networkish, options?: any): BaseProvider {
         // Handle http and ws (and their secure variants)
         const match = network.match(/^(ws|http)s?:/i);
         if (match) {
-            switch (match[1]) {
-                case "http":
+            switch (match[1].toLowerCase()) {
+                case "http": case "https":
                     return new JsonRpcProvider(network);
-                case "ws":
+                case "ws": case "wss":
                     return new WebSocketProvider(network);
                 default:
                     logger.throwArgumentError("unsupported URL scheme", "network", network);
@@ -76,6 +77,7 @@ function getDefaultProvider(network?: Networkish, options?: any): BaseProvider {
         FallbackProvider,
 
         AlchemyProvider,
+        AnkrProvider,
         CloudflareProvider,
         EtherscanProvider,
         InfuraProvider,
@@ -108,6 +110,7 @@ export {
 
     AlchemyProvider,
     AlchemyWebSocketProvider,
+    AnkrProvider,
     CloudflareProvider,
     EtherscanProvider,
     InfuraProvider,

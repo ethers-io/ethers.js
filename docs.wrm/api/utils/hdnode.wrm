@@ -1,6 +1,6 @@
 _section: HD Wallet @<hdnodes>
 
-The Hierarchal Desterministic (HD) Wallet was a standard
+The Hierarchal Deterministic (HD) Wallet was a standard
 created for Bitcoin, but lends itself well to a wide variety of
 Blockchains which rely on secp256k1 private keys.
 

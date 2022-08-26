@@ -23,6 +23,15 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
         request.referrer = "client";                     // no-referrer, *client
     };
 
+    if (options.fetchOptions != null) {
+        const opts = options.fetchOptions;
+        if (opts.mode) { request.mode = <RequestMode>(opts.mode); }
+        if (opts.cache) { request.cache = <RequestCache>(opts.cache); }
+        if (opts.credentials) { request.credentials = <RequestCredentials>(opts.credentials); }
+        if (opts.redirect) { request.redirect = <RequestRedirect>(opts.redirect); }
+        if (opts.referrer) { request.referrer = opts.referrer; }
+    }
+
     const response = await fetch(href, request);
     const body = await response.arrayBuffer();
 

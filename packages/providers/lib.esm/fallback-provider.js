@@ -329,6 +329,9 @@ function getRunner(config, currentBlockNumber, method, params) {
                 if (params.blockTag && isHexString(params.blockTag)) {
                     provider = yield waitForSync(config, currentBlockNumber);
                 }
+                if (method === "call" && params.blockTag) {
+                    return provider[method](params.transaction, params.blockTag);
+                }
                 return provider[method](params.transaction);
             case "getTransaction":
             case "getTransactionReceipt":
@@ -349,7 +352,6 @@ function getRunner(config, currentBlockNumber, method, params) {
 }
 export class FallbackProvider extends BaseProvider {
     constructor(providers, quorum) {
-        logger.checkNew(new.target, FallbackProvider);
         if (providers.length === 0) {
             logger.throwArgumentError("missing providers", "providers", providers);
         }

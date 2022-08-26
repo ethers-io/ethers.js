@@ -79,7 +79,8 @@ var allowedTransactionKeys = {
     chainId: true, data: true, from: true, gasLimit: true, gasPrice: true, nonce: true, to: true, value: true,
     type: true, accessList: true,
     maxFeePerGas: true, maxPriorityFeePerGas: true,
-    customData: true
+    customData: true,
+    ccipReadEnabled: true
 };
 function resolveName(resolver, nameOrPromise) {
     return __awaiter(this, void 0, void 0, function () {
@@ -254,6 +255,9 @@ function populateTransaction(contract, fragment, args) {
                     if (ro.customData) {
                         tx.customData = (0, properties_1.shallowCopy)(ro.customData);
                     }
+                    if (ro.ccipReadEnabled) {
+                        tx.ccipReadEnabled = !!ro.ccipReadEnabled;
+                    }
                     // Remove the overrides
                     delete overrides.nonce;
                     delete overrides.gasLimit;
@@ -265,6 +269,7 @@ function populateTransaction(contract, fragment, args) {
                     delete overrides.maxFeePerGas;
                     delete overrides.maxPriorityFeePerGas;
                     delete overrides.customData;
+                    delete overrides.ccipReadEnabled;
                     leftovers = Object.keys(overrides).filter(function (key) { return (overrides[key] != null); });
                     if (leftovers.length) {
                         logger.throwError("cannot override " + leftovers.map(function (l) { return JSON.stringify(l); }).join(","), logger_1.Logger.errors.UNSUPPORTED_OPERATION, {
@@ -606,7 +611,6 @@ var BaseContract = /** @class */ (function () {
     function BaseContract(addressOrName, contractInterface, signerOrProvider) {
         var _newTarget = this.constructor;
         var _this = this;
-        logger.checkNew(_newTarget, Contract);
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
         (0, properties_1.defineReadOnly)(this, "interface", (0, properties_1.getStatic)(_newTarget, "getInterface")(contractInterface));
@@ -679,6 +683,8 @@ var BaseContract = /** @class */ (function () {
                 });
             }
         }
+        // Swallow bad ENS names to prevent Unhandled Exceptions
+        this.resolvedAddress.catch(function (e) { });
         var uniqueNames = {};
         var uniqueSignatures = {};
         Object.keys(this.interface.functions).forEach(function (signature) {

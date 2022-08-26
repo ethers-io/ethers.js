@@ -12,8 +12,6 @@ var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var Formatter = /** @class */ (function () {
     function Formatter() {
-        var _newTarget = this.constructor;
-        logger.checkNew(_newTarget, Formatter);
         this.formats = this.getDefaultFormats();
     }
     Formatter.prototype.getDefaultFormats = function () {
@@ -96,7 +94,7 @@ var Formatter = /** @class */ (function () {
             type: type
         };
         formats.block = {
-            hash: hash,
+            hash: Formatter.allowNull(hash),
             parentHash: hash,
             number: number,
             timestamp: number,
@@ -104,7 +102,7 @@ var Formatter = /** @class */ (function () {
             difficulty: this.difficulty.bind(this),
             gasLimit: bigNumber,
             gasUsed: bigNumber,
-            miner: address,
+            miner: Formatter.allowNull(address),
             extraData: data,
             transactions: Formatter.allowNull(Formatter.arrayOf(hash)),
             baseFeePerGas: Formatter.allowNull(bigNumber)
@@ -209,8 +207,13 @@ var Formatter = /** @class */ (function () {
         if (blockTag === "earliest") {
             return "0x0";
         }
-        if (blockTag === "latest" || blockTag === "pending") {
-            return blockTag;
+        switch (blockTag) {
+            case "earliest": return "0x0";
+            case "latest":
+            case "pending":
+            case "safe":
+            case "finalized":
+                return blockTag;
         }
         if (typeof (blockTag) === "number" || (0, bytes_1.isHexString)(blockTag)) {
             return (0, bytes_1.hexValue)(blockTag);

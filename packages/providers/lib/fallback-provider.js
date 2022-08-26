@@ -399,7 +399,11 @@ function getRunner(config, currentBlockNumber, method, params) {
                 case 13:
                     provider = _b.sent();
                     _b.label = 14;
-                case 14: return [2 /*return*/, provider[method](params.transaction)];
+                case 14:
+                    if (method === "call" && params.blockTag) {
+                        return [2 /*return*/, provider[method](params.transaction, params.blockTag)];
+                    }
+                    return [2 /*return*/, provider[method](params.transaction)];
                 case 15: return [2 /*return*/, provider[method](params.transactionHash)];
                 case 16:
                     filter = params.filter;
@@ -420,9 +424,7 @@ function getRunner(config, currentBlockNumber, method, params) {
 var FallbackProvider = /** @class */ (function (_super) {
     __extends(FallbackProvider, _super);
     function FallbackProvider(providers, quorum) {
-        var _newTarget = this.constructor;
         var _this = this;
-        logger.checkNew(_newTarget, FallbackProvider);
         if (providers.length === 0) {
             logger.throwArgumentError("missing providers", "providers", providers);
         }

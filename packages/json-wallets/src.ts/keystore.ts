@@ -329,7 +329,7 @@ export function encrypt(account: ExternallyOwnedAccount, password: Bytes | strin
             address: account.address.substring(2).toLowerCase(),
             id: uuidV4(uuidRandom),
             version: 3,
-            Crypto: {
+            crypto: {
                 cipher: "aes-128-ctr",
                 cipherparams: {
                     iv: hexlify(iv).substring(2),

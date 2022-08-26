@@ -25,9 +25,7 @@ var json_rpc_provider_1 = require("./json-rpc-provider");
 var IpcProvider = /** @class */ (function (_super) {
     __extends(IpcProvider, _super);
     function IpcProvider(path, network) {
-        var _newTarget = this.constructor;
         var _this = this;
-        logger.checkNew(_newTarget, IpcProvider);
         if (path == null) {
             logger.throwError("missing path", logger_1.Logger.errors.MISSING_ARGUMENT, { arg: "path" });
         }

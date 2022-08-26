@@ -20,6 +20,8 @@ export interface Signature {
     _vs: string;
     recoveryParam: number;
     v: number;
+    yParityAndS: string;
+    compact: string;
 }
 export declare function isBytesLike(value: any): value is BytesLike;
 export declare function isBytes(value: any): value is Bytes;

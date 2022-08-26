@@ -27,6 +27,24 @@ export function getUrl(href, options) {
             request.referrer = "client"; // no-referrer, *client
         }
         ;
+        if (options.fetchOptions != null) {
+            const opts = options.fetchOptions;
+            if (opts.mode) {
+                request.mode = (opts.mode);
+            }
+            if (opts.cache) {
+                request.cache = (opts.cache);
+            }
+            if (opts.credentials) {
+                request.credentials = (opts.credentials);
+            }
+            if (opts.redirect) {
+                request.redirect = (opts.redirect);
+            }
+            if (opts.referrer) {
+                request.referrer = opts.referrer;
+            }
+        }
         const response = yield fetch(href, request);
         const body = yield response.arrayBuffer();
         const headers = {};

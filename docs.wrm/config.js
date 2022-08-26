@@ -226,6 +226,7 @@ module.exports = {
   externalLinks: {
       "link-mail": "mailto:me@ricmoo.com",
       "link-alchemy": { name: "Alchemy", url: "https:/\/alchemyapi.io" },
+      "link-ankr": { name: "Ankr", url: "https:/\/www.ankr.com" },
       "link-cloudflare": { name: "Cloudflare", url: "https:/\/developers.cloudflare.com/distributed-web/ethereum-gateway/" },
       "link-ens": { name: "ENS", url: "https:/\/ens.domains/" },
       "link-ethereum": { name: "Ethereum", url: "https:/\/ethereumorg" },
@@ -250,6 +251,8 @@ module.exports = {
       "link-sphinx": { name: "Sphinx", url: "https:/\/www.sphinx-doc.org/" },
 
       "link-alchemy-signup": "https:/\/dashboard.alchemyapi.io/signup?referral=55a35117-028e-4b7c-9e47-e275ad0acc6d",
+      "link-ankr-public": "https:/\/www.ankr.com/protocol/public/",
+      "link-ankr-premium": "https:/\/www.ankr.com/protocol/plan/",
       "link-etherscan-signup": "https:/\/etherscan.io/apis",
       "link-etherscan-ratelimit": "https:/\/info.etherscan.com/api-return-errors/",
       "link-infura-signup": "https:/\/infura.io/register",

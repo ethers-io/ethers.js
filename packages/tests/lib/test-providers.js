@@ -141,7 +141,7 @@ var blockchainData = {
                     }
                 ],
                 logsBloom: "0x00000000000000040000000000100000010000000000000040000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000200000010000000004000000000000000000000000000000000002000000000000000000000000400000000020000000000000000000000000000000000000004000000000000000000000000000000000000000000000000801000000000000000000000020000000000040000000040000000000000000002000000004000000000000000000000000000000000000000000000010000000000000000000000000000000000200000000000000000",
-                root: "0x9b550a9a640ce50331b64504ef87aaa7e2aaf97344acb6ff111f879b319d2590",
+                //root: "0x9b550a9a640ce50331b64504ef87aaa7e2aaf97344acb6ff111f879b319d2590",
                 status: null,
                 to: "0x6090A6e47849629b7245Dfa1Ca21D94cd15878Ef",
                 transactionHash: "0xc6fcb7d00d536e659a4559d2de29afa9e364094438fef3e72ba80728ce1cb616",
@@ -375,7 +375,7 @@ var blockchainData = {
                     }
                 ],
                 logsBloom: "0x00000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000010000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-                root: "0xf1c3506ab619ac1b5e8f1ca355b16d6b9a1b7436b2960b0e9ec9a91f4238b5cc",
+                //root: "0xf1c3506ab619ac1b5e8f1ca355b16d6b9a1b7436b2960b0e9ec9a91f4238b5cc",
                 to: "0x6fC21092DA55B392b045eD78F4732bff3C580e2c",
                 transactionHash: "0x55c477790b105e69e98afadf0505cbda606414b0187356137132bf24945016ce",
                 transactionIndex: 0x0
@@ -537,26 +537,21 @@ function waiter(duration) {
         }
     });
 }
-var allNetworks = ["default", "homestead", "ropsten", "rinkeby", "kovan", "goerli"];
+var allNetworks = ["default", "homestead", "ropsten", "rinkeby", "goerli"];
 // We use separate API keys because otherwise the testcases sometimes
 // fail during CI because our default keys are pretty heavily used
 var _ApiKeys = {
     alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
     etherscan: "FPFGK6JSW2UHJJ2666FG93KP7WC999MNW7",
     infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",
-};
-var _ApiKeysPocket = {
-    homestead: "6004bcd10040261633ade990",
-    ropsten: "6004bd4d0040261633ade991",
-    rinkeby: "6004bda20040261633ade994",
-    goerli: "6004bd860040261633ade992",
+    pocket: "62fd9de24b068e0039c16996"
 };
 function getApiKeys(network) {
     if (network === "default" || network == null) {
         network = "homestead";
     }
     var apiKeys = ethers_1.ethers.utils.shallowCopy(_ApiKeys);
-    apiKeys.pocket = _ApiKeysPocket[network];
+    //apiKeys.pocket = _ApiKeysPocket[network];
     return apiKeys;
 }
 var providerFunctions = [
@@ -578,6 +573,16 @@ var providerFunctions = [
                 return new ethers_1.ethers.providers.AlchemyProvider(null, getApiKeys(network).alchemy);
             }
             return new ethers_1.ethers.providers.AlchemyProvider(network, getApiKeys(network).alchemy);
+        }
+    },
+    {
+        name: "AnkrProvider",
+        networks: ["default", "homestead", "ropsten", "rinkeby"],
+        create: function (network) {
+            if (network == "default") {
+                return new ethers_1.ethers.providers.AnkrProvider(null);
+            }
+            return new ethers_1.ethers.providers.AnkrProvider(network);
         }
     },
     /*
@@ -618,11 +623,7 @@ var providerFunctions = [
     },
     {
         name: "PocketProvider",
-        // note: sans-kovan
-        // @TODO: Pocket is being incredibly unreliable right now; removing it so
-        // we can pass the CI
-        //networks: [ "default", "homestead", "ropsten", "rinkeby", "goerli" ],
-        networks: ["default", "homestead"],
+        networks: ["default", "homestead", "goerli"],
         create: function (network) {
             if (network == "default") {
                 return new ethers_1.ethers.providers.PocketProvider(null, {
@@ -763,6 +764,7 @@ Object.keys(blockchainData).forEach(function (network) {
                     case 0: return [4 /*yield*/, provider.getTransactionReceipt(hash)];
                     case 1:
                         receipt = _a.sent();
+                        assert_1.default.ok(!!receipt, "missing receipt");
                         if (test.status === null) {
                             assert_1.default.ok(receipt.status === undefined, "no status");
                             receipt.status = null;
@@ -873,7 +875,8 @@ testFunctions.push({
     timeout: 900,
     networks: ["ropsten"],
     checkSkip: function (provider, network, test) {
-        return false;
+        // This isn't working right now on Ankr
+        return (provider === "AnkrProvider");
     },
     execute: function (provider) { return __awaiter(void 0, void 0, void 0, function () {
         var gasPrice, wallet, addr, b0, tx, b1;
@@ -920,7 +923,8 @@ testFunctions.push({
     timeout: 900,
     networks: ["ropsten"],
     checkSkip: function (provider, network, test) {
-        return false;
+        // This isn't working right now on Ankr
+        return (provider === "AnkrProvider");
     },
     execute: function (provider) { return __awaiter(void 0, void 0, void 0, function () {
         var gasPrice, wallet, addr, b0, tx, b1;
@@ -974,7 +978,8 @@ testFunctions.push({
     networks: ["ropsten"],
     checkSkip: function (provider, network, test) {
         // These don't support EIP-1559 yet for sending
-        return (provider === "AlchemyProvider");
+        //return (provider === "AlchemyProvider" );
+        return (provider === "AnkrProvider");
     },
     execute: function (provider) { return __awaiter(void 0, void 0, void 0, function () {
         var wallet, addr, b0, tx, b1;
@@ -1316,43 +1321,24 @@ describe("Test API Key Formatting", function () {
         assert_1.default.equal(apiKeyObject2.applicationId, applicationId);
         assert_1.default.equal(apiKeyObject2.applicationSecretKey, applicationSecretKey);
         // Test complex API key with loadBalancer
-        [true, false].forEach(function (loadBalancer) {
-            var apiKeyObject = ethers_1.ethers.providers.PocketProvider.getApiKey({
+        {
+            var loadBalancer = true;
+            var apiKeyObject_1 = ethers_1.ethers.providers.PocketProvider.getApiKey({
                 applicationId: applicationId,
                 loadBalancer: loadBalancer
             });
-            assert_1.default.equal(apiKeyObject.applicationId, applicationId);
-            assert_1.default.equal(apiKeyObject.loadBalancer, loadBalancer);
-            assert_1.default.ok(apiKeyObject.applicationSecretKey == null);
-            var apiKeyObject2 = ethers_1.ethers.providers.PocketProvider.getApiKey({
+            assert_1.default.equal(apiKeyObject_1.applicationId, applicationId);
+            assert_1.default.equal(apiKeyObject_1.loadBalancer, loadBalancer);
+            assert_1.default.ok(apiKeyObject_1.applicationSecretKey == null);
+            var apiKeyObject2_1 = ethers_1.ethers.providers.PocketProvider.getApiKey({
                 applicationId: applicationId,
                 applicationSecretKey: applicationSecretKey,
                 loadBalancer: loadBalancer
             });
-            assert_1.default.equal(apiKeyObject2.applicationId, applicationId);
-            assert_1.default.equal(apiKeyObject2.applicationSecretKey, applicationSecretKey);
-            assert_1.default.equal(apiKeyObject2.loadBalancer, loadBalancer);
-        });
-        // Fails on invalid applicationId type
-        assert_1.default.throws(function () {
-            var apiKey = ethers_1.ethers.providers.PocketProvider.getApiKey({
-                applicationId: 1234,
-                applicationSecretKey: applicationSecretKey
-            });
-            console.log(apiKey);
-        }, function (error) {
-            return (error.argument === "applicationId" && error.reason === "applicationSecretKey requires an applicationId");
-        });
-        // Fails on invalid projectSecret type
-        assert_1.default.throws(function () {
-            var apiKey = ethers_1.ethers.providers.PocketProvider.getApiKey({
-                applicationId: applicationId,
-                applicationSecretKey: 1234
-            });
-            console.log(apiKey);
-        }, function (error) {
-            return (error.argument === "applicationSecretKey" && error.reason === "invalid applicationSecretKey");
-        });
+            assert_1.default.equal(apiKeyObject2_1.applicationId, applicationId);
+            assert_1.default.equal(apiKeyObject2_1.applicationSecretKey, applicationSecretKey);
+            assert_1.default.equal(apiKeyObject2_1.loadBalancer, loadBalancer);
+        }
         {
             var provider = new ethers_1.ethers.providers.PocketProvider("homestead", {
                 applicationId: applicationId,
@@ -1537,6 +1523,303 @@ describe("Resolve ENS avatar", function () {
                             return [2 /*return*/];
                     }
                 });
+            });
+        });
+    });
+});
+describe("Resolve ENS content hash", function () {
+    [
+        { title: "skynet", name: "skynet-ens.eth", value: "sia:/\/AQCRuTdTPzCyyU6I82eV7VDFVLPW82LJS9mH-chmjDlKUQ" },
+        { title: "ipns", name: "stderr.eth", value: "ipns://12D3KooWB8Z5zTNUJM1U98SjAwuCSaEwx65cHkFcMu1SJSvGmMJT" },
+        { title: "ipfs", name: "ricmoo.eth", value: "ipfs://QmdTPkMMBWQvL8t7yXogo7jq5pAcWg8J7RkLrDsWZHT82y" },
+    ].forEach(function (test) {
+        it("Resolves avatar for " + test.title, function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var provider, resolver, contentHash;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            this.timeout(60000);
+                            provider = ethers_1.ethers.getDefaultProvider("homestead", getApiKeys("homestead"));
+                            return [4 /*yield*/, provider.getResolver(test.name)];
+                        case 1:
+                            resolver = _a.sent();
+                            return [4 /*yield*/, resolver.getContentHash()];
+                        case 2:
+                            contentHash = _a.sent();
+                            assert_1.default.equal(contentHash, test.value, "content hash");
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        });
+    });
+});
+describe("Test EIP-2544 ENS wildcards", function () {
+    var provider = (providerFunctions[0].create("ropsten"));
+    it("Resolves recursively", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var resolver, _a, _b, _c, _d, _e, _f;
+            return __generator(this, function (_g) {
+                switch (_g.label) {
+                    case 0: return [4 /*yield*/, provider.getResolver("ricmoose.hatch.eth")];
+                    case 1:
+                        resolver = _g.sent();
+                        assert_1.default.equal(resolver.address, "0x8fc4C380c5d539aE631daF3Ca9182b40FB21D1ae", "found the correct resolver");
+                        _b = (_a = assert_1.default).equal;
+                        return [4 /*yield*/, resolver.supportsWildcard()];
+                    case 2:
+                        _b.apply(_a, [_g.sent(), true, "supportsWildcard"]);
+                        _d = (_c = assert_1.default).equal;
+                        return [4 /*yield*/, resolver.getAvatar()];
+                    case 3:
+                        _d.apply(_c, [(_g.sent()).url, "https://static.ricmoo.com/uploads/profile-06cb9c3031c9.jpg", "gets passed-through avatar"]);
+                        _f = (_e = assert_1.default).equal;
+                        return [4 /*yield*/, resolver.getAddress()];
+                    case 4:
+                        _f.apply(_e, [_g.sent(), "0x4FaBE0A3a4DDd9968A7b4565184Ad0eFA7BE5411", "gets resolved address"]);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+});
+describe("Test CCIP execution", function () {
+    var address = "0xAe375B05A08204C809b3cA67C680765661998886";
+    var ABI = [
+        //'error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData)',
+        'function testGet(bytes callData) view returns (bytes32)',
+        'function testGetFail(bytes callData) view returns (bytes32)',
+        'function testGetSenderFail(bytes callData) view returns (bytes32)',
+        'function testGetFallback(bytes callData) view returns (bytes32)',
+        'function testGetMissing(bytes callData) view returns (bytes32)',
+        'function testPost(bytes callData) view returns (bytes32)',
+        'function verifyTest(bytes result, bytes extraData) pure returns (bytes32)'
+    ];
+    var provider = providerFunctions[0].create("ropsten");
+    var contract = new ethers_1.ethers.Contract(address, ABI, provider);
+    // This matches the verify method in the Solidity contract against the
+    // processed data from the endpoint
+    var verify = function (sender, data, result) {
+        var check = ethers_1.ethers.utils.concat([
+            ethers_1.ethers.utils.arrayify(ethers_1.ethers.utils.arrayify(sender).length),
+            sender,
+            ethers_1.ethers.utils.arrayify(ethers_1.ethers.utils.arrayify(data).length),
+            data
+        ]);
+        assert_1.default.equal(result, ethers_1.ethers.utils.keccak256(check), "response is equal");
+    };
+    it("testGet passes under normal operation", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(60000);
+                        data = "0x1234";
+                        return [4 /*yield*/, contract.testGet(data, { ccipReadEnabled: true })];
+                    case 1:
+                        result = _a.sent();
+                        verify(address, data, result);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("testGet should fail with CCIP not explicitly enabled by overrides", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, result, error_4;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(60000);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        data = "0x1234";
+                        return [4 /*yield*/, contract.testGet(data)];
+                    case 2:
+                        result = _a.sent();
+                        console.log(result);
+                        assert_1.default.fail("throw-failed");
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_4 = _a.sent();
+                        if (error_4.message === "throw-failed") {
+                            throw error_4;
+                        }
+                        if (error_4.code !== "CALL_EXCEPTION") {
+                            console.log(error_4);
+                            assert_1.default.fail("failed");
+                        }
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("testGet should fail with CCIP explicitly disabled on provider", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var provider, contract, data, result, error_5;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(60000);
+                        provider = providerFunctions[0].create("ropsten");
+                        provider.disableCcipRead = true;
+                        contract = new ethers_1.ethers.Contract(address, ABI, provider);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        data = "0x1234";
+                        return [4 /*yield*/, contract.testGet(data, { ccipReadEnabled: true })];
+                    case 2:
+                        result = _a.sent();
+                        console.log(result);
+                        assert_1.default.fail("throw-failed");
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_5 = _a.sent();
+                        if (error_5.message === "throw-failed") {
+                            throw error_5;
+                        }
+                        if (error_5.code !== "CALL_EXCEPTION") {
+                            console.log(error_5);
+                            assert_1.default.fail("failed");
+                        }
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("testGetFail should fail if all URLs 5xx", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, result, error_6;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(60000);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        data = "0x1234";
+                        return [4 /*yield*/, contract.testGetFail(data, { ccipReadEnabled: true })];
+                    case 2:
+                        result = _a.sent();
+                        console.log(result);
+                        assert_1.default.fail("throw-failed");
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_6 = _a.sent();
+                        if (error_6.message === "throw-failed") {
+                            throw error_6;
+                        }
+                        if (error_6.code !== "SERVER_ERROR" || (error_6.errorMessages || []).pop() !== "hello world") {
+                            console.log(error_6);
+                            assert_1.default.fail("failed");
+                        }
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("testGetSenderFail should fail if sender does not match", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, result, error_7;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(60000);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        data = "0x1234";
+                        return [4 /*yield*/, contract.testGetSenderFail(data, { ccipReadEnabled: true })];
+                    case 2:
+                        result = _a.sent();
+                        console.log(result);
+                        assert_1.default.fail("throw-failed");
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_7 = _a.sent();
+                        if (error_7.message === "throw-failed") {
+                            throw error_7;
+                        }
+                        if (error_7.code !== "CALL_EXCEPTION") {
+                            console.log(error_7);
+                            assert_1.default.fail("failed");
+                        }
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("testGetMissing should fail if early URL 4xx", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, result, error_8;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(60000);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        data = "0x1234";
+                        return [4 /*yield*/, contract.testGetMissing(data, { ccipReadEnabled: true })];
+                    case 2:
+                        result = _a.sent();
+                        console.log(result);
+                        assert_1.default.fail("throw-failed");
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_8 = _a.sent();
+                        if (error_8.message === "throw-failed") {
+                            throw error_8;
+                        }
+                        if (error_8.code !== "SERVER_ERROR" || error_8.errorMessage !== "hello world") {
+                            console.log(error_8);
+                            assert_1.default.fail("failed");
+                        }
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("testGetFallback passes if any URL returns correctly", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(60000);
+                        data = "0x123456";
+                        return [4 /*yield*/, contract.testGetFallback(data, { ccipReadEnabled: true })];
+                    case 1:
+                        result = _a.sent();
+                        verify(address, data, result);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+    it("testPost passes under normal operation", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(60000);
+                        data = "0x1234";
+                        return [4 /*yield*/, contract.testPost(data, { ccipReadEnabled: true })];
+                    case 1:
+                        result = _a.sent();
+                        verify(address, data, result);
+                        return [2 /*return*/];
+                }
             });
         });
     });

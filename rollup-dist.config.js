@@ -96,7 +96,7 @@ function getUmdConfig() {
             name: "ethers",
             sourcemap: true
         },
-        context: "window",
+        context: "commonjsGlobal",
         treeshake: false,
         plugins
     };
@@ -122,7 +122,7 @@ function getEsmConfig() {
             format: "esm",
             sourcemap: true
         },
-        context: "window",
+        context: "commonjsGlobal",
         treeshake: false,
         plugins
     };

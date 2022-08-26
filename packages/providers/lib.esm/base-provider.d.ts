@@ -9,6 +9,8 @@ export declare class Event {
     readonly listener: Listener;
     readonly once: boolean;
     readonly tag: string;
+    _lastBlockNumber: number;
+    _inflight: boolean;
     constructor(tag: string, listener: Listener, once: boolean);
     get event(): EventType;
     get type(): string;
@@ -40,7 +42,10 @@ export declare class Resolver implements EnsResolver {
     readonly name: string;
     readonly address: string;
     readonly _resolvedAddress: null | string;
+    _supportsEip2544: null | Promise<boolean>;
     constructor(provider: BaseProvider, address: string, name: string, resolvedAddress?: string);
+    supportsWildcard(): Promise<boolean>;
+    _fetch(selector: string, parameters?: string): Promise<null | string>;
     _fetchBytes(selector: string, parameters?: string): Promise<null | string>;
     _getAddress(coinType: number, hexBytes: string): string;
     getAddress(coinType?: number): Promise<string>;
@@ -60,6 +65,7 @@ export declare class BaseProvider extends Provider implements EnsProvider {
     _poller: NodeJS.Timer;
     _bootstrapPoll: NodeJS.Timer;
     _lastBlockNumber: number;
+    _maxFilterBlockRange: number;
     _fastBlockNumber: number;
     _fastBlockNumberPromise: Promise<number>;
     _fastQueryDate: number;
@@ -70,6 +76,7 @@ export declare class BaseProvider extends Provider implements EnsProvider {
         respTime: number;
     }>;
     readonly anyNetwork: boolean;
+    disableCcipRead: boolean;
     /**
      *  ready
      *
@@ -84,6 +91,7 @@ export declare class BaseProvider extends Provider implements EnsProvider {
     get ready(): Promise<Network>;
     static getFormatter(): Formatter;
     static getNetwork(network: Networkish): Network;
+    ccipReadFetch(tx: Transaction, calldata: string, urls: Array<string>): Promise<null | string>;
     _getInternalBlockNumber(maxAge: number): Promise<number>;
     poll(): Promise<void>;
     resetEventsBlock(blockNumber: number): void;
@@ -116,6 +124,7 @@ export declare class BaseProvider extends Provider implements EnsProvider {
     sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
     _getTransactionRequest(transaction: Deferrable<TransactionRequest>): Promise<Transaction>;
     _getFilter(filter: Filter | FilterByBlockHash | Promise<Filter | FilterByBlockHash>): Promise<Filter | FilterByBlockHash>;
+    _call(transaction: TransactionRequest, blockTag: BlockTag, attempt: number): Promise<string>;
     call(transaction: Deferrable<TransactionRequest>, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
     estimateGas(transaction: Deferrable<TransactionRequest>): Promise<BigNumber>;
     _getAddress(addressOrName: string | Promise<string>): Promise<string>;
@@ -128,7 +137,7 @@ export declare class BaseProvider extends Provider implements EnsProvider {
     getEtherPrice(): Promise<number>;
     _getBlockTag(blockTag: BlockTag | Promise<BlockTag>): Promise<BlockTag>;
     getResolver(name: string): Promise<null | Resolver>;
-    _getResolver(name: string): Promise<string>;
+    _getResolver(name: string, operation?: string): Promise<string>;
     resolveName(name: string | Promise<string>): Promise<null | string>;
     lookupAddress(address: string | Promise<string>): Promise<null | string>;
     getAvatar(nameOrAddress: string): Promise<null | string>;

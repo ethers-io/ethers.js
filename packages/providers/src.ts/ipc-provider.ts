@@ -16,8 +16,6 @@ export class IpcProvider extends JsonRpcProvider {
     readonly path: string;
 
     constructor(path: string, network?: Networkish) {
-        logger.checkNew(new.target, IpcProvider);
-
         if (path == null) {
             logger.throwError("missing path", Logger.errors.MISSING_ARGUMENT, { arg: "path" });
         }

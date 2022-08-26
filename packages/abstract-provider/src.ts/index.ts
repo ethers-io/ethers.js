@@ -124,6 +124,7 @@ export interface TransactionReceipt {
 };
 
 export interface FeeData {
+    lastBaseFeePerGas: null | BigNumber;
     maxFeePerGas: null | BigNumber;
     maxPriorityFeePerGas: null | BigNumber;
     gasPrice: null | BigNumber;
@@ -241,17 +242,18 @@ export abstract class Provider implements OnceBlockable {
             })
         });
 
-        let maxFeePerGas = null, maxPriorityFeePerGas = null;
+        let lastBaseFeePerGas = null, maxFeePerGas = null, maxPriorityFeePerGas = null;
 
         if (block && block.baseFeePerGas) {
             // We may want to compute this more accurately in the future,
             // using the formula "check if the base fee is correct".
             // See: https://eips.ethereum.org/EIPS/eip-1559
+            lastBaseFeePerGas = block.baseFeePerGas;
             maxPriorityFeePerGas = BigNumber.from("1500000000");
             maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
         }
 
-        return { maxFeePerGas, maxPriorityFeePerGas, gasPrice };
+        return { lastBaseFeePerGas, maxFeePerGas, maxPriorityFeePerGas, gasPrice };
     }
 
     // Account

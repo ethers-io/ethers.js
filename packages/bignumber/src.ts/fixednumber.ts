@@ -202,8 +202,6 @@ export class FixedNumber {
     readonly _isFixedNumber: boolean;
 
     constructor(constructorGuard: any, hex: string, value: string, format?: FixedFormat) {
-        logger.checkNew(new.target, FixedNumber);
-
         if (constructorGuard !== _constructorGuard) {
             logger.throwError("cannot use FixedNumber constructor; use FixedNumber.from", Logger.errors.UNSUPPORTED_OPERATION, {
                 operation: "new FixedFormat"

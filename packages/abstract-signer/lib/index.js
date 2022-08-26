@@ -57,7 +57,7 @@ var logger_1 = require("@ethersproject/logger");
 var _version_1 = require("./_version");
 var logger = new logger_1.Logger(_version_1.version);
 var allowedTransactionKeys = [
-    "accessList", "chainId", "customData", "data", "from", "gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "to", "type", "value"
+    "accessList", "ccipReadEnabled", "chainId", "customData", "data", "from", "gasLimit", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "to", "type", "value"
 ];
 var forwardErrors = [
     logger_1.Logger.errors.INSUFFICIENT_FUNDS,
@@ -406,10 +406,7 @@ exports.Signer = Signer;
 var VoidSigner = /** @class */ (function (_super) {
     __extends(VoidSigner, _super);
     function VoidSigner(address, provider) {
-        var _newTarget = this.constructor;
-        var _this = this;
-        logger.checkNew(_newTarget, VoidSigner);
-        _this = _super.call(this) || this;
+        var _this = _super.call(this) || this;
         (0, properties_1.defineReadOnly)(_this, "address", address);
         (0, properties_1.defineReadOnly)(_this, "provider", provider || null);
         return _this;

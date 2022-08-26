@@ -1,0 +1,7337 @@
+{
+  "004cb826d2441cd5b0770161e66d351b2ba5abb5": {
+    "authors": [
+      {
+        "email": "jordan.michael.last@gmail.com",
+        "link": "https://github.com/lastmjs",
+        "login": "lastmjs"
+      }
+    ],
+    "date": "2019-09-06",
+    "issues": [
+      593
+    ],
+    "message": "Added pkg.ethereum key for donations (#593)."
+  },
+  "0059b7e468d9b8489b6c38b55eed252c02f7d96c": {
+    "authors": [
+      {
+        "link": "https://github.com/mohamedhayibor",
+        "login": "mohamedhayibor"
+      },
+      {
+        "link": "https://github.com/TomAFrench",
+        "login": "TomAFrench"
+      },
+      {
+        "email": "22412996+zemse@users.noreply.github.com",
+        "link": "https://github.com/zemse",
+        "login": "zemse"
+      }
+    ],
+    "date": "2020-07-03",
+    "issues": [
+      895,
+      917,
+      924
+    ],
+    "message": "Fixed documentation typos (#895, #917, #924)."
+  },
+  "0078e026f1b438dd0976200ee16c38ec5a7788f6": {
+    "authors": [
+      {
+        "email": "adriandelgado.tech@gmail.com",
+        "link": "https://github.com/adriandelgg",
+        "login": "adriandelgg"
+      }
+    ],
+    "date": "2022-05-26",
+    "issues": [
+      3013
+    ],
+    "message": "Fixed topic filters for numeric types with string values (#3013)."
+  },
+  "017b1feba2c9dea88f078b299d211cbd58d43b49": {
+    "authors": [
+      {
+        "email": "aka.cdor1@gmail.com",
+        "link": "https://github.com/cdor1",
+        "login": "cdor1"
+      }
+    ],
+    "date": "2021-08-24",
+    "issues": [
+      1906
+    ],
+    "message": "Fix address coder to prepare non-hexdatastring addresses as hexdatastring (#1906)."
+  },
+  "017ea0d6bd22833e9d399ae6b818443786f17884": {
+    "authors": [
+      {
+        "link": "https://github.com/gitpusha",
+        "login": "gitpusha"
+      }
+    ],
+    "date": "2020-04-24",
+    "issues": [
+      684
+    ],
+    "message": "Make default constructor non-payable (#684)."
+  },
+  "019c1fc7089b3da2d7bd41c933b6c6bc35c8dade": {
+    "authors": [
+      {
+        "link": "https://github.com/mitar",
+        "login": "mitar"
+      }
+    ],
+    "date": "2019-08-26",
+    "issues": [
+      592
+    ],
+    "message": "Fixed typo in error message (#592)."
+  },
+  "023a20ff470f73a91a72d57bc85dfafd77255d4e": {
+    "authors": [
+      {
+        "link": "https://github.com/mschristensen",
+        "login": "mschristensen"
+      }
+    ],
+    "date": "2018-10-14",
+    "issues": [
+      306
+    ],
+    "message": "Fixed and refactored populating transaction values for signers (#306)."
+  },
+  "03152ea0145de17912c035874b180125b7f353cf": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2022-01-24",
+    "issues": [
+      2489
+    ],
+    "message": "Include trouble-shooting URLs in errors (#2489)."
+  },
+  "03545aa78b0e7bd177e22432e4842b0580a11d7d": {
+    "authors": [
+      {
+        "email": "tim+github@tinman.be",
+        "link": "https://github.com/tlammens",
+        "login": "tlammens"
+      },
+      {
+        "link": "https://github.com/christopherdro",
+        "login": "christopherdro"
+      },
+      {
+        "link": "https://github.com/cpixy3810",
+        "login": "cpixy3810"
+      }
+    ],
+    "date": "2022-01-24",
+    "issues": [
+      2271,
+      2527,
+      2590
+    ],
+    "message": "Support invalid but popular IPFS URI format (#2271, #2527, #2590)."
+  },
+  "0358e8afb7a82bcac2c25f0e4b6b1b63bdedaca5": {
+    "authors": [
+      {
+        "link": "https://github.com/christoph2806",
+        "login": "christoph2806"
+      }
+    ],
+    "date": "2018-08-21",
+    "issues": [
+      259
+    ],
+    "message": "Fixed typo in units for finney (#259)."
+  },
+  "0364dd93680de00813ed3d4415917ab63bc258bc": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-06-26",
+    "issues": [
+      1610
+    ],
+    "message": "Added some provider-specific adjustments to deal with eip-1559 (#1610)."
+  },
+  "0382faebb1f33f1fa47aab4dde26fc55c4daf996": {
+    "authors": [
+      {
+        "link": "https://github.com/gabrocheleau",
+        "login": "gabrocheleau"
+      }
+    ],
+    "date": "2020-11-18",
+    "issues": [
+      1127
+    ],
+    "message": "docs: Typo in BigNumber (#1127)."
+  },
+  "042b74e6ee648d4fa37bf674194273d8f4483bfb": {
+    "authors": [
+      {
+        "email": "thegostep@gmail.com",
+        "link": "https://github.com/thegostep",
+        "login": "thegostep"
+      }
+    ],
+    "date": "2020-09-10",
+    "issues": [
+      1037
+    ],
+    "message": "Add clamping functions to FixedNumber (#1037)."
+  },
+  "048c571d3d307f6b5a0094865b54106f6d7c5ffa": {
+    "authors": [
+      {
+        "email": "davidvanisacker@gmail.com",
+        "link": "https://github.com/Dvisacker",
+        "login": "Dvisacker"
+      }
+    ],
+    "date": "2018-11-13",
+    "issues": [
+      346
+    ],
+    "message": "Fixed 0 confirmation waiting (#346)."
+  },
+  "04c0515f0ba522b15398452658e2f6eab9eeede3": {
+    "authors": [
+      {
+        "email": "fg@frang.io",
+        "link": "https://github.com/frangio",
+        "login": "frangio"
+      }
+    ],
+    "date": "2022-04-29",
+    "issues": [
+      2776
+    ],
+    "message": "docs: fixed wrong Solidity function name (#2776)."
+  },
+  "053a2d7fcdb4ca4c9bfd0bee0f42e0187d3db477": {
+    "authors": [
+      {
+        "link": "https://github.com/TamirTian",
+        "login": "TamirTian"
+      }
+    ],
+    "date": "2020-04-03",
+    "issues": [
+      768
+    ],
+    "message": "Fixed Signer call not forwarding blockTag (#768)."
+  },
+  "056d7c8bfc5896759c383d7cfae8ed0ec5c5eefb": {
+    "authors": [
+      {
+        "email": "trybaj@gmail.com",
+        "link": "https://github.com/tryba",
+        "login": "tryba"
+      }
+    ],
+    "date": "2022-04-12",
+    "issues": [
+      2890
+    ],
+    "message": "Fix pocket API key not being passed in for default provider (#2890)."
+  },
+  "0589b3102e2da702f4ac19a32c8b083faa6bbeea": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-01-30",
+    "issues": [
+      721
+    ],
+    "message": "Fix backwards compatibility with certain parsed JSON objects passed into Interface and Contracts (#721)."
+  },
+  "0609ea96519bf4afe6badc5f43c0d03ca91b8363": {
+    "authors": [
+      {
+        "link": "https://github.com/FSM1",
+        "login": "FSM1"
+      }
+    ],
+    "date": "2019-10-16",
+    "issues": [
+      622
+    ],
+    "message": "Fixed TypeScript 3.7-beta import issue (#622)."
+  },
+  "0838135d4a4a0cffb5f9171d4a8e7bbf64e0d061": {
+    "authors": [
+      {
+        "link": "https://github.com/ryanio",
+        "login": "ryanio"
+      }
+    ],
+    "date": "2020-07-05",
+    "issues": [
+      921
+    ],
+    "message": "Fixed typos in docs (#921)."
+  },
+  "083fd76a3a638ec16d5f9bf652101e5a150c7347": {
+    "authors": [
+      {
+        "link": "https://github.com/naddison36",
+        "login": "naddison36"
+      }
+    ],
+    "date": "2019-07-20",
+    "issues": [
+      562
+    ],
+    "message": "Export provider.Formatter (#562)."
+  },
+  "0844de4eb45eb4170fafb6f2a239b53b6be22f1c": {
+    "authors": [
+      {
+        "link": "https://github.com/fritzschoff",
+        "login": "fritzschoff"
+      }
+    ],
+    "date": "2021-11-30",
+    "issues": [
+      2335
+    ],
+    "message": "Added arbitrum and optimism to networks and providers (#2335)."
+  },
+  "0855d6e9f593515b639c10a3f65bad712c68221c": {
+    "_missingIssues": [
+      2845
+    ],
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      },
+      {
+        "link": "https://github.com/timaiv",
+        "login": "timaiv"
+      }
+    ],
+    "date": "2022-04-13",
+    "issues": [
+      2845,
+      2846
+    ],
+    "message": "Support new OpenEthereum NONCE_EXPIRED string (#2845, #2846)."
+  },
+  "08c74e9a132f37ab8cc3fb5dab3bd1fd708ee702": {
+    "authors": [
+      {
+        "link": "https://github.com/EvilJordan",
+        "login": "EvilJordan"
+      }
+    ],
+    "date": "2020-06-29",
+    "issues": [
+      898
+    ],
+    "message": "Fixed FixedNumber unguarded constructor and added isZero (#898)."
+  },
+  "095c1fe579068a3204ea0d1bc1893f293f61e719": {
+    "authors": [
+      {
+        "link": "https://github.com/mrwillis",
+        "login": "mrwillis"
+      }
+    ],
+    "date": "2019-06-06",
+    "issues": [
+      537
+    ],
+    "message": "Make TransactionResponse hash required (#537)."
+  },
+  "098d7efb21bd648c2660342297d2419904a10925": {
+    "authors": [
+      {
+        "email": "greg.beaver.cello@gmail.com",
+        "link": "https://github.com/cellog",
+        "login": "cellog"
+      }
+    ],
+    "date": "2020-05-03",
+    "issues": [
+      499
+    ],
+    "message": "Only error on duplicate signatures in Contract ABI (#499)."
+  },
+  "0a28679994c844cef514f9e800c6cd8e1a21aa30": {
+    "authors": [
+      {
+        "link": "https://github.com/olehmisar",
+        "login": "olehmisar"
+      },
+      {
+        "link": "https://github.com/valentinmatter",
+        "login": "valentinmatter"
+      }
+    ],
+    "date": "2022-06-17",
+    "issues": [
+      3062,
+      3085
+    ],
+    "message": "Fix NonceManager for increment 0 and provided nonce (#3062, #3085)."
+  },
+  "0a8be37b087470d9354f387d7c439cb0166eaf4d": {
+    "authors": [
+      {
+        "link": "https://github.com/TheGreatHB",
+        "login": "TheGreatHB"
+      },
+      {
+        "link": "https://github.com/RyanRHall",
+        "login": "RyanRHall"
+      },
+      {
+        "email": "chalkerx@gmail.com",
+        "link": "https://github.com/ChALkeR",
+        "login": "ChALkeR"
+      }
+    ],
+    "date": "2021-10-16",
+    "issues": [
+      1432,
+      2054,
+      2120
+    ],
+    "message": "Fix issue when Solidity method collises with JavaScript prototype (#1432, #2054, #2120)."
+  },
+  "0ae9ac6f98847864507ac067fb2b03c7341625d3": {
+    "authors": [
+      {
+        "link": "https://github.com/krasi-georgiev",
+        "login": "krasi-georgiev"
+      }
+    ],
+    "date": "2021-02-04",
+    "issues": [
+      1266
+    ],
+    "message": "docs: added details on URL for JsonRpcProvider regarding ConnectionInfo support (#1266)."
+  },
+  "0c72e0f1fdd0ea9cfdfbe2bd2e3167e1ce1141da": {
+    "authors": [
+      {
+        "link": "https://github.com/GavinPacini",
+        "login": "GavinPacini"
+      }
+    ],
+    "date": "2022-02-03",
+    "issues": [
+      2311
+    ],
+    "message": "docs: added effectiveGasPrice to receipts (#2311)."
+  },
+  "0e1721b13084dacf63089e47116f7d5331be4f36": {
+    "authors": [
+      {
+        "link": "https://github.com/naddison36",
+        "login": "naddison36"
+      }
+    ],
+    "date": "2021-03-26",
+    "issues": [
+      1393
+    ],
+    "message": "Fixed Contract properties that collide with null member properties (#1393)."
+  },
+  "0e3a66c82959a08f3f4e4ffbca3ae3792ff2548f": {
+    "authors": [
+      {
+        "email": "jarindr23@gmail.com",
+        "link": "https://github.com/jarindr",
+        "login": "jarindr"
+      }
+    ],
+    "date": "2020-05-03",
+    "issues": [
+      814
+    ],
+    "message": "Better messaging on low-level network errors (#814)."
+  },
+  "0e5419ec79cb18d82bab8c47bfa3ab4a21cfd293": {
+    "authors": [
+      {
+        "email": "geigerzaehler@axiom.fm",
+        "link": "https://github.com/geigerzaehler",
+        "login": "geigerzaehler"
+      }
+    ],
+    "date": "2021-10-04",
+    "issues": [
+      1850
+    ],
+    "message": "Added some explicit null results to previously implicit null results for ENS (#1850)."
+  },
+  "0e6cc9a9a8ebceae4529ccbb7c107618eb54490a": {
+    "authors": [
+      {
+        "email": "hi@bpier.re",
+        "link": "https://github.com/bpierre",
+        "login": "bpierre"
+      }
+    ],
+    "date": "2020-12-14",
+    "issues": [
+      1009
+    ],
+    "message": "Lock package versions for the ESM builds (#1009)."
+  },
+  "0ed983a264077d74d23da194b580fc702e9139a9": {
+    "authors": [
+      {
+        "link": "https://github.com/area",
+        "login": "area"
+      }
+    ],
+    "date": "2019-02-12",
+    "issues": [
+      411
+    ],
+    "message": "Fixed support for calling self-destructed contracts (#411)."
+  },
+  "0f0d0c00d3fc14e5454169d42a9286b1d8b0abef": {
+    "authors": [
+      {
+        "link": "https://github.com/OliverNChalk",
+        "login": "OliverNChalk"
+      }
+    ],
+    "date": "2021-07-06",
+    "issues": [
+      1706
+    ],
+    "message": "Fixed null confirmations in Wallet transaction (#1706)."
+  },
+  "0fd9aa5cb6f4a3f9c1bea9b4eeee389700db01fa": {
+    "authors": [
+      {
+        "email": "22412996+zemse@users.noreply.github.com",
+        "link": "https://github.com/zemse",
+        "login": "zemse"
+      }
+    ],
+    "date": "2020-07-05",
+    "issues": [
+      901
+    ],
+    "message": "Fixed StaticJsonRpcProvider when auto-detecting network (#901)."
+  },
+  "117a5dd7ffa783c4335c0b87621437447cd499d0": {
+    "authors": [
+      {
+        "link": "https://github.com/peetzweg",
+        "login": "peetzweg"
+      }
+    ],
+    "date": "2020-03-12",
+    "issues": [
+      141
+    ],
+    "message": "Added initial WebSocketProvider (#141)."
+  },
+  "12cfc599656d7e3a6d3d9aa4e468592865a711cc": {
+    "authors": [
+      {
+        "link": "https://github.com/pldespaigne",
+        "login": "pldespaigne"
+      }
+    ],
+    "date": "2019-10-16",
+    "issues": [
+      629
+    ],
+    "message": "Fixed getBlock for blockhashes with a leading 0 (#629)."
+  },
+  "13dd42c6c38d6977645555cdf7ab60354b0e2725": {
+    "authors": [
+      {
+        "link": "https://github.com/dghelm",
+        "login": "dghelm"
+      },
+      {
+        "email": "peterjan.brone@gmail.com",
+        "link": "https://github.com/peterjan",
+        "login": "peterjan"
+      }
+    ],
+    "date": "2022-05-20",
+    "issues": [
+      2853,
+      2866
+    ],
+    "message": "Add Skynet support (#2853, #2866)."
+  },
+  "13e50ec6db1c7f898076a411b6aacbf4e7bb6f6a": {
+    "authors": [
+      {
+        "link": "https://github.com/kyriediculous",
+        "login": "kyriediculous"
+      },
+      {
+        "link": "https://github.com/cf19drofxots",
+        "login": "cf19drofxots"
+      }
+    ],
+    "date": "2018-09-06",
+    "issues": [
+      233,
+      271
+    ],
+    "message": "Exposed more secp256k1 primitives (#233 #271)."
+  },
+  "13f50abd847f7ddcc7e54c102da54e2d23b86fae": {
+    "authors": [
+      {
+        "link": "https://github.com/HenryNguyen5",
+        "login": "HenryNguyen5"
+      }
+    ],
+    "date": "2020-01-08",
+    "issues": [
+      698
+    ],
+    "message": "Better property access on ABI decoded results (#698)."
+  },
+  "152d672278477321d6ff5dab03b2d1e812151f45": {
+    "authors": [
+      {
+        "link": "https://github.com/bojan96",
+        "login": "bojan96"
+      }
+    ],
+    "date": "2018-12-12",
+    "issues": [
+      367
+    ],
+    "message": "Add isHexString to exported utils (#367)."
+  },
+  "15893537c3d9c92fe8748a3e9617d133d1d5d6a7": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-10-19",
+    "issues": [
+      687
+    ],
+    "message": "Added EIP-712 test cases (#687)."
+  },
+  "15a90af5be75806e26f589f0a3f3687c0fb1c672": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-10-19",
+    "issues": [
+      687
+    ],
+    "message": "Fix signTypedData call for JsonRpcSigner (#687)."
+  },
+  "1651389571b5dd16c1c056dcd94729b48a4bdd85": {
+    "authors": [
+      {
+        "email": "wighawag@gmail.com",
+        "link": "https://github.com/wighawag",
+        "login": "wighawag"
+      }
+    ],
+    "date": "2022-02-19",
+    "issues": [
+      1886
+    ],
+    "message": "docs: added skipFetchSetup to ConnectionInfo (#1886)."
+  },
+  "16c974532603b6ed7e49cedd6ce11f2e92158bf0": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2019-03-08",
+    "issues": [
+      421
+    ],
+    "message": "Added goerli to InfuraProvider (#421)."
+  },
+  "16fdf6b621fd45bb1d6ab4e636388d9e7a9028d2": {
+    "authors": [
+      {
+        "link": "https://github.com/tlxnithin",
+        "login": "tlxnithin"
+      }
+    ],
+    "date": "2018-12-05",
+    "issues": [
+      365
+    ],
+    "message": "Added gas estimation back into JsonRpcSigner (#365)."
+  },
+  "173f4d44bfaba1e785fa37f4d3992a360c83bff3": {
+    "authors": [
+      {
+        "link": "https://github.com/KillariDev",
+        "login": "KillariDev"
+      }
+    ],
+    "date": "2021-02-08",
+    "issues": [
+      1281
+    ],
+    "message": "docs: update links in README (#1281)."
+  },
+  "17676e9597ef7610443e3a7d7bb2967e7b509c26": {
+    "authors": [
+      {
+        "link": "https://github.com/mikhailxyz",
+        "login": "mikhailxyz"
+      }
+    ],
+    "date": "2022-07-14",
+    "issues": [
+      3166
+    ],
+    "message": "Fix bug in EIP1193Bridge forwarding to the wrong method (#3166)."
+  },
+  "18d8d1f34d87317d4d173153b6e55dd073043e3f": {
+    "authors": [
+      {
+        "email": "chaserileyroberts@gmail.com",
+        "link": "https://github.com/Thenerdstation",
+        "login": "Thenerdstation"
+      }
+    ],
+    "date": "2022-02-03",
+    "issues": [
+      2531
+    ],
+    "message": "docs: fixed typos (#2531)."
+  },
+  "18ee2c518c252a18fa172a8a7092c58cf6c0b7c5": {
+    "authors": [
+      {
+        "link": "https://github.com/sulliwane",
+        "login": "sulliwane"
+      }
+    ],
+    "date": "2019-02-01",
+    "issues": [
+      405
+    ],
+    "message": "Support for xpub and xpriv derivation and generating extended keys; no fromExtendedKey yet (#405)."
+  },
+  "1934ad3b48115cafb89142c8605f4187b2b60a22": {
+    "authors": [
+      {
+        "link": "https://github.com/zemse",
+        "login": "zemse"
+      }
+    ],
+    "date": "2022-06-18",
+    "issues": [
+      2940
+    ],
+    "message": "docs: added ConnectionInfo details (#2940)."
+  },
+  "19587eea3f3fadc301ff4d949646b700ebb4a85b": {
+    "authors": [
+      {
+        "email": "raggamuffin.music@gmail.com",
+        "link": "https://github.com/kshinn",
+        "login": "kshinn"
+      }
+    ],
+    "date": "2019-05-24",
+    "issues": [
+      462
+    ],
+    "message": "Warn on deprecated INFURA API Token; use Project ID instead (#462)."
+  },
+  "19fd55e935e141318efc46bd0235a956ea8464d8": {
+    "authors": [
+      {
+        "link": "https://github.com/DefiCake",
+        "login": "DefiCake"
+      }
+    ],
+    "date": "2020-09-08",
+    "issues": [
+      911
+    ],
+    "message": "Docs: add example for custom ENS address (#911)."
+  },
+  "1a7c4e89efecc2b8afc8bea4c1f8f75fdaac08c5": {
+    "authors": [
+      {
+        "link": "https://github.com/FrederikBolding",
+        "login": "FrederikBolding"
+      }
+    ],
+    "date": "2021-04-02",
+    "issues": [
+      1371
+    ],
+    "message": "Cache JsonRpcProvider requests for certain methods per event loop (#1371)."
+  },
+  "1a89c591c26a7fcc2031d0df90137d8a096c5c01": {
+    "authors": [
+      {
+        "email": "22412996+zemse@users.noreply.github.com",
+        "link": "https://github.com/zemse",
+        "login": "zemse"
+      }
+    ],
+    "date": "2020-06-03",
+    "issues": [
+      862
+    ],
+    "message": "Allow JsonRpcSigner to override from if it matches Signer (#862)."
+  },
+  "1b0ad5aa69327f80c7814069142965914673dc06": {
+    "authors": [
+      {
+        "link": "https://github.com/bbarton",
+        "login": "bbarton"
+      }
+    ],
+    "date": "2020-05-30",
+    "issues": [
+      856
+    ],
+    "message": "Correctly set last emitted block for WebSocketProvider (#856)."
+  },
+  "1b4bc7a6a6e1c7c4eed8d241a7dfe3222a78a23e": {
+    "authors": [
+      {
+        "link": "https://github.com/jrfrantz",
+        "login": "jrfrantz"
+      }
+    ],
+    "date": "2021-08-09",
+    "issues": [
+      1851
+    ],
+    "message": "docs: Fix listAccounts return type (#1851)."
+  },
+  "1bd91615eedcb34a24fca04aa93a9aac394968ed": {
+    "authors": [
+      {
+        "link": "https://github.com/hogan0520",
+        "login": "hogan0520"
+      }
+    ],
+    "date": "2021-10-20",
+    "issues": [
+      2190
+    ],
+    "message": "Fixed abstract Provider signature issue (#2190)."
+  },
+  "1be096130cfb4ddc1e4b03ee8345883ec78aea04": {
+    "authors": [
+      {
+        "email": "github.com@phor.net",
+        "link": "https://github.com/fulldecent",
+        "login": "fulldecent"
+      }
+    ],
+    "date": "2022-02-03",
+    "issues": [
+      2400
+    ],
+    "message": "docs: fixed typos (#2400)."
+  },
+  "1cb3199e5cb01f5a55eb00ab6c7904606d7ea1dd": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-04-18",
+    "issues": [
+      1364
+    ],
+    "message": "Update tests for current EIP-2930 support across backends (#1364)."
+  },
+  "1d27d95670ee3a51879393fed44297128c4a42a3": {
+    "authors": [
+      {
+        "email": "aayushg@mit.edu",
+        "link": "https://github.com/Divide-By-0",
+        "login": "Divide-By-0"
+      }
+    ],
+    "date": "2021-08-04",
+    "issues": [
+      1807
+    ],
+    "message": "Fixed Etherscan API key in default provider (#1807)."
+  },
+  "1d419b5829976b9c80c299e456e5ce0a5e8f63e1": {
+    "authors": [
+      {
+        "email": "github.com@phor.net",
+        "link": "https://github.com/fulldecent",
+        "login": "fulldecent"
+      }
+    ],
+    "date": "2022-02-03",
+    "issues": [
+      2115
+    ],
+    "message": "docs: more explicitly describe the id function (#2115)."
+  },
+  "1d4f90a958da6364117353850d62535c9702abd2": {
+    "authors": [
+      {
+        "link": "https://github.com/Velenir",
+        "login": "Velenir"
+      }
+    ],
+    "date": "2019-11-01",
+    "issues": [
+      641
+    ],
+    "message": "Added provider property to Web3Provider (#641)."
+  },
+  "1e6a3c23c4af088acc113f6615f66df86363c976": {
+    "authors": [
+      {
+        "email": "swasti@sourabh.xyz",
+        "link": "https://github.com/sourabhxyz",
+        "login": "sourabhxyz"
+      }
+    ],
+    "date": "2022-05-14",
+    "issues": [
+      2970
+    ],
+    "message": "docs: fixed typo (#2970)."
+  },
+  "1e72fc7d6f7c3be4410dbdcfbab9a0463ceb52bd": {
+    "authors": [
+      {
+        "link": "https://github.com/rjchow",
+        "login": "rjchow"
+      }
+    ],
+    "date": "2020-01-08",
+    "issues": [
+      694
+    ],
+    "message": "Fixed resolveName when name is an address with an invalid checksum (#694)."
+  },
+  "1ec5804bd460f6948d4813469fdc7bf739baa6a6": {
+    "authors": [
+      {
+        "link": "https://github.com/naddison36",
+        "login": "naddison36"
+      },
+      {
+        "email": "raggamuffin.music@gmail.com",
+        "link": "https://github.com/kshinn",
+        "login": "kshinn"
+      }
+    ],
+    "date": "2019-11-19",
+    "issues": [
+      464,
+      651,
+      652
+    ],
+    "message": "Added support for complex API keys including support for INFURA project secrets (#464, #651, #652)."
+  },
+  "20409c083cd428c46cba09488ee609cc14ff1d2b": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2019-11-24",
+    "issues": [
+      666
+    ],
+    "message": "Update elliptic package to protect from Minerva timing attack (#666)."
+  },
+  "20f34f1ba9c698d1731cb12c5de1822ad462fd7f": {
+    "authors": [
+      {
+        "email": "22412996+zemse@users.noreply.github.com",
+        "link": "https://github.com/zemse",
+        "login": "zemse"
+      }
+    ],
+    "date": "2019-12-21",
+    "issues": [
+      688
+    ],
+    "message": "Added proper support for v0.6 Solidity JSON type (#688)."
+  },
+  "20f6e16394909a43498c1ac6c73152957bd121bd": {
+    "authors": [
+      {
+        "link": "https://github.com/Jonas121",
+        "login": "Jonas121"
+      },
+      {
+        "email": "jannis@edgeandnode.com",
+        "link": "https://github.com/Jannis",
+        "login": "Jannis"
+      },
+      {
+        "link": "https://github.com/EvilJordan",
+        "login": "EvilJordan"
+      },
+      {
+        "email": "andre.vmatos@gmail.com",
+        "link": "https://github.com/andrevmatos",
+        "login": "andrevmatos"
+      }
+    ],
+    "date": "2021-01-13",
+    "issues": [
+      1084,
+      1208,
+      1221,
+      1235
+    ],
+    "message": "Better provider internal block management (#1084, #1208, #1221, #1235)."
+  },
+  "22a26736cc332fe6e896c9d2707cc99ceee2fb10": {
+    "authors": [
+      {
+        "email": "contact@bitfalls.com",
+        "link": "https://github.com/Swader",
+        "login": "Swader"
+      }
+    ],
+    "date": "2019-09-06",
+    "issues": [
+      574
+    ],
+    "message": "Fixed typo in error message (#574)."
+  },
+  "2359a98641d99b26cf88ec892e3601a8a2c81c9c": {
+    "authors": [
+      {
+        "email": "kevin.brown@hey.com",
+        "link": "https://github.com/thekevinbrown",
+        "login": "thekevinbrown"
+      }
+    ],
+    "date": "2020-09-04",
+    "issues": [
+      1028
+    ],
+    "message": "Fixed link in docs (#1028)."
+  },
+  "240aac568303deff14cbb2366b94c8c89cacefc1": {
+    "authors": [
+      {
+        "email": "chalkerx@gmail.com",
+        "link": "https://github.com/ChALkeR",
+        "login": "ChALkeR"
+      },
+      {
+        "email": "for4die@sina.com",
+        "link": "https://github.com/282931",
+        "login": "282931"
+      }
+    ],
+    "date": "2020-08-27",
+    "issues": [
+      944,
+      993
+    ],
+    "message": "Updating shims for constrained environments (#944, #993)."
+  },
+  "243beffa4f83c910f5f1c5e0554531e5dcf3ab93": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-02-12",
+    "issues": [
+      1290
+    ],
+    "message": "Prevent unconfigured ENS names from making an init tx (#1290)."
+  },
+  "24bd3281f721886c3663df9a2a0d33148a5270e6": {
+    "authors": [
+      {
+        "email": "namy.19@gmail.com",
+        "link": "https://github.com/yqrashawn",
+        "login": "yqrashawn"
+      }
+    ],
+    "date": "2022-04-29",
+    "issues": [
+      2662
+    ],
+    "message": "docs: fixed typo in comments (#2662)."
+  },
+  "24c3caae14bb642c2558284c9fb0a347e4120ef8": {
+    "authors": [
+      {
+        "link": "https://github.com/peterslany",
+        "login": "peterslany"
+      }
+    ],
+    "date": "2022-04-29",
+    "issues": [
+      2834
+    ],
+    "message": "docs: fixed typos (#2834)."
+  },
+  "24f243e689112048df502e10dbc2935303280c4d": {
+    "authors": [
+      {
+        "email": "michaelsbradleyjr@gmail.com",
+        "link": "https://github.com/michaelsbradleyjr",
+        "login": "michaelsbradleyjr"
+      }
+    ],
+    "date": "2019-08-22",
+    "issues": [
+      582
+    ],
+    "message": "Allow Secret Storage wallet address to be optional (#582)."
+  },
+  "251882ced4379931ec82ba28a4db10bc7dbf3580": {
+    "authors": [
+      {
+        "email": "22412996+zemse@users.noreply.github.com",
+        "link": "https://github.com/zemse",
+        "login": "zemse"
+      }
+    ],
+    "date": "2020-01-21",
+    "issues": [
+      711
+    ],
+    "message": "Fixed out-of-bounds difficulty in getBlock, which can affect PoA networks (#711)."
+  },
+  "25337d454399d3673ce245581f1c18d89150c5f6": {
+    "authors": [
+      {
+        "link": "https://github.com/JohnnySheffield",
+        "login": "JohnnySheffield"
+      }
+    ],
+    "date": "2018-09-20",
+    "issues": [
+      272
+    ],
+    "message": "Fix typo in error message (#272)."
+  },
+  "2534b1b3b2feb41a0d831283cfd6088a4bb23e85": {
+    "authors": [
+      {
+        "link": "https://github.com/willrnch",
+        "login": "willrnch"
+      }
+    ],
+    "date": "2021-04-10",
+    "issues": [
+      1411
+    ],
+    "message": "docs: fixed typo in signature (#1411)."
+  },
+  "25c3024a8937ada165573ebdd6eb28f44be2356f": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-04-18",
+    "issues": [
+      1364
+    ],
+    "message": "docs: added AccessLists details (#1364)."
+  },
+  "25c8b8b3e66c97f757973de53918fb8f3a56fed7": {
+    "authors": [
+      {
+        "link": "https://github.com/PierreJeanjacquot",
+        "login": "PierreJeanjacquot"
+      }
+    ],
+    "date": "2021-07-02",
+    "issues": [
+      1729
+    ],
+    "message": "docs: fixed typo (#1729)"
+  },
+  "263bfe5ce632790e0399d06a0ab660a501997998": {
+    "authors": [
+      {
+        "email": "22412996+zemse@users.noreply.github.com",
+        "link": "https://github.com/zemse",
+        "login": "zemse"
+      }
+    ],
+    "date": "2020-09-16",
+    "issues": [
+      1047
+    ],
+    "message": "Improve fetch errors with looser mime-type detection (#1047)."
+  },
+  "26d32716436cd8925a5278173ba72ad54e00eef8": {
+    "authors": [
+      {
+        "link": "https://github.com/chrsengel",
+        "login": "chrsengel"
+      }
+    ],
+    "date": "2020-01-11",
+    "issues": [
+      700
+    ],
+    "message": "Add missing chainId to transaction responses (#700)."
+  },
+  "27a981c84b578feb762fdb37dd5325d9c335bd59": {
+    "authors": [
+      {
+        "link": "https://github.com/luyzdeleon",
+        "login": "luyzdeleon"
+      }
+    ],
+    "date": "2021-02-02",
+    "issues": [
+      1052
+    ],
+    "message": "Added load balancer support to PocketProvider (#1052)."
+  },
+  "280dc56a747876973c78d7afae4d315840868ae9": {
+    "authors": [
+      {
+        "email": "patricio@nomiclabs.io",
+        "link": "https://github.com/alcuadrado",
+        "login": "alcuadrado"
+      }
+    ],
+    "date": "2018-08-27",
+    "issues": [
+      263
+    ],
+    "message": "Removing address from JsonRpcSigner and cache address (#263)."
+  },
+  "281bd0613d9da2542b519122496387e9e25c51ac": {
+    "authors": [
+      {
+        "email": "briar.sweetbriar.baron@gmail.com",
+        "link": "https://github.com/briarsweetbriar",
+        "login": "briarsweetbriar"
+      }
+    ],
+    "date": "2018-10-03",
+    "issues": [
+      288
+    ],
+    "message": "Added support for JSON serialized BigNumbers in the constructor (#288)."
+  },
+  "28800d7681f3bab08f6d30a22f0813e04feee18a": {
+    "authors": [
+      {
+        "link": "https://github.com/jochenonline",
+        "login": "jochenonline"
+      }
+    ],
+    "date": "2020-05-01",
+    "issues": [
+      437
+    ],
+    "message": "Allow contract filters to include OR-ed values (#437)."
+  },
+  "28a52cd485f48599ced1cbf58535e41e179a69bf": {
+    "authors": [
+      {
+        "email": "elena@arenabg.com",
+        "link": "https://github.com/elenadimitrova",
+        "login": "elenadimitrova"
+      }
+    ],
+    "date": "2018-11-08",
+    "issues": [
+      329
+    ],
+    "message": "Fix for when blockTag is specified as a null equivalent value in contract overrides (#329)."
+  },
+  "28ddf485ed4540889c52e579aff8e00d3de6fc34": {
+    "authors": [
+      {
+        "email": "roderik@settlemint.com",
+        "link": "https://github.com/roderik",
+        "login": "roderik"
+      }
+    ],
+    "date": "2018-04-05",
+    "issues": [
+      152
+    ],
+    "message": "Allow large block difficulty, but set it to null for PoA (#152)."
+  },
+  "28eb38ee703288aaad9f730b2d93fe3aeea7ada6": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2019-07-27",
+    "issues": [
+      42
+    ],
+    "message": "Added initial IDNA support for full UTF-8 support in namehash (#42)."
+  },
+  "28f60d5ef83665541c8c1b432f8e173d73cb8227": {
+    "authors": [
+      {
+        "link": "https://github.com/DeltaBalances",
+        "login": "DeltaBalances"
+      }
+    ],
+    "date": "2020-10-22",
+    "issues": [
+      1093
+    ],
+    "message": "Use POST for long requests in EtherscanProvider (#1093)."
+  },
+  "296473299cca5e28730ebf5f47603446d8805691": {
+    "authors": [
+      {
+        "link": "https://github.com/Brbb",
+        "login": "Brbb"
+      }
+    ],
+    "date": "2018-03-27",
+    "issues": [
+      146
+    ],
+    "message": "Added blockHash to Etherscan getLogs result (#146)."
+  },
+  "2997bae93599294935d1e467d8ede2960ee92e50": {
+    "authors": [
+      {
+        "email": "g.bytniewski@flexidao.com",
+        "link": "https://github.com/greg-flexidao",
+        "login": "greg-flexidao"
+      }
+    ],
+    "date": "2019-05-24",
+    "issues": [
+      514
+    ],
+    "message": "Export poll function (#514)."
+  },
+  "29f3d2dea87700c2cb82dacb21603a3f3ebda689": {
+    "authors": [
+      {
+        "email": "stephenalexbrowne@gmail.com",
+        "link": "https://github.com/albrow",
+        "login": "albrow"
+      }
+    ],
+    "date": "2018-07-26",
+    "issues": [
+      237
+    ],
+    "message": "Fixed long fixed-length bytes from overflowing encoded ABI. (#237)"
+  },
+  "29f6c34343d75fa42023bdcd07632f49a450570c": {
+    "authors": [
+      {
+        "link": "https://github.com/matYang",
+        "login": "matYang"
+      }
+    ],
+    "date": "2020-11-20",
+    "issues": [
+      1166
+    ],
+    "message": "Allow private keys to Wallet to omit the 0x prefix (#1166)."
+  },
+  "2a7ce0e72a1e0c9469e10392b0329e75e341cf18": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-06-24",
+    "issues": [
+      1610
+    ],
+    "message": "Merge: 91fff144 8ba64af2 merged master including transaction type 0 legacy constant (#1610)."
+  },
+  "2bc7bb6e61219a40cfe2acd95c115c2195c21223": {
+    "authors": [
+      {
+        "email": "me@nikita.tk",
+        "link": "https://github.com/ZitRos",
+        "login": "ZitRos"
+      },
+      {
+        "link": "https://github.com/kerzhner",
+        "login": "kerzhner"
+      }
+    ],
+    "date": "2020-06-03",
+    "issues": [
+      495,
+      861
+    ],
+    "message": "Added initial support for spontaneous network changes (#495, #861)."
+  },
+  "2c3dae08745530b8c3ea3ab6c8f03e8fa8ac1e5c": {
+    "authors": [
+      {
+        "email": "victorio.franco@gmail.com",
+        "link": "https://github.com/fvictorio",
+        "login": "fvictorio"
+      }
+    ],
+    "date": "2022-05-12",
+    "issues": [
+      2954
+    ],
+    "message": "Ensure gas estimate errors are not call exceptions in disguise (#2954)."
+  },
+  "2d854bd94c799271ce5a2aa4f5ad17d22c8d8dc0": {
+    "authors": [
+      {
+        "link": "https://github.com/ruzpuz",
+        "login": "ruzpuz"
+      }
+    ],
+    "date": "2018-12-04",
+    "issues": [
+      335
+    ],
+    "message": "Do not fill in implicit values for JSON-RPC based signers (#335)."
+  },
+  "2d98b4fca1eb2544fec728f7c1c7b0d450e0dbee": {
+    "authors": [
+      {
+        "email": "wighawag@gmail.com",
+        "link": "https://github.com/wighawag",
+        "login": "wighawag"
+      }
+    ],
+    "date": "2022-02-19",
+    "issues": [
+      1886
+    ],
+    "message": "Added Cloudflare Worker support (#1886)."
+  },
+  "2dd5c1a6d2e1288d7a2193ad6961362a1f412199": {
+    "authors": [
+      {
+        "link": "https://github.com/josh-richardson",
+        "login": "josh-richardson"
+      }
+    ],
+    "date": "2021-08-09",
+    "issues": [
+      1538
+    ],
+    "message": "docs: Fixed topicset example (#1538)."
+  },
+  "2e24920d028d42908d0764ad4ca0b56b55f852d1": {
+    "authors": [
+      {
+        "link": "https://github.com/jurosh",
+        "login": "jurosh"
+      }
+    ],
+    "date": "2020-04-24",
+    "issues": [
+      798
+    ],
+    "message": "Omit HID libraries for hardware-wallets package on unsupported environments (#798)."
+  },
+  "2f57c6a4ab44083b2c03f5e57b2702ab7078d286": {
+    "authors": [
+      {
+        "link": "https://github.com/PierreJeanjacquot",
+        "login": "PierreJeanjacquot"
+      }
+    ],
+    "date": "2021-12-24",
+    "issues": [
+      2387
+    ],
+    "message": "Do not swallow ENS not supported errors (#2387)."
+  },
+  "30b716bf2cfd67ca38f76e344a26c0c2d5b75935": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2022-05-24",
+    "issues": [
+      3017
+    ],
+    "message": "Bump BN.js for hexstring bug fix (#3017)."
+  },
+  "3135d7ff6cb200d6916c5a52269312da21aa9a24": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-04-18",
+    "issues": [
+      789
+    ],
+    "message": "Added updated admin scripts needed for dist build (#789)."
+  },
+  "315ecfd19e6148d6c328bd3f651b418477d0eac2": {
+    "authors": [
+      {
+        "link": "https://github.com/snkashis",
+        "login": "snkashis"
+      }
+    ],
+    "date": "2022-02-03",
+    "issues": [
+      2354
+    ],
+    "message": "docs: fixed typs (#2354)."
+  },
+  "319987ec3e1d0e8787f98f525e5fc07875bf5570": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-06-24",
+    "issues": [
+      1610
+    ],
+    "message": "Fixed EIP-1559 from address calculation bug (#1610)."
+  },
+  "31d3ee899f4331cb75952eceb07b9a8ad7b30e9f": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2018-11-21",
+    "issues": [
+      351
+    ],
+    "message": "Throw exception instead of returning null for getDefaultProvider (#351)."
+  },
+  "32a6b2a362815eb85ce3f3abad5adf92f2b80e10": {
+    "authors": [
+      {
+        "email": "abbas_mhosseini@yahoo.com",
+        "link": "https://github.com/arkantos1482",
+        "login": "arkantos1482"
+      },
+      {
+        "email": "chalkerx@gmail.com",
+        "link": "https://github.com/ChALkeR",
+        "login": "ChALkeR"
+      }
+    ],
+    "date": "2021-09-16",
+    "issues": [
+      2016,
+      1975,
+      1976
+    ],
+    "message": "Fix parseUints with excess zeros and fix ReDoS issue (#2016, #1975, #1976)."
+  },
+  "32b7373456972e0fbd47e7edaf056ed130adf1da": {
+    "_missingIssues": [
+      2860
+    ],
+    "authors": [
+      {
+        "email": "jettblu.fabrications@gmail.com",
+        "link": "https://github.com/jettblu",
+        "login": "jettblu"
+      },
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2022-05-12",
+    "issues": [
+      2860,
+      2861
+    ],
+    "message": "Remove pedantic check for new keyword which broke some platforms for inheritance (#2860, #2861)."
+  },
+  "3396846a30a4be0ed58fe449589e7e4e54f3d32e": {
+    "authors": [
+      {
+        "email": "micah@zoltu.net",
+        "link": "https://github.com/MicahZoltu",
+        "login": "MicahZoltu"
+      }
+    ],
+    "date": "2021-01-19",
+    "issues": [
+      401
+    ],
+    "message": "Added TypeScript declaration maps (#401)."
+  },
+  "34488cd7d821c22e50ed063b43f6d723097dffd7": {
+    "authors": [
+      {
+        "email": "contact@yuetloo.com",
+        "link": "https://github.com/yuetloo",
+        "login": "yuetloo"
+      }
+    ],
+    "date": "2020-11-23",
+    "issues": [
+      1122
+    ],
+    "message": "docs: updates and fixes (#1122)."
+  },
+  "345a830dc4bc869d5f3edfdc27465797e7663055": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-10-10",
+    "issues": [
+      687
+    ],
+    "message": "Consolidated TypedDataEncoder methods (#687)."
+  },
+  "375627f6b1ed904f087edb0d8863f5218d677488": {
+    "authors": [
+      {
+        "link": "https://github.com/jataro",
+        "login": "jataro"
+      }
+    ],
+    "date": "2021-10-04",
+    "issues": [
+      2032
+    ],
+    "message": "docs: updated signer prefix info (#2032)."
+  },
+  "376cf3cdbf6d2281331d36c5742414a425927318": {
+    "authors": [
+      {
+        "link": "https://github.com/gitpusha",
+        "login": "gitpusha"
+      }
+    ],
+    "date": "2021-06-10",
+    "issues": [
+      1546
+    ],
+    "message": "Added Matic testnet info to networks (#1546)."
+  },
+  "37a9c77ab2acb7f75e1fc4cc918810d2fe59dd76": {
+    "authors": [
+      {
+        "link": "https://github.com/davidp94",
+        "login": "davidp94"
+      },
+      {
+        "link": "https://github.com/mcastiglione777",
+        "login": "mcastiglione777"
+      }
+    ],
+    "date": "2021-05-07",
+    "issues": [
+      1204,
+      1473
+    ],
+    "message": "Abstracted EtherscanProivder to more easily fascilitate other Etherscan-supported chains (#1204, #1473)."
+  },
+  "38a068bcea3f251c8f3a349a90fcb077a39d23ad": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-10-07",
+    "issues": [
+      1085
+    ],
+    "message": "Add gzip support to AlchemyProivder and InfuraProvider fetching (#1085)."
+  },
+  "38e825cee624ff935ec6b70023cf288126a6bb85": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2022-03-08",
+    "issues": [
+      2489
+    ],
+    "message": "Updated help for errors (#2489)."
+  },
+  "393c0c74a91175adca2e25026dcdb9e6445afd8f": {
+    "authors": [
+      {
+        "link": "https://github.com/danielattilasimon",
+        "login": "danielattilasimon"
+      }
+    ],
+    "date": "2020-04-28",
+    "issues": [
+      805
+    ],
+    "message": "Fixed getLogs filter deserialization (#805)."
+  },
+  "394c36cad43f229a94c72d21f94d1c7982a887a1": {
+    "authors": [
+      {
+        "link": "https://github.com/yayajacky",
+        "login": "yayajacky"
+      }
+    ],
+    "date": "2019-11-01",
+    "issues": [
+      634
+    ],
+    "message": "Migrating to modern syntax and scoping (#634)."
+  },
+  "3a19f43844b3161d536455ee0cbb0712263cd061": {
+    "authors": [
+      {
+        "link": "https://github.com/mrwillis",
+        "login": "mrwillis"
+      }
+    ],
+    "date": "2018-11-08",
+    "issues": [
+      320
+    ],
+    "message": "Added \"debug\" event for providers; do not depend on the format as it may change, but this should help debugging in most cases (#320)."
+  },
+  "3a3764bdb4838c81dcd7afbb6eabd2792d3a5b00": {
+    "authors": [
+      {
+        "link": "https://github.com/sulliwane",
+        "login": "sulliwane"
+      }
+    ],
+    "date": "2019-02-02",
+    "issues": [
+      405
+    ],
+    "message": "Added xpub and xpriv test cases for HD nodes (#405)."
+  },
+  "3ac91a414cd0718e5ff0dc351bc61cacc23e2133": {
+    "authors": [
+      {
+        "email": "22412996+zemse@users.noreply.github.com",
+        "link": "https://github.com/zemse",
+        "login": "zemse"
+      }
+    ],
+    "date": "2021-08-09",
+    "issues": [
+      1514,
+      1531
+    ],
+    "message": "docs: added StaticJsonRpcProvider (#1514, #1531)."
+  },
+  "3b7176f322376f8f42c333082388ef56d1720bae": {
+    "authors": [
+      {
+        "email": "secoif@gmail.com",
+        "link": "https://github.com/timoxley",
+        "login": "timoxley"
+      }
+    ],
+    "date": "2020-03-13",
+    "issues": [
+      722
+    ],
+    "message": "Fixed typo in error (#722)."
+  },
+  "3bb5fbf533107e880377ecc14f30f314a5028e56": {
+    "authors": [
+      {
+        "email": "deanshelton913@gmail.com",
+        "link": "https://github.com/deanshelton913",
+        "login": "deanshelton913"
+      }
+    ],
+    "date": "2021-04-23",
+    "issues": [
+      1499
+    ],
+    "message": "Added support for null entries in EventFilter (#1499)."
+  },
+  "3c760d014b71931392cf429ed543b955b953c162": {
+    "authors": [
+      {
+        "email": "me@egorfine.com",
+        "link": "https://github.com/egorFiNE",
+        "login": "egorFiNE"
+      }
+    ],
+    "date": "2022-06-18",
+    "issues": [
+      2997
+    ],
+    "message": "docs: fixed type (#2997)."
+  },
+  "3cb21dd6c7964aab99cfbbdde9be5c9d8e5a3337": {
+    "authors": [
+      {
+        "email": "yogeshkumar180592@gmail.com",
+        "link": "https://github.com/itsyogesh",
+        "login": "itsyogesh"
+      }
+    ],
+    "date": "2018-05-14",
+    "issues": [
+      174
+    ],
+    "message": "Added timestamp to EtherscanProvider history (#174)."
+  },
+  "3cbc4b462262ba61fa7d99a7a12e7bbf8049afb1": {
+    "authors": [
+      {
+        "link": "https://github.com/pldespaigne",
+        "login": "pldespaigne"
+      }
+    ],
+    "date": "2019-05-23",
+    "issues": [
+      504
+    ],
+    "message": "Better error message for unconfigured ENS names (#504)."
+  },
+  "3d051e454db978f58c7b38ff4484096c3eb85b94": {
+    "authors": [
+      {
+        "email": "shanecarey17@gmail.com",
+        "link": "https://github.com/shanecarey17",
+        "login": "shanecarey17"
+      }
+    ],
+    "date": "2020-10-03",
+    "issues": [
+      1079
+    ],
+    "message": "Export hexConcat in utils (#1079)."
+  },
+  "3d6a7ec020eacd993b4b0fd3274574de3ddcc257": {
+    "authors": [
+      {
+        "link": "https://github.com/githubdoramon",
+        "login": "githubdoramon"
+      }
+    ],
+    "date": "2021-12-24",
+    "issues": [
+      2426
+    ],
+    "message": "Add support for IPFS metadata imageUrl in getAvatar (#2426)."
+  },
+  "3de1b815014b10d223a42e524fe9c25f9087293b": {
+    "authors": [
+      {
+        "email": "chalkerx@gmail.com",
+        "link": "https://github.com/ChALkeR",
+        "login": "ChALkeR"
+      }
+    ],
+    "date": "2021-10-18",
+    "issues": [
+      2084
+    ],
+    "message": "Fixed splitSignature logic for verifying EIP-2930 and EIP-1559 v (#2084)."
+  },
+  "3df0e06c64bf5a2f9745525d8adc51751c2e2d30": {
+    "authors": [
+      {
+        "link": "https://github.com/PhoeniXAbhisheK",
+        "login": "PhoeniXAbhisheK"
+      }
+    ],
+    "date": "2022-02-03",
+    "issues": [
+      2522
+    ],
+    "message": "docs: fixed typos (#2522)."
+  },
+  "3f5bc6ddc1013f0a5974f2ee6f542d6c91480c13": {
+    "authors": [
+      {
+        "email": "kingersoll@gmail.com",
+        "link": "https://github.com/holic",
+        "login": "holic"
+      }
+    ],
+    "date": "2022-01-06",
+    "issues": [
+      2500
+    ],
+    "message": "Fixed case-folding in schemes for ENS avatars (#2500)."
+  },
+  "3f631e968152911e7e963833a6ce0a26511154ab": {
+    "authors": [
+      {
+        "link": "https://github.com/kimpers",
+        "login": "kimpers"
+      }
+    ],
+    "date": "2022-04-29",
+    "issues": [
+      2696
+    ],
+    "message": "docs: fixed return type for receipt.status (#2696)."
+  },
+  "3f76f603d9de66cb38b8c5d2e2fc6f7c6794d234": {
+    "authors": [
+      {
+        "email": "paul@marlow.dev",
+        "link": "https://github.com/sweetpalma",
+        "login": "sweetpalma"
+      }
+    ],
+    "date": "2018-11-27",
+    "issues": [
+      355
+    ],
+    "message": "Fixed contract proxied tx.wait receipt properties (#355)."
+  },
+  "3f97b94d159c5942803b18c14a8d6299b7dec19b": {
+    "authors": [
+      {
+        "link": "https://github.com/dievardump",
+        "login": "dievardump"
+      },
+      {
+        "link": "https://github.com/sudeepb02",
+        "login": "sudeepb02"
+      }
+    ],
+    "date": "2021-02-04",
+    "issues": [
+      1189,
+      1261
+    ],
+    "message": "docs: typos (#1189, #1261)"
+  },
+  "40264ff9006156ba8441e6101e5a7149a5cf03f6": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-10-03",
+    "issues": [
+      1054
+    ],
+    "message": "Cache chain ID for WebSocketProvider (#1054)."
+  },
+  "4151c0eacd22287e2369a8656ffa00359db6f84b": {
+    "authors": [
+      {
+        "link": "https://github.com/chrsengel",
+        "login": "chrsengel"
+      }
+    ],
+    "date": "2020-01-11",
+    "issues": [
+      700
+    ],
+    "message": "Fixed splitSignature computing wrong v for BytesLike (#700)."
+  },
+  "417065bad6133b3fa0e8b6d4402f17e929432fb8": {
+    "authors": [
+      {
+        "link": "https://github.com/Perseverance",
+        "login": "Perseverance"
+      }
+    ],
+    "date": "2018-05-15",
+    "issues": [
+      177
+    ],
+    "message": "Added wait to transactions from JsonRpcSigner in sendTransaction (#177)."
+  },
+  "41c2c8a729816226bc38a5bc0e73e0c573afe25d": {
+    "authors": [
+      {
+        "email": "suchangqin@gmail.com",
+        "link": "https://github.com/suchangqin",
+        "login": "suchangqin"
+      }
+    ],
+    "date": "2019-02-08",
+    "issues": [
+      420
+    ],
+    "message": "Fixed out-of-safe-range hexlify values to throw an exception (#420)."
+  },
+  "42dee67187adb04d0b88f420b24cb3e73301d609": {
+    "authors": [
+      {
+        "link": "https://github.com/cag",
+        "login": "cag"
+      },
+      {
+        "email": "dennison@dennisonbertram.com",
+        "link": "https://github.com/crazyrabbitLTC",
+        "login": "crazyrabbitLTC"
+      },
+      {
+        "link": "https://github.com/danielattilasimon",
+        "login": "danielattilasimon"
+      }
+    ],
+    "date": "2020-06-01",
+    "issues": [
+      819,
+      845,
+      847,
+      860
+    ],
+    "message": "Major Contract refactor for overrides (#819, #845, #847, #860)."
+  },
+  "4467d9fa004cab55ffd94376ab375bb24d86356b": {
+    "authors": [
+      {
+        "email": "nekomune@comfy.moe",
+        "link": "https://github.com/nyanpasu",
+        "login": "nyanpasu"
+      }
+    ],
+    "date": "2022-04-29",
+    "issues": [
+      2780
+    ],
+    "message": "docs: fixed typo (#2780)."
+  },
+  "450694e25760d383f3fe3b299d181ebe5fd6ab06": {
+    "authors": [
+      {
+        "link": "https://github.com/vanxh",
+        "login": "vanxh"
+      }
+    ],
+    "date": "2022-07-14",
+    "issues": [
+      3082
+    ],
+    "message": "Switch to hash.js for ripemd160 on node as it was removed from the default crypto provider in node 17 (#3082)."
+  },
+  "4514229f275ef9d32e5b77862552203db49bd840": {
+    "authors": [
+      {
+        "email": "patricio@nomiclabs.io",
+        "link": "https://github.com/alcuadrado",
+        "login": "alcuadrado"
+      }
+    ],
+    "date": "2018-07-03",
+    "issues": [
+      189
+    ],
+    "message": "Added eslint for promises. (#189)"
+  },
+  "4577444c448f41114263077c5b54fbe6af749fd4": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-04-18",
+    "issues": [
+      1364
+    ],
+    "message": "Prevent non-typed transactions from unsafely ignoring specified access lists (#1364)."
+  },
+  "45a2902874e828a16396a253548bcb00bceccf95": {
+    "authors": [
+      {
+        "link": "https://github.com/blakewest",
+        "login": "blakewest"
+      }
+    ],
+    "date": "2020-11-25",
+    "issues": [
+      1172
+    ],
+    "message": "Fix BigNumber when passed something with a length property (#1172)."
+  },
+  "45d3fea4014897ac4136b85e0be11ab973b62e3a": {
+    "authors": [
+      {
+        "link": "https://github.com/AlecGard",
+        "login": "AlecGard"
+      },
+      {
+        "link": "https://github.com/bobanm",
+        "login": "bobanm"
+      }
+    ],
+    "date": "2022-06-18",
+    "issues": [
+      3087,
+      3036
+    ],
+    "message": "docs: fixed typos (#3087)."
+  },
+  "45f367512d1d5dccfd06fad9cc8688e4d0cccdb8": {
+    "authors": [
+      {
+        "email": "chalkerx@gmail.com",
+        "link": "https://github.com/ChALkeR",
+        "login": "ChALkeR"
+      }
+    ],
+    "date": "2021-10-04",
+    "issues": [
+      2083
+    ],
+    "message": "Stop allowing commas in fixed numbers; left over from legacy comma support (#2083)."
+  },
+  "46fd2deb8b451b5dbf037ade8968d01d1c1b2f5c": {
+    "authors": [
+      {
+        "link": "https://github.com/ygnr",
+        "login": "ygnr"
+      }
+    ],
+    "date": "2018-03-15",
+    "issues": [
+      132
+    ],
+    "message": "Added pollingInterval to provider. (#132)"
+  },
+  "470551e4ee3f1e343a26fc0775f9d9f7489129f8": {
+    "authors": [
+      {
+        "link": "https://github.com/apps/dependabot",
+        "login": "dependabot[bot]"
+      },
+      {
+        "link": "https://github.com/fredriksvantes",
+        "login": "fredriksvantes"
+      }
+    ],
+    "date": "2021-05-31",
+    "issues": [
+      1633,
+      1634
+    ],
+    "message": "Update ws dependency version to fix security (#1633, #1634)."
+  },
+  "472e5b07eab180baa12185c8f00e5079ce4c671f": {
+    "authors": [
+      {
+        "link": "https://github.com/danielattilasimon",
+        "login": "danielattilasimon"
+      }
+    ],
+    "date": "2020-05-03",
+    "issues": [
+      813
+    ],
+    "message": "Fix WebSocketProvider responses when message result is null (#813)."
+  },
+  "478aaf9619bd2e75e559ac73f1e007457480cb61": {
+    "authors": [
+      {
+        "link": "https://github.com/raymogg",
+        "login": "raymogg"
+      }
+    ],
+    "date": "2018-11-09",
+    "issues": [
+      338
+    ],
+    "message": "Force unorm shim when String.prototype.normalize is broken (#338)."
+  },
+  "47d92aeff02cacfb26793850c7faef7cb21ce4cf": {
+    "authors": [
+      {
+        "link": "https://github.com/vilsbole",
+        "login": "vilsbole"
+      }
+    ],
+    "date": "2019-05-24",
+    "issues": [
+      470
+    ],
+    "message": "Fixed typo in error message (#470)."
+  },
+  "483d67f55c15a76bcd853e889a0e35815d9850f7": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-04-26",
+    "issues": [
+      1498
+    ],
+    "message": "Added EIP-838 error name as well as error signature (#1498)."
+  },
+  "4852e837d2f47b70038136f3a702e9e127ad6c9c": {
+    "authors": [
+      {
+        "link": "https://github.com/thomasmetta",
+        "login": "thomasmetta"
+      }
+    ],
+    "date": "2018-11-08",
+    "issues": [
+      339
+    ],
+    "message": "Fix for Kovan filters without an address (#339)."
+  },
+  "48c9e0bf39eec9b5b30ab7cd5685effdccaa1b1a": {
+    "authors": [
+      {
+        "email": "mark.tyneway@gmail.com",
+        "link": "https://github.com/tynes",
+        "login": "tynes"
+      }
+    ],
+    "date": "2021-10-04",
+    "issues": [
+      2121
+    ],
+    "message": "Export FallbackProviderConfig (#2121)."
+  },
+  "493273d698b9cc71ce1c0555f9df2bd791cd851e": {
+    "authors": [
+      {
+        "email": "kevin.brown@hey.com",
+        "link": "https://github.com/thekevinbrown",
+        "login": "thekevinbrown"
+      }
+    ],
+    "date": "2018-10-11",
+    "issues": [
+      226
+    ],
+    "message": "Added optional blockTag to call; note that this may not behave as expected on all nodes (#226)."
+  },
+  "4935f93015d601c5097abced940d99727d4ff8d5": {
+    "authors": [
+      {
+        "link": "https://github.com/Rishabhraghwendra18",
+        "login": "Rishabhraghwendra18"
+      }
+    ],
+    "date": "2022-02-03",
+    "issues": [
+      2535
+    ],
+    "message": "docs: add MetaMask request info (#2535)."
+  },
+  "4970385e7b42b764e82ca340db79811718aa9b5e": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-06-26",
+    "issues": [
+      1610
+    ],
+    "message": "Fixing up testcases for non-eip-1559 ready platforms (#1610)."
+  },
+  "49f71574f4799d685a5ae8fd24fe1134f752d70a": {
+    "authors": [
+      {
+        "email": "22412996+zemse@users.noreply.github.com",
+        "link": "https://github.com/zemse",
+        "login": "zemse"
+      }
+    ],
+    "date": "2020-09-16",
+    "issues": [
+      1047
+    ],
+    "message": "More robust blockchain error detection (#1047)"
+  },
+  "4a44865a8c22adb9c55d5c37a81ee46ebc68228c": {
+    "authors": [
+      {
+        "email": "stivennoni77@gmail.com",
+        "link": "https://github.com/nionis",
+        "login": "nionis"
+      }
+    ],
+    "date": "2021-04-18",
+    "issues": [
+      1458
+    ],
+    "message": "Fixed run-checking non-filter Contract events (#1458)."
+  },
+  "4a8d579dcaf026d0c232e20176605d34cba4767d": {
+    "authors": [
+      {
+        "email": "agresso@gmail.com",
+        "link": "https://github.com/bogdan",
+        "login": "bogdan"
+      }
+    ],
+    "date": "2020-11-22",
+    "issues": [
+      949
+    ],
+    "message": "Fix for new versions of Geth which return formatted data on revert rather than standard data (#949)."
+  },
+  "4a9373e773dd78c62f4f5127f8357001e5940a22": {
+    "authors": [
+      {
+        "link": "https://github.com/vilsbole",
+        "login": "vilsbole"
+      }
+    ],
+    "date": "2019-05-24",
+    "issues": [
+      470
+    ],
+    "message": "Fixed typo in error message (#470)."
+  },
+  "4af2c19f455bb43406d3cc5421c3b3fdda75f78f": {
+    "authors": [
+      {
+        "link": "https://github.com/luyzdeleon",
+        "login": "luyzdeleon"
+      }
+    ],
+    "date": "2021-02-01",
+    "issues": [
+      1030,
+      1052
+    ],
+    "message": "Added Pocket network to the default provider (#1030, #1052)."
+  },
+  "4b331148d980e3056ceaabdcd6e50a2aa1beb40d": {
+    "authors": [
+      {
+        "link": "https://github.com/jcbdev",
+        "login": "jcbdev"
+      }
+    ],
+    "date": "2021-05-31",
+    "issues": [
+      1519
+    ],
+    "message": "Removed Hangul checks in shims which crashes Android (#1519)."
+  },
+  "4b7028a66128b2fdf0110b44368a81d5b05e7149": {
+    "authors": [
+      {
+        "link": "https://github.com/jtakalai",
+        "login": "jtakalai"
+      }
+    ],
+    "date": "2020-11-18",
+    "issues": [
+      1100
+    ],
+    "message": "docs: Typo in BigNumber source (#1100)."
+  },
+  "4b8e198bf209fcf0aea55018d8940355ea4345de": {
+    "authors": [
+      {
+        "email": "wighawag@gmail.com",
+        "link": "https://github.com/wighawag",
+        "login": "wighawag"
+      }
+    ],
+    "date": "2020-02-25",
+    "issues": [
+      733
+    ],
+    "message": "Fix log parsing when no matching topic is found (#733)."
+  },
+  "4ba63acc107fdd0a6d6ef3e27349e65edb007447": {
+    "authors": [
+      {
+        "link": "https://github.com/Elinia",
+        "login": "Elinia"
+      }
+    ],
+    "date": "2021-12-24",
+    "issues": [
+      2405
+    ],
+    "message": "Fix browser random in WebWorkers (#2405)."
+  },
+  "4d3e586701ca9ecd0ab63133d90185809d4f3811": {
+    "authors": [
+      {
+        "email": "info@sammosna.it",
+        "link": "https://github.com/sammosna",
+        "login": "sammosna"
+      }
+    ],
+    "date": "2022-07-14",
+    "issues": [
+      3135
+    ],
+    "message": "Add optimism-kovan to EtherscanProvider (#3135)."
+  },
+  "4e394fc68019445ae4b4e201e41f95d6793dbe92": {
+    "authors": [
+      {
+        "email": "christophergewecke@gmail.com",
+        "link": "https://github.com/cgewecke",
+        "login": "cgewecke"
+      },
+      {
+        "link": "https://github.com/GriffGreen",
+        "login": "GriffGreen"
+      }
+    ],
+    "date": "2020-09-07",
+    "issues": [
+      891,
+      992
+    ],
+    "message": "Allow events to use compact bytes ABI coded data for Solidity 0.4 external events (#891, #992)."
+  },
+  "4e41871fa4cf701d714ad73527a367e9ca1d3431": {
+    "authors": [
+      {
+        "link": "https://github.com/mrwillis",
+        "login": "mrwillis"
+      }
+    ],
+    "date": "2020-02-16",
+    "issues": [
+      477
+    ],
+    "message": "Fixed typo in arguments name for waitForTransaction (#477)."
+  },
+  "4e8f004e9e42892840663311cafe042c0b24c61e": {
+    "authors": [
+      {
+        "link": "https://github.com/cte",
+        "login": "cte"
+      }
+    ],
+    "date": "2022-02-19",
+    "issues": [
+      2714
+    ],
+    "message": "Remove spurious console.log from Interface (#2714)."
+  },
+  "4e9abfdee478a8423da4d55feea8c1aae78a8eb4": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-04-23",
+    "issues": [
+      1472
+    ],
+    "message": "Added hex support for bigint (#1472)."
+  },
+  "4ef0e4f7653226bf8cca86e065ad614e7288af96": {
+    "authors": [
+      {
+        "link": "https://github.com/bbarton",
+        "login": "bbarton"
+      }
+    ],
+    "date": "2020-04-17",
+    "issues": [
+      785
+    ],
+    "message": "Fix provider log filters with zero topics (#785)."
+  },
+  "5144acf456b51c95bbe3950bd37609abecc7ebc7": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-05-14",
+    "issues": [
+      1477
+    ],
+    "message": "Added initial support for detecting replacement transactions (#1477)."
+  },
+  "51f0e1a52fb885e6f146f7b3b70ed487fd1c8f5a": {
+    "authors": [
+      {
+        "email": "mikael@arvola.com",
+        "link": "https://github.com/arvola",
+        "login": "arvola"
+      }
+    ],
+    "date": "2021-04-20",
+    "issues": [
+      1486
+    ],
+    "message": "Fail early for ABI decoding that will obviously run out of data (#1486)."
+  },
+  "51fb4728091a30d147b7dcd61e08562c6171b372": {
+    "authors": [
+      {
+        "link": "https://github.com/hoytech",
+        "login": "hoytech"
+      }
+    ],
+    "date": "2018-12-12",
+    "issues": [
+      375
+    ],
+    "message": "Add abs method to BigNumber (#375)."
+  },
+  "53671d0b17df3be40c545004c4eed718738681f5": {
+    "authors": [
+      {
+        "email": "jayphbee@163.com",
+        "link": "https://github.com/calldata",
+        "login": "calldata"
+      }
+    ],
+    "date": "2021-07-02",
+    "issues": [
+      1727
+    ],
+    "message": "docs: fixed typo (#1727)"
+  },
+  "5443363de43e92de712e72d55165c3f4d7f652e9": {
+    "authors": [
+      {
+        "email": "hello@yos.io",
+        "link": "https://github.com/yosriady",
+        "login": "yosriady"
+      }
+    ],
+    "date": "2020-07-20",
+    "issues": [
+      947
+    ],
+    "message": "Fix Logger setLogLevel with enum case mismatch (#947)."
+  },
+  "5456c359245d9eef5d2abdc05ccedb5269576c94": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-06-10",
+    "issues": [
+      1610
+    ],
+    "message": "Added EIP-1559 overrides to contracts (#1610)."
+  },
+  "54c19dfb5a8c9b30f42ec304a616469c03bfeaa5": {
+    "authors": [
+      {
+        "email": "gfjhogue@gmail.com",
+        "link": "https://github.com/GFJHogue",
+        "login": "GFJHogue"
+      }
+    ],
+    "date": "2017-10-28",
+    "issues": [
+      51
+    ],
+    "message": "Fixed default network for providers (#51)."
+  },
+  "54e6e57fcece4c1718a577ecbeb1af97998e8bdc": {
+    "authors": [
+      {
+        "link": "https://github.com/mjpowersjr",
+        "login": "mjpowersjr"
+      }
+    ],
+    "date": "2022-03-08",
+    "issues": [
+      2225
+    ],
+    "message": "Add support for pending blocks (#2225)."
+  },
+  "550ecf2f25b90f6d8996583489a218dbf2306ebc": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-10-20",
+    "issues": [
+      687
+    ],
+    "message": "Added verifyTypedData for EIP-712 typed data (#687)."
+  },
+  "551cfa0062ec1645c9310335e0e6cbd250bb3788": {
+    "authors": [
+      {
+        "link": "https://github.com/alexanderwende",
+        "login": "alexanderwende"
+      }
+    ],
+    "date": "2021-07-22",
+    "issues": [
+      1749
+    ],
+    "message": "Fixed floor, ceiling and round for FixedNumber for non-default Formats (#1749)."
+  },
+  "5724fa5d9c6fe73f14ec8bdea1f7226a222537ef": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-01-04",
+    "issues": [
+      691
+    ],
+    "message": "Added Czech wordlist to default wordlists export (#691)."
+  },
+  "57439af25db99752ce0ea2d02b8e2361b8885c11": {
+    "authors": [
+      {
+        "link": "https://github.com/florianlenz",
+        "login": "florianlenz"
+      },
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2018-09-26",
+    "issues": [
+      202,
+      228
+    ],
+    "message": "Removed options from unit conversion and added separate otto-safe commify function (#202, prep for #228)."
+  },
+  "576e9b54abc3ff048113f93f765aa3177bf3b819": {
+    "authors": [
+      {
+        "link": "https://github.com/gitpusha",
+        "login": "gitpusha"
+      }
+    ],
+    "date": "2021-07-23",
+    "issues": [
+      1546
+    ],
+    "message": "Added matic support to INFURA and Alchemy (#1546)."
+  },
+  "57eb5b777e2c67f1f8d74e41d3413e9f0564528d": {
+    "authors": [
+      {
+        "email": "for4die@sina.com",
+        "link": "https://github.com/282931",
+        "login": "282931"
+      }
+    ],
+    "date": "2020-08-28",
+    "issues": [
+      993
+    ],
+    "message": "Initial React Native test harness (#993)."
+  },
+  "58488e78f9ef79715693e19b42663335aad88c03": {
+    "authors": [
+      {
+        "link": "https://github.com/dmihal",
+        "login": "dmihal"
+      }
+    ],
+    "date": "2021-04-20",
+    "issues": [
+      1484
+    ],
+    "message": "Fixed JsonRpcProvider event-loop caching when using any network (#1484)."
+  },
+  "593b4886ff607d00d656b8131b843933eb48838e": {
+    "authors": [
+      {
+        "link": "https://github.com/llwslc",
+        "login": "llwslc"
+      }
+    ],
+    "date": "2021-07-29",
+    "issues": [
+      1785
+    ],
+    "message": "Prevent overriding value for non-payble constructors (#1785)."
+  },
+  "5998fea53d5ea26358c2f10939dfdf0bc679936d": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2022-03-16",
+    "issues": [
+      2478
+    ],
+    "message": "Fix issue with CCIP Read using wrong sender (#2478)."
+  },
+  "5a4dd5a70377d3e86823d279d6ff466d03767644": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-10-12",
+    "issues": [
+      687
+    ],
+    "message": "Added EIP-712 multi-dimensional array support (#687)."
+  },
+  "5abc2f36e20eef79a935961f3dd8133b5528d9e5": {
+    "authors": [
+      {
+        "link": "https://github.com/jeffprestes",
+        "login": "jeffprestes"
+      }
+    ],
+    "date": "2020-10-07",
+    "issues": [
+      981
+    ],
+    "message": "Better error message for parseUnits of non-strings (#981)."
+  },
+  "5aefb4303d2fdda62e7e5ddb644919f613d6016a": {
+    "authors": [
+      {
+        "link": "https://github.com/jurosh",
+        "login": "jurosh"
+      }
+    ],
+    "date": "2020-04-25",
+    "issues": [
+      798
+    ],
+    "message": "Fix for HID on ES2015; does not support dymanic imports (#798)."
+  },
+  "5ba6a616a6f969b1f28f8c6367c21488f497a7ae": {
+    "authors": [
+      {
+        "link": "https://github.com/aaronbarnardsound",
+        "login": "aaronbarnardsound"
+      }
+    ],
+    "date": "2019-05-31",
+    "issues": [
+      532
+    ],
+    "message": "Fixed default JsonRpcSigner (#532)."
+  },
+  "5bf763fe2307e8570ab5e91e30c43e2e5731fc39": {
+    "authors": [
+      {
+        "email": "maarten@zuidhoorn.com",
+        "link": "https://github.com/Mrtenz",
+        "login": "Mrtenz"
+      }
+    ],
+    "date": "2019-06-04",
+    "issues": [
+      534
+    ],
+    "message": "Fixed INFURA project ID checking (#534)."
+  },
+  "5c776a83ffbd82b6c8161f257e8195a1960ec920": {
+    "authors": [
+      {
+        "link": "https://github.com/kabriel",
+        "login": "kabriel"
+      }
+    ],
+    "date": "2017-10-20",
+    "issues": [
+      36
+    ],
+    "message": "Removed chatty library (See issue #36)."
+  },
+  "5cd1668e0d29099c5b7ce1fdc1d0e8a41af1a249": {
+    "authors": [
+      {
+        "email": "22412996+zemse@users.noreply.github.com",
+        "link": "https://github.com/zemse",
+        "login": "zemse"
+      }
+    ],
+    "date": "2020-09-26",
+    "issues": [
+      1066
+    ],
+    "message": "Better errors for unconfigured ENS names (#1066)."
+  },
+  "5e7d28b19b18aa1bbb4b851f74f6d7865725be02": {
+    "authors": [
+      {
+        "email": "maarten@zuidhoorn.com",
+        "link": "https://github.com/Mrtenz",
+        "login": "Mrtenz"
+      }
+    ],
+    "date": "2020-06-12",
+    "issues": [
+      874
+    ],
+    "message": "Use URL parse instead of constructor for react compatibility (#874)."
+  },
+  "5e86e02304f1c2ec65adf26e39f81aeb4a369b56": {
+    "authors": [
+      {
+        "link": "https://github.com/metsawyr",
+        "login": "metsawyr"
+      }
+    ],
+    "date": "2018-10-01",
+    "issues": [
+      289
+    ],
+    "message": "Fixed wildcard events and made nested events more robust (#289)."
+  },
+  "5efd0c1f8ab9544f94f80a4f12f83e7809ce53ac": {
+    "authors": [
+      {
+        "link": "https://github.com/kyriediculous",
+        "login": "kyriediculous"
+      }
+    ],
+    "date": "2018-08-27",
+    "issues": [
+      262
+    ],
+    "message": "Backport fix for EIP-848 status codes from v4; only an error is generated in v3, the error string is ignored. (#262)."
+  },
+  "5f013216c5f51830ef3fd3f725d42272f7ae5c99": {
+    "authors": [
+      {
+        "email": "hermantamas@gmail.com",
+        "link": "https://github.com/onetom",
+        "login": "onetom"
+      }
+    ],
+    "date": "2019-01-21",
+    "issues": [
+      384
+    ],
+    "message": "Fixed long-response bug in IpcProvider (#384)."
+  },
+  "5f26fd55c9d010c00f830a4c83a480a54773858d": {
+    "authors": [
+      {
+        "email": "zmp@umich.edu",
+        "link": "https://github.com/zzmp",
+        "login": "zzmp"
+      }
+    ],
+    "date": "2022-02-22",
+    "issues": [
+      2711
+    ],
+    "message": "Fixed eth_chainId response for Eip1193Bridge (#2711)."
+  },
+  "5f7ddcd5d71d8a1c9efbeef1232c34ef93f92e5a": {
+    "authors": [
+      {
+        "email": "justinjmoses@gmail.com",
+        "link": "https://github.com/justinjmoses",
+        "login": "justinjmoses"
+      }
+    ],
+    "date": "2020-03-13",
+    "issues": [
+      729
+    ],
+    "message": "Fix EtherscanProvider from throwing outside async context (#729)."
+  },
+  "6009a26c89c359ae44ef4b6e8a664ed57db24f67": {
+    "authors": [
+      {
+        "link": "https://github.com/Velenir",
+        "login": "Velenir"
+      }
+    ],
+    "date": "2019-11-24",
+    "issues": [
+      641
+    ],
+    "message": "Added provider property to Web3Provider (#641)."
+  },
+  "60b75c10d702b5a04ec1e381191fe1cd5a93274c": {
+    "authors": [
+      {
+        "link": "https://github.com/epheph",
+        "login": "epheph"
+      }
+    ],
+    "date": "2019-02-09",
+    "issues": [
+      412
+    ],
+    "message": "Initial support for EIP-234; filter by blockHash (#412)."
+  },
+  "620b7b91a133d9b5aeafc6b859ab6989fcd889c3": {
+    "authors": [
+      {
+        "email": "remscar@gmail.com",
+        "link": "https://github.com/Remscar",
+        "login": "Remscar"
+      }
+    ],
+    "date": "2021-02-04",
+    "issues": [
+      1199
+    ],
+    "message": "docs: added some info on contract overrides (#1199)."
+  },
+  "621313d2a697bc6e1dd25eb5b08d67e832a28d05": {
+    "authors": [
+      {
+        "link": "https://github.com/NoahZinsmeister",
+        "login": "NoahZinsmeister"
+      }
+    ],
+    "date": "2019-08-21",
+    "issues": [
+      587
+    ],
+    "message": "Added CloudflareProvider (#587)."
+  },
+  "62201c5eebc52e9723dbbb2cc64823155ce1e0f9": {
+    "authors": [
+      {
+        "email": "greg.beaver.cello@gmail.com",
+        "link": "https://github.com/cellog",
+        "login": "cellog"
+      }
+    ],
+    "date": "2019-06-12",
+    "issues": [
+      506
+    ],
+    "message": "Migrated XMLHttpRequest to fetch API (#506)."
+  },
+  "630656e949a8ffd940e4b66ec93ec07cd6ec2634": {
+    "authors": [
+      {
+        "link": "https://github.com/chebykin",
+        "login": "chebykin"
+      },
+      {
+        "email": "decroockjovi@gmail.com",
+        "link": "https://github.com/JoviDeCroock",
+        "login": "JoviDeCroock"
+      }
+    ],
+    "date": "2021-05-31",
+    "issues": [
+      1624,
+      1626
+    ],
+    "message": "Fixed broken variable in template string (#1624, #1626)."
+  },
+  "63dd3d4682b564445948988243fa9139c598587b": {
+    "authors": [
+      {
+        "link": "https://github.com/0xGabi",
+        "login": "0xGabi"
+      }
+    ],
+    "date": "2020-07-16",
+    "issues": [
+      959
+    ],
+    "message": "Fixed ENS overrides for the default provider (#959)."
+  },
+  "64744990ffb13c86af6cb34fb745f3b10277cf98": {
+    "authors": [
+      {
+        "link": "https://github.com/QaidVoid",
+        "login": "QaidVoid"
+      }
+    ],
+    "date": "2022-06-18",
+    "issues": [
+      2991
+    ],
+    "message": "docs: fixed typo in constant defaults (#2991)."
+  },
+  "647fbd8cbfa0f94f72db6faadd528e61c49b1dd6": {
+    "authors": [
+      {
+        "link": "https://github.com/sz-piotr",
+        "login": "sz-piotr"
+      }
+    ],
+    "date": "2020-05-13",
+    "issues": [
+      829
+    ],
+    "message": "Add sub-error to gas estimate error for Ganache users (#829)."
+  },
+  "64dccb275c68ebb40328350d4ab5be0f29b8a02e": {
+    "authors": [
+      {
+        "link": "https://github.com/pldespaigne",
+        "login": "pldespaigne"
+      }
+    ],
+    "date": "2020-02-27",
+    "issues": [
+      741
+    ],
+    "message": "Fix address-less filter listening in Provider (#741)."
+  },
+  "65196097f6626401638d85cf19e3d628a6223d5d": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-04-23",
+    "issues": [
+      1498
+    ],
+    "message": "Support for EIP-838 custom contract errors (#1498)."
+  },
+  "6526de016fda5403474dad61ee59acc62ee25ebc": {
+    "authors": [
+      {
+        "link": "https://github.com/ddaws",
+        "login": "ddaws"
+      }
+    ],
+    "date": "2020-04-04",
+    "issues": [
+      762
+    ],
+    "message": "Fixed mutabilityState calculation for function fragments (#762)."
+  },
+  "65772a8e1a55d663bdb67e3a2b160fecc9f986ef": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-10-07",
+    "issues": [
+      1085
+    ],
+    "message": "Add gzip support to getUrl in node (#1085)."
+  },
+  "6582ede1ce46be0b3abafb120e052b95a2d172b3": {
+    "authors": [
+      {
+        "email": "wighawag@gmail.com",
+        "link": "https://github.com/wighawag",
+        "login": "wighawag"
+      }
+    ],
+    "date": "2021-10-05",
+    "issues": [
+      1886
+    ],
+    "message": "Add support for Cloudflare Workers (#1886)."
+  },
+  "660e69db71d42084b1fe791d864d13f0111f84fb": {
+    "authors": [
+      {
+        "email": "roderik@settlemint.com",
+        "link": "https://github.com/roderik",
+        "login": "roderik"
+      }
+    ],
+    "date": "2021-07-23",
+    "issues": [
+      971
+    ],
+    "message": "Added wait to transactions returned by getBlockWithTransactions (#971)."
+  },
+  "66440b8542e80e056bd96d94a1be9fcbb1c9b2d7": {
+    "authors": [
+      {
+        "email": "xuanji@gmail.com",
+        "link": "https://github.com/ldct",
+        "login": "ldct"
+      }
+    ],
+    "date": "2018-12-10",
+    "issues": [
+      364
+    ],
+    "message": "Better error messages for namehash (#364)."
+  },
+  "6807a76b8ddfdd121f98b21e269de3b195a7673e": {
+    "authors": [
+      {
+        "link": "https://github.com/moltam89",
+        "login": "moltam89"
+      }
+    ],
+    "date": "2022-02-22",
+    "issues": [
+      2691
+    ],
+    "message": "Preserve explicit chainId in JsonRpcProvider during transaction serialization (#2691)."
+  },
+  "68095a48ae19ed06cbcf2f415f1fcbda90d4b2ae": {
+    "authors": [
+      {
+        "email": "lyova.potyomkin@gmail.com",
+        "link": "https://github.com/ly0va",
+        "login": "ly0va"
+      }
+    ],
+    "date": "2021-10-05",
+    "issues": [
+      1761
+    ],
+    "message": "Adding customData support to transactions to assist L2 chains (#1761)."
+  },
+  "693094e97ce4f0dc0cd49b9cf6b1557bd7dc517d": {
+    "authors": [
+      {
+        "link": "https://github.com/mrwillis",
+        "login": "mrwillis"
+      }
+    ],
+    "date": "2020-06-12",
+    "issues": [
+      678
+    ],
+    "message": "More debug information in timeout and fetch errors (#678)."
+  },
+  "6978cca17d3fa9a18c56479985b658cc1f9fb0fc": {
+    "authors": [
+      {
+        "link": "https://github.com/manoj398",
+        "login": "manoj398"
+      }
+    ],
+    "date": "2021-03-30",
+    "issues": [
+      1345,
+      1346
+    ],
+    "message": "admin: fixed rats nest linking on Windows (#1345, #1346)"
+  },
+  "69f707762ed5939c5f52bf6dce5c5513aaf6fa1d": {
+    "authors": [
+      {
+        "link": "https://github.com/bbarton",
+        "login": "bbarton"
+      }
+    ],
+    "date": "2020-04-15",
+    "issues": [
+      784
+    ],
+    "message": "Fixed WebSocketProvider filter events (#784)."
+  },
+  "6ac2d923b75526ab663a677f6a712f5400c2a621": {
+    "authors": [
+      {
+        "link": "https://github.com/Destiner",
+        "login": "Destiner"
+      }
+    ],
+    "date": "2018-10-13",
+    "issues": [
+      305
+    ],
+    "message": "Fixed filtering with null non-indexed parameters (#305)."
+  },
+  "6ade5795423b9d611b15dd9573bcbf456844a515": {
+    "authors": [
+      {
+        "email": "adam.dossa@gmail.com",
+        "link": "https://github.com/adamdossa",
+        "login": "adamdossa"
+      }
+    ],
+    "date": "2018-02-04",
+    "issues": [
+      113
+    ],
+    "message": "Added bool support to Solidity-style hash functions (#113)."
+  },
+  "6b8f0f3cb38295cd5d693f9b71f629b591206f1e": {
+    "authors": [
+      {
+        "link": "https://github.com/ryanio",
+        "login": "ryanio"
+      }
+    ],
+    "date": "2020-05-30",
+    "issues": [
+      853
+    ],
+    "message": "Fixing GitHub actions (#853)."
+  },
+  "6c71b515126d8ef3cea5a1aec814c4cab56cc1a5": {
+    "authors": [
+      {
+        "link": "https://github.com/Gabriel1590",
+        "login": "Gabriel1590"
+      }
+    ],
+    "date": "2020-04-01",
+    "issues": [
+      776
+    ],
+    "message": "Fixed getEtherPrice for EtherscanProvider (#776)."
+  },
+  "6ca1d772986482b8be467d97fd9cd3107c959ab5": {
+    "authors": [
+      {
+        "link": "https://github.com/metsawyr",
+        "login": "metsawyr"
+      }
+    ],
+    "date": "2018-12-08",
+    "issues": [
+      370
+    ],
+    "message": "Fixed function name in parsed transactions (#370)."
+  },
+  "6d08968b8789976ee5a7ef23e3dd73e73342cf5b": {
+    "authors": [
+      {
+        "email": "cmarcelom@gmail.com",
+        "link": "https://github.com/marcelomorgado",
+        "login": "marcelomorgado"
+      }
+    ],
+    "date": "2019-01-15",
+    "issues": [
+      391
+    ],
+    "message": "Fixed contract removeAllListeners which did not clean up the event loop properly (#391)."
+  },
+  "6da5c531206777ceef98d111a12b050a04bdf49c": {
+    "authors": [
+      {
+        "email": "andre.vmatos@gmail.com",
+        "link": "https://github.com/andrevmatos",
+        "login": "andrevmatos"
+      }
+    ],
+    "date": "2020-01-11",
+    "issues": [
+      602
+    ],
+    "message": "Fixed Contract and Interface constructor abi paramter type; should be a Fragment not a ParamType (#602)."
+  },
+  "6f4291f65f0ea20c65fef7fd7b09b4d5bf5f0dcd": {
+    "authors": [
+      {
+        "link": "https://github.com/mitar",
+        "login": "mitar"
+      }
+    ],
+    "date": "2019-09-06",
+    "issues": [
+      592
+    ],
+    "message": "Fixed typo in error message (#592)."
+  },
+  "6f57e8b1564a0b5c80b742775d02b9fad710c8e6": {
+    "authors": [
+      {
+        "link": "https://github.com/encrylife",
+        "login": "encrylife"
+      }
+    ],
+    "date": "2022-07-14",
+    "issues": [
+      3075
+    ],
+    "message": "Use updated Web3 Secret Storage format for JSON wallets (#3075)."
+  },
+  "700dd3413718ecfa3800aab361c4c5b91d1a7137": {
+    "authors": [
+      {
+        "link": "https://github.com/elv-kevin",
+        "login": "elv-kevin"
+      }
+    ],
+    "date": "2019-01-23",
+    "issues": [
+      398
+    ],
+    "message": "Added to and from for Transaction Receipts (#398)."
+  },
+  "7075c8c2352ec306b5679da6fbe7c2ddf7bd65d1": {
+    "authors": [
+      {
+        "link": "https://github.com/pldespaigne",
+        "login": "pldespaigne"
+      }
+    ],
+    "date": "2019-05-23",
+    "issues": [
+      504
+    ],
+    "message": "Fixed error message for unconfigured ENS names (#504)."
+  },
+  "7175e2e99c2747e8d2314feb407bf0a0f9371ece": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-08-03",
+    "issues": [
+      1817
+    ],
+    "message": "Adjust default masPriorityFeePerGas to account for MEV-heavy blocks (#1817)."
+  },
+  "7274cd06cf3f6f31c6df3fd6636706d8536b7ee2": {
+    "authors": [
+      {
+        "link": "https://github.com/chaitanya5",
+        "login": "chaitanya5"
+      }
+    ],
+    "date": "2021-07-30",
+    "issues": [
+      1766
+    ],
+    "message": "Fixed JsonRpcProvider for pre-EIP-2930 chains (#1766)."
+  },
+  "72b3bc9909074893038c768f3da1564ed96a6a20": {
+    "authors": [
+      {
+        "link": "https://github.com/chrsengel",
+        "login": "chrsengel"
+      }
+    ],
+    "date": "2020-01-11",
+    "issues": [
+      700
+    ],
+    "message": "Fix TransactionResponse to have chainId instead of legacy networkId (#700)."
+  },
+  "72c89922a4e1b77295414c8e0717a7373f2397b8": {
+    "authors": [
+      {
+        "link": "https://github.com/jeansoonsik",
+        "login": "jeansoonsik"
+      }
+    ],
+    "date": "2020-03-17",
+    "issues": [
+      379
+    ],
+    "message": "Fixed log level filtering for Logger (#379)."
+  },
+  "72edcd054fa78c52c82c33bcc7e389d93ff517ec": {
+    "authors": [
+      {
+        "link": "https://github.com/safead",
+        "login": "safead"
+      }
+    ],
+    "date": "2019-02-12",
+    "issues": [
+      410
+    ],
+    "message": "Fixed waitForTransaction and removeListener (#410)."
+  },
+  "731f189010f03b22c085fa87f197d77988d7d0c2": {
+    "authors": [
+      {
+        "email": "mmoishin@gmail.com",
+        "link": "https://github.com/memoishin",
+        "login": "memoishin"
+      }
+    ],
+    "date": "2018-10-04",
+    "issues": [
+      292
+    ],
+    "message": "Fixed nested errors for providers that were masking true error (#292)."
+  },
+  "73b31b371fa47bacc4f5f6bed01d0d1e5d66fa2c": {
+    "authors": [
+      {
+        "link": "https://github.com/cryppadotta",
+        "login": "cryppadotta"
+      }
+    ],
+    "date": "2021-02-03",
+    "issues": [
+      1275
+    ],
+    "message": "Fixed typos in JSON ABI formatting (#1275)."
+  },
+  "73e94349de94d2969ccb21c834119525ddfcb961": {
+    "authors": [
+      {
+        "link": "https://github.com/flexsurfer",
+        "login": "flexsurfer"
+      }
+    ],
+    "date": "2021-02-08",
+    "issues": [
+      1285
+    ],
+    "message": "When in Status trigger personal_sign instead of eth_sign (#1285)."
+  },
+  "74470defda5170338735bbbe676c207cdd5cc1cf": {
+    "authors": [
+      {
+        "link": "https://github.com/Jonas121",
+        "login": "Jonas121"
+      },
+      {
+        "email": "jannis@edgeandnode.com",
+        "link": "https://github.com/Jannis",
+        "login": "Jannis"
+      },
+      {
+        "link": "https://github.com/EvilJordan",
+        "login": "EvilJordan"
+      },
+      {
+        "email": "andre.vmatos@gmail.com",
+        "link": "https://github.com/andrevmatos",
+        "login": "andrevmatos"
+      }
+    ],
+    "date": "2021-01-13",
+    "issues": [
+      1084,
+      1208,
+      1221,
+      1235
+    ],
+    "message": "Fixed abundant UnhandledRejectErrors in provider polling (#1084, #1208, #1221, #1235)."
+  },
+  "7498c18235c7566b2f652cddba991f55e0943da8": {
+    "authors": [
+      {
+        "link": "https://github.com/SilentCicero",
+        "login": "SilentCicero"
+      }
+    ],
+    "date": "2020-04-15",
+    "issues": [
+      781
+    ],
+    "message": "Added bitwise operations to BigNumber (#781)."
+  },
+  "751793ea25183d54d7fc4c610a789608f91c062e": {
+    "authors": [
+      {
+        "link": "https://github.com/naddison36",
+        "login": "naddison36"
+      }
+    ],
+    "date": "2019-09-08",
+    "issues": [
+      572
+    ],
+    "message": "Fixed getContractAddress for odd-length hex values (#572)."
+  },
+  "760a5aec74cfc2ce7467ae89214606500ed7a762": {
+    "authors": [
+      {
+        "email": "laurent.mallet@gmail.com",
+        "link": "https://github.com/ellis2323",
+        "login": "ellis2323"
+      }
+    ],
+    "date": "2019-08-22",
+    "issues": [
+      581
+    ],
+    "message": "Fixed ENS lookupAddress when the resolver isn't configured (#581)."
+  },
+  "771190202f232cccf2f967c65b2cf28c0fcd1597": {
+    "authors": [
+      {
+        "link": "https://github.com/c0mm0n",
+        "login": "c0mm0n"
+      }
+    ],
+    "date": "2020-07-18",
+    "issues": [
+      958
+    ],
+    "message": "Fixed typo in DAI docs example (#958)."
+  },
+  "78b350bbc5ea73561bf47038743b9e51049496f7": {
+    "authors": [
+      {
+        "email": "chalkerx@gmail.com",
+        "link": "https://github.com/ChALkeR",
+        "login": "ChALkeR"
+      }
+    ],
+    "date": "2020-07-16",
+    "issues": [
+      951
+    ],
+    "message": "Removed unnecessary dependency from BigNumber (#951)."
+  },
+  "78e4273a327d12da9a1ec008d3f2146d97385921": {
+    "authors": [
+      {
+        "link": "https://github.com/coinwalletdev",
+        "login": "coinwalletdev"
+      }
+    ],
+    "date": "2021-08-18",
+    "issues": [
+      1858
+    ],
+    "message": "Fxied getBlockWithTransactions results (1858)."
+  },
+  "79494446128474745b10828f669eb58965367e7f": {
+    "authors": [
+      {
+        "email": "stephenalexbrowne@gmail.com",
+        "link": "https://github.com/albrow",
+        "login": "albrow"
+      }
+    ],
+    "date": "2018-06-23",
+    "issues": [
+      188
+    ],
+    "message": "Added initial support for EIP838, revert codes (#188)."
+  },
+  "796954f8807b0c464c7baa8f7ff299e22685e192": {
+    "authors": [
+      {
+        "link": "https://github.com/breakabort",
+        "login": "breakabort"
+      }
+    ],
+    "date": "2021-02-08",
+    "issues": [
+      1284
+    ],
+    "message": "Bump elliptic version for CVE-2020-28498 (#1284)."
+  },
+  "7a12216cfbd3f86b917451924957471b8be21a8b": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-05-30",
+    "issues": [
+      1610
+    ],
+    "message": "Initial EIP-1559 support (#1610)."
+  },
+  "7a404fb8ed95a99baab8f3b384f438b697fa5d76": {
+    "authors": [
+      {
+        "email": "chalkerx@gmail.com",
+        "link": "https://github.com/ChALkeR",
+        "login": "ChALkeR"
+      }
+    ],
+    "date": "2021-10-04",
+    "issues": [
+      1964
+    ],
+    "message": "Fixed isBytes check for invalid length or elements (#1964)."
+  },
+  "7adcf3b154669d9d1a0a66d5e15dabfbf6618180": {
+    "authors": [
+      {
+        "link": "https://github.com/yoshiwarab",
+        "login": "yoshiwarab"
+      }
+    ],
+    "date": "2021-05-31",
+    "issues": [
+      1605
+    ],
+    "message": "Fixed ENS namehash with leading and trailing dots (#1605)."
+  },
+  "7aebe53e5b16585f0f3a8e1e17013f12121480d1": {
+    "authors": [
+      {
+        "link": "https://github.com/gabrielschulhof",
+        "login": "gabrielschulhof"
+      }
+    ],
+    "date": "2018-09-04",
+    "issues": [
+      265
+    ],
+    "message": "Change Buffer constructor to safer operations (#265)."
+  },
+  "7b0d02d30e83a1c59d42ee169b3b940b33446c4d": {
+    "authors": [
+      {
+        "email": "etinosaobaseki@gmail.com",
+        "link": "https://github.com/obasekietinosa",
+        "login": "obasekietinosa"
+      }
+    ],
+    "date": "2022-02-03",
+    "issues": [
+      2289
+    ],
+    "message": "docs: fixed typos (#2289)."
+  },
+  "7b1a7c7f31a3631e12c2a341b562983360e670e9": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-05-03",
+    "issues": [
+      815
+    ],
+    "message": "Manage FallbackProvider stalling without unref (#815)."
+  },
+  "7b299dd9c97571b12916e3ae529540f3f2e5a367": {
+    "authors": [
+      {
+        "email": "olaf@tomalka.me",
+        "link": "https://github.com/ritave",
+        "login": "ritave"
+      }
+    ],
+    "date": "2022-04-29",
+    "issues": [
+      2926
+    ],
+    "message": "Enforce 32-byte private key length (2926)."
+  },
+  "7b80ba20fee68bc4eae8ed1653f8ff9ff2acf7c1": {
+    "authors": [
+      {
+        "link": "https://github.com/chris56974",
+        "login": "chris56974"
+      }
+    ],
+    "date": "2022-02-03",
+    "issues": [
+      2614
+    ],
+    "message": "docs: fixed typos (#2614)."
+  },
+  "7e56f3d392e52815c5c859772b99660e0fc38ef5": {
+    "authors": [
+      {
+        "email": "chalkerx@gmail.com",
+        "link": "https://github.com/ChALkeR",
+        "login": "ChALkeR"
+      }
+    ],
+    "date": "2020-07-08",
+    "issues": [
+      935
+    ],
+    "message": "Fixed BigNumber string validation (#935)."
+  },
+  "813fcef4adff69783c094c879a425c6f300d1c91": {
+    "authors": [
+      {
+        "email": "github@adamspiers.org",
+        "link": "https://github.com/aspiers",
+        "login": "aspiers"
+      }
+    ],
+    "date": "2022-01-31",
+    "issues": [
+      2611
+    ],
+    "message": "docs: added jsonRpcProvider.connection (#2611)"
+  },
+  "8175c83026436b6335800780ca12b7257e1b490f": {
+    "authors": [
+      {
+        "link": "https://github.com/miguelmota",
+        "login": "miguelmota"
+      }
+    ],
+    "date": "2021-01-13",
+    "issues": [
+      1236
+    ],
+    "message": "Fixed non-checksum address comparisons in abstract Signer (#1236)."
+  },
+  "819b1ace5c9b16e29dc354ad80e0e5b71ac63c52": {
+    "authors": [
+      {
+        "link": "https://github.com/tennox",
+        "login": "tennox"
+      }
+    ],
+    "date": "2021-05-31",
+    "issues": [
+      1478
+    ],
+    "message": "Version bumps for bn.js and hash.js to match elliptic and fix some build tools (#1478)."
+  },
+  "81fd628292b7dde90fe5115074fa68476a872dbf": {
+    "authors": [
+      {
+        "email": "matt@mattsolomon.dev",
+        "link": "https://github.com/mds1",
+        "login": "mds1"
+      }
+    ],
+    "date": "2021-03-30",
+    "issues": [
+      1415
+    ],
+    "message": "Added BigNumber.toBigInt method (#1415)."
+  },
+  "8277f5a62a6739a05ae6682da6956fb490b81e4a": {
+    "authors": [
+      {
+        "link": "https://github.com/FrederikBolding",
+        "login": "FrederikBolding"
+      }
+    ],
+    "date": "2021-06-22",
+    "issues": [
+      1628
+    ],
+    "message": "Fixed transaction serialization with explicit null type (#1628)."
+  },
+  "8279120e0ad1cbb7aeabd32c08e168a4228abbec": {
+    "authors": [
+      {
+        "email": "contact@yuetloo.com",
+        "link": "https://github.com/yuetloo",
+        "login": "yuetloo"
+      }
+    ],
+    "date": "2021-02-12",
+    "issues": [
+      1243
+    ],
+    "message": "Better error messaging when provider backends give bogus responses (#1243)."
+  },
+  "82d6dcbdde95004e041f9ff353de37af5e557d2e": {
+    "authors": [
+      {
+        "link": "https://github.com/meteorologic",
+        "login": "meteorologic"
+      }
+    ],
+    "date": "2022-02-03",
+    "issues": [
+      2430
+    ],
+    "message": "docs: fix typos (#2430)."
+  },
+  "8320d534d78173dfa8ecb4def634a00483a6aa9c": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-08-27",
+    "issues": [
+      1967
+    ],
+    "message": "Temporarily remove the block miner for clique-based networks from CI testing (#1967)."
+  },
+  "83891f9258492f9801aa579ac50764b6491b6180": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      },
+      {
+        "link": "https://github.com/TomAFrench",
+        "login": "TomAFrench"
+      }
+    ],
+    "date": "2022-02-18",
+    "issues": [
+      2477,
+      2582,
+      2583
+    ],
+    "message": "Add EIP-2544 Wildcard support (#2477, #2582, #2583)."
+  },
+  "8395cc146f4821da5c03d9c889db05741709e7fb": {
+    "authors": [
+      {
+        "email": "satyamsgsits1994@gmail.com",
+        "link": "https://github.com/satyambnsal",
+        "login": "satyambnsal"
+      }
+    ],
+    "date": "2021-10-04",
+    "issues": [
+      1979
+    ],
+    "message": "docs: fixed typo in providers README (#1979)."
+  },
+  "83db8a6bd1364458dcfeea544de707df41890b4e": {
+    "authors": [
+      {
+        "link": "https://github.com/moodysalem",
+        "login": "moodysalem"
+      }
+    ],
+    "date": "2020-09-04",
+    "issues": [
+      1003
+    ],
+    "message": "Added basic ENS resolver functions for contenthash, text and multi-coin addresses (#1003)."
+  },
+  "84344ac4c2a2502234373c24c0f02d8912417039": {
+    "authors": [
+      {
+        "email": "micah@zoltu.net",
+        "link": "https://github.com/MicahZoltu",
+        "login": "MicahZoltu"
+      }
+    ],
+    "date": "2018-10-11",
+    "issues": [
+      299
+    ],
+    "message": "Check all transaction parameters are valid; protect against typos (#299)."
+  },
+  "84e253f3f9674b52fa2a17b097644e91e6474021": {
+    "authors": [
+      {
+        "email": "rksethuram9@gmail.com",
+        "link": "https://github.com/rhlsthrm",
+        "login": "rhlsthrm"
+      }
+    ],
+    "date": "2020-07-05",
+    "issues": [
+      925
+    ],
+    "message": "Prevent negative exponents in BigNumber (#925)."
+  },
+  "85160766cdcd031f226382901ebadee9d7f40200": {
+    "authors": [
+      {
+        "link": "https://github.com/sz-piotr",
+        "login": "sz-piotr"
+      }
+    ],
+    "date": "2020-05-13",
+    "issues": [
+      828
+    ],
+    "message": "Add correct tag to release on publish (#828)."
+  },
+  "8681cd59698d02d040871aa889fc6ccc8550df98": {
+    "authors": [
+      {
+        "link": "https://github.com/zedkai",
+        "login": "zedkai"
+      }
+    ],
+    "date": "2021-05-31",
+    "issues": [
+      1629
+    ],
+    "message": "Fixed FixedNumber rounding for non-default formats (#1629)."
+  },
+  "8737f12e1bbeee477413e1d96c4124463256161e": {
+    "authors": [
+      {
+        "email": "contact@bitfalls.com",
+        "link": "https://github.com/Swader",
+        "login": "Swader"
+      }
+    ],
+    "date": "2019-09-06",
+    "issues": [
+      574
+    ],
+    "message": "Fixed typo in error message (#574)."
+  },
+  "8770cc46fdb4dd70865286ddac7fecb1416b9b54": {
+    "authors": [
+      {
+        "link": "https://github.com/aux0x",
+        "login": "aux0x"
+      }
+    ],
+    "date": "2022-04-29",
+    "issues": [
+      2680
+    ],
+    "message": "docs: fixed typo (#2680)."
+  },
+  "87ceaed4be21283619da74678cf371c228c918b7": {
+    "authors": [
+      {
+        "link": "https://github.com/krzkaczor",
+        "login": "krzkaczor"
+      }
+    ],
+    "date": "2021-03-26",
+    "issues": [
+      1384
+    ],
+    "message": "Abstracted Contract with BaseContract without meta-class properties for easier extensions (#1384)."
+  },
+  "88c7eaed061ae9a6798733a97e4e87011d36b8e7": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      },
+      {
+        "email": "thegostep@gmail.com",
+        "link": "https://github.com/thegostep",
+        "login": "thegostep"
+      },
+      {
+        "link": "https://github.com/alazarevski",
+        "login": "alazarevski"
+      }
+    ],
+    "date": "2020-07-14",
+    "issues": [
+      139,
+      904,
+      926
+    ],
+    "message": "Added initial throttling support (#139, #904, #926)."
+  },
+  "88f2f51266a66cc8a5934ef5371e0458d08a46e8": {
+    "authors": [
+      {
+        "email": "xuanji@gmail.com",
+        "link": "https://github.com/ldct",
+        "login": "ldct"
+      }
+    ],
+    "date": "2018-11-12",
+    "issues": [
+      318
+    ],
+    "message": "Fix spacing in checkArgument errors (#318)."
+  },
+  "892f30a051211489bab60481711a782d03cd217c": {
+    "authors": [
+      {
+        "email": "micah@zoltu.net",
+        "link": "https://github.com/MicahZoltu",
+        "login": "MicahZoltu"
+      }
+    ],
+    "date": "2018-09-20",
+    "issues": [
+      280
+    ],
+    "message": "Check HTTP status before parsing body in fetchJson (#280)."
+  },
+  "8947fd405e3aea07f6db958d89a3ad39abe3a25a": {
+    "authors": [
+      {
+        "link": "https://github.com/alfetopito",
+        "login": "alfetopito"
+      },
+      {
+        "link": "https://github.com/ghost",
+        "login": "ghost"
+      }
+    ],
+    "date": "2021-10-16",
+    "issues": [
+      1542,
+      1840
+    ],
+    "message": "Use personal_sign instead of eth_sign for message signing with JsonRpcSigner; added _legacySignMessage for legacy support (#1542, #1840)."
+  },
+  "89bae3bd634b20ce29b33309d4c816350dc81119": {
+    "authors": [
+      {
+        "link": "https://github.com/00iCon",
+        "login": "00iCon"
+      }
+    ],
+    "date": "2021-06-10",
+    "issues": [
+      1594
+    ],
+    "message": "docs: grammar fix (#1594)."
+  },
+  "8a7b5efad0775fab28a79706f2699db2ee5310a0": {
+    "authors": [
+      {
+        "link": "https://github.com/a2468834",
+        "login": "a2468834"
+      }
+    ],
+    "date": "2022-04-29",
+    "issues": [
+      2821
+    ],
+    "message": "docs: Fixed link typo (#2821)."
+  },
+  "8abdbbbf633f96fde2346c4ae70e538895fd7829": {
+    "authors": [
+      {
+        "email": "chalkerx@gmail.com",
+        "link": "https://github.com/ChALkeR",
+        "login": "ChALkeR"
+      },
+      {
+        "email": "for4die@sina.com",
+        "link": "https://github.com/282931",
+        "login": "282931"
+      }
+    ],
+    "date": "2020-08-27",
+    "issues": [
+      944,
+      993
+    ],
+    "message": "Updating shims for constrained environments (#944, #993)."
+  },
+  "8ad26f0ff42614a6c40e735cb6fffd36874da1a0": {
+    "authors": [
+      {
+        "link": "https://github.com/epheph",
+        "login": "epheph"
+      }
+    ],
+    "date": "2020-04-04",
+    "issues": [
+      415
+    ],
+    "message": "Removed transactionLogIndex from tests (#415)."
+  },
+  "8b2e57276fa6e5fa983474127f5080331254ddeb": {
+    "authors": [
+      {
+        "email": "me@nikita.tk",
+        "link": "https://github.com/ZitRos",
+        "login": "ZitRos"
+      }
+    ],
+    "date": "2018-09-20",
+    "issues": [
+      282
+    ],
+    "message": "Do not override nonce if forced to 0 (#282)."
+  },
+  "8b62aeff9cce44cbd16ff41f8fc01ebb101f8265": {
+    "authors": [
+      {
+        "link": "https://github.com/ljybill",
+        "login": "ljybill"
+      }
+    ],
+    "date": "2022-05-14",
+    "issues": [
+      2320
+    ],
+    "message": "Use case-insensitive schemes for getDefaultProvider (#2320)."
+  },
+  "8bb2a0fd08f6f128a80444e3fd90c29e4cd7edfb": {
+    "authors": [
+      {
+        "link": "https://github.com/pyggie",
+        "login": "pyggie"
+      }
+    ],
+    "date": "2020-04-24",
+    "issues": [
+      796
+    ],
+    "message": "Fixed ContractFactory.deploy ignoring overrides (#796)."
+  },
+  "8cdda37095df28f828ccd2ac5437ccb6541b16cc": {
+    "authors": [
+      {
+        "link": "https://github.com/asselstine",
+        "login": "asselstine"
+      }
+    ],
+    "date": "2019-05-23",
+    "issues": [
+      404
+    ],
+    "message": "Fixed contract events (#404)."
+  },
+  "8e31b4dcf4a88fa1eecbc1f1769e3d25dca290a5": {
+    "authors": [
+      {
+        "email": "angrybeatty@gmail.com",
+        "link": "https://github.com/0xWarren",
+        "login": "0xWarren"
+      }
+    ],
+    "date": "2022-05-14",
+    "issues": [
+      2981
+    ],
+    "message": "docs: fix type in comments of admin tools (#2981)."
+  },
+  "8e682cc8481c6051a6f8115b29d78f4996120ccd": {
+    "authors": [
+      {
+        "link": "https://github.com/naddison36",
+        "login": "naddison36"
+      }
+    ],
+    "date": "2020-10-07",
+    "issues": [
+      1018
+    ],
+    "message": "Added debug event info to WebSocketProvider (#1018)."
+  },
+  "8e7751f7dfb41e58f81c7918cf36c152c3209ae2": {
+    "authors": [
+      {
+        "link": "https://github.com/bbarton",
+        "login": "bbarton"
+      }
+    ],
+    "date": "2020-04-24",
+    "issues": [
+      795
+    ],
+    "message": "Fixed inconsistent log format in WebSocketProvider (#795)."
+  },
+  "8e83ceaedc11e414a432934bf6c87c869665d657": {
+    "authors": [
+      {
+        "email": "micah@zoltu.net",
+        "link": "https://github.com/MicahZoltu",
+        "login": "MicahZoltu"
+      }
+    ],
+    "date": "2018-07-03",
+    "issues": [
+      219
+    ],
+    "message": "Check for invalid strings in BigNumber constructor. (#219)"
+  },
+  "8ed67a5c198d17501e9b9ad91c5b31fd9fc830b0": {
+    "authors": [
+      {
+        "link": "https://github.com/Coda-Coda",
+        "login": "Coda-Coda"
+      }
+    ],
+    "date": "2020-06-15",
+    "issues": [
+      885
+    ],
+    "message": "Fixed typo in docs (#885)."
+  },
+  "8efd8d203158ebdef040ec759c3b423312a86e7c": {
+    "authors": [
+      {
+        "email": "22412996+zemse@users.noreply.github.com",
+        "link": "https://github.com/zemse",
+        "login": "zemse"
+      }
+    ],
+    "date": "2020-05-29",
+    "issues": [
+      854
+    ],
+    "message": "Fixed delayed network detection attempting to overwrite read-only value (#854)."
+  },
+  "8f3d71dc5fd0e91407737a4b82c58c31269ed2be": {
+    "authors": [
+      {
+        "email": "jimmie@subpixel.net",
+        "link": "https://github.com/j1mmie",
+        "login": "j1mmie"
+      }
+    ],
+    "date": "2021-10-16",
+    "issues": [
+      1494
+    ],
+    "message": "admin: fixed alias script (#1494)."
+  },
+  "8f4b3027ef2854421300a19ffa1fcabdcf5f3fc7": {
+    "authors": [
+      {
+        "link": "https://github.com/kumavis",
+        "login": "kumavis"
+      }
+    ],
+    "date": "2020-08-20",
+    "issues": [
+      1001
+    ],
+    "message": "Run bootstrap in postinstall for better testing UX (#1001)."
+  },
+  "8facc1a5305b1f699aa3afc5a0a692abe7927652": {
+    "authors": [
+      {
+        "link": "https://github.com/KillariDev",
+        "login": "KillariDev"
+      }
+    ],
+    "date": "2020-08-25",
+    "issues": [
+      1010
+    ],
+    "message": "Added JSON support to BigNumber (#1010)."
+  },
+  "8fc5914c5a57427d99aaef60a4a260d6aaf31cc2": {
+    "authors": [
+      {
+        "link": "https://github.com/dsk7",
+        "login": "dsk7"
+      }
+    ],
+    "date": "2021-10-04",
+    "issues": [
+      2011
+    ],
+    "message": "docs: fixed typo in cookbook (#2011)."
+  },
+  "905e98aa392e2a52d6b0339b21bfce5237fd8662": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2022-03-16",
+    "issues": [
+      2478
+    ],
+    "message": "Update test cases for CCIP Read fix (#2478)."
+  },
+  "908258f8d4c56b58f6826011a805c2e690d9a4a0": {
+    "authors": [
+      {
+        "link": "https://github.com/asselstine",
+        "login": "asselstine"
+      }
+    ],
+    "date": "2019-01-26",
+    "issues": [
+      404
+    ],
+    "message": "Fixed duplicate events from triggering (#404)."
+  },
+  "918b66bc2e176fc3c6f3088cc10b9d03e2df1f6e": {
+    "authors": [
+      {
+        "email": "greg.beaver.cello@gmail.com",
+        "link": "https://github.com/cellog",
+        "login": "cellog"
+      }
+    ],
+    "date": "2018-12-12",
+    "issues": [
+      376
+    ],
+    "message": "Fixed typo in error strings (#376)."
+  },
+  "91951dc825af42d4440d2d3b43cfa7a601b20342": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-06-22",
+    "issues": [
+      1690
+    ],
+    "message": "Trap CALL_EXCEPTION errors when resolving ENS entries (#1690)."
+  },
+  "91fff1449df5e337fd3b4681b5a04b151d92f5a1": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-06-15",
+    "issues": [
+      1610
+    ],
+    "message": "Better baseFee calculation (#1610)."
+  },
+  "92a383ff0dad4587e44953efca3c6ab795a1b1bd": {
+    "authors": [
+      {
+        "link": "https://github.com/elranu",
+        "login": "elranu"
+      }
+    ],
+    "date": "2020-01-19",
+    "issues": [
+      685
+    ],
+    "message": "Abstracting mnemonic phrases (#685)."
+  },
+  "92c978e5c20aca96a4297c7d494e154c3a796e71": {
+    "authors": [
+      {
+        "email": "deric.walintukan@gmail.com",
+        "link": "https://github.com/dwalintukan",
+        "login": "dwalintukan"
+      }
+    ],
+    "date": "2019-06-10",
+    "issues": [
+      539
+    ],
+    "message": "Fixed error in throwing an error for ABI decode (#539)."
+  },
+  "93152ef86394720e911aaf98011013e6dae87c77": {
+    "authors": [
+      {
+        "email": "kevin@kliu.io",
+        "link": "https://github.com/kliu128",
+        "login": "kliu128"
+      }
+    ],
+    "date": "2018-11-12",
+    "issues": [
+      343
+    ],
+    "message": "Do not replay block events when the provider event block is reset (#343)."
+  },
+  "9565c28a91b558a96a3895ccfc03975efc639432": {
+    "authors": [
+      {
+        "email": "logvinov.leon@gmail.com",
+        "link": "https://github.com/LogvinovLeon",
+        "login": "LogvinovLeon"
+      }
+    ],
+    "date": "2018-12-04",
+    "issues": [
+      357
+    ],
+    "message": "More relaxed transaction parsing (#357)."
+  },
+  "95708b9a4ae003db6c7d39e608af9ea6e123bae3": {
+    "authors": [
+      {
+        "link": "https://github.com/jcstein",
+        "login": "jcstein"
+      }
+    ],
+    "date": "2022-05-14",
+    "issues": [
+      2779
+    ],
+    "message": "docs: add Ankr to list of Providers (#2779)."
+  },
+  "95b2c72b1200c32616a99697fb87072843ff2d28": {
+    "authors": [
+      {
+        "link": "https://github.com/emanuel-sol",
+        "login": "emanuel-sol"
+      }
+    ],
+    "date": "2022-02-03",
+    "issues": [
+      2242
+    ],
+    "message": "docs: updated API provider supported networks (#2242)."
+  },
+  "95b87f61a6bdfde39887ed3acfa28486d0a215ca": {
+    "authors": [
+      {
+        "link": "https://github.com/JL2718",
+        "login": "JL2718"
+      }
+    ],
+    "date": "2021-08-24",
+    "issues": [
+      1799
+    ],
+    "message": "docs: added BigNumber.toBigInt (#1799)."
+  },
+  "963197d70c96e5970b431173c2cc782cb496674c": {
+    "authors": [
+      {
+        "email": "wighawag@gmail.com",
+        "link": "https://github.com/wighawag",
+        "login": "wighawag"
+      }
+    ],
+    "date": "2020-05-08",
+    "issues": [
+      822
+    ],
+    "message": "Fix JsonRpcProvider out-of-order super call (#822)."
+  },
+  "9668f98b69b420d047376658d605c1f871a93c3a": {
+    "authors": [
+      {
+        "link": "https://github.com/adassoul",
+        "login": "adassoul"
+      },
+      {
+        "email": "andrei.stefan.work@gmail.com",
+        "link": "https://github.com/andreistefanwork",
+        "login": "andreistefanwork"
+      }
+    ],
+    "date": "2022-05-26",
+    "issues": [
+      2989,
+      2998
+    ],
+    "message": "docs: fixed typo (#2989)."
+  },
+  "9785eed8dd227234afbfcb0eef9892e6a7a2b187": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2019-02-08",
+    "issues": [
+      421
+    ],
+    "message": "Added goerli testnet support (#421)."
+  },
+  "9797b36186add496aafc29c96b44d61fa62b23e3": {
+    "authors": [
+      {
+        "link": "https://github.com/jlindberg-oss",
+        "login": "jlindberg-oss"
+      },
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2018-10-04",
+    "issues": [
+      156,
+      238
+    ],
+    "message": "Added confirmations to TransactionResponse (#156, #238)."
+  },
+  "97acaa11296cf54c59a2d10b1b3aa7bcc4a8d063": {
+    "authors": [
+      {
+        "link": "https://github.com/willrnch",
+        "login": "willrnch"
+      }
+    ],
+    "date": "2020-09-06",
+    "issues": [
+      1026
+    ],
+    "message": "Docs: fixed typo (#1026)."
+  },
+  "97efeba8dc6d0aaf793c4b740e7db8f3336a7bbd": {
+    "authors": [
+      {
+        "email": "maxcwolff@gmail.com",
+        "link": "https://github.com/maxwolff",
+        "login": "maxwolff"
+      }
+    ],
+    "date": "2020-11-18",
+    "issues": [
+      1128
+    ],
+    "message": "docs: fixed typo in contracts readme (#1128)."
+  },
+  "987bec87afaa365f291290a0136cedbc2b1992f2": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-04-26",
+    "issues": [
+      1477
+    ],
+    "message": "Added new error for replaced transactions (#1477)."
+  },
+  "98bb58964bec7dff0ccf481d474354ec1ca6f376": {
+    "authors": [
+      {
+        "link": "https://github.com/danielattilasimon",
+        "login": "danielattilasimon"
+      }
+    ],
+    "date": "2020-06-03",
+    "issues": [
+      860
+    ],
+    "message": "Allow undefined properties in transaction object and fix stray this (#860)."
+  },
+  "99422c1c7c9af65887ea202d4bdc17c1d6bd7ec2": {
+    "authors": [
+      {
+        "link": "https://github.com/spape",
+        "login": "spape"
+      }
+    ],
+    "date": "2021-06-22",
+    "issues": [
+      1686
+    ],
+    "message": "admin: fixed typo in docs (#1686)."
+  },
+  "9947acc349691734bce8b33d870ab48944a7962f": {
+    "authors": [
+      {
+        "link": "https://github.com/elranu",
+        "login": "elranu"
+      }
+    ],
+    "date": "2020-02-16",
+    "issues": [
+      685
+    ],
+    "message": "Partial support for non-English mnemonics for encrypted JSON wallets (#685)."
+  },
+  "99a21660ab5b360cc4cbdba87dc54245c00565b9": {
+    "authors": [
+      {
+        "link": "https://github.com/pointtoken",
+        "login": "pointtoken"
+      }
+    ],
+    "date": "2018-12-14",
+    "issues": [
+      340
+    ],
+    "message": "Allow unchecked transactions which will remain unwrapped for the JsonRpcSigner (#340)."
+  },
+  "99ae946476a317a9d89e5d8f57cf37f8680bfa2b": {
+    "authors": [
+      {
+        "email": "jarindr23@gmail.com",
+        "link": "https://github.com/jarindr",
+        "login": "jarindr"
+      }
+    ],
+    "date": "2020-05-03",
+    "issues": [
+      814
+    ],
+    "message": "Allow providers to detect their network after instantiation (#814)."
+  },
+  "9aac785395e9b47655477a3ba7baf05df3274de9": {
+    "authors": [
+      {
+        "link": "https://github.com/safead",
+        "login": "safead"
+      },
+      {
+        "link": "https://github.com/RobbingBlocks",
+        "login": "RobbingBlocks"
+      }
+    ],
+    "date": "2022-02-19",
+    "issues": [
+      2562,
+      2644
+    ],
+    "message": "Allow raw WebSocket to be passed into WebSocketProvider (#2562, #2644)."
+  },
+  "9ae6b70efb9f3d3251820403597085cfa30ace05": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      },
+      {
+        "email": "greg.beaver.cello@gmail.com",
+        "link": "https://github.com/cellog",
+        "login": "cellog"
+      }
+    ],
+    "date": "2020-04-18",
+    "issues": [
+      789,
+      506
+    ],
+    "message": "Fixes for dist builds without injected XMLHttpRequest (#789, #506)."
+  },
+  "9bf17fa07c6149a02ef217f2b89f1bfd990b1a6c": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2022-04-29",
+    "issues": [
+      2948
+    ],
+    "message": "Fixed decimal strings as value-type properties for JsonRpcSigner (#2948)."
+  },
+  "9c63b4a7535f423a802bb1c17c325ce968987349": {
+    "authors": [
+      {
+        "email": "kevin@kliu.io",
+        "link": "https://github.com/kliu128",
+        "login": "kliu128"
+      }
+    ],
+    "date": "2019-09-06",
+    "issues": [
+      580
+    ],
+    "message": "Fixed typo in error message (#580)."
+  },
+  "9d04f2c1ebda7a27c2580b8c819282f7efe9402c": {
+    "authors": [
+      {
+        "link": "https://github.com/yann300",
+        "login": "yann300"
+      }
+    ],
+    "date": "2018-09-20",
+    "issues": [
+      281
+    ],
+    "message": "Prevent odd-length values from being passed in as bytesXX (#281)."
+  },
+  "9d9b14b95299b793c1a0f4cb8f42e4e0252fed1c": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2022-03-25",
+    "issues": [
+      2603
+    ],
+    "message": "More robust JSON-RPC error handling for reverted executions (#2603)."
+  },
+  "9dcf6f32531f8132c1b78b38bfbb27587430e7c3": {
+    "authors": [
+      {
+        "link": "https://github.com/tracoco",
+        "login": "tracoco"
+      },
+      {
+        "email": "micah@zoltu.net",
+        "link": "https://github.com/MicahZoltu",
+        "login": "MicahZoltu"
+      }
+    ],
+    "date": "2018-09-06",
+    "issues": [
+      224,
+      257
+    ],
+    "message": "Added headers and timeout to fetchJson (#224 #257)."
+  },
+  "9e273220b6f1e147ab95ef0731a009390ad0a9bc": {
+    "authors": [
+      {
+        "email": "hi@austinki.ng",
+        "link": "https://github.com/0xASK",
+        "login": "0xASK"
+      }
+    ],
+    "date": "2021-04-02",
+    "issues": [
+      1423
+    ],
+    "message": "docs: Fixed typo in getting-started (#1423)."
+  },
+  "9ee685df46753c46cbbde12d05d6ea04f2b5ea3f": {
+    "authors": [
+      {
+        "email": "22412996+zemse@users.noreply.github.com",
+        "link": "https://github.com/zemse",
+        "login": "zemse"
+      }
+    ],
+    "date": "2020-09-16",
+    "issues": [
+      1047
+    ],
+    "message": "Forward blockchain errors from Signer during gas estimation (#1047)."
+  },
+  "9eed04a6d5e6fac2f4f77e554e49d64e14fb276e": {
+    "authors": [
+      {
+        "link": "https://github.com/vsevdrob",
+        "login": "vsevdrob"
+      }
+    ],
+    "date": "2022-02-03",
+    "issues": [
+      2407
+    ],
+    "message": "docs: fixed typos (#2407)."
+  },
+  "a11602d066667629908ffdef5e103f1567fde6c1": {
+    "authors": [
+      {
+        "email": "felipe.lima@gmail.com",
+        "link": "https://github.com/felipecsl",
+        "login": "felipecsl"
+      }
+    ],
+    "date": "2021-04-10",
+    "issues": [
+      1450
+    ],
+    "message": "docs: fixed typo (#1450)."
+  },
+  "a12030ad29aa13c02aa75d9e0860f4986a0043b4": {
+    "authors": [
+      {
+        "email": "wighawag@gmail.com",
+        "link": "https://github.com/wighawag",
+        "login": "wighawag"
+      }
+    ],
+    "date": "2019-09-28",
+    "issues": [
+      614
+    ],
+    "message": "Allow numeric values in a transaction to be odd-lengthed hexstrings (#614)."
+  },
+  "a12d60d722dfcf998a2e06eba5e46390d7d442e5": {
+    "authors": [
+      {
+        "email": "michaelsbradleyjr@gmail.com",
+        "link": "https://github.com/michaelsbradleyjr",
+        "login": "michaelsbradleyjr"
+      }
+    ],
+    "date": "2019-08-22",
+    "issues": [
+      582
+    ],
+    "message": "Port optional Secret Storage wallet address to v5 (#582)."
+  },
+  "a144ed8a714b5553be5bf100b490bff6995cae70": {
+    "authors": [
+      {
+        "link": "https://github.com/fritzschoff",
+        "login": "fritzschoff"
+      }
+    ],
+    "date": "2020-07-05",
+    "issues": [
+      890
+    ],
+    "message": "Fixed migration docs (#890)."
+  },
+  "a21202c66b392ec6f91296d66551dffca742cf0a": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-10-20",
+    "issues": [
+      687
+    ],
+    "message": "Export verifyTypedData in utils (#687)."
+  },
+  "a27ef825772f72071439c51e51180b6fcc64f03c": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2022-05-24",
+    "issues": [
+      3017
+    ],
+    "message": "Lock versions for BigNumber fix (#3017)."
+  },
+  "a34ca6b3a38d0854d5b57c908d523a98262c0f53": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2019-07-09",
+    "issues": [
+      557
+    ],
+    "message": "Added test cases for case-agnostic mnemonics (#557)."
+  },
+  "a48552a4fb85a08178d07437a3934db98b7d0736": {
+    "authors": [
+      {
+        "link": "https://github.com/sz-piotr",
+        "login": "sz-piotr"
+      },
+      {
+        "email": "wmitsuda@gmail.com",
+        "link": "https://github.com/wmitsuda",
+        "login": "wmitsuda"
+      }
+    ],
+    "date": "2021-10-04",
+    "issues": [
+      2001,
+      2036
+    ],
+    "message": "Added BigNumber _difficulty to Block results (#2001, #2036)."
+  },
+  "a5296a9258a475b6d3ebe4c6b848945a77ba4887": {
+    "authors": [
+      {
+        "email": "chalkerx@gmail.com",
+        "link": "https://github.com/ChALkeR",
+        "login": "ChALkeR"
+      }
+    ],
+    "date": "2019-06-28",
+    "issues": [
+      553
+    ],
+    "message": "Added tests for testnet extended private key (#553)."
+  },
+  "a56a0a33366ea9276fba5bc45f1e4678dd723fa6": {
+    "authors": [
+      {
+        "email": "zimmah@openhedge.com",
+        "link": "https://github.com/zimmah",
+        "login": "zimmah"
+      }
+    ],
+    "date": "2020-12-18",
+    "issues": [
+      1205
+    ],
+    "message": "Fixed listenerCount for contract when requesting for all events (#1205)."
+  },
+  "a5c6a468f4a7ad29fb5277e08c6b8b208383a575": {
+    "authors": [
+      {
+        "email": "patricio@nomiclabs.io",
+        "link": "https://github.com/alcuadrado",
+        "login": "alcuadrado"
+      }
+    ],
+    "date": "2021-10-16",
+    "issues": [
+      1051
+    ],
+    "message": "Better errors when non-string address or ENS name is passed into Contracts or provider methods (#1051)."
+  },
+  "a5d2ec534f75b21eebe69a789a3c43c33014a825": {
+    "authors": [
+      {
+        "email": "wighawag@gmail.com",
+        "link": "https://github.com/wighawag",
+        "login": "wighawag"
+      }
+    ],
+    "date": "2020-02-25",
+    "issues": [
+      733
+    ],
+    "message": "Merge: 8c164ab3 4b8e198b Fix log parsing when no matching topic hash is found (#733)."
+  },
+  "a62d20d86f2d545b9a7bcda5418993790b7db91c": {
+    "authors": [
+      {
+        "link": "https://github.com/luyzdeleon",
+        "login": "luyzdeleon"
+      }
+    ],
+    "date": "2020-10-09",
+    "issues": [
+      1052
+    ],
+    "message": "Added initial PocketProvider (#1052)."
+  },
+  "a662490e82a9b71b5f6dee0a8242e6fa78409d79": {
+    "authors": [
+      {
+        "link": "https://github.com/NoahZinsmeister",
+        "login": "NoahZinsmeister"
+      }
+    ],
+    "date": "2021-08-24",
+    "issues": [
+      1894
+    ],
+    "message": "Added Deferred Error support to Description objects to extent Interface parse methods (#1894)."
+  },
+  "a6e128f5cc566d291b722cca1734ba41aae6c548": {
+    "authors": [
+      {
+        "email": "fg@frang.io",
+        "link": "https://github.com/frangio",
+        "login": "frangio"
+      }
+    ],
+    "date": "2021-06-10",
+    "issues": [
+      1657
+    ],
+    "message": "Match Solidity identifier regex (#1657)."
+  },
+  "a72e40425965396c6661b7882d270adf9eda1ae7": {
+    "authors": [
+      {
+        "email": "jasonzhouu@outlook.com",
+        "link": "https://github.com/jasonzhouu",
+        "login": "jasonzhouu"
+      }
+    ],
+    "date": "2022-04-29",
+    "issues": [
+      2903
+    ],
+    "message": "docs: fixed typo (#2903)."
+  },
+  "a8e3380ed547b6368be5fe40b48be6e31b5cdd93": {
+    "authors": [
+      {
+        "link": "https://github.com/slavik0329",
+        "login": "slavik0329"
+      }
+    ],
+    "date": "2020-11-23",
+    "issues": [
+      1101
+    ],
+    "message": "Add ABI coder function to compute default values (#1101)."
+  },
+  "a9cdbe1238c149a7167c6bb1a78f314805b52755": {
+    "authors": [
+      {
+        "link": "https://github.com/coinwalletdev",
+        "login": "coinwalletdev"
+      },
+      {
+        "link": "https://github.com/rstormsf",
+        "login": "rstormsf"
+      },
+      {
+        "link": "https://github.com/aya-eiya",
+        "login": "aya-eiya"
+      }
+    ],
+    "date": "2021-04-23",
+    "issues": [
+      1019,
+      1291,
+      1463
+    ],
+    "message": "More flexible FixedNumber input and output for strings with no decimals (#1019, #1291, #1463)."
+  },
+  "aa6753709726c4a1bebc5d1752f4229fe62f53da": {
+    "authors": [
+      {
+        "email": "arul@luracast.com",
+        "link": "https://github.com/Arul-",
+        "login": "Arul-"
+      }
+    ],
+    "date": "2018-06-22",
+    "issues": [
+      182
+    ],
+    "message": "Added fallback operations to contract (#182)."
+  },
+  "aacb95cd6b49237656c48d058885350c3ba3b446": {
+    "_missingIssues": [
+      1301
+    ],
+    "authors": [
+      {
+        "email": "nicolas.venturo@gmail.com",
+        "link": "https://github.com/nventuro",
+        "login": "nventuro"
+      },
+      {
+        "link": "https://github.com/alexisgauba",
+        "login": "alexisgauba"
+      }
+    ],
+    "date": "2021-08-09",
+    "issues": [
+      1147,
+      1301,
+      1302
+    ],
+    "message": "docs: added struct encoding example (#1147, #1301, #1302)."
+  },
+  "ab13887cda3939703dc1f7e27d139ef6001b7dd2": {
+    "authors": [
+      {
+        "email": "johnsgresham@gmail.com",
+        "link": "https://github.com/jgresham",
+        "login": "jgresham"
+      }
+    ],
+    "date": "2022-01-06",
+    "issues": [
+      2434
+    ],
+    "message": "Added Kintsugi network (#2434)."
+  },
+  "ab319f2f4c365d4cd1b1e17e577ecd18a7a89276": {
+    "authors": [
+      {
+        "link": "https://github.com/Dan-Nolan",
+        "login": "Dan-Nolan"
+      }
+    ],
+    "date": "2021-10-18",
+    "issues": [
+      1334
+    ],
+    "message": "Include events on ContractFactory deployment transactions (#1334)."
+  },
+  "ab43e7d171b6191abc47318e76ddec4ee7156cdd": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2022-07-14",
+    "issues": [
+      3168
+    ],
+    "message": "Forward any blockTag along in the FallbackProvider during call (#3168)."
+  },
+  "ab806cad153d0246a668014d1621a058cf98ab60": {
+    "authors": [
+      {
+        "link": "https://github.com/viztor",
+        "login": "viztor"
+      }
+    ],
+    "date": "2021-10-04",
+    "issues": [
+      1770
+    ],
+    "message": "docs: fixed typo (#1770)."
+  },
+  "abdf2e30a5169d6ddd368f2bc3cdcd5feed25ae5": {
+    "_missingIssues": [
+      3161
+    ],
+    "authors": [
+      {
+        "email": "leon.talbert@gmail.com",
+        "link": "https://github.com/LeonmanRolls",
+        "login": "LeonmanRolls"
+      }
+    ],
+    "date": "2022-07-14",
+    "issues": [
+      3161
+    ],
+    "message": "Relaxed nameprep length requirement dropping RFC-5891 section 4.2.4 (#3161)."
+  },
+  "accb85268c92fa894e769ec1dca322e117d33e5f": {
+    "authors": [
+      {
+        "link": "https://github.com/lily-57blocks",
+        "login": "lily-57blocks"
+      }
+    ],
+    "date": "2021-08-24",
+    "issues": [
+      1893
+    ],
+    "message": "Removed temporary code for better errors needed until Alchemy added EIP-1559 support (#1893)."
+  },
+  "ad87b718a9c79a96c6fbecc1bb4f8bd270e041f9": {
+    "authors": [
+      {
+        "email": "paul@sablier.finance",
+        "link": "https://github.com/paulrberg",
+        "login": "paulrberg"
+      }
+    ],
+    "date": "2021-10-04",
+    "issues": [
+      2087
+    ],
+    "message": "docs: fixed typos in comments (#2087)."
+  },
+  "ae0d5eb7c2e37a003d893671db59c2d5719aea0f": {
+    "authors": [
+      {
+        "link": "https://github.com/doraemondrian",
+        "login": "doraemondrian"
+      },
+      {
+        "link": "https://github.com/jamesmorgan",
+        "login": "jamesmorgan"
+      },
+      {
+        "link": "https://github.com/tobyjaguar",
+        "login": "tobyjaguar"
+      }
+    ],
+    "date": "2021-04-17",
+    "issues": [
+      62,
+      656,
+      892
+    ],
+    "message": "Removed underscore from the JsonRpcBatchProvider name (#62, #656, #892)."
+  },
+  "ae23bb76a937924bf57baf679e6efd8cdf59bc47": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2022-03-04",
+    "issues": [
+      2478
+    ],
+    "message": "Added CCIP support to provider.call (#2478)."
+  },
+  "af10705632bc1f8203ea50ea7ed3120b01c67122": {
+    "authors": [
+      {
+        "email": "hello@yos.io",
+        "link": "https://github.com/yosriady",
+        "login": "yosriady"
+      }
+    ],
+    "date": "2020-07-20",
+    "issues": [
+      947
+    ],
+    "message": "Add testcases for setLogLevel (#947)."
+  },
+  "af3aed4580da47be1f89fce94c37b91012f92b91": {
+    "authors": [
+      {
+        "link": "https://github.com/sulliwane",
+        "login": "sulliwane"
+      }
+    ],
+    "date": "2019-02-02",
+    "issues": [
+      405
+    ],
+    "message": "Added xpub and xpriv deserialization (#405)."
+  },
+  "b0c082d728dc66b0f2a5ec315da44d6295716284": {
+    "authors": [
+      {
+        "email": "22412996+zemse@users.noreply.github.com",
+        "link": "https://github.com/zemse",
+        "login": "zemse"
+      }
+    ],
+    "date": "2020-08-20",
+    "issues": [
+      1004
+    ],
+    "message": "Fix emitted error for ABI code array count mismatch (#1004)."
+  },
+  "b1affdbc10701c6fc4773ba2712244111623b5f7": {
+    "authors": [
+      {
+        "link": "https://github.com/mrwillis",
+        "login": "mrwillis"
+      }
+    ],
+    "date": "2021-06-24",
+    "issues": [
+      1713
+    ],
+    "message": "Fixed documentation on FallbackProvider priority (#1713)."
+  },
+  "b21681a7f4292b0e77315caad3a59fe814e9292b": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2019-08-03",
+    "issues": [
+      42
+    ],
+    "message": "Added generation scripts for Table A.1 for stringprep (#42)."
+  },
+  "b2db10e216748e4c4d5d359bded904af7bd1128f": {
+    "authors": [
+      {
+        "link": "https://github.com/attente",
+        "login": "attente"
+      }
+    ],
+    "date": "2018-10-07",
+    "issues": [
+      293
+    ],
+    "message": "Mark progressCallback as optional (#293)."
+  },
+  "b2ecffb0c8d44c8ee65199e7866dc744abae4e6e": {
+    "authors": [
+      {
+        "link": "https://github.com/glomotion",
+        "login": "glomotion"
+      }
+    ],
+    "date": "2021-03-07",
+    "issues": [
+      1288
+    ],
+    "message": "Bumped TypeScript to 4.2.2 (#1288)."
+  },
+  "b5f720ace6ac3e43beb2aaeda774f00f050192f4": {
+    "authors": [
+      {
+        "link": "https://github.com/ochikov",
+        "login": "ochikov"
+      }
+    ],
+    "date": "2019-01-24",
+    "issues": [
+      400
+    ],
+    "message": "Ganache does not include from in receipts (#400)."
+  },
+  "b65508995ce7d02f109a970ebeb625819beb915a": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-04-14",
+    "issues": [
+      1364
+    ],
+    "message": "Fixed EIP-2930 transactions for EtherscanProvider (#1364)."
+  },
+  "bacc4403979fa423890e269e7a5c7d11c6891a9f": {
+    "authors": [
+      {
+        "link": "https://github.com/mrwillis",
+        "login": "mrwillis"
+      }
+    ],
+    "date": "2020-02-04",
+    "issues": [
+      477
+    ],
+    "message": "Added timeout to waitForTransaction (#477)."
+  },
+  "bbb4f407b34782c36ff93fa528e3b9f793987d4a": {
+    "authors": [
+      {
+        "email": "22412996+zemse@users.noreply.github.com",
+        "link": "https://github.com/zemse",
+        "login": "zemse"
+      }
+    ],
+    "date": "2020-06-14",
+    "issues": [
+      882
+    ],
+    "message": "Allow provider.ready to stall until the network is available (#882)."
+  },
+  "bc3eeeca39adb734f24019d0e942eff2eac6ad4d": {
+    "authors": [
+      {
+        "link": "https://github.com/dev1644",
+        "login": "dev1644"
+      }
+    ],
+    "date": "2020-09-11",
+    "issues": [
+      1021
+    ],
+    "message": "Better error forwarding from FallbackProvider (#1021)."
+  },
+  "bc457bb3bde7f3c3f1ca2e8345cdf1a4e0701454": {
+    "authors": [
+      {
+        "email": "liam@lihorne.com",
+        "link": "https://github.com/snario",
+        "login": "snario"
+      }
+    ],
+    "date": "2018-12-04",
+    "issues": [
+      360
+    ],
+    "message": "Allow any whitespace characters in human-readable ABI (#360)."
+  },
+  "bcba17a9e76e9ff7867e3d8e32a508fc1582e003": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2018-12-12",
+    "issues": [
+      228
+    ],
+    "message": "Allow nonce to be a BigNumber (#228)."
+  },
+  "bd05aed070ac9e1421a3e2bff2ceea150bedf9b7": {
+    "authors": [
+      {
+        "email": "fg@frang.io",
+        "link": "https://github.com/frangio",
+        "login": "frangio"
+      },
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-04-22",
+    "issues": [
+      1493,
+      1497
+    ],
+    "message": "Do not throw on ABI _error_ type (#1493, #1497)."
+  },
+  "bd066b85421b1d0e575180e0626fcfb70135caf0": {
+    "authors": [
+      {
+        "link": "https://github.com/rjchow",
+        "login": "rjchow"
+      }
+    ],
+    "date": "2020-01-08",
+    "issues": [
+      694
+    ],
+    "message": "Fix resolveName when name is an address with an invalid checksum (#694)."
+  },
+  "bd152f7ea06300dddc07e9f52c2d41e0e27de699": {
+    "authors": [
+      {
+        "link": "https://github.com/a2468834",
+        "login": "a2468834"
+      }
+    ],
+    "date": "2022-04-29",
+    "issues": [
+      2821
+    ],
+    "message": "docs: added info on the block._difficulty property and explain its necessity (#2821)."
+  },
+  "bda66230916e58e25a522e8430ce4de25091eb6b": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-04-25",
+    "issues": [
+      800
+    ],
+    "message": "Added initial support for recoverable coding erros (#800)."
+  },
+  "bdb54ac52bd58b535aaff0fb366bc91828ecaa21": {
+    "authors": [
+      {
+        "link": "https://github.com/Code0x2",
+        "login": "Code0x2"
+      }
+    ],
+    "date": "2021-08-24",
+    "issues": [
+      1857
+    ],
+    "message": "docs: added cookbook entry to compute raw transaction (#1857)."
+  },
+  "be273f26e9d0814c47090685412a27fc848ab7e5": {
+    "authors": [
+      {
+        "link": "https://github.com/nicholasjpaterno",
+        "login": "nicholasjpaterno"
+      }
+    ],
+    "date": "2020-08-20",
+    "issues": [
+      996
+    ],
+    "message": "Fixed typos in readme (#996)."
+  },
+  "be3854e648fdef0478db8a64c26be6d9e90cf453": {
+    "authors": [
+      {
+        "link": "https://github.com/chaitanya5",
+        "login": "chaitanya5"
+      }
+    ],
+    "date": "2021-07-30",
+    "issues": [
+      1766
+    ],
+    "message": "Forward some missing EIP-1559 fields to call and estimateGas (#1766)."
+  },
+  "be4e2164e64dfa0697561763e8079120a485a566": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-10-19",
+    "issues": [
+      687
+    ],
+    "message": "Initial Signer support for EIP-712 signed typed data (#687)."
+  },
+  "be518c32ec7db9dd4769b57cdf130eb333aebb72": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2022-03-09",
+    "issues": [
+      2478
+    ],
+    "message": "Enable CCIP Read for ENS resolvers (#2478)."
+  },
+  "bebd6698c6c3193f0bdb96b54c5daa5ee5d0692c": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2022-04-29",
+    "issues": [
+      2846
+    ],
+    "message": "Better error coalescing for OpenEthereum nodes (#2846)."
+  },
+  "bf65ddbff0036f6eb8e99c145f30edff157687f5": {
+    "authors": [
+      {
+        "link": "https://github.com/oed",
+        "login": "oed"
+      },
+      {
+        "link": "https://github.com/Amxx",
+        "login": "Amxx"
+      }
+    ],
+    "date": "2020-07-08",
+    "issues": [
+      893,
+      933
+    ],
+    "message": "Fixed splitSignature when recoveryParam is encoded directly (#893, #933)."
+  },
+  "bfcd05fcbb132d456d6f22f70c8ac9cf5b1826f7": {
+    "authors": [
+      {
+        "email": "jmcph4.github@gmail.com",
+        "link": "https://github.com/jmcph4",
+        "login": "jmcph4"
+      }
+    ],
+    "date": "2021-05-31",
+    "issues": [
+      1576
+    ],
+    "message": "Added MinInt256 and MaxInt256 constants (#1576)."
+  },
+  "bfcf224b2bcfa10ff1a1250c3943d33daa98d6d8": {
+    "authors": [
+      {
+        "link": "https://github.com/mitar",
+        "login": "mitar"
+      }
+    ],
+    "date": "2019-09-06",
+    "issues": [
+      592
+    ],
+    "message": "Fixed typo in error message (#592)."
+  },
+  "bffc557be1b84ae2b69edd5071f7a072c94421e9": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2018-11-20",
+    "issues": [
+      351
+    ],
+    "message": "Added default provider support for Ethereum classic (#351)."
+  },
+  "c004ae50f3df833380ca1540ef5024965ac8ef48": {
+    "authors": [
+      {
+        "link": "https://github.com/bertho-zero",
+        "login": "bertho-zero"
+      }
+    ],
+    "date": "2022-07-14",
+    "issues": [
+      3157
+    ],
+    "message": "Fixed Interface signautres missing strings as eventFragments (#3157)."
+  },
+  "c0869623024bbf3671938dad03b131ff2ac54345": {
+    "authors": [
+      {
+        "link": "https://github.com/lcswillems",
+        "login": "lcswillems"
+      }
+    ],
+    "date": "2021-04-20",
+    "issues": [
+      1485
+    ],
+    "message": "Fixed BigNumber toBigInt return type (#1485)."
+  },
+  "c15a89832b2fd8ab06b9ec655487cb50e8ded7c1": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2019-02-15",
+    "issues": [
+      424
+    ],
+    "message": "Fix waitForTransaction delay (#424)."
+  },
+  "c2a6a012bf1d8fcd5805e45754cebdfe211c6933": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2022-02-24",
+    "issues": [
+      2737
+    ],
+    "message": "Fix contracts when name resolution fails without any checks (#2737)."
+  },
+  "c303199d26d6c5959b1a85a24ca162a1e405c63b": {
+    "authors": [
+      {
+        "link": "https://github.com/mitar",
+        "login": "mitar"
+      }
+    ],
+    "date": "2019-08-26",
+    "issues": [
+      592
+    ],
+    "message": "Fixed typo in error message (#592)."
+  },
+  "c309df8a3e988b00b4bc636622be78e246379f73": {
+    "authors": [
+      {
+        "email": "zzn-github@zzn.im",
+        "link": "https://github.com/xinbenlv",
+        "login": "xinbenlv"
+      }
+    ],
+    "date": "2022-06-30",
+    "issues": [
+      3096
+    ],
+    "message": "Allow browser fetch option overrides (#3096)."
+  },
+  "c34a1f73c6e05a098bd15e760971f68c0a471770": {
+    "authors": [
+      {
+        "link": "https://github.com/zhaozhiming",
+        "login": "zhaozhiming"
+      }
+    ],
+    "date": "2018-10-03",
+    "issues": [
+      191
+    ],
+    "message": "Added French and Spanish BIP-39 wordlists (#191)."
+  },
+  "c3b5a6e47e67c37b46f4ae58b4355c84e5f653f8": {
+    "authors": [
+      {
+        "link": "https://github.com/dwardu",
+        "login": "dwardu"
+      }
+    ],
+    "date": "2022-06-18",
+    "issues": [
+      3061
+    ],
+    "message": "docs: fixed typo in example (#3061)."
+  },
+  "c47d2eba4dc741eb5cb754c3ef5064b8ea7ac7cc": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-03-26",
+    "issues": [
+      1364
+    ],
+    "message": "Added EIP-2930 support (#1364)."
+  },
+  "c4a494b528f2e5f706c159d916d8ff0ffd96a211": {
+    "authors": [
+      {
+        "email": "maarten@zuidhoorn.com",
+        "link": "https://github.com/Mrtenz",
+        "login": "Mrtenz"
+      }
+    ],
+    "date": "2019-06-01",
+    "issues": [
+      530
+    ],
+    "message": "Fixed invalid arrayify value in browser for SHA2-HMAC (#530)."
+  },
+  "c4de88af6f8b72d9632ab9840db0f6b37c43289f": {
+    "authors": [
+      {
+        "email": "pauldavidcowgill@gmail.com",
+        "link": "https://github.com/pcowgill",
+        "login": "pcowgill"
+      }
+    ],
+    "date": "2020-09-23",
+    "issues": [
+      1044
+    ],
+    "message": "Docs: Fix typo (#1044)."
+  },
+  "c53864de0af55dd8ec8ca5681e78da380d85250a": {
+    "authors": [
+      {
+        "email": "22412996+zemse@users.noreply.github.com",
+        "link": "https://github.com/zemse",
+        "login": "zemse"
+      }
+    ],
+    "date": "2020-06-29",
+    "issues": [
+      901
+    ],
+    "message": "Added StaticJsonRpcProvider for reducing calls to chainId in certain cases (#901)."
+  },
+  "c562150d2678710f50e5ee3ffa88d0e62d6f696f": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2022-02-21",
+    "issues": [
+      2489
+    ],
+    "message": "Tweaked error URLs (#2489)."
+  },
+  "c5a53d6911d7c41dd03a290b550e80f2919e9379": {
+    "authors": [
+      {
+        "link": "https://github.com/PierreJeanjacquot",
+        "login": "PierreJeanjacquot"
+      }
+    ],
+    "date": "2021-02-25",
+    "issues": [
+      1193
+    ],
+    "message": "Force TypedData numbers to be in decimal (#1193)."
+  },
+  "c5bca7767e3f3d43e3d0bd3c9e9420321ee9907a": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-06-15",
+    "issues": [
+      1610
+    ],
+    "message": "Refactored eip-1559 logic (#1610)."
+  },
+  "c61f3bc2a070149ca219f76241ea9901e1b7fcb9": {
+    "authors": [
+      {
+        "link": "https://github.com/mikaeldusenne",
+        "login": "mikaeldusenne"
+      }
+    ],
+    "date": "2022-02-03",
+    "issues": [
+      2397
+    ],
+    "message": "docs: fixed import typo (#2397)."
+  },
+  "c6eebf9928597cab305b663fa409d30e3122e7d0": {
+    "authors": [
+      {
+        "link": "https://github.com/eliotstock",
+        "login": "eliotstock"
+      }
+    ],
+    "date": "2022-05-12",
+    "issues": [
+      2968
+    ],
+    "message": "Added optimism to EtherscanProvider (#2968)."
+  },
+  "c76e01e61fd52692f58c516842f7ed3b252b0f83": {
+    "authors": [
+      {
+        "email": "phireskyde+gh@gmail.com",
+        "link": "https://github.com/phiresky",
+        "login": "phiresky"
+      }
+    ],
+    "date": "2020-01-03",
+    "issues": [
+      695
+    ],
+    "message": "Properly handle errors in the IpcProvider (#695)."
+  },
+  "c7e9715758c865aeb726bec6608d31d45dfde22c": {
+    "authors": [
+      {
+        "link": "https://github.com/ASmallPotato",
+        "login": "ASmallPotato"
+      }
+    ],
+    "date": "2021-11-30",
+    "issues": [
+      2224,
+      2257
+    ],
+    "message": "docs: Fixed ContractFactory.connect return type (#2224, #2257)"
+  },
+  "c8bb77d8af85d2f9f9df82f1afbe7516ab296e98": {
+    "authors": [
+      {
+        "link": "https://github.com/matYang",
+        "login": "matYang"
+      }
+    ],
+    "date": "2020-11-22",
+    "issues": [
+      1164
+    ],
+    "message": "Allow base-10 to be passed into BigNumbner.toString and improve errors for other radices (#1164)."
+  },
+  "c93b48920e4861b4fe35c60be19344abbb19a184": {
+    "authors": [
+      {
+        "link": "https://github.com/BigMurry",
+        "login": "BigMurry"
+      }
+    ],
+    "date": "2019-04-18",
+    "issues": [
+      489
+    ],
+    "message": "Increment JSON-RPC ID for JsonRpcProviders for environments that unsafely manage callbacks (#489)."
+  },
+  "c969fe5a68a0703a892dc5ab6e09a6938ccc9e4c": {
+    "authors": [
+      {
+        "email": "kevin@kliu.io",
+        "link": "https://github.com/kliu128",
+        "login": "kliu128"
+      }
+    ],
+    "date": "2019-09-06",
+    "issues": [
+      580
+    ],
+    "message": "Fixed typo in error message (#580)."
+  },
+  "c9e548071e9ed03e3b12f40f0be779c16422a73f": {
+    "authors": [
+      {
+        "email": "rksethuram9@gmail.com",
+        "link": "https://github.com/rhlsthrm",
+        "login": "rhlsthrm"
+      }
+    ],
+    "date": "2020-11-19",
+    "issues": [
+      1163
+    ],
+    "message": "Force address to use bignumber package with base36 private functions (#1163)."
+  },
+  "caa198366539830e5a7497871c2ad1dee0a5f2e1": {
+    "authors": [
+      {
+        "email": "samlaf92@gmail.com",
+        "link": "https://github.com/samlaf",
+        "login": "samlaf"
+      }
+    ],
+    "date": "2021-11-30",
+    "issues": [
+      2336
+    ],
+    "message": "docs: Add view/pure to docs (#2336)"
+  },
+  "cadb28d6b364e68e43a06f7a9b8a31797afbd920": {
+    "authors": [
+      {
+        "link": "https://github.com/andrewpaulicek",
+        "login": "andrewpaulicek"
+      }
+    ],
+    "date": "2020-09-05",
+    "issues": [
+      936
+    ],
+    "message": "Fixed LedgerSigner sendTransaction (#936)."
+  },
+  "cadccc3060b88ab2ca64aeb302717d2d1c95a897": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-04-23",
+    "issues": [
+      1472
+    ],
+    "message": "Add bigint to allowed BigNumberish types (#1472)."
+  },
+  "cb43a99405cdc5bdcc875efc1821e00e55447791": {
+    "authors": [
+      {
+        "email": "zmp@umich.edu",
+        "link": "https://github.com/zzmp",
+        "login": "zzmp"
+      },
+      {
+        "link": "https://github.com/aksdevac",
+        "login": "aksdevac"
+      }
+    ],
+    "date": "2021-10-16",
+    "issues": [
+      2058,
+      2077
+    ],
+    "message": "Removed extra wordlists from the dist files (#2058, #2077)."
+  },
+  "cb8f4a3a4e378a749c6bbbddf46d8d79d35722cc": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-08-25",
+    "issues": [
+      1013
+    ],
+    "message": "Updated docs for all packages on npm pages (#1013)."
+  },
+  "cc250b2060451e0ee6b1cf3edb6b005f9eee9c61": {
+    "authors": [
+      {
+        "link": "https://github.com/NiftyAndy",
+        "login": "NiftyAndy"
+      }
+    ],
+    "date": "2021-10-04",
+    "issues": [
+      2031
+    ],
+    "message": "Allow any Networkish for getDefaultProvider (#2031)."
+  },
+  "cc63e61f73d530c28655f9421506a25fc0a49df0": {
+    "authors": [
+      {
+        "email": "mark.tyneway@gmail.com",
+        "link": "https://github.com/tynes",
+        "login": "tynes"
+      }
+    ],
+    "date": "2020-11-19",
+    "issues": [
+      1136
+    ],
+    "message": "Remove stray console.log in hardware wallets (#1136)."
+  },
+  "cddc258c963ab63de426b89ef190b83aefe6f6cd": {
+    "authors": [
+      {
+        "link": "https://github.com/desfero",
+        "login": "desfero"
+      }
+    ],
+    "date": "2020-11-18",
+    "issues": [
+      1133
+    ],
+    "message": "Remove invalid pkg.module reference (#1133)."
+  },
+  "cf036e1ffad3340fcf1c7559d0032493ccc08e6e": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2019-11-24",
+    "issues": [
+      666
+    ],
+    "message": "Update elliptic package to protect from Minerva timing attack (#666)."
+  },
+  "cf39adb09020ca0393e028b330bfd07fb4869236": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2019-05-24",
+    "issues": [
+      476
+    ],
+    "message": "Allow storage class in Human-Readable ABI (#476)."
+  },
+  "cf47ec5fd5c7e6dda4da499b1c25ac1d1cc84b5a": {
+    "authors": [
+      {
+        "link": "https://github.com/starwalker00",
+        "login": "starwalker00"
+      }
+    ],
+    "date": "2022-03-04",
+    "issues": [
+      2760
+    ],
+    "message": "docs: fixed typo (#2760)."
+  },
+  "cfa6dec29314fe485df283974612d40550bc4179": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-10-10",
+    "issues": [
+      687
+    ],
+    "message": "Initial EIP-712 utilities (#687)."
+  },
+  "d001901c8c0541c823eb9638b9b309a316b00757": {
+    "authors": [
+      {
+        "email": "mfornet94@gmail.com",
+        "link": "https://github.com/mfornet",
+        "login": "mfornet"
+      }
+    ],
+    "date": "2021-06-24",
+    "issues": [
+      1687
+    ],
+    "message": "Added type to TransactionResponse and TrnsactionReceipt (#1687)."
+  },
+  "d06aa26d74eecd06149f908ce25dbaf867754c0e": {
+    "authors": [
+      {
+        "link": "https://github.com/psytron",
+        "login": "psytron"
+      }
+    ],
+    "date": "2022-05-20",
+    "issues": [
+      2976
+    ],
+    "message": "Fix WebWorker support in rollup files (#2976)."
+  },
+  "d0e0e30532baf387df6b4a8efe0805986cc265f2": {
+    "authors": [
+      {
+        "link": "https://github.com/andrewgordstewart",
+        "login": "andrewgordstewart"
+      }
+    ],
+    "date": "2019-10-30",
+    "issues": [
+      613
+    ],
+    "message": "Fix filters by forcing a poll instantly when polling starts to capture the current block (#613)."
+  },
+  "d1d636b503f7dec8b7b6efc109c4590654fbf782": {
+    "authors": [
+      {
+        "link": "https://github.com/PierreJeanjacquot",
+        "login": "PierreJeanjacquot"
+      }
+    ],
+    "date": "2021-10-04",
+    "issues": [
+      2125
+    ],
+    "message": "docs: fixed typo (#2125)."
+  },
+  "d2406c42a18c123205918eb46bf24de0ff97ee23": {
+    "authors": [
+      {
+        "link": "https://github.com/danielattilasimon",
+        "login": "danielattilasimon"
+      }
+    ],
+    "date": "2020-06-03",
+    "issues": [
+      860
+    ],
+    "message": "Added test case for null from and blockTag to contract populateTransaction (#860)."
+  },
+  "d2ca4fb443b2653063ca5aa349b52ecd0ff79e2f": {
+    "authors": [
+      {
+        "email": "me@nikita.tk",
+        "link": "https://github.com/ZitRos",
+        "login": "ZitRos"
+      },
+      {
+        "link": "https://github.com/kerzhner",
+        "login": "kerzhner"
+      }
+    ],
+    "date": "2020-06-03",
+    "issues": [
+      495,
+      861
+    ],
+    "message": "Fix non-any Provider network emit (#495, #861)."
+  },
+  "d3b1ac046aaf2a46f6c3efbd93c55adb0cb8f16d": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-12-08",
+    "issues": [
+      687
+    ],
+    "message": "Fixed EIP-712 getPayload dropping EIP712Domain from types for JSON-RPC calls (#687)."
+  },
+  "d3d2953e8d9be971453cbb3745bb7d1385a77367": {
+    "authors": [
+      {
+        "email": "keir@chainfrog.com",
+        "link": "https://github.com/kf106",
+        "login": "kf106"
+      }
+    ],
+    "date": "2021-12-01",
+    "issues": [
+      2321
+    ],
+    "message": "docs: fixed and expanded explanation of fees (#2321)"
+  },
+  "d55ab6d4e6025c484cc7e64486d927bd54a0772b": {
+    "authors": [
+      {
+        "link": "https://github.com/doraemondrian",
+        "login": "doraemondrian"
+      },
+      {
+        "link": "https://github.com/jamesmorgan",
+        "login": "jamesmorgan"
+      },
+      {
+        "link": "https://github.com/tobyjaguar",
+        "login": "tobyjaguar"
+      }
+    ],
+    "date": "2021-04-02",
+    "issues": [
+      62,
+      656,
+      892
+    ],
+    "message": "Added experimental _JsonRpcBatchProvider (#62, #656, #892)."
+  },
+  "d5815cc4f1c13e5265c748d8afc4c085a97b1945": {
+    "authors": [
+      {
+        "email": "trkporter@ucdavis.edu",
+        "link": "https://github.com/tkporter",
+        "login": "tkporter"
+      }
+    ],
+    "date": "2022-05-14",
+    "issues": [
+      2982
+    ],
+    "message": "Pad position in JSON-RPC getStorageAt calls (#2982)."
+  },
+  "d5b41ce210c0f22dd795749810f6ce798f71a00f": {
+    "authors": [
+      {
+        "email": "lyova.potyomkin@gmail.com",
+        "link": "https://github.com/ly0va",
+        "login": "ly0va"
+      }
+    ],
+    "date": "2021-10-04",
+    "issues": [
+      1838
+    ],
+    "message": "Removed redundant call to normalizing blockTag (1838)."
+  },
+  "d67f8fb778533ac450c6764c09862588f49da126": {
+    "authors": [
+      {
+        "email": "github.com@phor.net",
+        "link": "https://github.com/fulldecent",
+        "login": "fulldecent"
+      }
+    ],
+    "date": "2021-10-04",
+    "issues": [
+      2033
+    ],
+    "message": "docs: fixed capitalization of MetaMask (#2033)."
+  },
+  "d7c8b355a049b36068b0525a357c6278639a8d58": {
+    "authors": [
+      {
+        "link": "https://github.com/ddaws",
+        "login": "ddaws"
+      }
+    ],
+    "date": "2020-04-04",
+    "issues": [
+      762
+    ],
+    "message": "Fix stateMutability calculation for constructors (#762)."
+  },
+  "d83c5834126ce6035ce319b6c1b373ceb678ce7a": {
+    "authors": [
+      {
+        "email": "suraneti.rod@gmail.com",
+        "link": "https://github.com/suraneti",
+        "login": "suraneti"
+      }
+    ],
+    "date": "2021-02-04",
+    "issues": [
+      1271
+    ],
+    "message": "docs: updated NonceManager method name (#1271)."
+  },
+  "d8821d731746f9a684be81123b9a4814680dd74b": {
+    "authors": [
+      {
+        "email": "treeder@gmail.com",
+        "link": "https://github.com/treeder",
+        "login": "treeder"
+      }
+    ],
+    "date": "2020-10-06",
+    "issues": [
+      1087
+    ],
+    "message": "Docs: Fixed typo (#1087)."
+  },
+  "d88ee45937b3484b68f72e3f72ad6c29556c984b": {
+    "authors": [
+      {
+        "email": "greg.beaver.cello@gmail.com",
+        "link": "https://github.com/cellog",
+        "login": "cellog"
+      }
+    ],
+    "date": "2019-07-20",
+    "issues": [
+      561
+    ],
+    "message": "Updated package.json description for Contract package (#561)."
+  },
+  "d936b4cd09126f395d5478b65c076049e560940c": {
+    "authors": [
+      {
+        "link": "https://github.com/NoahMarconi",
+        "login": "NoahMarconi"
+      }
+    ],
+    "date": "2018-10-03",
+    "issues": [
+      223
+    ],
+    "message": "Fixed scrypt for long passwords (#223)."
+  },
+  "d937668dc1d39cc293f64bbd30b99b29614d1607": {
+    "authors": [
+      {
+        "email": "mikael.lazarev@gmail.com",
+        "link": "https://github.com/0xmikko",
+        "login": "0xmikko"
+      }
+    ],
+    "date": "2021-02-12",
+    "issues": [
+      1234
+    ],
+    "message": "Prevent unhandled rejections when passing nullish into Contract constructor (#1234)."
+  },
+  "d9d438a119bb11f8516fc9cf02c534ab3816fcb3": {
+    "authors": [
+      {
+        "link": "https://github.com/naddison36",
+        "login": "naddison36"
+      }
+    ],
+    "date": "2019-10-19",
+    "issues": [
+      573
+    ],
+    "message": "Force deploy receipt to address to be null (#573)."
+  },
+  "d9f45b3b9db92c72f9c606bab8315d0eb02fec70": {
+    "authors": [
+      {
+        "link": "https://github.com/codingwithmanny",
+        "login": "codingwithmanny"
+      }
+    ],
+    "date": "2022-05-01",
+    "issues": [
+      2949,
+      2950
+    ],
+    "message": "Added testnets for AnkrProvider (#2949, #2950)."
+  },
+  "da412f660723d1c411484e74970ce4eb166374c2": {
+    "authors": [
+      {
+        "link": "https://github.com/epheph",
+        "login": "epheph"
+      }
+    ],
+    "date": "2020-04-04",
+    "issues": [
+      415
+    ],
+    "message": "Force Log properties to be non-optional (#415)."
+  },
+  "dab6ede226e572706655e2865d4c953e37741a5c": {
+    "_missingIssues": [
+      2849
+    ],
+    "authors": [
+      {
+        "email": "kamil.sliwak+github@codepoets.it",
+        "link": "https://github.com/cameel",
+        "login": "cameel"
+      },
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2022-04-13",
+    "issues": [
+      2849,
+      2862
+    ],
+    "message": "Mimic Hardhard error strings in CALL_EXCEPTION for popular matchers (#2849, #2862)."
+  },
+  "dd09bf0735813c80467340bccbb5b1ecf27ee0d4": {
+    "authors": [
+      {
+        "link": "https://github.com/jeffprestes",
+        "login": "jeffprestes"
+      }
+    ],
+    "date": "2021-08-10",
+    "issues": [
+      982
+    ],
+    "message": "docs: dded code examples for Contract (#982)."
+  },
+  "df1ae611bab0955005b0da6604191b60b34f198f": {
+    "authors": [
+      {
+        "email": "agresso@gmail.com",
+        "link": "https://github.com/bogdan",
+        "login": "bogdan"
+      }
+    ],
+    "date": "2019-11-24",
+    "issues": [
+      663
+    ],
+    "message": "Moved node types to devDependencies (#663)."
+  },
+  "e0927461657f2e26bb13a9919f5a9ca679bd1b38": {
+    "authors": [
+      {
+        "email": "micah@zoltu.net",
+        "link": "https://github.com/MicahZoltu",
+        "login": "MicahZoltu"
+      }
+    ],
+    "date": "2018-08-21",
+    "issues": [
+      261
+    ],
+    "message": "Removed jsonCopy and added deepCopy instead (#261)."
+  },
+  "e1509a6326dd2cb8bf7ed64b82dd3947b768a314": {
+    "authors": [
+      {
+        "link": "https://github.com/yayajacky",
+        "login": "yayajacky"
+      }
+    ],
+    "date": "2019-11-01",
+    "issues": [
+      634
+    ],
+    "message": "Migrating providers to modern syntax and scoping (#634)."
+  },
+  "e1754483809b45dcf948b1d91c91517bd5387e42": {
+    "authors": [
+      {
+        "link": "https://github.com/krunkosaurus",
+        "login": "krunkosaurus"
+      }
+    ],
+    "date": "2022-02-03",
+    "issues": [
+      2625
+    ],
+    "message": "docs: added BaseProvider (#2625)."
+  },
+  "e19290305080ebdfa2cb2ab2719cb53fee5a6cc7": {
+    "authors": [
+      {
+        "link": "https://github.com/ceo-domido",
+        "login": "ceo-domido"
+      }
+    ],
+    "date": "2022-03-25",
+    "issues": [
+      2833
+    ],
+    "message": "Fixed left-padding in arrayify (#2833)."
+  },
+  "e39e2ed718364cfccb6921518500dd19f2a479fe": {
+    "authors": [
+      {
+        "link": "https://github.com/SilentCicero",
+        "login": "SilentCicero"
+      }
+    ],
+    "date": "2018-10-07",
+    "issues": [
+      196
+    ],
+    "message": "Added address to HDNode (#196)."
+  },
+  "e3f7426af4d6d7e43db322700d768216b06433e0": {
+    "authors": [
+      {
+        "link": "https://github.com/pnlp-dev",
+        "login": "pnlp-dev"
+      }
+    ],
+    "date": "2020-07-20",
+    "issues": [
+      966
+    ],
+    "message": "Removed UUID dependency from json-wallets (#966)."
+  },
+  "e4423b7a277e7e1be1c02d345d4ab1eab484c9b8": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2019-07-09",
+    "issues": [
+      557
+    ],
+    "message": "Make mnemonic phrases case agnostic (#557)."
+  },
+  "e67a66f90016a54e8334793bb2496545b51b5b16": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2018-03-05",
+    "issues": [
+      95
+    ],
+    "message": "Major version update; some changes are not backwards compatible. This package has been merged into one package instead of an umbrella pacakge. (See: #95)"
+  },
+  "e6f6383346818fa67423f1f20450e011242eb554": {
+    "authors": [
+      {
+        "email": "greg.beaver.cello@gmail.com",
+        "link": "https://github.com/cellog",
+        "login": "cellog"
+      }
+    ],
+    "date": "2019-06-06",
+    "issues": [
+      512
+    ],
+    "message": "Expose poll function in utils (#512)."
+  },
+  "e727efc33eaa31c3af6adbb64a893caf354d0ba7": {
+    "authors": [
+      {
+        "link": "https://github.com/bguiz",
+        "login": "bguiz"
+      },
+      {
+        "link": "https://github.com/FrederikBolding",
+        "login": "FrederikBolding"
+      }
+    ],
+    "date": "2021-02-01",
+    "issues": [
+      952,
+      1251
+    ],
+    "message": "Added support for networks with slightly incorrect EIP-658 implementations (#952, #1251)."
+  },
+  "e80f8dd4e64425b42da4d8a2a238c8cfe8efb2c7": {
+    "authors": [
+      {
+        "link": "https://github.com/GiraeffleAeffle",
+        "login": "GiraeffleAeffle"
+      }
+    ],
+    "date": "2021-08-09",
+    "issues": [
+      1777
+    ],
+    "message": "docs: updates for EIP-1559 (#1777)."
+  },
+  "e86f83b9c052522da6ec8651a4bf1b8d18935586": {
+    "authors": [
+      {
+        "email": "pauldavidcowgill@gmail.com",
+        "link": "https://github.com/pcowgill",
+        "login": "pcowgill"
+      }
+    ],
+    "date": "2020-10-03",
+    "issues": [
+      1074
+    ],
+    "message": "Docs: Fixed typo (#1074)."
+  },
+  "e8a0144b7aa95add967578d9629d70bf01fc55cf": {
+    "authors": [
+      {
+        "email": "aakilfernandes@gmail.com",
+        "link": "https://github.com/aakilfernandes",
+        "login": "aakilfernandes"
+      }
+    ],
+    "date": "2021-06-22",
+    "issues": [
+      728
+    ],
+    "message": "Fix issue with loading JSON ABI with internalType property (#728)."
+  },
+  "e8b23c29a5b8fe9109516bcdb7c397cb394b0ada": {
+    "authors": [
+      {
+        "email": "zenkjenna@gmail.com",
+        "link": "https://github.com/jennazenk",
+        "login": "jennazenk"
+      }
+    ],
+    "date": "2017-11-17",
+    "issues": [
+      69
+    ],
+    "message": "Fixed for PoA networks getTransactionReceipt (#69)."
+  },
+  "e8c89d7ca9cea6e20281f614c4fb22f180114622": {
+    "authors": [
+      {
+        "link": "https://github.com/superoo7",
+        "login": "superoo7"
+      }
+    ],
+    "date": "2020-04-22",
+    "issues": [
+      746
+    ],
+    "message": "Allow receive type in ABI without warning (#746)."
+  },
+  "e9009631d533bc675848f741c37f642572934dbd": {
+    "authors": [
+      {
+        "link": "https://github.com/willrnch",
+        "login": "willrnch"
+      }
+    ],
+    "date": "2020-08-20",
+    "issues": [
+      976
+    ],
+    "message": "Fixed typo in docs (#976)."
+  },
+  "e95708eedc130aeb92820a2234398970a987c507": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-06-26",
+    "issues": [
+      1610
+    ],
+    "message": "Updated gasPrice to be optional for eip-1559 (#1610)."
+  },
+  "ea102ef7c4fa5df7b9389fbc8a2947bbbd4c471e": {
+    "authors": [
+      {
+        "link": "https://github.com/pstuermlinger",
+        "login": "pstuermlinger"
+      }
+    ],
+    "date": "2020-01-19",
+    "issues": [
+      497
+    ],
+    "message": "Fixed some typing for receipts and logs (#497)."
+  },
+  "ea2d2453a535a319ad55e7ca739ab1bcdb1432b7": {
+    "authors": [
+      {
+        "link": "https://github.com/Caruso33",
+        "login": "Caruso33"
+      },
+      {
+        "link": "https://github.com/knivets",
+        "login": "knivets"
+      }
+    ],
+    "date": "2022-07-20",
+    "issues": [
+      3069,
+      3094
+    ],
+    "message": "Fix old events from being emitted at the beginning of a filter (#3069, #3094)."
+  },
+  "eb1ec2f2318e2851073ea1634e5003cdb53f1c1b": {
+    "authors": [
+      {
+        "email": "tnalsl1984@naver.com",
+        "link": "https://github.com/gruming",
+        "login": "gruming"
+      }
+    ],
+    "date": "2021-04-17",
+    "issues": [
+      1298
+    ],
+    "message": "Fix Android React Native environment shims which crash on normalizing Korean test (#1298)."
+  },
+  "eb26a6d95022a241c44f859e7b2f29646afb4914": {
+    "authors": [
+      {
+        "email": "julien.genestoux@gmail.com",
+        "link": "https://github.com/julien51",
+        "login": "julien51"
+      }
+    ],
+    "date": "2020-01-06",
+    "issues": [
+      697
+    ],
+    "message": "Added function to generate CREATE2 addresses (#697)."
+  },
+  "ebf42dc9e036dd16e58e55f141ea64cb2c6e585f": {
+    "authors": [
+      {
+        "email": "micah@zoltu.net",
+        "link": "https://github.com/MicahZoltu",
+        "login": "MicahZoltu"
+      }
+    ],
+    "date": "2018-07-01",
+    "issues": [
+      220
+    ],
+    "message": "Fixed extra output in array data. (#220)"
+  },
+  "ebfca98dc276d6f6ca6961632635e8203bb17645": {
+    "authors": [
+      {
+        "email": "greg.beaver.cello@gmail.com",
+        "link": "https://github.com/cellog",
+        "login": "cellog"
+      }
+    ],
+    "date": "2019-08-22",
+    "issues": [
+      561
+    ],
+    "message": "Fixed package descriptions (#561)."
+  },
+  "ecce86125d87ef5258406bde2fff5bc8c9ff3141": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2021-10-19",
+    "issues": [
+      2185
+    ],
+    "message": "Added ENS avatar support to provider (#2185)."
+  },
+  "ed7e6a500e6087efcace8a5ff98997fbce2c6d6d": {
+    "authors": [
+      {
+        "email": "ouromoros@gmail.com",
+        "link": "https://github.com/ouromoros",
+        "login": "ouromoros"
+      }
+    ],
+    "date": "2022-05-20",
+    "issues": [
+      2995
+    ],
+    "message": "Remove superfluous logging (#2995)."
+  },
+  "edb7c5da91ce271688561364d867998b0f0675e3": {
+    "authors": [
+      {
+        "link": "https://github.com/3sGgpQ8H",
+        "login": "3sGgpQ8H"
+      }
+    ],
+    "date": "2020-02-04",
+    "issues": [
+      708
+    ],
+    "message": "Safer transaction serialization, matching signature.v with chainId (#708)."
+  },
+  "ee82e86ccc439825259d20825a00050217890ad3": {
+    "authors": [
+      {
+        "email": "mohamed@paraswap.io",
+        "link": "https://github.com/mwamedacen",
+        "login": "mwamedacen"
+      }
+    ],
+    "date": "2021-06-10",
+    "issues": [
+      1658
+    ],
+    "message": "Fixed replacement transaction detection for JsonRpcSigner (#1658)."
+  },
+  "eea53bb1be29ad2bd1b229a13c85b12be264b019": {
+    "authors": [
+      {
+        "link": "https://github.com/rstormsf",
+        "login": "rstormsf"
+      }
+    ],
+    "date": "2019-05-24",
+    "issues": [
+      463
+    ],
+    "message": "Added queryFilter to Contracts (#463)."
+  },
+  "ef8e4330d3c4fd53af1c0a3cb9cd69aaf180c3c5": {
+    "authors": [
+      {
+        "email": "contact@yuetloo.com",
+        "link": "https://github.com/yuetloo",
+        "login": "yuetloo"
+      }
+    ],
+    "date": "2020-10-06",
+    "issues": [
+      1082
+    ],
+    "message": "Merge: d8821d73 a0278615 Docs: Merge typos fixes (#1082)."
+  },
+  "ef91dcd757349dfb31ad2fbd0b840abe6a4043be": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2019-07-09",
+    "issues": [
+      557
+    ],
+    "message": "Make mnemonics case-agnostic (#557)."
+  },
+  "f0a5869c53475e55a5f47d8651f609fff45dc9a7": {
+    "authors": [
+      {
+        "email": "cruzdanilo@gmail.com",
+        "link": "https://github.com/cruzdanilo",
+        "login": "cruzdanilo"
+      }
+    ],
+    "date": "2020-09-26",
+    "issues": [
+      1058
+    ],
+    "message": "Add more accurate intrinsic gas cost to ABI calls with specified gas property (#1058)."
+  },
+  "f26074b92b0fc8efd3d85c68e84cc6ff8897e4a8": {
+    "authors": [
+      {
+        "email": "pmj@pmj.hu",
+        "link": "https://github.com/pmjohann",
+        "login": "pmjohann"
+      }
+    ],
+    "date": "2022-02-18",
+    "issues": [
+      2246
+    ],
+    "message": "Add support for EIP-2098 compact signatures (#2246)."
+  },
+  "f2dd977de4fb6216d6a990d13999644a9be5815d": {
+    "authors": [
+      {
+        "link": "https://github.com/jasonbukowski",
+        "login": "jasonbukowski"
+      }
+    ],
+    "date": "2019-01-23",
+    "issues": [
+      286
+    ],
+    "message": "Added v3 INFURA end-points to InfuraProvider (#286)."
+  },
+  "f318fd9cf1303fe2770f400cbce14c778f77e454": {
+    "authors": [
+      {
+        "link": "https://github.com/marekkirejczyk",
+        "login": "marekkirejczyk"
+      }
+    ],
+    "date": "2019-02-15",
+    "issues": [
+      402
+    ],
+    "message": "Added fastRetry to polling for JsonRpcSigner to improve polling for sent transactions (#402)."
+  },
+  "f3c6d819f34b6d93f53d98b9f337ade5aa37a594": {
+    "authors": [
+      {
+        "email": "jay.mccarthy@gmail.com",
+        "link": "https://github.com/jeapostrophe",
+        "login": "jeapostrophe"
+      }
+    ],
+    "date": "2021-10-05",
+    "issues": [
+      1130
+    ],
+    "message": "Added more information to some invalid argument errors (#1130)."
+  },
+  "f3e5b0ded1b227a377fd4799507653c95c76e353": {
+    "authors": [
+      {
+        "email": "johngrantuk@googlemail.com",
+        "link": "https://github.com/johngrantuk",
+        "login": "johngrantuk"
+      }
+    ],
+    "date": "2020-10-05",
+    "issues": [
+      1012
+    ],
+    "message": "ABI encoding performance additions (#1012)."
+  },
+  "f3ec27b95fcb56d521952c708fdc0229f6d6f7f3": {
+    "authors": [
+      {
+        "link": "https://github.com/jeansoonsik",
+        "login": "jeansoonsik"
+      }
+    ],
+    "date": "2018-12-27",
+    "issues": [
+      379
+    ],
+    "message": "Added customizable log levels to quiet warnings (#379)."
+  },
+  "f46aa75ef1f3428e640cd046db3f080d264b32f3": {
+    "_missingIssues": [
+      2652
+    ],
+    "authors": [
+      {
+        "link": "https://github.com/atropos0902",
+        "login": "atropos0902"
+      },
+      {
+        "link": "https://github.com/shanefontaine",
+        "login": "shanefontaine"
+      },
+      {
+        "email": "raggamuffin.music@gmail.com",
+        "link": "https://github.com/kshinn",
+        "login": "kshinn"
+      },
+      {
+        "link": "https://github.com/claasahl",
+        "login": "claasahl"
+      }
+    ],
+    "date": "2022-03-09",
+    "issues": [
+      1798,
+      1814,
+      1830,
+      2274,
+      2652
+    ],
+    "message": "Fix events getting blocked from fix for missed events (#1798, #1814, #1830, #2274, #2652)."
+  },
+  "f4b97c00ed295f6a39d66e971904659b202972db": {
+    "authors": [
+      {
+        "email": "victorio.franco@gmail.com",
+        "link": "https://github.com/fvictorio",
+        "login": "fvictorio"
+      }
+    ],
+    "date": "2021-02-04",
+    "issues": [
+      1153
+    ],
+    "message": "docs: added more on contributing (#1153)."
+  },
+  "f4bcf24a257a17ec9beb98f3d0b3682de543534c": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      },
+      {
+        "link": "https://github.com/NoahZinsmeister",
+        "login": "NoahZinsmeister"
+      }
+    ],
+    "date": "2020-01-19",
+    "issues": [
+      635,
+      588
+    ],
+    "message": "Much more resiliant FallbackProvider which can ignore properties that are only approximate and supports per-provider priorities (#635, #588)."
+  },
+  "f54f06b5c8092997fd3c9055d69a3e0796ce44f3": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-01-04",
+    "issues": [
+      691
+    ],
+    "message": "Added Czech BIP-39 wordlist (#691)."
+  },
+  "f56fc572f159e6375db27caa1b3d464dd67803c7": {
+    "authors": [
+      {
+        "link": "https://github.com/thundo",
+        "login": "thundo"
+      }
+    ],
+    "date": "2018-12-05",
+    "issues": [
+      362
+    ],
+    "message": "Squashed unhandled promise exception for Providers that are never used (#362)."
+  },
+  "f5c7ccbb80e157ad27a51f310686d4ca3e1db7c8": {
+    "authors": [
+      {
+        "email": "subramanian.bsv@gmail.com",
+        "link": "https://github.com/subramanianv",
+        "login": "subramanianv"
+      }
+    ],
+    "date": "2018-10-04",
+    "issues": [
+      229
+    ],
+    "message": "Added ability to wait for a specific number of confirmations (#229)."
+  },
+  "f635af2684a619b5c5d0269c0968b6a566547ff6": {
+    "authors": [
+      {
+        "link": "https://github.com/cpixy3810",
+        "login": "cpixy3810"
+      }
+    ],
+    "date": "2022-01-31",
+    "issues": [
+      2591
+    ],
+    "message": "docs: added getAvatar (#2591)."
+  },
+  "f67a9a8569cdfd0ef9ce5fbf09866aab6e4814d4": {
+    "_missingIssues": [
+      2652
+    ],
+    "authors": [
+      {
+        "link": "https://github.com/atropos0902",
+        "login": "atropos0902"
+      },
+      {
+        "link": "https://github.com/shanefontaine",
+        "login": "shanefontaine"
+      },
+      {
+        "email": "raggamuffin.music@gmail.com",
+        "link": "https://github.com/kshinn",
+        "login": "kshinn"
+      },
+      {
+        "link": "https://github.com/claasahl",
+        "login": "claasahl"
+      }
+    ],
+    "date": "2022-03-09",
+    "issues": [
+      1798,
+      1814,
+      1830,
+      2274,
+      2652
+    ],
+    "message": "Fix missing events on certain network conditions (#1798, #1814, #1830, #2274, #2652)."
+  },
+  "f733fac875caf8be2923a2ee3ad60238b693639f": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2020-09-17",
+    "issues": [
+      824
+    ],
+    "message": "Custom API key for Etherscan during tests (#824)."
+  },
+  "f8087ae39ce7631425b6b4763347a4f9618f9730": {
+    "authors": [
+      {
+        "email": "julien.genestoux@gmail.com",
+        "link": "https://github.com/julien51",
+        "login": "julien51"
+      }
+    ],
+    "date": "2020-01-03",
+    "issues": [
+      697
+    ],
+    "message": "Added utility function to compute CREATE2 addresses (#697)."
+  },
+  "f8adf82e16aaad1a7c1750e7f2e3a9f8073b73e1": {
+    "authors": [
+      {
+        "email": "chalkerx@gmail.com",
+        "link": "https://github.com/ChALkeR",
+        "login": "ChALkeR"
+      }
+    ],
+    "date": "2021-10-04",
+    "issues": [
+      1977
+    ],
+    "message": "Fixed randomBytes not rejecting NaN as a length (#1977)."
+  },
+  "f955dca417a6f86690cf33a81b08baa99e1b1a5c": {
+    "authors": [
+      {
+        "email": "github@ricmoo.com",
+        "link": "https://github.com/ricmoo",
+        "login": "ricmoo"
+      }
+    ],
+    "date": "2019-08-03",
+    "issues": [
+      42
+    ],
+    "message": "Fixed some case-folding and added Table A.1 for IDNA (#42)."
+  },
+  "f96358940043123aa7a8fe97a1af7af293ce9740": {
+    "authors": [
+      {
+        "email": "jordan.michael.last@gmail.com",
+        "link": "https://github.com/lastmjs",
+        "login": "lastmjs"
+      }
+    ],
+    "date": "2020-05-21",
+    "issues": [
+      841
+    ],
+    "message": "Fixed FallbackProvider sync-stalling for backends (#841)."
+  },
+  "f9d09645e7697c3833b5e854bc5c001d1124508d": {
+    "authors": [
+      {
+        "link": "https://github.com/wjmelements",
+        "login": "wjmelements"
+      }
+    ],
+    "date": "2021-06-18",
+    "issues": [
+      1343
+    ],
+    "message": "docs: Added info on signMessage (#1343)."
+  },
+  "f9dd0996caeb0d51bbfccedc3d7ea4e40509d950": {
+    "authors": [
+      {
+        "email": "easrng@gmail.com",
+        "link": "https://github.com/easrng",
+        "login": "easrng"
+      }
+    ],
+    "date": "2021-03-27",
+    "issues": [
+      1387
+    ],
+    "message": "docs: fixed typo (#1387)."
+  },
+  "fa4db2ceccb76a60ebdbad31c81c93464d98ef09": {
+    "authors": [
+      {
+        "email": "zenkjenna@gmail.com",
+        "link": "https://github.com/jennazenk",
+        "login": "jennazenk"
+      }
+    ],
+    "date": "2017-12-02",
+    "issues": [
+      80
+    ],
+    "message": "Add binary message support for wallet.signMessage (#80)."
+  },
+  "fa87417e9416d99a37d9a2668a1e54feb7e342fc": {
+    "authors": [
+      {
+        "link": "https://github.com/kamescg",
+        "login": "kamescg"
+      }
+    ],
+    "date": "2020-05-13",
+    "issues": [
+      816
+    ],
+    "message": "Moved ABI check for unique names to coding time and only if ambiguous (#816)."
+  },
+  "fab14f8f5a16091810bbe4d35f38e0b976adab7c": {
+    "authors": [
+      {
+        "email": "brian@brianmcmichael.com",
+        "link": "https://github.com/brianmcmichael",
+        "login": "brianmcmichael"
+      }
+    ],
+    "date": "2020-04-22",
+    "issues": [
+      778
+    ],
+    "message": "Fixed typo in error message (#778)."
+  },
+  "fb6d14172384f73b8e127e4c5c9748aba7353139": {
+    "authors": [
+      {
+        "email": "lyova.potyomkin@gmail.com",
+        "link": "https://github.com/ly0va",
+        "login": "ly0va"
+      }
+    ],
+    "date": "2021-10-04",
+    "issues": [
+      1838
+    ],
+    "message": "docs: fixed typos in comments; h/t @ly0va (#1838)."
+  },
+  "fb9eea6c7e33c09a291b9ab9d975debe85a6af4c": {
+    "authors": [
+      {
+        "email": "victorio.franco@gmail.com",
+        "link": "https://github.com/fvictorio",
+        "login": "fvictorio"
+      },
+      {
+        "link": "https://github.com/vilsbole",
+        "login": "vilsbole"
+      }
+    ],
+    "date": "2021-02-04",
+    "issues": [
+      1252,
+      1255
+    ],
+    "message": "docs: typos and corrected priority order (#1252, #1255)."
+  },
+  "fbbe4ad638e06089cdd976a7f4ffd51b85a31558": {
+    "authors": [
+      {
+        "link": "https://github.com/matYang",
+        "login": "matYang"
+      }
+    ],
+    "date": "2020-11-22",
+    "issues": [
+      1164
+    ],
+    "message": "Fixed typo in BigNumber error (#1164)."
+  },
+  "fbf15c0ffe046290749fe307e9d4e8624b81664a": {
+    "authors": [
+      {
+        "email": "chalkerx@gmail.com",
+        "link": "https://github.com/ChALkeR",
+        "login": "ChALkeR"
+      }
+    ],
+    "date": "2019-06-28",
+    "issues": [
+      553
+    ],
+    "message": "Fixed testnet exteneded private keys (#553)."
+  },
+  "fde102b7eda304403dcc677cd6d3b48339cd3a81": {
+    "authors": [
+      {
+        "email": "wighawag@gmail.com",
+        "link": "https://github.com/wighawag",
+        "login": "wighawag"
+      }
+    ],
+    "date": "2020-05-12",
+    "issues": [
+      822
+    ],
+    "message": "Fixed FallbackProvider ESM super-this out-of-order issue (#822)."
+  },
+  "fe17a295816214d063f3d6bd4f3273e0ce0c3eac": {
+    "authors": [
+      {
+        "email": "kaiansaari@gmail.com",
+        "link": "https://github.com/kaiansaari",
+        "login": "kaiansaari"
+      }
+    ],
+    "date": "2020-10-23",
+    "issues": [
+      1104
+    ],
+    "message": "Allow 0x as a numeric value for 0 in Provider formatter (#1104)."
+  }
+}

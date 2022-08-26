@@ -1,0 +1,26 @@
+name: Feature Request
+description: Suggest a new feature or addition to Ethers
+title: "Feature Request Title"
+labels: [ "enhancement" ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The best place to start a new feature request is by starting an [Idea discussion](https://github.com/ethers-io/ethers.js/discussions), to mull over the feature, discuss current options and think through the impact on the overall library.
+
+        Keep in mind that features increase the library size, and may require additional dependencies. Ethers strives to remain lean and the number of dependencies low, so many features may make more sense as ancillary packages.
+  - type: textarea
+    id: about-the-feature
+    attributes:
+      label: Describe the Feature
+      description: Please describe the feature, the problem it is solving, your solution and alternatives you've considered.
+      placeholder: e.g. I want Ethers to be more/less magical.
+    validations:
+      required: true
+  - type: textarea
+    id: code-example
+    attributes:
+      label: Code Example
+      description: Optionally, provide an example of how the feature would be used in code.
+      placeholder: e.g. provider.doMagic()
+      render: shell

@@ -77,10 +77,7 @@ function hasMnemonic(value) {
 var Wallet = /** @class */ (function (_super) {
     __extends(Wallet, _super);
     function Wallet(privateKey, provider) {
-        var _newTarget = this.constructor;
-        var _this = this;
-        logger.checkNew(_newTarget, Wallet);
-        _this = _super.call(this) || this;
+        var _this = _super.call(this) || this;
         if (isAccount(privateKey)) {
             var signingKey_1 = new signing_key_1.SigningKey(privateKey.privateKey);
             (0, properties_1.defineReadOnly)(_this, "_signingKey", function () { return signingKey_1; });

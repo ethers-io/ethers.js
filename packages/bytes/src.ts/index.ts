@@ -118,7 +118,7 @@ export function arrayify(value: BytesLike | Hexable | number, options?: DataOpti
         let hex = (<string>value).substring(2);
         if (hex.length % 2) {
             if (options.hexPad === "left") {
-                hex = "0x0" + hex.substring(2);
+                hex = "0" + hex;
             } else if (options.hexPad === "right") {
                 hex += "0";
             } else {

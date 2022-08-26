@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcBatchProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
+exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcBatchProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
 Object.defineProperty(exports, "Provider", { enumerable: true, get: function () { return abstract_provider_1.Provider; } });
 var networks_1 = require("@ethersproject/networks");
@@ -11,6 +11,8 @@ Object.defineProperty(exports, "Resolver", { enumerable: true, get: function () 
 var alchemy_provider_1 = require("./alchemy-provider");
 Object.defineProperty(exports, "AlchemyProvider", { enumerable: true, get: function () { return alchemy_provider_1.AlchemyProvider; } });
 Object.defineProperty(exports, "AlchemyWebSocketProvider", { enumerable: true, get: function () { return alchemy_provider_1.AlchemyWebSocketProvider; } });
+var ankr_provider_1 = require("./ankr-provider");
+Object.defineProperty(exports, "AnkrProvider", { enumerable: true, get: function () { return ankr_provider_1.AnkrProvider; } });
 var cloudflare_provider_1 = require("./cloudflare-provider");
 Object.defineProperty(exports, "CloudflareProvider", { enumerable: true, get: function () { return cloudflare_provider_1.CloudflareProvider; } });
 var etherscan_provider_1 = require("./etherscan-provider");
@@ -58,10 +60,12 @@ function getDefaultProvider(network, options) {
         // Handle http and ws (and their secure variants)
         var match = network.match(/^(ws|http)s?:/i);
         if (match) {
-            switch (match[1]) {
+            switch (match[1].toLowerCase()) {
                 case "http":
+                case "https":
                     return new json_rpc_provider_1.JsonRpcProvider(network);
                 case "ws":
+                case "wss":
                     return new websocket_provider_1.WebSocketProvider(network);
                 default:
                     logger.throwArgumentError("unsupported URL scheme", "network", network);
@@ -78,6 +82,7 @@ function getDefaultProvider(network, options) {
     return n._defaultProvider({
         FallbackProvider: fallback_provider_1.FallbackProvider,
         AlchemyProvider: alchemy_provider_1.AlchemyProvider,
+        AnkrProvider: ankr_provider_1.AnkrProvider,
         CloudflareProvider: cloudflare_provider_1.CloudflareProvider,
         EtherscanProvider: etherscan_provider_1.EtherscanProvider,
         InfuraProvider: infura_provider_1.InfuraProvider,

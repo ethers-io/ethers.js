@@ -40,7 +40,7 @@ exports.getUrl = void 0;
 var bytes_1 = require("@ethersproject/bytes");
 function getUrl(href, options) {
     return __awaiter(this, void 0, void 0, function () {
-        var request, response, body, headers;
+        var request, opts, response, body, headers;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -60,6 +60,24 @@ function getUrl(href, options) {
                         request.referrer = "client"; // no-referrer, *client
                     }
                     ;
+                    if (options.fetchOptions != null) {
+                        opts = options.fetchOptions;
+                        if (opts.mode) {
+                            request.mode = (opts.mode);
+                        }
+                        if (opts.cache) {
+                            request.cache = (opts.cache);
+                        }
+                        if (opts.credentials) {
+                            request.credentials = (opts.credentials);
+                        }
+                        if (opts.redirect) {
+                            request.redirect = (opts.redirect);
+                        }
+                        if (opts.referrer) {
+                            request.referrer = opts.referrer;
+                        }
+                    }
                     return [4 /*yield*/, fetch(href, request)];
                 case 1:
                     response = _a.sent();

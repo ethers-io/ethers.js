@@ -68,6 +68,18 @@ _property: ipcProvider.path => string
 The path this [[Provider]] is connected to.
 
 
+_subsection: JsonRpcBatchProvider  @<JsonRpcBatchProvider> @INHERIT<[[JsonRpcProvider]]> @SRC<providers:class.JsonRpcBatchProvider>
+
+The **JsonRpcBatchProvider** operated identically to any other Provider,
+except the calls are implicly batched during an event-loop and sent using
+the JSON-RPC batch protocol to the backend.
+
+This results in fewer connections and fewer requests, which may result
+in lower costs or faster responses, depending on your use case.
+
+Keep in mind some backends may not support batched requests.
+
+
 _subsection: UrlJsonRpcProvider @<UrlJsonRpcProvider> @INHERIT<[[JsonRpcProvider]]> @SRC<providers:class.UrlJsonRpcProvider>
 
 This class is intended to be sub-classed and not used directly. It

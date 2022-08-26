@@ -31,7 +31,6 @@ export class Formatter {
     readonly formats: Formats;
 
     constructor() {
-        logger.checkNew(new.target, Formatter);
         this.formats = this.getDefaultFormats();
     }
 
@@ -130,7 +129,7 @@ export class Formatter {
         };
 
         formats.block = {
-            hash: hash,
+            hash: Formatter.allowNull(hash),
             parentHash: hash,
             number: number,
 
@@ -141,7 +140,7 @@ export class Formatter {
             gasLimit: bigNumber,
             gasUsed: bigNumber,
 
-            miner: address,
+            miner: Formatter.allowNull(address),
             extraData: data,
 
             transactions: Formatter.allowNull(Formatter.arrayOf(hash)),
@@ -251,8 +250,10 @@ export class Formatter {
 
         if (blockTag === "earliest") { return "0x0"; }
 
-        if (blockTag === "latest" || blockTag === "pending") {
-            return blockTag;
+        switch (blockTag) {
+            case "earliest": return "0x0";
+            case "latest": case "pending": case "safe": case "finalized":
+                return blockTag;
         }
 
         if (typeof(blockTag) === "number" || isHexString(blockTag)) {

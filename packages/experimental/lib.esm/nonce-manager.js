@@ -1,12 +1,9 @@
 "use strict";
 import { ethers } from "ethers";
-import { version } from "./_version";
-const logger = new ethers.utils.Logger(version);
 // @TODO: Keep a per-NonceManager pool of sent but unmined transactions for
 //        rebroadcasting, in case we overrun the transaction pool
 export class NonceManager extends ethers.Signer {
     constructor(signer) {
-        logger.checkNew(new.target, NonceManager);
         super();
         this._deltaCount = 0;
         ethers.utils.defineReadOnly(this, "signer", signer);
@@ -35,7 +32,7 @@ export class NonceManager extends ethers.Signer {
         this._deltaCount = 0;
     }
     incrementTransactionCount(count) {
-        this._deltaCount += (count ? count : 1);
+        this._deltaCount += ((count == null) ? 1 : count);
     }
     signMessage(message) {
         return this.signer.signMessage(message);
@@ -52,6 +49,7 @@ export class NonceManager extends ethers.Signer {
         }
         else {
             this.setTransactionCount(transaction.nonce);
+            this._deltaCount++;
         }
         return this.signer.sendTransaction(transaction).then((tx) => {
             return tx;

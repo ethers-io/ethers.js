@@ -78,7 +78,7 @@ export class Eip1193Bridge extends EventEmitter {
                  return ethers.utils.hexValue(result.transactions.length);
              }
              case "eth_getCode": {
-                 const result = await this.provider.getBlock(params[0]);
+                 const result = await this.provider.getCode(params[0], params[1]);
                  return result;
              }
              case "eth_sendRawTransaction": {

@@ -296,7 +296,7 @@ _code: @lang<javascript>
 
 //_result:
 await provider.call({
-  // ENS public resovler address
+  // ENS public resolver address
   to: "0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41",
 
   // `function addr(namehash("ricmoo.eth")) view returns (address)`

@@ -294,7 +294,7 @@ describe('Test Namehash', function() {
                 const namehash = ethers.utils.namehash(name);
                 console.log(name, namehash);
             }, (error: Error) => {
-                return !!error.message.match(/invalid ENS address/);
+                return !!error.message.match(/invalid ENS name; empty component/);
             });
         });
     });

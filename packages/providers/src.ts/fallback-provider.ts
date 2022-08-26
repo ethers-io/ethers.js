@@ -381,6 +381,9 @@ async function getRunner(config: RunningConfig, currentBlockNumber: number, meth
             if (params.blockTag && isHexString(params.blockTag)) {
                 provider = await waitForSync(config, currentBlockNumber)
             }
+            if (method === "call" && params.blockTag) {
+                return provider[method](params.transaction, params.blockTag);
+            }
             return provider[method](params.transaction);
         case "getTransaction":
         case "getTransactionReceipt":
@@ -410,8 +413,6 @@ export class FallbackProvider extends BaseProvider {
     _highestBlockNumber: number;
 
     constructor(providers: Array<Provider | FallbackProviderConfig>, quorum?: number) {
-        logger.checkNew(new.target, FallbackProvider);
-
         if (providers.length === 0) {
             logger.throwArgumentError("missing providers", "providers", providers);
         }

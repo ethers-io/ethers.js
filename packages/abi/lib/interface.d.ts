@@ -69,8 +69,8 @@ export declare class Interface {
     encodeFunctionData(functionFragment: FunctionFragment | string, values?: ReadonlyArray<any>): string;
     decodeFunctionResult(functionFragment: FunctionFragment | string, data: BytesLike): Result;
     encodeFunctionResult(functionFragment: FunctionFragment | string, values?: ReadonlyArray<any>): string;
-    encodeFilterTopics(eventFragment: EventFragment, values: ReadonlyArray<any>): Array<string | Array<string>>;
-    encodeEventLog(eventFragment: EventFragment, values: ReadonlyArray<any>): {
+    encodeFilterTopics(eventFragment: EventFragment | string, values: ReadonlyArray<any>): Array<string | Array<string>>;
+    encodeEventLog(eventFragment: EventFragment | string, values: ReadonlyArray<any>): {
         data: string;
         topics: Array<string>;
     };

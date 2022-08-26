@@ -49,7 +49,7 @@ function getResult(result) {
     if (result.status == 0 && (result.message === "No records found" || result.message === "No transactions found")) {
         return result.result;
     }
-    if (result.status != 1 || result.message != "OK") {
+    if (result.status != 1 || typeof (result.message) !== "string" || !result.message.match(/^OK/)) {
         const error = new Error("invalid response");
         error.result = JSON.stringify(result);
         if ((result.result || "").toLowerCase().indexOf("rate limit") >= 0) {
@@ -96,7 +96,6 @@ function checkLogTag(blockTag) {
     }
     return parseInt(blockTag.substring(2), 16);
 }
-const defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 function checkError(method, error, transaction) {
     // Undo the "convenience" some nodes are attempting to prevent backwards
     // incompatibility; maybe for v6 consider forwarding reverts as errors
@@ -158,10 +157,9 @@ function checkError(method, error, transaction) {
 }
 export class EtherscanProvider extends BaseProvider {
     constructor(network, apiKey) {
-        logger.checkNew(new.target, EtherscanProvider);
         super(network);
         defineReadOnly(this, "baseUrl", this.getBaseUrl());
-        defineReadOnly(this, "apiKey", apiKey || defaultApiKey);
+        defineReadOnly(this, "apiKey", apiKey || null);
     }
     getBaseUrl() {
         switch (this.network ? this.network.name : "invalid") {
@@ -175,9 +173,13 @@ export class EtherscanProvider extends BaseProvider {
                 return "https:/\/api-kovan.etherscan.io";
             case "goerli":
                 return "https:/\/api-goerli.etherscan.io";
+            case "optimism":
+                return "https:/\/api-optimistic.etherscan.io";
+            case "optimism-kovan":
+                return "https:/\/api-kovan-optimistic.etherscan.io";
             default:
         }
-        return logger.throwArgumentError("unsupported network", "network", name);
+        return logger.throwArgumentError("unsupported network", "network", this.network.name);
     }
     getUrl(module, params) {
         const query = Object.keys(params).reduce((accum, key) => {
@@ -413,7 +415,7 @@ export class EtherscanProvider extends BaseProvider {
         });
     }
     isCommunityResource() {
-        return (this.apiKey === defaultApiKey);
+        return (this.apiKey == null);
     }
 }
 //# sourceMappingURL=etherscan-provider.js.map

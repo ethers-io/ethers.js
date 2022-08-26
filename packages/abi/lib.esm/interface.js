@@ -47,7 +47,6 @@ function checkNames(fragment: Fragment, type: "input" | "output", params: Array<
 */
 export class Interface {
     constructor(fragments) {
-        logger.checkNew(new.target, Interface);
         let abi = [];
         if (typeof (fragments) === "string") {
             abi = JSON.parse(fragments);
@@ -303,6 +302,7 @@ export class Interface {
         }
         let bytes = arrayify(data);
         let reason = null;
+        let message = "";
         let errorArgs = null;
         let errorName = null;
         let errorSignature = null;
@@ -323,6 +323,12 @@ export class Interface {
                     if (builtin.reason) {
                         reason = errorArgs[0];
                     }
+                    if (errorName === "Error") {
+                        message = `; VM Exception while processing transaction: reverted with reason string ${JSON.stringify(errorArgs[0])}`;
+                    }
+                    else if (errorName === "Panic") {
+                        message = `; VM Exception while processing transaction: reverted with panic code ${errorArgs[0]}`;
+                    }
                 }
                 else {
                     try {
@@ -331,16 +337,14 @@ export class Interface {
                         errorName = error.name;
                         errorSignature = error.format();
                     }
-                    catch (error) {
-                        console.log(error);
-                    }
+                    catch (error) { }
                 }
                 break;
             }
         }
-        return logger.throwError("call revert exception", Logger.errors.CALL_EXCEPTION, {
+        return logger.throwError("call revert exception" + message, Logger.errors.CALL_EXCEPTION, {
             method: functionFragment.format(),
-            errorArgs, errorName, errorSignature, reason
+            data: hexlify(data), errorArgs, errorName, errorSignature, reason
         });
     }
     // Encode the result for a function call (e.g. for eth_call)
@@ -371,6 +375,12 @@ export class Interface {
             }
             else if (param.type === "bytes") {
                 return keccak256(hexlify(value));
+            }
+            if (param.type === "bool" && typeof (value) === "boolean") {
+                value = (value ? "0x01" : "0x00");
+            }
+            if (param.type.match(/^u?int/)) {
+                value = BigNumber.from(value).toHexString();
             }
             // Check addresses are valid
             if (param.type === "address") {

@@ -7,8 +7,8 @@
     "./lib/random": "./lib/browser-random.js"
   },
   "dependencies": {
-    "@ethersproject/bytes": "^5.5.0",
-    "@ethersproject/logger": "^5.5.0"
+    "@ethersproject/bytes": "^5.7.0",
+    "@ethersproject/logger": "^5.7.0"
   },
   "description": "Random utility functions for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -43,7 +43,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0xd86bc70a8ab1aee5abed32106f2ee9a1e16f27a0a04264596ce69927a95a5681",
+  "tarballHash": "0xb91a9e0289e2dcbc8a1521cc785465161f4ae4aad01aea6ddf3a1a3f2c29a4da",
   "types": "./lib/index.d.ts",
-  "version": "5.5.1"
+  "version": "5.7.0"
 }

@@ -9,6 +9,14 @@ export declare type Subscription = {
     tag: string;
     processFunc: (payload: any) => void;
 };
+export interface WebSocketLike {
+    onopen: ((...args: Array<any>) => any) | null;
+    onmessage: ((...args: Array<any>) => any) | null;
+    onerror: ((...args: Array<any>) => any) | null;
+    readyState: number;
+    send(payload: any): void;
+    close(code?: number, reason?: string): void;
+}
 export declare class WebSocketProvider extends JsonRpcProvider {
     readonly _websocket: any;
     readonly _requests: {
@@ -22,7 +30,8 @@ export declare class WebSocketProvider extends JsonRpcProvider {
         [name: string]: Subscription;
     };
     _wsReady: boolean;
-    constructor(url: string, network?: Networkish);
+    constructor(url: string | WebSocketLike, network?: Networkish);
+    get websocket(): WebSocketLike;
     detectNetwork(): Promise<Network>;
     get pollingInterval(): number;
     resetEventsBlock(blockNumber: number): void;

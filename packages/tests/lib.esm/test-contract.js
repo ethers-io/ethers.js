@@ -41,16 +41,17 @@ function equals(name, actual, expected) {
 }
 function TestContractEvents() {
     return __awaiter(this, void 0, void 0, function* () {
-        const data = yield ethers.utils.fetchJson('https://api.ethers.io/api/v1/?action=triggerTest&address=' + contract.address);
-        console.log('*** Triggered Transaction Hash: ' + data.hash);
-        contract.on("error", (error) => {
-            console.log(error);
-            assert(false);
-            contract.removeAllListeners();
-        });
         function waitForEvent(eventName, expected) {
             return new Promise(function (resolve, reject) {
                 let done = false;
+                contract.on("error", (error) => {
+                    if (done) {
+                        return;
+                    }
+                    done = true;
+                    contract.removeAllListeners();
+                    reject(error);
+                });
                 contract.on(eventName, function () {
                     if (done) {
                         return;
@@ -75,7 +76,7 @@ function TestContractEvents() {
                 }
             });
         }
-        return new Promise(function (resolve, reject) {
+        const running = new Promise(function (resolve, reject) {
             let p0 = '0x06B5955A67D827CDF91823E3bB8F069e6c89c1D6';
             let p0_1 = '0x06b5955A67d827CdF91823e3Bb8F069e6C89C1d7';
             let p1 = 0x42;
@@ -91,6 +92,9 @@ function TestContractEvents() {
                 resolve(result);
             });
         });
+        const data = yield ethers.utils.fetchJson('https://api.ethers.io/api/v1/?action=triggerTest&address=' + contract.address);
+        console.log('*** Triggered Transaction Hash: ' + data.hash);
+        return running;
     });
 }
 describe('Test Contract Objects', function () {

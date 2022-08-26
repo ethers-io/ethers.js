@@ -4,6 +4,7 @@ import {
     Block, BlockTag, BlockWithTransactions, EventType, Filter, FilterByBlockHash, ForkEvent,
     Listener, Log, Provider, TransactionReceipt, TransactionRequest, TransactionResponse
 } from "@ethersproject/abstract-provider";
+import { encode as base64Encode } from "@ethersproject/base64";
 import { Base58 } from "@ethersproject/basex";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { arrayify, BytesLike, concat, hexConcat, hexDataLength, hexDataSlice, hexlify, hexValue, hexZeroPad, isHexString } from "@ethersproject/bytes";
@@ -140,10 +141,16 @@ export class Event {
     readonly once: boolean;
     readonly tag: string;
 
+    _lastBlockNumber: number
+    _inflight: boolean;
+
     constructor(tag: string, listener: Listener, once: boolean) {
         defineReadOnly(this, "tag", tag);
         defineReadOnly(this, "listener", listener);
         defineReadOnly(this, "once", once);
+
+        this._lastBlockNumber = -2;
+        this._inflight = false;
     }
 
     get event(): EventType {
@@ -364,9 +371,11 @@ export class Resolver implements EnsResolver {
     }
 
     async _fetch(selector: string, parameters?: string): Promise<null | string> {
+
         // e.g. keccak256("addr(bytes32,uint256)")
         const tx = {
             to: this.address,
+            ccipReadEnabled: true,
             data: hexConcat([ selector, namehash(this.name), (parameters || "0x") ])
         };
 
@@ -381,11 +390,16 @@ export class Resolver implements EnsResolver {
 
         try {
             let result = await this.provider.call(tx);
+            if ((arrayify(result).length % 32) === 4) {
+                logger.throwError("resolver threw error", Logger.errors.CALL_EXCEPTION, {
+                    transaction: tx, data: result
+                });
+            }
             if (parseBytes) { result = _parseBytes(result, 0); }
             return result;
         } catch (error) {
             if (error.code === Logger.errors.CALL_EXCEPTION) { return null; }
-            return null;
+            throw error;
         }
     }
 
@@ -627,11 +641,30 @@ export class Resolver implements EnsResolver {
             }
         }
 
+        // IPNS (CID: 1, Type: libp2p-key)
+        const ipns = hexBytes.match(/^0xe5010172(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
+        if (ipns) {
+            const length = parseInt(ipns[3], 16);
+            if (ipns[4].length === length * 2) {
+                return "ipns:/\/" + Base58.encode("0x" + ipns[1]);
+            }
+        }
+
         // Swarm (CID: 1, Type: swarm-manifest; hash/length hard-coded to keccak256/32)
         const swarm = hexBytes.match(/^0xe40101fa011b20([0-9a-f]*)$/)
         if (swarm) {
             if (swarm[1].length === (32 * 2)) {
                 return "bzz:/\/" + swarm[1]
+            }
+        }
+
+        const skynet = hexBytes.match(/^0x90b2c605([0-9a-f]*)$/);
+        if (skynet) {
+            if (skynet[1].length === (34 * 2)) {
+                // URL Safe base64; https://datatracker.ietf.org/doc/html/rfc4648#section-5
+                const urlSafe: Record<string, string> = { "=": "", "+": "-", "/": "_" };
+                const hash = base64Encode("0x" + skynet[1]).replace(/[=+\/]/g, (a) => (urlSafe[a]));
+                return "sia:/\/" + hash;
             }
         }
 
@@ -691,6 +724,7 @@ export class BaseProvider extends Provider implements EnsProvider {
     _bootstrapPoll: NodeJS.Timer;
 
     _lastBlockNumber: number;
+    _maxFilterBlockRange: number;
 
     _fastBlockNumber: number;
     _fastBlockNumberPromise: Promise<number>;
@@ -718,8 +752,6 @@ export class BaseProvider extends Provider implements EnsProvider {
      */
 
     constructor(network: Networkish | Promise<Network>) {
-        logger.checkNew(new.target, Provider);
-
         super();
 
         // Events being listened to
@@ -760,6 +792,7 @@ export class BaseProvider extends Provider implements EnsProvider {
         this._maxInternalBlockNumber = -1024;
 
         this._lastBlockNumber = -2;
+        this._maxFilterBlockRange = 10;
 
         this._pollingInterval = 4000;
 
@@ -833,7 +866,7 @@ export class BaseProvider extends Provider implements EnsProvider {
     async ccipReadFetch(tx: Transaction, calldata: string, urls: Array<string>): Promise<null | string> {
         if (this.disableCcipRead || urls.length === 0) { return null; }
 
-        const sender = (tx.from || "0x0000000000000000000000000000000000000000").toLowerCase();
+        const sender = tx.to.toLowerCase();
         const data = calldata.toLowerCase();
 
         const errorMessages: Array<string> = [ ];
@@ -1006,7 +1039,6 @@ export class BaseProvider extends Provider implements EnsProvider {
         if (this._lastBlockNumber === -2) {
             this._lastBlockNumber = blockNumber - 1;
         }
-
         // Find all transaction hashes we are waiting on
         this._events.forEach((event) => {
             switch (event.type) {
@@ -1025,19 +1057,58 @@ export class BaseProvider extends Provider implements EnsProvider {
                 }
 
                 case "filter": {
-                    const filter = event.filter;
-                    filter.fromBlock = this._lastBlockNumber + 1;
-                    filter.toBlock = blockNumber;
+                    // We only allow a single getLogs to be in-flight at a time
+                    if (!event._inflight) {
+                        event._inflight = true;
 
-                    const runner = this.getLogs(filter).then((logs) => {
-                        if (logs.length === 0) { return; }
-                        logs.forEach((log: Log) => {
-                            this._emitted["b:" + log.blockHash] = log.blockNumber;
-                            this._emitted["t:" + log.transactionHash] = log.blockNumber;
-                            this.emit(filter, log);
+                        // This is the first filter for this event, so we want to
+                        // restrict events to events that happened no earlier than now
+                        if (event._lastBlockNumber === -2) {
+                            event._lastBlockNumber = blockNumber - 1;
+                        }
+
+                        // Filter from the last *known* event; due to load-balancing
+                        // and some nodes returning updated block numbers before
+                        // indexing events, a logs result with 0 entries cannot be
+                        // trusted and we must retry a range which includes it again
+                        const filter = event.filter;
+                        filter.fromBlock = event._lastBlockNumber + 1;
+                        filter.toBlock = blockNumber;
+
+                        // Prevent fitler ranges from growing too wild, since it is quite
+                        // likely there just haven't been any events to move the lastBlockNumber.
+                        const minFromBlock = filter.toBlock - this._maxFilterBlockRange;
+                        if (minFromBlock > filter.fromBlock) { filter.fromBlock = minFromBlock; }
+
+                        if (filter.fromBlock < 0) { filter.fromBlock = 0; }
+
+                        const runner = this.getLogs(filter).then((logs) => {
+                            // Allow the next getLogs
+                            event._inflight = false;
+
+                            if (logs.length === 0) { return; }
+
+                            logs.forEach((log: Log) => {
+                                // Only when we get an event for a given block number
+                                // can we trust the events are indexed
+                                if (log.blockNumber > event._lastBlockNumber) {
+                                    event._lastBlockNumber = log.blockNumber;
+                                }
+
+                                // Make sure we stall requests to fetch blocks and txs
+                                this._emitted["b:" + log.blockHash] = log.blockNumber;
+                                this._emitted["t:" + log.transactionHash] = log.blockNumber;
+
+                                this.emit(filter, log);
+                            });
+                        }).catch((error: Error) => {
+                            this.emit("error", error);
+
+                            // Allow another getLogs (the range was not updated)
+                            event._inflight = false;
                         });
-                    }).catch((error: Error) => { this.emit("error", error); });
-                    runners.push(runner);
+                        runners.push(runner);
+                    }
 
                     break;
                 }
@@ -1878,7 +1949,7 @@ export class BaseProvider extends Provider implements EnsProvider {
             if (currentName === "" || currentName === ".") { return null; }
 
             // Optimization since the eth node cannot change and does
-            // not have a wildcar resolver
+            // not have a wildcard resolver
             if (name !== "eth" && currentName === "eth") { return null; }
 
             // Check the current node for a resolver
@@ -1943,7 +2014,7 @@ export class BaseProvider extends Provider implements EnsProvider {
             logger.throwArgumentError("invalid ENS name", "name", name);
         }
 
-        // Get the addr from the resovler
+        // Get the addr from the resolver
         const resolver = await this.getResolver(name);
         if (!resolver) { return null; }
 

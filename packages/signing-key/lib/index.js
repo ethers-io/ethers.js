@@ -18,6 +18,9 @@ var SigningKey = /** @class */ (function () {
     function SigningKey(privateKey) {
         (0, properties_1.defineReadOnly)(this, "curve", "secp256k1");
         (0, properties_1.defineReadOnly)(this, "privateKey", (0, bytes_1.hexlify)(privateKey));
+        if ((0, bytes_1.hexDataLength)(this.privateKey) !== 32) {
+            logger.throwArgumentError("invalid private key", "privateKey", "[[ REDACTED ]]");
+        }
         var keyPair = getCurve().keyFromPrivate((0, bytes_1.arrayify)(this.privateKey));
         (0, properties_1.defineReadOnly)(this, "publicKey", "0x" + keyPair.getPublic(false, "hex"));
         (0, properties_1.defineReadOnly)(this, "compressedPublicKey", "0x" + keyPair.getPublic(true, "hex"));
