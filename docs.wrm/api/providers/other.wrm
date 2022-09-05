@@ -106,7 +106,7 @@ The URL to use for the JsonRpcProvider instance.
 _subsection: Web3Provider @<Web3Provider> @INHERIT<[[JsonRpcProvider]]> @SRC<providers:class.Web3Provider>
 
 The Web3Provider is meant to ease moving from a [web3.js based](link-web3)
-application to ethers by wrapping an existing Web3-compatible (such as a
+application to ethers by wrapping an existing Web3-compatible provider (such as a
 [Web3HttpProvider](link-web3-http), [Web3IpcProvider](link-web3-ipc) or
 [Web3WsProvider](link-web3-ws)) and exposing it as an ethers.js [[Provider]]
 which can then be used with the rest of the library.
