@@ -1,0 +1,1 @@
+{"version":3,"file":"lang-it.js","sourceRoot":"","sources":["../../src.ts/wordlists/lang-it.ts"],"names":[],"mappings":";;;AAAA,uDAAgD;AAEhD,MAAM,KAAK,GAAG,0+OAA0+O,CAAC;AACz/O,MAAM,QAAQ,GAAG,oEAAoE,CAAC;AAEtF,MAAa,MAAO,SAAQ,6BAAW;IACnC,gBAAgB,KAAK,CAAC,IAAI,EAAE,KAAK,EAAE,QAAQ,CAAC,CAAC,CAAC,CAAC;CAClD;AAFD,wBAEC;AAEY,QAAA,MAAM,GAAG,IAAI,MAAM,EAAE,CAAC"}

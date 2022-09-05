@@ -1,0 +1,24 @@
+export declare function solidityPacked(types: ReadonlyArray<string>, values: ReadonlyArray<any>): string;
+/**
+ *   Computes the non-standard packed (tightly packed) keccak256 hash of
+ *   the values given the types.
+ *
+ *   @param {Array<string>} types - The Solidity types to interpret each value as [default: bar]
+ *   @param {Array<any>} values - The values to pack
+ *
+ *   @returns: {HexString} the hexstring of the hash
+ *   @example:
+ *       solidityPackedKeccak256([ "address", "uint" ], [ "0x1234", 45 ]);
+ *       //_result:
+ *
+ *   @see https://docs.soliditylang.org/en/v0.8.14/abi-spec.html#non-standard-packed-mode
+ */
+export declare function solidityPackedKeccak256(types: ReadonlyArray<string>, values: ReadonlyArray<any>): string;
+/**
+ *  Test Function, for fun
+ *
+ *  @param foo - something fun
+ */
+export declare function test(foo: number | string): void;
+export declare function solidityPackedSha256(types: ReadonlyArray<string>, values: ReadonlyArray<any>): string;
+//# sourceMappingURL=solidity.d.ts.map
