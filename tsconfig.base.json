@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "declaration": false,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "importHelpers": true,
+    "lib": [
+      "es2020",
+      "es5"
+    ],
+    "moduleResolution": "node16",
+    "noEmitOnError": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "preserveSymlinks": true,
+    "preserveWatchOutput": true,
+    "pretty": false,
+    "rootDir": "./src.ts",
+    "strict": true,
+    "sourceMap": true,
+    "target": "es2022"
+  },
+  "exclude": [ ],
+  "include": [
+    "./src.ts/**/*.ts"
+  ],
+}

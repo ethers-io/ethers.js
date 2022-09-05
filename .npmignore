@@ -1,0 +1,26 @@
+
+# Ignore TypeScript config and caches
+tsconfig.*.json
+tsconfig.tsbuildinfo
+rollup.config.js
+output/**
+
+# Ignore admin scripts and files
+src.ts/_admin/**
+lib.commonjs/_admin/**
+lib.esm/_admin/**
+types/_admin/**
+reporter.cjs
+package-commonjs.json
+
+# Ignore test cases
+src.ts/_tests/**
+lib.commonjs/_tests/**
+lib.esm/_tests/**
+types/_tests/**
+testcases/**
+
+# Ignore random junk
+.DS_Store
+node_modules/**
+misc/**

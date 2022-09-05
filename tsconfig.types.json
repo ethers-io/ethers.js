@@ -1,0 +1,12 @@
+{
+  "exclude": [
+    "src.ts/_admin/**"
+  ],
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "declarationDir": "./types",
+    "emitDeclarationOnly": true
+  }
+}

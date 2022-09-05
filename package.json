@@ -1,0 +1,131 @@
+{
+  "author": "Richard Moore <me@ricmoo.com>",
+  "dependencies": {
+    "@noble/hashes": "1.1.2",
+    "@noble/secp256k1": "1.6.3",
+    "aes-js": "4.0.0-beta.2",
+    "tslib": "2.4.0",
+    "ws": "8.5.0"
+  },
+  "description": "Ethereum library.",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "13.3.0",
+    "@types/mocha": "9.1.1",
+    "c8": "7.12.0",
+    "mocha": "10.0.0",
+    "rollup": "2.78.1",
+    "typescript": "4.7.4",
+    "uglify-js": "3.17.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browser": {
+    "./lib.esm/crypto/crypto.js": "./lib.esm/crypto/crypto-browser.js",
+    "./lib.esm/providers/provider-ipcsocket.js": "./lib.esm/providers/provider-ipcsocket-browser.js",
+    "./lib.esm/providers/ws.js": "./lib.esm/providers/ws-browser.js",
+    "./lib.esm/utils/base64.js": "./lib.esm/utils/base64-browser.js",
+    "./lib.esm/utils/geturl.js": "./lib.esm/utils/geturl-browser.js",
+    "./lib.esm/wordlists/wordlists.js": "./lib.esm/wordlists/wordlists-browser.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./lib.esm/index.js",
+      "require": "./lib.commonjs/index.js",
+      "types": "./types/index.d.ts"
+    },
+    "./abi": {
+      "import": "./lib.esm/abi/index.js",
+      "require": "./lib.commonjs/abi/index.js",
+      "types": "./types/abi/index.d.ts"
+    },
+    "./address": {
+      "import": "./lib.esm/address/index.js",
+      "require": "./lib.commonjs/address/index.js",
+      "types": "./types/address/index.d.ts"
+    },
+    "./constants": {
+      "import": "./lib.esm/constants/index.js",
+      "require": "./lib.commonjs/constants/index.js",
+      "types": "./types/constants/index.d.ts"
+    },
+    "./contract": {
+      "import": "./lib.esm/contract/index.js",
+      "require": "./lib.commonjs/contract/index.js",
+      "types": "./types/contract/index.d.ts"
+    },
+    "./crypto": {
+      "import": "./lib.esm/crypto/index.js",
+      "require": "./lib.commonjs/crypto/index.js",
+      "types": "./types/crypto/index.d.ts"
+    },
+    "./hash": {
+      "import": "./lib.esm/hash/index.js",
+      "require": "./lib.commonjs/hash/index.js",
+      "types": "./types/hash/index.d.ts"
+    },
+    "./providers": {
+      "import": "./lib.esm/providers/index.js",
+      "require": "./lib.commonjs/providers/index.js",
+      "types": "./types/providers/index.d.ts"
+    },
+    "./transaction": {
+      "import": "./lib.esm/transaction/index.js",
+      "require": "./lib.commonjs/transaction/index.js",
+      "types": "./types/transaction/index.d.ts"
+    },
+    "./utils": {
+      "import": "./lib.esm/utils/index.js",
+      "require": "./lib.commonjs/utils/index.js",
+      "types": "./types/utils/index.d.ts"
+    },
+    "./wallet": {
+      "import": "./lib.esm/wallet/index.js",
+      "require": "./lib.commonjs/wallet/index.js",
+      "types": "./types/wallet/index.d.ts"
+    },
+    "./wordlists": {
+      "import": "./lib.esm/wordlists/index.js",
+      "require": "./lib.commonjs/wordlists/index.js",
+      "types": "./types/wordlistsindex.d.ts"
+    }
+  },
+  "keywords": [
+    "ethereum",
+    "ethers",
+    "ethersjs"
+  ],
+  "license": "MIT",
+  "main": "./lib.commonjs/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "ethers",
+  "publishConfig": {
+    "access": "public",
+    "tag": "beta-exports"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "scripts": {
+    "clean": "rm -rf dist lib.esm lib.commonjs types",
+    "build": "tsc --project tsconfig.esm.json",
+    "build-commonjs": "tsc --project tsconfig.commonjs.json && cp ./package-commonjs.json ./lib.commonjs/package.json",
+    "build-types": "tsc --project tsconfig.types.json",
+    "build-docs": "echo 'foo'",
+    "auto-build": "npm run build -- -w",
+    "build-all": "npm run build && npm run build-commonjs && npm run build-types",
+    "build-clean": "npm run clean && npm run build-all",
+    "_dist-stats": "gzip -k9f -S '.gz' ./dist/ethers.min.js && gzip -k9f -S '.gz' ./dist/wordlists-extra.min.js && du -hs ./dist/*.gz && echo '' && du -hs ./dist/*.js",
+    "_build-dist": "rollup -c && uglifyjs ./dist/ethers.js -o ./dist/ethers.min.js && uglifyjs ./dist/wordlists-extra.js -o ./dist/wordlists-extra.min.js && npm run _dist-stats",
+    "build-dist": "npm run build && npm run _build-dist",
+    "stats": "echo 'Dependencies' && npm ls --all --omit=dev",
+    "test": "mocha --reporter ./reporter.cjs ./lib.esm/_tests/test-*.js",
+    "test-commonjs": "mocha --reporter ./reporter.cjs ./lib.commonjs/_tests/test-*.js",
+    "test-coverage": "c8 -o output -r lcov -r text mocha --no-color --reporter ./reporter.cjs ./lib.esm/_tests/test-*.js | tee output/summary.txt"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "types": "./types/index.d.ts",
+  "version": "6.0.0-beta-exports.0"
+}
