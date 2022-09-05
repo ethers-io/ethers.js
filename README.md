@@ -2,9 +2,25 @@ The Ethers Project
 ==================
 
 ```
-This branch (i.e. v6-beta-exports) can be install via npm using
-"npm install ethers@beta-exports" and is highly experimental.
+This branch (i.e. v6-beta-exports) is still experimental and a
+playground for new ideas for the upcoming v6 release. Please
+don't use it in production yet.
+
+To install:
+   npm install ethers@beta-exports
+
+Please try it out and report any bugs you find using the v6-beta
+template in the GitHub issues.
+
+Documentation is coming, but will still take a bit of time.
+
+In general, please be a patient as there is lots to do.
+
+
+Thanks! :)
 ```
+
+-----
 
 A complete, compact and simple library for Ethereum and ilk, written
 in [TypeScript](https://www.typescriptlang.org).
@@ -59,15 +75,19 @@ Installing
 
 **Browser (ESM)**
 
+The bundled library is available in the `./dist/` folder in this repo.
+
 ```
 <script type="module">
-    import { ethers } from "https://cdn.ethers.io/lib/ethers-5.6.esm.min.js";
+    import { ethers } from "./dist/ethers.min.js";
 </script>
 ```
 
 
 Documentation
 -------------
+
+**Note: The v6 docs are not available yet**
 
 Browse the [documentation](https://docs.ethers.io) online:
 
