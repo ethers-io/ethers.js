@@ -1,9 +1,9 @@
 
 import * as secp256k1 from "@noble/secp256k1";
 
-import { computeHmac } from "../crypto/index.js";
 import { concat, hexlify, toHex, logger } from "../utils/index.js";
 
+import { computeHmac } from "./hmac.js";
 import { Signature } from "./signature.js";
 
 import type { BytesLike, Frozen } from "../utils/index.js";
