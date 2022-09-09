@@ -1,5 +1,7 @@
-import { logger } from "../utils/logger.js";
-import { defineProperties } from "../utils/index.js";
+import {
+    defineProperties, getBigInt, getNumber,
+    assertPrivate, throwArgumentError, throwError
+} from "../utils/index.js";
 
 
 export interface JsonFragmentType {
@@ -76,7 +78,9 @@ const regexNumber = new RegExp("^([0-9]+)");
 const regexIdentifier = new RegExp("^([a-zA-Z$_][a-zA-Z0-9$_]*)");
 const regexType = new RegExp("^(address|bool|bytes([0-9]*)|string|u?int([0-9]*))");
 
-
+/**
+ *  @ignore:
+ */
 export type Token = Readonly<{
     // Type of token (e.g. TYPE, KEYWORD, NUMBER, etc)
     type: string;
@@ -268,7 +272,7 @@ export function lex(text: string): TokenString {
                 if (tokens.length > 0 && tokens[tokens.length - 1].type === "NUMBER") {
                     const value = (tokens.pop() as Token).text;
                     suffix = value + suffix;
-                    (<Writeable<Token>>(tokens[tokens.length - 1])).value = logger.getNumber(value);
+                    (<Writeable<Token>>(tokens[tokens.length - 1])).value = getNumber(value);
                 }
                 if (tokens.length === 0 || tokens[tokens.length - 1].type !== "BRACKET") {
                     throw new Error("missing opening bracket");
@@ -381,7 +385,7 @@ function consumeGas(tokens: TokenString): null | bigint {
     if (tokens.peekType("AT")) {
         tokens.pop();
         if (tokens.peekType("NUMBER")) {
-            return logger.getBigInt(tokens.pop().text);
+            return getBigInt(tokens.pop().text);
         }
         throw new Error("invalid gas");
     }
@@ -399,7 +403,7 @@ const regexArrayType = new RegExp(/^(.*)\[([0-9]*)\]$/);
 function verifyBasicType(type: string): string {
     const match = type.match(regexType);
     if (!match) {
-        return logger.throwArgumentError("invalid type", "type", type);
+        return throwArgumentError("invalid type", "type", type);
     }
     if (type === "uint") { return "uint256"; }
     if (type === "int") { return "int256"; }
@@ -408,14 +412,14 @@ function verifyBasicType(type: string): string {
         // bytesXX
         const length = parseInt(match[2]);
         if (length === 0 || length > 32) {
-            logger.throwArgumentError("invalid bytes length", "type", type);
+            throwArgumentError("invalid bytes length", "type", type);
         }
 
     } else if (match[3]) {
         // intXX or uintXX
         const size = parseInt(match[3] as string);
         if (size === 0 || size > 256 || size % 8) {
-            logger.throwArgumentError("invalid numeric width", "type", type);
+            throwArgumentError("invalid numeric width", "type", type);
         }
     }
 
@@ -470,7 +474,7 @@ export class ParamType {
 
 
     constructor(guard: any, name: string, type: string, baseType: string, indexed: null | boolean, components: null | ReadonlyArray<ParamType>, arrayLength: null | number, arrayChildren: null | ParamType) {
-        logger.assertPrivate(guard, _guard, "ParamType");
+        assertPrivate(guard, _guard, "ParamType");
         Object.defineProperty(this, internal, { value: ParamTypeInternal });
 
         if (components) { components = Object.freeze(components.slice()); }
@@ -500,7 +504,7 @@ export class ParamType {
     //   - full:    "tuple(uint256 foo, address bar) indexed baz"
     format(format: FormatType = FormatType.sighash): string {
         if (!FormatType[format]) {
-            logger.throwArgumentError("invalid format type", "format", format);
+            throwArgumentError("invalid format type", "format", format);
         }
 
         if (format === FormatType.json) {
@@ -656,13 +660,13 @@ export class ParamType {
 
         const name = obj.name;
         if (name && (typeof(name) !== "string" || !name.match(regexIdentifier))) {
-            logger.throwArgumentError("invalid name", "obj.name", name);
+            throwArgumentError("invalid name", "obj.name", name);
         }
 
         let indexed = obj.indexed;
         if (indexed != null) {
             if (!allowIndexed) {
-                logger.throwArgumentError("parameter cannot be indexed", "obj.indexed", obj.indexed);
+                throwArgumentError("parameter cannot be indexed", "obj.indexed", obj.indexed);
             }
             indexed = !!indexed;
         }
@@ -756,7 +760,7 @@ export abstract class Fragment {
     readonly inputs!: ReadonlyArray<ParamType>;
 
     constructor(guard: any, type: FragmentType, inputs: ReadonlyArray<ParamType>) {
-        logger.assertPrivate(guard, _guard, "Fragment");
+        assertPrivate(guard, _guard, "Fragment");
         inputs = Object.freeze(inputs.slice());
         defineProperties<Fragment>(this, { type, inputs });
     }
@@ -864,7 +868,7 @@ export class ErrorFragment extends NamedFragment {
 
     format(format: FormatType = FormatType.sighash): string {
        if (!FormatType[format]) {
-            logger.throwArgumentError("invalid format type", "format", format);
+            throwArgumentError("invalid format type", "format", format);
         }
 
         if (format === FormatType.json) {
@@ -905,7 +909,7 @@ export class EventFragment extends NamedFragment {
 
     format(format: FormatType = FormatType.sighash): string {
         if (!FormatType[format]) {
-            logger.throwArgumentError("invalid format type", "format", format);
+            throwArgumentError("invalid format type", "format", format);
         }
 
         if (format === FormatType.json) {
@@ -950,11 +954,11 @@ export class ConstructorFragment extends Fragment {
 
     format(format: FormatType = FormatType.sighash): string {
         if (!FormatType[format]) {
-            logger.throwArgumentError("invalid format type", "format", format);
+            throwArgumentError("invalid format type", "format", format);
         }
 
         if (format === FormatType.sighash) {
-            logger.throwError("cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", {
+            throwError("cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", {
                 operation: "format(sighash)"
             });
         }
@@ -1012,7 +1016,7 @@ export class FunctionFragment extends NamedFragment {
 
     format(format: FormatType = FormatType.sighash): string {
         if (!FormatType[format]) {
-            logger.throwArgumentError("invalid format type", "format", format);
+            throwArgumentError("invalid format type", "format", format);
         }
 
         if (format === FormatType.json) {

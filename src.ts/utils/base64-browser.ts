@@ -1,7 +1,7 @@
 
 // utils/base64-browser
 
-import { logger } from "./logger.js";
+import { getBytes } from "./data.js";
 
 import type { BytesLike } from "./data.js";
 
@@ -12,11 +12,11 @@ export function decodeBase64(textData: string): Uint8Array {
     for (let i = 0; i < textData.length; i++) {
         data[i] = textData.charCodeAt(i);
     }
-    return logger.getBytes(data);
+    return getBytes(data);
 }
 
 export function encodeBase64(_data: BytesLike): string {
-    const data = logger.getBytes(_data);
+    const data = getBytes(_data);
     let textData = "";
     for (let i = 0; i < data.length; i++) {
         textData += String.fromCharCode(data[i]);

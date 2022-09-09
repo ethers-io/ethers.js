@@ -1,9 +1,10 @@
-import { concat, dataSlice, hexlify, zeroPadValue, isHexString } from "../utils/data.js";
 import { keccak256 } from "../crypto/index.js"
 import { id } from "../hash/index.js"
-import { logger } from "../utils/logger.js";
-import { defineProperties } from "../utils/properties.js";
-import { toHex } from "../utils/maths.js";
+import {
+    concat, dataSlice, getBigInt, getBytes, getBytesCopy, hexlify,
+    zeroPadValue, isHexString, defineProperties, throwArgumentError, toHex,
+    throwError, makeError
+} from "../utils/index.js";
 
 import { AbiCoder, defaultAbiCoder } from "./abi-coder.js";
 import { checkResultErrors, Result } from "./coders/abstract-coder.js";
@@ -182,7 +183,7 @@ export class Interface {
             switch (fragment.type) {
                 case "constructor":
                     if (this.deploy) {
-                        logger.warn("duplicate definition - constructor");
+                        console.log("duplicate definition - constructor");
                         return;
                     }
                     //checkNames(fragment, "input", fragment.inputs);
@@ -208,11 +209,9 @@ export class Interface {
                     return;
             }
 
+            // Two identical entries; ignore it
             const signature = fragment.format();
-            if (bucket.has(signature)) {
-                logger.warn("duplicate definition - " + signature);
-                return;
-            }
+            if (bucket.has(signature)) { return; }
 
             bucket.set(signature, fragment);
         });
@@ -228,7 +227,7 @@ export class Interface {
     format(format?: FormatType): string | Array<string> {
         if (!format) { format = FormatType.full; }
         if (format === FormatType.sighash) {
-            logger.throwArgumentError("interface does not support formatting sighash", "format", format);
+            throwArgumentError("interface does not support formatting sighash", "format", format);
         }
 
         const abi = this.fragments.map((f) => f.format(format));
@@ -266,7 +265,7 @@ export class Interface {
             for (const fragment of this.#functions.values()) {
                 if (selector === this.getSelector(fragment)) { return fragment; }
             }
-            logger.throwArgumentError("no matching function", "selector", key);
+            throwArgumentError("no matching function", "selector", key);
         }
 
         // It is a bare name, look up the function (will return null if ambiguous)
@@ -328,11 +327,11 @@ export class Interface {
             }
 
             if (matching.length === 0) {
-                logger.throwArgumentError("no matching function", "name", key);
+                throwArgumentError("no matching function", "name", key);
 
             } else if (matching.length > 1 && forceUnique) {
                 const matchStr = matching.map((m) => JSON.stringify(m.format())).join(", ");
-                logger.throwArgumentError(`multiple matching functions (i.e. ${ matchStr })`, "name", key);
+                throwArgumentError(`multiple matching functions (i.e. ${ matchStr })`, "name", key);
             }
 
             return matching[0];
@@ -342,7 +341,7 @@ export class Interface {
         const result = this.#functions.get(FunctionFragment.fromString(key).format());
         if (result) { return result; }
 
-        return logger.throwArgumentError("no matching function", "signature", key);
+        return throwArgumentError("no matching function", "signature", key);
     }
     getFunctionName(key: string): string {
         return (this.#getFunction(key, null, false)).name;
@@ -361,7 +360,7 @@ export class Interface {
             for (const fragment of this.#events.values()) {
                 if (eventTopic === this.getEventTopic(fragment)) { return fragment; }
             }
-            logger.throwArgumentError("no matching event", "eventTopic", key);
+            throwArgumentError("no matching event", "eventTopic", key);
         }
 
         // It is a bare name, look up the function (will return null if ambiguous)
@@ -396,10 +395,10 @@ export class Interface {
             }
 
             if (matching.length === 0) {
-                logger.throwArgumentError("no matching event", "name", key);
+                throwArgumentError("no matching event", "name", key);
             } else if (matching.length > 1 && forceUnique) {
                 // @TODO: refine by Typed
-                logger.throwArgumentError("multiple matching events", "name", key);
+                throwArgumentError("multiple matching events", "name", key);
             }
 
             return matching[0];
@@ -409,7 +408,7 @@ export class Interface {
         const result = this.#events.get(EventFragment.fromString(key).format());
         if (result) { return result; }
 
-        return logger.throwArgumentError("no matching event", "signature", key);
+        return throwArgumentError("no matching event", "signature", key);
     }
     getEventName(key: string): string {
         return (this.#getEvent(key, null, false)).name;
@@ -430,7 +429,7 @@ export class Interface {
             for (const fragment of this.#errors.values()) {
                 if (selector === this.getSelector(fragment)) { return fragment; }
             }
-            logger.throwArgumentError("no matching error", "selector", key);
+            throwArgumentError("no matching error", "selector", key);
         }
 
         // It is a bare name, look up the function (will return null if ambiguous)
@@ -443,10 +442,10 @@ export class Interface {
             if (matching.length === 0) {
                 if (key === "Error") { return ErrorFragment.fromString("error Error(string)"); }
                 if (key === "Panic") { return ErrorFragment.fromString("error Panic(uint256)"); }
-                logger.throwArgumentError("no matching error", "name", key);
+                throwArgumentError("no matching error", "name", key);
             } else if (matching.length > 1) {
                 // @TODO: refine by Typed
-                logger.throwArgumentError("multiple matching errors", "name", key);
+                throwArgumentError("multiple matching errors", "name", key);
             }
 
             return matching[0];
@@ -460,7 +459,7 @@ export class Interface {
         const result = this.#errors.get(key);
         if (result) { return result; }
 
-        return logger.throwArgumentError("no matching error", "signature", key);
+        return throwArgumentError("no matching error", "signature", key);
     }
 
     // Get the 4-byte selector used by Solidity to identify a function
@@ -508,7 +507,7 @@ export class Interface {
         if (typeof(fragment) === "string") { fragment = this.getError(fragment); }
 
         if (dataSlice(data, 0, 4) !== this.getSelector(fragment)) {
-            logger.throwArgumentError(`data signature does not match error ${ fragment.name }.`, "data", data);
+            throwArgumentError(`data signature does not match error ${ fragment.name }.`, "data", data);
         }
 
         return this._decodeParams(fragment.inputs, dataSlice(data, 4));
@@ -528,7 +527,7 @@ export class Interface {
         if (typeof(fragment) === "string") { fragment = this.getFunction(fragment); }
 
         if (dataSlice(data, 0, 4) !== this.getSelector(fragment)) {
-            logger.throwArgumentError(`data signature does not match function ${ fragment.name }.`, "data", data);
+            throwArgumentError(`data signature does not match function ${ fragment.name }.`, "data", data);
         }
 
         return this._decodeParams(fragment.inputs, dataSlice(data, 4));
@@ -550,7 +549,7 @@ export class Interface {
 
         let message = "invalid length for result data";
 
-        const bytes = logger.getBytesCopy(data);
+        const bytes = getBytesCopy(data);
         if ((bytes.length % 32) === 0) {
             try {
                 return this.#abiCoder.decode(fragment.outputs, bytes);
@@ -560,7 +559,7 @@ export class Interface {
         }
 
         // Call returned data with no error, but the data is junk
-        return logger.throwError(message, "BAD_DATA", {
+        return throwError(message, "BAD_DATA", {
             value: hexlify(bytes),
             info: { method: fragment.name, signature: fragment.format() }
         });
@@ -569,7 +568,7 @@ export class Interface {
     makeError(fragment: FunctionFragment | string, _data: BytesLike, tx?: { data: string }): Error {
         if (typeof(fragment) === "string") { fragment = this.getFunction(fragment); }
 
-        const data = logger.getBytes(_data);
+        const data = getBytes(_data);
 
         let args: undefined | Result = undefined;
         if (tx) {
@@ -616,7 +615,7 @@ export class Interface {
             }
         }
 
-        return logger.makeError("call revert exception", "CALL_EXCEPTION", {
+        return makeError("call revert exception", "CALL_EXCEPTION", {
             data: hexlify(data), transaction: null,
             method: fragment.name, signature: fragment.format(), args,
             errorArgs, errorName, errorSignature, reason
@@ -668,7 +667,7 @@ export class Interface {
         }
 
         if (values.length > eventFragment.inputs.length) {
-            logger.throwError("too many arguments for " + eventFragment.format(), "UNEXPECTED_ARGUMENT", {
+            throwError("too many arguments for " + eventFragment.format(), "UNEXPECTED_ARGUMENT", {
                 count: values.length,
                 expectedCount: eventFragment.inputs.length
             })
@@ -705,7 +704,7 @@ export class Interface {
 
             if (!param.indexed) {
                 if (value != null) {
-                    logger.throwArgumentError("cannot filter non-indexed parameters; must be null", ("contract." + param.name), value);
+                    throwArgumentError("cannot filter non-indexed parameters; must be null", ("contract." + param.name), value);
                 }
                 return;
             }
@@ -713,7 +712,7 @@ export class Interface {
             if (value == null) {
                 topics.push(null);
             } else if (param.baseType === "array" || param.baseType === "tuple") {
-                logger.throwArgumentError("filtering with tuples or arrays not supported", ("contract." + param.name), value);
+                throwArgumentError("filtering with tuples or arrays not supported", ("contract." + param.name), value);
             } else if (Array.isArray(value)) {
                 topics.push(value.map((value) => encodeTopic(param, value)));
             } else {
@@ -744,7 +743,7 @@ export class Interface {
         }
 
         if (values.length !== eventFragment.inputs.length) {
-            logger.throwArgumentError("event arguments/values mismatch", "values", values);
+            throwArgumentError("event arguments/values mismatch", "values", values);
         }
 
         eventFragment.inputs.forEach((param, index) => {
@@ -781,7 +780,7 @@ export class Interface {
         if (topics != null && !eventFragment.anonymous) {
             const eventTopic = this.getEventTopic(eventFragment);
             if (!isHexString(topics[0], 32) || topics[0].toLowerCase() !== eventTopic) {
-                logger.throwArgumentError("fragment/topic mismatch", "topics[0]", topics[0]);
+                throwArgumentError("fragment/topic mismatch", "topics[0]", topics[0]);
             }
             topics = topics.slice(1);
         }
@@ -846,8 +845,8 @@ export class Interface {
     // Given a transaction, find the matching function fragment (if any) and
     // determine all its properties and call parameters
     parseTransaction(tx: { data: string, value?: BigNumberish }): null | TransactionDescription {
-        const data = logger.getBytes(tx.data, "tx.data");
-        const value = logger.getBigInt((tx.value != null) ? tx.value: 0, "tx.value");
+        const data = getBytes(tx.data, "tx.data");
+        const value = getBigInt((tx.value != null) ? tx.value: 0, "tx.value");
 
         const fragment = this.getFunction(hexlify(data.slice(0, 4)));
 
@@ -887,7 +886,7 @@ export class Interface {
     }
 
 
-    static from(value: ReadonlyArray<Fragment | string | JsonFragment> | string | Interface) {
+    static from(value: ReadonlyArray<Fragment | string | JsonFragment> | string | Interface): Interface {
         // Already an Interface, which is immutable
         if (value instanceof Interface) { return value; }
 

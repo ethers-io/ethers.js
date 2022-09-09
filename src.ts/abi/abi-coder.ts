@@ -1,6 +1,6 @@
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 
-import { logger } from "../utils/logger.js";
+import { assertArgumentCount, throwArgumentError } from "../utils/index.js";
 
 import { Coder, Reader, Result, Writer } from "./coders/abstract-coder.js";
 import { AddressCoder } from "./coders/address.js";
@@ -49,7 +49,7 @@ export class AbiCoder {
         if (match) {
             let size = parseInt(match[2] || "256");
             if (size === 0 || size > 256 || (size % 8) !== 0) {
-                logger.throwArgumentError("invalid " + match[1] + " bit length", "param", param);
+                throwArgumentError("invalid " + match[1] + " bit length", "param", param);
             }
             return new NumberCoder(size / 8, (match[1] === "int"), param.name);
         }
@@ -59,12 +59,12 @@ export class AbiCoder {
         if (match) {
             let size = parseInt(match[1]);
             if (size === 0 || size > 32) {
-                logger.throwArgumentError("invalid bytes length", "param", param);
+                throwArgumentError("invalid bytes length", "param", param);
             }
             return new FixedBytesCoder(size, param.name);
         }
 
-        return logger.throwArgumentError("invalid type", "type", param.type);
+        return throwArgumentError("invalid type", "type", param.type);
     }
 
     getDefaultValue(types: ReadonlyArray<string | ParamType>): Result {
@@ -74,7 +74,7 @@ export class AbiCoder {
     }
 
     encode(types: ReadonlyArray<string | ParamType>, values: ReadonlyArray<any>): string {
-        logger.assertArgumentCount(values.length, types.length, "types/values length mismatch");
+        assertArgumentCount(values.length, types.length, "types/values length mismatch");
 
         const coders = types.map((type) => this.#getCoder(ParamType.from(type)));
         const coder = (new TupleCoder(coders, "_"));

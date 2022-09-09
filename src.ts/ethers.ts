@@ -22,7 +22,7 @@ export {
 
 export {
     ZeroAddress,
-    NegativeOne, Zero, One, Two, WeiPerEther, MaxUint256, MinInt256, MaxInt256,
+    NegativeOne, Zero, One, Two, WeiPerEther, MaxUint256, MinInt256, MaxInt256, N,
     ZeroHash,
     EtherSymbol, MessagePrefix
 } from "./constants/index.js";
@@ -47,7 +47,7 @@ export {
 
 export {
     id,
-    //isValidName, namehash, dnsEncode
+    isValidName, namehash, dnsEncode,
     hashMessage,
     solidityPacked, solidityPackedKeccak256, solidityPackedSha256,
     TypedDataEncoder
@@ -65,7 +65,7 @@ export {
     isCallException, isError,
     FetchRequest, FetchResponse,
     FixedFormat, FixedNumber, formatFixed, parseFixed,
-    assertArgument, Logger, logger,
+    assertArgument,
     fromTwos, toTwos, mask, toArray, toBigInt, toHex, toNumber,
     formatEther, parseEther, formatUnits, parseUnits,
     _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String,

@@ -1,4 +1,5 @@
-import { logger } from "./logger.js";
+import { getBytes } from "./data.js";
+import { assertNormalize, throwArgumentError } from "./errors.js";
 
 import type { BytesLike } from "./index.js";
 
@@ -42,8 +43,11 @@ export type Utf8ErrorReason =
 
 export type Utf8ErrorFunc = (reason: Utf8ErrorReason, offset: number, bytes: ArrayLike<number>, output: Array<number>, badCodepoint?: number) => number;
 
+
+
+
 function errorFunc(reason: Utf8ErrorReason, offset: number, bytes: ArrayLike<number>, output: Array<number>, badCodepoint?: number): number {
-    return logger.throwArgumentError(`invalid codepoint at offset ${ offset }; ${ reason }`, "bytes", bytes);
+    return throwArgumentError(`invalid codepoint at offset ${ offset }; ${ reason }`, "bytes", bytes);
 }
 
 function ignoreFunc(reason: Utf8ErrorReason, offset: number, bytes: ArrayLike<number>, output: Array<number>, badCodepoint?: number): number {
@@ -94,7 +98,7 @@ export const Utf8ErrorFuncs: Readonly<Record<"error" | "ignore" | "replace", Utf
 function getUtf8CodePoints(_bytes: BytesLike, onError?: Utf8ErrorFunc): Array<number> {
     if (onError == null) { onError = Utf8ErrorFuncs.error; }
 
-    const bytes = logger.getBytes(_bytes, "bytes");
+    const bytes = getBytes(_bytes, "bytes");
 
     const result: Array<number> = [];
     let i = 0;
@@ -192,7 +196,7 @@ function getUtf8CodePoints(_bytes: BytesLike, onError?: Utf8ErrorFunc): Array<nu
 export function toUtf8Bytes(str: string, form?: UnicodeNormalizationForm): Uint8Array {
 
     if (form != null) {
-        logger.assertNormalize(form);
+        assertNormalize(form);
         str = str.normalize(form);
     }
 
@@ -232,7 +236,7 @@ export function toUtf8Bytes(str: string, form?: UnicodeNormalizationForm): Uint8
     return new Uint8Array(result);
 };
 
-function escapeChar(value: number) {
+function escapeChar(value: number): string {
     const hex = ("0000" + value.toString(16));
     return "\\u" + hex.substring(hex.length - 4);
 }
@@ -283,3 +287,4 @@ export function toUtf8String(bytes: BytesLike, onError?: Utf8ErrorFunc): string 
 export function toUtf8CodePoints(str: string, form?: UnicodeNormalizationForm): Array<number> {
     return getUtf8CodePoints(toUtf8Bytes(str, form));
 }
+

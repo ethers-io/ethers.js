@@ -1,11 +1,12 @@
 import { ZeroHash } from "../constants/hashes.js";
 import { dnsEncode, namehash } from "../hash/index.js";
 import {
-    defineProperties, encodeBase58, toArray, toNumber, toUtf8Bytes, toUtf8String
+    concat, dataSlice, getBytes, hexlify, zeroPadValue,
+    defineProperties, encodeBase58, getBigInt, toArray,
+    toNumber, toUtf8Bytes, toUtf8String,
+    throwArgumentError, throwError,
+    FetchRequest
 } from "../utils/index.js";
-import { concat, dataSlice, hexlify, zeroPadValue } from "../utils/data.js";
-import { FetchRequest } from "../utils/fetch.js";
-import { logger } from "../utils/logger.js";
 
 import type { BigNumberish, BytesLike, EthersError } from "../utils/index.js";
 
@@ -64,7 +65,7 @@ function encodeBytes(datas: Array<BytesLike>) {
     }
 
     for (let i = 0; i < datas.length; i++) {
-        const data = logger.getBytes(datas[i]);
+        const data = getBytes(datas[i]);
 
         // Update the bytes offset
         result[i] = numPad(byteCount);
@@ -86,7 +87,7 @@ function getIpfsLink(link: string): string {
     } else if (link.match(/^ipfs:\/\//i)) {
         link = link.substring(7);
     } else {
-        logger.throwArgumentError("unsupported IPFS format", "link", link);
+        throwArgumentError("unsupported IPFS format", "link", link);
     }
 
     return `https:/\/gateway.ipfs.io/ipfs/${ link }`;
@@ -170,7 +171,7 @@ export class EnsResolver {
                 to: this.address,
                 data: "0x01ffc9a79061b92300000000000000000000000000000000000000000000000000000000"
             }).then((result) => {
-                return (logger.getBigInt(result) === BN_1);
+                return (getBigInt(result) === BN_1);
             }).catch((error) => {
                 if (error.code === "CALL_EXCEPTION") { return false; }
                 // Rethrow the error: link is down, etc. Let future attempts retry.
@@ -203,8 +204,8 @@ export class EnsResolver {
 
         try {
             let data = await this.provider.call(tx);
-            if ((logger.getBytes(data).length % 32) === 4) {
-                return logger.throwError("resolver threw error", "CALL_EXCEPTION", {
+            if ((getBytes(data).length % 32) === 4) {
+                return throwError("resolver threw error", "CALL_EXCEPTION", {
                     transaction: tx, data
                 });
             }
@@ -256,7 +257,7 @@ export class EnsResolver {
 
         if (address != null) { return address; }
 
-        return logger.throwError(`invalid coin data`, "UNSUPPORTED_OPERATION", {
+        return throwError(`invalid coin data`, "UNSUPPORTED_OPERATION", {
             operation: `getAddress(${ coinType })`,
             info: { coinType, data }
         });
@@ -268,7 +269,7 @@ export class EnsResolver {
 
         // The nodehash consumes the first slot, so the string pointer targets
         // offset 64, with the length at offset 64 and data starting at offset 96
-        const calldata = logger.getBytes(concat([ numPad(64), numPad(keyBytes.length), keyBytes ]));
+        const calldata = getBytes(concat([ numPad(64), numPad(keyBytes.length), keyBytes ]));
 
         const hexBytes = parseBytes((await this._fetch("0x59d1d43c", bytesPad(calldata))) || "0x", 0);
         if (hexBytes == null || hexBytes === "0x") { return null; }
@@ -299,7 +300,7 @@ export class EnsResolver {
             return `bzz:/\/${ swarm[1] }`;
         }
 
-        return logger.throwError(`invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
+        return throwError(`invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
             operation: "getContentHash()",
             info: { data: hexBytes }
         });
@@ -377,7 +378,7 @@ export class EnsResolver {
 
                         } else if (scheme === "erc1155") {
                             // balanceOf(address owner, uint256 tokenId)
-                            const balance = logger.getBigInt(await this.provider.call({
+                            const balance = getBigInt(await this.provider.call({
                                 to: addr, data: concat([ "0x00fdd58e", zeroPadValue(owner, 32), tokenId ])
                             }));
                             if (!balance) {
@@ -479,7 +480,7 @@ export class EnsResolver {
 
         // No ENS...
         if (!ensPlugin) {
-            return logger.throwError("network does not support ENS", "UNSUPPORTED_OPERATION", {
+            return throwError("network does not support ENS", "UNSUPPORTED_OPERATION", {
                 operation: "getResolver", info: { network: network.name }
             });
         }

@@ -1,9 +1,9 @@
 
-import { toArray, toBigInt, toNumber } from "../../utils/maths.js";
-import { concat, hexlify } from "../../utils/data.js";
-import { defineProperties } from "../../utils/properties.js";
-
-import { logger } from "../../utils/logger.js";
+import {
+    defineProperties, concat, getBytesCopy, getNumber, hexlify,
+    toArray, toBigInt, toNumber,
+    assertPrivate, throwArgumentError, throwError
+} from "../../utils/index.js";
 
 import type { BigNumberish, BytesLike } from "../../utils/index.js";
 
@@ -22,7 +22,7 @@ export class Result extends Array<any> {
     [ K: string | number ]: any
 
     constructor(guard: any, items: Array<any>, keys?: Array<null | string>) {
-        logger.assertPrivate(guard, _guard, "Result");
+        assertPrivate(guard, _guard, "Result");
         super(...items);
 
         // Name lookup table
@@ -44,7 +44,7 @@ export class Result extends Array<any> {
             get: (target, prop, receiver) => {
                 if (typeof(prop) === "string") {
                     if (prop.match(/^[0-9]+$/)) {
-                        const index = logger.getNumber(prop, "%index");
+                        const index = getNumber(prop, "%index");
                         if (index < 0 || index >= this.length) {
                             throw new RangeError("out of result range");
                         }
@@ -153,7 +153,7 @@ function getValue(value: BigNumberish): Uint8Array {
     let bytes = toArray(value);
 
     if (bytes.length > WordSize) {
-        logger.throwError("value out-of-bounds", "BUFFER_OVERRUN", {
+        throwError("value out-of-bounds", "BUFFER_OVERRUN", {
             buffer: bytes,
             length: WordSize,
             offset: bytes.length
@@ -161,7 +161,7 @@ function getValue(value: BigNumberish): Uint8Array {
     }
 
     if (bytes.length !== WordSize) {
-        bytes = logger.getBytesCopy(concat([ Padding.slice(bytes.length % WordSize), bytes ]));
+        bytes = getBytesCopy(concat([ Padding.slice(bytes.length % WordSize), bytes ]));
     }
 
     return bytes;
@@ -194,7 +194,7 @@ export abstract class Coder {
     }
 
     _throwError(message: string, value: any): never {
-        return logger.throwArgumentError(message, this.localName, value);
+        return throwArgumentError(message, this.localName, value);
     }
 
     abstract encode(writer: Writer, value: any): number;
@@ -225,15 +225,15 @@ export class Writer {
     }
 
     appendWriter(writer: Writer): number {
-        return this.#writeData(logger.getBytesCopy(writer.data));
+        return this.#writeData(getBytesCopy(writer.data));
     }
 
     // Arrayish item; pad on the right to *nearest* WordSize
     writeBytes(value: BytesLike): number {
-        let bytes = logger.getBytesCopy(value);
+        let bytes = getBytesCopy(value);
         const paddingOffset = bytes.length % WordSize;
         if (paddingOffset) {
-            bytes = logger.getBytesCopy(concat([ bytes, Padding.slice(paddingOffset) ]))
+            bytes = getBytesCopy(concat([ bytes, Padding.slice(paddingOffset) ]))
         }
         return this.#writeData(bytes);
     }
@@ -268,7 +268,7 @@ export class Reader {
     constructor(data: BytesLike, allowLoose?: boolean) {
         defineProperties<Reader>(this, { allowLoose: !!allowLoose });
 
-        this.#data = logger.getBytesCopy(data);
+        this.#data = getBytesCopy(data);
 
         this.#offset = 0;
     }
@@ -284,8 +284,8 @@ export class Reader {
             if (this.allowLoose && loose && this.#offset + length <= this.#data.length) {
                 alignedLength = length;
             } else {
-                logger.throwError("data out-of-bounds", "BUFFER_OVERRUN", {
-                    buffer: logger.getBytesCopy(this.#data),
+                throwError("data out-of-bounds", "BUFFER_OVERRUN", {
+                    buffer: getBytesCopy(this.#data),
                     length: this.#data.length,
                     offset: this.#offset + alignedLength
                 });

@@ -2,7 +2,10 @@ import { computeHmac, randomBytes, ripemd160, SigningKey, sha256 } from "../cryp
 import { VoidSigner } from "../providers/index.js";
 import { computeAddress } from "../transaction/index.js";
 import {
-    concat, dataSlice, decodeBase58, defineProperties, encodeBase58, hexlify, logger, toBigInt, toHex
+    concat, dataSlice, decodeBase58, defineProperties, encodeBase58,
+    getBytes, hexlify,
+    getNumber, toBigInt, toHex,
+    assertPrivate, throwArgumentError, throwError
 } from "../utils/index.js";
 import { langEn } from "../wordlists/lang-en.js";
 
@@ -36,7 +39,7 @@ function zpad(value: number, length: number): string {
 }
 
 function encodeBase58Check(_value: BytesLike): string {
-    const value = logger.getBytes(_value);
+    const value = getBytes(_value);
     const check = dataSlice(sha256(sha256(value)), 0, 4);
     const bytes = concat([ value, check ]);
     return encodeBase58(bytes);
@@ -49,22 +52,22 @@ function ser_I(index: number, chainCode: string, publicKey: string, privateKey: 
 
     if (index & HardenedBit) {
         if (privateKey == null) {
-            return logger.throwError("cannot derive child of neutered node", "UNSUPPORTED_OPERATION", {
+            return throwError("cannot derive child of neutered node", "UNSUPPORTED_OPERATION", {
                 operation: "deriveChild"
             });
         }
 
         // Data = 0x00 || ser_256(k_par)
-        data.set(logger.getBytes(privateKey), 1);
+        data.set(getBytes(privateKey), 1);
 
     } else {
         // Data = ser_p(point(k_par))
-        data.set(logger.getBytes(publicKey));
+        data.set(getBytes(publicKey));
     }
 
     // Data += ser_32(i)
     for (let i = 24; i >= 0; i -= 8) { data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff); }
-    const I = logger.getBytes(computeHmac("sha512", chainCode, data));
+    const I = getBytes(computeHmac("sha512", chainCode, data));
 
     return { IL: I.slice(0, 32), IR: I.slice(32) };
 }
@@ -122,7 +125,7 @@ export class HDNodeWallet extends BaseWallet {
 
     constructor(guard: any, signingKey: SigningKey, parentFingerprint: string, chainCode: string, path: null | string, index: number, depth: number, mnemonic: null | Mnemonic, provider: null | Provider) {
         super(signingKey, provider);
-        logger.assertPrivate(guard, _guard, "HDNodeWallet");
+        assertPrivate(guard, _guard, "HDNodeWallet");
 
         defineProperties<HDNodeWallet>(this, { publicKey: signingKey.compressedPublicKey });
 
@@ -165,7 +168,7 @@ export class HDNodeWallet extends BaseWallet {
     }
 
     deriveChild(_index: Numeric): HDNodeWallet {
-        const index = logger.getNumber(_index, "index");
+        const index = getNumber(_index, "index");
         if (index > 0xffffffff) { throw new Error("invalid index - " + String(index)); }
 
         // Base path
@@ -188,12 +191,12 @@ export class HDNodeWallet extends BaseWallet {
     }
 
     static #fromSeed(_seed: BytesLike, mnemonic: null | Mnemonic): HDNodeWallet {
-        const seed = logger.getBytes(_seed, "seed");
+        const seed = getBytes(_seed, "seed");
         if (seed.length < 16 || seed.length > 64) {
             throw new Error("invalid seed");
         }
 
-        const I = logger.getBytes(computeHmac("sha512", MasterSecret, seed));
+        const I = getBytes(computeHmac("sha512", MasterSecret, seed));
         const signingKey = new SigningKey(hexlify(I.slice(0, 32)));
 
         return new HDNodeWallet(_guard, signingKey, "0x00000000", hexlify(I.slice(32)),
@@ -204,7 +207,7 @@ export class HDNodeWallet extends BaseWallet {
         return HDNodeWallet.#fromSeed(seed, null);
     }
 
-    static fromPhrase(phrase: string, password = "", path: null | string = defaultPath, wordlist: Wordlist = langEn): HDNodeWallet {
+    static fromPhrase(phrase: string, password: string = "", path: null | string = defaultPath, wordlist: Wordlist = langEn): HDNodeWallet {
         if (!path) { path = defaultPath; }
         const mnemonic = Mnemonic.fromPhrase(phrase, password, wordlist)
         return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
@@ -216,10 +219,10 @@ export class HDNodeWallet extends BaseWallet {
     }
 
     static fromExtendedKey(extendedKey: string): HDNodeWallet | HDNodeVoidWallet {
-        const bytes = logger.getBytes(decodeBase58(extendedKey)); // @TODO: redact
+        const bytes = getBytes(decodeBase58(extendedKey)); // @TODO: redact
 
         if (bytes.length !== 82 || encodeBase58Check(bytes.slice(0, 78)) !== extendedKey) {
-            logger.throwArgumentError("invalid extended key", "extendedKey", "[ REDACTED ]");
+            throwArgumentError("invalid extended key", "extendedKey", "[ REDACTED ]");
         }
 
         const depth = bytes[4];
@@ -244,10 +247,10 @@ export class HDNodeWallet extends BaseWallet {
         }
 
 
-        return logger.throwArgumentError("invalid extended key prefix", "extendedKey", "[ REDACTED ]");
+        return throwArgumentError("invalid extended key prefix", "extendedKey", "[ REDACTED ]");
     }
 
-    static createRandom(password = "", path: null | string = defaultPath, wordlist: Wordlist = langEn): HDNodeWallet {
+    static createRandom(password: string = "", path: null | string = defaultPath, wordlist: Wordlist = langEn): HDNodeWallet {
         if (!path) { path = defaultPath; }
         const mnemonic = Mnemonic.fromEntropy(randomBytes(16), password, wordlist)
         return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
@@ -268,7 +271,7 @@ export class HDNodeVoidWallet extends VoidSigner {
 
     constructor(guard: any, address: string, publicKey: string, parentFingerprint: string, chainCode: string, path: null | string, index: number, depth: number, provider: null | Provider) {
         super(address, provider);
-        logger.assertPrivate(guard, _guard, "HDNodeVoidWallet");
+        assertPrivate(guard, _guard, "HDNodeVoidWallet");
 
         defineProperties<HDNodeVoidWallet>(this, { publicKey });
 
@@ -305,7 +308,7 @@ export class HDNodeVoidWallet extends VoidSigner {
     hasPath(): this is { path: string } { return (this.path != null); }
 
     deriveChild(_index: Numeric): HDNodeVoidWallet {
-        const index = logger.getNumber(_index, "index");
+        const index = getNumber(_index, "index");
         if (index > 0xffffffff) { throw new Error("invalid index - " + String(index)); }
 
         // Base path
@@ -333,19 +336,19 @@ export class HDNodeVoidWallet extends VoidSigner {
 export class HDNodeWalletManager {
     #root: HDNodeWallet;
 
-    constructor(phrase: string, password = "", path = "m/44'/60'/0'/0", locale: Wordlist = langEn) {
+    constructor(phrase: string, password: string = "", path: string = "m/44'/60'/0'/0", locale: Wordlist = langEn) {
         this.#root = HDNodeWallet.fromPhrase(phrase, password, path, locale);
     }
 
-    getSigner(index = 0): HDNodeWallet {
-        return this.#root.deriveChild(index);
+    getSigner(index?: number): HDNodeWallet {
+        return this.#root.deriveChild((index == null) ? 0: index);
     }
 }
 
 export function getAccountPath(_index: Numeric): string {
-    const index = logger.getNumber(_index, "index");
+    const index = getNumber(_index, "index");
     if (index < 0 || index >= HardenedBit) {
-        logger.throwArgumentError("invalid account index", "index", index);
+        throwArgumentError("invalid account index", "index", index);
     }
     return `m/44'/60'/${ index }'/0/0`;
 }

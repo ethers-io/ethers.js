@@ -1,4 +1,4 @@
-import { logger } from "../utils/logger.js";
+import { throwArgumentError, throwError } from "../utils/index.js";
 
 import { getAddress } from "./address.js";
 
@@ -21,9 +21,9 @@ async function checkAddress(target: any, promise: Promise<null | string>): Promi
     const result = await promise;
     if (result == null || result === "0x0000000000000000000000000000000000000000") {
         if (typeof(target) === "string") {
-            return logger.throwError("unconfigured name", "UNCONFIGURED_NAME", { value: target });
+            return throwError("unconfigured name", "UNCONFIGURED_NAME", { value: target });
         }
-        return logger.throwArgumentError("invalid AddressLike value; did not resolve to a value address", "target", target);
+        return throwArgumentError("invalid AddressLike value; did not resolve to a value address", "target", target);
     }
     return getAddress(result);
 }
@@ -36,7 +36,7 @@ export function resolveAddress(target: AddressLike, resolver?: null | NameResolv
         if (target.match(/^0x[0-9a-f]{40}$/i)) { return getAddress(target); }
 
         if (resolver == null) {
-            return logger.throwError("ENS resolution requires a provider", "UNSUPPORTED_OPERATION", {
+            return throwError("ENS resolution requires a provider", "UNSUPPORTED_OPERATION", {
                 operation: "resolveName",
             });
         }
@@ -50,5 +50,5 @@ export function resolveAddress(target: AddressLike, resolver?: null | NameResolv
         return checkAddress(target, target);
     }
 
-    return logger.throwArgumentError("unsupported addressable value", "target", target);
+    return throwArgumentError("unsupported addressable value", "target", target);
 }

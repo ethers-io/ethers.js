@@ -1,6 +1,6 @@
 import { decodeBase64, encodeBase64 } from "./base64.js";
 import { hexlify } from "./data.js";
-import { assertArgument, logger } from "./logger.js";
+import { assertArgument, throwArgumentError, throwError } from "./errors.js";
 import { defineProperties } from "./properties.js";
 import { toUtf8Bytes, toUtf8String } from "./utf8.js"
 
@@ -114,7 +114,7 @@ export class FetchCancelSignal {
 
     addListener(listener: () => void): void {
         if (this.#cancelled) {
-            logger.throwError("singal already cancelled", "UNSUPPORTED_OPERATION", {
+            throwError("singal already cancelled", "UNSUPPORTED_OPERATION", {
                 operation: "fetchCancelSignal.addCancelListener"
             });
         }
@@ -125,7 +125,7 @@ export class FetchCancelSignal {
 
     checkSignal(): void {
         if (!this.cancelled) { return; }
-        logger.throwError("cancelled", "CANCELLED", { });
+        throwError("cancelled", "CANCELLED", { });
     }
 }
 
@@ -251,7 +251,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
     }
     setCredentials(username: string, password: string): void {
         if (username.match(/:/)) {
-            logger.throwArgumentError("invalid basic authentication username", "username", "[REDACTED]");
+            throwArgumentError("invalid basic authentication username", "username", "[REDACTED]");
         }
         this.#creds = `${ username }:${ password }`;
     }
@@ -319,7 +319,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         }
 
         if (getTime() > expires) {
-            return logger.throwError("timeout", "TIMEOUT", {
+            return throwError("timeout", "TIMEOUT", {
                 operation: "request.send", reason: "timeout", request: _request
             });
         }
@@ -409,7 +409,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
 
     send(): Promise<FetchResponse> {
         if (this.#signal != null) {
-            return logger.throwError("request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
+            return throwError("request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
         }
         this.#signal = new FetchCancelSignal(this);
         return this.#send(0, getTime() + this.timeout, 0, this, new FetchResponse(0, "", { }, null, this));
@@ -417,7 +417,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
 
     cancel(): void {
         if (this.#signal == null) {
-            return logger.throwError("request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
+            return throwError("request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
         }
         const signal = fetchSignals.get(this);
         if (!signal) { throw new Error("missing signal; should not happen"); }
@@ -438,7 +438,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         // - downgrading the security (e.g. https => http)
         // - to non-HTTP (or non-HTTPS) protocols [this could be relaxed?]
         if (this.method !== "GET" || (current === "https" && target === "http") || !location.match(/^https?:/)) {
-            return logger.throwError(`unsupported redirect`, "UNSUPPORTED_OPERATION", {
+            return throwError(`unsupported redirect`, "UNSUPPORTED_OPERATION", {
                 operation: `redirect(${ this.method } ${ JSON.stringify(this.url) } => ${ JSON.stringify(location) })`
             });
         }
@@ -536,7 +536,7 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
 
     get statusCode(): number { return this.#statusCode; }
     get statusMessage(): string { return this.#statusMessage; }
-    get headers() { return this.#headers; }
+    get headers(): Record<string, string> { return this.#headers; }
     get body(): null | Readonly<Uint8Array> {
         return (this.#body == null) ? null: new Uint8Array(this.#body);
     }
@@ -544,7 +544,7 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
         try {
             return (this.#body == null) ? "": toUtf8String(this.#body);
         } catch (error) {
-            return logger.throwError("response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
+            return throwError("response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
                 operation: "bodyText", info: { response: this }
             });
         }
@@ -553,7 +553,7 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
         try {
             return JSON.parse(this.bodyText);
         } catch (error) {
-            return logger.throwError("response body is not valid JSON", "UNSUPPORTED_OPERATION", {
+            return throwError("response body is not valid JSON", "UNSUPPORTED_OPERATION", {
                 operation: "bodyJson", info: { response: this }
             });
         }
@@ -607,7 +607,7 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
         if (stall == null) {
             stall = -1;
         } else if (typeof(stall) !== "number" || !Number.isInteger(stall) || stall < 0) {
-            return logger.throwArgumentError("invalid stall timeout", "stall", stall);
+            return throwArgumentError("invalid stall timeout", "stall", stall);
         }
 
         const error = new Error(message || "throttling requests");
@@ -637,7 +637,7 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
         if (message === "") {
             message = `server response ${ this.statusCode } ${ this.statusMessage }`;
         }
-        logger.throwError(message, "SERVER_ERROR", {
+        throwError(message, "SERVER_ERROR", {
             request: (this.request || "unknown request"), response: this, error
         });
     }

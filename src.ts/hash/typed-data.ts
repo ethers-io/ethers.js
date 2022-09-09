@@ -2,11 +2,11 @@
 import { getAddress } from "../address/index.js";
 import { keccak256 } from "../crypto/index.js";
 import {
-    concat, defineProperties, hexlify, isHexString, mask, toHex, toTwos, zeroPadValue
+    concat, defineProperties, getBigInt, getBytes, hexlify, isHexString, mask, toHex, toTwos, zeroPadValue,
+    throwArgumentError
 } from "../utils/index.js";
 
 import { id } from "./id.js";
-import { logger } from "../utils/logger.js";
 
 import type { BigNumberish, BytesLike } from "../utils/index.js";
 
@@ -32,8 +32,8 @@ export interface TypedDataField {
     type: string;
 };
 
-function hexPadRight(value: BytesLike) {
-    const bytes = logger.getBytes(value);
+function hexPadRight(value: BytesLike): string {
+    const bytes = getBytes(value);
     const padOffset = bytes.length % 32
     if (padOffset) {
         return concat([ bytes, padding.slice(padOffset) ]);
@@ -59,7 +59,7 @@ const domainFieldNames: Array<string> = [
 function checkString(key: string): (value: any) => string {
     return function (value: any){
         if (typeof(value) !== "string") {
-            logger.throwArgumentError(`invalid domain value for ${ JSON.stringify(key) }`, `domain.${ key }`, value);
+            throwArgumentError(`invalid domain value for ${ JSON.stringify(key) }`, `domain.${ key }`, value);
         }
         return value;
     }
@@ -69,18 +69,18 @@ const domainChecks: Record<string, (value: any) => any> = {
     name: checkString("name"),
     version: checkString("version"),
     chainId: function(value: any) {
-        return logger.getBigInt(value, "domain.chainId");
+        return getBigInt(value, "domain.chainId");
     },
     verifyingContract: function(value: any) {
         try {
             return getAddress(value).toLowerCase();
         } catch (error) { }
-        return logger.throwArgumentError(`invalid domain value "verifyingContract"`, "domain.verifyingContract", value);
+        return throwArgumentError(`invalid domain value "verifyingContract"`, "domain.verifyingContract", value);
     },
     salt: function(value: any) {
-        const bytes = logger.getBytes(value, "domain.salt");
+        const bytes = getBytes(value, "domain.salt");
         if (bytes.length !== 32) {
-            logger.throwArgumentError(`invalid domain value "salt"`, "domain.salt", value);
+            throwArgumentError(`invalid domain value "salt"`, "domain.salt", value);
         }
         return hexlify(bytes);
     }
@@ -95,17 +95,17 @@ function getBaseEncoder(type: string): null | ((value: any) => string) {
 
             const width = parseInt(match[2] || "256");
             if (width % 8 !== 0 || width > 256 || (match[2] && match[2] !== String(width))) {
-                logger.throwArgumentError("invalid numeric width", "type", type);
+                throwArgumentError("invalid numeric width", "type", type);
             }
 
             const boundsUpper = mask(BN_MAX_UINT256, signed ? (width - 1): width);
             const boundsLower = signed ? ((boundsUpper + BN_1) * BN__1): BN_0;
 
             return function(_value: BigNumberish) {
-                const value = logger.getBigInt(_value, "value");
+                const value = getBigInt(_value, "value");
 
                 if (value < boundsLower || value > boundsUpper) {
-                    logger.throwArgumentError(`value out-of-bounds for ${ type }`, "value", value);
+                    throwArgumentError(`value out-of-bounds for ${ type }`, "value", value);
                 }
 
                 return toHex(toTwos(value, 256), 32);
@@ -119,13 +119,13 @@ function getBaseEncoder(type: string): null | ((value: any) => string) {
         if (match) {
             const width = parseInt(match[1]);
             if (width === 0 || width > 32 || match[1] !== String(width)) {
-                logger.throwArgumentError("invalid bytes width", "type", type);
+                throwArgumentError("invalid bytes width", "type", type);
             }
 
             return function(value: BytesLike) {
-                const bytes = logger.getBytes(value);
+                const bytes = getBytes(value);
                 if (bytes.length !== width) {
-                    logger.throwArgumentError(`invalid length for ${ type }`, "value", value);
+                    throwArgumentError(`invalid length for ${ type }`, "value", value);
                 }
                 return hexPadRight(value);
             };
@@ -193,14 +193,14 @@ export class TypedDataEncoder {
 
                 // Check each field has a unique name
                 if (uniqueNames.has(field.name)) {
-                    logger.throwArgumentError(`duplicate variable name ${ JSON.stringify(field.name) } in ${ JSON.stringify(name) }`, "types", types);
+                    throwArgumentError(`duplicate variable name ${ JSON.stringify(field.name) } in ${ JSON.stringify(name) }`, "types", types);
                 }
                 uniqueNames.add(field.name);
 
                 // Get the base type (drop any array specifiers)
                 const baseType = (<any>(field.type.match(/^([^\x5b]*)(\x5b|$)/)))[1] || null;
                 if (baseType === name) {
-                    logger.throwArgumentError(`circular type reference to ${ JSON.stringify(baseType) }`, "types", types);
+                    throwArgumentError(`circular type reference to ${ JSON.stringify(baseType) }`, "types", types);
                 }
 
                 // Is this a base encoding type?
@@ -208,7 +208,7 @@ export class TypedDataEncoder {
                 if (encoder) { continue; }
 
                 if (!parents.has(baseType)) {
-                    logger.throwArgumentError(`unknown type ${ JSON.stringify(baseType) }`, "types", types);
+                    throwArgumentError(`unknown type ${ JSON.stringify(baseType) }`, "types", types);
                 }
 
                 // Add linkage
@@ -221,9 +221,9 @@ export class TypedDataEncoder {
         const primaryTypes = Array.from(parents.keys()).filter((n) => ((parents.get(n) as Array<string>).length === 0));
 
         if (primaryTypes.length === 0) {
-            logger.throwArgumentError("missing primary type", "types", types);
+            throwArgumentError("missing primary type", "types", types);
         } else if (primaryTypes.length > 1) {
-            logger.throwArgumentError(`ambiguous primary types or unused types: ${ primaryTypes.map((t) => (JSON.stringify(t))).join(", ") }`, "types", types);
+            throwArgumentError(`ambiguous primary types or unused types: ${ primaryTypes.map((t) => (JSON.stringify(t))).join(", ") }`, "types", types);
         }
 
         defineProperties<TypedDataEncoder>(this, { primaryType: primaryTypes[0] });
@@ -231,7 +231,7 @@ export class TypedDataEncoder {
         // Check for circular type references
         function checkCircular(type: string, found: Set<string>) {
             if (found.has(type)) {
-                logger.throwArgumentError(`circular type reference to ${ JSON.stringify(type) }`, "types", types);
+                throwArgumentError(`circular type reference to ${ JSON.stringify(type) }`, "types", types);
             }
 
             found.add(type);
@@ -285,7 +285,7 @@ export class TypedDataEncoder {
             const length = parseInt(match[3]);
             return (value: Array<any>) => {
                 if (length >= 0 && value.length !== length) {
-                    logger.throwArgumentError("array length mismatch; expected length ${ arrayLength }", "value", value);
+                    throwArgumentError("array length mismatch; expected length ${ arrayLength }", "value", value);
                 }
 
                 let result = value.map(subEncoder);
@@ -312,13 +312,13 @@ export class TypedDataEncoder {
             }
         }
 
-        return logger.throwArgumentError(`unknown type: ${ type }`, "type", type);
+        return throwArgumentError(`unknown type: ${ type }`, "type", type);
     }
 
     encodeType(name: string): string {
         const result = this.#fullTypes.get(name);
         if (!result) {
-            return logger.throwArgumentError(`unknown type: ${ JSON.stringify(name) }`, "name", name);
+            return throwArgumentError(`unknown type: ${ JSON.stringify(name) }`, "name", name);
         }
         return result;
     }
@@ -352,7 +352,7 @@ export class TypedDataEncoder {
             const subtype = match[1];
             const length = parseInt(match[3]);
             if (length >= 0 && value.length !== length) {
-                logger.throwArgumentError("array length mismatch; expected length ${ arrayLength }", "value", value);
+                throwArgumentError("array length mismatch; expected length ${ arrayLength }", "value", value);
             }
             return value.map((v: any) => this._visit(subtype, v, callback));
         }
@@ -366,7 +366,7 @@ export class TypedDataEncoder {
             }, <Record<string, any>>{});
         }
 
-        return logger.throwArgumentError(`unknown type: ${ type }`, "type", type);
+        return throwArgumentError(`unknown type: ${ type }`, "type", type);
     }
 
     visit(value: Record<string, any>, callback: (type: string, data: any) => any): any {
@@ -390,7 +390,7 @@ export class TypedDataEncoder {
         for (const name in domain) {
             const type = domainFieldTypes[name];
             if (!type) {
-                logger.throwArgumentError(`invalid typed-data domain key: ${ JSON.stringify(name) }`, "domain", domain);
+                throwArgumentError(`invalid typed-data domain key: ${ JSON.stringify(name) }`, "domain", domain);
             }
             domainFields.push({ name, type });
         }
@@ -476,7 +476,7 @@ export class TypedDataEncoder {
 
         const typesWithDomain = Object.assign({ }, types);
         if (typesWithDomain.EIP712Domain) {
-            logger.throwArgumentError("types must not contain EIP712Domain type", "types.EIP712Domain", types);
+            throwArgumentError("types must not contain EIP712Domain type", "types.EIP712Domain", types);
         } else {
             typesWithDomain.EIP712Domain = domainTypes;
         }
@@ -492,12 +492,12 @@ export class TypedDataEncoder {
 
                 // bytes
                 if (type.match(/^bytes(\d*)/)) {
-                    return hexlify(logger.getBytes(value));
+                    return hexlify(getBytes(value));
                 }
 
                 // uint or int
                 if (type.match(/^u?int/)) {
-                    return logger.getBigInt(value).toString();
+                    return getBigInt(value).toString();
                 }
 
                 switch (type) {
@@ -507,12 +507,12 @@ export class TypedDataEncoder {
                         return !!value;
                     case "string":
                         if (typeof(value) !== "string") {
-                            logger.throwArgumentError(`invalid string`, "value", value);
+                            throwArgumentError(`invalid string`, "value", value);
                         }
                         return value;
                 }
 
-                return logger.throwArgumentError("unsupported type", "type", type);
+                return throwArgumentError("unsupported type", "type", type);
             })
         };
     }

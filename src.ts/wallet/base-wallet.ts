@@ -2,7 +2,9 @@ import { getAddress, resolveAddress } from "../address/index.js";
 import { hashMessage, TypedDataEncoder } from "../hash/index.js";
 import { AbstractSigner } from "../providers/index.js";
 import { computeAddress, Transaction } from "../transaction/index.js";
-import { defineProperties, logger, resolveProperties } from "../utils/index.js";
+import {
+    defineProperties, resolveProperties, throwArgumentError, throwError
+} from "../utils/index.js";
 
 import type { SigningKey } from "../crypto/index.js";
 import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
@@ -42,7 +44,7 @@ export class BaseWallet extends AbstractSigner {
 
         if (tx.from != null) {
             if (getAddress(tx.from) !== this.address) {
-                logger.throwArgumentError("transaction from address mismatch", "tx.from", _tx.from);
+                throwArgumentError("transaction from address mismatch", "tx.from", _tx.from);
             }
             delete tx.from;
         }
@@ -63,7 +65,7 @@ export class BaseWallet extends AbstractSigner {
         // Populate any ENS names
         const populated = await TypedDataEncoder.resolveNames(domain, types, value, async (name: string) => {
             if (this.provider == null) {
-                return logger.throwError("cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
+                return throwError("cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
                     operation: "resolveName",
                     info: { name }
                 });
@@ -71,7 +73,7 @@ export class BaseWallet extends AbstractSigner {
 
             const address = await this.provider.resolveName(name);
             if (address == null) {
-                return logger.throwError("unconfigured ENS name", "UNCONFIGURED_NAME", {
+                return throwError("unconfigured ENS name", "UNCONFIGURED_NAME", {
                     value: name
                 });
             }

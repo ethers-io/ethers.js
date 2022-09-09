@@ -1,5 +1,8 @@
 //export type TransactionReceipt {
 //}
+import { version } from "../_version.js";
+
+import { defineReadOnly } from "./properties.js";
 
 export type ErrorSignature = {
     r: string;
@@ -10,6 +13,13 @@ export type ErrorSignature = {
 
 export type ErrorAccessList = Array<{ address: string, storageKeys: Array<string> }>;
 
+export type ErrorInfo<T> = Omit<T, "code" | "name" | "message">;
+
+// The type of error to use for various error codes
+const ErrorConstructors: Record<string, { new (...args: Array<any>): Error }> = { };
+ErrorConstructors.INVALID_ARGUMENT = TypeError;
+ErrorConstructors.NUMERIC_FAULT = RangeError;
+ErrorConstructors.BUFFER_OVERRUN = RangeError;
 /*
 export interface ErrorTransaction {
     type?: number;
@@ -237,6 +247,12 @@ export interface ActionRejectedError extends EthersError<"ACTION_REJECTED"> {
 
 // Coding; converts an ErrorCode its Typed Error
 
+/**
+ *  A conditional type that transforms the [[ErrorCode]] T into
+ *  its EthersError type.
+ *
+ *  @flatworm-skip-docs
+ */
 export type CodedEthersError<T> =
     T extends "UNKNOWN_ERROR" ? UnknownError:
     T extends "NOT_IMPLEMENTED" ? NotImplementedError:
@@ -267,6 +283,8 @@ export type CodedEthersError<T> =
 
     never;
 
+
+
 /**
  *  try {
  *      // code....
@@ -282,4 +300,112 @@ export function isError<K extends ErrorCode, T extends CodedEthersError<K>>(erro
 
 export function isCallException(error: any): error is CallExceptionError {
     return isError(error, "CALL_EXCEPTION");
+}
+
+export function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(message: string, code: K, info?: ErrorInfo<T>): T {
+    {
+        const details: Array<string> = [];
+        if (info) {
+            for (const key in info) {
+                const value = <any>(info[<keyof ErrorInfo<T>>key]);
+                try {
+                    details.push(key + "=" + JSON.stringify(value));
+                } catch (error) {
+                    details.push(key + "=[could not serialize object]");
+                }
+            }
+        }
+        details.push(`code=${ code }`);
+        details.push(`version=${ version }`);
+
+        if (details.length) {
+            message += " (" + details.join(", ") + ")";
+        }
+    }
+
+    const create = ErrorConstructors[code] || Error;
+    const error = <T>(new create(message));
+    defineReadOnly(error, "code", code);
+    if (info) {
+        for (const key in info) {
+            defineReadOnly(error, <keyof T>key, <any>(info[<keyof ErrorInfo<T>>key]));
+        }
+    }
+    return <T>error;
+}
+
+export function throwError<K extends ErrorCode, T extends CodedEthersError<K>>(message: string, code: K, info?: ErrorInfo<T>): never {
+    throw makeError(message, code, info);
+}
+
+export function throwArgumentError(message: string, name: string, value: any): never {
+    return throwError(message, "INVALID_ARGUMENT", {
+        argument: name,
+        value: value
+    });
+}
+
+export function assertArgument(check: unknown, message: string, name: string, value: unknown): asserts check {
+    if (!check) { throwArgumentError(message, name, value); }
+}
+
+
+export function assertArgumentCount(count: number, expectedCount: number, message: string = ""): void {
+    if (message) { message = ": " + message; }
+
+    if (count < expectedCount) {
+        throwError("missing arguemnt" + message, "MISSING_ARGUMENT", {
+            count: count,
+            expectedCount: expectedCount
+        });
+    }
+
+    if (count > expectedCount) {
+        throwError("too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
+            count: count,
+            expectedCount: expectedCount
+        });
+    }
+}
+
+const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
+    try {
+        // General test for normalize
+        /* c8 ignore start */
+        if ("test".normalize(form) !== "test") { throw new Error("bad"); };
+        /* c8 ignore stop */
+
+        if (form === "NFD") {
+            const check = String.fromCharCode(0xe9).normalize("NFD");
+            const expected = String.fromCharCode(0x65, 0x0301)
+            /* c8 ignore start */
+            if (check !== expected) { throw new Error("broken") }
+            /* c8 ignore stop */
+        }
+
+        accum.push(form);
+    } catch(error) { }
+
+    return accum;
+}, <Array<string>>[]);
+
+export function assertNormalize(form: string): void {
+    if (_normalizeForms.indexOf(form) === -1) {
+        throwError("platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
+            operation: "String.prototype.normalize", info: { form }
+        });
+    }
+}
+
+export function assertPrivate(givenGuard: any, guard: any, className: string = ""): void {
+    if (givenGuard !== guard) {
+        let method = className, operation = "new";
+        if (className) {
+            method += ".";
+            operation += " " + className;
+        }
+        throwError(`private constructor; use ${ method }from* methods`, "UNSUPPORTED_OPERATION", {
+            operation
+        });
+    }
 }

@@ -1,9 +1,8 @@
 //import { resolveAddress } from "@ethersproject/address";
-import { hexlify } from "../utils/data.js";
-import { logger } from "../utils/logger.js";
-import { defineProperties } from "../utils/properties.js";
+import {
+    defineProperties, getBigInt, getNumber, hexlify, throwError
+} from "../utils/index.js";
 import { accessListify } from "../transaction/index.js";
-
 
 import type { AddressLike, NameResolver } from "../address/index.js";
 import type { BigNumberish, EventEmitterable, Frozen, Listener } from "../utils/index.js";
@@ -127,13 +126,13 @@ export function copyRequest(req: CallRequest): PreparedRequest {
     const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerGas, maxPriorityFeePerGas,value".split(/,/);
     for (const key in bigIntKeys) {
         if (!(key in req) || (<any>req)[key] == null) { continue; }
-        result[key] = logger.getBigInt((<any>req)[key], `request.${ key }`);
+        result[key] = getBigInt((<any>req)[key], `request.${ key }`);
     }
 
     const numberKeys = "type,nonce".split(/,/);
     for (const key in numberKeys) {
         if (!(key in req) || (<any>req)[key] == null) { continue; }
-        result[key] = logger.getNumber((<any>req)[key], `request.${ key }`);
+        result[key] = getNumber((<any>req)[key], `request.${ key }`);
     }
 
     if (req.accessList) {
@@ -585,7 +584,7 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
 
     reorderedEvent(other?: TransactionResponse): OrphanFilter {
         if (other && !other.isMined()) {
-            return logger.throwError("unmined 'other' transction cannot be orphaned", "UNSUPPORTED_OPERATION", {
+            return throwError("unmined 'other' transction cannot be orphaned", "UNSUPPORTED_OPERATION", {
                 operation: "reorderedEvent(other)" });
         }
         return createReorderedTransactionFilter(this, other);
@@ -775,7 +774,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
 
     removedEvent(): OrphanFilter {
         if (!this.isMined()) {
-            return logger.throwError("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
+            return throwError("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
                 operation: "removeEvent()" });
         }
         return createRemovedTransactionFilter(this);
@@ -783,11 +782,11 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
 
     reorderedEvent(other?: TransactionResponse): OrphanFilter {
         if (!this.isMined()) {
-            return logger.throwError("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
+            return throwError("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
                 operation: "removeEvent()" });
         }
         if (other && !other.isMined()) {
-            return logger.throwError("unmined 'other' transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
+            return throwError("unmined 'other' transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
                 operation: "removeEvent()" });
         }
         return createReorderedTransactionFilter(this, other);
@@ -1006,7 +1005,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
     waitForBlock(blockTag?: BlockTag): Promise<Block<string>>;
 }
 
-
+// @TODO: I think I can drop T
 function fail<T>(): T {
     throw new Error("this provider should not be used");
 }
@@ -1014,64 +1013,64 @@ function fail<T>(): T {
 class DummyProvider implements Provider {
     get provider(): this { return this; }
 
-    async getNetwork() { return fail<Frozen<Network>>(); }
-    async getFeeData() { return fail<FeeData>(); }
+    async getNetwork(): Promise<Frozen<Network>> { return fail<Frozen<Network>>(); }
+    async getFeeData(): Promise<FeeData> { return fail<FeeData>(); }
 
-    async estimateGas(tx: TransactionRequest) { return fail<bigint>(); }
-    async call(tx: CallRequest) { return fail<string>(); }
+    async estimateGas(tx: TransactionRequest): Promise<bigint> { return fail<bigint>(); }
+    async call(tx: CallRequest): Promise<string> { return fail<string>(); }
 
-    async resolveName(name: string) { return fail<null | string>(); }
+    async resolveName(name: string): Promise<null | string> { return fail<null | string>(); }
 
     // State
-    async getBlockNumber() { return fail<number>(); }
+    async getBlockNumber(): Promise<number> { return fail<number>(); }
 
     // Account
-    async getBalance(address: AddressLike, blockTag?: BlockTag) {
+    async getBalance(address: AddressLike, blockTag?: BlockTag): Promise<bigint> {
         return fail<bigint>();
     }
-    async getTransactionCount(address: AddressLike, blockTag?: BlockTag) {
+    async getTransactionCount(address: AddressLike, blockTag?: BlockTag): Promise<number> {
         return fail<number>();
     }
 
-    async getCode(address: AddressLike, blockTag?: BlockTag) {
+    async getCode(address: AddressLike, blockTag?: BlockTag): Promise<string> {
         return fail<string>();
     }
-    async getStorageAt(address: AddressLike, position: BigNumberish, blockTag?: BlockTag) {
+    async getStorageAt(address: AddressLike, position: BigNumberish, blockTag?: BlockTag): Promise<string> {
         return fail<string>();
     }
 
     // Write
-    async broadcastTransaction(signedTx: string) { return fail<TransactionResponse>(); }
+    async broadcastTransaction(signedTx: string): Promise<TransactionResponse> { return fail<TransactionResponse>(); }
 
     // Queries
-    async getBlock(blockHashOrBlockTag: BlockTag | string){
+    async getBlock(blockHashOrBlockTag: BlockTag | string): Promise<null | Block<string>>{
         return fail<null | Block<string>>();
     }
-    async getBlockWithTransactions(blockHashOrBlockTag: BlockTag | string) {
+    async getBlockWithTransactions(blockHashOrBlockTag: BlockTag | string): Promise<null | Block<TransactionResponse>> {
         return fail<null | Block<TransactionResponse>>();
     }
-    async getTransaction(hash: string) {
+    async getTransaction(hash: string): Promise<null | TransactionResponse> {
         return fail<null | TransactionResponse>();
     }
-    async getTransactionReceipt(hash: string) {
+    async getTransactionReceipt(hash: string): Promise<null | TransactionReceipt> {
         return fail<null | TransactionReceipt>();
     }
 
     // Bloom-filter Queries
-    async getLogs(filter: Filter | FilterByBlockHash) {
+    async getLogs(filter: Filter | FilterByBlockHash): Promise<Array<Log>> {
         return fail<Array<Log>>();
     }
 
     // ENS
-    async lookupAddress(address: string) {
+    async lookupAddress(address: string): Promise<null | string> {
         return fail<null | string>();
     }
 
-    async waitForTransaction(hash: string, confirms?: number, timeout?: number) {
+    async waitForTransaction(hash: string, confirms?: number, timeout?: number): Promise<null | TransactionReceipt> {
         return fail<null | TransactionReceipt>();
     }
 
-    async waitForBlock(blockTag?: BlockTag) {
+    async waitForBlock(blockTag?: BlockTag): Promise<Block<string>> {
         return fail<Block<string>>();
     }
 

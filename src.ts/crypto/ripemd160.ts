@@ -1,6 +1,6 @@
 import { ripemd160 as noble_ripemd160 } from "@noble/hashes/ripemd160";
 
-import { hexlify, logger } from "../utils/index.js";
+import { getBytes,  hexlify } from "../utils/index.js";
 
 import type { BytesLike } from "../utils/index.js";
 
@@ -14,7 +14,7 @@ const _ripemd160 = function(data: Uint8Array): Uint8Array {
 let __ripemd160: (data: Uint8Array) => BytesLike = _ripemd160;
 
 export function ripemd160(_data: BytesLike): string {
-    const data = logger.getBytes(_data, "data");
+    const data = getBytes(_data, "data");
     return hexlify(__ripemd160(data));
 }
 ripemd160._ = _ripemd160;

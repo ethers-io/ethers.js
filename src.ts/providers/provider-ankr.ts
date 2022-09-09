@@ -1,9 +1,9 @@
-import { defineProperties } from "../utils/properties.js";
-import { FetchRequest } from "../utils/fetch.js";
+import {
+    defineProperties, FetchRequest, throwArgumentError
+} from "../utils/index.js";
 
 import { AbstractProvider } from "./abstract-provider.js";
 import { showThrottleMessage } from "./community.js";
-import { logger } from "../utils/logger.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
 
@@ -28,7 +28,7 @@ function getHost(name: string): string {
         case "arbitrum":
             return "rpc.ankr.com/arbitrum";
     }
-    return logger.throwArgumentError("unsupported network", "network", name);
+    return throwArgumentError("unsupported network", "network", name);
 }
 
 

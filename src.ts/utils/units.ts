@@ -1,5 +1,5 @@
 import { formatFixed, parseFixed } from "./fixednumber.js";
-import { logger } from "./logger.js";
+import { throwArgumentError } from "./errors.js";
 
 import type { BigNumberish, Numeric } from "../utils/index.js";
 
@@ -23,7 +23,7 @@ const names = [
 export function formatUnits(value: BigNumberish, unit?: string | Numeric): string {
     if (typeof(unit) === "string") {
         const index = names.indexOf(unit);
-        if (index === -1) { logger.throwArgumentError("invalid unit", "unit", unit); }
+        if (index === -1) { throwArgumentError("invalid unit", "unit", unit); }
         unit = 3 * index;
     }
     return formatFixed(value, (unit != null) ? unit: 18);
@@ -36,12 +36,12 @@ export function formatUnits(value: BigNumberish, unit?: string | Numeric): strin
  */
 export function parseUnits(value: string, unit?: string | Numeric): bigint {
     if (typeof(value) !== "string") {
-        logger.throwArgumentError("value must be a string", "value", value);
+        throwArgumentError("value must be a string", "value", value);
     }
 
     if (typeof(unit) === "string") {
         const index = names.indexOf(unit);
-        if (index === -1) { logger.throwArgumentError("invalid unit", "unit", unit); }
+        if (index === -1) { throwArgumentError("invalid unit", "unit", unit); }
         unit = 3 * index;
     }
     return parseFixed(value, (unit != null) ? unit: 18);

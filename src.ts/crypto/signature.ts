@@ -1,9 +1,13 @@
 import { ZeroHash } from "../constants/index.js";
 import {
-    concat, dataLength, getStore, hexlify, isHexString, logger, setStore
+    concat, dataLength, getBigInt, getBytes, getNumber, getStore, hexlify,
+    isHexString, setStore,
+    assertPrivate, throwArgumentError
 } from "../utils/index.js";
 
-import type { BigNumberish, BytesLike, Freezable, Frozen } from "../utils/index.js";
+import type {
+    BigNumberish, BytesLike, Freezable, Frozen
+} from "../utils/index.js";
 
 
 // Constants
@@ -45,7 +49,7 @@ export class Signature implements Freezable<Signature> {
     get r(): string { return getStore(this.#props, "r"); }
     set r(value: BytesLike) {
         if (dataLength(value) !== 32) {
-            logger.throwArgumentError("invalid r", "value", value);
+            throwArgumentError("invalid r", "value", value);
         }
         setStore(this.#props, "r", hexlify(value));
     }
@@ -53,16 +57,16 @@ export class Signature implements Freezable<Signature> {
     get s(): string { return getStore(this.#props, "s"); }
     set s(value: BytesLike) {
         if (dataLength(value) !== 32) {
-            logger.throwArgumentError("invalid r", "value", value);
-        } else if (logger.getBytes(value)[0] & 0x80) {
-            logger.throwArgumentError("non-canonical s", "value", value);
+            throwArgumentError("invalid r", "value", value);
+        } else if (getBytes(value)[0] & 0x80) {
+            throwArgumentError("non-canonical s", "value", value);
         }
         setStore(this.#props, "s", hexlify(value));
     }
 
     get v(): 27 | 28 { return getStore(this.#props, "v"); }
     set v(value: BigNumberish) {
-        const v = logger.getNumber(value, "value");
+        const v = getNumber(value, "value");
         if (v !== 27 && v !== 28) { throw new Error("@TODO"); }
         setStore(this.#props, "v", v);
     }
@@ -89,7 +93,7 @@ export class Signature implements Freezable<Signature> {
 
     get yParityAndS(): string {
         // The EIP-2098 compact representation
-        const yParityAndS = logger.getBytes(this.s);
+        const yParityAndS = getBytes(this.s);
         if (this.yParity) { yParityAndS[0] |= 0x80; }
         return hexlify(yParityAndS);
     }
@@ -103,11 +107,11 @@ export class Signature implements Freezable<Signature> {
     }
 
     constructor(guard: any, r: string, s: string, v: 27 | 28) {
-        logger.assertPrivate(guard, _guard, "Signature");
+        assertPrivate(guard, _guard, "Signature");
         this.#props = { r, s, v, networkV: null };
     }
 
-    [Symbol.for('nodejs.util.inspect.custom')]() {
+    [Symbol.for('nodejs.util.inspect.custom')](): string {
         return `Signature { r: "${ this.r }", s: "${ this.s }", yParity: ${ this.yParity }, networkV: ${ this.networkV } }`;
     }
 
@@ -141,25 +145,25 @@ export class Signature implements Freezable<Signature> {
 
     // Get the chain ID from an EIP-155 v
     static getChainId(v: BigNumberish): bigint {
-        const bv = logger.getBigInt(v, "v");
+        const bv = getBigInt(v, "v");
 
         // The v is not an EIP-155 v, so it is the unspecified chain ID
         if ((bv == BN_27) || (bv == BN_28)) { return BN_0; }
 
         // Bad value for an EIP-155 v
-        if (bv < BN_35) { logger.throwArgumentError("invalid EIP-155 v", "v", v); }
+        if (bv < BN_35) { throwArgumentError("invalid EIP-155 v", "v", v); }
 
         return (bv - BN_35) / BN_2;
     }
 
     // Get the EIP-155 v transformed for a given chainId
     static getChainIdV(chainId: BigNumberish, v: 27 | 28): bigint {
-        return (logger.getBigInt(chainId) * BN_2) + BigInt(35 + v - 27);
+        return (getBigInt(chainId) * BN_2) + BigInt(35 + v - 27);
     }
 
     // Convert an EIP-155 v into a normalized v
     static getNormalizedV(v: BigNumberish): 27 | 28 {
-        const bv = logger.getBigInt(v);
+        const bv = getBigInt(v);
 
         if (bv == BN_0) { return 27; }
         if (bv == BN_1) { return 28; }
@@ -170,11 +174,11 @@ export class Signature implements Freezable<Signature> {
 
     static from(sig: SignatureLike): Signature {
         const throwError = (message: string) => {
-            return logger.throwArgumentError(message, "signature", sig);
+            return throwArgumentError(message, "signature", sig);
         };
 
         if (typeof(sig) === "string") {
-            const bytes = logger.getBytes(sig, "signature");
+            const bytes = getBytes(sig, "signature");
             if (bytes.length === 64) {
                 const r = hexlify(bytes.slice(0, 32));
                 const s = bytes.slice(32, 64);
@@ -210,19 +214,19 @@ export class Signature implements Freezable<Signature> {
 
             if (yParityAndS != null) {
                 if (!isHexString(yParityAndS, 32)) { throwError("invalid yParityAndS"); }
-                const bytes = logger.getBytes(yParityAndS);
+                const bytes = getBytes(yParityAndS);
                 bytes[0] &= 0x7f;
                 return hexlify(bytes);
             }
 
             return throwError("missing s");
         })(sig.s, sig.yParityAndS);
-        if (logger.getBytes(s)[0] & 0x80) { throwError("non-canonical s"); }
+        if (getBytes(s)[0] & 0x80) { throwError("non-canonical s"); }
 
         // Get v; by any means necessary (we check consistency below)
         const { networkV, v } = (function(_v?: BigNumberish, yParityAndS?: string, yParity?: number): { networkV?: bigint, v: 27 | 28 } {
             if (_v != null) {
-                const v = logger.getBigInt(_v);
+                const v = getBigInt(_v);
                 return {
                     networkV: ((v >= BN_35) ? v: undefined),
                     v: Signature.getNormalizedV(v)
@@ -231,7 +235,7 @@ export class Signature implements Freezable<Signature> {
 
             if (yParityAndS != null) {
                 if (!isHexString(yParityAndS, 32)) { throwError("invalid yParityAndS"); }
-                return { v: ((logger.getBytes(yParityAndS)[0] & 0x80) ? 28: 27) };
+                return { v: ((getBytes(yParityAndS)[0] & 0x80) ? 28: 27) };
             }
 
             if (yParity != null) {

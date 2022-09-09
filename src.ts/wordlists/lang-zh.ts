@@ -1,5 +1,5 @@
 import { id } from "../hash/index.js";
-import { toUtf8String, logger } from "../utils/index.js";
+import { throwArgumentError, toUtf8String } from "../utils/index.js";
 
 import { Wordlist } from "./wordlist.js";
 
@@ -64,7 +64,7 @@ class LangZh extends Wordlist {
     getWord(index: number): string {
         const words = loadWords(this.locale);
         if (index < 0 || index >= words.length) {
-            logger.throwArgumentError(`invalid word index: ${ index }`, "index", index);
+            throwArgumentError(`invalid word index: ${ index }`, "index", index);
         }
         return words[index];
     }

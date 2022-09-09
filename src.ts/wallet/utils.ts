@@ -1,4 +1,6 @@
-import { hexlify, logger, toUtf8Bytes } from "../utils/index.js";
+import {
+    getBytes, getBytesCopy, hexlify, throwArgumentError, toUtf8Bytes
+} from "../utils/index.js";
 
 import type { BytesLike } from "../utils/index.js";
 
@@ -7,7 +9,7 @@ export function looseArrayify(hexString: string): Uint8Array {
     if (typeof(hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
         hexString = '0x' + hexString;
     }
-    return logger.getBytesCopy(hexString);
+    return getBytesCopy(hexString);
 }
 
 export function zpad(value: String | number, length: number): String {
@@ -20,14 +22,14 @@ export function getPassword(password: string | Uint8Array): Uint8Array {
     if (typeof(password) === 'string') {
         return toUtf8Bytes(password, "NFKC");
     }
-    return logger.getBytesCopy(password);
+    return getBytesCopy(password);
 }
 
 export function spelunk<T = string>(object: any, _path: string): T {
 
     const match = _path.match(/^([a-z0-9$_.-]*)(:([a-z]+))?(!)?$/i);
     if (match == null) {
-        return logger.throwArgumentError("invalid path", "path", _path);
+        return throwArgumentError("invalid path", "path", _path);
     }
     const path = match[1];
     const type = match[3];
@@ -59,7 +61,7 @@ export function spelunk<T = string>(object: any, _path: string): T {
     }
 
     if (reqd && cur == null) {
-        logger.throwArgumentError("missing required value", "path", path);
+        throwArgumentError("missing required value", "path", path);
     }
 
     if (type && cur != null) {
@@ -84,7 +86,7 @@ export function spelunk<T = string>(object: any, _path: string): T {
         if (type === "array" && Array.isArray(cur)) { return <T><unknown>cur; }
         if (type === typeof(cur)) { return cur; }
 
-        logger.throwArgumentError(`wrong type found for ${ type } `, "path", path);
+        throwArgumentError(`wrong type found for ${ type } `, "path", path);
     }
 
     return cur;
@@ -122,7 +124,7 @@ export function followRequired(data: any, path: string): string {
 */
 // See: https://www.ietf.org/rfc/rfc4122.txt (Section 4.4)
 export function uuidV4(randomBytes: BytesLike): string {
-    const bytes = logger.getBytes(randomBytes, "randomBytes");
+    const bytes = getBytes(randomBytes, "randomBytes");
 
     // Section: 4.1.3:
     // - time_hi_and_version[12:16] = 0b0100

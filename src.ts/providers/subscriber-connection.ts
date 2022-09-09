@@ -1,6 +1,7 @@
 
+import { getNumber } from "../utils/index.js";
+
 import type { Subscriber } from "./abstract-provider.js";
-import { logger } from "../utils/logger.js";
 
 
 //#TODO: Temp
@@ -25,7 +26,7 @@ export class BlockConnectionSubscriber implements Subscriber {
 
     start(): void {
         this.#filterId = this.#provider._subscribe([ "newHeads" ], (result: any) => {
-            const blockNumber = logger.getNumber(result.number);
+            const blockNumber = getNumber(result.number);
             const initial = (this.#blockNumber === -2) ? blockNumber: (this.#blockNumber + 1)
             for (let b = initial; b <= blockNumber; b++) {
                 this.#provider.emit("block", b);

@@ -1,5 +1,5 @@
 import { createHmac } from "./crypto.js";
-import { hexlify, logger } from "../utils/index.js";
+import { getBytes, hexlify } from "../utils/index.js";
 
 import type { BytesLike } from "../utils/index.js";
 
@@ -13,8 +13,8 @@ const _computeHmac = function(algorithm: "sha256" | "sha512", key: Uint8Array, d
 let __computeHmac = _computeHmac;
 
 export function computeHmac(algorithm: "sha256" | "sha512", _key: BytesLike, _data: BytesLike): string {
-    const key = logger.getBytes(_key, "key");
-    const data = logger.getBytes(_data, "data");
+    const key = getBytes(_key, "key");
+    const data = getBytes(_data, "data");
     return hexlify(__computeHmac(algorithm, key, data));
 }
 computeHmac._ = _computeHmac;

@@ -16,9 +16,10 @@
  */
 
 import { getAddress, getCreateAddress } from "../address/index.js";
-import { dataLength, dataSlice, isHexString } from "../utils/data.js";
-import { toQuantity } from "../utils/maths.js";
-import { logger } from "../utils/logger.js";
+import {
+    dataLength, dataSlice, getBigInt, getNumber, isHexString, toQuantity,
+    throwArgumentError, throwError
+} from "../utils/index.js";
 import { Signature } from "../crypto/signature.js";
 import { accessListify } from "../transaction/index.js";
 
@@ -168,7 +169,7 @@ export class Formatter {
     // An address from a call result; may be zero-padded
     callAddress(value: any): string {
         if (dataLength(value) !== 32 || dataSlice(value, 0, 12) !== "0x000000000000000000000000") {
-            logger.throwArgumentError("invalid call address", "value", value);
+            throwArgumentError("invalid call address", "value", value);
         }
         return this.address(dataSlice(value, 12));
     }
@@ -177,7 +178,7 @@ export class Formatter {
     contractAddress(value: any): string {
         return getCreateAddress({
             from: this.address(value.from),
-            nonce: logger.getNumber(value.nonce, "value.nonce")
+            nonce: getNumber(value.nonce, "value.nonce")
         });
     }
 
@@ -196,7 +197,7 @@ export class Formatter {
             return toQuantity(value);
         }
 
-        return logger.throwArgumentError("invalid blockTag", "value", value);
+        return throwArgumentError("invalid blockTag", "value", value);
     }
 
     // Block objects
@@ -279,20 +280,20 @@ export class Formatter {
                 if (value === 0 || value === 1) {
                     // Make sure if both are specified, they match
                     if (receipt.status != null && receipt.status !== value) {
-                        return logger.throwError("alt-root-status/status mismatch", "BAD_DATA", {
+                        return throwError("alt-root-status/status mismatch", "BAD_DATA", {
                             value: { root: receipt.root, status: receipt.status }
                         });
                     }
                     receipt.status = value;
                     delete receipt.root;
                 } else {
-                    return logger.throwError("invalid alt-root-status", "BAD_DATA", {
+                    return throwError("invalid alt-root-status", "BAD_DATA", {
                         value: receipt.root
                     });
                 }
             } else if (!isHexString(receipt.root, 32)) {
                 // Must be a valid bytes32
-                return logger.throwError("invalid receipt root hash", "BAD_DATA", {
+                return throwError("invalid receipt root hash", "BAD_DATA", {
                     value: receipt.root
                 });
             }
@@ -356,13 +357,13 @@ export class Formatter {
 
     // Requires a value which is a value BigNumber
     bigNumber(value: any): bigint {
-        return logger.getBigInt(value, "value");
+        return getBigInt(value, "value");
     }
 
     uint256(value: any): bigint {
         const result = this.bigNumber(value);
         if (result < 0 || result > BN_MAX_UINT256) {
-            logger.throwArgumentError("invalid uint256", "value", value);
+            throwArgumentError("invalid uint256", "value", value);
         }
         return result;
     }
@@ -375,7 +376,7 @@ export class Formatter {
             case false: case "false":
                 return false;
         }
-        return logger.throwArgumentError(`invalid boolean; ${ JSON.stringify(value) }`, "value", value);
+        return throwArgumentError(`invalid boolean; ${ JSON.stringify(value) }`, "value", value);
     }
 
     // Requires a value which is a valid hexstring. If dataOrLength is true,
@@ -393,7 +394,7 @@ export class Formatter {
 
     data(value: string): string {
         if (dataLength(value) == null) {
-            logger.throwArgumentError("", "value", value);
+            throwArgumentError("", "value", value);
         }
         return value;
     }
@@ -401,14 +402,14 @@ export class Formatter {
     // Requires a network-native hash
     hash(value: any): string {
         if (dataLength(value) !== 32) {
-            logger.throwArgumentError("", "value", value);
+            throwArgumentError("", "value", value);
         }
         return this.#format.data(value);
     }
 
     // Requires a valid number, within the IEEE 754 safe range
     number(value: any): number {
-        return logger.getNumber(value);
+        return getNumber(value);
     }
 
     // Requires an object which matches a fleet of other formatters
@@ -433,7 +434,7 @@ export class Formatter {
                     if (nv !== undefined) { result[key] = nv; }
                 } catch (error) {
                     const message = (error instanceof Error) ? error.message: "not-an-error";
-                    logger.throwError(`invalid value for value.${ key } (${ message })`, "BAD_DATA", { value })
+                    throwError(`invalid value for value.${ key } (${ message })`, "BAD_DATA", { value })
                 }
             }
             return result;

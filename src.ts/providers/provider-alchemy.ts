@@ -1,9 +1,9 @@
 
-import { defineProperties } from "../utils/properties.js";
-import { FetchRequest } from "../utils/fetch.js";
+import {
+    defineProperties, FetchRequest, throwArgumentError, throwError
+} from "../utils/index.js";
 
 import { showThrottleMessage } from "./community.js";
-import { logger } from "../utils/logger.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
 
@@ -40,7 +40,7 @@ function getHost(name: string): string {
             return "opt-kovan.g.alchemy.com";
     }
 
-    return logger.throwArgumentError("unsupported network", "network", name);
+    return throwArgumentError("unsupported network", "network", name);
 }
 
 export class AlchemyProvider extends JsonRpcProvider implements CommunityResourcable {
@@ -79,14 +79,14 @@ export class AlchemyProvider extends JsonRpcProvider implements CommunityResourc
 
             if (data) {
                 if (error) {
-                    logger.throwError("an error occurred during transaction executions", "CALL_EXCEPTION", {
+                    throwError("an error occurred during transaction executions", "CALL_EXCEPTION", {
                         data
                     });
                 }
                 return data;
             }
 
-            return logger.throwError("could not parse trace result", "BAD_DATA", { value: trace });
+            return throwError("could not parse trace result", "BAD_DATA", { value: trace });
         }
 
         return await super._perform(req);

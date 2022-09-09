@@ -1,7 +1,7 @@
-import { fromTwos, mask, toTwos } from "../../utils/maths.js";
-import { defineProperties } from "../../utils/properties.js";
+import {
+    defineProperties, fromTwos, getBigInt, mask, toTwos
+} from "../../utils/index.js";
 
-import { logger } from "../../utils/logger.js";
 import { Typed } from "../typed.js";
 import { Coder, WordSize } from "./abstract-coder.js";
 
@@ -30,7 +30,7 @@ export class NumberCoder extends Coder {
     }
 
     encode(writer: Writer, _value: BigNumberish | Typed): number {
-        let value = logger.getBigInt(Typed.dereference(_value, this.type));
+        let value = getBigInt(Typed.dereference(_value, this.type));
 
         // Check bounds are safe for encoding
         let maxUintValue = mask(BN_MAX_UINT256, WordSize * 8);

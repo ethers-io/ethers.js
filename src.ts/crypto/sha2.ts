@@ -1,6 +1,6 @@
 import { createHash } from "./crypto.js";
 
-import { hexlify, logger } from "../utils/index.js";
+import { getBytes, hexlify } from "../utils/index.js";
 
 import type { BytesLike } from "../utils/index.js";
 
@@ -20,7 +20,7 @@ let locked256 = false, locked512 = false;
 
 
 export function sha256(_data: BytesLike): string {
-    const data = logger.getBytes(_data, "data");
+    const data = getBytes(_data, "data");
     return hexlify(__sha256(data));
 }
 sha256._ = _sha256;
@@ -32,7 +32,7 @@ sha256.register = function(func: (data: Uint8Array) => BytesLike): void {
 Object.freeze(sha256);
 
 export function sha512(_data: BytesLike): string {
-    const data = logger.getBytes(_data, "data");
+    const data = getBytes(_data, "data");
     return hexlify(__sha512(data));
 }
 sha512._ = _sha512;

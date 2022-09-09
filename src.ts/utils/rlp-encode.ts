@@ -1,6 +1,6 @@
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
-import { logger } from "./logger.js";
+import { getBytes } from "./data.js";
 
 import type { RlpStructuredData } from "./rlp.js";
 
@@ -33,7 +33,7 @@ function _encode(object: Array<any> | string): Array<number> {
 
     }
 
-    const data: Array<number> = Array.prototype.slice.call(logger.getBytes(object, "object"));
+    const data: Array<number> = Array.prototype.slice.call(getBytes(object, "object"));
 
     if (data.length === 1 && data[0] <= 0x7f) {
         return data;

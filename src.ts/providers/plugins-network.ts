@@ -1,6 +1,6 @@
 import { defineProperties } from "../utils/properties.js";
 
-import { logger } from "../utils/logger.js";
+import { throwArgumentError } from "../utils/index.js";
 
 //import { BigNumberish } from "../math/index.js";
 
@@ -56,7 +56,7 @@ export class GasCostPlugin extends NetworkPlugin {
             let value = (costs || { })[name];
             if (value == null) { value = nullish; }
             if (typeof(value) !== "number") {
-                logger.throwArgumentError(`invalud value for ${ name }`, "costs", costs);
+                throwArgumentError(`invalud value for ${ name }`, "costs", costs);
             }
             props[name] = value;
         }

@@ -1,5 +1,7 @@
 import { pbkdf2, sha256 } from "../crypto/index.js";
-import { defineProperties, hexlify, logger, toUtf8Bytes } from "../utils/index.js";
+import {
+    defineProperties, getBytes, hexlify, assertNormalize, assertPrivate, throwArgumentError, toUtf8Bytes
+} from "../utils/index.js";
 import { langEn } from "../wordlists/lang-en.js";
 
 import type { BytesLike } from "../utils/index.js";
@@ -18,13 +20,13 @@ function getLowerMask(bits: number): number {
 
 
 function mnemonicToEntropy(mnemonic: string, wordlist: null | Wordlist = langEn): string {
-    logger.assertNormalize("NFKD");
+    assertNormalize("NFKD");
 
     if (wordlist == null) { wordlist = langEn; }
 
     const words = wordlist.split(mnemonic);
     if ((words.length % 3) !== 0 || words.length < 12 || words.length > 24) {
-        logger.throwArgumentError("invalid mnemonic length", "mnemonic", "[ REDACTED ]");
+        throwArgumentError("invalid mnemonic length", "mnemonic", "[ REDACTED ]");
     }
 
     const entropy = new Uint8Array(Math.ceil(11 * words.length / 8));
@@ -33,7 +35,7 @@ function mnemonicToEntropy(mnemonic: string, wordlist: null | Wordlist = langEn)
     for (let i = 0; i < words.length; i++) {
         let index = wordlist.getWordIndex(words[i].normalize("NFKD"));
         if (index === -1) {
-            logger.throwArgumentError(`invalid mnemonic word at index ${ i }`, "mnemonic", "[ REDACTED ]");
+            throwArgumentError(`invalid mnemonic word at index ${ i }`, "mnemonic", "[ REDACTED ]");
         }
 
         for (let bit = 0; bit < 11; bit++) {
@@ -50,10 +52,10 @@ function mnemonicToEntropy(mnemonic: string, wordlist: null | Wordlist = langEn)
     const checksumBits = words.length / 3;
     const checksumMask = getUpperMask(checksumBits);
 
-    const checksum = logger.getBytes(sha256(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
+    const checksum = getBytes(sha256(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
 
     if (checksum !== (entropy[entropy.length - 1] & checksumMask)) {
-        logger.throwArgumentError("invalid mnemonic checksum", "mnemonic", "[ REDACTED ]");
+        throwArgumentError("invalid mnemonic checksum", "mnemonic", "[ REDACTED ]");
     }
 
     return hexlify(entropy.slice(0, entropyBits / 8));
@@ -61,7 +63,7 @@ function mnemonicToEntropy(mnemonic: string, wordlist: null | Wordlist = langEn)
 
 function entropyToMnemonic(entropy: Uint8Array, wordlist: null | Wordlist = langEn): string {
     if ((entropy.length % 4) || entropy.length < 16 || entropy.length > 32) {
-        logger.throwArgumentError("invalid entropy size", "entropy", "[ REDACTED ]");
+        throwArgumentError("invalid entropy size", "entropy", "[ REDACTED ]");
     }
 
     if (wordlist == null) { wordlist = langEn; }
@@ -113,7 +115,7 @@ export class Mnemonic {
     constructor(guard: any, entropy: string, phrase: string, password?: null | string, wordlist?: null | Wordlist) {
         if (password == null) { password = ""; }
         if (wordlist == null) { wordlist = langEn; }
-        logger.assertPrivate(guard, _guard, "Mnemonic");
+        assertPrivate(guard, _guard, "Mnemonic");
         defineProperties<Mnemonic>(this, { phrase, password, wordlist, entropy });
     }
 
@@ -122,21 +124,21 @@ export class Mnemonic {
         return pbkdf2(toUtf8Bytes(this.phrase, "NFKD"), salt, 2048, 64, "sha512");
     }
 
-    static fromPhrase(phrase: string, password?: null | string, wordlist?: null | Wordlist) {
+    static fromPhrase(phrase: string, password?: null | string, wordlist?: null | Wordlist): Mnemonic {
         // Normalize the case and space; throws if invalid
         const entropy = mnemonicToEntropy(phrase, wordlist);
-        phrase = entropyToMnemonic(logger.getBytes(entropy), wordlist);
+        phrase = entropyToMnemonic(getBytes(entropy), wordlist);
         return new Mnemonic(_guard, entropy, phrase, password, wordlist);
     }
 
     static fromEntropy(_entropy: BytesLike, password?: null | string, wordlist?: null | Wordlist): Mnemonic {
-        const entropy = logger.getBytes(_entropy, "entropy");
+        const entropy = getBytes(_entropy, "entropy");
         const phrase = entropyToMnemonic(entropy, wordlist);
         return new Mnemonic(_guard, hexlify(entropy), phrase, password, wordlist);
     }
 
     static entropyToPhrase(_entropy: BytesLike, wordlist?: null | Wordlist): string {
-        const entropy = logger.getBytes(_entropy, "entropy");
+        const entropy = getBytes(_entropy, "entropy");
         return entropyToMnemonic(entropy, wordlist);
     }
 

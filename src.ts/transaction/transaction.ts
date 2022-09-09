@@ -2,7 +2,8 @@
 import { getAddress } from "../address/index.js";
 import { keccak256, Signature } from "../crypto/index.js";
 import {
-    concat, decodeRlp, encodeRlp, getStore, hexlify, logger, setStore, toArray, zeroPadValue
+    concat, decodeRlp, encodeRlp, getBytes, getStore, getBigInt, getNumber, hexlify,
+    setStore, throwArgumentError, toArray, zeroPadValue
 } from "../utils/index.js";
 
 import { accessListify } from "./accesslist.js";
@@ -55,7 +56,7 @@ function handleData(value: string, param: string): string {
     try {
         return hexlify(value);
     } catch (error) {
-        return logger.throwArgumentError("invalid data", param, value);
+        return throwArgumentError("invalid data", param, value);
     }
 }
 
@@ -63,27 +64,27 @@ function handleAccessList(value: any, param: string): AccessList {
     try {
         return accessListify(value);
     } catch (error) {
-        return logger.throwArgumentError("invalid accessList", param, value);
+        return throwArgumentError("invalid accessList", param, value);
     }
 }
 
 function handleNumber(_value: string, param: string): number {
     if (_value === "0x") { return 0; }
-    return logger.getNumber(_value, param);
+    return getNumber(_value, param);
 }
 
 function handleUint(_value: string, param: string): bigint {
     if (_value === "0x") { return BN_0; }
-    const value = logger.getBigInt(_value, param);
-    if (value > BN_MAX_UINT) { logger.throwArgumentError("value exceeds uint size", param, value); }
+    const value = getBigInt(_value, param);
+    if (value > BN_MAX_UINT) { throwArgumentError("value exceeds uint size", param, value); }
     return value;
 }
 
 function formatNumber(_value: BigNumberish, name: string): Uint8Array {
-    const value = logger.getBigInt(_value, "value");
+    const value = getBigInt(_value, "value");
     const result = toArray(value);
     if (result.length > 32) {
-        logger.throwArgumentError(`value too large`, `tx.${ name }`, value);
+        throwArgumentError(`value too large`, `tx.${ name }`, value);
     }
     return result;
 }
@@ -96,7 +97,7 @@ function _parseLegacy(data: Uint8Array): TransactionLike {
     const fields: any = decodeRlp(data);
 
     if (!Array.isArray(fields) || (fields.length !== 9 && fields.length !== 6)) {
-        return logger.throwArgumentError("invalid field count for legacy transaction", "data", data);
+        return throwArgumentError("invalid field count for legacy transaction", "data", data);
     }
 
     const tx: TransactionLike = {
@@ -130,7 +131,7 @@ function _parseLegacy(data: Uint8Array): TransactionLike {
 
         // Signed Legacy Transaction
         if (chainId === BN_0 && (v < BN_27 || v > BN_28)) {
-            logger.throwArgumentError("non-canonical legacy v", "v", fields[6]);
+            throwArgumentError("non-canonical legacy v", "v", fields[6]);
         }
 
         tx.signature = Signature.from({
@@ -158,12 +159,12 @@ function _serializeLegacy(tx: Transaction, sig?: Signature): string {
     let chainId = BN_0;
     if (tx.chainId != null) {
         // A chainId was provided; if non-zero we'll use EIP-155
-        chainId = logger.getBigInt(tx.chainId, "tx.chainId");
+        chainId = getBigInt(tx.chainId, "tx.chainId");
 
         // We have a chainId in the tx and an EIP-155 v in the signature,
         // make sure they agree with each other
         if (sig && sig.networkV != null && sig.legacyChainId !== chainId) {
-             logger.throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
+             throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
         }
 
     } else if (sig) {
@@ -189,7 +190,7 @@ function _serializeLegacy(tx: Transaction, sig?: Signature): string {
     if (chainId !== BN_0) {
         v = Signature.getChainIdV(chainId, sig.v);
     } else if (BigInt(sig.v) !== v) {
-        logger.throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
+        throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
     }
 
     fields.push(toArray(v));
@@ -205,7 +206,7 @@ function _parseEipSignature(tx: TransactionLike, fields: Array<string>, serializ
         yParity = handleNumber(fields[0], "yParity");
         if (yParity !== 0 && yParity !== 1) { throw new Error("bad yParity"); }
     } catch (error) {
-        return logger.throwArgumentError("invalid yParity", "yParity", fields[0]);
+        return throwArgumentError("invalid yParity", "yParity", fields[0]);
     }
 
     const r = zeroPadValue(fields[1], 32);
@@ -216,10 +217,10 @@ function _parseEipSignature(tx: TransactionLike, fields: Array<string>, serializ
 }
 
 function _parseEip1559(data: Uint8Array): TransactionLike {
-    const fields: any = decodeRlp(logger.getBytes(data).slice(1));
+    const fields: any = decodeRlp(getBytes(data).slice(1));
 
     if (!Array.isArray(fields) || (fields.length !== 9 && fields.length !== 12)) {
-        logger.throwArgumentError("invalid field count for transaction type: 2", "data", hexlify(data));
+        throwArgumentError("invalid field count for transaction type: 2", "data", hexlify(data));
     }
 
     const maxPriorityFeePerGas = handleUint(fields[2], "maxPriorityFeePerGas");
@@ -271,10 +272,10 @@ function _serializeEip1559(tx: TransactionLike, sig?: Signature): string {
 }
 
 function _parseEip2930(data: Uint8Array): TransactionLike {
-    const fields: any = decodeRlp(logger.getBytes(data).slice(1));
+    const fields: any = decodeRlp(getBytes(data).slice(1));
 
     if (!Array.isArray(fields) || (fields.length !== 8 && fields.length !== 11)) {
-        logger.throwArgumentError("invalid field count for transaction type: 1", "data", hexlify(data));
+        throwArgumentError("invalid field count for transaction type: 1", "data", hexlify(data));
     }
 
     const tx: TransactionLike = {
@@ -397,10 +398,10 @@ export class Transaction implements Freezable<Transaction>, TransactionLike<stri
     }
 
     get nonce(): number { return getStore(this.#props, "nonce"); }
-    set nonce(value: BigNumberish) { setStore(this.#props, "nonce", logger.getNumber(value, "value")); }
+    set nonce(value: BigNumberish) { setStore(this.#props, "nonce", getNumber(value, "value")); }
 
     get gasLimit(): bigint { return getStore(this.#props, "gasLimit"); }
-    set gasLimit(value: BigNumberish) { setStore(this.#props, "gasLimit", logger.getBigInt(value)); }
+    set gasLimit(value: BigNumberish) { setStore(this.#props, "gasLimit", getBigInt(value)); }
 
     get gasPrice(): null | bigint {
         const value = getStore(this.#props, "gasPrice");
@@ -408,7 +409,7 @@ export class Transaction implements Freezable<Transaction>, TransactionLike<stri
         return value;
     }
     set gasPrice(value: null | BigNumberish) {
-        setStore(this.#props, "gasPrice", (value == null) ? null: logger.getBigInt(value, "gasPrice"));
+        setStore(this.#props, "gasPrice", (value == null) ? null: getBigInt(value, "gasPrice"));
     }
 
     get maxPriorityFeePerGas(): null | bigint {
@@ -417,7 +418,7 @@ export class Transaction implements Freezable<Transaction>, TransactionLike<stri
         return value;
     }
     set maxPriorityFeePerGas(value: null | BigNumberish) {
-        setStore(this.#props, "maxPriorityFeePerGas", (value == null) ? null: logger.getBigInt(value, "maxPriorityFeePerGas"));
+        setStore(this.#props, "maxPriorityFeePerGas", (value == null) ? null: getBigInt(value, "maxPriorityFeePerGas"));
     }
 
     get maxFeePerGas(): null | bigint {
@@ -426,7 +427,7 @@ export class Transaction implements Freezable<Transaction>, TransactionLike<stri
         return value;
     }
     set maxFeePerGas(value: null | BigNumberish) {
-        setStore(this.#props, "maxFeePerGas", (value == null) ? null: logger.getBigInt(value, "maxFeePerGas"));
+        setStore(this.#props, "maxFeePerGas", (value == null) ? null: getBigInt(value, "maxFeePerGas"));
     }
 
     get data(): string { return getStore(this.#props, "data"); }
@@ -434,11 +435,11 @@ export class Transaction implements Freezable<Transaction>, TransactionLike<stri
 
     get value(): bigint { return getStore(this.#props, "value"); }
     set value(value: BigNumberish) {
-        setStore(this.#props, "value", logger.getBigInt(value, "value"));
+        setStore(this.#props, "value", getBigInt(value, "value"));
     }
 
     get chainId(): bigint { return getStore(this.#props, "chainId"); }
-    set chainId(value: BigNumberish) { setStore(this.#props, "chainId", logger.getBigInt(value)); }
+    set chainId(value: BigNumberish) { setStore(this.#props, "chainId", getBigInt(value)); }
 
     get signature(): null | Signature { return getStore(this.#props, "sig") || null; }
     set signature(value: null | SignatureLike) {
@@ -624,7 +625,7 @@ export class Transaction implements Freezable<Transaction>, TransactionLike<stri
 
     static from(tx: string | TransactionLike<string>): Transaction {
         if (typeof(tx) === "string") {
-            const payload = logger.getBytes(tx);
+            const payload = getBytes(tx);
 
             if (payload[0] >= 0x7f) { // @TODO: > vs >= ??
                 return Transaction.from(_parseLegacy(payload));

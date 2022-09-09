@@ -2,7 +2,7 @@ import { isHexString } from "../utils/data.js";
 
 import type { AbstractProvider, Subscriber } from "./abstract-provider.js";
 import type { EventFilter, OrphanFilter, ProviderEvent } from "./provider.js";
-import { logger } from "../utils/logger.js";
+import { throwError } from "../utils/index.js";
 
 function copy(obj: any): any {
     return JSON.parse(JSON.stringify(obj));
@@ -12,7 +12,7 @@ export function getPollingSubscriber(provider: AbstractProvider, event: Provider
     if (event === "block") { return new PollingBlockSubscriber(provider); }
     if (isHexString(event, 32)) { return new PollingTransactionSubscriber(provider, event); }
 
-    return logger.throwError("unsupported polling event", "UNSUPPORTED_OPERATION", {
+    return throwError("unsupported polling event", "UNSUPPORTED_OPERATION", {
         operation: "getPollingSubscriber", info: { event }
     });
 }

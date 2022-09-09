@@ -1,4 +1,4 @@
-import { assertArgument } from "../utils/logger.js";
+import { assertArgument } from "../utils/index.js";
 
 import { decodeBits } from "./bit-reader.js";
 import { decodeOwl } from "./decode-owl.js";

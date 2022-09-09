@@ -1,6 +1,8 @@
-import { logger } from "../utils/logger.js";
 import { Transaction } from "../transaction/index.js";
-import { defineProperties, resolveProperties } from "../utils/index.js";
+import {
+    defineProperties, resolveProperties,
+    throwArgumentError, throwError
+} from "../utils/index.js";
 
 import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
 import type { TransactionLike } from "../transaction/index.js";
@@ -23,7 +25,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
 
     #checkProvider(operation: string): Provider {
         if (this.provider) { return this.provider; }
-        return logger.throwError("missing provider", "UNSUPPORTED_OPERATION", { operation });
+        return throwError("missing provider", "UNSUPPORTED_OPERATION", { operation });
     }
 
     async getNonce(blockTag?: BlockTag): Promise<number> {
@@ -39,7 +41,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
         if (pop.to != null) {
             pop.to = provider.resolveName(pop.to).then((to) => {
                 if (to == null) {
-                    return logger.throwArgumentError("transaction to ENS name not configured", "tx.to", pop.to);
+                    return throwArgumentError("transaction to ENS name not configured", "tx.to", pop.to);
                 }
                 return to;
             });
@@ -52,7 +54,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
                 this.resolveName(from)
             ]).then(([ address, from ]) => {
                 if (!from || address.toLowerCase() !== from.toLowerCase()) {
-                    return logger.throwArgumentError("transaction from mismatch", "tx.from", from);
+                    return throwArgumentError("transaction from mismatch", "tx.from", from);
                 }
                 return address;
             });
@@ -123,7 +125,7 @@ export class VoidSigner extends AbstractSigner {
     }
 
     #throwUnsupported(suffix: string, operation: string): never {
-        return logger.throwError(`VoidSigner cannot sign ${ suffix }`, "UNSUPPORTED_OPERATION", {
+        return throwError(`VoidSigner cannot sign ${ suffix }`, "UNSUPPORTED_OPERATION", {
             operation
         });
     }

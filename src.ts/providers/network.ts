@@ -1,5 +1,6 @@
-import { logger } from "../utils/logger.js";
-import { getStore, setStore } from "../utils/storage.js";
+import {
+    getStore, getBigInt, setStore, throwArgumentError
+} from "../utils/index.js";
 
 import { Formatter } from "./formatter.js";
 import { EnsPlugin, GasCostPlugin } from "./plugins-network.js";
@@ -96,7 +97,7 @@ export class Network implements Freezable<Network> {
     };
 
     constructor(name: string, _chainId: BigNumberish, formatter?: Formatter) {
-        const chainId = logger.getBigInt(_chainId);
+        const chainId = getBigInt(_chainId);
         if (formatter == null) { formatter = defaultFormatter; }
         const plugins = new Map();
         this.#props = { name, chainId, formatter, plugins };
@@ -110,7 +111,7 @@ export class Network implements Freezable<Network> {
     set name(value: string) { setStore(this.#props, "name", value); }
 
     get chainId(): bigint { return getStore(this.#props, "chainId"); }
-    set chainId(value: BigNumberish) { setStore(this.#props, "chainId", logger.getBigInt(value, "chainId")); }
+    set chainId(value: BigNumberish) { setStore(this.#props, "chainId", getBigInt(value, "chainId")); }
 
     get formatter(): Formatter { return getStore(this.#props, "formatter"); }
     set formatter(value: Formatter) { setStore(this.#props, "formatter", value); }
@@ -192,7 +193,7 @@ export class Network implements Freezable<Network> {
                 return new Network("unknown", network);
             }
 
-            logger.throwArgumentError("unknown network", "network", network);
+            throwArgumentError("unknown network", "network", network);
         }
 
         // Clonable with network-like abilities
@@ -206,7 +207,7 @@ export class Network implements Freezable<Network> {
         // Networkish
         if (typeof(network) === "object") {
             if (typeof(network.name) !== "string" || typeof(network.chainId) !== "number") {
-                logger.throwArgumentError("invalid network object name or chainId", "network", network);
+                throwArgumentError("invalid network object name or chainId", "network", network);
             }
 
             const custom = new Network(<string>(network.name), <number>(network.chainId));
@@ -222,14 +223,14 @@ export class Network implements Freezable<Network> {
             return custom;
         }
 
-        return logger.throwArgumentError("invalid network", "network", network);
+        return throwArgumentError("invalid network", "network", network);
     }
 
     static register(nameOrChainId: string | number | bigint, networkFunc: () => Network): void {
         if (typeof(nameOrChainId) === "number") { nameOrChainId = BigInt(nameOrChainId); }
         const existing = Networks.get(nameOrChainId);
         if (existing) {
-            logger.throwArgumentError(`conflicting network for ${ JSON.stringify(existing.name) }`, "nameOrChainId", nameOrChainId);
+            throwArgumentError(`conflicting network for ${ JSON.stringify(existing.name) }`, "nameOrChainId", nameOrChainId);
         }
         Networks.set(nameOrChainId, networkFunc);
     }

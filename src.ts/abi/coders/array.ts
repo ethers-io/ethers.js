@@ -1,8 +1,9 @@
-import { defineProperties } from "../../utils/properties.js";
-import { isError } from "../../utils/errors.js";
-import { logger } from "../../utils/logger.js";
+import {
+    defineProperties, isError, assertArgumentCount, throwArgumentError, throwError
+} from "../../utils/index.js";
 
 import { Typed } from "../typed.js";
+
 import { Coder, Result, WordSize, Writer } from "./abstract-coder.js";
 import { AnonymousCoder } from "./anonymous.js";
 
@@ -21,7 +22,7 @@ export function pack(writer: Writer, coders: ReadonlyArray<Coder>, values: Array
         arrayValues = coders.map((coder) => {
             const name = coder.localName;
             if (!name) {
-                logger.throwError("cannot encode object for signature with missing names", "INVALID_ARGUMENT", {
+                throwError("cannot encode object for signature with missing names", "INVALID_ARGUMENT", {
                     argument: "values",
                     info: { coder },
                     value: values
@@ -29,7 +30,7 @@ export function pack(writer: Writer, coders: ReadonlyArray<Coder>, values: Array
             }
 
             if (unique[name]) {
-                logger.throwError("cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", {
+                throwError("cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", {
                     argument: "values",
                     info: { coder },
                     value: values
@@ -42,11 +43,11 @@ export function pack(writer: Writer, coders: ReadonlyArray<Coder>, values: Array
         });
 
     } else {
-        logger.throwArgumentError("invalid tuple value", "tuple", values);
+        throwArgumentError("invalid tuple value", "tuple", values);
     }
 
     if (coders.length !== arrayValues.length) {
-        logger.throwArgumentError("types/value length mismatch", "tuple", values);
+        throwArgumentError("types/value length mismatch", "tuple", values);
     }
 
     let staticWriter = new Writer();
@@ -173,7 +174,7 @@ export class ArrayCoder extends Coder {
             writer.writeValue(value.length);
         }
 
-        logger.assertArgumentCount(value.length, count, "coder array" + (this.localName? (" "+ this.localName): ""));
+        assertArgumentCount(value.length, count, "coder array" + (this.localName? (" "+ this.localName): ""));
 
         let coders = [];
         for (let i = 0; i < value.length; i++) { coders.push(this.coder); }
@@ -192,7 +193,7 @@ export class ArrayCoder extends Coder {
             // bytes as a link to the data). This could use a much
             // tighter bound, but we are erroring on the side of safety.
             if (count * WordSize > reader.dataLength) {
-                logger.throwError("insufficient data length", "BUFFER_OVERRUN", {
+                throwError("insufficient data length", "BUFFER_OVERRUN", {
                     buffer: reader.bytes,
                     offset: count * WordSize,
                     length: reader.dataLength

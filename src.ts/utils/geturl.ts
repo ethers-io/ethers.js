@@ -2,7 +2,8 @@ import http from "http";
 import https from "https";
 import { gunzipSync } from "zlib";
 
-import { logger } from "./logger.js";
+import { throwError } from "./errors.js";
+import { getBytes } from "./data.js";
 
 import type { FetchRequest, FetchCancelSignal, GetUrlResponse } from "./fetch.js";
 
@@ -12,14 +13,14 @@ export async function getUrl(req: FetchRequest, signal?: FetchCancelSignal): Pro
     const protocol = req.url.split(":")[0].toLowerCase();
 
     if (protocol !== "http" && protocol !== "https") {
-        logger.throwError(`unsupported protocol ${ protocol }`, "UNSUPPORTED_OPERATION", {
+        throwError(`unsupported protocol ${ protocol }`, "UNSUPPORTED_OPERATION", {
             info: { protocol },
             operation: "request"
         });
     }
 
     if (req.credentials && !req.allowInsecureAuthentication) {
-        logger.throwError("insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
+        throwError("insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
             operation: "request"
         });
     }
@@ -78,7 +79,7 @@ export async function getUrl(req: FetchRequest, signal?: FetchCancelSignal): Pro
 
             resp.on("end", () => {
                 if (headers["content-encoding"] === "gzip" && body) {
-                    body = logger.getBytes(gunzipSync(body));
+                    body = getBytes(gunzipSync(body));
                 }
 
                 resolve({ statusCode, statusMessage, headers, body });

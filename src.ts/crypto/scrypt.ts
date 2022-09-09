@@ -1,6 +1,6 @@
 import { scrypt as _nobleSync, scryptAsync as _nobleAsync } from "@noble/hashes/scrypt";
 
-import { hexlify as H, logger } from "../utils/index.js";
+import { getBytes, hexlify as H } from "../utils/index.js";
 
 import type { BytesLike } from "../utils/index.js";
 
@@ -22,8 +22,8 @@ let __scryptSync: (passwd: Uint8Array, salt: Uint8Array, N: number, r: number, p
 
 
 export async function scrypt(_passwd: BytesLike, _salt: BytesLike, N: number, r: number, p: number, dkLen: number, progress?: ProgressCallback): Promise<string> {
-    const passwd = logger.getBytes(_passwd, "passwd");
-    const salt = logger.getBytes(_salt, "salt");
+    const passwd = getBytes(_passwd, "passwd");
+    const salt = getBytes(_salt, "salt");
     return H(await __scryptAsync(passwd, salt, N, r, p, dkLen, progress));
 }
 scrypt._ = _scryptAsync;
@@ -35,8 +35,8 @@ scrypt.register = function(func: (passwd: Uint8Array, salt: Uint8Array, N: numbe
 Object.freeze(scrypt);
 
 export function scryptSync(_passwd: BytesLike, _salt: BytesLike, N: number, r: number, p: number, dkLen: number): string {
-    const passwd = logger.getBytes(_passwd, "passwd");
-    const salt = logger.getBytes(_salt, "salt");
+    const passwd = getBytes(_passwd, "passwd");
+    const salt = getBytes(_salt, "salt");
     return H(__scryptSync(passwd, salt, N, r, p, dkLen));
 }
 scryptSync._ = _scryptSync;

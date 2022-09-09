@@ -1,11 +1,10 @@
-import { hexlify, isHexString } from "../utils/data.js";
-import { toQuantity } from "../utils/maths.js";
-import { isError } from "../utils/errors.js";
-import { defineProperties } from "../utils/properties.js";
-import { toUtf8String } from "../utils/utf8.js";
-import { FetchRequest } from "../utils/fetch.js";
-
-if (false) { console.log(isHexString, isError); } // @TODO
+import {
+    defineProperties,
+    hexlify, toQuantity,
+    FetchRequest,
+    throwArgumentError, throwError,
+    toUtf8String
+ } from "../utils/index.js";
 
 import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
@@ -16,8 +15,6 @@ import { PerformActionRequest } from "./abstract-provider.js";
 import type { Networkish } from "./network.js";
 //import type { } from "./pagination";
 import type { TransactionRequest } from "./provider.js";
-
-import { logger } from "../utils/logger.js";
 
 
 const defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
@@ -82,7 +79,7 @@ export class EtherscanProvider extends AbstractProvider {
             default:
         }
 
-        return logger.throwArgumentError("unsupported network", "network", this.network);
+        return throwArgumentError("unsupported network", "network", this.network);
     }
 
     getUrl(module: string, params: Record<string, string>): string {
@@ -358,7 +355,7 @@ export class EtherscanProvider extends AbstractProvider {
                     });
                 }
 
-                return logger.throwError("getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
+                return throwError("getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
                     operation: "getBlock(blockHash)"
                 });
 

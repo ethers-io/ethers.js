@@ -1,9 +1,37 @@
-import { logger } from "./logger.js";
+import { throwArgumentError, throwError } from "./errors.js";
+
 
 export type BytesLike = string | Uint8Array;
 
+function _getBytes(value: BytesLike, name?: string, copy?: boolean): Uint8Array {
+    if (value instanceof Uint8Array) {
+        if (copy) { return new Uint8Array(value); }
+        return value;
+    }
 
-export function isHexString(value: any, length?: number | boolean): value is string {
+    if (typeof(value) === "string" && value.match(/^0x([0-9a-f][0-9a-f])*$/i)) {
+        const result = new Uint8Array((value.length - 2) / 2);
+        let offset = 2;
+        for (let i = 0; i < result.length; i++) {
+            result[i] = parseInt(value.substring(offset, offset + 2), 16);
+            offset += 2;
+        }
+        return result;
+    }
+
+    return throwArgumentError("invalid BytesLike value", name || "value", value);
+}
+
+export function getBytes(value: BytesLike, name?: string): Uint8Array {
+    return _getBytes(value, name, false);
+}
+
+export function getBytesCopy(value: BytesLike, name?: string): Uint8Array {
+    return _getBytes(value, name, true);
+}
+
+
+export function isHexString(value: any, length?: number | boolean): value is `0x${ string }` {
     if (typeof(value) !== "string" || !value.match(/^0x[0-9A-Fa-f]*$/)) {
         return false
     }
@@ -20,7 +48,7 @@ export function isBytesLike(value: any): value is BytesLike {
 
 const HexCharacters: string = "0123456789abcdef";
 export function hexlify(data: BytesLike): string {
-    const bytes = logger.getBytes(data);
+    const bytes = getBytes(data);
 
     let result = "0x";
     for (let i = 0; i < bytes.length; i++) {
@@ -36,12 +64,12 @@ export function concat(datas: ReadonlyArray<BytesLike>): string {
 
 export function dataLength(data: BytesLike): number {
     if (isHexString(data, true)) { return (data.length - 2) / 2; }
-    return logger.getBytes(data).length;
+    return getBytes(data).length;
 }
 
 export function dataSlice(data: BytesLike, start?: number, end?: number): string {
-    const bytes = logger.getBytes(data);
-    if (end != null && end > bytes.length) { logger.throwError("cannot slice beyond data bounds", "BUFFER_OVERRUN", {
+    const bytes = getBytes(data);
+    if (end != null && end > bytes.length) { throwError("cannot slice beyond data bounds", "BUFFER_OVERRUN", {
         buffer: bytes, length: bytes.length, offset: end
     }); }
     return hexlify(bytes.slice((start == null) ? 0: start, (end == null) ? bytes.length: end));
@@ -55,9 +83,9 @@ export function stripZerosLeft(data: BytesLike): string {
 
 
 function zeroPad(data: BytesLike, length: number, left: boolean): string {
-    const bytes = logger.getBytes(data);
+    const bytes = getBytes(data);
     if (length < bytes.length) {
-       logger.throwError("padding exceeds data length", "BUFFER_OVERRUN", {
+       throwError("padding exceeds data length", "BUFFER_OVERRUN", {
             buffer: new Uint8Array(bytes),
             length: length,
             offset: length + 1

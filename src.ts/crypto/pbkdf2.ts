@@ -1,6 +1,6 @@
 import { pbkdf2Sync } from "./crypto.js";
 
-import { hexlify, logger } from "../utils/index.js";
+import { getBytes, hexlify } from "../utils/index.js";
 
 import type { BytesLike } from "../utils/index.js";
 
@@ -14,8 +14,8 @@ const _pbkdf2 = function(password: Uint8Array, salt: Uint8Array, iterations: num
 let __pbkdf2 = _pbkdf2;
 
 export function pbkdf2(_password: BytesLike, _salt: BytesLike, iterations: number, keylen: number, algo: "sha256" | "sha512"): string {
-    const password = logger.getBytes(_password, "password");
-    const salt = logger.getBytes(_salt, "salt");
+    const password = getBytes(_password, "password");
+    const salt = getBytes(_salt, "salt");
     return hexlify(__pbkdf2(password, salt, iterations, keylen, algo));
 }
 pbkdf2._ = _pbkdf2;

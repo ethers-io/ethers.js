@@ -1,6 +1,6 @@
 import { keccak_256 } from "@noble/hashes/sha3";
 
-import { hexlify, logger } from "../utils/index.js";
+import { getBytes, hexlify } from "../utils/index.js";
 
 import type { BytesLike } from "../utils/index.js";
 
@@ -14,7 +14,7 @@ const _keccak256 = function(data: Uint8Array): Uint8Array {
 let __keccak256: (data: Uint8Array) => BytesLike = _keccak256;
 
 export function keccak256(_data: BytesLike): string {
-    const data = logger.getBytes(_data, "data");
+    const data = getBytes(_data, "data");
     return hexlify(__keccak256(data));
 }
 keccak256._ = _keccak256;

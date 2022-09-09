@@ -1,7 +1,8 @@
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
 import { hexlify } from "./data.js";
-import { logger } from "./logger.js";
+import { throwArgumentError, throwError } from "./errors.js";
+import { getBytes } from "./data.js";
 
 import type { BytesLike, RlpStructuredData } from "./index.js";
 
@@ -35,7 +36,7 @@ function _decodeChildren(data: Uint8Array, offset: number, childOffset: number, 
 
         childOffset += decoded.consumed;
         if (childOffset > offset + 1 + length) {
-            logger.throwError("child data too short", "BUFFER_OVERRUN", {
+            throwError("child data too short", "BUFFER_OVERRUN", {
                 buffer: data, length, offset
             });
         }
@@ -47,14 +48,14 @@ function _decodeChildren(data: Uint8Array, offset: number, childOffset: number, 
 // returns { consumed: number, result: Object }
 function _decode(data: Uint8Array, offset: number): { consumed: number, result: any } {
     if (data.length === 0) {
-        logger.throwError("data too short", "BUFFER_OVERRUN", {
+        throwError("data too short", "BUFFER_OVERRUN", {
             buffer: data, length: 0, offset: 1
         });
     }
 
     const checkOffset = (offset: number) => {
         if (offset > data.length) {
-            logger.throwError("data short segment too short", "BUFFER_OVERRUN", {
+            throwError("data short segment too short", "BUFFER_OVERRUN", {
                 buffer: data, length: data.length, offset
             });
         }
@@ -98,10 +99,10 @@ function _decode(data: Uint8Array, offset: number): { consumed: number, result: 
 }
 
 export function decodeRlp(_data: BytesLike): RlpStructuredData {
-    const data = logger.getBytes(_data, "data");
+    const data = getBytes(_data, "data");
     const decoded = _decode(data, 0);
     if (decoded.consumed !== data.length) {
-        logger.throwArgumentError("unexpected junk after rlp payload", "data", _data);
+        throwArgumentError("unexpected junk after rlp payload", "data", _data);
     }
     return decoded.result;
 }

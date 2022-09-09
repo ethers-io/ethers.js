@@ -4,13 +4,13 @@
 // https://playground.open-rpc.org/?schemaUrl=https://raw.githubusercontent.com/ethereum/eth1.0-apis/assembled-spec/openrpc.json&uiSchema%5BappBar%5D%5Bui:splitView%5D=true&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false
 
 import { resolveAddress } from "../address/index.js";
-import { hexlify } from "../utils/data.js";
-import { FetchRequest } from "../utils/fetch.js";
-import { toQuantity } from "../utils/maths.js";
-import { defineProperties } from "../utils/properties.js";
 import { TypedDataEncoder } from "../hash/typed-data.js";
-import { toUtf8Bytes } from "../utils/utf8.js";
 import { accessListify } from "../transaction/index.js";
+import {
+    defineProperties, getBigInt, hexlify, toQuantity, toUtf8Bytes,
+    throwArgumentError, throwError,
+    FetchRequest
+} from "../utils/index.js";
 
 import { AbstractProvider, UnmanagedSubscriber } from "./abstract-provider.js";
 import { AbstractSigner } from "./abstract-signer.js";
@@ -24,8 +24,6 @@ import type { PerformActionRequest, Subscriber, Subscription } from "./abstract-
 import type { Networkish } from "./network.js";
 import type { Provider, TransactionRequest, TransactionResponse } from "./provider.js";
 import type { Signer } from "./signer.js";
-
-import { logger } from "../utils/logger.js";
 
 
 //function copy<T = any>(value: T): T {
@@ -149,7 +147,7 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
     }
 
     connect(provider: null | Provider): Signer {
-        return logger.throwError("cannot reconnect JsonRpcSigner", "UNSUPPORTED_OPERATION", {
+        return throwError("cannot reconnect JsonRpcSigner", "UNSUPPORTED_OPERATION", {
             operation: "signer.connect"
         });
     }
@@ -196,7 +194,7 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
             promises.push((async () => {
                 const from = await resolveAddress(_from, this.provider);
                 if (from == null || from.toLowerCase() !== this.address.toLowerCase()) {
-                    logger.throwArgumentError("from address mismatch", "transaction", _tx);
+                    throwArgumentError("from address mismatch", "transaction", _tx);
                 }
                 tx.from = from;
             })());
@@ -263,7 +261,7 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
         if (tx.from) {
             const from = await resolveAddress(tx.from, this.provider);
             if (from == null || from.toLowerCase() !== this.address.toLowerCase()) {
-                return logger.throwArgumentError("from address mismatch", "transaction", _tx);
+                return throwArgumentError("from address mismatch", "transaction", _tx);
             }
             tx.from = from;
         } else {
@@ -288,7 +286,7 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
         const populated = await TypedDataEncoder.resolveNames(domain, types, value, async (value: string) => {
             const address = await resolveAddress(value);
             if (address == null) {
-                return logger.throwArgumentError("TypedData does not support null address", "value", value);
+                return throwArgumentError("TypedData does not support null address", "value", value);
             }
             return address;
         });
@@ -337,7 +335,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
         // This could be relaxed in the future to just check equivalent networks
         const staticNetwork = this._getOption("staticNetwork");
         if (staticNetwork && staticNetwork !== network) {
-            logger.throwArgumentError("staticNetwork MUST match network object", "options", options);
+            throwArgumentError("staticNetwork MUST match network object", "options", options);
         }
     }
 
@@ -445,7 +443,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
 
     // Sub-classes MUST override this
     _send(payload: JsonRpcPayload | Array<JsonRpcPayload>): Promise<Array<JsonRpcResult | JsonRpcError>> {
-        return logger.throwError("sub-classes must override _send", "UNSUPPORTED_OPERATION", {
+        return throwError("sub-classes must override _send", "UNSUPPORTED_OPERATION", {
             operation: "jsonRpcApiProvider._send"
         });
     }
@@ -481,7 +479,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
         const network = this._getOption("staticNetwork");
         if (network) { return network; }
 
-        return Network.from(logger.getBigInt(await this._perform({ method: "chainId" })));
+        return Network.from(getBigInt(await this._perform({ method: "chainId" })));
     }
 
     _getSubscriber(sub: Subscription): Subscriber {
@@ -510,7 +508,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
             if ((<any>tx)[key] == null) { return; }
             let dstKey = key;
             if (key === "gasLimit") { dstKey = "gas"; }
-            (<any>result)[dstKey] = toQuantity(logger.getBigInt((<any>tx)[key], `tx.${ key }`));
+            (<any>result)[dstKey] = toQuantity(getBigInt((<any>tx)[key], `tx.${ key }`));
         });
 
         // Make sure addresses and data are lowercase
@@ -693,7 +691,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
         // is fair), so we delete type if it is 0 and a non-EIP-1559 network
         if (req.method === "call" || req.method === "estimateGas") {
             let tx = req.transaction;
-            if (tx && tx.type != null && logger.getBigInt(tx.type)) {
+            if (tx && tx.type != null && getBigInt(tx.type)) {
                 // If there are no EIP-1559 properties, it might be non-EIP-a559
                 if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
                     const feeData = await this.getFeeData();
