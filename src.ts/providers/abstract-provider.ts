@@ -597,7 +597,7 @@ export class AbstractProvider implements Provider {
         return network.formatter.transactionRequest(request);
     }
 
-    async estimateGas(_tx: TransactionRequest) {
+    async estimateGas(_tx: TransactionRequest): Promise<bigint> {
         const transaction = await this._getTransaction(_tx);
         return getBigInt(await this.#perform({
             method: "estimateGas", transaction
@@ -665,7 +665,7 @@ export class AbstractProvider implements Provider {
          }
     }
 
-    async call(_tx: CallRequest) {
+    async call(_tx: CallRequest): Promise<string> {
         const [ tx, blockTag ] = await Promise.all([
             this._getTransaction(_tx), this._getBlockTag(_tx.blockTag)
         ]);
@@ -684,25 +684,25 @@ export class AbstractProvider implements Provider {
         return await this.#perform(Object.assign(request, { address, blockTag }));
     }
 
-    async getBalance(address: AddressLike, blockTag?: BlockTag) {
+    async getBalance(address: AddressLike, blockTag?: BlockTag): Promise<bigint> {
         return getBigInt(await this.#getAccountValue({ method: "getBalance" }, address, blockTag), "%response");
     }
 
-    async getTransactionCount(address: AddressLike, blockTag?: BlockTag) {
+    async getTransactionCount(address: AddressLike, blockTag?: BlockTag): Promise<number> {
         return getNumber(await this.#getAccountValue({ method: "getTransactionCount" }, address, blockTag), "%response");
     }
 
-    async getCode(address: AddressLike, blockTag?: BlockTag) {
+    async getCode(address: AddressLike, blockTag?: BlockTag): Promise<string> {
         return hexlify(await this.#getAccountValue({ method: "getCode" }, address, blockTag));
     }
 
-    async getStorageAt(address: AddressLike, _position: BigNumberish, blockTag?: BlockTag) {
+    async getStorageAt(address: AddressLike, _position: BigNumberish, blockTag?: BlockTag): Promise<string> {
         const position = getBigInt(_position, "position");
         return hexlify(await this.#getAccountValue({ method: "getStorageAt", position }, address, blockTag));
     }
 
     // Write
-    async broadcastTransaction(signedTx: string) {
+    async broadcastTransaction(signedTx: string): Promise<TransactionResponse> {
         throw new Error();
         return <TransactionResponse><unknown>{ };
     }
@@ -869,6 +869,7 @@ export class AbstractProvider implements Provider {
     }
 
     async resolveName(name: string): Promise<null | string>{
+        if (isHexString(name, 20)) { return name; }
         //if (typeof(name) === "string") {
             const resolver = await this.getResolver(name);
             if (resolver) { return await resolver.getAddress(); }
@@ -1230,7 +1231,7 @@ function bytesPad(value: Uint8Array): Uint8Array {
 const empty = new Uint8Array([ ]);
 
 // ABI Encodes a series of (bytes, bytes, ...)
-function encodeBytes(datas: Array<BytesLike>) {
+function encodeBytes(datas: Array<BytesLike>): string {
     const result: Array<Uint8Array> = [ ];
 
     let byteCount = 0;

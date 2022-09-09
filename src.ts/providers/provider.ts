@@ -206,10 +206,6 @@ export interface MinedBlock<T extends string | TransactionResponse = string> ext
     readonly miner: string;
 }
 
-export interface LondonBlock<T extends string | TransactionResponse> extends Block<T> {
-    readonly baseFeePerGas: bigint;
-}
-
 export class Block<T extends string | TransactionResponse> implements BlockParams<T>, Iterable<T> {
     readonly provider!: Provider;
 
@@ -320,7 +316,9 @@ export class Block<T extends string | TransactionResponse> implements BlockParam
     }
 
     isMined(): this is MinedBlock<T> { return !!this.hash; }
-    isLondon(): this is LondonBlock<T> { return !!this.baseFeePerGas; }
+    isLondon(): this is (Block<T> & { baseFeePerGas: bigint }) {
+        return !!this.baseFeePerGas;
+    }
 
     orphanedEvent(): OrphanFilter {
         if (!this.isMined()) { throw new Error(""); }
@@ -449,6 +447,7 @@ export interface TransactionReceiptParams {
     root: null | string;
 }
 
+/*
 export interface LegacyTransactionReceipt {
     byzantium: false;
     status: null;
@@ -460,6 +459,7 @@ export interface ByzantiumTransactionReceipt {
     status: number;
     root: null;
 }
+*/
 
 export class TransactionReceipt implements TransactionReceiptParams, Iterable<Log> {
     readonly provider!: Provider;
@@ -631,23 +631,7 @@ export interface MinedTransactionResponse extends TransactionResponse {
     date: Date;
 }
 
-export interface LegacyTransactionResponse extends TransactionResponse {
-    accessList: null;
-    maxFeePerGas: null;
-    maxPriorityFeePerGas: null;
-}
 
-export interface BerlinTransactionResponse extends TransactionResponse {
-    accessList: AccessList;
-    maxFeePerGas: null;
-    maxPriorityFeePerGas: null;
-}
-
-export interface LondonTransactionResponse extends TransactionResponse {
-    accessList: AccessList;
-    maxFeePerGas: bigint;
-    maxPriorityFeePerGas: bigint;
-}
 
 export class TransactionResponse implements TransactionLike<string>, TransactionResponseParams {
     readonly provider: Provider;
@@ -760,15 +744,15 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
         return (this.blockHash != null);
     }
 
-    isLegacy(): this is LegacyTransactionResponse {
+    isLegacy(): this is (TransactionResponse & { accessList: null, maxFeePerGas: null, maxPriorityFeePerGas: null }) {
         return (this.type === 0)
     }
 
-    isBerlin(): this is BerlinTransactionResponse {
+    isBerlin(): this is (TransactionResponse & { accessList: AccessList, maxFeePerGas: null, maxPriorityFeePerGas: null }) {
         return (this.type === 1);
     }
 
-    isLondon(): this is LondonTransactionResponse {
+    isLondon(): this is (TransactionResponse & { accessList: AccessList, maxFeePerGas: bigint, maxPriorityFeePerGas: bigint }){
         return (this.type === 2);
     }
 

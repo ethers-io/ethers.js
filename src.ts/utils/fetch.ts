@@ -14,10 +14,6 @@ export type GetUrlResponse = {
     body: null | Uint8Array
 };
 
-export interface FetchRequestWithBody extends FetchRequest {
-    body: Uint8Array;
-}
-
 /**
  *  Called before any network request, allowing updated headers (e.g. Bearer tokens), etc.
  */
@@ -125,7 +121,7 @@ export class FetchCancelSignal {
         this.#listeners.push(listener);
     }
 
-    get cancelled(): boolean { return this.cancelled; }
+    get cancelled(): boolean { return this.#cancelled; }
 
     checkSignal(): void {
         if (!this.cancelled) { return; }
@@ -217,7 +213,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
     /**
      *  Returns true if the request has a body.
      */
-    hasBody(): this is FetchRequestWithBody {
+    hasBody(): this is (FetchRequest & { body: Uint8Array }) {
         return (this.#body != null);
     }
 
@@ -617,10 +613,6 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
 }
 
 
-export interface FetchResponseWithBody extends FetchResponse {
-    body: Readonly<Uint8Array>;
-}
-
 interface ThrottleError extends Error {
     stall: number;
     throttle: true;
@@ -771,7 +763,7 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
     /**
      *  Returns true of the response has a body.
      */
-    hasBody(): this is FetchResponseWithBody {
+    hasBody(): this is (FetchResponse & { body: Uint8Array }) {
         return (this.#body != null);
     }
 

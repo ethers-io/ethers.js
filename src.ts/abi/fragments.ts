@@ -428,18 +428,6 @@ function verifyBasicType(type: string): string {
 // Make the Fragment constructors effectively private
 const _guard = { };
 
-export interface ArrayParamType { //extends ParamType {
-    readonly arrayLength: number;
-    readonly arrayChildren: ParamType;
-}
-
-export interface TupleParamType extends ParamType {
-    readonly components: ReadonlyArray<ParamType>;
-}
-
-export interface IndexableParamType extends ParamType {
-    readonly indexed: boolean;
-}
 
 export type FragmentWalkFunc = (type: string, value: any) => any;
 export type FragmentWalkAsyncFunc = (type: string, value: any) => any | Promise<any>;
@@ -545,15 +533,15 @@ export class ParamType {
         return value && (value.baseType === "array")
     }
 
-    isArray(): this is (ParamType & ArrayParamType) {
+    isArray(): this is (ParamType & { arrayLength: number, arrayChildren: ParamType }) {
         return (this.baseType === "array")
     }
 
-    isTuple(): this is TupleParamType {
+    isTuple(): this is (ParamType & { components: ReadonlyArray<ParamType> }) {
         return (this.baseType === "tuple");
     }
 
-    isIndexable(): this is IndexableParamType {
+    isIndexable(): this is (ParamType & { indexed: boolean }) {
         return (this.indexed != null);
     }
 
@@ -563,7 +551,8 @@ export class ParamType {
             if (this.arrayLength !== -1 && value.length !== this.arrayLength) {
                 throw new Error("array is wrong length");
             }
-            return value.map((v) => ((<ArrayParamType>this).arrayChildren.walk(v, process)));
+            const _this = this;
+            return value.map((v) => (_this.arrayChildren.walk(v, process)));
         }
 
         if (this.isTuple()) {
@@ -571,7 +560,8 @@ export class ParamType {
             if (value.length !== this.components.length) {
                 throw new Error("array is wrong length");
             }
-            return value.map((v, i) => ((<TupleParamType>this).components[i].walk(v, process)));
+            const _this = this;
+            return value.map((v, i) => (_this.components[i].walk(v, process)));
         }
 
         return process(this.type, value);
@@ -742,13 +732,7 @@ export class ParamType {
     }
 }
 
-export enum FragmentType {
-    "constructor" = "constructor",
-    "error" = "error",
-    "event" = "event",
-    "function" = "function",
-    "struct" = "struct",
-};
+export type FragmentType = "constructor" | "error" | "event" | "function" | "struct";
 
 export abstract class Fragment {
     readonly type!: FragmentType;
@@ -858,7 +842,7 @@ function joinParams(format: FormatType, params: ReadonlyArray<ParamType>): strin
 
 export class ErrorFragment extends NamedFragment {
     constructor(guard: any, name: string, inputs: ReadonlyArray<ParamType>) {
-        super(guard, FragmentType.error, name, inputs);
+        super(guard, "error", name, inputs);
     }
 
     format(format: FormatType = "sighash"): string {
@@ -894,7 +878,7 @@ export class EventFragment extends NamedFragment {
     readonly anonymous!: boolean;
 
     constructor(guard: any, name: string, inputs: ReadonlyArray<ParamType>, anonymous: boolean) {
-        super(guard, FragmentType.event, name, inputs);
+        super(guard, "event", name, inputs);
         defineProperties<EventFragment>(this, { anonymous });
     }
 
@@ -977,7 +961,7 @@ export class ConstructorFragment extends Fragment {
         const gas = consumeGas(tokens);
         consumeEoi(tokens);
 
-        return new ConstructorFragment(_guard, FragmentType.constructor, inputs, payable, gas);
+        return new ConstructorFragment(_guard, "constructor", inputs, payable, gas);
     }
 }
 
@@ -990,7 +974,7 @@ export class FunctionFragment extends NamedFragment {
     readonly gas!: null | bigint;
 
     constructor(guard: any, name: string, stateMutability: string, inputs: ReadonlyArray<ParamType>, outputs: ReadonlyArray<ParamType>, gas: null | bigint) {
-        super(guard, FragmentType.function, name, inputs);
+        super(guard, "function", name, inputs);
         outputs = Object.freeze(outputs.slice());
         const constant = (stateMutability === "view" || stateMutability === "pure");
         const payable = (stateMutability === "payable");
@@ -1068,7 +1052,7 @@ export class StructFragment extends NamedFragment {
         const inputs = consumeParams(tokens);
         consumeEoi(tokens);
 
-        return new StructFragment(_guard, FragmentType.struct, name, inputs);
+        return new StructFragment(_guard, "struct", name, inputs);
     }
 }
 

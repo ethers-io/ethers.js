@@ -328,23 +328,6 @@ export interface SignedTransaction extends Transaction {
     signature: Signature;
 }
 
-export interface LegacyTransaction extends Transaction {
-    type: 0;
-    gasPrice: bigint;
-}
-
-export interface BerlinTransaction extends Transaction {
-    type: 1;
-    gasPrice: bigint;
-    accessList: AccessList;
-}
-
-export interface LondonTransaction extends Transaction {
-    type: 2;
-    maxFeePerGas: bigint;
-    maxPriorityFeePerGas: bigint;
-    accessList: AccessList;
-}
 
 export class Transaction implements Freezable<Transaction>, TransactionLike<string> {
     #props: {
@@ -595,9 +578,15 @@ export class Transaction implements Freezable<Transaction>, TransactionLike<stri
         return types;
     }
 
-    isLegacy(): this is LegacyTransaction { return (this.type === 0); }
-    isBerlin(): this is BerlinTransaction { return (this.type === 1); }
-    isLondon(): this is LondonTransaction { return (this.type === 2); }
+    isLegacy(): this is (Transaction & { type: 0, gasPrice: bigint }) {
+        return (this.type === 0);
+    }
+    isBerlin(): this is (Transaction & { type: 1, gasPrice: bigint, accessList: AccessList }) {
+        return (this.type === 1);
+    }
+    isLondon(): this is (Transaction & { type: 2, accessList: AccessList, maxFeePerGas: bigint, maxPriorityFeePerGas: bigint}) {
+        return (this.type === 2);
+    }
 
     clone(): Transaction {
         return Transaction.from(this);
