@@ -22,15 +22,39 @@ function _getBytes(value: BytesLike, name?: string, copy?: boolean): Uint8Array 
     return throwArgumentError("invalid BytesLike value", name || "value", value);
 }
 
+/**
+ *  Get a typed Uint8Array for %%value%%. If already a Uint8Array
+ *  the original %%value%% is returned; if a copy is required use
+ *  [[getBytesCopy]].
+ *
+ *  @see: getBytesCopy
+ */
 export function getBytes(value: BytesLike, name?: string): Uint8Array {
     return _getBytes(value, name, false);
 }
 
+/**
+ *  Get a typed Uint8Array for %%value%%, creating a copy if necessary
+ *  to prevent any modifications of the returned value from being
+ *  reflected elsewhere.
+ *
+ *  @see: getBytes
+ */
 export function getBytesCopy(value: BytesLike, name?: string): Uint8Array {
     return _getBytes(value, name, true);
 }
 
 
+/**
+ *  Returns true if %%value%% is a valid [[HexString]], with additional
+ *  optional constraints depending on %%length%%.
+ *
+ *  If %%length%% is //true//, then %%value%% must additionally be a valid
+ *  [[HexDataString]] (i.e. even length).
+ *
+ *  If %%length%% is //a number//, then %%value%% must represent that many
+ *  bytes of data (e.g. ``0x1234`` is 2 bytes).
+ */
 export function isHexString(value: any, length?: number | boolean): value is `0x${ string }` {
     if (typeof(value) !== "string" || !value.match(/^0x[0-9A-Fa-f]*$/)) {
         return false
@@ -42,11 +66,19 @@ export function isHexString(value: any, length?: number | boolean): value is `0x
     return true;
 }
 
+/**
+ *  Returns true if %%value%% is a valid representation of arbitrary
+ *  data (i.e. a valid [[HexDataString]] or a Uint8Array).
+ */
 export function isBytesLike(value: any): value is BytesLike {
     return (isHexString(value, true) || (value instanceof Uint8Array));
 }
 
 const HexCharacters: string = "0123456789abcdef";
+
+/**
+ *  Returns a [[HexDataString]] representation of %%data%%.
+ */
 export function hexlify(data: BytesLike): string {
     const bytes = getBytes(data);
 
@@ -58,15 +90,28 @@ export function hexlify(data: BytesLike): string {
     return result;
 }
 
+/**
+ *  Returns a [[HexDataString]] by concatenating all values
+ *  within %%data%%.
+ */
 export function concat(datas: ReadonlyArray<BytesLike>): string {
     return "0x" + datas.map((d) => hexlify(d).substring(2)).join("");
 }
 
+/**
+ *  Returns the length of %%data%%, in bytes.
+ */
 export function dataLength(data: BytesLike): number {
     if (isHexString(data, true)) { return (data.length - 2) / 2; }
     return getBytes(data).length;
 }
 
+/**
+ *  Returns a [[HexDataString]] by slicing %%data%% from the %%start%%
+ *  offset to the %%end%% offset.
+ *
+ *  By default %%start%% is 0 and %%end%% is the length of %%data%%.
+ */
 export function dataSlice(data: BytesLike, start?: number, end?: number): string {
     const bytes = getBytes(data);
     if (end != null && end > bytes.length) { throwError("cannot slice beyond data bounds", "BUFFER_OVERRUN", {
@@ -75,12 +120,15 @@ export function dataSlice(data: BytesLike, start?: number, end?: number): string
     return hexlify(bytes.slice((start == null) ? 0: start, (end == null) ? bytes.length: end));
 }
 
+/**
+ *  Return the [[HexDataString]] result by stripping all **leading**
+ ** zero bytes from %%data%%.
+ */
 export function stripZerosLeft(data: BytesLike): string {
     let bytes = hexlify(data).substring(2);
     while (bytes.substring(0, 2) == "00") { bytes = bytes.substring(2); }
     return "0x" + bytes;
 }
-
 
 function zeroPad(data: BytesLike, length: number, left: boolean): string {
     const bytes = getBytes(data);
@@ -103,10 +151,18 @@ function zeroPad(data: BytesLike, length: number, left: boolean): string {
     return hexlify(result);
 }
 
+/**
+ *  Return the [[HexDataString]] of %%data%% padded on the **left**
+ *  to %%length%% bytes.
+ */
 export function zeroPadValue(data: BytesLike, length: number): string {
     return zeroPad(data, length, true);
 }
 
+/**
+ *  Return the [[HexDataString]] of %%data%% padded on the **right**
+ *  to %%length%% bytes.
+ */
 export function zeroPadBytes(data: BytesLike, length: number): string {
     return zeroPad(data, length, false);
 }

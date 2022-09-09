@@ -3,8 +3,14 @@ import { throwArgumentError } from "./errors.js";
 
 import type { BytesLike } from "./data.js";
 
-
+/**
+ *  Any type that can be used where a numeric value is needed.
+ */
 export type Numeric = number | bigint;
+
+/**
+ *  Any type that can be used where a big number is needed.
+ */
 export type BigNumberish = string | Numeric;
 
 
@@ -54,6 +60,10 @@ export function mask(_value: BigNumberish, _bits: Numeric): bigint {
     return value & ((BN_1 << bits) - BN_1);
 }
 
+/**
+ *  Gets a [[BigInt]] from %%value%%. If it is an invalid value for
+ *  a BigInt, then an ArgumentError will be thrown for %%name%%.
+ */
 export function getBigInt(value: BigNumberish, name?: string): bigint {
     switch (typeof(value)) {
         case "bigint": return value;
@@ -75,11 +85,12 @@ export function getBigInt(value: BigNumberish, name?: string): bigint {
 }
 
 
+const Nibbles = "0123456789abcdef";
+
 /*
  * Converts %%value%% to a BigInt. If %%value%% is a Uint8Array, it
  * is treated as Big Endian data.
  */
-const Nibbles = "0123456789abcdef";
 export function toBigInt(value: BigNumberish | Uint8Array): bigint {
     if (value instanceof Uint8Array) {
         let result = "0x0";
@@ -93,6 +104,10 @@ export function toBigInt(value: BigNumberish | Uint8Array): bigint {
     return getBigInt(value);
 }
 
+/**
+ *  Gets a //number// from %%value%%. If it is an invalid value for
+ *  a //number//, then an ArgumentError will be thrown for %%name%%.
+ */
 export function getNumber(value: BigNumberish, name?: string): number {
     switch (typeof(value)) {
         case "bigint":
@@ -130,7 +145,6 @@ export function toNumber(value: BigNumberish | Uint8Array): number {
  *  Converts %%value%% to a Big Endian hexstring, optionally padded to
  *  %%width%% bytes.
  */
-// Converts value to hex, optionally padding on the left to width bytes
 export function toHex(_value: BigNumberish, _width?: Numeric): string {
     const value = getBigInt(_value, "value");
     if (value < 0) { throw new Error("cannot convert negative value to hex"); }
@@ -173,6 +187,13 @@ export function toArray(_value: BigNumberish): Uint8Array {
     return result;
 }
 
+/**
+ *  Returns a [[HexString]] for %%value%% safe to use as a //Quantity//.
+ *
+ *  A //Quantity// does not have and leading 0 values unless the value is
+ *  the literal value `0x0`. This is most commonly used for JSSON-RPC
+ *  numeric values.
+ */
 export function toQuantity(value: BytesLike | BigNumberish): string {
     let result = hexlify(isBytesLike(value) ? value: toArray(value)).substring(2);
     while (result.substring(0, 1) === "0") { result = result.substring(1); }

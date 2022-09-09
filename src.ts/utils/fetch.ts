@@ -72,12 +72,16 @@ async function gatewayData(url: string, signal?: FetchCancelSignal): Promise<Fet
     }
 }
 
-export function getIpfsGatewayFunc(base: string): FetchGatewayFunc {
+/**
+ *  Returns a [[FetchGatewayFunc]] for fetching content from a standard
+ *  IPFS gateway hosted at %%baseUrl%%.
+ */
+export function getIpfsGatewayFunc(baseUrl: string): FetchGatewayFunc {
     async function gatewayIpfs(url: string, signal?: FetchCancelSignal): Promise<FetchRequest | FetchResponse> {
         try {
             const match = url.match(reIpfs);
             if (!match) { throw new Error("invalid link"); }
-            return new FetchRequest(`${ base }${ match[2] }`);
+            return new FetchRequest(`${ baseUrl }${ match[2] }`);
         } catch (error) {
             return new FetchResponse(599, "BAD REQUEST (invalid IPFS URI)", { }, null, new FetchRequest(url));
         }
@@ -136,6 +140,12 @@ function checkSignal(signal?: FetchCancelSignal): FetchCancelSignal {
     return signal;
 }
 
+/**
+ *  Represents a request for a resource using a URI.
+ *
+ *  Requests can occur over http/https, data: URI or any
+ *  URI scheme registered via the static [[register]] method.
+ */
 export class FetchRequest implements Iterable<[ key: string, value: string ]> {
     #allowInsecure: boolean;
     #gzip: boolean;
@@ -155,13 +165,33 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
 
     #signal?: FetchCancelSignal;
 
-    // URL
+    /**
+     *  The fetch URI to requrest.
+     */
     get url(): string { return this.#url; }
     set url(url: string) {
         this.#url = String(url);
     }
 
-    // Body
+    /**
+     *  The fetch body, if any, to send as the request body.
+     *
+     *  When setting a body, the intrinsic ``Content-Type`` is automatically
+     *  set and will be used if **not overridden** by setting a custom
+     *  header.
+     *
+     *  If %%body%% is null, the body is cleared (along with the
+     *  intrinsic ``Content-Type``) and the .
+     *
+     *  If %%body%% is a string, the intrincis ``Content-Type`` is set to
+     *  ``text/plain``.
+     *
+     *  If %%body%% is a Uint8Array, the intrincis ``Content-Type`` is set to
+     *  ``application/octet-stream``.
+     *
+     *  If %%body%% is any other object, the intrincis ``Content-Type`` is
+     *  set to ``application/json``.
+     */
     get body(): null | Uint8Array {
         if (this.#body == null) { return null; }
         return new Uint8Array(this.#body);
@@ -184,11 +214,18 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         }
     }
 
+    /**
+     *  Returns true if the request has a body.
+     */
     hasBody(): this is FetchRequestWithBody {
         return (this.#body != null);
     }
 
-    // Method (default: GET with no body, POST with a body)
+    /**
+     *  The HTTP method to use when requesting the URI. If no method
+     *  has been explicitly set, then ``GET`` is used if the body is
+     *  null and ``POST`` otherwise.
+     */
     get method(): string {
         if (this.#method) { return this.#method; }
         if (this.hasBody()) { return "POST"; }
@@ -199,7 +236,9 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         this.#method = String(method).toUpperCase();
     }
 
-    // Headers (automatically fills content-type if not explicitly set)
+    /**
+     *  The headers that will be used when requesting the URI.
+     */
     get headers(): Readonly<Record<string, string>> {
         const headers = Object.assign({ }, this.#headers);
 
@@ -218,12 +257,25 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
 
         return Object.freeze(headers);
     }
+
+    /**
+     *  Get the header for %%key%%.
+     */
     getHeader(key: string): string {
         return this.headers[key.toLowerCase()];
     }
+
+    /**
+     *  Set the header for %%key%% to %%value%%. All values are coerced
+     *  to a string.
+     */
     setHeader(key: string, value: string | number): void {
         this.#headers[String(key).toLowerCase()] = String(value);
     }
+
+    /**
+     *  Clear all headers.
+     */
     clearHeaders(): void {
         this.#headers = { };
     }
@@ -245,10 +297,16 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         };
     }
 
-    // Configure an Authorization header
+    /**
+     *  The value that will be sent for the ``Authorization`` header.
+     */
     get credentials(): null | string {
         return this.#creds || null;
     }
+
+    /**
+     *  Sets an ``Authorization`` for %%username%% with %%password%%.
+     */
     setCredentials(username: string, password: string): void {
         if (username.match(/:/)) {
             throwArgumentError("invalid basic authentication username", "username", "[REDACTED]");
@@ -256,7 +314,9 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         this.#creds = `${ username }:${ password }`;
     }
 
-    // Configure the request to allow gzipped responses
+    /**
+     *  Allow gzip-encoded responses.
+     */
     get allowGzip(): boolean {
         return this.#gzip;
     }
@@ -264,7 +324,10 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         this.#gzip = !!value;
     }
 
-    // Allow credentials to be sent over an insecure (non-HTTPS) channel
+    /**
+     *  Allow ``Authentication`` credentials to be sent over insecure
+     *  channels.
+     */
     get allowInsecureAuthentication(): boolean {
         return !!this.#allowInsecure;
     }
@@ -272,14 +335,22 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         this.#allowInsecure = !!value;
     }
 
-    // Timeout (milliseconds)
+    /**
+     *  The timeout (in milliseconds) to wait for a complere response.
+     */
     get timeout(): number { return this.#timeout; }
     set timeout(timeout: number) {
         assertArgument(timeout >= 0, "timeout must be non-zero", "timeout", timeout);
         this.#timeout = timeout;
     }
 
-    // Preflight called before each request is sent
+    /**
+     *  This function is called prior to each request, for example
+     *  during a redirection or retry in case of server throttling.
+     *
+     *  This offers an opportunity to populate headers or update
+     *  content before sending a request.
+     */
     get preflightFunc(): null | FetchPreflightFunc {
         return this.#preflight || null;
     }
@@ -287,7 +358,16 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         this.#preflight = preflight;
     }
 
-    // Preflight called before each request is sent
+    /**
+     *  This function is called after each response, offering an
+     *  opportunity to provide client-level throttling or updating
+     *  response data.
+     *
+     *  Any error thrown in this causes the ``send()`` to throw.
+     *
+     *  To schedule a retry attempt (assuming the maximum retry limit
+     *  has not been reached), use [[response.throwThrottleError]].
+     */
     get processFunc(): null | FetchProcessFunc {
         return this.#process || null;
     }
@@ -295,7 +375,9 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         this.#process = process;
     }
 
-    // Preflight called before each request is sent
+    /**
+     *  This function is called on each retry attempt.
+     */
     get retryFunc(): null | FetchRetryFunc {
         return this.#retry || null;
     }
@@ -407,6 +489,9 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         return response;
     }
 
+    /**
+     *  Resolves to the response by sending the request.
+     */
     send(): Promise<FetchResponse> {
         if (this.#signal != null) {
             return throwError("request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
@@ -415,6 +500,10 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         return this.#send(0, getTime() + this.timeout, 0, this, new FetchResponse(0, "", { }, null, this));
     }
 
+    /**
+     *  Cancels the inflight response, causing a ``CANCELLED``
+     *  error to be rejected from the [[send]].
+     */
     cancel(): void {
         if (this.#signal == null) {
             return throwError("request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
@@ -460,6 +549,9 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         return req;
     }
 
+    /**
+     *  Create a new copy of this request.
+     */
     clone(): FetchRequest {
         const clone = new FetchRequest(this.url);
 
@@ -488,14 +580,24 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         return clone;
     }
 
+    /**
+     *  Locks all static configuration for gateways and FetchGetUrlFunc
+     *  registration.
+     */
     static lockConfig(): void {
         locked = true;
     }
 
+    /**
+     *  Get the current Gateway function for %%scheme%%.
+     */
     static getGateway(scheme: string): null | FetchGatewayFunc {
         return Gateways[scheme.toLowerCase()] || null;
     }
 
+    /**
+     *  Set the FetchGatewayFunc for %%scheme%% to %%func%%.
+     */
     static registerGateway(scheme: string, func: FetchGatewayFunc): void {
         scheme = scheme.toLowerCase();
         if (scheme === "http" || scheme === "https") {
@@ -505,6 +607,9 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         Gateways[scheme] = func;
     }
 
+    /**
+     *  Set a custom function for fetching HTTP and HTTPS requests.
+     */
     static registerGetUrl(getUrl: FetchGetUrlFunc): void {
         if (locked) { throw new Error("gateways locked"); }
         getUrlFunc = getUrl;
@@ -521,6 +626,9 @@ interface ThrottleError extends Error {
     throttle: true;
 };
 
+/**
+ *  The response for a FetchREquest.
+ */
 export class FetchResponse implements Iterable<[ key: string, value: string ]> {
     #statusCode: number;
     #statusMessage: string;
@@ -534,12 +642,33 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
         return `<Response status=${ this.statusCode } body=${ this.#body ? hexlify(this.#body): "null" }>`;
     }
 
+    /**
+     *  The response status code.
+     */
     get statusCode(): number { return this.#statusCode; }
+
+    /**
+     *  The response status message.
+     */
     get statusMessage(): string { return this.#statusMessage; }
+
+    /**
+     *  The response headers.
+     */
     get headers(): Record<string, string> { return this.#headers; }
+
+    /**
+     *  The response body.
+     */
     get body(): null | Readonly<Uint8Array> {
         return (this.#body == null) ? null: new Uint8Array(this.#body);
     }
+
+    /**
+     *  The response body as a UTF-8 encoded string.
+     *
+     * An error is thrown if the body is invalid UTF-8 data.
+     */
     get bodyText(): string {
         try {
             return (this.#body == null) ? "": toUtf8String(this.#body);
@@ -549,6 +678,12 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
             });
         }
     }
+
+    /**
+     *  The response body, decoded as JSON.
+     *
+     *  An error is thrown if the body is invalid JSON-encoded data.
+     */
     get bodyJson(): any {
         try {
             return JSON.parse(this.bodyText);
@@ -589,6 +724,11 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
         this.#error = { message: "" };
     }
 
+    /**
+     *  Return a Response with matching headers and body, but with
+     *  an error status code (i.e. 599) and %%message%% with an
+     *  optional %%error%%.
+     */
     makeServerError(message?: string, error?: Error): FetchResponse {
         let statusMessage: string;
         if (!message) {
@@ -603,6 +743,10 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
         return response;
     }
 
+    /**
+     *  If called within the [[processFunc]], causes the request to
+     *  retry as if throttled for %%stall%% milliseconds.
+     */
     throwThrottleError(message?: string, stall?: number): never {
         if (stall == null) {
             stall = -1;
@@ -617,20 +761,35 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
         throw error;
     }
 
+    /**
+     *  Get the header value for %%key%%.
+     */
     getHeader(key: string): string {
         return this.headers[key.toLowerCase()];
     }
 
+    /**
+     *  Returns true of the response has a body.
+     */
     hasBody(): this is FetchResponseWithBody {
         return (this.#body != null);
     }
 
+    /**
+     *  The request made for this response.
+     */
     get request(): null | FetchRequest { return this.#request; }
 
+    /**
+     *  Returns true if this response was a success statuscode.
+     */
     ok(): boolean {
         return (this.#error.message === "" && this.statusCode >= 200 && this.statusCode < 300);
     }
 
+    /**
+     *  Throws a ``SERVER_ERROR`` if this response is not ok.
+     */
     assertOk(): void {
         if (this.ok()) { return; }
         let { message, error } = this.#error;

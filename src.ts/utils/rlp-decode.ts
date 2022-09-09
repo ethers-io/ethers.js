@@ -98,6 +98,9 @@ function _decode(data: Uint8Array, offset: number): { consumed: number, result: 
     return { consumed: 1, result: hexlifyByte(data[offset]) };
 }
 
+/**
+ *  Decodes %%data%% into the structured data it represents.
+ */
 export function decodeRlp(_data: BytesLike): RlpStructuredData {
     const data = getBytes(_data, "data");
     const decoded = _decode(data, 0);
