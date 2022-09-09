@@ -13,7 +13,7 @@ import { Typed } from "./typed.js";
 
 import type { BigNumberish, BytesLike } from "../utils/index.js";
 
-import type { FormatType, JsonFragment } from "./fragments.js";
+import type { JsonFragment } from "./fragments.js";
 
 
 export { checkResultErrors, Result };
@@ -147,8 +147,14 @@ function checkNames(fragment: Fragment, type: "input" | "output", params: Array<
 export type InterfaceAbi = string | ReadonlyArray<Fragment | JsonFragment | string>;
 
 export class Interface {
+    /**
+     *  All the Contract ABI members (i.e. methods, events, errors, etc).
+     */
     readonly fragments!: ReadonlyArray<Fragment>;
 
+    /**
+     *  The Contract constructor.
+     */
     readonly deploy!: ConstructorFragment;
 
     #errors: Map<string, ErrorFragment>;
@@ -223,38 +229,36 @@ export class Interface {
             });
         }
     }
-// @TODO: multi sig?
-    format(format?: FormatType): string | Array<string> {
-        if (!format) { format = "full"; }
-        if (format === "sighash") {
-            throwArgumentError("interface does not support formatting sighash", "format", format);
-        }
 
+    /**
+     *  Returns the entire Human-Readable ABI, as an array of
+     *  signatures, optionally as %%minimal%% strings, which
+     *  removes parameter names and unneceesary spaces.
+     */
+    format(minimal?: boolean): Array<string> {
+        const format = (minimal ? "minimal": "full");
         const abi = this.fragments.map((f) => f.format(format));
-
-        // We need to re-bundle the JSON fragments a bit
-        if (format === "json") {
-             return JSON.stringify(abi.map((j) => JSON.parse(j)));
-        }
-
         return abi;
     }
 
+    /**
+     *  Return the JSON-encoded ABI. This is the format Solidiy
+     *  returns.
+     */
+    formatJson(): string {
+        const abi = this.fragments.map((f) => f.format("json"));
+
+        // We need to re-bundle the JSON fragments a bit
+        return JSON.stringify(abi.map((j) => JSON.parse(j)));
+    }
+
+    /**
+     *  The ABI coder that will be used to encode and decode binary
+     *  data.
+     */
     getAbiCoder(): AbiCoder {
         return defaultAbiCoder;
     }
-
-    //static getAddress(address: string): string {
-    //    return getAddress(address);
-    //}
-
-    //static getSelector(fragment: ErrorFragment | FunctionFragment): string {
-    //    return dataSlice(id(fragment.format()), 0, 4);
-    //}
-
-    //static getEventTopic(eventFragment: EventFragment): string {
-    //    return id(eventFragment.format());
-    //}
 
     // Find a function definition by any means necessary (unless it is ambiguous)
     #getFunction(key: string, values: null | Array<any | Typed>, forceUnique: boolean): FunctionFragment {
@@ -343,9 +347,25 @@ export class Interface {
 
         return throwArgumentError("no matching function", "signature", key);
     }
+
+    /**
+     *  Get the function name for %%key%%, which may be a function selector,
+     *  function name or function signature that belongs to the ABI.
+     */
     getFunctionName(key: string): string {
         return (this.#getFunction(key, null, false)).name;
     }
+
+    /**
+     *  Get the [[FunctionFragment]] for %%key%%, which may be a function
+     *  selector, function name or function signature that belongs to the ABI.
+     *
+     *  If %%values%% is provided, it will use the Typed API to handle
+     *  ambiguous cases where multiple functions match by name.
+     *
+     *  If the %%key%% and %%values%% do not refine to a single function in
+     *  the ABI, this will throw.
+     */
     getFunction(key: string, values?: Array<any | Typed>): FunctionFragment {
         return this.#getFunction(key, values || null, true)
     }
@@ -410,14 +430,39 @@ export class Interface {
 
         return throwArgumentError("no matching event", "signature", key);
     }
+
+    /**
+     *  Get the event name for %%key%%, which may be a topic hash,
+     *  event name or event signature that belongs to the ABI.
+     */
     getEventName(key: string): string {
         return (this.#getEvent(key, null, false)).name;
     }
+
+    /**
+     *  Get the [[EventFragment]] for %%key%%, which may be a topic hash,
+     *  event name or event signature that belongs to the ABI.
+     *
+     *  If %%values%% is provided, it will use the Typed API to handle
+     *  ambiguous cases where multiple events match by name.
+     *
+     *  If the %%key%% and %%values%% do not refine to a single event in
+     *  the ABI, this will throw.
+     */
     getEvent(key: string, values?: Array<any | Typed>): EventFragment {
         return this.#getEvent(key, values || null, true)
     }
 
-    // Find a function definition by any means necessary (unless it is ambiguous)
+    /**
+     *  Get the [[ErrorFragment]] for %%key%%, which may be an error
+     *  selector, error name or error signature that belongs to the ABI.
+     *
+     *  If %%values%% is provided, it will use the Typed API to handle
+     *  ambiguous cases where multiple errors match by name.
+     *
+     *  If the %%key%% and %%values%% do not refine to a single error in
+     *  the ABI, this will throw.
+     */
     getError(key: string, values?: Array<any | Typed>): ErrorFragment {
         if (isHexString(key)) {
             const selector = key.toLowerCase();
@@ -499,10 +544,23 @@ export class Interface {
         return this.#abiCoder.encode(params, values)
     }
 
+    /**
+     *  Encodes a ``tx.data`` object for deploying the Contract with
+     *  the %%values%% as the constructor arguments.
+     */
     encodeDeploy(values?: ReadonlyArray<any>): string {
         return this._encodeParams(this.deploy.inputs, values || [ ]);
     }
 
+    /**
+     *  Decodes the result %%data%% (e.g. from an ``eth_call``) for the
+     *  specified error (see [[getError]] for valid values for
+     *  %%key%%).
+     *
+     *  Most developers should prefer the [[parseResult]] method instead,
+     *  which will automatically detect a ``CALL_EXCEPTION`` and throw the
+     *  corresponding error.
+     */
     decodeErrorResult(fragment: ErrorFragment | string, data: BytesLike): Result {
         if (typeof(fragment) === "string") { fragment = this.getError(fragment); }
 
@@ -513,8 +571,16 @@ export class Interface {
         return this._decodeParams(fragment.inputs, dataSlice(data, 4));
     }
 
-    encodeErrorResult(fragment: ErrorFragment | string, values?: ReadonlyArray<any>): string {
-        if (typeof(fragment) === "string") { fragment = this.getError(fragment); }
+    /**
+     *  Encodes the transaction revert data for a call result that
+     *  reverted from the the Contract with the sepcified %%error%%
+     *  (see [[getError]] for valid values for %%key%%) with the %%values%%.
+     *
+     *  This is generally not used by most developers, unless trying to mock
+     *  a result from a Contract.
+     */
+    encodeErrorResult(key: ErrorFragment | string, values?: ReadonlyArray<any>): string {
+        const fragment = (typeof(key) === "string") ? this.getError(key): key;
 
         return concat([
             this.getSelector(fragment),
@@ -522,9 +588,16 @@ export class Interface {
         ]);
     }
 
-    // Decode the data for a function call (e.g. tx.data)
-    decodeFunctionData(fragment: FunctionFragment | string, data: BytesLike): Result {
-        if (typeof(fragment) === "string") { fragment = this.getFunction(fragment); }
+    /**
+     *  Decodes the %%data%% from a transaction ``tx.data`` for
+     *  the function specified (see [[getFunction]] for valid values
+     *  for %%key%%).
+     *
+     *  Most developers should prefer the [[parseTransaction]] method
+     *  instead, which will automatically detect the fragment.
+     */
+    decodeFunctionData(key: FunctionFragment | string, data: BytesLike): Result {
+        const fragment = (typeof(key) === "string") ? this.getFunction(key): key;
 
         if (dataSlice(data, 0, 4) !== this.getSelector(fragment)) {
             throwArgumentError(`data signature does not match function ${ fragment.name }.`, "data", data);
@@ -533,9 +606,13 @@ export class Interface {
         return this._decodeParams(fragment.inputs, dataSlice(data, 4));
     }
 
-    // Encode the data for a function call (e.g. tx.data)
-    encodeFunctionData(fragment: FunctionFragment | string, values?: ReadonlyArray<any>): string {
-        if (typeof(fragment) === "string") { fragment = this.getFunction(fragment); }
+    /**
+     *  Encodes the ``tx.data`` for a transaction that calls the function
+     *  specified (see [[getFunction]] for valid values for %%key%%) with
+     *  the %%values%%.
+     */
+    encodeFunctionData(key: FunctionFragment | string, values?: ReadonlyArray<any>): string {
+        const fragment = (typeof(key) === "string") ? this.getFunction(key): key;
 
         return concat([
             this.getSelector(fragment),
@@ -543,7 +620,15 @@ export class Interface {
         ]);
     }
 
-    // Decode the result from a function call (e.g. from eth_call)
+    /**
+     *  Decodes the result %%data%% (e.g. from an ``eth_call``) for the
+     *  specified function (see [[getFunction]] for valid values for
+     *  %%key%%).
+     *
+     *  Most developers should prefer the [[parseResult]] method instead,
+     *  which will automatically detect a ``CALL_EXCEPTION`` and throw the
+     *  corresponding error.
+     */
     decodeFunctionResult(fragment: FunctionFragment | string, data: BytesLike): Result {
         if (typeof(fragment) === "string") { fragment = this.getFunction(fragment); }
 
@@ -622,13 +707,17 @@ export class Interface {
         });
     }
 
-    // Encode the result for a function call (e.g. for eth_call)
-    encodeFunctionResult(functionFragment: FunctionFragment | string, values?: ReadonlyArray<any>): string {
-        if (typeof(functionFragment) === "string") {
-            functionFragment = this.getFunction(functionFragment);
-        }
-
-        return hexlify(this.#abiCoder.encode(functionFragment.outputs, values || [ ]));
+    /**
+     *  Encodes the result data (e.g. from an ``eth_call``) for the
+     *  specified function (see [[getFunction]] for valid values
+     *  for %%key%%) with %%values%%.
+     *
+     *  This is generally not used by most developers, unless trying to mock
+     *  a result from a Contract.
+     */
+    encodeFunctionResult(key: FunctionFragment | string, values?: ReadonlyArray<any>): string {
+        const fragment = (typeof(key) === "string") ? this.getFunction(key): key;
+        return hexlify(this.#abiCoder.encode(fragment.outputs, values || [ ]));
     }
 /*
     spelunk(inputs: Array<ParamType>, values: ReadonlyArray<any>, processfunc: (type: string, value: any) => Promise<any>): Promise<Array<any>> {
@@ -842,8 +931,12 @@ export class Interface {
         return Result.fromItems(values, keys);
     }
 
-    // Given a transaction, find the matching function fragment (if any) and
-    // determine all its properties and call parameters
+    /**
+     *  Parses a transaction, finding the matching function and extracts
+     *  the parameter values along with other useful function details.
+     *
+     *  If the matching function cannot be found, return null.
+     */
     parseTransaction(tx: { data: string, value?: BigNumberish }): null | TransactionDescription {
         const data = getBytes(tx.data, "tx.data");
         const value = getBigInt((tx.value != null) ? tx.value: 0, "tx.value");
@@ -856,11 +949,16 @@ export class Interface {
         return new TransactionDescription(fragment, this.getSelector(fragment), args, value);
     }
 
-    // @TODO
-    //parseCallResult(data: BytesLike): ??
+    parseCallResult(data: BytesLike): Result {
+        throw new Error("@TODO");
+    }
 
-    // Given an event log, find the matching event fragment (if any) and
-    // determine all its properties and values
+    /**
+     *  Parses a receipt log, finding the matching event and extracts
+     *  the parameter values along with other useful event details.
+     *
+     *  If the matching event cannot be found, returns null.
+     */
     parseLog(log: { topics: Array<string>, data: string}): null | LogDescription {
         const fragment = this.getEvent(log.topics[0]);
 
@@ -874,6 +972,12 @@ export class Interface {
        return new LogDescription(fragment, this.getEventTopic(fragment), this.decodeEventLog(fragment, log.data, log.topics));
     }
 
+    /**
+     *  Parses a revert data, finding the matching error and extracts
+     *  the parameter values along with other useful error details.
+     *
+     *  If the matching event cannot be found, returns null.
+     */
     parseError(data: BytesLike): null | ErrorDescription {
         const hexData = hexlify(data);
 
@@ -885,7 +989,12 @@ export class Interface {
         return new ErrorDescription(fragment, this.getSelector(fragment), args);
     }
 
-
+    /**
+     *  Creates a new [[Interface]] from the ABI %%value%%.
+     *
+     *  The %%value%% may be provided as an existing [[Interface]] object,
+     *  a JSON-encoded ABI or any Human-Readable ABI format.
+     */
     static from(value: ReadonlyArray<Fragment | string | JsonFragment> | string | Interface): Interface {
         // Already an Interface, which is immutable
         if (value instanceof Interface) { return value; }
