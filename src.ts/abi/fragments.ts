@@ -28,19 +28,18 @@ export interface JsonFragment {
     readonly gas?: string;
 };
 
-export enum FormatType {
+export type FormatType =
     // Bare formatting, as is needed for computing a sighash of an event or function
-    sighash = "sighash",
+    "sighash" |
 
     // Human-Readable with Minimal spacing and without names (compact human-readable)
-    minimal = "minimal",
+    "minimal" |
 
     // Human-Readable with nice spacing, including all names
-    full = "full",
+    "full" |
 
     // JSON-format a la Solidity
-    json = "json"
-};
+    "json";
 
 // [ "a", "b" ] => { "a": 1, "b": 1 }
 function setify(items: Array<string>): ReadonlySet<string> {
@@ -502,12 +501,8 @@ export class ParamType {
     //   - sighash: "(uint256,address)"
     //   - minimal: "tuple(uint256,address) indexed"
     //   - full:    "tuple(uint256 foo, address bar) indexed baz"
-    format(format: FormatType = FormatType.sighash): string {
-        if (!FormatType[format]) {
-            throwArgumentError("invalid format type", "format", format);
-        }
-
-        if (format === FormatType.json) {
+    format(format: FormatType = "sighash"): string {
+        if (format === "json") {
             let result: any = {
                 type: ((this.baseType === "tuple") ? "tuple": this.type),
                 name: (this.name || undefined)
@@ -527,18 +522,18 @@ export class ParamType {
             result += `[${ (this.arrayLength < 0 ? "": String(this.arrayLength)) }]`;
         } else {
             if (this.isTuple()) {
-                if (format !== FormatType.sighash) { result += this.type; }
+                if (format !== "sighash") { result += this.type; }
                 result += "(" + this.components.map(
                     (comp) => comp.format(format)
-                ).join((format === FormatType.full) ? ", ": ",") + ")";
+                ).join((format === "full") ? ", ": ",") + ")";
             } else {
                 result += this.type;
             }
         }
 
-        if (format !== FormatType.sighash) {
+        if (format !== "sighash") {
             if (this.indexed === true) { result += " indexed"; }
-            if (format === FormatType.full && this.name) {
+            if (format === "full" && this.name) {
                 result += " " + this.name;
             }
         }
@@ -858,7 +853,7 @@ export abstract class NamedFragment extends Fragment {
 }
 
 function joinParams(format: FormatType, params: ReadonlyArray<ParamType>): string { 
-    return "(" + params.map((p) => p.format(format)).join((format === FormatType.full) ? ", ": ",") + ")";
+    return "(" + params.map((p) => p.format(format)).join((format === "full") ? ", ": ",") + ")";
 }
 
 export class ErrorFragment extends NamedFragment {
@@ -866,12 +861,8 @@ export class ErrorFragment extends NamedFragment {
         super(guard, FragmentType.error, name, inputs);
     }
 
-    format(format: FormatType = FormatType.sighash): string {
-       if (!FormatType[format]) {
-            throwArgumentError("invalid format type", "format", format);
-        }
-
-        if (format === FormatType.json) {
+    format(format: FormatType = "sighash"): string {
+        if (format === "json") {
             return JSON.stringify({
                 type: "error",
                 name: this.name,
@@ -880,7 +871,7 @@ export class ErrorFragment extends NamedFragment {
         }
 
         const result = [ ];
-        if (format !== FormatType.sighash) { result.push("error"); }
+        if (format !== "sighash") { result.push("error"); }
         result.push(this.name + joinParams(format, this.inputs));
         return result.join(" ");
     }
@@ -907,12 +898,8 @@ export class EventFragment extends NamedFragment {
         defineProperties<EventFragment>(this, { anonymous });
     }
 
-    format(format: FormatType = FormatType.sighash): string {
-        if (!FormatType[format]) {
-            throwArgumentError("invalid format type", "format", format);
-        }
-
-        if (format === FormatType.json) {
+    format(format: FormatType = "sighash"): string {
+        if (format === "json") {
             return JSON.stringify({
                 type: "event",
                 anonymous: this.anonymous,
@@ -922,9 +909,9 @@ export class EventFragment extends NamedFragment {
         }
 
         const result = [ ];
-        if (format !== FormatType.sighash) { result.push("event"); }
+        if (format !== "sighash") { result.push("event"); }
         result.push(this.name + joinParams(format, this.inputs));
-        if (format !== FormatType.sighash && this.anonymous) { result.push("anonymous"); }
+        if (format !== "sighash" && this.anonymous) { result.push("anonymous"); }
         return result.join(" ");
     }
 
@@ -952,18 +939,14 @@ export class ConstructorFragment extends Fragment {
         defineProperties<ConstructorFragment>(this, { payable, gas });
     }
 
-    format(format: FormatType = FormatType.sighash): string {
-        if (!FormatType[format]) {
-            throwArgumentError("invalid format type", "format", format);
-        }
-
-        if (format === FormatType.sighash) {
+    format(format: FormatType = "sighash"): string {
+        if (format === "sighash") {
             throwError("cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", {
                 operation: "format(sighash)"
             });
         }
 
-        if (format === FormatType.json) {
+        if (format === "json") {
             return JSON.stringify({
                 type: "constructor",
                 stateMutability: (this.payable ? "payable": "undefined"),
@@ -1014,12 +997,8 @@ export class FunctionFragment extends NamedFragment {
         defineProperties<FunctionFragment>(this, { constant, gas, outputs, payable, stateMutability });
     }
 
-    format(format: FormatType = FormatType.sighash): string {
-        if (!FormatType[format]) {
-            throwArgumentError("invalid format type", "format", format);
-        }
-
-        if (format === FormatType.json) {
+    format(format: FormatType = "sighash"): string {
+        if (format === "json") {
             return JSON.stringify({
                 type: "function",
                 name: this.name,
@@ -1034,11 +1013,11 @@ export class FunctionFragment extends NamedFragment {
 
         const result = [];
 
-        if (format !== FormatType.sighash) { result.push("function"); }
+        if (format !== "sighash") { result.push("function"); }
 
         result.push(this.name + joinParams(format, this.inputs));
 
-        if (format !== FormatType.sighash) {
+        if (format !== "sighash") {
             if (this.stateMutability !== "nonpayable") {
                 result.push(this.stateMutability);
             }

@@ -8,12 +8,12 @@ import {
 
 import { AbiCoder, defaultAbiCoder } from "./abi-coder.js";
 import { checkResultErrors, Result } from "./coders/abstract-coder.js";
-import { ConstructorFragment, ErrorFragment, EventFragment, FormatType, Fragment, FunctionFragment, ParamType } from "./fragments.js";
+import { ConstructorFragment, ErrorFragment, EventFragment, Fragment, FunctionFragment, ParamType } from "./fragments.js";
 import { Typed } from "./typed.js";
 
 import type { BigNumberish, BytesLike } from "../utils/index.js";
 
-import type { JsonFragment } from "./fragments.js";
+import type { FormatType, JsonFragment } from "./fragments.js";
 
 
 export { checkResultErrors, Result };
@@ -225,15 +225,15 @@ export class Interface {
     }
 // @TODO: multi sig?
     format(format?: FormatType): string | Array<string> {
-        if (!format) { format = FormatType.full; }
-        if (format === FormatType.sighash) {
+        if (!format) { format = "full"; }
+        if (format === "sighash") {
             throwArgumentError("interface does not support formatting sighash", "format", format);
         }
 
         const abi = this.fragments.map((f) => f.format(format));
 
         // We need to re-bundle the JSON fragments a bit
-        if (format === FormatType.json) {
+        if (format === "json") {
              return JSON.stringify(abi.map((j) => JSON.parse(j)));
         }
 
@@ -895,7 +895,7 @@ export class Interface {
 
         // Maybe an interface from an older version, or from a symlinked copy
         if (typeof((<any>value).format) === "function") {
-            return new Interface((<any>value).format(FormatType.json));
+            return new Interface((<any>value).format("json"));
         }
 
         // Array of fragments
