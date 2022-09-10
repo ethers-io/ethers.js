@@ -113,7 +113,7 @@ As a result, any attempt to use a number which is outside the safe
 range, which would result in incorrect values, an error is thrown.
 
 In general, numbers should be kept as strings, [[BigNumber]] instances or
-using ES2020 bigints, which all can safely be used without loss of precission.
+using ES2020 bigints, which all can safely be used without loss of precision.
 
 _code: Examples @lang<javascript>
 
@@ -142,7 +142,7 @@ _heading: Numeric Underflow @<help-NUMERIC_FAULT-underflow>
 
 Numeric underflow should not be confused with overflow.
 
-Numeric underflow occurs when the precission of a value cannot be
+Numeric underflow occurs when the precision of a value cannot be
 safely represented in the current data type.
 
 **Common Causes**
