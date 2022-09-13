@@ -81,6 +81,11 @@ export function getAddress(address: string): string {
         logger.throwArgumentError("invalid address", "address", address);
     }
 
+    if (address.length > 40) {
+        // Remove address prefix
+        address = address.substring(address.length - 40);
+    }
+
     if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
 
         // Missing the 0x prefix
