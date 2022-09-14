@@ -4,6 +4,13 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+ethers/v5.7.1 (2022-09-13 21:28)
+--------------------------------
+
+  - Fixed message signing errors that clobbered critical Error properties. ([#3356](https://github.com/ethers-io/ethers.js/issues/3356); [b14cb0f](https://github.com/ethers-io/ethers.js/commit/b14cb0fa2c31c09bfc4c668e5b9dbbc52e9b5dce))
+  - Add support for all data URL formats. ([#3341](https://github.com/ethers-io/ethers.js/issues/3341); [4c86dc9](https://github.com/ethers-io/ethers.js/commit/4c86dc9ed41fcf889daaaca41686a218a0c68e90))
+  - Added Sepolia network. ([#3325](https://github.com/ethers-io/ethers.js/issues/3325); [d083522](https://github.com/ethers-io/ethers.js/commit/d083522374b8e48e02688d2f8e29cd86f99e5fc4))
+
 ethers/v5.7.0 (2022-08-18 16:17)
 --------------------------------
 

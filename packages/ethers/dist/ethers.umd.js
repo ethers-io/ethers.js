@@ -23381,7 +23381,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "networks/5.7.0";
+	exports.version = "networks/5.7.1";
 
 	});
 
@@ -23427,7 +23427,7 @@
 	            // network does not handle the Berlin hardfork, which is
 	            // live on these ones.
 	            // @TODO: This goes away once Pocket has upgraded their nodes
-	            var skip = ["goerli", "ropsten", "rinkeby"];
+	            var skip = ["goerli", "ropsten", "rinkeby", "sepolia"];
 	            try {
 	                var provider = new providers.PocketProvider(network, options.pocket);
 	                if (provider.network && skip.indexOf(provider.network.name) === -1) {
@@ -23527,6 +23527,11 @@
 	        _defaultProvider: ethDefaultProvider("goerli")
 	    },
 	    kintsugi: { chainId: 1337702, name: "kintsugi" },
+	    sepolia: {
+	        chainId: 11155111,
+	        name: "sepolia",
+	        _defaultProvider: ethDefaultProvider("sepolia")
+	    },
 	    // ETC (See: #351)
 	    classic: {
 	        chainId: 61,
@@ -23642,7 +23647,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "web/5.7.0";
+	exports.version = "web/5.7.1";
 
 	});
 
@@ -23834,6 +23839,11 @@
 	    }
 	    return value;
 	}
+	function unpercent(value) {
+	    return (0, lib$8.toUtf8Bytes)(value.replace(/%([0-9a-f][0-9a-f])/gi, function (all, code) {
+	        return String.fromCharCode(parseInt(code, 16));
+	    }));
+	}
 	// This API is still a work in progress; the future changes will likely be:
 	// - ConnectionInfo => FetchDataRequest<T = any>
 	// - FetchDataRequest.body? = string | Uint8Array | { contentType: string, data: string | Uint8Array }
@@ -23893,15 +23903,15 @@
 	            options.fetchOptions = (0, lib$3.shallowCopy)(connection.fetchOptions);
 	        }
 	    }
-	    var reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
+	    var reData = new RegExp("^data:([^;:]*)?(;base64)?,(.*)$", "i");
 	    var dataMatch = ((url) ? url.match(reData) : null);
 	    if (dataMatch) {
 	        try {
 	            var response = {
 	                statusCode: 200,
 	                statusMessage: "OK",
-	                headers: { "content-type": dataMatch[1] },
-	                body: (0, lib$9.decode)(dataMatch[2])
+	                headers: { "content-type": (dataMatch[1] || "text/plain") },
+	                body: (dataMatch[2] ? (0, lib$9.decode)(dataMatch[3]) : unpercent(dataMatch[3]))
 	            };
 	            var result = response.body;
 	            if (processFunc) {
@@ -24412,7 +24422,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.7.0";
+	exports.version = "providers/5.7.1";
 
 	});
 
@@ -27853,7 +27863,7 @@
 	                            logger.throwError("user rejected signing", lib.Logger.errors.ACTION_REJECTED, {
 	                                action: "signMessage",
 	                                from: address,
-	                                message: data
+	                                messageData: message
 	                            });
 	                        }
 	                        throw error_2;
@@ -27885,7 +27895,7 @@
 	                            logger.throwError("user rejected signing", lib.Logger.errors.ACTION_REJECTED, {
 	                                action: "_legacySignMessage",
 	                                from: address,
-	                                message: data
+	                                messageData: message
 	                            });
 	                        }
 	                        throw error_3;
@@ -27922,7 +27932,7 @@
 	                            logger.throwError("user rejected signing", lib.Logger.errors.ACTION_REJECTED, {
 	                                action: "_signTypedData",
 	                                from: address,
-	                                message: { domain: populated.domain, types: types, value: populated.value }
+	                                messageData: { domain: populated.domain, types: types, value: populated.value }
 	                            });
 	                        }
 	                        throw error_4;
@@ -29455,6 +29465,8 @@
 	                return "https:/\/api-kovan.etherscan.io";
 	            case "goerli":
 	                return "https:/\/api-goerli.etherscan.io";
+	            case "sepolia":
+	                return "https:/\/api-sepolia.etherscan.io";
 	            case "optimism":
 	                return "https:/\/api-optimistic.etherscan.io";
 	            case "optimism-kovan":
@@ -30569,6 +30581,9 @@
 	            case "goerli":
 	                host = "goerli.infura.io";
 	                break;
+	            case "sepolia":
+	                host = "sepolia.infura.io";
+	                break;
 	            case "matic":
 	                host = "polygon-mainnet.infura.io";
 	                break;
@@ -31532,7 +31547,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.7.0";
+	exports.version = "ethers/5.7.1";
 
 	});
 

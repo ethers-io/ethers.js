@@ -281,7 +281,7 @@ export class JsonRpcSigner extends Signer {
                     logger.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
                         action: "signMessage",
                         from: address,
-                        message: data
+                        messageData: message
                     });
                 }
                 throw error;
@@ -301,7 +301,7 @@ export class JsonRpcSigner extends Signer {
                     logger.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
                         action: "_legacySignMessage",
                         from: address,
-                        message: data
+                        messageData: message
                     });
                 }
                 throw error;
@@ -326,7 +326,7 @@ export class JsonRpcSigner extends Signer {
                     logger.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
                         action: "_signTypedData",
                         from: address,
-                        message: { domain: populated.domain, types, value: populated.value }
+                        messageData: { domain: populated.domain, types, value: populated.value }
                     });
                 }
                 throw error;

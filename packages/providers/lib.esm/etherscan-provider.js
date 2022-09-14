@@ -173,6 +173,8 @@ export class EtherscanProvider extends BaseProvider {
                 return "https:/\/api-kovan.etherscan.io";
             case "goerli":
                 return "https:/\/api-goerli.etherscan.io";
+            case "sepolia":
+                return "https:/\/api-sepolia.etherscan.io";
             case "optimism":
                 return "https:/\/api-optimistic.etherscan.io";
             case "optimism-kovan":

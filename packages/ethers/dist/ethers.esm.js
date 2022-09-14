@@ -17906,7 +17906,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.7.0";
+const version$k = "networks/5.7.1";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -17943,7 +17943,7 @@ function ethDefaultProvider(network) {
             // network does not handle the Berlin hardfork, which is
             // live on these ones.
             // @TODO: This goes away once Pocket has upgraded their nodes
-            const skip = ["goerli", "ropsten", "rinkeby"];
+            const skip = ["goerli", "ropsten", "rinkeby", "sepolia"];
             try {
                 const provider = new providers.PocketProvider(network, options.pocket);
                 if (provider.network && skip.indexOf(provider.network.name) === -1) {
@@ -18043,6 +18043,11 @@ const networks = {
         _defaultProvider: ethDefaultProvider("goerli")
     },
     kintsugi: { chainId: 1337702, name: "kintsugi" },
+    sepolia: {
+        chainId: 11155111,
+        name: "sepolia",
+        _defaultProvider: ethDefaultProvider("sepolia")
+    },
     // ETC (See: #351)
     classic: {
         chainId: 61,
@@ -18149,7 +18154,7 @@ function getNetwork(network) {
     };
 }
 
-const version$l = "web/5.7.0";
+const version$l = "web/5.7.1";
 
 "use strict";
 var __awaiter$7 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -18254,6 +18259,11 @@ function bodyify(value, type) {
     }
     return value;
 }
+function unpercent(value) {
+    return toUtf8Bytes(value.replace(/%([0-9a-f][0-9a-f])/gi, (all, code) => {
+        return String.fromCharCode(parseInt(code, 16));
+    }));
+}
 // This API is still a work in progress; the future changes will likely be:
 // - ConnectionInfo => FetchDataRequest<T = any>
 // - FetchDataRequest.body? = string | Uint8Array | { contentType: string, data: string | Uint8Array }
@@ -18313,15 +18323,15 @@ function _fetchData(connection, body, processFunc) {
             options.fetchOptions = shallowCopy(connection.fetchOptions);
         }
     }
-    const reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
+    const reData = new RegExp("^data:([^;:]*)?(;base64)?,(.*)$", "i");
     const dataMatch = ((url) ? url.match(reData) : null);
     if (dataMatch) {
         try {
             const response = {
                 statusCode: 200,
                 statusMessage: "OK",
-                headers: { "content-type": dataMatch[1] },
-                body: decode$1(dataMatch[2])
+                headers: { "content-type": (dataMatch[1] || "text/plain") },
+                body: (dataMatch[2] ? decode$1(dataMatch[3]) : unpercent(dataMatch[3]))
             };
             let result = response.body;
             if (processFunc) {
@@ -18794,7 +18804,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.7.0";
+const version$m = "providers/5.7.1";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -21498,7 +21508,7 @@ class JsonRpcSigner extends Signer {
                     logger$u.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
                         action: "signMessage",
                         from: address,
-                        message: data
+                        messageData: message
                     });
                 }
                 throw error;
@@ -21518,7 +21528,7 @@ class JsonRpcSigner extends Signer {
                     logger$u.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
                         action: "_legacySignMessage",
                         from: address,
-                        message: data
+                        messageData: message
                     });
                 }
                 throw error;
@@ -21543,7 +21553,7 @@ class JsonRpcSigner extends Signer {
                     logger$u.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
                         action: "_signTypedData",
                         from: address,
-                        message: { domain: populated.domain, types, value: populated.value }
+                        messageData: { domain: populated.domain, types, value: populated.value }
                     });
                 }
                 throw error;
@@ -22644,6 +22654,8 @@ class EtherscanProvider extends BaseProvider {
                 return "https:/\/api-kovan.etherscan.io";
             case "goerli":
                 return "https:/\/api-goerli.etherscan.io";
+            case "sepolia":
+                return "https:/\/api-sepolia.etherscan.io";
             case "optimism":
                 return "https:/\/api-optimistic.etherscan.io";
             case "optimism-kovan":
@@ -23535,6 +23547,9 @@ class InfuraProvider extends UrlJsonRpcProvider {
             case "goerli":
                 host = "goerli.infura.io";
                 break;
+            case "sepolia":
+                host = "sepolia.infura.io";
+                break;
             case "matic":
                 host = "polygon-mainnet.infura.io";
                 break;
@@ -24241,7 +24256,7 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$p = "ethers/5.7.0";
+const version$p = "ethers/5.7.1";
 
 "use strict";
 const logger$J = new Logger(version$p);

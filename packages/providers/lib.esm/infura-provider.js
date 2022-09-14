@@ -72,6 +72,9 @@ export class InfuraProvider extends UrlJsonRpcProvider {
             case "goerli":
                 host = "goerli.infura.io";
                 break;
+            case "sepolia":
+                host = "sepolia.infura.io";
+                break;
             case "matic":
                 host = "polygon-mainnet.infura.io";
                 break;

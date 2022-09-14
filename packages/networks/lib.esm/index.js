@@ -35,7 +35,7 @@ function ethDefaultProvider(network) {
             // network does not handle the Berlin hardfork, which is
             // live on these ones.
             // @TODO: This goes away once Pocket has upgraded their nodes
-            const skip = ["goerli", "ropsten", "rinkeby"];
+            const skip = ["goerli", "ropsten", "rinkeby", "sepolia"];
             try {
                 const provider = new providers.PocketProvider(network, options.pocket);
                 if (provider.network && skip.indexOf(provider.network.name) === -1) {
@@ -135,6 +135,11 @@ const networks = {
         _defaultProvider: ethDefaultProvider("goerli")
     },
     kintsugi: { chainId: 1337702, name: "kintsugi" },
+    sepolia: {
+        chainId: 11155111,
+        name: "sepolia",
+        _defaultProvider: ethDefaultProvider("sepolia")
+    },
     // ETC (See: #351)
     classic: {
         chainId: 61,

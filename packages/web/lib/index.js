@@ -69,6 +69,11 @@ function bodyify(value, type) {
     }
     return value;
 }
+function unpercent(value) {
+    return (0, strings_1.toUtf8Bytes)(value.replace(/%([0-9a-f][0-9a-f])/gi, function (all, code) {
+        return String.fromCharCode(parseInt(code, 16));
+    }));
+}
 // This API is still a work in progress; the future changes will likely be:
 // - ConnectionInfo => FetchDataRequest<T = any>
 // - FetchDataRequest.body? = string | Uint8Array | { contentType: string, data: string | Uint8Array }
@@ -128,15 +133,15 @@ function _fetchData(connection, body, processFunc) {
             options.fetchOptions = (0, properties_1.shallowCopy)(connection.fetchOptions);
         }
     }
-    var reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
+    var reData = new RegExp("^data:([^;:]*)?(;base64)?,(.*)$", "i");
     var dataMatch = ((url) ? url.match(reData) : null);
     if (dataMatch) {
         try {
             var response = {
                 statusCode: 200,
                 statusMessage: "OK",
-                headers: { "content-type": dataMatch[1] },
-                body: (0, base64_1.decode)(dataMatch[2])
+                headers: { "content-type": (dataMatch[1] || "text/plain") },
+                body: (dataMatch[2] ? (0, base64_1.decode)(dataMatch[3]) : unpercent(dataMatch[3]))
             };
             var result = response.body;
             if (processFunc) {
