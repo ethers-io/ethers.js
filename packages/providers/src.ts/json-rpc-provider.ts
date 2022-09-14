@@ -298,8 +298,6 @@ export class JsonRpcSigner extends Signer implements TypedDataSigner {
     async signMessage(message: Bytes | string): Promise<string> {
         const data = ((typeof(message) === "string") ? toUtf8Bytes(message): message);
         const address = await this.getAddress();
-
-
         try {
             return await this.provider.send("personal_sign", [ hexlify(data), address.toLowerCase() ]);
         } catch (error) {
@@ -307,7 +305,7 @@ export class JsonRpcSigner extends Signer implements TypedDataSigner {
                 logger.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
                     action: "signMessage",
                     from: address,
-                    message: data
+                    messageData: message
                 });
             }
             throw error;
@@ -326,7 +324,7 @@ export class JsonRpcSigner extends Signer implements TypedDataSigner {
                 logger.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
                     action: "_legacySignMessage",
                     from: address,
-                    message: data
+                    messageData: message
                 });
             }
             throw error;
@@ -351,7 +349,7 @@ export class JsonRpcSigner extends Signer implements TypedDataSigner {
                 logger.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
                     action: "_signTypedData",
                     from: address,
-                    message: { domain: populated.domain, types, value: populated.value }
+                    messageData: { domain: populated.domain, types, value: populated.value }
                 });
             }
             throw error;
