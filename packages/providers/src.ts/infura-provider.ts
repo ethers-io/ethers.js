@@ -111,6 +111,9 @@ export class InfuraProvider extends UrlJsonRpcProvider {
             case "optimism-kovan":
                 host = "optimism-kovan.infura.io";
                 break;
+            case "optimism-goerli":
+                host = "optimism-goerli.infura.io";
+                break;
             case "arbitrum":
                 host = "arbitrum-mainnet.infura.io";
                 break;
