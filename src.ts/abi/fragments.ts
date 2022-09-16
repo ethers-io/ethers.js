@@ -2,7 +2,7 @@ import {
     defineProperties, getBigInt, getNumber,
     assertPrivate, throwArgumentError, throwError
 } from "../utils/index.js";
-
+import { id } from "../hash/index.js";
 
 export interface JsonFragmentType {
     readonly name?: string;
@@ -80,7 +80,7 @@ const regexType = new RegExp("^(address|bool|bytes([0-9]*)|string|u?int([0-9]*))
 /**
  *  @ignore:
  */
-export type Token = Readonly<{
+type Token = Readonly<{
     // Type of token (e.g. TYPE, KEYWORD, NUMBER, etc)
     type: string;
 
@@ -105,7 +105,7 @@ export type Token = Readonly<{
     value: number;
 }>;
 
-export class TokenString {
+class TokenString {
     #offset: number;
     #tokens: ReadonlyArray<Token>;
 
@@ -212,7 +212,7 @@ export class TokenString {
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
-export function lex(text: string): TokenString {
+function lex(text: string): TokenString {
     const tokens: Array<Token> = [ ];
 
     const throwError = (message: string) => {
@@ -845,6 +845,10 @@ export class ErrorFragment extends NamedFragment {
         super(guard, "error", name, inputs);
     }
 
+    get selector(): string {
+        return id(this.format("sighash")).substring(0, 10);
+    }
+
     format(format: FormatType = "sighash"): string {
         if (format === "json") {
             return JSON.stringify({
@@ -880,6 +884,10 @@ export class EventFragment extends NamedFragment {
     constructor(guard: any, name: string, inputs: ReadonlyArray<ParamType>, anonymous: boolean) {
         super(guard, "event", name, inputs);
         defineProperties<EventFragment>(this, { anonymous });
+    }
+
+    get topicHash(): string {
+        return id(this.format("sighash"));
     }
 
     format(format: FormatType = "sighash"): string {
@@ -979,6 +987,10 @@ export class FunctionFragment extends NamedFragment {
         const constant = (stateMutability === "view" || stateMutability === "pure");
         const payable = (stateMutability === "payable");
         defineProperties<FunctionFragment>(this, { constant, gas, outputs, payable, stateMutability });
+    }
+
+    get selector(): string {
+        return id(this.format("sighash")).substring(0, 10);
     }
 
     format(format: FormatType = "sighash"): string {

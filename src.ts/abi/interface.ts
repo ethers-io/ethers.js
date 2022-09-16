@@ -267,7 +267,7 @@ export class Interface {
         if (isHexString(key)) {
             const selector = key.toLowerCase();
             for (const fragment of this.#functions.values()) {
-                if (selector === this.getSelector(fragment)) { return fragment; }
+                if (selector === fragment.selector) { return fragment; }
             }
             throwArgumentError("no matching function", "selector", key);
         }
@@ -378,7 +378,7 @@ export class Interface {
         if (isHexString(key)) {
             const eventTopic = key.toLowerCase();
             for (const fragment of this.#events.values()) {
-                if (eventTopic === this.getEventTopic(fragment)) { return fragment; }
+                if (eventTopic === fragment.topicHash) { return fragment; }
             }
             throwArgumentError("no matching event", "eventTopic", key);
         }
@@ -472,7 +472,7 @@ export class Interface {
             }
 
             for (const fragment of this.#errors.values()) {
-                if (selector === this.getSelector(fragment)) { return fragment; }
+                if (selector === fragment.selector) { return fragment; }
             }
             throwArgumentError("no matching error", "selector", key);
         }
@@ -508,8 +508,8 @@ export class Interface {
     }
 
     // Get the 4-byte selector used by Solidity to identify a function
-    getSelector(fragment: ErrorFragment | FunctionFragment): string {
         /*
+    getSelector(fragment: ErrorFragment | FunctionFragment): string {
         if (typeof(fragment) === "string") {
             const matches: Array<Fragment> = [ ];
 
@@ -524,16 +524,18 @@ export class Interface {
 
             fragment = matches[0];
         }
-        */
 
         return dataSlice(id(fragment.format()), 0, 4);
     }
+        */
 
     // Get the 32-byte topic hash used by Solidity to identify an event
+    /*
     getEventTopic(fragment: EventFragment): string {
         //if (typeof(fragment) === "string") { fragment = this.getEvent(eventFragment); }
         return id(fragment.format());
     }
+    */
 
 
     _decodeParams(params: ReadonlyArray<ParamType>, data: BytesLike): Result {
@@ -564,7 +566,7 @@ export class Interface {
     decodeErrorResult(fragment: ErrorFragment | string, data: BytesLike): Result {
         if (typeof(fragment) === "string") { fragment = this.getError(fragment); }
 
-        if (dataSlice(data, 0, 4) !== this.getSelector(fragment)) {
+        if (dataSlice(data, 0, 4) !== fragment.selector) {
             throwArgumentError(`data signature does not match error ${ fragment.name }.`, "data", data);
         }
 
@@ -583,7 +585,7 @@ export class Interface {
         const fragment = (typeof(key) === "string") ? this.getError(key): key;
 
         return concat([
-            this.getSelector(fragment),
+            fragment.selector,
             this._encodeParams(fragment.inputs, values || [ ])
         ]);
     }
@@ -599,7 +601,7 @@ export class Interface {
     decodeFunctionData(key: FunctionFragment | string, data: BytesLike): Result {
         const fragment = (typeof(key) === "string") ? this.getFunction(key): key;
 
-        if (dataSlice(data, 0, 4) !== this.getSelector(fragment)) {
+        if (dataSlice(data, 0, 4) !== fragment.selector) {
             throwArgumentError(`data signature does not match function ${ fragment.name }.`, "data", data);
         }
 
@@ -615,7 +617,7 @@ export class Interface {
         const fragment = (typeof(key) === "string") ? this.getFunction(key): key;
 
         return concat([
-            this.getSelector(fragment),
+            fragment.selector,
             this._encodeParams(fragment.inputs, values || [ ])
         ]);
     }
@@ -763,7 +765,7 @@ export class Interface {
         }
 
         const topics: Array<null | string | Array<string>> = [];
-        if (!eventFragment.anonymous) { topics.push(this.getEventTopic(eventFragment)); }
+        if (!eventFragment.anonymous) { topics.push(eventFragment.topicHash); }
 
         // @TODO: Use the coders for this; to properly support tuples, etc.
         const encodeTopic = (param: ParamType, value: any): string => {
@@ -828,7 +830,7 @@ export class Interface {
         const dataValues: Array<string> = [ ];
 
         if (!eventFragment.anonymous) {
-            topics.push(this.getEventTopic(eventFragment));
+            topics.push(eventFragment.topicHash);
         }
 
         if (values.length !== eventFragment.inputs.length) {
@@ -867,7 +869,7 @@ export class Interface {
         }
 
         if (topics != null && !eventFragment.anonymous) {
-            const eventTopic = this.getEventTopic(eventFragment);
+            const eventTopic = eventFragment.topicHash;
             if (!isHexString(topics[0], 32) || topics[0].toLowerCase() !== eventTopic) {
                 throwArgumentError("fragment/topic mismatch", "topics[0]", topics[0]);
             }
@@ -946,7 +948,7 @@ export class Interface {
         if (!fragment) { return null; }
 
         const args = this.#abiCoder.decode(fragment.inputs, data.slice(4));
-        return new TransactionDescription(fragment, this.getSelector(fragment), args, value);
+        return new TransactionDescription(fragment, fragment.selector, args, value);
     }
 
     parseCallResult(data: BytesLike): Result {
@@ -969,7 +971,7 @@ export class Interface {
         //        not mean we have the full ABI; maybe just a fragment?
 
 
-       return new LogDescription(fragment, this.getEventTopic(fragment), this.decodeEventLog(fragment, log.data, log.topics));
+       return new LogDescription(fragment, fragment.topicHash, this.decodeEventLog(fragment, log.data, log.topics));
     }
 
     /**
@@ -986,7 +988,7 @@ export class Interface {
         if (!fragment) { return null; }
 
         const args = this.#abiCoder.decode(fragment.inputs, dataSlice(hexData, 4));
-        return new ErrorDescription(fragment, this.getSelector(fragment), args);
+        return new ErrorDescription(fragment, fragment.selector, args);
     }
 
     /**

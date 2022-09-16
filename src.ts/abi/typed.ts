@@ -1,4 +1,4 @@
-import { defineProperties } from "../utils/properties.js";
+import { defineProperties } from "../utils/index.js";
 
 import type { Addressable } from "../address/index.js";
 import type { BigNumberish, BytesLike } from "../utils/index.js";
