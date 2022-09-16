@@ -354,7 +354,7 @@ async function getSubTag(contract: BaseContract, event: ContractEventName): Prom
     } else if (typeof(event) === "string") {
         // Event name (name or signature); `"Transfer"`
         fragment = contract.interface.getEvent(event);
-        topics = [ contract.interface.getEventTopic(fragment) ];
+        topics = [ fragment.topicHash ];
 
     } else if (isDeferred(event)) {
         // Deferred Topic Filter; e.g. `contract.filter.Transfer(from)`
@@ -364,7 +364,7 @@ async function getSubTag(contract: BaseContract, event: ContractEventName): Prom
     } else if ("fragment" in event) {
         // ContractEvent; e.g. `contract.filter.Transfer`
         fragment = event.fragment;
-        topics = [ contract.interface.getEventTopic(fragment) ];
+        topics = [ fragment.topicHash ];
 
     } else {
         console.log(event);
