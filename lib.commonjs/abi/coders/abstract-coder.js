@@ -1,10 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Reader = exports.Writer = exports.Coder = exports.checkResultErrors = exports.Result = exports.WordSize = void 0;
-const maths_js_1 = require("../../utils/maths.js");
-const data_js_1 = require("../../utils/data.js");
-const properties_js_1 = require("../../utils/properties.js");
-const logger_js_1 = require("../../utils/logger.js");
+const index_js_1 = require("../../utils/index.js");
 exports.WordSize = 32;
 const Padding = new Uint8Array(exports.WordSize);
 // Properties used to immediate pass through to the underlying object
@@ -14,7 +11,7 @@ const _guard = {};
 class Result extends Array {
     #indices;
     constructor(guard, items, keys) {
-        logger_js_1.logger.assertPrivate(guard, _guard, "Result");
+        (0, index_js_1.assertPrivate)(guard, _guard, "Result");
         super(...items);
         // Name lookup table
         this.#indices = new Map();
@@ -36,7 +33,7 @@ class Result extends Array {
             get: (target, prop, receiver) => {
                 if (typeof (prop) === "string") {
                     if (prop.match(/^[0-9]+$/)) {
-                        const index = logger_js_1.logger.getNumber(prop, "%index");
+                        const index = (0, index_js_1.getNumber)(prop, "%index");
                         if (index < 0 || index >= this.length) {
                             throw new RangeError("out of result range");
                         }
@@ -135,16 +132,16 @@ function checkResultErrors(result) {
 }
 exports.checkResultErrors = checkResultErrors;
 function getValue(value) {
-    let bytes = (0, maths_js_1.toArray)(value);
+    let bytes = (0, index_js_1.toArray)(value);
     if (bytes.length > exports.WordSize) {
-        logger_js_1.logger.throwError("value out-of-bounds", "BUFFER_OVERRUN", {
+        (0, index_js_1.throwError)("value out-of-bounds", "BUFFER_OVERRUN", {
             buffer: bytes,
             length: exports.WordSize,
             offset: bytes.length
         });
     }
     if (bytes.length !== exports.WordSize) {
-        bytes = logger_js_1.logger.getBytesCopy((0, data_js_1.concat)([Padding.slice(bytes.length % exports.WordSize), bytes]));
+        bytes = (0, index_js_1.getBytesCopy)((0, index_js_1.concat)([Padding.slice(bytes.length % exports.WordSize), bytes]));
     }
     return bytes;
 }
@@ -163,12 +160,12 @@ class Coder {
     //  - Not Dynamic: address, uint256, boolean[3], tuple(address, uint8)
     dynamic;
     constructor(name, type, localName, dynamic) {
-        (0, properties_js_1.defineProperties)(this, { name, type, localName, dynamic }, {
+        (0, index_js_1.defineProperties)(this, { name, type, localName, dynamic }, {
             name: "string", type: "string", localName: "string", dynamic: "boolean"
         });
     }
     _throwError(message, value) {
-        return logger_js_1.logger.throwArgumentError(message, this.localName, value);
+        return (0, index_js_1.throwArgumentError)(message, this.localName, value);
     }
 }
 exports.Coder = Coder;
@@ -181,7 +178,7 @@ class Writer {
         this.#dataLength = 0;
     }
     get data() {
-        return (0, data_js_1.concat)(this.#data);
+        return (0, index_js_1.concat)(this.#data);
     }
     get length() { return this.#dataLength; }
     #writeData(data) {
@@ -190,14 +187,14 @@ class Writer {
         return data.length;
     }
     appendWriter(writer) {
-        return this.#writeData(logger_js_1.logger.getBytesCopy(writer.data));
+        return this.#writeData((0, index_js_1.getBytesCopy)(writer.data));
     }
     // Arrayish item; pad on the right to *nearest* WordSize
     writeBytes(value) {
-        let bytes = logger_js_1.logger.getBytesCopy(value);
+        let bytes = (0, index_js_1.getBytesCopy)(value);
         const paddingOffset = bytes.length % exports.WordSize;
         if (paddingOffset) {
-            bytes = logger_js_1.logger.getBytesCopy((0, data_js_1.concat)([bytes, Padding.slice(paddingOffset)]));
+            bytes = (0, index_js_1.getBytesCopy)((0, index_js_1.concat)([bytes, Padding.slice(paddingOffset)]));
         }
         return this.#writeData(bytes);
     }
@@ -226,11 +223,11 @@ class Reader {
     #data;
     #offset;
     constructor(data, allowLoose) {
-        (0, properties_js_1.defineProperties)(this, { allowLoose: !!allowLoose });
-        this.#data = logger_js_1.logger.getBytesCopy(data);
+        (0, index_js_1.defineProperties)(this, { allowLoose: !!allowLoose });
+        this.#data = (0, index_js_1.getBytesCopy)(data);
         this.#offset = 0;
     }
-    get data() { return (0, data_js_1.hexlify)(this.#data); }
+    get data() { return (0, index_js_1.hexlify)(this.#data); }
     get dataLength() { return this.#data.length; }
     get consumed() { return this.#offset; }
     get bytes() { return new Uint8Array(this.#data); }
@@ -241,8 +238,8 @@ class Reader {
                 alignedLength = length;
             }
             else {
-                logger_js_1.logger.throwError("data out-of-bounds", "BUFFER_OVERRUN", {
-                    buffer: logger_js_1.logger.getBytesCopy(this.#data),
+                (0, index_js_1.throwError)("data out-of-bounds", "BUFFER_OVERRUN", {
+                    buffer: (0, index_js_1.getBytesCopy)(this.#data),
                     length: this.#data.length,
                     offset: this.#offset + alignedLength
                 });
@@ -263,10 +260,10 @@ class Reader {
     }
     // Read a numeric values
     readValue() {
-        return (0, maths_js_1.toBigInt)(this.readBytes(exports.WordSize));
+        return (0, index_js_1.toBigInt)(this.readBytes(exports.WordSize));
     }
     readIndex() {
-        return (0, maths_js_1.toNumber)(this.readBytes(exports.WordSize));
+        return (0, index_js_1.toNumber)(this.readBytes(exports.WordSize));
     }
 }
 exports.Reader = Reader;

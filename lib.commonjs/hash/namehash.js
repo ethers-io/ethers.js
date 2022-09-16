@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dnsEncode = exports.namehash = exports.isValidName = exports.ensNormalize = void 0;
-const keccak_js_1 = require("../crypto/keccak.js");
-const index_js_1 = require("../utils/index.js");
+const index_js_1 = require("../crypto/index.js");
+const index_js_2 = require("../utils/index.js");
 //import { ens_normalize } from "./ens-normalize/lib";
 // @TOOD:
 function ens_normalize(name) {
@@ -17,7 +17,7 @@ function checkComponent(comp) {
     return comp;
 }
 function ensNameSplit(name) {
-    const bytes = (0, index_js_1.toUtf8Bytes)(ens_normalize(name));
+    const bytes = (0, index_js_2.toUtf8Bytes)(ens_normalize(name));
     const comps = [];
     if (name.length === 0) {
         return comps;
@@ -39,7 +39,7 @@ function ensNameSplit(name) {
     return comps;
 }
 function ensNormalize(name) {
-    return ensNameSplit(name).map((comp) => (0, index_js_1.toUtf8String)(comp)).join(".");
+    return ensNameSplit(name).map((comp) => (0, index_js_2.toUtf8String)(comp)).join(".");
 }
 exports.ensNormalize = ensNormalize;
 function isValidName(name) {
@@ -53,18 +53,18 @@ exports.isValidName = isValidName;
 function namehash(name) {
     /* istanbul ignore if */
     if (typeof (name) !== "string") {
-        index_js_1.logger.throwArgumentError("invalid ENS name; not a string", "name", name);
+        (0, index_js_2.throwArgumentError)("invalid ENS name; not a string", "name", name);
     }
     let result = Zeros;
     const comps = ensNameSplit(name);
     while (comps.length) {
-        result = (0, keccak_js_1.keccak256)((0, index_js_1.concat)([result, (0, keccak_js_1.keccak256)((comps.pop()))]));
+        result = (0, index_js_1.keccak256)((0, index_js_2.concat)([result, (0, index_js_1.keccak256)((comps.pop()))]));
     }
-    return (0, index_js_1.hexlify)(result);
+    return (0, index_js_2.hexlify)(result);
 }
 exports.namehash = namehash;
 function dnsEncode(name) {
-    return (0, index_js_1.hexlify)((0, index_js_1.concat)(ensNameSplit(name).map((comp) => {
+    return (0, index_js_2.hexlify)((0, index_js_2.concat)(ensNameSplit(name).map((comp) => {
         // DNS does not allow components over 63 bytes in length
         if (comp.length > 63) {
             throw new Error("invalid DNS encoded entry; length exceeds 63 bytes");

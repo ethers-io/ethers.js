@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FixedNumber = exports.FixedFormat = exports.parseFixed = exports.formatFixed = void 0;
-const logger_js_1 = require("./logger.js");
+const data_js_1 = require("./data.js");
+const errors_js_1 = require("./errors.js");
 const maths_js_1 = require("./maths.js");
 const _constructorGuard = {};
 const NegativeOne = BigInt(-1);
@@ -10,7 +11,7 @@ function throwFault(message, fault, operation, value) {
     if (value !== undefined) {
         params.value = value;
     }
-    return logger_js_1.logger.throwError(message, "NUMERIC_FAULT", params);
+    return (0, errors_js_1.throwError)(message, "NUMERIC_FAULT", params);
 }
 // Constant to pull zeros from for multipliers
 let zeros = "0";
@@ -20,7 +21,7 @@ while (zeros.length < 256) {
 // Returns a string "1" followed by decimal "0"s
 function getMultiplier(decimals) {
     if (typeof (decimals) !== "number" || decimals < 0 || decimals > 256 || decimals % 1) {
-        logger_js_1.logger.throwArgumentError("invalid decimal length", "decimals", decimals);
+        (0, errors_js_1.throwArgumentError)("invalid decimal length", "decimals", decimals);
     }
     return BigInt("1" + zeros.substring(0, decimals));
 }
@@ -28,8 +29,8 @@ function formatFixed(_value, _decimals) {
     if (_decimals == null) {
         _decimals = 18;
     }
-    let value = logger_js_1.logger.getBigInt(_value, "value");
-    const decimals = logger_js_1.logger.getNumber(_decimals, "decimals");
+    let value = (0, maths_js_1.getBigInt)(_value, "value");
+    const decimals = (0, maths_js_1.getNumber)(_decimals, "decimals");
     const multiplier = getMultiplier(decimals);
     const multiplierStr = String(multiplier);
     const negative = (value < 0);
@@ -59,10 +60,10 @@ function parseFixed(value, _decimals) {
     if (_decimals == null) {
         _decimals = 18;
     }
-    const decimals = logger_js_1.logger.getNumber(_decimals, "decimals");
+    const decimals = (0, maths_js_1.getNumber)(_decimals, "decimals");
     const multiplier = getMultiplier(decimals);
     if (typeof (value) !== "string" || !value.match(/^-?[0-9.]+$/)) {
-        logger_js_1.logger.throwArgumentError("invalid decimal value", "value", value);
+        (0, errors_js_1.throwArgumentError)("invalid decimal value", "value", value);
     }
     // Is it negative?
     const negative = (value.substring(0, 1) === "-");
@@ -70,12 +71,12 @@ function parseFixed(value, _decimals) {
         value = value.substring(1);
     }
     if (value === ".") {
-        logger_js_1.logger.throwArgumentError("missing value", "value", value);
+        (0, errors_js_1.throwArgumentError)("missing value", "value", value);
     }
     // Split it into a whole and fractional part
     const comps = value.split(".");
     if (comps.length > 2) {
-        logger_js_1.logger.throwArgumentError("too many decimal points", "value", value);
+        (0, errors_js_1.throwArgumentError)("too many decimal points", "value", value);
     }
     let whole = (comps[0] || "0"), fraction = (comps[1] || "0");
     // Trim trialing zeros
@@ -111,7 +112,7 @@ class FixedFormat {
     _multiplier;
     constructor(constructorGuard, signed, width, decimals) {
         if (constructorGuard !== _constructorGuard) {
-            logger_js_1.logger.throwError("cannot use FixedFormat constructor; use FixedFormat.from", "UNSUPPORTED_OPERATION", {
+            (0, errors_js_1.throwError)("cannot use FixedFormat constructor; use FixedFormat.from", "UNSUPPORTED_OPERATION", {
                 operation: "new FixedFormat"
             });
         }
@@ -142,7 +143,7 @@ class FixedFormat {
             else {
                 const match = value.match(/^(u?)fixed([0-9]+)x([0-9]+)$/);
                 if (!match) {
-                    return logger_js_1.logger.throwArgumentError("invalid fixed format", "format", value);
+                    return (0, errors_js_1.throwArgumentError)("invalid fixed format", "format", value);
                 }
                 signed = (match[1] !== "u");
                 width = parseInt(match[2]);
@@ -155,7 +156,7 @@ class FixedFormat {
                     return defaultValue;
                 }
                 if (typeof (value[key]) !== type) {
-                    logger_js_1.logger.throwArgumentError("invalid fixed format (" + key + " not " + type + ")", "format." + key, value[key]);
+                    (0, errors_js_1.throwArgumentError)("invalid fixed format (" + key + " not " + type + ")", "format." + key, value[key]);
                 }
                 return value[key];
             };
@@ -164,15 +165,18 @@ class FixedFormat {
             decimals = check("decimals", "number", decimals);
         }
         if (width % 8) {
-            logger_js_1.logger.throwArgumentError("invalid fixed format width (not byte aligned)", "format.width", width);
+            (0, errors_js_1.throwArgumentError)("invalid fixed format width (not byte aligned)", "format.width", width);
         }
         if (decimals > 80) {
-            logger_js_1.logger.throwArgumentError("invalid fixed format (decimals too large)", "format.decimals", decimals);
+            (0, errors_js_1.throwArgumentError)("invalid fixed format (decimals too large)", "format.decimals", decimals);
         }
         return new FixedFormat(_constructorGuard, signed, width, decimals);
     }
 }
 exports.FixedFormat = FixedFormat;
+/**
+ *  Fixed Number class
+ */
 class FixedNumber {
     format;
     _isFixedNumber;
@@ -180,7 +184,7 @@ class FixedNumber {
     #value;
     constructor(constructorGuard, hex, value, format) {
         if (constructorGuard !== _constructorGuard) {
-            logger_js_1.logger.throwError("cannot use FixedNumber constructor; use FixedNumber.from", "UNSUPPORTED_OPERATION", {
+            (0, errors_js_1.throwError)("cannot use FixedNumber constructor; use FixedNumber.from", "UNSUPPORTED_OPERATION", {
                 operation: "new FixedFormat"
             });
         }
@@ -192,9 +196,13 @@ class FixedNumber {
     }
     #checkFormat(other) {
         if (this.format.name !== other.format.name) {
-            logger_js_1.logger.throwArgumentError("incompatible format; use fixedNumber.toFormat", "other", other);
+            (0, errors_js_1.throwArgumentError)("incompatible format; use fixedNumber.toFormat", "other", other);
         }
     }
+    /**
+     *  Returns a new [[FixedNumber]] with the result of this added
+     *  to %%other%%.
+     */
     addUnsafe(other) {
         this.#checkFormat(other);
         const a = parseFixed(this.#value, this.format.decimals);
@@ -254,7 +262,7 @@ class FixedNumber {
             comps.push("0");
         }
         if (decimals < 0 || decimals > 80 || (decimals % 1)) {
-            logger_js_1.logger.throwArgumentError("invalid decimal count", "decimals", decimals);
+            (0, errors_js_1.throwArgumentError)("invalid decimal count", "decimals", decimals);
         }
         if (comps[1].length <= decimals) {
             return this;
@@ -306,7 +314,7 @@ class FixedNumber {
         return new FixedNumber(_constructorGuard, hex, decimal, fixedFormat);
     }
     static fromBytes(_value, format = "fixed") {
-        const value = logger_js_1.logger.getBytes(_value, "value");
+        const value = (0, data_js_1.getBytes)(_value, "value");
         const fixedFormat = FixedFormat.from(format);
         if (value.length > fixedFormat.width / 8) {
             throw new Error("overflow");
@@ -335,7 +343,7 @@ class FixedNumber {
                 throw error;
             }
         }
-        return logger_js_1.logger.throwArgumentError("invalid FixedNumber value", "value", value);
+        return (0, errors_js_1.throwArgumentError)("invalid FixedNumber value", "value", value);
     }
     static isFixedNumber(value) {
         return !!(value && value._isFixedNumber);

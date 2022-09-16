@@ -1,7 +1,7 @@
-import { resolveAddress } from "../address/index.js";
 import { Interface, Typed } from "../abi/index.js";
-import { defineProperties, isCallException, isHexString, resolveProperties, logger } from "../utils/index.js";
+import { resolveAddress } from "../address/index.js";
 import { copyRequest } from "../providers/index.js";
+import { defineProperties, isCallException, isHexString, resolveProperties, makeError, throwArgumentError, throwError } from "../utils/index.js";
 import { ContractEventPayload, ContractTransactionResponse, EventLog } from "./wrappers.js";
 function canCall(value) {
     return (value && typeof (value.call) === "function");
@@ -80,10 +80,10 @@ export async function copyOverrides(arg) {
     // Some sanity checking; these are what these methods adds
     //if ((<any>overrides).to) {
     if (overrides.to) {
-        logger.throwArgumentError("cannot override to", "overrides.to", overrides.to);
+        throwArgumentError("cannot override to", "overrides.to", overrides.to);
     }
     else if (overrides.data) {
-        logger.throwArgumentError("cannot override data", "overrides.data", overrides.data);
+        throwArgumentError("cannot override data", "overrides.data", overrides.data);
     }
     // Resolve any from
     if (overrides.from) {
@@ -159,7 +159,7 @@ class WrappedMethod extends _WrappedMethodBase() {
     async send(...args) {
         const runner = this._contract.runner;
         if (!canSend(runner)) {
-            return logger.throwError("contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
+            return throwError("contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
                 operation: "sendTransaction"
             });
         }
@@ -170,7 +170,7 @@ class WrappedMethod extends _WrappedMethodBase() {
     async estimateGas(...args) {
         const runner = getRunner(this._contract.runner, "estimateGas");
         if (!canEstimate(runner)) {
-            return logger.throwError("contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", {
+            return throwError("contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", {
                 operation: "estimateGas"
             });
         }
@@ -179,7 +179,7 @@ class WrappedMethod extends _WrappedMethodBase() {
     async staticCallResult(...args) {
         const runner = getRunner(this._contract.runner, "call");
         if (!canCall(runner)) {
-            return logger.throwError("contract runner does not support calling", "UNSUPPORTED_OPERATION", {
+            return throwError("contract runner does not support calling", "UNSUPPORTED_OPERATION", {
                 operation: "call"
             });
         }
@@ -254,7 +254,7 @@ async function getSubTag(contract, event) {
     else if (typeof (event) === "string") {
         // Event name (name or signature); `"Transfer"`
         fragment = contract.interface.getEvent(event);
-        topics = [contract.interface.getEventTopic(fragment)];
+        topics = [fragment.topicHash];
     }
     else if (isDeferred(event)) {
         // Deferred Topic Filter; e.g. `contract.filter.Transfer(from)`
@@ -264,7 +264,7 @@ async function getSubTag(contract, event) {
     else if ("fragment" in event) {
         // ContractEvent; e.g. `contract.filter.Transfer`
         fragment = event.fragment;
-        topics = [contract.interface.getEventTopic(fragment)];
+        topics = [fragment.topicHash];
     }
     else {
         console.log(event);
@@ -299,7 +299,7 @@ async function getSub(contract, event) {
     // Make sure our runner can actually subscribe to events
     const provider = getProvider(contract.runner);
     if (!provider) {
-        return logger.throwError("contract runner does not support subscribing", "UNSUPPORTED_OPERATION", {
+        return throwError("contract runner does not support subscribing", "UNSUPPORTED_OPERATION", {
             operation: "on"
         });
     }
@@ -394,7 +394,7 @@ export class BaseContract {
             else {
                 const resolver = getRunner(runner, "resolveName");
                 if (!canResolve(resolver)) {
-                    throw logger.makeError("contract runner does not support name resolution", "UNSUPPORTED_OPERATION", {
+                    throw makeError("contract runner does not support name resolution", "UNSUPPORTED_OPERATION", {
                         operation: "resolveName"
                     });
                 }
@@ -453,7 +453,7 @@ export class BaseContract {
     async getDeployedCode() {
         const provider = getProvider(this.runner);
         if (!provider) {
-            return logger.throwError("runner does not support .provider", "UNSUPPORTED_OPERATION", {
+            return throwError("runner does not support .provider", "UNSUPPORTED_OPERATION", {
                 operation: "getDeployedCode"
             });
         }
@@ -478,7 +478,7 @@ export class BaseContract {
         // Make sure we can subscribe to a provider event
         const provider = getProvider(this.runner);
         if (provider == null) {
-            return logger.throwError("contract runner does not support .provider", "UNSUPPORTED_OPERATION", {
+            return throwError("contract runner does not support .provider", "UNSUPPORTED_OPERATION", {
                 operation: "waitForDeployment"
             });
         }
@@ -524,7 +524,7 @@ export class BaseContract {
         const filter = { address, topics, fromBlock, toBlock };
         const provider = getProvider(this.runner);
         if (!provider) {
-            return logger.throwError("contract runner does not have a provider", "UNSUPPORTED_OPERATION", {
+            return throwError("contract runner does not have a provider", "UNSUPPORTED_OPERATION", {
                 operation: "queryFilter"
             });
         }

@@ -23,7 +23,7 @@ function handleData(value, param) {
         return (0, index_js_3.hexlify)(value);
     }
     catch (error) {
-        return index_js_3.logger.throwArgumentError("invalid data", param, value);
+        return (0, index_js_3.throwArgumentError)("invalid data", param, value);
     }
 }
 function handleAccessList(value, param) {
@@ -31,30 +31,30 @@ function handleAccessList(value, param) {
         return (0, accesslist_js_1.accessListify)(value);
     }
     catch (error) {
-        return index_js_3.logger.throwArgumentError("invalid accessList", param, value);
+        return (0, index_js_3.throwArgumentError)("invalid accessList", param, value);
     }
 }
 function handleNumber(_value, param) {
     if (_value === "0x") {
         return 0;
     }
-    return index_js_3.logger.getNumber(_value, param);
+    return (0, index_js_3.getNumber)(_value, param);
 }
 function handleUint(_value, param) {
     if (_value === "0x") {
         return BN_0;
     }
-    const value = index_js_3.logger.getBigInt(_value, param);
+    const value = (0, index_js_3.getBigInt)(_value, param);
     if (value > BN_MAX_UINT) {
-        index_js_3.logger.throwArgumentError("value exceeds uint size", param, value);
+        (0, index_js_3.throwArgumentError)("value exceeds uint size", param, value);
     }
     return value;
 }
 function formatNumber(_value, name) {
-    const value = index_js_3.logger.getBigInt(_value, "value");
+    const value = (0, index_js_3.getBigInt)(_value, "value");
     const result = (0, index_js_3.toArray)(value);
     if (result.length > 32) {
-        index_js_3.logger.throwArgumentError(`value too large`, `tx.${name}`, value);
+        (0, index_js_3.throwArgumentError)(`value too large`, `tx.${name}`, value);
     }
     return result;
 }
@@ -64,7 +64,7 @@ function formatAccessList(value) {
 function _parseLegacy(data) {
     const fields = (0, index_js_3.decodeRlp)(data);
     if (!Array.isArray(fields) || (fields.length !== 9 && fields.length !== 6)) {
-        return index_js_3.logger.throwArgumentError("invalid field count for legacy transaction", "data", data);
+        return (0, index_js_3.throwArgumentError)("invalid field count for legacy transaction", "data", data);
     }
     const tx = {
         type: 0,
@@ -96,7 +96,7 @@ function _parseLegacy(data) {
         tx.chainId = chainId;
         // Signed Legacy Transaction
         if (chainId === BN_0 && (v < BN_27 || v > BN_28)) {
-            index_js_3.logger.throwArgumentError("non-canonical legacy v", "v", fields[6]);
+            (0, index_js_3.throwArgumentError)("non-canonical legacy v", "v", fields[6]);
         }
         tx.signature = index_js_2.Signature.from({
             r: (0, index_js_3.zeroPadValue)(fields[7], 32),
@@ -119,11 +119,11 @@ function _serializeLegacy(tx, sig) {
     let chainId = BN_0;
     if (tx.chainId != null) {
         // A chainId was provided; if non-zero we'll use EIP-155
-        chainId = index_js_3.logger.getBigInt(tx.chainId, "tx.chainId");
+        chainId = (0, index_js_3.getBigInt)(tx.chainId, "tx.chainId");
         // We have a chainId in the tx and an EIP-155 v in the signature,
         // make sure they agree with each other
         if (sig && sig.networkV != null && sig.legacyChainId !== chainId) {
-            index_js_3.logger.throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
+            (0, index_js_3.throwArgumentError)("tx.chainId/sig.v mismatch", "sig", sig);
         }
     }
     else if (sig) {
@@ -149,7 +149,7 @@ function _serializeLegacy(tx, sig) {
         v = index_js_2.Signature.getChainIdV(chainId, sig.v);
     }
     else if (BigInt(sig.v) !== v) {
-        index_js_3.logger.throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
+        (0, index_js_3.throwArgumentError)("tx.chainId/sig.v mismatch", "sig", sig);
     }
     fields.push((0, index_js_3.toArray)(v));
     fields.push((0, index_js_3.toArray)(sig.r));
@@ -165,7 +165,7 @@ function _parseEipSignature(tx, fields, serialize) {
         }
     }
     catch (error) {
-        return index_js_3.logger.throwArgumentError("invalid yParity", "yParity", fields[0]);
+        return (0, index_js_3.throwArgumentError)("invalid yParity", "yParity", fields[0]);
     }
     const r = (0, index_js_3.zeroPadValue)(fields[1], 32);
     const s = (0, index_js_3.zeroPadValue)(fields[2], 32);
@@ -173,9 +173,9 @@ function _parseEipSignature(tx, fields, serialize) {
     tx.signature = signature;
 }
 function _parseEip1559(data) {
-    const fields = (0, index_js_3.decodeRlp)(index_js_3.logger.getBytes(data).slice(1));
+    const fields = (0, index_js_3.decodeRlp)((0, index_js_3.getBytes)(data).slice(1));
     if (!Array.isArray(fields) || (fields.length !== 9 && fields.length !== 12)) {
-        index_js_3.logger.throwArgumentError("invalid field count for transaction type: 2", "data", (0, index_js_3.hexlify)(data));
+        (0, index_js_3.throwArgumentError)("invalid field count for transaction type: 2", "data", (0, index_js_3.hexlify)(data));
     }
     const maxPriorityFeePerGas = handleUint(fields[2], "maxPriorityFeePerGas");
     const maxFeePerGas = handleUint(fields[3], "maxFeePerGas");
@@ -220,9 +220,9 @@ function _serializeEip1559(tx, sig) {
     return (0, index_js_3.concat)(["0x02", (0, index_js_3.encodeRlp)(fields)]);
 }
 function _parseEip2930(data) {
-    const fields = (0, index_js_3.decodeRlp)(index_js_3.logger.getBytes(data).slice(1));
+    const fields = (0, index_js_3.decodeRlp)((0, index_js_3.getBytes)(data).slice(1));
     if (!Array.isArray(fields) || (fields.length !== 8 && fields.length !== 11)) {
-        index_js_3.logger.throwArgumentError("invalid field count for transaction type: 1", "data", (0, index_js_3.hexlify)(data));
+        (0, index_js_3.throwArgumentError)("invalid field count for transaction type: 1", "data", (0, index_js_3.hexlify)(data));
     }
     const tx = {
         type: 1,
@@ -301,9 +301,9 @@ class Transaction {
         (0, index_js_3.setStore)(this.#props, "to", (value == null) ? null : (0, index_js_1.getAddress)(value));
     }
     get nonce() { return (0, index_js_3.getStore)(this.#props, "nonce"); }
-    set nonce(value) { (0, index_js_3.setStore)(this.#props, "nonce", index_js_3.logger.getNumber(value, "value")); }
+    set nonce(value) { (0, index_js_3.setStore)(this.#props, "nonce", (0, index_js_3.getNumber)(value, "value")); }
     get gasLimit() { return (0, index_js_3.getStore)(this.#props, "gasLimit"); }
-    set gasLimit(value) { (0, index_js_3.setStore)(this.#props, "gasLimit", index_js_3.logger.getBigInt(value)); }
+    set gasLimit(value) { (0, index_js_3.setStore)(this.#props, "gasLimit", (0, index_js_3.getBigInt)(value)); }
     get gasPrice() {
         const value = (0, index_js_3.getStore)(this.#props, "gasPrice");
         if (value == null && (this.type === 0 || this.type === 1)) {
@@ -312,7 +312,7 @@ class Transaction {
         return value;
     }
     set gasPrice(value) {
-        (0, index_js_3.setStore)(this.#props, "gasPrice", (value == null) ? null : index_js_3.logger.getBigInt(value, "gasPrice"));
+        (0, index_js_3.setStore)(this.#props, "gasPrice", (value == null) ? null : (0, index_js_3.getBigInt)(value, "gasPrice"));
     }
     get maxPriorityFeePerGas() {
         const value = (0, index_js_3.getStore)(this.#props, "maxPriorityFeePerGas");
@@ -322,7 +322,7 @@ class Transaction {
         return value;
     }
     set maxPriorityFeePerGas(value) {
-        (0, index_js_3.setStore)(this.#props, "maxPriorityFeePerGas", (value == null) ? null : index_js_3.logger.getBigInt(value, "maxPriorityFeePerGas"));
+        (0, index_js_3.setStore)(this.#props, "maxPriorityFeePerGas", (value == null) ? null : (0, index_js_3.getBigInt)(value, "maxPriorityFeePerGas"));
     }
     get maxFeePerGas() {
         const value = (0, index_js_3.getStore)(this.#props, "maxFeePerGas");
@@ -332,16 +332,16 @@ class Transaction {
         return value;
     }
     set maxFeePerGas(value) {
-        (0, index_js_3.setStore)(this.#props, "maxFeePerGas", (value == null) ? null : index_js_3.logger.getBigInt(value, "maxFeePerGas"));
+        (0, index_js_3.setStore)(this.#props, "maxFeePerGas", (value == null) ? null : (0, index_js_3.getBigInt)(value, "maxFeePerGas"));
     }
     get data() { return (0, index_js_3.getStore)(this.#props, "data"); }
     set data(value) { (0, index_js_3.setStore)(this.#props, "data", (0, index_js_3.hexlify)(value)); }
     get value() { return (0, index_js_3.getStore)(this.#props, "value"); }
     set value(value) {
-        (0, index_js_3.setStore)(this.#props, "value", index_js_3.logger.getBigInt(value, "value"));
+        (0, index_js_3.setStore)(this.#props, "value", (0, index_js_3.getBigInt)(value, "value"));
     }
     get chainId() { return (0, index_js_3.getStore)(this.#props, "chainId"); }
-    set chainId(value) { (0, index_js_3.setStore)(this.#props, "chainId", index_js_3.logger.getBigInt(value)); }
+    set chainId(value) { (0, index_js_3.setStore)(this.#props, "chainId", (0, index_js_3.getBigInt)(value)); }
     get signature() { return (0, index_js_3.getStore)(this.#props, "sig") || null; }
     set signature(value) {
         (0, index_js_3.setStore)(this.#props, "sig", (value == null) ? null : index_js_2.Signature.from(value));
@@ -481,9 +481,15 @@ class Transaction {
         types.sort();
         return types;
     }
-    isLegacy() { return (this.type === 0); }
-    isBerlin() { return (this.type === 1); }
-    isLondon() { return (this.type === 2); }
+    isLegacy() {
+        return (this.type === 0);
+    }
+    isBerlin() {
+        return (this.type === 1);
+    }
+    isLondon() {
+        return (this.type === 2);
+    }
     clone() {
         return Transaction.from(this);
     }
@@ -505,7 +511,7 @@ class Transaction {
     }
     static from(tx) {
         if (typeof (tx) === "string") {
-            const payload = index_js_3.logger.getBytes(tx);
+            const payload = (0, index_js_3.getBytes)(tx);
             if (payload[0] >= 0x7f) { // @TODO: > vs >= ??
                 return Transaction.from(_parseLegacy(payload));
             }

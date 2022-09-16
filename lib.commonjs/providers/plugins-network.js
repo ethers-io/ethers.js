@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FeeDataNetworkPlugin = exports.EnsPlugin = exports.GasCostPlugin = exports.NetworkPlugin = void 0;
 const properties_js_1 = require("../utils/properties.js");
-const logger_js_1 = require("../utils/logger.js");
+const index_js_1 = require("../utils/index.js");
 const EnsAddress = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
 class NetworkPlugin {
     name;
@@ -34,7 +34,7 @@ class GasCostPlugin extends NetworkPlugin {
                 value = nullish;
             }
             if (typeof (value) !== "number") {
-                logger_js_1.logger.throwArgumentError(`invalud value for ${name}`, "costs", costs);
+                (0, index_js_1.throwArgumentError)(`invalud value for ${name}`, "costs", costs);
             }
             props[name] = value;
         }

@@ -1,5 +1,5 @@
 import { ZeroHash } from "../constants/index.js";
-import { concat, dataLength, getStore, hexlify, isHexString, logger, setStore } from "../utils/index.js";
+import { concat, dataLength, getBigInt, getBytes, getNumber, getStore, hexlify, isHexString, setStore, assertPrivate, throwArgumentError } from "../utils/index.js";
 // Constants
 const BN_0 = BigInt(0);
 const BN_1 = BigInt(1);
@@ -13,23 +13,23 @@ export class Signature {
     get r() { return getStore(this.#props, "r"); }
     set r(value) {
         if (dataLength(value) !== 32) {
-            logger.throwArgumentError("invalid r", "value", value);
+            throwArgumentError("invalid r", "value", value);
         }
         setStore(this.#props, "r", hexlify(value));
     }
     get s() { return getStore(this.#props, "s"); }
     set s(value) {
         if (dataLength(value) !== 32) {
-            logger.throwArgumentError("invalid r", "value", value);
+            throwArgumentError("invalid r", "value", value);
         }
-        else if (logger.getBytes(value)[0] & 0x80) {
-            logger.throwArgumentError("non-canonical s", "value", value);
+        else if (getBytes(value)[0] & 0x80) {
+            throwArgumentError("non-canonical s", "value", value);
         }
         setStore(this.#props, "s", hexlify(value));
     }
     get v() { return getStore(this.#props, "v"); }
     set v(value) {
-        const v = logger.getNumber(value, "value");
+        const v = getNumber(value, "value");
         if (v !== 27 && v !== 28) {
             throw new Error("@TODO");
         }
@@ -59,7 +59,7 @@ export class Signature {
     }
     get yParityAndS() {
         // The EIP-2098 compact representation
-        const yParityAndS = logger.getBytes(this.s);
+        const yParityAndS = getBytes(this.s);
         if (this.yParity) {
             yParityAndS[0] |= 0x80;
         }
@@ -72,7 +72,7 @@ export class Signature {
         return concat([this.r, this.s, (this.yParity ? "0x1c" : "0x1b")]);
     }
     constructor(guard, r, s, v) {
-        logger.assertPrivate(guard, _guard, "Signature");
+        assertPrivate(guard, _guard, "Signature");
         this.#props = { r, s, v, networkV: null };
     }
     [Symbol.for('nodejs.util.inspect.custom')]() {
@@ -105,24 +105,24 @@ export class Signature {
     }
     // Get the chain ID from an EIP-155 v
     static getChainId(v) {
-        const bv = logger.getBigInt(v, "v");
+        const bv = getBigInt(v, "v");
         // The v is not an EIP-155 v, so it is the unspecified chain ID
         if ((bv == BN_27) || (bv == BN_28)) {
             return BN_0;
         }
         // Bad value for an EIP-155 v
         if (bv < BN_35) {
-            logger.throwArgumentError("invalid EIP-155 v", "v", v);
+            throwArgumentError("invalid EIP-155 v", "v", v);
         }
         return (bv - BN_35) / BN_2;
     }
     // Get the EIP-155 v transformed for a given chainId
     static getChainIdV(chainId, v) {
-        return (logger.getBigInt(chainId) * BN_2) + BigInt(35 + v - 27);
+        return (getBigInt(chainId) * BN_2) + BigInt(35 + v - 27);
     }
     // Convert an EIP-155 v into a normalized v
     static getNormalizedV(v) {
-        const bv = logger.getBigInt(v);
+        const bv = getBigInt(v);
         if (bv == BN_0) {
             return 27;
         }
@@ -134,10 +134,10 @@ export class Signature {
     }
     static from(sig) {
         const throwError = (message) => {
-            return logger.throwArgumentError(message, "signature", sig);
+            return throwArgumentError(message, "signature", sig);
         };
         if (typeof (sig) === "string") {
-            const bytes = logger.getBytes(sig, "signature");
+            const bytes = getBytes(sig, "signature");
             if (bytes.length === 64) {
                 const r = hexlify(bytes.slice(0, 32));
                 const s = bytes.slice(32, 64);
@@ -179,19 +179,19 @@ export class Signature {
                 if (!isHexString(yParityAndS, 32)) {
                     throwError("invalid yParityAndS");
                 }
-                const bytes = logger.getBytes(yParityAndS);
+                const bytes = getBytes(yParityAndS);
                 bytes[0] &= 0x7f;
                 return hexlify(bytes);
             }
             return throwError("missing s");
         })(sig.s, sig.yParityAndS);
-        if (logger.getBytes(s)[0] & 0x80) {
+        if (getBytes(s)[0] & 0x80) {
             throwError("non-canonical s");
         }
         // Get v; by any means necessary (we check consistency below)
         const { networkV, v } = (function (_v, yParityAndS, yParity) {
             if (_v != null) {
-                const v = logger.getBigInt(_v);
+                const v = getBigInt(_v);
                 return {
                     networkV: ((v >= BN_35) ? v : undefined),
                     v: Signature.getNormalizedV(v)
@@ -201,7 +201,7 @@ export class Signature {
                 if (!isHexString(yParityAndS, 32)) {
                     throwError("invalid yParityAndS");
                 }
-                return { v: ((logger.getBytes(yParityAndS)[0] & 0x80) ? 28 : 27) };
+                return { v: ((getBytes(yParityAndS)[0] & 0x80) ? 28 : 27) };
             }
             if (yParity != null) {
                 switch (yParity) {

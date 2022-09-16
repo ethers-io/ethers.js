@@ -4,18 +4,15 @@ exports.EnsResolver = exports.BasicMulticoinProviderPlugin = exports.MulticoinPr
 const hashes_js_1 = require("../constants/hashes.js");
 const index_js_1 = require("../hash/index.js");
 const index_js_2 = require("../utils/index.js");
-const data_js_1 = require("../utils/data.js");
-const fetch_js_1 = require("../utils/fetch.js");
-const logger_js_1 = require("../utils/logger.js");
 const BN_1 = BigInt(1);
 const Empty = new Uint8Array([]);
 function parseBytes(result, start) {
     if (result === "0x") {
         return null;
     }
-    const offset = (0, index_js_2.toNumber)((0, data_js_1.dataSlice)(result, start, start + 32));
-    const length = (0, index_js_2.toNumber)((0, data_js_1.dataSlice)(result, offset, offset + 32));
-    return (0, data_js_1.dataSlice)(result, offset + 32, offset + 32 + length);
+    const offset = (0, index_js_2.toNumber)((0, index_js_2.dataSlice)(result, start, start + 32));
+    const length = (0, index_js_2.toNumber)((0, index_js_2.dataSlice)(result, offset, offset + 32));
+    return (0, index_js_2.dataSlice)(result, offset + 32, offset + 32 + length);
 }
 function parseString(result, start) {
     try {
@@ -54,7 +51,7 @@ function encodeBytes(datas) {
         byteCount += 32;
     }
     for (let i = 0; i < datas.length; i++) {
-        const data = logger_js_1.logger.getBytes(datas[i]);
+        const data = (0, index_js_2.getBytes)(datas[i]);
         // Update the bytes offset
         result[i] = numPad(byteCount);
         // The length and padded value of data
@@ -62,7 +59,7 @@ function encodeBytes(datas) {
         result.push(bytesPad(data));
         byteCount += 32 + Math.ceil(data.length / 32) * 32;
     }
-    return (0, data_js_1.concat)(result);
+    return (0, index_js_2.concat)(result);
 }
 // @TODO: This should use the fetch-data:ipfs gateway
 // Trim off the ipfs:// prefix and return the default gateway URL
@@ -74,7 +71,7 @@ function getIpfsLink(link) {
         link = link.substring(7);
     }
     else {
-        logger_js_1.logger.throwArgumentError("unsupported IPFS format", "link", link);
+        (0, index_js_2.throwArgumentError)("unsupported IPFS format", "link", link);
     }
     return `https:/\/gateway.ipfs.io/ipfs/${link}`;
 }
@@ -130,7 +127,7 @@ class EnsResolver {
                 to: this.address,
                 data: "0x01ffc9a79061b92300000000000000000000000000000000000000000000000000000000"
             }).then((result) => {
-                return (logger_js_1.logger.getBigInt(result) === BN_1);
+                return ((0, index_js_2.getBigInt)(result) === BN_1);
             }).catch((error) => {
                 if (error.code === "CALL_EXCEPTION") {
                     return false;
@@ -144,7 +141,7 @@ class EnsResolver {
     }
     async _fetch(selector, parameters = "0x") {
         // e.g. keccak256("addr(bytes32,uint256)")
-        const addrData = (0, data_js_1.concat)([selector, (0, index_js_1.namehash)(this.name), parameters]);
+        const addrData = (0, index_js_2.concat)([selector, (0, index_js_1.namehash)(this.name), parameters]);
         const tx = {
             to: this.address,
             enableCcipRead: true,
@@ -155,12 +152,12 @@ class EnsResolver {
         if (await this.supportsWildcard()) {
             wrapped = true;
             // selector("resolve(bytes,bytes)")
-            tx.data = (0, data_js_1.concat)(["0x9061b923", encodeBytes([(0, index_js_1.dnsEncode)(this.name), addrData])]);
+            tx.data = (0, index_js_2.concat)(["0x9061b923", encodeBytes([(0, index_js_1.dnsEncode)(this.name), addrData])]);
         }
         try {
             let data = await this.provider.call(tx);
-            if ((logger_js_1.logger.getBytes(data).length % 32) === 4) {
-                return logger_js_1.logger.throwError("resolver threw error", "CALL_EXCEPTION", {
+            if (((0, index_js_2.getBytes)(data).length % 32) === 4) {
+                return (0, index_js_2.throwError)("resolver threw error", "CALL_EXCEPTION", {
                     transaction: tx, data
                 });
             }
@@ -219,7 +216,7 @@ class EnsResolver {
         if (address != null) {
             return address;
         }
-        return logger_js_1.logger.throwError(`invalid coin data`, "UNSUPPORTED_OPERATION", {
+        return (0, index_js_2.throwError)(`invalid coin data`, "UNSUPPORTED_OPERATION", {
             operation: `getAddress(${coinType})`,
             info: { coinType, data }
         });
@@ -229,7 +226,7 @@ class EnsResolver {
         let keyBytes = (0, index_js_2.toUtf8Bytes)(key);
         // The nodehash consumes the first slot, so the string pointer targets
         // offset 64, with the length at offset 64 and data starting at offset 96
-        const calldata = logger_js_1.logger.getBytes((0, data_js_1.concat)([numPad(64), numPad(keyBytes.length), keyBytes]));
+        const calldata = (0, index_js_2.getBytes)((0, index_js_2.concat)([numPad(64), numPad(keyBytes.length), keyBytes]));
         const hexBytes = parseBytes((await this._fetch("0x59d1d43c", bytesPad(calldata))) || "0x", 0);
         if (hexBytes == null || hexBytes === "0x") {
             return null;
@@ -257,7 +254,7 @@ class EnsResolver {
         if (swarm && swarm[1].length === 64) {
             return `bzz:/\/${swarm[1]}`;
         }
-        return logger_js_1.logger.throwError(`invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
+        return (0, index_js_2.throwError)(`invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
             operation: "getContentHash()",
             info: { data: hexBytes }
         });
@@ -316,7 +313,7 @@ class EnsResolver {
                         if (scheme === "erc721") {
                             // ownerOf(uint256 tokenId)
                             const tokenOwner = formatter.callAddress(await this.provider.call({
-                                to: addr, data: (0, data_js_1.concat)(["0x6352211e", tokenId])
+                                to: addr, data: (0, index_js_2.concat)(["0x6352211e", tokenId])
                             }));
                             if (owner !== tokenOwner) {
                                 linkage.push({ type: "!owner", value: tokenOwner });
@@ -326,8 +323,8 @@ class EnsResolver {
                         }
                         else if (scheme === "erc1155") {
                             // balanceOf(address owner, uint256 tokenId)
-                            const balance = logger_js_1.logger.getBigInt(await this.provider.call({
-                                to: addr, data: (0, data_js_1.concat)(["0x00fdd58e", (0, data_js_1.zeroPadValue)(owner, 32), tokenId])
+                            const balance = (0, index_js_2.getBigInt)(await this.provider.call({
+                                to: addr, data: (0, index_js_2.concat)(["0x00fdd58e", (0, index_js_2.zeroPadValue)(owner, 32), tokenId])
                             }));
                             if (!balance) {
                                 linkage.push({ type: "!balance", value: "0" });
@@ -338,7 +335,7 @@ class EnsResolver {
                         // Call the token contract for the metadata URL
                         const tx = {
                             to: comps[0],
-                            data: (0, data_js_1.concat)([selector, tokenId])
+                            data: (0, index_js_2.concat)([selector, tokenId])
                         };
                         let metadataUrl = parseString(await this.provider.call(tx), 0);
                         if (metadataUrl == null) {
@@ -348,7 +345,7 @@ class EnsResolver {
                         linkage.push({ type: "metadata-url-base", value: metadataUrl });
                         // ERC-1155 allows a generic {id} in the URL
                         if (scheme === "erc1155") {
-                            metadataUrl = metadataUrl.replace("{id}", (0, data_js_1.hexlify)(tokenId).substring(2));
+                            metadataUrl = metadataUrl.replace("{id}", (0, index_js_2.hexlify)(tokenId).substring(2));
                             linkage.push({ type: "metadata-url-expanded", value: metadataUrl });
                         }
                         // Transform IPFS metadata links
@@ -358,7 +355,7 @@ class EnsResolver {
                         linkage.push({ type: "metadata-url", value: metadataUrl });
                         // Get the token metadata
                         let metadata = {};
-                        const response = await (new fetch_js_1.FetchRequest(metadataUrl)).send();
+                        const response = await (new index_js_2.FetchRequest(metadataUrl)).send();
                         response.assertOk();
                         try {
                             metadata = response.bodyJson;
@@ -370,7 +367,7 @@ class EnsResolver {
                             catch (error) {
                                 const bytes = response.body;
                                 if (bytes) {
-                                    linkage.push({ type: "!metadata", value: (0, data_js_1.hexlify)(bytes) });
+                                    linkage.push({ type: "!metadata", value: (0, index_js_2.hexlify)(bytes) });
                                 }
                                 throw error;
                             }
@@ -416,7 +413,7 @@ class EnsResolver {
         const ensPlugin = network.getPlugin("org.ethers.network-plugins.ens");
         // No ENS...
         if (!ensPlugin) {
-            return logger_js_1.logger.throwError("network does not support ENS", "UNSUPPORTED_OPERATION", {
+            return (0, index_js_2.throwError)("network does not support ENS", "UNSUPPORTED_OPERATION", {
                 operation: "getResolver", info: { network: network.name }
             });
         }
@@ -424,11 +421,11 @@ class EnsResolver {
             // keccak256("resolver(bytes32)")
             const addrData = await provider.call({
                 to: ensPlugin.address,
-                data: (0, data_js_1.concat)(["0x0178b8bf", (0, index_js_1.namehash)(name)]),
+                data: (0, index_js_2.concat)(["0x0178b8bf", (0, index_js_1.namehash)(name)]),
                 enableCcipRead: true
             });
             const addr = network.formatter.callAddress(addrData);
-            if (addr === (0, data_js_1.dataSlice)(hashes_js_1.ZeroHash, 0, 20)) {
+            if (addr === (0, index_js_2.dataSlice)(hashes_js_1.ZeroHash, 0, 20)) {
                 return null;
             }
             return addr;

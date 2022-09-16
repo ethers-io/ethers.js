@@ -15,7 +15,7 @@ class ContractFactory {
         const iface = index_js_1.Interface.from(abi);
         // Dereference Solidity bytecode objects and allow a missing `0x`-prefix
         if (bytecode instanceof Uint8Array) {
-            bytecode = (0, index_js_3.hexlify)(index_js_3.logger.getBytes(bytecode));
+            bytecode = (0, index_js_3.hexlify)((0, index_js_3.getBytes)(bytecode));
         }
         else {
             if (typeof (bytecode) === "object") {
@@ -24,7 +24,7 @@ class ContractFactory {
             if (bytecode.substring(0, 2) !== "0x") {
                 bytecode = "0x" + bytecode;
             }
-            bytecode = (0, index_js_3.hexlify)(index_js_3.logger.getBytes(bytecode));
+            bytecode = (0, index_js_3.hexlify)((0, index_js_3.getBytes)(bytecode));
         }
         (0, index_js_3.defineProperties)(this, {
             bytecode, interface: iface, runner: (runner || null)
@@ -46,7 +46,7 @@ class ContractFactory {
     async deploy(...args) {
         const tx = await this.getDeployTransaction(...args);
         if (!this.runner || typeof (this.runner.sendTransaction) !== "function") {
-            return index_js_3.logger.throwError("factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
+            return (0, index_js_3.throwError)("factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
                 operation: "sendTransaction"
             });
         }
@@ -59,7 +59,7 @@ class ContractFactory {
     }
     static fromSolidity(output, runner) {
         if (output == null) {
-            index_js_3.logger.throwArgumentError("bad compiler output", "output", output);
+            (0, index_js_3.throwArgumentError)("bad compiler output", "output", output);
         }
         if (typeof (output) === "string") {
             output = JSON.parse(output);

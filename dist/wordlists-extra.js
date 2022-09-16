@@ -40,6 +40,51 @@ const assert = {
     output,
 };
 
+/*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+const u32 = (arr) => new Uint32Array(arr.buffer, arr.byteOffset, Math.floor(arr.byteLength / 4));
+const isLE = new Uint8Array(new Uint32Array([0x11223344]).buffer)[0] === 0x44;
+// There is almost no big endian hardware, but js typed arrays uses platform specific endianness.
+// So, just to be sure not to corrupt anything.
+if (!isLE)
+    throw new Error('Non little-endian hardware is not supported');
+Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'));
+function utf8ToBytes(str) {
+    if (typeof str !== 'string') {
+        throw new TypeError(`utf8ToBytes expected string, got ${typeof str}`);
+    }
+    return new TextEncoder().encode(str);
+}
+function toBytes(data) {
+    if (typeof data === 'string')
+        data = utf8ToBytes(data);
+    if (!(data instanceof Uint8Array))
+        throw new TypeError(`Expected input type is Uint8Array (got ${typeof data})`);
+    return data;
+}
+// For runtime check if class implements interface
+class Hash {
+    // Safe version that clones internal state
+    clone() {
+        return this._cloneInto();
+    }
+}
+function wrapConstructor(hashConstructor) {
+    const hashC = (message) => hashConstructor().update(toBytes(message)).digest();
+    const tmp = hashConstructor();
+    hashC.outputLen = tmp.outputLen;
+    hashC.blockLen = tmp.blockLen;
+    hashC.create = () => hashConstructor();
+    return hashC;
+}
+function wrapConstructorWithOpts(hashCons) {
+    const hashC = (msg, opts) => hashCons(opts).update(toBytes(msg)).digest();
+    const tmp = hashCons({});
+    hashC.outputLen = tmp.outputLen;
+    hashC.blockLen = tmp.blockLen;
+    hashC.create = (opts) => hashCons(opts);
+    return hashC;
+}
+
 const U32_MASK64 = BigInt(2 ** 32 - 1);
 const _32n = BigInt(32);
 // We are not using BigUint64Array, because they are extremely slow as per 2022
@@ -100,49 +145,433 @@ const u64 = {
     add, add3L, add3H, add4L, add4H, add5H, add5L,
 };
 
-/*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-const u32 = (arr) => new Uint32Array(arr.buffer, arr.byteOffset, Math.floor(arr.byteLength / 4));
-const isLE = new Uint8Array(new Uint32Array([0x11223344]).buffer)[0] === 0x44;
-// There is almost no big endian hardware, but js typed arrays uses platform specific endianness.
-// So, just to be sure not to corrupt anything.
-if (!isLE)
-    throw new Error('Non little-endian hardware is not supported');
-Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'));
-function utf8ToBytes(str) {
-    if (typeof str !== 'string') {
-        throw new TypeError(`utf8ToBytes expected string, got ${typeof str}`);
+const version = "6.0.0-beta-exports.0";
+
+function defineReadOnly(object, name, value) {
+    Object.defineProperty(object, name, {
+        enumerable: true,
+        value: value,
+        writable: false,
+    });
+}
+/*
+export interface CancellablePromise<T> extends Promise<T> {
+    cancel(): Promise<void>;
+}
+export type IsCancelled = () => Promise<boolean>;
+
+export function createPromise<T>(resolve: (isCancelled: IsCancelled, (result: T) => void) => void, reject: (error: Error) => void, isCancelled: IsCancelled): CancellablePromise<T> {
+    let cancelled = false;
+
+    const promise = new Promise((resolve, reject) => {
+
+    });
+
+    (<CancellablePromise<T>>promise).cancel = function() {
+        cancelled = true;
+    };
+
+    return (<CancellablePromise<T>>promise);
+}
+*/
+/*
+export class A implements Freezable<A> {
+    foo: number;
+    constructor(foo: number) {
+        this.foo = foo;
     }
-    return new TextEncoder().encode(str);
-}
-function toBytes(data) {
-    if (typeof data === 'string')
-        data = utf8ToBytes(data);
-    if (!(data instanceof Uint8Array))
-        throw new TypeError(`Expected input type is Uint8Array (got ${typeof data})`);
-    return data;
-}
-// For runtime check if class implements interface
-class Hash {
-    // Safe version that clones internal state
-    clone() {
-        return this._cloneInto();
+    freeze(): Frozen<A> {
+        Object.freeze(this);
+        return this;
+    }
+    clone(): A {
+        return new A(this.foo);
     }
 }
-function wrapConstructor(hashConstructor) {
-    const hashC = (message) => hashConstructor().update(toBytes(message)).digest();
-    const tmp = hashConstructor();
-    hashC.outputLen = tmp.outputLen;
-    hashC.blockLen = tmp.blockLen;
-    hashC.create = () => hashConstructor();
-    return hashC;
+
+export class B implements Freezable<B> {
+    a: A;
+    constructor(a: A) {
+        this.a = a;
+    }
+    freeze(): Frozen<B> {
+        this.a.freeze();
+        Object.freeze(this);
+        return this;
+    }
+    clone(): B {
+        return new B(this.a);
+    }
 }
-function wrapConstructorWithOpts(hashCons) {
-    const hashC = (msg, opts) => hashCons(opts).update(toBytes(msg)).digest();
-    const tmp = hashCons({});
-    hashC.outputLen = tmp.outputLen;
-    hashC.blockLen = tmp.blockLen;
-    hashC.create = (opts) => hashCons(opts);
-    return hashC;
+
+export function test() {
+    const a = new A(123);
+    const b = new B(a);
+    b.a = new A(234);
+    const b2 = b.freeze();
+    b2.a.foo = 123; // = a;
+}
+*/
+function checkType(value, type) {
+    const types = type.split("|").map(t => t.trim());
+    for (let i = 0; i < types.length; i++) {
+        switch (type) {
+            case "any":
+                return;
+            case "boolean":
+            case "number":
+            case "string":
+                if (typeof (value) === type) {
+                    return;
+                }
+        }
+    }
+    throw new Error("invalid value for type");
+}
+function defineProperties(target, values, types, defaults) {
+    for (let key in values) {
+        let value = values[key];
+        const fallback = (defaults ? defaults[key] : undefined);
+        if (fallback !== undefined) {
+            value = fallback;
+        }
+        else {
+            const type = (types ? types[key] : null);
+            if (type) {
+                checkType(value, type);
+            }
+        }
+        Object.defineProperty(target, key, { enumerable: true, value, writable: false });
+    }
+}
+
+// The type of error to use for various error codes
+const ErrorConstructors = {};
+ErrorConstructors.INVALID_ARGUMENT = TypeError;
+ErrorConstructors.NUMERIC_FAULT = RangeError;
+ErrorConstructors.BUFFER_OVERRUN = RangeError;
+/**
+ *  Returns a new Error configured to the format ethers emits errors, with
+ *  the %%message%%, [[api:ErrorCode]] %%code%% and additioanl properties
+ *  for the corresponding EthersError.
+ *
+ *  Each error in ethers includes the version of ethers, a
+ *  machine-readable [[ErrorCode]], and depneding on %%code%%, additional
+ *  required properties. The error message will also include the %%meeage%%,
+ *  ethers version, %%code%% and all aditional properties, serialized.
+ */
+function makeError(message, code, info) {
+    {
+        const details = [];
+        if (info) {
+            if ("message" in info || "code" in info || "name" in info) {
+                throw new Error(`value will overwrite populated values: ${JSON.stringify(info)}`);
+            }
+            for (const key in info) {
+                const value = (info[key]);
+                try {
+                    details.push(key + "=" + JSON.stringify(value));
+                }
+                catch (error) {
+                    details.push(key + "=[could not serialize object]");
+                }
+            }
+        }
+        details.push(`code=${code}`);
+        details.push(`version=${version}`);
+        if (details.length) {
+            message += " (" + details.join(", ") + ")";
+        }
+    }
+    const create = ErrorConstructors[code] || Error;
+    const error = (new create(message));
+    defineReadOnly(error, "code", code);
+    if (info) {
+        for (const key in info) {
+            defineReadOnly(error, key, (info[key]));
+        }
+    }
+    return error;
+}
+/**
+ *  Throws an EthersError with %%message%%, %%code%% and additional error
+ *  info.
+ *
+ *  @see [[api:makeError]]
+ */
+function throwError(message, code, info) {
+    throw makeError(message, code, info);
+}
+/**
+ *  Throws an [[api:ArgumentError]] with %%message%% for the parameter with
+ *  %%name%% and the %%value%%.
+ */
+function throwArgumentError(message, name, value) {
+    return throwError(message, "INVALID_ARGUMENT", {
+        argument: name,
+        value: value
+    });
+}
+/**
+ *  A simple helper to simply ensuring provided arguments match expected
+ *  constraints, throwing if not.
+ *
+ *  In TypeScript environments, the %%check%% has been asserted true, so
+ *  any further code does not need additional compile-time checks.
+ */
+function assertArgument(check, message, name, value) {
+    if (!check) {
+        throwArgumentError(message, name, value);
+    }
+}
+const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
+    try {
+        // General test for normalize
+        /* c8 ignore start */
+        if ("test".normalize(form) !== "test") {
+            throw new Error("bad");
+        }
+        ;
+        /* c8 ignore stop */
+        if (form === "NFD") {
+            const check = String.fromCharCode(0xe9).normalize("NFD");
+            const expected = String.fromCharCode(0x65, 0x0301);
+            /* c8 ignore start */
+            if (check !== expected) {
+                throw new Error("broken");
+            }
+            /* c8 ignore stop */
+        }
+        accum.push(form);
+    }
+    catch (error) { }
+    return accum;
+}, []);
+/**
+ *  Throws if the normalization %%form%% is not supported.
+ */
+function assertNormalize(form) {
+    if (_normalizeForms.indexOf(form) === -1) {
+        throwError("platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
+            operation: "String.prototype.normalize", info: { form }
+        });
+    }
+}
+
+function _getBytes(value, name, copy) {
+    if (value instanceof Uint8Array) {
+        if (copy) {
+            return new Uint8Array(value);
+        }
+        return value;
+    }
+    if (typeof (value) === "string" && value.match(/^0x([0-9a-f][0-9a-f])*$/i)) {
+        const result = new Uint8Array((value.length - 2) / 2);
+        let offset = 2;
+        for (let i = 0; i < result.length; i++) {
+            result[i] = parseInt(value.substring(offset, offset + 2), 16);
+            offset += 2;
+        }
+        return result;
+    }
+    return throwArgumentError("invalid BytesLike value", name || "value", value);
+}
+/**
+ *  Get a typed Uint8Array for %%value%%. If already a Uint8Array
+ *  the original %%value%% is returned; if a copy is required use
+ *  [[getBytesCopy]].
+ *
+ *  @see: getBytesCopy
+ */
+function getBytes(value, name) {
+    return _getBytes(value, name, false);
+}
+const HexCharacters = "0123456789abcdef";
+/**
+ *  Returns a [[HexDataString]] representation of %%data%%.
+ */
+function hexlify(data) {
+    const bytes = getBytes(data);
+    let result = "0x";
+    for (let i = 0; i < bytes.length; i++) {
+        const v = bytes[i];
+        result += HexCharacters[(v & 0xf0) >> 4] + HexCharacters[v & 0x0f];
+    }
+    return result;
+}
+
+function errorFunc(reason, offset, bytes, output, badCodepoint) {
+    return throwArgumentError(`invalid codepoint at offset ${offset}; ${reason}`, "bytes", bytes);
+}
+function ignoreFunc(reason, offset, bytes, output, badCodepoint) {
+    // If there is an invalid prefix (including stray continuation), skip any additional continuation bytes
+    if (reason === "BAD_PREFIX" || reason === "UNEXPECTED_CONTINUE") {
+        let i = 0;
+        for (let o = offset + 1; o < bytes.length; o++) {
+            if (bytes[o] >> 6 !== 0x02) {
+                break;
+            }
+            i++;
+        }
+        return i;
+    }
+    // This byte runs us past the end of the string, so just jump to the end
+    // (but the first byte was read already read and therefore skipped)
+    if (reason === "OVERRUN") {
+        return bytes.length - offset - 1;
+    }
+    // Nothing to skip
+    return 0;
+}
+function replaceFunc(reason, offset, bytes, output, badCodepoint) {
+    // Overlong representations are otherwise "valid" code points; just non-deistingtished
+    if (reason === "OVERLONG") {
+        output.push((badCodepoint != null) ? badCodepoint : -1);
+        return 0;
+    }
+    // Put the replacement character into the output
+    output.push(0xfffd);
+    // Otherwise, process as if ignoring errors
+    return ignoreFunc(reason, offset, bytes);
+}
+// Common error handing strategies
+const Utf8ErrorFuncs = Object.freeze({
+    error: errorFunc,
+    ignore: ignoreFunc,
+    replace: replaceFunc
+});
+// http://stackoverflow.com/questions/13356493/decode-utf-8-with-javascript#13691499
+function getUtf8CodePoints(_bytes, onError) {
+    if (onError == null) {
+        onError = Utf8ErrorFuncs.error;
+    }
+    const bytes = getBytes(_bytes, "bytes");
+    const result = [];
+    let i = 0;
+    // Invalid bytes are ignored
+    while (i < bytes.length) {
+        const c = bytes[i++];
+        // 0xxx xxxx
+        if (c >> 7 === 0) {
+            result.push(c);
+            continue;
+        }
+        // Multibyte; how many bytes left for this character?
+        let extraLength = null;
+        let overlongMask = null;
+        // 110x xxxx 10xx xxxx
+        if ((c & 0xe0) === 0xc0) {
+            extraLength = 1;
+            overlongMask = 0x7f;
+            // 1110 xxxx 10xx xxxx 10xx xxxx
+        }
+        else if ((c & 0xf0) === 0xe0) {
+            extraLength = 2;
+            overlongMask = 0x7ff;
+            // 1111 0xxx 10xx xxxx 10xx xxxx 10xx xxxx
+        }
+        else if ((c & 0xf8) === 0xf0) {
+            extraLength = 3;
+            overlongMask = 0xffff;
+        }
+        else {
+            if ((c & 0xc0) === 0x80) {
+                i += onError("UNEXPECTED_CONTINUE", i - 1, bytes, result);
+            }
+            else {
+                i += onError("BAD_PREFIX", i - 1, bytes, result);
+            }
+            continue;
+        }
+        // Do we have enough bytes in our data?
+        if (i - 1 + extraLength >= bytes.length) {
+            i += onError("OVERRUN", i - 1, bytes, result);
+            continue;
+        }
+        // Remove the length prefix from the char
+        let res = c & ((1 << (8 - extraLength - 1)) - 1);
+        for (let j = 0; j < extraLength; j++) {
+            let nextChar = bytes[i];
+            // Invalid continuation byte
+            if ((nextChar & 0xc0) != 0x80) {
+                i += onError("MISSING_CONTINUE", i, bytes, result);
+                res = null;
+                break;
+            }
+            res = (res << 6) | (nextChar & 0x3f);
+            i++;
+        }
+        // See above loop for invalid continuation byte
+        if (res === null) {
+            continue;
+        }
+        // Maximum code point
+        if (res > 0x10ffff) {
+            i += onError("OUT_OF_RANGE", i - 1 - extraLength, bytes, result, res);
+            continue;
+        }
+        // Reserved for UTF-16 surrogate halves
+        if (res >= 0xd800 && res <= 0xdfff) {
+            i += onError("UTF16_SURROGATE", i - 1 - extraLength, bytes, result, res);
+            continue;
+        }
+        // Check for overlong sequences (more bytes than needed)
+        if (res <= overlongMask) {
+            i += onError("OVERLONG", i - 1 - extraLength, bytes, result, res);
+            continue;
+        }
+        result.push(res);
+    }
+    return result;
+}
+// http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+function toUtf8Bytes(str, form) {
+    if (form != null) {
+        assertNormalize(form);
+        str = str.normalize(form);
+    }
+    let result = [];
+    for (let i = 0; i < str.length; i++) {
+        const c = str.charCodeAt(i);
+        if (c < 0x80) {
+            result.push(c);
+        }
+        else if (c < 0x800) {
+            result.push((c >> 6) | 0xc0);
+            result.push((c & 0x3f) | 0x80);
+        }
+        else if ((c & 0xfc00) == 0xd800) {
+            i++;
+            const c2 = str.charCodeAt(i);
+            if (i >= str.length || (c2 & 0xfc00) !== 0xdc00) {
+                throw new Error("invalid utf-8 string");
+            }
+            // Surrogate Pair
+            const pair = 0x10000 + ((c & 0x03ff) << 10) + (c2 & 0x03ff);
+            result.push((pair >> 18) | 0xf0);
+            result.push(((pair >> 12) & 0x3f) | 0x80);
+            result.push(((pair >> 6) & 0x3f) | 0x80);
+            result.push((pair & 0x3f) | 0x80);
+        }
+        else {
+            result.push((c >> 12) | 0xe0);
+            result.push(((c >> 6) & 0x3f) | 0x80);
+            result.push((c & 0x3f) | 0x80);
+        }
+    }
+    return new Uint8Array(result);
+}
+function _toUtf8String(codePoints) {
+    return codePoints.map((codePoint) => {
+        if (codePoint <= 0xffff) {
+            return String.fromCharCode(codePoint);
+        }
+        codePoint -= 0x10000;
+        return String.fromCharCode((((codePoint >> 10) & 0x3ff) + 0xd800), ((codePoint & 0x3ff) + 0xdc00));
+    }).join("");
+}
+function toUtf8String(bytes, onError) {
+    return _toUtf8String(getUtf8CodePoints(bytes, onError));
 }
 
 // Various per round constants calculations
@@ -348,516 +777,13 @@ const genShake = (suffix, blockLen, outputLen) => wrapConstructorWithOpts((opts 
 genShake(0x1f, 168, 128 / 8);
 genShake(0x1f, 136, 256 / 8);
 
-const version = "6.0.0-beta-exports.0";
-
-const LogLevels = ["debug", "info", "warning", "error", "off"];
-const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
-    try {
-        // General test for normalize
-        /* c8 ignore start */
-        if ("test".normalize(form) !== "test") {
-            throw new Error("bad");
-        }
-        ;
-        /* c8 ignore stop */
-        if (form === "NFD") {
-            const check = String.fromCharCode(0xe9).normalize("NFD");
-            const expected = String.fromCharCode(0x65, 0x0301);
-            /* c8 ignore start */
-            if (check !== expected) {
-                throw new Error("broken");
-            }
-            /* c8 ignore stop */
-        }
-        accum.push(form);
-    }
-    catch (error) { }
-    return accum;
-}, []);
-function defineReadOnly(object, name, value) {
-    Object.defineProperty(object, name, {
-        enumerable: true, writable: false, value,
-    });
-}
-// IEEE 754 support 53-bits of mantissa
-const maxValue = 0x1fffffffffffff;
-// The type of error to use for various error codes
-const ErrorConstructors = {};
-ErrorConstructors.INVALID_ARGUMENT = TypeError;
-ErrorConstructors.NUMERIC_FAULT = RangeError;
-ErrorConstructors.BUFFER_OVERRUN = RangeError;
-class Logger {
-    version;
-    #logLevel;
-    constructor(version) {
-        defineReadOnly(this, "version", version || "_");
-        this.#logLevel = 1;
-    }
-    get logLevel() {
-        return LogLevels[this.#logLevel];
-    }
-    set logLevel(value) {
-        const logLevel = LogLevels.indexOf(value);
-        if (logLevel == null) {
-            this.throwArgumentError("invalid logLevel", "logLevel", value);
-        }
-        this.#logLevel = logLevel;
-    }
-    makeError(message, code, info) {
-        {
-            const details = [];
-            if (info) {
-                for (const key in info) {
-                    const value = (info[key]);
-                    try {
-                        details.push(key + "=" + JSON.stringify(value));
-                    }
-                    catch (error) {
-                        details.push(key + "=[could not serialize object]");
-                    }
-                }
-            }
-            details.push(`code=${code}`);
-            details.push(`version=${this.version}`);
-            if (details.length) {
-                message += " (" + details.join(", ") + ")";
-            }
-        }
-        const create = ErrorConstructors[code] || Error;
-        const error = (new create(message));
-        defineReadOnly(error, "code", code);
-        if (info) {
-            for (const key in info) {
-                defineReadOnly(error, key, (info[key]));
-            }
-        }
-        return error;
-    }
-    throwError(message, code, info) {
-        throw this.makeError(message, code, info);
-    }
-    throwArgumentError(message, name, value) {
-        return this.throwError(message, "INVALID_ARGUMENT", {
-            argument: name,
-            value: value
-        });
-    }
-    assertNormalize(form) {
-        if (_normalizeForms.indexOf(form) === -1) {
-            this.throwError("platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
-                operation: "String.prototype.normalize", info: { form }
-            });
-        }
-    }
-    assertPrivate(givenGuard, guard, className = "") {
-        if (givenGuard !== guard) {
-            let method = className, operation = "new";
-            if (className) {
-                method += ".";
-                operation += " " + className;
-            }
-            this.throwError(`private constructor; use ${method}from* methods`, "UNSUPPORTED_OPERATION", {
-                operation
-            });
-        }
-    }
-    assertArgumentCount(count, expectedCount, message = "") {
-        if (message) {
-            message = ": " + message;
-        }
-        if (count < expectedCount) {
-            this.throwError("missing arguemnt" + message, "MISSING_ARGUMENT", {
-                count: count,
-                expectedCount: expectedCount
-            });
-        }
-        if (count > expectedCount) {
-            this.throwError("too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
-                count: count,
-                expectedCount: expectedCount
-            });
-        }
-    }
-    #getBytes(value, name, copy) {
-        if (value instanceof Uint8Array) {
-            if (copy) {
-                return new Uint8Array(value);
-            }
-            return value;
-        }
-        if (typeof (value) === "string" && value.match(/^0x([0-9a-f][0-9a-f])*$/i)) {
-            const result = new Uint8Array((value.length - 2) / 2);
-            let offset = 2;
-            for (let i = 0; i < result.length; i++) {
-                result[i] = parseInt(value.substring(offset, offset + 2), 16);
-                offset += 2;
-            }
-            return result;
-        }
-        return this.throwArgumentError("invalid BytesLike value", name || "value", value);
-    }
-    getBytes(value, name) {
-        return this.#getBytes(value, name, false);
-    }
-    getBytesCopy(value, name) {
-        return this.#getBytes(value, name, true);
-    }
-    getNumber(value, name) {
-        switch (typeof (value)) {
-            case "bigint":
-                if (value < -maxValue || value > maxValue) {
-                    this.throwArgumentError("overflow", name || "value", value);
-                }
-                return Number(value);
-            case "number":
-                if (!Number.isInteger(value)) {
-                    this.throwArgumentError("underflow", name || "value", value);
-                }
-                else if (value < -maxValue || value > maxValue) {
-                    this.throwArgumentError("overflow", name || "value", value);
-                }
-                return value;
-            case "string":
-                try {
-                    return this.getNumber(BigInt(value), name);
-                }
-                catch (e) {
-                    this.throwArgumentError(`invalid numeric string: ${e.message}`, name || "value", value);
-                }
-        }
-        return this.throwArgumentError("invalid numeric value", name || "value", value);
-    }
-    getBigInt(value, name) {
-        switch (typeof (value)) {
-            case "bigint": return value;
-            case "number":
-                if (!Number.isInteger(value)) {
-                    this.throwArgumentError("underflow", name || "value", value);
-                }
-                else if (value < -maxValue || value > maxValue) {
-                    this.throwArgumentError("overflow", name || "value", value);
-                }
-                return BigInt(value);
-            case "string":
-                try {
-                    return BigInt(value);
-                }
-                catch (e) {
-                    this.throwArgumentError(`invalid BigNumberish string: ${e.message}`, name || "value", value);
-                }
-        }
-        return this.throwArgumentError("invalid BigNumberish value", name || "value", value);
-    }
-    #log(_logLevel, args) {
-        const logLevel = LogLevels.indexOf(_logLevel);
-        if (logLevel === -1) {
-            this.throwArgumentError("invalid log level name", "logLevel", _logLevel);
-        }
-        if (this.#logLevel > logLevel) {
-            return;
-        }
-        console.log.apply(console, args);
-    }
-    debug(...args) {
-        this.#log("debug", args);
-    }
-    info(...args) {
-        this.#log("info", args);
-    }
-    warn(...args) {
-        this.#log("warning", args);
-    }
-}
-const logger = new Logger(version);
-function assertArgument(check, message, name, value) {
-    if (!check) {
-        logger.throwArgumentError(message, name, value);
-    }
-}
-
-const HexCharacters = "0123456789abcdef";
-function hexlify(data) {
-    const bytes = logger.getBytes(data);
-    let result = "0x";
-    for (let i = 0; i < bytes.length; i++) {
-        const v = bytes[i];
-        result += HexCharacters[(v & 0xf0) >> 4] + HexCharacters[v & 0x0f];
-    }
-    return result;
-}
-
-/*
-export interface CancellablePromise<T> extends Promise<T> {
-    cancel(): Promise<void>;
-}
-export type IsCancelled = () => Promise<boolean>;
-
-export function createPromise<T>(resolve: (isCancelled: IsCancelled, (result: T) => void) => void, reject: (error: Error) => void, isCancelled: IsCancelled): CancellablePromise<T> {
-    let cancelled = false;
-
-    const promise = new Promise((resolve, reject) => {
-
-    });
-
-    (<CancellablePromise<T>>promise).cancel = function() {
-        cancelled = true;
-    };
-
-    return (<CancellablePromise<T>>promise);
-}
-*/
-/*
-export class A implements Freezable<A> {
-    foo: number;
-    constructor(foo: number) {
-        this.foo = foo;
-    }
-    freeze(): Frozen<A> {
-        Object.freeze(this);
-        return this;
-    }
-    clone(): A {
-        return new A(this.foo);
-    }
-}
-
-export class B implements Freezable<B> {
-    a: A;
-    constructor(a: A) {
-        this.a = a;
-    }
-    freeze(): Frozen<B> {
-        this.a.freeze();
-        Object.freeze(this);
-        return this;
-    }
-    clone(): B {
-        return new B(this.a);
-    }
-}
-
-export function test() {
-    const a = new A(123);
-    const b = new B(a);
-    b.a = new A(234);
-    const b2 = b.freeze();
-    b2.a.foo = 123; // = a;
-}
-*/
-function checkType(value, type) {
-    const types = type.split("|").map(t => t.trim());
-    for (let i = 0; i < types.length; i++) {
-        switch (type) {
-            case "any":
-                return;
-            case "boolean":
-            case "number":
-            case "string":
-                if (typeof (value) === type) {
-                    return;
-                }
-        }
-    }
-    throw new Error("invalid value for type");
-}
-function defineProperties(target, values, types, defaults) {
-    for (let key in values) {
-        let value = values[key];
-        const fallback = (defaults ? defaults[key] : undefined);
-        if (fallback !== undefined) {
-            value = fallback;
-        }
-        else {
-            const type = (types ? types[key] : null);
-            if (type) {
-                checkType(value, type);
-            }
-        }
-        Object.defineProperty(target, key, { enumerable: true, value, writable: false });
-    }
-}
-
-function errorFunc(reason, offset, bytes, output, badCodepoint) {
-    return logger.throwArgumentError(`invalid codepoint at offset ${offset}; ${reason}`, "bytes", bytes);
-}
-function ignoreFunc(reason, offset, bytes, output, badCodepoint) {
-    // If there is an invalid prefix (including stray continuation), skip any additional continuation bytes
-    if (reason === "BAD_PREFIX" || reason === "UNEXPECTED_CONTINUE") {
-        let i = 0;
-        for (let o = offset + 1; o < bytes.length; o++) {
-            if (bytes[o] >> 6 !== 0x02) {
-                break;
-            }
-            i++;
-        }
-        return i;
-    }
-    // This byte runs us past the end of the string, so just jump to the end
-    // (but the first byte was read already read and therefore skipped)
-    if (reason === "OVERRUN") {
-        return bytes.length - offset - 1;
-    }
-    // Nothing to skip
-    return 0;
-}
-function replaceFunc(reason, offset, bytes, output, badCodepoint) {
-    // Overlong representations are otherwise "valid" code points; just non-deistingtished
-    if (reason === "OVERLONG") {
-        output.push((badCodepoint != null) ? badCodepoint : -1);
-        return 0;
-    }
-    // Put the replacement character into the output
-    output.push(0xfffd);
-    // Otherwise, process as if ignoring errors
-    return ignoreFunc(reason, offset, bytes);
-}
-// Common error handing strategies
-const Utf8ErrorFuncs = Object.freeze({
-    error: errorFunc,
-    ignore: ignoreFunc,
-    replace: replaceFunc
-});
-// http://stackoverflow.com/questions/13356493/decode-utf-8-with-javascript#13691499
-function getUtf8CodePoints(_bytes, onError) {
-    if (onError == null) {
-        onError = Utf8ErrorFuncs.error;
-    }
-    const bytes = logger.getBytes(_bytes, "bytes");
-    const result = [];
-    let i = 0;
-    // Invalid bytes are ignored
-    while (i < bytes.length) {
-        const c = bytes[i++];
-        // 0xxx xxxx
-        if (c >> 7 === 0) {
-            result.push(c);
-            continue;
-        }
-        // Multibyte; how many bytes left for this character?
-        let extraLength = null;
-        let overlongMask = null;
-        // 110x xxxx 10xx xxxx
-        if ((c & 0xe0) === 0xc0) {
-            extraLength = 1;
-            overlongMask = 0x7f;
-            // 1110 xxxx 10xx xxxx 10xx xxxx
-        }
-        else if ((c & 0xf0) === 0xe0) {
-            extraLength = 2;
-            overlongMask = 0x7ff;
-            // 1111 0xxx 10xx xxxx 10xx xxxx 10xx xxxx
-        }
-        else if ((c & 0xf8) === 0xf0) {
-            extraLength = 3;
-            overlongMask = 0xffff;
-        }
-        else {
-            if ((c & 0xc0) === 0x80) {
-                i += onError("UNEXPECTED_CONTINUE", i - 1, bytes, result);
-            }
-            else {
-                i += onError("BAD_PREFIX", i - 1, bytes, result);
-            }
-            continue;
-        }
-        // Do we have enough bytes in our data?
-        if (i - 1 + extraLength >= bytes.length) {
-            i += onError("OVERRUN", i - 1, bytes, result);
-            continue;
-        }
-        // Remove the length prefix from the char
-        let res = c & ((1 << (8 - extraLength - 1)) - 1);
-        for (let j = 0; j < extraLength; j++) {
-            let nextChar = bytes[i];
-            // Invalid continuation byte
-            if ((nextChar & 0xc0) != 0x80) {
-                i += onError("MISSING_CONTINUE", i, bytes, result);
-                res = null;
-                break;
-            }
-            res = (res << 6) | (nextChar & 0x3f);
-            i++;
-        }
-        // See above loop for invalid continuation byte
-        if (res === null) {
-            continue;
-        }
-        // Maximum code point
-        if (res > 0x10ffff) {
-            i += onError("OUT_OF_RANGE", i - 1 - extraLength, bytes, result, res);
-            continue;
-        }
-        // Reserved for UTF-16 surrogate halves
-        if (res >= 0xd800 && res <= 0xdfff) {
-            i += onError("UTF16_SURROGATE", i - 1 - extraLength, bytes, result, res);
-            continue;
-        }
-        // Check for overlong sequences (more bytes than needed)
-        if (res <= overlongMask) {
-            i += onError("OVERLONG", i - 1 - extraLength, bytes, result, res);
-            continue;
-        }
-        result.push(res);
-    }
-    return result;
-}
-// http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
-function toUtf8Bytes(str, form) {
-    if (form != null) {
-        logger.assertNormalize(form);
-        str = str.normalize(form);
-    }
-    let result = [];
-    for (let i = 0; i < str.length; i++) {
-        const c = str.charCodeAt(i);
-        if (c < 0x80) {
-            result.push(c);
-        }
-        else if (c < 0x800) {
-            result.push((c >> 6) | 0xc0);
-            result.push((c & 0x3f) | 0x80);
-        }
-        else if ((c & 0xfc00) == 0xd800) {
-            i++;
-            const c2 = str.charCodeAt(i);
-            if (i >= str.length || (c2 & 0xfc00) !== 0xdc00) {
-                throw new Error("invalid utf-8 string");
-            }
-            // Surrogate Pair
-            const pair = 0x10000 + ((c & 0x03ff) << 10) + (c2 & 0x03ff);
-            result.push((pair >> 18) | 0xf0);
-            result.push(((pair >> 12) & 0x3f) | 0x80);
-            result.push(((pair >> 6) & 0x3f) | 0x80);
-            result.push((pair & 0x3f) | 0x80);
-        }
-        else {
-            result.push((c >> 12) | 0xe0);
-            result.push(((c >> 6) & 0x3f) | 0x80);
-            result.push((c & 0x3f) | 0x80);
-        }
-    }
-    return new Uint8Array(result);
-}
-function _toUtf8String(codePoints) {
-    return codePoints.map((codePoint) => {
-        if (codePoint <= 0xffff) {
-            return String.fromCharCode(codePoint);
-        }
-        codePoint -= 0x10000;
-        return String.fromCharCode((((codePoint >> 10) & 0x3ff) + 0xd800), ((codePoint & 0x3ff) + 0xdc00));
-    }).join("");
-}
-function toUtf8String(bytes, onError) {
-    return _toUtf8String(getUtf8CodePoints(bytes, onError));
-}
-
 let locked = false;
 const _keccak256 = function (data) {
     return keccak_256(data);
 };
 let __keccak256 = _keccak256;
 function keccak256(_data) {
-    const data = logger.getBytes(_data, "data");
+    const data = getBytes(_data, "data");
     return hexlify(__keccak256(data));
 }
 keccak256._ = _keccak256;
@@ -969,7 +895,7 @@ class WordlistOwl extends Wordlist {
     getWord(index) {
         const words = this.#loadWords();
         if (index < 0 || index >= words.length) {
-            logger.throwArgumentError(`invalid word index: ${index}`, "index", index);
+            throwArgumentError(`invalid word index: ${index}`, "index", index);
         }
         return words[index];
     }
@@ -1177,7 +1103,7 @@ class LangJa extends Wordlist {
     getWord(index) {
         const words = loadWords$2();
         if (index < 0 || index >= words.length) {
-            logger.throwArgumentError(`invalid word index: ${index}`, "index", index);
+            throwArgumentError(`invalid word index: ${index}`, "index", index);
         }
         return words[index];
     }
@@ -1249,7 +1175,7 @@ class LangKo extends Wordlist {
     getWord(index) {
         const words = loadWords$1();
         if (index < 0 || index >= words.length) {
-            logger.throwArgumentError(`invalid word index: ${index}`, "index", index);
+            throwArgumentError(`invalid word index: ${index}`, "index", index);
         }
         return words[index];
     }
@@ -1321,7 +1247,7 @@ class LangZh extends Wordlist {
     getWord(index) {
         const words = loadWords(this.locale);
         if (index < 0 || index >= words.length) {
-            logger.throwArgumentError(`invalid word index: ${index}`, "index", index);
+            throwArgumentError(`invalid word index: ${index}`, "index", index);
         }
         return words[index];
     }

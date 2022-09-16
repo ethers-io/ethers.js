@@ -1,19 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EtherscanProvider = exports.EtherscanPlugin = void 0;
-const data_js_1 = require("../utils/data.js");
-const maths_js_1 = require("../utils/maths.js");
-const errors_js_1 = require("../utils/errors.js");
-const properties_js_1 = require("../utils/properties.js");
-const utf8_js_1 = require("../utils/utf8.js");
-const fetch_js_1 = require("../utils/fetch.js");
-if (false) {
-    console.log(data_js_1.isHexString, errors_js_1.isError);
-} // @TODO
+const index_js_1 = require("../utils/index.js");
 const abstract_provider_js_1 = require("./abstract-provider.js");
 const network_js_1 = require("./network.js");
 const plugins_network_js_1 = require("./plugins-network.js");
-const logger_js_1 = require("../utils/logger.js");
 const defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 const EtherscanPluginId = "org.ethers.plugins.etherscan";
 class EtherscanPlugin extends plugins_network_js_1.NetworkPlugin {
@@ -22,7 +13,7 @@ class EtherscanPlugin extends plugins_network_js_1.NetworkPlugin {
     constructor(baseUrl, communityApiKey) {
         super(EtherscanPluginId);
         //if (communityApiKey == null) { communityApiKey = null; }
-        (0, properties_js_1.defineProperties)(this, { baseUrl, communityApiKey });
+        (0, index_js_1.defineProperties)(this, { baseUrl, communityApiKey });
     }
     clone() {
         return new EtherscanPlugin(this.baseUrl, this.communityApiKey);
@@ -44,7 +35,7 @@ class EtherscanProvider extends abstract_provider_js_1.AbstractProvider {
                 apiKey = defaultApiKey;
             }
         }
-        (0, properties_js_1.defineProperties)(this, { apiKey, network });
+        (0, index_js_1.defineProperties)(this, { apiKey, network });
         // Test that the network is supported by Etherscan
         this.getBaseUrl();
     }
@@ -66,7 +57,7 @@ class EtherscanProvider extends abstract_provider_js_1.AbstractProvider {
                 return "https:/\/api-goerli.etherscan.io";
             default:
         }
-        return logger_js_1.logger.throwArgumentError("unsupported network", "network", this.network);
+        return (0, index_js_1.throwArgumentError)("unsupported network", "network", this.network);
     }
     getUrl(module, params) {
         const query = Object.keys(params).reduce((accum, key) => {
@@ -100,9 +91,9 @@ class EtherscanProvider extends abstract_provider_js_1.AbstractProvider {
             provider: this
         });
         */
-        const request = new fetch_js_1.FetchRequest(url);
+        const request = new index_js_1.FetchRequest(url);
         request.processFunc = async (request, response) => {
-            const result = response.hasBody() ? JSON.parse((0, utf8_js_1.toUtf8String)(response.body)) : {};
+            const result = response.hasBody() ? JSON.parse((0, index_js_1.toUtf8String)(response.body)) : {};
             const throttle = ((typeof (result.result) === "string") ? result.result : "").toLowerCase().indexOf("rate limit") >= 0;
             if (module === "proxy") {
                 // This JSON response indicates we are being throttled
@@ -136,7 +127,7 @@ class EtherscanProvider extends abstract_provider_js_1.AbstractProvider {
             provider: this
         });
         */
-        const result = JSON.parse((0, utf8_js_1.toUtf8String)(response.body));
+        const result = JSON.parse((0, index_js_1.toUtf8String)(response.body));
         if (module === "proxy") {
             if (result.jsonrpc != "2.0") {
                 // @TODO: not any
@@ -186,7 +177,7 @@ class EtherscanProvider extends abstract_provider_js_1.AbstractProvider {
             }
             // Quantity-types require no leading zero, unless 0
             if ({ type: true, gasLimit: true, gasPrice: true, maxFeePerGs: true, maxPriorityFeePerGas: true, nonce: true, value: true }[key]) {
-                value = (0, maths_js_1.toQuantity)((0, data_js_1.hexlify)(value));
+                value = (0, index_js_1.toQuantity)((0, index_js_1.hexlify)(value));
             }
             else if (key === "accessList") {
                 value = "[" + this.network.formatter.accessList(value).map((set) => {
@@ -194,7 +185,7 @@ class EtherscanProvider extends abstract_provider_js_1.AbstractProvider {
                 }).join(",") + "]";
             }
             else {
-                value = (0, data_js_1.hexlify)(value);
+                value = (0, index_js_1.hexlify)(value);
             }
             result[key] = value;
         }
@@ -322,7 +313,7 @@ class EtherscanProvider extends abstract_provider_js_1.AbstractProvider {
                         boolean: (req.includeTransactions ? "true" : "false")
                     });
                 }
-                return logger_js_1.logger.throwError("getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
+                return (0, index_js_1.throwError)("getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
                     operation: "getBlock(blockHash)"
                 });
             case "getTransaction":

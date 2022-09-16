@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlockConnectionSubscriber = void 0;
-const logger_js_1 = require("../utils/logger.js");
+const index_js_1 = require("../utils/index.js");
 class BlockConnectionSubscriber {
     #provider;
     #blockNumber;
@@ -13,7 +13,7 @@ class BlockConnectionSubscriber {
     }
     start() {
         this.#filterId = this.#provider._subscribe(["newHeads"], (result) => {
-            const blockNumber = logger_js_1.logger.getNumber(result.number);
+            const blockNumber = (0, index_js_1.getNumber)(result.number);
             const initial = (this.#blockNumber === -2) ? blockNumber : (this.#blockNumber + 1);
             for (let b = initial; b <= blockNumber; b++) {
                 this.#provider.emit("block", b);

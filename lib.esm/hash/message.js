@@ -1,4 +1,4 @@
-import { keccak256 } from "../crypto/keccak.js";
+import { keccak256 } from "../crypto/index.js";
 import { MessagePrefix } from "../constants/index.js";
 import { concat, toUtf8Bytes } from "../utils/index.js";
 export function hashMessage(message) {

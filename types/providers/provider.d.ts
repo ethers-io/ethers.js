@@ -70,9 +70,6 @@ export interface MinedBlock<T extends string | TransactionResponse = string> ext
     readonly date: Date;
     readonly miner: string;
 }
-export interface LondonBlock<T extends string | TransactionResponse> extends Block<T> {
-    readonly baseFeePerGas: bigint;
-}
 export declare class Block<T extends string | TransactionResponse> implements BlockParams<T>, Iterable<T> {
     #private;
     readonly provider: Provider;
@@ -95,7 +92,9 @@ export declare class Block<T extends string | TransactionResponse> implements Bl
     get date(): null | Date;
     getTransaction(index: number): Promise<TransactionResponse>;
     isMined(): this is MinedBlock<T>;
-    isLondon(): this is LondonBlock<T>;
+    isLondon(): this is (Block<T> & {
+        baseFeePerGas: bigint;
+    });
     orphanedEvent(): OrphanFilter;
 }
 export interface LogParams {
@@ -145,16 +144,6 @@ export interface TransactionReceiptParams {
     status: null | number;
     root: null | string;
 }
-export interface LegacyTransactionReceipt {
-    byzantium: false;
-    status: null;
-    root: string;
-}
-export interface ByzantiumTransactionReceipt {
-    byzantium: true;
-    status: number;
-    root: null;
-}
 export declare class TransactionReceipt implements TransactionReceiptParams, Iterable<Log> {
     #private;
     readonly provider: Provider;
@@ -180,6 +169,7 @@ export declare class TransactionReceipt implements TransactionReceiptParams, Ite
     get fee(): bigint;
     getBlock(): Promise<Block<string>>;
     getTransaction(): Promise<TransactionResponse>;
+    getResult(): Promise<string>;
     confirmations(): Promise<number>;
     removedEvent(): OrphanFilter;
     reorderedEvent(other?: TransactionResponse): OrphanFilter;
@@ -208,21 +198,6 @@ export interface MinedTransactionResponse extends TransactionResponse {
     blockHash: string;
     date: Date;
 }
-export interface LegacyTransactionResponse extends TransactionResponse {
-    accessList: null;
-    maxFeePerGas: null;
-    maxPriorityFeePerGas: null;
-}
-export interface BerlinTransactionResponse extends TransactionResponse {
-    accessList: AccessList;
-    maxFeePerGas: null;
-    maxPriorityFeePerGas: null;
-}
-export interface LondonTransactionResponse extends TransactionResponse {
-    accessList: AccessList;
-    maxFeePerGas: bigint;
-    maxPriorityFeePerGas: bigint;
-}
 export declare class TransactionResponse implements TransactionLike<string>, TransactionResponseParams {
     readonly provider: Provider;
     readonly blockNumber: null | number;
@@ -248,9 +223,21 @@ export declare class TransactionResponse implements TransactionLike<string>, Tra
     getTransaction(): Promise<null | TransactionResponse>;
     wait(confirms?: number): Promise<null | TransactionReceipt>;
     isMined(): this is MinedTransactionResponse;
-    isLegacy(): this is LegacyTransactionResponse;
-    isBerlin(): this is BerlinTransactionResponse;
-    isLondon(): this is LondonTransactionResponse;
+    isLegacy(): this is (TransactionResponse & {
+        accessList: null;
+        maxFeePerGas: null;
+        maxPriorityFeePerGas: null;
+    });
+    isBerlin(): this is (TransactionResponse & {
+        accessList: AccessList;
+        maxFeePerGas: null;
+        maxPriorityFeePerGas: null;
+    });
+    isLondon(): this is (TransactionResponse & {
+        accessList: AccessList;
+        maxFeePerGas: bigint;
+        maxPriorityFeePerGas: bigint;
+    });
     removedEvent(): OrphanFilter;
     reorderedEvent(other?: TransactionResponse): OrphanFilter;
 }
@@ -388,6 +375,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
     getBlockWithTransactions(blockHashOrBlockTag: BlockTag | string): Promise<null | Block<TransactionResponse>>;
     getTransaction(hash: string): Promise<null | TransactionResponse>;
     getTransactionReceipt(hash: string): Promise<null | TransactionReceipt>;
+    getTransactionResult(hash: string): Promise<null | string>;
     getLogs(filter: Filter | FilterByBlockHash): Promise<Array<Log>>;
     resolveName(name: string): Promise<null | string>;
     lookupAddress(address: string): Promise<null | string>;

@@ -13,7 +13,7 @@ let __sha256 = _sha256;
 let __sha512 = _sha512;
 let locked256 = false, locked512 = false;
 function sha256(_data) {
-    const data = index_js_1.logger.getBytes(_data, "data");
+    const data = (0, index_js_1.getBytes)(_data, "data");
     return (0, index_js_1.hexlify)(__sha256(data));
 }
 exports.sha256 = sha256;
@@ -27,7 +27,7 @@ sha256.register = function (func) {
 };
 Object.freeze(sha256);
 function sha512(_data) {
-    const data = index_js_1.logger.getBytes(_data, "data");
+    const data = (0, index_js_1.getBytes)(_data, "data");
     return (0, index_js_1.hexlify)(__sha512(data));
 }
 exports.sha512 = sha512;

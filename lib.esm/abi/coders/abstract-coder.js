@@ -1,7 +1,4 @@
-import { toArray, toBigInt, toNumber } from "../../utils/maths.js";
-import { concat, hexlify } from "../../utils/data.js";
-import { defineProperties } from "../../utils/properties.js";
-import { logger } from "../../utils/logger.js";
+import { defineProperties, concat, getBytesCopy, getNumber, hexlify, toArray, toBigInt, toNumber, assertPrivate, throwArgumentError, throwError } from "../../utils/index.js";
 export const WordSize = 32;
 const Padding = new Uint8Array(WordSize);
 // Properties used to immediate pass through to the underlying object
@@ -11,7 +8,7 @@ const _guard = {};
 export class Result extends Array {
     #indices;
     constructor(guard, items, keys) {
-        logger.assertPrivate(guard, _guard, "Result");
+        assertPrivate(guard, _guard, "Result");
         super(...items);
         // Name lookup table
         this.#indices = new Map();
@@ -33,7 +30,7 @@ export class Result extends Array {
             get: (target, prop, receiver) => {
                 if (typeof (prop) === "string") {
                     if (prop.match(/^[0-9]+$/)) {
-                        const index = logger.getNumber(prop, "%index");
+                        const index = getNumber(prop, "%index");
                         if (index < 0 || index >= this.length) {
                             throw new RangeError("out of result range");
                         }
@@ -132,14 +129,14 @@ export function checkResultErrors(result) {
 function getValue(value) {
     let bytes = toArray(value);
     if (bytes.length > WordSize) {
-        logger.throwError("value out-of-bounds", "BUFFER_OVERRUN", {
+        throwError("value out-of-bounds", "BUFFER_OVERRUN", {
             buffer: bytes,
             length: WordSize,
             offset: bytes.length
         });
     }
     if (bytes.length !== WordSize) {
-        bytes = logger.getBytesCopy(concat([Padding.slice(bytes.length % WordSize), bytes]));
+        bytes = getBytesCopy(concat([Padding.slice(bytes.length % WordSize), bytes]));
     }
     return bytes;
 }
@@ -163,7 +160,7 @@ export class Coder {
         });
     }
     _throwError(message, value) {
-        return logger.throwArgumentError(message, this.localName, value);
+        return throwArgumentError(message, this.localName, value);
     }
 }
 export class Writer {
@@ -184,14 +181,14 @@ export class Writer {
         return data.length;
     }
     appendWriter(writer) {
-        return this.#writeData(logger.getBytesCopy(writer.data));
+        return this.#writeData(getBytesCopy(writer.data));
     }
     // Arrayish item; pad on the right to *nearest* WordSize
     writeBytes(value) {
-        let bytes = logger.getBytesCopy(value);
+        let bytes = getBytesCopy(value);
         const paddingOffset = bytes.length % WordSize;
         if (paddingOffset) {
-            bytes = logger.getBytesCopy(concat([bytes, Padding.slice(paddingOffset)]));
+            bytes = getBytesCopy(concat([bytes, Padding.slice(paddingOffset)]));
         }
         return this.#writeData(bytes);
     }
@@ -220,7 +217,7 @@ export class Reader {
     #offset;
     constructor(data, allowLoose) {
         defineProperties(this, { allowLoose: !!allowLoose });
-        this.#data = logger.getBytesCopy(data);
+        this.#data = getBytesCopy(data);
         this.#offset = 0;
     }
     get data() { return hexlify(this.#data); }
@@ -234,8 +231,8 @@ export class Reader {
                 alignedLength = length;
             }
             else {
-                logger.throwError("data out-of-bounds", "BUFFER_OVERRUN", {
-                    buffer: logger.getBytesCopy(this.#data),
+                throwError("data out-of-bounds", "BUFFER_OVERRUN", {
+                    buffer: getBytesCopy(this.#data),
                     length: this.#data.length,
                     offset: this.#offset + alignedLength
                 });

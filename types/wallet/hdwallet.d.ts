@@ -6,9 +6,6 @@ import type { BytesLike, Numeric } from "../utils/index.js";
 import type { Provider } from "../providers/index.js";
 import type { Wordlist } from "../wordlists/index.js";
 export declare const defaultPath = "m/44'/60'/0'/0/0";
-export interface HDNodeWithPath {
-    path: string;
-}
 export declare class HDNodeWallet extends BaseWallet {
     #private;
     readonly publicKey: string;

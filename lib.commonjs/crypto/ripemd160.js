@@ -9,7 +9,7 @@ const _ripemd160 = function (data) {
 };
 let __ripemd160 = _ripemd160;
 function ripemd160(_data) {
-    const data = index_js_1.logger.getBytes(_data, "data");
+    const data = (0, index_js_1.getBytes)(_data, "data");
     return (0, index_js_1.hexlify)(__ripemd160(data));
 }
 exports.ripemd160 = ripemd160;

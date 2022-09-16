@@ -1,15 +1,15 @@
-import { logger } from "./logger.js";
+import { throwError } from "./errors.js";
 // @TODO: timeout is completely ignored; start a Promise.any with a reject?
 export async function getUrl(req, _signal) {
     const protocol = req.url.split(":")[0].toLowerCase();
     if (protocol !== "http" && protocol !== "https") {
-        logger.throwError(`unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
+        throwError(`unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
             info: { protocol },
             operation: "request"
         });
     }
     if (req.credentials && !req.allowInsecureAuthentication) {
-        logger.throwError("insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
+        throwError("insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
             operation: "request"
         });
     }

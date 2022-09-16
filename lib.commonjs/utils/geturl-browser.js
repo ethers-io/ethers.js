@@ -1,18 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUrl = void 0;
-const logger_js_1 = require("./logger.js");
+const errors_js_1 = require("./errors.js");
 // @TODO: timeout is completely ignored; start a Promise.any with a reject?
 async function getUrl(req, _signal) {
     const protocol = req.url.split(":")[0].toLowerCase();
     if (protocol !== "http" && protocol !== "https") {
-        logger_js_1.logger.throwError(`unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
+        (0, errors_js_1.throwError)(`unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
             info: { protocol },
             operation: "request"
         });
     }
     if (req.credentials && !req.allowInsecureAuthentication) {
-        logger_js_1.logger.throwError("insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
+        (0, errors_js_1.throwError)("insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
             operation: "request"
         });
     }

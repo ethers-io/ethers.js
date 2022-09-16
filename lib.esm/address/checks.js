@@ -1,4 +1,4 @@
-import { logger } from "../utils/logger.js";
+import { throwArgumentError, throwError } from "../utils/index.js";
 import { getAddress } from "./address.js";
 export function isAddressable(value) {
     return (value && typeof (value.getAddress) === "function");
@@ -15,9 +15,9 @@ async function checkAddress(target, promise) {
     const result = await promise;
     if (result == null || result === "0x0000000000000000000000000000000000000000") {
         if (typeof (target) === "string") {
-            return logger.throwError("unconfigured name", "UNCONFIGURED_NAME", { value: target });
+            return throwError("unconfigured name", "UNCONFIGURED_NAME", { value: target });
         }
-        return logger.throwArgumentError("invalid AddressLike value; did not resolve to a value address", "target", target);
+        return throwArgumentError("invalid AddressLike value; did not resolve to a value address", "target", target);
     }
     return getAddress(result);
 }
@@ -29,7 +29,7 @@ export function resolveAddress(target, resolver) {
             return getAddress(target);
         }
         if (resolver == null) {
-            return logger.throwError("ENS resolution requires a provider", "UNSUPPORTED_OPERATION", {
+            return throwError("ENS resolution requires a provider", "UNSUPPORTED_OPERATION", {
                 operation: "resolveName",
             });
         }
@@ -41,6 +41,6 @@ export function resolveAddress(target, resolver) {
     else if (typeof (target.then) === "function") {
         return checkAddress(target, target);
     }
-    return logger.throwArgumentError("unsupported addressable value", "target", target);
+    return throwArgumentError("unsupported addressable value", "target", target);
 }
 //# sourceMappingURL=checks.js.map

@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.langKo = void 0;
-const id_js_1 = require("../hash/id.js");
-const index_js_1 = require("../utils/index.js");
+const index_js_1 = require("../hash/index.js");
+const index_js_2 = require("../utils/index.js");
 const wordlist_js_1 = require("./wordlist.js");
 const data = [
     "OYAa",
@@ -22,7 +22,7 @@ function getHangul(code) {
     else if (code >= 19) {
         code = code + 97 - 19;
     }
-    return (0, index_js_1.toUtf8String)(new Uint8Array([225, (code >> 6) + 132, (code & 0x3f) + 128]));
+    return (0, index_js_2.toUtf8String)(new Uint8Array([225, (code >> 6) + 132, (code & 0x3f) + 128]));
 }
 let _wordlist = null;
 function loadWords() {
@@ -43,7 +43,7 @@ function loadWords() {
     wordlist.sort();
     // Verify the computed list matches the official list
     /* istanbul ignore if */
-    const checksum = (0, id_js_1.id)(wordlist.join("\n") + "\n");
+    const checksum = (0, index_js_1.id)(wordlist.join("\n") + "\n");
     /* c8 ignore start */
     if (checksum !== "0xf9eddeace9c5d3da9c93cf7d3cd38f6a13ed3affb933259ae865714e8a3ae71a") {
         throw new Error("BIP39 Wordlist for ko (Korean) FAILED");
@@ -59,7 +59,7 @@ class LangKo extends wordlist_js_1.Wordlist {
     getWord(index) {
         const words = loadWords();
         if (index < 0 || index >= words.length) {
-            index_js_1.logger.throwArgumentError(`invalid word index: ${index}`, "index", index);
+            (0, index_js_2.throwArgumentError)(`invalid word index: ${index}`, "index", index);
         }
         return words[index];
     }

@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FetchResponse = exports.FetchRequest = exports.FetchCancelSignal = exports.getIpfsGatewayFunc = void 0;
 const base64_js_1 = require("./base64.js");
 const data_js_1 = require("./data.js");
-const logger_js_1 = require("./logger.js");
+const errors_js_1 = require("./errors.js");
 const properties_js_1 = require("./properties.js");
 const utf8_js_1 = require("./utf8.js");
 const geturl_js_1 = require("./geturl.js");
@@ -24,20 +24,24 @@ async function gatewayData(url, signal) {
         }
         return new FetchResponse(200, "OK", {
             "content-type": (match[1] || "text/plain"),
-        }, (match[1] ? (0, base64_js_1.decodeBase64)(match[3]) : unpercent(match[3])));
+        }, (match[2] ? (0, base64_js_1.decodeBase64)(match[3]) : unpercent(match[3])));
     }
     catch (error) {
         return new FetchResponse(599, "BAD REQUEST (invalid data: URI)", {}, null, new FetchRequest(url));
     }
 }
-function getIpfsGatewayFunc(base) {
+/**
+ *  Returns a [[FetchGatewayFunc]] for fetching content from a standard
+ *  IPFS gateway hosted at %%baseUrl%%.
+ */
+function getIpfsGatewayFunc(baseUrl) {
     async function gatewayIpfs(url, signal) {
         try {
             const match = url.match(reIpfs);
             if (!match) {
                 throw new Error("invalid link");
             }
-            return new FetchRequest(`${base}${match[2]}`);
+            return new FetchRequest(`${baseUrl}${match[2]}`);
         }
         catch (error) {
             return new FetchResponse(599, "BAD REQUEST (invalid IPFS URI)", {}, null, new FetchRequest(url));
@@ -70,18 +74,18 @@ class FetchCancelSignal {
     }
     addListener(listener) {
         if (this.#cancelled) {
-            logger_js_1.logger.throwError("singal already cancelled", "UNSUPPORTED_OPERATION", {
+            (0, errors_js_1.throwError)("singal already cancelled", "UNSUPPORTED_OPERATION", {
                 operation: "fetchCancelSignal.addCancelListener"
             });
         }
         this.#listeners.push(listener);
     }
-    get cancelled() { return this.cancelled; }
+    get cancelled() { return this.#cancelled; }
     checkSignal() {
         if (!this.cancelled) {
             return;
         }
-        logger_js_1.logger.throwError("cancelled", "CANCELLED", {});
+        (0, errors_js_1.throwError)("cancelled", "CANCELLED", {});
     }
 }
 exports.FetchCancelSignal = FetchCancelSignal;
@@ -93,6 +97,12 @@ function checkSignal(signal) {
     signal.checkSignal();
     return signal;
 }
+/**
+ *  Represents a request for a resource using a URI.
+ *
+ *  Requests can occur over http/https, data: URI or any
+ *  URI scheme registered via the static [[register]] method.
+ */
 class FetchRequest {
     #allowInsecure;
     #gzip;
@@ -108,12 +118,32 @@ class FetchRequest {
     #process;
     #retry;
     #signal;
-    // URL
+    /**
+     *  The fetch URI to requrest.
+     */
     get url() { return this.#url; }
     set url(url) {
         this.#url = String(url);
     }
-    // Body
+    /**
+     *  The fetch body, if any, to send as the request body.
+     *
+     *  When setting a body, the intrinsic ``Content-Type`` is automatically
+     *  set and will be used if **not overridden** by setting a custom
+     *  header.
+     *
+     *  If %%body%% is null, the body is cleared (along with the
+     *  intrinsic ``Content-Type``) and the .
+     *
+     *  If %%body%% is a string, the intrincis ``Content-Type`` is set to
+     *  ``text/plain``.
+     *
+     *  If %%body%% is a Uint8Array, the intrincis ``Content-Type`` is set to
+     *  ``application/octet-stream``.
+     *
+     *  If %%body%% is any other object, the intrincis ``Content-Type`` is
+     *  set to ``application/json``.
+     */
     get body() {
         if (this.#body == null) {
             return null;
@@ -141,10 +171,17 @@ class FetchRequest {
             throw new Error("invalid body");
         }
     }
+    /**
+     *  Returns true if the request has a body.
+     */
     hasBody() {
         return (this.#body != null);
     }
-    // Method (default: GET with no body, POST with a body)
+    /**
+     *  The HTTP method to use when requesting the URI. If no method
+     *  has been explicitly set, then ``GET`` is used if the body is
+     *  null and ``POST`` otherwise.
+     */
     get method() {
         if (this.#method) {
             return this.#method;
@@ -160,7 +197,9 @@ class FetchRequest {
         }
         this.#method = String(method).toUpperCase();
     }
-    // Headers (automatically fills content-type if not explicitly set)
+    /**
+     *  The headers that will be used when requesting the URI.
+     */
     get headers() {
         const headers = Object.assign({}, this.#headers);
         if (this.#creds) {
@@ -178,12 +217,22 @@ class FetchRequest {
         }
         return Object.freeze(headers);
     }
+    /**
+     *  Get the header for %%key%%.
+     */
     getHeader(key) {
         return this.headers[key.toLowerCase()];
     }
+    /**
+     *  Set the header for %%key%% to %%value%%. All values are coerced
+     *  to a string.
+     */
     setHeader(key, value) {
         this.#headers[String(key).toLowerCase()] = String(value);
     }
+    /**
+     *  Clear all headers.
+     */
     clearHeaders() {
         this.#headers = {};
     }
@@ -203,51 +252,80 @@ class FetchRequest {
             }
         };
     }
-    // Configure an Authorization header
+    /**
+     *  The value that will be sent for the ``Authorization`` header.
+     */
     get credentials() {
         return this.#creds || null;
     }
+    /**
+     *  Sets an ``Authorization`` for %%username%% with %%password%%.
+     */
     setCredentials(username, password) {
         if (username.match(/:/)) {
-            logger_js_1.logger.throwArgumentError("invalid basic authentication username", "username", "[REDACTED]");
+            (0, errors_js_1.throwArgumentError)("invalid basic authentication username", "username", "[REDACTED]");
         }
         this.#creds = `${username}:${password}`;
     }
-    // Configure the request to allow gzipped responses
+    /**
+     *  Allow gzip-encoded responses.
+     */
     get allowGzip() {
         return this.#gzip;
     }
     set allowGzip(value) {
         this.#gzip = !!value;
     }
-    // Allow credentials to be sent over an insecure (non-HTTPS) channel
+    /**
+     *  Allow ``Authentication`` credentials to be sent over insecure
+     *  channels.
+     */
     get allowInsecureAuthentication() {
         return !!this.#allowInsecure;
     }
     set allowInsecureAuthentication(value) {
         this.#allowInsecure = !!value;
     }
-    // Timeout (milliseconds)
+    /**
+     *  The timeout (in milliseconds) to wait for a complere response.
+     */
     get timeout() { return this.#timeout; }
     set timeout(timeout) {
-        (0, logger_js_1.assertArgument)(timeout >= 0, "timeout must be non-zero", "timeout", timeout);
+        (0, errors_js_1.assertArgument)(timeout >= 0, "timeout must be non-zero", "timeout", timeout);
         this.#timeout = timeout;
     }
-    // Preflight called before each request is sent
+    /**
+     *  This function is called prior to each request, for example
+     *  during a redirection or retry in case of server throttling.
+     *
+     *  This offers an opportunity to populate headers or update
+     *  content before sending a request.
+     */
     get preflightFunc() {
         return this.#preflight || null;
     }
     set preflightFunc(preflight) {
         this.#preflight = preflight;
     }
-    // Preflight called before each request is sent
+    /**
+     *  This function is called after each response, offering an
+     *  opportunity to provide client-level throttling or updating
+     *  response data.
+     *
+     *  Any error thrown in this causes the ``send()`` to throw.
+     *
+     *  To schedule a retry attempt (assuming the maximum retry limit
+     *  has not been reached), use [[response.throwThrottleError]].
+     */
     get processFunc() {
         return this.#process || null;
     }
     set processFunc(process) {
         this.#process = process;
     }
-    // Preflight called before each request is sent
+    /**
+     *  This function is called on each retry attempt.
+     */
     get retryFunc() {
         return this.#retry || null;
     }
@@ -267,7 +345,7 @@ class FetchRequest {
             return _response.makeServerError("exceeded maximum retry limit");
         }
         if (getTime() > expires) {
-            return logger_js_1.logger.throwError("timeout", "TIMEOUT", {
+            return (0, errors_js_1.throwError)("timeout", "TIMEOUT", {
                 operation: "request.send", reason: "timeout", request: _request
             });
         }
@@ -346,16 +424,23 @@ class FetchRequest {
         }
         return response;
     }
+    /**
+     *  Resolves to the response by sending the request.
+     */
     send() {
         if (this.#signal != null) {
-            return logger_js_1.logger.throwError("request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
+            return (0, errors_js_1.throwError)("request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
         }
         this.#signal = new FetchCancelSignal(this);
         return this.#send(0, getTime() + this.timeout, 0, this, new FetchResponse(0, "", {}, null, this));
     }
+    /**
+     *  Cancels the inflight response, causing a ``CANCELLED``
+     *  error to be rejected from the [[send]].
+     */
     cancel() {
         if (this.#signal == null) {
-            return logger_js_1.logger.throwError("request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
+            return (0, errors_js_1.throwError)("request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
         }
         const signal = fetchSignals.get(this);
         if (!signal) {
@@ -376,7 +461,7 @@ class FetchRequest {
         // - downgrading the security (e.g. https => http)
         // - to non-HTTP (or non-HTTPS) protocols [this could be relaxed?]
         if (this.method !== "GET" || (current === "https" && target === "http") || !location.match(/^https?:/)) {
-            return logger_js_1.logger.throwError(`unsupported redirect`, "UNSUPPORTED_OPERATION", {
+            return (0, errors_js_1.throwError)(`unsupported redirect`, "UNSUPPORTED_OPERATION", {
                 operation: `redirect(${this.method} ${JSON.stringify(this.url)} => ${JSON.stringify(location)})`
             });
         }
@@ -396,6 +481,9 @@ class FetchRequest {
         //setStore(req.#props, "creds", getStore(this.#pros, "creds"));
         return req;
     }
+    /**
+     *  Create a new copy of this request.
+     */
     clone() {
         const clone = new FetchRequest(this.url);
         // Preserve "default method" (i.e. null)
@@ -421,12 +509,22 @@ class FetchRequest {
         clone.#retry = this.#retry;
         return clone;
     }
+    /**
+     *  Locks all static configuration for gateways and FetchGetUrlFunc
+     *  registration.
+     */
     static lockConfig() {
         locked = true;
     }
+    /**
+     *  Get the current Gateway function for %%scheme%%.
+     */
     static getGateway(scheme) {
         return Gateways[scheme.toLowerCase()] || null;
     }
+    /**
+     *  Set the FetchGatewayFunc for %%scheme%% to %%func%%.
+     */
     static registerGateway(scheme, func) {
         scheme = scheme.toLowerCase();
         if (scheme === "http" || scheme === "https") {
@@ -437,6 +535,9 @@ class FetchRequest {
         }
         Gateways[scheme] = func;
     }
+    /**
+     *  Set a custom function for fetching HTTP and HTTPS requests.
+     */
     static registerGetUrl(getUrl) {
         if (locked) {
             throw new Error("gateways locked");
@@ -446,6 +547,9 @@ class FetchRequest {
 }
 exports.FetchRequest = FetchRequest;
 ;
+/**
+ *  The response for a FetchREquest.
+ */
 class FetchResponse {
     #statusCode;
     #statusMessage;
@@ -456,28 +560,50 @@ class FetchResponse {
     toString() {
         return `<Response status=${this.statusCode} body=${this.#body ? (0, data_js_1.hexlify)(this.#body) : "null"}>`;
     }
+    /**
+     *  The response status code.
+     */
     get statusCode() { return this.#statusCode; }
+    /**
+     *  The response status message.
+     */
     get statusMessage() { return this.#statusMessage; }
+    /**
+     *  The response headers.
+     */
     get headers() { return this.#headers; }
+    /**
+     *  The response body.
+     */
     get body() {
         return (this.#body == null) ? null : new Uint8Array(this.#body);
     }
+    /**
+     *  The response body as a UTF-8 encoded string.
+     *
+     * An error is thrown if the body is invalid UTF-8 data.
+     */
     get bodyText() {
         try {
             return (this.#body == null) ? "" : (0, utf8_js_1.toUtf8String)(this.#body);
         }
         catch (error) {
-            return logger_js_1.logger.throwError("response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
+            return (0, errors_js_1.throwError)("response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
                 operation: "bodyText", info: { response: this }
             });
         }
     }
+    /**
+     *  The response body, decoded as JSON.
+     *
+     *  An error is thrown if the body is invalid JSON-encoded data.
+     */
     get bodyJson() {
         try {
             return JSON.parse(this.bodyText);
         }
         catch (error) {
-            return logger_js_1.logger.throwError("response body is not valid JSON", "UNSUPPORTED_OPERATION", {
+            return (0, errors_js_1.throwError)("response body is not valid JSON", "UNSUPPORTED_OPERATION", {
                 operation: "bodyJson", info: { response: this }
             });
         }
@@ -509,6 +635,11 @@ class FetchResponse {
         this.#request = (request || null);
         this.#error = { message: "" };
     }
+    /**
+     *  Return a Response with matching headers and body, but with
+     *  an error status code (i.e. 599) and %%message%% with an
+     *  optional %%error%%.
+     */
     makeServerError(message, error) {
         let statusMessage;
         if (!message) {
@@ -522,27 +653,46 @@ class FetchResponse {
         response.#error = { message, error };
         return response;
     }
+    /**
+     *  If called within the [[processFunc]], causes the request to
+     *  retry as if throttled for %%stall%% milliseconds.
+     */
     throwThrottleError(message, stall) {
         if (stall == null) {
             stall = -1;
         }
         else if (typeof (stall) !== "number" || !Number.isInteger(stall) || stall < 0) {
-            return logger_js_1.logger.throwArgumentError("invalid stall timeout", "stall", stall);
+            return (0, errors_js_1.throwArgumentError)("invalid stall timeout", "stall", stall);
         }
         const error = new Error(message || "throttling requests");
         (0, properties_js_1.defineProperties)(error, { stall, throttle: true });
         throw error;
     }
+    /**
+     *  Get the header value for %%key%%.
+     */
     getHeader(key) {
         return this.headers[key.toLowerCase()];
     }
+    /**
+     *  Returns true of the response has a body.
+     */
     hasBody() {
         return (this.#body != null);
     }
+    /**
+     *  The request made for this response.
+     */
     get request() { return this.#request; }
+    /**
+     *  Returns true if this response was a success statuscode.
+     */
     ok() {
         return (this.#error.message === "" && this.statusCode >= 200 && this.statusCode < 300);
     }
+    /**
+     *  Throws a ``SERVER_ERROR`` if this response is not ok.
+     */
     assertOk() {
         if (this.ok()) {
             return;
@@ -551,7 +701,7 @@ class FetchResponse {
         if (message === "") {
             message = `server response ${this.statusCode} ${this.statusMessage}`;
         }
-        logger_js_1.logger.throwError(message, "SERVER_ERROR", {
+        (0, errors_js_1.throwError)(message, "SERVER_ERROR", {
             request: (this.request || "unknown request"), response: this, error
         });
     }

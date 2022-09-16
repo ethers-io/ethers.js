@@ -1,5 +1,5 @@
-import { keccak256 } from "../crypto/keccak.js";
-import { logger } from "../utils/logger.js";
+import { keccak256 } from "../crypto/index.js";
+import { getBytes, throwArgumentError } from "../utils/index.js";
 const BN_0 = BigInt(0);
 const BN_36 = BigInt(36);
 function getChecksumAddress(address) {
@@ -12,7 +12,7 @@ function getChecksumAddress(address) {
     for (let i = 0; i < 40; i++) {
         expanded[i] = chars[i].charCodeAt(0);
     }
-    const hashed = logger.getBytes(keccak256(expanded));
+    const hashed = getBytes(keccak256(expanded));
     for (let i = 0; i < 40; i += 2) {
         if ((hashed[i >> 1] >> 4) >= 8) {
             chars[i] = chars[i].toUpperCase();
@@ -70,7 +70,7 @@ function fromBase36(value) {
 }
 export function getAddress(address) {
     if (typeof (address) !== "string") {
-        logger.throwArgumentError("invalid address", "address", address);
+        throwArgumentError("invalid address", "address", address);
     }
     if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
         // Missing the 0x prefix
@@ -80,7 +80,7 @@ export function getAddress(address) {
         const result = getChecksumAddress(address);
         // It is a checksummed address with a bad checksum
         if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
-            logger.throwArgumentError("bad address checksum", "address", address);
+            throwArgumentError("bad address checksum", "address", address);
         }
         return result;
     }
@@ -88,7 +88,7 @@ export function getAddress(address) {
     if (address.match(/^XE[0-9]{2}[0-9A-Za-z]{30,31}$/)) {
         // It is an ICAP address with a bad checksum
         if (address.substring(2, 4) !== ibanChecksum(address)) {
-            logger.throwArgumentError("bad icap checksum", "address", address);
+            throwArgumentError("bad icap checksum", "address", address);
         }
         let result = fromBase36(address.substring(4)).toString(16);
         while (result.length < 40) {
@@ -96,7 +96,7 @@ export function getAddress(address) {
         }
         return getChecksumAddress("0x" + result);
     }
-    return logger.throwArgumentError("invalid address", "address", address);
+    return throwArgumentError("invalid address", "address", address);
 }
 export function getIcapAddress(address) {
     //let base36 = _base16To36(getAddress(address).substring(2)).toUpperCase();

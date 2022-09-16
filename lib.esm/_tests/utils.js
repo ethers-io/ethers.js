@@ -29,4 +29,89 @@ export function log(context, text) {
         console.log(text);
     }
 }
+async function stall(duration) {
+    return new Promise((resolve) => { setTimeout(resolve, duration); });
+}
+const ATTEMPTS = 5;
+export async function retryIt(name, func) {
+    it(name, async function () {
+        this.timeout(ATTEMPTS * 5000);
+        for (let i = 0; i < ATTEMPTS; i++) {
+            try {
+                await func.call(this);
+                return;
+            }
+            catch (error) {
+                if (error.message === "sync skip; aborting execution") {
+                    // Skipping a test; let mocha handle it
+                    throw error;
+                }
+                else if (error.code === "ERR_ASSERTION") {
+                    // Assertion error; let mocha scold us
+                    throw error;
+                }
+                else {
+                    if (i === ATTEMPTS - 1) {
+                        stats.pushRetry(i, name, error);
+                    }
+                    else {
+                        await stall(500 * (1 << i));
+                        stats.pushRetry(i, name, null);
+                    }
+                }
+            }
+        }
+        // All hope is lost.
+        throw new Error(`Failed after ${ATTEMPTS} attempts; ${name}`);
+    });
+}
+const _guard = {};
+export class Stats {
+    #stats;
+    constructor(guard) {
+        if (guard !== _guard) {
+            throw new Error("private constructor");
+        }
+        this.#stats = [];
+    }
+    #currentStats() {
+        if (this.#stats.length === 0) {
+            throw new Error("no active stats");
+        }
+        return this.#stats[this.#stats.length - 1];
+    }
+    pushRetry(attempt, line, error) {
+        const { retries } = this.#currentStats();
+        if (attempt > 0) {
+            retries.pop();
+        }
+        if (retries.length < 100) {
+            retries.push({
+                message: `${attempt + 1} failures: ${line}`,
+                error
+            });
+        }
+    }
+    start(name) {
+        this.#stats.push({ name, retries: [] });
+    }
+    end(context) {
+        let log = console.log.bind(console);
+        if (context && typeof (context._ethersLog) === "function") {
+            log = context._ethersLog;
+        }
+        const { name, retries } = this.#currentStats();
+        if (retries.length === 0) {
+            return;
+        }
+        log(`Warning: The following tests required retries (${name})`);
+        retries.forEach(({ error, message }) => {
+            log("  " + message);
+            if (error) {
+                log(error);
+            }
+        });
+    }
+}
+export const stats = new Stats(_guard);
 //# sourceMappingURL=utils.js.map

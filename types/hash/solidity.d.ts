@@ -14,11 +14,5 @@ export declare function solidityPacked(types: ReadonlyArray<string>, values: Rea
  *   @see https://docs.soliditylang.org/en/v0.8.14/abi-spec.html#non-standard-packed-mode
  */
 export declare function solidityPackedKeccak256(types: ReadonlyArray<string>, values: ReadonlyArray<any>): string;
-/**
- *  Test Function, for fun
- *
- *  @param foo - something fun
- */
-export declare function test(foo: number | string): void;
 export declare function solidityPackedSha256(types: ReadonlyArray<string>, values: ReadonlyArray<any>): string;
 //# sourceMappingURL=solidity.d.ts.map

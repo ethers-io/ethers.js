@@ -1,7 +1,5 @@
-import { defineProperties } from "../utils/properties.js";
-import { FetchRequest } from "../utils/fetch.js";
+import { defineProperties, FetchRequest, throwArgumentError } from "../utils/index.js";
 import { showThrottleMessage } from "./community.js";
-import { logger } from "../utils/logger.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
 const defaultApiKey = "9f7d929b018cdffb338517efa06f58359e86ff1ffd350bc889738523659e7972";
@@ -20,7 +18,7 @@ function getHost(name) {
         case "arbitrum":
             return "rpc.ankr.com/arbitrum";
     }
-    return logger.throwArgumentError("unsupported network", "network", name);
+    return throwArgumentError("unsupported network", "network", name);
 }
 export class AnkrProvider extends JsonRpcProvider {
     apiKey;

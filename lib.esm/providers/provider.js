@@ -1,7 +1,5 @@
 //import { resolveAddress } from "@ethersproject/address";
-import { hexlify } from "../utils/data.js";
-import { logger } from "../utils/logger.js";
-import { defineProperties } from "../utils/properties.js";
+import { defineProperties, getBigInt, getNumber, hexlify, throwError } from "../utils/index.js";
 import { accessListify } from "../transaction/index.js";
 // -----------------------
 function getValue(value) {
@@ -56,14 +54,14 @@ export function copyRequest(req) {
         if (!(key in req) || req[key] == null) {
             continue;
         }
-        result[key] = logger.getBigInt(req[key], `request.${key}`);
+        result[key] = getBigInt(req[key], `request.${key}`);
     }
     const numberKeys = "type,nonce".split(/,/);
     for (const key in numberKeys) {
         if (!(key in req) || req[key] == null) {
             continue;
         }
-        result[key] = logger.getNumber(req[key], `request.${key}`);
+        result[key] = getNumber(req[key], `request.${key}`);
     }
     if (req.accessList) {
         result.accessList = accessListify(req.accessList);
@@ -170,7 +168,9 @@ export class Block {
         }
     }
     isMined() { return !!this.hash; }
-    isLondon() { return !!this.baseFeePerGas; }
+    isLondon() {
+        return !!this.baseFeePerGas;
+    }
     orphanedEvent() {
         if (!this.isMined()) {
             throw new Error("");
@@ -231,6 +231,19 @@ export class Log {
         return createRemovedLogFilter(this);
     }
 }
+/*
+export interface LegacyTransactionReceipt {
+    byzantium: false;
+    status: null;
+    root: string;
+}
+
+export interface ByzantiumTransactionReceipt {
+    byzantium: true;
+    status: number;
+    root: null;
+}
+*/
 export class TransactionReceipt {
     provider;
     to;
@@ -322,6 +335,9 @@ export class TransactionReceipt {
         }
         return tx;
     }
+    async getResult() {
+        return (await this.provider.getTransactionResult(this.hash));
+    }
     async confirmations() {
         return (await this.provider.getBlockNumber()) - this.blockNumber + 1;
     }
@@ -330,7 +346,7 @@ export class TransactionReceipt {
     }
     reorderedEvent(other) {
         if (other && !other.isMined()) {
-            return logger.throwError("unmined 'other' transction cannot be orphaned", "UNSUPPORTED_OPERATION", {
+            return throwError("unmined 'other' transction cannot be orphaned", "UNSUPPORTED_OPERATION", {
                 operation: "reorderedEvent(other)"
             });
         }
@@ -436,7 +452,7 @@ export class TransactionResponse {
     }
     removedEvent() {
         if (!this.isMined()) {
-            return logger.throwError("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
+            return throwError("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
                 operation: "removeEvent()"
             });
         }
@@ -444,12 +460,12 @@ export class TransactionResponse {
     }
     reorderedEvent(other) {
         if (!this.isMined()) {
-            return logger.throwError("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
+            return throwError("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
                 operation: "removeEvent()"
             });
         }
         if (other && !other.isMined()) {
-            return logger.throwError("unmined 'other' transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
+            return throwError("unmined 'other' transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
                 operation: "removeEvent()"
             });
         }
@@ -476,6 +492,7 @@ function createRemovedLogFilter(log) {
             index: log.index
         } };
 }
+// @TODO: I think I can drop T
 function fail() {
     throw new Error("this provider should not be used");
 }
@@ -514,6 +531,9 @@ class DummyProvider {
         return fail();
     }
     async getTransactionReceipt(hash) {
+        return fail();
+    }
+    async getTransactionResult(hash) {
         return fail();
     }
     // Bloom-filter Queries

@@ -9,7 +9,7 @@
  *  - a sub-class MUST call `_processMessage(string)` for each message
  */
 import { UnmanagedSubscriber } from "./abstract-provider.js";
-import { assertArgument, logger } from "../utils/logger.js";
+import { assertArgument, makeError, throwError } from "../utils/index.js";
 import { JsonRpcApiProvider } from "./provider-jsonrpc.js";
 export class SocketSubscriber {
     #provider;
@@ -42,7 +42,7 @@ export class SocketSubscriber {
     //        and resume
     pause(dropWhilePaused) {
         if (!dropWhilePaused) {
-            logger.throwError("preserve logs while paused not supported by SocketSubscriber yet", "UNSUPPORTED_OPERATION", {
+            throwError("preserve logs while paused not supported by SocketSubscriber yet", "UNSUPPORTED_OPERATION", {
                 operation: "pause(false)"
             });
         }
@@ -184,7 +184,7 @@ export class SocketProvider extends JsonRpcApiProvider {
             this.#callbacks.delete(result.id);
             if ("error" in result) {
                 const { message, code, data } = result.error;
-                const error = logger.makeError(message || "unkonwn error", "SERVER_ERROR", {
+                const error = makeError(message || "unkonwn error", "SERVER_ERROR", {
                     request: `ws:${JSON.stringify(callback.payload)}`,
                     info: { code, data }
                 });

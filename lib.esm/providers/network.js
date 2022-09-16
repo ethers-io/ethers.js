@@ -1,5 +1,4 @@
-import { logger } from "../utils/logger.js";
-import { getStore, setStore } from "../utils/storage.js";
+import { getStore, getBigInt, setStore, throwArgumentError } from "../utils/index.js";
 import { Formatter } from "./formatter.js";
 import { EnsPlugin, GasCostPlugin } from "./plugins-network.js";
 /* * * *
@@ -57,7 +56,7 @@ const defaultFormatter = new Formatter();
 export class Network {
     #props;
     constructor(name, _chainId, formatter) {
-        const chainId = logger.getBigInt(_chainId);
+        const chainId = getBigInt(_chainId);
         if (formatter == null) {
             formatter = defaultFormatter;
         }
@@ -70,7 +69,7 @@ export class Network {
     get name() { return getStore(this.#props, "name"); }
     set name(value) { setStore(this.#props, "name", value); }
     get chainId() { return getStore(this.#props, "chainId"); }
-    set chainId(value) { setStore(this.#props, "chainId", logger.getBigInt(value, "chainId")); }
+    set chainId(value) { setStore(this.#props, "chainId", getBigInt(value, "chainId")); }
     get formatter() { return getStore(this.#props, "formatter"); }
     set formatter(value) { setStore(this.#props, "formatter", value); }
     get plugins() {
@@ -131,6 +130,9 @@ export class Network {
         }
         return gas;
     }
+    /**
+     *  Returns a new Network for the %%network%% name or chainId.
+     */
     static from(network) {
         // Default network
         if (network == null) {
@@ -148,7 +150,7 @@ export class Network {
             if (typeof (network) === "bigint") {
                 return new Network("unknown", network);
             }
-            logger.throwArgumentError("unknown network", "network", network);
+            throwArgumentError("unknown network", "network", network);
         }
         // Clonable with network-like abilities
         if (typeof (network.clone) === "function") {
@@ -160,7 +162,7 @@ export class Network {
         // Networkish
         if (typeof (network) === "object") {
             if (typeof (network.name) !== "string" || typeof (network.chainId) !== "number") {
-                logger.throwArgumentError("invalid network object name or chainId", "network", network);
+                throwArgumentError("invalid network object name or chainId", "network", network);
             }
             const custom = new Network((network.name), (network.chainId));
             if (network.ensAddress || network.ensNetwork != null) {
@@ -171,15 +173,19 @@ export class Network {
             //}
             return custom;
         }
-        return logger.throwArgumentError("invalid network", "network", network);
+        return throwArgumentError("invalid network", "network", network);
     }
+    /**
+     *  Register %%nameOrChainId%% with a function which returns
+     *  an instance of a Network representing that chain.
+     */
     static register(nameOrChainId, networkFunc) {
         if (typeof (nameOrChainId) === "number") {
             nameOrChainId = BigInt(nameOrChainId);
         }
         const existing = Networks.get(nameOrChainId);
         if (existing) {
-            logger.throwArgumentError(`conflicting network for ${JSON.stringify(existing.name)}`, "nameOrChainId", nameOrChainId);
+            throwArgumentError(`conflicting network for ${JSON.stringify(existing.name)}`, "nameOrChainId", nameOrChainId);
         }
         Networks.set(nameOrChainId, networkFunc);
     }

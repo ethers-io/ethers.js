@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.toUtf8CodePoints = exports.toUtf8String = exports._toUtf8String = exports._toEscapedUtf8String = exports.toUtf8Bytes = exports.Utf8ErrorFuncs = void 0;
-const logger_js_1 = require("./logger.js");
+const data_js_1 = require("./data.js");
+const errors_js_1 = require("./errors.js");
 function errorFunc(reason, offset, bytes, output, badCodepoint) {
-    return logger_js_1.logger.throwArgumentError(`invalid codepoint at offset ${offset}; ${reason}`, "bytes", bytes);
+    return (0, errors_js_1.throwArgumentError)(`invalid codepoint at offset ${offset}; ${reason}`, "bytes", bytes);
 }
 function ignoreFunc(reason, offset, bytes, output, badCodepoint) {
     // If there is an invalid prefix (including stray continuation), skip any additional continuation bytes
@@ -47,7 +48,7 @@ function getUtf8CodePoints(_bytes, onError) {
     if (onError == null) {
         onError = exports.Utf8ErrorFuncs.error;
     }
-    const bytes = logger_js_1.logger.getBytes(_bytes, "bytes");
+    const bytes = (0, data_js_1.getBytes)(_bytes, "bytes");
     const result = [];
     let i = 0;
     // Invalid bytes are ignored
@@ -130,7 +131,7 @@ function getUtf8CodePoints(_bytes, onError) {
 // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
 function toUtf8Bytes(str, form) {
     if (form != null) {
-        logger_js_1.logger.assertNormalize(form);
+        (0, errors_js_1.assertNormalize)(form);
         str = str.normalize(form);
     }
     let result = [];

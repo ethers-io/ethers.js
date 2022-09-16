@@ -13,20 +13,20 @@ function getLowerMask(bits) {
     return ((1 << bits) - 1) & 0xff;
 }
 function mnemonicToEntropy(mnemonic, wordlist = lang_en_js_1.langEn) {
-    index_js_2.logger.assertNormalize("NFKD");
+    (0, index_js_2.assertNormalize)("NFKD");
     if (wordlist == null) {
         wordlist = lang_en_js_1.langEn;
     }
     const words = wordlist.split(mnemonic);
     if ((words.length % 3) !== 0 || words.length < 12 || words.length > 24) {
-        index_js_2.logger.throwArgumentError("invalid mnemonic length", "mnemonic", "[ REDACTED ]");
+        (0, index_js_2.throwArgumentError)("invalid mnemonic length", "mnemonic", "[ REDACTED ]");
     }
     const entropy = new Uint8Array(Math.ceil(11 * words.length / 8));
     let offset = 0;
     for (let i = 0; i < words.length; i++) {
         let index = wordlist.getWordIndex(words[i].normalize("NFKD"));
         if (index === -1) {
-            index_js_2.logger.throwArgumentError(`invalid mnemonic word at index ${i}`, "mnemonic", "[ REDACTED ]");
+            (0, index_js_2.throwArgumentError)(`invalid mnemonic word at index ${i}`, "mnemonic", "[ REDACTED ]");
         }
         for (let bit = 0; bit < 11; bit++) {
             if (index & (1 << (10 - bit))) {
@@ -38,15 +38,15 @@ function mnemonicToEntropy(mnemonic, wordlist = lang_en_js_1.langEn) {
     const entropyBits = 32 * words.length / 3;
     const checksumBits = words.length / 3;
     const checksumMask = getUpperMask(checksumBits);
-    const checksum = index_js_2.logger.getBytes((0, index_js_1.sha256)(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
+    const checksum = (0, index_js_2.getBytes)((0, index_js_1.sha256)(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
     if (checksum !== (entropy[entropy.length - 1] & checksumMask)) {
-        index_js_2.logger.throwArgumentError("invalid mnemonic checksum", "mnemonic", "[ REDACTED ]");
+        (0, index_js_2.throwArgumentError)("invalid mnemonic checksum", "mnemonic", "[ REDACTED ]");
     }
     return (0, index_js_2.hexlify)(entropy.slice(0, entropyBits / 8));
 }
 function entropyToMnemonic(entropy, wordlist = lang_en_js_1.langEn) {
     if ((entropy.length % 4) || entropy.length < 16 || entropy.length > 32) {
-        index_js_2.logger.throwArgumentError("invalid entropy size", "entropy", "[ REDACTED ]");
+        (0, index_js_2.throwArgumentError)("invalid entropy size", "entropy", "[ REDACTED ]");
     }
     if (wordlist == null) {
         wordlist = lang_en_js_1.langEn;
@@ -90,7 +90,7 @@ class Mnemonic {
         if (wordlist == null) {
             wordlist = lang_en_js_1.langEn;
         }
-        index_js_2.logger.assertPrivate(guard, _guard, "Mnemonic");
+        (0, index_js_2.assertPrivate)(guard, _guard, "Mnemonic");
         (0, index_js_2.defineProperties)(this, { phrase, password, wordlist, entropy });
     }
     computeSeed() {
@@ -100,16 +100,16 @@ class Mnemonic {
     static fromPhrase(phrase, password, wordlist) {
         // Normalize the case and space; throws if invalid
         const entropy = mnemonicToEntropy(phrase, wordlist);
-        phrase = entropyToMnemonic(index_js_2.logger.getBytes(entropy), wordlist);
+        phrase = entropyToMnemonic((0, index_js_2.getBytes)(entropy), wordlist);
         return new Mnemonic(_guard, entropy, phrase, password, wordlist);
     }
     static fromEntropy(_entropy, password, wordlist) {
-        const entropy = index_js_2.logger.getBytes(_entropy, "entropy");
+        const entropy = (0, index_js_2.getBytes)(_entropy, "entropy");
         const phrase = entropyToMnemonic(entropy, wordlist);
         return new Mnemonic(_guard, (0, index_js_2.hexlify)(entropy), phrase, password, wordlist);
     }
     static entropyToPhrase(_entropy, wordlist) {
-        const entropy = index_js_2.logger.getBytes(_entropy, "entropy");
+        const entropy = (0, index_js_2.getBytes)(_entropy, "entropy");
         return entropyToMnemonic(entropy, wordlist);
     }
     static phraseToEntropy(phrase, wordlist) {

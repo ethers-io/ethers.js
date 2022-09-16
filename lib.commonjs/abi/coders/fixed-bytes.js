@@ -1,9 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FixedBytesCoder = void 0;
-const logger_js_1 = require("../../utils/logger.js");
-const data_js_1 = require("../../utils/data.js");
-const properties_js_1 = require("../../utils/properties.js");
+const index_js_1 = require("../../utils/index.js");
 const typed_js_1 = require("../typed.js");
 const abstract_coder_js_1 = require("./abstract-coder.js");
 class FixedBytesCoder extends abstract_coder_js_1.Coder {
@@ -11,20 +9,20 @@ class FixedBytesCoder extends abstract_coder_js_1.Coder {
     constructor(size, localName) {
         let name = "bytes" + String(size);
         super(name, name, localName, false);
-        (0, properties_js_1.defineProperties)(this, { size }, { size: "number" });
+        (0, index_js_1.defineProperties)(this, { size }, { size: "number" });
     }
     defaultValue() {
         return ("0x0000000000000000000000000000000000000000000000000000000000000000").substring(0, 2 + this.size * 2);
     }
     encode(writer, _value) {
-        let data = logger_js_1.logger.getBytesCopy(typed_js_1.Typed.dereference(_value, this.type));
+        let data = (0, index_js_1.getBytesCopy)(typed_js_1.Typed.dereference(_value, this.type));
         if (data.length !== this.size) {
             this._throwError("incorrect data length", _value);
         }
         return writer.writeBytes(data);
     }
     decode(reader) {
-        return (0, data_js_1.hexlify)(reader.readBytes(this.size));
+        return (0, index_js_1.hexlify)(reader.readBytes(this.size));
     }
 }
 exports.FixedBytesCoder = FixedBytesCoder;

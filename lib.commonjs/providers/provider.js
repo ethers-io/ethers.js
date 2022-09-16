@@ -2,10 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dummyProvider = exports.TransactionResponse = exports.TransactionReceipt = exports.Log = exports.Block = exports.copyRequest = exports.FeeData = void 0;
 //import { resolveAddress } from "@ethersproject/address";
-const data_js_1 = require("../utils/data.js");
-const logger_js_1 = require("../utils/logger.js");
-const properties_js_1 = require("../utils/properties.js");
-const index_js_1 = require("../transaction/index.js");
+const index_js_1 = require("../utils/index.js");
+const index_js_2 = require("../transaction/index.js");
 // -----------------------
 function getValue(value) {
     if (value == null) {
@@ -25,7 +23,7 @@ class FeeData {
     maxFeePerGas;
     maxPriorityFeePerGas;
     constructor(gasPrice, maxFeePerGas, maxPriorityFeePerGas) {
-        (0, properties_js_1.defineProperties)(this, {
+        (0, index_js_1.defineProperties)(this, {
             gasPrice: getValue(gasPrice),
             maxFeePerGas: getValue(maxFeePerGas),
             maxPriorityFeePerGas: getValue(maxPriorityFeePerGas)
@@ -53,24 +51,24 @@ function copyRequest(req) {
         result.from = req.from;
     }
     if (req.data) {
-        result.data = (0, data_js_1.hexlify)(req.data);
+        result.data = (0, index_js_1.hexlify)(req.data);
     }
     const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerGas, maxPriorityFeePerGas,value".split(/,/);
     for (const key in bigIntKeys) {
         if (!(key in req) || req[key] == null) {
             continue;
         }
-        result[key] = logger_js_1.logger.getBigInt(req[key], `request.${key}`);
+        result[key] = (0, index_js_1.getBigInt)(req[key], `request.${key}`);
     }
     const numberKeys = "type,nonce".split(/,/);
     for (const key in numberKeys) {
         if (!(key in req) || req[key] == null) {
             continue;
         }
-        result[key] = logger_js_1.logger.getNumber(req[key], `request.${key}`);
+        result[key] = (0, index_js_1.getNumber)(req[key], `request.${key}`);
     }
     if (req.accessList) {
-        result.accessList = (0, index_js_1.accessListify)(req.accessList);
+        result.accessList = (0, index_js_2.accessListify)(req.accessList);
     }
     if ("blockTag" in req) {
         result.blockTag = req.blockTag;
@@ -110,7 +108,7 @@ class Block {
             return tx;
         }));
         ;
-        (0, properties_js_1.defineProperties)(this, {
+        (0, index_js_1.defineProperties)(this, {
             provider,
             hash: getValue(block.hash),
             number: block.number,
@@ -175,7 +173,9 @@ class Block {
         }
     }
     isMined() { return !!this.hash; }
-    isLondon() { return !!this.baseFeePerGas; }
+    isLondon() {
+        return !!this.baseFeePerGas;
+    }
     orphanedEvent() {
         if (!this.isMined()) {
             throw new Error("");
@@ -201,7 +201,7 @@ class Log {
         }
         this.provider = provider;
         const topics = Object.freeze(log.topics.slice());
-        (0, properties_js_1.defineProperties)(this, {
+        (0, index_js_1.defineProperties)(this, {
             transactionHash: log.transactionHash,
             blockHash: log.blockHash,
             blockNumber: log.blockNumber,
@@ -238,6 +238,19 @@ class Log {
     }
 }
 exports.Log = Log;
+/*
+export interface LegacyTransactionReceipt {
+    byzantium: false;
+    status: null;
+    root: string;
+}
+
+export interface ByzantiumTransactionReceipt {
+    byzantium: true;
+    status: number;
+    root: null;
+}
+*/
 class TransactionReceipt {
     provider;
     to;
@@ -266,7 +279,7 @@ class TransactionReceipt {
             }
             return log;
         }));
-        (0, properties_js_1.defineProperties)(this, {
+        (0, index_js_1.defineProperties)(this, {
             provider,
             to: tx.to,
             from: tx.from,
@@ -329,6 +342,9 @@ class TransactionReceipt {
         }
         return tx;
     }
+    async getResult() {
+        return (await this.provider.getTransactionResult(this.hash));
+    }
     async confirmations() {
         return (await this.provider.getBlockNumber()) - this.blockNumber + 1;
     }
@@ -337,7 +353,7 @@ class TransactionReceipt {
     }
     reorderedEvent(other) {
         if (other && !other.isMined()) {
-            return logger_js_1.logger.throwError("unmined 'other' transction cannot be orphaned", "UNSUPPORTED_OPERATION", {
+            return (0, index_js_1.throwError)("unmined 'other' transction cannot be orphaned", "UNSUPPORTED_OPERATION", {
                 operation: "reorderedEvent(other)"
             });
         }
@@ -444,7 +460,7 @@ class TransactionResponse {
     }
     removedEvent() {
         if (!this.isMined()) {
-            return logger_js_1.logger.throwError("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
+            return (0, index_js_1.throwError)("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
                 operation: "removeEvent()"
             });
         }
@@ -452,12 +468,12 @@ class TransactionResponse {
     }
     reorderedEvent(other) {
         if (!this.isMined()) {
-            return logger_js_1.logger.throwError("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
+            return (0, index_js_1.throwError)("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
                 operation: "removeEvent()"
             });
         }
         if (other && !other.isMined()) {
-            return logger_js_1.logger.throwError("unmined 'other' transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
+            return (0, index_js_1.throwError)("unmined 'other' transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
                 operation: "removeEvent()"
             });
         }
@@ -485,6 +501,7 @@ function createRemovedLogFilter(log) {
             index: log.index
         } };
 }
+// @TODO: I think I can drop T
 function fail() {
     throw new Error("this provider should not be used");
 }
@@ -523,6 +540,9 @@ class DummyProvider {
         return fail();
     }
     async getTransactionReceipt(hash) {
+        return fail();
+    }
+    async getTransactionResult(hash) {
         return fail();
     }
     // Bloom-filter Queries

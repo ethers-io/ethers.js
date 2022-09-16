@@ -6,7 +6,7 @@ const hmac_1 = require("@noble/hashes/hmac");
 const pbkdf2_1 = require("@noble/hashes/pbkdf2");
 const sha256_1 = require("@noble/hashes/sha256");
 const sha512_1 = require("@noble/hashes/sha512");
-const logger_js_1 = require("../utils/logger.js");
+const index_js_1 = require("../utils/index.js");
 function getGlobal() {
     if (typeof self !== 'undefined') {
         return self;
@@ -27,13 +27,13 @@ function createHash(algo) {
         case "sha256": return sha256_1.sha256.create();
         case "sha512": return sha512_1.sha512.create();
     }
-    return logger_js_1.logger.throwArgumentError("invalid hashing algorithm name", "algorithm", algo);
+    return (0, index_js_1.throwArgumentError)("invalid hashing algorithm name", "algorithm", algo);
 }
 exports.createHash = createHash;
 function createHmac(_algo, key) {
     const algo = ({ sha256: sha256_1.sha256, sha512: sha512_1.sha512 }[_algo]);
     if (algo == null) {
-        return logger_js_1.logger.throwArgumentError("invalid hmac algorithm", "algorithm", _algo);
+        return (0, index_js_1.throwArgumentError)("invalid hmac algorithm", "algorithm", _algo);
     }
     return hmac_1.hmac.create(algo, key);
 }
@@ -41,19 +41,19 @@ exports.createHmac = createHmac;
 function pbkdf2Sync(password, salt, iterations, keylen, _algo) {
     const algo = ({ sha256: sha256_1.sha256, sha512: sha512_1.sha512 }[_algo]);
     if (algo == null) {
-        return logger_js_1.logger.throwArgumentError("invalid pbkdf2 algorithm", "algorithm", _algo);
+        return (0, index_js_1.throwArgumentError)("invalid pbkdf2 algorithm", "algorithm", _algo);
     }
     return (0, pbkdf2_1.pbkdf2)(algo, password, salt, { c: iterations, dkLen: keylen });
 }
 exports.pbkdf2Sync = pbkdf2Sync;
 function randomBytes(length) {
     if (crypto == null) {
-        return logger_js_1.logger.throwError("platform does not support secure random numbers", "UNSUPPORTED_OPERATION", {
+        return (0, index_js_1.throwError)("platform does not support secure random numbers", "UNSUPPORTED_OPERATION", {
             operation: "randomBytes"
         });
     }
     if (!Number.isInteger(length) || length <= 0 || length > 1024) {
-        logger_js_1.logger.throwArgumentError("invalid length", "length", length);
+        (0, index_js_1.throwArgumentError)("invalid length", "length", length);
     }
     const result = new Uint8Array(length);
     crypto.getRandomValues(result);

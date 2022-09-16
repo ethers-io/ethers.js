@@ -16,13 +16,11 @@ export interface JsonFragment {
     readonly outputs?: ReadonlyArray<JsonFragmentType>;
     readonly gas?: string;
 }
-export declare enum FormatType {
-    sighash = "sighash",
-    minimal = "minimal",
-    full = "full",
-    json = "json"
-}
-export declare type Token = Readonly<{
+export declare type FormatType = "sighash" | "minimal" | "full" | "json";
+/**
+ *  @ignore:
+ */
+declare type Token = Readonly<{
     type: string;
     offset: number;
     text: string;
@@ -32,7 +30,7 @@ export declare type Token = Readonly<{
     linkNext: number;
     value: number;
 }>;
-export declare class TokenString {
+declare class TokenString {
     #private;
     get offset(): number;
     get length(): number;
@@ -48,17 +46,6 @@ export declare class TokenString {
     peekType(type: string): null | string;
     pop(): Token;
     toString(): string;
-}
-export declare function lex(text: string): TokenString;
-export interface ArrayParamType {
-    readonly arrayLength: number;
-    readonly arrayChildren: ParamType;
-}
-export interface TupleParamType extends ParamType {
-    readonly components: ReadonlyArray<ParamType>;
-}
-export interface IndexableParamType extends ParamType {
-    readonly indexed: boolean;
 }
 export declare type FragmentWalkFunc = (type: string, value: any) => any;
 export declare type FragmentWalkAsyncFunc = (type: string, value: any) => any | Promise<any>;
@@ -76,9 +63,16 @@ export declare class ParamType {
     static isArray(value: any): value is {
         arrayChildren: ParamType;
     };
-    isArray(): this is (ParamType & ArrayParamType);
-    isTuple(): this is TupleParamType;
-    isIndexable(): this is IndexableParamType;
+    isArray(): this is (ParamType & {
+        arrayLength: number;
+        arrayChildren: ParamType;
+    });
+    isTuple(): this is (ParamType & {
+        components: ReadonlyArray<ParamType>;
+    });
+    isIndexable(): this is (ParamType & {
+        indexed: boolean;
+    });
     walk(value: any, process: FragmentWalkFunc): any;
     walkAsync(value: any, process: (type: string, value: any) => any | Promise<any>): Promise<any>;
     static from(obj: any, allowIndexed?: boolean): ParamType;
@@ -86,13 +80,7 @@ export declare class ParamType {
     static fromTokens(tokens: TokenString, allowIndexed?: boolean): ParamType;
     static isParamType(value: any): value is ParamType;
 }
-export declare enum FragmentType {
-    "constructor" = "constructor",
-    "error" = "error",
-    "event" = "event",
-    "function" = "function",
-    "struct" = "struct"
-}
+export declare type FragmentType = "constructor" | "error" | "event" | "function" | "struct";
 export declare abstract class Fragment {
     readonly type: FragmentType;
     readonly inputs: ReadonlyArray<ParamType>;
@@ -114,6 +102,7 @@ export declare abstract class NamedFragment extends Fragment {
 }
 export declare class ErrorFragment extends NamedFragment {
     constructor(guard: any, name: string, inputs: ReadonlyArray<ParamType>);
+    get selector(): string;
     format(format?: FormatType): string;
     static fromString(text: string): ErrorFragment;
     static fromTokens(tokens: TokenString): ErrorFragment;
@@ -121,6 +110,7 @@ export declare class ErrorFragment extends NamedFragment {
 export declare class EventFragment extends NamedFragment {
     readonly anonymous: boolean;
     constructor(guard: any, name: string, inputs: ReadonlyArray<ParamType>, anonymous: boolean);
+    get topicHash(): string;
     format(format?: FormatType): string;
     static fromString(text: string): EventFragment;
     static fromTokens(tokens: TokenString): EventFragment;
@@ -141,6 +131,7 @@ export declare class FunctionFragment extends NamedFragment {
     readonly payable: boolean;
     readonly gas: null | bigint;
     constructor(guard: any, name: string, stateMutability: string, inputs: ReadonlyArray<ParamType>, outputs: ReadonlyArray<ParamType>, gas: null | bigint);
+    get selector(): string;
     format(format?: FormatType): string;
     static fromString(text: string): FunctionFragment;
     static fromTokens(tokens: TokenString): FunctionFragment;
@@ -150,4 +141,5 @@ export declare class StructFragment extends NamedFragment {
     static fromString(text: string): StructFragment;
     static fromTokens(tokens: TokenString): StructFragment;
 }
+export {};
 //# sourceMappingURL=fragments.d.ts.map

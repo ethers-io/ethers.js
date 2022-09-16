@@ -1,5 +1,5 @@
 import { defineProperties } from "../utils/properties.js";
-import { logger } from "../utils/logger.js";
+import { throwArgumentError } from "../utils/index.js";
 const EnsAddress = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
 export class NetworkPlugin {
     name;
@@ -30,7 +30,7 @@ export class GasCostPlugin extends NetworkPlugin {
                 value = nullish;
             }
             if (typeof (value) !== "number") {
-                logger.throwArgumentError(`invalud value for ${name}`, "costs", costs);
+                throwArgumentError(`invalud value for ${name}`, "costs", costs);
             }
             props[name] = value;
         }

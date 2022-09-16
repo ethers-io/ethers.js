@@ -1,5 +1,5 @@
-import { id } from "../hash/id.js";
-import { hexlify, logger, toUtf8Bytes, toUtf8String } from "../utils/index.js";
+import { id } from "../hash/index.js";
+import { hexlify, throwArgumentError, toUtf8Bytes, toUtf8String } from "../utils/index.js";
 import { Wordlist } from "./wordlist.js";
 const data = [
     // 4-kana words
@@ -114,7 +114,7 @@ class LangJa extends Wordlist {
     getWord(index) {
         const words = loadWords();
         if (index < 0 || index >= words.length) {
-            logger.throwArgumentError(`invalid word index: ${index}`, "index", index);
+            throwArgumentError(`invalid word index: ${index}`, "index", index);
         }
         return words[index];
     }

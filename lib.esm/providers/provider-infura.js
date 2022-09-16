@@ -1,7 +1,5 @@
-import { defineProperties } from "../utils/properties.js";
-import { FetchRequest } from "../utils/fetch.js";
+import { defineProperties, FetchRequest, throwArgumentError } from "../utils/index.js";
 import { showThrottleMessage } from "./community.js";
-import { logger } from "../utils/logger.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
 const defaultProjectId = "84842078b09946638c03157f83405213";
@@ -30,7 +28,7 @@ function getHost(name) {
         case "arbitrum-rinkeby":
             return "arbitrum-rinkeby.infura.io";
     }
-    return logger.throwArgumentError("unsupported network", "network", name);
+    return throwArgumentError("unsupported network", "network", name);
 }
 export class InfuraProvider extends JsonRpcProvider {
     projectId;

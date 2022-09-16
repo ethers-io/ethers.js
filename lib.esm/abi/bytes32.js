@@ -1,6 +1,4 @@
-import { zeroPadBytes } from "../utils/data.js";
-import { logger } from "../utils/logger.js";
-import { toUtf8Bytes, toUtf8String } from "../utils/utf8.js";
+import { getBytes, toUtf8Bytes, toUtf8String, zeroPadBytes } from "../utils/index.js";
 export function formatBytes32String(text) {
     // Get the bytes
     const bytes = toUtf8Bytes(text);
@@ -12,7 +10,7 @@ export function formatBytes32String(text) {
     return zeroPadBytes(bytes, 32);
 }
 export function parseBytes32String(_bytes) {
-    const data = logger.getBytes(_bytes, "bytes");
+    const data = getBytes(_bytes, "bytes");
     // Must be 32 bytes with a null-termination
     if (data.length !== 32) {
         throw new Error("invalid bytes32 - not 32 bytes long");

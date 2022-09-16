@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Contract = exports.BaseContract = exports.resolveArgs = exports.copyOverrides = void 0;
-const index_js_1 = require("../address/index.js");
-const index_js_2 = require("../abi/index.js");
-const index_js_3 = require("../utils/index.js");
-const index_js_4 = require("../providers/index.js");
+const index_js_1 = require("../abi/index.js");
+const index_js_2 = require("../address/index.js");
+const index_js_3 = require("../providers/index.js");
+const index_js_4 = require("../utils/index.js");
 const wrappers_js_1 = require("./wrappers.js");
 function canCall(value) {
     return (value && typeof (value.call) === "function");
@@ -27,7 +27,7 @@ class PreparedTopicFilter {
     #filter;
     fragment;
     constructor(contract, fragment, args) {
-        (0, index_js_3.defineProperties)(this, { fragment });
+        (0, index_js_4.defineProperties)(this, { fragment });
         if (fragment.inputs.length < args.length) {
             throw new Error("too many arguments");
         }
@@ -38,7 +38,7 @@ class PreparedTopicFilter {
             const resolvedArgs = await Promise.all(fragment.inputs.map((param, index) => {
                 return param.walkAsync(args[index], (type, value) => {
                     if (type === "address") {
-                        return (0, index_js_1.resolveAddress)(value, resolver);
+                        return (0, index_js_2.resolveAddress)(value, resolver);
                     }
                     return value;
                 });
@@ -79,18 +79,18 @@ function getProvider(value) {
 }
 async function copyOverrides(arg) {
     // Create a shallow copy (we'll deep-ify anything needed during normalizing)
-    const overrides = (0, index_js_4.copyRequest)(index_js_2.Typed.dereference(arg, "overrides"));
+    const overrides = (0, index_js_3.copyRequest)(index_js_1.Typed.dereference(arg, "overrides"));
     // Some sanity checking; these are what these methods adds
     //if ((<any>overrides).to) {
     if (overrides.to) {
-        index_js_3.logger.throwArgumentError("cannot override to", "overrides.to", overrides.to);
+        (0, index_js_4.throwArgumentError)("cannot override to", "overrides.to", overrides.to);
     }
     else if (overrides.data) {
-        index_js_3.logger.throwArgumentError("cannot override data", "overrides.data", overrides.data);
+        (0, index_js_4.throwArgumentError)("cannot override data", "overrides.data", overrides.data);
     }
     // Resolve any from
     if (overrides.from) {
-        overrides.from = await (0, index_js_1.resolveAddress)(overrides.from);
+        overrides.from = await (0, index_js_2.resolveAddress)(overrides.from);
     }
     return overrides;
 }
@@ -102,7 +102,7 @@ async function resolveArgs(_runner, inputs, args) {
     return await Promise.all(inputs.map((param, index) => {
         return param.walkAsync(args[index], (type, value) => {
             if (type === "address") {
-                return (0, index_js_1.resolveAddress)(value, resolver);
+                return (0, index_js_2.resolveAddress)(value, resolver);
             }
             return value;
         });
@@ -115,7 +115,7 @@ class WrappedMethod extends _WrappedMethodBase() {
     _key;
     constructor(contract, key) {
         super();
-        (0, index_js_3.defineProperties)(this, {
+        (0, index_js_4.defineProperties)(this, {
             name: contract.interface.getFunctionName(key),
             _contract: contract, _key: key
         });
@@ -149,7 +149,7 @@ class WrappedMethod extends _WrappedMethodBase() {
             throw new Error("internal error: fragment inputs doesn't match arguments; should not happen");
         }
         const resolvedArgs = await resolveArgs(this._contract.runner, fragment.inputs, args);
-        return Object.assign({}, overrides, await (0, index_js_3.resolveProperties)({
+        return Object.assign({}, overrides, await (0, index_js_4.resolveProperties)({
             to: this._contract.getAddress(),
             data: this._contract.interface.encodeFunctionData(fragment, resolvedArgs)
         }));
@@ -164,7 +164,7 @@ class WrappedMethod extends _WrappedMethodBase() {
     async send(...args) {
         const runner = this._contract.runner;
         if (!canSend(runner)) {
-            return index_js_3.logger.throwError("contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
+            return (0, index_js_4.throwError)("contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
                 operation: "sendTransaction"
             });
         }
@@ -175,7 +175,7 @@ class WrappedMethod extends _WrappedMethodBase() {
     async estimateGas(...args) {
         const runner = getRunner(this._contract.runner, "estimateGas");
         if (!canEstimate(runner)) {
-            return index_js_3.logger.throwError("contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", {
+            return (0, index_js_4.throwError)("contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", {
                 operation: "estimateGas"
             });
         }
@@ -184,7 +184,7 @@ class WrappedMethod extends _WrappedMethodBase() {
     async staticCallResult(...args) {
         const runner = getRunner(this._contract.runner, "call");
         if (!canCall(runner)) {
-            return index_js_3.logger.throwError("contract runner does not support calling", "UNSUPPORTED_OPERATION", {
+            return (0, index_js_4.throwError)("contract runner does not support calling", "UNSUPPORTED_OPERATION", {
                 operation: "call"
             });
         }
@@ -195,7 +195,7 @@ class WrappedMethod extends _WrappedMethodBase() {
             result = await runner.call(tx);
         }
         catch (error) {
-            if ((0, index_js_3.isCallException)(error)) {
+            if ((0, index_js_4.isCallException)(error)) {
                 throw this._contract.interface.makeError(fragment, error.data, tx);
             }
             throw error;
@@ -212,7 +212,7 @@ class WrappedEvent extends _WrappedEventBase() {
     _key;
     constructor(contract, key) {
         super();
-        (0, index_js_3.defineProperties)(this, {
+        (0, index_js_4.defineProperties)(this, {
             name: contract.interface.getEventName(key),
             _contract: contract, _key: key
         });
@@ -259,7 +259,7 @@ async function getSubTag(contract, event) {
     else if (typeof (event) === "string") {
         // Event name (name or signature); `"Transfer"`
         fragment = contract.interface.getEvent(event);
-        topics = [contract.interface.getEventTopic(fragment)];
+        topics = [fragment.topicHash];
     }
     else if (isDeferred(event)) {
         // Deferred Topic Filter; e.g. `contract.filter.Transfer(from)`
@@ -269,7 +269,7 @@ async function getSubTag(contract, event) {
     else if ("fragment" in event) {
         // ContractEvent; e.g. `contract.filter.Transfer`
         fragment = event.fragment;
-        topics = [contract.interface.getEventTopic(fragment)];
+        topics = [fragment.topicHash];
     }
     else {
         console.log(event);
@@ -304,7 +304,7 @@ async function getSub(contract, event) {
     // Make sure our runner can actually subscribe to events
     const provider = getProvider(contract.runner);
     if (!provider) {
-        return index_js_3.logger.throwError("contract runner does not support subscribing", "UNSUPPORTED_OPERATION", {
+        return (0, index_js_4.throwError)("contract runner does not support subscribing", "UNSUPPORTED_OPERATION", {
             operation: "on"
         });
     }
@@ -379,8 +379,8 @@ class BaseContract {
     filters;
     [internal];
     constructor(target, abi, runner = null, _deployTx) {
-        const iface = index_js_2.Interface.from(abi);
-        (0, index_js_3.defineProperties)(this, { target, runner, interface: iface });
+        const iface = index_js_1.Interface.from(abi);
+        (0, index_js_4.defineProperties)(this, { target, runner, interface: iface });
         Object.defineProperty(this, internal, { value: {} });
         let addrPromise;
         let addr = null;
@@ -392,14 +392,14 @@ class BaseContract {
         let subs = new Map();
         // Resolve the target as the address
         if (typeof (target) === "string") {
-            if ((0, index_js_3.isHexString)(target)) {
+            if ((0, index_js_4.isHexString)(target)) {
                 addr = target;
                 addrPromise = Promise.resolve(target);
             }
             else {
                 const resolver = getRunner(runner, "resolveName");
                 if (!canResolve(resolver)) {
-                    throw index_js_3.logger.makeError("contract runner does not support name resolution", "UNSUPPORTED_OPERATION", {
+                    throw (0, index_js_4.makeError)("contract runner does not support name resolution", "UNSUPPORTED_OPERATION", {
                         operation: "resolveName"
                     });
                 }
@@ -438,7 +438,7 @@ class BaseContract {
                 throw new Error(`unknown contract event: ${prop}`);
             }
         });
-        (0, index_js_3.defineProperties)(this, { filters });
+        (0, index_js_4.defineProperties)(this, { filters });
         // Return a Proxy that will respond to functions
         return new Proxy(this, {
             get: (target, _prop, receiver) => {
@@ -458,7 +458,7 @@ class BaseContract {
     async getDeployedCode() {
         const provider = getProvider(this.runner);
         if (!provider) {
-            return index_js_3.logger.throwError("runner does not support .provider", "UNSUPPORTED_OPERATION", {
+            return (0, index_js_4.throwError)("runner does not support .provider", "UNSUPPORTED_OPERATION", {
                 operation: "getDeployedCode"
             });
         }
@@ -483,7 +483,7 @@ class BaseContract {
         // Make sure we can subscribe to a provider event
         const provider = getProvider(this.runner);
         if (provider == null) {
-            return index_js_3.logger.throwError("contract runner does not support .provider", "UNSUPPORTED_OPERATION", {
+            return (0, index_js_4.throwError)("contract runner does not support .provider", "UNSUPPORTED_OPERATION", {
                 operation: "waitForDeployment"
             });
         }
@@ -529,7 +529,7 @@ class BaseContract {
         const filter = { address, topics, fromBlock, toBlock };
         const provider = getProvider(this.runner);
         if (!provider) {
-            return index_js_3.logger.throwError("contract runner does not have a provider", "UNSUPPORTED_OPERATION", {
+            return (0, index_js_4.throwError)("contract runner does not have a provider", "UNSUPPORTED_OPERATION", {
                 operation: "queryFilter"
             });
         }

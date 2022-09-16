@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decodeOwlA = void 0;
-const logger_js_1 = require("../utils/logger.js");
+const index_js_1 = require("../utils/index.js");
 const bit_reader_js_1 = require("./bit-reader.js");
 const decode_owl_js_1 = require("./decode-owl.js");
 function decodeOwlA(data, accents) {
@@ -9,7 +9,7 @@ function decodeOwlA(data, accents) {
     // Inject the accents
     accents.split(/,/g).forEach((accent) => {
         const match = accent.match(/^([a-z]*)([0-9]+)([0-9])(.*)$/);
-        (0, logger_js_1.assertArgument)(match !== null, "internal error parsing accents", "accents", accents);
+        (0, index_js_1.assertArgument)(match !== null, "internal error parsing accents", "accents", accents);
         let posOffset = 0;
         const positions = (0, bit_reader_js_1.decodeBits)(parseInt(match[3]), match[4]);
         const charCode = parseInt(match[2]);

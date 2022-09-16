@@ -1,4 +1,4 @@
-import { FetchRequest } from "../utils/fetch.js";
+import { FetchRequest } from "../utils/index.js";
 import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";

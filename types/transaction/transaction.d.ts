@@ -24,21 +24,6 @@ export interface SignedTransaction extends Transaction {
     from: string;
     signature: Signature;
 }
-export interface LegacyTransaction extends Transaction {
-    type: 0;
-    gasPrice: bigint;
-}
-export interface BerlinTransaction extends Transaction {
-    type: 1;
-    gasPrice: bigint;
-    accessList: AccessList;
-}
-export interface LondonTransaction extends Transaction {
-    type: 2;
-    maxFeePerGas: bigint;
-    maxPriorityFeePerGas: bigint;
-    accessList: AccessList;
-}
 export declare class Transaction implements Freezable<Transaction>, TransactionLike<string> {
     #private;
     get type(): null | number;
@@ -75,9 +60,21 @@ export declare class Transaction implements Freezable<Transaction>, TransactionL
     get serialized(): string;
     get unsignedSerialized(): string;
     inferTypes(): Array<number>;
-    isLegacy(): this is LegacyTransaction;
-    isBerlin(): this is BerlinTransaction;
-    isLondon(): this is LondonTransaction;
+    isLegacy(): this is (Transaction & {
+        type: 0;
+        gasPrice: bigint;
+    });
+    isBerlin(): this is (Transaction & {
+        type: 1;
+        gasPrice: bigint;
+        accessList: AccessList;
+    });
+    isLondon(): this is (Transaction & {
+        type: 2;
+        accessList: AccessList;
+        maxFeePerGas: bigint;
+        maxPriorityFeePerGas: bigint;
+    });
     clone(): Transaction;
     freeze(): Frozen<Transaction>;
     isFrozen(): boolean;

@@ -1,10 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AnkrProvider = void 0;
-const properties_js_1 = require("../utils/properties.js");
-const fetch_js_1 = require("../utils/fetch.js");
+const index_js_1 = require("../utils/index.js");
 const community_js_1 = require("./community.js");
-const logger_js_1 = require("../utils/logger.js");
 const network_js_1 = require("./network.js");
 const provider_jsonrpc_js_1 = require("./provider-jsonrpc.js");
 const defaultApiKey = "9f7d929b018cdffb338517efa06f58359e86ff1ffd350bc889738523659e7972";
@@ -23,7 +21,7 @@ function getHost(name) {
         case "arbitrum":
             return "rpc.ankr.com/arbitrum";
     }
-    return logger_js_1.logger.throwArgumentError("unsupported network", "network", name);
+    return (0, index_js_1.throwArgumentError)("unsupported network", "network", name);
 }
 class AnkrProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
     apiKey;
@@ -36,7 +34,7 @@ class AnkrProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
         const options = { polling: true, staticNetwork: network };
         const request = AnkrProvider.getRequest(network, apiKey);
         super(request, network, options);
-        (0, properties_js_1.defineProperties)(this, { apiKey });
+        (0, index_js_1.defineProperties)(this, { apiKey });
     }
     _getProvider(chainId) {
         try {
@@ -49,7 +47,7 @@ class AnkrProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
         if (apiKey == null) {
             apiKey = defaultApiKey;
         }
-        const request = new fetch_js_1.FetchRequest(`https:/\/${getHost(network.name)}/${apiKey}`);
+        const request = new index_js_1.FetchRequest(`https:/\/${getHost(network.name)}/${apiKey}`);
         request.allowGzip = true;
         if (apiKey === defaultApiKey) {
             request.retryFunc = async (request, response, attempt) => {

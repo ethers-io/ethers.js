@@ -95,7 +95,7 @@ class Wallet extends base_wallet_js_1.BaseWallet {
             signingKey = trySigningKey(key);
         }
         if (signingKey == null) {
-            index_js_3.logger.throwArgumentError("invalid key", "key", "[ REDACTED ]");
+            (0, index_js_3.throwArgumentError)("invalid key", "key", "[ REDACTED ]");
         }
         super(signingKey, provider);
         this.#mnemonic = mnemonic;
@@ -128,11 +128,11 @@ class Wallet extends base_wallet_js_1.BaseWallet {
             }
         }
         else {
-            return index_js_3.logger.throwArgumentError("invalid JSON wallet", "json", "[ REDACTED ]");
+            return (0, index_js_3.throwArgumentError)("invalid JSON wallet", "json", "[ REDACTED ]");
         }
         const wallet = new Wallet(account.privateKey);
         if (wallet.address !== account.address) {
-            index_js_3.logger.throwArgumentError("address/privateKey mismatch", "json", "[ REDACTED ]");
+            (0, index_js_3.throwArgumentError)("address/privateKey mismatch", "json", "[ REDACTED ]");
         }
         // @TODO: mnemonic
         return wallet;
@@ -146,11 +146,11 @@ class Wallet extends base_wallet_js_1.BaseWallet {
             account = (0, json_crowdsale_js_1.decryptCrowdsaleJson)(json, password);
         }
         else {
-            return index_js_3.logger.throwArgumentError("invalid JSON wallet", "json", "[ REDACTED ]");
+            return (0, index_js_3.throwArgumentError)("invalid JSON wallet", "json", "[ REDACTED ]");
         }
         const wallet = new Wallet(account.privateKey);
         if (wallet.address !== account.address) {
-            index_js_3.logger.throwArgumentError("address/privateKey mismatch", "json", "[ REDACTED ]");
+            (0, index_js_3.throwArgumentError)("address/privateKey mismatch", "json", "[ REDACTED ]");
         }
         // @TODO: mnemonic
         return wallet;
@@ -161,7 +161,10 @@ class Wallet extends base_wallet_js_1.BaseWallet {
     static fromMnemonic(mnemonic, provider) {
         return new Wallet(mnemonic, provider);
     }
-    static fromPhrase(phrase, provider, password = "", wordlist) {
+    static fromPhrase(phrase, provider, password, wordlist) {
+        if (password == null) {
+            password = "";
+        }
         return new Wallet(mnemonic_js_1.Mnemonic.fromPhrase(phrase, password, wordlist), provider);
     }
 }

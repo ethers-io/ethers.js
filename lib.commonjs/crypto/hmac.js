@@ -9,8 +9,8 @@ const _computeHmac = function (algorithm, key, data) {
 };
 let __computeHmac = _computeHmac;
 function computeHmac(algorithm, _key, _data) {
-    const key = index_js_1.logger.getBytes(_key, "key");
-    const data = index_js_1.logger.getBytes(_data, "data");
+    const key = (0, index_js_1.getBytes)(_key, "key");
+    const data = (0, index_js_1.getBytes)(_data, "data");
     return (0, index_js_1.hexlify)(__computeHmac(algorithm, key, data));
 }
 exports.computeHmac = computeHmac;

@@ -26,7 +26,7 @@ function zpad(value, length) {
     return "0x" + result;
 }
 function encodeBase58Check(_value) {
-    const value = index_js_4.logger.getBytes(_value);
+    const value = (0, index_js_4.getBytes)(_value);
     const check = (0, index_js_4.dataSlice)((0, index_js_1.sha256)((0, index_js_1.sha256)(value)), 0, 4);
     const bytes = (0, index_js_4.concat)([value, check]);
     return (0, index_js_4.encodeBase58)(bytes);
@@ -36,22 +36,22 @@ function ser_I(index, chainCode, publicKey, privateKey) {
     const data = new Uint8Array(37);
     if (index & HardenedBit) {
         if (privateKey == null) {
-            return index_js_4.logger.throwError("cannot derive child of neutered node", "UNSUPPORTED_OPERATION", {
+            return (0, index_js_4.throwError)("cannot derive child of neutered node", "UNSUPPORTED_OPERATION", {
                 operation: "deriveChild"
             });
         }
         // Data = 0x00 || ser_256(k_par)
-        data.set(index_js_4.logger.getBytes(privateKey), 1);
+        data.set((0, index_js_4.getBytes)(privateKey), 1);
     }
     else {
         // Data = ser_p(point(k_par))
-        data.set(index_js_4.logger.getBytes(publicKey));
+        data.set((0, index_js_4.getBytes)(publicKey));
     }
     // Data += ser_32(i)
     for (let i = 24; i >= 0; i -= 8) {
         data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff);
     }
-    const I = index_js_4.logger.getBytes((0, index_js_1.computeHmac)("sha512", chainCode, data));
+    const I = (0, index_js_4.getBytes)((0, index_js_1.computeHmac)("sha512", chainCode, data));
     return { IL: I.slice(0, 32), IR: I.slice(32) };
 }
 function derivePath(node, path) {
@@ -96,7 +96,7 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
     depth;
     constructor(guard, signingKey, parentFingerprint, chainCode, path, index, depth, mnemonic, provider) {
         super(signingKey, provider);
-        index_js_4.logger.assertPrivate(guard, _guard, "HDNodeWallet");
+        (0, index_js_4.assertPrivate)(guard, _guard, "HDNodeWallet");
         (0, index_js_4.defineProperties)(this, { publicKey: signingKey.compressedPublicKey });
         const fingerprint = (0, index_js_4.dataSlice)((0, index_js_1.ripemd160)((0, index_js_1.sha256)(this.publicKey)), 0, 4);
         (0, index_js_4.defineProperties)(this, {
@@ -128,7 +128,7 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
         return new HDNodeVoidWallet(_guard, this.address, this.publicKey, this.parentFingerprint, this.chainCode, this.path, this.index, this.depth, this.provider);
     }
     deriveChild(_index) {
-        const index = index_js_4.logger.getNumber(_index, "index");
+        const index = (0, index_js_4.getNumber)(_index, "index");
         if (index > 0xffffffff) {
             throw new Error("invalid index - " + String(index));
         }
@@ -148,11 +148,11 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
         return derivePath(this, path);
     }
     static #fromSeed(_seed, mnemonic) {
-        const seed = index_js_4.logger.getBytes(_seed, "seed");
+        const seed = (0, index_js_4.getBytes)(_seed, "seed");
         if (seed.length < 16 || seed.length > 64) {
             throw new Error("invalid seed");
         }
-        const I = index_js_4.logger.getBytes((0, index_js_1.computeHmac)("sha512", MasterSecret, seed));
+        const I = (0, index_js_4.getBytes)((0, index_js_1.computeHmac)("sha512", MasterSecret, seed));
         const signingKey = new index_js_1.SigningKey((0, index_js_4.hexlify)(I.slice(0, 32)));
         return new HDNodeWallet(_guard, signingKey, "0x00000000", (0, index_js_4.hexlify)(I.slice(32)), "m", 0, 0, mnemonic, null);
     }
@@ -173,9 +173,9 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
         return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
     }
     static fromExtendedKey(extendedKey) {
-        const bytes = index_js_4.logger.getBytes((0, index_js_4.decodeBase58)(extendedKey)); // @TODO: redact
+        const bytes = (0, index_js_4.getBytes)((0, index_js_4.decodeBase58)(extendedKey)); // @TODO: redact
         if (bytes.length !== 82 || encodeBase58Check(bytes.slice(0, 78)) !== extendedKey) {
-            index_js_4.logger.throwArgumentError("invalid extended key", "extendedKey", "[ REDACTED ]");
+            (0, index_js_4.throwArgumentError)("invalid extended key", "extendedKey", "[ REDACTED ]");
         }
         const depth = bytes[4];
         const parentFingerprint = (0, index_js_4.hexlify)(bytes.slice(5, 9));
@@ -197,7 +197,7 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
                 }
                 return new HDNodeWallet(_guard, new index_js_1.SigningKey(key.slice(1)), parentFingerprint, chainCode, null, index, depth, null, null);
         }
-        return index_js_4.logger.throwArgumentError("invalid extended key prefix", "extendedKey", "[ REDACTED ]");
+        return (0, index_js_4.throwArgumentError)("invalid extended key prefix", "extendedKey", "[ REDACTED ]");
     }
     static createRandom(password = "", path = exports.defaultPath, wordlist = lang_en_js_1.langEn) {
         if (!path) {
@@ -218,7 +218,7 @@ class HDNodeVoidWallet extends index_js_2.VoidSigner {
     depth;
     constructor(guard, address, publicKey, parentFingerprint, chainCode, path, index, depth, provider) {
         super(address, provider);
-        index_js_4.logger.assertPrivate(guard, _guard, "HDNodeVoidWallet");
+        (0, index_js_4.assertPrivate)(guard, _guard, "HDNodeVoidWallet");
         (0, index_js_4.defineProperties)(this, { publicKey });
         const fingerprint = (0, index_js_4.dataSlice)((0, index_js_1.ripemd160)((0, index_js_1.sha256)(publicKey)), 0, 4);
         (0, index_js_4.defineProperties)(this, {
@@ -248,7 +248,7 @@ class HDNodeVoidWallet extends index_js_2.VoidSigner {
     }
     hasPath() { return (this.path != null); }
     deriveChild(_index) {
-        const index = index_js_4.logger.getNumber(_index, "index");
+        const index = (0, index_js_4.getNumber)(_index, "index");
         if (index > 0xffffffff) {
             throw new Error("invalid index - " + String(index));
         }
@@ -275,15 +275,15 @@ class HDNodeWalletManager {
     constructor(phrase, password = "", path = "m/44'/60'/0'/0", locale = lang_en_js_1.langEn) {
         this.#root = HDNodeWallet.fromPhrase(phrase, password, path, locale);
     }
-    getSigner(index = 0) {
-        return this.#root.deriveChild(index);
+    getSigner(index) {
+        return this.#root.deriveChild((index == null) ? 0 : index);
     }
 }
 exports.HDNodeWalletManager = HDNodeWalletManager;
 function getAccountPath(_index) {
-    const index = index_js_4.logger.getNumber(_index, "index");
+    const index = (0, index_js_4.getNumber)(_index, "index");
     if (index < 0 || index >= HardenedBit) {
-        index_js_4.logger.throwArgumentError("invalid account index", "index", index);
+        (0, index_js_4.throwArgumentError)("invalid account index", "index", index);
     }
     return `m/44'/60'/${index}'/0/0`;
 }

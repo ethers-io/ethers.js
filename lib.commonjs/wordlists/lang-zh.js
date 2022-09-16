@@ -52,7 +52,7 @@ class LangZh extends wordlist_js_1.Wordlist {
     getWord(index) {
         const words = loadWords(this.locale);
         if (index < 0 || index >= words.length) {
-            index_js_2.logger.throwArgumentError(`invalid word index: ${index}`, "index", index);
+            (0, index_js_2.throwArgumentError)(`invalid word index: ${index}`, "index", index);
         }
         return words[index];
     }

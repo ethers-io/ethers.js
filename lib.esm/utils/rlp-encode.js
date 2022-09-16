@@ -1,5 +1,5 @@
 //See: https://github.com/ethereum/wiki/wiki/RLP
-import { logger } from "./logger.js";
+import { getBytes } from "./data.js";
 function arrayifyInteger(value) {
     const result = [];
     while (value) {
@@ -22,7 +22,7 @@ function _encode(object) {
         length.unshift(0xf7 + length.length);
         return length.concat(payload);
     }
-    const data = Array.prototype.slice.call(logger.getBytes(object, "object"));
+    const data = Array.prototype.slice.call(getBytes(object, "object"));
     if (data.length === 1 && data[0] <= 0x7f) {
         return data;
     }
@@ -35,6 +35,9 @@ function _encode(object) {
     return length.concat(data);
 }
 const nibbles = "0123456789abcdef";
+/**
+ *  Encodes %%object%% as an RLP-encoded [[HexDataString]].
+ */
 export function encodeRlp(object) {
     let result = "0x";
     for (const v of _encode(object)) {

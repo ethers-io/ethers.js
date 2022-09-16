@@ -1,7 +1,7 @@
 // Use the encode-latin.js script to create the necessary
 // data files to be consumed by this class
-import { id } from "../hash/id.js";
-import { logger } from "../utils/logger.js";
+import { id } from "../hash/index.js";
+import { throwArgumentError } from "../utils/index.js";
 import { decodeOwl } from "./decode-owl.js";
 import { Wordlist } from "./wordlist.js";
 export class WordlistOwl extends Wordlist {
@@ -35,7 +35,7 @@ export class WordlistOwl extends Wordlist {
     getWord(index) {
         const words = this.#loadWords();
         if (index < 0 || index >= words.length) {
-            logger.throwArgumentError(`invalid word index: ${index}`, "index", index);
+            throwArgumentError(`invalid word index: ${index}`, "index", index);
         }
         return words[index];
     }

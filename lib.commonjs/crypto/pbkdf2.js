@@ -9,8 +9,8 @@ const _pbkdf2 = function (password, salt, iterations, keylen, algo) {
 };
 let __pbkdf2 = _pbkdf2;
 function pbkdf2(_password, _salt, iterations, keylen, algo) {
-    const password = index_js_1.logger.getBytes(_password, "password");
-    const salt = index_js_1.logger.getBytes(_salt, "salt");
+    const password = (0, index_js_1.getBytes)(_password, "password");
+    const salt = (0, index_js_1.getBytes)(_salt, "salt");
     return (0, index_js_1.hexlify)(__pbkdf2(password, salt, iterations, keylen, algo));
 }
 exports.pbkdf2 = pbkdf2;

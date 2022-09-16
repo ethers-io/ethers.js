@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getIcapAddress = exports.getAddress = void 0;
-const keccak_js_1 = require("../crypto/keccak.js");
-const logger_js_1 = require("../utils/logger.js");
+const index_js_1 = require("../crypto/index.js");
+const index_js_2 = require("../utils/index.js");
 const BN_0 = BigInt(0);
 const BN_36 = BigInt(36);
 function getChecksumAddress(address) {
@@ -15,7 +15,7 @@ function getChecksumAddress(address) {
     for (let i = 0; i < 40; i++) {
         expanded[i] = chars[i].charCodeAt(0);
     }
-    const hashed = logger_js_1.logger.getBytes((0, keccak_js_1.keccak256)(expanded));
+    const hashed = (0, index_js_2.getBytes)((0, index_js_1.keccak256)(expanded));
     for (let i = 0; i < 40; i += 2) {
         if ((hashed[i >> 1] >> 4) >= 8) {
             chars[i] = chars[i].toUpperCase();
@@ -73,7 +73,7 @@ function fromBase36(value) {
 }
 function getAddress(address) {
     if (typeof (address) !== "string") {
-        logger_js_1.logger.throwArgumentError("invalid address", "address", address);
+        (0, index_js_2.throwArgumentError)("invalid address", "address", address);
     }
     if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
         // Missing the 0x prefix
@@ -83,7 +83,7 @@ function getAddress(address) {
         const result = getChecksumAddress(address);
         // It is a checksummed address with a bad checksum
         if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
-            logger_js_1.logger.throwArgumentError("bad address checksum", "address", address);
+            (0, index_js_2.throwArgumentError)("bad address checksum", "address", address);
         }
         return result;
     }
@@ -91,7 +91,7 @@ function getAddress(address) {
     if (address.match(/^XE[0-9]{2}[0-9A-Za-z]{30,31}$/)) {
         // It is an ICAP address with a bad checksum
         if (address.substring(2, 4) !== ibanChecksum(address)) {
-            logger_js_1.logger.throwArgumentError("bad icap checksum", "address", address);
+            (0, index_js_2.throwArgumentError)("bad icap checksum", "address", address);
         }
         let result = fromBase36(address.substring(4)).toString(16);
         while (result.length < 40) {
@@ -99,7 +99,7 @@ function getAddress(address) {
         }
         return getChecksumAddress("0x" + result);
     }
-    return logger_js_1.logger.throwArgumentError("invalid address", "address", address);
+    return (0, index_js_2.throwArgumentError)("invalid address", "address", address);
 }
 exports.getAddress = getAddress;
 function getIcapAddress(address) {

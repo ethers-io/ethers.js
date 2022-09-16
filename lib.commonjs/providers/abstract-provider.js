@@ -9,14 +9,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AbstractProvider = exports.copyRequest = exports.UnmanagedSubscriber = void 0;
 const index_js_1 = require("../address/index.js");
-const data_js_1 = require("../utils/data.js");
-const errors_js_1 = require("../utils/errors.js");
-const fetch_js_1 = require("../utils/fetch.js");
-const maths_js_1 = require("../utils/maths.js");
 const index_js_2 = require("../utils/index.js");
-const index_js_3 = require("../utils/index.js");
-;
-const logger_js_1 = require("../utils/logger.js");
 const ens_resolver_js_1 = require("./ens-resolver.js");
 const network_js_1 = require("./network.js");
 const provider_js_1 = require("./provider.js");
@@ -83,7 +76,7 @@ async function getSubscription(_event, provider) {
             }
         }
     }
-    if ((0, data_js_1.isHexString)(_event, 32)) {
+    if ((0, index_js_2.isHexString)(_event, 32)) {
         const hash = _event.toLowerCase();
         return { type: "transaction", tag: getTag("tx", { hash }), hash };
     }
@@ -109,7 +102,7 @@ async function getSubscription(_event, provider) {
             const addresses = [];
             const promises = [];
             const addAddress = (addr) => {
-                if ((0, data_js_1.isHexString)(addr)) {
+                if ((0, index_js_2.isHexString)(addr)) {
                     addresses.push(addr);
                 }
                 else {
@@ -131,7 +124,7 @@ async function getSubscription(_event, provider) {
         }
         return { filter, tag: getTag("event", filter), type: "event" };
     }
-    return logger_js_1.logger.throwArgumentError("unknown ProviderEvent", "event", _event);
+    return (0, index_js_2.throwArgumentError)("unknown ProviderEvent", "event", _event);
 }
 function getTime() { return (new Date()).getTime(); }
 function copyRequest(tx) {
@@ -224,7 +217,7 @@ class AbstractProvider {
             //    value.status = response.statusCode;
             //    return value;
             //});
-            const request = new fetch_js_1.FetchRequest(href);
+            const request = new index_js_2.FetchRequest(href);
             if (url.indexOf("{data}") === -1) {
                 request.body = { data, sender };
             }
@@ -242,7 +235,7 @@ class AbstractProvider {
             catch (error) { }
             // 4xx indicates the result is not present; stop
             if (resp.statusCode >= 400 && resp.statusCode < 500) {
-                return logger_js_1.logger.throwError(`response not found during CCIP fetch: ${errorMessage}`, "OFFCHAIN_FAULT", {
+                return (0, index_js_2.throwError)(`response not found during CCIP fetch: ${errorMessage}`, "OFFCHAIN_FAULT", {
                     reason: "404_MISSING_RESOURCE",
                     transaction: tx, info: { url, errorMessage }
                 });
@@ -250,7 +243,7 @@ class AbstractProvider {
             // 5xx indicates server issue; try the next url
             errorMessages.push(errorMessage);
         }
-        return logger_js_1.logger.throwError(`error encountered during CCIP fetch: ${errorMessages.map((m) => JSON.stringify(m)).join(", ")}`, "OFFCHAIN_FAULT", {
+        return (0, index_js_2.throwError)(`error encountered during CCIP fetch: ${errorMessages.map((m) => JSON.stringify(m)).join(", ")}`, "OFFCHAIN_FAULT", {
             reason: "500_SERVER_ERROR",
             transaction: tx, info: { urls, errorMessages }
         });
@@ -259,21 +252,21 @@ class AbstractProvider {
         return tx;
     }
     _detectNetwork() {
-        return logger_js_1.logger.throwError("sub-classes must implement this", "UNSUPPORTED_OPERATION", {
+        return (0, index_js_2.throwError)("sub-classes must implement this", "UNSUPPORTED_OPERATION", {
             operation: "_detectNetwork"
         });
     }
     // Sub-classes should override this and handle PerformActionRequest requests, calling
     // the super for any unhandled actions.
     async _perform(req) {
-        return logger_js_1.logger.throwError(`unsupported method: ${req.method}`, "UNSUPPORTED_OPERATION", {
+        return (0, index_js_2.throwError)(`unsupported method: ${req.method}`, "UNSUPPORTED_OPERATION", {
             operation: req.method,
             info: req
         });
     }
     // State
     async getBlockNumber() {
-        return logger_js_1.logger.getNumber(await this.#perform({ method: "getBlockNumber" }), "%response");
+        return (0, index_js_2.getNumber)(await this.#perform({ method: "getBlockNumber" }), "%response");
     }
     // @TODO: Make this string | Promsie<string> so no await needed if sync is possible
     _getAddress(address) {
@@ -301,19 +294,19 @@ class AbstractProvider {
             case "finalized":
                 return blockTag;
         }
-        if ((0, data_js_1.isHexString)(blockTag)) {
-            if ((0, data_js_1.dataLength)(blockTag) === 32) {
+        if ((0, index_js_2.isHexString)(blockTag)) {
+            if ((0, index_js_2.dataLength)(blockTag) === 32) {
                 return blockTag;
             }
-            return (0, maths_js_1.toQuantity)(blockTag);
+            return (0, index_js_2.toQuantity)(blockTag);
         }
         if (typeof (blockTag) === "number") {
             if (blockTag >= 0) {
-                return (0, maths_js_1.toQuantity)(blockTag);
+                return (0, index_js_2.toQuantity)(blockTag);
             }
-            return this.getBlockNumber().then((b) => (0, maths_js_1.toQuantity)(b + blockTag));
+            return this.getBlockNumber().then((b) => (0, index_js_2.toQuantity)(b + blockTag));
         }
-        return logger_js_1.logger.throwArgumentError("invalid blockTag", "blockTag", blockTag);
+        return (0, index_js_2.throwArgumentError)("invalid blockTag", "blockTag", blockTag);
     }
     async getNetwork() {
         // No explicit network was set and this is our first time
@@ -348,7 +341,7 @@ class AbstractProvider {
             }
             else {
                 // Otherwise, we do not allow changes to the underlying network
-                logger_js_1.logger.throwError(`network changed: ${expected.chainId} => ${actual.chainId} `, "NETWORK_ERROR", {
+                (0, index_js_2.throwError)(`network changed: ${expected.chainId} => ${actual.chainId} `, "NETWORK_ERROR", {
                     event: "changed"
                 });
             }
@@ -361,7 +354,7 @@ class AbstractProvider {
             gasPrice: ((async () => {
                 try {
                     const gasPrice = await this.#perform({ method: "getGasPrice" });
-                    return logger_js_1.logger.getBigInt(gasPrice, "%response");
+                    return (0, index_js_2.getBigInt)(gasPrice, "%response");
                 }
                 catch (error) { }
                 return null;
@@ -393,40 +386,40 @@ class AbstractProvider {
     }
     async estimateGas(_tx) {
         const transaction = await this._getTransaction(_tx);
-        return logger_js_1.logger.getBigInt(await this.#perform({
+        return (0, index_js_2.getBigInt)(await this.#perform({
             method: "estimateGas", transaction
         }), "%response");
     }
     async #call(tx, blockTag, attempt) {
         if (attempt >= MAX_CCIP_REDIRECTS) {
-            logger_js_1.logger.throwError("CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
+            (0, index_js_2.throwError)("CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
                 reason: "TOO_MANY_REDIRECTS",
                 transaction: Object.assign({}, tx, { blockTag, enableCcipRead: true })
             });
         }
         const transaction = copyRequest(tx);
         try {
-            return (0, data_js_1.hexlify)(await this._perform({ method: "call", transaction, blockTag }));
+            return (0, index_js_2.hexlify)(await this._perform({ method: "call", transaction, blockTag }));
         }
         catch (error) {
             // CCIP Read OffchainLookup
-            if (!this.disableCcipRead && (0, errors_js_1.isCallException)(error) && attempt >= 0 && blockTag === "latest" && transaction.to != null && (0, data_js_1.dataSlice)(error.data, 0, 4) === "0x556f1830") {
+            if (!this.disableCcipRead && (0, index_js_2.isCallException)(error) && attempt >= 0 && blockTag === "latest" && transaction.to != null && (0, index_js_2.dataSlice)(error.data, 0, 4) === "0x556f1830") {
                 const data = error.data;
                 const txSender = await (0, index_js_1.resolveAddress)(transaction.to, this);
                 // Parse the CCIP Read Arguments
                 let ccipArgs;
                 try {
-                    ccipArgs = parseOffchainLookup((0, data_js_1.dataSlice)(error.data, 4));
+                    ccipArgs = parseOffchainLookup((0, index_js_2.dataSlice)(error.data, 4));
                 }
                 catch (error) {
-                    return logger_js_1.logger.throwError(error.message, "OFFCHAIN_FAULT", {
+                    return (0, index_js_2.throwError)(error.message, "OFFCHAIN_FAULT", {
                         reason: "BAD_DATA",
                         transaction, info: { data }
                     });
                 }
                 // Check the sender of the OffchainLookup matches the transaction
                 if (ccipArgs.sender.toLowerCase() !== txSender.toLowerCase()) {
-                    return logger_js_1.logger.throwError("CCIP Read sender mismatch", "CALL_EXCEPTION", {
+                    return (0, index_js_2.throwError)("CCIP Read sender mismatch", "CALL_EXCEPTION", {
                         data, transaction,
                         errorSignature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
                         errorName: "OffchainLookup",
@@ -435,14 +428,14 @@ class AbstractProvider {
                 }
                 const ccipResult = await this.ccipReadFetch(transaction, ccipArgs.calldata, ccipArgs.urls);
                 if (ccipResult == null) {
-                    return logger_js_1.logger.throwError("CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
+                    return (0, index_js_2.throwError)("CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
                         reason: "FETCH_FAILED",
                         transaction, info: { data: error.data, errorArgs: ccipArgs.errorArgs }
                     });
                 }
                 return this.#call({
                     to: txSender,
-                    data: (0, data_js_1.concat)([
+                    data: (0, index_js_2.concat)([
                         ccipArgs.selector, encodeBytes([ccipResult, ccipArgs.extraData])
                     ]),
                 }, blockTag, attempt + 1);
@@ -466,17 +459,17 @@ class AbstractProvider {
         return await this.#perform(Object.assign(request, { address, blockTag }));
     }
     async getBalance(address, blockTag) {
-        return logger_js_1.logger.getBigInt(await this.#getAccountValue({ method: "getBalance" }, address, blockTag), "%response");
+        return (0, index_js_2.getBigInt)(await this.#getAccountValue({ method: "getBalance" }, address, blockTag), "%response");
     }
     async getTransactionCount(address, blockTag) {
-        return logger_js_1.logger.getNumber(await this.#getAccountValue({ method: "getTransactionCount" }, address, blockTag), "%response");
+        return (0, index_js_2.getNumber)(await this.#getAccountValue({ method: "getTransactionCount" }, address, blockTag), "%response");
     }
     async getCode(address, blockTag) {
-        return (0, data_js_1.hexlify)(await this.#getAccountValue({ method: "getCode" }, address, blockTag));
+        return (0, index_js_2.hexlify)(await this.#getAccountValue({ method: "getCode" }, address, blockTag));
     }
     async getStorageAt(address, _position, blockTag) {
-        const position = logger_js_1.logger.getBigInt(_position, "position");
-        return (0, data_js_1.hexlify)(await this.#getAccountValue({ method: "getStorageAt", position }, address, blockTag));
+        const position = (0, index_js_2.getBigInt)(_position, "position");
+        return (0, index_js_2.hexlify)(await this.#getAccountValue({ method: "getStorageAt", position }, address, blockTag));
     }
     // Write
     async broadcastTransaction(signedTx) {
@@ -484,7 +477,7 @@ class AbstractProvider {
         return {};
     }
     async #getBlock(block, includeTransactions) {
-        if ((0, data_js_1.isHexString)(block, 32)) {
+        if ((0, index_js_2.isHexString)(block, 32)) {
             return await this.#perform({
                 method: "getBlock", blockHash: block, includeTransactions
             });
@@ -539,7 +532,7 @@ class AbstractProvider {
         if (result == null) {
             return null;
         }
-        return (0, data_js_1.hexlify)(result);
+        return (0, index_js_2.hexlify)(result);
     }
     _getFilter(filter) {
         // Create a canonical representation of the topics
@@ -628,7 +621,7 @@ class AbstractProvider {
     }
     // ENS
     _getProvider(chainId) {
-        return logger_js_1.logger.throwError("provider cannot connect to target network", "UNSUPPORTED_OPERATION", {
+        return (0, index_js_2.throwError)("provider cannot connect to target network", "UNSUPPORTED_OPERATION", {
             operation: "_getProvider()"
         });
     }
@@ -643,6 +636,9 @@ class AbstractProvider {
         return null;
     }
     async resolveName(name) {
+        if ((0, index_js_2.isHexString)(name, 20)) {
+            return name;
+        }
         //if (typeof(name) === "string") {
         const resolver = await this.getResolver(name);
         if (resolver) {
@@ -696,7 +692,7 @@ class AbstractProvider {
                     }
                     timer = null;
                     this.off("block", listener);
-                    reject(logger_js_1.logger.makeError("timeout", "TIMEOUT", { reason: "timeout" }));
+                    reject((0, index_js_2.makeError)("timeout", "TIMEOUT", { reason: "timeout" }));
                 }, timeout);
             }
             listener(await this.getBlockNumber());
@@ -935,7 +931,7 @@ class AbstractProvider {
             if (this.#pausedState == !!dropWhilePaused) {
                 return;
             }
-            return logger_js_1.logger.throwError("cannot change pause type; resume first", "UNSUPPORTED_OPERATION", {
+            return (0, index_js_2.throwError)("cannot change pause type; resume first", "UNSUPPORTED_OPERATION", {
                 operation: "pause"
             });
         }
@@ -974,7 +970,7 @@ function _parseString(result, start) {
     try {
         const bytes = _parseBytes(result, start);
         if (bytes) {
-            return (0, index_js_3.toUtf8String)(bytes);
+            return (0, index_js_2.toUtf8String)(bytes);
         }
     }
     catch (error) { }
@@ -985,15 +981,15 @@ function _parseBytes(result, start) {
         return null;
     }
     try {
-        const offset = logger_js_1.logger.getNumber((0, data_js_1.dataSlice)(result, start, start + 32));
-        const length = logger_js_1.logger.getNumber((0, data_js_1.dataSlice)(result, offset, offset + 32));
-        return (0, data_js_1.dataSlice)(result, offset + 32, offset + 32 + length);
+        const offset = (0, index_js_2.getNumber)((0, index_js_2.dataSlice)(result, start, start + 32));
+        const length = (0, index_js_2.getNumber)((0, index_js_2.dataSlice)(result, offset, offset + 32));
+        return (0, index_js_2.dataSlice)(result, offset + 32, offset + 32 + length);
     }
     catch (error) { }
     return null;
 }
 function numPad(value) {
-    const result = (0, maths_js_1.toArray)(value);
+    const result = (0, index_js_2.toArray)(value);
     if (result.length > 32) {
         throw new Error("internal; should not happen");
     }
@@ -1020,7 +1016,7 @@ function encodeBytes(datas) {
         byteCount += 32;
     }
     for (let i = 0; i < datas.length; i++) {
-        const data = logger_js_1.logger.getBytes(datas[i]);
+        const data = (0, index_js_2.getBytes)(datas[i]);
         // Update the bytes offset
         result[i] = numPad(byteCount);
         // The length and padded value of data
@@ -1028,27 +1024,27 @@ function encodeBytes(datas) {
         result.push(bytesPad(data));
         byteCount += 32 + Math.ceil(data.length / 32) * 32;
     }
-    return (0, data_js_1.concat)(result);
+    return (0, index_js_2.concat)(result);
 }
 const zeros = "0x0000000000000000000000000000000000000000000000000000000000000000";
 function parseOffchainLookup(data) {
     const result = {
         sender: "", urls: [], calldata: "", selector: "", extraData: "", errorArgs: []
     };
-    if ((0, data_js_1.dataLength)(data) < 5 * 32) {
+    if ((0, index_js_2.dataLength)(data) < 5 * 32) {
         throw new Error("insufficient OffchainLookup data");
     }
-    const sender = (0, data_js_1.dataSlice)(data, 0, 32);
-    if ((0, data_js_1.dataSlice)(sender, 0, 12) !== (0, data_js_1.dataSlice)(zeros, 0, 12)) {
+    const sender = (0, index_js_2.dataSlice)(data, 0, 32);
+    if ((0, index_js_2.dataSlice)(sender, 0, 12) !== (0, index_js_2.dataSlice)(zeros, 0, 12)) {
         throw new Error("corrupt OffchainLookup sender");
     }
-    result.sender = (0, data_js_1.dataSlice)(sender, 12);
+    result.sender = (0, index_js_2.dataSlice)(sender, 12);
     // Read the URLs from the response
     try {
         const urls = [];
-        const urlsOffset = logger_js_1.logger.getNumber((0, data_js_1.dataSlice)(data, 32, 64));
-        const urlsLength = logger_js_1.logger.getNumber((0, data_js_1.dataSlice)(data, urlsOffset, urlsOffset + 32));
-        const urlsData = (0, data_js_1.dataSlice)(data, urlsOffset + 32);
+        const urlsOffset = (0, index_js_2.getNumber)((0, index_js_2.dataSlice)(data, 32, 64));
+        const urlsLength = (0, index_js_2.getNumber)((0, index_js_2.dataSlice)(data, urlsOffset, urlsOffset + 32));
+        const urlsData = (0, index_js_2.dataSlice)(data, urlsOffset + 32);
         for (let u = 0; u < urlsLength; u++) {
             const url = _parseString(urlsData, u * 32);
             if (url == null) {
@@ -1073,10 +1069,10 @@ function parseOffchainLookup(data) {
         throw new Error("corrupt OffchainLookup calldata");
     }
     // Get the callbackSelector (bytes4)
-    if ((0, data_js_1.dataSlice)(data, 100, 128) !== (0, data_js_1.dataSlice)(zeros, 0, 28)) {
+    if ((0, index_js_2.dataSlice)(data, 100, 128) !== (0, index_js_2.dataSlice)(zeros, 0, 28)) {
         throw new Error("corrupt OffchainLookup callbaackSelector");
     }
-    result.selector = (0, data_js_1.dataSlice)(data, 96, 100);
+    result.selector = (0, index_js_2.dataSlice)(data, 96, 100);
     // Get the extra data to send back to the contract as context
     try {
         const extraData = _parseBytes(data, 128);

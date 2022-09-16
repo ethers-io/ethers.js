@@ -1,17 +1,5 @@
-import { logger } from "../utils/logger.js";
-import { defineProperties } from "../utils/index.js";
-;
-export var FormatType;
-(function (FormatType) {
-    // Bare formatting, as is needed for computing a sighash of an event or function
-    FormatType["sighash"] = "sighash";
-    // Human-Readable with Minimal spacing and without names (compact human-readable)
-    FormatType["minimal"] = "minimal";
-    // Human-Readable with nice spacing, including all names
-    FormatType["full"] = "full";
-    // JSON-format a la Solidity
-    FormatType["json"] = "json";
-})(FormatType || (FormatType = {}));
+import { defineProperties, getBigInt, getNumber, assertPrivate, throwArgumentError, throwError } from "../utils/index.js";
+import { id } from "../hash/index.js";
 ;
 // [ "a", "b" ] => { "a": 1, "b": 1 }
 function setify(items) {
@@ -41,7 +29,7 @@ const regexWhitespace = new RegExp("^(\\s*)");
 const regexNumber = new RegExp("^([0-9]+)");
 const regexIdentifier = new RegExp("^([a-zA-Z$_][a-zA-Z0-9$_]*)");
 const regexType = new RegExp("^(address|bool|bytes([0-9]*)|string|u?int([0-9]*))");
-export class TokenString {
+class TokenString {
     #offset;
     #tokens;
     get offset() { return this.#offset; }
@@ -137,7 +125,7 @@ export class TokenString {
         return `<TokenString ${tokens.join(" ")}>`;
     }
 }
-export function lex(text) {
+function lex(text) {
     const tokens = [];
     const throwError = (message) => {
         const token = (offset < text.length) ? JSON.stringify(text[offset]) : "$EOI";
@@ -189,7 +177,7 @@ export function lex(text) {
                 if (tokens.length > 0 && tokens[tokens.length - 1].type === "NUMBER") {
                     const value = tokens.pop().text;
                     suffix = value + suffix;
-                    (tokens[tokens.length - 1]).value = logger.getNumber(value);
+                    (tokens[tokens.length - 1]).value = getNumber(value);
                 }
                 if (tokens.length === 0 || tokens[tokens.length - 1].type !== "BRACKET") {
                     throw new Error("missing opening bracket");
@@ -297,7 +285,7 @@ function consumeGas(tokens) {
     if (tokens.peekType("AT")) {
         tokens.pop();
         if (tokens.peekType("NUMBER")) {
-            return logger.getBigInt(tokens.pop().text);
+            return getBigInt(tokens.pop().text);
         }
         throw new Error("invalid gas");
     }
@@ -312,7 +300,7 @@ const regexArrayType = new RegExp(/^(.*)\[([0-9]*)\]$/);
 function verifyBasicType(type) {
     const match = type.match(regexType);
     if (!match) {
-        return logger.throwArgumentError("invalid type", "type", type);
+        return throwArgumentError("invalid type", "type", type);
     }
     if (type === "uint") {
         return "uint256";
@@ -324,14 +312,14 @@ function verifyBasicType(type) {
         // bytesXX
         const length = parseInt(match[2]);
         if (length === 0 || length > 32) {
-            logger.throwArgumentError("invalid bytes length", "type", type);
+            throwArgumentError("invalid bytes length", "type", type);
         }
     }
     else if (match[3]) {
         // intXX or uintXX
         const size = parseInt(match[3]);
         if (size === 0 || size > 256 || size % 8) {
-            logger.throwArgumentError("invalid numeric width", "type", type);
+            throwArgumentError("invalid numeric width", "type", type);
         }
     }
     return type;
@@ -358,7 +346,7 @@ export class ParamType {
     arrayLength;
     arrayChildren;
     constructor(guard, name, type, baseType, indexed, components, arrayLength, arrayChildren) {
-        logger.assertPrivate(guard, _guard, "ParamType");
+        assertPrivate(guard, _guard, "ParamType");
         Object.defineProperty(this, internal, { value: ParamTypeInternal });
         if (components) {
             components = Object.freeze(components.slice());
@@ -387,11 +375,8 @@ export class ParamType {
     //   - sighash: "(uint256,address)"
     //   - minimal: "tuple(uint256,address) indexed"
     //   - full:    "tuple(uint256 foo, address bar) indexed baz"
-    format(format = FormatType.sighash) {
-        if (!FormatType[format]) {
-            logger.throwArgumentError("invalid format type", "format", format);
-        }
-        if (format === FormatType.json) {
+    format(format = "sighash") {
+        if (format === "json") {
             let result = {
                 type: ((this.baseType === "tuple") ? "tuple" : this.type),
                 name: (this.name || undefined)
@@ -412,20 +397,20 @@ export class ParamType {
         }
         else {
             if (this.isTuple()) {
-                if (format !== FormatType.sighash) {
+                if (format !== "sighash") {
                     result += this.type;
                 }
-                result += "(" + this.components.map((comp) => comp.format(format)).join((format === FormatType.full) ? ", " : ",") + ")";
+                result += "(" + this.components.map((comp) => comp.format(format)).join((format === "full") ? ", " : ",") + ")";
             }
             else {
                 result += this.type;
             }
         }
-        if (format !== FormatType.sighash) {
+        if (format !== "sighash") {
             if (this.indexed === true) {
                 result += " indexed";
             }
-            if (format === FormatType.full && this.name) {
+            if (format === "full" && this.name) {
                 result += " " + this.name;
             }
         }
@@ -451,7 +436,8 @@ export class ParamType {
             if (this.arrayLength !== -1 && value.length !== this.arrayLength) {
                 throw new Error("array is wrong length");
             }
-            return value.map((v) => (this.arrayChildren.walk(v, process)));
+            const _this = this;
+            return value.map((v) => (_this.arrayChildren.walk(v, process)));
         }
         if (this.isTuple()) {
             if (!Array.isArray(value)) {
@@ -460,7 +446,8 @@ export class ParamType {
             if (value.length !== this.components.length) {
                 throw new Error("array is wrong length");
             }
-            return value.map((v, i) => (this.components[i].walk(v, process)));
+            const _this = this;
+            return value.map((v, i) => (_this.components[i].walk(v, process)));
         }
         return process(this.type, value);
     }
@@ -545,12 +532,12 @@ export class ParamType {
         }
         const name = obj.name;
         if (name && (typeof (name) !== "string" || !name.match(regexIdentifier))) {
-            logger.throwArgumentError("invalid name", "obj.name", name);
+            throwArgumentError("invalid name", "obj.name", name);
         }
         let indexed = obj.indexed;
         if (indexed != null) {
             if (!allowIndexed) {
-                logger.throwArgumentError("parameter cannot be indexed", "obj.indexed", obj.indexed);
+                throwArgumentError("parameter cannot be indexed", "obj.indexed", obj.indexed);
             }
             indexed = !!indexed;
         }
@@ -619,20 +606,11 @@ export class ParamType {
         return (value && value[internal] === ParamTypeInternal);
     }
 }
-export var FragmentType;
-(function (FragmentType) {
-    FragmentType["constructor"] = "constructor";
-    FragmentType["error"] = "error";
-    FragmentType["event"] = "event";
-    FragmentType["function"] = "function";
-    FragmentType["struct"] = "struct";
-})(FragmentType || (FragmentType = {}));
-;
 export class Fragment {
     type;
     inputs;
     constructor(guard, type, inputs) {
-        logger.assertPrivate(guard, _guard, "Fragment");
+        assertPrivate(guard, _guard, "Fragment");
         inputs = Object.freeze(inputs.slice());
         defineProperties(this, { type, inputs });
     }
@@ -719,17 +697,17 @@ export class NamedFragment extends Fragment {
     }
 }
 function joinParams(format, params) {
-    return "(" + params.map((p) => p.format(format)).join((format === FormatType.full) ? ", " : ",") + ")";
+    return "(" + params.map((p) => p.format(format)).join((format === "full") ? ", " : ",") + ")";
 }
 export class ErrorFragment extends NamedFragment {
     constructor(guard, name, inputs) {
-        super(guard, FragmentType.error, name, inputs);
+        super(guard, "error", name, inputs);
     }
-    format(format = FormatType.sighash) {
-        if (!FormatType[format]) {
-            logger.throwArgumentError("invalid format type", "format", format);
-        }
-        if (format === FormatType.json) {
+    get selector() {
+        return id(this.format("sighash")).substring(0, 10);
+    }
+    format(format = "sighash") {
+        if (format === "json") {
             return JSON.stringify({
                 type: "error",
                 name: this.name,
@@ -737,7 +715,7 @@ export class ErrorFragment extends NamedFragment {
             });
         }
         const result = [];
-        if (format !== FormatType.sighash) {
+        if (format !== "sighash") {
             result.push("error");
         }
         result.push(this.name + joinParams(format, this.inputs));
@@ -756,14 +734,14 @@ export class ErrorFragment extends NamedFragment {
 export class EventFragment extends NamedFragment {
     anonymous;
     constructor(guard, name, inputs, anonymous) {
-        super(guard, FragmentType.event, name, inputs);
+        super(guard, "event", name, inputs);
         defineProperties(this, { anonymous });
     }
-    format(format = FormatType.sighash) {
-        if (!FormatType[format]) {
-            logger.throwArgumentError("invalid format type", "format", format);
-        }
-        if (format === FormatType.json) {
+    get topicHash() {
+        return id(this.format("sighash"));
+    }
+    format(format = "sighash") {
+        if (format === "json") {
             return JSON.stringify({
                 type: "event",
                 anonymous: this.anonymous,
@@ -772,11 +750,11 @@ export class EventFragment extends NamedFragment {
             });
         }
         const result = [];
-        if (format !== FormatType.sighash) {
+        if (format !== "sighash") {
             result.push("event");
         }
         result.push(this.name + joinParams(format, this.inputs));
-        if (format !== FormatType.sighash && this.anonymous) {
+        if (format !== "sighash" && this.anonymous) {
             result.push("anonymous");
         }
         return result.join(" ");
@@ -799,16 +777,13 @@ export class ConstructorFragment extends Fragment {
         super(guard, type, inputs);
         defineProperties(this, { payable, gas });
     }
-    format(format = FormatType.sighash) {
-        if (!FormatType[format]) {
-            logger.throwArgumentError("invalid format type", "format", format);
-        }
-        if (format === FormatType.sighash) {
-            logger.throwError("cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", {
+    format(format = "sighash") {
+        if (format === "sighash") {
+            throwError("cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", {
                 operation: "format(sighash)"
             });
         }
-        if (format === FormatType.json) {
+        if (format === "json") {
             return JSON.stringify({
                 type: "constructor",
                 stateMutability: (this.payable ? "payable" : "undefined"),
@@ -836,7 +811,7 @@ export class ConstructorFragment extends Fragment {
         const payable = !!consumeKeywords(tokens, setify(["payable"])).has("payable");
         const gas = consumeGas(tokens);
         consumeEoi(tokens);
-        return new ConstructorFragment(_guard, FragmentType.constructor, inputs, payable, gas);
+        return new ConstructorFragment(_guard, "constructor", inputs, payable, gas);
     }
 }
 export class FunctionFragment extends NamedFragment {
@@ -846,17 +821,17 @@ export class FunctionFragment extends NamedFragment {
     payable;
     gas;
     constructor(guard, name, stateMutability, inputs, outputs, gas) {
-        super(guard, FragmentType.function, name, inputs);
+        super(guard, "function", name, inputs);
         outputs = Object.freeze(outputs.slice());
         const constant = (stateMutability === "view" || stateMutability === "pure");
         const payable = (stateMutability === "payable");
         defineProperties(this, { constant, gas, outputs, payable, stateMutability });
     }
-    format(format = FormatType.sighash) {
-        if (!FormatType[format]) {
-            logger.throwArgumentError("invalid format type", "format", format);
-        }
-        if (format === FormatType.json) {
+    get selector() {
+        return id(this.format("sighash")).substring(0, 10);
+    }
+    format(format = "sighash") {
+        if (format === "json") {
             return JSON.stringify({
                 type: "function",
                 name: this.name,
@@ -869,11 +844,11 @@ export class FunctionFragment extends NamedFragment {
             });
         }
         const result = [];
-        if (format !== FormatType.sighash) {
+        if (format !== "sighash") {
             result.push("function");
         }
         result.push(this.name + joinParams(format, this.inputs));
-        if (format !== FormatType.sighash) {
+        if (format !== "sighash") {
             if (this.stateMutability !== "nonpayable") {
                 result.push(this.stateMutability);
             }
@@ -914,7 +889,7 @@ export class StructFragment extends NamedFragment {
         const name = consumeName("struct", tokens);
         const inputs = consumeParams(tokens);
         consumeEoi(tokens);
-        return new StructFragment(_guard, FragmentType.struct, name, inputs);
+        return new StructFragment(_guard, "struct", name, inputs);
     }
 }
 //# sourceMappingURL=fragments.js.map

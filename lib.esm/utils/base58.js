@@ -1,4 +1,5 @@
-import { logger } from "./logger.js";
+import { getBytes } from "./data.js";
+import { throwArgumentError } from "./errors.js";
 import { toBigInt, toHex } from "./maths.js";
 const Alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 let Lookup = null;
@@ -11,7 +12,7 @@ function getAlpha(letter) {
     }
     const result = Lookup[letter];
     if (result == null) {
-        logger.throwArgumentError(`invalid base58 value`, "letter", letter);
+        throwArgumentError(`invalid base58 value`, "letter", letter);
     }
     return result;
 }
@@ -21,7 +22,7 @@ const BN_58 = BigInt(58);
  *  Encode %%value%% as Base58-encoded data.
  */
 export function encodeBase58(_value) {
-    let value = toBigInt(logger.getBytes(_value));
+    let value = toBigInt(getBytes(_value));
     let result = "";
     while (value) {
         result = Alphabet[Number(value % BN_58)] + result;
@@ -38,6 +39,6 @@ export function decodeBase58(value) {
         result *= BN_58;
         result += getAlpha(value[i]);
     }
-    return toHex(result);
+    return getBytes(toHex(result));
 }
 //# sourceMappingURL=base58.js.map

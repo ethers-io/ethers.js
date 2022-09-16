@@ -3,7 +3,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decodeRlp = void 0;
 const data_js_1 = require("./data.js");
-const logger_js_1 = require("./logger.js");
+const errors_js_1 = require("./errors.js");
+const data_js_2 = require("./data.js");
 function hexlifyByte(value) {
     let result = value.toString(16);
     while (result.length < 2) {
@@ -25,7 +26,7 @@ function _decodeChildren(data, offset, childOffset, length) {
         result.push(decoded.result);
         childOffset += decoded.consumed;
         if (childOffset > offset + 1 + length) {
-            logger_js_1.logger.throwError("child data too short", "BUFFER_OVERRUN", {
+            (0, errors_js_1.throwError)("child data too short", "BUFFER_OVERRUN", {
                 buffer: data, length, offset
             });
         }
@@ -35,13 +36,13 @@ function _decodeChildren(data, offset, childOffset, length) {
 // returns { consumed: number, result: Object }
 function _decode(data, offset) {
     if (data.length === 0) {
-        logger_js_1.logger.throwError("data too short", "BUFFER_OVERRUN", {
+        (0, errors_js_1.throwError)("data too short", "BUFFER_OVERRUN", {
             buffer: data, length: 0, offset: 1
         });
     }
     const checkOffset = (offset) => {
         if (offset > data.length) {
-            logger_js_1.logger.throwError("data short segment too short", "BUFFER_OVERRUN", {
+            (0, errors_js_1.throwError)("data short segment too short", "BUFFER_OVERRUN", {
                 buffer: data, length: data.length, offset
             });
         }
@@ -75,11 +76,14 @@ function _decode(data, offset) {
     }
     return { consumed: 1, result: hexlifyByte(data[offset]) };
 }
+/**
+ *  Decodes %%data%% into the structured data it represents.
+ */
 function decodeRlp(_data) {
-    const data = logger_js_1.logger.getBytes(_data, "data");
+    const data = (0, data_js_2.getBytes)(_data, "data");
     const decoded = _decode(data, 0);
     if (decoded.consumed !== data.length) {
-        logger_js_1.logger.throwArgumentError("unexpected junk after rlp payload", "data", _data);
+        (0, errors_js_1.throwArgumentError)("unexpected junk after rlp payload", "data", _data);
     }
     return decoded.result;
 }

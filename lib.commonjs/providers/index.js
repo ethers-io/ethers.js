@@ -1,11 +1,10 @@
 "use strict";
-/*
-export {
-    AbstractProvider, UnmanagedSubscriber
-} from "./abstract-provider.js";
-*/
+/////
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.WebSocketProvider = exports.SocketProvider = exports.IpcSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyProvider = exports.JsonRpcSigner = exports.JsonRpcProvider = exports.JsonRpcApiProvider = exports.FallbackProvider = exports.copyRequest = exports.dummyProvider = exports.TransactionResponse = exports.TransactionReceipt = exports.Log = exports.FeeData = exports.Block = exports.EnsPlugin = exports.GasCostPlugin = exports.NetworkPlugin = exports.Network = exports.Formatter = exports.WrappedSigner = exports.VoidSigner = exports.AbstractSigner = void 0;
+exports.SocketEventSubscriber = exports.SocketPendingSubscriber = exports.SocketBlockSubscriber = exports.SocketSubscriber = exports.WebSocketProvider = exports.SocketProvider = exports.IpcSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyProvider = exports.JsonRpcSigner = exports.JsonRpcProvider = exports.JsonRpcApiProvider = exports.FallbackProvider = exports.copyRequest = exports.dummyProvider = exports.TransactionResponse = exports.TransactionReceipt = exports.Log = exports.FeeData = exports.Block = exports.EnsPlugin = exports.GasCostPlugin = exports.NetworkPlugin = exports.Network = exports.Formatter = exports.WrappedSigner = exports.VoidSigner = exports.AbstractSigner = exports.UnmanagedSubscriber = exports.AbstractProvider = void 0;
+var abstract_provider_js_1 = require("./abstract-provider.js");
+Object.defineProperty(exports, "AbstractProvider", { enumerable: true, get: function () { return abstract_provider_js_1.AbstractProvider; } });
+Object.defineProperty(exports, "UnmanagedSubscriber", { enumerable: true, get: function () { return abstract_provider_js_1.UnmanagedSubscriber; } });
 var abstract_signer_js_1 = require("./abstract-signer.js");
 Object.defineProperty(exports, "AbstractSigner", { enumerable: true, get: function () { return abstract_signer_js_1.AbstractSigner; } });
 Object.defineProperty(exports, "VoidSigner", { enumerable: true, get: function () { return abstract_signer_js_1.VoidSigner; } });
@@ -58,4 +57,9 @@ var provider_socket_js_1 = require("./provider-socket.js");
 Object.defineProperty(exports, "SocketProvider", { enumerable: true, get: function () { return provider_socket_js_1.SocketProvider; } });
 var provider_websocket_js_1 = require("./provider-websocket.js");
 Object.defineProperty(exports, "WebSocketProvider", { enumerable: true, get: function () { return provider_websocket_js_1.WebSocketProvider; } });
+var provider_socket_js_2 = require("./provider-socket.js");
+Object.defineProperty(exports, "SocketSubscriber", { enumerable: true, get: function () { return provider_socket_js_2.SocketSubscriber; } });
+Object.defineProperty(exports, "SocketBlockSubscriber", { enumerable: true, get: function () { return provider_socket_js_2.SocketBlockSubscriber; } });
+Object.defineProperty(exports, "SocketPendingSubscriber", { enumerable: true, get: function () { return provider_socket_js_2.SocketPendingSubscriber; } });
+Object.defineProperty(exports, "SocketEventSubscriber", { enumerable: true, get: function () { return provider_socket_js_2.SocketEventSubscriber; } });
 //# sourceMappingURL=index.js.map

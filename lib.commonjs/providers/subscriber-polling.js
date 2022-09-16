@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PollingEventSubscriber = exports.PollingTransactionSubscriber = exports.PollingOrphanSubscriber = exports.OnBlockSubscriber = exports.PollingBlockSubscriber = exports.getPollingSubscriber = void 0;
-const data_js_1 = require("../utils/data.js");
-const logger_js_1 = require("../utils/logger.js");
+const index_js_1 = require("../utils/index.js");
 function copy(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
@@ -10,10 +9,10 @@ function getPollingSubscriber(provider, event) {
     if (event === "block") {
         return new PollingBlockSubscriber(provider);
     }
-    if ((0, data_js_1.isHexString)(event, 32)) {
+    if ((0, index_js_1.isHexString)(event, 32)) {
         return new PollingTransactionSubscriber(provider, event);
     }
-    return logger_js_1.logger.throwError("unsupported polling event", "UNSUPPORTED_OPERATION", {
+    return (0, index_js_1.throwError)("unsupported polling event", "UNSUPPORTED_OPERATION", {
         operation: "getPollingSubscriber", info: { event }
     });
 }

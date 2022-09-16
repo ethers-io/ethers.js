@@ -1,10 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InfuraProvider = void 0;
-const properties_js_1 = require("../utils/properties.js");
-const fetch_js_1 = require("../utils/fetch.js");
+const index_js_1 = require("../utils/index.js");
 const community_js_1 = require("./community.js");
-const logger_js_1 = require("../utils/logger.js");
 const network_js_1 = require("./network.js");
 const provider_jsonrpc_js_1 = require("./provider-jsonrpc.js");
 const defaultProjectId = "84842078b09946638c03157f83405213";
@@ -33,7 +31,7 @@ function getHost(name) {
         case "arbitrum-rinkeby":
             return "arbitrum-rinkeby.infura.io";
     }
-    return logger_js_1.logger.throwArgumentError("unsupported network", "network", name);
+    return (0, index_js_1.throwArgumentError)("unsupported network", "network", name);
 }
 class InfuraProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
     projectId;
@@ -48,7 +46,7 @@ class InfuraProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
         }
         const request = InfuraProvider.getRequest(network, projectId, projectSecret);
         super(request, network, { staticNetwork: network });
-        (0, properties_js_1.defineProperties)(this, { projectId, projectSecret });
+        (0, index_js_1.defineProperties)(this, { projectId, projectSecret });
     }
     _getProvider(chainId) {
         try {
@@ -64,7 +62,7 @@ class InfuraProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
         if (projectSecret == null) {
             projectSecret = null;
         }
-        const request = new fetch_js_1.FetchRequest(`https:/\/${getHost(network.name)}/v3/${projectId}`);
+        const request = new index_js_1.FetchRequest(`https:/\/${getHost(network.name)}/v3/${projectId}`);
         request.allowGzip = true;
         if (projectSecret) {
             request.setCredentials("", projectSecret);

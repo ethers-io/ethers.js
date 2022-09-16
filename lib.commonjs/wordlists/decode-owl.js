@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decodeOwl = exports.decode = void 0;
-const logger_js_1 = require("../utils/logger.js");
+const index_js_1 = require("../utils/index.js");
 const subsChrs = " !#$%&'()*+,-./<=>?@[]^_`{|}~";
 const Word = /^[a-z]*$/i;
 function unfold(words, sep) {
@@ -47,7 +47,7 @@ function decode(data, subs) {
 }
 exports.decode = decode;
 function decodeOwl(data) {
-    (0, logger_js_1.assertArgument)(data[0] === "0", "unsupported auwl data", "data", data);
+    (0, index_js_1.assertArgument)(data[0] === "0", "unsupported auwl data", "data", data);
     return decode(data.substring(1 + 2 * subsChrs.length), data.substring(1, 1 + 2 * subsChrs.length));
 }
 exports.decodeOwl = decodeOwl;

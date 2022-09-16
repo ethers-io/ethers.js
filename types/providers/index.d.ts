@@ -1,3 +1,4 @@
+export { AbstractProvider, UnmanagedSubscriber } from "./abstract-provider.js";
 export { AbstractSigner, VoidSigner, WrappedSigner } from "./abstract-signer.js";
 export { Formatter } from "./formatter.js";
 export { Network } from "./common-networks.js";
@@ -14,10 +15,14 @@ import { IpcSocketProvider } from "./provider-ipcsocket.js";
 export { IpcSocketProvider };
 export { SocketProvider } from "./provider-socket.js";
 export { WebSocketProvider } from "./provider-websocket.js";
+export { SocketSubscriber, SocketBlockSubscriber, SocketPendingSubscriber, SocketEventSubscriber } from "./provider-socket.js";
+export type { Subscription, Subscriber, ProviderPlugin, PerformActionFilter, PerformActionTransaction, PerformActionRequest } from "./abstract-provider.js";
 export type { ContractRunner } from "./contracts.js";
 export type { FormatFunc } from "./formatter.js";
 export type { Networkish } from "./network.js";
 export type { GasCostParameters } from "./plugins-network.js";
 export type { BlockTag, CallRequest, TransactionRequest, PreparedRequest, EventFilter, Filter, FilterByBlockHash, OrphanFilter, ProviderEvent, TopicFilter, Provider, } from "./provider.js";
+export type { JsonRpcPayload, JsonRpcResult, JsonRpcError, JsonRpcApiProviderOptions, JsonRpcTransactionRequest, } from "./provider-jsonrpc.js";
+export type { WebSocketLike } from "./provider-websocket.js";
 export type { Signer } from "./signer.js";
 //# sourceMappingURL=index.d.ts.map

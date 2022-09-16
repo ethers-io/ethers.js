@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseEther = exports.formatEther = exports.parseUnits = exports.formatUnits = void 0;
 const fixednumber_js_1 = require("./fixednumber.js");
-const logger_js_1 = require("./logger.js");
+const errors_js_1 = require("./errors.js");
 const names = [
     "wei",
     "kwei",
@@ -22,7 +22,7 @@ function formatUnits(value, unit) {
     if (typeof (unit) === "string") {
         const index = names.indexOf(unit);
         if (index === -1) {
-            logger_js_1.logger.throwArgumentError("invalid unit", "unit", unit);
+            (0, errors_js_1.throwArgumentError)("invalid unit", "unit", unit);
         }
         unit = 3 * index;
     }
@@ -36,12 +36,12 @@ exports.formatUnits = formatUnits;
  */
 function parseUnits(value, unit) {
     if (typeof (value) !== "string") {
-        logger_js_1.logger.throwArgumentError("value must be a string", "value", value);
+        (0, errors_js_1.throwArgumentError)("value must be a string", "value", value);
     }
     if (typeof (unit) === "string") {
         const index = names.indexOf(unit);
         if (index === -1) {
-            logger_js_1.logger.throwArgumentError("invalid unit", "unit", unit);
+            (0, errors_js_1.throwArgumentError)("invalid unit", "unit", unit);
         }
         unit = 3 * index;
     }

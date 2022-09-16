@@ -1,9 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FallbackProvider = void 0;
-const data_js_1 = require("../utils/data.js");
+const index_js_1 = require("../utils/index.js");
 const abstract_provider_js_1 = require("./abstract-provider.js");
-const logger_js_1 = require("../utils/logger.js");
 const network_js_1 = require("./network.js");
 //const BN_0 = BigInt("0");
 const BN_1 = BigInt("1");
@@ -47,19 +46,19 @@ async function waitForSync(config, blockNumber) {
 function normalize(network, value, req) {
     switch (req.method) {
         case "chainId":
-            return logger_js_1.logger.getBigInt(value).toString();
+            return (0, index_js_1.getBigInt)(value).toString();
         case "getBlockNumber":
-            return logger_js_1.logger.getNumber(value).toString();
+            return (0, index_js_1.getNumber)(value).toString();
         case "getGasPrice":
-            return logger_js_1.logger.getBigInt(value).toString();
+            return (0, index_js_1.getBigInt)(value).toString();
         case "getBalance":
-            return logger_js_1.logger.getBigInt(value).toString();
+            return (0, index_js_1.getBigInt)(value).toString();
         case "getTransactionCount":
-            return logger_js_1.logger.getNumber(value).toString();
+            return (0, index_js_1.getNumber)(value).toString();
         case "getCode":
-            return (0, data_js_1.hexlify)(value);
+            return (0, index_js_1.hexlify)(value);
         case "getStorageAt":
-            return (0, data_js_1.hexlify)(value);
+            return (0, index_js_1.hexlify)(value);
         case "getBlock":
             if (req.includeTransactions) {
                 return JSON.stringify(network.formatter.blockWithTransactions(value));
@@ -70,13 +69,13 @@ function normalize(network, value, req) {
         case "getTransactionReceipt":
             return JSON.stringify(network.formatter.receipt(value));
         case "call":
-            return (0, data_js_1.hexlify)(value);
+            return (0, index_js_1.hexlify)(value);
         case "estimateGas":
-            return logger_js_1.logger.getBigInt(value).toString();
+            return (0, index_js_1.getBigInt)(value).toString();
         case "getLogs":
             return JSON.stringify(value.map((v) => network.formatter.log(v)));
     }
-    return logger_js_1.logger.throwError("unsupported method", "UNSUPPORTED_OPERATION", {
+    return (0, index_js_1.throwError)("unsupported method", "UNSUPPORTED_OPERATION", {
         operation: `_perform(${JSON.stringify(req.method)})`
     });
 }
@@ -119,7 +118,7 @@ function getMedian(results) {
 }
 function getFuzzyMode(quorum, results) {
     if (quorum === 1) {
-        return logger_js_1.logger.getNumber(getMedian(results), "%internal");
+        return (0, index_js_1.getNumber)(getMedian(results), "%internal");
     }
     const tally = new Map();
     const add = (result, weight) => {
@@ -128,7 +127,7 @@ function getFuzzyMode(quorum, results) {
         tally.set(result, t);
     };
     for (const { weight, result } of results) {
-        const r = logger_js_1.logger.getNumber(result);
+        const r = (0, index_js_1.getNumber)(result);
         add(r - 1, weight);
         add(r, weight);
         add(r + 1, weight);
@@ -170,7 +169,7 @@ class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
         this.eventQuorum = 1;
         this.eventWorkers = 1;
         if (this.quorum > this.#configs.reduce((a, c) => (a + c.weight), 0)) {
-            logger_js_1.logger.throwArgumentError("quorum exceed provider wieght", "quorum", this.quorum);
+            (0, index_js_1.throwArgumentError)("quorum exceed provider wieght", "quorum", this.quorum);
         }
     }
     // @TOOD: Copy these and only return public values
@@ -178,7 +177,7 @@ class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
         return this.#configs.slice();
     }
     async _detectNetwork() {
-        return network_js_1.Network.from(logger_js_1.logger.getBigInt(await this._perform({ method: "chainId" }))).freeze();
+        return network_js_1.Network.from((0, index_js_1.getBigInt)(await this._perform({ method: "chainId" }))).freeze();
     }
     // @TODO: Add support to select providers to be the event subscriber
     //_getSubscriber(sub: Subscription): Subscriber {
@@ -256,7 +255,7 @@ class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
                         chainId = network.chainId;
                     }
                     else if (network.chainId !== chainId) {
-                        logger_js_1.logger.throwError("cannot mix providers on different networks", "UNSUPPORTED_OPERATION", {
+                        (0, index_js_1.throwError)("cannot mix providers on different networks", "UNSUPPORTED_OPERATION", {
                             operation: "new FallbackProvider"
                         });
                     }
@@ -286,9 +285,9 @@ class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
             case "getBlockNumber": {
                 // We need to get the bootstrap block height
                 if (this.#height === -2) {
-                    const height = Math.ceil(logger_js_1.logger.getNumber(getMedian(this.#configs.map((c) => ({
+                    const height = Math.ceil((0, index_js_1.getNumber)(getMedian(this.#configs.map((c) => ({
                         result: c.blockNumber,
-                        normal: logger_js_1.logger.getNumber(c.blockNumber).toString(),
+                        normal: (0, index_js_1.getNumber)(c.blockNumber).toString(),
                         weight: c.weight
                     }))), "%internal"));
                     this.#height = height;
@@ -327,7 +326,7 @@ class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
             case "broadcastTransaction":
                 throw new Error("TODO");
         }
-        return logger_js_1.logger.throwError("unsupported method", "UNSUPPORTED_OPERATION", {
+        return (0, index_js_1.throwError)("unsupported method", "UNSUPPORTED_OPERATION", {
             operation: `_perform(${JSON.stringify(req.method)})`
         });
     }

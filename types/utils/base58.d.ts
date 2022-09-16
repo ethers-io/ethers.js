@@ -6,5 +6,5 @@ export declare function encodeBase58(_value: BytesLike): string;
 /**
  *  Decode the Base58-encoded %%value%%.
  */
-export declare function decodeBase58(value: string): string;
+export declare function decodeBase58(value: string): Uint8Array;
 //# sourceMappingURL=base58.d.ts.map

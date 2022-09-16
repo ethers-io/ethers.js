@@ -1,6 +1,6 @@
 import { getAddress } from "../address/index.js";
 import { keccak256, Signature } from "../crypto/index.js";
-import { concat, decodeRlp, encodeRlp, getStore, hexlify, logger, setStore, toArray, zeroPadValue } from "../utils/index.js";
+import { concat, decodeRlp, encodeRlp, getBytes, getStore, getBigInt, getNumber, hexlify, setStore, throwArgumentError, toArray, zeroPadValue } from "../utils/index.js";
 import { accessListify } from "./accesslist.js";
 import { recoverAddress } from "./address.js";
 const BN_0 = BigInt(0);
@@ -20,7 +20,7 @@ function handleData(value, param) {
         return hexlify(value);
     }
     catch (error) {
-        return logger.throwArgumentError("invalid data", param, value);
+        return throwArgumentError("invalid data", param, value);
     }
 }
 function handleAccessList(value, param) {
@@ -28,30 +28,30 @@ function handleAccessList(value, param) {
         return accessListify(value);
     }
     catch (error) {
-        return logger.throwArgumentError("invalid accessList", param, value);
+        return throwArgumentError("invalid accessList", param, value);
     }
 }
 function handleNumber(_value, param) {
     if (_value === "0x") {
         return 0;
     }
-    return logger.getNumber(_value, param);
+    return getNumber(_value, param);
 }
 function handleUint(_value, param) {
     if (_value === "0x") {
         return BN_0;
     }
-    const value = logger.getBigInt(_value, param);
+    const value = getBigInt(_value, param);
     if (value > BN_MAX_UINT) {
-        logger.throwArgumentError("value exceeds uint size", param, value);
+        throwArgumentError("value exceeds uint size", param, value);
     }
     return value;
 }
 function formatNumber(_value, name) {
-    const value = logger.getBigInt(_value, "value");
+    const value = getBigInt(_value, "value");
     const result = toArray(value);
     if (result.length > 32) {
-        logger.throwArgumentError(`value too large`, `tx.${name}`, value);
+        throwArgumentError(`value too large`, `tx.${name}`, value);
     }
     return result;
 }
@@ -61,7 +61,7 @@ function formatAccessList(value) {
 function _parseLegacy(data) {
     const fields = decodeRlp(data);
     if (!Array.isArray(fields) || (fields.length !== 9 && fields.length !== 6)) {
-        return logger.throwArgumentError("invalid field count for legacy transaction", "data", data);
+        return throwArgumentError("invalid field count for legacy transaction", "data", data);
     }
     const tx = {
         type: 0,
@@ -93,7 +93,7 @@ function _parseLegacy(data) {
         tx.chainId = chainId;
         // Signed Legacy Transaction
         if (chainId === BN_0 && (v < BN_27 || v > BN_28)) {
-            logger.throwArgumentError("non-canonical legacy v", "v", fields[6]);
+            throwArgumentError("non-canonical legacy v", "v", fields[6]);
         }
         tx.signature = Signature.from({
             r: zeroPadValue(fields[7], 32),
@@ -116,11 +116,11 @@ function _serializeLegacy(tx, sig) {
     let chainId = BN_0;
     if (tx.chainId != null) {
         // A chainId was provided; if non-zero we'll use EIP-155
-        chainId = logger.getBigInt(tx.chainId, "tx.chainId");
+        chainId = getBigInt(tx.chainId, "tx.chainId");
         // We have a chainId in the tx and an EIP-155 v in the signature,
         // make sure they agree with each other
         if (sig && sig.networkV != null && sig.legacyChainId !== chainId) {
-            logger.throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
+            throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
         }
     }
     else if (sig) {
@@ -146,7 +146,7 @@ function _serializeLegacy(tx, sig) {
         v = Signature.getChainIdV(chainId, sig.v);
     }
     else if (BigInt(sig.v) !== v) {
-        logger.throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
+        throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
     }
     fields.push(toArray(v));
     fields.push(toArray(sig.r));
@@ -162,7 +162,7 @@ function _parseEipSignature(tx, fields, serialize) {
         }
     }
     catch (error) {
-        return logger.throwArgumentError("invalid yParity", "yParity", fields[0]);
+        return throwArgumentError("invalid yParity", "yParity", fields[0]);
     }
     const r = zeroPadValue(fields[1], 32);
     const s = zeroPadValue(fields[2], 32);
@@ -170,9 +170,9 @@ function _parseEipSignature(tx, fields, serialize) {
     tx.signature = signature;
 }
 function _parseEip1559(data) {
-    const fields = decodeRlp(logger.getBytes(data).slice(1));
+    const fields = decodeRlp(getBytes(data).slice(1));
     if (!Array.isArray(fields) || (fields.length !== 9 && fields.length !== 12)) {
-        logger.throwArgumentError("invalid field count for transaction type: 2", "data", hexlify(data));
+        throwArgumentError("invalid field count for transaction type: 2", "data", hexlify(data));
     }
     const maxPriorityFeePerGas = handleUint(fields[2], "maxPriorityFeePerGas");
     const maxFeePerGas = handleUint(fields[3], "maxFeePerGas");
@@ -217,9 +217,9 @@ function _serializeEip1559(tx, sig) {
     return concat(["0x02", encodeRlp(fields)]);
 }
 function _parseEip2930(data) {
-    const fields = decodeRlp(logger.getBytes(data).slice(1));
+    const fields = decodeRlp(getBytes(data).slice(1));
     if (!Array.isArray(fields) || (fields.length !== 8 && fields.length !== 11)) {
-        logger.throwArgumentError("invalid field count for transaction type: 1", "data", hexlify(data));
+        throwArgumentError("invalid field count for transaction type: 1", "data", hexlify(data));
     }
     const tx = {
         type: 1,
@@ -298,9 +298,9 @@ export class Transaction {
         setStore(this.#props, "to", (value == null) ? null : getAddress(value));
     }
     get nonce() { return getStore(this.#props, "nonce"); }
-    set nonce(value) { setStore(this.#props, "nonce", logger.getNumber(value, "value")); }
+    set nonce(value) { setStore(this.#props, "nonce", getNumber(value, "value")); }
     get gasLimit() { return getStore(this.#props, "gasLimit"); }
-    set gasLimit(value) { setStore(this.#props, "gasLimit", logger.getBigInt(value)); }
+    set gasLimit(value) { setStore(this.#props, "gasLimit", getBigInt(value)); }
     get gasPrice() {
         const value = getStore(this.#props, "gasPrice");
         if (value == null && (this.type === 0 || this.type === 1)) {
@@ -309,7 +309,7 @@ export class Transaction {
         return value;
     }
     set gasPrice(value) {
-        setStore(this.#props, "gasPrice", (value == null) ? null : logger.getBigInt(value, "gasPrice"));
+        setStore(this.#props, "gasPrice", (value == null) ? null : getBigInt(value, "gasPrice"));
     }
     get maxPriorityFeePerGas() {
         const value = getStore(this.#props, "maxPriorityFeePerGas");
@@ -319,7 +319,7 @@ export class Transaction {
         return value;
     }
     set maxPriorityFeePerGas(value) {
-        setStore(this.#props, "maxPriorityFeePerGas", (value == null) ? null : logger.getBigInt(value, "maxPriorityFeePerGas"));
+        setStore(this.#props, "maxPriorityFeePerGas", (value == null) ? null : getBigInt(value, "maxPriorityFeePerGas"));
     }
     get maxFeePerGas() {
         const value = getStore(this.#props, "maxFeePerGas");
@@ -329,16 +329,16 @@ export class Transaction {
         return value;
     }
     set maxFeePerGas(value) {
-        setStore(this.#props, "maxFeePerGas", (value == null) ? null : logger.getBigInt(value, "maxFeePerGas"));
+        setStore(this.#props, "maxFeePerGas", (value == null) ? null : getBigInt(value, "maxFeePerGas"));
     }
     get data() { return getStore(this.#props, "data"); }
     set data(value) { setStore(this.#props, "data", hexlify(value)); }
     get value() { return getStore(this.#props, "value"); }
     set value(value) {
-        setStore(this.#props, "value", logger.getBigInt(value, "value"));
+        setStore(this.#props, "value", getBigInt(value, "value"));
     }
     get chainId() { return getStore(this.#props, "chainId"); }
-    set chainId(value) { setStore(this.#props, "chainId", logger.getBigInt(value)); }
+    set chainId(value) { setStore(this.#props, "chainId", getBigInt(value)); }
     get signature() { return getStore(this.#props, "sig") || null; }
     set signature(value) {
         setStore(this.#props, "sig", (value == null) ? null : Signature.from(value));
@@ -478,9 +478,15 @@ export class Transaction {
         types.sort();
         return types;
     }
-    isLegacy() { return (this.type === 0); }
-    isBerlin() { return (this.type === 1); }
-    isLondon() { return (this.type === 2); }
+    isLegacy() {
+        return (this.type === 0);
+    }
+    isBerlin() {
+        return (this.type === 1);
+    }
+    isLondon() {
+        return (this.type === 2);
+    }
     clone() {
         return Transaction.from(this);
     }
@@ -502,7 +508,7 @@ export class Transaction {
     }
     static from(tx) {
         if (typeof (tx) === "string") {
-            const payload = logger.getBytes(tx);
+            const payload = getBytes(tx);
             if (payload[0] >= 0x7f) { // @TODO: > vs >= ??
                 return Transaction.from(_parseLegacy(payload));
             }

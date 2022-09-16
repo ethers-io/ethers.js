@@ -1,5 +1,5 @@
 import { pbkdf2, sha256 } from "../crypto/index.js";
-import { defineProperties, hexlify, logger, toUtf8Bytes } from "../utils/index.js";
+import { defineProperties, getBytes, hexlify, assertNormalize, assertPrivate, throwArgumentError, toUtf8Bytes } from "../utils/index.js";
 import { langEn } from "../wordlists/lang-en.js";
 // Returns a byte with the MSB bits set
 function getUpperMask(bits) {
@@ -10,20 +10,20 @@ function getLowerMask(bits) {
     return ((1 << bits) - 1) & 0xff;
 }
 function mnemonicToEntropy(mnemonic, wordlist = langEn) {
-    logger.assertNormalize("NFKD");
+    assertNormalize("NFKD");
     if (wordlist == null) {
         wordlist = langEn;
     }
     const words = wordlist.split(mnemonic);
     if ((words.length % 3) !== 0 || words.length < 12 || words.length > 24) {
-        logger.throwArgumentError("invalid mnemonic length", "mnemonic", "[ REDACTED ]");
+        throwArgumentError("invalid mnemonic length", "mnemonic", "[ REDACTED ]");
     }
     const entropy = new Uint8Array(Math.ceil(11 * words.length / 8));
     let offset = 0;
     for (let i = 0; i < words.length; i++) {
         let index = wordlist.getWordIndex(words[i].normalize("NFKD"));
         if (index === -1) {
-            logger.throwArgumentError(`invalid mnemonic word at index ${i}`, "mnemonic", "[ REDACTED ]");
+            throwArgumentError(`invalid mnemonic word at index ${i}`, "mnemonic", "[ REDACTED ]");
         }
         for (let bit = 0; bit < 11; bit++) {
             if (index & (1 << (10 - bit))) {
@@ -35,15 +35,15 @@ function mnemonicToEntropy(mnemonic, wordlist = langEn) {
     const entropyBits = 32 * words.length / 3;
     const checksumBits = words.length / 3;
     const checksumMask = getUpperMask(checksumBits);
-    const checksum = logger.getBytes(sha256(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
+    const checksum = getBytes(sha256(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
     if (checksum !== (entropy[entropy.length - 1] & checksumMask)) {
-        logger.throwArgumentError("invalid mnemonic checksum", "mnemonic", "[ REDACTED ]");
+        throwArgumentError("invalid mnemonic checksum", "mnemonic", "[ REDACTED ]");
     }
     return hexlify(entropy.slice(0, entropyBits / 8));
 }
 function entropyToMnemonic(entropy, wordlist = langEn) {
     if ((entropy.length % 4) || entropy.length < 16 || entropy.length > 32) {
-        logger.throwArgumentError("invalid entropy size", "entropy", "[ REDACTED ]");
+        throwArgumentError("invalid entropy size", "entropy", "[ REDACTED ]");
     }
     if (wordlist == null) {
         wordlist = langEn;
@@ -87,7 +87,7 @@ export class Mnemonic {
         if (wordlist == null) {
             wordlist = langEn;
         }
-        logger.assertPrivate(guard, _guard, "Mnemonic");
+        assertPrivate(guard, _guard, "Mnemonic");
         defineProperties(this, { phrase, password, wordlist, entropy });
     }
     computeSeed() {
@@ -97,16 +97,16 @@ export class Mnemonic {
     static fromPhrase(phrase, password, wordlist) {
         // Normalize the case and space; throws if invalid
         const entropy = mnemonicToEntropy(phrase, wordlist);
-        phrase = entropyToMnemonic(logger.getBytes(entropy), wordlist);
+        phrase = entropyToMnemonic(getBytes(entropy), wordlist);
         return new Mnemonic(_guard, entropy, phrase, password, wordlist);
     }
     static fromEntropy(_entropy, password, wordlist) {
-        const entropy = logger.getBytes(_entropy, "entropy");
+        const entropy = getBytes(_entropy, "entropy");
         const phrase = entropyToMnemonic(entropy, wordlist);
         return new Mnemonic(_guard, hexlify(entropy), phrase, password, wordlist);
     }
     static entropyToPhrase(_entropy, wordlist) {
-        const entropy = logger.getBytes(_entropy, "entropy");
+        const entropy = getBytes(_entropy, "entropy");
         return entropyToMnemonic(entropy, wordlist);
     }
     static phraseToEntropy(phrase, wordlist) {

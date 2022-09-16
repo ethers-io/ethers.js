@@ -2,7 +2,7 @@ import { CTR } from "aes-js";
 import { getAddress } from "../address/index.js";
 import { keccak256, pbkdf2, randomBytes, scrypt, scryptSync } from "../crypto/index.js";
 import { computeAddress } from "../transaction/index.js";
-import { concat, hexlify, logger } from "../utils/index.js";
+import { concat, getBytes, hexlify, throwArgumentError, throwError } from "../utils/index.js";
 import { getPassword, spelunk, uuidV4, zpad } from "./utils.js";
 import { version } from "../_version.js";
 const defaultPath = "m/44'/60'/0'/0/0";
@@ -24,16 +24,16 @@ function decrypt(data, key, ciphertext) {
         const aesCtr = new CTR(key, iv);
         return hexlify(aesCtr.decrypt(ciphertext));
     }
-    return logger.throwError("unsupported cipher", "UNSUPPORTED_OPERATION", {
+    return throwError("unsupported cipher", "UNSUPPORTED_OPERATION", {
         operation: "decrypt"
     });
 }
 function getAccount(data, _key) {
-    const key = logger.getBytes(_key);
+    const key = getBytes(_key);
     const ciphertext = spelunk(data, "crypto.ciphertext:data!");
     const computedMAC = hexlify(keccak256(concat([key.slice(16, 32), ciphertext]))).substring(2);
     if (computedMAC !== spelunk(data, "crypto.mac:string!").toLowerCase()) {
-        return logger.throwArgumentError("incorrect password", "password", "[ REDACTED ]");
+        return throwArgumentError("incorrect password", "password", "[ REDACTED ]");
     }
     const privateKey = decrypt(data, key.slice(0, 16), ciphertext);
     const address = computeAddress(privateKey);
@@ -43,7 +43,7 @@ function getAccount(data, _key) {
             check = "0x" + check;
         }
         if (getAddress(check) !== address) {
-            logger.throwArgumentError("keystore address/privateKey mismatch", "address", data.address);
+            throwArgumentError("keystore address/privateKey mismatch", "address", data.address);
         }
     }
     const account = { address, privateKey };
@@ -57,7 +57,7 @@ function getAccount(data, _key) {
         account.mnemonic = {
             path: (spelunk(data, "x-ethers.path:string") || defaultPath),
             locale: (spelunk(data, "x-ethers.locale:string") || "en"),
-            entropy: hexlify(logger.getBytes(mnemonicAesCtr.decrypt(mnemonicCiphertext)))
+            entropy: hexlify(getBytes(mnemonicAesCtr.decrypt(mnemonicCiphertext)))
         };
     }
     return account;
@@ -66,7 +66,7 @@ function getKdfParams(data) {
     const kdf = spelunk(data, "crypto.kdf:string");
     if (kdf && typeof (kdf) === "string") {
         const throwError = function (name, value) {
-            return logger.throwArgumentError("invalid key-derivation function parameters", name, value);
+            return throwArgumentError("invalid key-derivation function parameters", name, value);
         };
         if (kdf.toLowerCase() === "scrypt") {
             const salt = spelunk(data, "crypto.kdfparams.salt:data!");
@@ -102,7 +102,7 @@ function getKdfParams(data) {
             return { name: "pbkdf2", salt, count, dkLen, algorithm };
         }
     }
-    return logger.throwArgumentError("unsupported key-derivation function", "kdf", kdf);
+    return throwArgumentError("unsupported key-derivation function", "kdf", kdf);
 }
 export function decryptKeystoreJsonSync(json, _password) {
     const data = JSON.parse(json);
@@ -171,7 +171,7 @@ export async function encryptKeystoreJson(account, password, options, progressCa
     if (!options) {
         options = {};
     }
-    const privateKey = logger.getBytes(account.privateKey, "privateKey");
+    const privateKey = getBytes(account.privateKey, "privateKey");
     const passwordBytes = getPassword(password);
     /*
         let mnemonic: null | Mnemonic = null;
@@ -187,16 +187,16 @@ export async function encryptKeystoreJson(account, password, options, progressCa
         }
     */
     // Check/generate the salt
-    const salt = (options.salt != null) ? logger.getBytes(options.salt, "options.slat") : randomBytes(32);
+    const salt = (options.salt != null) ? getBytes(options.salt, "options.slat") : randomBytes(32);
     // Override initialization vector
-    const iv = (options.iv != null) ? logger.getBytes(options.iv, "options.iv") : randomBytes(16);
+    const iv = (options.iv != null) ? getBytes(options.iv, "options.iv") : randomBytes(16);
     if (iv.length !== 16) {
-        logger.throwArgumentError("invalid options.iv", "options.iv", options.iv);
+        throwArgumentError("invalid options.iv", "options.iv", options.iv);
     }
     // Override the uuid
-    const uuidRandom = (options.uuid != null) ? logger.getBytes(options.uuid, "options.uuid") : randomBytes(16);
+    const uuidRandom = (options.uuid != null) ? getBytes(options.uuid, "options.uuid") : randomBytes(16);
     if (uuidRandom.length !== 16) {
-        logger.throwArgumentError("invalid options.uuid", "options.uuid", options.iv);
+        throwArgumentError("invalid options.uuid", "options.uuid", options.iv);
     }
     if (uuidRandom.length !== 16) {
         throw new Error("invalid uuid");
@@ -218,13 +218,13 @@ export async function encryptKeystoreJson(account, password, options, progressCa
     //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
     //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
     const _key = await scrypt(passwordBytes, salt, N, r, p, 64, progressCallback);
-    const key = logger.getBytes(_key);
+    const key = getBytes(_key);
     // This will be used to encrypt the wallet (as per Web3 secret storage)
     const derivedKey = key.slice(0, 16);
     const macPrefix = key.slice(16, 32);
     // Encrypt the private key
     const aesCtr = new CTR(derivedKey, iv);
-    const ciphertext = logger.getBytes(aesCtr.encrypt(privateKey));
+    const ciphertext = getBytes(aesCtr.encrypt(privateKey));
     // Compute the message authentication code, used to check the password
     const mac = keccak256(concat([macPrefix, ciphertext]));
     // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
@@ -255,10 +255,10 @@ export async function encryptKeystoreJson(account, password, options, progressCa
         const path = account.mnemonic.path || defaultPath;
         const locale = account.mnemonic.locale || "en";
         const mnemonicKey = key.slice(32, 64);
-        const entropy = logger.getBytes(account.mnemonic.entropy, "account.mnemonic.entropy");
+        const entropy = getBytes(account.mnemonic.entropy, "account.mnemonic.entropy");
         const mnemonicIv = randomBytes(16);
         const mnemonicAesCtr = new CTR(mnemonicKey, mnemonicIv);
-        const mnemonicCiphertext = logger.getBytes(mnemonicAesCtr.encrypt(entropy));
+        const mnemonicCiphertext = getBytes(mnemonicAesCtr.encrypt(entropy));
         const now = new Date();
         const timestamp = (now.getUTCFullYear() + "-" +
             zpad(now.getUTCMonth() + 1, 2) + "-" +

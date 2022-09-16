@@ -1,4 +1,4 @@
-import { assertArgument } from "../utils/logger.js";
+import { assertArgument } from "../utils/index.js";
 const subsChrs = " !#$%&'()*+,-./<=>?@[]^_`{|}~";
 const Word = /^[a-z]*$/i;
 function unfold(words, sep) {

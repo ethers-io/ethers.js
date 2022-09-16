@@ -1,5 +1,5 @@
 import { formatFixed, parseFixed } from "./fixednumber.js";
-import { logger } from "./logger.js";
+import { throwArgumentError } from "./errors.js";
 const names = [
     "wei",
     "kwei",
@@ -19,7 +19,7 @@ export function formatUnits(value, unit) {
     if (typeof (unit) === "string") {
         const index = names.indexOf(unit);
         if (index === -1) {
-            logger.throwArgumentError("invalid unit", "unit", unit);
+            throwArgumentError("invalid unit", "unit", unit);
         }
         unit = 3 * index;
     }
@@ -32,12 +32,12 @@ export function formatUnits(value, unit) {
  */
 export function parseUnits(value, unit) {
     if (typeof (value) !== "string") {
-        logger.throwArgumentError("value must be a string", "value", value);
+        throwArgumentError("value must be a string", "value", value);
     }
     if (typeof (unit) === "string") {
         const index = names.indexOf(unit);
         if (index === -1) {
-            logger.throwArgumentError("invalid unit", "unit", unit);
+            throwArgumentError("invalid unit", "unit", unit);
         }
         unit = 3 * index;
     }

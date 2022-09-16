@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.langJa = void 0;
-const id_js_1 = require("../hash/id.js");
-const index_js_1 = require("../utils/index.js");
+const index_js_1 = require("../hash/index.js");
+const index_js_2 = require("../utils/index.js");
 const wordlist_js_1 = require("./wordlist.js");
 const data = [
     // 4-kana words
@@ -24,12 +24,12 @@ const data = [
 const mapping = "~~AzB~X~a~KN~Q~D~S~C~G~E~Y~p~L~I~O~eH~g~V~hxyumi~~U~~Z~~v~~s~~dkoblPjfnqwMcRTr~W~~~F~~~~~Jt";
 let _wordlist = null;
 function hex(word) {
-    return (0, index_js_1.hexlify)((0, index_js_1.toUtf8Bytes)(word));
+    return (0, index_js_2.hexlify)((0, index_js_2.toUtf8Bytes)(word));
 }
 const KiYoKu = "0xe3818de38284e3818f";
 const KyoKu = "0xe3818de38283e3818f";
 function toString(data) {
-    return (0, index_js_1.toUtf8String)(new Uint8Array(data));
+    return (0, index_js_2.toUtf8String)(new Uint8Array(data));
 }
 function loadWords() {
     if (_wordlist !== null) {
@@ -103,7 +103,7 @@ function loadWords() {
     /* c8 ignore stop */
     // Verify the computed list matches the official list
     /* istanbul ignore if */
-    const checksum = (0, id_js_1.id)(wordlist.join("\n") + "\n");
+    const checksum = (0, index_js_1.id)(wordlist.join("\n") + "\n");
     /* c8 ignore start */
     if (checksum !== "0xcb36b09e6baa935787fd762ce65e80b0c6a8dabdfbc3a7f86ac0e2c4fd111600") {
         throw new Error("BIP39 Wordlist for ja (Japanese) FAILED");
@@ -117,7 +117,7 @@ class LangJa extends wordlist_js_1.Wordlist {
     getWord(index) {
         const words = loadWords();
         if (index < 0 || index >= words.length) {
-            index_js_1.logger.throwArgumentError(`invalid word index: ${index}`, "index", index);
+            (0, index_js_2.throwArgumentError)(`invalid word index: ${index}`, "index", index);
         }
         return words[index];
     }

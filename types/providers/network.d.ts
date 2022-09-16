@@ -34,7 +34,14 @@ export declare class Network implements Freezable<Network> {
     freeze(): Frozen<Network>;
     isFrozen(): boolean;
     computeIntrinsicGas(tx: TransactionLike): number;
+    /**
+     *  Returns a new Network for the %%network%% name or chainId.
+     */
     static from(network?: Networkish): Network;
+    /**
+     *  Register %%nameOrChainId%% with a function which returns
+     *  an instance of a Network representing that chain.
+     */
     static register(nameOrChainId: string | number | bigint, networkFunc: () => Network): void;
 }
 //# sourceMappingURL=network.d.ts.map

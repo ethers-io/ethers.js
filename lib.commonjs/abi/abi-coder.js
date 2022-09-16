@@ -2,7 +2,7 @@
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defaultAbiCoder = exports.AbiCoder = void 0;
-const logger_js_1 = require("../utils/logger.js");
+const index_js_1 = require("../utils/index.js");
 const abstract_coder_js_1 = require("./coders/abstract-coder.js");
 const address_js_1 = require("./coders/address.js");
 const array_js_1 = require("./coders/array.js");
@@ -41,7 +41,7 @@ class AbiCoder {
         if (match) {
             let size = parseInt(match[2] || "256");
             if (size === 0 || size > 256 || (size % 8) !== 0) {
-                logger_js_1.logger.throwArgumentError("invalid " + match[1] + " bit length", "param", param);
+                (0, index_js_1.throwArgumentError)("invalid " + match[1] + " bit length", "param", param);
             }
             return new number_js_1.NumberCoder(size / 8, (match[1] === "int"), param.name);
         }
@@ -50,11 +50,11 @@ class AbiCoder {
         if (match) {
             let size = parseInt(match[1]);
             if (size === 0 || size > 32) {
-                logger_js_1.logger.throwArgumentError("invalid bytes length", "param", param);
+                (0, index_js_1.throwArgumentError)("invalid bytes length", "param", param);
             }
             return new fixed_bytes_js_1.FixedBytesCoder(size, param.name);
         }
-        return logger_js_1.logger.throwArgumentError("invalid type", "type", param.type);
+        return (0, index_js_1.throwArgumentError)("invalid type", "type", param.type);
     }
     getDefaultValue(types) {
         const coders = types.map((type) => this.#getCoder(fragments_js_1.ParamType.from(type)));
@@ -62,7 +62,7 @@ class AbiCoder {
         return coder.defaultValue();
     }
     encode(types, values) {
-        logger_js_1.logger.assertArgumentCount(values.length, types.length, "types/values length mismatch");
+        (0, index_js_1.assertArgumentCount)(values.length, types.length, "types/values length mismatch");
         const coders = types.map((type) => this.#getCoder(fragments_js_1.ParamType.from(type)));
         const coder = (new tuple_js_1.TupleCoder(coders, "_"));
         const writer = new abstract_coder_js_1.Writer();

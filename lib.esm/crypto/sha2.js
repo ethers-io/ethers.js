@@ -1,5 +1,5 @@
 import { createHash } from "./crypto.js";
-import { hexlify, logger } from "../utils/index.js";
+import { getBytes, hexlify } from "../utils/index.js";
 const _sha256 = function (data) {
     return createHash("sha256").update(data).digest();
 };
@@ -10,7 +10,7 @@ let __sha256 = _sha256;
 let __sha512 = _sha512;
 let locked256 = false, locked512 = false;
 export function sha256(_data) {
-    const data = logger.getBytes(_data, "data");
+    const data = getBytes(_data, "data");
     return hexlify(__sha256(data));
 }
 sha256._ = _sha256;
@@ -23,7 +23,7 @@ sha256.register = function (func) {
 };
 Object.freeze(sha256);
 export function sha512(_data) {
-    const data = logger.getBytes(_data, "data");
+    const data = getBytes(_data, "data");
     return hexlify(__sha512(data));
 }
 sha512._ = _sha512;

@@ -30,7 +30,7 @@ class BaseWallet extends index_js_3.AbstractSigner {
         }));
         if (tx.from != null) {
             if ((0, index_js_1.getAddress)(tx.from) !== this.address) {
-                index_js_5.logger.throwArgumentError("transaction from address mismatch", "tx.from", _tx.from);
+                (0, index_js_5.throwArgumentError)("transaction from address mismatch", "tx.from", _tx.from);
             }
             delete tx.from;
         }
@@ -46,14 +46,14 @@ class BaseWallet extends index_js_3.AbstractSigner {
         // Populate any ENS names
         const populated = await index_js_2.TypedDataEncoder.resolveNames(domain, types, value, async (name) => {
             if (this.provider == null) {
-                return index_js_5.logger.throwError("cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
+                return (0, index_js_5.throwError)("cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
                     operation: "resolveName",
                     info: { name }
                 });
             }
             const address = await this.provider.resolveName(name);
             if (address == null) {
-                return index_js_5.logger.throwError("unconfigured ENS name", "UNCONFIGURED_NAME", {
+                return (0, index_js_5.throwError)("unconfigured ENS name", "UNCONFIGURED_NAME", {
                     value: name
                 });
             }

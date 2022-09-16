@@ -1,6 +1,5 @@
-import { logger } from "../utils/logger.js";
 import { Transaction } from "../transaction/index.js";
-import { defineProperties, resolveProperties } from "../utils/index.js";
+import { defineProperties, getBigInt, resolveProperties, throwArgumentError, throwError } from "../utils/index.js";
 export class AbstractSigner {
     provider;
     constructor(provider) {
@@ -10,7 +9,7 @@ export class AbstractSigner {
         if (this.provider) {
             return this.provider;
         }
-        return logger.throwError("missing provider", "UNSUPPORTED_OPERATION", { operation });
+        return throwError("missing provider", "UNSUPPORTED_OPERATION", { operation });
     }
     async getNonce(blockTag) {
         return this.#checkProvider("getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
@@ -22,7 +21,7 @@ export class AbstractSigner {
         if (pop.to != null) {
             pop.to = provider.resolveName(pop.to).then((to) => {
                 if (to == null) {
-                    return logger.throwArgumentError("transaction to ENS name not configured", "tx.to", pop.to);
+                    return throwArgumentError("transaction to ENS name not configured", "tx.to", pop.to);
                 }
                 return to;
             });
@@ -34,7 +33,7 @@ export class AbstractSigner {
                 this.resolveName(from)
             ]).then(([address, from]) => {
                 if (!from || address.toLowerCase() !== from.toLowerCase()) {
-                    return logger.throwArgumentError("transaction from mismatch", "tx.from", from);
+                    return throwArgumentError("transaction from mismatch", "tx.from", from);
                 }
                 return address;
             });
@@ -53,7 +52,21 @@ export class AbstractSigner {
         if (pop.gasLimit == null) {
             pop.gasLimit = await this.estimateGas(pop);
         }
+        // Populate the chain ID
+        const network = await (this.provider).getNetwork();
+        if (pop.chainId != null) {
+            const chainId = getBigInt(pop.chainId);
+            if (chainId !== network.chainId) {
+                throwArgumentError("transaction chainId mismatch", "tx.chainId", tx.chainId);
+            }
+        }
+        else {
+            pop.chainId = network.chainId;
+        }
+        //@TOOD: Don't await all over the place; save them up for
+        // the end for better batching
         //@TODO: Copy type logic from AbstractSigner in v5
+        // Test how many batches is actually sent for sending a tx; compare before/after
         return await resolveProperties(pop);
     }
     async estimateGas(tx) {
@@ -83,7 +96,7 @@ export class VoidSigner extends AbstractSigner {
         return new VoidSigner(this.address, provider);
     }
     #throwUnsupported(suffix, operation) {
-        return logger.throwError(`VoidSigner cannot sign ${suffix}`, "UNSUPPORTED_OPERATION", {
+        return throwError(`VoidSigner cannot sign ${suffix}`, "UNSUPPORTED_OPERATION", {
             operation
         });
     }

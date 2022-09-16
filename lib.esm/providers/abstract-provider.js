@@ -6,14 +6,7 @@
 //   migrate the listener to the static event. We also need to maintain a map
 //   of Signer/ENS name to address so we can sync respond to listenerCount.
 import { resolveAddress } from "../address/index.js";
-import { concat, dataLength, dataSlice, hexlify, isHexString } from "../utils/data.js";
-import { isCallException } from "../utils/errors.js";
-import { FetchRequest } from "../utils/fetch.js";
-import { toArray, toQuantity } from "../utils/maths.js";
-import { defineProperties, EventPayload, resolveProperties } from "../utils/index.js";
-import { toUtf8String } from "../utils/index.js";
-;
-import { logger } from "../utils/logger.js";
+import { concat, dataLength, dataSlice, hexlify, isHexString, getBigInt, getBytes, getNumber, isCallException, makeError, throwError, throwArgumentError, FetchRequest, toArray, toQuantity, defineProperties, EventPayload, resolveProperties, toUtf8String } from "../utils/index.js";
 import { EnsResolver } from "./ens-resolver.js";
 import { Network } from "./network.js";
 import { FeeData } from "./provider.js";
@@ -127,7 +120,7 @@ async function getSubscription(_event, provider) {
         }
         return { filter, tag: getTag("event", filter), type: "event" };
     }
-    return logger.throwArgumentError("unknown ProviderEvent", "event", _event);
+    return throwArgumentError("unknown ProviderEvent", "event", _event);
 }
 function getTime() { return (new Date()).getTime(); }
 export function copyRequest(tx) {
@@ -237,7 +230,7 @@ export class AbstractProvider {
             catch (error) { }
             // 4xx indicates the result is not present; stop
             if (resp.statusCode >= 400 && resp.statusCode < 500) {
-                return logger.throwError(`response not found during CCIP fetch: ${errorMessage}`, "OFFCHAIN_FAULT", {
+                return throwError(`response not found during CCIP fetch: ${errorMessage}`, "OFFCHAIN_FAULT", {
                     reason: "404_MISSING_RESOURCE",
                     transaction: tx, info: { url, errorMessage }
                 });
@@ -245,7 +238,7 @@ export class AbstractProvider {
             // 5xx indicates server issue; try the next url
             errorMessages.push(errorMessage);
         }
-        return logger.throwError(`error encountered during CCIP fetch: ${errorMessages.map((m) => JSON.stringify(m)).join(", ")}`, "OFFCHAIN_FAULT", {
+        return throwError(`error encountered during CCIP fetch: ${errorMessages.map((m) => JSON.stringify(m)).join(", ")}`, "OFFCHAIN_FAULT", {
             reason: "500_SERVER_ERROR",
             transaction: tx, info: { urls, errorMessages }
         });
@@ -254,21 +247,21 @@ export class AbstractProvider {
         return tx;
     }
     _detectNetwork() {
-        return logger.throwError("sub-classes must implement this", "UNSUPPORTED_OPERATION", {
+        return throwError("sub-classes must implement this", "UNSUPPORTED_OPERATION", {
             operation: "_detectNetwork"
         });
     }
     // Sub-classes should override this and handle PerformActionRequest requests, calling
     // the super for any unhandled actions.
     async _perform(req) {
-        return logger.throwError(`unsupported method: ${req.method}`, "UNSUPPORTED_OPERATION", {
+        return throwError(`unsupported method: ${req.method}`, "UNSUPPORTED_OPERATION", {
             operation: req.method,
             info: req
         });
     }
     // State
     async getBlockNumber() {
-        return logger.getNumber(await this.#perform({ method: "getBlockNumber" }), "%response");
+        return getNumber(await this.#perform({ method: "getBlockNumber" }), "%response");
     }
     // @TODO: Make this string | Promsie<string> so no await needed if sync is possible
     _getAddress(address) {
@@ -308,7 +301,7 @@ export class AbstractProvider {
             }
             return this.getBlockNumber().then((b) => toQuantity(b + blockTag));
         }
-        return logger.throwArgumentError("invalid blockTag", "blockTag", blockTag);
+        return throwArgumentError("invalid blockTag", "blockTag", blockTag);
     }
     async getNetwork() {
         // No explicit network was set and this is our first time
@@ -343,7 +336,7 @@ export class AbstractProvider {
             }
             else {
                 // Otherwise, we do not allow changes to the underlying network
-                logger.throwError(`network changed: ${expected.chainId} => ${actual.chainId} `, "NETWORK_ERROR", {
+                throwError(`network changed: ${expected.chainId} => ${actual.chainId} `, "NETWORK_ERROR", {
                     event: "changed"
                 });
             }
@@ -356,7 +349,7 @@ export class AbstractProvider {
             gasPrice: ((async () => {
                 try {
                     const gasPrice = await this.#perform({ method: "getGasPrice" });
-                    return logger.getBigInt(gasPrice, "%response");
+                    return getBigInt(gasPrice, "%response");
                 }
                 catch (error) { }
                 return null;
@@ -388,13 +381,13 @@ export class AbstractProvider {
     }
     async estimateGas(_tx) {
         const transaction = await this._getTransaction(_tx);
-        return logger.getBigInt(await this.#perform({
+        return getBigInt(await this.#perform({
             method: "estimateGas", transaction
         }), "%response");
     }
     async #call(tx, blockTag, attempt) {
         if (attempt >= MAX_CCIP_REDIRECTS) {
-            logger.throwError("CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
+            throwError("CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
                 reason: "TOO_MANY_REDIRECTS",
                 transaction: Object.assign({}, tx, { blockTag, enableCcipRead: true })
             });
@@ -414,14 +407,14 @@ export class AbstractProvider {
                     ccipArgs = parseOffchainLookup(dataSlice(error.data, 4));
                 }
                 catch (error) {
-                    return logger.throwError(error.message, "OFFCHAIN_FAULT", {
+                    return throwError(error.message, "OFFCHAIN_FAULT", {
                         reason: "BAD_DATA",
                         transaction, info: { data }
                     });
                 }
                 // Check the sender of the OffchainLookup matches the transaction
                 if (ccipArgs.sender.toLowerCase() !== txSender.toLowerCase()) {
-                    return logger.throwError("CCIP Read sender mismatch", "CALL_EXCEPTION", {
+                    return throwError("CCIP Read sender mismatch", "CALL_EXCEPTION", {
                         data, transaction,
                         errorSignature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
                         errorName: "OffchainLookup",
@@ -430,7 +423,7 @@ export class AbstractProvider {
                 }
                 const ccipResult = await this.ccipReadFetch(transaction, ccipArgs.calldata, ccipArgs.urls);
                 if (ccipResult == null) {
-                    return logger.throwError("CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
+                    return throwError("CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
                         reason: "FETCH_FAILED",
                         transaction, info: { data: error.data, errorArgs: ccipArgs.errorArgs }
                     });
@@ -461,16 +454,16 @@ export class AbstractProvider {
         return await this.#perform(Object.assign(request, { address, blockTag }));
     }
     async getBalance(address, blockTag) {
-        return logger.getBigInt(await this.#getAccountValue({ method: "getBalance" }, address, blockTag), "%response");
+        return getBigInt(await this.#getAccountValue({ method: "getBalance" }, address, blockTag), "%response");
     }
     async getTransactionCount(address, blockTag) {
-        return logger.getNumber(await this.#getAccountValue({ method: "getTransactionCount" }, address, blockTag), "%response");
+        return getNumber(await this.#getAccountValue({ method: "getTransactionCount" }, address, blockTag), "%response");
     }
     async getCode(address, blockTag) {
         return hexlify(await this.#getAccountValue({ method: "getCode" }, address, blockTag));
     }
     async getStorageAt(address, _position, blockTag) {
-        const position = logger.getBigInt(_position, "position");
+        const position = getBigInt(_position, "position");
         return hexlify(await this.#getAccountValue({ method: "getStorageAt", position }, address, blockTag));
     }
     // Write
@@ -623,7 +616,7 @@ export class AbstractProvider {
     }
     // ENS
     _getProvider(chainId) {
-        return logger.throwError("provider cannot connect to target network", "UNSUPPORTED_OPERATION", {
+        return throwError("provider cannot connect to target network", "UNSUPPORTED_OPERATION", {
             operation: "_getProvider()"
         });
     }
@@ -638,6 +631,9 @@ export class AbstractProvider {
         return null;
     }
     async resolveName(name) {
+        if (isHexString(name, 20)) {
+            return name;
+        }
         //if (typeof(name) === "string") {
         const resolver = await this.getResolver(name);
         if (resolver) {
@@ -691,7 +687,7 @@ export class AbstractProvider {
                     }
                     timer = null;
                     this.off("block", listener);
-                    reject(logger.makeError("timeout", "TIMEOUT", { reason: "timeout" }));
+                    reject(makeError("timeout", "TIMEOUT", { reason: "timeout" }));
                 }, timeout);
             }
             listener(await this.getBlockNumber());
@@ -930,7 +926,7 @@ export class AbstractProvider {
             if (this.#pausedState == !!dropWhilePaused) {
                 return;
             }
-            return logger.throwError("cannot change pause type; resume first", "UNSUPPORTED_OPERATION", {
+            return throwError("cannot change pause type; resume first", "UNSUPPORTED_OPERATION", {
                 operation: "pause"
             });
         }
@@ -979,8 +975,8 @@ function _parseBytes(result, start) {
         return null;
     }
     try {
-        const offset = logger.getNumber(dataSlice(result, start, start + 32));
-        const length = logger.getNumber(dataSlice(result, offset, offset + 32));
+        const offset = getNumber(dataSlice(result, start, start + 32));
+        const length = getNumber(dataSlice(result, offset, offset + 32));
         return dataSlice(result, offset + 32, offset + 32 + length);
     }
     catch (error) { }
@@ -1014,7 +1010,7 @@ function encodeBytes(datas) {
         byteCount += 32;
     }
     for (let i = 0; i < datas.length; i++) {
-        const data = logger.getBytes(datas[i]);
+        const data = getBytes(datas[i]);
         // Update the bytes offset
         result[i] = numPad(byteCount);
         // The length and padded value of data
@@ -1040,8 +1036,8 @@ function parseOffchainLookup(data) {
     // Read the URLs from the response
     try {
         const urls = [];
-        const urlsOffset = logger.getNumber(dataSlice(data, 32, 64));
-        const urlsLength = logger.getNumber(dataSlice(data, urlsOffset, urlsOffset + 32));
+        const urlsOffset = getNumber(dataSlice(data, 32, 64));
+        const urlsLength = getNumber(dataSlice(data, urlsOffset, urlsOffset + 32));
         const urlsData = dataSlice(data, urlsOffset + 32);
         for (let u = 0; u < urlsLength; u++) {
             const url = _parseString(urlsData, u * 32);

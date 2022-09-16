@@ -1,6 +1,7 @@
-import { logger } from "./logger.js";
+import { getBytes } from "./data.js";
+import { assertNormalize, throwArgumentError } from "./errors.js";
 function errorFunc(reason, offset, bytes, output, badCodepoint) {
-    return logger.throwArgumentError(`invalid codepoint at offset ${offset}; ${reason}`, "bytes", bytes);
+    return throwArgumentError(`invalid codepoint at offset ${offset}; ${reason}`, "bytes", bytes);
 }
 function ignoreFunc(reason, offset, bytes, output, badCodepoint) {
     // If there is an invalid prefix (including stray continuation), skip any additional continuation bytes
@@ -44,7 +45,7 @@ function getUtf8CodePoints(_bytes, onError) {
     if (onError == null) {
         onError = Utf8ErrorFuncs.error;
     }
-    const bytes = logger.getBytes(_bytes, "bytes");
+    const bytes = getBytes(_bytes, "bytes");
     const result = [];
     let i = 0;
     // Invalid bytes are ignored
@@ -127,7 +128,7 @@ function getUtf8CodePoints(_bytes, onError) {
 // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
 export function toUtf8Bytes(str, form) {
     if (form != null) {
-        logger.assertNormalize(form);
+        assertNormalize(form);
         str = str.normalize(form);
     }
     let result = [];

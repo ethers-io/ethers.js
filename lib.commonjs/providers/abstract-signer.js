@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WrappedSigner = exports.VoidSigner = exports.AbstractSigner = void 0;
-const logger_js_1 = require("../utils/logger.js");
 const index_js_1 = require("../transaction/index.js");
 const index_js_2 = require("../utils/index.js");
 class AbstractSigner {
@@ -13,7 +12,7 @@ class AbstractSigner {
         if (this.provider) {
             return this.provider;
         }
-        return logger_js_1.logger.throwError("missing provider", "UNSUPPORTED_OPERATION", { operation });
+        return (0, index_js_2.throwError)("missing provider", "UNSUPPORTED_OPERATION", { operation });
     }
     async getNonce(blockTag) {
         return this.#checkProvider("getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
@@ -25,7 +24,7 @@ class AbstractSigner {
         if (pop.to != null) {
             pop.to = provider.resolveName(pop.to).then((to) => {
                 if (to == null) {
-                    return logger_js_1.logger.throwArgumentError("transaction to ENS name not configured", "tx.to", pop.to);
+                    return (0, index_js_2.throwArgumentError)("transaction to ENS name not configured", "tx.to", pop.to);
                 }
                 return to;
             });
@@ -37,7 +36,7 @@ class AbstractSigner {
                 this.resolveName(from)
             ]).then(([address, from]) => {
                 if (!from || address.toLowerCase() !== from.toLowerCase()) {
-                    return logger_js_1.logger.throwArgumentError("transaction from mismatch", "tx.from", from);
+                    return (0, index_js_2.throwArgumentError)("transaction from mismatch", "tx.from", from);
                 }
                 return address;
             });
@@ -56,7 +55,21 @@ class AbstractSigner {
         if (pop.gasLimit == null) {
             pop.gasLimit = await this.estimateGas(pop);
         }
+        // Populate the chain ID
+        const network = await (this.provider).getNetwork();
+        if (pop.chainId != null) {
+            const chainId = (0, index_js_2.getBigInt)(pop.chainId);
+            if (chainId !== network.chainId) {
+                (0, index_js_2.throwArgumentError)("transaction chainId mismatch", "tx.chainId", tx.chainId);
+            }
+        }
+        else {
+            pop.chainId = network.chainId;
+        }
+        //@TOOD: Don't await all over the place; save them up for
+        // the end for better batching
         //@TODO: Copy type logic from AbstractSigner in v5
+        // Test how many batches is actually sent for sending a tx; compare before/after
         return await (0, index_js_2.resolveProperties)(pop);
     }
     async estimateGas(tx) {
@@ -87,7 +100,7 @@ class VoidSigner extends AbstractSigner {
         return new VoidSigner(this.address, provider);
     }
     #throwUnsupported(suffix, operation) {
-        return logger_js_1.logger.throwError(`VoidSigner cannot sign ${suffix}`, "UNSUPPORTED_OPERATION", {
+        return (0, index_js_2.throwError)(`VoidSigner cannot sign ${suffix}`, "UNSUPPORTED_OPERATION", {
             operation
         });
     }

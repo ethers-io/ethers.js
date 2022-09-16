@@ -12,7 +12,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SocketProvider = exports.SocketEventSubscriber = exports.SocketPendingSubscriber = exports.SocketBlockSubscriber = exports.SocketSubscriber = void 0;
 const abstract_provider_js_1 = require("./abstract-provider.js");
-const logger_js_1 = require("../utils/logger.js");
+const index_js_1 = require("../utils/index.js");
 const provider_jsonrpc_js_1 = require("./provider-jsonrpc.js");
 class SocketSubscriber {
     #provider;
@@ -45,7 +45,7 @@ class SocketSubscriber {
     //        and resume
     pause(dropWhilePaused) {
         if (!dropWhilePaused) {
-            logger_js_1.logger.throwError("preserve logs while paused not supported by SocketSubscriber yet", "UNSUPPORTED_OPERATION", {
+            (0, index_js_1.throwError)("preserve logs while paused not supported by SocketSubscriber yet", "UNSUPPORTED_OPERATION", {
                 operation: "pause(false)"
             });
         }
@@ -159,7 +159,7 @@ class SocketProvider extends provider_jsonrpc_js_1.JsonRpcApiProvider {
     }
     async _send(payload) {
         // WebSocket provider doesn't accept batches
-        (0, logger_js_1.assertArgument)(!Array.isArray(payload), "WebSocket does not support batch send", "payload", payload);
+        (0, index_js_1.assertArgument)(!Array.isArray(payload), "WebSocket does not support batch send", "payload", payload);
         // @TODO: stringify payloads here and store to prevent mutations
         const promise = new Promise((resolve, reject) => {
             this.#callbacks.set(payload.id, { payload, resolve, reject });
@@ -191,7 +191,7 @@ class SocketProvider extends provider_jsonrpc_js_1.JsonRpcApiProvider {
             this.#callbacks.delete(result.id);
             if ("error" in result) {
                 const { message, code, data } = result.error;
-                const error = logger_js_1.logger.makeError(message || "unkonwn error", "SERVER_ERROR", {
+                const error = (0, index_js_1.makeError)(message || "unkonwn error", "SERVER_ERROR", {
                     request: `ws:${JSON.stringify(callback.payload)}`,
                     info: { code, data }
                 });

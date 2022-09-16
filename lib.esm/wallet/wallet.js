@@ -1,6 +1,6 @@
 import { randomBytes, SigningKey } from "../crypto/index.js";
 import { computeAddress } from "../transaction/index.js";
-import { isHexString, logger } from "../utils/index.js";
+import { isHexString, throwArgumentError } from "../utils/index.js";
 import { BaseWallet } from "./base-wallet.js";
 import { HDNodeWallet } from "./hdwallet.js";
 import { decryptCrowdsaleJson, isCrowdsaleJson } from "./json-crowdsale.js";
@@ -92,7 +92,7 @@ export class Wallet extends BaseWallet {
             signingKey = trySigningKey(key);
         }
         if (signingKey == null) {
-            logger.throwArgumentError("invalid key", "key", "[ REDACTED ]");
+            throwArgumentError("invalid key", "key", "[ REDACTED ]");
         }
         super(signingKey, provider);
         this.#mnemonic = mnemonic;
@@ -125,11 +125,11 @@ export class Wallet extends BaseWallet {
             }
         }
         else {
-            return logger.throwArgumentError("invalid JSON wallet", "json", "[ REDACTED ]");
+            return throwArgumentError("invalid JSON wallet", "json", "[ REDACTED ]");
         }
         const wallet = new Wallet(account.privateKey);
         if (wallet.address !== account.address) {
-            logger.throwArgumentError("address/privateKey mismatch", "json", "[ REDACTED ]");
+            throwArgumentError("address/privateKey mismatch", "json", "[ REDACTED ]");
         }
         // @TODO: mnemonic
         return wallet;
@@ -143,11 +143,11 @@ export class Wallet extends BaseWallet {
             account = decryptCrowdsaleJson(json, password);
         }
         else {
-            return logger.throwArgumentError("invalid JSON wallet", "json", "[ REDACTED ]");
+            return throwArgumentError("invalid JSON wallet", "json", "[ REDACTED ]");
         }
         const wallet = new Wallet(account.privateKey);
         if (wallet.address !== account.address) {
-            logger.throwArgumentError("address/privateKey mismatch", "json", "[ REDACTED ]");
+            throwArgumentError("address/privateKey mismatch", "json", "[ REDACTED ]");
         }
         // @TODO: mnemonic
         return wallet;
@@ -158,7 +158,10 @@ export class Wallet extends BaseWallet {
     static fromMnemonic(mnemonic, provider) {
         return new Wallet(mnemonic, provider);
     }
-    static fromPhrase(phrase, provider, password = "", wordlist) {
+    static fromPhrase(phrase, provider, password, wordlist) {
+        if (password == null) {
+            password = "";
+        }
         return new Wallet(Mnemonic.fromPhrase(phrase, password, wordlist), provider);
     }
 }

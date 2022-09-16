@@ -1,6 +1,6 @@
 import { Interface } from "../abi/index.js";
 import { getCreateAddress } from "../address/index.js";
-import { concat, defineProperties, hexlify, logger } from "../utils/index.js";
+import { concat, defineProperties, getBytes, hexlify, throwArgumentError, throwError } from "../utils/index.js";
 import { BaseContract, copyOverrides, resolveArgs } from "./contract.js";
 // A = Arguments to the constructor
 // I = Interface of deployed contracts
@@ -12,7 +12,7 @@ export class ContractFactory {
         const iface = Interface.from(abi);
         // Dereference Solidity bytecode objects and allow a missing `0x`-prefix
         if (bytecode instanceof Uint8Array) {
-            bytecode = hexlify(logger.getBytes(bytecode));
+            bytecode = hexlify(getBytes(bytecode));
         }
         else {
             if (typeof (bytecode) === "object") {
@@ -21,7 +21,7 @@ export class ContractFactory {
             if (bytecode.substring(0, 2) !== "0x") {
                 bytecode = "0x" + bytecode;
             }
-            bytecode = hexlify(logger.getBytes(bytecode));
+            bytecode = hexlify(getBytes(bytecode));
         }
         defineProperties(this, {
             bytecode, interface: iface, runner: (runner || null)
@@ -43,7 +43,7 @@ export class ContractFactory {
     async deploy(...args) {
         const tx = await this.getDeployTransaction(...args);
         if (!this.runner || typeof (this.runner.sendTransaction) !== "function") {
-            return logger.throwError("factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
+            return throwError("factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
                 operation: "sendTransaction"
             });
         }
@@ -56,7 +56,7 @@ export class ContractFactory {
     }
     static fromSolidity(output, runner) {
         if (output == null) {
-            logger.throwArgumentError("bad compiler output", "output", output);
+            throwArgumentError("bad compiler output", "output", output);
         }
         if (typeof (output) === "string") {
             output = JSON.parse(output);

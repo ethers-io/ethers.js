@@ -1,5 +1,4 @@
-import { logger } from "../../utils/logger.js";
-import { hexlify } from "../../utils/data.js";
+import { getBytesCopy, hexlify } from "../../utils/index.js";
 import { Coder } from "./abstract-coder.js";
 export class DynamicBytesCoder extends Coder {
     constructor(type, localName) {
@@ -9,7 +8,7 @@ export class DynamicBytesCoder extends Coder {
         return "0x";
     }
     encode(writer, value) {
-        value = logger.getBytesCopy(value);
+        value = getBytesCopy(value);
         let length = writer.writeValue(value.length);
         length += writer.writeBytes(value);
         return length;

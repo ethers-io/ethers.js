@@ -1,8 +1,8 @@
 import { CBC, pkcs7Strip } from "aes-js";
 import { getAddress } from "../address/index.js";
 import { pbkdf2 } from "../crypto/index.js";
-import { id } from "../hash/id.js";
-import { logger } from "../utils/index.js";
+import { id } from "../hash/index.js";
+import { getBytes, throwArgumentError } from "../utils/index.js";
 import { getPassword, looseArrayify, spelunk } from "./utils.js";
 export function isCrowdsaleJson(json) {
     try {
@@ -23,14 +23,14 @@ export function decryptCrowdsaleJson(json, _password) {
     // Encrypted Seed
     const encseed = looseArrayify(spelunk(data, "encseed:string!"));
     if (!encseed || (encseed.length % 16) !== 0) {
-        logger.throwArgumentError("invalid encseed", "json", json);
+        throwArgumentError("invalid encseed", "json", json);
     }
-    const key = logger.getBytes(pbkdf2(password, password, 2000, 32, "sha256")).slice(0, 16);
+    const key = getBytes(pbkdf2(password, password, 2000, 32, "sha256")).slice(0, 16);
     const iv = encseed.slice(0, 16);
     const encryptedSeed = encseed.slice(16);
     // Decrypt the seed
     const aesCbc = new CBC(key, iv);
-    const seed = pkcs7Strip(logger.getBytes(aesCbc.decrypt(encryptedSeed)));
+    const seed = pkcs7Strip(getBytes(aesCbc.decrypt(encryptedSeed)));
     // This wallet format is weird... Convert the binary encoded hex to a string.
     let seedHex = "";
     for (let i = 0; i < seed.length; i++) {

@@ -1,6 +1,5 @@
-import { hexlify } from "../utils/data.js";
+import { getBigInt, getNumber, hexlify, throwError, throwArgumentError } from "../utils/index.js";
 import { AbstractProvider } from "./abstract-provider.js";
-import { logger } from "../utils/logger.js";
 import { Network } from "./network.js";
 //const BN_0 = BigInt("0");
 const BN_1 = BigInt("1");
@@ -44,15 +43,15 @@ async function waitForSync(config, blockNumber) {
 function normalize(network, value, req) {
     switch (req.method) {
         case "chainId":
-            return logger.getBigInt(value).toString();
+            return getBigInt(value).toString();
         case "getBlockNumber":
-            return logger.getNumber(value).toString();
+            return getNumber(value).toString();
         case "getGasPrice":
-            return logger.getBigInt(value).toString();
+            return getBigInt(value).toString();
         case "getBalance":
-            return logger.getBigInt(value).toString();
+            return getBigInt(value).toString();
         case "getTransactionCount":
-            return logger.getNumber(value).toString();
+            return getNumber(value).toString();
         case "getCode":
             return hexlify(value);
         case "getStorageAt":
@@ -69,11 +68,11 @@ function normalize(network, value, req) {
         case "call":
             return hexlify(value);
         case "estimateGas":
-            return logger.getBigInt(value).toString();
+            return getBigInt(value).toString();
         case "getLogs":
             return JSON.stringify(value.map((v) => network.formatter.log(v)));
     }
-    return logger.throwError("unsupported method", "UNSUPPORTED_OPERATION", {
+    return throwError("unsupported method", "UNSUPPORTED_OPERATION", {
         operation: `_perform(${JSON.stringify(req.method)})`
     });
 }
@@ -116,7 +115,7 @@ function getMedian(results) {
 }
 function getFuzzyMode(quorum, results) {
     if (quorum === 1) {
-        return logger.getNumber(getMedian(results), "%internal");
+        return getNumber(getMedian(results), "%internal");
     }
     const tally = new Map();
     const add = (result, weight) => {
@@ -125,7 +124,7 @@ function getFuzzyMode(quorum, results) {
         tally.set(result, t);
     };
     for (const { weight, result } of results) {
-        const r = logger.getNumber(result);
+        const r = getNumber(result);
         add(r - 1, weight);
         add(r, weight);
         add(r + 1, weight);
@@ -167,7 +166,7 @@ export class FallbackProvider extends AbstractProvider {
         this.eventQuorum = 1;
         this.eventWorkers = 1;
         if (this.quorum > this.#configs.reduce((a, c) => (a + c.weight), 0)) {
-            logger.throwArgumentError("quorum exceed provider wieght", "quorum", this.quorum);
+            throwArgumentError("quorum exceed provider wieght", "quorum", this.quorum);
         }
     }
     // @TOOD: Copy these and only return public values
@@ -175,7 +174,7 @@ export class FallbackProvider extends AbstractProvider {
         return this.#configs.slice();
     }
     async _detectNetwork() {
-        return Network.from(logger.getBigInt(await this._perform({ method: "chainId" }))).freeze();
+        return Network.from(getBigInt(await this._perform({ method: "chainId" }))).freeze();
     }
     // @TODO: Add support to select providers to be the event subscriber
     //_getSubscriber(sub: Subscription): Subscriber {
@@ -253,7 +252,7 @@ export class FallbackProvider extends AbstractProvider {
                         chainId = network.chainId;
                     }
                     else if (network.chainId !== chainId) {
-                        logger.throwError("cannot mix providers on different networks", "UNSUPPORTED_OPERATION", {
+                        throwError("cannot mix providers on different networks", "UNSUPPORTED_OPERATION", {
                             operation: "new FallbackProvider"
                         });
                     }
@@ -283,9 +282,9 @@ export class FallbackProvider extends AbstractProvider {
             case "getBlockNumber": {
                 // We need to get the bootstrap block height
                 if (this.#height === -2) {
-                    const height = Math.ceil(logger.getNumber(getMedian(this.#configs.map((c) => ({
+                    const height = Math.ceil(getNumber(getMedian(this.#configs.map((c) => ({
                         result: c.blockNumber,
-                        normal: logger.getNumber(c.blockNumber).toString(),
+                        normal: getNumber(c.blockNumber).toString(),
                         weight: c.weight
                     }))), "%internal"));
                     this.#height = height;
@@ -324,7 +323,7 @@ export class FallbackProvider extends AbstractProvider {
             case "broadcastTransaction":
                 throw new Error("TODO");
         }
-        return logger.throwError("unsupported method", "UNSUPPORTED_OPERATION", {
+        return throwError("unsupported method", "UNSUPPORTED_OPERATION", {
             operation: `_perform(${JSON.stringify(req.method)})`
         });
     }

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Typed = void 0;
-const properties_js_1 = require("../utils/properties.js");
+const index_js_1 = require("../utils/index.js");
 const _gaurd = {};
 function n(value, width) {
     let signed = false;
@@ -26,7 +26,7 @@ class Typed {
         if (gaurd !== _gaurd) {
             throw new Error("private constructor");
         }
-        (0, properties_js_1.defineProperties)(this, { _typedSymbol, type, value });
+        (0, index_js_1.defineProperties)(this, { _typedSymbol, type, value });
         this.#options = options;
         // Check the value is valid
         this.format();

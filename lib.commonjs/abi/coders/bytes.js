@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BytesCoder = exports.DynamicBytesCoder = void 0;
-const logger_js_1 = require("../../utils/logger.js");
-const data_js_1 = require("../../utils/data.js");
+const index_js_1 = require("../../utils/index.js");
 const abstract_coder_js_1 = require("./abstract-coder.js");
 class DynamicBytesCoder extends abstract_coder_js_1.Coder {
     constructor(type, localName) {
@@ -12,7 +11,7 @@ class DynamicBytesCoder extends abstract_coder_js_1.Coder {
         return "0x";
     }
     encode(writer, value) {
-        value = logger_js_1.logger.getBytesCopy(value);
+        value = (0, index_js_1.getBytesCopy)(value);
         let length = writer.writeValue(value.length);
         length += writer.writeBytes(value);
         return length;
@@ -27,7 +26,7 @@ class BytesCoder extends DynamicBytesCoder {
         super("bytes", localName);
     }
     decode(reader) {
-        return (0, data_js_1.hexlify)(super.decode(reader));
+        return (0, index_js_1.hexlify)(super.decode(reader));
     }
 }
 exports.BytesCoder = BytesCoder;

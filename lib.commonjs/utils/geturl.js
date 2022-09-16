@@ -7,17 +7,18 @@ exports.getUrl = void 0;
 const http_1 = __importDefault(require("http"));
 const https_1 = __importDefault(require("https"));
 const zlib_1 = require("zlib");
-const logger_js_1 = require("./logger.js");
+const errors_js_1 = require("./errors.js");
+const data_js_1 = require("./data.js");
 async function getUrl(req, signal) {
     const protocol = req.url.split(":")[0].toLowerCase();
     if (protocol !== "http" && protocol !== "https") {
-        logger_js_1.logger.throwError(`unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
+        (0, errors_js_1.throwError)(`unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
             info: { protocol },
             operation: "request"
         });
     }
     if (req.credentials && !req.allowInsecureAuthentication) {
-        logger_js_1.logger.throwError("insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
+        (0, errors_js_1.throwError)("insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
             operation: "request"
         });
     }
@@ -68,7 +69,7 @@ async function getUrl(req, signal) {
             });
             resp.on("end", () => {
                 if (headers["content-encoding"] === "gzip" && body) {
-                    body = logger_js_1.logger.getBytes((0, zlib_1.gunzipSync)(body));
+                    body = (0, data_js_1.getBytes)((0, zlib_1.gunzipSync)(body));
                 }
                 resolve({ statusCode, statusMessage, headers, body });
             });

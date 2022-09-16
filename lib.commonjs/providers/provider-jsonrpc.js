@@ -5,21 +5,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.JsonRpcProvider = exports.JsonRpcApiProvider = exports.JsonRpcSigner = void 0;
 // https://playground.open-rpc.org/?schemaUrl=https://raw.githubusercontent.com/ethereum/eth1.0-apis/assembled-spec/openrpc.json&uiSchema%5BappBar%5D%5Bui:splitView%5D=true&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false
 const index_js_1 = require("../address/index.js");
-const data_js_1 = require("../utils/data.js");
-const fetch_js_1 = require("../utils/fetch.js");
-const maths_js_1 = require("../utils/maths.js");
-const properties_js_1 = require("../utils/properties.js");
-const typed_data_js_1 = require("../hash/typed-data.js");
-const utf8_js_1 = require("../utils/utf8.js");
-const index_js_2 = require("../transaction/index.js");
+const index_js_2 = require("../hash/index.js");
+const index_js_3 = require("../transaction/index.js");
+const index_js_4 = require("../utils/index.js");
 const abstract_provider_js_1 = require("./abstract-provider.js");
 const abstract_signer_js_1 = require("./abstract-signer.js");
 const network_js_1 = require("./network.js");
 const subscriber_filterid_js_1 = require("./subscriber-filterid.js");
-const logger_js_1 = require("../utils/logger.js");
-//function copy<T = any>(value: T): T {
-//    return JSON.parse(JSON.stringify(value));
-//}
 const Primitive = "bigint,boolean,function,number,string,symbol".split(/,/g);
 //const Methods = "getAddress,then".split(/,/g);
 function deepCopy(value) {
@@ -62,10 +54,10 @@ class JsonRpcSigner extends abstract_signer_js_1.AbstractSigner {
     address;
     constructor(provider, address) {
         super(provider);
-        (0, properties_js_1.defineProperties)(this, { address });
+        (0, index_js_4.defineProperties)(this, { address });
     }
     connect(provider) {
-        return logger_js_1.logger.throwError("cannot reconnect JsonRpcSigner", "UNSUPPORTED_OPERATION", {
+        return (0, index_js_4.throwError)("cannot reconnect JsonRpcSigner", "UNSUPPORTED_OPERATION", {
             operation: "signer.connect"
         });
     }
@@ -76,21 +68,6 @@ class JsonRpcSigner extends abstract_signer_js_1.AbstractSigner {
     async populateTransaction(tx) {
         return await this.populateCall(tx);
     }
-    //async getNetwork(): Promise<Frozen<Network>> {
-    //    return await this.provider.getNetwork();
-    //}
-    //async estimateGas(tx: TransactionRequest): Promise<bigint> {
-    //    return await this.provider.estimateGas(tx);
-    //}
-    //async call(tx: TransactionRequest): Promise<string> {
-    //    return await this.provider.call(tx);
-    //}
-    //async resolveName(name: string | Addressable): Promise<null | string> {
-    //    return await this.provider.resolveName(name);
-    //}
-    //async getNonce(blockTag?: BlockTag): Promise<number> {
-    //    return await this.provider.getTransactionCountOf(this.address);
-    //}
     // Returns just the hash of the transaction after sent, which is what
     // the bare JSON-RPC API does;
     async sendUncheckedTransaction(_tx) {
@@ -102,7 +79,7 @@ class JsonRpcSigner extends abstract_signer_js_1.AbstractSigner {
             promises.push((async () => {
                 const from = await (0, index_js_1.resolveAddress)(_from, this.provider);
                 if (from == null || from.toLowerCase() !== this.address.toLowerCase()) {
-                    logger_js_1.logger.throwArgumentError("from address mismatch", "transaction", _tx);
+                    (0, index_js_4.throwArgumentError)("from address mismatch", "transaction", _tx);
                 }
                 tx.from = from;
             })());
@@ -161,7 +138,7 @@ class JsonRpcSigner extends abstract_signer_js_1.AbstractSigner {
         if (tx.from) {
             const from = await (0, index_js_1.resolveAddress)(tx.from, this.provider);
             if (from == null || from.toLowerCase() !== this.address.toLowerCase()) {
-                return logger_js_1.logger.throwArgumentError("from address mismatch", "transaction", _tx);
+                return (0, index_js_4.throwArgumentError)("from address mismatch", "transaction", _tx);
             }
             tx.from = from;
         }
@@ -172,24 +149,24 @@ class JsonRpcSigner extends abstract_signer_js_1.AbstractSigner {
         return await this.provider.send("eth_sign_Transaction", [hexTx]);
     }
     async signMessage(_message) {
-        const message = ((typeof (_message) === "string") ? (0, utf8_js_1.toUtf8Bytes)(_message) : _message);
+        const message = ((typeof (_message) === "string") ? (0, index_js_4.toUtf8Bytes)(_message) : _message);
         return await this.provider.send("personal_sign", [
-            (0, data_js_1.hexlify)(message), this.address.toLowerCase()
+            (0, index_js_4.hexlify)(message), this.address.toLowerCase()
         ]);
     }
     async signTypedData(domain, types, _value) {
         const value = deepCopy(_value);
         // Populate any ENS names (in-place)
-        const populated = await typed_data_js_1.TypedDataEncoder.resolveNames(domain, types, value, async (value) => {
+        const populated = await index_js_2.TypedDataEncoder.resolveNames(domain, types, value, async (value) => {
             const address = await (0, index_js_1.resolveAddress)(value);
             if (address == null) {
-                return logger_js_1.logger.throwArgumentError("TypedData does not support null address", "value", value);
+                return (0, index_js_4.throwArgumentError)("TypedData does not support null address", "value", value);
             }
             return address;
         });
         return await this.provider.send("eth_signTypedData_v4", [
             this.address.toLowerCase(),
-            JSON.stringify(typed_data_js_1.TypedDataEncoder.getPayload(populated.domain, types, populated.value))
+            JSON.stringify(index_js_2.TypedDataEncoder.getPayload(populated.domain, types, populated.value))
         ]);
     }
     async unlock(password) {
@@ -199,13 +176,19 @@ class JsonRpcSigner extends abstract_signer_js_1.AbstractSigner {
     }
     // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
     async _legacySignMessage(_message) {
-        const message = ((typeof (_message) === "string") ? (0, utf8_js_1.toUtf8Bytes)(_message) : _message);
+        const message = ((typeof (_message) === "string") ? (0, index_js_4.toUtf8Bytes)(_message) : _message);
         return await this.provider.send("eth_sign", [
-            this.address.toLowerCase(), (0, data_js_1.hexlify)(message)
+            this.address.toLowerCase(), (0, index_js_4.hexlify)(message)
         ]);
     }
 }
 exports.JsonRpcSigner = JsonRpcSigner;
+/**
+ *  The JsonRpcApiProvider is an abstract class and **MUST** be
+ *  sub-classed.
+ *
+ *  It provides the base for all JSON-RPC-based Provider interaction.
+ */
 class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
     #options;
     #nextId;
@@ -220,28 +203,23 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         // This could be relaxed in the future to just check equivalent networks
         const staticNetwork = this._getOption("staticNetwork");
         if (staticNetwork && staticNetwork !== network) {
-            logger_js_1.logger.throwArgumentError("staticNetwork MUST match network object", "options", options);
+            (0, index_js_4.throwArgumentError)("staticNetwork MUST match network object", "options", options);
         }
     }
+    /**
+     *  Returns the value associated with the option %%key%%.
+     *
+     *  Sub-classes can use this to inquire about configuration options.
+     */
     _getOption(key) {
         return this.#options[key];
     }
-    // @TODO: Merge this into send
-    //prepareRequest(method: string, params: Array<any>): JsonRpcPayload {
-    //    return {
-    //        method, params, id: (this.#nextId++), jsonrpc: "2.0"
-    //    };
-    //}
-    /*
-        async send<T = any>(method: string, params: Array<any>): Promise<T> {
-            // @TODO: This should construct and queue the payload
-            throw new Error("sub-class must implement this");
-        }
-    */
     #scheduleDrain() {
         if (this.#drainTimer) {
             return;
         }
+        // If we aren't using batching, no hard in sending it immeidately
+        const stallTime = (this._getOption("batchMaxCount") === 1) ? 0 : this._getOption("batchStallTime");
         this.#drainTimer = setTimeout(() => {
             this.#drainTimer = null;
             const payloads = this.#payloads;
@@ -292,9 +270,22 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
                     }
                 })();
             }
-        }, this.#options.batchStallTime);
+        }, stallTime);
     }
     // Sub-classes should **NOT** override this
+    /**
+     *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
+     *  over the underlying channel. This can be used to call methods
+     *  on the backend that do not have a high-level API within the Provider
+     *  API.
+     *
+     *  This method queues requests according to the batch constraints
+     *  in the options, assigns the request a unique ID.
+     *
+     *  **Do NOT override** this method in sub-classes; instead
+     *  override [[_send]] or force the options values in the
+     *  call to the constructor to modify this method's behavior.
+     */
     send(method, params) {
         // @TODO: cache chainId?? purge on switch_networks
         const id = this.#nextId++;
@@ -308,12 +299,28 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         this.#scheduleDrain();
         return promise;
     }
-    // Sub-classes MUST override this
+    /**
+     *  Sends a JSON-RPC %%payload%% (or a batch) to the underlying channel.
+     *
+     *  Sub-classes **MUST** override this.
+     */
     _send(payload) {
-        return logger_js_1.logger.throwError("sub-classes must override _send", "UNSUPPORTED_OPERATION", {
+        return (0, index_js_4.throwError)("sub-classes must override _send", "UNSUPPORTED_OPERATION", {
             operation: "jsonRpcApiProvider._send"
         });
     }
+    /**
+     *  Resolves to the [[Signer]] account for  %%address%% managed by
+     *  the client.
+     *
+     *  If the %%address%% is a number, it is used as an index in the
+     *  the accounts from [[listAccounts]].
+     *
+     *  This can only be used on clients which manage accounts (such as
+     *  Geth with imported account or MetaMask).
+     *
+     *  Throws if the account doesn't exist.
+     */
     async getSigner(address = 0) {
         const accountsPromise = this.send("eth_accounts", []);
         // Account index
@@ -342,8 +349,14 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         if (network) {
             return network;
         }
-        return network_js_1.Network.from(logger_js_1.logger.getBigInt(await this._perform({ method: "chainId" })));
+        return network_js_1.Network.from((0, index_js_4.getBigInt)(await this._perform({ method: "chainId" })));
     }
+    /**
+     *  Return a Subscriber that will manage the %%sub%%.
+     *
+     *  Sub-classes can override this to modify the behavior of
+     *  subscription management.
+     */
     _getSubscriber(sub) {
         // Pending Filters aren't availble via polling
         if (sub.type === "pending") {
@@ -359,7 +372,11 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         }
         return super._getSubscriber(sub);
     }
-    // Normalize a JSON-RPC transaction
+    /**
+     *  Returns %%tx%% as a normalized JSON-RPC transaction request,
+     *  which has all values hexlified and any numeric values converted
+     *  to Quantity values.
+     */
     getRpcTransaction(tx) {
         const result = {};
         // JSON-RPC now requires numeric values to be "quantity" values
@@ -371,22 +388,25 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
             if (key === "gasLimit") {
                 dstKey = "gas";
             }
-            result[dstKey] = (0, maths_js_1.toQuantity)(logger_js_1.logger.getBigInt(tx[key], `tx.${key}`));
+            result[dstKey] = (0, index_js_4.toQuantity)((0, index_js_4.getBigInt)(tx[key], `tx.${key}`));
         });
         // Make sure addresses and data are lowercase
         ["from", "to", "data"].forEach((key) => {
             if (tx[key] == null) {
                 return;
             }
-            result[key] = (0, data_js_1.hexlify)(tx[key]);
+            result[key] = (0, index_js_4.hexlify)(tx[key]);
         });
         // Normalize the access list object
         if (tx.accessList) {
-            result["accessList"] = (0, index_js_2.accessListify)(tx.accessList);
+            result["accessList"] = (0, index_js_3.accessListify)(tx.accessList);
         }
         return result;
     }
-    // Get the necessary paramters for making a JSON-RPC request
+    /**
+     *  Returns the request method and arguments required to perform
+     *  %%req%%.
+     */
     getRpcRequest(req) {
         switch (req.method) {
             case "chainId":
@@ -472,73 +492,72 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         }
         return null;
     }
+    /**
+     *  Returns an ethers-style Error for the given JSON-RPC error
+     *  %%payload%%, coalescing the various strings and error shapes
+     *  that different nodes return, coercing them into a machine-readable
+     *  standardized error.
+     */
     getRpcError(payload, error) {
-        console.log("getRpcError", payload, error);
-        return new Error(`JSON-RPC badness; @TODO: ${error}`);
-        /*
-            if (payload.method === "eth_call") {
-                const result = spelunkData(error);
-                if (result) {
-                    // @TODO: Extract errorSignature, errorName, errorArgs, reason if
-                    //        it is Error(string) or Panic(uint25)
-                    return logger.makeError("execution reverted during JSON-RPC call", "CALL_EXCEPTION", {
-                        data: result.data,
-                        transaction: args[0]
-                    });
-                }
-    
-                return logger.makeError("missing revert data during JSON-RPC call", "CALL_EXCEPTION", {
-                    data: "0x", transaction: args[0], info: { error }
+        const { method } = payload;
+        if (method === "eth_call") {
+            const transaction = (payload.params[0]);
+            const result = spelunkData(error);
+            if (result) {
+                // @TODO: Extract errorSignature, errorName, errorArgs, reason if
+                //        it is Error(string) or Panic(uint25)
+                return (0, index_js_4.makeError)("execution reverted during JSON-RPC call", "CALL_EXCEPTION", {
+                    data: result.data,
+                    transaction
                 });
             }
-    
-            if (method === "eth_estimateGas") {
-                // @TODO: Spelunk, and adapt the above to allow missing data.
-                //        Then throw an UNPREDICTABLE_GAS exception
+            return (0, index_js_4.makeError)("missing revert data during JSON-RPC call", "CALL_EXCEPTION", {
+                data: "0x", transaction, info: { error }
+            });
+        }
+        const message = JSON.stringify(spelunkMessage(error));
+        if (method === "eth_estimateGas") {
+            const transaction = (payload.params[0]);
+            if (message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
+                return (0, index_js_4.makeError)("cannot estimate gas; transaction may fail or may require manual gas limit", "UNPREDICTABLE_GAS_LIMIT", {
+                    transaction
+                });
             }
-    
-            const message = JSON.stringify(spelunkMessage(error));
-    
+        }
+        if (method === "eth_sendRawTransaction" || method === "eth_sendTransaction") {
+            const transaction = (payload.params[0]);
             if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
-                return logger.makeError("insufficient funds for intrinsic transaction cost", "INSUFFICIENT_FUNDS", {
-                    transaction: args[0]
+                return (0, index_js_4.makeError)("insufficient funds for intrinsic transaction cost", "INSUFFICIENT_FUNDS", {
+                    transaction
                 });
             }
-    
             if (message.match(/nonce/) && message.match(/too low/)) {
-                return logger.makeError("nonce has already been used", "NONCE_EXPIRED", {
-                    transaction: args[0]
-                });
+                return (0, index_js_4.makeError)("nonce has already been used", "NONCE_EXPIRED", { transaction });
             }
-    
             // "replacement transaction underpriced"
             if (message.match(/replacement transaction/) && message.match(/underpriced/)) {
-                return logger.makeError("replacement fee too low", "REPLACEMENT_UNDERPRICED", {
-                    transaction: args[0]
-                });
+                return (0, index_js_4.makeError)("replacement fee too low", "REPLACEMENT_UNDERPRICED", { transaction });
             }
-    
             if (message.match(/only replay-protected/)) {
-                return logger.makeError("legacy pre-eip-155 transactions not supported", "UNSUPPORTED_OPERATION", {
-                    operation: method, info: { transaction: args[0] }
+                return (0, index_js_4.makeError)("legacy pre-eip-155 transactions not supported", "UNSUPPORTED_OPERATION", {
+                    operation: method, info: { transaction }
                 });
             }
-    
-            if (method === "estimateGas" && message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
-                return logger.makeError("cannot estimate gas; transaction may fail or may require manual gas limit", "UNPREDICTABLE_GAS_LIMIT", {
-                    transaction: args[0]
-                });
-            }
-    
-            return error;
-            */
+        }
+        return (0, index_js_4.makeError)("could not coalesce error", "UNKNOWN_ERROR", { error });
     }
+    /**
+     *  Resolves to the non-normalized value by performing %%req%%.
+     *
+     *  Sub-classes may override this to modify behavior of actions,
+     *  and should generally call ``super._perform`` as a fallback.
+     */
     async _perform(req) {
         // Legacy networks do not like the type field being passed along (which
         // is fair), so we delete type if it is 0 and a non-EIP-1559 network
         if (req.method === "call" || req.method === "estimateGas") {
             let tx = req.transaction;
-            if (tx && tx.type != null && logger_js_1.logger.getBigInt(tx.type)) {
+            if (tx && tx.type != null && (0, index_js_4.getBigInt)(tx.type)) {
                 // If there are no EIP-1559 properties, it might be non-EIP-a559
                 if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
                     const feeData = await this.getFeeData();
@@ -554,25 +573,19 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         const request = this.getRpcRequest(req);
         if (request != null) {
             return await this.send(request.method, request.args);
-            /*
-              @TODO: Add debug output to send
-                        this.emit("debug", { type: "sendRequest", request });
-                        try {
-                            const result =
-                            //console.log("RR", result);
-                            this.emit("debug", { type: "getResponse", result });
-                            return result;
-                        } catch (error) {
-                            this.emit("debug", { type: "getError", error });
-                            throw error;
-                            //throw this.getRpcError(request.method, request.args, <Error>error);
-                        }
-            */
         }
         return super._perform(req);
     }
 }
 exports.JsonRpcApiProvider = JsonRpcApiProvider;
+/**
+ *  The JsonRpcProvider is one of the most common Providers,
+ *  which performs all operations over HTTP (or HTTPS) requests.
+ *
+ *  Events are processed by polling the backend for the current block
+ *  number; when it advances, all block-base events are then checked
+ *  for updates.
+ */
 class JsonRpcProvider extends JsonRpcApiProvider {
     #connect;
     #pollingInterval;
@@ -582,7 +595,7 @@ class JsonRpcProvider extends JsonRpcApiProvider {
         }
         super(network, options);
         if (typeof (url) === "string") {
-            this.#connect = new fetch_js_1.FetchRequest(url);
+            this.#connect = new index_js_4.FetchRequest(url);
         }
         else {
             this.#connect = url.clone();
@@ -601,6 +614,9 @@ class JsonRpcProvider extends JsonRpcApiProvider {
         }
         return resp;
     }
+    /**
+     *  The polling interval (default: 4000 ms)
+     */
     get pollingInterval() { return this.#pollingInterval; }
     set pollingInterval(value) {
         if (!Number.isInteger(value) || value < 0) {
@@ -615,79 +631,58 @@ class JsonRpcProvider extends JsonRpcApiProvider {
     }
 }
 exports.JsonRpcProvider = JsonRpcProvider;
-// This class should only be used when it is not possible for the
-// underlying network to change, such as with INFURA. If you are
-// using MetaMask or some other client which allows users to change
-// their network DO NOT USE THIS. Bad things will happen.
-/*
-export class StaticJsonRpcProvider extends JsonRpcProvider {
-    readonly network!: Network;
-
-    constructor(url: string | ConnectionInfo, network?: Network, options?: JsonRpcOptions) {
-        super(url, network, options);
-        defineProperties<StaticJsonRpcProvider>(this, { network });
+function spelunkData(value) {
+    if (value == null) {
+        return null;
     }
-
-    async _detectNetwork(): Promise<Network> {
-        return this.network;
-    }
-}
-*/
-/*
-function spelunkData(value: any): null | { message: string, data: string } {
-    if (value == null) { return null; }
-
     // These *are* the droids we're looking for.
-    if (typeof(value.message) === "string" && value.message.match("reverted") && isHexString(value.data)) {
+    if (typeof (value.message) === "string" && value.message.match("reverted") && (0, index_js_4.isHexString)(value.data)) {
         return { message: value.message, data: value.data };
     }
-
     // Spelunk further...
-    if (typeof(value) === "object") {
+    if (typeof (value) === "object") {
         for (const key in value) {
             const result = spelunkData(value[key]);
-            if (result) { return result; }
+            if (result) {
+                return result;
+            }
         }
         return null;
     }
-
     // Might be a JSON string we can further descend...
-    if (typeof(value) === "string") {
+    if (typeof (value) === "string") {
         try {
             return spelunkData(JSON.parse(value));
-        } catch (error) { }
+        }
+        catch (error) { }
     }
-
     return null;
 }
-
-function _spelunkMessage(value: any, result: Array<string>): void {
-    if (value == null) { return; }
-
+function _spelunkMessage(value, result) {
+    if (value == null) {
+        return;
+    }
     // These *are* the droids we're looking for.
-    if (typeof(value.message) === "string") {
+    if (typeof (value.message) === "string") {
         result.push(value.message);
     }
-
     // Spelunk further...
-    if (typeof(value) === "object") {
+    if (typeof (value) === "object") {
         for (const key in value) {
             _spelunkMessage(value[key], result);
         }
     }
-
     // Might be a JSON string we can further descend...
-    if (typeof(value) === "string") {
+    if (typeof (value) === "string") {
         try {
             return _spelunkMessage(JSON.parse(value), result);
-        } catch (error) { }
+        }
+        catch (error) { }
     }
 }
-
-function spelunkMessage(value: any): Array<string> {
-    const result: Array<string> = [ ];
+function spelunkMessage(value) {
+    const result = [];
     _spelunkMessage(value, result);
     return result;
 }
-*/
 //# sourceMappingURL=provider-jsonrpc.js.map

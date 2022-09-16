@@ -1,6 +1,7 @@
 //See: https://github.com/ethereum/wiki/wiki/RLP
 import { hexlify } from "./data.js";
-import { logger } from "./logger.js";
+import { throwArgumentError, throwError } from "./errors.js";
+import { getBytes } from "./data.js";
 function hexlifyByte(value) {
     let result = value.toString(16);
     while (result.length < 2) {
@@ -22,7 +23,7 @@ function _decodeChildren(data, offset, childOffset, length) {
         result.push(decoded.result);
         childOffset += decoded.consumed;
         if (childOffset > offset + 1 + length) {
-            logger.throwError("child data too short", "BUFFER_OVERRUN", {
+            throwError("child data too short", "BUFFER_OVERRUN", {
                 buffer: data, length, offset
             });
         }
@@ -32,13 +33,13 @@ function _decodeChildren(data, offset, childOffset, length) {
 // returns { consumed: number, result: Object }
 function _decode(data, offset) {
     if (data.length === 0) {
-        logger.throwError("data too short", "BUFFER_OVERRUN", {
+        throwError("data too short", "BUFFER_OVERRUN", {
             buffer: data, length: 0, offset: 1
         });
     }
     const checkOffset = (offset) => {
         if (offset > data.length) {
-            logger.throwError("data short segment too short", "BUFFER_OVERRUN", {
+            throwError("data short segment too short", "BUFFER_OVERRUN", {
                 buffer: data, length: data.length, offset
             });
         }
@@ -72,11 +73,14 @@ function _decode(data, offset) {
     }
     return { consumed: 1, result: hexlifyByte(data[offset]) };
 }
+/**
+ *  Decodes %%data%% into the structured data it represents.
+ */
 export function decodeRlp(_data) {
-    const data = logger.getBytes(_data, "data");
+    const data = getBytes(_data, "data");
     const decoded = _decode(data, 0);
     if (decoded.consumed !== data.length) {
-        logger.throwArgumentError("unexpected junk after rlp payload", "data", _data);
+        throwArgumentError("unexpected junk after rlp payload", "data", _data);
     }
     return decoded.result;
 }

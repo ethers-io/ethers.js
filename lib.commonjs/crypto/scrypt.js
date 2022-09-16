@@ -13,8 +13,8 @@ const _scryptSync = function (passwd, salt, N, r, p, dkLen) {
 let __scryptAsync = _scryptAsync;
 let __scryptSync = _scryptSync;
 async function scrypt(_passwd, _salt, N, r, p, dkLen, progress) {
-    const passwd = index_js_1.logger.getBytes(_passwd, "passwd");
-    const salt = index_js_1.logger.getBytes(_salt, "salt");
+    const passwd = (0, index_js_1.getBytes)(_passwd, "passwd");
+    const salt = (0, index_js_1.getBytes)(_salt, "salt");
     return (0, index_js_1.hexlify)(await __scryptAsync(passwd, salt, N, r, p, dkLen, progress));
 }
 exports.scrypt = scrypt;
@@ -28,8 +28,8 @@ scrypt.register = function (func) {
 };
 Object.freeze(scrypt);
 function scryptSync(_passwd, _salt, N, r, p, dkLen) {
-    const passwd = index_js_1.logger.getBytes(_passwd, "passwd");
-    const salt = index_js_1.logger.getBytes(_salt, "salt");
+    const passwd = (0, index_js_1.getBytes)(_passwd, "passwd");
+    const salt = (0, index_js_1.getBytes)(_salt, "salt");
     return (0, index_js_1.hexlify)(__scryptSync(passwd, salt, N, r, p, dkLen));
 }
 exports.scryptSync = scryptSync;

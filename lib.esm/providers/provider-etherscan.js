@@ -1,16 +1,7 @@
-import { hexlify, isHexString } from "../utils/data.js";
-import { toQuantity } from "../utils/maths.js";
-import { isError } from "../utils/errors.js";
-import { defineProperties } from "../utils/properties.js";
-import { toUtf8String } from "../utils/utf8.js";
-import { FetchRequest } from "../utils/fetch.js";
-if (false) {
-    console.log(isHexString, isError);
-} // @TODO
+import { defineProperties, hexlify, toQuantity, FetchRequest, throwArgumentError, throwError, toUtf8String } from "../utils/index.js";
 import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
 import { NetworkPlugin } from "./plugins-network.js";
-import { logger } from "../utils/logger.js";
 const defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 const EtherscanPluginId = "org.ethers.plugins.etherscan";
 export class EtherscanPlugin extends NetworkPlugin {
@@ -62,7 +53,7 @@ export class EtherscanProvider extends AbstractProvider {
                 return "https:/\/api-goerli.etherscan.io";
             default:
         }
-        return logger.throwArgumentError("unsupported network", "network", this.network);
+        return throwArgumentError("unsupported network", "network", this.network);
     }
     getUrl(module, params) {
         const query = Object.keys(params).reduce((accum, key) => {
@@ -318,7 +309,7 @@ export class EtherscanProvider extends AbstractProvider {
                         boolean: (req.includeTransactions ? "true" : "false")
                     });
                 }
-                return logger.throwError("getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
+                return throwError("getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
                     operation: "getBlock(blockHash)"
                 });
             case "getTransaction":

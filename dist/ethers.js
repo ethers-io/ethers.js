@@ -1,426 +1,5 @@
 const version = "6.0.0-beta-exports.0";
 
-const LogLevels = ["debug", "info", "warning", "error", "off"];
-const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
-    try {
-        // General test for normalize
-        /* c8 ignore start */
-        if ("test".normalize(form) !== "test") {
-            throw new Error("bad");
-        }
-        ;
-        /* c8 ignore stop */
-        if (form === "NFD") {
-            const check = String.fromCharCode(0xe9).normalize("NFD");
-            const expected = String.fromCharCode(0x65, 0x0301);
-            /* c8 ignore start */
-            if (check !== expected) {
-                throw new Error("broken");
-            }
-            /* c8 ignore stop */
-        }
-        accum.push(form);
-    }
-    catch (error) { }
-    return accum;
-}, []);
-function defineReadOnly$1(object, name, value) {
-    Object.defineProperty(object, name, {
-        enumerable: true, writable: false, value,
-    });
-}
-// IEEE 754 support 53-bits of mantissa
-const maxValue = 0x1fffffffffffff;
-// The type of error to use for various error codes
-const ErrorConstructors = {};
-ErrorConstructors.INVALID_ARGUMENT = TypeError;
-ErrorConstructors.NUMERIC_FAULT = RangeError;
-ErrorConstructors.BUFFER_OVERRUN = RangeError;
-class Logger {
-    version;
-    #logLevel;
-    constructor(version) {
-        defineReadOnly$1(this, "version", version || "_");
-        this.#logLevel = 1;
-    }
-    get logLevel() {
-        return LogLevels[this.#logLevel];
-    }
-    set logLevel(value) {
-        const logLevel = LogLevels.indexOf(value);
-        if (logLevel == null) {
-            this.throwArgumentError("invalid logLevel", "logLevel", value);
-        }
-        this.#logLevel = logLevel;
-    }
-    makeError(message, code, info) {
-        {
-            const details = [];
-            if (info) {
-                for (const key in info) {
-                    const value = (info[key]);
-                    try {
-                        details.push(key + "=" + JSON.stringify(value));
-                    }
-                    catch (error) {
-                        details.push(key + "=[could not serialize object]");
-                    }
-                }
-            }
-            details.push(`code=${code}`);
-            details.push(`version=${this.version}`);
-            if (details.length) {
-                message += " (" + details.join(", ") + ")";
-            }
-        }
-        const create = ErrorConstructors[code] || Error;
-        const error = (new create(message));
-        defineReadOnly$1(error, "code", code);
-        if (info) {
-            for (const key in info) {
-                defineReadOnly$1(error, key, (info[key]));
-            }
-        }
-        return error;
-    }
-    throwError(message, code, info) {
-        throw this.makeError(message, code, info);
-    }
-    throwArgumentError(message, name, value) {
-        return this.throwError(message, "INVALID_ARGUMENT", {
-            argument: name,
-            value: value
-        });
-    }
-    assertNormalize(form) {
-        if (_normalizeForms.indexOf(form) === -1) {
-            this.throwError("platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
-                operation: "String.prototype.normalize", info: { form }
-            });
-        }
-    }
-    assertPrivate(givenGuard, guard, className = "") {
-        if (givenGuard !== guard) {
-            let method = className, operation = "new";
-            if (className) {
-                method += ".";
-                operation += " " + className;
-            }
-            this.throwError(`private constructor; use ${method}from* methods`, "UNSUPPORTED_OPERATION", {
-                operation
-            });
-        }
-    }
-    assertArgumentCount(count, expectedCount, message = "") {
-        if (message) {
-            message = ": " + message;
-        }
-        if (count < expectedCount) {
-            this.throwError("missing arguemnt" + message, "MISSING_ARGUMENT", {
-                count: count,
-                expectedCount: expectedCount
-            });
-        }
-        if (count > expectedCount) {
-            this.throwError("too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
-                count: count,
-                expectedCount: expectedCount
-            });
-        }
-    }
-    #getBytes(value, name, copy) {
-        if (value instanceof Uint8Array) {
-            if (copy) {
-                return new Uint8Array(value);
-            }
-            return value;
-        }
-        if (typeof (value) === "string" && value.match(/^0x([0-9a-f][0-9a-f])*$/i)) {
-            const result = new Uint8Array((value.length - 2) / 2);
-            let offset = 2;
-            for (let i = 0; i < result.length; i++) {
-                result[i] = parseInt(value.substring(offset, offset + 2), 16);
-                offset += 2;
-            }
-            return result;
-        }
-        return this.throwArgumentError("invalid BytesLike value", name || "value", value);
-    }
-    getBytes(value, name) {
-        return this.#getBytes(value, name, false);
-    }
-    getBytesCopy(value, name) {
-        return this.#getBytes(value, name, true);
-    }
-    getNumber(value, name) {
-        switch (typeof (value)) {
-            case "bigint":
-                if (value < -maxValue || value > maxValue) {
-                    this.throwArgumentError("overflow", name || "value", value);
-                }
-                return Number(value);
-            case "number":
-                if (!Number.isInteger(value)) {
-                    this.throwArgumentError("underflow", name || "value", value);
-                }
-                else if (value < -maxValue || value > maxValue) {
-                    this.throwArgumentError("overflow", name || "value", value);
-                }
-                return value;
-            case "string":
-                try {
-                    return this.getNumber(BigInt(value), name);
-                }
-                catch (e) {
-                    this.throwArgumentError(`invalid numeric string: ${e.message}`, name || "value", value);
-                }
-        }
-        return this.throwArgumentError("invalid numeric value", name || "value", value);
-    }
-    getBigInt(value, name) {
-        switch (typeof (value)) {
-            case "bigint": return value;
-            case "number":
-                if (!Number.isInteger(value)) {
-                    this.throwArgumentError("underflow", name || "value", value);
-                }
-                else if (value < -maxValue || value > maxValue) {
-                    this.throwArgumentError("overflow", name || "value", value);
-                }
-                return BigInt(value);
-            case "string":
-                try {
-                    return BigInt(value);
-                }
-                catch (e) {
-                    this.throwArgumentError(`invalid BigNumberish string: ${e.message}`, name || "value", value);
-                }
-        }
-        return this.throwArgumentError("invalid BigNumberish value", name || "value", value);
-    }
-    #log(_logLevel, args) {
-        const logLevel = LogLevels.indexOf(_logLevel);
-        if (logLevel === -1) {
-            this.throwArgumentError("invalid log level name", "logLevel", _logLevel);
-        }
-        if (this.#logLevel > logLevel) {
-            return;
-        }
-        console.log.apply(console, args);
-    }
-    debug(...args) {
-        this.#log("debug", args);
-    }
-    info(...args) {
-        this.#log("info", args);
-    }
-    warn(...args) {
-        this.#log("warning", args);
-    }
-}
-const logger = new Logger(version);
-function assertArgument(check, message, name, value) {
-    if (!check) {
-        logger.throwArgumentError(message, name, value);
-    }
-}
-
-function isHexString(value, length) {
-    if (typeof (value) !== "string" || !value.match(/^0x[0-9A-Fa-f]*$/)) {
-        return false;
-    }
-    if (typeof (length) === "number" && value.length !== 2 + 2 * length) {
-        return false;
-    }
-    if (length === true && (value.length % 2) !== 0) {
-        return false;
-    }
-    return true;
-}
-function isBytesLike(value) {
-    return (isHexString(value, true) || (value instanceof Uint8Array));
-}
-const HexCharacters = "0123456789abcdef";
-function hexlify(data) {
-    const bytes = logger.getBytes(data);
-    let result = "0x";
-    for (let i = 0; i < bytes.length; i++) {
-        const v = bytes[i];
-        result += HexCharacters[(v & 0xf0) >> 4] + HexCharacters[v & 0x0f];
-    }
-    return result;
-}
-function concat(datas) {
-    return "0x" + datas.map((d) => hexlify(d).substring(2)).join("");
-}
-function dataLength(data) {
-    if (isHexString(data, true)) {
-        return (data.length - 2) / 2;
-    }
-    return logger.getBytes(data).length;
-}
-function dataSlice(data, start, end) {
-    const bytes = logger.getBytes(data);
-    if (end != null && end > bytes.length) {
-        logger.throwError("cannot slice beyond data bounds", "BUFFER_OVERRUN", {
-            buffer: bytes, length: bytes.length, offset: end
-        });
-    }
-    return hexlify(bytes.slice((start == null) ? 0 : start, (end == null) ? bytes.length : end));
-}
-function stripZerosLeft(data) {
-    let bytes = hexlify(data).substring(2);
-    while (bytes.substring(0, 2) == "00") {
-        bytes = bytes.substring(2);
-    }
-    return "0x" + bytes;
-}
-function zeroPad(data, length, left) {
-    const bytes = logger.getBytes(data);
-    if (length < bytes.length) {
-        logger.throwError("padding exceeds data length", "BUFFER_OVERRUN", {
-            buffer: new Uint8Array(bytes),
-            length: length,
-            offset: length + 1
-        });
-    }
-    const result = new Uint8Array(length);
-    result.fill(0);
-    if (left) {
-        result.set(bytes, length - bytes.length);
-    }
-    else {
-        result.set(bytes, 0);
-    }
-    return hexlify(result);
-}
-function zeroPadValue(data, length) {
-    return zeroPad(data, length, true);
-}
-function zeroPadBytes(data, length) {
-    return zeroPad(data, length, false);
-}
-
-const BN_0$6 = BigInt(0);
-const BN_1$5 = BigInt(1);
-/**
- *  Convert %%value%% from a twos-compliment value of %%width%% bits.
- */
-function fromTwos(_value, _width) {
-    const value = logger.getBigInt(_value, "value");
-    const width = BigInt(logger.getNumber(_width, "width"));
-    // Top bit set; treat as a negative value
-    if (value >> (width - BN_1$5)) {
-        const mask = (BN_1$5 << width) - BN_1$5;
-        return -(((~value) & mask) + BN_1$5);
-    }
-    return value;
-}
-/**
- *  Convert %%value%% to a twos-compliment value of %%width%% bits.
- */
-function toTwos(_value, _width) {
-    const value = logger.getBigInt(_value, "value");
-    const width = BigInt(logger.getNumber(_width, "width"));
-    if (value < BN_0$6) {
-        const mask = (BN_1$5 << width) - BN_1$5;
-        return ((~(-value)) & mask) + BN_1$5;
-    }
-    return value;
-}
-/**
- *  Mask %%value%% with a bitmask of %%bits%% ones.
- */
-function mask(_value, _bits) {
-    const value = logger.getBigInt(_value, "value");
-    const bits = BigInt(logger.getNumber(_bits, "bits"));
-    return value & ((BN_1$5 << bits) - BN_1$5);
-}
-/*
- * Converts %%value%% to a BigInt. If %%value%% is a Uint8Array, it
- * is treated as Big Endian data.
- */
-const Nibbles$1 = "0123456789abcdef";
-function toBigInt(value) {
-    if (value instanceof Uint8Array) {
-        let result = "0x0";
-        for (const v of value) {
-            result += Nibbles$1[v >> 4];
-            result += Nibbles$1[v & 0x0f];
-        }
-        return BigInt(result);
-    }
-    return logger.getBigInt(value);
-}
-/*
- * Converts %%value%% to a number. If %%value%% is a Uint8Array, it
- * is treated as Big Endian data. Throws if the value is not safe.
- */
-function toNumber(value) {
-    return logger.getNumber(toBigInt(value));
-}
-/**
- *  Converts %%value%% to a Big Endian hexstring, optionally padded to
- *  %%width%% bytes.
- */
-// Converts value to hex, optionally padding on the left to width bytes
-function toHex(_value, _width) {
-    const value = logger.getBigInt(_value, "value");
-    if (value < 0) {
-        throw new Error("cannot convert negative value to hex");
-    }
-    let result = value.toString(16);
-    if (_width == null) {
-        // Ensure the value is of even length
-        if (result.length % 2) {
-            result = "0" + result;
-        }
-    }
-    else {
-        const width = logger.getNumber(_width, "width");
-        if (width * 2 < result.length) {
-            throw new Error(`value ${value} exceeds width ${width}`);
-        }
-        // Pad the value to the required width
-        while (result.length < (width * 2)) {
-            result = "0" + result;
-        }
-    }
-    return "0x" + result;
-}
-/**
- *  Converts %%value%% to a Big Endian Uint8Array.
- */
-function toArray(_value) {
-    const value = logger.getBigInt(_value, "value");
-    if (value < 0) {
-        throw new Error("cannot convert negative value to hex");
-    }
-    if (value === BN_0$6) {
-        return new Uint8Array([]);
-    }
-    let hex = value.toString(16);
-    if (hex.length % 2) {
-        hex = "0" + hex;
-    }
-    const result = new Uint8Array(hex.length / 2);
-    for (let i = 0; i < result.length; i++) {
-        const offset = i * 2;
-        result[i] = parseInt(hex.substring(offset, offset + 2), 16);
-    }
-    return result;
-}
-function toQuantity(value) {
-    let result = hexlify(isBytesLike(value) ? value : toArray(value)).substring(2);
-    while (result.substring(0, 1) === "0") {
-        result = result.substring(1);
-    }
-    if (result === "") {
-        result = "0";
-    }
-    return "0x" + result;
-}
-
 async function resolveProperties(value) {
     const keys = Object.keys(value);
     const results = await Promise.all(keys.map((k) => Promise.resolve(value[k])));
@@ -527,6 +106,2091 @@ function defineProperties(target, values, types, defaults) {
     }
 }
 
+// The type of error to use for various error codes
+const ErrorConstructors = {};
+ErrorConstructors.INVALID_ARGUMENT = TypeError;
+ErrorConstructors.NUMERIC_FAULT = RangeError;
+ErrorConstructors.BUFFER_OVERRUN = RangeError;
+/**
+ *  Returns true if the %%error%% matches an error thrown by ethers
+ *  that matches the error %%code%%.
+ *
+ *  In TypeScript envornoments, this can be used to check that %%error%%
+ *  matches an EthersError type, which means the expected properties will
+ *  be set.
+ *
+ *  @See [ErrorCodes](api:ErrorCode)
+ *  @example
+ *  try {
+ *      // code....
+ *  } catch (e) {
+ *      if (isError(e, "CALL_EXCEPTION")) {
+ *          console.log(e.data);
+ *      }
+ *  }
+ */
+function isError(error, code) {
+    return (error && error.code === code);
+}
+/**
+ *  Returns true if %%error%% is a [CALL_EXCEPTION](api:CallExceptionError).
+ */
+function isCallException(error) {
+    return isError(error, "CALL_EXCEPTION");
+}
+/**
+ *  Returns a new Error configured to the format ethers emits errors, with
+ *  the %%message%%, [[api:ErrorCode]] %%code%% and additioanl properties
+ *  for the corresponding EthersError.
+ *
+ *  Each error in ethers includes the version of ethers, a
+ *  machine-readable [[ErrorCode]], and depneding on %%code%%, additional
+ *  required properties. The error message will also include the %%meeage%%,
+ *  ethers version, %%code%% and all aditional properties, serialized.
+ */
+function makeError(message, code, info) {
+    {
+        const details = [];
+        if (info) {
+            if ("message" in info || "code" in info || "name" in info) {
+                throw new Error(`value will overwrite populated values: ${JSON.stringify(info)}`);
+            }
+            for (const key in info) {
+                const value = (info[key]);
+                try {
+                    details.push(key + "=" + JSON.stringify(value));
+                }
+                catch (error) {
+                    details.push(key + "=[could not serialize object]");
+                }
+            }
+        }
+        details.push(`code=${code}`);
+        details.push(`version=${version}`);
+        if (details.length) {
+            message += " (" + details.join(", ") + ")";
+        }
+    }
+    const create = ErrorConstructors[code] || Error;
+    const error = (new create(message));
+    defineReadOnly(error, "code", code);
+    if (info) {
+        for (const key in info) {
+            defineReadOnly(error, key, (info[key]));
+        }
+    }
+    return error;
+}
+/**
+ *  Throws an EthersError with %%message%%, %%code%% and additional error
+ *  info.
+ *
+ *  @see [[api:makeError]]
+ */
+function throwError(message, code, info) {
+    throw makeError(message, code, info);
+}
+/**
+ *  Throws an [[api:ArgumentError]] with %%message%% for the parameter with
+ *  %%name%% and the %%value%%.
+ */
+function throwArgumentError(message, name, value) {
+    return throwError(message, "INVALID_ARGUMENT", {
+        argument: name,
+        value: value
+    });
+}
+/**
+ *  A simple helper to simply ensuring provided arguments match expected
+ *  constraints, throwing if not.
+ *
+ *  In TypeScript environments, the %%check%% has been asserted true, so
+ *  any further code does not need additional compile-time checks.
+ */
+function assertArgument(check, message, name, value) {
+    if (!check) {
+        throwArgumentError(message, name, value);
+    }
+}
+function assertArgumentCount(count, expectedCount, message = "") {
+    if (message) {
+        message = ": " + message;
+    }
+    if (count < expectedCount) {
+        throwError("missing arguemnt" + message, "MISSING_ARGUMENT", {
+            count: count,
+            expectedCount: expectedCount
+        });
+    }
+    if (count > expectedCount) {
+        throwError("too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
+            count: count,
+            expectedCount: expectedCount
+        });
+    }
+}
+const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
+    try {
+        // General test for normalize
+        /* c8 ignore start */
+        if ("test".normalize(form) !== "test") {
+            throw new Error("bad");
+        }
+        ;
+        /* c8 ignore stop */
+        if (form === "NFD") {
+            const check = String.fromCharCode(0xe9).normalize("NFD");
+            const expected = String.fromCharCode(0x65, 0x0301);
+            /* c8 ignore start */
+            if (check !== expected) {
+                throw new Error("broken");
+            }
+            /* c8 ignore stop */
+        }
+        accum.push(form);
+    }
+    catch (error) { }
+    return accum;
+}, []);
+/**
+ *  Throws if the normalization %%form%% is not supported.
+ */
+function assertNormalize(form) {
+    if (_normalizeForms.indexOf(form) === -1) {
+        throwError("platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
+            operation: "String.prototype.normalize", info: { form }
+        });
+    }
+}
+/**
+ *  Many classes use file-scoped values to guard the constructor,
+ *  making it effectively private. This facilitates that pattern
+ *  by ensuring the %%givenGaurd%% matches the file-scoped %%guard%%,
+ *  throwing if not, indicating the %%className%% if provided.
+ */
+function assertPrivate(givenGuard, guard, className = "") {
+    if (givenGuard !== guard) {
+        let method = className, operation = "new";
+        if (className) {
+            method += ".";
+            operation += " " + className;
+        }
+        throwError(`private constructor; use ${method}from* methods`, "UNSUPPORTED_OPERATION", {
+            operation
+        });
+    }
+}
+
+function _getBytes(value, name, copy) {
+    if (value instanceof Uint8Array) {
+        if (copy) {
+            return new Uint8Array(value);
+        }
+        return value;
+    }
+    if (typeof (value) === "string" && value.match(/^0x([0-9a-f][0-9a-f])*$/i)) {
+        const result = new Uint8Array((value.length - 2) / 2);
+        let offset = 2;
+        for (let i = 0; i < result.length; i++) {
+            result[i] = parseInt(value.substring(offset, offset + 2), 16);
+            offset += 2;
+        }
+        return result;
+    }
+    return throwArgumentError("invalid BytesLike value", name || "value", value);
+}
+/**
+ *  Get a typed Uint8Array for %%value%%. If already a Uint8Array
+ *  the original %%value%% is returned; if a copy is required use
+ *  [[getBytesCopy]].
+ *
+ *  @see: getBytesCopy
+ */
+function getBytes(value, name) {
+    return _getBytes(value, name, false);
+}
+/**
+ *  Get a typed Uint8Array for %%value%%, creating a copy if necessary
+ *  to prevent any modifications of the returned value from being
+ *  reflected elsewhere.
+ *
+ *  @see: getBytes
+ */
+function getBytesCopy(value, name) {
+    return _getBytes(value, name, true);
+}
+/**
+ *  Returns true if %%value%% is a valid [[HexString]], with additional
+ *  optional constraints depending on %%length%%.
+ *
+ *  If %%length%% is //true//, then %%value%% must additionally be a valid
+ *  [[HexDataString]] (i.e. even length).
+ *
+ *  If %%length%% is //a number//, then %%value%% must represent that many
+ *  bytes of data (e.g. ``0x1234`` is 2 bytes).
+ */
+function isHexString(value, length) {
+    if (typeof (value) !== "string" || !value.match(/^0x[0-9A-Fa-f]*$/)) {
+        return false;
+    }
+    if (typeof (length) === "number" && value.length !== 2 + 2 * length) {
+        return false;
+    }
+    if (length === true && (value.length % 2) !== 0) {
+        return false;
+    }
+    return true;
+}
+/**
+ *  Returns true if %%value%% is a valid representation of arbitrary
+ *  data (i.e. a valid [[HexDataString]] or a Uint8Array).
+ */
+function isBytesLike(value) {
+    return (isHexString(value, true) || (value instanceof Uint8Array));
+}
+const HexCharacters = "0123456789abcdef";
+/**
+ *  Returns a [[HexDataString]] representation of %%data%%.
+ */
+function hexlify(data) {
+    const bytes = getBytes(data);
+    let result = "0x";
+    for (let i = 0; i < bytes.length; i++) {
+        const v = bytes[i];
+        result += HexCharacters[(v & 0xf0) >> 4] + HexCharacters[v & 0x0f];
+    }
+    return result;
+}
+/**
+ *  Returns a [[HexDataString]] by concatenating all values
+ *  within %%data%%.
+ */
+function concat(datas) {
+    return "0x" + datas.map((d) => hexlify(d).substring(2)).join("");
+}
+/**
+ *  Returns the length of %%data%%, in bytes.
+ */
+function dataLength(data) {
+    if (isHexString(data, true)) {
+        return (data.length - 2) / 2;
+    }
+    return getBytes(data).length;
+}
+/**
+ *  Returns a [[HexDataString]] by slicing %%data%% from the %%start%%
+ *  offset to the %%end%% offset.
+ *
+ *  By default %%start%% is 0 and %%end%% is the length of %%data%%.
+ */
+function dataSlice(data, start, end) {
+    const bytes = getBytes(data);
+    if (end != null && end > bytes.length) {
+        throwError("cannot slice beyond data bounds", "BUFFER_OVERRUN", {
+            buffer: bytes, length: bytes.length, offset: end
+        });
+    }
+    return hexlify(bytes.slice((start == null) ? 0 : start, (end == null) ? bytes.length : end));
+}
+/**
+ *  Return the [[HexDataString]] result by stripping all **leading**
+ ** zero bytes from %%data%%.
+ */
+function stripZerosLeft(data) {
+    let bytes = hexlify(data).substring(2);
+    while (bytes.substring(0, 2) == "00") {
+        bytes = bytes.substring(2);
+    }
+    return "0x" + bytes;
+}
+function zeroPad(data, length, left) {
+    const bytes = getBytes(data);
+    if (length < bytes.length) {
+        throwError("padding exceeds data length", "BUFFER_OVERRUN", {
+            buffer: new Uint8Array(bytes),
+            length: length,
+            offset: length + 1
+        });
+    }
+    const result = new Uint8Array(length);
+    result.fill(0);
+    if (left) {
+        result.set(bytes, length - bytes.length);
+    }
+    else {
+        result.set(bytes, 0);
+    }
+    return hexlify(result);
+}
+/**
+ *  Return the [[HexDataString]] of %%data%% padded on the **left**
+ *  to %%length%% bytes.
+ */
+function zeroPadValue(data, length) {
+    return zeroPad(data, length, true);
+}
+/**
+ *  Return the [[HexDataString]] of %%data%% padded on the **right**
+ *  to %%length%% bytes.
+ */
+function zeroPadBytes(data, length) {
+    return zeroPad(data, length, false);
+}
+
+const BN_0$6 = BigInt(0);
+const BN_1$5 = BigInt(1);
+// IEEE 754 support 53-bits of mantissa
+const maxValue = 0x1fffffffffffff;
+/**
+ *  Convert %%value%% from a twos-compliment value of %%width%% bits.
+ */
+function fromTwos(_value, _width) {
+    const value = getBigInt(_value, "value");
+    const width = BigInt(getNumber(_width, "width"));
+    // Top bit set; treat as a negative value
+    if (value >> (width - BN_1$5)) {
+        const mask = (BN_1$5 << width) - BN_1$5;
+        return -(((~value) & mask) + BN_1$5);
+    }
+    return value;
+}
+/**
+ *  Convert %%value%% to a twos-compliment value of %%width%% bits.
+ */
+function toTwos(_value, _width) {
+    const value = getBigInt(_value, "value");
+    const width = BigInt(getNumber(_width, "width"));
+    if (value < BN_0$6) {
+        const mask = (BN_1$5 << width) - BN_1$5;
+        return ((~(-value)) & mask) + BN_1$5;
+    }
+    return value;
+}
+/**
+ *  Mask %%value%% with a bitmask of %%bits%% ones.
+ */
+function mask(_value, _bits) {
+    const value = getBigInt(_value, "value");
+    const bits = BigInt(getNumber(_bits, "bits"));
+    return value & ((BN_1$5 << bits) - BN_1$5);
+}
+/**
+ *  Gets a [[BigInt]] from %%value%%. If it is an invalid value for
+ *  a BigInt, then an ArgumentError will be thrown for %%name%%.
+ */
+function getBigInt(value, name) {
+    switch (typeof (value)) {
+        case "bigint": return value;
+        case "number":
+            if (!Number.isInteger(value)) {
+                throwArgumentError("underflow", name || "value", value);
+            }
+            else if (value < -maxValue || value > maxValue) {
+                throwArgumentError("overflow", name || "value", value);
+            }
+            return BigInt(value);
+        case "string":
+            try {
+                return BigInt(value);
+            }
+            catch (e) {
+                throwArgumentError(`invalid BigNumberish string: ${e.message}`, name || "value", value);
+            }
+    }
+    return throwArgumentError("invalid BigNumberish value", name || "value", value);
+}
+const Nibbles$1 = "0123456789abcdef";
+/*
+ * Converts %%value%% to a BigInt. If %%value%% is a Uint8Array, it
+ * is treated as Big Endian data.
+ */
+function toBigInt(value) {
+    if (value instanceof Uint8Array) {
+        let result = "0x0";
+        for (const v of value) {
+            result += Nibbles$1[v >> 4];
+            result += Nibbles$1[v & 0x0f];
+        }
+        return BigInt(result);
+    }
+    return getBigInt(value);
+}
+/**
+ *  Gets a //number// from %%value%%. If it is an invalid value for
+ *  a //number//, then an ArgumentError will be thrown for %%name%%.
+ */
+function getNumber(value, name) {
+    switch (typeof (value)) {
+        case "bigint":
+            if (value < -maxValue || value > maxValue) {
+                throwArgumentError("overflow", name || "value", value);
+            }
+            return Number(value);
+        case "number":
+            if (!Number.isInteger(value)) {
+                throwArgumentError("underflow", name || "value", value);
+            }
+            else if (value < -maxValue || value > maxValue) {
+                throwArgumentError("overflow", name || "value", value);
+            }
+            return value;
+        case "string":
+            try {
+                return getNumber(BigInt(value), name);
+            }
+            catch (e) {
+                throwArgumentError(`invalid numeric string: ${e.message}`, name || "value", value);
+            }
+    }
+    return throwArgumentError("invalid numeric value", name || "value", value);
+}
+/*
+ * Converts %%value%% to a number. If %%value%% is a Uint8Array, it
+ * is treated as Big Endian data. Throws if the value is not safe.
+ */
+function toNumber(value) {
+    return getNumber(toBigInt(value));
+}
+/**
+ *  Converts %%value%% to a Big Endian hexstring, optionally padded to
+ *  %%width%% bytes.
+ */
+function toHex(_value, _width) {
+    const value = getBigInt(_value, "value");
+    if (value < 0) {
+        throw new Error("cannot convert negative value to hex");
+    }
+    let result = value.toString(16);
+    if (_width == null) {
+        // Ensure the value is of even length
+        if (result.length % 2) {
+            result = "0" + result;
+        }
+    }
+    else {
+        const width = getNumber(_width, "width");
+        if (width * 2 < result.length) {
+            throw new Error(`value ${value} exceeds width ${width}`);
+        }
+        // Pad the value to the required width
+        while (result.length < (width * 2)) {
+            result = "0" + result;
+        }
+    }
+    return "0x" + result;
+}
+/**
+ *  Converts %%value%% to a Big Endian Uint8Array.
+ */
+function toArray(_value) {
+    const value = getBigInt(_value, "value");
+    if (value < 0) {
+        throw new Error("cannot convert negative value to hex");
+    }
+    if (value === BN_0$6) {
+        return new Uint8Array([]);
+    }
+    let hex = value.toString(16);
+    if (hex.length % 2) {
+        hex = "0" + hex;
+    }
+    const result = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < result.length; i++) {
+        const offset = i * 2;
+        result[i] = parseInt(hex.substring(offset, offset + 2), 16);
+    }
+    return result;
+}
+/**
+ *  Returns a [[HexString]] for %%value%% safe to use as a //Quantity//.
+ *
+ *  A //Quantity// does not have and leading 0 values unless the value is
+ *  the literal value `0x0`. This is most commonly used for JSSON-RPC
+ *  numeric values.
+ */
+function toQuantity(value) {
+    let result = hexlify(isBytesLike(value) ? value : toArray(value)).substring(2);
+    while (result.substring(0, 1) === "0") {
+        result = result.substring(1);
+    }
+    if (result === "") {
+        result = "0";
+    }
+    return "0x" + result;
+}
+
+const Alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+let Lookup = null;
+function getAlpha(letter) {
+    if (Lookup == null) {
+        Lookup = {};
+        for (let i = 0; i < Alphabet.length; i++) {
+            Lookup[Alphabet[i]] = BigInt(i);
+        }
+    }
+    const result = Lookup[letter];
+    if (result == null) {
+        throwArgumentError(`invalid base58 value`, "letter", letter);
+    }
+    return result;
+}
+const BN_0$5 = BigInt(0);
+const BN_58 = BigInt(58);
+/**
+ *  Encode %%value%% as Base58-encoded data.
+ */
+function encodeBase58(_value) {
+    let value = toBigInt(getBytes(_value));
+    let result = "";
+    while (value) {
+        result = Alphabet[Number(value % BN_58)] + result;
+        value /= BN_58;
+    }
+    return result;
+}
+/**
+ *  Decode the Base58-encoded %%value%%.
+ */
+function decodeBase58(value) {
+    let result = BN_0$5;
+    for (let i = 0; i < value.length; i++) {
+        result *= BN_58;
+        result += getAlpha(value[i]);
+    }
+    return getBytes(toHex(result));
+}
+
+// utils/base64-browser
+function decodeBase64(textData) {
+    textData = atob(textData);
+    const data = new Uint8Array(textData.length);
+    for (let i = 0; i < textData.length; i++) {
+        data[i] = textData.charCodeAt(i);
+    }
+    return getBytes(data);
+}
+function encodeBase64(_data) {
+    const data = getBytes(_data);
+    let textData = "";
+    for (let i = 0; i < data.length; i++) {
+        textData += String.fromCharCode(data[i]);
+    }
+    return btoa(textData);
+}
+
+class EventPayload {
+    filter;
+    emitter;
+    #listener;
+    constructor(emitter, listener, filter) {
+        this.#listener = listener;
+        defineProperties(this, { emitter, filter });
+    }
+    async removeListener() {
+        if (this.#listener == null) {
+            return;
+        }
+        await this.emitter.off(this.filter, this.#listener);
+    }
+}
+
+function errorFunc(reason, offset, bytes, output, badCodepoint) {
+    return throwArgumentError(`invalid codepoint at offset ${offset}; ${reason}`, "bytes", bytes);
+}
+function ignoreFunc(reason, offset, bytes, output, badCodepoint) {
+    // If there is an invalid prefix (including stray continuation), skip any additional continuation bytes
+    if (reason === "BAD_PREFIX" || reason === "UNEXPECTED_CONTINUE") {
+        let i = 0;
+        for (let o = offset + 1; o < bytes.length; o++) {
+            if (bytes[o] >> 6 !== 0x02) {
+                break;
+            }
+            i++;
+        }
+        return i;
+    }
+    // This byte runs us past the end of the string, so just jump to the end
+    // (but the first byte was read already read and therefore skipped)
+    if (reason === "OVERRUN") {
+        return bytes.length - offset - 1;
+    }
+    // Nothing to skip
+    return 0;
+}
+function replaceFunc(reason, offset, bytes, output, badCodepoint) {
+    // Overlong representations are otherwise "valid" code points; just non-deistingtished
+    if (reason === "OVERLONG") {
+        output.push((badCodepoint != null) ? badCodepoint : -1);
+        return 0;
+    }
+    // Put the replacement character into the output
+    output.push(0xfffd);
+    // Otherwise, process as if ignoring errors
+    return ignoreFunc(reason, offset, bytes, output, badCodepoint);
+}
+// Common error handing strategies
+const Utf8ErrorFuncs = Object.freeze({
+    error: errorFunc,
+    ignore: ignoreFunc,
+    replace: replaceFunc
+});
+// http://stackoverflow.com/questions/13356493/decode-utf-8-with-javascript#13691499
+function getUtf8CodePoints(_bytes, onError) {
+    if (onError == null) {
+        onError = Utf8ErrorFuncs.error;
+    }
+    const bytes = getBytes(_bytes, "bytes");
+    const result = [];
+    let i = 0;
+    // Invalid bytes are ignored
+    while (i < bytes.length) {
+        const c = bytes[i++];
+        // 0xxx xxxx
+        if (c >> 7 === 0) {
+            result.push(c);
+            continue;
+        }
+        // Multibyte; how many bytes left for this character?
+        let extraLength = null;
+        let overlongMask = null;
+        // 110x xxxx 10xx xxxx
+        if ((c & 0xe0) === 0xc0) {
+            extraLength = 1;
+            overlongMask = 0x7f;
+            // 1110 xxxx 10xx xxxx 10xx xxxx
+        }
+        else if ((c & 0xf0) === 0xe0) {
+            extraLength = 2;
+            overlongMask = 0x7ff;
+            // 1111 0xxx 10xx xxxx 10xx xxxx 10xx xxxx
+        }
+        else if ((c & 0xf8) === 0xf0) {
+            extraLength = 3;
+            overlongMask = 0xffff;
+        }
+        else {
+            if ((c & 0xc0) === 0x80) {
+                i += onError("UNEXPECTED_CONTINUE", i - 1, bytes, result);
+            }
+            else {
+                i += onError("BAD_PREFIX", i - 1, bytes, result);
+            }
+            continue;
+        }
+        // Do we have enough bytes in our data?
+        if (i - 1 + extraLength >= bytes.length) {
+            i += onError("OVERRUN", i - 1, bytes, result);
+            continue;
+        }
+        // Remove the length prefix from the char
+        let res = c & ((1 << (8 - extraLength - 1)) - 1);
+        for (let j = 0; j < extraLength; j++) {
+            let nextChar = bytes[i];
+            // Invalid continuation byte
+            if ((nextChar & 0xc0) != 0x80) {
+                i += onError("MISSING_CONTINUE", i, bytes, result);
+                res = null;
+                break;
+            }
+            ;
+            res = (res << 6) | (nextChar & 0x3f);
+            i++;
+        }
+        // See above loop for invalid continuation byte
+        if (res === null) {
+            continue;
+        }
+        // Maximum code point
+        if (res > 0x10ffff) {
+            i += onError("OUT_OF_RANGE", i - 1 - extraLength, bytes, result, res);
+            continue;
+        }
+        // Reserved for UTF-16 surrogate halves
+        if (res >= 0xd800 && res <= 0xdfff) {
+            i += onError("UTF16_SURROGATE", i - 1 - extraLength, bytes, result, res);
+            continue;
+        }
+        // Check for overlong sequences (more bytes than needed)
+        if (res <= overlongMask) {
+            i += onError("OVERLONG", i - 1 - extraLength, bytes, result, res);
+            continue;
+        }
+        result.push(res);
+    }
+    return result;
+}
+// http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+function toUtf8Bytes(str, form) {
+    if (form != null) {
+        assertNormalize(form);
+        str = str.normalize(form);
+    }
+    let result = [];
+    for (let i = 0; i < str.length; i++) {
+        const c = str.charCodeAt(i);
+        if (c < 0x80) {
+            result.push(c);
+        }
+        else if (c < 0x800) {
+            result.push((c >> 6) | 0xc0);
+            result.push((c & 0x3f) | 0x80);
+        }
+        else if ((c & 0xfc00) == 0xd800) {
+            i++;
+            const c2 = str.charCodeAt(i);
+            if (i >= str.length || (c2 & 0xfc00) !== 0xdc00) {
+                throw new Error("invalid utf-8 string");
+            }
+            // Surrogate Pair
+            const pair = 0x10000 + ((c & 0x03ff) << 10) + (c2 & 0x03ff);
+            result.push((pair >> 18) | 0xf0);
+            result.push(((pair >> 12) & 0x3f) | 0x80);
+            result.push(((pair >> 6) & 0x3f) | 0x80);
+            result.push((pair & 0x3f) | 0x80);
+        }
+        else {
+            result.push((c >> 12) | 0xe0);
+            result.push(((c >> 6) & 0x3f) | 0x80);
+            result.push((c & 0x3f) | 0x80);
+        }
+    }
+    return new Uint8Array(result);
+}
+;
+function escapeChar(value) {
+    const hex = ("0000" + value.toString(16));
+    return "\\u" + hex.substring(hex.length - 4);
+}
+function _toEscapedUtf8String(bytes, onError) {
+    return '"' + getUtf8CodePoints(bytes, onError).map((codePoint) => {
+        if (codePoint < 256) {
+            switch (codePoint) {
+                case 8: return "\\b";
+                case 9: return "\\t";
+                case 10: return "\\n";
+                case 13: return "\\r";
+                case 34: return "\\\"";
+                case 92: return "\\\\";
+            }
+            if (codePoint >= 32 && codePoint < 127) {
+                return String.fromCharCode(codePoint);
+            }
+        }
+        if (codePoint <= 0xffff) {
+            return escapeChar(codePoint);
+        }
+        codePoint -= 0x10000;
+        return escapeChar(((codePoint >> 10) & 0x3ff) + 0xd800) + escapeChar((codePoint & 0x3ff) + 0xdc00);
+    }).join("") + '"';
+}
+function _toUtf8String(codePoints) {
+    return codePoints.map((codePoint) => {
+        if (codePoint <= 0xffff) {
+            return String.fromCharCode(codePoint);
+        }
+        codePoint -= 0x10000;
+        return String.fromCharCode((((codePoint >> 10) & 0x3ff) + 0xd800), ((codePoint & 0x3ff) + 0xdc00));
+    }).join("");
+}
+function toUtf8String(bytes, onError) {
+    return _toUtf8String(getUtf8CodePoints(bytes, onError));
+}
+function toUtf8CodePoints(str, form) {
+    return getUtf8CodePoints(toUtf8Bytes(str, form));
+}
+
+// @TODO: timeout is completely ignored; start a Promise.any with a reject?
+async function getUrl(req, _signal) {
+    const protocol = req.url.split(":")[0].toLowerCase();
+    if (protocol !== "http" && protocol !== "https") {
+        throwError(`unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
+            info: { protocol },
+            operation: "request"
+        });
+    }
+    if (req.credentials && !req.allowInsecureAuthentication) {
+        throwError("insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
+            operation: "request"
+        });
+    }
+    let signal = undefined;
+    if (_signal) {
+        const controller = new AbortController();
+        signal = controller.signal;
+        _signal.addListener(() => { controller.abort(); });
+    }
+    const init = {
+        method: req.method,
+        headers: new Headers(Array.from(req)),
+        body: req.body || undefined,
+        signal
+    };
+    const resp = await fetch(req.url, init);
+    const headers = {};
+    resp.headers.forEach((value, key) => {
+        headers[key.toLowerCase()] = value;
+    });
+    const respBody = await resp.arrayBuffer();
+    const body = (respBody == null) ? null : new Uint8Array(respBody);
+    return {
+        statusCode: resp.status,
+        statusMessage: resp.statusText,
+        headers, body
+    };
+}
+
+const MAX_ATTEMPTS = 12;
+const SLOT_INTERVAL = 250;
+// The global FetchGetUrlFunc implementation.
+let getUrlFunc = getUrl;
+const reData = new RegExp("^data:([^;:]*)?(;base64)?,(.*)$", "i");
+const reIpfs = new RegExp("^ipfs:/\/(ipfs/)?(.*)$", "i");
+// If locked, new Gateways cannot be added
+let locked$5 = false;
+// https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
+async function gatewayData(url, signal) {
+    try {
+        const match = url.match(reData);
+        if (!match) {
+            throw new Error("invalid data");
+        }
+        return new FetchResponse(200, "OK", {
+            "content-type": (match[1] || "text/plain"),
+        }, (match[2] ? decodeBase64(match[3]) : unpercent(match[3])));
+    }
+    catch (error) {
+        return new FetchResponse(599, "BAD REQUEST (invalid data: URI)", {}, null, new FetchRequest(url));
+    }
+}
+/**
+ *  Returns a [[FetchGatewayFunc]] for fetching content from a standard
+ *  IPFS gateway hosted at %%baseUrl%%.
+ */
+function getIpfsGatewayFunc(baseUrl) {
+    async function gatewayIpfs(url, signal) {
+        try {
+            const match = url.match(reIpfs);
+            if (!match) {
+                throw new Error("invalid link");
+            }
+            return new FetchRequest(`${baseUrl}${match[2]}`);
+        }
+        catch (error) {
+            return new FetchResponse(599, "BAD REQUEST (invalid IPFS URI)", {}, null, new FetchRequest(url));
+        }
+    }
+    return gatewayIpfs;
+}
+const Gateways = {
+    "data": gatewayData,
+    "ipfs": getIpfsGatewayFunc("https:/\/gateway.ipfs.io/ipfs/")
+};
+const fetchSignals = new WeakMap();
+class FetchCancelSignal {
+    #listeners;
+    #cancelled;
+    constructor(request) {
+        this.#listeners = [];
+        this.#cancelled = false;
+        fetchSignals.set(request, () => {
+            if (this.#cancelled) {
+                return;
+            }
+            this.#cancelled = true;
+            for (const listener of this.#listeners) {
+                setTimeout(() => { listener(); }, 0);
+            }
+            this.#listeners = [];
+        });
+    }
+    addListener(listener) {
+        if (this.#cancelled) {
+            throwError("singal already cancelled", "UNSUPPORTED_OPERATION", {
+                operation: "fetchCancelSignal.addCancelListener"
+            });
+        }
+        this.#listeners.push(listener);
+    }
+    get cancelled() { return this.#cancelled; }
+    checkSignal() {
+        if (!this.cancelled) {
+            return;
+        }
+        throwError("cancelled", "CANCELLED", {});
+    }
+}
+// Check the signal, throwing if it is cancelled
+function checkSignal(signal) {
+    if (signal == null) {
+        throw new Error("missing signal; should not happen");
+    }
+    signal.checkSignal();
+    return signal;
+}
+/**
+ *  Represents a request for a resource using a URI.
+ *
+ *  Requests can occur over http/https, data: URI or any
+ *  URI scheme registered via the static [[register]] method.
+ */
+class FetchRequest {
+    #allowInsecure;
+    #gzip;
+    #headers;
+    #method;
+    #timeout;
+    #url;
+    #body;
+    #bodyType;
+    #creds;
+    // Hooks
+    #preflight;
+    #process;
+    #retry;
+    #signal;
+    /**
+     *  The fetch URI to requrest.
+     */
+    get url() { return this.#url; }
+    set url(url) {
+        this.#url = String(url);
+    }
+    /**
+     *  The fetch body, if any, to send as the request body.
+     *
+     *  When setting a body, the intrinsic ``Content-Type`` is automatically
+     *  set and will be used if **not overridden** by setting a custom
+     *  header.
+     *
+     *  If %%body%% is null, the body is cleared (along with the
+     *  intrinsic ``Content-Type``) and the .
+     *
+     *  If %%body%% is a string, the intrincis ``Content-Type`` is set to
+     *  ``text/plain``.
+     *
+     *  If %%body%% is a Uint8Array, the intrincis ``Content-Type`` is set to
+     *  ``application/octet-stream``.
+     *
+     *  If %%body%% is any other object, the intrincis ``Content-Type`` is
+     *  set to ``application/json``.
+     */
+    get body() {
+        if (this.#body == null) {
+            return null;
+        }
+        return new Uint8Array(this.#body);
+    }
+    set body(body) {
+        if (body == null) {
+            this.#body = undefined;
+            this.#bodyType = undefined;
+        }
+        else if (typeof (body) === "string") {
+            this.#body = toUtf8Bytes(body);
+            this.#bodyType = "text/plain";
+        }
+        else if (body instanceof Uint8Array) {
+            this.#body = body;
+            this.#bodyType = "application/octet-stream";
+        }
+        else if (typeof (body) === "object") {
+            this.#body = toUtf8Bytes(JSON.stringify(body));
+            this.#bodyType = "application/json";
+        }
+        else {
+            throw new Error("invalid body");
+        }
+    }
+    /**
+     *  Returns true if the request has a body.
+     */
+    hasBody() {
+        return (this.#body != null);
+    }
+    /**
+     *  The HTTP method to use when requesting the URI. If no method
+     *  has been explicitly set, then ``GET`` is used if the body is
+     *  null and ``POST`` otherwise.
+     */
+    get method() {
+        if (this.#method) {
+            return this.#method;
+        }
+        if (this.hasBody()) {
+            return "POST";
+        }
+        return "GET";
+    }
+    set method(method) {
+        if (method == null) {
+            method = "";
+        }
+        this.#method = String(method).toUpperCase();
+    }
+    /**
+     *  The headers that will be used when requesting the URI.
+     */
+    get headers() {
+        const headers = Object.assign({}, this.#headers);
+        if (this.#creds) {
+            headers["authorization"] = `Basic ${encodeBase64(toUtf8Bytes(this.#creds))}`;
+        }
+        ;
+        if (this.allowGzip) {
+            headers["accept-encoding"] = "gzip";
+        }
+        if (headers["content-type"] == null && this.#bodyType) {
+            headers["content-type"] = this.#bodyType;
+        }
+        if (this.body) {
+            headers["content-length"] = String(this.body.length);
+        }
+        return Object.freeze(headers);
+    }
+    /**
+     *  Get the header for %%key%%.
+     */
+    getHeader(key) {
+        return this.headers[key.toLowerCase()];
+    }
+    /**
+     *  Set the header for %%key%% to %%value%%. All values are coerced
+     *  to a string.
+     */
+    setHeader(key, value) {
+        this.#headers[String(key).toLowerCase()] = String(value);
+    }
+    /**
+     *  Clear all headers.
+     */
+    clearHeaders() {
+        this.#headers = {};
+    }
+    [Symbol.iterator]() {
+        const headers = this.headers;
+        const keys = Object.keys(headers);
+        let index = 0;
+        return {
+            next: () => {
+                if (index < keys.length) {
+                    const key = keys[index++];
+                    return {
+                        value: [key, headers[key]], done: false
+                    };
+                }
+                return { value: undefined, done: true };
+            }
+        };
+    }
+    /**
+     *  The value that will be sent for the ``Authorization`` header.
+     */
+    get credentials() {
+        return this.#creds || null;
+    }
+    /**
+     *  Sets an ``Authorization`` for %%username%% with %%password%%.
+     */
+    setCredentials(username, password) {
+        if (username.match(/:/)) {
+            throwArgumentError("invalid basic authentication username", "username", "[REDACTED]");
+        }
+        this.#creds = `${username}:${password}`;
+    }
+    /**
+     *  Allow gzip-encoded responses.
+     */
+    get allowGzip() {
+        return this.#gzip;
+    }
+    set allowGzip(value) {
+        this.#gzip = !!value;
+    }
+    /**
+     *  Allow ``Authentication`` credentials to be sent over insecure
+     *  channels.
+     */
+    get allowInsecureAuthentication() {
+        return !!this.#allowInsecure;
+    }
+    set allowInsecureAuthentication(value) {
+        this.#allowInsecure = !!value;
+    }
+    /**
+     *  The timeout (in milliseconds) to wait for a complere response.
+     */
+    get timeout() { return this.#timeout; }
+    set timeout(timeout) {
+        assertArgument(timeout >= 0, "timeout must be non-zero", "timeout", timeout);
+        this.#timeout = timeout;
+    }
+    /**
+     *  This function is called prior to each request, for example
+     *  during a redirection or retry in case of server throttling.
+     *
+     *  This offers an opportunity to populate headers or update
+     *  content before sending a request.
+     */
+    get preflightFunc() {
+        return this.#preflight || null;
+    }
+    set preflightFunc(preflight) {
+        this.#preflight = preflight;
+    }
+    /**
+     *  This function is called after each response, offering an
+     *  opportunity to provide client-level throttling or updating
+     *  response data.
+     *
+     *  Any error thrown in this causes the ``send()`` to throw.
+     *
+     *  To schedule a retry attempt (assuming the maximum retry limit
+     *  has not been reached), use [[response.throwThrottleError]].
+     */
+    get processFunc() {
+        return this.#process || null;
+    }
+    set processFunc(process) {
+        this.#process = process;
+    }
+    /**
+     *  This function is called on each retry attempt.
+     */
+    get retryFunc() {
+        return this.#retry || null;
+    }
+    set retryFunc(retry) {
+        this.#retry = retry;
+    }
+    constructor(url) {
+        this.#url = String(url);
+        this.#allowInsecure = false;
+        this.#gzip = false;
+        this.#headers = {};
+        this.#method = "";
+        this.#timeout = 300;
+    }
+    async #send(attempt, expires, delay, _request, _response) {
+        if (attempt >= MAX_ATTEMPTS) {
+            return _response.makeServerError("exceeded maximum retry limit");
+        }
+        if (getTime$2() > expires) {
+            return throwError("timeout", "TIMEOUT", {
+                operation: "request.send", reason: "timeout", request: _request
+            });
+        }
+        if (delay > 0) {
+            await wait(delay);
+        }
+        let req = this.clone();
+        const scheme = (req.url.split(":")[0] || "").toLowerCase();
+        // Process any Gateways
+        if (scheme in Gateways) {
+            const result = await Gateways[scheme](req.url, checkSignal(_request.#signal));
+            if (result instanceof FetchResponse) {
+                let response = result;
+                if (this.processFunc) {
+                    checkSignal(_request.#signal);
+                    try {
+                        response = await this.processFunc(req, response);
+                    }
+                    catch (error) {
+                        // Something went wrong during processing; throw a 5xx server error
+                        if (error.throttle == null || typeof (error.stall) !== "number") {
+                            response.makeServerError("error in post-processing function", error).assertOk();
+                        }
+                        // Ignore throttling
+                    }
+                }
+                return response;
+            }
+            req = result;
+        }
+        // We have a preflight function; update the request
+        if (this.preflightFunc) {
+            req = await this.preflightFunc(req);
+        }
+        const resp = await getUrlFunc(req, checkSignal(_request.#signal));
+        let response = new FetchResponse(resp.statusCode, resp.statusMessage, resp.headers, resp.body, _request);
+        if (response.statusCode === 301 || response.statusCode === 302) {
+            // Redirect
+            try {
+                const location = response.headers.location || "";
+                return req.redirect(location).#send(attempt + 1, expires, 0, _request, response);
+            }
+            catch (error) { }
+            // Things won't get any better on another attempt; abort
+            return response;
+        }
+        else if (response.statusCode === 429) {
+            // Throttle
+            if (this.retryFunc == null || (await this.retryFunc(req, response, attempt))) {
+                const retryAfter = response.headers["retry-after"];
+                let delay = SLOT_INTERVAL * Math.trunc(Math.random() * Math.pow(2, attempt));
+                if (typeof (retryAfter) === "string" && retryAfter.match(/^[1-9][0-9]*$/)) {
+                    delay = parseInt(retryAfter);
+                }
+                return req.clone().#send(attempt + 1, expires, delay, _request, response);
+            }
+        }
+        if (this.processFunc) {
+            checkSignal(_request.#signal);
+            try {
+                response = await this.processFunc(req, response);
+            }
+            catch (error) {
+                // Something went wrong during processing; throw a 5xx server error
+                if (error.throttle == null || typeof (error.stall) !== "number") {
+                    response.makeServerError("error in post-processing function", error).assertOk();
+                }
+                // Throttle
+                let delay = SLOT_INTERVAL * Math.trunc(Math.random() * Math.pow(2, attempt));
+                ;
+                if (error.stall >= 0) {
+                    delay = error.stall;
+                }
+                return req.clone().#send(attempt + 1, expires, delay, _request, response);
+            }
+        }
+        return response;
+    }
+    /**
+     *  Resolves to the response by sending the request.
+     */
+    send() {
+        if (this.#signal != null) {
+            return throwError("request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
+        }
+        this.#signal = new FetchCancelSignal(this);
+        return this.#send(0, getTime$2() + this.timeout, 0, this, new FetchResponse(0, "", {}, null, this));
+    }
+    /**
+     *  Cancels the inflight response, causing a ``CANCELLED``
+     *  error to be rejected from the [[send]].
+     */
+    cancel() {
+        if (this.#signal == null) {
+            return throwError("request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
+        }
+        const signal = fetchSignals.get(this);
+        if (!signal) {
+            throw new Error("missing signal; should not happen");
+        }
+        signal();
+    }
+    /**
+     *  Returns a new [[FetchRequest]] that represents the redirection
+     *  to %%location%%.
+     */
+    redirect(location) {
+        // Redirection; for now we only support absolute locataions
+        const current = this.url.split(":")[0].toLowerCase();
+        const target = location.split(":")[0].toLowerCase();
+        // Don't allow redirecting:
+        // - non-GET requests
+        // - downgrading the security (e.g. https => http)
+        // - to non-HTTP (or non-HTTPS) protocols [this could be relaxed?]
+        if (this.method !== "GET" || (current === "https" && target === "http") || !location.match(/^https?:/)) {
+            return throwError(`unsupported redirect`, "UNSUPPORTED_OPERATION", {
+                operation: `redirect(${this.method} ${JSON.stringify(this.url)} => ${JSON.stringify(location)})`
+            });
+        }
+        // Create a copy of this request, with a new URL
+        const req = new FetchRequest(location);
+        req.method = "GET";
+        req.allowGzip = this.allowGzip;
+        req.timeout = this.timeout;
+        req.#headers = Object.assign({}, this.#headers);
+        if (this.#body) {
+            req.#body = new Uint8Array(this.#body);
+        }
+        req.#bodyType = this.#bodyType;
+        // Do not forward credentials unless on the same domain; only absolute
+        //req.allowInsecure = false;
+        // paths are currently supported; may want a way to specify to forward?
+        //setStore(req.#props, "creds", getStore(this.#pros, "creds"));
+        return req;
+    }
+    /**
+     *  Create a new copy of this request.
+     */
+    clone() {
+        const clone = new FetchRequest(this.url);
+        // Preserve "default method" (i.e. null)
+        clone.#method = this.#method;
+        // Preserve "default body" with type, copying the Uint8Array is present
+        if (this.#body) {
+            clone.#body = this.#body;
+        }
+        clone.#bodyType = this.#bodyType;
+        // Preserve "default headers"
+        clone.#headers = Object.assign({}, this.#headers);
+        // Credentials is readonly, so we copy internally
+        clone.#creds = this.#creds;
+        if (this.allowGzip) {
+            clone.allowGzip = true;
+        }
+        clone.timeout = this.timeout;
+        if (this.allowInsecureAuthentication) {
+            clone.allowInsecureAuthentication = true;
+        }
+        clone.#preflight = this.#preflight;
+        clone.#process = this.#process;
+        clone.#retry = this.#retry;
+        return clone;
+    }
+    /**
+     *  Locks all static configuration for gateways and FetchGetUrlFunc
+     *  registration.
+     */
+    static lockConfig() {
+        locked$5 = true;
+    }
+    /**
+     *  Get the current Gateway function for %%scheme%%.
+     */
+    static getGateway(scheme) {
+        return Gateways[scheme.toLowerCase()] || null;
+    }
+    /**
+     *  Set the FetchGatewayFunc for %%scheme%% to %%func%%.
+     */
+    static registerGateway(scheme, func) {
+        scheme = scheme.toLowerCase();
+        if (scheme === "http" || scheme === "https") {
+            throw new Error(`cannot intercept ${scheme}; use registerGetUrl`);
+        }
+        if (locked$5) {
+            throw new Error("gateways locked");
+        }
+        Gateways[scheme] = func;
+    }
+    /**
+     *  Set a custom function for fetching HTTP and HTTPS requests.
+     */
+    static registerGetUrl(getUrl) {
+        if (locked$5) {
+            throw new Error("gateways locked");
+        }
+        getUrlFunc = getUrl;
+    }
+}
+;
+/**
+ *  The response for a FetchREquest.
+ */
+class FetchResponse {
+    #statusCode;
+    #statusMessage;
+    #headers;
+    #body;
+    #request;
+    #error;
+    toString() {
+        return `<Response status=${this.statusCode} body=${this.#body ? hexlify(this.#body) : "null"}>`;
+    }
+    /**
+     *  The response status code.
+     */
+    get statusCode() { return this.#statusCode; }
+    /**
+     *  The response status message.
+     */
+    get statusMessage() { return this.#statusMessage; }
+    /**
+     *  The response headers.
+     */
+    get headers() { return this.#headers; }
+    /**
+     *  The response body.
+     */
+    get body() {
+        return (this.#body == null) ? null : new Uint8Array(this.#body);
+    }
+    /**
+     *  The response body as a UTF-8 encoded string.
+     *
+     * An error is thrown if the body is invalid UTF-8 data.
+     */
+    get bodyText() {
+        try {
+            return (this.#body == null) ? "" : toUtf8String(this.#body);
+        }
+        catch (error) {
+            return throwError("response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
+                operation: "bodyText", info: { response: this }
+            });
+        }
+    }
+    /**
+     *  The response body, decoded as JSON.
+     *
+     *  An error is thrown if the body is invalid JSON-encoded data.
+     */
+    get bodyJson() {
+        try {
+            return JSON.parse(this.bodyText);
+        }
+        catch (error) {
+            return throwError("response body is not valid JSON", "UNSUPPORTED_OPERATION", {
+                operation: "bodyJson", info: { response: this }
+            });
+        }
+    }
+    [Symbol.iterator]() {
+        const headers = this.headers;
+        const keys = Object.keys(headers);
+        let index = 0;
+        return {
+            next: () => {
+                if (index < keys.length) {
+                    const key = keys[index++];
+                    return {
+                        value: [key, headers[key]], done: false
+                    };
+                }
+                return { value: undefined, done: true };
+            }
+        };
+    }
+    constructor(statusCode, statusMessage, headers, body, request) {
+        this.#statusCode = statusCode;
+        this.#statusMessage = statusMessage;
+        this.#headers = Object.freeze(Object.assign({}, Object.keys(headers).reduce((accum, k) => {
+            accum[k.toLowerCase()] = String(headers[k]);
+            return accum;
+        }, {})));
+        this.#body = ((body == null) ? null : new Uint8Array(body));
+        this.#request = (request || null);
+        this.#error = { message: "" };
+    }
+    /**
+     *  Return a Response with matching headers and body, but with
+     *  an error status code (i.e. 599) and %%message%% with an
+     *  optional %%error%%.
+     */
+    makeServerError(message, error) {
+        let statusMessage;
+        if (!message) {
+            message = `${this.statusCode} ${this.statusMessage}`;
+            statusMessage = `CLIENT ESCALATED SERVER ERROR (${message})`;
+        }
+        else {
+            statusMessage = `CLIENT ESCALATED SERVER ERROR (${this.statusCode} ${this.statusMessage}; ${message})`;
+        }
+        const response = new FetchResponse(599, statusMessage, this.headers, this.body, this.#request || undefined);
+        response.#error = { message, error };
+        return response;
+    }
+    /**
+     *  If called within the [[processFunc]], causes the request to
+     *  retry as if throttled for %%stall%% milliseconds.
+     */
+    throwThrottleError(message, stall) {
+        if (stall == null) {
+            stall = -1;
+        }
+        else if (typeof (stall) !== "number" || !Number.isInteger(stall) || stall < 0) {
+            return throwArgumentError("invalid stall timeout", "stall", stall);
+        }
+        const error = new Error(message || "throttling requests");
+        defineProperties(error, { stall, throttle: true });
+        throw error;
+    }
+    /**
+     *  Get the header value for %%key%%.
+     */
+    getHeader(key) {
+        return this.headers[key.toLowerCase()];
+    }
+    /**
+     *  Returns true of the response has a body.
+     */
+    hasBody() {
+        return (this.#body != null);
+    }
+    /**
+     *  The request made for this response.
+     */
+    get request() { return this.#request; }
+    /**
+     *  Returns true if this response was a success statuscode.
+     */
+    ok() {
+        return (this.#error.message === "" && this.statusCode >= 200 && this.statusCode < 300);
+    }
+    /**
+     *  Throws a ``SERVER_ERROR`` if this response is not ok.
+     */
+    assertOk() {
+        if (this.ok()) {
+            return;
+        }
+        let { message, error } = this.#error;
+        if (message === "") {
+            message = `server response ${this.statusCode} ${this.statusMessage}`;
+        }
+        throwError(message, "SERVER_ERROR", {
+            request: (this.request || "unknown request"), response: this, error
+        });
+    }
+}
+function getTime$2() { return (new Date()).getTime(); }
+function unpercent(value) {
+    return toUtf8Bytes(value.replace(/%([0-9a-f][0-9a-f])/gi, (all, code) => {
+        return String.fromCharCode(parseInt(code, 16));
+    }));
+}
+function wait(delay) {
+    return new Promise((resolve) => setTimeout(resolve, delay));
+}
+
+const _constructorGuard = {};
+const NegativeOne$1 = BigInt(-1);
+function throwFault(message, fault, operation, value) {
+    const params = { fault: fault, operation: operation };
+    if (value !== undefined) {
+        params.value = value;
+    }
+    return throwError(message, "NUMERIC_FAULT", params);
+}
+// Constant to pull zeros from for multipliers
+let zeros$1 = "0";
+while (zeros$1.length < 256) {
+    zeros$1 += zeros$1;
+}
+// Returns a string "1" followed by decimal "0"s
+function getMultiplier(decimals) {
+    if (typeof (decimals) !== "number" || decimals < 0 || decimals > 256 || decimals % 1) {
+        throwArgumentError("invalid decimal length", "decimals", decimals);
+    }
+    return BigInt("1" + zeros$1.substring(0, decimals));
+}
+function formatFixed(_value, _decimals) {
+    if (_decimals == null) {
+        _decimals = 18;
+    }
+    let value = getBigInt(_value, "value");
+    const decimals = getNumber(_decimals, "decimals");
+    const multiplier = getMultiplier(decimals);
+    const multiplierStr = String(multiplier);
+    const negative = (value < 0);
+    if (negative) {
+        value *= NegativeOne$1;
+    }
+    let fraction = String(value % multiplier);
+    // Make sure there are enough place-holders
+    while (fraction.length < multiplierStr.length - 1) {
+        fraction = "0" + fraction;
+    }
+    // Strip training 0
+    while (fraction.length > 1 && fraction.substring(fraction.length - 1) === "0") {
+        fraction = fraction.substring(0, fraction.length - 1);
+    }
+    let result = String(value / multiplier);
+    if (multiplierStr.length !== 1) {
+        result += "." + fraction;
+    }
+    if (negative) {
+        result = "-" + result;
+    }
+    return result;
+}
+function parseFixed(value, _decimals) {
+    if (_decimals == null) {
+        _decimals = 18;
+    }
+    const decimals = getNumber(_decimals, "decimals");
+    const multiplier = getMultiplier(decimals);
+    if (typeof (value) !== "string" || !value.match(/^-?[0-9.]+$/)) {
+        throwArgumentError("invalid decimal value", "value", value);
+    }
+    // Is it negative?
+    const negative = (value.substring(0, 1) === "-");
+    if (negative) {
+        value = value.substring(1);
+    }
+    if (value === ".") {
+        throwArgumentError("missing value", "value", value);
+    }
+    // Split it into a whole and fractional part
+    const comps = value.split(".");
+    if (comps.length > 2) {
+        throwArgumentError("too many decimal points", "value", value);
+    }
+    let whole = (comps[0] || "0"), fraction = (comps[1] || "0");
+    // Trim trialing zeros
+    while (fraction[fraction.length - 1] === "0") {
+        fraction = fraction.substring(0, fraction.length - 1);
+    }
+    // Check the fraction doesn't exceed our decimals size
+    if (fraction.length > String(multiplier).length - 1) {
+        throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
+    }
+    // If decimals is 0, we have an empty string for fraction
+    if (fraction === "") {
+        fraction = "0";
+    }
+    // Fully pad the string with zeros to get to wei
+    while (fraction.length < String(multiplier).length - 1) {
+        fraction += "0";
+    }
+    const wholeValue = BigInt(whole);
+    const fractionValue = BigInt(fraction);
+    let wei = (wholeValue * multiplier) + fractionValue;
+    if (negative) {
+        wei *= NegativeOne$1;
+    }
+    return wei;
+}
+class FixedFormat {
+    signed;
+    width;
+    decimals;
+    name;
+    _multiplier;
+    constructor(constructorGuard, signed, width, decimals) {
+        if (constructorGuard !== _constructorGuard) {
+            throwError("cannot use FixedFormat constructor; use FixedFormat.from", "UNSUPPORTED_OPERATION", {
+                operation: "new FixedFormat"
+            });
+        }
+        this.signed = signed;
+        this.width = width;
+        this.decimals = decimals;
+        this.name = (signed ? "" : "u") + "fixed" + String(width) + "x" + String(decimals);
+        this._multiplier = getMultiplier(decimals);
+        Object.freeze(this);
+    }
+    static from(value) {
+        if (value instanceof FixedFormat) {
+            return value;
+        }
+        if (typeof (value) === "number") {
+            value = `fixed128x${value}`;
+        }
+        let signed = true;
+        let width = 128;
+        let decimals = 18;
+        if (typeof (value) === "string") {
+            if (value === "fixed") {
+                // defaults...
+            }
+            else if (value === "ufixed") {
+                signed = false;
+            }
+            else {
+                const match = value.match(/^(u?)fixed([0-9]+)x([0-9]+)$/);
+                if (!match) {
+                    return throwArgumentError("invalid fixed format", "format", value);
+                }
+                signed = (match[1] !== "u");
+                width = parseInt(match[2]);
+                decimals = parseInt(match[3]);
+            }
+        }
+        else if (value) {
+            const check = (key, type, defaultValue) => {
+                if (value[key] == null) {
+                    return defaultValue;
+                }
+                if (typeof (value[key]) !== type) {
+                    throwArgumentError("invalid fixed format (" + key + " not " + type + ")", "format." + key, value[key]);
+                }
+                return value[key];
+            };
+            signed = check("signed", "boolean", signed);
+            width = check("width", "number", width);
+            decimals = check("decimals", "number", decimals);
+        }
+        if (width % 8) {
+            throwArgumentError("invalid fixed format width (not byte aligned)", "format.width", width);
+        }
+        if (decimals > 80) {
+            throwArgumentError("invalid fixed format (decimals too large)", "format.decimals", decimals);
+        }
+        return new FixedFormat(_constructorGuard, signed, width, decimals);
+    }
+}
+/**
+ *  Fixed Number class
+ */
+class FixedNumber {
+    format;
+    _isFixedNumber;
+    //#hex: string;
+    #value;
+    constructor(constructorGuard, hex, value, format) {
+        if (constructorGuard !== _constructorGuard) {
+            throwError("cannot use FixedNumber constructor; use FixedNumber.from", "UNSUPPORTED_OPERATION", {
+                operation: "new FixedFormat"
+            });
+        }
+        this.format = FixedFormat.from(format);
+        //this.#hex = hex;
+        this.#value = value;
+        this._isFixedNumber = true;
+        Object.freeze(this);
+    }
+    #checkFormat(other) {
+        if (this.format.name !== other.format.name) {
+            throwArgumentError("incompatible format; use fixedNumber.toFormat", "other", other);
+        }
+    }
+    /**
+     *  Returns a new [[FixedNumber]] with the result of this added
+     *  to %%other%%.
+     */
+    addUnsafe(other) {
+        this.#checkFormat(other);
+        const a = parseFixed(this.#value, this.format.decimals);
+        const b = parseFixed(other.#value, other.format.decimals);
+        return FixedNumber.fromValue(a + b, this.format.decimals, this.format);
+    }
+    subUnsafe(other) {
+        this.#checkFormat(other);
+        const a = parseFixed(this.#value, this.format.decimals);
+        const b = parseFixed(other.#value, other.format.decimals);
+        return FixedNumber.fromValue(a - b, this.format.decimals, this.format);
+    }
+    mulUnsafe(other) {
+        this.#checkFormat(other);
+        const a = parseFixed(this.#value, this.format.decimals);
+        const b = parseFixed(other.#value, other.format.decimals);
+        return FixedNumber.fromValue((a * b) / this.format._multiplier, this.format.decimals, this.format);
+    }
+    divUnsafe(other) {
+        this.#checkFormat(other);
+        const a = parseFixed(this.#value, this.format.decimals);
+        const b = parseFixed(other.#value, other.format.decimals);
+        return FixedNumber.fromValue((a * this.format._multiplier) / b, this.format.decimals, this.format);
+    }
+    floor() {
+        const comps = this.toString().split(".");
+        if (comps.length === 1) {
+            comps.push("0");
+        }
+        let result = FixedNumber.from(comps[0], this.format);
+        const hasFraction = !comps[1].match(/^(0*)$/);
+        if (this.isNegative() && hasFraction) {
+            result = result.subUnsafe(ONE.toFormat(result.format));
+        }
+        return result;
+    }
+    ceiling() {
+        const comps = this.toString().split(".");
+        if (comps.length === 1) {
+            comps.push("0");
+        }
+        let result = FixedNumber.from(comps[0], this.format);
+        const hasFraction = !comps[1].match(/^(0*)$/);
+        if (!this.isNegative() && hasFraction) {
+            result = result.addUnsafe(ONE.toFormat(result.format));
+        }
+        return result;
+    }
+    // @TODO: Support other rounding algorithms
+    round(decimals) {
+        if (decimals == null) {
+            decimals = 0;
+        }
+        // If we are already in range, we're done
+        const comps = this.toString().split(".");
+        if (comps.length === 1) {
+            comps.push("0");
+        }
+        if (decimals < 0 || decimals > 80 || (decimals % 1)) {
+            throwArgumentError("invalid decimal count", "decimals", decimals);
+        }
+        if (comps[1].length <= decimals) {
+            return this;
+        }
+        const factor = FixedNumber.from("1" + zeros$1.substring(0, decimals), this.format);
+        const bump = BUMP.toFormat(this.format);
+        return this.mulUnsafe(factor).addUnsafe(bump).floor().divUnsafe(factor);
+    }
+    isZero() {
+        return (this.#value === "0.0" || this.#value === "0");
+    }
+    isNegative() {
+        return (this.#value[0] === "-");
+    }
+    toString() { return this.#value; }
+    toHexString(_width) {
+        throw new Error("TODO");
+        /*
+        return toHex();
+        if (width == null) { return this.#hex; }
+
+        const width = logger.getNumeric(_width);
+        if (width % 8) { logger.throwArgumentError("invalid byte width", "width", width); }
+
+        const hex = BigNumber.from(this.#hex).fromTwos(this.format.width).toTwos(width).toHexString();
+        return zeroPadLeft(hex, width / 8);
+        */
+    }
+    toUnsafeFloat() { return parseFloat(this.toString()); }
+    toFormat(format) {
+        return FixedNumber.fromString(this.#value, format);
+    }
+    static fromValue(value, decimals = 0, format = "fixed") {
+        return FixedNumber.fromString(formatFixed(value, decimals), FixedFormat.from(format));
+    }
+    static fromString(value, format = "fixed") {
+        const fixedFormat = FixedFormat.from(format);
+        const numeric = parseFixed(value, fixedFormat.decimals);
+        if (!fixedFormat.signed && numeric < 0) {
+            throwFault("unsigned value cannot be negative", "overflow", "value", value);
+        }
+        const hex = (function () {
+            if (fixedFormat.signed) {
+                return toHex(toTwos(numeric, fixedFormat.width));
+            }
+            return toHex(numeric, fixedFormat.width / 8);
+        })();
+        const decimal = formatFixed(numeric, fixedFormat.decimals);
+        return new FixedNumber(_constructorGuard, hex, decimal, fixedFormat);
+    }
+    static fromBytes(_value, format = "fixed") {
+        const value = getBytes(_value, "value");
+        const fixedFormat = FixedFormat.from(format);
+        if (value.length > fixedFormat.width / 8) {
+            throw new Error("overflow");
+        }
+        let numeric = toBigInt(value);
+        if (fixedFormat.signed) {
+            numeric = fromTwos(numeric, fixedFormat.width);
+        }
+        const hex = toHex(toTwos(numeric, (fixedFormat.signed ? 0 : 1) + fixedFormat.width));
+        const decimal = formatFixed(numeric, fixedFormat.decimals);
+        return new FixedNumber(_constructorGuard, hex, decimal, fixedFormat);
+    }
+    static from(value, format) {
+        if (typeof (value) === "string") {
+            return FixedNumber.fromString(value, format);
+        }
+        if (value instanceof Uint8Array) {
+            return FixedNumber.fromBytes(value, format);
+        }
+        try {
+            return FixedNumber.fromValue(value, 0, format);
+        }
+        catch (error) {
+            // Allow NUMERIC_FAULT to bubble up
+            if (error.code !== "INVALID_ARGUMENT") {
+                throw error;
+            }
+        }
+        return throwArgumentError("invalid FixedNumber value", "value", value);
+    }
+    static isFixedNumber(value) {
+        return !!(value && value._isFixedNumber);
+    }
+}
+const ONE = FixedNumber.from(1);
+const BUMP = FixedNumber.from("0.5");
+
+//See: https://github.com/ethereum/wiki/wiki/RLP
+function hexlifyByte(value) {
+    let result = value.toString(16);
+    while (result.length < 2) {
+        result = "0" + result;
+    }
+    return "0x" + result;
+}
+function unarrayifyInteger(data, offset, length) {
+    let result = 0;
+    for (let i = 0; i < length; i++) {
+        result = (result * 256) + data[offset + i];
+    }
+    return result;
+}
+function _decodeChildren(data, offset, childOffset, length) {
+    const result = [];
+    while (childOffset < offset + 1 + length) {
+        const decoded = _decode(data, childOffset);
+        result.push(decoded.result);
+        childOffset += decoded.consumed;
+        if (childOffset > offset + 1 + length) {
+            throwError("child data too short", "BUFFER_OVERRUN", {
+                buffer: data, length, offset
+            });
+        }
+    }
+    return { consumed: (1 + length), result: result };
+}
+// returns { consumed: number, result: Object }
+function _decode(data, offset) {
+    if (data.length === 0) {
+        throwError("data too short", "BUFFER_OVERRUN", {
+            buffer: data, length: 0, offset: 1
+        });
+    }
+    const checkOffset = (offset) => {
+        if (offset > data.length) {
+            throwError("data short segment too short", "BUFFER_OVERRUN", {
+                buffer: data, length: data.length, offset
+            });
+        }
+    };
+    // Array with extra length prefix
+    if (data[offset] >= 0xf8) {
+        const lengthLength = data[offset] - 0xf7;
+        checkOffset(offset + 1 + lengthLength);
+        const length = unarrayifyInteger(data, offset + 1, lengthLength);
+        checkOffset(offset + 1 + lengthLength + length);
+        return _decodeChildren(data, offset, offset + 1 + lengthLength, lengthLength + length);
+    }
+    else if (data[offset] >= 0xc0) {
+        const length = data[offset] - 0xc0;
+        checkOffset(offset + 1 + length);
+        return _decodeChildren(data, offset, offset + 1, length);
+    }
+    else if (data[offset] >= 0xb8) {
+        const lengthLength = data[offset] - 0xb7;
+        checkOffset(offset + 1 + lengthLength);
+        const length = unarrayifyInteger(data, offset + 1, lengthLength);
+        checkOffset(offset + 1 + lengthLength + length);
+        const result = hexlify(data.slice(offset + 1 + lengthLength, offset + 1 + lengthLength + length));
+        return { consumed: (1 + lengthLength + length), result: result };
+    }
+    else if (data[offset] >= 0x80) {
+        const length = data[offset] - 0x80;
+        checkOffset(offset + 1 + length);
+        const result = hexlify(data.slice(offset + 1, offset + 1 + length));
+        return { consumed: (1 + length), result: result };
+    }
+    return { consumed: 1, result: hexlifyByte(data[offset]) };
+}
+/**
+ *  Decodes %%data%% into the structured data it represents.
+ */
+function decodeRlp(_data) {
+    const data = getBytes(_data, "data");
+    const decoded = _decode(data, 0);
+    if (decoded.consumed !== data.length) {
+        throwArgumentError("unexpected junk after rlp payload", "data", _data);
+    }
+    return decoded.result;
+}
+
+//See: https://github.com/ethereum/wiki/wiki/RLP
+function arrayifyInteger(value) {
+    const result = [];
+    while (value) {
+        result.unshift(value & 0xff);
+        value >>= 8;
+    }
+    return result;
+}
+function _encode(object) {
+    if (Array.isArray(object)) {
+        let payload = [];
+        object.forEach(function (child) {
+            payload = payload.concat(_encode(child));
+        });
+        if (payload.length <= 55) {
+            payload.unshift(0xc0 + payload.length);
+            return payload;
+        }
+        const length = arrayifyInteger(payload.length);
+        length.unshift(0xf7 + length.length);
+        return length.concat(payload);
+    }
+    const data = Array.prototype.slice.call(getBytes(object, "object"));
+    if (data.length === 1 && data[0] <= 0x7f) {
+        return data;
+    }
+    else if (data.length <= 55) {
+        data.unshift(0x80 + data.length);
+        return data;
+    }
+    const length = arrayifyInteger(data.length);
+    length.unshift(0xb7 + length.length);
+    return length.concat(data);
+}
+const nibbles = "0123456789abcdef";
+/**
+ *  Encodes %%object%% as an RLP-encoded [[HexDataString]].
+ */
+function encodeRlp(object) {
+    let result = "0x";
+    for (const v of _encode(object)) {
+        result += nibbles[v >> 4];
+        result += nibbles[v & 0xf];
+    }
+    return result;
+}
+
+function getStore(store, key) {
+    return store[key];
+}
+function setStore(store, key, value) {
+    if (Object.isFrozen(store)) {
+        throw new Error(`frozen object is immuatable; cannot set ${String(key)}`);
+    }
+    store[key] = value;
+}
+
+const names = [
+    "wei",
+    "kwei",
+    "mwei",
+    "gwei",
+    "szabo",
+    "finney",
+    "ether",
+];
+/**
+ *  Converts %%value%% into a //decimal string//, assuming %%unit%% decimal
+ *  places. The %%unit%% may be the number of decimal places or the name of
+ *  a unit (e.g. ``"gwei"`` for 9 decimal places).
+ *
+ */
+function formatUnits(value, unit) {
+    if (typeof (unit) === "string") {
+        const index = names.indexOf(unit);
+        if (index === -1) {
+            throwArgumentError("invalid unit", "unit", unit);
+        }
+        unit = 3 * index;
+    }
+    return formatFixed(value, (unit != null) ? unit : 18);
+}
+/**
+ *  Converts the //decimal string// %%value%% to a [[BigInt]], assuming
+ *  %%unit%% decimal places. The %%unit%% may the number of decimal places
+ *  or the name of a unit (e.g. ``"gwei"`` for 9 decimal places).
+ */
+function parseUnits(value, unit) {
+    if (typeof (value) !== "string") {
+        throwArgumentError("value must be a string", "value", value);
+    }
+    if (typeof (unit) === "string") {
+        const index = names.indexOf(unit);
+        if (index === -1) {
+            throwArgumentError("invalid unit", "unit", unit);
+        }
+        unit = 3 * index;
+    }
+    return parseFixed(value, (unit != null) ? unit : 18);
+}
+/**
+ *  Converts %%value%% into a //decimal string// using 18 decimal places.
+ */
+function formatEther(wei) {
+    return formatUnits(wei, 18);
+}
+/**
+ *  Converts the //decimal string// %%ether%% to a [[BigInt]], using 18
+ *  decimal places.
+ */
+function parseEther(ether) {
+    return parseUnits(ether, 18);
+}
+
+////
+
 const WordSize = 32;
 const Padding = new Uint8Array(WordSize);
 // Properties used to immediate pass through to the underlying object
@@ -536,7 +2200,7 @@ const _guard$4 = {};
 class Result extends Array {
     #indices;
     constructor(guard, items, keys) {
-        logger.assertPrivate(guard, _guard$4, "Result");
+        assertPrivate(guard, _guard$4, "Result");
         super(...items);
         // Name lookup table
         this.#indices = new Map();
@@ -558,7 +2222,7 @@ class Result extends Array {
             get: (target, prop, receiver) => {
                 if (typeof (prop) === "string") {
                     if (prop.match(/^[0-9]+$/)) {
-                        const index = logger.getNumber(prop, "%index");
+                        const index = getNumber(prop, "%index");
                         if (index < 0 || index >= this.length) {
                             throw new RangeError("out of result range");
                         }
@@ -657,14 +2321,14 @@ function checkResultErrors(result) {
 function getValue$1(value) {
     let bytes = toArray(value);
     if (bytes.length > WordSize) {
-        logger.throwError("value out-of-bounds", "BUFFER_OVERRUN", {
+        throwError("value out-of-bounds", "BUFFER_OVERRUN", {
             buffer: bytes,
             length: WordSize,
             offset: bytes.length
         });
     }
     if (bytes.length !== WordSize) {
-        bytes = logger.getBytesCopy(concat([Padding.slice(bytes.length % WordSize), bytes]));
+        bytes = getBytesCopy(concat([Padding.slice(bytes.length % WordSize), bytes]));
     }
     return bytes;
 }
@@ -688,7 +2352,7 @@ class Coder {
         });
     }
     _throwError(message, value) {
-        return logger.throwArgumentError(message, this.localName, value);
+        return throwArgumentError(message, this.localName, value);
     }
 }
 class Writer {
@@ -709,14 +2373,14 @@ class Writer {
         return data.length;
     }
     appendWriter(writer) {
-        return this.#writeData(logger.getBytesCopy(writer.data));
+        return this.#writeData(getBytesCopy(writer.data));
     }
     // Arrayish item; pad on the right to *nearest* WordSize
     writeBytes(value) {
-        let bytes = logger.getBytesCopy(value);
+        let bytes = getBytesCopy(value);
         const paddingOffset = bytes.length % WordSize;
         if (paddingOffset) {
-            bytes = logger.getBytesCopy(concat([bytes, Padding.slice(paddingOffset)]));
+            bytes = getBytesCopy(concat([bytes, Padding.slice(paddingOffset)]));
         }
         return this.#writeData(bytes);
     }
@@ -745,7 +2409,7 @@ class Reader {
     #offset;
     constructor(data, allowLoose) {
         defineProperties(this, { allowLoose: !!allowLoose });
-        this.#data = logger.getBytesCopy(data);
+        this.#data = getBytesCopy(data);
         this.#offset = 0;
     }
     get data() { return hexlify(this.#data); }
@@ -759,8 +2423,8 @@ class Reader {
                 alignedLength = length;
             }
             else {
-                logger.throwError("data out-of-bounds", "BUFFER_OVERRUN", {
-                    buffer: logger.getBytesCopy(this.#data),
+                throwError("data out-of-bounds", "BUFFER_OVERRUN", {
+                    buffer: getBytesCopy(this.#data),
                     length: this.#data.length,
                     offset: this.#offset + alignedLength
                 });
@@ -828,66 +2492,6 @@ const assert = {
     hash,
     exists,
     output,
-};
-
-const U32_MASK64 = BigInt(2 ** 32 - 1);
-const _32n = BigInt(32);
-// We are not using BigUint64Array, because they are extremely slow as per 2022
-function fromBig(n, le = false) {
-    if (le)
-        return { h: Number(n & U32_MASK64), l: Number((n >> _32n) & U32_MASK64) };
-    return { h: Number((n >> _32n) & U32_MASK64) | 0, l: Number(n & U32_MASK64) | 0 };
-}
-function split(lst, le = false) {
-    let Ah = new Uint32Array(lst.length);
-    let Al = new Uint32Array(lst.length);
-    for (let i = 0; i < lst.length; i++) {
-        const { h, l } = fromBig(lst[i], le);
-        [Ah[i], Al[i]] = [h, l];
-    }
-    return [Ah, Al];
-}
-const toBig = (h, l) => (BigInt(h >>> 0) << _32n) | BigInt(l >>> 0);
-// for Shift in [0, 32)
-const shrSH = (h, l, s) => h >>> s;
-const shrSL = (h, l, s) => (h << (32 - s)) | (l >>> s);
-// Right rotate for Shift in [1, 32)
-const rotrSH = (h, l, s) => (h >>> s) | (l << (32 - s));
-const rotrSL = (h, l, s) => (h << (32 - s)) | (l >>> s);
-// Right rotate for Shift in (32, 64), NOTE: 32 is special case.
-const rotrBH = (h, l, s) => (h << (64 - s)) | (l >>> (s - 32));
-const rotrBL = (h, l, s) => (h >>> (s - 32)) | (l << (64 - s));
-// Right rotate for shift===32 (just swaps l&h)
-const rotr32H = (h, l) => l;
-const rotr32L = (h, l) => h;
-// Left rotate for Shift in [1, 32)
-const rotlSH = (h, l, s) => (h << s) | (l >>> (32 - s));
-const rotlSL = (h, l, s) => (l << s) | (h >>> (32 - s));
-// Left rotate for Shift in (32, 64), NOTE: 32 is special case.
-const rotlBH = (h, l, s) => (l << (s - 32)) | (h >>> (64 - s));
-const rotlBL = (h, l, s) => (h << (s - 32)) | (l >>> (64 - s));
-// JS uses 32-bit signed integers for bitwise operations which means we cannot
-// simple take carry out of low bit sum by shift, we need to use division.
-// Removing "export" has 5% perf penalty -_-
-function add(Ah, Al, Bh, Bl) {
-    const l = (Al >>> 0) + (Bl >>> 0);
-    return { h: (Ah + Bh + ((l / 2 ** 32) | 0)) | 0, l: l | 0 };
-}
-// Addition with more than 2 elements
-const add3L = (Al, Bl, Cl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0);
-const add3H = (low, Ah, Bh, Ch) => (Ah + Bh + Ch + ((low / 2 ** 32) | 0)) | 0;
-const add4L = (Al, Bl, Cl, Dl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0) + (Dl >>> 0);
-const add4H = (low, Ah, Bh, Ch, Dh) => (Ah + Bh + Ch + Dh + ((low / 2 ** 32) | 0)) | 0;
-const add5L = (Al, Bl, Cl, Dl, El) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0) + (Dl >>> 0) + (El >>> 0);
-const add5H = (low, Ah, Bh, Ch, Dh, Eh) => (Ah + Bh + Ch + Dh + Eh + ((low / 2 ** 32) | 0)) | 0;
-// prettier-ignore
-const u64 = {
-    fromBig, split, toBig,
-    shrSH, shrSL,
-    rotrSH, rotrSL, rotrBH, rotrBL,
-    rotr32H, rotr32L,
-    rotlSH, rotlSL, rotlBH, rotlBL,
-    add, add3L, add3H, add4L, add4H, add5H, add5L,
 };
 
 const crypto$2 = {
@@ -1033,3459 +2637,6 @@ function randomBytes$2(bytesLength = 32) {
     else {
         throw new Error("The environment doesn't have randomBytes function");
     }
-}
-
-// Various per round constants calculations
-const [SHA3_PI, SHA3_ROTL, _SHA3_IOTA] = [[], [], []];
-const _0n$1 = BigInt(0);
-const _1n$1 = BigInt(1);
-const _2n$1 = BigInt(2);
-const _7n = BigInt(7);
-const _256n = BigInt(256);
-const _0x71n = BigInt(0x71);
-for (let round = 0, R = _1n$1, x = 1, y = 0; round < 24; round++) {
-    // Pi
-    [x, y] = [y, (2 * x + 3 * y) % 5];
-    SHA3_PI.push(2 * (5 * y + x));
-    // Rotational
-    SHA3_ROTL.push((((round + 1) * (round + 2)) / 2) % 64);
-    // Iota
-    let t = _0n$1;
-    for (let j = 0; j < 7; j++) {
-        R = ((R << _1n$1) ^ ((R >> _7n) * _0x71n)) % _256n;
-        if (R & _2n$1)
-            t ^= _1n$1 << ((_1n$1 << BigInt(j)) - _1n$1);
-    }
-    _SHA3_IOTA.push(t);
-}
-const [SHA3_IOTA_H, SHA3_IOTA_L] = u64.split(_SHA3_IOTA, true);
-// Left rotation (without 0, 32, 64)
-const rotlH = (h, l, s) => s > 32 ? u64.rotlBH(h, l, s) : u64.rotlSH(h, l, s);
-const rotlL = (h, l, s) => s > 32 ? u64.rotlBL(h, l, s) : u64.rotlSL(h, l, s);
-// Same as keccakf1600, but allows to skip some rounds
-function keccakP(s, rounds = 24) {
-    const B = new Uint32Array(5 * 2);
-    // NOTE: all indices are x2 since we store state as u32 instead of u64 (bigints to slow in js)
-    for (let round = 24 - rounds; round < 24; round++) {
-        // Theta θ
-        for (let x = 0; x < 10; x++)
-            B[x] = s[x] ^ s[x + 10] ^ s[x + 20] ^ s[x + 30] ^ s[x + 40];
-        for (let x = 0; x < 10; x += 2) {
-            const idx1 = (x + 8) % 10;
-            const idx0 = (x + 2) % 10;
-            const B0 = B[idx0];
-            const B1 = B[idx0 + 1];
-            const Th = rotlH(B0, B1, 1) ^ B[idx1];
-            const Tl = rotlL(B0, B1, 1) ^ B[idx1 + 1];
-            for (let y = 0; y < 50; y += 10) {
-                s[x + y] ^= Th;
-                s[x + y + 1] ^= Tl;
-            }
-        }
-        // Rho (ρ) and Pi (π)
-        let curH = s[2];
-        let curL = s[3];
-        for (let t = 0; t < 24; t++) {
-            const shift = SHA3_ROTL[t];
-            const Th = rotlH(curH, curL, shift);
-            const Tl = rotlL(curH, curL, shift);
-            const PI = SHA3_PI[t];
-            curH = s[PI];
-            curL = s[PI + 1];
-            s[PI] = Th;
-            s[PI + 1] = Tl;
-        }
-        // Chi (χ)
-        for (let y = 0; y < 50; y += 10) {
-            for (let x = 0; x < 10; x++)
-                B[x] = s[y + x];
-            for (let x = 0; x < 10; x++)
-                s[y + x] ^= ~B[(x + 2) % 10] & B[(x + 4) % 10];
-        }
-        // Iota (ι)
-        s[0] ^= SHA3_IOTA_H[round];
-        s[1] ^= SHA3_IOTA_L[round];
-    }
-    B.fill(0);
-}
-class Keccak extends Hash {
-    // NOTE: we accept arguments in bytes instead of bits here.
-    constructor(blockLen, suffix, outputLen, enableXOF = false, rounds = 24) {
-        super();
-        this.blockLen = blockLen;
-        this.suffix = suffix;
-        this.outputLen = outputLen;
-        this.enableXOF = enableXOF;
-        this.rounds = rounds;
-        this.pos = 0;
-        this.posOut = 0;
-        this.finished = false;
-        this.destroyed = false;
-        // Can be passed from user as dkLen
-        assert.number(outputLen);
-        // 1600 = 5x5 matrix of 64bit.  1600 bits === 200 bytes
-        if (0 >= this.blockLen || this.blockLen >= 200)
-            throw new Error('Sha3 supports only keccak-f1600 function');
-        this.state = new Uint8Array(200);
-        this.state32 = u32(this.state);
-    }
-    keccak() {
-        keccakP(this.state32, this.rounds);
-        this.posOut = 0;
-        this.pos = 0;
-    }
-    update(data) {
-        assert.exists(this);
-        const { blockLen, state } = this;
-        data = toBytes(data);
-        const len = data.length;
-        for (let pos = 0; pos < len;) {
-            const take = Math.min(blockLen - this.pos, len - pos);
-            for (let i = 0; i < take; i++)
-                state[this.pos++] ^= data[pos++];
-            if (this.pos === blockLen)
-                this.keccak();
-        }
-        return this;
-    }
-    finish() {
-        if (this.finished)
-            return;
-        this.finished = true;
-        const { state, suffix, pos, blockLen } = this;
-        // Do the padding
-        state[pos] ^= suffix;
-        if ((suffix & 0x80) !== 0 && pos === blockLen - 1)
-            this.keccak();
-        state[blockLen - 1] ^= 0x80;
-        this.keccak();
-    }
-    writeInto(out) {
-        assert.exists(this, false);
-        assert.bytes(out);
-        this.finish();
-        const bufferOut = this.state;
-        const { blockLen } = this;
-        for (let pos = 0, len = out.length; pos < len;) {
-            if (this.posOut >= blockLen)
-                this.keccak();
-            const take = Math.min(blockLen - this.posOut, len - pos);
-            out.set(bufferOut.subarray(this.posOut, this.posOut + take), pos);
-            this.posOut += take;
-            pos += take;
-        }
-        return out;
-    }
-    xofInto(out) {
-        // Sha3/Keccak usage with XOF is probably mistake, only SHAKE instances can do XOF
-        if (!this.enableXOF)
-            throw new Error('XOF is not possible for this instance');
-        return this.writeInto(out);
-    }
-    xof(bytes) {
-        assert.number(bytes);
-        return this.xofInto(new Uint8Array(bytes));
-    }
-    digestInto(out) {
-        assert.output(out, this);
-        if (this.finished)
-            throw new Error('digest() was already called');
-        this.writeInto(out);
-        this.destroy();
-        return out;
-    }
-    digest() {
-        return this.digestInto(new Uint8Array(this.outputLen));
-    }
-    destroy() {
-        this.destroyed = true;
-        this.state.fill(0);
-    }
-    _cloneInto(to) {
-        const { blockLen, suffix, outputLen, rounds, enableXOF } = this;
-        to || (to = new Keccak(blockLen, suffix, outputLen, enableXOF, rounds));
-        to.state32.set(this.state32);
-        to.pos = this.pos;
-        to.posOut = this.posOut;
-        to.finished = this.finished;
-        to.rounds = rounds;
-        // Suffix can change in cSHAKE
-        to.suffix = suffix;
-        to.outputLen = outputLen;
-        to.enableXOF = enableXOF;
-        to.destroyed = this.destroyed;
-        return to;
-    }
-}
-const gen = (suffix, blockLen, outputLen) => wrapConstructor(() => new Keccak(blockLen, suffix, outputLen));
-const sha3_224 = gen(0x06, 144, 224 / 8);
-/**
- * SHA3-256 hash function
- * @param message - that would be hashed
- */
-const sha3_256 = gen(0x06, 136, 256 / 8);
-const sha3_384 = gen(0x06, 104, 384 / 8);
-const sha3_512 = gen(0x06, 72, 512 / 8);
-const keccak_224 = gen(0x01, 144, 224 / 8);
-/**
- * keccak-256 hash function. Different from SHA3-256.
- * @param message - that would be hashed
- */
-const keccak_256 = gen(0x01, 136, 256 / 8);
-const keccak_384 = gen(0x01, 104, 384 / 8);
-const keccak_512 = gen(0x01, 72, 512 / 8);
-const genShake = (suffix, blockLen, outputLen) => wrapConstructorWithOpts((opts = {}) => new Keccak(blockLen, suffix, opts.dkLen === undefined ? outputLen : opts.dkLen, true));
-const shake128 = genShake(0x1f, 168, 128 / 8);
-const shake256 = genShake(0x1f, 136, 256 / 8);
-
-const Alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-let Lookup = null;
-function getAlpha(letter) {
-    if (Lookup == null) {
-        Lookup = {};
-        for (let i = 0; i < Alphabet.length; i++) {
-            Lookup[Alphabet[i]] = BigInt(i);
-        }
-    }
-    const result = Lookup[letter];
-    if (result == null) {
-        logger.throwArgumentError(`invalid base58 value`, "letter", letter);
-    }
-    return result;
-}
-const BN_0$5 = BigInt(0);
-const BN_58 = BigInt(58);
-/**
- *  Encode %%value%% as Base58-encoded data.
- */
-function encodeBase58(_value) {
-    let value = toBigInt(logger.getBytes(_value));
-    let result = "";
-    while (value) {
-        result = Alphabet[Number(value % BN_58)] + result;
-        value /= BN_58;
-    }
-    return result;
-}
-/**
- *  Decode the Base58-encoded %%value%%.
- */
-function decodeBase58(value) {
-    let result = BN_0$5;
-    for (let i = 0; i < value.length; i++) {
-        result *= BN_58;
-        result += getAlpha(value[i]);
-    }
-    return toHex(result);
-}
-
-// utils/base64-browser
-function decodeBase64(textData) {
-    textData = atob(textData);
-    const data = new Uint8Array(textData.length);
-    for (let i = 0; i < textData.length; i++) {
-        data[i] = textData.charCodeAt(i);
-    }
-    return logger.getBytes(data);
-}
-function encodeBase64(_data) {
-    const data = logger.getBytes(_data);
-    let textData = "";
-    for (let i = 0; i < data.length; i++) {
-        textData += String.fromCharCode(data[i]);
-    }
-    return btoa(textData);
-}
-
-//export type TransactionReceipt {
-//}
-/**
- *  try {
- *      // code....
- *  } catch (e) {
- *      if (isError(e, errors.CALL_EXCEPTION)) {
- *          console.log(e.data);
- *      }
- *  }
- */
-function isError(error, code) {
-    return (error && error.code === code);
-}
-function isCallException(error) {
-    return isError(error, "CALL_EXCEPTION");
-}
-
-class EventPayload {
-    filter;
-    emitter;
-    #listener;
-    constructor(emitter, listener, filter) {
-        this.#listener = listener;
-        defineProperties(this, { emitter, filter });
-    }
-    async removeListener() {
-        if (this.#listener == null) {
-            return;
-        }
-        await this.emitter.off(this.filter, this.#listener);
-    }
-}
-
-function errorFunc(reason, offset, bytes, output, badCodepoint) {
-    return logger.throwArgumentError(`invalid codepoint at offset ${offset}; ${reason}`, "bytes", bytes);
-}
-function ignoreFunc(reason, offset, bytes, output, badCodepoint) {
-    // If there is an invalid prefix (including stray continuation), skip any additional continuation bytes
-    if (reason === "BAD_PREFIX" || reason === "UNEXPECTED_CONTINUE") {
-        let i = 0;
-        for (let o = offset + 1; o < bytes.length; o++) {
-            if (bytes[o] >> 6 !== 0x02) {
-                break;
-            }
-            i++;
-        }
-        return i;
-    }
-    // This byte runs us past the end of the string, so just jump to the end
-    // (but the first byte was read already read and therefore skipped)
-    if (reason === "OVERRUN") {
-        return bytes.length - offset - 1;
-    }
-    // Nothing to skip
-    return 0;
-}
-function replaceFunc(reason, offset, bytes, output, badCodepoint) {
-    // Overlong representations are otherwise "valid" code points; just non-deistingtished
-    if (reason === "OVERLONG") {
-        output.push((badCodepoint != null) ? badCodepoint : -1);
-        return 0;
-    }
-    // Put the replacement character into the output
-    output.push(0xfffd);
-    // Otherwise, process as if ignoring errors
-    return ignoreFunc(reason, offset, bytes, output, badCodepoint);
-}
-// Common error handing strategies
-const Utf8ErrorFuncs = Object.freeze({
-    error: errorFunc,
-    ignore: ignoreFunc,
-    replace: replaceFunc
-});
-// http://stackoverflow.com/questions/13356493/decode-utf-8-with-javascript#13691499
-function getUtf8CodePoints(_bytes, onError) {
-    if (onError == null) {
-        onError = Utf8ErrorFuncs.error;
-    }
-    const bytes = logger.getBytes(_bytes, "bytes");
-    const result = [];
-    let i = 0;
-    // Invalid bytes are ignored
-    while (i < bytes.length) {
-        const c = bytes[i++];
-        // 0xxx xxxx
-        if (c >> 7 === 0) {
-            result.push(c);
-            continue;
-        }
-        // Multibyte; how many bytes left for this character?
-        let extraLength = null;
-        let overlongMask = null;
-        // 110x xxxx 10xx xxxx
-        if ((c & 0xe0) === 0xc0) {
-            extraLength = 1;
-            overlongMask = 0x7f;
-            // 1110 xxxx 10xx xxxx 10xx xxxx
-        }
-        else if ((c & 0xf0) === 0xe0) {
-            extraLength = 2;
-            overlongMask = 0x7ff;
-            // 1111 0xxx 10xx xxxx 10xx xxxx 10xx xxxx
-        }
-        else if ((c & 0xf8) === 0xf0) {
-            extraLength = 3;
-            overlongMask = 0xffff;
-        }
-        else {
-            if ((c & 0xc0) === 0x80) {
-                i += onError("UNEXPECTED_CONTINUE", i - 1, bytes, result);
-            }
-            else {
-                i += onError("BAD_PREFIX", i - 1, bytes, result);
-            }
-            continue;
-        }
-        // Do we have enough bytes in our data?
-        if (i - 1 + extraLength >= bytes.length) {
-            i += onError("OVERRUN", i - 1, bytes, result);
-            continue;
-        }
-        // Remove the length prefix from the char
-        let res = c & ((1 << (8 - extraLength - 1)) - 1);
-        for (let j = 0; j < extraLength; j++) {
-            let nextChar = bytes[i];
-            // Invalid continuation byte
-            if ((nextChar & 0xc0) != 0x80) {
-                i += onError("MISSING_CONTINUE", i, bytes, result);
-                res = null;
-                break;
-            }
-            ;
-            res = (res << 6) | (nextChar & 0x3f);
-            i++;
-        }
-        // See above loop for invalid continuation byte
-        if (res === null) {
-            continue;
-        }
-        // Maximum code point
-        if (res > 0x10ffff) {
-            i += onError("OUT_OF_RANGE", i - 1 - extraLength, bytes, result, res);
-            continue;
-        }
-        // Reserved for UTF-16 surrogate halves
-        if (res >= 0xd800 && res <= 0xdfff) {
-            i += onError("UTF16_SURROGATE", i - 1 - extraLength, bytes, result, res);
-            continue;
-        }
-        // Check for overlong sequences (more bytes than needed)
-        if (res <= overlongMask) {
-            i += onError("OVERLONG", i - 1 - extraLength, bytes, result, res);
-            continue;
-        }
-        result.push(res);
-    }
-    return result;
-}
-// http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
-function toUtf8Bytes(str, form) {
-    if (form != null) {
-        logger.assertNormalize(form);
-        str = str.normalize(form);
-    }
-    let result = [];
-    for (let i = 0; i < str.length; i++) {
-        const c = str.charCodeAt(i);
-        if (c < 0x80) {
-            result.push(c);
-        }
-        else if (c < 0x800) {
-            result.push((c >> 6) | 0xc0);
-            result.push((c & 0x3f) | 0x80);
-        }
-        else if ((c & 0xfc00) == 0xd800) {
-            i++;
-            const c2 = str.charCodeAt(i);
-            if (i >= str.length || (c2 & 0xfc00) !== 0xdc00) {
-                throw new Error("invalid utf-8 string");
-            }
-            // Surrogate Pair
-            const pair = 0x10000 + ((c & 0x03ff) << 10) + (c2 & 0x03ff);
-            result.push((pair >> 18) | 0xf0);
-            result.push(((pair >> 12) & 0x3f) | 0x80);
-            result.push(((pair >> 6) & 0x3f) | 0x80);
-            result.push((pair & 0x3f) | 0x80);
-        }
-        else {
-            result.push((c >> 12) | 0xe0);
-            result.push(((c >> 6) & 0x3f) | 0x80);
-            result.push((c & 0x3f) | 0x80);
-        }
-    }
-    return new Uint8Array(result);
-}
-;
-function escapeChar(value) {
-    const hex = ("0000" + value.toString(16));
-    return "\\u" + hex.substring(hex.length - 4);
-}
-function _toEscapedUtf8String(bytes, onError) {
-    return '"' + getUtf8CodePoints(bytes, onError).map((codePoint) => {
-        if (codePoint < 256) {
-            switch (codePoint) {
-                case 8: return "\\b";
-                case 9: return "\\t";
-                case 10: return "\\n";
-                case 13: return "\\r";
-                case 34: return "\\\"";
-                case 92: return "\\\\";
-            }
-            if (codePoint >= 32 && codePoint < 127) {
-                return String.fromCharCode(codePoint);
-            }
-        }
-        if (codePoint <= 0xffff) {
-            return escapeChar(codePoint);
-        }
-        codePoint -= 0x10000;
-        return escapeChar(((codePoint >> 10) & 0x3ff) + 0xd800) + escapeChar((codePoint & 0x3ff) + 0xdc00);
-    }).join("") + '"';
-}
-function _toUtf8String(codePoints) {
-    return codePoints.map((codePoint) => {
-        if (codePoint <= 0xffff) {
-            return String.fromCharCode(codePoint);
-        }
-        codePoint -= 0x10000;
-        return String.fromCharCode((((codePoint >> 10) & 0x3ff) + 0xd800), ((codePoint & 0x3ff) + 0xdc00));
-    }).join("");
-}
-function toUtf8String(bytes, onError) {
-    return _toUtf8String(getUtf8CodePoints(bytes, onError));
-}
-function toUtf8CodePoints(str, form) {
-    return getUtf8CodePoints(toUtf8Bytes(str, form));
-}
-
-// @TODO: timeout is completely ignored; start a Promise.any with a reject?
-async function getUrl(req, _signal) {
-    const protocol = req.url.split(":")[0].toLowerCase();
-    if (protocol !== "http" && protocol !== "https") {
-        logger.throwError(`unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
-            info: { protocol },
-            operation: "request"
-        });
-    }
-    if (req.credentials && !req.allowInsecureAuthentication) {
-        logger.throwError("insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
-            operation: "request"
-        });
-    }
-    let signal = undefined;
-    if (_signal) {
-        const controller = new AbortController();
-        signal = controller.signal;
-        _signal.addListener(() => { controller.abort(); });
-    }
-    const init = {
-        method: req.method,
-        headers: new Headers(Array.from(req)),
-        body: req.body || undefined,
-        signal
-    };
-    const resp = await fetch(req.url, init);
-    const headers = {};
-    resp.headers.forEach((value, key) => {
-        headers[key.toLowerCase()] = value;
-    });
-    const respBody = await resp.arrayBuffer();
-    const body = (respBody == null) ? null : new Uint8Array(respBody);
-    return {
-        statusCode: resp.status,
-        statusMessage: resp.statusText,
-        headers, body
-    };
-}
-
-const MAX_ATTEMPTS = 12;
-const SLOT_INTERVAL = 250;
-// The global FetchGetUrlFunc implementation.
-let getUrlFunc = getUrl;
-const reData = new RegExp("^data:([^;:]*)?(;base64)?,(.*)$", "i");
-const reIpfs = new RegExp("^ipfs:/\/(ipfs/)?(.*)$", "i");
-// If locked, new Gateways cannot be added
-let locked$5 = false;
-// https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
-async function gatewayData(url, signal) {
-    try {
-        const match = url.match(reData);
-        if (!match) {
-            throw new Error("invalid data");
-        }
-        return new FetchResponse(200, "OK", {
-            "content-type": (match[1] || "text/plain"),
-        }, (match[1] ? decodeBase64(match[3]) : unpercent(match[3])));
-    }
-    catch (error) {
-        return new FetchResponse(599, "BAD REQUEST (invalid data: URI)", {}, null, new FetchRequest(url));
-    }
-}
-function getIpfsGatewayFunc(base) {
-    async function gatewayIpfs(url, signal) {
-        try {
-            const match = url.match(reIpfs);
-            if (!match) {
-                throw new Error("invalid link");
-            }
-            return new FetchRequest(`${base}${match[2]}`);
-        }
-        catch (error) {
-            return new FetchResponse(599, "BAD REQUEST (invalid IPFS URI)", {}, null, new FetchRequest(url));
-        }
-    }
-    return gatewayIpfs;
-}
-const Gateways = {
-    "data": gatewayData,
-    "ipfs": getIpfsGatewayFunc("https:/\/gateway.ipfs.io/ipfs/")
-};
-const fetchSignals = new WeakMap();
-class FetchCancelSignal {
-    #listeners;
-    #cancelled;
-    constructor(request) {
-        this.#listeners = [];
-        this.#cancelled = false;
-        fetchSignals.set(request, () => {
-            if (this.#cancelled) {
-                return;
-            }
-            this.#cancelled = true;
-            for (const listener of this.#listeners) {
-                setTimeout(() => { listener(); }, 0);
-            }
-            this.#listeners = [];
-        });
-    }
-    addListener(listener) {
-        if (this.#cancelled) {
-            logger.throwError("singal already cancelled", "UNSUPPORTED_OPERATION", {
-                operation: "fetchCancelSignal.addCancelListener"
-            });
-        }
-        this.#listeners.push(listener);
-    }
-    get cancelled() { return this.cancelled; }
-    checkSignal() {
-        if (!this.cancelled) {
-            return;
-        }
-        logger.throwError("cancelled", "CANCELLED", {});
-    }
-}
-// Check the signal, throwing if it is cancelled
-function checkSignal(signal) {
-    if (signal == null) {
-        throw new Error("missing signal; should not happen");
-    }
-    signal.checkSignal();
-    return signal;
-}
-class FetchRequest {
-    #allowInsecure;
-    #gzip;
-    #headers;
-    #method;
-    #timeout;
-    #url;
-    #body;
-    #bodyType;
-    #creds;
-    // Hooks
-    #preflight;
-    #process;
-    #retry;
-    #signal;
-    // URL
-    get url() { return this.#url; }
-    set url(url) {
-        this.#url = String(url);
-    }
-    // Body
-    get body() {
-        if (this.#body == null) {
-            return null;
-        }
-        return new Uint8Array(this.#body);
-    }
-    set body(body) {
-        if (body == null) {
-            this.#body = undefined;
-            this.#bodyType = undefined;
-        }
-        else if (typeof (body) === "string") {
-            this.#body = toUtf8Bytes(body);
-            this.#bodyType = "text/plain";
-        }
-        else if (body instanceof Uint8Array) {
-            this.#body = body;
-            this.#bodyType = "application/octet-stream";
-        }
-        else if (typeof (body) === "object") {
-            this.#body = toUtf8Bytes(JSON.stringify(body));
-            this.#bodyType = "application/json";
-        }
-        else {
-            throw new Error("invalid body");
-        }
-    }
-    hasBody() {
-        return (this.#body != null);
-    }
-    // Method (default: GET with no body, POST with a body)
-    get method() {
-        if (this.#method) {
-            return this.#method;
-        }
-        if (this.hasBody()) {
-            return "POST";
-        }
-        return "GET";
-    }
-    set method(method) {
-        if (method == null) {
-            method = "";
-        }
-        this.#method = String(method).toUpperCase();
-    }
-    // Headers (automatically fills content-type if not explicitly set)
-    get headers() {
-        const headers = Object.assign({}, this.#headers);
-        if (this.#creds) {
-            headers["authorization"] = `Basic ${encodeBase64(toUtf8Bytes(this.#creds))}`;
-        }
-        ;
-        if (this.allowGzip) {
-            headers["accept-encoding"] = "gzip";
-        }
-        if (headers["content-type"] == null && this.#bodyType) {
-            headers["content-type"] = this.#bodyType;
-        }
-        if (this.body) {
-            headers["content-length"] = String(this.body.length);
-        }
-        return Object.freeze(headers);
-    }
-    getHeader(key) {
-        return this.headers[key.toLowerCase()];
-    }
-    setHeader(key, value) {
-        this.#headers[String(key).toLowerCase()] = String(value);
-    }
-    clearHeaders() {
-        this.#headers = {};
-    }
-    [Symbol.iterator]() {
-        const headers = this.headers;
-        const keys = Object.keys(headers);
-        let index = 0;
-        return {
-            next: () => {
-                if (index < keys.length) {
-                    const key = keys[index++];
-                    return {
-                        value: [key, headers[key]], done: false
-                    };
-                }
-                return { value: undefined, done: true };
-            }
-        };
-    }
-    // Configure an Authorization header
-    get credentials() {
-        return this.#creds || null;
-    }
-    setCredentials(username, password) {
-        if (username.match(/:/)) {
-            logger.throwArgumentError("invalid basic authentication username", "username", "[REDACTED]");
-        }
-        this.#creds = `${username}:${password}`;
-    }
-    // Configure the request to allow gzipped responses
-    get allowGzip() {
-        return this.#gzip;
-    }
-    set allowGzip(value) {
-        this.#gzip = !!value;
-    }
-    // Allow credentials to be sent over an insecure (non-HTTPS) channel
-    get allowInsecureAuthentication() {
-        return !!this.#allowInsecure;
-    }
-    set allowInsecureAuthentication(value) {
-        this.#allowInsecure = !!value;
-    }
-    // Timeout (milliseconds)
-    get timeout() { return this.#timeout; }
-    set timeout(timeout) {
-        assertArgument(timeout >= 0, "timeout must be non-zero", "timeout", timeout);
-        this.#timeout = timeout;
-    }
-    // Preflight called before each request is sent
-    get preflightFunc() {
-        return this.#preflight || null;
-    }
-    set preflightFunc(preflight) {
-        this.#preflight = preflight;
-    }
-    // Preflight called before each request is sent
-    get processFunc() {
-        return this.#process || null;
-    }
-    set processFunc(process) {
-        this.#process = process;
-    }
-    // Preflight called before each request is sent
-    get retryFunc() {
-        return this.#retry || null;
-    }
-    set retryFunc(retry) {
-        this.#retry = retry;
-    }
-    constructor(url) {
-        this.#url = String(url);
-        this.#allowInsecure = false;
-        this.#gzip = false;
-        this.#headers = {};
-        this.#method = "";
-        this.#timeout = 300;
-    }
-    async #send(attempt, expires, delay, _request, _response) {
-        if (attempt >= MAX_ATTEMPTS) {
-            return _response.makeServerError("exceeded maximum retry limit");
-        }
-        if (getTime$2() > expires) {
-            return logger.throwError("timeout", "TIMEOUT", {
-                operation: "request.send", reason: "timeout", request: _request
-            });
-        }
-        if (delay > 0) {
-            await wait(delay);
-        }
-        let req = this.clone();
-        const scheme = (req.url.split(":")[0] || "").toLowerCase();
-        // Process any Gateways
-        if (scheme in Gateways) {
-            const result = await Gateways[scheme](req.url, checkSignal(_request.#signal));
-            if (result instanceof FetchResponse) {
-                let response = result;
-                if (this.processFunc) {
-                    checkSignal(_request.#signal);
-                    try {
-                        response = await this.processFunc(req, response);
-                    }
-                    catch (error) {
-                        // Something went wrong during processing; throw a 5xx server error
-                        if (error.throttle == null || typeof (error.stall) !== "number") {
-                            response.makeServerError("error in post-processing function", error).assertOk();
-                        }
-                        // Ignore throttling
-                    }
-                }
-                return response;
-            }
-            req = result;
-        }
-        // We have a preflight function; update the request
-        if (this.preflightFunc) {
-            req = await this.preflightFunc(req);
-        }
-        const resp = await getUrlFunc(req, checkSignal(_request.#signal));
-        let response = new FetchResponse(resp.statusCode, resp.statusMessage, resp.headers, resp.body, _request);
-        if (response.statusCode === 301 || response.statusCode === 302) {
-            // Redirect
-            try {
-                const location = response.headers.location || "";
-                return req.redirect(location).#send(attempt + 1, expires, 0, _request, response);
-            }
-            catch (error) { }
-            // Things won't get any better on another attempt; abort
-            return response;
-        }
-        else if (response.statusCode === 429) {
-            // Throttle
-            if (this.retryFunc == null || (await this.retryFunc(req, response, attempt))) {
-                const retryAfter = response.headers["retry-after"];
-                let delay = SLOT_INTERVAL * Math.trunc(Math.random() * Math.pow(2, attempt));
-                if (typeof (retryAfter) === "string" && retryAfter.match(/^[1-9][0-9]*$/)) {
-                    delay = parseInt(retryAfter);
-                }
-                return req.clone().#send(attempt + 1, expires, delay, _request, response);
-            }
-        }
-        if (this.processFunc) {
-            checkSignal(_request.#signal);
-            try {
-                response = await this.processFunc(req, response);
-            }
-            catch (error) {
-                // Something went wrong during processing; throw a 5xx server error
-                if (error.throttle == null || typeof (error.stall) !== "number") {
-                    response.makeServerError("error in post-processing function", error).assertOk();
-                }
-                // Throttle
-                let delay = SLOT_INTERVAL * Math.trunc(Math.random() * Math.pow(2, attempt));
-                ;
-                if (error.stall >= 0) {
-                    delay = error.stall;
-                }
-                return req.clone().#send(attempt + 1, expires, delay, _request, response);
-            }
-        }
-        return response;
-    }
-    send() {
-        if (this.#signal != null) {
-            return logger.throwError("request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
-        }
-        this.#signal = new FetchCancelSignal(this);
-        return this.#send(0, getTime$2() + this.timeout, 0, this, new FetchResponse(0, "", {}, null, this));
-    }
-    cancel() {
-        if (this.#signal == null) {
-            return logger.throwError("request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
-        }
-        const signal = fetchSignals.get(this);
-        if (!signal) {
-            throw new Error("missing signal; should not happen");
-        }
-        signal();
-    }
-    /**
-     *  Returns a new [[FetchRequest]] that represents the redirection
-     *  to %%location%%.
-     */
-    redirect(location) {
-        // Redirection; for now we only support absolute locataions
-        const current = this.url.split(":")[0].toLowerCase();
-        const target = location.split(":")[0].toLowerCase();
-        // Don't allow redirecting:
-        // - non-GET requests
-        // - downgrading the security (e.g. https => http)
-        // - to non-HTTP (or non-HTTPS) protocols [this could be relaxed?]
-        if (this.method !== "GET" || (current === "https" && target === "http") || !location.match(/^https?:/)) {
-            return logger.throwError(`unsupported redirect`, "UNSUPPORTED_OPERATION", {
-                operation: `redirect(${this.method} ${JSON.stringify(this.url)} => ${JSON.stringify(location)})`
-            });
-        }
-        // Create a copy of this request, with a new URL
-        const req = new FetchRequest(location);
-        req.method = "GET";
-        req.allowGzip = this.allowGzip;
-        req.timeout = this.timeout;
-        req.#headers = Object.assign({}, this.#headers);
-        if (this.#body) {
-            req.#body = new Uint8Array(this.#body);
-        }
-        req.#bodyType = this.#bodyType;
-        // Do not forward credentials unless on the same domain; only absolute
-        //req.allowInsecure = false;
-        // paths are currently supported; may want a way to specify to forward?
-        //setStore(req.#props, "creds", getStore(this.#pros, "creds"));
-        return req;
-    }
-    clone() {
-        const clone = new FetchRequest(this.url);
-        // Preserve "default method" (i.e. null)
-        clone.#method = this.#method;
-        // Preserve "default body" with type, copying the Uint8Array is present
-        if (this.#body) {
-            clone.#body = this.#body;
-        }
-        clone.#bodyType = this.#bodyType;
-        // Preserve "default headers"
-        clone.#headers = Object.assign({}, this.#headers);
-        // Credentials is readonly, so we copy internally
-        clone.#creds = this.#creds;
-        if (this.allowGzip) {
-            clone.allowGzip = true;
-        }
-        clone.timeout = this.timeout;
-        if (this.allowInsecureAuthentication) {
-            clone.allowInsecureAuthentication = true;
-        }
-        clone.#preflight = this.#preflight;
-        clone.#process = this.#process;
-        clone.#retry = this.#retry;
-        return clone;
-    }
-    static lockConfig() {
-        locked$5 = true;
-    }
-    static getGateway(scheme) {
-        return Gateways[scheme.toLowerCase()] || null;
-    }
-    static registerGateway(scheme, func) {
-        scheme = scheme.toLowerCase();
-        if (scheme === "http" || scheme === "https") {
-            throw new Error(`cannot intercept ${scheme}; use registerGetUrl`);
-        }
-        if (locked$5) {
-            throw new Error("gateways locked");
-        }
-        Gateways[scheme] = func;
-    }
-    static registerGetUrl(getUrl) {
-        if (locked$5) {
-            throw new Error("gateways locked");
-        }
-        getUrlFunc = getUrl;
-    }
-}
-;
-class FetchResponse {
-    #statusCode;
-    #statusMessage;
-    #headers;
-    #body;
-    #request;
-    #error;
-    toString() {
-        return `<Response status=${this.statusCode} body=${this.#body ? hexlify(this.#body) : "null"}>`;
-    }
-    get statusCode() { return this.#statusCode; }
-    get statusMessage() { return this.#statusMessage; }
-    get headers() { return this.#headers; }
-    get body() {
-        return (this.#body == null) ? null : new Uint8Array(this.#body);
-    }
-    get bodyText() {
-        try {
-            return (this.#body == null) ? "" : toUtf8String(this.#body);
-        }
-        catch (error) {
-            return logger.throwError("response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
-                operation: "bodyText", info: { response: this }
-            });
-        }
-    }
-    get bodyJson() {
-        try {
-            return JSON.parse(this.bodyText);
-        }
-        catch (error) {
-            return logger.throwError("response body is not valid JSON", "UNSUPPORTED_OPERATION", {
-                operation: "bodyJson", info: { response: this }
-            });
-        }
-    }
-    [Symbol.iterator]() {
-        const headers = this.headers;
-        const keys = Object.keys(headers);
-        let index = 0;
-        return {
-            next: () => {
-                if (index < keys.length) {
-                    const key = keys[index++];
-                    return {
-                        value: [key, headers[key]], done: false
-                    };
-                }
-                return { value: undefined, done: true };
-            }
-        };
-    }
-    constructor(statusCode, statusMessage, headers, body, request) {
-        this.#statusCode = statusCode;
-        this.#statusMessage = statusMessage;
-        this.#headers = Object.freeze(Object.assign({}, Object.keys(headers).reduce((accum, k) => {
-            accum[k.toLowerCase()] = String(headers[k]);
-            return accum;
-        }, {})));
-        this.#body = ((body == null) ? null : new Uint8Array(body));
-        this.#request = (request || null);
-        this.#error = { message: "" };
-    }
-    makeServerError(message, error) {
-        let statusMessage;
-        if (!message) {
-            message = `${this.statusCode} ${this.statusMessage}`;
-            statusMessage = `CLIENT ESCALATED SERVER ERROR (${message})`;
-        }
-        else {
-            statusMessage = `CLIENT ESCALATED SERVER ERROR (${this.statusCode} ${this.statusMessage}; ${message})`;
-        }
-        const response = new FetchResponse(599, statusMessage, this.headers, this.body, this.#request || undefined);
-        response.#error = { message, error };
-        return response;
-    }
-    throwThrottleError(message, stall) {
-        if (stall == null) {
-            stall = -1;
-        }
-        else if (typeof (stall) !== "number" || !Number.isInteger(stall) || stall < 0) {
-            return logger.throwArgumentError("invalid stall timeout", "stall", stall);
-        }
-        const error = new Error(message || "throttling requests");
-        defineProperties(error, { stall, throttle: true });
-        throw error;
-    }
-    getHeader(key) {
-        return this.headers[key.toLowerCase()];
-    }
-    hasBody() {
-        return (this.#body != null);
-    }
-    get request() { return this.#request; }
-    ok() {
-        return (this.#error.message === "" && this.statusCode >= 200 && this.statusCode < 300);
-    }
-    assertOk() {
-        if (this.ok()) {
-            return;
-        }
-        let { message, error } = this.#error;
-        if (message === "") {
-            message = `server response ${this.statusCode} ${this.statusMessage}`;
-        }
-        logger.throwError(message, "SERVER_ERROR", {
-            request: (this.request || "unknown request"), response: this, error
-        });
-    }
-}
-function getTime$2() { return (new Date()).getTime(); }
-function unpercent(value) {
-    return toUtf8Bytes(value.replace(/%([0-9a-f][0-9a-f])/gi, (all, code) => {
-        return String.fromCharCode(parseInt(code, 16));
-    }));
-}
-function wait(delay) {
-    return new Promise((resolve) => setTimeout(resolve, delay));
-}
-
-const _constructorGuard = {};
-const NegativeOne$1 = BigInt(-1);
-function throwFault(message, fault, operation, value) {
-    const params = { fault: fault, operation: operation };
-    if (value !== undefined) {
-        params.value = value;
-    }
-    return logger.throwError(message, "NUMERIC_FAULT", params);
-}
-// Constant to pull zeros from for multipliers
-let zeros$1 = "0";
-while (zeros$1.length < 256) {
-    zeros$1 += zeros$1;
-}
-// Returns a string "1" followed by decimal "0"s
-function getMultiplier(decimals) {
-    if (typeof (decimals) !== "number" || decimals < 0 || decimals > 256 || decimals % 1) {
-        logger.throwArgumentError("invalid decimal length", "decimals", decimals);
-    }
-    return BigInt("1" + zeros$1.substring(0, decimals));
-}
-function formatFixed(_value, _decimals) {
-    if (_decimals == null) {
-        _decimals = 18;
-    }
-    let value = logger.getBigInt(_value, "value");
-    const decimals = logger.getNumber(_decimals, "decimals");
-    const multiplier = getMultiplier(decimals);
-    const multiplierStr = String(multiplier);
-    const negative = (value < 0);
-    if (negative) {
-        value *= NegativeOne$1;
-    }
-    let fraction = String(value % multiplier);
-    // Make sure there are enough place-holders
-    while (fraction.length < multiplierStr.length - 1) {
-        fraction = "0" + fraction;
-    }
-    // Strip training 0
-    while (fraction.length > 1 && fraction.substring(fraction.length - 1) === "0") {
-        fraction = fraction.substring(0, fraction.length - 1);
-    }
-    let result = String(value / multiplier);
-    if (multiplierStr.length !== 1) {
-        result += "." + fraction;
-    }
-    if (negative) {
-        result = "-" + result;
-    }
-    return result;
-}
-function parseFixed(value, _decimals) {
-    if (_decimals == null) {
-        _decimals = 18;
-    }
-    const decimals = logger.getNumber(_decimals, "decimals");
-    const multiplier = getMultiplier(decimals);
-    if (typeof (value) !== "string" || !value.match(/^-?[0-9.]+$/)) {
-        logger.throwArgumentError("invalid decimal value", "value", value);
-    }
-    // Is it negative?
-    const negative = (value.substring(0, 1) === "-");
-    if (negative) {
-        value = value.substring(1);
-    }
-    if (value === ".") {
-        logger.throwArgumentError("missing value", "value", value);
-    }
-    // Split it into a whole and fractional part
-    const comps = value.split(".");
-    if (comps.length > 2) {
-        logger.throwArgumentError("too many decimal points", "value", value);
-    }
-    let whole = (comps[0] || "0"), fraction = (comps[1] || "0");
-    // Trim trialing zeros
-    while (fraction[fraction.length - 1] === "0") {
-        fraction = fraction.substring(0, fraction.length - 1);
-    }
-    // Check the fraction doesn't exceed our decimals size
-    if (fraction.length > String(multiplier).length - 1) {
-        throwFault("fractional component exceeds decimals", "underflow", "parseFixed");
-    }
-    // If decimals is 0, we have an empty string for fraction
-    if (fraction === "") {
-        fraction = "0";
-    }
-    // Fully pad the string with zeros to get to wei
-    while (fraction.length < String(multiplier).length - 1) {
-        fraction += "0";
-    }
-    const wholeValue = BigInt(whole);
-    const fractionValue = BigInt(fraction);
-    let wei = (wholeValue * multiplier) + fractionValue;
-    if (negative) {
-        wei *= NegativeOne$1;
-    }
-    return wei;
-}
-class FixedFormat {
-    signed;
-    width;
-    decimals;
-    name;
-    _multiplier;
-    constructor(constructorGuard, signed, width, decimals) {
-        if (constructorGuard !== _constructorGuard) {
-            logger.throwError("cannot use FixedFormat constructor; use FixedFormat.from", "UNSUPPORTED_OPERATION", {
-                operation: "new FixedFormat"
-            });
-        }
-        this.signed = signed;
-        this.width = width;
-        this.decimals = decimals;
-        this.name = (signed ? "" : "u") + "fixed" + String(width) + "x" + String(decimals);
-        this._multiplier = getMultiplier(decimals);
-        Object.freeze(this);
-    }
-    static from(value) {
-        if (value instanceof FixedFormat) {
-            return value;
-        }
-        if (typeof (value) === "number") {
-            value = `fixed128x${value}`;
-        }
-        let signed = true;
-        let width = 128;
-        let decimals = 18;
-        if (typeof (value) === "string") {
-            if (value === "fixed") {
-                // defaults...
-            }
-            else if (value === "ufixed") {
-                signed = false;
-            }
-            else {
-                const match = value.match(/^(u?)fixed([0-9]+)x([0-9]+)$/);
-                if (!match) {
-                    return logger.throwArgumentError("invalid fixed format", "format", value);
-                }
-                signed = (match[1] !== "u");
-                width = parseInt(match[2]);
-                decimals = parseInt(match[3]);
-            }
-        }
-        else if (value) {
-            const check = (key, type, defaultValue) => {
-                if (value[key] == null) {
-                    return defaultValue;
-                }
-                if (typeof (value[key]) !== type) {
-                    logger.throwArgumentError("invalid fixed format (" + key + " not " + type + ")", "format." + key, value[key]);
-                }
-                return value[key];
-            };
-            signed = check("signed", "boolean", signed);
-            width = check("width", "number", width);
-            decimals = check("decimals", "number", decimals);
-        }
-        if (width % 8) {
-            logger.throwArgumentError("invalid fixed format width (not byte aligned)", "format.width", width);
-        }
-        if (decimals > 80) {
-            logger.throwArgumentError("invalid fixed format (decimals too large)", "format.decimals", decimals);
-        }
-        return new FixedFormat(_constructorGuard, signed, width, decimals);
-    }
-}
-class FixedNumber {
-    format;
-    _isFixedNumber;
-    //#hex: string;
-    #value;
-    constructor(constructorGuard, hex, value, format) {
-        if (constructorGuard !== _constructorGuard) {
-            logger.throwError("cannot use FixedNumber constructor; use FixedNumber.from", "UNSUPPORTED_OPERATION", {
-                operation: "new FixedFormat"
-            });
-        }
-        this.format = FixedFormat.from(format);
-        //this.#hex = hex;
-        this.#value = value;
-        this._isFixedNumber = true;
-        Object.freeze(this);
-    }
-    #checkFormat(other) {
-        if (this.format.name !== other.format.name) {
-            logger.throwArgumentError("incompatible format; use fixedNumber.toFormat", "other", other);
-        }
-    }
-    addUnsafe(other) {
-        this.#checkFormat(other);
-        const a = parseFixed(this.#value, this.format.decimals);
-        const b = parseFixed(other.#value, other.format.decimals);
-        return FixedNumber.fromValue(a + b, this.format.decimals, this.format);
-    }
-    subUnsafe(other) {
-        this.#checkFormat(other);
-        const a = parseFixed(this.#value, this.format.decimals);
-        const b = parseFixed(other.#value, other.format.decimals);
-        return FixedNumber.fromValue(a - b, this.format.decimals, this.format);
-    }
-    mulUnsafe(other) {
-        this.#checkFormat(other);
-        const a = parseFixed(this.#value, this.format.decimals);
-        const b = parseFixed(other.#value, other.format.decimals);
-        return FixedNumber.fromValue((a * b) / this.format._multiplier, this.format.decimals, this.format);
-    }
-    divUnsafe(other) {
-        this.#checkFormat(other);
-        const a = parseFixed(this.#value, this.format.decimals);
-        const b = parseFixed(other.#value, other.format.decimals);
-        return FixedNumber.fromValue((a * this.format._multiplier) / b, this.format.decimals, this.format);
-    }
-    floor() {
-        const comps = this.toString().split(".");
-        if (comps.length === 1) {
-            comps.push("0");
-        }
-        let result = FixedNumber.from(comps[0], this.format);
-        const hasFraction = !comps[1].match(/^(0*)$/);
-        if (this.isNegative() && hasFraction) {
-            result = result.subUnsafe(ONE.toFormat(result.format));
-        }
-        return result;
-    }
-    ceiling() {
-        const comps = this.toString().split(".");
-        if (comps.length === 1) {
-            comps.push("0");
-        }
-        let result = FixedNumber.from(comps[0], this.format);
-        const hasFraction = !comps[1].match(/^(0*)$/);
-        if (!this.isNegative() && hasFraction) {
-            result = result.addUnsafe(ONE.toFormat(result.format));
-        }
-        return result;
-    }
-    // @TODO: Support other rounding algorithms
-    round(decimals) {
-        if (decimals == null) {
-            decimals = 0;
-        }
-        // If we are already in range, we're done
-        const comps = this.toString().split(".");
-        if (comps.length === 1) {
-            comps.push("0");
-        }
-        if (decimals < 0 || decimals > 80 || (decimals % 1)) {
-            logger.throwArgumentError("invalid decimal count", "decimals", decimals);
-        }
-        if (comps[1].length <= decimals) {
-            return this;
-        }
-        const factor = FixedNumber.from("1" + zeros$1.substring(0, decimals), this.format);
-        const bump = BUMP.toFormat(this.format);
-        return this.mulUnsafe(factor).addUnsafe(bump).floor().divUnsafe(factor);
-    }
-    isZero() {
-        return (this.#value === "0.0" || this.#value === "0");
-    }
-    isNegative() {
-        return (this.#value[0] === "-");
-    }
-    toString() { return this.#value; }
-    toHexString(_width) {
-        throw new Error("TODO");
-        /*
-        return toHex();
-        if (width == null) { return this.#hex; }
-
-        const width = logger.getNumeric(_width);
-        if (width % 8) { logger.throwArgumentError("invalid byte width", "width", width); }
-
-        const hex = BigNumber.from(this.#hex).fromTwos(this.format.width).toTwos(width).toHexString();
-        return zeroPadLeft(hex, width / 8);
-        */
-    }
-    toUnsafeFloat() { return parseFloat(this.toString()); }
-    toFormat(format) {
-        return FixedNumber.fromString(this.#value, format);
-    }
-    static fromValue(value, decimals = 0, format = "fixed") {
-        return FixedNumber.fromString(formatFixed(value, decimals), FixedFormat.from(format));
-    }
-    static fromString(value, format = "fixed") {
-        const fixedFormat = FixedFormat.from(format);
-        const numeric = parseFixed(value, fixedFormat.decimals);
-        if (!fixedFormat.signed && numeric < 0) {
-            throwFault("unsigned value cannot be negative", "overflow", "value", value);
-        }
-        const hex = (function () {
-            if (fixedFormat.signed) {
-                return toHex(toTwos(numeric, fixedFormat.width));
-            }
-            return toHex(numeric, fixedFormat.width / 8);
-        })();
-        const decimal = formatFixed(numeric, fixedFormat.decimals);
-        return new FixedNumber(_constructorGuard, hex, decimal, fixedFormat);
-    }
-    static fromBytes(_value, format = "fixed") {
-        const value = logger.getBytes(_value, "value");
-        const fixedFormat = FixedFormat.from(format);
-        if (value.length > fixedFormat.width / 8) {
-            throw new Error("overflow");
-        }
-        let numeric = toBigInt(value);
-        if (fixedFormat.signed) {
-            numeric = fromTwos(numeric, fixedFormat.width);
-        }
-        const hex = toHex(toTwos(numeric, (fixedFormat.signed ? 0 : 1) + fixedFormat.width));
-        const decimal = formatFixed(numeric, fixedFormat.decimals);
-        return new FixedNumber(_constructorGuard, hex, decimal, fixedFormat);
-    }
-    static from(value, format) {
-        if (typeof (value) === "string") {
-            return FixedNumber.fromString(value, format);
-        }
-        if (value instanceof Uint8Array) {
-            return FixedNumber.fromBytes(value, format);
-        }
-        try {
-            return FixedNumber.fromValue(value, 0, format);
-        }
-        catch (error) {
-            // Allow NUMERIC_FAULT to bubble up
-            if (error.code !== "INVALID_ARGUMENT") {
-                throw error;
-            }
-        }
-        return logger.throwArgumentError("invalid FixedNumber value", "value", value);
-    }
-    static isFixedNumber(value) {
-        return !!(value && value._isFixedNumber);
-    }
-}
-const ONE = FixedNumber.from(1);
-const BUMP = FixedNumber.from("0.5");
-
-//See: https://github.com/ethereum/wiki/wiki/RLP
-function hexlifyByte(value) {
-    let result = value.toString(16);
-    while (result.length < 2) {
-        result = "0" + result;
-    }
-    return "0x" + result;
-}
-function unarrayifyInteger(data, offset, length) {
-    let result = 0;
-    for (let i = 0; i < length; i++) {
-        result = (result * 256) + data[offset + i];
-    }
-    return result;
-}
-function _decodeChildren(data, offset, childOffset, length) {
-    const result = [];
-    while (childOffset < offset + 1 + length) {
-        const decoded = _decode(data, childOffset);
-        result.push(decoded.result);
-        childOffset += decoded.consumed;
-        if (childOffset > offset + 1 + length) {
-            logger.throwError("child data too short", "BUFFER_OVERRUN", {
-                buffer: data, length, offset
-            });
-        }
-    }
-    return { consumed: (1 + length), result: result };
-}
-// returns { consumed: number, result: Object }
-function _decode(data, offset) {
-    if (data.length === 0) {
-        logger.throwError("data too short", "BUFFER_OVERRUN", {
-            buffer: data, length: 0, offset: 1
-        });
-    }
-    const checkOffset = (offset) => {
-        if (offset > data.length) {
-            logger.throwError("data short segment too short", "BUFFER_OVERRUN", {
-                buffer: data, length: data.length, offset
-            });
-        }
-    };
-    // Array with extra length prefix
-    if (data[offset] >= 0xf8) {
-        const lengthLength = data[offset] - 0xf7;
-        checkOffset(offset + 1 + lengthLength);
-        const length = unarrayifyInteger(data, offset + 1, lengthLength);
-        checkOffset(offset + 1 + lengthLength + length);
-        return _decodeChildren(data, offset, offset + 1 + lengthLength, lengthLength + length);
-    }
-    else if (data[offset] >= 0xc0) {
-        const length = data[offset] - 0xc0;
-        checkOffset(offset + 1 + length);
-        return _decodeChildren(data, offset, offset + 1, length);
-    }
-    else if (data[offset] >= 0xb8) {
-        const lengthLength = data[offset] - 0xb7;
-        checkOffset(offset + 1 + lengthLength);
-        const length = unarrayifyInteger(data, offset + 1, lengthLength);
-        checkOffset(offset + 1 + lengthLength + length);
-        const result = hexlify(data.slice(offset + 1 + lengthLength, offset + 1 + lengthLength + length));
-        return { consumed: (1 + lengthLength + length), result: result };
-    }
-    else if (data[offset] >= 0x80) {
-        const length = data[offset] - 0x80;
-        checkOffset(offset + 1 + length);
-        const result = hexlify(data.slice(offset + 1, offset + 1 + length));
-        return { consumed: (1 + length), result: result };
-    }
-    return { consumed: 1, result: hexlifyByte(data[offset]) };
-}
-function decodeRlp(_data) {
-    const data = logger.getBytes(_data, "data");
-    const decoded = _decode(data, 0);
-    if (decoded.consumed !== data.length) {
-        logger.throwArgumentError("unexpected junk after rlp payload", "data", _data);
-    }
-    return decoded.result;
-}
-
-//See: https://github.com/ethereum/wiki/wiki/RLP
-function arrayifyInteger(value) {
-    const result = [];
-    while (value) {
-        result.unshift(value & 0xff);
-        value >>= 8;
-    }
-    return result;
-}
-function _encode(object) {
-    if (Array.isArray(object)) {
-        let payload = [];
-        object.forEach(function (child) {
-            payload = payload.concat(_encode(child));
-        });
-        if (payload.length <= 55) {
-            payload.unshift(0xc0 + payload.length);
-            return payload;
-        }
-        const length = arrayifyInteger(payload.length);
-        length.unshift(0xf7 + length.length);
-        return length.concat(payload);
-    }
-    const data = Array.prototype.slice.call(logger.getBytes(object, "object"));
-    if (data.length === 1 && data[0] <= 0x7f) {
-        return data;
-    }
-    else if (data.length <= 55) {
-        data.unshift(0x80 + data.length);
-        return data;
-    }
-    const length = arrayifyInteger(data.length);
-    length.unshift(0xb7 + length.length);
-    return length.concat(data);
-}
-const nibbles = "0123456789abcdef";
-function encodeRlp(object) {
-    let result = "0x";
-    for (const v of _encode(object)) {
-        result += nibbles[v >> 4];
-        result += nibbles[v & 0xf];
-    }
-    return result;
-}
-
-function getStore(store, key) {
-    return store[key];
-}
-function setStore(store, key, value) {
-    if (Object.isFrozen(store)) {
-        throw new Error(`frozen object is immuatable; cannot set ${String(key)}`);
-    }
-    store[key] = value;
-}
-
-const names = [
-    "wei",
-    "kwei",
-    "mwei",
-    "gwei",
-    "szabo",
-    "finney",
-    "ether",
-];
-/**
- *  Converts %%value%% into a //decimal string//, assuming %%unit%% decimal
- *  places. The %%unit%% may be the number of decimal places or the name of
- *  a unit (e.g. ``"gwei"`` for 9 decimal places).
- *
- */
-function formatUnits(value, unit) {
-    if (typeof (unit) === "string") {
-        const index = names.indexOf(unit);
-        if (index === -1) {
-            logger.throwArgumentError("invalid unit", "unit", unit);
-        }
-        unit = 3 * index;
-    }
-    return formatFixed(value, (unit != null) ? unit : 18);
-}
-/**
- *  Converts the //decimal string// %%value%% to a [[BigInt]], assuming
- *  %%unit%% decimal places. The %%unit%% may the number of decimal places
- *  or the name of a unit (e.g. ``"gwei"`` for 9 decimal places).
- */
-function parseUnits(value, unit) {
-    if (typeof (value) !== "string") {
-        logger.throwArgumentError("value must be a string", "value", value);
-    }
-    if (typeof (unit) === "string") {
-        const index = names.indexOf(unit);
-        if (index === -1) {
-            logger.throwArgumentError("invalid unit", "unit", unit);
-        }
-        unit = 3 * index;
-    }
-    return parseFixed(value, (unit != null) ? unit : 18);
-}
-/**
- *  Converts %%value%% into a //decimal string// using 18 decimal places.
- */
-function formatEther(wei) {
-    return formatUnits(wei, 18);
-}
-/**
- *  Converts the //decimal string// %%ether%% to a [[BigInt]], using 18
- *  decimal places.
- */
-function parseEther(ether) {
-    return parseUnits(ether, 18);
-}
-
-////
-
-let locked$4 = false;
-const _keccak256 = function (data) {
-    return keccak_256(data);
-};
-let __keccak256 = _keccak256;
-function keccak256(_data) {
-    const data = logger.getBytes(_data, "data");
-    return hexlify(__keccak256(data));
-}
-keccak256._ = _keccak256;
-keccak256.lock = function () { locked$4 = true; };
-keccak256.register = function (func) {
-    if (locked$4) {
-        throw new TypeError("keccak256 is locked");
-    }
-    __keccak256 = func;
-};
-Object.freeze(keccak256);
-
-const BN_0$4 = BigInt(0);
-const BN_36 = BigInt(36);
-function getChecksumAddress(address) {
-    //    if (!isHexString(address, 20)) {
-    //        logger.throwArgumentError("invalid address", "address", address);
-    //    }
-    address = address.toLowerCase();
-    const chars = address.substring(2).split("");
-    const expanded = new Uint8Array(40);
-    for (let i = 0; i < 40; i++) {
-        expanded[i] = chars[i].charCodeAt(0);
-    }
-    const hashed = logger.getBytes(keccak256(expanded));
-    for (let i = 0; i < 40; i += 2) {
-        if ((hashed[i >> 1] >> 4) >= 8) {
-            chars[i] = chars[i].toUpperCase();
-        }
-        if ((hashed[i >> 1] & 0x0f) >= 8) {
-            chars[i + 1] = chars[i + 1].toUpperCase();
-        }
-    }
-    return "0x" + chars.join("");
-}
-// See: https://en.wikipedia.org/wiki/International_Bank_Account_Number
-// Create lookup table
-const ibanLookup = {};
-for (let i = 0; i < 10; i++) {
-    ibanLookup[String(i)] = String(i);
-}
-for (let i = 0; i < 26; i++) {
-    ibanLookup[String.fromCharCode(65 + i)] = String(10 + i);
-}
-// How many decimal digits can we process? (for 64-bit float, this is 15)
-// i.e. Math.floor(Math.log10(Number.MAX_SAFE_INTEGER));
-const safeDigits = 15;
-function ibanChecksum(address) {
-    address = address.toUpperCase();
-    address = address.substring(4) + address.substring(0, 2) + "00";
-    let expanded = address.split("").map((c) => { return ibanLookup[c]; }).join("");
-    // Javascript can handle integers safely up to 15 (decimal) digits
-    while (expanded.length >= safeDigits) {
-        let block = expanded.substring(0, safeDigits);
-        expanded = parseInt(block, 10) % 97 + expanded.substring(block.length);
-    }
-    let checksum = String(98 - (parseInt(expanded, 10) % 97));
-    while (checksum.length < 2) {
-        checksum = "0" + checksum;
-    }
-    return checksum;
-}
-;
-const Base36 = (function () {
-    ;
-    const result = {};
-    for (let i = 0; i < 36; i++) {
-        const key = "0123456789abcdefghijklmnopqrstuvwxyz"[i];
-        result[key] = BigInt(i);
-    }
-    return result;
-})();
-function fromBase36(value) {
-    value = value.toLowerCase();
-    let result = BN_0$4;
-    for (let i = 0; i < value.length; i++) {
-        result = result * BN_36 + Base36[value[i]];
-    }
-    return result;
-}
-function getAddress(address) {
-    if (typeof (address) !== "string") {
-        logger.throwArgumentError("invalid address", "address", address);
-    }
-    if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
-        // Missing the 0x prefix
-        if (address.substring(0, 2) !== "0x") {
-            address = "0x" + address;
-        }
-        const result = getChecksumAddress(address);
-        // It is a checksummed address with a bad checksum
-        if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
-            logger.throwArgumentError("bad address checksum", "address", address);
-        }
-        return result;
-    }
-    // Maybe ICAP? (we only support direct mode)
-    if (address.match(/^XE[0-9]{2}[0-9A-Za-z]{30,31}$/)) {
-        // It is an ICAP address with a bad checksum
-        if (address.substring(2, 4) !== ibanChecksum(address)) {
-            logger.throwArgumentError("bad icap checksum", "address", address);
-        }
-        let result = fromBase36(address.substring(4)).toString(16);
-        while (result.length < 40) {
-            result = "0" + result;
-        }
-        return getChecksumAddress("0x" + result);
-    }
-    return logger.throwArgumentError("invalid address", "address", address);
-}
-function getIcapAddress(address) {
-    //let base36 = _base16To36(getAddress(address).substring(2)).toUpperCase();
-    let base36 = BigInt(getAddress(address)).toString(36).toUpperCase();
-    while (base36.length < 30) {
-        base36 = "0" + base36;
-    }
-    return "XE" + ibanChecksum("XE00" + base36) + base36;
-}
-
-// http://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
-function getCreateAddress(tx) {
-    const from = getAddress(tx.from);
-    const nonce = logger.getBigInt(tx.nonce, "tx.nonce");
-    let nonceHex = nonce.toString(16);
-    if (nonceHex === "0") {
-        nonceHex = "0x";
-    }
-    else if (nonceHex.length % 2) {
-        nonceHex = "0x0" + nonceHex;
-    }
-    else {
-        nonceHex = "0x" + nonceHex;
-    }
-    return getAddress(dataSlice(keccak256(encodeRlp([from, nonceHex])), 12));
-}
-function getCreate2Address(_from, _salt, _initCodeHash) {
-    const from = getAddress(_from);
-    const salt = logger.getBytes(_salt, "salt");
-    const initCodeHash = logger.getBytes(_initCodeHash, "initCodeHash");
-    if (salt.length !== 32) {
-        logger.throwArgumentError("salt must be 32 bytes", "salt", _salt);
-    }
-    if (initCodeHash.length !== 32) {
-        logger.throwArgumentError("initCodeHash must be 32 bytes", "initCodeHash", _initCodeHash);
-    }
-    return getAddress(dataSlice(keccak256(concat(["0xff", from, salt, initCodeHash])), 12));
-}
-
-function isAddressable(value) {
-    return (value && typeof (value.getAddress) === "function");
-}
-function isAddress(value) {
-    try {
-        getAddress(value);
-        return true;
-    }
-    catch (error) { }
-    return false;
-}
-async function checkAddress(target, promise) {
-    const result = await promise;
-    if (result == null || result === "0x0000000000000000000000000000000000000000") {
-        if (typeof (target) === "string") {
-            return logger.throwError("unconfigured name", "UNCONFIGURED_NAME", { value: target });
-        }
-        return logger.throwArgumentError("invalid AddressLike value; did not resolve to a value address", "target", target);
-    }
-    return getAddress(result);
-}
-// Resolves an Ethereum address, ENS name or Addressable object,
-// throwing if the result is null.
-function resolveAddress(target, resolver) {
-    if (typeof (target) === "string") {
-        if (target.match(/^0x[0-9a-f]{40}$/i)) {
-            return getAddress(target);
-        }
-        if (resolver == null) {
-            return logger.throwError("ENS resolution requires a provider", "UNSUPPORTED_OPERATION", {
-                operation: "resolveName",
-            });
-        }
-        return checkAddress(target, resolver.resolveName(target));
-    }
-    else if (isAddressable(target)) {
-        return checkAddress(target, target.getAddress());
-    }
-    else if (typeof (target.then) === "function") {
-        return checkAddress(target, target);
-    }
-    return logger.throwArgumentError("unsupported addressable value", "target", target);
-}
-
-const _gaurd = {};
-function n(value, width) {
-    let signed = false;
-    if (width < 0) {
-        signed = true;
-        width *= -1;
-    }
-    // @TODO: Check range is valid for value
-    return new Typed(_gaurd, `${signed ? "" : "u"}int${width}`, value, { signed, width });
-}
-function b(value, size) {
-    // @TODO: Check range is valid for value
-    return new Typed(_gaurd, `bytes${(size) ? size : ""}`, value, { size });
-}
-const _typedSymbol = Symbol.for("_ethers_typed");
-class Typed {
-    type;
-    value;
-    #options;
-    _typedSymbol;
-    constructor(gaurd, type, value, options = null) {
-        if (gaurd !== _gaurd) {
-            throw new Error("private constructor");
-        }
-        defineProperties(this, { _typedSymbol, type, value });
-        this.#options = options;
-        // Check the value is valid
-        this.format();
-    }
-    format() {
-        if (this.type === "array") {
-            throw new Error("");
-        }
-        else if (this.type === "dynamicArray") {
-            throw new Error("");
-        }
-        else if (this.type === "tuple") {
-            return `tuple(${this.value.map((v) => v.format()).join(",")})`;
-        }
-        return this.type;
-    }
-    defaultValue() {
-        return 0;
-    }
-    minValue() {
-        return 0;
-    }
-    maxValue() {
-        return 0;
-    }
-    isBigInt() {
-        return !!(this.type.match(/^u?int[0-9]+$/));
-    }
-    isData() {
-        return (this.type.substring(0, 5) === "bytes");
-    }
-    isString() {
-        return (this.type === "string");
-    }
-    get tupleName() {
-        if (this.type !== "tuple") {
-            throw TypeError("not a tuple");
-        }
-        return this.#options;
-    }
-    // Returns the length of this type as an array
-    // - `null` indicates the length is unforced, it could be dynamic
-    // - `-1` indicates the length is dynamic
-    // - any other value indicates it is a static array and is its length
-    get arrayLength() {
-        if (this.type !== "array") {
-            throw TypeError("not an array");
-        }
-        if (this.#options === true) {
-            return -1;
-        }
-        if (this.#options === false) {
-            return (this.value).length;
-        }
-        return null;
-    }
-    static from(type, value) {
-        return new Typed(_gaurd, type, value);
-    }
-    static uint8(v) { return n(v, 8); }
-    static uint16(v) { return n(v, 16); }
-    static uint24(v) { return n(v, 24); }
-    static uint32(v) { return n(v, 32); }
-    static uint40(v) { return n(v, 40); }
-    static uint48(v) { return n(v, 46); }
-    static uint56(v) { return n(v, 56); }
-    static uint64(v) { return n(v, 64); }
-    static uint72(v) { return n(v, 72); }
-    static uint80(v) { return n(v, 80); }
-    static uint88(v) { return n(v, 88); }
-    static uint96(v) { return n(v, 96); }
-    static uint104(v) { return n(v, 104); }
-    static uint112(v) { return n(v, 112); }
-    static uint120(v) { return n(v, 120); }
-    static uint128(v) { return n(v, 128); }
-    static uint136(v) { return n(v, 136); }
-    static uint144(v) { return n(v, 144); }
-    static uint152(v) { return n(v, 152); }
-    static uint160(v) { return n(v, 160); }
-    static uint168(v) { return n(v, 168); }
-    static uint176(v) { return n(v, 176); }
-    static uint184(v) { return n(v, 184); }
-    static uint192(v) { return n(v, 192); }
-    static uint200(v) { return n(v, 200); }
-    static uint208(v) { return n(v, 208); }
-    static uint216(v) { return n(v, 216); }
-    static uint224(v) { return n(v, 224); }
-    static uint232(v) { return n(v, 232); }
-    static uint240(v) { return n(v, 240); }
-    static uint248(v) { return n(v, 248); }
-    static uint256(v) { return n(v, 256); }
-    static uint(v) { return n(v, 256); }
-    static int8(v) { return n(v, -8); }
-    static int16(v) { return n(v, -16); }
-    static int24(v) { return n(v, -24); }
-    static int32(v) { return n(v, -32); }
-    static int40(v) { return n(v, -40); }
-    static int48(v) { return n(v, -46); }
-    static int56(v) { return n(v, -56); }
-    static int64(v) { return n(v, -64); }
-    static int72(v) { return n(v, -72); }
-    static int80(v) { return n(v, -80); }
-    static int88(v) { return n(v, -88); }
-    static int96(v) { return n(v, -96); }
-    static int104(v) { return n(v, -104); }
-    static int112(v) { return n(v, -112); }
-    static int120(v) { return n(v, -120); }
-    static int128(v) { return n(v, -128); }
-    static int136(v) { return n(v, -136); }
-    static int144(v) { return n(v, -144); }
-    static int152(v) { return n(v, -152); }
-    static int160(v) { return n(v, -160); }
-    static int168(v) { return n(v, -168); }
-    static int176(v) { return n(v, -176); }
-    static int184(v) { return n(v, -184); }
-    static int192(v) { return n(v, -192); }
-    static int200(v) { return n(v, -200); }
-    static int208(v) { return n(v, -208); }
-    static int216(v) { return n(v, -216); }
-    static int224(v) { return n(v, -224); }
-    static int232(v) { return n(v, -232); }
-    static int240(v) { return n(v, -240); }
-    static int248(v) { return n(v, -248); }
-    static int256(v) { return n(v, -256); }
-    static int(v) { return n(v, -256); }
-    static bytes(v) { return b(v); }
-    static bytes1(v) { return b(v, 1); }
-    static bytes2(v) { return b(v, 2); }
-    static bytes3(v) { return b(v, 3); }
-    static bytes4(v) { return b(v, 4); }
-    static bytes5(v) { return b(v, 5); }
-    static bytes6(v) { return b(v, 6); }
-    static bytes7(v) { return b(v, 7); }
-    static bytes8(v) { return b(v, 8); }
-    static bytes9(v) { return b(v, 9); }
-    static bytes10(v) { return b(v, 10); }
-    static bytes11(v) { return b(v, 11); }
-    static bytes12(v) { return b(v, 12); }
-    static bytes13(v) { return b(v, 13); }
-    static bytes14(v) { return b(v, 14); }
-    static bytes15(v) { return b(v, 15); }
-    static bytes16(v) { return b(v, 16); }
-    static bytes17(v) { return b(v, 17); }
-    static bytes18(v) { return b(v, 18); }
-    static bytes19(v) { return b(v, 19); }
-    static bytes20(v) { return b(v, 20); }
-    static bytes21(v) { return b(v, 21); }
-    static bytes22(v) { return b(v, 22); }
-    static bytes23(v) { return b(v, 23); }
-    static bytes24(v) { return b(v, 24); }
-    static bytes25(v) { return b(v, 25); }
-    static bytes26(v) { return b(v, 26); }
-    static bytes27(v) { return b(v, 27); }
-    static bytes28(v) { return b(v, 28); }
-    static bytes29(v) { return b(v, 29); }
-    static bytes30(v) { return b(v, 30); }
-    static bytes31(v) { return b(v, 31); }
-    static bytes32(v) { return b(v, 32); }
-    static address(v) { return new Typed(_gaurd, "address", v); }
-    static bool(v) { return new Typed(_gaurd, "bool", !!v); }
-    static string(v) { return new Typed(_gaurd, "string", v); }
-    static array(v, dynamic) {
-        throw new Error("not implemented yet");
-        return new Typed(_gaurd, "array", v, dynamic);
-    }
-    static tuple(v, name) {
-        throw new Error("not implemented yet");
-        return new Typed(_gaurd, "tuple", v, name);
-    }
-    static overrides(v) {
-        return new Typed(_gaurd, "overrides", Object.assign({}, v));
-    }
-    static isTyped(value) {
-        return (value && value._typedSymbol === _typedSymbol);
-    }
-    static dereference(value, type) {
-        if (Typed.isTyped(value)) {
-            if (value.type !== type) {
-                throw new Error(`invalid type: expecetd ${type}, got ${value.type}`);
-            }
-            return value.value;
-        }
-        return value;
-    }
-}
-
-class AddressCoder extends Coder {
-    constructor(localName) {
-        super("address", "address", localName, false);
-    }
-    defaultValue() {
-        return "0x0000000000000000000000000000000000000000";
-    }
-    encode(writer, _value) {
-        let value = Typed.dereference(_value, "string");
-        try {
-            value = getAddress(value);
-        }
-        catch (error) {
-            return this._throwError(error.message, _value);
-        }
-        return writer.writeValue(value);
-    }
-    decode(reader) {
-        return getAddress(toHex(reader.readValue(), 20));
-    }
-}
-
-// Clones the functionality of an existing Coder, but without a localName
-class AnonymousCoder extends Coder {
-    coder;
-    constructor(coder) {
-        super(coder.name, coder.type, "_", coder.dynamic);
-        this.coder = coder;
-    }
-    defaultValue() {
-        return this.coder.defaultValue();
-    }
-    encode(writer, value) {
-        return this.coder.encode(writer, value);
-    }
-    decode(reader) {
-        return this.coder.decode(reader);
-    }
-}
-
-function pack(writer, coders, values) {
-    let arrayValues = [];
-    if (Array.isArray(values)) {
-        arrayValues = values;
-    }
-    else if (values && typeof (values) === "object") {
-        let unique = {};
-        arrayValues = coders.map((coder) => {
-            const name = coder.localName;
-            if (!name) {
-                logger.throwError("cannot encode object for signature with missing names", "INVALID_ARGUMENT", {
-                    argument: "values",
-                    info: { coder },
-                    value: values
-                });
-            }
-            if (unique[name]) {
-                logger.throwError("cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", {
-                    argument: "values",
-                    info: { coder },
-                    value: values
-                });
-            }
-            unique[name] = true;
-            return values[name];
-        });
-    }
-    else {
-        logger.throwArgumentError("invalid tuple value", "tuple", values);
-    }
-    if (coders.length !== arrayValues.length) {
-        logger.throwArgumentError("types/value length mismatch", "tuple", values);
-    }
-    let staticWriter = new Writer();
-    let dynamicWriter = new Writer();
-    let updateFuncs = [];
-    coders.forEach((coder, index) => {
-        let value = arrayValues[index];
-        if (coder.dynamic) {
-            // Get current dynamic offset (for the future pointer)
-            let dynamicOffset = dynamicWriter.length;
-            // Encode the dynamic value into the dynamicWriter
-            coder.encode(dynamicWriter, value);
-            // Prepare to populate the correct offset once we are done
-            let updateFunc = staticWriter.writeUpdatableValue();
-            updateFuncs.push((baseOffset) => {
-                updateFunc(baseOffset + dynamicOffset);
-            });
-        }
-        else {
-            coder.encode(staticWriter, value);
-        }
-    });
-    // Backfill all the dynamic offsets, now that we know the static length
-    updateFuncs.forEach((func) => { func(staticWriter.length); });
-    let length = writer.appendWriter(staticWriter);
-    length += writer.appendWriter(dynamicWriter);
-    return length;
-}
-function unpack(reader, coders) {
-    let values = [];
-    let keys = [];
-    // A reader anchored to this base
-    let baseReader = reader.subReader(0);
-    coders.forEach((coder) => {
-        let value = null;
-        if (coder.dynamic) {
-            let offset = reader.readIndex();
-            let offsetReader = baseReader.subReader(offset);
-            try {
-                value = coder.decode(offsetReader);
-            }
-            catch (error) {
-                // Cannot recover from this
-                if (isError(error, "BUFFER_OVERRUN")) {
-                    throw error;
-                }
-                value = error;
-                value.baseType = coder.name;
-                value.name = coder.localName;
-                value.type = coder.type;
-            }
-        }
-        else {
-            try {
-                value = coder.decode(reader);
-            }
-            catch (error) {
-                // Cannot recover from this
-                if (isError(error, "BUFFER_OVERRUN")) {
-                    throw error;
-                }
-                value = error;
-                value.baseType = coder.name;
-                value.name = coder.localName;
-                value.type = coder.type;
-            }
-        }
-        if (value == undefined) {
-            throw new Error("investigate");
-        }
-        values.push(value);
-        keys.push(coder.localName || null);
-    });
-    return Result.fromItems(values, keys);
-}
-class ArrayCoder extends Coder {
-    coder;
-    length;
-    constructor(coder, length, localName) {
-        const type = (coder.type + "[" + (length >= 0 ? length : "") + "]");
-        const dynamic = (length === -1 || coder.dynamic);
-        super("array", type, localName, dynamic);
-        defineProperties(this, { coder, length });
-    }
-    defaultValue() {
-        // Verifies the child coder is valid (even if the array is dynamic or 0-length)
-        const defaultChild = this.coder.defaultValue();
-        const result = [];
-        for (let i = 0; i < this.length; i++) {
-            result.push(defaultChild);
-        }
-        return result;
-    }
-    encode(writer, _value) {
-        const value = Typed.dereference(_value, "array");
-        if (!Array.isArray(value)) {
-            this._throwError("expected array value", value);
-        }
-        let count = this.length;
-        if (count === -1) {
-            count = value.length;
-            writer.writeValue(value.length);
-        }
-        logger.assertArgumentCount(value.length, count, "coder array" + (this.localName ? (" " + this.localName) : ""));
-        let coders = [];
-        for (let i = 0; i < value.length; i++) {
-            coders.push(this.coder);
-        }
-        return pack(writer, coders, value);
-    }
-    decode(reader) {
-        let count = this.length;
-        if (count === -1) {
-            count = reader.readIndex();
-            // Check that there is *roughly* enough data to ensure
-            // stray random data is not being read as a length. Each
-            // slot requires at least 32 bytes for their value (or 32
-            // bytes as a link to the data). This could use a much
-            // tighter bound, but we are erroring on the side of safety.
-            if (count * WordSize > reader.dataLength) {
-                logger.throwError("insufficient data length", "BUFFER_OVERRUN", {
-                    buffer: reader.bytes,
-                    offset: count * WordSize,
-                    length: reader.dataLength
-                });
-            }
-        }
-        let coders = [];
-        for (let i = 0; i < count; i++) {
-            coders.push(new AnonymousCoder(this.coder));
-        }
-        return unpack(reader, coders);
-    }
-}
-
-class BooleanCoder extends Coder {
-    constructor(localName) {
-        super("bool", "bool", localName, false);
-    }
-    defaultValue() {
-        return false;
-    }
-    encode(writer, _value) {
-        const value = Typed.dereference(_value, "bool");
-        return writer.writeValue(value ? 1 : 0);
-    }
-    decode(reader) {
-        return !!reader.readValue();
-    }
-}
-
-class DynamicBytesCoder extends Coder {
-    constructor(type, localName) {
-        super(type, type, localName, true);
-    }
-    defaultValue() {
-        return "0x";
-    }
-    encode(writer, value) {
-        value = logger.getBytesCopy(value);
-        let length = writer.writeValue(value.length);
-        length += writer.writeBytes(value);
-        return length;
-    }
-    decode(reader) {
-        return reader.readBytes(reader.readIndex(), true);
-    }
-}
-class BytesCoder extends DynamicBytesCoder {
-    constructor(localName) {
-        super("bytes", localName);
-    }
-    decode(reader) {
-        return hexlify(super.decode(reader));
-    }
-}
-
-class FixedBytesCoder extends Coder {
-    size;
-    constructor(size, localName) {
-        let name = "bytes" + String(size);
-        super(name, name, localName, false);
-        defineProperties(this, { size }, { size: "number" });
-    }
-    defaultValue() {
-        return ("0x0000000000000000000000000000000000000000000000000000000000000000").substring(0, 2 + this.size * 2);
-    }
-    encode(writer, _value) {
-        let data = logger.getBytesCopy(Typed.dereference(_value, this.type));
-        if (data.length !== this.size) {
-            this._throwError("incorrect data length", _value);
-        }
-        return writer.writeBytes(data);
-    }
-    decode(reader) {
-        return hexlify(reader.readBytes(this.size));
-    }
-}
-
-const Empty$1 = new Uint8Array([]);
-class NullCoder extends Coder {
-    constructor(localName) {
-        super("null", "", localName, false);
-    }
-    defaultValue() {
-        return null;
-    }
-    encode(writer, value) {
-        if (value != null) {
-            this._throwError("not null", value);
-        }
-        return writer.writeBytes(Empty$1);
-    }
-    decode(reader) {
-        reader.readBytes(0);
-        return null;
-    }
-}
-
-const BN_0$3 = BigInt(0);
-const BN_1$4 = BigInt(1);
-const BN_MAX_UINT256$2 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-class NumberCoder extends Coder {
-    size;
-    signed;
-    constructor(size, signed, localName) {
-        const name = ((signed ? "int" : "uint") + (size * 8));
-        super(name, name, localName, false);
-        defineProperties(this, { size, signed }, { size: "number", signed: "boolean" });
-    }
-    defaultValue() {
-        return 0;
-    }
-    encode(writer, _value) {
-        let value = logger.getBigInt(Typed.dereference(_value, this.type));
-        // Check bounds are safe for encoding
-        let maxUintValue = mask(BN_MAX_UINT256$2, WordSize * 8);
-        if (this.signed) {
-            let bounds = mask(maxUintValue, (this.size * 8) - 1);
-            if (value > bounds || value < -(bounds + BN_1$4)) {
-                this._throwError("value out-of-bounds", _value);
-            }
-        }
-        else if (value < BN_0$3 || value > mask(maxUintValue, this.size * 8)) {
-            this._throwError("value out-of-bounds", _value);
-        }
-        value = mask(toTwos(value, this.size * 8), this.size * 8);
-        if (this.signed) {
-            value = toTwos(fromTwos(value, this.size * 8), 8 * WordSize);
-        }
-        return writer.writeValue(value);
-    }
-    decode(reader) {
-        let value = mask(reader.readValue(), this.size * 8);
-        if (this.signed) {
-            value = fromTwos(value, this.size * 8);
-        }
-        return value;
-    }
-}
-
-class StringCoder extends DynamicBytesCoder {
-    constructor(localName) {
-        super("string", localName);
-    }
-    defaultValue() {
-        return "";
-    }
-    encode(writer, _value) {
-        return super.encode(writer, toUtf8Bytes(Typed.dereference(_value, "string")));
-    }
-    decode(reader) {
-        return toUtf8String(super.decode(reader));
-    }
-}
-
-class TupleCoder extends Coder {
-    coders;
-    constructor(coders, localName) {
-        let dynamic = false;
-        const types = [];
-        coders.forEach((coder) => {
-            if (coder.dynamic) {
-                dynamic = true;
-            }
-            types.push(coder.type);
-        });
-        const type = ("tuple(" + types.join(",") + ")");
-        super("tuple", type, localName, dynamic);
-        defineProperties(this, { coders: Object.freeze(coders.slice()) });
-    }
-    defaultValue() {
-        const values = [];
-        this.coders.forEach((coder) => {
-            values.push(coder.defaultValue());
-        });
-        // We only output named properties for uniquely named coders
-        const uniqueNames = this.coders.reduce((accum, coder) => {
-            const name = coder.localName;
-            if (name) {
-                if (!accum[name]) {
-                    accum[name] = 0;
-                }
-                accum[name]++;
-            }
-            return accum;
-        }, {});
-        // Add named values
-        this.coders.forEach((coder, index) => {
-            let name = coder.localName;
-            if (!name || uniqueNames[name] !== 1) {
-                return;
-            }
-            if (name === "length") {
-                name = "_length";
-            }
-            if (values[name] != null) {
-                return;
-            }
-            values[name] = values[index];
-        });
-        return Object.freeze(values);
-    }
-    encode(writer, _value) {
-        const value = Typed.dereference(_value, "tuple");
-        return pack(writer, this.coders, value);
-    }
-    decode(reader) {
-        return unpack(reader, this.coders);
-    }
-}
-
-;
-var FormatType;
-(function (FormatType) {
-    // Bare formatting, as is needed for computing a sighash of an event or function
-    FormatType["sighash"] = "sighash";
-    // Human-Readable with Minimal spacing and without names (compact human-readable)
-    FormatType["minimal"] = "minimal";
-    // Human-Readable with nice spacing, including all names
-    FormatType["full"] = "full";
-    // JSON-format a la Solidity
-    FormatType["json"] = "json";
-})(FormatType || (FormatType = {}));
-;
-// [ "a", "b" ] => { "a": 1, "b": 1 }
-function setify(items) {
-    const result = new Set();
-    items.forEach((k) => result.add(k));
-    return Object.freeze(result);
-}
-// Visibility Keywords
-const _kwVisib = "constant external internal payable private public pure view";
-const KwVisib = setify(_kwVisib.split(" "));
-const _kwTypes = "constructor error event function struct";
-const KwTypes = setify(_kwTypes.split(" "));
-const _kwModifiers = "calldata memory storage payable indexed";
-const KwModifiers = setify(_kwModifiers.split(" "));
-const _kwOther = "tuple returns";
-// All Keywords
-const _keywords = [_kwTypes, _kwModifiers, _kwOther, _kwVisib].join(" ");
-const Keywords = setify(_keywords.split(" "));
-// Single character tokens
-const SimpleTokens = {
-    "(": "OPEN_PAREN", ")": "CLOSE_PAREN",
-    "[": "OPEN_BRACKET", "]": "CLOSE_BRACKET",
-    ",": "COMMA", "@": "AT"
-};
-// Parser regexes to consume the next token
-const regexWhitespace = new RegExp("^(\\s*)");
-const regexNumber$1 = new RegExp("^([0-9]+)");
-const regexIdentifier = new RegExp("^([a-zA-Z$_][a-zA-Z0-9$_]*)");
-const regexType = new RegExp("^(address|bool|bytes([0-9]*)|string|u?int([0-9]*))");
-class TokenString {
-    #offset;
-    #tokens;
-    get offset() { return this.#offset; }
-    get length() { return this.#tokens.length - this.#offset; }
-    constructor(tokens) {
-        this.#offset = 0;
-        this.#tokens = tokens.slice();
-    }
-    clone() { return new TokenString(this.#tokens); }
-    reset() { this.#offset = 0; }
-    #subTokenString(from = 0, to = 0) {
-        return new TokenString(this.#tokens.slice(from, to).map((t) => {
-            return Object.freeze(Object.assign({}, t, {
-                match: (t.match - from),
-                linkBack: (t.linkBack - from),
-                linkNext: (t.linkNext - from),
-            }));
-            return t;
-        }));
-    }
-    // Pops and returns the value of the next token, if it is a keyword in allowed; throws if out of tokens
-    popKeyword(allowed) {
-        const top = this.peek();
-        if (top.type !== "KEYWORD" || !allowed.has(top.text)) {
-            throw new Error(`expected keyword ${top.text}`);
-        }
-        return this.pop().text;
-    }
-    // Pops and returns the value of the next token if it is `type`; throws if out of tokens
-    popType(type) {
-        if (this.peek().type !== type) {
-            throw new Error(`expected ${type}; got ${JSON.stringify(this.peek())}`);
-        }
-        return this.pop().text;
-    }
-    // Pops and returns a "(" TOKENS ")"
-    popParen() {
-        const top = this.peek();
-        if (top.type !== "OPEN_PAREN") {
-            throw new Error("bad start");
-        }
-        const result = this.#subTokenString(this.#offset + 1, top.match + 1);
-        this.#offset = top.match + 1;
-        return result;
-    }
-    // Pops and returns the items within "(" ITEM1 "," ITEM2 "," ... ")"
-    popParams() {
-        const top = this.peek();
-        if (top.type !== "OPEN_PAREN") {
-            throw new Error("bad start");
-        }
-        const result = [];
-        while (this.#offset < top.match - 1) {
-            const link = this.peek().linkNext;
-            result.push(this.#subTokenString(this.#offset + 1, link));
-            this.#offset = link;
-        }
-        this.#offset = top.match + 1;
-        return result;
-    }
-    // Returns the top Token, throwing if out of tokens
-    peek() {
-        if (this.#offset >= this.#tokens.length) {
-            throw new Error("out-of-bounds");
-        }
-        return this.#tokens[this.#offset];
-    }
-    // Returns the next value, if it is a keyword in `allowed`
-    peekKeyword(allowed) {
-        const top = this.peekType("KEYWORD");
-        return (top != null && allowed.has(top)) ? top : null;
-    }
-    // Returns the value of the next token if it is `type`
-    peekType(type) {
-        if (this.length === 0) {
-            return null;
-        }
-        const top = this.peek();
-        return (top.type === type) ? top.text : null;
-    }
-    // Returns the next token; throws if out of tokens
-    pop() {
-        const result = this.peek();
-        this.#offset++;
-        return result;
-    }
-    toString() {
-        const tokens = [];
-        for (let i = this.#offset; i < this.#tokens.length; i++) {
-            const token = this.#tokens[i];
-            tokens.push(`${token.type}:${token.text}`);
-        }
-        return `<TokenString ${tokens.join(" ")}>`;
-    }
-}
-function lex(text) {
-    const tokens = [];
-    const throwError = (message) => {
-        const token = (offset < text.length) ? JSON.stringify(text[offset]) : "$EOI";
-        throw new Error(`invalid token ${token} at ${offset}: ${message}`);
-    };
-    let brackets = [];
-    let commas = [];
-    let offset = 0;
-    while (offset < text.length) {
-        // Strip off any leading whitespace
-        let cur = text.substring(offset);
-        let match = cur.match(regexWhitespace);
-        if (match) {
-            offset += match[1].length;
-            cur = text.substring(offset);
-        }
-        const token = { depth: brackets.length, linkBack: -1, linkNext: -1, match: -1, type: "", text: "", offset, value: -1 };
-        tokens.push(token);
-        let type = (SimpleTokens[cur[0]] || "");
-        if (type) {
-            token.type = type;
-            token.text = cur[0];
-            offset++;
-            if (type === "OPEN_PAREN") {
-                brackets.push(tokens.length - 1);
-                commas.push(tokens.length - 1);
-            }
-            else if (type == "CLOSE_PAREN") {
-                if (brackets.length === 0) {
-                    throwError("no matching open bracket");
-                }
-                token.match = brackets.pop();
-                (tokens[token.match]).match = tokens.length - 1;
-                token.depth--;
-                token.linkBack = commas.pop();
-                (tokens[token.linkBack]).linkNext = tokens.length - 1;
-            }
-            else if (type === "COMMA") {
-                token.linkBack = commas.pop();
-                (tokens[token.linkBack]).linkNext = tokens.length - 1;
-                commas.push(tokens.length - 1);
-            }
-            else if (type === "OPEN_BRACKET") {
-                token.type = "BRACKET";
-            }
-            else if (type === "CLOSE_BRACKET") {
-                // Remove the CLOSE_BRACKET
-                let suffix = tokens.pop().text;
-                if (tokens.length > 0 && tokens[tokens.length - 1].type === "NUMBER") {
-                    const value = tokens.pop().text;
-                    suffix = value + suffix;
-                    (tokens[tokens.length - 1]).value = logger.getNumber(value);
-                }
-                if (tokens.length === 0 || tokens[tokens.length - 1].type !== "BRACKET") {
-                    throw new Error("missing opening bracket");
-                }
-                (tokens[tokens.length - 1]).text += suffix;
-            }
-            continue;
-        }
-        match = cur.match(regexIdentifier);
-        if (match) {
-            token.text = match[1];
-            offset += token.text.length;
-            if (Keywords.has(token.text)) {
-                token.type = "KEYWORD";
-                continue;
-            }
-            if (token.text.match(regexType)) {
-                token.type = "TYPE";
-                continue;
-            }
-            token.type = "ID";
-            continue;
-        }
-        match = cur.match(regexNumber$1);
-        if (match) {
-            token.text = match[1];
-            token.type = "NUMBER";
-            offset += token.text.length;
-            continue;
-        }
-        throw new Error(`unexpected token ${JSON.stringify(cur[0])} at position ${offset}`);
-    }
-    return new TokenString(tokens.map((t) => Object.freeze(t)));
-}
-// Check only one of `allowed` is in `set`
-function allowSingle(set, allowed) {
-    let included = [];
-    for (const key in allowed.keys()) {
-        if (set.has(key)) {
-            included.push(key);
-        }
-    }
-    if (included.length > 1) {
-        throw new Error(`conflicting types: ${included.join(", ")}`);
-    }
-}
-// Functions to process a Solidity Signature TokenString from left-to-right for...
-// ...the name with an optional type, returning the name
-function consumeName(type, tokens) {
-    if (tokens.peekKeyword(KwTypes)) {
-        const keyword = tokens.pop().text;
-        if (keyword !== type) {
-            throw new Error(`expected ${type}, got ${keyword}`);
-        }
-    }
-    return tokens.popType("ID");
-}
-// ...all keywords matching allowed, returning the keywords
-function consumeKeywords(tokens, allowed) {
-    const keywords = new Set();
-    while (true) {
-        const keyword = tokens.peekType("KEYWORD");
-        if (keyword == null || (allowed && !allowed.has(keyword))) {
-            break;
-        }
-        tokens.pop();
-        if (keywords.has(keyword)) {
-            throw new Error(`duplicate keywords: ${JSON.stringify(keyword)}`);
-        }
-        keywords.add(keyword);
-    }
-    return Object.freeze(keywords);
-}
-// ...all visibility keywords, returning the coalesced mutability
-function consumeMutability(tokens) {
-    let modifiers = consumeKeywords(tokens, KwVisib);
-    // Detect conflicting modifiers
-    allowSingle(modifiers, setify("constant payable nonpayable".split(" ")));
-    allowSingle(modifiers, setify("pure view payable nonpayable".split(" ")));
-    // Process mutability states
-    if (modifiers.has("view")) {
-        return "view";
-    }
-    if (modifiers.has("pure")) {
-        return "pure";
-    }
-    if (modifiers.has("payable")) {
-        return "payable";
-    }
-    if (modifiers.has("nonpayable")) {
-        return "nonpayable";
-    }
-    // Process legacy `constant` last
-    if (modifiers.has("constant")) {
-        return "view";
-    }
-    return "nonpayable";
-}
-// ...a parameter list, returning the ParamType list
-function consumeParams(tokens, allowIndexed) {
-    return tokens.popParams().map((t) => ParamType.fromTokens(t, allowIndexed));
-}
-// ...a gas limit, returning a BigNumber or null if none
-function consumeGas(tokens) {
-    if (tokens.peekType("AT")) {
-        tokens.pop();
-        if (tokens.peekType("NUMBER")) {
-            return logger.getBigInt(tokens.pop().text);
-        }
-        throw new Error("invalid gas");
-    }
-    return null;
-}
-function consumeEoi(tokens) {
-    if (tokens.length) {
-        throw new Error(`unexpected tokens: ${tokens.toString()}`);
-    }
-}
-const regexArrayType = new RegExp(/^(.*)\[([0-9]*)\]$/);
-function verifyBasicType(type) {
-    const match = type.match(regexType);
-    if (!match) {
-        return logger.throwArgumentError("invalid type", "type", type);
-    }
-    if (type === "uint") {
-        return "uint256";
-    }
-    if (type === "int") {
-        return "int256";
-    }
-    if (match[2]) {
-        // bytesXX
-        const length = parseInt(match[2]);
-        if (length === 0 || length > 32) {
-            logger.throwArgumentError("invalid bytes length", "type", type);
-        }
-    }
-    else if (match[3]) {
-        // intXX or uintXX
-        const size = parseInt(match[3]);
-        if (size === 0 || size > 256 || size % 8) {
-            logger.throwArgumentError("invalid numeric width", "type", type);
-        }
-    }
-    return type;
-}
-// Make the Fragment constructors effectively private
-const _guard$3 = {};
-const internal$1 = Symbol.for("_ethers_internal");
-const ParamTypeInternal = "_ParamTypeInternal";
-class ParamType {
-    // The local name of the parameter (of "" if unbound)
-    name;
-    // The fully qualified type (e.g. "address", "tuple(address)", "uint256[3][]"
-    type;
-    // The base type (e.g. "address", "tuple", "array")
-    baseType;
-    // Indexable Paramters ONLY (otherwise null)
-    indexed;
-    // Tuples ONLY: (otherwise null)
-    //  - sub-components
-    components;
-    // Arrays ONLY: (otherwise null)
-    //  - length of the array (-1 for dynamic length)
-    //  - child type
-    arrayLength;
-    arrayChildren;
-    constructor(guard, name, type, baseType, indexed, components, arrayLength, arrayChildren) {
-        logger.assertPrivate(guard, _guard$3, "ParamType");
-        Object.defineProperty(this, internal$1, { value: ParamTypeInternal });
-        if (components) {
-            components = Object.freeze(components.slice());
-        }
-        if (baseType === "array") {
-            if (arrayLength == null || arrayChildren == null) {
-                throw new Error("");
-            }
-        }
-        else if (arrayLength != null || arrayChildren != null) {
-            throw new Error("");
-        }
-        if (baseType === "tuple") {
-            if (components == null) {
-                throw new Error("");
-            }
-        }
-        else if (components != null) {
-            throw new Error("");
-        }
-        defineProperties(this, {
-            name, type, baseType, indexed, components, arrayLength, arrayChildren
-        });
-    }
-    // Format the parameter fragment
-    //   - sighash: "(uint256,address)"
-    //   - minimal: "tuple(uint256,address) indexed"
-    //   - full:    "tuple(uint256 foo, address bar) indexed baz"
-    format(format = FormatType.sighash) {
-        if (!FormatType[format]) {
-            logger.throwArgumentError("invalid format type", "format", format);
-        }
-        if (format === FormatType.json) {
-            let result = {
-                type: ((this.baseType === "tuple") ? "tuple" : this.type),
-                name: (this.name || undefined)
-            };
-            if (typeof (this.indexed) === "boolean") {
-                result.indexed = this.indexed;
-            }
-            if (this.isTuple()) {
-                result.components = this.components.map((c) => JSON.parse(c.format(format)));
-            }
-            return JSON.stringify(result);
-        }
-        let result = "";
-        // Array
-        if (this.isArray()) {
-            result += this.arrayChildren.format(format);
-            result += `[${(this.arrayLength < 0 ? "" : String(this.arrayLength))}]`;
-        }
-        else {
-            if (this.isTuple()) {
-                if (format !== FormatType.sighash) {
-                    result += this.type;
-                }
-                result += "(" + this.components.map((comp) => comp.format(format)).join((format === FormatType.full) ? ", " : ",") + ")";
-            }
-            else {
-                result += this.type;
-            }
-        }
-        if (format !== FormatType.sighash) {
-            if (this.indexed === true) {
-                result += " indexed";
-            }
-            if (format === FormatType.full && this.name) {
-                result += " " + this.name;
-            }
-        }
-        return result;
-    }
-    static isArray(value) {
-        return value && (value.baseType === "array");
-    }
-    isArray() {
-        return (this.baseType === "array");
-    }
-    isTuple() {
-        return (this.baseType === "tuple");
-    }
-    isIndexable() {
-        return (this.indexed != null);
-    }
-    walk(value, process) {
-        if (this.isArray()) {
-            if (!Array.isArray(value)) {
-                throw new Error("invlaid array value");
-            }
-            if (this.arrayLength !== -1 && value.length !== this.arrayLength) {
-                throw new Error("array is wrong length");
-            }
-            return value.map((v) => (this.arrayChildren.walk(v, process)));
-        }
-        if (this.isTuple()) {
-            if (!Array.isArray(value)) {
-                throw new Error("invlaid tuple value");
-            }
-            if (value.length !== this.components.length) {
-                throw new Error("array is wrong length");
-            }
-            return value.map((v, i) => (this.components[i].walk(v, process)));
-        }
-        return process(this.type, value);
-    }
-    #walkAsync(promises, value, process, setValue) {
-        if (this.isArray()) {
-            if (!Array.isArray(value)) {
-                throw new Error("invlaid array value");
-            }
-            if (this.arrayLength !== -1 && value.length !== this.arrayLength) {
-                throw new Error("array is wrong length");
-            }
-            const childType = this.arrayChildren;
-            const result = value.slice();
-            result.forEach((value, index) => {
-                childType.#walkAsync(promises, value, process, (value) => {
-                    result[index] = value;
-                });
-            });
-            setValue(result);
-            return;
-        }
-        if (this.isTuple()) {
-            const components = this.components;
-            // Convert the object into an array
-            let result;
-            if (Array.isArray(value)) {
-                result = value.slice();
-            }
-            else {
-                if (value == null || typeof (value) !== "object") {
-                    throw new Error("invlaid tuple value");
-                }
-                result = components.map((param) => {
-                    if (!param.name) {
-                        throw new Error("cannot use object value with unnamed components");
-                    }
-                    if (!(param.name in value)) {
-                        throw new Error(`missing value for component ${param.name}`);
-                    }
-                    return value[param.name];
-                });
-            }
-            if (value.length !== this.components.length) {
-                throw new Error("array is wrong length");
-            }
-            result.forEach((value, index) => {
-                components[index].#walkAsync(promises, value, process, (value) => {
-                    result[index] = value;
-                });
-            });
-            setValue(result);
-            return;
-        }
-        const result = process(this.type, value);
-        if (result.then) {
-            promises.push((async function () { setValue(await result); })());
-        }
-        else {
-            setValue(result);
-        }
-    }
-    async walkAsync(value, process) {
-        const promises = [];
-        const result = [value];
-        this.#walkAsync(promises, value, process, (value) => {
-            result[0] = value;
-        });
-        if (promises.length) {
-            await Promise.all(promises);
-        }
-        return result[0];
-    }
-    static from(obj, allowIndexed) {
-        if (ParamType.isParamType(obj)) {
-            return obj;
-        }
-        if (typeof (obj) === "string") {
-            return ParamType.fromTokens(lex(obj), allowIndexed);
-        }
-        if (obj instanceof TokenString) {
-            return ParamType.fromTokens(obj, allowIndexed);
-        }
-        const name = obj.name;
-        if (name && (typeof (name) !== "string" || !name.match(regexIdentifier))) {
-            logger.throwArgumentError("invalid name", "obj.name", name);
-        }
-        let indexed = obj.indexed;
-        if (indexed != null) {
-            if (!allowIndexed) {
-                logger.throwArgumentError("parameter cannot be indexed", "obj.indexed", obj.indexed);
-            }
-            indexed = !!indexed;
-        }
-        let type = obj.type;
-        let arrayMatch = type.match(regexArrayType);
-        if (arrayMatch) {
-            const arrayLength = arrayMatch[2];
-            const arrayChildren = ParamType.from({
-                type: arrayMatch[1],
-                components: obj.components
-            });
-            return new ParamType(_guard$3, name, type, "array", indexed, null, arrayLength, arrayChildren);
-        }
-        if (type.substring(0, 5) === "tuple(" || type[0] === "(") {
-            const comps = (obj.components != null) ? obj.components.map((c) => ParamType.from(c)) : null;
-            const tuple = new ParamType(_guard$3, name, type, "tuple", indexed, comps, null, null);
-            // @TODO: use lexer to validate and normalize type
-            return tuple;
-        }
-        type = verifyBasicType(obj.type);
-        return new ParamType(_guard$3, name, type, type, indexed, null, null, null);
-    }
-    static fromObject(obj, allowIndexed) {
-        throw new Error("@TODO");
-    }
-    static fromTokens(tokens, allowIndexed) {
-        let type = "", baseType = "";
-        let comps = null;
-        if (consumeKeywords(tokens, setify(["tuple"])).has("tuple") || tokens.peekType("OPEN_PAREN")) {
-            // Tuple
-            baseType = "tuple";
-            comps = tokens.popParams().map((t) => ParamType.from(t));
-            type = `tuple(${comps.map((c) => c.format()).join(",")})`;
-        }
-        else {
-            // Normal
-            type = verifyBasicType(tokens.popType("TYPE"));
-            baseType = type;
-        }
-        // Check for Array
-        let arrayChildren = null;
-        let arrayLength = null;
-        while (tokens.length && tokens.peekType("BRACKET")) {
-            const bracket = tokens.pop(); //arrays[i];
-            arrayChildren = new ParamType(_guard$3, "", type, baseType, null, comps, arrayLength, arrayChildren);
-            arrayLength = bracket.value;
-            type += bracket.text;
-            baseType = "array";
-            comps = null;
-        }
-        let indexed = null;
-        const keywords = consumeKeywords(tokens, KwModifiers);
-        if (keywords.has("indexed")) {
-            if (!allowIndexed) {
-                throw new Error("");
-            }
-            indexed = true;
-        }
-        const name = (tokens.peekType("ID") ? tokens.pop().text : "");
-        if (tokens.length) {
-            throw new Error("leftover tokens");
-        }
-        return new ParamType(_guard$3, name, type, baseType, indexed, comps, arrayLength, arrayChildren);
-    }
-    static isParamType(value) {
-        return (value && value[internal$1] === ParamTypeInternal);
-    }
-}
-var FragmentType;
-(function (FragmentType) {
-    FragmentType["constructor"] = "constructor";
-    FragmentType["error"] = "error";
-    FragmentType["event"] = "event";
-    FragmentType["function"] = "function";
-    FragmentType["struct"] = "struct";
-})(FragmentType || (FragmentType = {}));
-;
-class Fragment {
-    type;
-    inputs;
-    constructor(guard, type, inputs) {
-        logger.assertPrivate(guard, _guard$3, "Fragment");
-        inputs = Object.freeze(inputs.slice());
-        defineProperties(this, { type, inputs });
-    }
-    static from(obj) {
-        if (typeof (obj) === "string") {
-            return this.fromString(obj);
-        }
-        if (obj instanceof TokenString) {
-            return this.fromTokens(obj);
-        }
-        if (typeof (obj) === "object") {
-            return this.fromObject(obj);
-        }
-        throw new Error(`unsupported type: ${obj}`);
-    }
-    static fromObject(obj) {
-        switch (obj.type) {
-            case "constructor": return ConstructorFragment.fromObject(obj);
-            case "error": return ErrorFragment.fromObject(obj);
-            case "event": return EventFragment.fromObject(obj);
-            case "function": return FunctionFragment.fromObject(obj);
-            case "struct": return StructFragment.fromObject(obj);
-        }
-        throw new Error("not implemented yet");
-    }
-    static fromString(text) {
-        try {
-            Fragment.from(JSON.parse(text));
-        }
-        catch (e) { }
-        return Fragment.fromTokens(lex(text));
-    }
-    static fromTokens(tokens) {
-        const type = tokens.popKeyword(KwTypes);
-        switch (type) {
-            case "constructor": return ConstructorFragment.fromTokens(tokens);
-            case "error": return ErrorFragment.fromTokens(tokens);
-            case "event": return EventFragment.fromTokens(tokens);
-            case "function": return FunctionFragment.fromTokens(tokens);
-            case "struct": return StructFragment.fromTokens(tokens);
-        }
-        throw new Error(`unsupported type: ${type}`);
-    }
-    /*
-    static fromTokens(tokens: TokenString): Fragment {
-        const assertDone = () => {
-            if (tokens.length) { throw new Error(`unexpected tokens: ${ tokens.toString() }`); }
-        });
-
-        const type = (tokens.length && tokens.peek().type === "KEYWORD") ? tokens.peek().text: "unknown";
-
-        const name = consumeName("error", tokens);
-        const inputs = consumeParams(tokens, type === "event");
-
-        switch (type) {
-            case "event": case "struct":
-                assertDone();
-        }
-
-    }
-    */
-    static isConstructor(value) {
-        return (value && value.type === "constructor");
-    }
-    static isError(value) {
-        return (value && value.type === "error");
-    }
-    static isEvent(value) {
-        return (value && value.type === "event");
-    }
-    static isFunction(value) {
-        return (value && value.type === "function");
-    }
-    static isStruct(value) {
-        return (value && value.type === "struct");
-    }
-}
-class NamedFragment extends Fragment {
-    name;
-    constructor(guard, type, name, inputs) {
-        super(guard, type, inputs);
-        inputs = Object.freeze(inputs.slice());
-        defineProperties(this, { name });
-    }
-}
-function joinParams(format, params) {
-    return "(" + params.map((p) => p.format(format)).join((format === FormatType.full) ? ", " : ",") + ")";
-}
-class ErrorFragment extends NamedFragment {
-    constructor(guard, name, inputs) {
-        super(guard, FragmentType.error, name, inputs);
-    }
-    format(format = FormatType.sighash) {
-        if (!FormatType[format]) {
-            logger.throwArgumentError("invalid format type", "format", format);
-        }
-        if (format === FormatType.json) {
-            return JSON.stringify({
-                type: "error",
-                name: this.name,
-                inputs: this.inputs.map((input) => JSON.parse(input.format(format))),
-            });
-        }
-        const result = [];
-        if (format !== FormatType.sighash) {
-            result.push("error");
-        }
-        result.push(this.name + joinParams(format, this.inputs));
-        return result.join(" ");
-    }
-    static fromString(text) {
-        return ErrorFragment.fromTokens(lex(text));
-    }
-    static fromTokens(tokens) {
-        const name = consumeName("error", tokens);
-        const inputs = consumeParams(tokens);
-        consumeEoi(tokens);
-        return new ErrorFragment(_guard$3, name, inputs);
-    }
-}
-class EventFragment extends NamedFragment {
-    anonymous;
-    constructor(guard, name, inputs, anonymous) {
-        super(guard, FragmentType.event, name, inputs);
-        defineProperties(this, { anonymous });
-    }
-    format(format = FormatType.sighash) {
-        if (!FormatType[format]) {
-            logger.throwArgumentError("invalid format type", "format", format);
-        }
-        if (format === FormatType.json) {
-            return JSON.stringify({
-                type: "event",
-                anonymous: this.anonymous,
-                name: this.name,
-                inputs: this.inputs.map((i) => JSON.parse(i.format(format)))
-            });
-        }
-        const result = [];
-        if (format !== FormatType.sighash) {
-            result.push("event");
-        }
-        result.push(this.name + joinParams(format, this.inputs));
-        if (format !== FormatType.sighash && this.anonymous) {
-            result.push("anonymous");
-        }
-        return result.join(" ");
-    }
-    static fromString(text) {
-        return EventFragment.fromTokens(lex(text));
-    }
-    static fromTokens(tokens) {
-        const name = consumeName("event", tokens);
-        const inputs = consumeParams(tokens, true);
-        const anonymous = !!consumeKeywords(tokens, setify(["anonymous"])).has("anonymous");
-        consumeEoi(tokens);
-        return new EventFragment(_guard$3, name, inputs, anonymous);
-    }
-}
-class ConstructorFragment extends Fragment {
-    payable;
-    gas;
-    constructor(guard, type, inputs, payable, gas) {
-        super(guard, type, inputs);
-        defineProperties(this, { payable, gas });
-    }
-    format(format = FormatType.sighash) {
-        if (!FormatType[format]) {
-            logger.throwArgumentError("invalid format type", "format", format);
-        }
-        if (format === FormatType.sighash) {
-            logger.throwError("cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", {
-                operation: "format(sighash)"
-            });
-        }
-        if (format === FormatType.json) {
-            return JSON.stringify({
-                type: "constructor",
-                stateMutability: (this.payable ? "payable" : "undefined"),
-                payable: this.payable,
-                gas: ((this.gas != null) ? this.gas : undefined),
-                inputs: this.inputs.map((i) => JSON.parse(i.format(format)))
-            });
-        }
-        const result = [`constructor${joinParams(format, this.inputs)}`];
-        result.push((this.payable) ? "payable" : "nonpayable");
-        if (this.gas != null) {
-            result.push(`@${this.gas.toString()}`);
-        }
-        return result.join(" ");
-    }
-    static fromString(text) {
-        return ConstructorFragment.fromTokens(lex(text));
-    }
-    static fromObject(obj) {
-        throw new Error("TODO");
-    }
-    static fromTokens(tokens) {
-        consumeKeywords(tokens, setify(["constructor"]));
-        const inputs = consumeParams(tokens);
-        const payable = !!consumeKeywords(tokens, setify(["payable"])).has("payable");
-        const gas = consumeGas(tokens);
-        consumeEoi(tokens);
-        return new ConstructorFragment(_guard$3, FragmentType.constructor, inputs, payable, gas);
-    }
-}
-class FunctionFragment extends NamedFragment {
-    constant;
-    outputs;
-    stateMutability;
-    payable;
-    gas;
-    constructor(guard, name, stateMutability, inputs, outputs, gas) {
-        super(guard, FragmentType.function, name, inputs);
-        outputs = Object.freeze(outputs.slice());
-        const constant = (stateMutability === "view" || stateMutability === "pure");
-        const payable = (stateMutability === "payable");
-        defineProperties(this, { constant, gas, outputs, payable, stateMutability });
-    }
-    format(format = FormatType.sighash) {
-        if (!FormatType[format]) {
-            logger.throwArgumentError("invalid format type", "format", format);
-        }
-        if (format === FormatType.json) {
-            return JSON.stringify({
-                type: "function",
-                name: this.name,
-                constant: this.constant,
-                stateMutability: ((this.stateMutability !== "nonpayable") ? this.stateMutability : undefined),
-                payable: this.payable,
-                gas: ((this.gas != null) ? this.gas : undefined),
-                inputs: this.inputs.map((i) => JSON.parse(i.format(format))),
-                outputs: this.outputs.map((o) => JSON.parse(o.format(format))),
-            });
-        }
-        const result = [];
-        if (format !== FormatType.sighash) {
-            result.push("function");
-        }
-        result.push(this.name + joinParams(format, this.inputs));
-        if (format !== FormatType.sighash) {
-            if (this.stateMutability !== "nonpayable") {
-                result.push(this.stateMutability);
-            }
-            if (this.outputs && this.outputs.length) {
-                result.push("returns");
-                result.push(joinParams(format, this.outputs));
-            }
-            if (this.gas != null) {
-                result.push(`@${this.gas.toString()}`);
-            }
-        }
-        return result.join(" ");
-    }
-    static fromString(text) {
-        return FunctionFragment.fromTokens(lex(text));
-    }
-    static fromTokens(tokens) {
-        const name = consumeName("function", tokens);
-        const inputs = consumeParams(tokens);
-        const mutability = consumeMutability(tokens);
-        let outputs = [];
-        if (consumeKeywords(tokens, setify(["returns"])).has("returns")) {
-            outputs = consumeParams(tokens);
-        }
-        const gas = consumeGas(tokens);
-        consumeEoi(tokens);
-        return new FunctionFragment(_guard$3, name, mutability, inputs, outputs, gas);
-    }
-}
-class StructFragment extends NamedFragment {
-    format() {
-        throw new Error("@TODO");
-    }
-    static fromString(text) {
-        return StructFragment.fromTokens(lex(text));
-    }
-    static fromTokens(tokens) {
-        const name = consumeName("struct", tokens);
-        const inputs = consumeParams(tokens);
-        consumeEoi(tokens);
-        return new StructFragment(_guard$3, FragmentType.struct, name, inputs);
-    }
-}
-
-// See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
-const paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
-const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
-class AbiCoder {
-    #getCoder(param) {
-        if (param.isArray()) {
-            return new ArrayCoder(this.#getCoder(param.arrayChildren), param.arrayLength, param.name);
-        }
-        if (param.isTuple()) {
-            return new TupleCoder(param.components.map((c) => this.#getCoder(c)), param.name);
-        }
-        switch (param.baseType) {
-            case "address":
-                return new AddressCoder(param.name);
-            case "bool":
-                return new BooleanCoder(param.name);
-            case "string":
-                return new StringCoder(param.name);
-            case "bytes":
-                return new BytesCoder(param.name);
-            case "":
-                return new NullCoder(param.name);
-        }
-        // u?int[0-9]*
-        let match = param.type.match(paramTypeNumber);
-        if (match) {
-            let size = parseInt(match[2] || "256");
-            if (size === 0 || size > 256 || (size % 8) !== 0) {
-                logger.throwArgumentError("invalid " + match[1] + " bit length", "param", param);
-            }
-            return new NumberCoder(size / 8, (match[1] === "int"), param.name);
-        }
-        // bytes[0-9]+
-        match = param.type.match(paramTypeBytes);
-        if (match) {
-            let size = parseInt(match[1]);
-            if (size === 0 || size > 32) {
-                logger.throwArgumentError("invalid bytes length", "param", param);
-            }
-            return new FixedBytesCoder(size, param.name);
-        }
-        return logger.throwArgumentError("invalid type", "type", param.type);
-    }
-    getDefaultValue(types) {
-        const coders = types.map((type) => this.#getCoder(ParamType.from(type)));
-        const coder = new TupleCoder(coders, "_");
-        return coder.defaultValue();
-    }
-    encode(types, values) {
-        logger.assertArgumentCount(values.length, types.length, "types/values length mismatch");
-        const coders = types.map((type) => this.#getCoder(ParamType.from(type)));
-        const coder = (new TupleCoder(coders, "_"));
-        const writer = new Writer();
-        coder.encode(writer, values);
-        return writer.data;
-    }
-    decode(types, data, loose) {
-        const coders = types.map((type) => this.#getCoder(ParamType.from(type)));
-        const coder = new TupleCoder(coders, "_");
-        return coder.decode(new Reader(data, loose));
-    }
-}
-const defaultAbiCoder = new AbiCoder();
-
-function formatBytes32String(text) {
-    // Get the bytes
-    const bytes = toUtf8Bytes(text);
-    // Check we have room for null-termination
-    if (bytes.length > 31) {
-        throw new Error("bytes32 string must be less than 32 bytes");
-    }
-    // Zero-pad (implicitly null-terminates)
-    return zeroPadBytes(bytes, 32);
-}
-function parseBytes32String(_bytes) {
-    const data = logger.getBytes(_bytes, "bytes");
-    // Must be 32 bytes with a null-termination
-    if (data.length !== 32) {
-        throw new Error("invalid bytes32 - not 32 bytes long");
-    }
-    if (data[31] !== 0) {
-        throw new Error("invalid bytes32 string - no null terminator");
-    }
-    // Find the null termination
-    let length = 31;
-    while (data[length - 1] === 0) {
-        length--;
-    }
-    // Determine the string value
-    return toUtf8String(data.slice(0, length));
 }
 
 // HMAC (RFC 2104)
@@ -4854,6 +3005,66 @@ class SHA256 extends SHA2 {
  */
 const sha256$1 = wrapConstructor(() => new SHA256());
 
+const U32_MASK64 = BigInt(2 ** 32 - 1);
+const _32n = BigInt(32);
+// We are not using BigUint64Array, because they are extremely slow as per 2022
+function fromBig(n, le = false) {
+    if (le)
+        return { h: Number(n & U32_MASK64), l: Number((n >> _32n) & U32_MASK64) };
+    return { h: Number((n >> _32n) & U32_MASK64) | 0, l: Number(n & U32_MASK64) | 0 };
+}
+function split(lst, le = false) {
+    let Ah = new Uint32Array(lst.length);
+    let Al = new Uint32Array(lst.length);
+    for (let i = 0; i < lst.length; i++) {
+        const { h, l } = fromBig(lst[i], le);
+        [Ah[i], Al[i]] = [h, l];
+    }
+    return [Ah, Al];
+}
+const toBig = (h, l) => (BigInt(h >>> 0) << _32n) | BigInt(l >>> 0);
+// for Shift in [0, 32)
+const shrSH = (h, l, s) => h >>> s;
+const shrSL = (h, l, s) => (h << (32 - s)) | (l >>> s);
+// Right rotate for Shift in [1, 32)
+const rotrSH = (h, l, s) => (h >>> s) | (l << (32 - s));
+const rotrSL = (h, l, s) => (h << (32 - s)) | (l >>> s);
+// Right rotate for Shift in (32, 64), NOTE: 32 is special case.
+const rotrBH = (h, l, s) => (h << (64 - s)) | (l >>> (s - 32));
+const rotrBL = (h, l, s) => (h >>> (s - 32)) | (l << (64 - s));
+// Right rotate for shift===32 (just swaps l&h)
+const rotr32H = (h, l) => l;
+const rotr32L = (h, l) => h;
+// Left rotate for Shift in [1, 32)
+const rotlSH = (h, l, s) => (h << s) | (l >>> (32 - s));
+const rotlSL = (h, l, s) => (l << s) | (h >>> (32 - s));
+// Left rotate for Shift in (32, 64), NOTE: 32 is special case.
+const rotlBH = (h, l, s) => (l << (s - 32)) | (h >>> (64 - s));
+const rotlBL = (h, l, s) => (h << (s - 32)) | (l >>> (64 - s));
+// JS uses 32-bit signed integers for bitwise operations which means we cannot
+// simple take carry out of low bit sum by shift, we need to use division.
+// Removing "export" has 5% perf penalty -_-
+function add(Ah, Al, Bh, Bl) {
+    const l = (Al >>> 0) + (Bl >>> 0);
+    return { h: (Ah + Bh + ((l / 2 ** 32) | 0)) | 0, l: l | 0 };
+}
+// Addition with more than 2 elements
+const add3L = (Al, Bl, Cl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0);
+const add3H = (low, Ah, Bh, Ch) => (Ah + Bh + Ch + ((low / 2 ** 32) | 0)) | 0;
+const add4L = (Al, Bl, Cl, Dl) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0) + (Dl >>> 0);
+const add4H = (low, Ah, Bh, Ch, Dh) => (Ah + Bh + Ch + Dh + ((low / 2 ** 32) | 0)) | 0;
+const add5L = (Al, Bl, Cl, Dl, El) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0) + (Dl >>> 0) + (El >>> 0);
+const add5H = (low, Ah, Bh, Ch, Dh, Eh) => (Ah + Bh + Ch + Dh + Eh + ((low / 2 ** 32) | 0)) | 0;
+// prettier-ignore
+const u64 = {
+    fromBig, split, toBig,
+    shrSH, shrSL,
+    rotrSH, rotrSL, rotrBH, rotrBL,
+    rotr32H, rotr32L,
+    rotlSH, rotlSL, rotlBH, rotlBL,
+    add, add3L, add3H, add4L, add4H, add5H, add5L,
+};
+
 // Round contants (first 32 bits of the fractional parts of the cube roots of the first 80 primes 2..409):
 // prettier-ignore
 const [SHA512_Kh, SHA512_Kl] = u64.split([
@@ -5079,55 +3290,277 @@ function createHash(algo) {
         case "sha256": return sha256$1.create();
         case "sha512": return sha512$1.create();
     }
-    return logger.throwArgumentError("invalid hashing algorithm name", "algorithm", algo);
+    return throwArgumentError("invalid hashing algorithm name", "algorithm", algo);
 }
 function createHmac(_algo, key) {
     const algo = ({ sha256: sha256$1, sha512: sha512$1 }[_algo]);
     if (algo == null) {
-        return logger.throwArgumentError("invalid hmac algorithm", "algorithm", _algo);
+        return throwArgumentError("invalid hmac algorithm", "algorithm", _algo);
     }
     return hmac.create(algo, key);
 }
 function pbkdf2Sync(password, salt, iterations, keylen, _algo) {
     const algo = ({ sha256: sha256$1, sha512: sha512$1 }[_algo]);
     if (algo == null) {
-        return logger.throwArgumentError("invalid pbkdf2 algorithm", "algorithm", _algo);
+        return throwArgumentError("invalid pbkdf2 algorithm", "algorithm", _algo);
     }
     return pbkdf2$1(algo, password, salt, { c: iterations, dkLen: keylen });
 }
 function randomBytes$1(length) {
     if (crypto$1 == null) {
-        return logger.throwError("platform does not support secure random numbers", "UNSUPPORTED_OPERATION", {
+        return throwError("platform does not support secure random numbers", "UNSUPPORTED_OPERATION", {
             operation: "randomBytes"
         });
     }
     if (!Number.isInteger(length) || length <= 0 || length > 1024) {
-        logger.throwArgumentError("invalid length", "length", length);
+        throwArgumentError("invalid length", "length", length);
     }
     const result = new Uint8Array(length);
     crypto$1.getRandomValues(result);
     return result;
 }
 
-let locked$3 = false;
+let locked$4 = false;
 const _computeHmac = function (algorithm, key, data) {
     return "0x" + createHmac(algorithm, key).update(data).digest("hex");
 };
 let __computeHmac = _computeHmac;
 function computeHmac(algorithm, _key, _data) {
-    const key = logger.getBytes(_key, "key");
-    const data = logger.getBytes(_data, "data");
+    const key = getBytes(_key, "key");
+    const data = getBytes(_data, "data");
     return hexlify(__computeHmac(algorithm, key, data));
 }
 computeHmac._ = _computeHmac;
-computeHmac.lock = function () { locked$3 = true; };
+computeHmac.lock = function () { locked$4 = true; };
 computeHmac.register = function (func) {
-    if (locked$3) {
+    if (locked$4) {
         throw new Error("computeHmac is locked");
     }
     __computeHmac = func;
 };
 Object.freeze(computeHmac);
+
+// Various per round constants calculations
+const [SHA3_PI, SHA3_ROTL, _SHA3_IOTA] = [[], [], []];
+const _0n$1 = BigInt(0);
+const _1n$1 = BigInt(1);
+const _2n$1 = BigInt(2);
+const _7n = BigInt(7);
+const _256n = BigInt(256);
+const _0x71n = BigInt(0x71);
+for (let round = 0, R = _1n$1, x = 1, y = 0; round < 24; round++) {
+    // Pi
+    [x, y] = [y, (2 * x + 3 * y) % 5];
+    SHA3_PI.push(2 * (5 * y + x));
+    // Rotational
+    SHA3_ROTL.push((((round + 1) * (round + 2)) / 2) % 64);
+    // Iota
+    let t = _0n$1;
+    for (let j = 0; j < 7; j++) {
+        R = ((R << _1n$1) ^ ((R >> _7n) * _0x71n)) % _256n;
+        if (R & _2n$1)
+            t ^= _1n$1 << ((_1n$1 << BigInt(j)) - _1n$1);
+    }
+    _SHA3_IOTA.push(t);
+}
+const [SHA3_IOTA_H, SHA3_IOTA_L] = u64.split(_SHA3_IOTA, true);
+// Left rotation (without 0, 32, 64)
+const rotlH = (h, l, s) => s > 32 ? u64.rotlBH(h, l, s) : u64.rotlSH(h, l, s);
+const rotlL = (h, l, s) => s > 32 ? u64.rotlBL(h, l, s) : u64.rotlSL(h, l, s);
+// Same as keccakf1600, but allows to skip some rounds
+function keccakP(s, rounds = 24) {
+    const B = new Uint32Array(5 * 2);
+    // NOTE: all indices are x2 since we store state as u32 instead of u64 (bigints to slow in js)
+    for (let round = 24 - rounds; round < 24; round++) {
+        // Theta θ
+        for (let x = 0; x < 10; x++)
+            B[x] = s[x] ^ s[x + 10] ^ s[x + 20] ^ s[x + 30] ^ s[x + 40];
+        for (let x = 0; x < 10; x += 2) {
+            const idx1 = (x + 8) % 10;
+            const idx0 = (x + 2) % 10;
+            const B0 = B[idx0];
+            const B1 = B[idx0 + 1];
+            const Th = rotlH(B0, B1, 1) ^ B[idx1];
+            const Tl = rotlL(B0, B1, 1) ^ B[idx1 + 1];
+            for (let y = 0; y < 50; y += 10) {
+                s[x + y] ^= Th;
+                s[x + y + 1] ^= Tl;
+            }
+        }
+        // Rho (ρ) and Pi (π)
+        let curH = s[2];
+        let curL = s[3];
+        for (let t = 0; t < 24; t++) {
+            const shift = SHA3_ROTL[t];
+            const Th = rotlH(curH, curL, shift);
+            const Tl = rotlL(curH, curL, shift);
+            const PI = SHA3_PI[t];
+            curH = s[PI];
+            curL = s[PI + 1];
+            s[PI] = Th;
+            s[PI + 1] = Tl;
+        }
+        // Chi (χ)
+        for (let y = 0; y < 50; y += 10) {
+            for (let x = 0; x < 10; x++)
+                B[x] = s[y + x];
+            for (let x = 0; x < 10; x++)
+                s[y + x] ^= ~B[(x + 2) % 10] & B[(x + 4) % 10];
+        }
+        // Iota (ι)
+        s[0] ^= SHA3_IOTA_H[round];
+        s[1] ^= SHA3_IOTA_L[round];
+    }
+    B.fill(0);
+}
+class Keccak extends Hash {
+    // NOTE: we accept arguments in bytes instead of bits here.
+    constructor(blockLen, suffix, outputLen, enableXOF = false, rounds = 24) {
+        super();
+        this.blockLen = blockLen;
+        this.suffix = suffix;
+        this.outputLen = outputLen;
+        this.enableXOF = enableXOF;
+        this.rounds = rounds;
+        this.pos = 0;
+        this.posOut = 0;
+        this.finished = false;
+        this.destroyed = false;
+        // Can be passed from user as dkLen
+        assert.number(outputLen);
+        // 1600 = 5x5 matrix of 64bit.  1600 bits === 200 bytes
+        if (0 >= this.blockLen || this.blockLen >= 200)
+            throw new Error('Sha3 supports only keccak-f1600 function');
+        this.state = new Uint8Array(200);
+        this.state32 = u32(this.state);
+    }
+    keccak() {
+        keccakP(this.state32, this.rounds);
+        this.posOut = 0;
+        this.pos = 0;
+    }
+    update(data) {
+        assert.exists(this);
+        const { blockLen, state } = this;
+        data = toBytes(data);
+        const len = data.length;
+        for (let pos = 0; pos < len;) {
+            const take = Math.min(blockLen - this.pos, len - pos);
+            for (let i = 0; i < take; i++)
+                state[this.pos++] ^= data[pos++];
+            if (this.pos === blockLen)
+                this.keccak();
+        }
+        return this;
+    }
+    finish() {
+        if (this.finished)
+            return;
+        this.finished = true;
+        const { state, suffix, pos, blockLen } = this;
+        // Do the padding
+        state[pos] ^= suffix;
+        if ((suffix & 0x80) !== 0 && pos === blockLen - 1)
+            this.keccak();
+        state[blockLen - 1] ^= 0x80;
+        this.keccak();
+    }
+    writeInto(out) {
+        assert.exists(this, false);
+        assert.bytes(out);
+        this.finish();
+        const bufferOut = this.state;
+        const { blockLen } = this;
+        for (let pos = 0, len = out.length; pos < len;) {
+            if (this.posOut >= blockLen)
+                this.keccak();
+            const take = Math.min(blockLen - this.posOut, len - pos);
+            out.set(bufferOut.subarray(this.posOut, this.posOut + take), pos);
+            this.posOut += take;
+            pos += take;
+        }
+        return out;
+    }
+    xofInto(out) {
+        // Sha3/Keccak usage with XOF is probably mistake, only SHAKE instances can do XOF
+        if (!this.enableXOF)
+            throw new Error('XOF is not possible for this instance');
+        return this.writeInto(out);
+    }
+    xof(bytes) {
+        assert.number(bytes);
+        return this.xofInto(new Uint8Array(bytes));
+    }
+    digestInto(out) {
+        assert.output(out, this);
+        if (this.finished)
+            throw new Error('digest() was already called');
+        this.writeInto(out);
+        this.destroy();
+        return out;
+    }
+    digest() {
+        return this.digestInto(new Uint8Array(this.outputLen));
+    }
+    destroy() {
+        this.destroyed = true;
+        this.state.fill(0);
+    }
+    _cloneInto(to) {
+        const { blockLen, suffix, outputLen, rounds, enableXOF } = this;
+        to || (to = new Keccak(blockLen, suffix, outputLen, enableXOF, rounds));
+        to.state32.set(this.state32);
+        to.pos = this.pos;
+        to.posOut = this.posOut;
+        to.finished = this.finished;
+        to.rounds = rounds;
+        // Suffix can change in cSHAKE
+        to.suffix = suffix;
+        to.outputLen = outputLen;
+        to.enableXOF = enableXOF;
+        to.destroyed = this.destroyed;
+        return to;
+    }
+}
+const gen = (suffix, blockLen, outputLen) => wrapConstructor(() => new Keccak(blockLen, suffix, outputLen));
+const sha3_224 = gen(0x06, 144, 224 / 8);
+/**
+ * SHA3-256 hash function
+ * @param message - that would be hashed
+ */
+const sha3_256 = gen(0x06, 136, 256 / 8);
+const sha3_384 = gen(0x06, 104, 384 / 8);
+const sha3_512 = gen(0x06, 72, 512 / 8);
+const keccak_224 = gen(0x01, 144, 224 / 8);
+/**
+ * keccak-256 hash function. Different from SHA3-256.
+ * @param message - that would be hashed
+ */
+const keccak_256 = gen(0x01, 136, 256 / 8);
+const keccak_384 = gen(0x01, 104, 384 / 8);
+const keccak_512 = gen(0x01, 72, 512 / 8);
+const genShake = (suffix, blockLen, outputLen) => wrapConstructorWithOpts((opts = {}) => new Keccak(blockLen, suffix, opts.dkLen === undefined ? outputLen : opts.dkLen, true));
+const shake128 = genShake(0x1f, 168, 128 / 8);
+const shake256 = genShake(0x1f, 136, 256 / 8);
+
+let locked$3 = false;
+const _keccak256 = function (data) {
+    return keccak_256(data);
+};
+let __keccak256 = _keccak256;
+function keccak256(_data) {
+    const data = getBytes(_data, "data");
+    return hexlify(__keccak256(data));
+}
+keccak256._ = _keccak256;
+keccak256.lock = function () { locked$3 = true; };
+keccak256.register = function (func) {
+    if (locked$3) {
+        throw new TypeError("keccak256 is locked");
+    }
+    __keccak256 = func;
+};
+Object.freeze(keccak256);
 
 // https://homes.esat.kuleuven.be/~bosselae/ripemd160.html
 // https://homes.esat.kuleuven.be/~bosselae/ripemd160/pdf/AB-9601/AB-9601.pdf
@@ -5233,7 +3666,7 @@ const _ripemd160 = function (data) {
 };
 let __ripemd160 = _ripemd160;
 function ripemd160(_data) {
-    const data = logger.getBytes(_data, "data");
+    const data = getBytes(_data, "data");
     return hexlify(__ripemd160(data));
 }
 ripemd160._ = _ripemd160;
@@ -5252,8 +3685,8 @@ const _pbkdf2 = function (password, salt, iterations, keylen, algo) {
 };
 let __pbkdf2 = _pbkdf2;
 function pbkdf2(_password, _salt, iterations, keylen, algo) {
-    const password = logger.getBytes(_password, "password");
-    const salt = logger.getBytes(_salt, "salt");
+    const password = getBytes(_password, "password");
+    const salt = getBytes(_salt, "salt");
     return hexlify(__pbkdf2(password, salt, iterations, keylen, algo));
 }
 pbkdf2._ = _pbkdf2;
@@ -5508,8 +3941,8 @@ const _scryptSync = function (passwd, salt, N, r, p, dkLen) {
 let __scryptAsync = _scryptAsync;
 let __scryptSync = _scryptSync;
 async function scrypt(_passwd, _salt, N, r, p, dkLen, progress) {
-    const passwd = logger.getBytes(_passwd, "passwd");
-    const salt = logger.getBytes(_salt, "salt");
+    const passwd = getBytes(_passwd, "passwd");
+    const salt = getBytes(_salt, "salt");
     return hexlify(await __scryptAsync(passwd, salt, N, r, p, dkLen, progress));
 }
 scrypt._ = _scryptAsync;
@@ -5522,8 +3955,8 @@ scrypt.register = function (func) {
 };
 Object.freeze(scrypt);
 function scryptSync(_passwd, _salt, N, r, p, dkLen) {
-    const passwd = logger.getBytes(_passwd, "passwd");
-    const salt = logger.getBytes(_salt, "salt");
+    const passwd = getBytes(_passwd, "passwd");
+    const salt = getBytes(_salt, "salt");
     return hexlify(__scryptSync(passwd, salt, N, r, p, dkLen));
 }
 scryptSync._ = _scryptSync;
@@ -5546,7 +3979,7 @@ let __sha256 = _sha256;
 let __sha512 = _sha512;
 let locked256 = false, locked512 = false;
 function sha256(_data) {
-    const data = logger.getBytes(_data, "data");
+    const data = getBytes(_data, "data");
     return hexlify(__sha256(data));
 }
 sha256._ = _sha256;
@@ -5559,7 +3992,7 @@ sha256.register = function (func) {
 };
 Object.freeze(sha256);
 function sha512(_data) {
-    const data = logger.getBytes(_data, "data");
+    const data = getBytes(_data, "data");
     return hexlify(__sha512(data));
 }
 sha512._ = _sha512;
@@ -6784,35 +5217,35 @@ const EtherSymbol = "\u039e"; // "\uD835\uDF63";
 const MessagePrefix = "\x19Ethereum Signed Message:\n";
 
 // Constants
-const BN_0$2 = BigInt(0);
-const BN_1$3 = BigInt(1);
+const BN_0$4 = BigInt(0);
+const BN_1$4 = BigInt(1);
 const BN_2$3 = BigInt(2);
 const BN_27$1 = BigInt(27);
 const BN_28$1 = BigInt(28);
 const BN_35$1 = BigInt(35);
-const _guard$2 = {};
+const _guard$3 = {};
 class Signature {
     #props;
     get r() { return getStore(this.#props, "r"); }
     set r(value) {
         if (dataLength(value) !== 32) {
-            logger.throwArgumentError("invalid r", "value", value);
+            throwArgumentError("invalid r", "value", value);
         }
         setStore(this.#props, "r", hexlify(value));
     }
     get s() { return getStore(this.#props, "s"); }
     set s(value) {
         if (dataLength(value) !== 32) {
-            logger.throwArgumentError("invalid r", "value", value);
+            throwArgumentError("invalid r", "value", value);
         }
-        else if (logger.getBytes(value)[0] & 0x80) {
-            logger.throwArgumentError("non-canonical s", "value", value);
+        else if (getBytes(value)[0] & 0x80) {
+            throwArgumentError("non-canonical s", "value", value);
         }
         setStore(this.#props, "s", hexlify(value));
     }
     get v() { return getStore(this.#props, "v"); }
     set v(value) {
-        const v = logger.getNumber(value, "value");
+        const v = getNumber(value, "value");
         if (v !== 27 && v !== 28) {
             throw new Error("@TODO");
         }
@@ -6842,7 +5275,7 @@ class Signature {
     }
     get yParityAndS() {
         // The EIP-2098 compact representation
-        const yParityAndS = logger.getBytes(this.s);
+        const yParityAndS = getBytes(this.s);
         if (this.yParity) {
             yParityAndS[0] |= 0x80;
         }
@@ -6855,14 +5288,14 @@ class Signature {
         return concat([this.r, this.s, (this.yParity ? "0x1c" : "0x1b")]);
     }
     constructor(guard, r, s, v) {
-        logger.assertPrivate(guard, _guard$2, "Signature");
+        assertPrivate(guard, _guard$3, "Signature");
         this.#props = { r, s, v, networkV: null };
     }
     [Symbol.for('nodejs.util.inspect.custom')]() {
         return `Signature { r: "${this.r}", s: "${this.s}", yParity: ${this.yParity}, networkV: ${this.networkV} }`;
     }
     clone() {
-        const clone = new Signature(_guard$2, this.r, this.s, this.v);
+        const clone = new Signature(_guard$3, this.r, this.s, this.v);
         if (this.networkV) {
             setStore(clone.#props, "networkV", this.networkV);
         }
@@ -6884,49 +5317,49 @@ class Signature {
         };
     }
     static create() {
-        return new Signature(_guard$2, ZeroHash, ZeroHash, 27);
+        return new Signature(_guard$3, ZeroHash, ZeroHash, 27);
     }
     // Get the chain ID from an EIP-155 v
     static getChainId(v) {
-        const bv = logger.getBigInt(v, "v");
+        const bv = getBigInt(v, "v");
         // The v is not an EIP-155 v, so it is the unspecified chain ID
         if ((bv == BN_27$1) || (bv == BN_28$1)) {
-            return BN_0$2;
+            return BN_0$4;
         }
         // Bad value for an EIP-155 v
         if (bv < BN_35$1) {
-            logger.throwArgumentError("invalid EIP-155 v", "v", v);
+            throwArgumentError("invalid EIP-155 v", "v", v);
         }
         return (bv - BN_35$1) / BN_2$3;
     }
     // Get the EIP-155 v transformed for a given chainId
     static getChainIdV(chainId, v) {
-        return (logger.getBigInt(chainId) * BN_2$3) + BigInt(35 + v - 27);
+        return (getBigInt(chainId) * BN_2$3) + BigInt(35 + v - 27);
     }
     // Convert an EIP-155 v into a normalized v
     static getNormalizedV(v) {
-        const bv = logger.getBigInt(v);
-        if (bv == BN_0$2) {
+        const bv = getBigInt(v);
+        if (bv == BN_0$4) {
             return 27;
         }
-        if (bv == BN_1$3) {
+        if (bv == BN_1$4) {
             return 28;
         }
         // Otherwise, EIP-155 v means odd is 27 and even is 28
-        return (bv & BN_1$3) ? 27 : 28;
+        return (bv & BN_1$4) ? 27 : 28;
     }
     static from(sig) {
         const throwError = (message) => {
-            return logger.throwArgumentError(message, "signature", sig);
+            return throwArgumentError(message, "signature", sig);
         };
         if (typeof (sig) === "string") {
-            const bytes = logger.getBytes(sig, "signature");
+            const bytes = getBytes(sig, "signature");
             if (bytes.length === 64) {
                 const r = hexlify(bytes.slice(0, 32));
                 const s = bytes.slice(32, 64);
                 const v = (s[0] & 0x80) ? 28 : 27;
                 s[0] &= 0x7f;
-                return new Signature(_guard$2, r, hexlify(s), v);
+                return new Signature(_guard$3, r, hexlify(s), v);
             }
             if (dataLength(sig) !== 65) {
                 const r = hexlify(sig.slice(0, 32));
@@ -6935,7 +5368,7 @@ class Signature {
                     throwError("non-canonical s");
                 }
                 const v = Signature.getNormalizedV(bytes[64]);
-                return new Signature(_guard$2, r, hexlify(s), v);
+                return new Signature(_guard$3, r, hexlify(s), v);
             }
             return throwError("invlaid raw signature length");
         }
@@ -6962,19 +5395,19 @@ class Signature {
                 if (!isHexString(yParityAndS, 32)) {
                     throwError("invalid yParityAndS");
                 }
-                const bytes = logger.getBytes(yParityAndS);
+                const bytes = getBytes(yParityAndS);
                 bytes[0] &= 0x7f;
                 return hexlify(bytes);
             }
             return throwError("missing s");
         })(sig.s, sig.yParityAndS);
-        if (logger.getBytes(s)[0] & 0x80) {
+        if (getBytes(s)[0] & 0x80) {
             throwError("non-canonical s");
         }
         // Get v; by any means necessary (we check consistency below)
         const { networkV, v } = (function (_v, yParityAndS, yParity) {
             if (_v != null) {
-                const v = logger.getBigInt(_v);
+                const v = getBigInt(_v);
                 return {
                     networkV: ((v >= BN_35$1) ? v : undefined),
                     v: Signature.getNormalizedV(v)
@@ -6984,7 +5417,7 @@ class Signature {
                 if (!isHexString(yParityAndS, 32)) {
                     throwError("invalid yParityAndS");
                 }
-                return { v: ((logger.getBytes(yParityAndS)[0] & 0x80) ? 28 : 27) };
+                return { v: ((getBytes(yParityAndS)[0] & 0x80) ? 28 : 27) };
             }
             if (yParity != null) {
                 switch (yParity) {
@@ -6995,7 +5428,7 @@ class Signature {
             }
             return throwError("missing v");
         })(sig.v, sig.yParityAndS, sig.yParity);
-        const result = new Signature(_guard$2, r, s, v);
+        const result = new Signature(_guard$3, r, s, v);
         if (networkV) {
             setStore(result.#props, "networkV", networkV);
         }
@@ -7013,7 +5446,7 @@ class Signature {
 //const N = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
 // Make noble-secp256k1 sync
 utils.hmacSha256Sync = function (key, ...messages) {
-    return logger.getBytes(computeHmac("sha256", key, concat(messages)));
+    return getBytes(computeHmac("sha256", key, concat(messages)));
 };
 class SigningKey {
     #privateKey;
@@ -7033,7 +5466,7 @@ class SigningKey {
         /* @TODO
         logger.assertArgument(() => (dataLength(digest) === 32), "invalid digest length", "digest", digest);
         */
-        const [sigDer, recid] = signSync(logger.getBytesCopy(digest), logger.getBytesCopy(this.#privateKey), {
+        const [sigDer, recid] = signSync(getBytesCopy(digest), getBytesCopy(this.#privateKey), {
             recovered: true,
             canonical: true
         });
@@ -7046,10 +5479,10 @@ class SigningKey {
     }
     computeShardSecret(other) {
         const pubKey = SigningKey.computePublicKey(other);
-        return hexlify(getSharedSecret(logger.getBytesCopy(this.#privateKey), pubKey));
+        return hexlify(getSharedSecret(getBytesCopy(this.#privateKey), pubKey));
     }
     static computePublicKey(key, compressed) {
-        let bytes = logger.getBytes(key, "key");
+        let bytes = getBytes(key, "key");
         if (bytes.length === 32) {
             const pubKey = getPublicKey(bytes, !!compressed);
             return hexlify(pubKey);
@@ -7065,12 +5498,12 @@ class SigningKey {
     }
     static recoverPublicKey(digest, signature) {
         const sig = Signature.from(signature);
-        const der = Signature$1.fromCompact(logger.getBytesCopy(concat([sig.r, sig.s]))).toDERRawBytes();
-        const pubKey = recoverPublicKey(logger.getBytesCopy(digest), der, sig.yParity);
+        const der = Signature$1.fromCompact(getBytesCopy(concat([sig.r, sig.s]))).toDERRawBytes();
+        const pubKey = recoverPublicKey(getBytesCopy(digest), der, sig.yParity);
         if (pubKey != null) {
             return hexlify(pubKey);
         }
-        return logger.throwArgumentError("invalid signautre for digest", "signature", signature);
+        return throwArgumentError("invalid signautre for digest", "signature", signature);
     }
     static _addPoints(p0, p1, compressed) {
         const pub0 = Point.fromHex(SigningKey.computePublicKey(p0).substring(2));
@@ -7125,6 +5558,800 @@ function lock() {
     sha512.lock();
 }
 
+const BN_0$3 = BigInt(0);
+const BN_36 = BigInt(36);
+function getChecksumAddress(address) {
+    //    if (!isHexString(address, 20)) {
+    //        logger.throwArgumentError("invalid address", "address", address);
+    //    }
+    address = address.toLowerCase();
+    const chars = address.substring(2).split("");
+    const expanded = new Uint8Array(40);
+    for (let i = 0; i < 40; i++) {
+        expanded[i] = chars[i].charCodeAt(0);
+    }
+    const hashed = getBytes(keccak256(expanded));
+    for (let i = 0; i < 40; i += 2) {
+        if ((hashed[i >> 1] >> 4) >= 8) {
+            chars[i] = chars[i].toUpperCase();
+        }
+        if ((hashed[i >> 1] & 0x0f) >= 8) {
+            chars[i + 1] = chars[i + 1].toUpperCase();
+        }
+    }
+    return "0x" + chars.join("");
+}
+// See: https://en.wikipedia.org/wiki/International_Bank_Account_Number
+// Create lookup table
+const ibanLookup = {};
+for (let i = 0; i < 10; i++) {
+    ibanLookup[String(i)] = String(i);
+}
+for (let i = 0; i < 26; i++) {
+    ibanLookup[String.fromCharCode(65 + i)] = String(10 + i);
+}
+// How many decimal digits can we process? (for 64-bit float, this is 15)
+// i.e. Math.floor(Math.log10(Number.MAX_SAFE_INTEGER));
+const safeDigits = 15;
+function ibanChecksum(address) {
+    address = address.toUpperCase();
+    address = address.substring(4) + address.substring(0, 2) + "00";
+    let expanded = address.split("").map((c) => { return ibanLookup[c]; }).join("");
+    // Javascript can handle integers safely up to 15 (decimal) digits
+    while (expanded.length >= safeDigits) {
+        let block = expanded.substring(0, safeDigits);
+        expanded = parseInt(block, 10) % 97 + expanded.substring(block.length);
+    }
+    let checksum = String(98 - (parseInt(expanded, 10) % 97));
+    while (checksum.length < 2) {
+        checksum = "0" + checksum;
+    }
+    return checksum;
+}
+;
+const Base36 = (function () {
+    ;
+    const result = {};
+    for (let i = 0; i < 36; i++) {
+        const key = "0123456789abcdefghijklmnopqrstuvwxyz"[i];
+        result[key] = BigInt(i);
+    }
+    return result;
+})();
+function fromBase36(value) {
+    value = value.toLowerCase();
+    let result = BN_0$3;
+    for (let i = 0; i < value.length; i++) {
+        result = result * BN_36 + Base36[value[i]];
+    }
+    return result;
+}
+function getAddress(address) {
+    if (typeof (address) !== "string") {
+        throwArgumentError("invalid address", "address", address);
+    }
+    if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
+        // Missing the 0x prefix
+        if (address.substring(0, 2) !== "0x") {
+            address = "0x" + address;
+        }
+        const result = getChecksumAddress(address);
+        // It is a checksummed address with a bad checksum
+        if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
+            throwArgumentError("bad address checksum", "address", address);
+        }
+        return result;
+    }
+    // Maybe ICAP? (we only support direct mode)
+    if (address.match(/^XE[0-9]{2}[0-9A-Za-z]{30,31}$/)) {
+        // It is an ICAP address with a bad checksum
+        if (address.substring(2, 4) !== ibanChecksum(address)) {
+            throwArgumentError("bad icap checksum", "address", address);
+        }
+        let result = fromBase36(address.substring(4)).toString(16);
+        while (result.length < 40) {
+            result = "0" + result;
+        }
+        return getChecksumAddress("0x" + result);
+    }
+    return throwArgumentError("invalid address", "address", address);
+}
+function getIcapAddress(address) {
+    //let base36 = _base16To36(getAddress(address).substring(2)).toUpperCase();
+    let base36 = BigInt(getAddress(address)).toString(36).toUpperCase();
+    while (base36.length < 30) {
+        base36 = "0" + base36;
+    }
+    return "XE" + ibanChecksum("XE00" + base36) + base36;
+}
+
+// http://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
+function getCreateAddress(tx) {
+    const from = getAddress(tx.from);
+    const nonce = getBigInt(tx.nonce, "tx.nonce");
+    let nonceHex = nonce.toString(16);
+    if (nonceHex === "0") {
+        nonceHex = "0x";
+    }
+    else if (nonceHex.length % 2) {
+        nonceHex = "0x0" + nonceHex;
+    }
+    else {
+        nonceHex = "0x" + nonceHex;
+    }
+    return getAddress(dataSlice(keccak256(encodeRlp([from, nonceHex])), 12));
+}
+function getCreate2Address(_from, _salt, _initCodeHash) {
+    const from = getAddress(_from);
+    const salt = getBytes(_salt, "salt");
+    const initCodeHash = getBytes(_initCodeHash, "initCodeHash");
+    if (salt.length !== 32) {
+        throwArgumentError("salt must be 32 bytes", "salt", _salt);
+    }
+    if (initCodeHash.length !== 32) {
+        throwArgumentError("initCodeHash must be 32 bytes", "initCodeHash", _initCodeHash);
+    }
+    return getAddress(dataSlice(keccak256(concat(["0xff", from, salt, initCodeHash])), 12));
+}
+
+function isAddressable(value) {
+    return (value && typeof (value.getAddress) === "function");
+}
+function isAddress(value) {
+    try {
+        getAddress(value);
+        return true;
+    }
+    catch (error) { }
+    return false;
+}
+async function checkAddress(target, promise) {
+    const result = await promise;
+    if (result == null || result === "0x0000000000000000000000000000000000000000") {
+        if (typeof (target) === "string") {
+            return throwError("unconfigured name", "UNCONFIGURED_NAME", { value: target });
+        }
+        return throwArgumentError("invalid AddressLike value; did not resolve to a value address", "target", target);
+    }
+    return getAddress(result);
+}
+// Resolves an Ethereum address, ENS name or Addressable object,
+// throwing if the result is null.
+function resolveAddress(target, resolver) {
+    if (typeof (target) === "string") {
+        if (target.match(/^0x[0-9a-f]{40}$/i)) {
+            return getAddress(target);
+        }
+        if (resolver == null) {
+            return throwError("ENS resolution requires a provider", "UNSUPPORTED_OPERATION", {
+                operation: "resolveName",
+            });
+        }
+        return checkAddress(target, resolver.resolveName(target));
+    }
+    else if (isAddressable(target)) {
+        return checkAddress(target, target.getAddress());
+    }
+    else if (typeof (target.then) === "function") {
+        return checkAddress(target, target);
+    }
+    return throwArgumentError("unsupported addressable value", "target", target);
+}
+
+const _gaurd = {};
+function n(value, width) {
+    let signed = false;
+    if (width < 0) {
+        signed = true;
+        width *= -1;
+    }
+    // @TODO: Check range is valid for value
+    return new Typed(_gaurd, `${signed ? "" : "u"}int${width}`, value, { signed, width });
+}
+function b(value, size) {
+    // @TODO: Check range is valid for value
+    return new Typed(_gaurd, `bytes${(size) ? size : ""}`, value, { size });
+}
+const _typedSymbol = Symbol.for("_ethers_typed");
+class Typed {
+    type;
+    value;
+    #options;
+    _typedSymbol;
+    constructor(gaurd, type, value, options = null) {
+        if (gaurd !== _gaurd) {
+            throw new Error("private constructor");
+        }
+        defineProperties(this, { _typedSymbol, type, value });
+        this.#options = options;
+        // Check the value is valid
+        this.format();
+    }
+    format() {
+        if (this.type === "array") {
+            throw new Error("");
+        }
+        else if (this.type === "dynamicArray") {
+            throw new Error("");
+        }
+        else if (this.type === "tuple") {
+            return `tuple(${this.value.map((v) => v.format()).join(",")})`;
+        }
+        return this.type;
+    }
+    defaultValue() {
+        return 0;
+    }
+    minValue() {
+        return 0;
+    }
+    maxValue() {
+        return 0;
+    }
+    isBigInt() {
+        return !!(this.type.match(/^u?int[0-9]+$/));
+    }
+    isData() {
+        return (this.type.substring(0, 5) === "bytes");
+    }
+    isString() {
+        return (this.type === "string");
+    }
+    get tupleName() {
+        if (this.type !== "tuple") {
+            throw TypeError("not a tuple");
+        }
+        return this.#options;
+    }
+    // Returns the length of this type as an array
+    // - `null` indicates the length is unforced, it could be dynamic
+    // - `-1` indicates the length is dynamic
+    // - any other value indicates it is a static array and is its length
+    get arrayLength() {
+        if (this.type !== "array") {
+            throw TypeError("not an array");
+        }
+        if (this.#options === true) {
+            return -1;
+        }
+        if (this.#options === false) {
+            return (this.value).length;
+        }
+        return null;
+    }
+    static from(type, value) {
+        return new Typed(_gaurd, type, value);
+    }
+    static uint8(v) { return n(v, 8); }
+    static uint16(v) { return n(v, 16); }
+    static uint24(v) { return n(v, 24); }
+    static uint32(v) { return n(v, 32); }
+    static uint40(v) { return n(v, 40); }
+    static uint48(v) { return n(v, 46); }
+    static uint56(v) { return n(v, 56); }
+    static uint64(v) { return n(v, 64); }
+    static uint72(v) { return n(v, 72); }
+    static uint80(v) { return n(v, 80); }
+    static uint88(v) { return n(v, 88); }
+    static uint96(v) { return n(v, 96); }
+    static uint104(v) { return n(v, 104); }
+    static uint112(v) { return n(v, 112); }
+    static uint120(v) { return n(v, 120); }
+    static uint128(v) { return n(v, 128); }
+    static uint136(v) { return n(v, 136); }
+    static uint144(v) { return n(v, 144); }
+    static uint152(v) { return n(v, 152); }
+    static uint160(v) { return n(v, 160); }
+    static uint168(v) { return n(v, 168); }
+    static uint176(v) { return n(v, 176); }
+    static uint184(v) { return n(v, 184); }
+    static uint192(v) { return n(v, 192); }
+    static uint200(v) { return n(v, 200); }
+    static uint208(v) { return n(v, 208); }
+    static uint216(v) { return n(v, 216); }
+    static uint224(v) { return n(v, 224); }
+    static uint232(v) { return n(v, 232); }
+    static uint240(v) { return n(v, 240); }
+    static uint248(v) { return n(v, 248); }
+    static uint256(v) { return n(v, 256); }
+    static uint(v) { return n(v, 256); }
+    static int8(v) { return n(v, -8); }
+    static int16(v) { return n(v, -16); }
+    static int24(v) { return n(v, -24); }
+    static int32(v) { return n(v, -32); }
+    static int40(v) { return n(v, -40); }
+    static int48(v) { return n(v, -46); }
+    static int56(v) { return n(v, -56); }
+    static int64(v) { return n(v, -64); }
+    static int72(v) { return n(v, -72); }
+    static int80(v) { return n(v, -80); }
+    static int88(v) { return n(v, -88); }
+    static int96(v) { return n(v, -96); }
+    static int104(v) { return n(v, -104); }
+    static int112(v) { return n(v, -112); }
+    static int120(v) { return n(v, -120); }
+    static int128(v) { return n(v, -128); }
+    static int136(v) { return n(v, -136); }
+    static int144(v) { return n(v, -144); }
+    static int152(v) { return n(v, -152); }
+    static int160(v) { return n(v, -160); }
+    static int168(v) { return n(v, -168); }
+    static int176(v) { return n(v, -176); }
+    static int184(v) { return n(v, -184); }
+    static int192(v) { return n(v, -192); }
+    static int200(v) { return n(v, -200); }
+    static int208(v) { return n(v, -208); }
+    static int216(v) { return n(v, -216); }
+    static int224(v) { return n(v, -224); }
+    static int232(v) { return n(v, -232); }
+    static int240(v) { return n(v, -240); }
+    static int248(v) { return n(v, -248); }
+    static int256(v) { return n(v, -256); }
+    static int(v) { return n(v, -256); }
+    static bytes(v) { return b(v); }
+    static bytes1(v) { return b(v, 1); }
+    static bytes2(v) { return b(v, 2); }
+    static bytes3(v) { return b(v, 3); }
+    static bytes4(v) { return b(v, 4); }
+    static bytes5(v) { return b(v, 5); }
+    static bytes6(v) { return b(v, 6); }
+    static bytes7(v) { return b(v, 7); }
+    static bytes8(v) { return b(v, 8); }
+    static bytes9(v) { return b(v, 9); }
+    static bytes10(v) { return b(v, 10); }
+    static bytes11(v) { return b(v, 11); }
+    static bytes12(v) { return b(v, 12); }
+    static bytes13(v) { return b(v, 13); }
+    static bytes14(v) { return b(v, 14); }
+    static bytes15(v) { return b(v, 15); }
+    static bytes16(v) { return b(v, 16); }
+    static bytes17(v) { return b(v, 17); }
+    static bytes18(v) { return b(v, 18); }
+    static bytes19(v) { return b(v, 19); }
+    static bytes20(v) { return b(v, 20); }
+    static bytes21(v) { return b(v, 21); }
+    static bytes22(v) { return b(v, 22); }
+    static bytes23(v) { return b(v, 23); }
+    static bytes24(v) { return b(v, 24); }
+    static bytes25(v) { return b(v, 25); }
+    static bytes26(v) { return b(v, 26); }
+    static bytes27(v) { return b(v, 27); }
+    static bytes28(v) { return b(v, 28); }
+    static bytes29(v) { return b(v, 29); }
+    static bytes30(v) { return b(v, 30); }
+    static bytes31(v) { return b(v, 31); }
+    static bytes32(v) { return b(v, 32); }
+    static address(v) { return new Typed(_gaurd, "address", v); }
+    static bool(v) { return new Typed(_gaurd, "bool", !!v); }
+    static string(v) { return new Typed(_gaurd, "string", v); }
+    static array(v, dynamic) {
+        throw new Error("not implemented yet");
+        return new Typed(_gaurd, "array", v, dynamic);
+    }
+    static tuple(v, name) {
+        throw new Error("not implemented yet");
+        return new Typed(_gaurd, "tuple", v, name);
+    }
+    static overrides(v) {
+        return new Typed(_gaurd, "overrides", Object.assign({}, v));
+    }
+    static isTyped(value) {
+        return (value && value._typedSymbol === _typedSymbol);
+    }
+    static dereference(value, type) {
+        if (Typed.isTyped(value)) {
+            if (value.type !== type) {
+                throw new Error(`invalid type: expecetd ${type}, got ${value.type}`);
+            }
+            return value.value;
+        }
+        return value;
+    }
+}
+
+class AddressCoder extends Coder {
+    constructor(localName) {
+        super("address", "address", localName, false);
+    }
+    defaultValue() {
+        return "0x0000000000000000000000000000000000000000";
+    }
+    encode(writer, _value) {
+        let value = Typed.dereference(_value, "string");
+        try {
+            value = getAddress(value);
+        }
+        catch (error) {
+            return this._throwError(error.message, _value);
+        }
+        return writer.writeValue(value);
+    }
+    decode(reader) {
+        return getAddress(toHex(reader.readValue(), 20));
+    }
+}
+
+// Clones the functionality of an existing Coder, but without a localName
+class AnonymousCoder extends Coder {
+    coder;
+    constructor(coder) {
+        super(coder.name, coder.type, "_", coder.dynamic);
+        this.coder = coder;
+    }
+    defaultValue() {
+        return this.coder.defaultValue();
+    }
+    encode(writer, value) {
+        return this.coder.encode(writer, value);
+    }
+    decode(reader) {
+        return this.coder.decode(reader);
+    }
+}
+
+function pack(writer, coders, values) {
+    let arrayValues = [];
+    if (Array.isArray(values)) {
+        arrayValues = values;
+    }
+    else if (values && typeof (values) === "object") {
+        let unique = {};
+        arrayValues = coders.map((coder) => {
+            const name = coder.localName;
+            if (!name) {
+                throwError("cannot encode object for signature with missing names", "INVALID_ARGUMENT", {
+                    argument: "values",
+                    info: { coder },
+                    value: values
+                });
+            }
+            if (unique[name]) {
+                throwError("cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", {
+                    argument: "values",
+                    info: { coder },
+                    value: values
+                });
+            }
+            unique[name] = true;
+            return values[name];
+        });
+    }
+    else {
+        throwArgumentError("invalid tuple value", "tuple", values);
+    }
+    if (coders.length !== arrayValues.length) {
+        throwArgumentError("types/value length mismatch", "tuple", values);
+    }
+    let staticWriter = new Writer();
+    let dynamicWriter = new Writer();
+    let updateFuncs = [];
+    coders.forEach((coder, index) => {
+        let value = arrayValues[index];
+        if (coder.dynamic) {
+            // Get current dynamic offset (for the future pointer)
+            let dynamicOffset = dynamicWriter.length;
+            // Encode the dynamic value into the dynamicWriter
+            coder.encode(dynamicWriter, value);
+            // Prepare to populate the correct offset once we are done
+            let updateFunc = staticWriter.writeUpdatableValue();
+            updateFuncs.push((baseOffset) => {
+                updateFunc(baseOffset + dynamicOffset);
+            });
+        }
+        else {
+            coder.encode(staticWriter, value);
+        }
+    });
+    // Backfill all the dynamic offsets, now that we know the static length
+    updateFuncs.forEach((func) => { func(staticWriter.length); });
+    let length = writer.appendWriter(staticWriter);
+    length += writer.appendWriter(dynamicWriter);
+    return length;
+}
+function unpack(reader, coders) {
+    let values = [];
+    let keys = [];
+    // A reader anchored to this base
+    let baseReader = reader.subReader(0);
+    coders.forEach((coder) => {
+        let value = null;
+        if (coder.dynamic) {
+            let offset = reader.readIndex();
+            let offsetReader = baseReader.subReader(offset);
+            try {
+                value = coder.decode(offsetReader);
+            }
+            catch (error) {
+                // Cannot recover from this
+                if (isError(error, "BUFFER_OVERRUN")) {
+                    throw error;
+                }
+                value = error;
+                value.baseType = coder.name;
+                value.name = coder.localName;
+                value.type = coder.type;
+            }
+        }
+        else {
+            try {
+                value = coder.decode(reader);
+            }
+            catch (error) {
+                // Cannot recover from this
+                if (isError(error, "BUFFER_OVERRUN")) {
+                    throw error;
+                }
+                value = error;
+                value.baseType = coder.name;
+                value.name = coder.localName;
+                value.type = coder.type;
+            }
+        }
+        if (value == undefined) {
+            throw new Error("investigate");
+        }
+        values.push(value);
+        keys.push(coder.localName || null);
+    });
+    return Result.fromItems(values, keys);
+}
+class ArrayCoder extends Coder {
+    coder;
+    length;
+    constructor(coder, length, localName) {
+        const type = (coder.type + "[" + (length >= 0 ? length : "") + "]");
+        const dynamic = (length === -1 || coder.dynamic);
+        super("array", type, localName, dynamic);
+        defineProperties(this, { coder, length });
+    }
+    defaultValue() {
+        // Verifies the child coder is valid (even if the array is dynamic or 0-length)
+        const defaultChild = this.coder.defaultValue();
+        const result = [];
+        for (let i = 0; i < this.length; i++) {
+            result.push(defaultChild);
+        }
+        return result;
+    }
+    encode(writer, _value) {
+        const value = Typed.dereference(_value, "array");
+        if (!Array.isArray(value)) {
+            this._throwError("expected array value", value);
+        }
+        let count = this.length;
+        if (count === -1) {
+            count = value.length;
+            writer.writeValue(value.length);
+        }
+        assertArgumentCount(value.length, count, "coder array" + (this.localName ? (" " + this.localName) : ""));
+        let coders = [];
+        for (let i = 0; i < value.length; i++) {
+            coders.push(this.coder);
+        }
+        return pack(writer, coders, value);
+    }
+    decode(reader) {
+        let count = this.length;
+        if (count === -1) {
+            count = reader.readIndex();
+            // Check that there is *roughly* enough data to ensure
+            // stray random data is not being read as a length. Each
+            // slot requires at least 32 bytes for their value (or 32
+            // bytes as a link to the data). This could use a much
+            // tighter bound, but we are erroring on the side of safety.
+            if (count * WordSize > reader.dataLength) {
+                throwError("insufficient data length", "BUFFER_OVERRUN", {
+                    buffer: reader.bytes,
+                    offset: count * WordSize,
+                    length: reader.dataLength
+                });
+            }
+        }
+        let coders = [];
+        for (let i = 0; i < count; i++) {
+            coders.push(new AnonymousCoder(this.coder));
+        }
+        return unpack(reader, coders);
+    }
+}
+
+class BooleanCoder extends Coder {
+    constructor(localName) {
+        super("bool", "bool", localName, false);
+    }
+    defaultValue() {
+        return false;
+    }
+    encode(writer, _value) {
+        const value = Typed.dereference(_value, "bool");
+        return writer.writeValue(value ? 1 : 0);
+    }
+    decode(reader) {
+        return !!reader.readValue();
+    }
+}
+
+class DynamicBytesCoder extends Coder {
+    constructor(type, localName) {
+        super(type, type, localName, true);
+    }
+    defaultValue() {
+        return "0x";
+    }
+    encode(writer, value) {
+        value = getBytesCopy(value);
+        let length = writer.writeValue(value.length);
+        length += writer.writeBytes(value);
+        return length;
+    }
+    decode(reader) {
+        return reader.readBytes(reader.readIndex(), true);
+    }
+}
+class BytesCoder extends DynamicBytesCoder {
+    constructor(localName) {
+        super("bytes", localName);
+    }
+    decode(reader) {
+        return hexlify(super.decode(reader));
+    }
+}
+
+class FixedBytesCoder extends Coder {
+    size;
+    constructor(size, localName) {
+        let name = "bytes" + String(size);
+        super(name, name, localName, false);
+        defineProperties(this, { size }, { size: "number" });
+    }
+    defaultValue() {
+        return ("0x0000000000000000000000000000000000000000000000000000000000000000").substring(0, 2 + this.size * 2);
+    }
+    encode(writer, _value) {
+        let data = getBytesCopy(Typed.dereference(_value, this.type));
+        if (data.length !== this.size) {
+            this._throwError("incorrect data length", _value);
+        }
+        return writer.writeBytes(data);
+    }
+    decode(reader) {
+        return hexlify(reader.readBytes(this.size));
+    }
+}
+
+const Empty$1 = new Uint8Array([]);
+class NullCoder extends Coder {
+    constructor(localName) {
+        super("null", "", localName, false);
+    }
+    defaultValue() {
+        return null;
+    }
+    encode(writer, value) {
+        if (value != null) {
+            this._throwError("not null", value);
+        }
+        return writer.writeBytes(Empty$1);
+    }
+    decode(reader) {
+        reader.readBytes(0);
+        return null;
+    }
+}
+
+const BN_0$2 = BigInt(0);
+const BN_1$3 = BigInt(1);
+const BN_MAX_UINT256$2 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+class NumberCoder extends Coder {
+    size;
+    signed;
+    constructor(size, signed, localName) {
+        const name = ((signed ? "int" : "uint") + (size * 8));
+        super(name, name, localName, false);
+        defineProperties(this, { size, signed }, { size: "number", signed: "boolean" });
+    }
+    defaultValue() {
+        return 0;
+    }
+    encode(writer, _value) {
+        let value = getBigInt(Typed.dereference(_value, this.type));
+        // Check bounds are safe for encoding
+        let maxUintValue = mask(BN_MAX_UINT256$2, WordSize * 8);
+        if (this.signed) {
+            let bounds = mask(maxUintValue, (this.size * 8) - 1);
+            if (value > bounds || value < -(bounds + BN_1$3)) {
+                this._throwError("value out-of-bounds", _value);
+            }
+        }
+        else if (value < BN_0$2 || value > mask(maxUintValue, this.size * 8)) {
+            this._throwError("value out-of-bounds", _value);
+        }
+        value = mask(toTwos(value, this.size * 8), this.size * 8);
+        if (this.signed) {
+            value = toTwos(fromTwos(value, this.size * 8), 8 * WordSize);
+        }
+        return writer.writeValue(value);
+    }
+    decode(reader) {
+        let value = mask(reader.readValue(), this.size * 8);
+        if (this.signed) {
+            value = fromTwos(value, this.size * 8);
+        }
+        return value;
+    }
+}
+
+class StringCoder extends DynamicBytesCoder {
+    constructor(localName) {
+        super("string", localName);
+    }
+    defaultValue() {
+        return "";
+    }
+    encode(writer, _value) {
+        return super.encode(writer, toUtf8Bytes(Typed.dereference(_value, "string")));
+    }
+    decode(reader) {
+        return toUtf8String(super.decode(reader));
+    }
+}
+
+class TupleCoder extends Coder {
+    coders;
+    constructor(coders, localName) {
+        let dynamic = false;
+        const types = [];
+        coders.forEach((coder) => {
+            if (coder.dynamic) {
+                dynamic = true;
+            }
+            types.push(coder.type);
+        });
+        const type = ("tuple(" + types.join(",") + ")");
+        super("tuple", type, localName, dynamic);
+        defineProperties(this, { coders: Object.freeze(coders.slice()) });
+    }
+    defaultValue() {
+        const values = [];
+        this.coders.forEach((coder) => {
+            values.push(coder.defaultValue());
+        });
+        // We only output named properties for uniquely named coders
+        const uniqueNames = this.coders.reduce((accum, coder) => {
+            const name = coder.localName;
+            if (name) {
+                if (!accum[name]) {
+                    accum[name] = 0;
+                }
+                accum[name]++;
+            }
+            return accum;
+        }, {});
+        // Add named values
+        this.coders.forEach((coder, index) => {
+            let name = coder.localName;
+            if (!name || uniqueNames[name] !== 1) {
+                return;
+            }
+            if (name === "length") {
+                name = "_length";
+            }
+            if (values[name] != null) {
+                return;
+            }
+            values[name] = values[index];
+        });
+        return Object.freeze(values);
+    }
+    encode(writer, _value) {
+        const value = Typed.dereference(_value, "tuple");
+        return pack(writer, this.coders, value);
+    }
+    decode(reader) {
+        return unpack(reader, this.coders);
+    }
+}
+
 function id(value) {
     return keccak256(toUtf8Bytes(value));
 }
@@ -7177,7 +6404,7 @@ function isValidName(name) {
 function namehash(name) {
     /* istanbul ignore if */
     if (typeof (name) !== "string") {
-        logger.throwArgumentError("invalid ENS name; not a string", "name", name);
+        throwArgumentError("invalid ENS name; not a string", "name", name);
     }
     let result = Zeros;
     const comps = ensNameSplit(name);
@@ -7211,49 +6438,49 @@ function hashMessage(message) {
 }
 
 const regexBytes = new RegExp("^bytes([0-9]+)$");
-const regexNumber = new RegExp("^(u?int)([0-9]*)$");
+const regexNumber$1 = new RegExp("^(u?int)([0-9]*)$");
 const regexArray = new RegExp("^(.*)\\[([0-9]*)\\]$");
 function _pack(type, value, isArray) {
     switch (type) {
         case "address":
             if (isArray) {
-                return logger.getBytes(zeroPadValue(value, 32));
+                return getBytes(zeroPadValue(value, 32));
             }
-            return logger.getBytes(value);
+            return getBytes(value);
         case "string":
             return toUtf8Bytes(value);
         case "bytes":
-            return logger.getBytes(value);
+            return getBytes(value);
         case "bool":
             value = (!!value ? "0x01" : "0x00");
             if (isArray) {
-                return logger.getBytes(zeroPadValue(value, 32));
+                return getBytes(zeroPadValue(value, 32));
             }
-            return logger.getBytes(value);
+            return getBytes(value);
     }
-    let match = type.match(regexNumber);
+    let match = type.match(regexNumber$1);
     if (match) {
         let size = parseInt(match[2] || "256");
         if ((match[2] && String(size) !== match[2]) || (size % 8 !== 0) || size === 0 || size > 256) {
-            return logger.throwArgumentError("invalid number type", "type", type);
+            return throwArgumentError("invalid number type", "type", type);
         }
         if (isArray) {
             size = 256;
         }
         value = toTwos(value, size);
-        return logger.getBytes(zeroPadValue(toArray(value), size / 8));
+        return getBytes(zeroPadValue(toArray(value), size / 8));
     }
     match = type.match(regexBytes);
     if (match) {
         const size = parseInt(match[1]);
         if (String(size) !== match[1] || size === 0 || size > 32) {
-            return logger.throwArgumentError("invalid bytes type", "type", type);
+            return throwArgumentError("invalid bytes type", "type", type);
         }
         if (dataLength(value) !== size) {
-            return logger.throwArgumentError(`invalid value for ${type}`, "value", value);
+            return throwArgumentError(`invalid value for ${type}`, "value", value);
         }
         if (isArray) {
-            return logger.getBytes(zeroPadBytes(value, 32));
+            return getBytes(zeroPadBytes(value, 32));
         }
         return value;
     }
@@ -7262,20 +6489,20 @@ function _pack(type, value, isArray) {
         const baseType = match[1];
         const count = parseInt(match[2] || String(value.length));
         if (count != value.length) {
-            logger.throwArgumentError(`invalid array length for ${type}`, "value", value);
+            throwArgumentError(`invalid array length for ${type}`, "value", value);
         }
         const result = [];
         value.forEach(function (value) {
             result.push(_pack(baseType, value, true));
         });
-        return logger.getBytes(concat(result));
+        return getBytes(concat(result));
     }
-    return logger.throwArgumentError("invalid type", "type", type);
+    return throwArgumentError("invalid type", "type", type);
 }
 // @TODO: Array Enum
 function solidityPacked(types, values) {
     if (types.length != values.length) {
-        logger.throwArgumentError("wrong number of values; expected ${ types.length }", "values", values);
+        throwArgumentError("wrong number of values; expected ${ types.length }", "values", values);
     }
     const tight = [];
     types.forEach(function (type, index) {
@@ -7300,13 +6527,6 @@ function solidityPacked(types, values) {
 function solidityPackedKeccak256(types, values) {
     return keccak256(solidityPacked(types, values));
 }
-/**
- *  Test Function, for fun
- *
- *  @param foo - something fun
- */
-function test(foo) {
-}
 function solidityPackedSha256(types, values) {
     return sha256(solidityPacked(types, values));
 }
@@ -7321,7 +6541,7 @@ const BN_MAX_UINT256$1 = BigInt("0xfffffffffffffffffffffffffffffffffffffffffffff
 ;
 ;
 function hexPadRight(value) {
-    const bytes = logger.getBytes(value);
+    const bytes = getBytes(value);
     const padOffset = bytes.length % 32;
     if (padOffset) {
         return concat([bytes, padding.slice(padOffset)]);
@@ -7343,7 +6563,7 @@ const domainFieldNames = [
 function checkString(key) {
     return function (value) {
         if (typeof (value) !== "string") {
-            logger.throwArgumentError(`invalid domain value for ${JSON.stringify(key)}`, `domain.${key}`, value);
+            throwArgumentError(`invalid domain value for ${JSON.stringify(key)}`, `domain.${key}`, value);
         }
         return value;
     };
@@ -7352,19 +6572,19 @@ const domainChecks = {
     name: checkString("name"),
     version: checkString("version"),
     chainId: function (value) {
-        return logger.getBigInt(value, "domain.chainId");
+        return getBigInt(value, "domain.chainId");
     },
     verifyingContract: function (value) {
         try {
             return getAddress(value).toLowerCase();
         }
         catch (error) { }
-        return logger.throwArgumentError(`invalid domain value "verifyingContract"`, "domain.verifyingContract", value);
+        return throwArgumentError(`invalid domain value "verifyingContract"`, "domain.verifyingContract", value);
     },
     salt: function (value) {
-        const bytes = logger.getBytes(value, "domain.salt");
+        const bytes = getBytes(value, "domain.salt");
         if (bytes.length !== 32) {
-            logger.throwArgumentError(`invalid domain value "salt"`, "domain.salt", value);
+            throwArgumentError(`invalid domain value "salt"`, "domain.salt", value);
         }
         return hexlify(bytes);
     }
@@ -7377,14 +6597,14 @@ function getBaseEncoder(type) {
             const signed = (match[1] === "");
             const width = parseInt(match[2] || "256");
             if (width % 8 !== 0 || width > 256 || (match[2] && match[2] !== String(width))) {
-                logger.throwArgumentError("invalid numeric width", "type", type);
+                throwArgumentError("invalid numeric width", "type", type);
             }
             const boundsUpper = mask(BN_MAX_UINT256$1, signed ? (width - 1) : width);
             const boundsLower = signed ? ((boundsUpper + BN_1$2) * BN__1) : BN_0$1;
             return function (_value) {
-                const value = logger.getBigInt(_value, "value");
+                const value = getBigInt(_value, "value");
                 if (value < boundsLower || value > boundsUpper) {
-                    logger.throwArgumentError(`value out-of-bounds for ${type}`, "value", value);
+                    throwArgumentError(`value out-of-bounds for ${type}`, "value", value);
                 }
                 return toHex(toTwos(value, 256), 32);
             };
@@ -7396,12 +6616,12 @@ function getBaseEncoder(type) {
         if (match) {
             const width = parseInt(match[1]);
             if (width === 0 || width > 32 || match[1] !== String(width)) {
-                logger.throwArgumentError("invalid bytes width", "type", type);
+                throwArgumentError("invalid bytes width", "type", type);
             }
             return function (value) {
-                const bytes = logger.getBytes(value);
+                const bytes = getBytes(value);
                 if (bytes.length !== width) {
-                    logger.throwArgumentError(`invalid length for ${type}`, "value", value);
+                    throwArgumentError(`invalid length for ${type}`, "value", value);
                 }
                 return hexPadRight(value);
             };
@@ -7454,13 +6674,13 @@ class TypedDataEncoder {
             for (const field of types[name]) {
                 // Check each field has a unique name
                 if (uniqueNames.has(field.name)) {
-                    logger.throwArgumentError(`duplicate variable name ${JSON.stringify(field.name)} in ${JSON.stringify(name)}`, "types", types);
+                    throwArgumentError(`duplicate variable name ${JSON.stringify(field.name)} in ${JSON.stringify(name)}`, "types", types);
                 }
                 uniqueNames.add(field.name);
                 // Get the base type (drop any array specifiers)
                 const baseType = (field.type.match(/^([^\x5b]*)(\x5b|$)/))[1] || null;
                 if (baseType === name) {
-                    logger.throwArgumentError(`circular type reference to ${JSON.stringify(baseType)}`, "types", types);
+                    throwArgumentError(`circular type reference to ${JSON.stringify(baseType)}`, "types", types);
                 }
                 // Is this a base encoding type?
                 const encoder = getBaseEncoder(baseType);
@@ -7468,7 +6688,7 @@ class TypedDataEncoder {
                     continue;
                 }
                 if (!parents.has(baseType)) {
-                    logger.throwArgumentError(`unknown type ${JSON.stringify(baseType)}`, "types", types);
+                    throwArgumentError(`unknown type ${JSON.stringify(baseType)}`, "types", types);
                 }
                 // Add linkage
                 parents.get(baseType).push(name);
@@ -7478,16 +6698,16 @@ class TypedDataEncoder {
         // Deduce the primary type
         const primaryTypes = Array.from(parents.keys()).filter((n) => (parents.get(n).length === 0));
         if (primaryTypes.length === 0) {
-            logger.throwArgumentError("missing primary type", "types", types);
+            throwArgumentError("missing primary type", "types", types);
         }
         else if (primaryTypes.length > 1) {
-            logger.throwArgumentError(`ambiguous primary types or unused types: ${primaryTypes.map((t) => (JSON.stringify(t))).join(", ")}`, "types", types);
+            throwArgumentError(`ambiguous primary types or unused types: ${primaryTypes.map((t) => (JSON.stringify(t))).join(", ")}`, "types", types);
         }
         defineProperties(this, { primaryType: primaryTypes[0] });
         // Check for circular type references
         function checkCircular(type, found) {
             if (found.has(type)) {
-                logger.throwArgumentError(`circular type reference to ${JSON.stringify(type)}`, "types", types);
+                throwArgumentError(`circular type reference to ${JSON.stringify(type)}`, "types", types);
             }
             found.add(type);
             for (const child of links.get(type)) {
@@ -7535,7 +6755,7 @@ class TypedDataEncoder {
             const length = parseInt(match[3]);
             return (value) => {
                 if (length >= 0 && value.length !== length) {
-                    logger.throwArgumentError("array length mismatch; expected length ${ arrayLength }", "value", value);
+                    throwArgumentError("array length mismatch; expected length ${ arrayLength }", "value", value);
                 }
                 let result = value.map(subEncoder);
                 if (this.#fullTypes.has(subtype)) {
@@ -7560,12 +6780,12 @@ class TypedDataEncoder {
                 return concat(values);
             };
         }
-        return logger.throwArgumentError(`unknown type: ${type}`, "type", type);
+        return throwArgumentError(`unknown type: ${type}`, "type", type);
     }
     encodeType(name) {
         const result = this.#fullTypes.get(name);
         if (!result) {
-            return logger.throwArgumentError(`unknown type: ${JSON.stringify(name)}`, "name", name);
+            return throwArgumentError(`unknown type: ${JSON.stringify(name)}`, "name", name);
         }
         return result;
     }
@@ -7595,7 +6815,7 @@ class TypedDataEncoder {
             const subtype = match[1];
             const length = parseInt(match[3]);
             if (length >= 0 && value.length !== length) {
-                logger.throwArgumentError("array length mismatch; expected length ${ arrayLength }", "value", value);
+                throwArgumentError("array length mismatch; expected length ${ arrayLength }", "value", value);
             }
             return value.map((v) => this._visit(subtype, v, callback));
         }
@@ -7607,7 +6827,7 @@ class TypedDataEncoder {
                 return accum;
             }, {});
         }
-        return logger.throwArgumentError(`unknown type: ${type}`, "type", type);
+        return throwArgumentError(`unknown type: ${type}`, "type", type);
     }
     visit(value, callback) {
         return this._visit(this.primaryType, value, callback);
@@ -7626,7 +6846,7 @@ class TypedDataEncoder {
         for (const name in domain) {
             const type = domainFieldTypes[name];
             if (!type) {
-                logger.throwArgumentError(`invalid typed-data domain key: ${JSON.stringify(name)}`, "domain", domain);
+                throwArgumentError(`invalid typed-data domain key: ${JSON.stringify(name)}`, "domain", domain);
             }
             domainFields.push({ name, type });
         }
@@ -7698,7 +6918,7 @@ class TypedDataEncoder {
         const encoder = TypedDataEncoder.from(types);
         const typesWithDomain = Object.assign({}, types);
         if (typesWithDomain.EIP712Domain) {
-            logger.throwArgumentError("types must not contain EIP712Domain type", "types.EIP712Domain", types);
+            throwArgumentError("types must not contain EIP712Domain type", "types.EIP712Domain", types);
         }
         else {
             typesWithDomain.EIP712Domain = domainTypes;
@@ -7712,11 +6932,11 @@ class TypedDataEncoder {
             message: encoder.visit(value, (type, value) => {
                 // bytes
                 if (type.match(/^bytes(\d*)/)) {
-                    return hexlify(logger.getBytes(value));
+                    return hexlify(getBytes(value));
                 }
                 // uint or int
                 if (type.match(/^u?int/)) {
-                    return logger.getBigInt(value).toString();
+                    return getBigInt(value).toString();
                 }
                 switch (type) {
                     case "address":
@@ -7725,14 +6945,999 @@ class TypedDataEncoder {
                         return !!value;
                     case "string":
                         if (typeof (value) !== "string") {
-                            logger.throwArgumentError(`invalid string`, "value", value);
+                            throwArgumentError(`invalid string`, "value", value);
                         }
                         return value;
                 }
-                return logger.throwArgumentError("unsupported type", "type", type);
+                return throwArgumentError("unsupported type", "type", type);
             })
         };
     }
+}
+
+;
+// [ "a", "b" ] => { "a": 1, "b": 1 }
+function setify(items) {
+    const result = new Set();
+    items.forEach((k) => result.add(k));
+    return Object.freeze(result);
+}
+// Visibility Keywords
+const _kwVisib = "constant external internal payable private public pure view";
+const KwVisib = setify(_kwVisib.split(" "));
+const _kwTypes = "constructor error event function struct";
+const KwTypes = setify(_kwTypes.split(" "));
+const _kwModifiers = "calldata memory storage payable indexed";
+const KwModifiers = setify(_kwModifiers.split(" "));
+const _kwOther = "tuple returns";
+// All Keywords
+const _keywords = [_kwTypes, _kwModifiers, _kwOther, _kwVisib].join(" ");
+const Keywords = setify(_keywords.split(" "));
+// Single character tokens
+const SimpleTokens = {
+    "(": "OPEN_PAREN", ")": "CLOSE_PAREN",
+    "[": "OPEN_BRACKET", "]": "CLOSE_BRACKET",
+    ",": "COMMA", "@": "AT"
+};
+// Parser regexes to consume the next token
+const regexWhitespace = new RegExp("^(\\s*)");
+const regexNumber = new RegExp("^([0-9]+)");
+const regexIdentifier = new RegExp("^([a-zA-Z$_][a-zA-Z0-9$_]*)");
+const regexType = new RegExp("^(address|bool|bytes([0-9]*)|string|u?int([0-9]*))");
+class TokenString {
+    #offset;
+    #tokens;
+    get offset() { return this.#offset; }
+    get length() { return this.#tokens.length - this.#offset; }
+    constructor(tokens) {
+        this.#offset = 0;
+        this.#tokens = tokens.slice();
+    }
+    clone() { return new TokenString(this.#tokens); }
+    reset() { this.#offset = 0; }
+    #subTokenString(from = 0, to = 0) {
+        return new TokenString(this.#tokens.slice(from, to).map((t) => {
+            return Object.freeze(Object.assign({}, t, {
+                match: (t.match - from),
+                linkBack: (t.linkBack - from),
+                linkNext: (t.linkNext - from),
+            }));
+            return t;
+        }));
+    }
+    // Pops and returns the value of the next token, if it is a keyword in allowed; throws if out of tokens
+    popKeyword(allowed) {
+        const top = this.peek();
+        if (top.type !== "KEYWORD" || !allowed.has(top.text)) {
+            throw new Error(`expected keyword ${top.text}`);
+        }
+        return this.pop().text;
+    }
+    // Pops and returns the value of the next token if it is `type`; throws if out of tokens
+    popType(type) {
+        if (this.peek().type !== type) {
+            throw new Error(`expected ${type}; got ${JSON.stringify(this.peek())}`);
+        }
+        return this.pop().text;
+    }
+    // Pops and returns a "(" TOKENS ")"
+    popParen() {
+        const top = this.peek();
+        if (top.type !== "OPEN_PAREN") {
+            throw new Error("bad start");
+        }
+        const result = this.#subTokenString(this.#offset + 1, top.match + 1);
+        this.#offset = top.match + 1;
+        return result;
+    }
+    // Pops and returns the items within "(" ITEM1 "," ITEM2 "," ... ")"
+    popParams() {
+        const top = this.peek();
+        if (top.type !== "OPEN_PAREN") {
+            throw new Error("bad start");
+        }
+        const result = [];
+        while (this.#offset < top.match - 1) {
+            const link = this.peek().linkNext;
+            result.push(this.#subTokenString(this.#offset + 1, link));
+            this.#offset = link;
+        }
+        this.#offset = top.match + 1;
+        return result;
+    }
+    // Returns the top Token, throwing if out of tokens
+    peek() {
+        if (this.#offset >= this.#tokens.length) {
+            throw new Error("out-of-bounds");
+        }
+        return this.#tokens[this.#offset];
+    }
+    // Returns the next value, if it is a keyword in `allowed`
+    peekKeyword(allowed) {
+        const top = this.peekType("KEYWORD");
+        return (top != null && allowed.has(top)) ? top : null;
+    }
+    // Returns the value of the next token if it is `type`
+    peekType(type) {
+        if (this.length === 0) {
+            return null;
+        }
+        const top = this.peek();
+        return (top.type === type) ? top.text : null;
+    }
+    // Returns the next token; throws if out of tokens
+    pop() {
+        const result = this.peek();
+        this.#offset++;
+        return result;
+    }
+    toString() {
+        const tokens = [];
+        for (let i = this.#offset; i < this.#tokens.length; i++) {
+            const token = this.#tokens[i];
+            tokens.push(`${token.type}:${token.text}`);
+        }
+        return `<TokenString ${tokens.join(" ")}>`;
+    }
+}
+function lex(text) {
+    const tokens = [];
+    const throwError = (message) => {
+        const token = (offset < text.length) ? JSON.stringify(text[offset]) : "$EOI";
+        throw new Error(`invalid token ${token} at ${offset}: ${message}`);
+    };
+    let brackets = [];
+    let commas = [];
+    let offset = 0;
+    while (offset < text.length) {
+        // Strip off any leading whitespace
+        let cur = text.substring(offset);
+        let match = cur.match(regexWhitespace);
+        if (match) {
+            offset += match[1].length;
+            cur = text.substring(offset);
+        }
+        const token = { depth: brackets.length, linkBack: -1, linkNext: -1, match: -1, type: "", text: "", offset, value: -1 };
+        tokens.push(token);
+        let type = (SimpleTokens[cur[0]] || "");
+        if (type) {
+            token.type = type;
+            token.text = cur[0];
+            offset++;
+            if (type === "OPEN_PAREN") {
+                brackets.push(tokens.length - 1);
+                commas.push(tokens.length - 1);
+            }
+            else if (type == "CLOSE_PAREN") {
+                if (brackets.length === 0) {
+                    throwError("no matching open bracket");
+                }
+                token.match = brackets.pop();
+                (tokens[token.match]).match = tokens.length - 1;
+                token.depth--;
+                token.linkBack = commas.pop();
+                (tokens[token.linkBack]).linkNext = tokens.length - 1;
+            }
+            else if (type === "COMMA") {
+                token.linkBack = commas.pop();
+                (tokens[token.linkBack]).linkNext = tokens.length - 1;
+                commas.push(tokens.length - 1);
+            }
+            else if (type === "OPEN_BRACKET") {
+                token.type = "BRACKET";
+            }
+            else if (type === "CLOSE_BRACKET") {
+                // Remove the CLOSE_BRACKET
+                let suffix = tokens.pop().text;
+                if (tokens.length > 0 && tokens[tokens.length - 1].type === "NUMBER") {
+                    const value = tokens.pop().text;
+                    suffix = value + suffix;
+                    (tokens[tokens.length - 1]).value = getNumber(value);
+                }
+                if (tokens.length === 0 || tokens[tokens.length - 1].type !== "BRACKET") {
+                    throw new Error("missing opening bracket");
+                }
+                (tokens[tokens.length - 1]).text += suffix;
+            }
+            continue;
+        }
+        match = cur.match(regexIdentifier);
+        if (match) {
+            token.text = match[1];
+            offset += token.text.length;
+            if (Keywords.has(token.text)) {
+                token.type = "KEYWORD";
+                continue;
+            }
+            if (token.text.match(regexType)) {
+                token.type = "TYPE";
+                continue;
+            }
+            token.type = "ID";
+            continue;
+        }
+        match = cur.match(regexNumber);
+        if (match) {
+            token.text = match[1];
+            token.type = "NUMBER";
+            offset += token.text.length;
+            continue;
+        }
+        throw new Error(`unexpected token ${JSON.stringify(cur[0])} at position ${offset}`);
+    }
+    return new TokenString(tokens.map((t) => Object.freeze(t)));
+}
+// Check only one of `allowed` is in `set`
+function allowSingle(set, allowed) {
+    let included = [];
+    for (const key in allowed.keys()) {
+        if (set.has(key)) {
+            included.push(key);
+        }
+    }
+    if (included.length > 1) {
+        throw new Error(`conflicting types: ${included.join(", ")}`);
+    }
+}
+// Functions to process a Solidity Signature TokenString from left-to-right for...
+// ...the name with an optional type, returning the name
+function consumeName(type, tokens) {
+    if (tokens.peekKeyword(KwTypes)) {
+        const keyword = tokens.pop().text;
+        if (keyword !== type) {
+            throw new Error(`expected ${type}, got ${keyword}`);
+        }
+    }
+    return tokens.popType("ID");
+}
+// ...all keywords matching allowed, returning the keywords
+function consumeKeywords(tokens, allowed) {
+    const keywords = new Set();
+    while (true) {
+        const keyword = tokens.peekType("KEYWORD");
+        if (keyword == null || (allowed && !allowed.has(keyword))) {
+            break;
+        }
+        tokens.pop();
+        if (keywords.has(keyword)) {
+            throw new Error(`duplicate keywords: ${JSON.stringify(keyword)}`);
+        }
+        keywords.add(keyword);
+    }
+    return Object.freeze(keywords);
+}
+// ...all visibility keywords, returning the coalesced mutability
+function consumeMutability(tokens) {
+    let modifiers = consumeKeywords(tokens, KwVisib);
+    // Detect conflicting modifiers
+    allowSingle(modifiers, setify("constant payable nonpayable".split(" ")));
+    allowSingle(modifiers, setify("pure view payable nonpayable".split(" ")));
+    // Process mutability states
+    if (modifiers.has("view")) {
+        return "view";
+    }
+    if (modifiers.has("pure")) {
+        return "pure";
+    }
+    if (modifiers.has("payable")) {
+        return "payable";
+    }
+    if (modifiers.has("nonpayable")) {
+        return "nonpayable";
+    }
+    // Process legacy `constant` last
+    if (modifiers.has("constant")) {
+        return "view";
+    }
+    return "nonpayable";
+}
+// ...a parameter list, returning the ParamType list
+function consumeParams(tokens, allowIndexed) {
+    return tokens.popParams().map((t) => ParamType.fromTokens(t, allowIndexed));
+}
+// ...a gas limit, returning a BigNumber or null if none
+function consumeGas(tokens) {
+    if (tokens.peekType("AT")) {
+        tokens.pop();
+        if (tokens.peekType("NUMBER")) {
+            return getBigInt(tokens.pop().text);
+        }
+        throw new Error("invalid gas");
+    }
+    return null;
+}
+function consumeEoi(tokens) {
+    if (tokens.length) {
+        throw new Error(`unexpected tokens: ${tokens.toString()}`);
+    }
+}
+const regexArrayType = new RegExp(/^(.*)\[([0-9]*)\]$/);
+function verifyBasicType(type) {
+    const match = type.match(regexType);
+    if (!match) {
+        return throwArgumentError("invalid type", "type", type);
+    }
+    if (type === "uint") {
+        return "uint256";
+    }
+    if (type === "int") {
+        return "int256";
+    }
+    if (match[2]) {
+        // bytesXX
+        const length = parseInt(match[2]);
+        if (length === 0 || length > 32) {
+            throwArgumentError("invalid bytes length", "type", type);
+        }
+    }
+    else if (match[3]) {
+        // intXX or uintXX
+        const size = parseInt(match[3]);
+        if (size === 0 || size > 256 || size % 8) {
+            throwArgumentError("invalid numeric width", "type", type);
+        }
+    }
+    return type;
+}
+// Make the Fragment constructors effectively private
+const _guard$2 = {};
+const internal$1 = Symbol.for("_ethers_internal");
+const ParamTypeInternal = "_ParamTypeInternal";
+class ParamType {
+    // The local name of the parameter (of "" if unbound)
+    name;
+    // The fully qualified type (e.g. "address", "tuple(address)", "uint256[3][]"
+    type;
+    // The base type (e.g. "address", "tuple", "array")
+    baseType;
+    // Indexable Paramters ONLY (otherwise null)
+    indexed;
+    // Tuples ONLY: (otherwise null)
+    //  - sub-components
+    components;
+    // Arrays ONLY: (otherwise null)
+    //  - length of the array (-1 for dynamic length)
+    //  - child type
+    arrayLength;
+    arrayChildren;
+    constructor(guard, name, type, baseType, indexed, components, arrayLength, arrayChildren) {
+        assertPrivate(guard, _guard$2, "ParamType");
+        Object.defineProperty(this, internal$1, { value: ParamTypeInternal });
+        if (components) {
+            components = Object.freeze(components.slice());
+        }
+        if (baseType === "array") {
+            if (arrayLength == null || arrayChildren == null) {
+                throw new Error("");
+            }
+        }
+        else if (arrayLength != null || arrayChildren != null) {
+            throw new Error("");
+        }
+        if (baseType === "tuple") {
+            if (components == null) {
+                throw new Error("");
+            }
+        }
+        else if (components != null) {
+            throw new Error("");
+        }
+        defineProperties(this, {
+            name, type, baseType, indexed, components, arrayLength, arrayChildren
+        });
+    }
+    // Format the parameter fragment
+    //   - sighash: "(uint256,address)"
+    //   - minimal: "tuple(uint256,address) indexed"
+    //   - full:    "tuple(uint256 foo, address bar) indexed baz"
+    format(format = "sighash") {
+        if (format === "json") {
+            let result = {
+                type: ((this.baseType === "tuple") ? "tuple" : this.type),
+                name: (this.name || undefined)
+            };
+            if (typeof (this.indexed) === "boolean") {
+                result.indexed = this.indexed;
+            }
+            if (this.isTuple()) {
+                result.components = this.components.map((c) => JSON.parse(c.format(format)));
+            }
+            return JSON.stringify(result);
+        }
+        let result = "";
+        // Array
+        if (this.isArray()) {
+            result += this.arrayChildren.format(format);
+            result += `[${(this.arrayLength < 0 ? "" : String(this.arrayLength))}]`;
+        }
+        else {
+            if (this.isTuple()) {
+                if (format !== "sighash") {
+                    result += this.type;
+                }
+                result += "(" + this.components.map((comp) => comp.format(format)).join((format === "full") ? ", " : ",") + ")";
+            }
+            else {
+                result += this.type;
+            }
+        }
+        if (format !== "sighash") {
+            if (this.indexed === true) {
+                result += " indexed";
+            }
+            if (format === "full" && this.name) {
+                result += " " + this.name;
+            }
+        }
+        return result;
+    }
+    static isArray(value) {
+        return value && (value.baseType === "array");
+    }
+    isArray() {
+        return (this.baseType === "array");
+    }
+    isTuple() {
+        return (this.baseType === "tuple");
+    }
+    isIndexable() {
+        return (this.indexed != null);
+    }
+    walk(value, process) {
+        if (this.isArray()) {
+            if (!Array.isArray(value)) {
+                throw new Error("invlaid array value");
+            }
+            if (this.arrayLength !== -1 && value.length !== this.arrayLength) {
+                throw new Error("array is wrong length");
+            }
+            const _this = this;
+            return value.map((v) => (_this.arrayChildren.walk(v, process)));
+        }
+        if (this.isTuple()) {
+            if (!Array.isArray(value)) {
+                throw new Error("invlaid tuple value");
+            }
+            if (value.length !== this.components.length) {
+                throw new Error("array is wrong length");
+            }
+            const _this = this;
+            return value.map((v, i) => (_this.components[i].walk(v, process)));
+        }
+        return process(this.type, value);
+    }
+    #walkAsync(promises, value, process, setValue) {
+        if (this.isArray()) {
+            if (!Array.isArray(value)) {
+                throw new Error("invlaid array value");
+            }
+            if (this.arrayLength !== -1 && value.length !== this.arrayLength) {
+                throw new Error("array is wrong length");
+            }
+            const childType = this.arrayChildren;
+            const result = value.slice();
+            result.forEach((value, index) => {
+                childType.#walkAsync(promises, value, process, (value) => {
+                    result[index] = value;
+                });
+            });
+            setValue(result);
+            return;
+        }
+        if (this.isTuple()) {
+            const components = this.components;
+            // Convert the object into an array
+            let result;
+            if (Array.isArray(value)) {
+                result = value.slice();
+            }
+            else {
+                if (value == null || typeof (value) !== "object") {
+                    throw new Error("invlaid tuple value");
+                }
+                result = components.map((param) => {
+                    if (!param.name) {
+                        throw new Error("cannot use object value with unnamed components");
+                    }
+                    if (!(param.name in value)) {
+                        throw new Error(`missing value for component ${param.name}`);
+                    }
+                    return value[param.name];
+                });
+            }
+            if (value.length !== this.components.length) {
+                throw new Error("array is wrong length");
+            }
+            result.forEach((value, index) => {
+                components[index].#walkAsync(promises, value, process, (value) => {
+                    result[index] = value;
+                });
+            });
+            setValue(result);
+            return;
+        }
+        const result = process(this.type, value);
+        if (result.then) {
+            promises.push((async function () { setValue(await result); })());
+        }
+        else {
+            setValue(result);
+        }
+    }
+    async walkAsync(value, process) {
+        const promises = [];
+        const result = [value];
+        this.#walkAsync(promises, value, process, (value) => {
+            result[0] = value;
+        });
+        if (promises.length) {
+            await Promise.all(promises);
+        }
+        return result[0];
+    }
+    static from(obj, allowIndexed) {
+        if (ParamType.isParamType(obj)) {
+            return obj;
+        }
+        if (typeof (obj) === "string") {
+            return ParamType.fromTokens(lex(obj), allowIndexed);
+        }
+        if (obj instanceof TokenString) {
+            return ParamType.fromTokens(obj, allowIndexed);
+        }
+        const name = obj.name;
+        if (name && (typeof (name) !== "string" || !name.match(regexIdentifier))) {
+            throwArgumentError("invalid name", "obj.name", name);
+        }
+        let indexed = obj.indexed;
+        if (indexed != null) {
+            if (!allowIndexed) {
+                throwArgumentError("parameter cannot be indexed", "obj.indexed", obj.indexed);
+            }
+            indexed = !!indexed;
+        }
+        let type = obj.type;
+        let arrayMatch = type.match(regexArrayType);
+        if (arrayMatch) {
+            const arrayLength = arrayMatch[2];
+            const arrayChildren = ParamType.from({
+                type: arrayMatch[1],
+                components: obj.components
+            });
+            return new ParamType(_guard$2, name, type, "array", indexed, null, arrayLength, arrayChildren);
+        }
+        if (type.substring(0, 5) === "tuple(" || type[0] === "(") {
+            const comps = (obj.components != null) ? obj.components.map((c) => ParamType.from(c)) : null;
+            const tuple = new ParamType(_guard$2, name, type, "tuple", indexed, comps, null, null);
+            // @TODO: use lexer to validate and normalize type
+            return tuple;
+        }
+        type = verifyBasicType(obj.type);
+        return new ParamType(_guard$2, name, type, type, indexed, null, null, null);
+    }
+    static fromObject(obj, allowIndexed) {
+        throw new Error("@TODO");
+    }
+    static fromTokens(tokens, allowIndexed) {
+        let type = "", baseType = "";
+        let comps = null;
+        if (consumeKeywords(tokens, setify(["tuple"])).has("tuple") || tokens.peekType("OPEN_PAREN")) {
+            // Tuple
+            baseType = "tuple";
+            comps = tokens.popParams().map((t) => ParamType.from(t));
+            type = `tuple(${comps.map((c) => c.format()).join(",")})`;
+        }
+        else {
+            // Normal
+            type = verifyBasicType(tokens.popType("TYPE"));
+            baseType = type;
+        }
+        // Check for Array
+        let arrayChildren = null;
+        let arrayLength = null;
+        while (tokens.length && tokens.peekType("BRACKET")) {
+            const bracket = tokens.pop(); //arrays[i];
+            arrayChildren = new ParamType(_guard$2, "", type, baseType, null, comps, arrayLength, arrayChildren);
+            arrayLength = bracket.value;
+            type += bracket.text;
+            baseType = "array";
+            comps = null;
+        }
+        let indexed = null;
+        const keywords = consumeKeywords(tokens, KwModifiers);
+        if (keywords.has("indexed")) {
+            if (!allowIndexed) {
+                throw new Error("");
+            }
+            indexed = true;
+        }
+        const name = (tokens.peekType("ID") ? tokens.pop().text : "");
+        if (tokens.length) {
+            throw new Error("leftover tokens");
+        }
+        return new ParamType(_guard$2, name, type, baseType, indexed, comps, arrayLength, arrayChildren);
+    }
+    static isParamType(value) {
+        return (value && value[internal$1] === ParamTypeInternal);
+    }
+}
+class Fragment {
+    type;
+    inputs;
+    constructor(guard, type, inputs) {
+        assertPrivate(guard, _guard$2, "Fragment");
+        inputs = Object.freeze(inputs.slice());
+        defineProperties(this, { type, inputs });
+    }
+    static from(obj) {
+        if (typeof (obj) === "string") {
+            return this.fromString(obj);
+        }
+        if (obj instanceof TokenString) {
+            return this.fromTokens(obj);
+        }
+        if (typeof (obj) === "object") {
+            return this.fromObject(obj);
+        }
+        throw new Error(`unsupported type: ${obj}`);
+    }
+    static fromObject(obj) {
+        switch (obj.type) {
+            case "constructor": return ConstructorFragment.fromObject(obj);
+            case "error": return ErrorFragment.fromObject(obj);
+            case "event": return EventFragment.fromObject(obj);
+            case "function": return FunctionFragment.fromObject(obj);
+            case "struct": return StructFragment.fromObject(obj);
+        }
+        throw new Error("not implemented yet");
+    }
+    static fromString(text) {
+        try {
+            Fragment.from(JSON.parse(text));
+        }
+        catch (e) { }
+        return Fragment.fromTokens(lex(text));
+    }
+    static fromTokens(tokens) {
+        const type = tokens.popKeyword(KwTypes);
+        switch (type) {
+            case "constructor": return ConstructorFragment.fromTokens(tokens);
+            case "error": return ErrorFragment.fromTokens(tokens);
+            case "event": return EventFragment.fromTokens(tokens);
+            case "function": return FunctionFragment.fromTokens(tokens);
+            case "struct": return StructFragment.fromTokens(tokens);
+        }
+        throw new Error(`unsupported type: ${type}`);
+    }
+    /*
+    static fromTokens(tokens: TokenString): Fragment {
+        const assertDone = () => {
+            if (tokens.length) { throw new Error(`unexpected tokens: ${ tokens.toString() }`); }
+        });
+
+        const type = (tokens.length && tokens.peek().type === "KEYWORD") ? tokens.peek().text: "unknown";
+
+        const name = consumeName("error", tokens);
+        const inputs = consumeParams(tokens, type === "event");
+
+        switch (type) {
+            case "event": case "struct":
+                assertDone();
+        }
+
+    }
+    */
+    static isConstructor(value) {
+        return (value && value.type === "constructor");
+    }
+    static isError(value) {
+        return (value && value.type === "error");
+    }
+    static isEvent(value) {
+        return (value && value.type === "event");
+    }
+    static isFunction(value) {
+        return (value && value.type === "function");
+    }
+    static isStruct(value) {
+        return (value && value.type === "struct");
+    }
+}
+class NamedFragment extends Fragment {
+    name;
+    constructor(guard, type, name, inputs) {
+        super(guard, type, inputs);
+        inputs = Object.freeze(inputs.slice());
+        defineProperties(this, { name });
+    }
+}
+function joinParams(format, params) {
+    return "(" + params.map((p) => p.format(format)).join((format === "full") ? ", " : ",") + ")";
+}
+class ErrorFragment extends NamedFragment {
+    constructor(guard, name, inputs) {
+        super(guard, "error", name, inputs);
+    }
+    get selector() {
+        return id(this.format("sighash")).substring(0, 10);
+    }
+    format(format = "sighash") {
+        if (format === "json") {
+            return JSON.stringify({
+                type: "error",
+                name: this.name,
+                inputs: this.inputs.map((input) => JSON.parse(input.format(format))),
+            });
+        }
+        const result = [];
+        if (format !== "sighash") {
+            result.push("error");
+        }
+        result.push(this.name + joinParams(format, this.inputs));
+        return result.join(" ");
+    }
+    static fromString(text) {
+        return ErrorFragment.fromTokens(lex(text));
+    }
+    static fromTokens(tokens) {
+        const name = consumeName("error", tokens);
+        const inputs = consumeParams(tokens);
+        consumeEoi(tokens);
+        return new ErrorFragment(_guard$2, name, inputs);
+    }
+}
+class EventFragment extends NamedFragment {
+    anonymous;
+    constructor(guard, name, inputs, anonymous) {
+        super(guard, "event", name, inputs);
+        defineProperties(this, { anonymous });
+    }
+    get topicHash() {
+        return id(this.format("sighash"));
+    }
+    format(format = "sighash") {
+        if (format === "json") {
+            return JSON.stringify({
+                type: "event",
+                anonymous: this.anonymous,
+                name: this.name,
+                inputs: this.inputs.map((i) => JSON.parse(i.format(format)))
+            });
+        }
+        const result = [];
+        if (format !== "sighash") {
+            result.push("event");
+        }
+        result.push(this.name + joinParams(format, this.inputs));
+        if (format !== "sighash" && this.anonymous) {
+            result.push("anonymous");
+        }
+        return result.join(" ");
+    }
+    static fromString(text) {
+        return EventFragment.fromTokens(lex(text));
+    }
+    static fromTokens(tokens) {
+        const name = consumeName("event", tokens);
+        const inputs = consumeParams(tokens, true);
+        const anonymous = !!consumeKeywords(tokens, setify(["anonymous"])).has("anonymous");
+        consumeEoi(tokens);
+        return new EventFragment(_guard$2, name, inputs, anonymous);
+    }
+}
+class ConstructorFragment extends Fragment {
+    payable;
+    gas;
+    constructor(guard, type, inputs, payable, gas) {
+        super(guard, type, inputs);
+        defineProperties(this, { payable, gas });
+    }
+    format(format = "sighash") {
+        if (format === "sighash") {
+            throwError("cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", {
+                operation: "format(sighash)"
+            });
+        }
+        if (format === "json") {
+            return JSON.stringify({
+                type: "constructor",
+                stateMutability: (this.payable ? "payable" : "undefined"),
+                payable: this.payable,
+                gas: ((this.gas != null) ? this.gas : undefined),
+                inputs: this.inputs.map((i) => JSON.parse(i.format(format)))
+            });
+        }
+        const result = [`constructor${joinParams(format, this.inputs)}`];
+        result.push((this.payable) ? "payable" : "nonpayable");
+        if (this.gas != null) {
+            result.push(`@${this.gas.toString()}`);
+        }
+        return result.join(" ");
+    }
+    static fromString(text) {
+        return ConstructorFragment.fromTokens(lex(text));
+    }
+    static fromObject(obj) {
+        throw new Error("TODO");
+    }
+    static fromTokens(tokens) {
+        consumeKeywords(tokens, setify(["constructor"]));
+        const inputs = consumeParams(tokens);
+        const payable = !!consumeKeywords(tokens, setify(["payable"])).has("payable");
+        const gas = consumeGas(tokens);
+        consumeEoi(tokens);
+        return new ConstructorFragment(_guard$2, "constructor", inputs, payable, gas);
+    }
+}
+class FunctionFragment extends NamedFragment {
+    constant;
+    outputs;
+    stateMutability;
+    payable;
+    gas;
+    constructor(guard, name, stateMutability, inputs, outputs, gas) {
+        super(guard, "function", name, inputs);
+        outputs = Object.freeze(outputs.slice());
+        const constant = (stateMutability === "view" || stateMutability === "pure");
+        const payable = (stateMutability === "payable");
+        defineProperties(this, { constant, gas, outputs, payable, stateMutability });
+    }
+    get selector() {
+        return id(this.format("sighash")).substring(0, 10);
+    }
+    format(format = "sighash") {
+        if (format === "json") {
+            return JSON.stringify({
+                type: "function",
+                name: this.name,
+                constant: this.constant,
+                stateMutability: ((this.stateMutability !== "nonpayable") ? this.stateMutability : undefined),
+                payable: this.payable,
+                gas: ((this.gas != null) ? this.gas : undefined),
+                inputs: this.inputs.map((i) => JSON.parse(i.format(format))),
+                outputs: this.outputs.map((o) => JSON.parse(o.format(format))),
+            });
+        }
+        const result = [];
+        if (format !== "sighash") {
+            result.push("function");
+        }
+        result.push(this.name + joinParams(format, this.inputs));
+        if (format !== "sighash") {
+            if (this.stateMutability !== "nonpayable") {
+                result.push(this.stateMutability);
+            }
+            if (this.outputs && this.outputs.length) {
+                result.push("returns");
+                result.push(joinParams(format, this.outputs));
+            }
+            if (this.gas != null) {
+                result.push(`@${this.gas.toString()}`);
+            }
+        }
+        return result.join(" ");
+    }
+    static fromString(text) {
+        return FunctionFragment.fromTokens(lex(text));
+    }
+    static fromTokens(tokens) {
+        const name = consumeName("function", tokens);
+        const inputs = consumeParams(tokens);
+        const mutability = consumeMutability(tokens);
+        let outputs = [];
+        if (consumeKeywords(tokens, setify(["returns"])).has("returns")) {
+            outputs = consumeParams(tokens);
+        }
+        const gas = consumeGas(tokens);
+        consumeEoi(tokens);
+        return new FunctionFragment(_guard$2, name, mutability, inputs, outputs, gas);
+    }
+}
+class StructFragment extends NamedFragment {
+    format() {
+        throw new Error("@TODO");
+    }
+    static fromString(text) {
+        return StructFragment.fromTokens(lex(text));
+    }
+    static fromTokens(tokens) {
+        const name = consumeName("struct", tokens);
+        const inputs = consumeParams(tokens);
+        consumeEoi(tokens);
+        return new StructFragment(_guard$2, "struct", name, inputs);
+    }
+}
+
+// See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
+const paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
+const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
+class AbiCoder {
+    #getCoder(param) {
+        if (param.isArray()) {
+            return new ArrayCoder(this.#getCoder(param.arrayChildren), param.arrayLength, param.name);
+        }
+        if (param.isTuple()) {
+            return new TupleCoder(param.components.map((c) => this.#getCoder(c)), param.name);
+        }
+        switch (param.baseType) {
+            case "address":
+                return new AddressCoder(param.name);
+            case "bool":
+                return new BooleanCoder(param.name);
+            case "string":
+                return new StringCoder(param.name);
+            case "bytes":
+                return new BytesCoder(param.name);
+            case "":
+                return new NullCoder(param.name);
+        }
+        // u?int[0-9]*
+        let match = param.type.match(paramTypeNumber);
+        if (match) {
+            let size = parseInt(match[2] || "256");
+            if (size === 0 || size > 256 || (size % 8) !== 0) {
+                throwArgumentError("invalid " + match[1] + " bit length", "param", param);
+            }
+            return new NumberCoder(size / 8, (match[1] === "int"), param.name);
+        }
+        // bytes[0-9]+
+        match = param.type.match(paramTypeBytes);
+        if (match) {
+            let size = parseInt(match[1]);
+            if (size === 0 || size > 32) {
+                throwArgumentError("invalid bytes length", "param", param);
+            }
+            return new FixedBytesCoder(size, param.name);
+        }
+        return throwArgumentError("invalid type", "type", param.type);
+    }
+    getDefaultValue(types) {
+        const coders = types.map((type) => this.#getCoder(ParamType.from(type)));
+        const coder = new TupleCoder(coders, "_");
+        return coder.defaultValue();
+    }
+    encode(types, values) {
+        assertArgumentCount(values.length, types.length, "types/values length mismatch");
+        const coders = types.map((type) => this.#getCoder(ParamType.from(type)));
+        const coder = (new TupleCoder(coders, "_"));
+        const writer = new Writer();
+        coder.encode(writer, values);
+        return writer.data;
+    }
+    decode(types, data, loose) {
+        const coders = types.map((type) => this.#getCoder(ParamType.from(type)));
+        const coder = new TupleCoder(coders, "_");
+        return coder.decode(new Reader(data, loose));
+    }
+}
+const defaultAbiCoder = new AbiCoder();
+
+function formatBytes32String(text) {
+    // Get the bytes
+    const bytes = toUtf8Bytes(text);
+    // Check we have room for null-termination
+    if (bytes.length > 31) {
+        throw new Error("bytes32 string must be less than 32 bytes");
+    }
+    // Zero-pad (implicitly null-terminates)
+    return zeroPadBytes(bytes, 32);
+}
+function parseBytes32String(_bytes) {
+    const data = getBytes(_bytes, "bytes");
+    // Must be 32 bytes with a null-termination
+    if (data.length !== 32) {
+        throw new Error("invalid bytes32 - not 32 bytes long");
+    }
+    if (data[31] !== 0) {
+        throw new Error("invalid bytes32 string - no null terminator");
+    }
+    // Find the null termination
+    let length = 31;
+    while (data[length - 1] === 0) {
+        length--;
+    }
+    // Determine the string value
+    return toUtf8String(data.slice(0, length));
 }
 
 class LogDescription {
@@ -7821,7 +8026,13 @@ const BuiltinErrors = {
     }
 };
 class Interface {
+    /**
+     *  All the Contract ABI members (i.e. methods, events, errors, etc).
+     */
     fragments;
+    /**
+     *  The Contract constructor.
+     */
     deploy;
     #errors;
     #events;
@@ -7850,7 +8061,7 @@ class Interface {
             switch (fragment.type) {
                 case "constructor":
                     if (this.deploy) {
-                        logger.warn("duplicate definition - constructor");
+                        console.log("duplicate definition - constructor");
                         return;
                     }
                     //checkNames(fragment, "input", fragment.inputs);
@@ -7871,9 +8082,9 @@ class Interface {
                 default:
                     return;
             }
+            // Two identical entries; ignore it
             const signature = fragment.format();
             if (bucket.has(signature)) {
-                logger.warn("duplicate definition - " + signature);
                 return;
             }
             bucket.set(signature, fragment);
@@ -7885,44 +8096,43 @@ class Interface {
             });
         }
     }
-    // @TODO: multi sig?
-    format(format) {
-        if (!format) {
-            format = FormatType.full;
-        }
-        if (format === FormatType.sighash) {
-            logger.throwArgumentError("interface does not support formatting sighash", "format", format);
-        }
+    /**
+     *  Returns the entire Human-Readable ABI, as an array of
+     *  signatures, optionally as %%minimal%% strings, which
+     *  removes parameter names and unneceesary spaces.
+     */
+    format(minimal) {
+        const format = (minimal ? "minimal" : "full");
         const abi = this.fragments.map((f) => f.format(format));
-        // We need to re-bundle the JSON fragments a bit
-        if (format === FormatType.json) {
-            return JSON.stringify(abi.map((j) => JSON.parse(j)));
-        }
         return abi;
     }
+    /**
+     *  Return the JSON-encoded ABI. This is the format Solidiy
+     *  returns.
+     */
+    formatJson() {
+        const abi = this.fragments.map((f) => f.format("json"));
+        // We need to re-bundle the JSON fragments a bit
+        return JSON.stringify(abi.map((j) => JSON.parse(j)));
+    }
+    /**
+     *  The ABI coder that will be used to encode and decode binary
+     *  data.
+     */
     getAbiCoder() {
         return defaultAbiCoder;
     }
-    //static getAddress(address: string): string {
-    //    return getAddress(address);
-    //}
-    //static getSelector(fragment: ErrorFragment | FunctionFragment): string {
-    //    return dataSlice(id(fragment.format()), 0, 4);
-    //}
-    //static getEventTopic(eventFragment: EventFragment): string {
-    //    return id(eventFragment.format());
-    //}
     // Find a function definition by any means necessary (unless it is ambiguous)
     #getFunction(key, values, forceUnique) {
         // Selector
         if (isHexString(key)) {
             const selector = key.toLowerCase();
             for (const fragment of this.#functions.values()) {
-                if (selector === this.getSelector(fragment)) {
+                if (selector === fragment.selector) {
                     return fragment;
                 }
             }
-            logger.throwArgumentError("no matching function", "selector", key);
+            throwArgumentError("no matching function", "selector", key);
         }
         // It is a bare name, look up the function (will return null if ambiguous)
         if (key.indexOf("(") === -1) {
@@ -7981,11 +8191,11 @@ class Interface {
                 }
             }
             if (matching.length === 0) {
-                logger.throwArgumentError("no matching function", "name", key);
+                throwArgumentError("no matching function", "name", key);
             }
             else if (matching.length > 1 && forceUnique) {
                 const matchStr = matching.map((m) => JSON.stringify(m.format())).join(", ");
-                logger.throwArgumentError(`multiple matching functions (i.e. ${matchStr})`, "name", key);
+                throwArgumentError(`multiple matching functions (i.e. ${matchStr})`, "name", key);
             }
             return matching[0];
         }
@@ -7994,11 +8204,25 @@ class Interface {
         if (result) {
             return result;
         }
-        return logger.throwArgumentError("no matching function", "signature", key);
+        return throwArgumentError("no matching function", "signature", key);
     }
+    /**
+     *  Get the function name for %%key%%, which may be a function selector,
+     *  function name or function signature that belongs to the ABI.
+     */
     getFunctionName(key) {
         return (this.#getFunction(key, null, false)).name;
     }
+    /**
+     *  Get the [[FunctionFragment]] for %%key%%, which may be a function
+     *  selector, function name or function signature that belongs to the ABI.
+     *
+     *  If %%values%% is provided, it will use the Typed API to handle
+     *  ambiguous cases where multiple functions match by name.
+     *
+     *  If the %%key%% and %%values%% do not refine to a single function in
+     *  the ABI, this will throw.
+     */
     getFunction(key, values) {
         return this.#getFunction(key, values || null, true);
     }
@@ -8008,11 +8232,11 @@ class Interface {
         if (isHexString(key)) {
             const eventTopic = key.toLowerCase();
             for (const fragment of this.#events.values()) {
-                if (eventTopic === this.getEventTopic(fragment)) {
+                if (eventTopic === fragment.topicHash) {
                     return fragment;
                 }
             }
-            logger.throwArgumentError("no matching event", "eventTopic", key);
+            throwArgumentError("no matching event", "eventTopic", key);
         }
         // It is a bare name, look up the function (will return null if ambiguous)
         if (key.indexOf("(") === -1) {
@@ -8046,11 +8270,11 @@ class Interface {
                 }
             }
             if (matching.length === 0) {
-                logger.throwArgumentError("no matching event", "name", key);
+                throwArgumentError("no matching event", "name", key);
             }
             else if (matching.length > 1 && forceUnique) {
                 // @TODO: refine by Typed
-                logger.throwArgumentError("multiple matching events", "name", key);
+                throwArgumentError("multiple matching events", "name", key);
             }
             return matching[0];
         }
@@ -8059,15 +8283,38 @@ class Interface {
         if (result) {
             return result;
         }
-        return logger.throwArgumentError("no matching event", "signature", key);
+        return throwArgumentError("no matching event", "signature", key);
     }
+    /**
+     *  Get the event name for %%key%%, which may be a topic hash,
+     *  event name or event signature that belongs to the ABI.
+     */
     getEventName(key) {
         return (this.#getEvent(key, null, false)).name;
     }
+    /**
+     *  Get the [[EventFragment]] for %%key%%, which may be a topic hash,
+     *  event name or event signature that belongs to the ABI.
+     *
+     *  If %%values%% is provided, it will use the Typed API to handle
+     *  ambiguous cases where multiple events match by name.
+     *
+     *  If the %%key%% and %%values%% do not refine to a single event in
+     *  the ABI, this will throw.
+     */
     getEvent(key, values) {
         return this.#getEvent(key, values || null, true);
     }
-    // Find a function definition by any means necessary (unless it is ambiguous)
+    /**
+     *  Get the [[ErrorFragment]] for %%key%%, which may be an error
+     *  selector, error name or error signature that belongs to the ABI.
+     *
+     *  If %%values%% is provided, it will use the Typed API to handle
+     *  ambiguous cases where multiple errors match by name.
+     *
+     *  If the %%key%% and %%values%% do not refine to a single error in
+     *  the ABI, this will throw.
+     */
     getError(key, values) {
         if (isHexString(key)) {
             const selector = key.toLowerCase();
@@ -8075,11 +8322,11 @@ class Interface {
                 return ErrorFragment.fromString(BuiltinErrors[selector].signature);
             }
             for (const fragment of this.#errors.values()) {
-                if (selector === this.getSelector(fragment)) {
+                if (selector === fragment.selector) {
                     return fragment;
                 }
             }
-            logger.throwArgumentError("no matching error", "selector", key);
+            throwArgumentError("no matching error", "selector", key);
         }
         // It is a bare name, look up the function (will return null if ambiguous)
         if (key.indexOf("(") === -1) {
@@ -8096,11 +8343,11 @@ class Interface {
                 if (key === "Panic") {
                     return ErrorFragment.fromString("error Panic(uint256)");
                 }
-                logger.throwArgumentError("no matching error", "name", key);
+                throwArgumentError("no matching error", "name", key);
             }
             else if (matching.length > 1) {
                 // @TODO: refine by Typed
-                logger.throwArgumentError("multiple matching errors", "name", key);
+                throwArgumentError("multiple matching errors", "name", key);
             }
             return matching[0];
         }
@@ -8116,87 +8363,124 @@ class Interface {
         if (result) {
             return result;
         }
-        return logger.throwArgumentError("no matching error", "signature", key);
+        return throwArgumentError("no matching error", "signature", key);
     }
     // Get the 4-byte selector used by Solidity to identify a function
-    getSelector(fragment) {
-        /*
-        if (typeof(fragment) === "string") {
-            const matches: Array<Fragment> = [ ];
+    /*
+getSelector(fragment: ErrorFragment | FunctionFragment): string {
+    if (typeof(fragment) === "string") {
+        const matches: Array<Fragment> = [ ];
 
-            try { matches.push(this.getFunction(fragment)); } catch (error) { }
-            try { matches.push(this.getError(<string>fragment)); } catch (_) { }
+        try { matches.push(this.getFunction(fragment)); } catch (error) { }
+        try { matches.push(this.getError(<string>fragment)); } catch (_) { }
 
-            if (matches.length === 0) {
-                logger.throwArgumentError("unknown fragment", "key", fragment);
-            } else if (matches.length > 1) {
-                logger.throwArgumentError("ambiguous fragment matches function and error", "key", fragment);
-            }
-
-            fragment = matches[0];
+        if (matches.length === 0) {
+            logger.throwArgumentError("unknown fragment", "key", fragment);
+        } else if (matches.length > 1) {
+            logger.throwArgumentError("ambiguous fragment matches function and error", "key", fragment);
         }
-        */
-        return dataSlice(id(fragment.format()), 0, 4);
+
+        fragment = matches[0];
     }
+
+    return dataSlice(id(fragment.format()), 0, 4);
+}
+    */
     // Get the 32-byte topic hash used by Solidity to identify an event
-    getEventTopic(fragment) {
+    /*
+    getEventTopic(fragment: EventFragment): string {
         //if (typeof(fragment) === "string") { fragment = this.getEvent(eventFragment); }
         return id(fragment.format());
     }
+    */
     _decodeParams(params, data) {
         return this.#abiCoder.decode(params, data);
     }
     _encodeParams(params, values) {
         return this.#abiCoder.encode(params, values);
     }
+    /**
+     *  Encodes a ``tx.data`` object for deploying the Contract with
+     *  the %%values%% as the constructor arguments.
+     */
     encodeDeploy(values) {
         return this._encodeParams(this.deploy.inputs, values || []);
     }
+    /**
+     *  Decodes the result %%data%% (e.g. from an ``eth_call``) for the
+     *  specified error (see [[getError]] for valid values for
+     *  %%key%%).
+     *
+     *  Most developers should prefer the [[parseResult]] method instead,
+     *  which will automatically detect a ``CALL_EXCEPTION`` and throw the
+     *  corresponding error.
+     */
     decodeErrorResult(fragment, data) {
         if (typeof (fragment) === "string") {
             fragment = this.getError(fragment);
         }
-        if (dataSlice(data, 0, 4) !== this.getSelector(fragment)) {
-            logger.throwArgumentError(`data signature does not match error ${fragment.name}.`, "data", data);
+        if (dataSlice(data, 0, 4) !== fragment.selector) {
+            throwArgumentError(`data signature does not match error ${fragment.name}.`, "data", data);
         }
         return this._decodeParams(fragment.inputs, dataSlice(data, 4));
     }
-    encodeErrorResult(fragment, values) {
-        if (typeof (fragment) === "string") {
-            fragment = this.getError(fragment);
-        }
+    /**
+     *  Encodes the transaction revert data for a call result that
+     *  reverted from the the Contract with the sepcified %%error%%
+     *  (see [[getError]] for valid values for %%key%%) with the %%values%%.
+     *
+     *  This is generally not used by most developers, unless trying to mock
+     *  a result from a Contract.
+     */
+    encodeErrorResult(key, values) {
+        const fragment = (typeof (key) === "string") ? this.getError(key) : key;
         return concat([
-            this.getSelector(fragment),
+            fragment.selector,
             this._encodeParams(fragment.inputs, values || [])
         ]);
     }
-    // Decode the data for a function call (e.g. tx.data)
-    decodeFunctionData(fragment, data) {
-        if (typeof (fragment) === "string") {
-            fragment = this.getFunction(fragment);
-        }
-        if (dataSlice(data, 0, 4) !== this.getSelector(fragment)) {
-            logger.throwArgumentError(`data signature does not match function ${fragment.name}.`, "data", data);
+    /**
+     *  Decodes the %%data%% from a transaction ``tx.data`` for
+     *  the function specified (see [[getFunction]] for valid values
+     *  for %%key%%).
+     *
+     *  Most developers should prefer the [[parseTransaction]] method
+     *  instead, which will automatically detect the fragment.
+     */
+    decodeFunctionData(key, data) {
+        const fragment = (typeof (key) === "string") ? this.getFunction(key) : key;
+        if (dataSlice(data, 0, 4) !== fragment.selector) {
+            throwArgumentError(`data signature does not match function ${fragment.name}.`, "data", data);
         }
         return this._decodeParams(fragment.inputs, dataSlice(data, 4));
     }
-    // Encode the data for a function call (e.g. tx.data)
-    encodeFunctionData(fragment, values) {
-        if (typeof (fragment) === "string") {
-            fragment = this.getFunction(fragment);
-        }
+    /**
+     *  Encodes the ``tx.data`` for a transaction that calls the function
+     *  specified (see [[getFunction]] for valid values for %%key%%) with
+     *  the %%values%%.
+     */
+    encodeFunctionData(key, values) {
+        const fragment = (typeof (key) === "string") ? this.getFunction(key) : key;
         return concat([
-            this.getSelector(fragment),
+            fragment.selector,
             this._encodeParams(fragment.inputs, values || [])
         ]);
     }
-    // Decode the result from a function call (e.g. from eth_call)
+    /**
+     *  Decodes the result %%data%% (e.g. from an ``eth_call``) for the
+     *  specified function (see [[getFunction]] for valid values for
+     *  %%key%%).
+     *
+     *  Most developers should prefer the [[parseResult]] method instead,
+     *  which will automatically detect a ``CALL_EXCEPTION`` and throw the
+     *  corresponding error.
+     */
     decodeFunctionResult(fragment, data) {
         if (typeof (fragment) === "string") {
             fragment = this.getFunction(fragment);
         }
         let message = "invalid length for result data";
-        const bytes = logger.getBytesCopy(data);
+        const bytes = getBytesCopy(data);
         if ((bytes.length % 32) === 0) {
             try {
                 return this.#abiCoder.decode(fragment.outputs, bytes);
@@ -8206,7 +8490,7 @@ class Interface {
             }
         }
         // Call returned data with no error, but the data is junk
-        return logger.throwError(message, "BAD_DATA", {
+        return throwError(message, "BAD_DATA", {
             value: hexlify(bytes),
             info: { method: fragment.name, signature: fragment.format() }
         });
@@ -8215,7 +8499,7 @@ class Interface {
         if (typeof (fragment) === "string") {
             fragment = this.getFunction(fragment);
         }
-        const data = logger.getBytes(_data);
+        const data = getBytes(_data);
         let args = undefined;
         if (tx) {
             try {
@@ -8265,18 +8549,23 @@ class Interface {
                 }
             }
         }
-        return logger.makeError("call revert exception", "CALL_EXCEPTION", {
+        return makeError("call revert exception", "CALL_EXCEPTION", {
             data: hexlify(data), transaction: null,
             method: fragment.name, signature: fragment.format(), args,
             errorArgs, errorName, errorSignature, reason
         });
     }
-    // Encode the result for a function call (e.g. for eth_call)
-    encodeFunctionResult(functionFragment, values) {
-        if (typeof (functionFragment) === "string") {
-            functionFragment = this.getFunction(functionFragment);
-        }
-        return hexlify(this.#abiCoder.encode(functionFragment.outputs, values || []));
+    /**
+     *  Encodes the result data (e.g. from an ``eth_call``) for the
+     *  specified function (see [[getFunction]] for valid values
+     *  for %%key%%) with %%values%%.
+     *
+     *  This is generally not used by most developers, unless trying to mock
+     *  a result from a Contract.
+     */
+    encodeFunctionResult(key, values) {
+        const fragment = (typeof (key) === "string") ? this.getFunction(key) : key;
+        return hexlify(this.#abiCoder.encode(fragment.outputs, values || []));
     }
     /*
         spelunk(inputs: Array<ParamType>, values: ReadonlyArray<any>, processfunc: (type: string, value: any) => Promise<any>): Promise<Array<any>> {
@@ -8314,14 +8603,14 @@ class Interface {
             eventFragment = this.getEvent(eventFragment);
         }
         if (values.length > eventFragment.inputs.length) {
-            logger.throwError("too many arguments for " + eventFragment.format(), "UNEXPECTED_ARGUMENT", {
+            throwError("too many arguments for " + eventFragment.format(), "UNEXPECTED_ARGUMENT", {
                 count: values.length,
                 expectedCount: eventFragment.inputs.length
             });
         }
         const topics = [];
         if (!eventFragment.anonymous) {
-            topics.push(this.getEventTopic(eventFragment));
+            topics.push(eventFragment.topicHash);
         }
         // @TODO: Use the coders for this; to properly support tuples, etc.
         const encodeTopic = (param, value) => {
@@ -8348,7 +8637,7 @@ class Interface {
             const param = eventFragment.inputs[index];
             if (!param.indexed) {
                 if (value != null) {
-                    logger.throwArgumentError("cannot filter non-indexed parameters; must be null", ("contract." + param.name), value);
+                    throwArgumentError("cannot filter non-indexed parameters; must be null", ("contract." + param.name), value);
                 }
                 return;
             }
@@ -8356,7 +8645,7 @@ class Interface {
                 topics.push(null);
             }
             else if (param.baseType === "array" || param.baseType === "tuple") {
-                logger.throwArgumentError("filtering with tuples or arrays not supported", ("contract." + param.name), value);
+                throwArgumentError("filtering with tuples or arrays not supported", ("contract." + param.name), value);
             }
             else if (Array.isArray(value)) {
                 topics.push(value.map((value) => encodeTopic(param, value)));
@@ -8379,10 +8668,10 @@ class Interface {
         const dataTypes = [];
         const dataValues = [];
         if (!eventFragment.anonymous) {
-            topics.push(this.getEventTopic(eventFragment));
+            topics.push(eventFragment.topicHash);
         }
         if (values.length !== eventFragment.inputs.length) {
-            logger.throwArgumentError("event arguments/values mismatch", "values", values);
+            throwArgumentError("event arguments/values mismatch", "values", values);
         }
         eventFragment.inputs.forEach((param, index) => {
             const value = values[index];
@@ -8417,9 +8706,9 @@ class Interface {
             eventFragment = this.getEvent(eventFragment);
         }
         if (topics != null && !eventFragment.anonymous) {
-            const eventTopic = this.getEventTopic(eventFragment);
+            const eventTopic = eventFragment.topicHash;
             if (!isHexString(topics[0], 32) || topics[0].toLowerCase() !== eventTopic) {
-                logger.throwArgumentError("fragment/topic mismatch", "topics[0]", topics[0]);
+                throwArgumentError("fragment/topic mismatch", "topics[0]", topics[0]);
             }
             topics = topics.slice(1);
         }
@@ -8479,22 +8768,31 @@ class Interface {
         });
         return Result.fromItems(values, keys);
     }
-    // Given a transaction, find the matching function fragment (if any) and
-    // determine all its properties and call parameters
+    /**
+     *  Parses a transaction, finding the matching function and extracts
+     *  the parameter values along with other useful function details.
+     *
+     *  If the matching function cannot be found, return null.
+     */
     parseTransaction(tx) {
-        const data = logger.getBytes(tx.data, "tx.data");
-        const value = logger.getBigInt((tx.value != null) ? tx.value : 0, "tx.value");
+        const data = getBytes(tx.data, "tx.data");
+        const value = getBigInt((tx.value != null) ? tx.value : 0, "tx.value");
         const fragment = this.getFunction(hexlify(data.slice(0, 4)));
         if (!fragment) {
             return null;
         }
         const args = this.#abiCoder.decode(fragment.inputs, data.slice(4));
-        return new TransactionDescription(fragment, this.getSelector(fragment), args, value);
+        return new TransactionDescription(fragment, fragment.selector, args, value);
     }
-    // @TODO
-    //parseCallResult(data: BytesLike): ??
-    // Given an event log, find the matching event fragment (if any) and
-    // determine all its properties and values
+    parseCallResult(data) {
+        throw new Error("@TODO");
+    }
+    /**
+     *  Parses a receipt log, finding the matching event and extracts
+     *  the parameter values along with other useful event details.
+     *
+     *  If the matching event cannot be found, returns null.
+     */
     parseLog(log) {
         const fragment = this.getEvent(log.topics[0]);
         if (!fragment || fragment.anonymous) {
@@ -8503,8 +8801,14 @@ class Interface {
         // @TODO: If anonymous, and the only method, and the input count matches, should we parse?
         //        Probably not, because just because it is the only event in the ABI does
         //        not mean we have the full ABI; maybe just a fragment?
-        return new LogDescription(fragment, this.getEventTopic(fragment), this.decodeEventLog(fragment, log.data, log.topics));
+        return new LogDescription(fragment, fragment.topicHash, this.decodeEventLog(fragment, log.data, log.topics));
     }
+    /**
+     *  Parses a revert data, finding the matching error and extracts
+     *  the parameter values along with other useful error details.
+     *
+     *  If the matching event cannot be found, returns null.
+     */
     parseError(data) {
         const hexData = hexlify(data);
         const fragment = this.getError(dataSlice(hexData, 0, 4));
@@ -8512,8 +8816,14 @@ class Interface {
             return null;
         }
         const args = this.#abiCoder.decode(fragment.inputs, dataSlice(hexData, 4));
-        return new ErrorDescription(fragment, this.getSelector(fragment), args);
+        return new ErrorDescription(fragment, fragment.selector, args);
     }
+    /**
+     *  Creates a new [[Interface]] from the ABI %%value%%.
+     *
+     *  The %%value%% may be provided as an existing [[Interface]] object,
+     *  a JSON-encoded ABI or any Human-Readable ABI format.
+     */
     static from(value) {
         // Already an Interface, which is immutable
         if (value instanceof Interface) {
@@ -8525,10 +8835,471 @@ class Interface {
         }
         // Maybe an interface from an older version, or from a symlinked copy
         if (typeof (value.format) === "function") {
-            return new Interface(value.format(FormatType.json));
+            return new Interface(value.format("json"));
         }
         // Array of fragments
         return new Interface(value);
+    }
+}
+
+//////
+
+const BN_1$1 = BigInt(1);
+const Empty = new Uint8Array([]);
+function parseBytes(result, start) {
+    if (result === "0x") {
+        return null;
+    }
+    const offset = toNumber(dataSlice(result, start, start + 32));
+    const length = toNumber(dataSlice(result, offset, offset + 32));
+    return dataSlice(result, offset + 32, offset + 32 + length);
+}
+function parseString(result, start) {
+    try {
+        const bytes = parseBytes(result, start);
+        if (bytes != null) {
+            return toUtf8String(bytes);
+        }
+    }
+    catch (error) { }
+    return null;
+}
+function numPad$1(value) {
+    const result = toArray(value);
+    if (result.length > 32) {
+        throw new Error("internal; should not happen");
+    }
+    const padded = new Uint8Array(32);
+    padded.set(result, 32 - result.length);
+    return padded;
+}
+function bytesPad$1(value) {
+    if ((value.length % 32) === 0) {
+        return value;
+    }
+    const result = new Uint8Array(Math.ceil(value.length / 32) * 32);
+    result.set(value);
+    return result;
+}
+// ABI Encodes a series of (bytes, bytes, ...)
+function encodeBytes$1(datas) {
+    const result = [];
+    let byteCount = 0;
+    // Add place-holders for pointers as we add items
+    for (let i = 0; i < datas.length; i++) {
+        result.push(Empty);
+        byteCount += 32;
+    }
+    for (let i = 0; i < datas.length; i++) {
+        const data = getBytes(datas[i]);
+        // Update the bytes offset
+        result[i] = numPad$1(byteCount);
+        // The length and padded value of data
+        result.push(numPad$1(data.length));
+        result.push(bytesPad$1(data));
+        byteCount += 32 + Math.ceil(data.length / 32) * 32;
+    }
+    return concat(result);
+}
+// @TODO: This should use the fetch-data:ipfs gateway
+// Trim off the ipfs:// prefix and return the default gateway URL
+function getIpfsLink(link) {
+    if (link.match(/^ipfs:\/\/ipfs\//i)) {
+        link = link.substring(12);
+    }
+    else if (link.match(/^ipfs:\/\//i)) {
+        link = link.substring(7);
+    }
+    else {
+        throwArgumentError("unsupported IPFS format", "link", link);
+    }
+    return `https:/\/gateway.ipfs.io/ipfs/${link}`;
+}
+;
+;
+class MulticoinProviderPlugin {
+    name;
+    constructor(name) {
+        defineProperties(this, { name });
+    }
+    validate(proivder) {
+        return this;
+    }
+    supportsCoinType(coinType) {
+        return false;
+    }
+    async encodeAddress(coinType, address) {
+        throw new Error("unsupported coin");
+    }
+    async decodeAddress(coinType, data) {
+        throw new Error("unsupported coin");
+    }
+}
+const BasicMulticoinPluginId = "org.ethers.provider-prugins.basicmulticoin";
+class BasicMulticoinProviderPlugin extends MulticoinProviderPlugin {
+    constructor() {
+        super(BasicMulticoinPluginId);
+    }
+}
+const matcherIpfs = new RegExp("^(ipfs):/\/(.*)$", "i");
+const matchers = [
+    new RegExp("^(https):/\/(.*)$", "i"),
+    new RegExp("^(data):(.*)$", "i"),
+    matcherIpfs,
+    new RegExp("^eip155:[0-9]+/(erc[0-9]+):(.*)$", "i"),
+];
+class EnsResolver {
+    provider;
+    address;
+    name;
+    // For EIP-2544 names, the ancestor that provided the resolver
+    #supports2544;
+    constructor(provider, address, name) {
+        defineProperties(this, { provider, address, name });
+        this.#supports2544 = null;
+    }
+    async supportsWildcard() {
+        if (!this.#supports2544) {
+            // supportsInterface(bytes4 = selector("resolve(bytes,bytes)"))
+            this.#supports2544 = this.provider.call({
+                to: this.address,
+                data: "0x01ffc9a79061b92300000000000000000000000000000000000000000000000000000000"
+            }).then((result) => {
+                return (getBigInt(result) === BN_1$1);
+            }).catch((error) => {
+                if (error.code === "CALL_EXCEPTION") {
+                    return false;
+                }
+                // Rethrow the error: link is down, etc. Let future attempts retry.
+                this.#supports2544 = null;
+                throw error;
+            });
+        }
+        return await this.#supports2544;
+    }
+    async _fetch(selector, parameters = "0x") {
+        // e.g. keccak256("addr(bytes32,uint256)")
+        const addrData = concat([selector, namehash(this.name), parameters]);
+        const tx = {
+            to: this.address,
+            enableCcipRead: true,
+            data: addrData
+        };
+        // Wildcard support; use EIP-2544 to resolve the request
+        let wrapped = false;
+        if (await this.supportsWildcard()) {
+            wrapped = true;
+            // selector("resolve(bytes,bytes)")
+            tx.data = concat(["0x9061b923", encodeBytes$1([dnsEncode(this.name), addrData])]);
+        }
+        try {
+            let data = await this.provider.call(tx);
+            if ((getBytes(data).length % 32) === 4) {
+                return throwError("resolver threw error", "CALL_EXCEPTION", {
+                    transaction: tx, data
+                });
+            }
+            if (wrapped) {
+                return parseBytes(data, 0);
+            }
+            return data;
+        }
+        catch (error) {
+            if (error.code !== "CALL_EXCEPTION") {
+                throw error;
+            }
+        }
+        return null;
+    }
+    async getAddress(coinType = 60) {
+        if (coinType === 60) {
+            try {
+                // keccak256("addr(bytes32)")
+                const result = await this._fetch("0x3b3b57de");
+                // No address
+                if (result === "0x" || result === ZeroHash) {
+                    return null;
+                }
+                const network = await this.provider.getNetwork();
+                return network.formatter.callAddress(result);
+            }
+            catch (error) {
+                if (error.code === "CALL_EXCEPTION") {
+                    return null;
+                }
+                throw error;
+            }
+        }
+        let coinPlugin = null;
+        for (const plugin of this.provider.plugins) {
+            if (!(plugin instanceof MulticoinProviderPlugin)) {
+                continue;
+            }
+            if (plugin.supportsCoinType(coinType)) {
+                coinPlugin = plugin;
+                break;
+            }
+        }
+        if (coinPlugin == null) {
+            return null;
+        }
+        // keccak256("addr(bytes32,uint256")
+        const data = parseBytes((await this._fetch("0xf1cb7e06", numPad$1(coinType))) || "0x", 0);
+        // No address
+        if (data == null || data === "0x") {
+            return null;
+        }
+        // Compute the address
+        const address = await coinPlugin.encodeAddress(coinType, data);
+        if (address != null) {
+            return address;
+        }
+        return throwError(`invalid coin data`, "UNSUPPORTED_OPERATION", {
+            operation: `getAddress(${coinType})`,
+            info: { coinType, data }
+        });
+    }
+    async getText(key) {
+        // The key encoded as parameter to fetchBytes
+        let keyBytes = toUtf8Bytes(key);
+        // The nodehash consumes the first slot, so the string pointer targets
+        // offset 64, with the length at offset 64 and data starting at offset 96
+        const calldata = getBytes(concat([numPad$1(64), numPad$1(keyBytes.length), keyBytes]));
+        const hexBytes = parseBytes((await this._fetch("0x59d1d43c", bytesPad$1(calldata))) || "0x", 0);
+        if (hexBytes == null || hexBytes === "0x") {
+            return null;
+        }
+        return toUtf8String(hexBytes);
+    }
+    async getContentHash() {
+        // keccak256("contenthash()")
+        const hexBytes = parseBytes((await this._fetch("0xbc1c58d1")) || "0x", 0);
+        // No contenthash
+        if (hexBytes == null || hexBytes === "0x") {
+            return null;
+        }
+        // IPFS (CID: 1, Type: 70=DAG-PB, 72=libp2p-key)
+        const ipfs = hexBytes.match(/^0x(e3010170|e5010172)(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
+        if (ipfs) {
+            const scheme = (ipfs[1] === "e3010170") ? "ipfs" : "ipns";
+            const length = parseInt(ipfs[4], 16);
+            if (ipfs[5].length === length * 2) {
+                return `${scheme}:/\/${encodeBase58("0x" + ipfs[2])}`;
+            }
+        }
+        // Swarm (CID: 1, Type: swarm-manifest; hash/length hard-coded to keccak256/32)
+        const swarm = hexBytes.match(/^0xe40101fa011b20([0-9a-f]*)$/);
+        if (swarm && swarm[1].length === 64) {
+            return `bzz:/\/${swarm[1]}`;
+        }
+        return throwError(`invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
+            operation: "getContentHash()",
+            info: { data: hexBytes }
+        });
+    }
+    async getAvatar() {
+        return (await this._getAvatar()).url;
+    }
+    async _getAvatar() {
+        const linkage = [{ type: "name", value: this.name }];
+        try {
+            // test data for ricmoo.eth
+            //const avatar = "eip155:1/erc721:0x265385c7f4132228A0d54EB1A9e7460b91c0cC68/29233";
+            const avatar = await this.getText("avatar");
+            if (avatar == null) {
+                linkage.push({ type: "!avatar", value: "" });
+                throw new Error("!avatar");
+            }
+            linkage.push({ type: "avatar", value: avatar });
+            for (let i = 0; i < matchers.length; i++) {
+                const match = avatar.match(matchers[i]);
+                if (match == null) {
+                    continue;
+                }
+                const scheme = match[1].toLowerCase();
+                switch (scheme) {
+                    case "https":
+                    case "data":
+                        linkage.push({ type: "url", value: avatar });
+                        return { linkage, url: avatar };
+                    case "ipfs": {
+                        const url = getIpfsLink(avatar);
+                        linkage.push({ type: "ipfs", value: avatar });
+                        linkage.push({ type: "url", value: url });
+                        return { linkage, url };
+                    }
+                    case "erc721":
+                    case "erc1155": {
+                        // Depending on the ERC type, use tokenURI(uint256) or url(uint256)
+                        const selector = (scheme === "erc721") ? "0xc87b56dd" : "0x0e89341c";
+                        linkage.push({ type: scheme, value: avatar });
+                        // The owner of this name
+                        const owner = await this.getAddress();
+                        if (owner == null) {
+                            linkage.push({ type: "!owner", value: "" });
+                            throw new Error("!owner");
+                        }
+                        const comps = (match[2] || "").split("/");
+                        if (comps.length !== 2) {
+                            linkage.push({ type: `!${scheme}caip`, value: (match[2] || "") });
+                            throw new Error("!caip");
+                        }
+                        const formatter = (await this.provider.getNetwork()).formatter;
+                        const addr = formatter.address(comps[0]);
+                        const tokenId = numPad$1(comps[1]);
+                        // Check that this account owns the token
+                        if (scheme === "erc721") {
+                            // ownerOf(uint256 tokenId)
+                            const tokenOwner = formatter.callAddress(await this.provider.call({
+                                to: addr, data: concat(["0x6352211e", tokenId])
+                            }));
+                            if (owner !== tokenOwner) {
+                                linkage.push({ type: "!owner", value: tokenOwner });
+                                throw new Error("!owner");
+                            }
+                            linkage.push({ type: "owner", value: tokenOwner });
+                        }
+                        else if (scheme === "erc1155") {
+                            // balanceOf(address owner, uint256 tokenId)
+                            const balance = getBigInt(await this.provider.call({
+                                to: addr, data: concat(["0x00fdd58e", zeroPadValue(owner, 32), tokenId])
+                            }));
+                            if (!balance) {
+                                linkage.push({ type: "!balance", value: "0" });
+                                throw new Error("!balance");
+                            }
+                            linkage.push({ type: "balance", value: balance.toString() });
+                        }
+                        // Call the token contract for the metadata URL
+                        const tx = {
+                            to: comps[0],
+                            data: concat([selector, tokenId])
+                        };
+                        let metadataUrl = parseString(await this.provider.call(tx), 0);
+                        if (metadataUrl == null) {
+                            linkage.push({ type: "!metadata-url", value: "" });
+                            throw new Error("!metadata-url");
+                        }
+                        linkage.push({ type: "metadata-url-base", value: metadataUrl });
+                        // ERC-1155 allows a generic {id} in the URL
+                        if (scheme === "erc1155") {
+                            metadataUrl = metadataUrl.replace("{id}", hexlify(tokenId).substring(2));
+                            linkage.push({ type: "metadata-url-expanded", value: metadataUrl });
+                        }
+                        // Transform IPFS metadata links
+                        if (metadataUrl.match(/^ipfs:/i)) {
+                            metadataUrl = getIpfsLink(metadataUrl);
+                        }
+                        linkage.push({ type: "metadata-url", value: metadataUrl });
+                        // Get the token metadata
+                        let metadata = {};
+                        const response = await (new FetchRequest(metadataUrl)).send();
+                        response.assertOk();
+                        try {
+                            metadata = response.bodyJson;
+                        }
+                        catch (error) {
+                            try {
+                                linkage.push({ type: "!metadata", value: response.bodyText });
+                            }
+                            catch (error) {
+                                const bytes = response.body;
+                                if (bytes) {
+                                    linkage.push({ type: "!metadata", value: hexlify(bytes) });
+                                }
+                                throw error;
+                            }
+                            throw error;
+                        }
+                        if (!metadata) {
+                            linkage.push({ type: "!metadata", value: "" });
+                            throw new Error("!metadata");
+                        }
+                        linkage.push({ type: "metadata", value: JSON.stringify(metadata) });
+                        // Pull the image URL out
+                        let imageUrl = metadata.image;
+                        if (typeof (imageUrl) !== "string") {
+                            linkage.push({ type: "!imageUrl", value: "" });
+                            throw new Error("!imageUrl");
+                        }
+                        if (imageUrl.match(/^(https:\/\/|data:)/i)) {
+                            // Allow
+                        }
+                        else {
+                            // Transform IPFS link to gateway
+                            const ipfs = imageUrl.match(matcherIpfs);
+                            if (ipfs == null) {
+                                linkage.push({ type: "!imageUrl-ipfs", value: imageUrl });
+                                throw new Error("!imageUrl-ipfs");
+                            }
+                            linkage.push({ type: "imageUrl-ipfs", value: imageUrl });
+                            imageUrl = getIpfsLink(imageUrl);
+                        }
+                        linkage.push({ type: "url", value: imageUrl });
+                        return { linkage, url: imageUrl };
+                    }
+                }
+            }
+        }
+        catch (error) {
+            console.log("EE", error);
+        }
+        return { linkage, url: null };
+    }
+    static async #getResolver(provider, name) {
+        const network = await provider.getNetwork();
+        const ensPlugin = network.getPlugin("org.ethers.network-plugins.ens");
+        // No ENS...
+        if (!ensPlugin) {
+            return throwError("network does not support ENS", "UNSUPPORTED_OPERATION", {
+                operation: "getResolver", info: { network: network.name }
+            });
+        }
+        try {
+            // keccak256("resolver(bytes32)")
+            const addrData = await provider.call({
+                to: ensPlugin.address,
+                data: concat(["0x0178b8bf", namehash(name)]),
+                enableCcipRead: true
+            });
+            const addr = network.formatter.callAddress(addrData);
+            if (addr === dataSlice(ZeroHash, 0, 20)) {
+                return null;
+            }
+            return addr;
+        }
+        catch (error) {
+            // ENS registry cannot throw errors on resolver(bytes32),
+            // so probably a link error
+            throw error;
+        }
+        return null;
+    }
+    static async fromName(provider, name) {
+        let currentName = name;
+        while (true) {
+            if (currentName === "" || currentName === ".") {
+                return null;
+            }
+            // Optimization since the eth node cannot change and does
+            // not have a wildcar resolver
+            if (name !== "eth" && currentName === "eth") {
+                return null;
+            }
+            // Check the current node for a resolver
+            const addr = await EnsResolver.#getResolver(provider, currentName);
+            // Found a resolver!
+            if (addr != null) {
+                const resolver = new EnsResolver(provider, addr, name);
+                // Legacy resolver found, using EIP-2544 so it isn't safe to use
+                if (currentName !== name && !(await resolver.supportsWildcard())) {
+                    return null;
+                }
+                return resolver;
+            }
+            // Get the parent node
+            currentName = currentName.split(".").slice(1).join(".");
+        }
     }
 }
 
@@ -8593,7 +9364,7 @@ function handleData(value, param) {
         return hexlify(value);
     }
     catch (error) {
-        return logger.throwArgumentError("invalid data", param, value);
+        return throwArgumentError("invalid data", param, value);
     }
 }
 function handleAccessList(value, param) {
@@ -8601,30 +9372,30 @@ function handleAccessList(value, param) {
         return accessListify(value);
     }
     catch (error) {
-        return logger.throwArgumentError("invalid accessList", param, value);
+        return throwArgumentError("invalid accessList", param, value);
     }
 }
 function handleNumber(_value, param) {
     if (_value === "0x") {
         return 0;
     }
-    return logger.getNumber(_value, param);
+    return getNumber(_value, param);
 }
 function handleUint(_value, param) {
     if (_value === "0x") {
         return BN_0;
     }
-    const value = logger.getBigInt(_value, param);
+    const value = getBigInt(_value, param);
     if (value > BN_MAX_UINT) {
-        logger.throwArgumentError("value exceeds uint size", param, value);
+        throwArgumentError("value exceeds uint size", param, value);
     }
     return value;
 }
 function formatNumber(_value, name) {
-    const value = logger.getBigInt(_value, "value");
+    const value = getBigInt(_value, "value");
     const result = toArray(value);
     if (result.length > 32) {
-        logger.throwArgumentError(`value too large`, `tx.${name}`, value);
+        throwArgumentError(`value too large`, `tx.${name}`, value);
     }
     return result;
 }
@@ -8634,7 +9405,7 @@ function formatAccessList(value) {
 function _parseLegacy(data) {
     const fields = decodeRlp(data);
     if (!Array.isArray(fields) || (fields.length !== 9 && fields.length !== 6)) {
-        return logger.throwArgumentError("invalid field count for legacy transaction", "data", data);
+        return throwArgumentError("invalid field count for legacy transaction", "data", data);
     }
     const tx = {
         type: 0,
@@ -8666,7 +9437,7 @@ function _parseLegacy(data) {
         tx.chainId = chainId;
         // Signed Legacy Transaction
         if (chainId === BN_0 && (v < BN_27 || v > BN_28)) {
-            logger.throwArgumentError("non-canonical legacy v", "v", fields[6]);
+            throwArgumentError("non-canonical legacy v", "v", fields[6]);
         }
         tx.signature = Signature.from({
             r: zeroPadValue(fields[7], 32),
@@ -8689,11 +9460,11 @@ function _serializeLegacy(tx, sig) {
     let chainId = BN_0;
     if (tx.chainId != null) {
         // A chainId was provided; if non-zero we'll use EIP-155
-        chainId = logger.getBigInt(tx.chainId, "tx.chainId");
+        chainId = getBigInt(tx.chainId, "tx.chainId");
         // We have a chainId in the tx and an EIP-155 v in the signature,
         // make sure they agree with each other
         if (sig && sig.networkV != null && sig.legacyChainId !== chainId) {
-            logger.throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
+            throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
         }
     }
     else if (sig) {
@@ -8719,7 +9490,7 @@ function _serializeLegacy(tx, sig) {
         v = Signature.getChainIdV(chainId, sig.v);
     }
     else if (BigInt(sig.v) !== v) {
-        logger.throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
+        throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
     }
     fields.push(toArray(v));
     fields.push(toArray(sig.r));
@@ -8735,7 +9506,7 @@ function _parseEipSignature(tx, fields, serialize) {
         }
     }
     catch (error) {
-        return logger.throwArgumentError("invalid yParity", "yParity", fields[0]);
+        return throwArgumentError("invalid yParity", "yParity", fields[0]);
     }
     const r = zeroPadValue(fields[1], 32);
     const s = zeroPadValue(fields[2], 32);
@@ -8743,9 +9514,9 @@ function _parseEipSignature(tx, fields, serialize) {
     tx.signature = signature;
 }
 function _parseEip1559(data) {
-    const fields = decodeRlp(logger.getBytes(data).slice(1));
+    const fields = decodeRlp(getBytes(data).slice(1));
     if (!Array.isArray(fields) || (fields.length !== 9 && fields.length !== 12)) {
-        logger.throwArgumentError("invalid field count for transaction type: 2", "data", hexlify(data));
+        throwArgumentError("invalid field count for transaction type: 2", "data", hexlify(data));
     }
     const maxPriorityFeePerGas = handleUint(fields[2], "maxPriorityFeePerGas");
     const maxFeePerGas = handleUint(fields[3], "maxFeePerGas");
@@ -8790,9 +9561,9 @@ function _serializeEip1559(tx, sig) {
     return concat(["0x02", encodeRlp(fields)]);
 }
 function _parseEip2930(data) {
-    const fields = decodeRlp(logger.getBytes(data).slice(1));
+    const fields = decodeRlp(getBytes(data).slice(1));
     if (!Array.isArray(fields) || (fields.length !== 8 && fields.length !== 11)) {
-        logger.throwArgumentError("invalid field count for transaction type: 1", "data", hexlify(data));
+        throwArgumentError("invalid field count for transaction type: 1", "data", hexlify(data));
     }
     const tx = {
         type: 1,
@@ -8871,9 +9642,9 @@ class Transaction {
         setStore(this.#props, "to", (value == null) ? null : getAddress(value));
     }
     get nonce() { return getStore(this.#props, "nonce"); }
-    set nonce(value) { setStore(this.#props, "nonce", logger.getNumber(value, "value")); }
+    set nonce(value) { setStore(this.#props, "nonce", getNumber(value, "value")); }
     get gasLimit() { return getStore(this.#props, "gasLimit"); }
-    set gasLimit(value) { setStore(this.#props, "gasLimit", logger.getBigInt(value)); }
+    set gasLimit(value) { setStore(this.#props, "gasLimit", getBigInt(value)); }
     get gasPrice() {
         const value = getStore(this.#props, "gasPrice");
         if (value == null && (this.type === 0 || this.type === 1)) {
@@ -8882,7 +9653,7 @@ class Transaction {
         return value;
     }
     set gasPrice(value) {
-        setStore(this.#props, "gasPrice", (value == null) ? null : logger.getBigInt(value, "gasPrice"));
+        setStore(this.#props, "gasPrice", (value == null) ? null : getBigInt(value, "gasPrice"));
     }
     get maxPriorityFeePerGas() {
         const value = getStore(this.#props, "maxPriorityFeePerGas");
@@ -8892,7 +9663,7 @@ class Transaction {
         return value;
     }
     set maxPriorityFeePerGas(value) {
-        setStore(this.#props, "maxPriorityFeePerGas", (value == null) ? null : logger.getBigInt(value, "maxPriorityFeePerGas"));
+        setStore(this.#props, "maxPriorityFeePerGas", (value == null) ? null : getBigInt(value, "maxPriorityFeePerGas"));
     }
     get maxFeePerGas() {
         const value = getStore(this.#props, "maxFeePerGas");
@@ -8902,16 +9673,16 @@ class Transaction {
         return value;
     }
     set maxFeePerGas(value) {
-        setStore(this.#props, "maxFeePerGas", (value == null) ? null : logger.getBigInt(value, "maxFeePerGas"));
+        setStore(this.#props, "maxFeePerGas", (value == null) ? null : getBigInt(value, "maxFeePerGas"));
     }
     get data() { return getStore(this.#props, "data"); }
     set data(value) { setStore(this.#props, "data", hexlify(value)); }
     get value() { return getStore(this.#props, "value"); }
     set value(value) {
-        setStore(this.#props, "value", logger.getBigInt(value, "value"));
+        setStore(this.#props, "value", getBigInt(value, "value"));
     }
     get chainId() { return getStore(this.#props, "chainId"); }
-    set chainId(value) { setStore(this.#props, "chainId", logger.getBigInt(value)); }
+    set chainId(value) { setStore(this.#props, "chainId", getBigInt(value)); }
     get signature() { return getStore(this.#props, "sig") || null; }
     set signature(value) {
         setStore(this.#props, "sig", (value == null) ? null : Signature.from(value));
@@ -9051,9 +9822,15 @@ class Transaction {
         types.sort();
         return types;
     }
-    isLegacy() { return (this.type === 0); }
-    isBerlin() { return (this.type === 1); }
-    isLondon() { return (this.type === 2); }
+    isLegacy() {
+        return (this.type === 0);
+    }
+    isBerlin() {
+        return (this.type === 1);
+    }
+    isLondon() {
+        return (this.type === 2);
+    }
     clone() {
         return Transaction.from(this);
     }
@@ -9075,7 +9852,7 @@ class Transaction {
     }
     static from(tx) {
         if (typeof (tx) === "string") {
-            const payload = logger.getBytes(tx);
+            const payload = getBytes(tx);
             if (payload[0] >= 0x7f) { // @TODO: > vs >= ??
                 return Transaction.from(_parseLegacy(payload));
             }
@@ -9146,146 +9923,6 @@ class Transaction {
     }
 }
 
-class AbstractSigner {
-    provider;
-    constructor(provider) {
-        defineProperties(this, { provider: (provider || null) });
-    }
-    #checkProvider(operation) {
-        if (this.provider) {
-            return this.provider;
-        }
-        return logger.throwError("missing provider", "UNSUPPORTED_OPERATION", { operation });
-    }
-    async getNonce(blockTag) {
-        return this.#checkProvider("getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
-    }
-    async #populate(op, tx) {
-        const provider = this.#checkProvider(op);
-        //let pop: Deferrable<TransactionRequest> = Object.assign({ }, tx);
-        let pop = Object.assign({}, tx);
-        if (pop.to != null) {
-            pop.to = provider.resolveName(pop.to).then((to) => {
-                if (to == null) {
-                    return logger.throwArgumentError("transaction to ENS name not configured", "tx.to", pop.to);
-                }
-                return to;
-            });
-        }
-        if (pop.from != null) {
-            const from = pop.from;
-            pop.from = Promise.all([
-                this.getAddress(),
-                this.resolveName(from)
-            ]).then(([address, from]) => {
-                if (!from || address.toLowerCase() !== from.toLowerCase()) {
-                    return logger.throwArgumentError("transaction from mismatch", "tx.from", from);
-                }
-                return address;
-            });
-        }
-        return pop;
-    }
-    async populateCall(tx) {
-        const pop = await this.#populate("populateCall", tx);
-        return pop;
-    }
-    async populateTransaction(tx) {
-        const pop = await this.#populate("populateTransaction", tx);
-        if (pop.nonce == null) {
-            pop.nonce = await this.getNonce("pending");
-        }
-        if (pop.gasLimit == null) {
-            pop.gasLimit = await this.estimateGas(pop);
-        }
-        //@TODO: Copy type logic from AbstractSigner in v5
-        return await resolveProperties(pop);
-    }
-    async estimateGas(tx) {
-        return this.#checkProvider("estimateGas").estimateGas(await this.populateCall(tx));
-    }
-    async call(tx) {
-        return this.#checkProvider("call").call(await this.populateCall(tx));
-    }
-    async resolveName(name) {
-        const provider = this.#checkProvider("resolveName");
-        return await provider.resolveName(name);
-    }
-    async sendTransaction(tx) {
-        const provider = this.#checkProvider("sendTransaction");
-        const txObj = Transaction.from(await this.populateTransaction(tx));
-        return await provider.broadcastTransaction(await this.signTransaction(txObj));
-    }
-}
-class VoidSigner extends AbstractSigner {
-    address;
-    constructor(address, provider) {
-        super(provider);
-        defineProperties(this, { address });
-    }
-    async getAddress() { return this.address; }
-    connect(provider) {
-        return new VoidSigner(this.address, provider);
-    }
-    #throwUnsupported(suffix, operation) {
-        return logger.throwError(`VoidSigner cannot sign ${suffix}`, "UNSUPPORTED_OPERATION", {
-            operation
-        });
-    }
-    async signTransaction(tx) {
-        this.#throwUnsupported("transactions", "signTransaction");
-    }
-    async signMessage(message) {
-        this.#throwUnsupported("messages", "signMessage");
-    }
-    async signTypedData(domain, types, value) {
-        this.#throwUnsupported("typed-data", "signTypedData");
-    }
-}
-class WrappedSigner extends AbstractSigner {
-    #signer;
-    constructor(signer) {
-        super(signer.provider);
-        this.#signer = signer;
-    }
-    async getAddress() {
-        return await this.#signer.getAddress();
-    }
-    connect(provider) {
-        return new WrappedSigner(this.#signer.connect(provider));
-    }
-    async getNonce(blockTag) {
-        return await this.#signer.getNonce(blockTag);
-    }
-    async populateCall(tx) {
-        return await this.#signer.populateCall(tx);
-    }
-    async populateTransaction(tx) {
-        return await this.#signer.populateTransaction(tx);
-    }
-    async estimateGas(tx) {
-        return await this.#signer.estimateGas(tx);
-    }
-    async call(tx) {
-        return await this.#signer.call(tx);
-    }
-    async resolveName(name) {
-        return this.#signer.resolveName(name);
-    }
-    async signTransaction(tx) {
-        return await this.#signer.signTransaction(tx);
-    }
-    async sendTransaction(tx) {
-        return await this.#signer.sendTransaction(tx);
-    }
-    async signMessage(message) {
-        return await this.#signer.signMessage(message);
-    }
-    async signTypedData(domain, types, value) {
-        return await this.#signer.signTypedData(domain, types, value);
-    }
-}
-
 //import { resolveAddress } from "@ethersproject/address";
 // -----------------------
 function getValue(value) {
@@ -9340,14 +9977,14 @@ function copyRequest$1(req) {
         if (!(key in req) || req[key] == null) {
             continue;
         }
-        result[key] = logger.getBigInt(req[key], `request.${key}`);
+        result[key] = getBigInt(req[key], `request.${key}`);
     }
     const numberKeys = "type,nonce".split(/,/);
     for (const key in numberKeys) {
         if (!(key in req) || req[key] == null) {
             continue;
         }
-        result[key] = logger.getNumber(req[key], `request.${key}`);
+        result[key] = getNumber(req[key], `request.${key}`);
     }
     if (req.accessList) {
         result.accessList = accessListify(req.accessList);
@@ -9454,7 +10091,9 @@ class Block {
         }
     }
     isMined() { return !!this.hash; }
-    isLondon() { return !!this.baseFeePerGas; }
+    isLondon() {
+        return !!this.baseFeePerGas;
+    }
     orphanedEvent() {
         if (!this.isMined()) {
             throw new Error("");
@@ -9515,6 +10154,19 @@ class Log {
         return createRemovedLogFilter(this);
     }
 }
+/*
+export interface LegacyTransactionReceipt {
+    byzantium: false;
+    status: null;
+    root: string;
+}
+
+export interface ByzantiumTransactionReceipt {
+    byzantium: true;
+    status: number;
+    root: null;
+}
+*/
 class TransactionReceipt {
     provider;
     to;
@@ -9606,6 +10258,9 @@ class TransactionReceipt {
         }
         return tx;
     }
+    async getResult() {
+        return (await this.provider.getTransactionResult(this.hash));
+    }
     async confirmations() {
         return (await this.provider.getBlockNumber()) - this.blockNumber + 1;
     }
@@ -9614,7 +10269,7 @@ class TransactionReceipt {
     }
     reorderedEvent(other) {
         if (other && !other.isMined()) {
-            return logger.throwError("unmined 'other' transction cannot be orphaned", "UNSUPPORTED_OPERATION", {
+            return throwError("unmined 'other' transction cannot be orphaned", "UNSUPPORTED_OPERATION", {
                 operation: "reorderedEvent(other)"
             });
         }
@@ -9720,7 +10375,7 @@ class TransactionResponse {
     }
     removedEvent() {
         if (!this.isMined()) {
-            return logger.throwError("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
+            return throwError("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
                 operation: "removeEvent()"
             });
         }
@@ -9728,12 +10383,12 @@ class TransactionResponse {
     }
     reorderedEvent(other) {
         if (!this.isMined()) {
-            return logger.throwError("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
+            return throwError("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
                 operation: "removeEvent()"
             });
         }
         if (other && !other.isMined()) {
-            return logger.throwError("unmined 'other' transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
+            return throwError("unmined 'other' transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
                 operation: "removeEvent()"
             });
         }
@@ -9760,6 +10415,7 @@ function createRemovedLogFilter(log) {
             index: log.index
         } };
 }
+// @TODO: I think I can drop T
 function fail() {
     throw new Error("this provider should not be used");
 }
@@ -9798,6 +10454,9 @@ class DummyProvider {
         return fail();
     }
     async getTransactionReceipt(hash) {
+        return fail();
+    }
+    async getTransactionResult(hash) {
         return fail();
     }
     // Bloom-filter Queries
@@ -9933,7 +10592,7 @@ class Formatter {
     // An address from a call result; may be zero-padded
     callAddress(value) {
         if (dataLength(value) !== 32 || dataSlice(value, 0, 12) !== "0x000000000000000000000000") {
-            logger.throwArgumentError("invalid call address", "value", value);
+            throwArgumentError("invalid call address", "value", value);
         }
         return this.address(dataSlice(value, 12));
     }
@@ -9941,7 +10600,7 @@ class Formatter {
     contractAddress(value) {
         return getCreateAddress({
             from: this.address(value.from),
-            nonce: logger.getNumber(value.nonce, "value.nonce")
+            nonce: getNumber(value.nonce, "value.nonce")
         });
     }
     // Block Tag
@@ -9961,7 +10620,7 @@ class Formatter {
         if (typeof (value) === "number" || (isHexString(value) && dataLength(value) < 32)) {
             return toQuantity(value);
         }
-        return logger.throwArgumentError("invalid blockTag", "value", value);
+        return throwArgumentError("invalid blockTag", "value", value);
     }
     // Block objects
     block(value, provider) {
@@ -10040,7 +10699,7 @@ class Formatter {
                 if (value === 0 || value === 1) {
                     // Make sure if both are specified, they match
                     if (receipt.status != null && receipt.status !== value) {
-                        return logger.throwError("alt-root-status/status mismatch", "BAD_DATA", {
+                        return throwError("alt-root-status/status mismatch", "BAD_DATA", {
                             value: { root: receipt.root, status: receipt.status }
                         });
                     }
@@ -10048,14 +10707,14 @@ class Formatter {
                     delete receipt.root;
                 }
                 else {
-                    return logger.throwError("invalid alt-root-status", "BAD_DATA", {
+                    return throwError("invalid alt-root-status", "BAD_DATA", {
                         value: receipt.root
                     });
                 }
             }
             else if (!isHexString(receipt.root, 32)) {
                 // Must be a valid bytes32
-                return logger.throwError("invalid receipt root hash", "BAD_DATA", {
+                return throwError("invalid receipt root hash", "BAD_DATA", {
                     value: receipt.root
                 });
             }
@@ -10113,12 +10772,12 @@ class Formatter {
     }
     // Requires a value which is a value BigNumber
     bigNumber(value) {
-        return logger.getBigInt(value, "value");
+        return getBigInt(value, "value");
     }
     uint256(value) {
         const result = this.bigNumber(value);
         if (result < 0 || result > BN_MAX_UINT256) {
-            logger.throwArgumentError("invalid uint256", "value", value);
+            throwArgumentError("invalid uint256", "value", value);
         }
         return result;
     }
@@ -10132,7 +10791,7 @@ class Formatter {
             case "false":
                 return false;
         }
-        return logger.throwArgumentError(`invalid boolean; ${JSON.stringify(value)}`, "value", value);
+        return throwArgumentError(`invalid boolean; ${JSON.stringify(value)}`, "value", value);
     }
     // Requires a value which is a valid hexstring. If dataOrLength is true,
     // the length must be even (i.e. a datahexstring) or if it is a number,
@@ -10150,20 +10809,20 @@ class Formatter {
     }
     data(value) {
         if (dataLength(value) == null) {
-            logger.throwArgumentError("", "value", value);
+            throwArgumentError("", "value", value);
         }
         return value;
     }
     // Requires a network-native hash
     hash(value) {
         if (dataLength(value) !== 32) {
-            logger.throwArgumentError("", "value", value);
+            throwArgumentError("", "value", value);
         }
         return this.#format.data(value);
     }
     // Requires a valid number, within the IEEE 754 safe range
     number(value) {
-        return logger.getNumber(value);
+        return getNumber(value);
     }
     // Requires an object which matches a fleet of other formatters
     // Any FormatFunc may return `undefined` to have the value omitted
@@ -10189,7 +10848,7 @@ class Formatter {
                 }
                 catch (error) {
                     const message = (error instanceof Error) ? error.message : "not-an-error";
-                    logger.throwError(`invalid value for value.${key} (${message})`, "BAD_DATA", { value });
+                    throwError(`invalid value for value.${key} (${message})`, "BAD_DATA", { value });
                 }
             }
             return result;
@@ -10227,7 +10886,7 @@ class GasCostPlugin extends NetworkPlugin {
                 value = nullish;
             }
             if (typeof (value) !== "number") {
-                logger.throwArgumentError(`invalud value for ${name}`, "costs", costs);
+                throwArgumentError(`invalud value for ${name}`, "costs", costs);
             }
             props[name] = value;
         }
@@ -10300,465 +10959,6 @@ class FeeDataNetworkPlugin extends NetworkPlugin {
     }
 }
 
-const BN_1$1 = BigInt(1);
-const Empty = new Uint8Array([]);
-function parseBytes(result, start) {
-    if (result === "0x") {
-        return null;
-    }
-    const offset = toNumber(dataSlice(result, start, start + 32));
-    const length = toNumber(dataSlice(result, offset, offset + 32));
-    return dataSlice(result, offset + 32, offset + 32 + length);
-}
-function parseString(result, start) {
-    try {
-        const bytes = parseBytes(result, start);
-        if (bytes != null) {
-            return toUtf8String(bytes);
-        }
-    }
-    catch (error) { }
-    return null;
-}
-function numPad$1(value) {
-    const result = toArray(value);
-    if (result.length > 32) {
-        throw new Error("internal; should not happen");
-    }
-    const padded = new Uint8Array(32);
-    padded.set(result, 32 - result.length);
-    return padded;
-}
-function bytesPad$1(value) {
-    if ((value.length % 32) === 0) {
-        return value;
-    }
-    const result = new Uint8Array(Math.ceil(value.length / 32) * 32);
-    result.set(value);
-    return result;
-}
-// ABI Encodes a series of (bytes, bytes, ...)
-function encodeBytes$1(datas) {
-    const result = [];
-    let byteCount = 0;
-    // Add place-holders for pointers as we add items
-    for (let i = 0; i < datas.length; i++) {
-        result.push(Empty);
-        byteCount += 32;
-    }
-    for (let i = 0; i < datas.length; i++) {
-        const data = logger.getBytes(datas[i]);
-        // Update the bytes offset
-        result[i] = numPad$1(byteCount);
-        // The length and padded value of data
-        result.push(numPad$1(data.length));
-        result.push(bytesPad$1(data));
-        byteCount += 32 + Math.ceil(data.length / 32) * 32;
-    }
-    return concat(result);
-}
-// @TODO: This should use the fetch-data:ipfs gateway
-// Trim off the ipfs:// prefix and return the default gateway URL
-function getIpfsLink(link) {
-    if (link.match(/^ipfs:\/\/ipfs\//i)) {
-        link = link.substring(12);
-    }
-    else if (link.match(/^ipfs:\/\//i)) {
-        link = link.substring(7);
-    }
-    else {
-        logger.throwArgumentError("unsupported IPFS format", "link", link);
-    }
-    return `https:/\/gateway.ipfs.io/ipfs/${link}`;
-}
-;
-;
-class MulticoinProviderPlugin {
-    name;
-    constructor(name) {
-        defineProperties(this, { name });
-    }
-    validate(proivder) {
-        return this;
-    }
-    supportsCoinType(coinType) {
-        return false;
-    }
-    async encodeAddress(coinType, address) {
-        throw new Error("unsupported coin");
-    }
-    async decodeAddress(coinType, data) {
-        throw new Error("unsupported coin");
-    }
-}
-const BasicMulticoinPluginId = "org.ethers.provider-prugins.basicmulticoin";
-class BasicMulticoinProviderPlugin extends MulticoinProviderPlugin {
-    constructor() {
-        super(BasicMulticoinPluginId);
-    }
-}
-const matcherIpfs = new RegExp("^(ipfs):/\/(.*)$", "i");
-const matchers = [
-    new RegExp("^(https):/\/(.*)$", "i"),
-    new RegExp("^(data):(.*)$", "i"),
-    matcherIpfs,
-    new RegExp("^eip155:[0-9]+/(erc[0-9]+):(.*)$", "i"),
-];
-class EnsResolver {
-    provider;
-    address;
-    name;
-    // For EIP-2544 names, the ancestor that provided the resolver
-    #supports2544;
-    constructor(provider, address, name) {
-        defineProperties(this, { provider, address, name });
-        this.#supports2544 = null;
-    }
-    async supportsWildcard() {
-        if (!this.#supports2544) {
-            // supportsInterface(bytes4 = selector("resolve(bytes,bytes)"))
-            this.#supports2544 = this.provider.call({
-                to: this.address,
-                data: "0x01ffc9a79061b92300000000000000000000000000000000000000000000000000000000"
-            }).then((result) => {
-                return (logger.getBigInt(result) === BN_1$1);
-            }).catch((error) => {
-                if (error.code === "CALL_EXCEPTION") {
-                    return false;
-                }
-                // Rethrow the error: link is down, etc. Let future attempts retry.
-                this.#supports2544 = null;
-                throw error;
-            });
-        }
-        return await this.#supports2544;
-    }
-    async _fetch(selector, parameters = "0x") {
-        // e.g. keccak256("addr(bytes32,uint256)")
-        const addrData = concat([selector, namehash(this.name), parameters]);
-        const tx = {
-            to: this.address,
-            enableCcipRead: true,
-            data: addrData
-        };
-        // Wildcard support; use EIP-2544 to resolve the request
-        let wrapped = false;
-        if (await this.supportsWildcard()) {
-            wrapped = true;
-            // selector("resolve(bytes,bytes)")
-            tx.data = concat(["0x9061b923", encodeBytes$1([dnsEncode(this.name), addrData])]);
-        }
-        try {
-            let data = await this.provider.call(tx);
-            if ((logger.getBytes(data).length % 32) === 4) {
-                return logger.throwError("resolver threw error", "CALL_EXCEPTION", {
-                    transaction: tx, data
-                });
-            }
-            if (wrapped) {
-                return parseBytes(data, 0);
-            }
-            return data;
-        }
-        catch (error) {
-            if (error.code !== "CALL_EXCEPTION") {
-                throw error;
-            }
-        }
-        return null;
-    }
-    async getAddress(coinType = 60) {
-        if (coinType === 60) {
-            try {
-                // keccak256("addr(bytes32)")
-                const result = await this._fetch("0x3b3b57de");
-                // No address
-                if (result === "0x" || result === ZeroHash) {
-                    return null;
-                }
-                const network = await this.provider.getNetwork();
-                return network.formatter.callAddress(result);
-            }
-            catch (error) {
-                if (error.code === "CALL_EXCEPTION") {
-                    return null;
-                }
-                throw error;
-            }
-        }
-        let coinPlugin = null;
-        for (const plugin of this.provider.plugins) {
-            if (!(plugin instanceof MulticoinProviderPlugin)) {
-                continue;
-            }
-            if (plugin.supportsCoinType(coinType)) {
-                coinPlugin = plugin;
-                break;
-            }
-        }
-        if (coinPlugin == null) {
-            return null;
-        }
-        // keccak256("addr(bytes32,uint256")
-        const data = parseBytes((await this._fetch("0xf1cb7e06", numPad$1(coinType))) || "0x", 0);
-        // No address
-        if (data == null || data === "0x") {
-            return null;
-        }
-        // Compute the address
-        const address = await coinPlugin.encodeAddress(coinType, data);
-        if (address != null) {
-            return address;
-        }
-        return logger.throwError(`invalid coin data`, "UNSUPPORTED_OPERATION", {
-            operation: `getAddress(${coinType})`,
-            info: { coinType, data }
-        });
-    }
-    async getText(key) {
-        // The key encoded as parameter to fetchBytes
-        let keyBytes = toUtf8Bytes(key);
-        // The nodehash consumes the first slot, so the string pointer targets
-        // offset 64, with the length at offset 64 and data starting at offset 96
-        const calldata = logger.getBytes(concat([numPad$1(64), numPad$1(keyBytes.length), keyBytes]));
-        const hexBytes = parseBytes((await this._fetch("0x59d1d43c", bytesPad$1(calldata))) || "0x", 0);
-        if (hexBytes == null || hexBytes === "0x") {
-            return null;
-        }
-        return toUtf8String(hexBytes);
-    }
-    async getContentHash() {
-        // keccak256("contenthash()")
-        const hexBytes = parseBytes((await this._fetch("0xbc1c58d1")) || "0x", 0);
-        // No contenthash
-        if (hexBytes == null || hexBytes === "0x") {
-            return null;
-        }
-        // IPFS (CID: 1, Type: 70=DAG-PB, 72=libp2p-key)
-        const ipfs = hexBytes.match(/^0x(e3010170|e5010172)(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
-        if (ipfs) {
-            const scheme = (ipfs[1] === "e3010170") ? "ipfs" : "ipns";
-            const length = parseInt(ipfs[4], 16);
-            if (ipfs[5].length === length * 2) {
-                return `${scheme}:/\/${encodeBase58("0x" + ipfs[2])}`;
-            }
-        }
-        // Swarm (CID: 1, Type: swarm-manifest; hash/length hard-coded to keccak256/32)
-        const swarm = hexBytes.match(/^0xe40101fa011b20([0-9a-f]*)$/);
-        if (swarm && swarm[1].length === 64) {
-            return `bzz:/\/${swarm[1]}`;
-        }
-        return logger.throwError(`invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
-            operation: "getContentHash()",
-            info: { data: hexBytes }
-        });
-    }
-    async getAvatar() {
-        return (await this._getAvatar()).url;
-    }
-    async _getAvatar() {
-        const linkage = [{ type: "name", value: this.name }];
-        try {
-            // test data for ricmoo.eth
-            //const avatar = "eip155:1/erc721:0x265385c7f4132228A0d54EB1A9e7460b91c0cC68/29233";
-            const avatar = await this.getText("avatar");
-            if (avatar == null) {
-                linkage.push({ type: "!avatar", value: "" });
-                throw new Error("!avatar");
-            }
-            linkage.push({ type: "avatar", value: avatar });
-            for (let i = 0; i < matchers.length; i++) {
-                const match = avatar.match(matchers[i]);
-                if (match == null) {
-                    continue;
-                }
-                const scheme = match[1].toLowerCase();
-                switch (scheme) {
-                    case "https":
-                    case "data":
-                        linkage.push({ type: "url", value: avatar });
-                        return { linkage, url: avatar };
-                    case "ipfs": {
-                        const url = getIpfsLink(avatar);
-                        linkage.push({ type: "ipfs", value: avatar });
-                        linkage.push({ type: "url", value: url });
-                        return { linkage, url };
-                    }
-                    case "erc721":
-                    case "erc1155": {
-                        // Depending on the ERC type, use tokenURI(uint256) or url(uint256)
-                        const selector = (scheme === "erc721") ? "0xc87b56dd" : "0x0e89341c";
-                        linkage.push({ type: scheme, value: avatar });
-                        // The owner of this name
-                        const owner = await this.getAddress();
-                        if (owner == null) {
-                            linkage.push({ type: "!owner", value: "" });
-                            throw new Error("!owner");
-                        }
-                        const comps = (match[2] || "").split("/");
-                        if (comps.length !== 2) {
-                            linkage.push({ type: `!${scheme}caip`, value: (match[2] || "") });
-                            throw new Error("!caip");
-                        }
-                        const formatter = (await this.provider.getNetwork()).formatter;
-                        const addr = formatter.address(comps[0]);
-                        const tokenId = numPad$1(comps[1]);
-                        // Check that this account owns the token
-                        if (scheme === "erc721") {
-                            // ownerOf(uint256 tokenId)
-                            const tokenOwner = formatter.callAddress(await this.provider.call({
-                                to: addr, data: concat(["0x6352211e", tokenId])
-                            }));
-                            if (owner !== tokenOwner) {
-                                linkage.push({ type: "!owner", value: tokenOwner });
-                                throw new Error("!owner");
-                            }
-                            linkage.push({ type: "owner", value: tokenOwner });
-                        }
-                        else if (scheme === "erc1155") {
-                            // balanceOf(address owner, uint256 tokenId)
-                            const balance = logger.getBigInt(await this.provider.call({
-                                to: addr, data: concat(["0x00fdd58e", zeroPadValue(owner, 32), tokenId])
-                            }));
-                            if (!balance) {
-                                linkage.push({ type: "!balance", value: "0" });
-                                throw new Error("!balance");
-                            }
-                            linkage.push({ type: "balance", value: balance.toString() });
-                        }
-                        // Call the token contract for the metadata URL
-                        const tx = {
-                            to: comps[0],
-                            data: concat([selector, tokenId])
-                        };
-                        let metadataUrl = parseString(await this.provider.call(tx), 0);
-                        if (metadataUrl == null) {
-                            linkage.push({ type: "!metadata-url", value: "" });
-                            throw new Error("!metadata-url");
-                        }
-                        linkage.push({ type: "metadata-url-base", value: metadataUrl });
-                        // ERC-1155 allows a generic {id} in the URL
-                        if (scheme === "erc1155") {
-                            metadataUrl = metadataUrl.replace("{id}", hexlify(tokenId).substring(2));
-                            linkage.push({ type: "metadata-url-expanded", value: metadataUrl });
-                        }
-                        // Transform IPFS metadata links
-                        if (metadataUrl.match(/^ipfs:/i)) {
-                            metadataUrl = getIpfsLink(metadataUrl);
-                        }
-                        linkage.push({ type: "metadata-url", value: metadataUrl });
-                        // Get the token metadata
-                        let metadata = {};
-                        const response = await (new FetchRequest(metadataUrl)).send();
-                        response.assertOk();
-                        try {
-                            metadata = response.bodyJson;
-                        }
-                        catch (error) {
-                            try {
-                                linkage.push({ type: "!metadata", value: response.bodyText });
-                            }
-                            catch (error) {
-                                const bytes = response.body;
-                                if (bytes) {
-                                    linkage.push({ type: "!metadata", value: hexlify(bytes) });
-                                }
-                                throw error;
-                            }
-                            throw error;
-                        }
-                        if (!metadata) {
-                            linkage.push({ type: "!metadata", value: "" });
-                            throw new Error("!metadata");
-                        }
-                        linkage.push({ type: "metadata", value: JSON.stringify(metadata) });
-                        // Pull the image URL out
-                        let imageUrl = metadata.image;
-                        if (typeof (imageUrl) !== "string") {
-                            linkage.push({ type: "!imageUrl", value: "" });
-                            throw new Error("!imageUrl");
-                        }
-                        if (imageUrl.match(/^(https:\/\/|data:)/i)) {
-                            // Allow
-                        }
-                        else {
-                            // Transform IPFS link to gateway
-                            const ipfs = imageUrl.match(matcherIpfs);
-                            if (ipfs == null) {
-                                linkage.push({ type: "!imageUrl-ipfs", value: imageUrl });
-                                throw new Error("!imageUrl-ipfs");
-                            }
-                            linkage.push({ type: "imageUrl-ipfs", value: imageUrl });
-                            imageUrl = getIpfsLink(imageUrl);
-                        }
-                        linkage.push({ type: "url", value: imageUrl });
-                        return { linkage, url: imageUrl };
-                    }
-                }
-            }
-        }
-        catch (error) {
-            console.log("EE", error);
-        }
-        return { linkage, url: null };
-    }
-    static async #getResolver(provider, name) {
-        const network = await provider.getNetwork();
-        const ensPlugin = network.getPlugin("org.ethers.network-plugins.ens");
-        // No ENS...
-        if (!ensPlugin) {
-            return logger.throwError("network does not support ENS", "UNSUPPORTED_OPERATION", {
-                operation: "getResolver", info: { network: network.name }
-            });
-        }
-        try {
-            // keccak256("resolver(bytes32)")
-            const addrData = await provider.call({
-                to: ensPlugin.address,
-                data: concat(["0x0178b8bf", namehash(name)]),
-                enableCcipRead: true
-            });
-            const addr = network.formatter.callAddress(addrData);
-            if (addr === dataSlice(ZeroHash, 0, 20)) {
-                return null;
-            }
-            return addr;
-        }
-        catch (error) {
-            // ENS registry cannot throw errors on resolver(bytes32),
-            // so probably a link error
-            throw error;
-        }
-        return null;
-    }
-    static async fromName(provider, name) {
-        let currentName = name;
-        while (true) {
-            if (currentName === "" || currentName === ".") {
-                return null;
-            }
-            // Optimization since the eth node cannot change and does
-            // not have a wildcar resolver
-            if (name !== "eth" && currentName === "eth") {
-                return null;
-            }
-            // Check the current node for a resolver
-            const addr = await EnsResolver.#getResolver(provider, currentName);
-            // Found a resolver!
-            if (addr != null) {
-                const resolver = new EnsResolver(provider, addr, name);
-                // Legacy resolver found, using EIP-2544 so it isn't safe to use
-                if (currentName !== name && !(await resolver.supportsWildcard())) {
-                    return null;
-                }
-                return resolver;
-            }
-            // Get the parent node
-            currentName = currentName.split(".").slice(1).join(".");
-        }
-    }
-}
-
 /* * * *
 // Networks which operation against an L2 can use this plugin to
 // specify how to access L1, for the purpose of resolving ENS,
@@ -10814,7 +11014,7 @@ const defaultFormatter = new Formatter();
 class Network {
     #props;
     constructor(name, _chainId, formatter) {
-        const chainId = logger.getBigInt(_chainId);
+        const chainId = getBigInt(_chainId);
         if (formatter == null) {
             formatter = defaultFormatter;
         }
@@ -10827,7 +11027,7 @@ class Network {
     get name() { return getStore(this.#props, "name"); }
     set name(value) { setStore(this.#props, "name", value); }
     get chainId() { return getStore(this.#props, "chainId"); }
-    set chainId(value) { setStore(this.#props, "chainId", logger.getBigInt(value, "chainId")); }
+    set chainId(value) { setStore(this.#props, "chainId", getBigInt(value, "chainId")); }
     get formatter() { return getStore(this.#props, "formatter"); }
     set formatter(value) { setStore(this.#props, "formatter", value); }
     get plugins() {
@@ -10888,6 +11088,9 @@ class Network {
         }
         return gas;
     }
+    /**
+     *  Returns a new Network for the %%network%% name or chainId.
+     */
     static from(network) {
         // Default network
         if (network == null) {
@@ -10905,7 +11108,7 @@ class Network {
             if (typeof (network) === "bigint") {
                 return new Network("unknown", network);
             }
-            logger.throwArgumentError("unknown network", "network", network);
+            throwArgumentError("unknown network", "network", network);
         }
         // Clonable with network-like abilities
         if (typeof (network.clone) === "function") {
@@ -10917,7 +11120,7 @@ class Network {
         // Networkish
         if (typeof (network) === "object") {
             if (typeof (network.name) !== "string" || typeof (network.chainId) !== "number") {
-                logger.throwArgumentError("invalid network object name or chainId", "network", network);
+                throwArgumentError("invalid network object name or chainId", "network", network);
             }
             const custom = new Network((network.name), (network.chainId));
             if (network.ensAddress || network.ensNetwork != null) {
@@ -10928,15 +11131,19 @@ class Network {
             //}
             return custom;
         }
-        return logger.throwArgumentError("invalid network", "network", network);
+        return throwArgumentError("invalid network", "network", network);
     }
+    /**
+     *  Register %%nameOrChainId%% with a function which returns
+     *  an instance of a Network representing that chain.
+     */
     static register(nameOrChainId, networkFunc) {
         if (typeof (nameOrChainId) === "number") {
             nameOrChainId = BigInt(nameOrChainId);
         }
         const existing = Networks.get(nameOrChainId);
         if (existing) {
-            logger.throwArgumentError(`conflicting network for ${JSON.stringify(existing.name)}`, "nameOrChainId", nameOrChainId);
+            throwArgumentError(`conflicting network for ${JSON.stringify(existing.name)}`, "nameOrChainId", nameOrChainId);
         }
         Networks.set(nameOrChainId, networkFunc);
     }
@@ -10952,7 +11159,7 @@ function getPollingSubscriber(provider, event) {
     if (isHexString(event, 32)) {
         return new PollingTransactionSubscriber(provider, event);
     }
-    return logger.throwError("unsupported polling event", "UNSUPPORTED_OPERATION", {
+    return throwError("unsupported polling event", "UNSUPPORTED_OPERATION", {
         operation: "getPollingSubscriber", info: { event }
     });
 }
@@ -11115,7 +11322,6 @@ class PollingEventSubscriber {
 }
 
 // @TODO
-;
 // Constants
 const BN_2$1 = BigInt(2);
 const MAX_CCIP_REDIRECTS = 10;
@@ -11225,7 +11431,7 @@ async function getSubscription(_event, provider) {
         }
         return { filter, tag: getTag("event", filter), type: "event" };
     }
-    return logger.throwArgumentError("unknown ProviderEvent", "event", _event);
+    return throwArgumentError("unknown ProviderEvent", "event", _event);
 }
 function getTime$1() { return (new Date()).getTime(); }
 function copyRequest(tx) {
@@ -11335,7 +11541,7 @@ class AbstractProvider {
             catch (error) { }
             // 4xx indicates the result is not present; stop
             if (resp.statusCode >= 400 && resp.statusCode < 500) {
-                return logger.throwError(`response not found during CCIP fetch: ${errorMessage}`, "OFFCHAIN_FAULT", {
+                return throwError(`response not found during CCIP fetch: ${errorMessage}`, "OFFCHAIN_FAULT", {
                     reason: "404_MISSING_RESOURCE",
                     transaction: tx, info: { url, errorMessage }
                 });
@@ -11343,7 +11549,7 @@ class AbstractProvider {
             // 5xx indicates server issue; try the next url
             errorMessages.push(errorMessage);
         }
-        return logger.throwError(`error encountered during CCIP fetch: ${errorMessages.map((m) => JSON.stringify(m)).join(", ")}`, "OFFCHAIN_FAULT", {
+        return throwError(`error encountered during CCIP fetch: ${errorMessages.map((m) => JSON.stringify(m)).join(", ")}`, "OFFCHAIN_FAULT", {
             reason: "500_SERVER_ERROR",
             transaction: tx, info: { urls, errorMessages }
         });
@@ -11352,21 +11558,21 @@ class AbstractProvider {
         return tx;
     }
     _detectNetwork() {
-        return logger.throwError("sub-classes must implement this", "UNSUPPORTED_OPERATION", {
+        return throwError("sub-classes must implement this", "UNSUPPORTED_OPERATION", {
             operation: "_detectNetwork"
         });
     }
     // Sub-classes should override this and handle PerformActionRequest requests, calling
     // the super for any unhandled actions.
     async _perform(req) {
-        return logger.throwError(`unsupported method: ${req.method}`, "UNSUPPORTED_OPERATION", {
+        return throwError(`unsupported method: ${req.method}`, "UNSUPPORTED_OPERATION", {
             operation: req.method,
             info: req
         });
     }
     // State
     async getBlockNumber() {
-        return logger.getNumber(await this.#perform({ method: "getBlockNumber" }), "%response");
+        return getNumber(await this.#perform({ method: "getBlockNumber" }), "%response");
     }
     // @TODO: Make this string | Promsie<string> so no await needed if sync is possible
     _getAddress(address) {
@@ -11406,7 +11612,7 @@ class AbstractProvider {
             }
             return this.getBlockNumber().then((b) => toQuantity(b + blockTag));
         }
-        return logger.throwArgumentError("invalid blockTag", "blockTag", blockTag);
+        return throwArgumentError("invalid blockTag", "blockTag", blockTag);
     }
     async getNetwork() {
         // No explicit network was set and this is our first time
@@ -11441,7 +11647,7 @@ class AbstractProvider {
             }
             else {
                 // Otherwise, we do not allow changes to the underlying network
-                logger.throwError(`network changed: ${expected.chainId} => ${actual.chainId} `, "NETWORK_ERROR", {
+                throwError(`network changed: ${expected.chainId} => ${actual.chainId} `, "NETWORK_ERROR", {
                     event: "changed"
                 });
             }
@@ -11454,7 +11660,7 @@ class AbstractProvider {
             gasPrice: ((async () => {
                 try {
                     const gasPrice = await this.#perform({ method: "getGasPrice" });
-                    return logger.getBigInt(gasPrice, "%response");
+                    return getBigInt(gasPrice, "%response");
                 }
                 catch (error) { }
                 return null;
@@ -11486,13 +11692,13 @@ class AbstractProvider {
     }
     async estimateGas(_tx) {
         const transaction = await this._getTransaction(_tx);
-        return logger.getBigInt(await this.#perform({
+        return getBigInt(await this.#perform({
             method: "estimateGas", transaction
         }), "%response");
     }
     async #call(tx, blockTag, attempt) {
         if (attempt >= MAX_CCIP_REDIRECTS) {
-            logger.throwError("CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
+            throwError("CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
                 reason: "TOO_MANY_REDIRECTS",
                 transaction: Object.assign({}, tx, { blockTag, enableCcipRead: true })
             });
@@ -11512,14 +11718,14 @@ class AbstractProvider {
                     ccipArgs = parseOffchainLookup(dataSlice(error.data, 4));
                 }
                 catch (error) {
-                    return logger.throwError(error.message, "OFFCHAIN_FAULT", {
+                    return throwError(error.message, "OFFCHAIN_FAULT", {
                         reason: "BAD_DATA",
                         transaction, info: { data }
                     });
                 }
                 // Check the sender of the OffchainLookup matches the transaction
                 if (ccipArgs.sender.toLowerCase() !== txSender.toLowerCase()) {
-                    return logger.throwError("CCIP Read sender mismatch", "CALL_EXCEPTION", {
+                    return throwError("CCIP Read sender mismatch", "CALL_EXCEPTION", {
                         data, transaction,
                         errorSignature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
                         errorName: "OffchainLookup",
@@ -11528,7 +11734,7 @@ class AbstractProvider {
                 }
                 const ccipResult = await this.ccipReadFetch(transaction, ccipArgs.calldata, ccipArgs.urls);
                 if (ccipResult == null) {
-                    return logger.throwError("CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
+                    return throwError("CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
                         reason: "FETCH_FAILED",
                         transaction, info: { data: error.data, errorArgs: ccipArgs.errorArgs }
                     });
@@ -11559,16 +11765,16 @@ class AbstractProvider {
         return await this.#perform(Object.assign(request, { address, blockTag }));
     }
     async getBalance(address, blockTag) {
-        return logger.getBigInt(await this.#getAccountValue({ method: "getBalance" }, address, blockTag), "%response");
+        return getBigInt(await this.#getAccountValue({ method: "getBalance" }, address, blockTag), "%response");
     }
     async getTransactionCount(address, blockTag) {
-        return logger.getNumber(await this.#getAccountValue({ method: "getTransactionCount" }, address, blockTag), "%response");
+        return getNumber(await this.#getAccountValue({ method: "getTransactionCount" }, address, blockTag), "%response");
     }
     async getCode(address, blockTag) {
         return hexlify(await this.#getAccountValue({ method: "getCode" }, address, blockTag));
     }
     async getStorageAt(address, _position, blockTag) {
-        const position = logger.getBigInt(_position, "position");
+        const position = getBigInt(_position, "position");
         return hexlify(await this.#getAccountValue({ method: "getStorageAt", position }, address, blockTag));
     }
     // Write
@@ -11721,7 +11927,7 @@ class AbstractProvider {
     }
     // ENS
     _getProvider(chainId) {
-        return logger.throwError("provider cannot connect to target network", "UNSUPPORTED_OPERATION", {
+        return throwError("provider cannot connect to target network", "UNSUPPORTED_OPERATION", {
             operation: "_getProvider()"
         });
     }
@@ -11736,6 +11942,9 @@ class AbstractProvider {
         return null;
     }
     async resolveName(name) {
+        if (isHexString(name, 20)) {
+            return name;
+        }
         //if (typeof(name) === "string") {
         const resolver = await this.getResolver(name);
         if (resolver) {
@@ -11789,7 +11998,7 @@ class AbstractProvider {
                     }
                     timer = null;
                     this.off("block", listener);
-                    reject(logger.makeError("timeout", "TIMEOUT", { reason: "timeout" }));
+                    reject(makeError("timeout", "TIMEOUT", { reason: "timeout" }));
                 }, timeout);
             }
             listener(await this.getBlockNumber());
@@ -12028,7 +12237,7 @@ class AbstractProvider {
             if (this.#pausedState == !!dropWhilePaused) {
                 return;
             }
-            return logger.throwError("cannot change pause type; resume first", "UNSUPPORTED_OPERATION", {
+            return throwError("cannot change pause type; resume first", "UNSUPPORTED_OPERATION", {
                 operation: "pause"
             });
         }
@@ -12077,8 +12286,8 @@ function _parseBytes(result, start) {
         return null;
     }
     try {
-        const offset = logger.getNumber(dataSlice(result, start, start + 32));
-        const length = logger.getNumber(dataSlice(result, offset, offset + 32));
+        const offset = getNumber(dataSlice(result, start, start + 32));
+        const length = getNumber(dataSlice(result, offset, offset + 32));
         return dataSlice(result, offset + 32, offset + 32 + length);
     }
     catch (error) { }
@@ -12112,7 +12321,7 @@ function encodeBytes(datas) {
         byteCount += 32;
     }
     for (let i = 0; i < datas.length; i++) {
-        const data = logger.getBytes(datas[i]);
+        const data = getBytes(datas[i]);
         // Update the bytes offset
         result[i] = numPad(byteCount);
         // The length and padded value of data
@@ -12138,8 +12347,8 @@ function parseOffchainLookup(data) {
     // Read the URLs from the response
     try {
         const urls = [];
-        const urlsOffset = logger.getNumber(dataSlice(data, 32, 64));
-        const urlsLength = logger.getNumber(dataSlice(data, urlsOffset, urlsOffset + 32));
+        const urlsOffset = getNumber(dataSlice(data, 32, 64));
+        const urlsLength = getNumber(dataSlice(data, urlsOffset, urlsOffset + 32));
         const urlsData = dataSlice(data, urlsOffset + 32);
         for (let u = 0; u < urlsLength; u++) {
             const url = _parseString(urlsData, u * 32);
@@ -12184,9 +12393,160 @@ function parseOffchainLookup(data) {
     return result;
 }
 
-if (false) {
-    console.log(isHexString, isError);
-} // @TODO
+class AbstractSigner {
+    provider;
+    constructor(provider) {
+        defineProperties(this, { provider: (provider || null) });
+    }
+    #checkProvider(operation) {
+        if (this.provider) {
+            return this.provider;
+        }
+        return throwError("missing provider", "UNSUPPORTED_OPERATION", { operation });
+    }
+    async getNonce(blockTag) {
+        return this.#checkProvider("getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
+    }
+    async #populate(op, tx) {
+        const provider = this.#checkProvider(op);
+        //let pop: Deferrable<TransactionRequest> = Object.assign({ }, tx);
+        let pop = Object.assign({}, tx);
+        if (pop.to != null) {
+            pop.to = provider.resolveName(pop.to).then((to) => {
+                if (to == null) {
+                    return throwArgumentError("transaction to ENS name not configured", "tx.to", pop.to);
+                }
+                return to;
+            });
+        }
+        if (pop.from != null) {
+            const from = pop.from;
+            pop.from = Promise.all([
+                this.getAddress(),
+                this.resolveName(from)
+            ]).then(([address, from]) => {
+                if (!from || address.toLowerCase() !== from.toLowerCase()) {
+                    return throwArgumentError("transaction from mismatch", "tx.from", from);
+                }
+                return address;
+            });
+        }
+        return pop;
+    }
+    async populateCall(tx) {
+        const pop = await this.#populate("populateCall", tx);
+        return pop;
+    }
+    async populateTransaction(tx) {
+        const pop = await this.#populate("populateTransaction", tx);
+        if (pop.nonce == null) {
+            pop.nonce = await this.getNonce("pending");
+        }
+        if (pop.gasLimit == null) {
+            pop.gasLimit = await this.estimateGas(pop);
+        }
+        // Populate the chain ID
+        const network = await (this.provider).getNetwork();
+        if (pop.chainId != null) {
+            const chainId = getBigInt(pop.chainId);
+            if (chainId !== network.chainId) {
+                throwArgumentError("transaction chainId mismatch", "tx.chainId", tx.chainId);
+            }
+        }
+        else {
+            pop.chainId = network.chainId;
+        }
+        //@TOOD: Don't await all over the place; save them up for
+        // the end for better batching
+        //@TODO: Copy type logic from AbstractSigner in v5
+        // Test how many batches is actually sent for sending a tx; compare before/after
+        return await resolveProperties(pop);
+    }
+    async estimateGas(tx) {
+        return this.#checkProvider("estimateGas").estimateGas(await this.populateCall(tx));
+    }
+    async call(tx) {
+        return this.#checkProvider("call").call(await this.populateCall(tx));
+    }
+    async resolveName(name) {
+        const provider = this.#checkProvider("resolveName");
+        return await provider.resolveName(name);
+    }
+    async sendTransaction(tx) {
+        const provider = this.#checkProvider("sendTransaction");
+        const txObj = Transaction.from(await this.populateTransaction(tx));
+        return await provider.broadcastTransaction(await this.signTransaction(txObj));
+    }
+}
+class VoidSigner extends AbstractSigner {
+    address;
+    constructor(address, provider) {
+        super(provider);
+        defineProperties(this, { address });
+    }
+    async getAddress() { return this.address; }
+    connect(provider) {
+        return new VoidSigner(this.address, provider);
+    }
+    #throwUnsupported(suffix, operation) {
+        return throwError(`VoidSigner cannot sign ${suffix}`, "UNSUPPORTED_OPERATION", {
+            operation
+        });
+    }
+    async signTransaction(tx) {
+        this.#throwUnsupported("transactions", "signTransaction");
+    }
+    async signMessage(message) {
+        this.#throwUnsupported("messages", "signMessage");
+    }
+    async signTypedData(domain, types, value) {
+        this.#throwUnsupported("typed-data", "signTypedData");
+    }
+}
+class WrappedSigner extends AbstractSigner {
+    #signer;
+    constructor(signer) {
+        super(signer.provider);
+        this.#signer = signer;
+    }
+    async getAddress() {
+        return await this.#signer.getAddress();
+    }
+    connect(provider) {
+        return new WrappedSigner(this.#signer.connect(provider));
+    }
+    async getNonce(blockTag) {
+        return await this.#signer.getNonce(blockTag);
+    }
+    async populateCall(tx) {
+        return await this.#signer.populateCall(tx);
+    }
+    async populateTransaction(tx) {
+        return await this.#signer.populateTransaction(tx);
+    }
+    async estimateGas(tx) {
+        return await this.#signer.estimateGas(tx);
+    }
+    async call(tx) {
+        return await this.#signer.call(tx);
+    }
+    async resolveName(name) {
+        return this.#signer.resolveName(name);
+    }
+    async signTransaction(tx) {
+        return await this.#signer.signTransaction(tx);
+    }
+    async sendTransaction(tx) {
+        return await this.#signer.sendTransaction(tx);
+    }
+    async signMessage(message) {
+        return await this.#signer.signMessage(message);
+    }
+    async signTypedData(domain, types, value) {
+        return await this.#signer.signTypedData(domain, types, value);
+    }
+}
+
 const defaultApiKey$2 = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 const EtherscanPluginId = "org.ethers.plugins.etherscan";
 class EtherscanPlugin extends NetworkPlugin {
@@ -12238,7 +12598,7 @@ class EtherscanProvider extends AbstractProvider {
                 return "https:/\/api-goerli.etherscan.io";
             default:
         }
-        return logger.throwArgumentError("unsupported network", "network", this.network);
+        return throwArgumentError("unsupported network", "network", this.network);
     }
     getUrl(module, params) {
         const query = Object.keys(params).reduce((accum, key) => {
@@ -12494,7 +12854,7 @@ class EtherscanProvider extends AbstractProvider {
                         boolean: (req.includeTransactions ? "true" : "false")
                     });
                 }
-                return logger.throwError("getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
+                return throwError("getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
                     operation: "getBlock(blockHash)"
                 });
             case "getTransaction":
@@ -12752,15 +13112,15 @@ async function waitForSync(config, blockNumber) {
 function normalize(network, value, req) {
     switch (req.method) {
         case "chainId":
-            return logger.getBigInt(value).toString();
+            return getBigInt(value).toString();
         case "getBlockNumber":
-            return logger.getNumber(value).toString();
+            return getNumber(value).toString();
         case "getGasPrice":
-            return logger.getBigInt(value).toString();
+            return getBigInt(value).toString();
         case "getBalance":
-            return logger.getBigInt(value).toString();
+            return getBigInt(value).toString();
         case "getTransactionCount":
-            return logger.getNumber(value).toString();
+            return getNumber(value).toString();
         case "getCode":
             return hexlify(value);
         case "getStorageAt":
@@ -12777,11 +13137,11 @@ function normalize(network, value, req) {
         case "call":
             return hexlify(value);
         case "estimateGas":
-            return logger.getBigInt(value).toString();
+            return getBigInt(value).toString();
         case "getLogs":
             return JSON.stringify(value.map((v) => network.formatter.log(v)));
     }
-    return logger.throwError("unsupported method", "UNSUPPORTED_OPERATION", {
+    return throwError("unsupported method", "UNSUPPORTED_OPERATION", {
         operation: `_perform(${JSON.stringify(req.method)})`
     });
 }
@@ -12824,7 +13184,7 @@ function getMedian(results) {
 }
 function getFuzzyMode(quorum, results) {
     if (quorum === 1) {
-        return logger.getNumber(getMedian(results), "%internal");
+        return getNumber(getMedian(results), "%internal");
     }
     const tally = new Map();
     const add = (result, weight) => {
@@ -12833,7 +13193,7 @@ function getFuzzyMode(quorum, results) {
         tally.set(result, t);
     };
     for (const { weight, result } of results) {
-        const r = logger.getNumber(result);
+        const r = getNumber(result);
         add(r - 1, weight);
         add(r, weight);
         add(r + 1, weight);
@@ -12875,7 +13235,7 @@ class FallbackProvider extends AbstractProvider {
         this.eventQuorum = 1;
         this.eventWorkers = 1;
         if (this.quorum > this.#configs.reduce((a, c) => (a + c.weight), 0)) {
-            logger.throwArgumentError("quorum exceed provider wieght", "quorum", this.quorum);
+            throwArgumentError("quorum exceed provider wieght", "quorum", this.quorum);
         }
     }
     // @TOOD: Copy these and only return public values
@@ -12883,7 +13243,7 @@ class FallbackProvider extends AbstractProvider {
         return this.#configs.slice();
     }
     async _detectNetwork() {
-        return Network.from(logger.getBigInt(await this._perform({ method: "chainId" }))).freeze();
+        return Network.from(getBigInt(await this._perform({ method: "chainId" }))).freeze();
     }
     // @TODO: Add support to select providers to be the event subscriber
     //_getSubscriber(sub: Subscription): Subscriber {
@@ -12961,7 +13321,7 @@ class FallbackProvider extends AbstractProvider {
                         chainId = network.chainId;
                     }
                     else if (network.chainId !== chainId) {
-                        logger.throwError("cannot mix providers on different networks", "UNSUPPORTED_OPERATION", {
+                        throwError("cannot mix providers on different networks", "UNSUPPORTED_OPERATION", {
                             operation: "new FallbackProvider"
                         });
                     }
@@ -12991,9 +13351,9 @@ class FallbackProvider extends AbstractProvider {
             case "getBlockNumber": {
                 // We need to get the bootstrap block height
                 if (this.#height === -2) {
-                    const height = Math.ceil(logger.getNumber(getMedian(this.#configs.map((c) => ({
+                    const height = Math.ceil(getNumber(getMedian(this.#configs.map((c) => ({
                         result: c.blockNumber,
-                        normal: logger.getNumber(c.blockNumber).toString(),
+                        normal: getNumber(c.blockNumber).toString(),
                         weight: c.weight
                     }))), "%internal"));
                     this.#height = height;
@@ -13032,7 +13392,7 @@ class FallbackProvider extends AbstractProvider {
             case "broadcastTransaction":
                 throw new Error("TODO");
         }
-        return logger.throwError("unsupported method", "UNSUPPORTED_OPERATION", {
+        return throwError("unsupported method", "UNSUPPORTED_OPERATION", {
             operation: `_perform(${JSON.stringify(req.method)})`
         });
     }
@@ -13224,9 +13584,6 @@ class FilterIdPendingSubscriber extends FilterIdSubscriber {
 }
 
 // @TODO:
-//function copy<T = any>(value: T): T {
-//    return JSON.parse(JSON.stringify(value));
-//}
 const Primitive = "bigint,boolean,function,number,string,symbol".split(/,/g);
 //const Methods = "getAddress,then".split(/,/g);
 function deepCopy(value) {
@@ -13272,7 +13629,7 @@ class JsonRpcSigner extends AbstractSigner {
         defineProperties(this, { address });
     }
     connect(provider) {
-        return logger.throwError("cannot reconnect JsonRpcSigner", "UNSUPPORTED_OPERATION", {
+        return throwError("cannot reconnect JsonRpcSigner", "UNSUPPORTED_OPERATION", {
             operation: "signer.connect"
         });
     }
@@ -13283,21 +13640,6 @@ class JsonRpcSigner extends AbstractSigner {
     async populateTransaction(tx) {
         return await this.populateCall(tx);
     }
-    //async getNetwork(): Promise<Frozen<Network>> {
-    //    return await this.provider.getNetwork();
-    //}
-    //async estimateGas(tx: TransactionRequest): Promise<bigint> {
-    //    return await this.provider.estimateGas(tx);
-    //}
-    //async call(tx: TransactionRequest): Promise<string> {
-    //    return await this.provider.call(tx);
-    //}
-    //async resolveName(name: string | Addressable): Promise<null | string> {
-    //    return await this.provider.resolveName(name);
-    //}
-    //async getNonce(blockTag?: BlockTag): Promise<number> {
-    //    return await this.provider.getTransactionCountOf(this.address);
-    //}
     // Returns just the hash of the transaction after sent, which is what
     // the bare JSON-RPC API does;
     async sendUncheckedTransaction(_tx) {
@@ -13309,7 +13651,7 @@ class JsonRpcSigner extends AbstractSigner {
             promises.push((async () => {
                 const from = await resolveAddress(_from, this.provider);
                 if (from == null || from.toLowerCase() !== this.address.toLowerCase()) {
-                    logger.throwArgumentError("from address mismatch", "transaction", _tx);
+                    throwArgumentError("from address mismatch", "transaction", _tx);
                 }
                 tx.from = from;
             })());
@@ -13368,7 +13710,7 @@ class JsonRpcSigner extends AbstractSigner {
         if (tx.from) {
             const from = await resolveAddress(tx.from, this.provider);
             if (from == null || from.toLowerCase() !== this.address.toLowerCase()) {
-                return logger.throwArgumentError("from address mismatch", "transaction", _tx);
+                return throwArgumentError("from address mismatch", "transaction", _tx);
             }
             tx.from = from;
         }
@@ -13390,7 +13732,7 @@ class JsonRpcSigner extends AbstractSigner {
         const populated = await TypedDataEncoder.resolveNames(domain, types, value, async (value) => {
             const address = await resolveAddress(value);
             if (address == null) {
-                return logger.throwArgumentError("TypedData does not support null address", "value", value);
+                return throwArgumentError("TypedData does not support null address", "value", value);
             }
             return address;
         });
@@ -13412,6 +13754,12 @@ class JsonRpcSigner extends AbstractSigner {
         ]);
     }
 }
+/**
+ *  The JsonRpcApiProvider is an abstract class and **MUST** be
+ *  sub-classed.
+ *
+ *  It provides the base for all JSON-RPC-based Provider interaction.
+ */
 class JsonRpcApiProvider extends AbstractProvider {
     #options;
     #nextId;
@@ -13426,28 +13774,23 @@ class JsonRpcApiProvider extends AbstractProvider {
         // This could be relaxed in the future to just check equivalent networks
         const staticNetwork = this._getOption("staticNetwork");
         if (staticNetwork && staticNetwork !== network) {
-            logger.throwArgumentError("staticNetwork MUST match network object", "options", options);
+            throwArgumentError("staticNetwork MUST match network object", "options", options);
         }
     }
+    /**
+     *  Returns the value associated with the option %%key%%.
+     *
+     *  Sub-classes can use this to inquire about configuration options.
+     */
     _getOption(key) {
         return this.#options[key];
     }
-    // @TODO: Merge this into send
-    //prepareRequest(method: string, params: Array<any>): JsonRpcPayload {
-    //    return {
-    //        method, params, id: (this.#nextId++), jsonrpc: "2.0"
-    //    };
-    //}
-    /*
-        async send<T = any>(method: string, params: Array<any>): Promise<T> {
-            // @TODO: This should construct and queue the payload
-            throw new Error("sub-class must implement this");
-        }
-    */
     #scheduleDrain() {
         if (this.#drainTimer) {
             return;
         }
+        // If we aren't using batching, no hard in sending it immeidately
+        const stallTime = (this._getOption("batchMaxCount") === 1) ? 0 : this._getOption("batchStallTime");
         this.#drainTimer = setTimeout(() => {
             this.#drainTimer = null;
             const payloads = this.#payloads;
@@ -13498,9 +13841,22 @@ class JsonRpcApiProvider extends AbstractProvider {
                     }
                 })();
             }
-        }, this.#options.batchStallTime);
+        }, stallTime);
     }
     // Sub-classes should **NOT** override this
+    /**
+     *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
+     *  over the underlying channel. This can be used to call methods
+     *  on the backend that do not have a high-level API within the Provider
+     *  API.
+     *
+     *  This method queues requests according to the batch constraints
+     *  in the options, assigns the request a unique ID.
+     *
+     *  **Do NOT override** this method in sub-classes; instead
+     *  override [[_send]] or force the options values in the
+     *  call to the constructor to modify this method's behavior.
+     */
     send(method, params) {
         // @TODO: cache chainId?? purge on switch_networks
         const id = this.#nextId++;
@@ -13514,12 +13870,28 @@ class JsonRpcApiProvider extends AbstractProvider {
         this.#scheduleDrain();
         return promise;
     }
-    // Sub-classes MUST override this
+    /**
+     *  Sends a JSON-RPC %%payload%% (or a batch) to the underlying channel.
+     *
+     *  Sub-classes **MUST** override this.
+     */
     _send(payload) {
-        return logger.throwError("sub-classes must override _send", "UNSUPPORTED_OPERATION", {
+        return throwError("sub-classes must override _send", "UNSUPPORTED_OPERATION", {
             operation: "jsonRpcApiProvider._send"
         });
     }
+    /**
+     *  Resolves to the [[Signer]] account for  %%address%% managed by
+     *  the client.
+     *
+     *  If the %%address%% is a number, it is used as an index in the
+     *  the accounts from [[listAccounts]].
+     *
+     *  This can only be used on clients which manage accounts (such as
+     *  Geth with imported account or MetaMask).
+     *
+     *  Throws if the account doesn't exist.
+     */
     async getSigner(address = 0) {
         const accountsPromise = this.send("eth_accounts", []);
         // Account index
@@ -13548,8 +13920,14 @@ class JsonRpcApiProvider extends AbstractProvider {
         if (network) {
             return network;
         }
-        return Network.from(logger.getBigInt(await this._perform({ method: "chainId" })));
+        return Network.from(getBigInt(await this._perform({ method: "chainId" })));
     }
+    /**
+     *  Return a Subscriber that will manage the %%sub%%.
+     *
+     *  Sub-classes can override this to modify the behavior of
+     *  subscription management.
+     */
     _getSubscriber(sub) {
         // Pending Filters aren't availble via polling
         if (sub.type === "pending") {
@@ -13565,7 +13943,11 @@ class JsonRpcApiProvider extends AbstractProvider {
         }
         return super._getSubscriber(sub);
     }
-    // Normalize a JSON-RPC transaction
+    /**
+     *  Returns %%tx%% as a normalized JSON-RPC transaction request,
+     *  which has all values hexlified and any numeric values converted
+     *  to Quantity values.
+     */
     getRpcTransaction(tx) {
         const result = {};
         // JSON-RPC now requires numeric values to be "quantity" values
@@ -13577,7 +13959,7 @@ class JsonRpcApiProvider extends AbstractProvider {
             if (key === "gasLimit") {
                 dstKey = "gas";
             }
-            result[dstKey] = toQuantity(logger.getBigInt(tx[key], `tx.${key}`));
+            result[dstKey] = toQuantity(getBigInt(tx[key], `tx.${key}`));
         });
         // Make sure addresses and data are lowercase
         ["from", "to", "data"].forEach((key) => {
@@ -13592,7 +13974,10 @@ class JsonRpcApiProvider extends AbstractProvider {
         }
         return result;
     }
-    // Get the necessary paramters for making a JSON-RPC request
+    /**
+     *  Returns the request method and arguments required to perform
+     *  %%req%%.
+     */
     getRpcRequest(req) {
         switch (req.method) {
             case "chainId":
@@ -13678,73 +14063,72 @@ class JsonRpcApiProvider extends AbstractProvider {
         }
         return null;
     }
+    /**
+     *  Returns an ethers-style Error for the given JSON-RPC error
+     *  %%payload%%, coalescing the various strings and error shapes
+     *  that different nodes return, coercing them into a machine-readable
+     *  standardized error.
+     */
     getRpcError(payload, error) {
-        console.log("getRpcError", payload, error);
-        return new Error(`JSON-RPC badness; @TODO: ${error}`);
-        /*
-            if (payload.method === "eth_call") {
-                const result = spelunkData(error);
-                if (result) {
-                    // @TODO: Extract errorSignature, errorName, errorArgs, reason if
-                    //        it is Error(string) or Panic(uint25)
-                    return logger.makeError("execution reverted during JSON-RPC call", "CALL_EXCEPTION", {
-                        data: result.data,
-                        transaction: args[0]
-                    });
-                }
-    
-                return logger.makeError("missing revert data during JSON-RPC call", "CALL_EXCEPTION", {
-                    data: "0x", transaction: args[0], info: { error }
+        const { method } = payload;
+        if (method === "eth_call") {
+            const transaction = (payload.params[0]);
+            const result = spelunkData(error);
+            if (result) {
+                // @TODO: Extract errorSignature, errorName, errorArgs, reason if
+                //        it is Error(string) or Panic(uint25)
+                return makeError("execution reverted during JSON-RPC call", "CALL_EXCEPTION", {
+                    data: result.data,
+                    transaction
                 });
             }
-    
-            if (method === "eth_estimateGas") {
-                // @TODO: Spelunk, and adapt the above to allow missing data.
-                //        Then throw an UNPREDICTABLE_GAS exception
+            return makeError("missing revert data during JSON-RPC call", "CALL_EXCEPTION", {
+                data: "0x", transaction, info: { error }
+            });
+        }
+        const message = JSON.stringify(spelunkMessage(error));
+        if (method === "eth_estimateGas") {
+            const transaction = (payload.params[0]);
+            if (message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
+                return makeError("cannot estimate gas; transaction may fail or may require manual gas limit", "UNPREDICTABLE_GAS_LIMIT", {
+                    transaction
+                });
             }
-    
-            const message = JSON.stringify(spelunkMessage(error));
-    
+        }
+        if (method === "eth_sendRawTransaction" || method === "eth_sendTransaction") {
+            const transaction = (payload.params[0]);
             if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
-                return logger.makeError("insufficient funds for intrinsic transaction cost", "INSUFFICIENT_FUNDS", {
-                    transaction: args[0]
+                return makeError("insufficient funds for intrinsic transaction cost", "INSUFFICIENT_FUNDS", {
+                    transaction
                 });
             }
-    
             if (message.match(/nonce/) && message.match(/too low/)) {
-                return logger.makeError("nonce has already been used", "NONCE_EXPIRED", {
-                    transaction: args[0]
-                });
+                return makeError("nonce has already been used", "NONCE_EXPIRED", { transaction });
             }
-    
             // "replacement transaction underpriced"
             if (message.match(/replacement transaction/) && message.match(/underpriced/)) {
-                return logger.makeError("replacement fee too low", "REPLACEMENT_UNDERPRICED", {
-                    transaction: args[0]
-                });
+                return makeError("replacement fee too low", "REPLACEMENT_UNDERPRICED", { transaction });
             }
-    
             if (message.match(/only replay-protected/)) {
-                return logger.makeError("legacy pre-eip-155 transactions not supported", "UNSUPPORTED_OPERATION", {
-                    operation: method, info: { transaction: args[0] }
+                return makeError("legacy pre-eip-155 transactions not supported", "UNSUPPORTED_OPERATION", {
+                    operation: method, info: { transaction }
                 });
             }
-    
-            if (method === "estimateGas" && message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
-                return logger.makeError("cannot estimate gas; transaction may fail or may require manual gas limit", "UNPREDICTABLE_GAS_LIMIT", {
-                    transaction: args[0]
-                });
-            }
-    
-            return error;
-            */
+        }
+        return makeError("could not coalesce error", "UNKNOWN_ERROR", { error });
     }
+    /**
+     *  Resolves to the non-normalized value by performing %%req%%.
+     *
+     *  Sub-classes may override this to modify behavior of actions,
+     *  and should generally call ``super._perform`` as a fallback.
+     */
     async _perform(req) {
         // Legacy networks do not like the type field being passed along (which
         // is fair), so we delete type if it is 0 and a non-EIP-1559 network
         if (req.method === "call" || req.method === "estimateGas") {
             let tx = req.transaction;
-            if (tx && tx.type != null && logger.getBigInt(tx.type)) {
+            if (tx && tx.type != null && getBigInt(tx.type)) {
                 // If there are no EIP-1559 properties, it might be non-EIP-a559
                 if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
                     const feeData = await this.getFeeData();
@@ -13760,24 +14144,18 @@ class JsonRpcApiProvider extends AbstractProvider {
         const request = this.getRpcRequest(req);
         if (request != null) {
             return await this.send(request.method, request.args);
-            /*
-              @TODO: Add debug output to send
-                        this.emit("debug", { type: "sendRequest", request });
-                        try {
-                            const result =
-                            //console.log("RR", result);
-                            this.emit("debug", { type: "getResponse", result });
-                            return result;
-                        } catch (error) {
-                            this.emit("debug", { type: "getError", error });
-                            throw error;
-                            //throw this.getRpcError(request.method, request.args, <Error>error);
-                        }
-            */
         }
         return super._perform(req);
     }
 }
+/**
+ *  The JsonRpcProvider is one of the most common Providers,
+ *  which performs all operations over HTTP (or HTTPS) requests.
+ *
+ *  Events are processed by polling the backend for the current block
+ *  number; when it advances, all block-base events are then checked
+ *  for updates.
+ */
 class JsonRpcProvider extends JsonRpcApiProvider {
     #connect;
     #pollingInterval;
@@ -13806,6 +14184,9 @@ class JsonRpcProvider extends JsonRpcApiProvider {
         }
         return resp;
     }
+    /**
+     *  The polling interval (default: 4000 ms)
+     */
     get pollingInterval() { return this.#pollingInterval; }
     set pollingInterval(value) {
         if (!Number.isInteger(value) || value < 0) {
@@ -13819,81 +14200,60 @@ class JsonRpcProvider extends JsonRpcApiProvider {
         });
     }
 }
-// This class should only be used when it is not possible for the
-// underlying network to change, such as with INFURA. If you are
-// using MetaMask or some other client which allows users to change
-// their network DO NOT USE THIS. Bad things will happen.
-/*
-export class StaticJsonRpcProvider extends JsonRpcProvider {
-    readonly network!: Network;
-
-    constructor(url: string | ConnectionInfo, network?: Network, options?: JsonRpcOptions) {
-        super(url, network, options);
-        defineProperties<StaticJsonRpcProvider>(this, { network });
+function spelunkData(value) {
+    if (value == null) {
+        return null;
     }
-
-    async _detectNetwork(): Promise<Network> {
-        return this.network;
-    }
-}
-*/
-/*
-function spelunkData(value: any): null | { message: string, data: string } {
-    if (value == null) { return null; }
-
     // These *are* the droids we're looking for.
-    if (typeof(value.message) === "string" && value.message.match("reverted") && isHexString(value.data)) {
+    if (typeof (value.message) === "string" && value.message.match("reverted") && isHexString(value.data)) {
         return { message: value.message, data: value.data };
     }
-
     // Spelunk further...
-    if (typeof(value) === "object") {
+    if (typeof (value) === "object") {
         for (const key in value) {
             const result = spelunkData(value[key]);
-            if (result) { return result; }
+            if (result) {
+                return result;
+            }
         }
         return null;
     }
-
     // Might be a JSON string we can further descend...
-    if (typeof(value) === "string") {
+    if (typeof (value) === "string") {
         try {
             return spelunkData(JSON.parse(value));
-        } catch (error) { }
+        }
+        catch (error) { }
     }
-
     return null;
 }
-
-function _spelunkMessage(value: any, result: Array<string>): void {
-    if (value == null) { return; }
-
+function _spelunkMessage(value, result) {
+    if (value == null) {
+        return;
+    }
     // These *are* the droids we're looking for.
-    if (typeof(value.message) === "string") {
+    if (typeof (value.message) === "string") {
         result.push(value.message);
     }
-
     // Spelunk further...
-    if (typeof(value) === "object") {
+    if (typeof (value) === "object") {
         for (const key in value) {
             _spelunkMessage(value[key], result);
         }
     }
-
     // Might be a JSON string we can further descend...
-    if (typeof(value) === "string") {
+    if (typeof (value) === "string") {
         try {
             return _spelunkMessage(JSON.parse(value), result);
-        } catch (error) { }
+        }
+        catch (error) { }
     }
 }
-
-function spelunkMessage(value: any): Array<string> {
-    const result: Array<string> = [ ];
+function spelunkMessage(value) {
+    const result = [];
     _spelunkMessage(value, result);
     return result;
 }
-*/
 
 // Show the throttle message only once
 const shown = new Set();
@@ -13942,7 +14302,7 @@ function getHost$2(name) {
         case "optimism-kovan":
             return "opt-kovan.g.alchemy.com";
     }
-    return logger.throwArgumentError("unsupported network", "network", name);
+    return throwArgumentError("unsupported network", "network", name);
 }
 class AlchemyProvider extends JsonRpcProvider {
     apiKey;
@@ -13978,13 +14338,13 @@ class AlchemyProvider extends JsonRpcProvider {
             catch (error) { }
             if (data) {
                 if (error) {
-                    logger.throwError("an error occurred during transaction executions", "CALL_EXCEPTION", {
+                    throwError("an error occurred during transaction executions", "CALL_EXCEPTION", {
                         data
                     });
                 }
                 return data;
             }
-            return logger.throwError("could not parse trace result", "BAD_DATA", { value: trace });
+            return throwError("could not parse trace result", "BAD_DATA", { value: trace });
         }
         return await super._perform(req);
     }
@@ -14023,7 +14383,7 @@ function getHost$1(name) {
         case "arbitrum":
             return "rpc.ankr.com/arbitrum";
     }
-    return logger.throwArgumentError("unsupported network", "network", name);
+    return throwArgumentError("unsupported network", "network", name);
 }
 class AnkrProvider extends JsonRpcProvider {
     apiKey;
@@ -14068,7 +14428,7 @@ class CloudflareProvider extends JsonRpcProvider {
     constructor(_network = "homestead") {
         const network = Network.from(_network);
         if (network.name !== "homestead") {
-            return logger.throwArgumentError("unsupported network", "network", _network);
+            return throwArgumentError("unsupported network", "network", _network);
         }
         super("https:/\/cloudflare-eth.com/", network, { staticNetwork: network });
     }
@@ -14100,7 +14460,7 @@ function getHost(name) {
         case "arbitrum-rinkeby":
             return "arbitrum-rinkeby.infura.io";
     }
-    return logger.throwArgumentError("unsupported network", "network", name);
+    return throwArgumentError("unsupported network", "network", name);
 }
 class InfuraProvider extends JsonRpcProvider {
     projectId;
@@ -14192,7 +14552,7 @@ class SocketSubscriber {
     //        and resume
     pause(dropWhilePaused) {
         if (!dropWhilePaused) {
-            logger.throwError("preserve logs while paused not supported by SocketSubscriber yet", "UNSUPPORTED_OPERATION", {
+            throwError("preserve logs while paused not supported by SocketSubscriber yet", "UNSUPPORTED_OPERATION", {
                 operation: "pause(false)"
             });
         }
@@ -14334,7 +14694,7 @@ class SocketProvider extends JsonRpcApiProvider {
             this.#callbacks.delete(result.id);
             if ("error" in result) {
                 const { message, code, data } = result.error;
-                const error = logger.makeError(message || "unkonwn error", "SERVER_ERROR", {
+                const error = makeError(message || "unkonwn error", "SERVER_ERROR", {
                     request: `ws:${JSON.stringify(callback.payload)}`,
                     info: { code, data }
                 });
@@ -14404,11 +14764,7 @@ class WebSocketProvider extends SocketProvider {
     }
 }
 
-/*
-export {
-    AbstractProvider, UnmanagedSubscriber
-} from "./abstract-provider.js";
-*/
+/////
 
 class EventLog extends Log {
     interface;
@@ -14558,10 +14914,10 @@ async function copyOverrides(arg) {
     // Some sanity checking; these are what these methods adds
     //if ((<any>overrides).to) {
     if (overrides.to) {
-        logger.throwArgumentError("cannot override to", "overrides.to", overrides.to);
+        throwArgumentError("cannot override to", "overrides.to", overrides.to);
     }
     else if (overrides.data) {
-        logger.throwArgumentError("cannot override data", "overrides.data", overrides.data);
+        throwArgumentError("cannot override data", "overrides.data", overrides.data);
     }
     // Resolve any from
     if (overrides.from) {
@@ -14637,7 +14993,7 @@ class WrappedMethod extends _WrappedMethodBase() {
     async send(...args) {
         const runner = this._contract.runner;
         if (!canSend(runner)) {
-            return logger.throwError("contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
+            return throwError("contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
                 operation: "sendTransaction"
             });
         }
@@ -14648,7 +15004,7 @@ class WrappedMethod extends _WrappedMethodBase() {
     async estimateGas(...args) {
         const runner = getRunner(this._contract.runner, "estimateGas");
         if (!canEstimate(runner)) {
-            return logger.throwError("contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", {
+            return throwError("contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", {
                 operation: "estimateGas"
             });
         }
@@ -14657,7 +15013,7 @@ class WrappedMethod extends _WrappedMethodBase() {
     async staticCallResult(...args) {
         const runner = getRunner(this._contract.runner, "call");
         if (!canCall(runner)) {
-            return logger.throwError("contract runner does not support calling", "UNSUPPORTED_OPERATION", {
+            return throwError("contract runner does not support calling", "UNSUPPORTED_OPERATION", {
                 operation: "call"
             });
         }
@@ -14732,7 +15088,7 @@ async function getSubTag(contract, event) {
     else if (typeof (event) === "string") {
         // Event name (name or signature); `"Transfer"`
         fragment = contract.interface.getEvent(event);
-        topics = [contract.interface.getEventTopic(fragment)];
+        topics = [fragment.topicHash];
     }
     else if (isDeferred(event)) {
         // Deferred Topic Filter; e.g. `contract.filter.Transfer(from)`
@@ -14742,7 +15098,7 @@ async function getSubTag(contract, event) {
     else if ("fragment" in event) {
         // ContractEvent; e.g. `contract.filter.Transfer`
         fragment = event.fragment;
-        topics = [contract.interface.getEventTopic(fragment)];
+        topics = [fragment.topicHash];
     }
     else {
         console.log(event);
@@ -14777,7 +15133,7 @@ async function getSub(contract, event) {
     // Make sure our runner can actually subscribe to events
     const provider = getProvider(contract.runner);
     if (!provider) {
-        return logger.throwError("contract runner does not support subscribing", "UNSUPPORTED_OPERATION", {
+        return throwError("contract runner does not support subscribing", "UNSUPPORTED_OPERATION", {
             operation: "on"
         });
     }
@@ -14872,7 +15228,7 @@ class BaseContract {
             else {
                 const resolver = getRunner(runner, "resolveName");
                 if (!canResolve(resolver)) {
-                    throw logger.makeError("contract runner does not support name resolution", "UNSUPPORTED_OPERATION", {
+                    throw makeError("contract runner does not support name resolution", "UNSUPPORTED_OPERATION", {
                         operation: "resolveName"
                     });
                 }
@@ -14931,7 +15287,7 @@ class BaseContract {
     async getDeployedCode() {
         const provider = getProvider(this.runner);
         if (!provider) {
-            return logger.throwError("runner does not support .provider", "UNSUPPORTED_OPERATION", {
+            return throwError("runner does not support .provider", "UNSUPPORTED_OPERATION", {
                 operation: "getDeployedCode"
             });
         }
@@ -14956,7 +15312,7 @@ class BaseContract {
         // Make sure we can subscribe to a provider event
         const provider = getProvider(this.runner);
         if (provider == null) {
-            return logger.throwError("contract runner does not support .provider", "UNSUPPORTED_OPERATION", {
+            return throwError("contract runner does not support .provider", "UNSUPPORTED_OPERATION", {
                 operation: "waitForDeployment"
             });
         }
@@ -15002,7 +15358,7 @@ class BaseContract {
         const filter = { address, topics, fromBlock, toBlock };
         const provider = getProvider(this.runner);
         if (!provider) {
-            return logger.throwError("contract runner does not have a provider", "UNSUPPORTED_OPERATION", {
+            return throwError("contract runner does not have a provider", "UNSUPPORTED_OPERATION", {
                 operation: "queryFilter"
             });
         }
@@ -15128,7 +15484,7 @@ class ContractFactory {
         const iface = Interface.from(abi);
         // Dereference Solidity bytecode objects and allow a missing `0x`-prefix
         if (bytecode instanceof Uint8Array) {
-            bytecode = hexlify(logger.getBytes(bytecode));
+            bytecode = hexlify(getBytes(bytecode));
         }
         else {
             if (typeof (bytecode) === "object") {
@@ -15137,7 +15493,7 @@ class ContractFactory {
             if (bytecode.substring(0, 2) !== "0x") {
                 bytecode = "0x" + bytecode;
             }
-            bytecode = hexlify(logger.getBytes(bytecode));
+            bytecode = hexlify(getBytes(bytecode));
         }
         defineProperties(this, {
             bytecode, interface: iface, runner: (runner || null)
@@ -15159,7 +15515,7 @@ class ContractFactory {
     async deploy(...args) {
         const tx = await this.getDeployTransaction(...args);
         if (!this.runner || typeof (this.runner.sendTransaction) !== "function") {
-            return logger.throwError("factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
+            return throwError("factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
                 operation: "sendTransaction"
             });
         }
@@ -15172,7 +15528,7 @@ class ContractFactory {
     }
     static fromSolidity(output, runner) {
         if (output == null) {
-            logger.throwArgumentError("bad compiler output", "output", output);
+            throwArgumentError("bad compiler output", "output", output);
         }
         if (typeof (output) === "string") {
             output = JSON.parse(output);
@@ -15284,7 +15640,7 @@ class WordlistOwl extends Wordlist {
     getWord(index) {
         const words = this.#loadWords();
         if (index < 0 || index >= words.length) {
-            logger.throwArgumentError(`invalid word index: ${index}`, "index", index);
+            throwArgumentError(`invalid word index: ${index}`, "index", index);
         }
         return words[index];
     }
@@ -15309,20 +15665,20 @@ function getLowerMask(bits) {
     return ((1 << bits) - 1) & 0xff;
 }
 function mnemonicToEntropy(mnemonic, wordlist = langEn) {
-    logger.assertNormalize("NFKD");
+    assertNormalize("NFKD");
     if (wordlist == null) {
         wordlist = langEn;
     }
     const words = wordlist.split(mnemonic);
     if ((words.length % 3) !== 0 || words.length < 12 || words.length > 24) {
-        logger.throwArgumentError("invalid mnemonic length", "mnemonic", "[ REDACTED ]");
+        throwArgumentError("invalid mnemonic length", "mnemonic", "[ REDACTED ]");
     }
     const entropy = new Uint8Array(Math.ceil(11 * words.length / 8));
     let offset = 0;
     for (let i = 0; i < words.length; i++) {
         let index = wordlist.getWordIndex(words[i].normalize("NFKD"));
         if (index === -1) {
-            logger.throwArgumentError(`invalid mnemonic word at index ${i}`, "mnemonic", "[ REDACTED ]");
+            throwArgumentError(`invalid mnemonic word at index ${i}`, "mnemonic", "[ REDACTED ]");
         }
         for (let bit = 0; bit < 11; bit++) {
             if (index & (1 << (10 - bit))) {
@@ -15334,15 +15690,15 @@ function mnemonicToEntropy(mnemonic, wordlist = langEn) {
     const entropyBits = 32 * words.length / 3;
     const checksumBits = words.length / 3;
     const checksumMask = getUpperMask(checksumBits);
-    const checksum = logger.getBytes(sha256(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
+    const checksum = getBytes(sha256(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
     if (checksum !== (entropy[entropy.length - 1] & checksumMask)) {
-        logger.throwArgumentError("invalid mnemonic checksum", "mnemonic", "[ REDACTED ]");
+        throwArgumentError("invalid mnemonic checksum", "mnemonic", "[ REDACTED ]");
     }
     return hexlify(entropy.slice(0, entropyBits / 8));
 }
 function entropyToMnemonic(entropy, wordlist = langEn) {
     if ((entropy.length % 4) || entropy.length < 16 || entropy.length > 32) {
-        logger.throwArgumentError("invalid entropy size", "entropy", "[ REDACTED ]");
+        throwArgumentError("invalid entropy size", "entropy", "[ REDACTED ]");
     }
     if (wordlist == null) {
         wordlist = langEn;
@@ -15386,7 +15742,7 @@ class Mnemonic {
         if (wordlist == null) {
             wordlist = langEn;
         }
-        logger.assertPrivate(guard, _guard$1, "Mnemonic");
+        assertPrivate(guard, _guard$1, "Mnemonic");
         defineProperties(this, { phrase, password, wordlist, entropy });
     }
     computeSeed() {
@@ -15396,16 +15752,16 @@ class Mnemonic {
     static fromPhrase(phrase, password, wordlist) {
         // Normalize the case and space; throws if invalid
         const entropy = mnemonicToEntropy(phrase, wordlist);
-        phrase = entropyToMnemonic(logger.getBytes(entropy), wordlist);
+        phrase = entropyToMnemonic(getBytes(entropy), wordlist);
         return new Mnemonic(_guard$1, entropy, phrase, password, wordlist);
     }
     static fromEntropy(_entropy, password, wordlist) {
-        const entropy = logger.getBytes(_entropy, "entropy");
+        const entropy = getBytes(_entropy, "entropy");
         const phrase = entropyToMnemonic(entropy, wordlist);
         return new Mnemonic(_guard$1, hexlify(entropy), phrase, password, wordlist);
     }
     static entropyToPhrase(_entropy, wordlist) {
-        const entropy = logger.getBytes(_entropy, "entropy");
+        const entropy = getBytes(_entropy, "entropy");
         return entropyToMnemonic(entropy, wordlist);
     }
     static phraseToEntropy(phrase, wordlist) {
@@ -15445,7 +15801,7 @@ class BaseWallet extends AbstractSigner {
         }));
         if (tx.from != null) {
             if (getAddress(tx.from) !== this.address) {
-                logger.throwArgumentError("transaction from address mismatch", "tx.from", _tx.from);
+                throwArgumentError("transaction from address mismatch", "tx.from", _tx.from);
             }
             delete tx.from;
         }
@@ -15461,14 +15817,14 @@ class BaseWallet extends AbstractSigner {
         // Populate any ENS names
         const populated = await TypedDataEncoder.resolveNames(domain, types, value, async (name) => {
             if (this.provider == null) {
-                return logger.throwError("cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
+                return throwError("cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
                     operation: "resolveName",
                     info: { name }
                 });
             }
             const address = await this.provider.resolveName(name);
             if (address == null) {
-                return logger.throwError("unconfigured ENS name", "UNCONFIGURED_NAME", {
+                return throwError("unconfigured ENS name", "UNCONFIGURED_NAME", {
                     value: name
                 });
             }
@@ -15496,7 +15852,7 @@ function zpad$1(value, length) {
     return "0x" + result;
 }
 function encodeBase58Check(_value) {
-    const value = logger.getBytes(_value);
+    const value = getBytes(_value);
     const check = dataSlice(sha256(sha256(value)), 0, 4);
     const bytes = concat([value, check]);
     return encodeBase58(bytes);
@@ -15506,22 +15862,22 @@ function ser_I(index, chainCode, publicKey, privateKey) {
     const data = new Uint8Array(37);
     if (index & HardenedBit) {
         if (privateKey == null) {
-            return logger.throwError("cannot derive child of neutered node", "UNSUPPORTED_OPERATION", {
+            return throwError("cannot derive child of neutered node", "UNSUPPORTED_OPERATION", {
                 operation: "deriveChild"
             });
         }
         // Data = 0x00 || ser_256(k_par)
-        data.set(logger.getBytes(privateKey), 1);
+        data.set(getBytes(privateKey), 1);
     }
     else {
         // Data = ser_p(point(k_par))
-        data.set(logger.getBytes(publicKey));
+        data.set(getBytes(publicKey));
     }
     // Data += ser_32(i)
     for (let i = 24; i >= 0; i -= 8) {
         data[33 + (i >> 3)] = ((index >> (24 - i)) & 0xff);
     }
-    const I = logger.getBytes(computeHmac("sha512", chainCode, data));
+    const I = getBytes(computeHmac("sha512", chainCode, data));
     return { IL: I.slice(0, 32), IR: I.slice(32) };
 }
 function derivePath(node, path) {
@@ -15566,7 +15922,7 @@ class HDNodeWallet extends BaseWallet {
     depth;
     constructor(guard, signingKey, parentFingerprint, chainCode, path, index, depth, mnemonic, provider) {
         super(signingKey, provider);
-        logger.assertPrivate(guard, _guard, "HDNodeWallet");
+        assertPrivate(guard, _guard, "HDNodeWallet");
         defineProperties(this, { publicKey: signingKey.compressedPublicKey });
         const fingerprint = dataSlice(ripemd160(sha256(this.publicKey)), 0, 4);
         defineProperties(this, {
@@ -15598,7 +15954,7 @@ class HDNodeWallet extends BaseWallet {
         return new HDNodeVoidWallet(_guard, this.address, this.publicKey, this.parentFingerprint, this.chainCode, this.path, this.index, this.depth, this.provider);
     }
     deriveChild(_index) {
-        const index = logger.getNumber(_index, "index");
+        const index = getNumber(_index, "index");
         if (index > 0xffffffff) {
             throw new Error("invalid index - " + String(index));
         }
@@ -15618,11 +15974,11 @@ class HDNodeWallet extends BaseWallet {
         return derivePath(this, path);
     }
     static #fromSeed(_seed, mnemonic) {
-        const seed = logger.getBytes(_seed, "seed");
+        const seed = getBytes(_seed, "seed");
         if (seed.length < 16 || seed.length > 64) {
             throw new Error("invalid seed");
         }
-        const I = logger.getBytes(computeHmac("sha512", MasterSecret, seed));
+        const I = getBytes(computeHmac("sha512", MasterSecret, seed));
         const signingKey = new SigningKey(hexlify(I.slice(0, 32)));
         return new HDNodeWallet(_guard, signingKey, "0x00000000", hexlify(I.slice(32)), "m", 0, 0, mnemonic, null);
     }
@@ -15643,9 +15999,9 @@ class HDNodeWallet extends BaseWallet {
         return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
     }
     static fromExtendedKey(extendedKey) {
-        const bytes = logger.getBytes(decodeBase58(extendedKey)); // @TODO: redact
+        const bytes = getBytes(decodeBase58(extendedKey)); // @TODO: redact
         if (bytes.length !== 82 || encodeBase58Check(bytes.slice(0, 78)) !== extendedKey) {
-            logger.throwArgumentError("invalid extended key", "extendedKey", "[ REDACTED ]");
+            throwArgumentError("invalid extended key", "extendedKey", "[ REDACTED ]");
         }
         const depth = bytes[4];
         const parentFingerprint = hexlify(bytes.slice(5, 9));
@@ -15667,7 +16023,7 @@ class HDNodeWallet extends BaseWallet {
                 }
                 return new HDNodeWallet(_guard, new SigningKey(key.slice(1)), parentFingerprint, chainCode, null, index, depth, null, null);
         }
-        return logger.throwArgumentError("invalid extended key prefix", "extendedKey", "[ REDACTED ]");
+        return throwArgumentError("invalid extended key prefix", "extendedKey", "[ REDACTED ]");
     }
     static createRandom(password = "", path = defaultPath$1, wordlist = langEn) {
         if (!path) {
@@ -15687,7 +16043,7 @@ class HDNodeVoidWallet extends VoidSigner {
     depth;
     constructor(guard, address, publicKey, parentFingerprint, chainCode, path, index, depth, provider) {
         super(address, provider);
-        logger.assertPrivate(guard, _guard, "HDNodeVoidWallet");
+        assertPrivate(guard, _guard, "HDNodeVoidWallet");
         defineProperties(this, { publicKey });
         const fingerprint = dataSlice(ripemd160(sha256(publicKey)), 0, 4);
         defineProperties(this, {
@@ -15717,7 +16073,7 @@ class HDNodeVoidWallet extends VoidSigner {
     }
     hasPath() { return (this.path != null); }
     deriveChild(_index) {
-        const index = logger.getNumber(_index, "index");
+        const index = getNumber(_index, "index");
         if (index > 0xffffffff) {
             throw new Error("invalid index - " + String(index));
         }
@@ -15743,14 +16099,14 @@ class HDNodeWalletManager {
     constructor(phrase, password = "", path = "m/44'/60'/0'/0", locale = langEn) {
         this.#root = HDNodeWallet.fromPhrase(phrase, password, path, locale);
     }
-    getSigner(index = 0) {
-        return this.#root.deriveChild(index);
+    getSigner(index) {
+        return this.#root.deriveChild((index == null) ? 0 : index);
     }
 }
 function getAccountPath(_index) {
-    const index = logger.getNumber(_index, "index");
+    const index = getNumber(_index, "index");
     if (index < 0 || index >= HardenedBit) {
-        logger.throwArgumentError("invalid account index", "index", index);
+        throwArgumentError("invalid account index", "index", index);
     }
     return `m/44'/60'/${index}'/0/0`;
 }
@@ -16296,7 +16652,7 @@ function looseArrayify(hexString) {
     if (typeof (hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
         hexString = '0x' + hexString;
     }
-    return logger.getBytesCopy(hexString);
+    return getBytesCopy(hexString);
 }
 function zpad(value, length) {
     value = String(value);
@@ -16309,12 +16665,12 @@ function getPassword(password) {
     if (typeof (password) === 'string') {
         return toUtf8Bytes(password, "NFKC");
     }
-    return logger.getBytesCopy(password);
+    return getBytesCopy(password);
 }
 function spelunk(object, _path) {
     const match = _path.match(/^([a-z0-9$_.-]*)(:([a-z]+))?(!)?$/i);
     if (match == null) {
-        return logger.throwArgumentError("invalid path", "path", _path);
+        return throwArgumentError("invalid path", "path", _path);
     }
     const path = match[1];
     const type = match[3];
@@ -16346,7 +16702,7 @@ function spelunk(object, _path) {
         }
     }
     if (reqd && cur == null) {
-        logger.throwArgumentError("missing required value", "path", path);
+        throwArgumentError("missing required value", "path", path);
     }
     if (type && cur != null) {
         if (type === "int") {
@@ -16373,7 +16729,7 @@ function spelunk(object, _path) {
         if (type === typeof (cur)) {
             return cur;
         }
-        logger.throwArgumentError(`wrong type found for ${type} `, "path", path);
+        throwArgumentError(`wrong type found for ${type} `, "path", path);
     }
     return cur;
 }
@@ -16410,7 +16766,7 @@ export function followRequired(data: any, path: string): string {
 */
 // See: https://www.ietf.org/rfc/rfc4122.txt (Section 4.4)
 function uuidV4(randomBytes) {
-    const bytes = logger.getBytes(randomBytes, "randomBytes");
+    const bytes = getBytes(randomBytes, "randomBytes");
     // Section: 4.1.3:
     // - time_hi_and_version[12:16] = 0b0100
     bytes[6] = (bytes[6] & 0x0f) | 0x40;
@@ -16447,14 +16803,14 @@ function decryptCrowdsaleJson(json, _password) {
     // Encrypted Seed
     const encseed = looseArrayify(spelunk(data, "encseed:string!"));
     if (!encseed || (encseed.length % 16) !== 0) {
-        logger.throwArgumentError("invalid encseed", "json", json);
+        throwArgumentError("invalid encseed", "json", json);
     }
-    const key = logger.getBytes(pbkdf2(password, password, 2000, 32, "sha256")).slice(0, 16);
+    const key = getBytes(pbkdf2(password, password, 2000, 32, "sha256")).slice(0, 16);
     const iv = encseed.slice(0, 16);
     const encryptedSeed = encseed.slice(16);
     // Decrypt the seed
     const aesCbc = new CBC(key, iv);
-    const seed = pkcs7Strip(logger.getBytes(aesCbc.decrypt(encryptedSeed)));
+    const seed = pkcs7Strip(getBytes(aesCbc.decrypt(encryptedSeed)));
     // This wallet format is weird... Convert the binary encoded hex to a string.
     let seedHex = "";
     for (let i = 0; i < seed.length; i++) {
@@ -16482,16 +16838,16 @@ function decrypt(data, key, ciphertext) {
         const aesCtr = new CTR(key, iv);
         return hexlify(aesCtr.decrypt(ciphertext));
     }
-    return logger.throwError("unsupported cipher", "UNSUPPORTED_OPERATION", {
+    return throwError("unsupported cipher", "UNSUPPORTED_OPERATION", {
         operation: "decrypt"
     });
 }
 function getAccount(data, _key) {
-    const key = logger.getBytes(_key);
+    const key = getBytes(_key);
     const ciphertext = spelunk(data, "crypto.ciphertext:data!");
     const computedMAC = hexlify(keccak256(concat([key.slice(16, 32), ciphertext]))).substring(2);
     if (computedMAC !== spelunk(data, "crypto.mac:string!").toLowerCase()) {
-        return logger.throwArgumentError("incorrect password", "password", "[ REDACTED ]");
+        return throwArgumentError("incorrect password", "password", "[ REDACTED ]");
     }
     const privateKey = decrypt(data, key.slice(0, 16), ciphertext);
     const address = computeAddress(privateKey);
@@ -16501,7 +16857,7 @@ function getAccount(data, _key) {
             check = "0x" + check;
         }
         if (getAddress(check) !== address) {
-            logger.throwArgumentError("keystore address/privateKey mismatch", "address", data.address);
+            throwArgumentError("keystore address/privateKey mismatch", "address", data.address);
         }
     }
     const account = { address, privateKey };
@@ -16515,7 +16871,7 @@ function getAccount(data, _key) {
         account.mnemonic = {
             path: (spelunk(data, "x-ethers.path:string") || defaultPath),
             locale: (spelunk(data, "x-ethers.locale:string") || "en"),
-            entropy: hexlify(logger.getBytes(mnemonicAesCtr.decrypt(mnemonicCiphertext)))
+            entropy: hexlify(getBytes(mnemonicAesCtr.decrypt(mnemonicCiphertext)))
         };
     }
     return account;
@@ -16524,7 +16880,7 @@ function getKdfParams(data) {
     const kdf = spelunk(data, "crypto.kdf:string");
     if (kdf && typeof (kdf) === "string") {
         const throwError = function (name, value) {
-            return logger.throwArgumentError("invalid key-derivation function parameters", name, value);
+            return throwArgumentError("invalid key-derivation function parameters", name, value);
         };
         if (kdf.toLowerCase() === "scrypt") {
             const salt = spelunk(data, "crypto.kdfparams.salt:data!");
@@ -16560,7 +16916,7 @@ function getKdfParams(data) {
             return { name: "pbkdf2", salt, count, dkLen, algorithm };
         }
     }
-    return logger.throwArgumentError("unsupported key-derivation function", "kdf", kdf);
+    return throwArgumentError("unsupported key-derivation function", "kdf", kdf);
 }
 function decryptKeystoreJsonSync(json, _password) {
     const data = JSON.parse(json);
@@ -16629,7 +16985,7 @@ async function encryptKeystoreJson(account, password, options, progressCallback)
     if (!options) {
         options = {};
     }
-    const privateKey = logger.getBytes(account.privateKey, "privateKey");
+    const privateKey = getBytes(account.privateKey, "privateKey");
     const passwordBytes = getPassword(password);
     /*
         let mnemonic: null | Mnemonic = null;
@@ -16645,16 +17001,16 @@ async function encryptKeystoreJson(account, password, options, progressCallback)
         }
     */
     // Check/generate the salt
-    const salt = (options.salt != null) ? logger.getBytes(options.salt, "options.slat") : randomBytes(32);
+    const salt = (options.salt != null) ? getBytes(options.salt, "options.slat") : randomBytes(32);
     // Override initialization vector
-    const iv = (options.iv != null) ? logger.getBytes(options.iv, "options.iv") : randomBytes(16);
+    const iv = (options.iv != null) ? getBytes(options.iv, "options.iv") : randomBytes(16);
     if (iv.length !== 16) {
-        logger.throwArgumentError("invalid options.iv", "options.iv", options.iv);
+        throwArgumentError("invalid options.iv", "options.iv", options.iv);
     }
     // Override the uuid
-    const uuidRandom = (options.uuid != null) ? logger.getBytes(options.uuid, "options.uuid") : randomBytes(16);
+    const uuidRandom = (options.uuid != null) ? getBytes(options.uuid, "options.uuid") : randomBytes(16);
     if (uuidRandom.length !== 16) {
-        logger.throwArgumentError("invalid options.uuid", "options.uuid", options.iv);
+        throwArgumentError("invalid options.uuid", "options.uuid", options.iv);
     }
     if (uuidRandom.length !== 16) {
         throw new Error("invalid uuid");
@@ -16676,13 +17032,13 @@ async function encryptKeystoreJson(account, password, options, progressCallback)
     //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
     //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
     const _key = await scrypt(passwordBytes, salt, N, r, p, 64, progressCallback);
-    const key = logger.getBytes(_key);
+    const key = getBytes(_key);
     // This will be used to encrypt the wallet (as per Web3 secret storage)
     const derivedKey = key.slice(0, 16);
     const macPrefix = key.slice(16, 32);
     // Encrypt the private key
     const aesCtr = new CTR(derivedKey, iv);
-    const ciphertext = logger.getBytes(aesCtr.encrypt(privateKey));
+    const ciphertext = getBytes(aesCtr.encrypt(privateKey));
     // Compute the message authentication code, used to check the password
     const mac = keccak256(concat([macPrefix, ciphertext]));
     // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
@@ -16713,10 +17069,10 @@ async function encryptKeystoreJson(account, password, options, progressCallback)
         const path = account.mnemonic.path || defaultPath;
         const locale = account.mnemonic.locale || "en";
         const mnemonicKey = key.slice(32, 64);
-        const entropy = logger.getBytes(account.mnemonic.entropy, "account.mnemonic.entropy");
+        const entropy = getBytes(account.mnemonic.entropy, "account.mnemonic.entropy");
         const mnemonicIv = randomBytes(16);
         const mnemonicAesCtr = new CTR(mnemonicKey, mnemonicIv);
-        const mnemonicCiphertext = logger.getBytes(mnemonicAesCtr.encrypt(entropy));
+        const mnemonicCiphertext = getBytes(mnemonicAesCtr.encrypt(entropy));
         const now = new Date();
         const timestamp = (now.getUTCFullYear() + "-" +
             zpad(now.getUTCMonth() + 1, 2) + "-" +
@@ -16821,7 +17177,7 @@ class Wallet extends BaseWallet {
             signingKey = trySigningKey(key);
         }
         if (signingKey == null) {
-            logger.throwArgumentError("invalid key", "key", "[ REDACTED ]");
+            throwArgumentError("invalid key", "key", "[ REDACTED ]");
         }
         super(signingKey, provider);
         this.#mnemonic = mnemonic;
@@ -16854,11 +17210,11 @@ class Wallet extends BaseWallet {
             }
         }
         else {
-            return logger.throwArgumentError("invalid JSON wallet", "json", "[ REDACTED ]");
+            return throwArgumentError("invalid JSON wallet", "json", "[ REDACTED ]");
         }
         const wallet = new Wallet(account.privateKey);
         if (wallet.address !== account.address) {
-            logger.throwArgumentError("address/privateKey mismatch", "json", "[ REDACTED ]");
+            throwArgumentError("address/privateKey mismatch", "json", "[ REDACTED ]");
         }
         // @TODO: mnemonic
         return wallet;
@@ -16872,11 +17228,11 @@ class Wallet extends BaseWallet {
             account = decryptCrowdsaleJson(json, password);
         }
         else {
-            return logger.throwArgumentError("invalid JSON wallet", "json", "[ REDACTED ]");
+            return throwArgumentError("invalid JSON wallet", "json", "[ REDACTED ]");
         }
         const wallet = new Wallet(account.privateKey);
         if (wallet.address !== account.address) {
-            logger.throwArgumentError("address/privateKey mismatch", "json", "[ REDACTED ]");
+            throwArgumentError("address/privateKey mismatch", "json", "[ REDACTED ]");
         }
         // @TODO: mnemonic
         return wallet;
@@ -16887,7 +17243,10 @@ class Wallet extends BaseWallet {
     static fromMnemonic(mnemonic, provider) {
         return new Wallet(mnemonic, provider);
     }
-    static fromPhrase(phrase, provider, password = "", wordlist) {
+    static fromPhrase(phrase, provider, password, wordlist) {
+        if (password == null) {
+            password = "";
+        }
         return new Wallet(Mnemonic.fromPhrase(phrase, password, wordlist), provider);
     }
 }
@@ -16995,6 +17354,7 @@ var ethers = /*#__PURE__*/Object.freeze({
     MaxUint256: MaxUint256,
     MinInt256: MinInt256,
     MaxInt256: MaxInt256,
+    N: N$1,
     ZeroHash: ZeroHash,
     EtherSymbol: EtherSymbol,
     MessagePrefix: MessagePrefix,
@@ -17018,6 +17378,9 @@ var ethers = /*#__PURE__*/Object.freeze({
     Signature: Signature,
     SigningKey: SigningKey,
     id: id,
+    isValidName: isValidName,
+    namehash: namehash,
+    dnsEncode: dnsEncode,
     hashMessage: hashMessage,
     solidityPacked: solidityPacked,
     solidityPackedKeccak256: solidityPackedKeccak256,
@@ -17029,24 +17392,46 @@ var ethers = /*#__PURE__*/Object.freeze({
     Transaction: Transaction,
     decodeBase58: decodeBase58,
     encodeBase58: encodeBase58,
+    decodeBase64: decodeBase64,
+    encodeBase64: encodeBase64,
+    concat: concat,
+    dataLength: dataLength,
+    dataSlice: dataSlice,
+    getBytes: getBytes,
+    getBytesCopy: getBytesCopy,
+    hexlify: hexlify,
+    isHexString: isHexString,
+    isBytesLike: isBytesLike,
+    stripZerosLeft: stripZerosLeft,
+    zeroPadBytes: zeroPadBytes,
+    zeroPadValue: zeroPadValue,
+    assertArgument: assertArgument,
+    assertArgumentCount: assertArgumentCount,
+    assertNormalize: assertNormalize,
+    assertPrivate: assertPrivate,
+    makeError: makeError,
+    throwArgumentError: throwArgumentError,
+    throwError: throwError,
     isCallException: isCallException,
     isError: isError,
+    getIpfsGatewayFunc: getIpfsGatewayFunc,
     FetchRequest: FetchRequest,
     FetchResponse: FetchResponse,
+    FetchCancelSignal: FetchCancelSignal,
     FixedFormat: FixedFormat,
     FixedNumber: FixedNumber,
     formatFixed: formatFixed,
     parseFixed: parseFixed,
-    assertArgument: assertArgument,
-    Logger: Logger,
-    logger: logger,
-    fromTwos: fromTwos,
-    toTwos: toTwos,
-    mask: mask,
+    getBigInt: getBigInt,
+    getNumber: getNumber,
     toArray: toArray,
     toBigInt: toBigInt,
     toHex: toHex,
     toNumber: toNumber,
+    toQuantity: toQuantity,
+    fromTwos: fromTwos,
+    toTwos: toTwos,
+    mask: mask,
     formatEther: formatEther,
     parseEther: parseEther,
     formatUnits: formatUnits,
@@ -17077,6 +17462,7 @@ var ethers = /*#__PURE__*/Object.freeze({
     wordlists: wordlists,
     WordlistOwl: WordlistOwl,
     WordlistOwlA: WordlistOwlA,
+    AbstractProvider: AbstractProvider,
     FallbackProvider: FallbackProvider,
     JsonRpcApiProvider: JsonRpcApiProvider,
     JsonRpcProvider: JsonRpcProvider,
@@ -17092,5 +17478,5 @@ var ethers = /*#__PURE__*/Object.freeze({
     Network: Network
 });
 
-export { AbiCoder, AlchemyProvider, AnkrProvider, BaseContract, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, ErrorFragment, EtherSymbol, EtherscanProvider, EventFragment, EventLog, FallbackProvider, FetchRequest, FetchResponse, FixedFormat, FixedNumber, Fragment, FunctionFragment, HDNodeVoidWallet, HDNodeWallet, HDNodeWalletManager, Indexed, InfuraProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, LogDescription, Logger, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, NegativeOne, Network, One, ParamType, Result, Signature, SigningKey, SocketProvider, Transaction, TransactionDescription, Two, Typed, TypedDataEncoder, Utf8ErrorFuncs, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, Zero, ZeroAddress, ZeroHash, _toEscapedUtf8String, accessListify, assertArgument, checkResultErrors, computeAddress, computeHmac, decodeBase58, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultAbiCoder, defaultPath$1 as defaultPath, encodeBase58, encodeRlp, encryptKeystoreJson, ethers, formatBytes32String, formatEther, formatFixed, formatUnits, fromTwos, getAccountPath, getAddress, getCreate2Address, getCreateAddress, getIcapAddress, hashMessage, id, isCallException, isCrowdsaleJson, isError, isKeystoreJson, keccak256, langEn, lock, logger, mask, parseBytes32String, parseEther, parseFixed, parseUnits, pbkdf2, randomBytes, recoverAddress, ripemd160, scrypt, scryptSync, sha256, sha512, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, toArray, toBigInt, toHex, toNumber, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, version, wordlists };
+export { AbiCoder, AbstractProvider, AlchemyProvider, AnkrProvider, BaseContract, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, ErrorFragment, EtherSymbol, EtherscanProvider, EventFragment, EventLog, FallbackProvider, FetchCancelSignal, FetchRequest, FetchResponse, FixedFormat, FixedNumber, Fragment, FunctionFragment, HDNodeVoidWallet, HDNodeWallet, HDNodeWalletManager, Indexed, InfuraProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, LogDescription, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, N$1 as N, NegativeOne, Network, One, ParamType, Result, Signature, SigningKey, SocketProvider, Transaction, TransactionDescription, Two, Typed, TypedDataEncoder, Utf8ErrorFuncs, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, Zero, ZeroAddress, ZeroHash, _toEscapedUtf8String, accessListify, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, checkResultErrors, computeAddress, computeHmac, concat, dataLength, dataSlice, decodeBase58, decodeBase64, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultAbiCoder, defaultPath$1 as defaultPath, dnsEncode, encodeBase58, encodeBase64, encodeRlp, encryptKeystoreJson, ethers, formatBytes32String, formatEther, formatFixed, formatUnits, fromTwos, getAccountPath, getAddress, getBigInt, getBytes, getBytesCopy, getCreate2Address, getCreateAddress, getIcapAddress, getIpfsGatewayFunc, getNumber, hashMessage, hexlify, id, isBytesLike, isCallException, isCrowdsaleJson, isError, isHexString, isKeystoreJson, isValidName, keccak256, langEn, lock, makeError, mask, namehash, parseBytes32String, parseEther, parseFixed, parseUnits, pbkdf2, randomBytes, recoverAddress, ripemd160, scrypt, scryptSync, sha256, sha512, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, throwArgumentError, throwError, toArray, toBigInt, toHex, toNumber, toQuantity, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, version, wordlists, zeroPadBytes, zeroPadValue };
 //# sourceMappingURL=ethers.js.map

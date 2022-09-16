@@ -1,4 +1,4 @@
-import { defineProperties } from "../utils/properties.js";
+import { defineProperties } from "../utils/index.js";
 const _gaurd = {};
 function n(value, width) {
     let signed = false;

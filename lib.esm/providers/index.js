@@ -1,8 +1,5 @@
-/*
-export {
-    AbstractProvider, UnmanagedSubscriber
-} from "./abstract-provider.js";
-*/
+/////
+export { AbstractProvider, UnmanagedSubscriber } from "./abstract-provider.js";
 export { AbstractSigner, VoidSigner, WrappedSigner } from "./abstract-signer.js";
 /*
 export {
@@ -35,4 +32,5 @@ import { IpcSocketProvider } from "./provider-ipcsocket.js"; /*-browser*/
 export { IpcSocketProvider };
 export { SocketProvider } from "./provider-socket.js";
 export { WebSocketProvider } from "./provider-websocket.js";
+export { SocketSubscriber, SocketBlockSubscriber, SocketPendingSubscriber, SocketEventSubscriber } from "./provider-socket.js";
 //# sourceMappingURL=index.js.map

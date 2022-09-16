@@ -1,10 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AlchemyProvider = void 0;
-const properties_js_1 = require("../utils/properties.js");
-const fetch_js_1 = require("../utils/fetch.js");
+const index_js_1 = require("../utils/index.js");
 const community_js_1 = require("./community.js");
-const logger_js_1 = require("../utils/logger.js");
 const network_js_1 = require("./network.js");
 const provider_jsonrpc_js_1 = require("./provider-jsonrpc.js");
 const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC";
@@ -33,7 +31,7 @@ function getHost(name) {
         case "optimism-kovan":
             return "opt-kovan.g.alchemy.com";
     }
-    return logger_js_1.logger.throwArgumentError("unsupported network", "network", name);
+    return (0, index_js_1.throwArgumentError)("unsupported network", "network", name);
 }
 class AlchemyProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
     apiKey;
@@ -44,7 +42,7 @@ class AlchemyProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
         }
         const request = AlchemyProvider.getRequest(network, apiKey);
         super(request, network, { staticNetwork: network });
-        (0, properties_js_1.defineProperties)(this, { apiKey });
+        (0, index_js_1.defineProperties)(this, { apiKey });
     }
     _getProvider(chainId) {
         try {
@@ -69,13 +67,13 @@ class AlchemyProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
             catch (error) { }
             if (data) {
                 if (error) {
-                    logger_js_1.logger.throwError("an error occurred during transaction executions", "CALL_EXCEPTION", {
+                    (0, index_js_1.throwError)("an error occurred during transaction executions", "CALL_EXCEPTION", {
                         data
                     });
                 }
                 return data;
             }
-            return logger_js_1.logger.throwError("could not parse trace result", "BAD_DATA", { value: trace });
+            return (0, index_js_1.throwError)("could not parse trace result", "BAD_DATA", { value: trace });
         }
         return await super._perform(req);
     }
@@ -86,7 +84,7 @@ class AlchemyProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
         if (apiKey == null) {
             apiKey = defaultApiKey;
         }
-        const request = new fetch_js_1.FetchRequest(`https:/\/${getHost(network.name)}/v2/${apiKey}`);
+        const request = new index_js_1.FetchRequest(`https:/\/${getHost(network.name)}/v2/${apiKey}`);
         request.allowGzip = true;
         if (apiKey === defaultApiKey) {
             request.retryFunc = async (request, response, attempt) => {

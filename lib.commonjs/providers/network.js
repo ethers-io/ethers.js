@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Network = void 0;
-const logger_js_1 = require("../utils/logger.js");
-const storage_js_1 = require("../utils/storage.js");
+const index_js_1 = require("../utils/index.js");
 const formatter_js_1 = require("./formatter.js");
 const plugins_network_js_1 = require("./plugins-network.js");
 /* * * *
@@ -60,7 +59,7 @@ const defaultFormatter = new formatter_js_1.Formatter();
 class Network {
     #props;
     constructor(name, _chainId, formatter) {
-        const chainId = logger_js_1.logger.getBigInt(_chainId);
+        const chainId = (0, index_js_1.getBigInt)(_chainId);
         if (formatter == null) {
             formatter = defaultFormatter;
         }
@@ -70,12 +69,12 @@ class Network {
     toJSON() {
         return { name: this.name, chainId: this.chainId };
     }
-    get name() { return (0, storage_js_1.getStore)(this.#props, "name"); }
-    set name(value) { (0, storage_js_1.setStore)(this.#props, "name", value); }
-    get chainId() { return (0, storage_js_1.getStore)(this.#props, "chainId"); }
-    set chainId(value) { (0, storage_js_1.setStore)(this.#props, "chainId", logger_js_1.logger.getBigInt(value, "chainId")); }
-    get formatter() { return (0, storage_js_1.getStore)(this.#props, "formatter"); }
-    set formatter(value) { (0, storage_js_1.setStore)(this.#props, "formatter", value); }
+    get name() { return (0, index_js_1.getStore)(this.#props, "name"); }
+    set name(value) { (0, index_js_1.setStore)(this.#props, "name", value); }
+    get chainId() { return (0, index_js_1.getStore)(this.#props, "chainId"); }
+    set chainId(value) { (0, index_js_1.setStore)(this.#props, "chainId", (0, index_js_1.getBigInt)(value, "chainId")); }
+    get formatter() { return (0, index_js_1.getStore)(this.#props, "formatter"); }
+    set formatter(value) { (0, index_js_1.setStore)(this.#props, "formatter", value); }
     get plugins() {
         return Array.from(this.#props.plugins.values());
     }
@@ -134,6 +133,9 @@ class Network {
         }
         return gas;
     }
+    /**
+     *  Returns a new Network for the %%network%% name or chainId.
+     */
     static from(network) {
         // Default network
         if (network == null) {
@@ -151,7 +153,7 @@ class Network {
             if (typeof (network) === "bigint") {
                 return new Network("unknown", network);
             }
-            logger_js_1.logger.throwArgumentError("unknown network", "network", network);
+            (0, index_js_1.throwArgumentError)("unknown network", "network", network);
         }
         // Clonable with network-like abilities
         if (typeof (network.clone) === "function") {
@@ -163,7 +165,7 @@ class Network {
         // Networkish
         if (typeof (network) === "object") {
             if (typeof (network.name) !== "string" || typeof (network.chainId) !== "number") {
-                logger_js_1.logger.throwArgumentError("invalid network object name or chainId", "network", network);
+                (0, index_js_1.throwArgumentError)("invalid network object name or chainId", "network", network);
             }
             const custom = new Network((network.name), (network.chainId));
             if (network.ensAddress || network.ensNetwork != null) {
@@ -174,15 +176,19 @@ class Network {
             //}
             return custom;
         }
-        return logger_js_1.logger.throwArgumentError("invalid network", "network", network);
+        return (0, index_js_1.throwArgumentError)("invalid network", "network", network);
     }
+    /**
+     *  Register %%nameOrChainId%% with a function which returns
+     *  an instance of a Network representing that chain.
+     */
     static register(nameOrChainId, networkFunc) {
         if (typeof (nameOrChainId) === "number") {
             nameOrChainId = BigInt(nameOrChainId);
         }
         const existing = Networks.get(nameOrChainId);
         if (existing) {
-            logger_js_1.logger.throwArgumentError(`conflicting network for ${JSON.stringify(existing.name)}`, "nameOrChainId", nameOrChainId);
+            (0, index_js_1.throwArgumentError)(`conflicting network for ${JSON.stringify(existing.name)}`, "nameOrChainId", nameOrChainId);
         }
         Networks.set(nameOrChainId, networkFunc);
     }

@@ -6,7 +6,7 @@ function looseArrayify(hexString) {
     if (typeof (hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
         hexString = '0x' + hexString;
     }
-    return index_js_1.logger.getBytesCopy(hexString);
+    return (0, index_js_1.getBytesCopy)(hexString);
 }
 exports.looseArrayify = looseArrayify;
 function zpad(value, length) {
@@ -21,13 +21,13 @@ function getPassword(password) {
     if (typeof (password) === 'string') {
         return (0, index_js_1.toUtf8Bytes)(password, "NFKC");
     }
-    return index_js_1.logger.getBytesCopy(password);
+    return (0, index_js_1.getBytesCopy)(password);
 }
 exports.getPassword = getPassword;
 function spelunk(object, _path) {
     const match = _path.match(/^([a-z0-9$_.-]*)(:([a-z]+))?(!)?$/i);
     if (match == null) {
-        return index_js_1.logger.throwArgumentError("invalid path", "path", _path);
+        return (0, index_js_1.throwArgumentError)("invalid path", "path", _path);
     }
     const path = match[1];
     const type = match[3];
@@ -59,7 +59,7 @@ function spelunk(object, _path) {
         }
     }
     if (reqd && cur == null) {
-        index_js_1.logger.throwArgumentError("missing required value", "path", path);
+        (0, index_js_1.throwArgumentError)("missing required value", "path", path);
     }
     if (type && cur != null) {
         if (type === "int") {
@@ -86,7 +86,7 @@ function spelunk(object, _path) {
         if (type === typeof (cur)) {
             return cur;
         }
-        index_js_1.logger.throwArgumentError(`wrong type found for ${type} `, "path", path);
+        (0, index_js_1.throwArgumentError)(`wrong type found for ${type} `, "path", path);
     }
     return cur;
 }
@@ -124,7 +124,7 @@ export function followRequired(data: any, path: string): string {
 */
 // See: https://www.ietf.org/rfc/rfc4122.txt (Section 4.4)
 function uuidV4(randomBytes) {
-    const bytes = index_js_1.logger.getBytes(randomBytes, "randomBytes");
+    const bytes = (0, index_js_1.getBytes)(randomBytes, "randomBytes");
     // Section: 4.1.3:
     // - time_hi_and_version[12:16] = 0b0100
     bytes[6] = (bytes[6] & 0x0f) | 0x40;

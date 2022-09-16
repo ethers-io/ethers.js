@@ -1,9 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ArrayCoder = exports.unpack = exports.pack = void 0;
-const properties_js_1 = require("../../utils/properties.js");
-const errors_js_1 = require("../../utils/errors.js");
-const logger_js_1 = require("../../utils/logger.js");
+const index_js_1 = require("../../utils/index.js");
 const typed_js_1 = require("../typed.js");
 const abstract_coder_js_1 = require("./abstract-coder.js");
 const anonymous_js_1 = require("./anonymous.js");
@@ -17,14 +15,14 @@ function pack(writer, coders, values) {
         arrayValues = coders.map((coder) => {
             const name = coder.localName;
             if (!name) {
-                logger_js_1.logger.throwError("cannot encode object for signature with missing names", "INVALID_ARGUMENT", {
+                (0, index_js_1.throwError)("cannot encode object for signature with missing names", "INVALID_ARGUMENT", {
                     argument: "values",
                     info: { coder },
                     value: values
                 });
             }
             if (unique[name]) {
-                logger_js_1.logger.throwError("cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", {
+                (0, index_js_1.throwError)("cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", {
                     argument: "values",
                     info: { coder },
                     value: values
@@ -35,10 +33,10 @@ function pack(writer, coders, values) {
         });
     }
     else {
-        logger_js_1.logger.throwArgumentError("invalid tuple value", "tuple", values);
+        (0, index_js_1.throwArgumentError)("invalid tuple value", "tuple", values);
     }
     if (coders.length !== arrayValues.length) {
-        logger_js_1.logger.throwArgumentError("types/value length mismatch", "tuple", values);
+        (0, index_js_1.throwArgumentError)("types/value length mismatch", "tuple", values);
     }
     let staticWriter = new abstract_coder_js_1.Writer();
     let dynamicWriter = new abstract_coder_js_1.Writer();
@@ -82,7 +80,7 @@ function unpack(reader, coders) {
             }
             catch (error) {
                 // Cannot recover from this
-                if ((0, errors_js_1.isError)(error, "BUFFER_OVERRUN")) {
+                if ((0, index_js_1.isError)(error, "BUFFER_OVERRUN")) {
                     throw error;
                 }
                 value = error;
@@ -97,7 +95,7 @@ function unpack(reader, coders) {
             }
             catch (error) {
                 // Cannot recover from this
-                if ((0, errors_js_1.isError)(error, "BUFFER_OVERRUN")) {
+                if ((0, index_js_1.isError)(error, "BUFFER_OVERRUN")) {
                     throw error;
                 }
                 value = error;
@@ -122,7 +120,7 @@ class ArrayCoder extends abstract_coder_js_1.Coder {
         const type = (coder.type + "[" + (length >= 0 ? length : "") + "]");
         const dynamic = (length === -1 || coder.dynamic);
         super("array", type, localName, dynamic);
-        (0, properties_js_1.defineProperties)(this, { coder, length });
+        (0, index_js_1.defineProperties)(this, { coder, length });
     }
     defaultValue() {
         // Verifies the child coder is valid (even if the array is dynamic or 0-length)
@@ -143,7 +141,7 @@ class ArrayCoder extends abstract_coder_js_1.Coder {
             count = value.length;
             writer.writeValue(value.length);
         }
-        logger_js_1.logger.assertArgumentCount(value.length, count, "coder array" + (this.localName ? (" " + this.localName) : ""));
+        (0, index_js_1.assertArgumentCount)(value.length, count, "coder array" + (this.localName ? (" " + this.localName) : ""));
         let coders = [];
         for (let i = 0; i < value.length; i++) {
             coders.push(this.coder);
@@ -160,7 +158,7 @@ class ArrayCoder extends abstract_coder_js_1.Coder {
             // bytes as a link to the data). This could use a much
             // tighter bound, but we are erroring on the side of safety.
             if (count * abstract_coder_js_1.WordSize > reader.dataLength) {
-                logger_js_1.logger.throwError("insufficient data length", "BUFFER_OVERRUN", {
+                (0, index_js_1.throwError)("insufficient data length", "BUFFER_OVERRUN", {
                     buffer: reader.bytes,
                     offset: count * abstract_coder_js_1.WordSize,
                     length: reader.dataLength

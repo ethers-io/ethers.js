@@ -9,7 +9,7 @@ const _keccak256 = function (data) {
 };
 let __keccak256 = _keccak256;
 function keccak256(_data) {
-    const data = index_js_1.logger.getBytes(_data, "data");
+    const data = (0, index_js_1.getBytes)(_data, "data");
     return (0, index_js_1.hexlify)(__keccak256(data));
 }
 exports.keccak256 = keccak256;
