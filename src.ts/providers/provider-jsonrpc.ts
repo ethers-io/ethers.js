@@ -4,7 +4,7 @@
 // https://playground.open-rpc.org/?schemaUrl=https://raw.githubusercontent.com/ethereum/eth1.0-apis/assembled-spec/openrpc.json&uiSchema%5BappBar%5D%5Bui:splitView%5D=true&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false
 
 import { resolveAddress } from "../address/index.js";
-import { TypedDataEncoder } from "../hash/typed-data.js";
+import { TypedDataEncoder } from "../hash/index.js";
 import { accessListify } from "../transaction/index.js";
 import {
     defineProperties, getBigInt, hexlify, toQuantity, toUtf8Bytes,
@@ -25,10 +25,6 @@ import type { Networkish } from "./network.js";
 import type { Provider, TransactionRequest, TransactionResponse } from "./provider.js";
 import type { Signer } from "./signer.js";
 
-
-//function copy<T = any>(value: T): T {
-//    return JSON.parse(JSON.stringify(value));
-//}
 
 const Primitive = "bigint,boolean,function,number,string,symbol".split(/,/g);
 //const Methods = "getAddress,then".split(/,/g);
@@ -67,6 +63,9 @@ function isPollable(value: any): value is Pollable {
     return (value && typeof(value.pollingInterval) === "number");
 }
 
+/**
+ *  A JSON-RPC payload, which are sent to a JSON-RPC server.
+ */
 export type JsonRpcPayload = {
     id: number;
     method: string;
@@ -74,11 +73,17 @@ export type JsonRpcPayload = {
     jsonrpc: "2.0";
 };
 
+/**
+ *  A JSON-RPC result, which are returned on success from a JSON-RPC server.
+ */
 export type JsonRpcResult = {
     id: number;
     result: any;
 };
 
+/**
+ *  A JSON-RPC error, which are returned on failure from a JSON-RPC server.
+ */
 export type JsonRpcError = {
     id: number;
     error: {
@@ -88,23 +93,60 @@ export type JsonRpcError = {
     }
 };
 
-export type JsonRpcOptions = {
-    // Whether to immediately fallback onto useing the polling strategy; otherwise
-    // attempt to use filters first, falling back onto polling if filter returns failure
+export type DebugEventJsonRpcApiProvider = {
+    action: "sendRpcPayload",
+    payload: JsonRpcPayload | Array<JsonRpcPayload>
+} | {
+    action: "receiveRpcResult",
+    result: Array<JsonRpcResult | JsonRpcError>
+} | {
+    action: "receiveRpcError",
+    error: Error
+};
+
+/**
+ *  Options for configuring a [[JsonRpcApiProvider]]. Much of this
+ *  is targetted towards sub-classes, which often will not expose
+ *  any of these options to their consumers.
+ *
+ *  _property: options.polling? => boolean
+ *  If true, the polling strategy is used immediately for events.
+ *  Otherwise, an attempt to use filters is made and on failure
+ *  polling is used for that and all future events. (default: ``false``)
+ *
+ *  _property: options.staticNetwork => [[Network]]
+ *  If this is set, then there are no requests made for the chainId.
+ *  (default: ``null``)
+ *
+ *  _warning:
+ *  This should **ONLY** be used if it is **certain** that the network
+ *  cannot change, such as when using INFURA (since the URL dictates the
+ *  network). If the network is assumed static and it does change, this
+ *  can have tragic consequences. For example, this **CANNOT** be used
+ *  with MetaMask, since the used can select a new network from the
+ *  drop-down at any time.
+ *
+ *  _property: option.batchStallTime? => number
+ *  The amount of time (in ms) to wait, allowing requests to be batched,
+ *  before making the request. If ``0``, then batching will only occur
+ *  within the same event loop. If the batchSize is ``1``, then this is
+ *  ignored. (default: ``10``)
+ *
+ *  _property: options.batchMaxSize? => number
+ *  The target maximum size (in bytes) to allow a payload within a single
+ *  batch. At least one request will be made per request, which may
+ *  violate this constraint if it is set too small or a large request is
+ *  present. (default: 1Mb)
+ *
+ *  _property: options.bstchMaxCount? => number
+ *  The maximum number of payloads to allow in a single batch. Set this to
+ *  ``1`` to disable batching entirely. (default: ``100``)
+ */
+export type JsonRpcApiProviderOptions = {
     polling?: boolean;
-
-    // Whether to check the network on each call; only set this to true when a backend
-    // **cannot** change otherwise catastrophic errors can occur
     staticNetwork?: null | Network;
-
-    // How long to wait before draining the payload queue
     batchStallTime?: number;
-
-    // Maximum estimated size (in bytes) to allow in a batch
     batchMaxSize?: number;
-
-    // Maximum number of payloads to send per batch; if set to 1, non-batching requests
-    // are made.
     batchMaxCount?: number;
 };
 
@@ -160,26 +202,6 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
     async populateTransaction(tx: TransactionRequest): Promise<TransactionLike<string>> {
         return await this.populateCall(tx);
     }
-
-    //async getNetwork(): Promise<Frozen<Network>> {
-    //    return await this.provider.getNetwork();
-    //}
-
-    //async estimateGas(tx: TransactionRequest): Promise<bigint> {
-    //    return await this.provider.estimateGas(tx);
-    //}
-
-    //async call(tx: TransactionRequest): Promise<string> {
-    //    return await this.provider.call(tx);
-    //}
-
-    //async resolveName(name: string | Addressable): Promise<null | string> {
-    //    return await this.provider.resolveName(name);
-    //}
-
-    //async getNonce(blockTag?: BlockTag): Promise<number> {
-    //    return await this.provider.getTransactionCountOf(this.address);
-    //}
 
     // Returns just the hash of the transaction after sent, which is what
     // the bare JSON-RPC API does;
@@ -315,15 +337,21 @@ type RejectFunc = (error: Error) => void;
 
 type Payload = { payload: JsonRpcPayload, resolve: ResolveFunc, reject: RejectFunc };
 
+/**
+ *  The JsonRpcApiProvider is an abstract class and **MUST** be
+ *  sub-classed.
+ *
+ *  It provides the base for all JSON-RPC-based Provider interaction.
+ */
 export class JsonRpcApiProvider extends AbstractProvider {
 
-    #options: Required<JsonRpcOptions>;
+    #options: Required<JsonRpcApiProviderOptions>;
 
     #nextId: number;
     #payloads: Array<Payload>;
     #drainTimer: null | NodeJS.Timer;
 
-    constructor(network?: Networkish, options?: JsonRpcOptions) {
+    constructor(network?: Networkish, options?: JsonRpcApiProviderOptions) {
         super(network);
 
         this.#nextId = 1;
@@ -339,25 +367,20 @@ export class JsonRpcApiProvider extends AbstractProvider {
         }
     }
 
-    _getOption<K extends keyof JsonRpcOptions>(key: K): JsonRpcOptions[K] {
+    /**
+     *  Returns the value associated with the option %%key%%.
+     *
+     *  Sub-classes can use this to inquire about configuration options.
+     */
+    _getOption<K extends keyof JsonRpcApiProviderOptions>(key: K): JsonRpcApiProviderOptions[K] {
         return this.#options[key];
     }
 
-    // @TODO: Merge this into send
-    //prepareRequest(method: string, params: Array<any>): JsonRpcPayload {
-    //    return {
-    //        method, params, id: (this.#nextId++), jsonrpc: "2.0"
-    //    };
-    //}
-/*
-    async send<T = any>(method: string, params: Array<any>): Promise<T> {
-        // @TODO: This should construct and queue the payload
-        throw new Error("sub-class must implement this");
-    }
-*/
-
     #scheduleDrain(): void {
         if (this.#drainTimer) { return; }
+
+        // If we aren't using batching, no hard in sending it immeidately
+        const stallTime = (this._getOption("batchMaxCount") === 1) ? 0: this._getOption("batchStallTime");
 
         this.#drainTimer = setTimeout(() => {
             this.#drainTimer = null;
@@ -420,10 +443,23 @@ export class JsonRpcApiProvider extends AbstractProvider {
                     }
                 })();
             }
-        }, this.#options.batchStallTime);
+        }, stallTime);
     }
 
     // Sub-classes should **NOT** override this
+    /**
+     *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
+     *  over the underlying channel. This can be used to call methods
+     *  on the backend that do not have a high-level API within the Provider
+     *  API.
+     *
+     *  This method queues requests according to the batch constraints
+     *  in the options, assigns the request a unique ID.
+     *
+     *  **Do NOT override** this method in sub-classes; instead
+     *  override [[_send]] or force the options values in the
+     *  call to the constructor to modify this method's behavior.
+     */
     send(method: string, params: Array<any> | Record<string, any>): Promise<any> {
         // @TODO: cache chainId?? purge on switch_networks
 
@@ -441,13 +477,29 @@ export class JsonRpcApiProvider extends AbstractProvider {
         return <Promise<JsonRpcResult>>promise;
     }
 
-    // Sub-classes MUST override this
+    /**
+     *  Sends a JSON-RPC %%payload%% (or a batch) to the underlying channel.
+     *
+     *  Sub-classes **MUST** override this.
+     */
     _send(payload: JsonRpcPayload | Array<JsonRpcPayload>): Promise<Array<JsonRpcResult | JsonRpcError>> {
         return throwError("sub-classes must override _send", "UNSUPPORTED_OPERATION", {
             operation: "jsonRpcApiProvider._send"
         });
     }
 
+    /**
+     *  Resolves to the [[Signer]] account for  %%address%% managed by
+     *  the client.
+     *
+     *  If the %%address%% is a number, it is used as an index in the
+     *  the accounts from [[listAccounts]].
+     *
+     *  This can only be used on clients which manage accounts (such as
+     *  Geth with imported account or MetaMask).
+     *
+     *  Throws if the account doesn't exist.
+     */
     async getSigner(address: number | string = 0): Promise<JsonRpcSigner> {
 
         const accountsPromise = this.send("eth_accounts", [ ]);
@@ -482,6 +534,12 @@ export class JsonRpcApiProvider extends AbstractProvider {
         return Network.from(getBigInt(await this._perform({ method: "chainId" })));
     }
 
+    /**
+     *  Return a Subscriber that will manage the %%sub%%.
+     *
+     *  Sub-classes can override this to modify the behavior of
+     *  subscription management.
+     */
     _getSubscriber(sub: Subscription): Subscriber {
         // Pending Filters aren't availble via polling
         if (sub.type === "pending") { return new FilterIdPendingSubscriber(this); }
@@ -499,7 +557,11 @@ export class JsonRpcApiProvider extends AbstractProvider {
         return super._getSubscriber(sub);
     }
 
-    // Normalize a JSON-RPC transaction
+    /**
+     *  Returns %%tx%% as a normalized JSON-RPC transaction request,
+     *  which has all values hexlified and any numeric values converted
+     *  to Quantity values.
+     */
     getRpcTransaction(tx: TransactionRequest): JsonRpcTransactionRequest {
         const result: JsonRpcTransactionRequest = {};
 
@@ -525,7 +587,10 @@ export class JsonRpcApiProvider extends AbstractProvider {
         return result;
     }
 
-    // Get the necessary paramters for making a JSON-RPC request
+    /**
+     *  Returns the request method and arguments required to perform
+     *  %%req%%.
+     */
     getRpcRequest(req: PerformActionRequest): null | { method: string, args: Array<any> } {
         switch (req.method) {
             case "chainId":
@@ -624,6 +689,10 @@ export class JsonRpcApiProvider extends AbstractProvider {
         return null;
     }
 
+    /**
+     *  Returns an ethers-style Error for the given JSON-RPC error
+     *  %%payload%%.
+     */
     getRpcError(payload: JsonRpcPayload, error: JsonRpcError): Error {
         console.log("getRpcError", payload, error);
         return new Error(`JSON-RPC badness; @TODO: ${ error }`);
@@ -686,6 +755,12 @@ export class JsonRpcApiProvider extends AbstractProvider {
         */
     }
 
+    /**
+     *  Resolves to the non-normalized value by performing %%req%%.
+     *
+     *  Sub-classes may override this to modify behavior of actions,
+     *  and should generally call ``super._perform`` as a fallback.
+     */
     async _perform(req: PerformActionRequest): Promise<any> {
         // Legacy networks do not like the type field being passed along (which
         // is fair), so we delete type if it is 0 and a non-EIP-1559 network
@@ -709,33 +784,26 @@ export class JsonRpcApiProvider extends AbstractProvider {
 
         if (request != null) {
             return await this.send(request.method, request.args);
-
-/*
-  @TODO: Add debug output to send
-            this.emit("debug", { type: "sendRequest", request });
-            try {
-                const result = 
-                //console.log("RR", result);
-                this.emit("debug", { type: "getResponse", result });
-                return result;
-            } catch (error) {
-                this.emit("debug", { type: "getError", error });
-                throw error;
-                //throw this.getRpcError(request.method, request.args, <Error>error);
-            }
-*/
         }
 
         return super._perform(req);
     }
 }
 
+/**
+ *  The JsonRpcProvider is one of the most common Providers,
+ *  which performs all operations over HTTP (or HTTPS) requests.
+ *
+ *  Events are processed by polling the backend for the current block
+ *  number; when it advances, all block-base events are then checked
+ *  for updates.
+ */
 export class JsonRpcProvider extends JsonRpcApiProvider {
     #connect: FetchRequest;
 
     #pollingInterval: number;
 
-    constructor(url?: string | FetchRequest, network?: Networkish, options?: JsonRpcOptions) {
+    constructor(url?: string | FetchRequest, network?: Networkish, options?: JsonRpcApiProviderOptions) {
         if (url == null) { url = "http:/\/localhost:8545"; }
         super(network, options);
 
@@ -762,6 +830,9 @@ export class JsonRpcProvider extends JsonRpcApiProvider {
         return resp;
     }
 
+    /**
+     *  The polling interval (default: 4000 ms)
+     */
     get pollingInterval(): number { return this.#pollingInterval; }
     set pollingInterval(value: number) {
         if (!Number.isInteger(value) || value < 0) { throw new Error("invalid interval"); }
@@ -774,24 +845,6 @@ export class JsonRpcProvider extends JsonRpcApiProvider {
     }
 }
 
-// This class should only be used when it is not possible for the
-// underlying network to change, such as with INFURA. If you are
-// using MetaMask or some other client which allows users to change
-// their network DO NOT USE THIS. Bad things will happen.
-/*
-export class StaticJsonRpcProvider extends JsonRpcProvider {
-    readonly network!: Network;
-
-    constructor(url: string | ConnectionInfo, network?: Network, options?: JsonRpcOptions) {
-        super(url, network, options);
-        defineProperties<StaticJsonRpcProvider>(this, { network });
-    }
-
-    async _detectNetwork(): Promise<Network> {
-        return this.network;
-    }
-}
-*/
 /*
 function spelunkData(value: any): null | { message: string, data: string } {
     if (value == null) { return null; }

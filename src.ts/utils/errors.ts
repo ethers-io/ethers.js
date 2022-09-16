@@ -1,17 +1,13 @@
-//export type TransactionReceipt {
-//}
 import { version } from "../_version.js";
 
 import { defineReadOnly } from "./properties.js";
 
-export type ErrorSignature = {
-    r: string;
-    s: string;
-    yParity: 0 | 1;
-    networkV: bigint;
-};
+import type {
+    TransactionRequest, TransactionReceipt, TransactionResponse
+} from "../providers/index.js";
 
-export type ErrorAccessList = Array<{ address: string, storageKeys: Array<string> }>;
+import type { FetchRequest, FetchResponse } from "./fetch.js";
+
 
 export type ErrorInfo<T> = Omit<T, "code" | "name" | "message">;
 
@@ -20,61 +16,17 @@ const ErrorConstructors: Record<string, { new (...args: Array<any>): Error }> = 
 ErrorConstructors.INVALID_ARGUMENT = TypeError;
 ErrorConstructors.NUMERIC_FAULT = RangeError;
 ErrorConstructors.BUFFER_OVERRUN = RangeError;
-/*
-export interface ErrorTransaction {
-    type?: number;
 
-    to?: string;
-    from?: string;
-
-    nonce?: number;
-
-    gasLimit?: bigint;
-    gasPrice?: bigint;
-
-    maxPriorityFeePerGas?: bigint;
-    maxFeePerGas?: bigint;
-
-    data?: string;
-    value?: bigint;
-    chainId?: bigint;
-
-    hash?: string;
-
-    signature?: ErrorSignature;
-
-    accessList?: ErrorAccessList;
-}
-*/
-
-export interface ErrorFetchRequestWithBody extends ErrorFetchRequest {
-    body: Readonly<Uint8Array>;
-}
-
-export interface ErrorFetchRequest {
-    url: string;
-    method: string;
-    headers: Readonly<Record<string, string>>;
-    getHeader(key: string): string;
-    body: null | Readonly<Uint8Array>;
-    hasBody(): this is ErrorFetchRequestWithBody;
-}
-
-
-export interface ErrorFetchResponseWithBody extends ErrorFetchResponse {
-    body: Readonly<Uint8Array>;
-}
-
-export interface ErrorFetchResponse {
-    statusCode: number;
-    statusMessage: string;
-    headers: Readonly<Record<string, string>>;
-    getHeader(key: string): string;
-    body: null | Readonly<Uint8Array>;
-    hasBody(): this is ErrorFetchResponseWithBody;
-}
-
-
+/**
+ *  All errors emitted by ethers have an **ErrorCode** to help
+ *  identify and coalesce errors to simplfy programatic analysis.
+ *
+ *  _property: ``"UNKNOWN_ERROR"``
+ *  This is a general puspose fallback when no other error makes sense
+ *  or the error wasn't expected
+ *
+ *  _property: ``"NOT_IMPLEMENTED"``
+ */
 export type ErrorCode =
 
     // Generic Errors
@@ -125,14 +77,14 @@ export interface NetworkError extends EthersError<"NETWORK_ERROR"> {
 }
 
 export interface ServerError extends EthersError<"SERVER_ERROR"> {
-    request: ErrorFetchRequest | string;
-    response?: ErrorFetchResponse;
+    request: FetchRequest | string;
+    response?: FetchResponse;
 }
 
 export interface TimeoutError extends EthersError<"TIMEOUT"> {
     operation: string;
     reason: string;
-    request?: ErrorFetchRequest;
+    request?: FetchRequest;
 }
 
 export interface BadDataError extends EthersError<"BAD_DATA"> {
@@ -176,11 +128,6 @@ export interface UnexpectedArgumentError extends EthersError<"UNEXPECTED_ARGUMEN
     expectedCount: number;
 }
 
-//export interface ValueMismatchError extends EthersError<ErrorCode.UNEXPECTED_ARGUMENT> {
-//    count: number;
-//    expectedCount: number;
-//}
-
 
 // Blockchain Errors
 
@@ -209,28 +156,28 @@ export interface CallExceptionError extends EthersError<"CALL_EXCEPTION"> {
 //}
 
 export interface InsufficientFundsError extends EthersError<"INSUFFICIENT_FUNDS"> {
-    transaction: any;//ErrorTransaction;
+    transaction: TransactionRequest;
 }
 
 export interface NonceExpiredError extends EthersError<"NONCE_EXPIRED"> {
-    transaction: any; //ErrorTransaction;
+    transaction: TransactionRequest;
 }
 
 export interface OffchainFaultError extends EthersError<"OFFCHAIN_FAULT"> {
-    transaction?: any;
+    transaction?: TransactionRequest;
     reason: string;
 }
 
 export interface ReplacementUnderpricedError extends EthersError<"REPLACEMENT_UNDERPRICED"> {
-    transaction: any; //ErrorTransaction;
+    transaction: TransactionRequest;
 }
 
 export interface TransactionReplacedError extends EthersError<"TRANSACTION_REPLACED"> {
     cancelled: boolean;
     reason: "repriced" | "cancelled" | "replaced";
     hash: string;
-    replacement: any; //TransactionResponse;
-    receipt: any; //TransactionReceipt;
+    replacement: TransactionResponse;
+    receipt: TransactionReceipt;
 }
 
 export interface UnconfiguredNameError extends EthersError<"UNCONFIGURED_NAME"> {
@@ -238,7 +185,7 @@ export interface UnconfiguredNameError extends EthersError<"UNCONFIGURED_NAME"> 
 }
 
 export interface UnpredictableGasLimitError extends EthersError<"UNPREDICTABLE_GAS_LIMIT"> {
-    transaction: any; //ErrorTransaction;
+    transaction: TransactionRequest;
 }
 
 export interface ActionRejectedError extends EthersError<"ACTION_REJECTED"> {
@@ -286,10 +233,19 @@ export type CodedEthersError<T> =
 
 
 /**
+ *  Returns true if the %%error%% matches an error thrown by ethers
+ *  that matches the error %%code%%.
+ *
+ *  In TypeScript envornoments, this can be used to check that %%error%%
+ *  matches an EthersError type, which means the expected properties will
+ *  be set.
+ *
+ *  @See [ErrorCodes](api:ErrorCode)
+ *  @example
  *  try {
  *      // code....
  *  } catch (e) {
- *      if (isError(e, errors.CALL_EXCEPTION)) {
+ *      if (isError(e, "CALL_EXCEPTION")) {
  *          console.log(e.data);
  *      }
  *  }
@@ -298,14 +254,30 @@ export function isError<K extends ErrorCode, T extends CodedEthersError<K>>(erro
     return (error && (<EthersError>error).code === code);
 }
 
+/**
+ *  Returns true if %%error%% is a [CALL_EXCEPTION](api:CallExceptionError).
+ */
 export function isCallException(error: any): error is CallExceptionError {
     return isError(error, "CALL_EXCEPTION");
 }
 
+/**
+ *  Returns a new Error configured to the format ethers emits errors, with
+ *  the %%message%%, [[api:ErrorCode]] %%code%% and additioanl properties
+ *  for the corresponding EthersError.
+ *
+ *  Each error in ethers includes the version of ethers, a
+ *  machine-readable [[ErrorCode]], and depneding on %%code%%, additional
+ *  required properties. The error message will also include the %%meeage%%,
+ *  ethers version, %%code%% and all aditional properties, serialized.
+ */
 export function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(message: string, code: K, info?: ErrorInfo<T>): T {
     {
         const details: Array<string> = [];
         if (info) {
+            if ("message" in info || "code" in info || "name" in info) {
+                throw new Error(`value will overwrite populated values: ${ JSON.stringify(info) }`);
+            }
             for (const key in info) {
                 const value = <any>(info[<keyof ErrorInfo<T>>key]);
                 try {
@@ -326,18 +298,30 @@ export function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(me
     const create = ErrorConstructors[code] || Error;
     const error = <T>(new create(message));
     defineReadOnly(error, "code", code);
+
     if (info) {
         for (const key in info) {
             defineReadOnly(error, <keyof T>key, <any>(info[<keyof ErrorInfo<T>>key]));
         }
     }
+
     return <T>error;
 }
 
+/**
+ *  Throws an EthersError with %%message%%, %%code%% and additional error
+ *  info.
+ *
+ *  @see [[api:makeError]]
+ */
 export function throwError<K extends ErrorCode, T extends CodedEthersError<K>>(message: string, code: K, info?: ErrorInfo<T>): never {
     throw makeError(message, code, info);
 }
 
+/**
+ *  Throws an [[api:ArgumentError]] with %%message%% for the parameter with
+ *  %%name%% and the %%value%%.
+ */
 export function throwArgumentError(message: string, name: string, value: any): never {
     return throwError(message, "INVALID_ARGUMENT", {
         argument: name,
@@ -345,10 +329,16 @@ export function throwArgumentError(message: string, name: string, value: any): n
     });
 }
 
+/**
+ *  A simple helper to simply ensuring provided arguments match expected
+ *  constraints, throwing if not.
+ *
+ *  In TypeScript environments, the %%check%% has been asserted true, so
+ *  any further code does not need additional compile-time checks.
+ */
 export function assertArgument(check: unknown, message: string, name: string, value: unknown): asserts check {
     if (!check) { throwArgumentError(message, name, value); }
 }
-
 
 export function assertArgumentCount(count: number, expectedCount: number, message: string = ""): void {
     if (message) { message = ": " + message; }
@@ -389,6 +379,9 @@ const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
     return accum;
 }, <Array<string>>[]);
 
+/**
+ *  Throws if the normalization %%form%% is not supported.
+ */
 export function assertNormalize(form: string): void {
     if (_normalizeForms.indexOf(form) === -1) {
         throwError("platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
@@ -397,6 +390,12 @@ export function assertNormalize(form: string): void {
     }
 }
 
+/**
+ *  Many classes use file-scoped values to guard the constructor,
+ *  making it effectively private. This facilitates that pattern
+ *  by ensuring the %%givenGaurd%% matches the file-scoped %%guard%%,
+ *  throwing if not, indicating the %%className%% if provided.
+ */
 export function assertPrivate(givenGuard: any, guard: any, className: string = ""): void {
     if (givenGuard !== guard) {
         let method = className, operation = "new";

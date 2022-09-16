@@ -64,6 +64,7 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
      *  - if ``from`` is specified , check that it matches this Signer
      *  - populates ``nonce`` via ``signer.getNonce("pending")``
      *  - populates ``gasLimit`` via ``signer.estimateGas(tx)``
+     *  - populates ``chainId`` via ``signer.provider.getNetwork()``
      *  - populates ``type`` and relevant fee data for that type (``gasPrice``
      *    for legacy transactions, ``maxFeePerGas`` for EIP-1559, etc)
      *
@@ -109,7 +110,7 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
     call(tx: CallRequest): Promise<string>;
 
     /**
-     *  Resolves an [[Address]], ENS Name or [[Addressable]] to an [[Address]].
+     *  Resolves an [[Address]] or ENS Name to an [[Address]].
      */
     resolveName(name: string): Promise<null | string>;
 
@@ -118,15 +119,15 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
     // Signing
 
     /**
-     *  Signs %%tx%%, returning the fully signed transaction. This does not populate
-     *  any additional properties within the transaction.
+     *  Signs %%tx%%, returning the fully signed transaction. This does not
+     *  populate any additional properties within the transaction.
      */
     signTransaction(tx: TransactionRequest): Promise<string>;
 
     /**
-     *  Sends %%tx%% to the Network. The ``signer.populateTransaction(tx)`` is
-     *  called first to ensure all necessary properties for the transaction to be
-     *  valid have been popualted dirst.
+     *  Sends %%tx%% to the Network. The ``signer.populateTransaction(tx)``
+     *  is called first to ensure all necessary properties for the
+     *  transaction to be valid have been popualted first.
      */
     sendTransaction(tx: TransactionRequest): Promise<TransactionResponse>;
 

@@ -180,6 +180,9 @@ export class Network implements Freezable<Network> {
         return gas;
     }
 
+    /**
+     *  Returns a new Network for the %%network%% name or chainId.
+     */
     static from(network?: Networkish): Network {
         // Default network
         if (network == null) { return Network.from("homestead"); }
@@ -226,6 +229,10 @@ export class Network implements Freezable<Network> {
         return throwArgumentError("invalid network", "network", network);
     }
 
+    /**
+     *  Register %%nameOrChainId%% with a function which returns
+     *  an instance of a Network representing that chain.
+     */
     static register(nameOrChainId: string | number | bigint, networkFunc: () => Network): void {
         if (typeof(nameOrChainId) === "number") { nameOrChainId = BigInt(nameOrChainId); }
         const existing = Networks.get(nameOrChainId);
