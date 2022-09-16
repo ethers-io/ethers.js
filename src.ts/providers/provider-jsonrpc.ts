@@ -7,8 +7,8 @@ import { resolveAddress } from "../address/index.js";
 import { TypedDataEncoder } from "../hash/index.js";
 import { accessListify } from "../transaction/index.js";
 import {
-    defineProperties, getBigInt, hexlify, toQuantity, toUtf8Bytes,
-    throwArgumentError, throwError,
+    defineProperties, getBigInt, hexlify, isHexString, toQuantity, toUtf8Bytes,
+    makeError, throwArgumentError, throwError,
     FetchRequest
 } from "../utils/index.js";
 
@@ -691,68 +691,69 @@ export class JsonRpcApiProvider extends AbstractProvider {
 
     /**
      *  Returns an ethers-style Error for the given JSON-RPC error
-     *  %%payload%%.
+     *  %%payload%%, coalescing the various strings and error shapes
+     *  that different nodes return, coercing them into a machine-readable
+     *  standardized error.
      */
     getRpcError(payload: JsonRpcPayload, error: JsonRpcError): Error {
-        console.log("getRpcError", payload, error);
-        return new Error(`JSON-RPC badness; @TODO: ${ error }`);
-    /*
-        if (payload.method === "eth_call") {
+        const { method } = payload;
+
+        if (method === "eth_call") {
+            const transaction = <TransactionLike<string>>((<any>payload).params[0]);
+
             const result = spelunkData(error);
             if (result) {
                 // @TODO: Extract errorSignature, errorName, errorArgs, reason if
                 //        it is Error(string) or Panic(uint25)
-                return logger.makeError("execution reverted during JSON-RPC call", "CALL_EXCEPTION", {
+                return makeError("execution reverted during JSON-RPC call", "CALL_EXCEPTION", {
                     data: result.data,
-                    transaction: args[0]
+                    transaction
                 });
             }
 
-            return logger.makeError("missing revert data during JSON-RPC call", "CALL_EXCEPTION", {
-                data: "0x", transaction: args[0], info: { error }
+            return makeError("missing revert data during JSON-RPC call", "CALL_EXCEPTION", {
+                data: "0x", transaction, info: { error }
             });
-        }
-
-        if (method === "eth_estimateGas") {
-            // @TODO: Spelunk, and adapt the above to allow missing data.
-            //        Then throw an UNPREDICTABLE_GAS exception
         }
 
         const message = JSON.stringify(spelunkMessage(error));
 
-        if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
-            return logger.makeError("insufficient funds for intrinsic transaction cost", "INSUFFICIENT_FUNDS", {
-                transaction: args[0]
-            });
+        if (method === "eth_estimateGas") {
+            const transaction = <TransactionLike<string>>((<any>payload).params[0]);
+
+            if (message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
+                return makeError("cannot estimate gas; transaction may fail or may require manual gas limit", "UNPREDICTABLE_GAS_LIMIT", {
+                    transaction
+                });
+            }
         }
 
-        if (message.match(/nonce/) && message.match(/too low/)) {
-            return logger.makeError("nonce has already been used", "NONCE_EXPIRED", {
-                transaction: args[0]
-            });
+        if (method === "eth_sendRawTransaction" || method === "eth_sendTransaction") {
+            const transaction = <TransactionLike<string>>((<any>payload).params[0]);
+
+            if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
+                return makeError("insufficient funds for intrinsic transaction cost", "INSUFFICIENT_FUNDS", {
+                    transaction
+                });
+            }
+
+            if (message.match(/nonce/) && message.match(/too low/)) {
+                return makeError("nonce has already been used", "NONCE_EXPIRED", { transaction });
+            }
+
+            // "replacement transaction underpriced"
+            if (message.match(/replacement transaction/) && message.match(/underpriced/)) {
+                return makeError("replacement fee too low", "REPLACEMENT_UNDERPRICED", { transaction });
+            }
+
+            if (message.match(/only replay-protected/)) {
+                return makeError("legacy pre-eip-155 transactions not supported", "UNSUPPORTED_OPERATION", {
+                    operation: method, info: { transaction }
+                });
+            }
         }
 
-        // "replacement transaction underpriced"
-        if (message.match(/replacement transaction/) && message.match(/underpriced/)) {
-            return logger.makeError("replacement fee too low", "REPLACEMENT_UNDERPRICED", {
-                transaction: args[0]
-            });
-        }
-
-        if (message.match(/only replay-protected/)) {
-            return logger.makeError("legacy pre-eip-155 transactions not supported", "UNSUPPORTED_OPERATION", {
-                operation: method, info: { transaction: args[0] }
-            });
-        }
-
-        if (method === "estimateGas" && message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
-            return logger.makeError("cannot estimate gas; transaction may fail or may require manual gas limit", "UNPREDICTABLE_GAS_LIMIT", {
-                transaction: args[0]
-            });
-        }
-
-        return error;
-        */
+        return makeError("could not coalesce error", "UNKNOWN_ERROR", { error });
     }
 
     /**
@@ -845,7 +846,6 @@ export class JsonRpcProvider extends JsonRpcApiProvider {
     }
 }
 
-/*
 function spelunkData(value: any): null | { message: string, data: string } {
     if (value == null) { return null; }
 
@@ -901,4 +901,3 @@ function spelunkMessage(value: any): Array<string> {
     _spelunkMessage(value, result);
     return result;
 }
-*/
