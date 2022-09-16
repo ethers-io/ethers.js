@@ -1,4 +1,4 @@
-import { id } from "../hash/id.js";
+import { id } from "../hash/index.js";
 import {
     hexlify, throwArgumentError, toUtf8Bytes, toUtf8String
 } from "../utils/index.js";

@@ -2,7 +2,7 @@ import { CBC, pkcs7Strip } from "aes-js";
 
 import { getAddress } from "../address/index.js";
 import { pbkdf2 } from "../crypto/index.js";
-import { id } from "../hash/id.js";
+import { id } from "../hash/index.js";
 import { getBytes, throwArgumentError } from "../utils/index.js";
 
 import { getPassword, looseArrayify, spelunk } from "./utils.js";

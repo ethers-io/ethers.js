@@ -2,7 +2,7 @@
 // Use the encode-latin.js script to create the necessary
 // data files to be consumed by this class
 
-import { id } from "../hash/id.js";
+import { id } from "../hash/index.js";
 import { throwArgumentError } from "../utils/index.js";
 
 import { decodeOwl } from "./decode-owl.js";

@@ -31,7 +31,10 @@ export {
 
 export { EventPayload } from "./events.js";
 
-export { FetchRequest, FetchResponse } from "./fetch.js";
+export {
+    getIpfsGatewayFunc,
+    FetchRequest, FetchResponse, FetchCancelSignal,
+} from "./fetch.js";
 
 export { FixedFormat, FixedNumber, formatFixed, parseFixed } from "./fixednumber.js"
 
@@ -66,8 +69,8 @@ export type { BytesLike } from "./data.js";
 
 export type {
 
-    ErrorSignature, ErrorFetchRequestWithBody, ErrorFetchRequest,
-    ErrorFetchResponseWithBody, ErrorFetchResponse,
+    //ErrorFetchRequestWithBody, ErrorFetchRequest,
+    //ErrorFetchResponseWithBody, ErrorFetchResponse,
 
     ErrorCode,
 
@@ -85,7 +88,6 @@ export type { EventEmitterable, Listener } from "./events.js";
 
 export type {
     GetUrlResponse,
-    FetchRequestWithBody, FetchResponseWithBody,
     FetchPreflightFunc, FetchProcessFunc, FetchRetryFunc,
     FetchGatewayFunc, FetchGetUrlFunc
 } from "./fetch.js";

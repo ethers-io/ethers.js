@@ -1,5 +1,5 @@
 
-import { keccak256 } from "../crypto/keccak.js";
+import { keccak256 } from "../crypto/index.js";
 import {
     concat, hexlify, throwArgumentError, toUtf8Bytes, toUtf8String
 } from "../utils/index.js";

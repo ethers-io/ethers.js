@@ -62,7 +62,7 @@ async function gatewayData(url: string, signal?: FetchCancelSignal): Promise<Fet
         if (!match) { throw new Error("invalid data"); }
         return new FetchResponse(200, "OK", {
             "content-type": (match[1] || "text/plain"),
-        }, (match[1] ? decodeBase64(match[3]): unpercent(match[3])));
+        }, (match[2] ? decodeBase64(match[3]): unpercent(match[3])));
     } catch (error) {
         return new FetchResponse(599, "BAD REQUEST (invalid data: URI)", { }, null, new FetchRequest(url));
     }

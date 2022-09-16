@@ -1,4 +1,4 @@
-import { id } from "../hash/id.js";
+import { id } from "../hash/index.js";
 import { throwArgumentError, toUtf8String } from "../utils/index.js";
 
 import { Wordlist } from "./wordlist.js";

@@ -62,11 +62,16 @@ export {
 
 export {
     decodeBase58, encodeBase58,
+    decodeBase64, encodeBase64,
+    concat, dataLength, dataSlice, getBytes, getBytesCopy, hexlify,
+    isHexString, isBytesLike, stripZerosLeft, zeroPadBytes, zeroPadValue,
+    assertArgument, assertArgumentCount, assertNormalize, assertPrivate,
+    makeError, throwArgumentError, throwError,
     isCallException, isError,
-    FetchRequest, FetchResponse,
+    getIpfsGatewayFunc, FetchRequest, FetchResponse, FetchCancelSignal,
     FixedFormat, FixedNumber, formatFixed, parseFixed,
-    assertArgument,
-    fromTwos, toTwos, mask, toArray, toBigInt, toHex, toNumber,
+    getBigInt, getNumber, toArray, toBigInt, toHex, toNumber, toQuantity,
+    fromTwos, toTwos, mask,
     formatEther, parseEther, formatUnits, parseUnits,
     _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String,
     Utf8ErrorFuncs,
@@ -111,6 +116,8 @@ export type { ProgressCallback, SignatureLike } from "./crypto/index.js";
 export type { TypedDataDomain, TypedDataField } from "./hash/index.js";
 
 export {
+    AbstractProvider,
+    
     FallbackProvider,
     JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner,
 
@@ -135,9 +142,16 @@ export type {
     RlpStructuredData,
 
     GetUrlResponse,
-    FetchRequestWithBody, FetchResponseWithBody,
     FetchPreflightFunc, FetchProcessFunc, FetchRetryFunc,
-    FetchGatewayFunc, FetchGetUrlFunc
+    FetchGatewayFunc, FetchGetUrlFunc,
+
+    EthersError, UnknownError, NotImplementedError, UnsupportedOperationError, NetworkError,
+    ServerError, TimeoutError, BadDataError, CancelledError, BufferOverrunError,
+    NumericFaultError, InvalidArgumentError, MissingArgumentError, UnexpectedArgumentError,
+    CallExceptionError, InsufficientFundsError, NonceExpiredError, OffchainFaultError,
+    ReplacementUnderpricedError, TransactionReplacedError, UnconfiguredNameError,
+    UnpredictableGasLimitError, ActionRejectedError,
+    CodedEthersError,
 } from "./utils/index.js";
 
 export type {

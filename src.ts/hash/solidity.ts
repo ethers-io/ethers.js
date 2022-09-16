@@ -104,14 +104,6 @@ export function solidityPackedKeccak256(types: ReadonlyArray<string>, values: Re
     return _keccak256(solidityPacked(types, values));
 }
 
-/**
- *  Test Function, for fun
- *
- *  @param foo - something fun
- */
-export function test(foo: number | string): void {
-}
-
 export function solidityPackedSha256(types: ReadonlyArray<string>, values: ReadonlyArray<any>): string {
     return _sha256(solidityPacked(types, values));
 }

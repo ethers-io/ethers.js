@@ -574,6 +574,10 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
         return tx;
     }
 
+    async getResult(): Promise<string> {
+        return <string>(await this.provider.getTransactionResult(this.hash));
+    }
+
     async confirmations(): Promise<number> {
         return (await this.provider.getBlockNumber()) - this.blockNumber + 1;
     }
@@ -971,6 +975,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
     getBlockWithTransactions(blockHashOrBlockTag: BlockTag | string): Promise<null | Block<TransactionResponse>>
     getTransaction(hash: string): Promise<null | TransactionResponse>;
     getTransactionReceipt(hash: string): Promise<null | TransactionReceipt>;
+    getTransactionResult(hash: string): Promise<null | string>;
 
 
     ////////////////////
@@ -1038,6 +1043,9 @@ class DummyProvider implements Provider {
     }
     async getTransactionReceipt(hash: string): Promise<null | TransactionReceipt> {
         return fail<null | TransactionReceipt>();
+    }
+    async getTransactionResult(hash: string): Promise<null | string> {
+        return fail<null | string>();
     }
 
     // Bloom-filter Queries

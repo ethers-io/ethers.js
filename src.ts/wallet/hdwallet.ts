@@ -104,11 +104,6 @@ function derivePath<T extends HDNodeLike<T>>(node: T, path: string): T {
     return result;
 }
 
-
-export interface HDNodeWithPath {
-    path: string;
-}
-
 export class HDNodeWallet extends BaseWallet {
     readonly publicKey!: string;
 

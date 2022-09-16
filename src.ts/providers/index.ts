@@ -1,8 +1,11 @@
-/*
+
+
+
+/////
+
 export {
     AbstractProvider, UnmanagedSubscriber
 } from "./abstract-provider.js";
-*/
 
 export {
     AbstractSigner,
@@ -60,12 +63,16 @@ export { IpcSocketProvider };
 export { SocketProvider } from "./provider-socket.js";
 export { WebSocketProvider } from "./provider-websocket.js";
 
+export {
+    SocketSubscriber, SocketBlockSubscriber, SocketPendingSubscriber,
+    SocketEventSubscriber
+} from "./provider-socket.js";
 
-/*
 export type {
-    ProviderPlugin, Subscriber, Subscription
+    Subscription, Subscriber,
+    ProviderPlugin,
+    PerformActionFilter, PerformActionTransaction, PerformActionRequest
 } from "./abstract-provider.js"
-*/
 export type { ContractRunner } from "./contracts.js";
 /*
 export type {
@@ -89,4 +96,13 @@ export type {
     Provider,
 } from "./provider.js";
 
+export type {
+    JsonRpcPayload, JsonRpcResult, JsonRpcError,
+    JsonRpcApiProviderOptions,
+    JsonRpcTransactionRequest,
+} from "./provider-jsonrpc.js";
+
+export type { WebSocketLike } from "./provider-websocket.js";
+
 export type { Signer } from "./signer.js";
+

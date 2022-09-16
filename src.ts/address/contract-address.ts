@@ -1,4 +1,4 @@
-import { keccak256 } from "../crypto/keccak.js";
+import { keccak256 } from "../crypto/index.js";
 import {
     concat, dataSlice, getBigInt, getBytes, encodeRlp, throwArgumentError
 } from "../utils/index.js";

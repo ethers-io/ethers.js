@@ -1,6 +1,6 @@
 import { Transaction } from "../transaction/index.js";
 import {
-    defineProperties, resolveProperties,
+    defineProperties, getBigInt, resolveProperties,
     throwArgumentError, throwError
 } from "../utils/index.js";
 
@@ -80,8 +80,21 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
             pop.gasLimit = await this.estimateGas(pop);
         }
 
-        //@TODO: Copy type logic from AbstractSigner in v5
+        // Populate the chain ID
+        const network = await (<Provider>(this.provider)).getNetwork();
+        if (pop.chainId != null) {
+            const chainId = getBigInt(pop.chainId);
+            if (chainId !== network.chainId) {
+                throwArgumentError("transaction chainId mismatch", "tx.chainId", tx.chainId);
+            }
+        } else {
+            pop.chainId = network.chainId;
+        }
 
+//@TOOD: Don't await all over the place; save them up for
+// the end for better batching
+        //@TODO: Copy type logic from AbstractSigner in v5
+// Test how many batches is actually sent for sending a tx; compare before/after
         return await resolveProperties(pop);
     }
 
