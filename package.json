@@ -127,7 +127,7 @@
     "build-docs": "echo 'foo'",
     "auto-build": "npm run build -- -w",
     "build-all": "npm run build && npm run build-commonjs && npm run build-types",
-    "build-clean": "npm run clean && npm run build-all && npm run _build-dist",
+    "build-clean": "npm run clean && node lib.esm/_admin/update-version-const && npm run build-all && npm run _build-dist",
     "_dist-stats": "gzip -k9f -S '.gz' ./dist/ethers.min.js && gzip -k9f -S '.gz' ./dist/wordlists-extra.min.js && du -hs ./dist/*.gz && echo '' && du -hs ./dist/*.js",
     "_build-dist": "rollup -c && uglifyjs ./dist/ethers.js -o ./dist/ethers.min.js && uglifyjs ./dist/wordlists-extra.js -o ./dist/wordlists-extra.min.js",
     "build-dist": "npm run build && npm run _build-dist && npm run _dist-stats",
@@ -139,5 +139,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./types/index.d.ts",
-  "version": "6.0.0-beta-exports.0"
+  "version": "6.0.0-beta-exports.1"
 }

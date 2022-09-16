@@ -1,4 +1,4 @@
-const version = "6.0.0-beta-exports.0";
+const version = "6.0.0-beta-exports.1";
 
 async function resolveProperties(value) {
     const keys = Object.keys(value);
