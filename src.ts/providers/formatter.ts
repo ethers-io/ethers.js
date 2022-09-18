@@ -14,7 +14,7 @@
  *  Network object this allows exotic (non-Ethereum) networks
  *  to be fairly simple to adapt to ethers.
  */
-
+/*
 import { getAddress, getCreateAddress } from "../address/index.js";
 import {
     dataLength, dataSlice, getBigInt, getNumber, isHexString, toQuantity,
@@ -441,3 +441,4 @@ export class Formatter {
         });
     }
 }
+*/

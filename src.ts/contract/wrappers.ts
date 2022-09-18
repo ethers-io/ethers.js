@@ -31,7 +31,7 @@ export class EventLog extends Log {
 export class ContractTransactionReceipt extends TransactionReceipt {
     readonly #interface: Interface;
 
-    constructor(iface: Interface, provider: null | Provider, tx: TransactionReceipt) {
+    constructor(iface: Interface, provider: Provider, tx: TransactionReceipt) {
         super(tx, provider);
         this.#interface = iface;
     }
@@ -52,7 +52,7 @@ export class ContractTransactionReceipt extends TransactionReceipt {
 export class ContractTransactionResponse extends TransactionResponse {
     readonly #interface: Interface;
 
-    constructor(iface: Interface, provider: null | Provider, tx: TransactionResponse) {
+    constructor(iface: Interface, provider: Provider, tx: TransactionResponse) {
         super(tx, provider);
         this.#interface = iface;
     }

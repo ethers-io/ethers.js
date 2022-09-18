@@ -1,3 +1,4 @@
+import { accessListify } from "../transaction/index.js";
 import {
     defineProperties,
     hexlify, toQuantity,
@@ -210,7 +211,7 @@ export class EtherscanProvider extends AbstractProvider {
             if ((<any>{ type: true, gasLimit: true, gasPrice: true, maxFeePerGs: true, maxPriorityFeePerGas: true, nonce: true, value: true })[key]) {
                 value = toQuantity(hexlify(value));
             } else if (key === "accessList") {
-                value = "[" + this.network.formatter.accessList(value).map((set) => {
+                value = "[" + accessListify(value).map((set) => {
                     return `{address:"${ set.address }",storageKeys:["${ set.storageKeys.join('","') }"]}`;
                 }).join(",") + "]";
             } else {

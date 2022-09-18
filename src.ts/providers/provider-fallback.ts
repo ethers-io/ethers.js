@@ -4,9 +4,11 @@ import {
 } from "../utils/index.js";
 
 import { AbstractProvider } from "./abstract-provider.js";
+import {
+    formatBlock, formatBlockWithTransactions, formatLog, formatTransactionReceipt,
+    formatTransactionResponse
+} from "./format.js";
 import { Network } from "./network.js"
-
-import type { Frozen } from "../utils/index.js";
 
 import type { PerformActionRequest } from "./abstract-provider.js";
 import type { Networkish } from "./network.js"
@@ -79,7 +81,7 @@ export interface FallbackProviderState extends Required<FallbackProviderConfig> 
 
 interface Config extends FallbackProviderState {
     _updateNumber: null | Promise<any>;
-    _network: null | Frozen<Network>;
+    _network: null | Network;
     _totalTime: number;
 }
 
@@ -132,7 +134,7 @@ type RunningState = {
 
 // Normalizes a result to a string that can be used to compare against
 // other results using normal string equality
-function normalize(network: Frozen<Network>, value: any, req: PerformActionRequest): string {
+function normalize(provider: AbstractProvider, value: any, req: PerformActionRequest): string {
     switch (req.method) {
         case "chainId":
             return getBigInt(value).toString();
@@ -150,19 +152,19 @@ function normalize(network: Frozen<Network>, value: any, req: PerformActionReque
             return hexlify(value);
         case "getBlock":
             if (req.includeTransactions) {
-                return JSON.stringify(network.formatter.blockWithTransactions(value));
+                return JSON.stringify(formatBlockWithTransactions(value));
             }
-            return JSON.stringify(network.formatter.block(value));
+            return JSON.stringify(formatBlock(value));
         case "getTransaction":
-            return JSON.stringify(network.formatter.transactionResponse(value));
+            return JSON.stringify(formatTransactionResponse(value));
         case "getTransactionReceipt":
-            return JSON.stringify(network.formatter.receipt(value));
+            return JSON.stringify(formatTransactionReceipt(value));
         case "call":
             return hexlify(value);
         case "estimateGas":
             return getBigInt(value).toString();
         case "getLogs":
-            return JSON.stringify(value.map((v: any) => network.formatter.log(v)));
+            return JSON.stringify(value.map((v: any) => formatLog(v)));
     }
 
     return throwError("unsupported method", "UNSUPPORTED_OPERATION", {
@@ -292,8 +294,8 @@ export class FallbackProvider extends AbstractProvider {
         return this.#configs.slice();
     }
 
-    async _detectNetwork(): Promise<Frozen<Network>> {
-        return Network.from(getBigInt(await this._perform({ method: "chainId" }))).freeze();
+    async _detectNetwork(): Promise<Network> {
+        return Network.from(getBigInt(await this._perform({ method: "chainId" })));
     }
 
     // @TODO: Add support to select providers to be the event subscriber
@@ -379,7 +381,7 @@ export class FallbackProvider extends AbstractProvider {
                 // Check all the networks match
                 let chainId: null | bigint = null;
                 for (const config of this.#configs) {
-                    const network = <Frozen<Network>>(config._network);
+                    const network = <Network>(config._network);
                     if (chainId == null) {
                         chainId = network.chainId;
                     } else if (network.chainId !== chainId) {
@@ -403,7 +405,7 @@ export class FallbackProvider extends AbstractProvider {
                 const result = runner.result.result;
                 results.push({
                     result,
-                    normal: normalize(<Frozen<Network>>(runner.config._network), result, req),
+                    normal: normalize(runner.config.provider, result, req),
                     weight: runner.config.weight
                 });
             }

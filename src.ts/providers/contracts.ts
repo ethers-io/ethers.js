@@ -1,5 +1,5 @@
 import type {
-    CallRequest, Provider, TransactionRequest, TransactionResponse
+    Provider, TransactionRequest, TransactionResponse
 } from "./provider.js";
 
 // The object that will be used to run Contracts. The Signer and Provider
@@ -11,7 +11,7 @@ export interface ContractRunner {
     estimateGas?: (tx: TransactionRequest) => Promise<bigint>;
 
     // Required for pure, view or static calls to contracts; usually a Signer or Provider
-    call?: (tx: CallRequest) => Promise<string>;
+    call?: (tx: TransactionRequest) => Promise<string>;
 
     // Required to support ENS names; usually a Signer or Provider
     resolveName?: (name: string) => Promise<null | string>;

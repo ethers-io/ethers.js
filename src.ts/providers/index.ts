@@ -22,8 +22,6 @@ export { getDefaultProvider } from "./default-provider.js";
 export { EnsResolver } from "./ens-resolver.js";
 */
 
-export { Formatter } from "./formatter.js";
-
 export { Network } from "./common-networks.js";
 
 export {
@@ -41,8 +39,6 @@ export {
     Log,
     TransactionReceipt,
     TransactionResponse,
-
-    dummyProvider,
 
     copyRequest,
     //resolveTransactionRequest,
@@ -83,15 +79,13 @@ export type {
     AvatarLinkageType, AvatarLinkage, AvatarResult
 } from "./ens-resolver.js";
 */
-export type { FormatFunc } from "./formatter.js";
-
 export type { Networkish } from "./network.js";
 
 export type { GasCostParameters } from "./plugins-network.js";
 
 export type {
     BlockTag,
-    CallRequest, TransactionRequest, PreparedRequest,
+    TransactionRequest, PreparedTransactionRequest,
     EventFilter, Filter, FilterByBlockHash, OrphanFilter, ProviderEvent, TopicFilter,
     Provider,
 } from "./provider.js";

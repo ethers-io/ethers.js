@@ -230,7 +230,9 @@ class WrappedMethod<A extends Array<any> = Array<any>, R = any, D extends R | Co
         }
         const tx = await runner.sendTransaction(await this.populateTransaction(...args));
         const provider = getProvider(this._contract.runner);
-        return new ContractTransactionResponse(this._contract.interface, provider, tx);
+        // @TODO: the provider can be null; make a custom dummy provider that will throw a
+        // meaningful error
+        return new ContractTransactionResponse(this._contract.interface, <Provider>provider, tx);
     }
 
     async estimateGas(...args: ContractMethodArgs<A>): Promise<bigint> {
@@ -491,7 +493,9 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
         let deployTx: null | ContractTransactionResponse = null;
         if (_deployTx) {
             const provider = getProvider(runner);
-            deployTx = new ContractTransactionResponse(this.interface, provider, _deployTx);
+            // @TODO: the provider can be null; make a custom dummy provider that will throw a
+            // meaningful error
+            deployTx = new ContractTransactionResponse(this.interface, <Provider>provider, _deployTx);
         }
 
         let subs = new Map();

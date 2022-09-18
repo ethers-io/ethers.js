@@ -1,17 +1,20 @@
 //import { resolveAddress } from "@ethersproject/address";
 import {
-    defineProperties, getBigInt, getNumber, hexlify, throwError
+    defineProperties, getBigInt, getNumber, hexlify, resolveProperties,
+    assertArgument, isError, makeError, throwError
 } from "../utils/index.js";
 import { accessListify } from "../transaction/index.js";
 
 import type { AddressLike, NameResolver } from "../address/index.js";
-import type { BigNumberish, EventEmitterable, Frozen, Listener } from "../utils/index.js";
+import type { BigNumberish, EventEmitterable } from "../utils/index.js";
 import type { Signature } from "../crypto/index.js";
 import type { AccessList, AccessListish, TransactionLike } from "../transaction/index.js";
 
 import type { ContractRunner } from "./contracts.js";
 import type { Network } from "./network.js";
 
+
+const BN_0 = BigInt(0);
 
 export type BlockTag = number | string;
 
@@ -55,7 +58,6 @@ export class FeeData {
 }
 
 
-
 export interface TransactionRequest {
     type?: null | number;
 
@@ -78,17 +80,15 @@ export interface TransactionRequest {
 
     customData?: any;
 
+    // Only meaningful when used for call
+    blockTag?: BlockTag;
+    enableCcipRead?: boolean;
+
     // Todo?
     //gasMultiplier?: number;
 };
 
-
-export interface CallRequest extends TransactionRequest {
-    blockTag?: BlockTag;
-    enableCcipRead?: boolean;
-}
-
-export interface PreparedRequest {
+export interface PreparedTransactionRequest {
     type?: number;
 
     to?: AddressLike;
@@ -114,7 +114,7 @@ export interface PreparedRequest {
     enableCcipRead?: boolean;
 }
 
-export function copyRequest(req: CallRequest): PreparedRequest {
+export function copyRequest(req: TransactionRequest): PreparedTransactionRequest {
     const result: any = { };
 
     // These could be addresses, ENS names or Addressables
@@ -176,7 +176,7 @@ export async function resolveTransactionRequest(tx: TransactionRequest, provider
 //////////////////////
 // Block
 
-export interface BlockParams<T extends string | TransactionResponse> {
+export interface BlockParams<T extends string | TransactionResponseParams> {
     hash?: null | string;
 
     number: number;
@@ -228,8 +228,7 @@ export class Block<T extends string | TransactionResponse> implements BlockParam
 
     readonly #transactions: ReadonlyArray<T>;
 
-    constructor(block: BlockParams<T>, provider?: null | Provider) {
-        if (provider == null) { provider = dummyProvider; }
+    constructor(block: BlockParams<T>, provider: Provider) {
 
         this.#transactions = Object.freeze(block.transactions.map((tx) => {
             if (typeof(tx) !== "string" && tx.provider !== provider) {
@@ -363,8 +362,7 @@ export class Log implements LogParams {
     readonly transactionIndex!: number;
 
 
-    constructor(log: LogParams, provider?: null | Provider) {
-        if (provider == null) { provider = dummyProvider; }
+    constructor(log: LogParams, provider: Provider) {
         this.provider = provider;
 
         const topics = Object.freeze(log.topics.slice());
@@ -486,8 +484,7 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
 
     readonly #logs: ReadonlyArray<Log>;
 
-    constructor(tx: TransactionReceiptParams, provider?: null | Provider) {
-        if (provider == null) { provider = dummyProvider; }
+    constructor(tx: TransactionReceiptParams, provider: Provider) {
         this.#logs = Object.freeze(tx.logs.map((log) => {
             if (provider !== log.provider) {
             //return log.connect(provider);
@@ -635,7 +632,14 @@ export interface MinedTransactionResponse extends TransactionResponse {
     date: Date;
 }
 
-
+export type ReplacementDetectionSetup = {
+    to: string;
+    from: string;
+    value: bigint;
+    data: string;
+    nonce: number;
+    block: number;
+};
 
 export class TransactionResponse implements TransactionLike<string>, TransactionResponseParams {
     readonly provider: Provider;
@@ -669,8 +673,9 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
 
     readonly accessList!: null | AccessList;
 
-    constructor(tx: TransactionResponseParams, provider?: null | Provider) {
-        if (provider == null) { provider = dummyProvider; }
+    #startBlock: number;
+
+    constructor(tx: TransactionResponseParams, provider: Provider) {
         this.provider = provider;
 
         this.blockNumber = (tx.blockNumber != null) ? tx.blockNumber: null;
@@ -697,11 +702,9 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
         this.signature = tx.signature;
 
         this.accessList = (tx.accessList != null) ? tx.accessList: null;
-    }
 
-    //connect(provider: Provider): TransactionResponse {
-    //    return new TransactionResponse(this, provider);
-    //}
+        this.#startBlock = -1;
+    }
 
     toJSON(): any {
         const {
@@ -740,8 +743,155 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
         return this.provider.getTransaction(this.hash);
     }
 
-    async wait(confirms?: number): Promise<null | TransactionReceipt> {
-        return this.provider.waitForTransaction(this.hash, confirms);
+    async wait(_confirms?: number, _timeout?: number): Promise<null | TransactionReceipt> {
+        const confirms = (_confirms == null) ? 1: _confirms;
+        const timeout = (_timeout == null) ? 0: _timeout;
+
+        let startBlock = this.#startBlock
+        let nextScan = -1;
+        let stopScanning = (startBlock === -1) ? true: false;
+        const checkReplacement = async () => {
+
+            // Get the current transaction count for this sender
+            if (stopScanning) { return null; }
+            const { blockNumber, nonce } = await resolveProperties({
+                blockNumber: this.provider.getBlockNumber(),
+                nonce: this.provider.getTransactionCount(this.from)
+            });
+
+            // No transaction for our nonce has been mined yet; but we can start
+            // scanning later when we do start
+            if (nonce < this.nonce) {
+                startBlock = blockNumber;
+                return;
+            }
+
+            // We were mined; no replacement
+            if (stopScanning) { return null; }
+            const mined = await this.getTransaction();
+            if (mined && mined.blockNumber != null) { return; }
+
+            // We were replaced; start scanning for that transaction
+
+            // Starting to scan; look back a few extra blocks for safety
+            if (nextScan === -1) {
+                nextScan = startBlock - 3;
+                if (nextScan < this.#startBlock) { nextScan = this.#startBlock; }
+            }
+
+            while (nextScan <= blockNumber) {
+
+                // Get the next block to scan
+                if (stopScanning) { return null; }
+                const block = await this.provider.getBlockWithTransactions(nextScan);
+
+                // This should not happen; but we'll try again shortly
+                if (block == null) { return; }
+
+                for (const tx of block.transactions) {
+
+                    // We were mined; no replacement
+                    if (tx.hash === this.hash) { return; }
+
+                    if (tx.from === this.from && tx.nonce === this.nonce) {
+                        // Get the receipt
+                        if (stopScanning) { return null; }
+                        const receipt = await this.provider.getTransactionReceipt(tx.hash);
+
+                        // This should not happen; but we'll try again shortly
+                        if (receipt == null) { return; }
+
+                        // We will retry this on the next block (this case could be optimized)
+                        if ((blockNumber - receipt.blockNumber + 1) < confirms) { return; }
+
+                        // The reason we were replaced
+                        let reason: "replaced" | "repriced" | "cancelled" = "replaced";
+                        if (tx.data === this.data && tx.to === this.to && tx.value === this.value) {
+                            reason = "repriced";
+                        } else  if (tx.data === "0x" && tx.from === tx.to && tx.value === BN_0) {
+                            reason = "cancelled"
+                        }
+
+                        throwError("transaction was replaced", "TRANSACTION_REPLACED", {
+                            cancelled: (reason === "replaced" || reason === "cancelled"),
+                            reason,
+                            replacement: tx.replaceableTransaction(startBlock),
+                            hash: tx.hash,
+                            receipt
+                        });
+                    }
+                }
+
+                nextScan++;
+            }
+            return;
+        };
+
+        const receipt = await this.provider.getTransactionReceipt(this.hash);
+
+        if (receipt) {
+            if ((await receipt.confirmations()) >= confirms) { return receipt; }
+        } else {
+            // Check for a replacement; throws if a replacement was found
+            await checkReplacement();
+
+            // Allow null only when the confirms is 0
+            if (confirms === 0) { return null; }
+        }
+
+        const waiter = new Promise((resolve, reject) => {
+            // List of things to cancel when we have a result (one way or the other)
+            const cancellers: Array<() => void> = [ ];
+            const cancel = () => { cancellers.forEach((c) => c()); };
+
+            // On cancel, stop scanning for replacements
+            cancellers.push(() => { stopScanning = true; });
+
+            // Set up any timeout requested
+            if (timeout > 0) {
+                const timer = setTimeout(() => {
+                    cancel();
+                    reject(makeError("wait for transaction timeout", "TIMEOUT"));
+                }, timeout);
+                cancellers.push(() => { clearTimeout(timer); });
+            }
+
+            const txListener = async (receipt: TransactionReceipt) => {
+                // Done; return it!
+                if ((await receipt.confirmations()) >= confirms) {
+                    cancel();
+                    resolve(receipt);
+                }
+
+            };
+            cancellers.push(() => { this.provider.off(this.hash, txListener); });
+            this.provider.on(this.hash, txListener);
+
+            // We support replacement detection; start checking
+            if (startBlock >= 0) {
+                const replaceListener = async () => {
+                    try {
+                        // Check for a replacement; this throws only if one is found
+                        await checkReplacement();
+
+                    } catch (error) {
+                        // We were replaced (with enough confirms); re-throw the error
+                        if (isError(error, "TRANSACTION_REPLACED")) {
+                            cancel();
+                            reject(error);
+                            return;
+                        }
+                    }
+
+                    // Rescheudle a check on the next block
+                    this.provider.once("block", replaceListener);
+                };
+                cancellers.push(() => { this.provider.off("block", replaceListener); });
+                this.provider.once("block", replaceListener);
+            }
+        });
+
+        return await <Promise<TransactionReceipt>>waiter;
     }
 
     isMined(): this is MinedTransactionResponse {
@@ -778,6 +928,22 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
                 operation: "removeEvent()" });
         }
         return createReorderedTransactionFilter(this, other);
+    }
+
+    /**
+     *  Returns a new TransactionResponse instance which has the ability to
+     *  detect (and throw an error) if the transaction is replaced, which
+     *  will begin scanning at %%startBlock%%.
+     *
+     *  This should generally not be used by developers and is intended
+     *  primarily for internal use. Setting an incorrect %%startBlock%% can
+     *  have devastating performance consequences if used incorrectly.
+     */
+    replaceableTransaction(startBlock: number): TransactionResponse {
+        assertArgument(Number.isInteger(startBlock) && startBlock >= 0, "invalid startBlock", "startBlock", startBlock);
+        const tx = new TransactionResponse(this, this.provider);
+        tx.#startBlock = startBlock;
+        return tx;
     }
 }
 
@@ -881,7 +1047,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
     /**
      *  Get the connected [[Network]].
      */
-    getNetwork(): Promise<Frozen<Network>>;
+    getNetwork(): Promise<Network>;
 
     /**
      *  Get the best guess at the recommended [[FeeData]].
@@ -957,7 +1123,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      *
      *  @param tx - The transaction to simulate
      */
-    call(tx: CallRequest): Promise<string>
+    call(tx: TransactionRequest): Promise<string>
 
     /**
      *  Broadcasts the %%signedTx%% to the network, adding it to the memory pool
@@ -993,96 +1159,3 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
     waitForTransaction(hash: string, confirms?: number, timeout?: number): Promise<null | TransactionReceipt>;
     waitForBlock(blockTag?: BlockTag): Promise<Block<string>>;
 }
-
-// @TODO: I think I can drop T
-function fail<T>(): T {
-    throw new Error("this provider should not be used");
-}
-
-class DummyProvider implements Provider {
-    get provider(): this { return this; }
-
-    async getNetwork(): Promise<Frozen<Network>> { return fail<Frozen<Network>>(); }
-    async getFeeData(): Promise<FeeData> { return fail<FeeData>(); }
-
-    async estimateGas(tx: TransactionRequest): Promise<bigint> { return fail<bigint>(); }
-    async call(tx: CallRequest): Promise<string> { return fail<string>(); }
-
-    async resolveName(name: string): Promise<null | string> { return fail<null | string>(); }
-
-    // State
-    async getBlockNumber(): Promise<number> { return fail<number>(); }
-
-    // Account
-    async getBalance(address: AddressLike, blockTag?: BlockTag): Promise<bigint> {
-        return fail<bigint>();
-    }
-    async getTransactionCount(address: AddressLike, blockTag?: BlockTag): Promise<number> {
-        return fail<number>();
-    }
-
-    async getCode(address: AddressLike, blockTag?: BlockTag): Promise<string> {
-        return fail<string>();
-    }
-    async getStorageAt(address: AddressLike, position: BigNumberish, blockTag?: BlockTag): Promise<string> {
-        return fail<string>();
-    }
-
-    // Write
-    async broadcastTransaction(signedTx: string): Promise<TransactionResponse> { return fail<TransactionResponse>(); }
-
-    // Queries
-    async getBlock(blockHashOrBlockTag: BlockTag | string): Promise<null | Block<string>>{
-        return fail<null | Block<string>>();
-    }
-    async getBlockWithTransactions(blockHashOrBlockTag: BlockTag | string): Promise<null | Block<TransactionResponse>> {
-        return fail<null | Block<TransactionResponse>>();
-    }
-    async getTransaction(hash: string): Promise<null | TransactionResponse> {
-        return fail<null | TransactionResponse>();
-    }
-    async getTransactionReceipt(hash: string): Promise<null | TransactionReceipt> {
-        return fail<null | TransactionReceipt>();
-    }
-    async getTransactionResult(hash: string): Promise<null | string> {
-        return fail<null | string>();
-    }
-
-    // Bloom-filter Queries
-    async getLogs(filter: Filter | FilterByBlockHash): Promise<Array<Log>> {
-        return fail<Array<Log>>();
-    }
-
-    // ENS
-    async lookupAddress(address: string): Promise<null | string> {
-        return fail<null | string>();
-    }
-
-    async waitForTransaction(hash: string, confirms?: number, timeout?: number): Promise<null | TransactionReceipt> {
-        return fail<null | TransactionReceipt>();
-    }
-
-    async waitForBlock(blockTag?: BlockTag): Promise<Block<string>> {
-        return fail<Block<string>>();
-    }
-
-    // EventEmitterable
-    async on(event: ProviderEvent, listener: Listener): Promise<this> { return fail(); }
-    async once(event: ProviderEvent, listener: Listener): Promise<this> { return fail(); }
-    async emit(event: ProviderEvent, ...args: Array<any>): Promise<boolean> { return fail(); }
-    async listenerCount(event?: ProviderEvent): Promise<number> { return fail(); }
-    async listeners(event?: ProviderEvent): Promise<Array<Listener>> { return fail(); }
-    async off(event: ProviderEvent, listener?: Listener): Promise<this> { return fail(); }
-    async removeAllListeners(event?: ProviderEvent): Promise<this> { return fail(); }
-
-    async addListener(event: ProviderEvent, listener: Listener): Promise<this> { return fail(); }
-    async removeListener(event: ProviderEvent, listener: Listener): Promise<this> { return fail(); }
-}
-
-/**
- *  A singleton [[Provider]] instance that can be used as a placeholder. This
- *  allows API that have a Provider added later to not require a null check.
- *
- *  All operations performed on this [[Provider]] will throw.
- */
-export const dummyProvider: Provider = new DummyProvider();

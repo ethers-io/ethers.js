@@ -30,7 +30,14 @@ export class IpcSocketProvider extends SocketProvider {
         super(network);
         this.#socket = connect(path);
 
-        this.socket.on("ready", () => { this._start(); });
+        this.socket.on("ready", async () => {
+            try {
+                await this._start();
+            } catch (error) {
+                console.log("failed to start IpcSocketProvider", error);
+                // @TODO: Now what? Restart?
+            }
+        });
 
         let response = Buffer.alloc(0);
         this.socket.on("data", (data) => {

@@ -2,9 +2,6 @@ import { defineProperties } from "../utils/properties.js";
 
 import { throwArgumentError } from "../utils/index.js";
 
-//import { BigNumberish } from "../math/index.js";
-
-import type { Network } from "./network.js";
 import type { FeeData, Provider } from "./provider.js";
 
 
@@ -21,9 +18,9 @@ export class NetworkPlugin {
         return new NetworkPlugin(this.name);
     }
 
-    validate(network: Network): NetworkPlugin {
-        return this;
-    }
+//    validate(network: Network): NetworkPlugin {
+//        return this;
+//    }
 }
 
 // Networks can use this plugin to override calculations for the
@@ -38,7 +35,7 @@ export type GasCostParameters = {
     txAccessListAddress?: number;
 };
 
-export class GasCostPlugin extends NetworkPlugin {
+export class GasCostPlugin extends NetworkPlugin implements GasCostParameters {
     readonly effectiveBlock!: number;
 
     readonly txBase!: number;
@@ -98,10 +95,10 @@ export class EnsPlugin extends NetworkPlugin {
         return new EnsPlugin(this.address, this.targetNetwork);
     }
 
-    validate(network: Network): this {
-        network.formatter.address(this.address);
-        return this;
-    }
+//    validate(network: Network): this {
+//        network.formatter.address(this.address);
+//        return this;
+//    }
 }
 /*
 export class MaxPriorityFeePlugin extends NetworkPlugin {
@@ -139,5 +136,30 @@ export class FeeDataNetworkPlugin extends NetworkPlugin {
 
     clone(): FeeDataNetworkPlugin {
         return new FeeDataNetworkPlugin(this.#feeDataFunc);
+    }
+}
+
+import type { Block, BlockParams, TransactionResponse, TransactionResponseParams } from "./provider.js";
+
+export class CustomBlockNetworkPlugin extends NetworkPlugin {
+    readonly #blockFunc: (provider: Provider, block: BlockParams<string>) => Block<string>;
+    readonly #blockWithTxsFunc: (provider: Provider, block: BlockParams<TransactionResponseParams>) => Block<TransactionResponse>;
+
+    constructor(blockFunc: (provider: Provider, block: BlockParams<string>) => Block<string>, blockWithTxsFunc: (provider: Provider, block: BlockParams<TransactionResponseParams>) => Block<TransactionResponse>) {
+        super("org.ethers.network-plugins.custom-block");
+        this.#blockFunc = blockFunc;
+        this.#blockWithTxsFunc = blockWithTxsFunc;
+    }
+
+    async getBlock(provider: Provider, block: BlockParams<string>): Promise<Block<string>> {
+        return await this.#blockFunc(provider, block);
+    }
+
+    async getBlockWithTransactions(provider: Provider, block: BlockParams<TransactionResponseParams>): Promise<Block<TransactionResponse>> {
+        return await this.#blockWithTxsFunc(provider, block);
+    }
+
+    clone(): CustomBlockNetworkPlugin {
+        return new CustomBlockNetworkPlugin(this.#blockFunc, this.#blockWithTxsFunc);
     }
 }

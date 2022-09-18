@@ -1,12 +1,11 @@
+import { accessListify } from "../transaction/index.js";
 import {
     getStore, getBigInt, setStore, throwArgumentError
 } from "../utils/index.js";
 
-import { Formatter } from "./formatter.js";
 import { EnsPlugin, GasCostPlugin } from "./plugins-network.js";
 
 import type { BigNumberish } from "../utils/index.js";
-import type { Freezable, Frozen } from "../utils/index.js";
 import type { TransactionLike } from "../transaction/index.js";
 
 import type { NetworkPlugin } from "./plugins-network.js";
@@ -84,23 +83,20 @@ export class CcipPreflightPlugin extends NetworkPlugin {
 
 const Networks: Map<string | bigint, () => Network> = new Map();
 
-const defaultFormatter = new Formatter();
+// @TODO: Add a _ethersNetworkObj variable to better detect network ovjects
 
-export class Network implements Freezable<Network> {
+export class Network {
     #props: {
       name: string,
       chainId: bigint,
 
-      formatter: Formatter,
-
       plugins: Map<string, NetworkPlugin>
     };
 
-    constructor(name: string, _chainId: BigNumberish, formatter?: Formatter) {
+    constructor(name: string, _chainId: BigNumberish) {
         const chainId = getBigInt(_chainId);
-        if (formatter == null) { formatter = defaultFormatter; }
         const plugins = new Map();
-        this.#props = { name, chainId, formatter, plugins };
+        this.#props = { name, chainId, plugins };
     }
 
     toJSON(): any {
@@ -113,19 +109,15 @@ export class Network implements Freezable<Network> {
     get chainId(): bigint { return getStore(this.#props, "chainId"); }
     set chainId(value: BigNumberish) { setStore(this.#props, "chainId", getBigInt(value, "chainId")); }
 
-    get formatter(): Formatter { return getStore(this.#props, "formatter"); }
-    set formatter(value: Formatter) { setStore(this.#props, "formatter", value); }
-
     get plugins(): Array<NetworkPlugin> {
         return Array.from(this.#props.plugins.values());
     }
 
     attachPlugin(plugin: NetworkPlugin): this {
-        if (this.isFrozen()) { throw new Error("frozen"); }
         if (this.#props.plugins.get(plugin.name)) {
             throw new Error(`cannot replace existing plugin: ${ plugin.name } `);
         }
-        this.#props.plugins.set(plugin.name, plugin.validate(this));
+        this.#props.plugins.set(plugin.name, plugin.clone());
         return this;
     }
 
@@ -139,13 +131,13 @@ export class Network implements Freezable<Network> {
     }
 
     clone(): Network {
-        const clone = new Network(this.name, this.chainId, this.formatter);
+        const clone = new Network(this.name, this.chainId);
         this.plugins.forEach((plugin) => {
             clone.attachPlugin(plugin.clone());
         });
         return clone;
     }
-
+/*
     freeze(): Frozen<Network> {
         Object.freeze(this.#props);
         return this;
@@ -154,7 +146,7 @@ export class Network implements Freezable<Network> {
     isFrozen(): boolean {
         return Object.isFrozen(this.#props);
     }
-
+*/
     computeIntrinsicGas(tx: TransactionLike): number {
         const costs = this.getPlugin<GasCostPlugin>("org.ethers.gas-cost") || (new GasCostPlugin());
 
@@ -171,7 +163,7 @@ export class Network implements Freezable<Network> {
         }
 
         if (tx.accessList) {
-            const accessList = this.formatter.accessList(tx.accessList);
+            const accessList = accessListify(tx.accessList);
             for (const addr in accessList) {
                 gas += costs.txAccessListAddress + costs.txAccessListStorageKey * accessList[addr].storageKeys.length;
             }

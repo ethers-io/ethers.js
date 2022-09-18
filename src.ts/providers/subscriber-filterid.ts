@@ -1,7 +1,5 @@
 import { PollingEventSubscriber } from "./subscriber-polling.js";
 
-import type { Frozen } from "../utils/index.js";
-
 import type { AbstractProvider, Subscriber } from "./abstract-provider.js";
 import type { Network } from "./network.js";
 import type { EventFilter } from "./provider.js";
@@ -18,7 +16,7 @@ export class FilterIdSubscriber implements Subscriber {
     #filterIdPromise: null | Promise<string>;
     #poller: (b: number) => Promise<void>;
 
-    #network: null | Frozen<Network>;
+    #network: null | Network;
 
     constructor(provider: JsonRpcApiProvider) {
         this.#provider = provider;
@@ -111,10 +109,8 @@ export class FilterIdEventSubscriber extends FilterIdSubscriber {
     }
 
     async _emitResults(provider: JsonRpcApiProvider, results: Array<any>): Promise<void> {
-        const network = await provider.getNetwork();
         for (const result of results) {
-            const log = network.formatter.log(result, provider);
-            provider.emit(this.#event, log);
+            provider.emit(this.#event, provider._wrapLog(result, provider._network));
         }
     }
 }
@@ -125,9 +121,8 @@ export class FilterIdPendingSubscriber extends FilterIdSubscriber {
     }
 
     async _emitResults(provider: JsonRpcApiProvider, results: Array<any>): Promise<void> {
-        const network = await provider.getNetwork();
         for (const result of results) {
-            provider.emit("pending", network.formatter.hash(result));
+            provider.emit("pending", result);
         }
     }
 }

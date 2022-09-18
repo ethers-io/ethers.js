@@ -18,22 +18,26 @@ import {
 } from "../utils/index.js";
 
 import { EnsResolver } from "./ens-resolver.js";
+import {
+    formatBlock, formatBlockWithTransactions, formatLog, formatTransactionReceipt,
+    formatTransactionResponse
+} from "./format.js";
 import { Network } from "./network.js";
-import { Block, FeeData, Log, TransactionReceipt, TransactionResponse } from "./provider.js";
+import { copyRequest, Block, FeeData, Log, TransactionReceipt, TransactionResponse } from "./provider.js";
 import {
     PollingBlockSubscriber, PollingEventSubscriber, PollingOrphanSubscriber, PollingTransactionSubscriber
 } from "./subscriber-polling.js";
 
 import type { Addressable, AddressLike } from "../address/index.js";
 import type { BigNumberish, BytesLike } from "../utils/index.js";
-import type { Frozen, Listener } from "../utils/index.js";
-import type { AccessList } from "../transaction/index.js";
+import type { Listener } from "../utils/index.js";
 
 import type { Networkish } from "./network.js";
 //import type { MaxPriorityFeePlugin } from "./plugins-network.js";
 import type {
-    BlockTag, CallRequest, EventFilter, Filter, FilterByBlockHash,
-    LogParams, OrphanFilter, Provider, ProviderEvent, TransactionRequest,
+    BlockParams, BlockTag, EventFilter, Filter, FilterByBlockHash, LogParams, OrphanFilter,
+    PreparedTransactionRequest, Provider, ProviderEvent,
+    TransactionReceiptParams, TransactionRequest, TransactionResponseParams
 } from "./provider.js";
 
 
@@ -42,6 +46,9 @@ const BN_2 = BigInt(2);
 
 const MAX_CCIP_REDIRECTS = 10;
 
+function isPromise<T = any>(value: any): value is Promise<T> {
+    return (value && typeof(value.then) === "function");
+}
 
 function getTag(prefix: string, value: any): string {
     return prefix + ":" + JSON.stringify(value, (k, v) => {
@@ -124,10 +131,6 @@ function concisify(items: Array<string>): Array<string> {
     return items;
 }
 
-// Normalize a ProviderEvent into a Subscription
-// @TODO: Make events sync if possible; like block
-//function getSyncSubscription(_event: ProviderEvent): Subscription {
-//}
 
 async function getSubscription(_event: ProviderEvent, provider: AbstractProvider): Promise<Subscription> {
     if (_event == null) { throw new Error("invalid event"); }
@@ -215,26 +218,10 @@ export type PerformActionFilter = {
     blockHash?: string;
 };
 
-export type PerformActionTransaction = {
-    type?: number;
-
+export interface PerformActionTransaction extends PreparedTransactionRequest {
     to?: string;
     from?: string;
-
-    nonce?: number;
-
-    gasLimit?: bigint;
-    gasPrice?: bigint;
-
-    maxPriorityFeePerGas?: bigint;
-    maxFeePerGas?: bigint;
-
-    data?: string;
-    value?: bigint;
-    chainId?: bigint;
-
-    accessList?: AccessList;
-};
+}
 
 export type PerformActionRequest = {
     method: "call",
@@ -289,11 +276,6 @@ type _PerformAccountRequest = {
     method: "getStorageAt", position: bigint
 }
 
-export function copyRequest<T extends PerformActionTransaction>(tx: T): T {
-    // @TODO: copy the copy from contracts and use it from this
-    return tx;
-}
-
 type CcipArgs = {
     sender: string;
     urls: Array<string>;
@@ -304,7 +286,6 @@ type CcipArgs = {
 };
 
 
-
 export class AbstractProvider implements Provider {
 
     #subs: Map<string, Sub>;
@@ -313,10 +294,13 @@ export class AbstractProvider implements Provider {
     // null=unpaused, true=paused+dropWhilePaused, false=paused
     #pausedState: null | boolean;
 
-    #networkPromise: null | Promise<Frozen<Network>>;
+    #networkPromise: null | Promise<Network>;
     readonly #anyNetwork: boolean;
 
     #performCache: Map<string, Promise<any>>;
+
+    // The most recent block number if running an event or -1 if no "block" event
+    #lastBlockNumber: number;
 
     #nextTimer: number;
     #timers: Map<number, { timer: null | NodeJS.Timer, func: () => void, time: number }>;
@@ -326,6 +310,7 @@ export class AbstractProvider implements Provider {
     // @TODO: This should be a () => Promise<Network> so network can be
     // done when needed; or rely entirely on _detectNetwork?
     constructor(_network?: "any" | Networkish) {
+
         if (_network === "any") {
             this.#anyNetwork = true;
             this.#networkPromise = null;
@@ -338,6 +323,8 @@ export class AbstractProvider implements Provider {
             this.#anyNetwork = false;
             this.#networkPromise = null;
         }
+
+        this.#lastBlockNumber = -1;
 
         this.#performCache = new Map();
 
@@ -445,11 +432,27 @@ export class AbstractProvider implements Provider {
         });
     }
 
-    _wrapTransaction(tx: TransactionResponse, hash: string, blockNumber: number): TransactionResponse {
-        return tx;
+    _wrapBlock(value: BlockParams<string>, network: Network): Block<string> {
+        return new Block(formatBlock(value), this);
     }
 
-    _detectNetwork(): Promise<Frozen<Network>> {
+    _wrapBlockWithTransactions(value: BlockParams<TransactionResponseParams>, network: Network): Block<TransactionResponse> {
+        return new Block(formatBlock(value), this);
+    }
+
+    _wrapLog(value: LogParams, network: Network): Log {
+        return new Log(formatLog(value), this);
+    }
+
+    _wrapTransactionReceipt(value: TransactionReceiptParams, network: Network): TransactionReceipt {
+        return new TransactionReceipt(formatTransactionReceipt(value), this);
+    }
+
+    _wrapTransactionResponse(tx: TransactionResponseParams, network: Network): TransactionResponse {
+        return new TransactionResponse(tx, this);
+    }
+
+    _detectNetwork(): Promise<Network> {
         return throwError("sub-classes must implement this", "UNSUPPORTED_OPERATION", {
             operation: "_detectNetwork"
         });
@@ -466,21 +469,13 @@ export class AbstractProvider implements Provider {
 
     // State
     async getBlockNumber(): Promise<number> {
-        return getNumber(await this.#perform({ method: "getBlockNumber" }), "%response");
+        const blockNumber = getNumber(await this.#perform({ method: "getBlockNumber" }), "%response");
+        if (this.#lastBlockNumber >= 0) { this.#lastBlockNumber = blockNumber; }
+        return blockNumber;
     }
 
-// @TODO: Make this string | Promsie<string> so no await needed if sync is possible
     _getAddress(address: AddressLike): string | Promise<string> {
         return resolveAddress(address, this);
-        /*
-        if (typeof(address) === "string") {
-            if (address.match(/^0x[0-9a-f]+$/i)) { return address; }
-            const resolved = await this.resolveName(address);
-            if (resolved == null) { throw new Error("not confiugred @TODO"); }
-            return resolved;
-        }
-        return address.getAddress();
-        */
     }
 
     _getBlockTag(blockTag?: BlockTag): string | Promise<string> {
@@ -500,274 +495,11 @@ export class AbstractProvider implements Provider {
 
         if (typeof(blockTag) === "number") {
             if (blockTag >= 0) { return toQuantity(blockTag); }
+            if (this.#lastBlockNumber >= 0) { return toQuantity(this.#lastBlockNumber + blockTag); }
             return this.getBlockNumber().then((b) => toQuantity(b + blockTag));
         }
 
         return throwArgumentError("invalid blockTag", "blockTag", blockTag);
-    }
-
-    async getNetwork(): Promise<Frozen<Network>> {
-
-        // No explicit network was set and this is our first time
-        if (this.#networkPromise == null) {
-
-            // Detect the current network (shared with all calls)
-            const detectNetwork = this._detectNetwork().then((network) => {
-                this.emit("network", network, null);
-                return network;
-            }, (error) => {
-                // Reset the networkPromise on failure, so we will try again
-                if (this.#networkPromise === detectNetwork) {
-                    this.#networkPromise = null;
-                }
-                throw error;
-            });
-
-            this.#networkPromise = detectNetwork;
-            return await detectNetwork;
-        }
-
-        const networkPromise = this.#networkPromise;
-
-        const [ expected, actual ] = await Promise.all([
-            networkPromise,          // Possibly an explicit Network
-            this._detectNetwork()    // The actual connected network
-        ]);
-
-        if (expected.chainId !== actual.chainId) {
-            if (this.#anyNetwork) {
-                // The "any" network can change, so notify listeners
-                this.emit("network", actual, expected);
-
-                // Update the network if something else hasn't already changed it
-                if (this.#networkPromise === networkPromise) {
-                    this.#networkPromise = Promise.resolve(actual);
-                }
-            } else {
-                // Otherwise, we do not allow changes to the underlying network
-                throwError(`network changed: ${ expected.chainId } => ${ actual.chainId } `, "NETWORK_ERROR", {
-                    event: "changed"
-                });
-            }
-        }
-
-        return expected.clone().freeze();
-    }
-
-    async getFeeData(): Promise<FeeData> {
-        const { block, gasPrice } = await resolveProperties({
-            block: this.getBlock("latest"),
-            gasPrice: ((async () => {
-                try {
-                    const gasPrice = await this.#perform({ method: "getGasPrice" });
-                    return getBigInt(gasPrice, "%response");
-                } catch (error) { }
-                return null
-            })())
-        });
-
-        let maxFeePerGas = null, maxPriorityFeePerGas = null;
-
-        if (block && block.baseFeePerGas) {
-            // We may want to compute this more accurately in the future,
-            // using the formula "check if the base fee is correct".
-            // See: https://eips.ethereum.org/EIPS/eip-1559
-            maxPriorityFeePerGas = BigInt("1500000000");
-
-            // Allow a network to override their maximum priority fee per gas
-            //const priorityFeePlugin = (await this.getNetwork()).getPlugin<MaxPriorityFeePlugin>("org.ethers.plugins.max-priority-fee");
-            //if (priorityFeePlugin) {
-            //    maxPriorityFeePerGas = await priorityFeePlugin.getPriorityFee(this);
-            //}
-            maxFeePerGas = (block.baseFeePerGas * BN_2) + maxPriorityFeePerGas;
-        }
-
-        return new FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
-    }
-
-    async _getTransaction(_request: CallRequest): Promise<PerformActionTransaction> {
-        const network = await this.getNetwork();
-
-        // Fill in any addresses
-        const request = Object.assign({}, _request, await resolveProperties({
-            to: (_request.to ? resolveAddress(_request.to, this): undefined),
-            from: (_request.from ? resolveAddress(_request.from, this): undefined),
-        }));
-
-        return network.formatter.transactionRequest(request);
-    }
-
-    async estimateGas(_tx: TransactionRequest): Promise<bigint> {
-        const transaction = await this._getTransaction(_tx);
-        return getBigInt(await this.#perform({
-            method: "estimateGas", transaction
-        }), "%response");
-    }
-
-    async #call(tx: PerformActionTransaction, blockTag: string, attempt: number): Promise<string> {
-        if (attempt >= MAX_CCIP_REDIRECTS) {
-             throwError("CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
-                 reason: "TOO_MANY_REDIRECTS",
-                 transaction: Object.assign({ }, tx, { blockTag, enableCcipRead: true })
-             });
-         }
-
-         const transaction = copyRequest(tx);
-
-         try {
-             return hexlify(await this._perform({ method: "call", transaction, blockTag }));
-
-         } catch (error) {
-             // CCIP Read OffchainLookup
-             if (!this.disableCcipRead && isCallException(error) && attempt >= 0 && blockTag === "latest" && transaction.to != null && dataSlice(error.data, 0, 4) === "0x556f1830") {
-                 const data = error.data;
-
-                 const txSender = await resolveAddress(transaction.to, this);
-
-                 // Parse the CCIP Read Arguments
-                 let ccipArgs: CcipArgs;
-                 try {
-                     ccipArgs = parseOffchainLookup(dataSlice(error.data, 4));
-                 } catch (error: any) {
-                     return throwError(error.message, "OFFCHAIN_FAULT", {
-                         reason: "BAD_DATA",
-                         transaction, info: { data }
-                     });
-                 }
-
-                 // Check the sender of the OffchainLookup matches the transaction
-                 if (ccipArgs.sender.toLowerCase() !== txSender.toLowerCase()) {
-                     return throwError("CCIP Read sender mismatch", "CALL_EXCEPTION", {
-                         data, transaction,
-                         errorSignature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
-                         errorName: "OffchainLookup",
-                         errorArgs: ccipArgs.errorArgs
-                     });
-                 }
-
-                 const ccipResult = await this.ccipReadFetch(transaction, ccipArgs.calldata, ccipArgs.urls);
-                 if (ccipResult == null) {
-                     return throwError("CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
-                         reason: "FETCH_FAILED",
-                         transaction, info: { data: error.data, errorArgs: ccipArgs.errorArgs }
-                     });
-                 }
-
-                 return this.#call({
-                     to: txSender,
-                     data: concat([
-                         ccipArgs.selector, encodeBytes([ ccipResult, ccipArgs.extraData ])
-                     ]),
-                 }, blockTag, attempt + 1);
-             }
-
-             throw error;
-         }
-    }
-
-    async call(_tx: CallRequest): Promise<string> {
-        const [ tx, blockTag ] = await Promise.all([
-            this._getTransaction(_tx), this._getBlockTag(_tx.blockTag)
-        ]);
-        return this.#call(tx, blockTag, _tx.enableCcipRead ? 0: -1);
-    }
-
-    // Account
-    async #getAccountValue(request: _PerformAccountRequest, _address: AddressLike, _blockTag?: BlockTag): Promise<any> {
-        let address: string | Promise<string> = this._getAddress(_address);
-        let blockTag: string | Promise<string> = this._getBlockTag(_blockTag);
-
-        if (typeof(address) !== "string" || typeof(blockTag) !== "string") {
-            [ address, blockTag ] = await Promise.all([ address, blockTag ]);
-        }
-
-        return await this.#perform(Object.assign(request, { address, blockTag }));
-    }
-
-    async getBalance(address: AddressLike, blockTag?: BlockTag): Promise<bigint> {
-        return getBigInt(await this.#getAccountValue({ method: "getBalance" }, address, blockTag), "%response");
-    }
-
-    async getTransactionCount(address: AddressLike, blockTag?: BlockTag): Promise<number> {
-        return getNumber(await this.#getAccountValue({ method: "getTransactionCount" }, address, blockTag), "%response");
-    }
-
-    async getCode(address: AddressLike, blockTag?: BlockTag): Promise<string> {
-        return hexlify(await this.#getAccountValue({ method: "getCode" }, address, blockTag));
-    }
-
-    async getStorageAt(address: AddressLike, _position: BigNumberish, blockTag?: BlockTag): Promise<string> {
-        const position = getBigInt(_position, "position");
-        return hexlify(await this.#getAccountValue({ method: "getStorageAt", position }, address, blockTag));
-    }
-
-    // Write
-    async broadcastTransaction(signedTx: string): Promise<TransactionResponse> {
-        throw new Error();
-        return <TransactionResponse><unknown>{ };
-    }
-
-    async #getBlock(block: BlockTag | string, includeTransactions: boolean): Promise<any> {
-        if (isHexString(block, 32)) {
-            return await this.#perform({
-                method: "getBlock", blockHash: block, includeTransactions
-            });
-        }
-
-        let blockTag = this._getBlockTag(block);
-        if (typeof(blockTag) !== "string") { blockTag = await blockTag; }
-
-        return await this.#perform({
-            method: "getBlock", blockTag, includeTransactions
-        });
-    }
-
-    // Queries
-    async getBlock(block: BlockTag | string): Promise<null | Block<string>> {
-        const [ network, params ] = await Promise.all([
-            this.getNetwork(), this.#getBlock(block, false)
-        ]);
-
-        if (params == null) { return null; }
-
-        return network.formatter.block(params, this);
-    }
-
-    async getBlockWithTransactions(block: BlockTag | string): Promise<null | Block<TransactionResponse>> {
-        const format = (await this.getNetwork()).formatter;
-
-        const params = this.#getBlock(block, true);
-        if (params == null) { return null; }
-
-        return format.blockWithTransactions(params, this);
-    }
-
-    async getTransaction(hash: string): Promise<null | TransactionResponse> {
-        const format = (await this.getNetwork()).formatter;
-        const params = await this.#perform({ method: "getTransaction", hash });
-        return format.transactionResponse(params, this);
-    }
-
-    async getTransactionReceipt(hash: string): Promise<null | TransactionReceipt> {
-        const format = (await this.getNetwork()).formatter;
-
-        const receipt = await this.#perform({ method: "getTransactionReceipt", hash });
-        if (receipt == null) { return null; }
-
-        // Some backends did not backfill the effectiveGasPrice into old transactions
-        // in the receipt, so we look it up manually and inject it.
-        if (receipt.gasPrice == null && receipt.effectiveGasPrice == null) {
-            const tx = await this.#perform({ method: "getTransaction", hash });
-            receipt.effectiveGasPrice = tx.gasPrice;
-        }
-
-        return format.receipt(receipt, this);
-    }
-
-    async getTransactionResult(hash: string): Promise<null | string> {
-        const result = await this.#perform({ method: "getTransactionResult", hash });
-        if (result == null) { return null; }
-        return hexlify(result);
     }
 
     _getFilter(filter: Filter | FilterByBlockHash): PerformActionFilter | Promise<PerformActionFilter> {
@@ -839,16 +571,327 @@ export class AbstractProvider implements Provider {
         return resolve(<Array<string>>address, fromBlock, toBlock);
     }
 
-    // Bloom-filter Queries
-    async getLogs(_filter: Filter | FilterByBlockHash): Promise<Array<Log>> {
-        const { network, filter } = await resolveProperties({
-            network: this.getNetwork(),
-            filter: this._getFilter(_filter)
+    _getTransactionRequest(_request: TransactionRequest): PerformActionTransaction | Promise<PerformActionTransaction> {
+        const request = <PerformActionTransaction>copyRequest(_request);
+
+        const promises: Array<Promise<void>> = [ ];
+        [ "to", "from" ].forEach((key) => {
+            if ((<any>request)[key] == null) { return; }
+
+            const addr = resolveAddress((<any>request)[key]);
+            if (isPromise(addr)) {
+                promises.push((async function() { (<any>request)[key] = await addr; })());
+            } else {
+                (<any>request)[key] = addr;
+            }
         });
 
-        return (await this.#perform<Array<LogParams>>({ method: "getLogs", filter })).map((l) => {
-            return network.formatter.log(l, this);
+        if (request.blockTag != null) {
+            const blockTag = this._getBlockTag(request.blockTag);
+            if (isPromise(blockTag)) {
+                promises.push((async function() { request.blockTag = await blockTag; })());
+            } else {
+                request.blockTag = blockTag;
+            }
+        }
+
+        if (promises.length) {
+            return (async function() {
+                await Promise.all(promises);
+                return request;
+            })();
+        }
+
+        return request;
+    }
+
+    async getNetwork(): Promise<Network> {
+
+        // No explicit network was set and this is our first time
+        if (this.#networkPromise == null) {
+
+            // Detect the current network (shared with all calls)
+            const detectNetwork = this._detectNetwork().then((network) => {
+                this.emit("network", network, null);
+                return network;
+            }, (error) => {
+                // Reset the networkPromise on failure, so we will try again
+                if (this.#networkPromise === detectNetwork) {
+                    this.#networkPromise = null;
+                }
+                throw error;
+            });
+
+            this.#networkPromise = detectNetwork;
+            return (await detectNetwork).clone();
+        }
+
+        const networkPromise = this.#networkPromise;
+
+        const [ expected, actual ] = await Promise.all([
+            networkPromise,          // Possibly an explicit Network
+            this._detectNetwork()    // The actual connected network
+        ]);
+
+        if (expected.chainId !== actual.chainId) {
+            if (this.#anyNetwork) {
+                // The "any" network can change, so notify listeners
+                this.emit("network", actual, expected);
+
+                // Update the network if something else hasn't already changed it
+                if (this.#networkPromise === networkPromise) {
+                    this.#networkPromise = Promise.resolve(actual);
+                }
+            } else {
+                // Otherwise, we do not allow changes to the underlying network
+                throwError(`network changed: ${ expected.chainId } => ${ actual.chainId } `, "NETWORK_ERROR", {
+                    event: "changed"
+                });
+            }
+        }
+
+        return expected.clone();
+    }
+
+    async getFeeData(): Promise<FeeData> {
+        const { block, gasPrice } = await resolveProperties({
+            block: this.getBlock("latest"),
+            gasPrice: ((async () => {
+                try {
+                    const gasPrice = await this.#perform({ method: "getGasPrice" });
+                    return getBigInt(gasPrice, "%response");
+                } catch (error) { }
+                return null
+            })())
         });
+
+        let maxFeePerGas = null, maxPriorityFeePerGas = null;
+
+        if (block && block.baseFeePerGas) {
+            // We may want to compute this more accurately in the future,
+            // using the formula "check if the base fee is correct".
+            // See: https://eips.ethereum.org/EIPS/eip-1559
+            maxPriorityFeePerGas = BigInt("1500000000");
+
+            // Allow a network to override their maximum priority fee per gas
+            //const priorityFeePlugin = (await this.getNetwork()).getPlugin<MaxPriorityFeePlugin>("org.ethers.plugins.max-priority-fee");
+            //if (priorityFeePlugin) {
+            //    maxPriorityFeePerGas = await priorityFeePlugin.getPriorityFee(this);
+            //}
+            maxFeePerGas = (block.baseFeePerGas * BN_2) + maxPriorityFeePerGas;
+        }
+
+        return new FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
+    }
+
+
+    async estimateGas(_tx: TransactionRequest): Promise<bigint> {
+        let tx = this._getTransactionRequest(_tx);
+        if (isPromise(tx)) { tx = await tx; }
+        return getBigInt(await this.#perform({
+            method: "estimateGas", transaction: tx
+        }), "%response");
+    }
+
+    async #call(tx: PerformActionTransaction, blockTag: string, attempt: number): Promise<string> {
+        if (attempt >= MAX_CCIP_REDIRECTS) {
+             throwError("CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
+                 reason: "TOO_MANY_REDIRECTS",
+                 transaction: Object.assign({ }, tx, { blockTag, enableCcipRead: true })
+             });
+         }
+
+         // This came in as a PerformActionTransaction, so to/from are safe; we can cast
+         const transaction = <PerformActionTransaction>copyRequest(tx);
+
+         try {
+             return hexlify(await this._perform({ method: "call", transaction, blockTag }));
+
+         } catch (error) {
+             // CCIP Read OffchainLookup
+             if (!this.disableCcipRead && isCallException(error) && attempt >= 0 && blockTag === "latest" && transaction.to != null && dataSlice(error.data, 0, 4) === "0x556f1830") {
+                 const data = error.data;
+
+                 const txSender = await resolveAddress(transaction.to, this);
+
+                 // Parse the CCIP Read Arguments
+                 let ccipArgs: CcipArgs;
+                 try {
+                     ccipArgs = parseOffchainLookup(dataSlice(error.data, 4));
+                 } catch (error: any) {
+                     return throwError(error.message, "OFFCHAIN_FAULT", {
+                         reason: "BAD_DATA",
+                         transaction, info: { data }
+                     });
+                 }
+
+                 // Check the sender of the OffchainLookup matches the transaction
+                 if (ccipArgs.sender.toLowerCase() !== txSender.toLowerCase()) {
+                     return throwError("CCIP Read sender mismatch", "CALL_EXCEPTION", {
+                         data, transaction,
+                         errorSignature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
+                         errorName: "OffchainLookup",
+                         errorArgs: ccipArgs.errorArgs
+                     });
+                 }
+
+                 const ccipResult = await this.ccipReadFetch(transaction, ccipArgs.calldata, ccipArgs.urls);
+                 if (ccipResult == null) {
+                     return throwError("CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
+                         reason: "FETCH_FAILED",
+                         transaction, info: { data: error.data, errorArgs: ccipArgs.errorArgs }
+                     });
+                 }
+
+                 return this.#call({
+                     to: txSender,
+                     data: concat([
+                         ccipArgs.selector, encodeBytes([ ccipResult, ccipArgs.extraData ])
+                     ]),
+                 }, blockTag, attempt + 1);
+             }
+
+             throw error;
+         }
+    }
+
+    async #checkNetwork<T>(promise: Promise<T>): Promise<T> {
+        const { value } = await resolveProperties({
+            network: this.getNetwork(),
+            value: promise
+        });
+        return value;
+    }
+
+    async call(_tx: TransactionRequest): Promise<string> {
+        const { tx, blockTag } = await resolveProperties({
+            tx: this._getTransactionRequest(_tx),
+            blockTag: this._getBlockTag(_tx.blockTag)
+        });
+        return await this.#checkNetwork(this.#call(tx, blockTag, _tx.enableCcipRead ? 0: -1));
+    }
+
+    // Account
+    async #getAccountValue(request: _PerformAccountRequest, _address: AddressLike, _blockTag?: BlockTag): Promise<any> {
+        let address: string | Promise<string> = this._getAddress(_address);
+        let blockTag: string | Promise<string> = this._getBlockTag(_blockTag);
+
+        if (typeof(address) !== "string" || typeof(blockTag) !== "string") {
+            [ address, blockTag ] = await Promise.all([ address, blockTag ]);
+        }
+
+        return await this.#checkNetwork(this.#perform(Object.assign(request, { address, blockTag })));
+    }
+
+    async getBalance(address: AddressLike, blockTag?: BlockTag): Promise<bigint> {
+        return getBigInt(await this.#getAccountValue({ method: "getBalance" }, address, blockTag), "%response");
+    }
+
+    async getTransactionCount(address: AddressLike, blockTag?: BlockTag): Promise<number> {
+        return getNumber(await this.#getAccountValue({ method: "getTransactionCount" }, address, blockTag), "%response");
+    }
+
+    async getCode(address: AddressLike, blockTag?: BlockTag): Promise<string> {
+        return hexlify(await this.#getAccountValue({ method: "getCode" }, address, blockTag));
+    }
+
+    async getStorageAt(address: AddressLike, _position: BigNumberish, blockTag?: BlockTag): Promise<string> {
+        const position = getBigInt(_position, "position");
+        return hexlify(await this.#getAccountValue({ method: "getStorageAt", position }, address, blockTag));
+    }
+
+    // Write
+    async broadcastTransaction(signedTx: string): Promise<TransactionResponse> {
+        throw new Error();
+        return <TransactionResponse><unknown>{ };
+    }
+
+    async #getBlock(block: BlockTag | string, includeTransactions: boolean): Promise<any> {
+        // @TODO: Add CustomBlockPlugin check
+
+        if (isHexString(block, 32)) {
+            return await this.#perform({
+                method: "getBlock", blockHash: block, includeTransactions
+            });
+        }
+
+        let blockTag = this._getBlockTag(block);
+        if (typeof(blockTag) !== "string") { blockTag = await blockTag; }
+
+        return await this.#perform({
+            method: "getBlock", blockTag, includeTransactions
+        });
+    }
+
+    // Queries
+    async getBlock(block: BlockTag | string): Promise<null | Block<string>> {
+        const { network, params } = await resolveProperties({
+            network: this.getNetwork(),
+            params: this.#getBlock(block, false)
+        });
+        if (params == null) { return null; }
+
+        return this._wrapBlock(formatBlock(params), network);
+    }
+
+    async getBlockWithTransactions(block: BlockTag | string): Promise<null | Block<TransactionResponse>> {
+        const { network, params } = await resolveProperties({
+            network: this.getNetwork(),
+            params: this.#getBlock(block, true)
+        });
+        if (params == null) { return null; }
+
+        return this._wrapBlockWithTransactions(formatBlockWithTransactions(params), network);
+    }
+
+    async getTransaction(hash: string): Promise<null | TransactionResponse> {
+        const { network, params } = await resolveProperties({
+            network: this.getNetwork(),
+            params: this.#perform({ method: "getTransaction", hash })
+        });
+        if (params == null) { return null; }
+
+        return this._wrapTransactionResponse(formatTransactionResponse(params), network);
+    }
+
+    async getTransactionReceipt(hash: string): Promise<null | TransactionReceipt> {
+        const { network, params } = await resolveProperties({
+            network: this.getNetwork(),
+            params: this.#perform({ method: "getTransactionReceipt", hash })
+        });
+        if (params == null) { return null; }
+
+        // Some backends did not backfill the effectiveGasPrice into old transactions
+        // in the receipt, so we look it up manually and inject it.
+        if (params.gasPrice == null && params.effectiveGasPrice == null) {
+            const tx = await this.#perform({ method: "getTransaction", hash });
+            if (tx == null) { throw new Error("report this; could not find tx or effectiveGasPrice"); }
+            params.effectiveGasPrice = tx.gasPrice;
+        }
+
+        return this._wrapTransactionReceipt(formatTransactionReceipt(params), network);
+    }
+
+    async getTransactionResult(hash: string): Promise<null | string> {
+        const { result } = await resolveProperties({
+            network: this.getNetwork(),
+            result: this.#perform({ method: "getTransactionResult", hash })
+        });
+        if (result == null) { return null; }
+        return hexlify(result);
+    }
+
+    // Bloom-filter Queries
+    async getLogs(_filter: Filter | FilterByBlockHash): Promise<Array<Log>> {
+        let filter = this._getFilter(_filter);
+        if (isPromise(filter)) { filter = await filter; }
+
+        const { network, params } = await resolveProperties({
+            network: this.getNetwork(),
+            params: this.#perform<Array<LogParams>>({ method: "getLogs", filter })
+        });
+
+        return params.map((p) => this._wrapLog(formatLog(p), network));
     }
 
     // ENS
@@ -1153,6 +1196,8 @@ export class AbstractProvider implements Provider {
     }
 
     pause(dropWhilePaused?: boolean): void {
+        this.#lastBlockNumber = -1;
+
         if (this.#pausedState != null) {
             if (this.#pausedState == !!dropWhilePaused) { return; }
             return throwError("cannot change pause type; resume first", "UNSUPPORTED_OPERATION", {

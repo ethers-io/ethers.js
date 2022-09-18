@@ -3,13 +3,13 @@
 
 // https://playground.open-rpc.org/?schemaUrl=https://raw.githubusercontent.com/ethereum/eth1.0-apis/assembled-spec/openrpc.json&uiSchema%5BappBar%5D%5Bui:splitView%5D=true&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false
 
-import { resolveAddress } from "../address/index.js";
+import { getAddress, resolveAddress } from "../address/index.js";
 import { TypedDataEncoder } from "../hash/index.js";
 import { accessListify } from "../transaction/index.js";
 import {
     defineProperties, getBigInt, hexlify, isHexString, toQuantity, toUtf8Bytes,
     makeError, throwArgumentError, throwError,
-    FetchRequest
+    FetchRequest, resolveProperties
 } from "../utils/index.js";
 
 import { AbstractProvider, UnmanagedSubscriber } from "./abstract-provider.js";
@@ -48,6 +48,10 @@ function deepCopy<T = any>(value: T): T {
     }
 
     throw new Error(`should not happen: ${ value } (${ typeof(value) })`);
+}
+
+function stall(duration: number): Promise<void> {
+    return new Promise((resolve) => { setTimeout(resolve, duration); });
 }
 
 function getLowerCase(value: string): string {
@@ -265,7 +269,7 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
                 // Try getting the transaction
                 const tx = await this.provider.getTransaction(hash);
                 if (tx != null) {
-                    resolve(this.provider._wrapTransaction(tx, hash, blockNumber));
+                    resolve(tx.replaceableTransaction(blockNumber));
                     return;
                 }
 
@@ -342,6 +346,10 @@ type Payload = { payload: JsonRpcPayload, resolve: ResolveFunc, reject: RejectFu
  *  sub-classed.
  *
  *  It provides the base for all JSON-RPC-based Provider interaction.
+ *
+ *  Sub-classing Notes:
+ *  - a sub-class MUST override _send
+ *  - a sub-class MUST call the `_start()` method once connected
  */
 export class JsonRpcApiProvider extends AbstractProvider {
 
@@ -349,10 +357,19 @@ export class JsonRpcApiProvider extends AbstractProvider {
 
     #nextId: number;
     #payloads: Array<Payload>;
+
+    #ready: boolean;
+    #starting: null | Promise<void>;
+
     #drainTimer: null | NodeJS.Timer;
+
+    #network: null | Network;
 
     constructor(network?: Networkish, options?: JsonRpcApiProviderOptions) {
         super(network);
+
+        this.#ready = false;
+        this.#starting = null;
 
         this.#nextId = 1;
         this.#options = Object.assign({ }, defaultOptions, options || { });
@@ -360,10 +377,15 @@ export class JsonRpcApiProvider extends AbstractProvider {
         this.#payloads = [ ];
         this.#drainTimer = null;
 
+        this.#network = null;
+
         // This could be relaxed in the future to just check equivalent networks
         const staticNetwork = this._getOption("staticNetwork");
-        if (staticNetwork && staticNetwork !== network) {
-            throwArgumentError("staticNetwork MUST match network object", "options", options);
+        if (staticNetwork) {
+            if (staticNetwork !== network) {
+                throwArgumentError("staticNetwork MUST match network object", "options", options);
+            }
+            this.#network = staticNetwork;
         }
     }
 
@@ -376,8 +398,43 @@ export class JsonRpcApiProvider extends AbstractProvider {
         return this.#options[key];
     }
 
+    get _network(): Network {
+        if (!this.#network) {
+            throwError("network is not available yet", "NETWORK_ERROR");
+        }
+
+        return this.#network;
+    }
+
+    get ready(): boolean { return this.#ready; }
+
+    async _start(): Promise<void> {
+        if (this.#ready) { return; }
+        if (this.#starting) { return this.#starting; }
+
+        this.#starting = (async () => {
+
+            // Bootstrap the network
+            if (this.#network == null) {
+                try {
+                    this.#network = await this._detectNetwork();
+                } catch (error) {
+                    console.log("JsonRpcProvider failed to startup; retry in 1s");
+                    await stall(1000);
+                    this.#starting = null;
+                }
+            }
+
+            this.#ready = true;
+            this.#starting = null;
+
+            // Start dispatching requests
+            this.#scheduleDrain();
+        })();
+    }
+
     #scheduleDrain(): void {
-        if (this.#drainTimer) { return; }
+        if (this.#drainTimer || !this.ready) { return; }
 
         // If we aren't using batching, no hard in sending it immeidately
         const stallTime = (this._getOption("batchMaxCount") === 1) ? 0: this._getOption("batchStallTime");
@@ -446,7 +503,6 @@ export class JsonRpcApiProvider extends AbstractProvider {
         }, stallTime);
     }
 
-    // Sub-classes should **NOT** override this
     /**
      *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
      *  over the underlying channel. This can be used to call methods
@@ -511,12 +567,15 @@ export class JsonRpcApiProvider extends AbstractProvider {
             return new JsonRpcSigner(this, accounts[address]);
         }
 
-        const [ network, accounts ] = await Promise.all([ this.getNetwork(), accountsPromise ]);
+        const { accounts } = await resolveProperties({
+            network: this.getNetwork(),
+            accounts: accountsPromise
+        });
 
         // Account address
-        address = network.formatter.address(address);
+        address = getAddress(address);
         for (const account of accounts) {
-            if (network.formatter.address(account) === account) {
+            if (getAddress(account) === account) {
                 return new JsonRpcSigner(this, account);
             }
         }
@@ -524,14 +583,35 @@ export class JsonRpcApiProvider extends AbstractProvider {
         throw new Error("invalid account");
     }
 
-    // Sub-classes can override this; it detects the *actual* network we
-    // are connected to
+    /** Sub-classes can override this; it detects the *actual* network that
+     *  we are **currently** connected to.
+     *
+     *  Keep in mind that [[send]] may only be used once [[ready]]. 
+     */
     async _detectNetwork(): Promise<Network> {
-        // We have a static network (like INFURA)
         const network = this._getOption("staticNetwork");
         if (network) { return network; }
 
-        return Network.from(getBigInt(await this._perform({ method: "chainId" })));
+        // If we are ready, use ``send``, which enabled requests to be batched
+        if (this.ready) {
+            return Network.from(getBigInt(await this.send("eth_chainId", [ ])));
+        }
+
+        // We are not ready yet; use the primitive _send
+
+        const payload: JsonRpcPayload = {
+            id: this.#nextId++, method: "eth_chainId", params: [ ], jsonrpc: "2.0"
+        };
+
+        this.emit("debug", { action: "sendRpcPayload", payload });
+        const result = (await this._send(payload))[0];
+        this.emit("debug", { action: "receiveRpcResult", result });
+
+        if ("result" in result) {
+            return Network.from(getBigInt(result.result));
+        }
+
+        throw this.getRpcError(payload, result);
     }
 
     /**
@@ -815,6 +895,15 @@ export class JsonRpcProvider extends JsonRpcApiProvider {
         }
 
         this.#pollingInterval = 4000;
+    }
+
+    async send(method: string, params: Array<any> | Record<string, any>): Promise<any> {
+        // All requests are over HTTP, so we can just start handling requests
+        // We do this here rather than the constructor so that we don't send any
+        // requests to the network until we absolutely have to.
+        await this._start();
+
+        return await super.send(method, params);
     }
 
     async _send(payload: JsonRpcPayload | Array<JsonRpcPayload>): Promise<Array<JsonRpcResult>> {

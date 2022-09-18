@@ -2,7 +2,7 @@ import type {
     EventFragment, FunctionFragment, Result, Typed
 } from "../abi/index.js";
 import type {
-    CallRequest, PreparedRequest, TopicFilter
+    TransactionRequest, PreparedTransactionRequest, TopicFilter
 } from "../providers/index.js";
 
 import type { ContractTransactionResponse } from "./wrappers.js";
@@ -20,7 +20,7 @@ export interface DeferredTopicFilter {
     fragment: EventFragment;
 }
 
-export interface ContractTransaction extends PreparedRequest {
+export interface ContractTransaction extends PreparedTransactionRequest {
     // These are populated by contract methods and cannot bu null
     to: string;
     data: string;
@@ -30,7 +30,7 @@ export interface ContractTransaction extends PreparedRequest {
 export interface ContractDeployTransaction extends Omit<ContractTransaction, "to"> { }
 
 // Overrides; cannot override `to` or `data` as Contract populates these
-export interface Overrides extends Omit<CallRequest, "to" | "data"> { };
+export interface Overrides extends Omit<TransactionRequest, "to" | "data"> { };
 
 
 // Arguments for methods; with an optional (n+1)th Override

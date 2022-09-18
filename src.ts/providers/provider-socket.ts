@@ -14,7 +14,6 @@ import { assertArgument, makeError, throwError } from "../utils/index.js";
 import { JsonRpcApiProvider } from "./provider-jsonrpc.js";
 
 import type { Subscriber, Subscription } from "./abstract-provider.js";
-import type { Formatter } from "./formatter.js";
 import type { EventFilter } from "./provider.js";
 import type { JsonRpcError, JsonRpcPayload, JsonRpcResult } from "./provider-jsonrpc.js";
 import type { Networkish } from "./network.js";
@@ -124,24 +123,18 @@ export class SocketEventSubscriber extends SocketSubscriber {
     #logFilter: string;
     get logFilter(): EventFilter { return JSON.parse(this.#logFilter); }
 
-    #formatter: Promise<Readonly<Formatter>>;
-
     constructor(provider: SocketProvider, filter: EventFilter) {
         super(provider, [ "logs", filter ]);
         this.#logFilter = JSON.stringify(filter);
-        this.#formatter = provider.getNetwork().then((network) => network.formatter);
     }
 
     async _emit(provider: SocketProvider, message: any): Promise<void> {
-        const formatter = await this.#formatter;
-        provider.emit(this.#logFilter, formatter.log(message, provider));
+        provider.emit(this.#logFilter, provider._wrapLog(message, provider._network));
     }
 }
 
 export class SocketProvider extends JsonRpcApiProvider {
     #callbacks: Map<number, { payload: JsonRpcPayload, resolve: (r: any) => void, reject: (e: Error) => void }>;
-
-    #ready: boolean;
 
     // Maps each filterId to its subscriber
     #subs: Map<number | string, SocketSubscriber>;
@@ -153,10 +146,19 @@ export class SocketProvider extends JsonRpcApiProvider {
     constructor(network?: Networkish) {
         super(network, { batchMaxCount: 1 });
         this.#callbacks = new Map();
-        this.#ready = false;
         this.#subs = new Map();
         this.#pending = new Map();
     }
+
+    // This value is only valid after _start has been called
+    /*
+    get _network(): Network {
+        if (this.#network == null) {
+            throw new Error("this shouldn't happen");
+        }
+        return this.#network.clone();
+    }
+    */
 
     _getSubscriber(sub: Subscription): Subscriber {
         switch (sub.type) {
@@ -198,21 +200,25 @@ export class SocketProvider extends JsonRpcApiProvider {
             this.#callbacks.set(payload.id, { payload, resolve, reject });
         });
 
-        if (this.#ready) {
-            await this._write(JSON.stringify(payload));
-        }
+        await this._write(JSON.stringify(payload));
 
         return <Array<JsonRpcResult | JsonRpcError>>[ await promise ];
     }
 
     // Sub-classes must call this once they are connected
+    /*
     async _start(): Promise<void> {
         if (this.#ready) { return; }
-        this.#ready = true;
+
         for (const { payload } of this.#callbacks.values()) {
             await this._write(JSON.stringify(payload));
         }
+
+        this.#ready = (async function() {
+            await super._start();
+        })();
     }
+    */
 
     // Sub-classes must call this for each message
     async _processMessage(message: string): Promise<void> {

@@ -8,7 +8,7 @@ import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
 import type { TransactionLike } from "../transaction/index.js";
 
 import type {
-    BlockTag, CallRequest, Provider, TransactionRequest, TransactionResponse
+    BlockTag, Provider, TransactionRequest, TransactionResponse
 } from "./provider.js";
 import type { Signer } from "./signer.js";
 
@@ -32,7 +32,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
         return this.#checkProvider("getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
     }
 
-    async #populate(op: string, tx: CallRequest | TransactionRequest): Promise<TransactionLike<string>> {
+    async #populate(op: string, tx: TransactionRequest): Promise<TransactionLike<string>> {
         const provider = this.#checkProvider(op);
 
         //let pop: Deferrable<TransactionRequest> = Object.assign({ }, tx);
@@ -63,7 +63,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
         return pop;
     }
 
-    async populateCall(tx: CallRequest): Promise<TransactionLike<string>> {
+    async populateCall(tx: TransactionRequest): Promise<TransactionLike<string>> {
         const pop = await this.#populate("populateCall", tx);
 
         return pop;
@@ -98,11 +98,11 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
         return await resolveProperties(pop);
     }
 
-    async estimateGas(tx: CallRequest): Promise<bigint> {
+    async estimateGas(tx: TransactionRequest): Promise<bigint> {
         return this.#checkProvider("estimateGas").estimateGas(await this.populateCall(tx));
     }
 
-    async call(tx: CallRequest): Promise<string> {
+    async call(tx: TransactionRequest): Promise<string> {
         return this.#checkProvider("call").call(await this.populateCall(tx));
     }
 
@@ -176,7 +176,7 @@ export class WrappedSigner extends AbstractSigner {
         return await this.#signer.getNonce(blockTag);
     }
 
-    async populateCall(tx: CallRequest): Promise<TransactionLike<string>> {
+    async populateCall(tx: TransactionRequest): Promise<TransactionLike<string>> {
         return await this.#signer.populateCall(tx);
     }
 
@@ -184,11 +184,11 @@ export class WrappedSigner extends AbstractSigner {
         return await this.#signer.populateTransaction(tx);
     }
 
-    async estimateGas(tx: CallRequest): Promise<bigint> {
+    async estimateGas(tx: TransactionRequest): Promise<bigint> {
         return await this.#signer.estimateGas(tx);
     }
 
-    async call(tx: CallRequest): Promise<string> {
+    async call(tx: TransactionRequest): Promise<string> {
         return await this.#signer.call(tx);
     }
 
