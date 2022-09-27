@@ -177,8 +177,16 @@ export class Interface {
         this.#events = new Map();
 //        this.#structs = new Map();
 
+
+        const frags: Array<Fragment> = [ ];
+        for (const a of abi) {
+            try {
+                frags.push(Fragment.from(a));
+            } catch (error) { }
+        }
+
         defineProperties<Interface>(this, {
-            fragments: Object.freeze(abi.map((f) => Fragment.from(f)).filter((f) => (f != null))),
+            fragments: Object.freeze(frags)
         });
 
         this.#abiCoder = this.getAbiCoder();

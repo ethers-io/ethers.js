@@ -761,7 +761,7 @@ export abstract class Fragment {
             case "function": return FunctionFragment.fromObject(obj);
             case "struct": return StructFragment.fromObject(obj);
         }
-        throw new Error("not implemented yet");
+        throw new Error(`not implemented yet: ${ obj.type }`);
     }
 
     static fromString(text: string): Fragment {
@@ -864,6 +864,11 @@ export class ErrorFragment extends NamedFragment {
         return result.join(" ");
     }
 
+    static fromObject(obj: any): ErrorFragment {
+        return new ErrorFragment(_guard, obj.name,
+            obj.inputs ? obj.inputs.map(ParamType.fromObject): [ ]);
+    }
+
     static fromString(text: string): ErrorFragment {
         return ErrorFragment.fromTokens(lex(text));
     }
@@ -905,6 +910,11 @@ export class EventFragment extends NamedFragment {
         result.push(this.name + joinParams(format, this.inputs));
         if (format !== "sighash" && this.anonymous) { result.push("anonymous"); }
         return result.join(" ");
+    }
+
+    static fromObject(obj: any): EventFragment {
+        return new EventFragment(_guard, obj.name,
+            obj.inputs ? obj.inputs.map(ParamType.fromObject): [ ], !!obj.anonymous);
     }
 
     static fromString(text: string): EventFragment {
@@ -954,12 +964,14 @@ export class ConstructorFragment extends Fragment {
         return result.join(" ");
     }
 
-    static fromString(text: string): ConstructorFragment {
-        return ConstructorFragment.fromTokens(lex(text));
+    static fromObject(obj: any): ConstructorFragment {
+        return new ConstructorFragment(_guard, "constructor",
+            obj.inputs ? obj.inputs.map(ParamType.fromObject): [ ],
+            !!obj.payable, (obj.gas != null) ? obj.gas: null);
     }
 
-    static fromObject(obj: any): ConstructorFragment {
-        throw new Error("TODO");
+    static fromString(text: string): ConstructorFragment {
+        return ConstructorFragment.fromTokens(lex(text));
     }
 
     static fromTokens(tokens: TokenString): ConstructorFragment {
@@ -1026,6 +1038,14 @@ export class FunctionFragment extends NamedFragment {
             if (this.gas != null) { result.push(`@${ this.gas.toString() }`); }
         }
         return result.join(" ");
+    }
+
+    static fromObject(obj: any): FunctionFragment {
+        // @TODO: verifyState for stateMutability
+        return new FunctionFragment(_guard, obj.name, obj.stateMutability,
+             obj.inputs ? obj.inputs.map(ParamType.fromObject): [ ],
+             obj.outputs ? obj.outputs.map(ParamType.fromObject): [ ],
+             (obj.gas != null) ? obj.gas: null);
     }
 
     static fromString(text: string): FunctionFragment {

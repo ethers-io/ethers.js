@@ -14,6 +14,10 @@ export type GetUrlResponse = {
     body: null | Uint8Array
 };
 
+export type FetchThrottleParams = {
+    maxAttempts?: number;
+    slotInterval?: number;
+};
 /**
  *  Called before any network request, allowing updated headers (e.g. Bearer tokens), etc.
  */
@@ -160,6 +164,8 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
     #retry?: null | FetchRetryFunc;
 
     #signal?: FetchCancelSignal;
+
+    #throttle: Required<FetchThrottleParams>;
 
     /**
      *  The fetch URI to requrest.
@@ -388,11 +394,25 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         this.#gzip = false;
         this.#headers = { };
         this.#method = "";
-        this.#timeout = 300;
+        this.#timeout = 300000;
+
+        this.#throttle = {
+            slotInterval: SLOT_INTERVAL,
+            maxAttempts: MAX_ATTEMPTS
+        };
+    }
+
+    setThrottleParams(params: FetchThrottleParams): void {
+        if (params.slotInterval != null) {
+            this.#throttle.slotInterval = params.slotInterval;
+        }
+        if (params.maxAttempts != null) {
+            this.#throttle.maxAttempts = params.maxAttempts;
+        }
     }
 
     async #send(attempt: number, expires: number, delay: number, _request: FetchRequest, _response: FetchResponse): Promise<FetchResponse> {
-        if (attempt >= MAX_ATTEMPTS) {
+        if (attempt >= this.#throttle.maxAttempts) {
             return _response.makeServerError("exceeded maximum retry limit");
         }
 
@@ -455,7 +475,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
             // Throttle
             if (this.retryFunc == null || (await this.retryFunc(req, response, attempt))) {
                 const retryAfter = response.headers["retry-after"];
-                let delay = SLOT_INTERVAL * Math.trunc(Math.random() * Math.pow(2, attempt));
+                let delay = this.#throttle.slotInterval * Math.trunc(Math.random() * Math.pow(2, attempt));
                 if (typeof(retryAfter) === "string" && retryAfter.match(/^[1-9][0-9]*$/)) {
                     delay = parseInt(retryAfter);
                 }
@@ -475,7 +495,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
                 }
 
                 // Throttle
-                let delay = SLOT_INTERVAL * Math.trunc(Math.random() * Math.pow(2, attempt));;
+                let delay = this.#throttle.slotInterval * Math.trunc(Math.random() * Math.pow(2, attempt));;
                 if (error.stall >= 0) { delay = error.stall; }
 
                 return req.clone().#send(attempt + 1, expires, delay, _request, response);
